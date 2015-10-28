@@ -120,22 +120,6 @@
       ]
     },
     {
-      # This target is the shared library used by Android APK (i.e.
-      # JNI-friendly) tests.
-      'target_name': 'sandbox_linux_jni_unittests',
-      'includes': [
-        'sandbox_linux_test_sources.gypi',
-      ],
-      'type': 'shared_library',
-      'conditions': [
-        [ 'OS == "android"', {
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'seccomp_bpf',
       'type': '<(component)',
       'sources': [
@@ -422,19 +406,6 @@
       }],
     }],
     [ 'OS=="android"', {
-      'targets': [
-        {
-        'target_name': 'sandbox_linux_jni_unittests_apk',
-        'type': 'none',
-        'variables': {
-          'test_suite_name': 'sandbox_linux_jni_unittests',
-        },
-        'dependencies': [
-          'sandbox_linux_jni_unittests',
-        ],
-        'includes': [ '../../build/apk_test.gypi' ],
-        }
-      ],
       'conditions': [
         ['test_isolation_mode != "noop"', {
           'targets': [

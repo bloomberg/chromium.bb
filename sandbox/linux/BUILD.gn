@@ -77,7 +77,7 @@ source_set("sandbox_linux_test_utils") {
   }
 }
 
-# Sources shared by sandbox_linux_unittests and sandbox_linux_jni_unittests.
+# Sources for sandbox_linux_unittests.
 source_set("sandbox_linux_unittests_sources") {
   testonly = true
 
@@ -202,19 +202,6 @@ test("sandbox_linux_unittests") {
   deps = [
     ":sandbox_linux_unittests_sources",
   ]
-}
-
-# This target is the shared library used by Android APK (i.e.
-# JNI-friendly) tests.
-shared_library("sandbox_linux_jni_unittests") {
-  testonly = true
-  deps = [
-    ":sandbox_linux_unittests_sources",
-    "//build/config/sanitizers:deps",
-  ]
-  if (is_android) {
-    deps += [ "//testing/android/native_test:native_test_native_code" ]
-  }
 }
 
 component("seccomp_bpf") {
@@ -463,16 +450,4 @@ if (is_android) {
   #    ":sandbox_linux_unittests",
   #  ]
   #}
-  # TODO(GYP) convert this.
-  #      {
-  #      'target_name': 'sandbox_linux_jni_unittests_apk',
-  #      'type': 'none',
-  #      'variables': {
-  #        'test_suite_name': 'sandbox_linux_jni_unittests',
-  #      },
-  #      'dependencies': [
-  #        'sandbox_linux_jni_unittests',
-  #      ],
-  #      'includes': [ '../../build/apk_test.gypi' ],
-  #      }
 }

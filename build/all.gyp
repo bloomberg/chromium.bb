@@ -851,7 +851,6 @@
             '../media/media.gyp:media_unittests_apk',
             '../media/midi/midi.gyp:midi_unittests_apk',
             '../net/net.gyp:net_unittests_apk',
-            '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests_apk',
             '../skia/skia_tests.gyp:skia_unittests_apk',
             '../sql/sql.gyp:sql_unittests_apk',
             '../sync/sync.gyp:sync_unit_tests_apk',

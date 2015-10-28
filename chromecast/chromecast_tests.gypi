@@ -261,8 +261,6 @@
             '../media/media.gyp:media_unittests_apk',
             '../media/midi/midi.gyp:midi_unittests_apk',
             '../net/net.gyp:net_unittests_apk',
-            # Note(gunsch): crashes 100% on Fugu. b/22489355
-            # '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests_apk',
             '../sql/sql.gyp:sql_unittests_apk',
             '../sync/sync.gyp:sync_unit_tests_apk',
             '../ui/events/events.gyp:events_unittests_apk',

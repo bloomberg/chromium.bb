@@ -332,7 +332,6 @@ group("both_gn_and_gyp") {
       "//net:quic_server",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
-      "//sandbox/linux:sandbox_linux_jni_unittests",
     ]
 
     if (is_chromeos || use_ash) {
