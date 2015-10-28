@@ -35,13 +35,13 @@ void* GetCdmHost(int host_interface_version, void* user_data);
 
 // An adapter class for abstracting away PPAPI interaction and threading for a
 // Content Decryption Module (CDM).
-class CdmAdapter : public pp::Instance,
-                   public pp::ContentDecryptor_Private,
-                   public cdm::Host_7,
-                   public cdm::Host_8 {
+class PpapiCdmAdapter : public pp::Instance,
+                        public pp::ContentDecryptor_Private,
+                        public cdm::Host_7,
+                        public cdm::Host_8 {
  public:
-  CdmAdapter(PP_Instance instance, pp::Module* module);
-  virtual ~CdmAdapter();
+  PpapiCdmAdapter(PP_Instance instance, pp::Module* module);
+  virtual ~PpapiCdmAdapter();
 
   // pp::Instance implementation.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
@@ -266,7 +266,7 @@ class CdmAdapter : public pp::Instance,
 #endif
 
   PpbBufferAllocator allocator_;
-  pp::CompletionCallbackFactory<CdmAdapter> callback_factory_;
+  pp::CompletionCallbackFactory<PpapiCdmAdapter> callback_factory_;
   linked_ptr<CdmWrapper> cdm_;
   std::string key_system_;
   bool allow_distinctive_identifier_;
@@ -283,7 +283,7 @@ class CdmAdapter : public pp::Instance,
   uint32_t last_read_file_size_kb_;
   bool file_size_uma_reported_;
 
-  DISALLOW_COPY_AND_ASSIGN(CdmAdapter);
+  DISALLOW_COPY_AND_ASSIGN(PpapiCdmAdapter);
 };
 
 }  // namespace media
