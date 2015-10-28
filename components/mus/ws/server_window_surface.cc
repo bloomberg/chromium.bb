@@ -115,7 +115,6 @@ void ServerWindowSurface::SetBeginFrameSource(
     cc::SurfaceId surface_id,
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Implement this.
-  NOTIMPLEMENTED();
 }
 
 }  // namespace ws

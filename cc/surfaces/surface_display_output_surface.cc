@@ -97,7 +97,6 @@ void SurfaceDisplayOutputSurface::SetBeginFrameSource(
     SurfaceId surface_id,
     BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Hook this up.
-  NOTIMPLEMENTED();
 }
 
 void SurfaceDisplayOutputSurface::SwapBuffersComplete(SurfaceDrawStatus drawn) {
