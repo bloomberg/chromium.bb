@@ -53,6 +53,7 @@
     'gyp_official_goma_minimal_symbols_x86': ['gyp', 'official', 'goma', 'minimal_symbols', 'x86'],
     'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm', 'crosscompile'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
+    'libfuzzer_upload_bot': ['gn', 'release', 'libfuzzer', 'asan'],
 
     # This is just for completeness; any bot that uses this config should never actually run MB.
     'none': ['none'],
@@ -233,6 +234,8 @@
 
     'gyp': {'type': 'gyp'},
 
+    'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
+
     'lsan': {
       'gn_args': 'use_lsan=true',
       'gyp_defines': 'lsan=1',
@@ -398,6 +401,7 @@
     },
     'chromium.fyi': {
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
+      'Libfuzzer Upload Linux': 'libfuzzer_upload_bot',
     },
     'chromium.webrtc.fyi': {
       'Android GN': 'android_gn_release_bot',
