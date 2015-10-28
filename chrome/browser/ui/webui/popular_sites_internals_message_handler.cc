@@ -36,7 +36,7 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
   std::string country;
   std::string version;
   popular_sites_.reset(new PopularSites(
-      Profile::FromWebUI(web_ui()), country, version, std::string(), false,
+      Profile::FromWebUI(web_ui()), country, version, false,
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
                  base::Unretained(this), false)));
 }
@@ -61,8 +61,7 @@ void PopularSitesInternalsMessageHandler::HandleDownload(
   std::string version;
   args->GetString(2, &version);
   popular_sites_.reset(new PopularSites(Profile::FromWebUI(web_ui()), country,
-                                        version, std::string(), true,
-                                        callback));
+                                        version, true, callback));
 }
 
 void PopularSitesInternalsMessageHandler::SendDownloadResult(bool success) {

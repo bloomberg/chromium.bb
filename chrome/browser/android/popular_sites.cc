@@ -99,11 +99,7 @@ std::string GetCountryCode(Profile* profile) {
 std::string GetPopularSitesServerFilename(
     Profile* profile,
     const std::string& override_country,
-    const std::string& override_version,
-    const std::string& override_filename) {
-  if (!override_filename.empty())
-    return override_filename;
-
+    const std::string& override_version) {
   std::string country =
       !override_country.empty() ? override_country : GetCountryCode(profile);
   std::string version = !override_version.empty() ? override_version
@@ -114,18 +110,16 @@ std::string GetPopularSitesServerFilename(
 
 GURL GetPopularSitesURL(Profile* profile,
                         const std::string& override_country,
-                        const std::string& override_version,
-                        const std::string& override_filename) {
+                        const std::string& override_version) {
   return GURL(base::StringPrintf(
       kPopularSitesURLFormat,
-      GetPopularSitesServerFilename(profile, override_country, override_version,
-                                    override_filename)
+      GetPopularSitesServerFilename(profile, override_country, override_version)
           .c_str()));
 }
 
 GURL GetPopularSitesFallbackURL(Profile* profile) {
   return GetPopularSitesURL(profile, kPopularSitesDefaultCountryCode,
-                            kPopularSitesDefaultVersion, std::string());
+                            kPopularSitesDefaultVersion);
 }
 
 base::FilePath GetPopularSitesPath() {
@@ -193,7 +187,6 @@ PopularSites::Site::~Site() {}
 PopularSites::PopularSites(Profile* profile,
                            const std::string& override_country,
                            const std::string& override_version,
-                           const std::string& override_filename,
                            bool force_download,
                            const FinishedCallback& callback)
     : callback_(callback),
@@ -203,7 +196,7 @@ PopularSites::PopularSites(Profile* profile,
   // local file afterwards.
   static bool first_time = true;
   FetchPopularSites(GetPopularSitesURL(profile, override_country,
-                                       override_version, override_filename),
+                                       override_version),
                     profile, first_time || force_download);
   first_time = false;
 }

@@ -48,15 +48,11 @@ class PopularSites {
   // locale. |override_country| (if non-empty) is used to override the
   // auto-detected country. |override_version|, if non-empty, will
   // override the baked-in default version.
-  // |override_filename|, if non-empty, will override the full filename
-  // (so |override_country| and |override_version| are ignored in this case).
-  // Set |force_download| to enfore re-downloading the suggestions file, even if
-  // it already exists on disk.
-  // TODO(treib): Get rid of |override_filename|.
+  // Set |force_download| to enforce re-downloading the suggestions file, even
+  // if it already exists on disk.
   PopularSites(Profile* profile,
                const std::string& override_country,
                const std::string& override_version,
-               const std::string& override_filename,
                bool force_download,
                const FinishedCallback& callback);
 

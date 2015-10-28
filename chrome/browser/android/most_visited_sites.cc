@@ -152,12 +152,6 @@ std::string GetPopularSitesVersion() {
                                             "version");
 }
 
-// TODO(treib): Get rid of this.
-std::string GetPopularSitesFilename() {
-  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
-                                            "filename");
-}
-
 // Determine whether we need any popular suggestions to fill up a grid of
 // |num_tiles| tiles.
 bool NeedPopularSites(const PrefService* prefs, size_t num_tiles) {
@@ -259,7 +253,6 @@ void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
         profile_,
         GetPopularSitesCountry(),
         GetPopularSitesVersion(),
-        GetPopularSitesFilename(),
         false,
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
