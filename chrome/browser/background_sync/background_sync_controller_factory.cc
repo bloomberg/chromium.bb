@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "background_sync_controller_factory.h"
+#include "chrome/browser/background_sync/background_sync_controller_factory.h"
 
 #include "chrome/browser/background_sync/background_sync_controller_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
