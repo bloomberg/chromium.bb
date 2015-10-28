@@ -5,7 +5,7 @@
 #ifndef RemoteObjectId_h
 #define RemoteObjectId_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {

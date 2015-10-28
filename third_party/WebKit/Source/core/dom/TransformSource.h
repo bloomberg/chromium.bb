@@ -20,7 +20,7 @@
 #ifndef TransformSource_h
 #define TransformSource_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include <libxml/tree.h>
 

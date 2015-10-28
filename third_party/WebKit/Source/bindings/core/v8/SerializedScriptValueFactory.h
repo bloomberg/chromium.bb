@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptValueSerializer.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/CoreExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

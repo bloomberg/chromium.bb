@@ -7,7 +7,6 @@
 
 #include "platform/LayoutUnit.h"
 #include "wtf/Allocator.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 

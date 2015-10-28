@@ -27,7 +27,7 @@
 #define ClipRect_h
 
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef ModuleProxy_h
 #define ModuleProxy_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include <v8.h>
 
 namespace blink {

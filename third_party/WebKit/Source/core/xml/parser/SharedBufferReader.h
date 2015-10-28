@@ -32,7 +32,7 @@
 #define SharedBufferReader_h
 
 #include "core/CoreExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 

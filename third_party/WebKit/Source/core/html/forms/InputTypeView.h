@@ -36,7 +36,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"

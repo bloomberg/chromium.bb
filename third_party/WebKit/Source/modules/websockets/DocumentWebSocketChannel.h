@@ -42,7 +42,6 @@
 #include "public/platform/WebSocketHandle.h"
 #include "public/platform/WebSocketHandleClient.h"
 #include "wtf/Deque.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

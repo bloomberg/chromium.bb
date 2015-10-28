@@ -31,7 +31,7 @@
 #ifndef ScopedPersistent_h
 #define ScopedPersistent_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include <v8.h>
 

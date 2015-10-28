@@ -29,7 +29,7 @@
 #ifndef WTF_Collator_h
 #define WTF_Collator_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/WTFExport.h"

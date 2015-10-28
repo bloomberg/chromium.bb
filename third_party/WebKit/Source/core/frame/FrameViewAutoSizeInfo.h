@@ -7,7 +7,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 

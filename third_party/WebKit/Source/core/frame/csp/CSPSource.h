@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

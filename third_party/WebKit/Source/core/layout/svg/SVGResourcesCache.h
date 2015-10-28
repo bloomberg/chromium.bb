@@ -21,7 +21,7 @@
 #define SVGResourcesCache_h
 
 #include "core/style/StyleDifference.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"

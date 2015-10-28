@@ -31,8 +31,8 @@
 #ifndef ThreadingPrimitives_h
 #define ThreadingPrimitives_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Locker.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"

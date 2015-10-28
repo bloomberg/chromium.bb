@@ -6,7 +6,7 @@
 #define V8DebuggerClient_h
 
 #include "core/CoreExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 #include <v8.h>
 

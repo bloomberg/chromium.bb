@@ -34,7 +34,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

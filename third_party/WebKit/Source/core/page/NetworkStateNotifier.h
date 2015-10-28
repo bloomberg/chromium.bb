@@ -29,7 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "public/platform/WebConnectionType.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/ThreadingPrimitives.h"

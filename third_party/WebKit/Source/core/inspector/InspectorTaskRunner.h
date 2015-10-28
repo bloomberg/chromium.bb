@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"

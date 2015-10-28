@@ -28,7 +28,7 @@
 
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRectOutsets.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/VectorTraits.h"
 

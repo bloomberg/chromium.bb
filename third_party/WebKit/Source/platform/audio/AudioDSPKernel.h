@@ -32,7 +32,7 @@
 #define AudioDSPKernel_h
 
 #include "platform/audio/AudioDSPKernelProcessor.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

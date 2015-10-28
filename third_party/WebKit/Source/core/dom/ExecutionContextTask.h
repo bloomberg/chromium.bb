@@ -28,7 +28,7 @@
 #define ExecutionContextTask_h
 
 #include "core/CoreExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"

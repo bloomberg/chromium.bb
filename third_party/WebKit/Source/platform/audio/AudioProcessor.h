@@ -32,7 +32,7 @@
 #define AudioProcessor_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

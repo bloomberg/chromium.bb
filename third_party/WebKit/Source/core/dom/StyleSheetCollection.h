@@ -30,7 +30,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

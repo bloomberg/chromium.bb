@@ -30,9 +30,9 @@
 #ifndef ThreadSafeRefCounted_h
 #define ThreadSafeRefCounted_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Atomics.h"
 #include "wtf/DynamicAnnotations.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
 

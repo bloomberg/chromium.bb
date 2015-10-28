@@ -33,7 +33,7 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/FileSystemType.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

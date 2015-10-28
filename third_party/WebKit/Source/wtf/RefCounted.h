@@ -21,8 +21,8 @@
 #ifndef RefCounted_h
 #define RefCounted_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/InstanceCounter.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"

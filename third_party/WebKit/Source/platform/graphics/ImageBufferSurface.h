@@ -36,7 +36,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 

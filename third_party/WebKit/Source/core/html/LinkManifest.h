@@ -6,7 +6,7 @@
 #define LinkManifest_h
 
 #include "core/html/LinkResource.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 

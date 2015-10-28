@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorTaskRunner.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"

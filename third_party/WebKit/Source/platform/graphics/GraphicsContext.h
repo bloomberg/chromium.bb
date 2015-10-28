@@ -40,7 +40,7 @@
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"

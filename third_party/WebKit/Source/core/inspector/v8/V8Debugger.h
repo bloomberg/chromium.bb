@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 

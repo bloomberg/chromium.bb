@@ -35,7 +35,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"

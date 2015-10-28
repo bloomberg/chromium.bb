@@ -21,7 +21,7 @@
 #ifndef TableLayoutAlgorithm_h
 #define TableLayoutAlgorithm_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

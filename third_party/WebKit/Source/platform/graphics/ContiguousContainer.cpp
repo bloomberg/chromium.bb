@@ -5,8 +5,8 @@
 #include "config.h"
 #include "platform/graphics/ContiguousContainer.h"
 
+#include "wtf/Allocator.h"
 #include "wtf/ContainerAnnotations.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/PartitionAlloc.h"
 #include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"

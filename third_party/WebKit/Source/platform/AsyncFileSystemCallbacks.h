@@ -35,8 +35,8 @@
 #include "platform/FileSystemType.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebFileWriter.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 

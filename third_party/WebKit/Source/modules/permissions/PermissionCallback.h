@@ -9,7 +9,7 @@
 #include "public/platform/modules/permissions/WebPermissionClient.h"
 #include "public/platform/modules/permissions/WebPermissionStatus.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

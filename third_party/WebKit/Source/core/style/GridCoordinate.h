@@ -32,7 +32,7 @@
 #define GridCoordinate_h
 
 #include "core/style/GridResolvedPosition.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

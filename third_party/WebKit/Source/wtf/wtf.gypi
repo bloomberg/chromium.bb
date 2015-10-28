@@ -50,7 +50,6 @@
             'DoublyLinkedList.h',
             'DynamicAnnotations.cpp',
             'DynamicAnnotations.h',
-            'FastAllocBase.h',
             'FilePrintStream.cpp',
             'FilePrintStream.h',
             'Float32Array.h',

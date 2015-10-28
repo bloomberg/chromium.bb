@@ -9,7 +9,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

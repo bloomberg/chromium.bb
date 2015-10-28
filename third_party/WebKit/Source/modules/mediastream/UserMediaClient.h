@@ -35,7 +35,7 @@
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef InjectedScriptHostClient_h
 #define InjectedScriptHostClient_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

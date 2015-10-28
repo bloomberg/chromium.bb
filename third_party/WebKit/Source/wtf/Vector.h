@@ -25,7 +25,6 @@
 #include "wtf/ConditionalDestructor.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/DefaultAllocator.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/NotFound.h"
 #include "wtf/StdLibExtras.h"

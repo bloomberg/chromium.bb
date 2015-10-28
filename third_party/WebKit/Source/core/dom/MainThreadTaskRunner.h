@@ -30,7 +30,7 @@
 #include "core/CoreExport.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

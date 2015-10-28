@@ -7,7 +7,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

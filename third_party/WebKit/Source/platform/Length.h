@@ -25,8 +25,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/animation/AnimationUtilities.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"

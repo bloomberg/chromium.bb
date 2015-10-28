@@ -36,7 +36,7 @@
 #include "core/frame/TopControls.h"
 #include "core/frame/VisualViewport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

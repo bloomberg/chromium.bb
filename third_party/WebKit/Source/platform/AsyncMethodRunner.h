@@ -32,7 +32,7 @@
 #define AsyncMethodRunner_h
 
 #include "platform/Timer.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

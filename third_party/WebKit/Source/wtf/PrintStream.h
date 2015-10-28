@@ -26,7 +26,7 @@
 #ifndef PrintStream_h
 #define PrintStream_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTFExport.h"

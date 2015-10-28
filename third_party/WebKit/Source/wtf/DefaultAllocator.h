@@ -35,8 +35,8 @@
 // traced, garbage collected heap. It uses FastMalloc for collections,
 // but uses the partition allocator for the backing store of the collections.
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/PartitionAlloc.h"
 #include "wtf/Partitions.h"
 

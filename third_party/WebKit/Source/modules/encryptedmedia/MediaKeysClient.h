@@ -5,7 +5,7 @@
 #ifndef MediaKeysClient_h
 #define MediaKeysClient_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

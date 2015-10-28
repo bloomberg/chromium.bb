@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

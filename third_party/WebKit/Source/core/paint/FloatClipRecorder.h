@@ -8,7 +8,7 @@
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

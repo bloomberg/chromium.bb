@@ -5,6 +5,8 @@
 #ifndef WTF_Allocator_h
 #define WTF_Allocator_h
 
+#include "wtf/Assertions.h"
+#include "wtf/Partitions.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WTF {
@@ -68,6 +70,60 @@ namespace WTF {
 #else
 #define STACK_ALLOCATED() DISALLOW_ALLOCATION()
 #endif
+
+// Provides customizable overrides of fastMalloc/fastFree and operator new/delete
+//
+// Provided functionality:
+//    Macro: WTF_MAKE_FAST_ALLOCATED
+//
+// Example usage:
+//    class Widget {
+//        WTF_MAKE_FAST_ALLOCATED(Widget)
+//    ...
+//    };
+//
+//    struct Data {
+//        WTF_MAKE_FAST_ALLOCATED(Data)
+//    public:
+//    ...
+//    };
+//
+
+#define WTF_MAKE_FAST_ALLOCATED(type) \
+public: \
+    void* operator new(size_t, void* p) { return p; } \
+    void* operator new[](size_t, void* p) { return p; } \
+    \
+    void* operator new(size_t size) \
+    { \
+        return ::WTF::Partitions::fastMalloc(size);     \
+    } \
+    \
+    void operator delete(void* p) \
+    { \
+        ::WTF::Partitions::fastFree(p);         \
+    } \
+    \
+    void* operator new[](size_t size) \
+    { \
+        return ::WTF::Partitions::fastMalloc(size);       \
+    } \
+    \
+    void operator delete[](void* p) \
+    { \
+        ::WTF::Partitions::fastFree(p);                   \
+    } \
+    void* operator new(size_t, NotNullTag, void* location) \
+    { \
+        ASSERT(location); \
+        return location; \
+    } \
+    static const char* classNameForAllocator() \
+    { \
+        return #type; \
+    } \
+private: \
+typedef int __thisIsHereToForceASemicolonAfterThisMacro
 
 } // namespace WTF
 

@@ -6,7 +6,7 @@
 #define CompositorWorkerMessagingProxy_h
 
 #include "core/workers/WorkerMessagingProxy.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

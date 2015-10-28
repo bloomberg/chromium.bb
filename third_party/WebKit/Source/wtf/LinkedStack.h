@@ -31,7 +31,7 @@
 #ifndef LinkedStack_h
 #define LinkedStack_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace WTF {

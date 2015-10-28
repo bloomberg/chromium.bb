@@ -8,7 +8,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebCompositorAnimationPlayerClient.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

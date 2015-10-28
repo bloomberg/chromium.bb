@@ -31,7 +31,7 @@
 #ifndef SQLTransactionClient_h
 #define SQLTransactionClient_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

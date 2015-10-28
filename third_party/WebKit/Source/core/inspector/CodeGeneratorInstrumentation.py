@@ -111,7 +111,7 @@ template_instrumenting_agents_h = string.Template("""// Code generated from Insp
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

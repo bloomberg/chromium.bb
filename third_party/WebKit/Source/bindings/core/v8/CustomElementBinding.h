@@ -32,7 +32,7 @@
 #define CustomElementBinding_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include <v8.h>
 

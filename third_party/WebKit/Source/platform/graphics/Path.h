@@ -34,7 +34,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathMeasure.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 class SkPath;

@@ -23,7 +23,7 @@
 #define CachedUAStyle_h
 
 #include "core/style/ComputedStyle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

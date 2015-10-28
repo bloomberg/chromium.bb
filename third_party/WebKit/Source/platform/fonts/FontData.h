@@ -27,7 +27,7 @@
 #define FontData_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"

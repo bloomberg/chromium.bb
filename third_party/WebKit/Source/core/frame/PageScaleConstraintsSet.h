@@ -36,7 +36,7 @@
 #include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntSize.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

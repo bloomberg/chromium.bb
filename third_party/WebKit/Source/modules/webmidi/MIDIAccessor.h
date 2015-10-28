@@ -33,7 +33,7 @@
 
 #include "public/platform/WebMIDIAccessor.h"
 #include "public/platform/WebMIDIAccessorClient.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 

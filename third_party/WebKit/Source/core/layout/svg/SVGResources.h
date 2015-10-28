@@ -20,7 +20,7 @@
 #ifndef SVGResources_h
 #define SVGResources_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"

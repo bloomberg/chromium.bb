@@ -34,7 +34,6 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 

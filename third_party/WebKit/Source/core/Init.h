@@ -32,7 +32,7 @@
 #define Init_h
 
 #include "core/CoreExport.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

@@ -26,7 +26,7 @@
 #ifndef SQLiteTransaction_h
 #define SQLiteTransaction_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

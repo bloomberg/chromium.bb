@@ -27,7 +27,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/network/ResourceLoadPriority.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 
 namespace blink {

@@ -36,7 +36,7 @@
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TemporaryChange.h"

@@ -33,7 +33,6 @@
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/StyleSheetCollection.h"
 #include "core/dom/TreeScope.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"

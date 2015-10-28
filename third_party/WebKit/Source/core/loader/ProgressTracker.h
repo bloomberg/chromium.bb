@@ -28,7 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

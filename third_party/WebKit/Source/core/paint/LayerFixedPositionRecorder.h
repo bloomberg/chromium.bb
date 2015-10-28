@@ -5,7 +5,7 @@
 #ifndef LayerFixedPositionRecorder_h
 #define LayerFixedPositionRecorder_h
 
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 

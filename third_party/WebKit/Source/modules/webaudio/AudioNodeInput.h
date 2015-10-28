@@ -28,7 +28,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioSummingJunction.h"
 #include "platform/audio/AudioBus.h"
-#include "wtf/FastAllocBase.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 
 namespace blink {
