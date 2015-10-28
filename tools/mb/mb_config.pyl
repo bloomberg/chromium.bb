@@ -329,8 +329,8 @@
       'precise64': 'gyp_official',
     },
     'chromium.android': {
-      'Android GN (dbg)': 'android_gn_debug_bot',
-      'Android Aura GN (dbg)': 'android_aura_gn_debug_bot',
+      'Android GN Builder (dbg)': 'android_gn_debug_bot',
+      'Android Aura Builder (dbg)': 'android_aura_gn_debug_bot',
     },
     'chromium.chrome': {
       'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
