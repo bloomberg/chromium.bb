@@ -8,48 +8,46 @@ Before:
       "drawsContent": true,
       "children": [
         {
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "position": [18, 120],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF",
-              "transform": [
-                [...],
-                [...],
-                [...],
-                [...]
-              ]
-            },
-            {
-              "position": [46, 230],
-              "bounds": [146, 452],
-              "drawsContent": true
-            }
+          "position": [18, 120],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [...],
+            [...],
+            [...],
+            [...]
           ]
         },
         {
-          "shouldFlattenTransform": false,
+          "position": [47, 230],
+          "bounds": [144, 452],
+          "drawsContent": true,
+          "backgroundColor": "#FFFFFF",
           "children": [
             {
-              "position": [69, 241],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#808080",
-              "transform": [
-                [...],
-                [...],
-                [...],
-                [...]
+              "shouldFlattenTransform": false,
+              "children": [
+                {
+                  "position": [22, 11],
+                  "bounds": [100, 100],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#808080",
+                  "transform": [
+                    [...],
+                    [...],
+                    [...],
+                    [...]
+                  ]
+                },
+                {
+                  "position": [-29, 462],
+                  "bounds": [100, 100],
+                  "drawsContent": true
+                }
               ]
-            },
-            {
-              "position": [18, 692],
-              "bounds": [100, 100],
-              "drawsContent": true
             }
           ]
         }
@@ -68,48 +66,47 @@ After:
       "drawsContent": true,
       "children": [
         {
-          "shouldFlattenTransform": false,
-          "children": [
-            {
-              "position": [18, 120],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF",
-              "transform": [
-                [...],
-                [...],
-                [...],
-                [...]
-              ]
-            },
-            {
-              "position": [58, 230],
-              "bounds": [122, 452],
-              "drawsContent": true
-            }
+          "position": [18, 120],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [...],
+            [...],
+            [...],
+            [...]
           ]
         },
         {
-          "shouldFlattenTransform": false,
+          "position": [58, 230],
+          "bounds": [122, 452],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#FFFFFF",
           "children": [
             {
-              "position": [69, 241],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#808080",
-              "transform": [
-                [...],
-                [...],
-                [...],
-                [...]
+              "shouldFlattenTransform": false,
+              "children": [
+                {
+                  "position": [11, 11],
+                  "bounds": [100, 100],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#808080",
+                  "transform": [
+                    [...],
+                    [...],
+                    [...],
+                    [...]
+                  ]
+                },
+                {
+                  "position": [-40, 98],
+                  "bounds": [174, 464],
+                  "drawsContent": true
+                }
               ]
-            },
-            {
-              "position": [18, 328],
-              "bounds": [174, 464],
-              "drawsContent": true
             }
           ]
         }

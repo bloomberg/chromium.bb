@@ -44,24 +44,27 @@
                   ]
                 },
                 {
-                  "position": [10, 230],
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#0000FF",
-                  "transform": [
-                    [...],
-                    [...],
-                    [...],
-                    [...]
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "position": [10, 230],
+                      "bounds": [100, 100],
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#0000FF",
+                      "transform": [
+                        [...],
+                        [...],
+                        [...],
+                        [...]
+                      ]
+                    },
+                    {
+                      "position": [10, 340],
+                      "bounds": [100, 100],
+                      "drawsContent": true
+                    }
                   ]
-                },
-                {
-                  "position": [10, 340],
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "drawsContent": true,
-                  "backgroundColor": "#FFFF00"
                 }
               ]
             }
