@@ -13517,13 +13517,13 @@ struct GenSyncTokenCHROMIUMImmediate {
   }
 
   void Init(GLuint64 _fence_sync) {
-    uint32_t total_size = 0;  // TODO(gman): get correct size.
+    uint32_t total_size = 0;  // WARNING: compute correct size.
     SetHeader(total_size);
     fence_sync = _fence_sync;
   }
 
   void* Set(void* cmd, GLuint64 _fence_sync) {
-    uint32_t total_size = 0;  // TODO(gman): get correct size.
+    uint32_t total_size = 0;  // WARNING: compute correct size.
     static_cast<ValueType*>(cmd)->Init(_fence_sync);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
@@ -13555,13 +13555,13 @@ struct GenUnverifiedSyncTokenCHROMIUMImmediate {
   }
 
   void Init(GLuint64 _fence_sync) {
-    uint32_t total_size = 0;  // TODO(gman): get correct size.
+    uint32_t total_size = 0;  // WARNING: compute correct size.
     SetHeader(total_size);
     fence_sync = _fence_sync;
   }
 
   void* Set(void* cmd, GLuint64 _fence_sync) {
-    uint32_t total_size = 0;  // TODO(gman): get correct size.
+    uint32_t total_size = 0;  // WARNING: compute correct size.
     static_cast<ValueType*>(cmd)->Init(_fence_sync);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }

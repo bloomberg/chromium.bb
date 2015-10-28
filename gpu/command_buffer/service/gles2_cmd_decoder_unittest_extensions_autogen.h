@@ -12,12 +12,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_EXTENSIONS_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_EXTENSIONS_AUTOGEN_H_
 
-// TODO(gman): BlitFramebufferCHROMIUM
-// TODO(gman): RenderbufferStorageMultisampleCHROMIUM
-// TODO(gman): RenderbufferStorageMultisampleEXT
-// TODO(gman): FramebufferTexture2DMultisampleEXT
-// TODO(gman): DiscardFramebufferEXTImmediate
-
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
        MatrixLoadfCHROMIUMImmediateValidArgs) {
   cmds::MatrixLoadfCHROMIUMImmediate& cmd =
@@ -44,9 +38,6 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-// TODO(gman): GenPathsCHROMIUM
-
-// TODO(gman): DeletePathsCHROMIUM
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, IsPathCHROMIUMValidArgs) {
   EXPECT_CALL(*gl_, IsPathNV(kServicePathId));
@@ -67,11 +58,6 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   cmd.Init(client_path_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
-// TODO(gman): PathCommandsCHROMIUM
-
-// TODO(gman): PathParameterfCHROMIUM
-
-// TODO(gman): PathParameteriCHROMIUM
 
 TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
        PathStencilFuncCHROMIUMValidArgs) {
@@ -82,17 +68,6 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-// TODO(gman): StencilFillPathCHROMIUM
-
-// TODO(gman): StencilStrokePathCHROMIUM
-
-// TODO(gman): CoverFillPathCHROMIUM
-
-// TODO(gman): CoverStrokePathCHROMIUM
-
-// TODO(gman): StencilThenCoverFillPathCHROMIUM
-
-// TODO(gman): StencilThenCoverStrokePathCHROMIUM
 
 // TODO(gman): StencilFillPathInstancedCHROMIUM
 
@@ -114,5 +89,4 @@ TEST_P(GLES2DecoderTestWithBlendEquationAdvanced, BlendBarrierKHRValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-// TODO(gman): ApplyScreenSpaceAntialiasingCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_EXTENSIONS_AUTOGEN_H_

@@ -23,7 +23,6 @@ TEST_F(GLES2ImplementationTest, AttachShader) {
   gl_->AttachShader(1, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for BindAttribLocation
 
 TEST_F(GLES2ImplementationTest, BindBuffer) {
   struct Cmds {
@@ -287,7 +286,6 @@ TEST_F(GLES2ImplementationTest, ClearStencil) {
   gl_->ClearStencil(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for ClientWaitSync
 
 TEST_F(GLES2ImplementationTest, ColorMask) {
   struct Cmds {
@@ -310,10 +308,6 @@ TEST_F(GLES2ImplementationTest, CompileShader) {
   gl_->CompileShader(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for CompressedTexImage2D
-// TODO(zmo): Implement unit test for CompressedTexSubImage2D
-// TODO(zmo): Implement unit test for CompressedTexImage3D
-// TODO(zmo): Implement unit test for CompressedTexSubImage3D
 
 TEST_F(GLES2ImplementationTest, CopyBufferSubData) {
   struct Cmds {
@@ -558,7 +552,6 @@ TEST_F(GLES2ImplementationTest, DrawArrays) {
   gl_->DrawArrays(GL_POINTS, 2, 3);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for DrawRangeElements
 
 TEST_F(GLES2ImplementationTest, EnableVertexAttribArray) {
   struct Cmds {
@@ -753,13 +746,6 @@ TEST_F(GLES2ImplementationTest, GenTransformFeedbacks) {
   EXPECT_EQ(kTransformFeedbacksStartId, ids[0]);
   EXPECT_EQ(kTransformFeedbacksStartId + 1, ids[1]);
 }
-// TODO(zmo): Implement unit test for GetActiveAttrib
-// TODO(zmo): Implement unit test for GetActiveUniform
-// TODO(zmo): Implement unit test for GetActiveUniformBlockiv
-// TODO(zmo): Implement unit test for GetActiveUniformBlockName
-// TODO(zmo): Implement unit test for GetActiveUniformsiv
-// TODO(zmo): Implement unit test for GetAttachedShaders
-// TODO(zmo): Implement unit test for GetAttribLocation
 
 TEST_F(GLES2ImplementationTest, GetBooleanv) {
   struct Cmds {
@@ -832,7 +818,6 @@ TEST_F(GLES2ImplementationTest, GetFloatv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
-// TODO(zmo): Implement unit test for GetFragDataLocation
 
 TEST_F(GLES2ImplementationTest, GetFramebufferAttachmentParameteriv) {
   struct Cmds {
@@ -927,7 +912,6 @@ TEST_F(GLES2ImplementationTest, GetIntegerv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
-// TODO(zmo): Implement unit test for GetInternalformativ
 
 TEST_F(GLES2ImplementationTest, GetProgramiv) {
   struct Cmds {
@@ -946,7 +930,6 @@ TEST_F(GLES2ImplementationTest, GetProgramiv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
-// TODO(zmo): Implement unit test for GetProgramInfoLog
 
 TEST_F(GLES2ImplementationTest, GetRenderbufferParameteriv) {
   struct Cmds {
@@ -1019,8 +1002,6 @@ TEST_F(GLES2ImplementationTest, GetShaderiv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
-// TODO(zmo): Implement unit test for GetShaderInfoLog
-// TODO(zmo): Implement unit test for GetShaderPrecisionFormat
 
 TEST_F(GLES2ImplementationTest, GetSynciv) {
   struct Cmds {
@@ -1076,13 +1057,6 @@ TEST_F(GLES2ImplementationTest, GetTexParameteriv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
-// TODO(zmo): Implement unit test for GetTransformFeedbackVarying
-// TODO(zmo): Implement unit test for GetUniformBlockIndex
-// TODO(zmo): Implement unit test for GetUniformfv
-// TODO(zmo): Implement unit test for GetUniformiv
-// TODO(zmo): Implement unit test for GetUniformuiv
-// TODO(zmo): Implement unit test for GetUniformIndices
-// TODO(zmo): Implement unit test for GetUniformLocation
 
 TEST_F(GLES2ImplementationTest, GetVertexAttribfv) {
   struct Cmds {
@@ -2742,8 +2716,6 @@ TEST_F(GLES2ImplementationTest, DeleteQueriesEXT) {
   gl_->DeleteQueriesEXT(arraysize(ids), &ids[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for QueryCounterEXT
-// TODO(zmo): Implement unit test for BeginQueryEXT
 
 TEST_F(GLES2ImplementationTest, BeginTransformFeedback) {
   struct Cmds {
@@ -2766,8 +2738,6 @@ TEST_F(GLES2ImplementationTest, EndTransformFeedback) {
   gl_->EndTransformFeedback();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for InsertEventMarkerEXT
-// TODO(zmo): Implement unit test for PushGroupMarkerEXT
 
 TEST_F(GLES2ImplementationTest, PopGroupMarkerEXT) {
   struct Cmds {
@@ -2830,9 +2800,6 @@ TEST_F(GLES2ImplementationTest, IsVertexArrayOES) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
-// TODO(zmo): Implement unit test for EnableFeatureCHROMIUM
-// TODO(zmo): Implement unit test for MapBufferRange
-// TODO(zmo): Implement unit test for UnmapBuffer
 
 TEST_F(GLES2ImplementationTest, ResizeCHROMIUM) {
   struct Cmds {
@@ -2844,9 +2811,6 @@ TEST_F(GLES2ImplementationTest, ResizeCHROMIUM) {
   gl_->ResizeCHROMIUM(1, 2, 3);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for GetRequestableExtensionsCHROMIUM
-// TODO(zmo): Implement unit test for CreateStreamTextureCHROMIUM
-// TODO(zmo): Implement unit test for GetTranslatedShaderSourceANGLE
 
 TEST_F(GLES2ImplementationTest, TexImageIOSurface2DCHROMIUM) {
   struct Cmds {
@@ -2925,8 +2889,6 @@ TEST_F(GLES2ImplementationTest, VertexAttribDivisorANGLE) {
   gl_->VertexAttribDivisorANGLE(1, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for GenMailboxCHROMIUM
-// TODO(zmo): Implement unit test for BindUniformLocationCHROMIUM
 
 TEST_F(GLES2ImplementationTest, GenValuebuffersCHROMIUM) {
   GLuint ids[2] = {
@@ -3081,7 +3043,6 @@ TEST_F(GLES2ImplementationTest, LoseContextCHROMIUM) {
                            GL_GUILTY_CONTEXT_RESET_ARB);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for InsertSyncPointCHROMIUM
 
 TEST_F(GLES2ImplementationTest, WaitSyncPointCHROMIUM) {
   struct Cmds {
@@ -3093,9 +3054,6 @@ TEST_F(GLES2ImplementationTest, WaitSyncPointCHROMIUM) {
   gl_->WaitSyncPointCHROMIUM(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for InsertFenceSyncCHROMIUM
-// TODO(zmo): Implement unit test for GenSyncTokenCHROMIUM
-// TODO(zmo): Implement unit test for GenUnverifiedSyncTokenCHROMIUM
 
 TEST_F(GLES2ImplementationTest, DrawBuffersEXT) {
   GLenum data[1][1] = {{0}};
@@ -3163,7 +3121,6 @@ TEST_F(GLES2ImplementationTest, MatrixLoadIdentityCHROMIUM) {
   gl_->MatrixLoadIdentityCHROMIUM(GL_PATH_PROJECTION_CHROMIUM);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
-// TODO(zmo): Implement unit test for GenPathsCHROMIUM
 
 TEST_F(GLES2ImplementationTest, DeletePathsCHROMIUM) {
   struct Cmds {
@@ -3194,7 +3151,6 @@ TEST_F(GLES2ImplementationTest, IsPathCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
 }
-// TODO(zmo): Implement unit test for PathCommandsCHROMIUM
 
 TEST_F(GLES2ImplementationTest, PathParameterfCHROMIUM) {
   struct Cmds {

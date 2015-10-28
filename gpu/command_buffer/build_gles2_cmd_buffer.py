@@ -2214,7 +2214,7 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindTexture',
     'gen_func': 'GenTextures',
-    # TODO(gman): remove this once client side caching works.
+    # TODO: remove this once client side caching works.
     'client_test': False,
     'trace_level': 2,
   },
@@ -4842,7 +4842,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteImmediateServiceUnitTest(self, func, f, *extras):
     """Writes the service unit test for an immediate command."""
-    f.write("// TODO(gman): %s\n" % func.name)
+    pass
 
   def WriteImmediateValidationCode(self, func, f):
     """Writes the validation code for an immediate version of a command."""
@@ -4850,7 +4850,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteBucketServiceUnitTest(self, func, f, *extras):
     """Writes the service unit test for a bucket command."""
-    f.write("// TODO(gman): %s\n" % func.name)
+    pass
 
   def WriteGLES2ImplementationDeclaration(self, func, f):
     """Writes the GLES2 Implemention declaration."""
@@ -5049,9 +5049,6 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
             'args': ", ".join(gl_arg_strings),
             'gl_error': invalid[2],
           })
-    else:
-      if client_test != False:
-        f.write("// TODO(zmo): Implement unit test for %s\n" % func.name)
 
   def WriteDestinationInitalizationValidation(self, func, f):
     """Writes the client side destintion initialization validation."""
@@ -5105,7 +5102,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
   def WriteImmediateCmdHelper(self, func, f):
     """Writes the cmd helper definition for the immediate version of a cmd."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32_t s = 0;  // TODO(gman): compute correct size
+    const uint32_t s = 0;
     gles2::cmds::%(name)s* c =
         GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(s);
     if (c) {
@@ -5360,16 +5357,16 @@ class CustomHandler(TypeHandler):
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteImmediateServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteImmediateCmdGetTotalSize(self, func, f):
     """Overrriden from TypeHandler."""
     f.write(
-        "    uint32_t total_size = 0;  // TODO(gman): get correct size.\n")
+        "    uint32_t total_size = 0;  // WARNING: compute correct size.\n")
 
   def WriteImmediateCmdInit(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5420,15 +5417,15 @@ class HandWrittenHandler(CustomHandler):
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteImmediateServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteBucketServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5452,11 +5449,11 @@ class HandWrittenHandler(CustomHandler):
 
   def WriteFormatTest(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): Write test for %s\n" % func.name)
+    pass
 
   def WriteImmediateFormatTest(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): Write test for %s\n" % func.name)
+    pass
 
 
 class ManualHandler(CustomHandler):
@@ -5481,11 +5478,11 @@ class ManualHandler(CustomHandler):
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteImmediateServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteImmediateServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5493,7 +5490,7 @@ class ManualHandler(CustomHandler):
 
   def WriteImmediateFormatTest(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): Implement test for %s\n" % func.name)
+    pass
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5509,7 +5506,7 @@ class ManualHandler(CustomHandler):
 
   def WriteImmediateCmdGetTotalSize(self, func, f):
     """Overrriden from TypeHandler."""
-    # TODO(gman): Move this data to _FUNCTION_INFO?
+    # TODO: Move this data to _FUNCTION_INFO?
     CustomHandler.WriteImmediateCmdGetTotalSize(self, func, f)
 
 
@@ -5526,7 +5523,7 @@ class DataHandler(TypeHandler):
 
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
-    # TODO(gman): Move this data to _FUNCTION_INFO?
+    # TODO: Move this data to _FUNCTION_INFO?
     name = func.name
     if name.endswith("Immediate"):
       name = name[0:-9]
@@ -5552,7 +5549,7 @@ class DataHandler(TypeHandler):
       f.write(code)
     else:
       f.write(
-          "// uint32_t data_size = 0;  // TODO(gman): get correct size!\n")
+          "// uint32_t data_size = 0;  // WARNING: compute correct size.\n")
 
   def WriteImmediateCmdGetTotalSize(self, func, f):
     """Overrriden from TypeHandler."""
@@ -5583,17 +5580,16 @@ class DataHandler(TypeHandler):
 
   def WriteImmediateFormatTest(self, func, f):
     """Overrriden from TypeHandler."""
-    # TODO(gman): Remove this exception.
-    f.write("// TODO(gman): Implement test for %s\n" % func.name)
+    # TODO: Remove this exception.
     return
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteImmediateServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    f.write("// TODO(gman): %s\n\n" % func.name)
+    pass
 
   def WriteBucketServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -7159,7 +7155,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd) +\n")
     f.write("      RoundSizeToMultipleOfEntries(sizeof(data)));\n")
-    f.write("  // TODO(gman): Check that data was inserted;\n")
+    # TODO: Check that data was inserted
     f.write("}\n")
     f.write("\n")
 
@@ -7504,7 +7500,7 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
     f.write("  CheckBytesWrittenMatchesExpectedSize(\n")
     f.write("      next_cmd, sizeof(cmd) +\n")
     f.write("      RoundSizeToMultipleOfEntries(sizeof(data)));\n")
-    f.write("  // TODO(gman): Check that data was inserted;\n")
+    # TODO: Check that data was inserted
     f.write("}\n")
     f.write("\n")
 
@@ -10354,9 +10350,7 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
           if True:
           #gen_cmd = func.GetInfo('gen_cmd')
           #if gen_cmd == True or gen_cmd == None:
-            if func.GetInfo('unit_test') == False:
-              f.write("// TODO(gman): %s\n" % func.name)
-            else:
+            if func.GetInfo('unit_test') != False:
               func.WriteServiceUnitTest(f, {
                 'test_name': test_name
               })
@@ -10458,9 +10452,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
     with CHeaderWriter(filename, comment) as f:
       for func in functions:
         if True:
-          if func.GetInfo('unit_test') == False:
-            f.write("// TODO(gman): %s\n" % func.name)
-          else:
+          if func.GetInfo('unit_test') != False:
             extension = ToCamelCase(
               ToGLExtensionString(func.GetInfo('extension_flag')))
             func.WriteServiceUnitTest(f, {

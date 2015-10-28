@@ -310,7 +310,6 @@ TEST_F(GLES2FormatTest, ClearBufferfvImmediate) {
   EXPECT_EQ(static_cast<GLint>(12), cmd.drawbuffers);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, ClearBufferivImmediate) {
@@ -333,7 +332,6 @@ TEST_F(GLES2FormatTest, ClearBufferivImmediate) {
   EXPECT_EQ(static_cast<GLint>(12), cmd.drawbuffers);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, ClearBufferuivImmediate) {
@@ -356,7 +354,6 @@ TEST_F(GLES2FormatTest, ClearBufferuivImmediate) {
   EXPECT_EQ(static_cast<GLint>(12), cmd.drawbuffers);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, ClearColor) {
@@ -1870,7 +1867,6 @@ TEST_F(GLES2FormatTest, InvalidateFramebufferImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, InvalidateSubFramebufferImmediate) {
@@ -1900,7 +1896,6 @@ TEST_F(GLES2FormatTest, InvalidateSubFramebufferImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(7), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, IsBuffer) {
@@ -2201,7 +2196,6 @@ TEST_F(GLES2FormatTest, SamplerParameterfvImmediate) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, SamplerParameteri) {
@@ -2234,7 +2228,6 @@ TEST_F(GLES2FormatTest, SamplerParameterivImmediate) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Scissor) {
@@ -2435,7 +2428,6 @@ TEST_F(GLES2FormatTest, TexParameterfvImmediate) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, TexParameteri) {
@@ -2468,7 +2460,6 @@ TEST_F(GLES2FormatTest, TexParameterivImmediate) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, TexStorage3D) {
@@ -2587,7 +2578,6 @@ TEST_F(GLES2FormatTest, Uniform1fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform1i) {
@@ -2620,7 +2610,6 @@ TEST_F(GLES2FormatTest, Uniform1ivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform1ui) {
@@ -2654,7 +2643,6 @@ TEST_F(GLES2FormatTest, Uniform1uivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform2f) {
@@ -2690,7 +2678,6 @@ TEST_F(GLES2FormatTest, Uniform2fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform2i) {
@@ -2726,7 +2713,6 @@ TEST_F(GLES2FormatTest, Uniform2ivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform2ui) {
@@ -2763,7 +2749,6 @@ TEST_F(GLES2FormatTest, Uniform2uivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform3f) {
@@ -2803,7 +2788,6 @@ TEST_F(GLES2FormatTest, Uniform3fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform3i) {
@@ -2842,7 +2826,6 @@ TEST_F(GLES2FormatTest, Uniform3ivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform3ui) {
@@ -2883,7 +2866,6 @@ TEST_F(GLES2FormatTest, Uniform3uivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform4f) {
@@ -2926,7 +2908,6 @@ TEST_F(GLES2FormatTest, Uniform4fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform4i) {
@@ -2969,7 +2950,6 @@ TEST_F(GLES2FormatTest, Uniform4ivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, Uniform4ui) {
@@ -3013,7 +2993,6 @@ TEST_F(GLES2FormatTest, Uniform4uivImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformBlockBinding) {
@@ -3055,7 +3034,6 @@ TEST_F(GLES2FormatTest, UniformMatrix2fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix2x3fvImmediate) {
@@ -3088,7 +3066,6 @@ TEST_F(GLES2FormatTest, UniformMatrix2x3fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix2x4fvImmediate) {
@@ -3125,7 +3102,6 @@ TEST_F(GLES2FormatTest, UniformMatrix2x4fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix3fvImmediate) {
@@ -3164,7 +3140,6 @@ TEST_F(GLES2FormatTest, UniformMatrix3fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix3x2fvImmediate) {
@@ -3197,7 +3172,6 @@ TEST_F(GLES2FormatTest, UniformMatrix3x2fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix3x4fvImmediate) {
@@ -3242,7 +3216,6 @@ TEST_F(GLES2FormatTest, UniformMatrix3x4fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix4fvImmediate) {
@@ -3295,7 +3268,6 @@ TEST_F(GLES2FormatTest, UniformMatrix4fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix4x2fvImmediate) {
@@ -3332,7 +3304,6 @@ TEST_F(GLES2FormatTest, UniformMatrix4x2fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UniformMatrix4x3fvImmediate) {
@@ -3377,7 +3348,6 @@ TEST_F(GLES2FormatTest, UniformMatrix4x3fvImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, UseProgram) {
@@ -3427,7 +3397,6 @@ TEST_F(GLES2FormatTest, VertexAttrib1fvImmediate) {
   EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, VertexAttrib2f) {
@@ -3459,7 +3428,6 @@ TEST_F(GLES2FormatTest, VertexAttrib2fvImmediate) {
   EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, VertexAttrib3f) {
@@ -3494,7 +3462,6 @@ TEST_F(GLES2FormatTest, VertexAttrib3fvImmediate) {
   EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, VertexAttrib4f) {
@@ -3531,7 +3498,6 @@ TEST_F(GLES2FormatTest, VertexAttrib4fvImmediate) {
   EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, VertexAttribI4i) {
@@ -3568,7 +3534,6 @@ TEST_F(GLES2FormatTest, VertexAttribI4ivImmediate) {
   EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, VertexAttribI4ui) {
@@ -3605,7 +3570,6 @@ TEST_F(GLES2FormatTest, VertexAttribI4uivImmediate) {
   EXPECT_EQ(static_cast<GLuint>(11), cmd.indx);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, VertexAttribIPointer) {
@@ -4304,7 +4268,6 @@ TEST_F(GLES2FormatTest, VertexAttribDivisorANGLE) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Write test for GenMailboxCHROMIUM
 TEST_F(GLES2FormatTest, ProduceTextureCHROMIUMImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLbyte data[] = {
@@ -4384,7 +4347,6 @@ TEST_F(GLES2FormatTest, ProduceTextureCHROMIUMImmediate) {
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, ProduceTextureDirectCHROMIUMImmediate) {
@@ -4468,7 +4430,6 @@ TEST_F(GLES2FormatTest, ProduceTextureDirectCHROMIUMImmediate) {
   EXPECT_EQ(static_cast<GLenum>(12), cmd.target);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, ConsumeTextureCHROMIUMImmediate) {
@@ -4550,10 +4511,8 @@ TEST_F(GLES2FormatTest, ConsumeTextureCHROMIUMImmediate) {
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
-// TODO(gman): Write test for CreateAndConsumeTextureCHROMIUMImmediate
 TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUMBucket) {
   cmds::BindUniformLocationCHROMIUMBucket& cmd =
       *GetBufferAs<cmds::BindUniformLocationCHROMIUMBucket>();
@@ -4741,7 +4700,6 @@ TEST_F(GLES2FormatTest, DiscardFramebufferEXTImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, LoseContextCHROMIUM) {
@@ -4756,7 +4714,6 @@ TEST_F(GLES2FormatTest, LoseContextCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Write test for InsertSyncPointCHROMIUM
 TEST_F(GLES2FormatTest, WaitSyncPointCHROMIUM) {
   cmds::WaitSyncPointCHROMIUM& cmd =
       *GetBufferAs<cmds::WaitSyncPointCHROMIUM>();
@@ -4811,7 +4768,6 @@ TEST_F(GLES2FormatTest, DrawBuffersEXTImmediate) {
   EXPECT_EQ(static_cast<GLsizei>(1), cmd.count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, DiscardBackbufferCHROMIUM) {
@@ -4900,7 +4856,6 @@ TEST_F(GLES2FormatTest, MatrixLoadfCHROMIUMImmediate) {
   EXPECT_EQ(static_cast<GLenum>(11), cmd.matrixMode);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-  // TODO(gman): Check that data was inserted;
 }
 
 TEST_F(GLES2FormatTest, MatrixLoadIdentityCHROMIUM) {

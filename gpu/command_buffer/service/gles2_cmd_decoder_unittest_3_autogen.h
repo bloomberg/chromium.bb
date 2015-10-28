@@ -308,9 +308,6 @@ TEST_P(GLES2DecoderTest3, VertexAttribI4uivImmediateValidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
-// TODO(gman): VertexAttribIPointer
-
-// TODO(gman): VertexAttribPointer
 
 TEST_P(GLES2DecoderTest3, ViewportValidArgs) {
   EXPECT_CALL(*gl_, Viewport(1, 2, 3, 4));
@@ -338,14 +335,6 @@ TEST_P(GLES2DecoderTest3, ViewportInvalidArgs3_0) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
-// TODO(gman): WaitSync
-
-// TODO(gman): TexStorage2DEXT
-// TODO(gman): GenQueriesEXTImmediate
-// TODO(gman): DeleteQueriesEXTImmediate
-// TODO(gman): QueryCounterEXT
-
-// TODO(gman): BeginQueryEXT
 
 TEST_P(GLES2DecoderTest3, BeginTransformFeedbackValidArgs) {
   EXPECT_CALL(*gl_, BeginTransformFeedback(GL_POINTS));
@@ -358,7 +347,6 @@ TEST_P(GLES2DecoderTest3, BeginTransformFeedbackValidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
-// TODO(gman): EndQueryEXT
 
 TEST_P(GLES2DecoderTest3, EndTransformFeedbackValidArgs) {
   EXPECT_CALL(*gl_, EndTransformFeedback());
@@ -371,11 +359,6 @@ TEST_P(GLES2DecoderTest3, EndTransformFeedbackValidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
-// TODO(gman): SetDisjointValueSyncCHROMIUM
-
-// TODO(gman): InsertEventMarkerEXT
-
-// TODO(gman): PushGroupMarkerEXT
 
 TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
   SpecializedSetup<cmds::PopGroupMarkerEXT, 0>(true);
@@ -384,50 +367,6 @@ TEST_P(GLES2DecoderTest3, PopGroupMarkerEXTValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-// TODO(gman): GenVertexArraysOESImmediate
-// TODO(gman): DeleteVertexArraysOESImmediate
-// TODO(gman): IsVertexArrayOES
-// TODO(gman): BindVertexArrayOES
-// TODO(gman): SwapBuffers
-// TODO(gman): GetMaxValueInBufferCHROMIUM
-// TODO(gman): EnableFeatureCHROMIUM
-
-// TODO(gman): MapBufferRange
-
-// TODO(gman): UnmapBuffer
-
-// TODO(gman): ResizeCHROMIUM
-// TODO(gman): GetRequestableExtensionsCHROMIUM
-
-// TODO(gman): RequestExtensionCHROMIUM
-
-// TODO(gman): GetProgramInfoCHROMIUM
-
-// TODO(gman): GetUniformBlocksCHROMIUM
-
-// TODO(gman): GetTransformFeedbackVaryingsCHROMIUM
-
-// TODO(gman): GetUniformsES3CHROMIUM
-
-// TODO(gman): GetTranslatedShaderSourceANGLE
-// TODO(gman): PostSubBufferCHROMIUM
-// TODO(gman): TexImageIOSurface2DCHROMIUM
-// TODO(gman): CopyTextureCHROMIUM
-// TODO(gman): CopySubTextureCHROMIUM
-// TODO(gman): CompressedCopyTextureCHROMIUM
-// TODO(gman): CompressedCopySubTextureCHROMIUM
-// TODO(gman): DrawArraysInstancedANGLE
-// TODO(gman): DrawElementsInstancedANGLE
-// TODO(gman): VertexAttribDivisorANGLE
-// TODO(gman): GenMailboxCHROMIUM
-
-// TODO(gman): ProduceTextureCHROMIUMImmediate
-// TODO(gman): ProduceTextureDirectCHROMIUMImmediate
-// TODO(gman): ConsumeTextureCHROMIUMImmediate
-// TODO(gman): CreateAndConsumeTextureCHROMIUMImmediate
-// TODO(gman): BindUniformLocationCHROMIUMBucket
-// TODO(gman): GenValuebuffersCHROMIUMImmediate
-// TODO(gman): DeleteValuebuffersCHROMIUMImmediate
 
 TEST_P(GLES2DecoderTest3, IsValuebufferCHROMIUMValidArgs) {
   SpecializedSetup<cmds::IsValuebufferCHROMIUM, 0>(true);
@@ -447,32 +386,4 @@ TEST_P(GLES2DecoderTest3, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
            kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
-// TODO(gman): BindValuebufferCHROMIUM
-// TODO(gman): SubscribeValueCHROMIUM
-// TODO(gman): PopulateSubscribedValuesCHROMIUM
-// TODO(gman): UniformValuebufferCHROMIUM
-// TODO(gman): BindTexImage2DCHROMIUM
-// TODO(gman): ReleaseTexImage2DCHROMIUM
-// TODO(gman): TraceBeginCHROMIUM
-
-// TODO(gman): TraceEndCHROMIUM
-// TODO(gman): LoseContextCHROMIUM
-// TODO(gman): InsertSyncPointCHROMIUM
-
-// TODO(gman): WaitSyncPointCHROMIUM
-
-// TODO(gman): InsertFenceSyncCHROMIUM
-
-// TODO(gman): GenSyncTokenCHROMIUMImmediate
-
-// TODO(gman): GenUnverifiedSyncTokenCHROMIUMImmediate
-
-// TODO(gman): WaitSyncTokenCHROMIUM
-
-// TODO(gman): DrawBuffersEXTImmediate
-// TODO(gman): DiscardBackbufferCHROMIUM
-
-// TODO(gman): ScheduleOverlayPlaneCHROMIUM
-// TODO(gman): SwapInterval
-// TODO(gman): FlushDriverCachesCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_

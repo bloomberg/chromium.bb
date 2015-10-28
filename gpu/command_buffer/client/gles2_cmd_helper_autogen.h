@@ -2766,7 +2766,7 @@ void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
 }
 
 void GenSyncTokenCHROMIUMImmediate(GLuint64 fence_sync) {
-  const uint32_t s = 0;  // TODO(gman): compute correct size
+  const uint32_t s = 0;
   gles2::cmds::GenSyncTokenCHROMIUMImmediate* c =
       GetImmediateCmdSpaceTotalSize<gles2::cmds::GenSyncTokenCHROMIUMImmediate>(
           s);
@@ -2776,7 +2776,7 @@ void GenSyncTokenCHROMIUMImmediate(GLuint64 fence_sync) {
 }
 
 void GenUnverifiedSyncTokenCHROMIUMImmediate(GLuint64 fence_sync) {
-  const uint32_t s = 0;  // TODO(gman): compute correct size
+  const uint32_t s = 0;
   gles2::cmds::GenUnverifiedSyncTokenCHROMIUMImmediate* c =
       GetImmediateCmdSpaceTotalSize<
           gles2::cmds::GenUnverifiedSyncTokenCHROMIUMImmediate>(s);
