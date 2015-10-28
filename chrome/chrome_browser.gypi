@@ -2864,8 +2864,6 @@
       'browser/sync/chrome_sync_client.h',
       'browser/sync/glue/extensions_activity_monitor.cc',
       'browser/sync/glue/extensions_activity_monitor.h',
-      'browser/sync/glue/local_device_info_provider_impl.cc',
-      'browser/sync/glue/local_device_info_provider_impl.h',
       'browser/sync/glue/sync_backend_host.cc',
       'browser/sync/glue/sync_backend_host.h',
       'browser/sync/glue/sync_backend_host_core.cc',

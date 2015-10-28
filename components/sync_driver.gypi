@@ -80,6 +80,8 @@
         'sync_driver/invalidation_helper.cc',
         'sync_driver/invalidation_helper.h',
         'sync_driver/local_device_info_provider.h',
+        'sync_driver/local_device_info_provider_impl.cc',
+        'sync_driver/local_device_info_provider_impl.h',
         'sync_driver/model_association_manager.cc',
         'sync_driver/model_association_manager.h',
         'sync_driver/model_associator.h',

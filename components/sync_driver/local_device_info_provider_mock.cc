@@ -42,7 +42,9 @@ std::string LocalDeviceInfoProviderMock::GetLocalSyncCacheGUID() const {
 }
 
 void LocalDeviceInfoProviderMock::Initialize(
-    const std::string& cache_guid, const std::string& signin_scoped_device_id) {
+    const std::string& cache_guid,
+    const std::string& signin_scoped_device_id,
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
   // Ignored for the mock provider.
 }
 

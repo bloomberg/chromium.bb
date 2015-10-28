@@ -11,7 +11,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
@@ -38,6 +37,7 @@
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/device_info_data_type_controller.h"
 #include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
+#include "components/sync_driver/local_device_info_provider_impl.h"
 #include "components/sync_driver/proxy_data_type_controller.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/ui_data_type_controller.h"
@@ -49,6 +49,7 @@
 #include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
+#include "ui/base/device_form_factor.h"
 
 #if defined(ENABLE_APP_LIST)
 #include "ui/app_list/app_list_switches.h"
@@ -418,7 +419,10 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
 scoped_ptr<sync_driver::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
   return scoped_ptr<sync_driver::LocalDeviceInfoProvider>(
-      new browser_sync::LocalDeviceInfoProviderImpl());
+      new browser_sync::LocalDeviceInfoProviderImpl(
+          chrome::GetChannel(),
+          chrome::GetVersionString(),
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET));
 }
 
 class TokenServiceProvider

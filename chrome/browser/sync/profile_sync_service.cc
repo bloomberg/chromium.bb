@@ -1127,7 +1127,8 @@ void ProfileSyncService::OnBackendInitialized(
       signin_client->GetSigninScopedDeviceId();
 
   // Initialize local device info.
-  local_device_->Initialize(cache_guid, signin_scoped_device_id);
+  local_device_->Initialize(cache_guid, signin_scoped_device_id,
+                            content::BrowserThread::GetBlockingPool());
 
   if (backend_mode_ == BACKUP || backend_mode_ == ROLLBACK)
     ConfigureDataTypeManager();

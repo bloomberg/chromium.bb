@@ -5,7 +5,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
+#include "components/sync_driver/local_device_info_provider_impl.h"
+#include "components/version_info/version_info.h"
 #include "sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,13 +18,16 @@ namespace browser_sync {
 const char kLocalDeviceGuid[] = "foo";
 const char kSigninScopedDeviceId[] = "device_id";
 
-class LocalDeviceInfoProviderTest : public testing::Test {
+class SyncLocalDeviceInfoProviderTest : public testing::Test {
  public:
-  LocalDeviceInfoProviderTest()
-    : called_back_(false) {}
-  ~LocalDeviceInfoProviderTest() override {}
+  SyncLocalDeviceInfoProviderTest() : called_back_(false) {}
+  ~SyncLocalDeviceInfoProviderTest() override {}
 
-  void SetUp() override { provider_.reset(new LocalDeviceInfoProviderImpl()); }
+  void SetUp() override {
+    provider_.reset(new LocalDeviceInfoProviderImpl(
+        version_info::Channel::UNKNOWN,
+        version_info::GetVersionStringWithModifier("UNKNOWN"), false));
+  }
 
   void TearDown() override {
     provider_.reset();
@@ -33,14 +37,16 @@ class LocalDeviceInfoProviderTest : public testing::Test {
  protected:
   void InitializeProvider() {
     // Start initialization.
-    provider_->Initialize(kLocalDeviceGuid, kSigninScopedDeviceId);
+    provider_->Initialize(kLocalDeviceGuid,
+                          kSigninScopedDeviceId,
+                          message_loop_.task_runner());
 
     // Subscribe to the notification and wait until the callback
     // is called. The callback will quit the loop.
     base::RunLoop run_loop;
     scoped_ptr<LocalDeviceInfoProvider::Subscription> subscription(
         provider_->RegisterOnInitializedCallback(
-            base::Bind(&LocalDeviceInfoProviderTest::QuitLoopOnInitialized,
+            base::Bind(&SyncLocalDeviceInfoProviderTest::QuitLoopOnInitialized,
                        base::Unretained(this), &run_loop)));
     run_loop.Run();
   }
@@ -58,14 +64,14 @@ class LocalDeviceInfoProviderTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
-TEST_F(LocalDeviceInfoProviderTest, OnInitializedCallback) {
+TEST_F(SyncLocalDeviceInfoProviderTest, OnInitializedCallback) {
   ASSERT_FALSE(called_back_);
 
   InitializeProvider();
   EXPECT_TRUE(called_back_);
 }
 
-TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
+TEST_F(SyncLocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
   ASSERT_EQ(NULL, provider_->GetLocalDeviceInfo());
 
   InitializeProvider();
@@ -82,7 +88,7 @@ TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
             local_device_info->sync_user_agent());
 }
 
-TEST_F(LocalDeviceInfoProviderTest, GetLocalSyncCacheGUID) {
+TEST_F(SyncLocalDeviceInfoProviderTest, GetLocalSyncCacheGUID) {
   ASSERT_EQ(std::string(), provider_->GetLocalSyncCacheGUID());
 
   InitializeProvider();

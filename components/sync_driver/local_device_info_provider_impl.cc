@@ -2,25 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_driver/local_device_info_provider_impl.h"
+
 #include "base/bind.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
-#include "chrome/common/channel_info.h"
+#include "base/task_runner.h"
 #include "components/sync_driver/sync_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/util/get_session_name.h"
-#include "ui/base/device_form_factor.h"
 
 namespace browser_sync {
 
 namespace {
 
-#if defined(OS_ANDROID)
-bool IsTabletUI() {
-  return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
-}
-#endif
-
-sync_pb::SyncEnums::DeviceType GetLocalDeviceType() {
+sync_pb::SyncEnums::DeviceType GetLocalDeviceType(bool is_tablet) {
 #if defined(OS_CHROMEOS)
   return sync_pb::SyncEnums_DeviceType_TYPE_CROS;
 #elif defined(OS_LINUX)
@@ -30,8 +23,8 @@ sync_pb::SyncEnums::DeviceType GetLocalDeviceType() {
 #elif defined(OS_WIN)
   return sync_pb::SyncEnums_DeviceType_TYPE_WIN;
 #elif defined(OS_ANDROID)
-  return IsTabletUI() ? sync_pb::SyncEnums_DeviceType_TYPE_TABLET
-                      : sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
+  return is_tablet ? sync_pb::SyncEnums_DeviceType_TYPE_TABLET
+                   : sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
 #else
   return sync_pb::SyncEnums_DeviceType_TYPE_OTHER;
 #endif
@@ -39,29 +32,33 @@ sync_pb::SyncEnums::DeviceType GetLocalDeviceType() {
 
 }  // namespace
 
-LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl()
-    : weak_factory_(this) {
-}
+LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl(
+    version_info::Channel channel,
+    const std::string& version,
+    bool is_tablet)
+    : channel_(channel),
+      version_(version),
+      is_tablet_(is_tablet),
+      weak_factory_(this) {}
 
-LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {
-}
+LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {}
 
-const sync_driver::DeviceInfo*
-LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
+const sync_driver::DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo()
+    const {
   return local_device_info_.get();
 }
 
 std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  return MakeDesktopUserAgentForSync(chrome::GetChannel());
-#elif defined(OS_CHROMEOS)
-  return MakeUserAgentForSync("CROS ", chrome::GetChannel());
+#if defined(OS_CHROMEOS)
+  return MakeUserAgentForSync("CROS ", channel_);
 #elif defined(OS_ANDROID)
-  if (IsTabletUI()) {
-    return MakeUserAgentForSync("ANDROID-TABLET ", chrome::GetChannel());
+  if (is_tablet_) {
+    return MakeUserAgentForSync("ANDROID-TABLET ", channel_);
   } else {
-    return MakeUserAgentForSync("ANDROID-PHONE ", chrome::GetChannel());
+    return MakeUserAgentForSync("ANDROID-PHONE ", channel_);
   }
+#elif !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  return MakeDesktopUserAgentForSync(channel_);
 #endif
 }
 
@@ -77,15 +74,16 @@ LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
 }
 
 void LocalDeviceInfoProviderImpl::Initialize(
-    const std::string& cache_guid, const std::string& signin_scoped_device_id) {
+    const std::string& cache_guid,
+    const std::string& signin_scoped_device_id,
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
   DCHECK(!cache_guid.empty());
   cache_guid_ = cache_guid;
 
   syncer::GetSessionName(
-      content::BrowserThread::GetBlockingPool(),
+      blocking_task_runner,
       base::Bind(&LocalDeviceInfoProviderImpl::InitializeContinuation,
-                 weak_factory_.GetWeakPtr(),
-                 cache_guid,
+                 weak_factory_.GetWeakPtr(), cache_guid,
                  signin_scoped_device_id));
 }
 
@@ -93,13 +91,9 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     const std::string& guid,
     const std::string& signin_scoped_device_id,
     const std::string& session_name) {
-  local_device_info_.reset(
-      new sync_driver::DeviceInfo(guid,
-                                  session_name,
-                                  chrome::GetVersionString(),
-                                  GetSyncUserAgent(),
-                                  GetLocalDeviceType(),
-                                  signin_scoped_device_id));
+  local_device_info_.reset(new sync_driver::DeviceInfo(
+      guid, session_name, version_, GetSyncUserAgent(),
+      GetLocalDeviceType(is_tablet_), signin_scoped_device_id));
 
   // Notify observers.
   callback_list_.Notify();

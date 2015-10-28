@@ -30,8 +30,10 @@ class LocalDeviceInfoProviderMock
   const DeviceInfo* GetLocalDeviceInfo() const override;
   std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;
-  void Initialize(const std::string& cache_guid,
-                  const std::string& signin_scoped_device_id) override;
+  void Initialize(
+      const std::string& cache_guid,
+      const std::string& signin_scoped_device_id,
+      const scoped_refptr<base::TaskRunner>& blocking_task_runner) override;
   scoped_ptr<Subscription> RegisterOnInitializedCallback(
       const base::Closure& callback) override;
 
