@@ -46,6 +46,7 @@ const char kAttributeFieldID[] = "fieldid";
 const char kAttributeFieldType[] = "fieldtype";
 const char kAttributeFieldLabel[] = "label";
 const char kAttributeFormSignature[] = "formsignature";
+const char kAttributeFormActionHostSignature[] = "actionsignature";
 const char kAttributeName[] = "name";
 const char kAttributeSignature[] = "signature";
 const char kAttributeControlType[] = "type";
@@ -480,6 +481,10 @@ bool FormStructure::EncodeUploadRequest(
                                form_was_autofilled ? "true" : "false");
   autofill_request_xml.SetAttr(buzz::QName(kAttributeDataPresent),
                                EncodeFieldTypes(available_field_types).c_str());
+  if (IsAutofillFieldMetadataEnabled()) {
+    autofill_request_xml.SetAttr(buzz::QName(kAttributeFormActionHostSignature),
+                                 Hash64Bit(target_url_.host()));
+  }
 
   if (!login_form_signature.empty()) {
     autofill_request_xml.SetAttr(buzz::QName(kAttributeLoginFormSignature),
