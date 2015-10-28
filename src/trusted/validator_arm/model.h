@@ -90,6 +90,7 @@ class Register {
     // aarch32 only has 16 GPRs, we steal other registers for flags and such.
   // TODO(jfb) Update for aarch64.
   static const Mask kGprMask = 0xFFFF;
+  static const Mask kAllMask = static_cast<Mask>(-1);
 
   Register() : number_(kNone) {}
   explicit Register(Number number) : number_(number) {}
@@ -165,7 +166,7 @@ class RegisterList {
 
   // Checks whether this list contains the given register.
   bool Contains(const Register& r) const {
-    return bits_ & r.BitMask();
+    return (bits_ & r.BitMask()) != 0;
   }
 
   // Checks whether this list contains all the registers in the operand.
@@ -175,7 +176,7 @@ class RegisterList {
 
   // Checks whether this list contains any of the registers in the operand.
   bool ContainsAny(const RegisterList& other) const {
-    return bits_ & other.bits_;
+    return (bits_ & other.bits_) != 0;
   }
 
   // Returns true if the two register lists are identical.
@@ -229,7 +230,7 @@ class RegisterList {
 
   // A list containing every possible register, even some we don't define.
   // Used exclusively as a bogus scary return value for forbidden instructions.
-  static RegisterList Everything() { return RegisterList(-1); }
+  static RegisterList Everything() { return RegisterList(Register::kAllMask); }
 
   // A special register list to communicate registers that can't be changed
   // when doing dynamic code replacement.

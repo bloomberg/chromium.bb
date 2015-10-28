@@ -187,7 +187,8 @@ class SfiValidator {
   }
 
   bool conditional_memory_access_allowed_for_sfi() const {
-    return NaClGetCPUFeatureArm(CpuFeatures(), NaClCPUFeatureArm_CanUseTstMem);
+    return NaClGetCPUFeatureArm(CpuFeatures(),
+                                NaClCPUFeatureArm_CanUseTstMem) != 0;
   }
 
   // Utility function that applies the decoder of the validator.
