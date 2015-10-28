@@ -215,7 +215,11 @@ if (enable_nacl) {
 
     if (current_cpu == "pnacl") {
       action("translate_pexe_to_nexe") {
-        pexe = "${root_out_dir}/ppapi_nacl_tests.pexe"
+        # We specify the toolchain explicitly because in the Non-SFI case, we
+        # still want to use the pexe built using the newlib_pnacl toolchain.
+        tests = ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)"
+
+        pexe = get_label_info(tests, "root_out_dir") + "/ppapi_nacl_tests.pexe"
         nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
 
         script = "${nacl_toolchain_bindir}/pydir/loader.py"
@@ -226,21 +230,33 @@ if (enable_nacl) {
           nexe,
         ]
 
-        # TODO(phosek): remove the following once change 1360243003 is rolled
-        # into Chrome and use $target_cpu directly.
-        if (target_cpu == "x86") {
-          arch = "i686"
-        } else if (target_cpu == "x64") {
-          arch = "x86-64"
-        } else if (target_cpu == "arm") {
-          arch = "armv7"
+        if (is_nacl_nonsfi) {
+          if (target_cpu == "x86" || target_cpu == "x64") {
+            arch = "x86-32-nonsfi"
+          } else if (target_cpu == "arm") {
+            arch = "arm-nonsfi"
+          }
+        } else {
+          # TODO(phosek): remove the following once change 1360243003 is rolled
+          # into Chrome and use $target_cpu directly.
+          if (target_cpu == "x86") {
+            arch = "i686"
+          } else if (target_cpu == "x64") {
+            arch = "x86-64"
+          } else if (target_cpu == "arm") {
+            arch = "armv7"
+          }
         }
 
         # The pre-translated object file has to be linked with an IRT shim to
         # get a runnable nexe. This is handled by pnacl-translate, which passes
         # -l:libpnacl_irt_shim.a to native linker, and we need to ensure the
         # linker can find the correct library.
-        pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:clang_newlib_${target_cpu})"
+        if (is_nacl_nonsfi) {
+          pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:newlib_pnacl_nonsfi)"
+        } else {
+          pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:clang_newlib_${target_cpu})"
+        }
 
         args = [
           "pnacl-translate",
@@ -253,7 +269,7 @@ if (enable_nacl) {
               rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir")),
         ]
         deps = [
-          ":ppapi_nacl_tests",
+          tests,
         ]
         data_deps = [
           pnacl_irt_shim,
@@ -356,6 +372,37 @@ if (enable_nacl) {
         }
       }
     }
+
+    action("generate_nonsfi_nmf") {
+      nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl_nonsfi.nmf"
+      nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
+
+      script = "//ppapi/tests/create_nonsfi_test_nmf.py"
+      sources = [
+        nexe,
+      ]
+      outputs = [
+        nmf,
+      ]
+      data = [
+        nexe,
+      ]
+      if (target_cpu == "x86") {
+        arch = "x86-32"
+      } else if (target_cpu == "x64") {
+        arch = "x86-64"
+      } else if (target_cpu == "arm") {
+        arch = "arm"
+      }
+      args = [
+        "--program=" + rebase_path(sources[0], root_build_dir),
+        "--arch=${arch}",
+        "--output=" + rebase_path(nmf, root_build_dir),
+      ]
+      deps = [
+        ":translate_pexe_to_nexe",
+      ]
+    }
   }
 
   group("ppapi_nacl_tests_all") {
@@ -364,6 +411,7 @@ if (enable_nacl) {
       ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
       ":generate_nmf(//build/toolchain/nacl:glibc_${target_cpu})",
       ":generate_nmf(//build/toolchain/nacl:newlib_pnacl)",
+      ":generate_nonsfi_nmf(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
     ]
   }
 }
