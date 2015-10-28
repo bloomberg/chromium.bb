@@ -276,7 +276,8 @@ ListThumbnailLoader.prototype.continue_ = function() {
  */
 ListThumbnailLoader.prototype.enqueue_ = function(index, entry) {
   var task = new ListThumbnailLoader.Task(
-      entry, this.thumbnailModel_, this.thumbnailLoaderConstructor_);
+      entry, this.volumeManager_, this.thumbnailModel_,
+      this.thumbnailLoaderConstructor_);
 
   var url = entry.toURL();
   this.active_[url] = task;
@@ -388,6 +389,7 @@ ListThumbnailLoader.ThumbnailData = function(fileUrl, dataUrl, width, height) {
  * A task to load thumbnail.
  *
  * @param {!Entry} entry An entry.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {!ThumbnailModel} thumbnailModel Metadata cache.
  * @param {!Function} thumbnailLoaderConstructor A constructor of thumbnail
  *     loader.
@@ -395,8 +397,9 @@ ListThumbnailLoader.ThumbnailData = function(fileUrl, dataUrl, width, height) {
  * @struct
  */
 ListThumbnailLoader.Task = function(
-    entry, thumbnailModel, thumbnailLoaderConstructor) {
+    entry, volumeManager, thumbnailModel, thumbnailLoaderConstructor) {
   this.entry_ = entry;
+  this.volumeManager_ = volumeManager;
   this.thumbnailModel_ = thumbnailModel;
   this.thumbnailLoaderConstructor_ = thumbnailLoaderConstructor;
 };
@@ -417,8 +420,24 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
             'Error: Unexpected EOF @0')
       throw metadatas[0].thumbnail.urlError;
 
+    var loadTargets = [
+      ThumbnailLoader.LoadTarget.CONTENT_METADATA,
+      ThumbnailLoader.LoadTarget.EXTERNAL_METADATA
+    ];
+
+    // If the file is on a provided file system which is based on network, then
+    // don't generate thumbnails from file entry, as it could cause very high
+    // network traffic.
+    var volumeInfo = this.volumeManager_.getVolumeInfo(this.entry_);
+    if (volumeInfo && (volumeInfo.volumeType !==
+        VolumeManagerCommon.VolumeType.PROVIDED ||
+        volumeInfo.source !== VolumeManagerCommon.Source.NETWORK)) {
+      loadTargets.push(ThumbnailLoader.LoadTarget.FILE_ENTRY);
+    }
+
     return new this.thumbnailLoaderConstructor_(
-        this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadatas[0])
+        this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadatas[0],
+        undefined /* opt_mediaType */, loadTargets)
         .loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL);
   }.bind(this)).then(function(result) {
     return new ListThumbnailLoader.ThumbnailData(
