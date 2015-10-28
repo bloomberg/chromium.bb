@@ -100,8 +100,7 @@ class TabStripModel {
 
     // New tab was opened using the menu command - either through the keyboard
     // shortcut, or by opening the menu and selecting the command. Applies to
-    // both Wrench menu and the menu bar's File menu (on platforms that have
-    // one).
+    // both app menu and the menu bar's File menu (on platforms that have one).
     NEW_TAB_COMMAND,
 
     // New tab was opened through the context menu on the tab strip.

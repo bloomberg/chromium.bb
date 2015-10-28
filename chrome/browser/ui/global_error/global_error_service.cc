@@ -46,7 +46,7 @@ GlobalError* GlobalErrorService::GetGlobalErrorByMenuItemCommandID(
 }
 
 GlobalError*
-GlobalErrorService::GetHighestSeverityGlobalErrorWithWrenchMenuItem() const {
+GlobalErrorService::GetHighestSeverityGlobalErrorWithAppMenuItem() const {
   GlobalError::Severity highest_severity = GlobalError::SEVERITY_LOW;
   GlobalError* highest_severity_error = NULL;
 

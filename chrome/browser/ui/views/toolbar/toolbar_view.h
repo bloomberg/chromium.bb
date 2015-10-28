@@ -9,8 +9,8 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/command_observer.h"
+#include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_badge_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/accessible_pane_view.h"
@@ -41,7 +41,7 @@ class ToolbarView : public views::AccessiblePaneView,
                     public views::ButtonListener,
                     public views::WidgetObserver,
                     public views::ViewTargeterDelegate,
-                    public WrenchMenuBadgeController::Delegate {
+                    public AppMenuBadgeController::Delegate {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -91,7 +91,7 @@ class ToolbarView : public views::AccessiblePaneView,
   LocationBarView* location_bar() const { return location_bar_; }
   AppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
-  WrenchMenuBadgeController* app_menu_badge_controller() {
+  AppMenuBadgeController* app_menu_badge_controller() {
     return &badge_controller_;
   }
 
@@ -177,8 +177,8 @@ class ToolbarView : public views::AccessiblePaneView,
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
-  // WrenchMenuBadgeController::Delegate:
-  void UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
+  // AppMenuBadgeController::Delegate:
+  void UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
                            WrenchIconPainter::Severity severity,
                            bool animate) override;
 
@@ -216,7 +216,7 @@ class ToolbarView : public views::AccessiblePaneView,
   AppMenuButton* app_menu_button_;
   Browser* browser_;
 
-  WrenchMenuBadgeController badge_controller_;
+  AppMenuBadgeController badge_controller_;
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;

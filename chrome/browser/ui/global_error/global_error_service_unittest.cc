@@ -134,21 +134,21 @@ TEST(GlobalErrorServiceTest, HighestSeverity) {
   MenuError* error3 = new MenuError(3, GlobalError::SEVERITY_HIGH);
 
   GlobalErrorService service(NULL);
-  EXPECT_EQ(NULL, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
+  EXPECT_EQ(NULL, service.GetHighestSeverityGlobalErrorWithAppMenuItem());
 
   service.AddGlobalError(error1);
-  EXPECT_EQ(error1, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
+  EXPECT_EQ(error1, service.GetHighestSeverityGlobalErrorWithAppMenuItem());
 
   service.AddGlobalError(error2);
-  EXPECT_EQ(error2, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
+  EXPECT_EQ(error2, service.GetHighestSeverityGlobalErrorWithAppMenuItem());
 
   service.AddGlobalError(error3);
-  EXPECT_EQ(error3, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
+  EXPECT_EQ(error3, service.GetHighestSeverityGlobalErrorWithAppMenuItem());
 
   // Remove the highest-severity error.
   service.RemoveGlobalError(error3);
   delete error3;
 
   // Now error2 should be the next highest severity error.
-  EXPECT_EQ(error2, service.GetHighestSeverityGlobalErrorWithWrenchMenuItem());
+  EXPECT_EQ(error2, service.GetHighestSeverityGlobalErrorWithAppMenuItem());
 }

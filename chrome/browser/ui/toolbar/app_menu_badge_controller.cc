@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/wrench_menu_badge_controller.h"
+#include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -38,7 +38,7 @@ WrenchIconPainter::Severity SeverityFromUpgradeLevel(
   return WrenchIconPainter::SEVERITY_NONE;
 }
 
-// Checks if the wrench icon should be animated for the given upgrade level.
+// Checks if the app menu icon should be animated for the given upgrade level.
 bool ShouldAnimateUpgradeLevel(
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
   bool should_animate = true;
@@ -55,7 +55,7 @@ bool ShouldAnimateUpgradeLevel(
 bool ShouldShowUpgradeRecommended() {
 #if defined(OS_CHROMEOS)
   // In chromeos, the update recommendation is shown in the system tray. So it
-  // should not be displayed in the wrench menu.
+  // should not be displayed in the app menu.
   return false;
 #else
   return UpgradeDetector::GetInstance()->notify_upgrade();
@@ -75,10 +75,9 @@ bool ShouldShowIncompatibilityWarning() {
 
 }  // namespace
 
-WrenchMenuBadgeController::WrenchMenuBadgeController(Profile* profile,
-                                                     Delegate* delegate)
-    : profile_(profile),
-      delegate_(delegate) {
+AppMenuBadgeController::AppMenuBadgeController(Profile* profile,
+                                               Delegate* delegate)
+    : profile_(profile), delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(delegate_);
 
@@ -97,10 +96,10 @@ WrenchMenuBadgeController::WrenchMenuBadgeController(Profile* profile,
 #endif
 }
 
-WrenchMenuBadgeController::~WrenchMenuBadgeController() {
+AppMenuBadgeController::~AppMenuBadgeController() {
 }
 
-void WrenchMenuBadgeController::UpdateDelegate() {
+void AppMenuBadgeController::UpdateDelegate() {
   if (ShouldShowUpgradeRecommended()) {
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
         UpgradeDetector::GetInstance()->upgrade_notification_stage();
@@ -117,7 +116,7 @@ void WrenchMenuBadgeController::UpdateDelegate() {
   }
 
   if (GlobalErrorServiceFactory::GetForProfile(profile_)->
-          GetHighestSeverityGlobalErrorWithWrenchMenuItem()) {
+          GetHighestSeverityGlobalErrorWithAppMenuItem()) {
     // If you change the severity here, make sure to also change the menu icon
     // and the bubble icon.
     delegate_->UpdateBadgeSeverity(BADGE_TYPE_GLOBAL_ERROR,
@@ -129,7 +128,7 @@ void WrenchMenuBadgeController::UpdateDelegate() {
                                  WrenchIconPainter::SEVERITY_NONE, true);
 }
 
-void WrenchMenuBadgeController::Observe(
+void AppMenuBadgeController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {

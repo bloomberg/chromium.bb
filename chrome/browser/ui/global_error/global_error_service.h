@@ -42,9 +42,9 @@ class GlobalErrorService : public KeyedService {
   // This class maintains ownership of the returned error.
   GlobalError* GetGlobalErrorByMenuItemCommandID(int command_id) const;
 
-  // Gets the highest severity error that has a wrench menu item.
+  // Gets the highest severity error that has a app menu item.
   // Returns NULL if no such error exists.
-  GlobalError* GetHighestSeverityGlobalErrorWithWrenchMenuItem() const;
+  GlobalError* GetHighestSeverityGlobalErrorWithAppMenuItem() const;
 
   // Gets the first error that has a bubble view which hasn't been shown yet.
   // Returns NULL if no such error exists.

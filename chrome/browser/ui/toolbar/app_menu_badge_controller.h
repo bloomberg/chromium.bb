@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_BADGE_CONTROLLER_H_
-#define CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_BADGE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_BADGE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_BADGE_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
@@ -14,9 +14,9 @@
 
 class Profile;
 
-// WrenchMenuBadgeController encapsulates the logic for badging the wrench menu
-// icon as a result of various events - such as available updates, errors, etc.
-class WrenchMenuBadgeController : public content::NotificationObserver {
+// AppMenuBadgeController encapsulates the logic for badging the app menu icon
+// as a result of various events - such as available updates, errors, etc.
+class AppMenuBadgeController : public content::NotificationObserver {
  public:
   enum BadgeType {
     BADGE_TYPE_NONE,
@@ -41,8 +41,8 @@ class WrenchMenuBadgeController : public content::NotificationObserver {
 
   // Creates an instance of this class for the given |profile| that will notify
   // |delegate| of updates.
-  WrenchMenuBadgeController(Profile* profile, Delegate* delegate);
-  ~WrenchMenuBadgeController() override;
+  AppMenuBadgeController(Profile* profile, Delegate* delegate);
+  ~AppMenuBadgeController() override;
 
   // Forces an update of the UI based on the current state of the world. This
   // will check whether there are any current pending updates, global errors,
@@ -60,7 +60,7 @@ class WrenchMenuBadgeController : public content::NotificationObserver {
   Delegate* delegate_;
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(WrenchMenuBadgeController);
+  DISALLOW_COPY_AND_ASSIGN(AppMenuBadgeController);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_BADGE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_TOOLBAR_APP_MENU_BADGE_CONTROLLER_H_

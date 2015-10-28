@@ -45,8 +45,8 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_badge_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -178,7 +178,7 @@ class CommandObserverBridge : public CommandObserver {
 // A class registered for C++ notifications. This is used to detect changes in
 // preferences and upgrade available notifications. Bridges the notification
 // back to the ToolbarController.
-class NotificationBridge : public WrenchMenuBadgeController::Delegate {
+class NotificationBridge : public AppMenuBadgeController::Delegate {
  public:
   explicit NotificationBridge(ToolbarController* controller)
       : controller_(controller),
@@ -190,7 +190,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     badge_controller_.UpdateDelegate();
   }
 
-  void UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
+  void UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
                            WrenchIconPainter::Severity severity,
                            bool animate) override {
     [controller_ updateWrenchButtonSeverity:severity animate:animate];
@@ -203,7 +203,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
  private:
   ToolbarController* controller_;  // weak, owns us
 
-  WrenchMenuBadgeController badge_controller_;
+  AppMenuBadgeController badge_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationBridge);
 };

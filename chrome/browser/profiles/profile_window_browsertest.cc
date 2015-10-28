@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestCannotSignin) {
   ASSERT_FALSE(signin_manager);
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestWrenchLacksBookmarks) {
+IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestAppMenuLacksBookmarks) {
   EmptyAcceleratorHandler accelerator_handler;
   // Verify the normal browser has a bookmark menu.
   AppMenuModel model_normal_profile(&accelerator_handler, browser());
