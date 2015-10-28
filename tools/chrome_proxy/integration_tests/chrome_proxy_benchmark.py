@@ -30,6 +30,7 @@ class ChromeProxyClientType(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.client_type.client_type'
 
 
+@benchmark.Disabled(*WEBVIEW_PLATFORMS)
 class ChromeProxyLoFi(ChromeProxyBenchmark):
   tag = 'lo_fi'
   test = measurements.ChromeProxyLoFi
