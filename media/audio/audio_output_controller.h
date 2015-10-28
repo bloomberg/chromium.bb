@@ -232,9 +232,7 @@ class MEDIA_EXPORT AudioOutputController
   // The current volume of the audio stream.
   double volume_;
 
-  // |state_| is written on the audio manager thread and is read on the
-  // hardware audio thread. These operations need to be locked. But lock
-  // is not required for reading on the audio manager thread.
+  // |state_| may only be used on the audio manager thread.
   State state_;
 
   // SyncReader is used only in low latency mode for synchronous reading.
@@ -249,6 +247,16 @@ class MEDIA_EXPORT AudioOutputController
   // Flags when we've asked for a stream to start but it never did.
   base::AtomicRefCount on_more_io_data_called_;
   scoped_ptr<base::OneShotTimer> wedge_timer_;
+
+  // Flag which indicates errors received during Stop/Close should be ignored.
+  // These errors are generally harmless since a fresh stream is about to be
+  // recreated, but if forwarded, renderer side clients may consider them
+  // catastrophic and abort their operations.
+  //
+  // If |stream_| is started then |ignore_errors_during_stop_close_| must only
+  // be accessed while |error_lock_| is held.
+  bool ignore_errors_during_stop_close_;
+  base::Lock error_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };

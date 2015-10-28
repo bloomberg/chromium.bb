@@ -63,6 +63,9 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // Returns true if there are any open AudioOutputProxy objects.
   bool HasOutputProxies() const;
 
+  // Closes all |idle_streams_|.
+  void CloseAllIdleStreams();
+
  private:
   friend class base::RefCountedThreadSafe<AudioOutputDispatcherImpl>;
   ~AudioOutputDispatcherImpl() override;
@@ -72,8 +75,6 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // opened.
   bool CreateAndOpenStream();
 
-  // Closes all |idle_streams_|.
-  void CloseAllIdleStreams();
   // Similar to CloseAllIdleStreams(), but keeps |keep_alive| streams alive.
   void CloseIdleStreams(size_t keep_alive);
 

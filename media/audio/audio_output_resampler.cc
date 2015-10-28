@@ -38,7 +38,9 @@ class OnMoreDataConverter
   // Clears |source_callback_| and flushes the resampler.
   void Stop();
 
-  bool started() { return source_callback_ != nullptr; }
+  bool started() const { return source_callback_ != nullptr; }
+
+  bool error_occurred() const { return error_occurred_; }
 
  private:
   // AudioConverter::InputCallback implementation.
@@ -61,6 +63,10 @@ class OnMoreDataConverter
   // Handles resampling, buffering, and channel mixing between input and output
   // parameters.
   AudioConverter audio_converter_;
+
+  // True if OnError() was ever called.  Should only be read if the underlying
+  // stream has been stopped.
+  bool error_occurred_;
 
   DISALLOW_COPY_AND_ASSIGN(OnMoreDataConverter);
 };
@@ -288,8 +294,15 @@ void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
   // be stopped and no longer calling OnMoreData(), making it safe to Stop() the
   // OnMoreDataConverter.
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
-  if (it != callbacks_.end())
+  if (it != callbacks_.end()) {
     it->second->Stop();
+
+    // Destroy idle streams if any errors occurred during output; this ensures
+    // bad streams will not be reused.  Note: Errors may occur during the Stop()
+    // call above.
+    if (it->second->error_occurred())
+      dispatcher_->CloseAllIdleStreams();
+  }
 }
 
 void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
@@ -330,7 +343,8 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
                 output_params.GetBytesPerSecond()),
       source_callback_(nullptr),
       input_bytes_per_second_(input_params.GetBytesPerSecond()),
-      audio_converter_(input_params, output_params, false) {}
+      audio_converter_(input_params, output_params, false),
+      error_occurred_(false) {}
 
 OnMoreDataConverter::~OnMoreDataConverter() {
   // Ensure Stop() has been called so we don't end up with an AudioOutputStream
@@ -385,6 +399,7 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
 }
 
 void OnMoreDataConverter::OnError(AudioOutputStream* stream) {
+  error_occurred_ = true;
   source_callback_->OnError(stream);
 }
 

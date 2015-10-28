@@ -35,7 +35,8 @@ AudioOutputController::AudioOutputController(
       power_monitor_(
           params.sample_rate(),
           TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)),
-      on_more_io_data_called_(0) {
+      on_more_io_data_called_(0),
+      ignore_errors_during_stop_close_(false) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);
@@ -302,6 +303,12 @@ int AudioOutputController::OnMoreData(AudioBus* dest,
 }
 
 void AudioOutputController::OnError(AudioOutputStream* stream) {
+  {
+    base::AutoLock auto_lock(error_lock_);
+    if (ignore_errors_during_stop_close_)
+      return;
+  }
+
   // Handle error on the audio controller thread.
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoReportError, this));
@@ -312,6 +319,11 @@ void AudioOutputController::DoStopCloseAndClearStream() {
 
   // Allow calling unconditionally and bail if we don't have a stream_ to close.
   if (stream_) {
+    {
+      base::AutoLock auto_lock(error_lock_);
+      ignore_errors_during_stop_close_ = true;
+    }
+
     // De-register from state change callbacks if stream_ was created via
     // AudioManager.
     if (stream_ != diverting_to_stream_)
@@ -322,6 +334,9 @@ void AudioOutputController::DoStopCloseAndClearStream() {
     if (stream_ == diverting_to_stream_)
       diverting_to_stream_ = NULL;
     stream_ = NULL;
+
+    // Since the stream is no longer running, no lock is necessary.
+    ignore_errors_during_stop_close_ = false;
   }
 
   state_ = kEmpty;
