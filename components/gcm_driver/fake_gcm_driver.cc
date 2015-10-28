@@ -19,16 +19,6 @@ FakeGCMDriver::FakeGCMDriver(
 FakeGCMDriver::~FakeGCMDriver() {
 }
 
-void FakeGCMDriver::Shutdown() {
-}
-
-void FakeGCMDriver::AddAppHandler(
-    const std::string& app_id, GCMAppHandler* handler) {
-}
-
-void FakeGCMDriver::RemoveAppHandler(const std::string& app_id) {
-}
-
 void FakeGCMDriver::OnSignedIn() {
 }
 

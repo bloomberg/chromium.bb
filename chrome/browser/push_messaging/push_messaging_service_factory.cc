@@ -4,6 +4,7 @@
 
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,6 +39,14 @@ PushMessagingServiceFactory::PushMessagingServiceFactory()
 }
 
 PushMessagingServiceFactory::~PushMessagingServiceFactory() {
+}
+
+void PushMessagingServiceFactory::RestoreFactoryForTests(
+    content::BrowserContext* context) {
+  SetTestingFactory(context, [](content::BrowserContext* context) {
+    return scoped_ptr<KeyedService>(
+        GetInstance()->BuildServiceInstanceFor(context));
+  });
 }
 
 KeyedService* PushMessagingServiceFactory::BuildServiceInstanceFor(

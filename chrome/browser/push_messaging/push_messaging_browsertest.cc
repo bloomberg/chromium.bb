@@ -118,6 +118,16 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
+  void RestartPushService() {
+    Profile* profile = GetBrowser()->profile();
+    PushMessagingServiceFactory::GetInstance()->SetTestingFactory(profile,
+                                                                  nullptr);
+    ASSERT_EQ(nullptr, PushMessagingServiceFactory::GetForProfile(profile));
+    PushMessagingServiceFactory::GetInstance()->RestoreFactoryForTests(profile);
+    PushMessagingServiceImpl::InitializeForProfile(profile);
+    push_service_ = PushMessagingServiceFactory::GetForProfile(profile);
+  }
+
   // InProcessBrowserTest:
   void TearDown() override {
 #if defined(ENABLE_NOTIFICATIONS)
@@ -146,6 +156,11 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     return content::ExecuteScriptAndExtractString(web_contents->GetMainFrame(),
                                                   script,
                                                   result);
+  }
+
+  gcm::GCMAppHandler* GetAppHandler() {
+    return gcm_service()->driver()->GetAppHandler(
+        kPushMessagingAppIdentifierPrefix);
   }
 
   PermissionBubbleManager* GetPermissionBubbleManager() {
@@ -403,6 +418,30 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
   LoadTestPage();
   TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
   EXPECT_EQ(sw1_identifier.app_id(), gcm_service()->last_registered_app_id());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, AppHandlerOnlyIfSubscribed) {
+  // This test restarts the push service to simulate restarting the browser.
+
+  EXPECT_NE(push_service(), GetAppHandler());
+  ASSERT_NO_FATAL_FAILURE(RestartPushService());
+  EXPECT_NE(push_service(), GetAppHandler());
+
+  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
+
+  EXPECT_EQ(push_service(), GetAppHandler());
+  ASSERT_NO_FATAL_FAILURE(RestartPushService());
+  EXPECT_EQ(push_service(), GetAppHandler());
+
+  // Unsubscribe.
+  std::string script_result;
+  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+
+  EXPECT_NE(push_service(), GetAppHandler());
+  ASSERT_NO_FATAL_FAILURE(RestartPushService());
+  EXPECT_NE(push_service(), GetAppHandler());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {

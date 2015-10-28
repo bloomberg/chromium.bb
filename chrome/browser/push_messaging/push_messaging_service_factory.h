@@ -17,6 +17,10 @@ class PushMessagingServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* profile);
   static PushMessagingServiceFactory* GetInstance();
 
+  // Undo a previous call to SetTestingFactory, such that subsequent calls to
+  // GetForProfile get a real push service.
+  void RestoreFactoryForTests(content::BrowserContext* context);
+
  private:
   friend struct base::DefaultSingletonTraits<PushMessagingServiceFactory>;
 

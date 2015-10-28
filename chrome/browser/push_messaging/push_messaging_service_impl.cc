@@ -141,6 +141,7 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
 }
 
 PushMessagingServiceImpl::~PushMessagingServiceImpl() {
+  HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
 void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
