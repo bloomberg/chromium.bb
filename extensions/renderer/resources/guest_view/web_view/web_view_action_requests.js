@@ -293,4 +293,4 @@ var WebViewActionRequests = {
 };
 
 // Exports.
-exports.WebViewActionRequests = WebViewActionRequests;
+exports.$set('WebViewActionRequests', WebViewActionRequests);

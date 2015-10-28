@@ -298,4 +298,4 @@ function DeclarativeWebRequestEvent(opt_eventName,
 DeclarativeWebRequestEvent.prototype.__proto__ = EventBindings.Event.prototype;
 
 // Exports.
-exports.WebViewEvents = WebViewEvents;
+exports.$set('WebViewEvents', WebViewEvents);

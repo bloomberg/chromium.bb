@@ -37,4 +37,4 @@ function StorageArea(namespace, schema) {
   $Array.forEach(apiFunctions, bindApiFunction);
 }
 
-exports.StorageArea = StorageArea;
+exports.$set('StorageArea', StorageArea);

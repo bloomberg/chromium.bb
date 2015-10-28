@@ -89,4 +89,4 @@ binding.registerCustomHook(function(api) {
       permissions.onAdded.dispatchToListener;
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

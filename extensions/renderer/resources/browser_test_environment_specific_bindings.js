@@ -11,5 +11,5 @@ function testDone(runNextTest) {
   setTimeout(runNextTest, 0);
 }
 
-exports.registerHooks = registerHooks;
-exports.testDone = testDone;
+exports.$set('registerHooks', registerHooks);
+exports.$set('testDone', testDone);

@@ -136,4 +136,4 @@ ExtensionViewImpl.prototype.loadNextSrc = function() {
 GuestViewContainer.registerElement(ExtensionViewImpl);
 
 // Exports.
-exports.ExtensionViewImpl = ExtensionViewImpl;
+exports.$set('ExtensionViewImpl', ExtensionViewImpl);

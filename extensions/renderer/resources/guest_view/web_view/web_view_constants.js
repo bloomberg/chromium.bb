@@ -37,4 +37,4 @@ var WebViewConstants = {
       'The permission request for "%1" has been denied.'
 };
 
-exports.WebViewConstants = $Object.freeze(WebViewConstants);
+exports.$set('WebViewConstants', $Object.freeze(WebViewConstants));

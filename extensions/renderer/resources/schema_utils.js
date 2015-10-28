@@ -153,7 +153,7 @@ function isFunctionSignatureAmbiguous(functionDef) {
   return false;
 };
 
-exports.isFunctionSignatureAmbiguous = isFunctionSignatureAmbiguous;
-exports.normalizeArgumentsAndValidate = normalizeArgumentsAndValidate;
-exports.schemaValidator = schemaValidator;
-exports.validate = validate;
+exports.$set('isFunctionSignatureAmbiguous', isFunctionSignatureAmbiguous);
+exports.$set('normalizeArgumentsAndValidate', normalizeArgumentsAndValidate);
+exports.$set('schemaValidator', schemaValidator);
+exports.$set('validate', validate);

@@ -166,9 +166,9 @@ function promise(func) {
   });
 }
 
-exports.forEach = forEach;
-exports.loadTypeSchema = loadTypeSchema;
-exports.lookup = lookup;
-exports.expose = expose;
-exports.deepCopy = deepCopy;
-exports.promise = promise;
+exports.$set('forEach', forEach);
+exports.$set('loadTypeSchema', loadTypeSchema);
+exports.$set('lookup', lookup);
+exports.$set('expose', expose);
+exports.$set('deepCopy', deepCopy);
+exports.$set('promise', promise);

@@ -20,4 +20,4 @@ binding.registerCustomHook(function(api) {
 
 binding.registerCustomEvent(WebRequestEvent);
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

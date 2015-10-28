@@ -18,11 +18,11 @@ class UtilsUnittest : public ModuleSystemTest {
     env()->RegisterModule("utils", IDR_UTILS_JS);
     env()->RegisterTestFile("utils_unittest", "utils_unittest.js");
     env()->OverrideNativeHandler("schema_registry",
-                                 "exports.GetSchema = function() {};");
+                                 "exports.$set('GetSchema', function() {});");
     env()->OverrideNativeHandler("logging",
-                                 "exports.CHECK = function() {};\n"
-                                 "exports.DCHECK = function() {};\n"
-                                 "exports.WARNING = function() {};");
+                                 "exports.$set('CHECK', function() {});\n"
+                                 "exports.$set('DCHECK', function() {});\n"
+                                 "exports.$set('WARNING', function() {});");
     env()->OverrideNativeHandler("v8_context", "");
     gin::Dictionary chrome(env()->isolate(), env()->CreateGlobal("chrome"));
     gin::Dictionary chrome_runtime(

@@ -139,4 +139,4 @@ var GuestViewAttributes = {
 };
 
 // Exports.
-exports.GuestViewAttributes = GuestViewAttributes;
+exports.$set('GuestViewAttributes', GuestViewAttributes);

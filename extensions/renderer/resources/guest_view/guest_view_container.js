@@ -306,4 +306,4 @@ function registerGuestViewElement(guestViewContainerType) {
 }
 
 // Exports.
-exports.GuestViewContainer = GuestViewContainer;
+exports.$set('GuestViewContainer', GuestViewContainer);

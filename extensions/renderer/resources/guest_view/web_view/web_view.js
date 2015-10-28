@@ -223,4 +223,4 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {};
 GuestViewContainer.registerElement(WebViewImpl);
 
 // Exports.
-exports.WebViewImpl = WebViewImpl;
+exports.$set('WebViewImpl', WebViewImpl);

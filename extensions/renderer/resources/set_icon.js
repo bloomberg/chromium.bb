@@ -133,4 +133,4 @@ function setIcon(details, callback) {
   throw new Error('Either the path or imageData property must be specified.');
 }
 
-exports.setIcon = setIcon;
+exports.$set('setIcon', setIcon);

@@ -174,5 +174,5 @@ GuestViewEvents.prototype.weakWrapper = function(func) {
 GuestViewEvents.prototype.getEvents = function() { return {}; };
 
 // Exports.
-exports.GuestViewEvents = GuestViewEvents;
-exports.CreateEvent = CreateEvent;
+exports.$set('GuestViewEvents', GuestViewEvents);
+exports.$set('CreateEvent', CreateEvent);

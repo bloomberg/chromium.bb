@@ -350,6 +350,6 @@ GuestView.prototype.getId = function() {
 };
 
 // Exports
-exports.GuestView = GuestView;
-exports.GuestViewImpl = GuestViewImpl;
-exports.ResizeEvent = ResizeEvent;
+exports.$set('GuestView', GuestView);
+exports.$set('GuestViewImpl', GuestViewImpl);
+exports.$set('ResizeEvent', ResizeEvent);

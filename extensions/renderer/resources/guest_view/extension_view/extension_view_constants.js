@@ -11,4 +11,4 @@ var ExtensionViewConstants = {
   ATTRIBUTE_SRC: 'src',
 };
 
-exports.ExtensionViewConstants = $Object.freeze(ExtensionViewConstants);
+exports.$set('ExtensionViewConstants', $Object.freeze(ExtensionViewConstants));

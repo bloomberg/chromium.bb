@@ -134,9 +134,9 @@ function reportIfUnchecked(name, targetChrome, stack) {
       (name || "unknown") + ": " + message + (stack ? "\n" + stack : ""));
 }
 
-exports.clear = clear;
-exports.hasAccessed = hasAccessed;
-exports.hasError = hasError;
-exports.set = set;
-exports.run = run;
-exports.reportIfUnchecked = reportIfUnchecked;
+exports.$set('clear', clear);
+exports.$set('hasAccessed', hasAccessed);
+exports.$set('hasError', hasError);
+exports.$set('set', set);
+exports.$set('run', run);
+exports.$set('reportIfUnchecked', reportIfUnchecked);

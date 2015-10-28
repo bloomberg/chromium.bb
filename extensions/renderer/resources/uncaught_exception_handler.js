@@ -95,16 +95,16 @@ function safeErrorToString(e, omitType) {
  * @param {string=} priorStackTrace - Error message suffix.
  * @see formatErrorMessage
  */
-exports.handle = function(message, e, priorStackTrace) {
+exports.$set('handle', function(message, e, priorStackTrace) {
   message = formatErrorMessage(message, e, priorStackTrace);
   handler(message, e);
-};
+});
 
 // |newHandler| A function which matches |handler|.
-exports.setHandler = function(newHandler) {
+exports.$set('setHandler', function(newHandler) {
   handler = newHandler;
-};
+});
 
-exports.getStackTrace = getStackTrace;
-exports.getExtensionStackTrace = getExtensionStackTrace;
-exports.safeErrorToString = safeErrorToString;
+exports.$set('getStackTrace', getStackTrace);
+exports.$set('getExtensionStackTrace', getExtensionStackTrace);
+exports.$set('safeErrorToString', safeErrorToString);

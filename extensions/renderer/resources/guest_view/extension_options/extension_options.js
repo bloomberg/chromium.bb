@@ -49,4 +49,4 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
 GuestViewContainer.registerElement(ExtensionOptionsImpl);
 
 // Exports.
-exports.ExtensionOptionsImpl = ExtensionOptionsImpl;
+exports.$set('ExtensionOptionsImpl', ExtensionOptionsImpl);

@@ -377,16 +377,16 @@ var Port = utils.expose('Port', PortImpl, { functions: [
     'onMessage'
   ] });
 
-exports.kRequestChannel = kRequestChannel;
-exports.kMessageChannel = kMessageChannel;
-exports.kNativeMessageChannel = kNativeMessageChannel;
-exports.Port = Port;
-exports.createPort = createPort;
-exports.sendMessageImpl = sendMessageImpl;
-exports.sendMessageUpdateArguments = sendMessageUpdateArguments;
+exports.$set('kRequestChannel', kRequestChannel);
+exports.$set('kMessageChannel', kMessageChannel);
+exports.$set('kNativeMessageChannel', kNativeMessageChannel);
+exports.$set('Port', Port);
+exports.$set('createPort', createPort);
+exports.$set('sendMessageImpl', sendMessageImpl);
+exports.$set('sendMessageUpdateArguments', sendMessageUpdateArguments);
 
 // For C++ code to call.
-exports.hasPort = hasPort;
-exports.dispatchOnConnect = dispatchOnConnect;
-exports.dispatchOnDisconnect = dispatchOnDisconnect;
-exports.dispatchOnMessage = dispatchOnMessage;
+exports.$set('hasPort', hasPort);
+exports.$set('dispatchOnConnect', dispatchOnConnect);
+exports.$set('dispatchOnDisconnect', dispatchOnDisconnect);
+exports.$set('dispatchOnMessage', dispatchOnMessage);

@@ -140,10 +140,10 @@ function clearCalledSendRequest() {
   calledSendRequest = false;
 }
 
-exports.sendRequest = sendRequest;
-exports.getCalledSendRequest = getCalledSendRequest;
-exports.clearCalledSendRequest = clearCalledSendRequest;
-exports.safeCallbackApply = safeCallbackApply;
+exports.$set('sendRequest', sendRequest);
+exports.$set('getCalledSendRequest', getCalledSendRequest);
+exports.$set('clearCalledSendRequest', clearCalledSendRequest);
+exports.$set('safeCallbackApply', safeCallbackApply);
 
 // Called by C++.
-exports.handleResponse = handleResponse;
+exports.$set('handleResponse', handleResponse);

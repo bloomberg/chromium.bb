@@ -202,5 +202,5 @@ binding.registerCustomHook(function(binding, id, contextType) {
   bindDirectoryEntryCallback('getPackageDirectoryEntry', apiFunctions);
 });
 
-exports.bindDirectoryEntryCallback = bindDirectoryEntryCallback;
-exports.binding = binding.generate();
+exports.$set('bindDirectoryEntryCallback', bindDirectoryEntryCallback);
+exports.$set('binding', binding.generate());

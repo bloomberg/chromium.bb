@@ -503,8 +503,8 @@
   ] });
 
   // NOTE: Event is (lazily) exposed as chrome.Event from dispatcher.cc.
-  exports.Event = Event;
+  exports.$set('Event', Event);
 
-  exports.dispatchEvent = dispatchEvent;
-  exports.parseEventOptions = parseEventOptions;
-  exports.registerArgumentMassager = registerArgumentMassager;
+  exports.$set('dispatchEvent', dispatchEvent);
+  exports.$set('parseEventOptions', parseEventOptions);
+  exports.$set('registerArgumentMassager', registerArgumentMassager);

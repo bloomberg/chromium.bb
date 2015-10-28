@@ -524,4 +524,4 @@ Binding.prototype = {
   }
 };
 
-exports.Binding = Binding;
+exports.$set('Binding', Binding);

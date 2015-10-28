@@ -96,6 +96,20 @@ class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
   }
 };
 
+// Sets a property on the "exports" object for bindings. Called by JS with
+// exports.$set(<key>, <value>).
+void SetExportsProperty(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  v8::Local<v8::Object> obj = args.This();
+  DCHECK_EQ(2, args.Length());
+  DCHECK(args[0]->IsString());
+  v8::Maybe<bool> result =
+      obj->DefineOwnProperty(args.GetIsolate()->GetCurrentContext(),
+                             args[0]->ToString(), args[1], v8::ReadOnly);
+  if (!result.FromMaybe(false))
+    LOG(ERROR) << "Failed to set private property on the export.";
+}
+
 }  // namespace
 
 std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
@@ -642,7 +656,25 @@ v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
   v8::Local<v8::Object> define_object = v8::Object::New(GetIsolate());
   gin::ModuleRegistry::InstallGlobals(GetIsolate(), define_object);
 
-  v8::Local<v8::Value> exports = v8::Object::New(GetIsolate());
+  v8::Local<v8::Object> exports = v8::Object::New(GetIsolate());
+
+  v8::Local<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New(
+      GetIsolate(),
+      &SetExportsProperty);
+  v8::Local<v8::String> v8_key;
+  if (!v8_helpers::ToV8String(GetIsolate(), "$set", &v8_key)) {
+    NOTREACHED();
+    return v8::Undefined(GetIsolate());
+  }
+
+  v8::Local<v8::Function> function;
+  if (!tmpl->GetFunction(v8_context).ToLocal(&function)) {
+    NOTREACHED();
+    return v8::Undefined(GetIsolate());
+  }
+
+  exports->ForceSet(v8_key, function, v8::ReadOnly);
+
   v8::Local<v8::Object> natives(NewInstance());
   CHECK(!natives.IsEmpty());  // this can fail if v8 has issues
 

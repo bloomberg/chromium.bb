@@ -361,4 +361,4 @@ binding.registerCustomHook(function(api) {
   environmentSpecificBindings.registerHooks(api);
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

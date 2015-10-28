@@ -188,5 +188,5 @@ var WebRequestEvent = utils.expose('WebRequestEvent',
 ] });
 
 webRequestInternal = binding.generate();
-exports.binding = webRequestInternal;
-exports.WebRequestEvent = WebRequestEvent;
+exports.$set('binding', webRequestInternal);
+exports.$set('WebRequestEvent', WebRequestEvent);

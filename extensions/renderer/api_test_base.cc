@@ -140,17 +140,18 @@ void ApiTestEnvironment::RegisterModules() {
                           "unit_test_environment_specific_bindings.js");
 
   env()->OverrideNativeHandler("activityLogger",
-                               "exports.LogAPICall = function() {};");
+                               "exports.$set('LogAPICall', function() {});");
   env()->OverrideNativeHandler(
       "apiDefinitions",
-      "exports.GetExtensionAPIDefinitionsForTest = function() { return [] };");
+      "exports.$set('GetExtensionAPIDefinitionsForTest',"
+                    "function() { return [] });");
   env()->OverrideNativeHandler(
       "event_natives",
-      "exports.AttachEvent = function() {};"
-      "exports.DetachEvent = function() {};"
-      "exports.AttachFilteredEvent = function() {};"
-      "exports.AttachFilteredEvent = function() {};"
-      "exports.MatchAgainstEventFilter = function() { return [] };");
+      "exports.$set('AttachEvent', function() {});"
+      "exports.$set('DetachEvent', function() {});"
+      "exports.$set('AttachFilteredEvent', function() {});"
+      "exports.$set('AttachFilteredEvent', function() {});"
+      "exports.$set('MatchAgainstEventFilter', function() { return [] });");
 
   gin::ModuleRegistry::From(env()->context()->v8_context())
       ->AddBuiltinModule(env()->isolate(),

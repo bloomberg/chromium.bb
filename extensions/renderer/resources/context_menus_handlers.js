@@ -138,4 +138,4 @@ function createContextMenusHandlers(isWebview) {
   };
 }
 
-exports.create = createContextMenusHandlers;
+exports.$set('create', createContextMenusHandlers);

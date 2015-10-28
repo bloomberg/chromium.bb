@@ -66,7 +66,8 @@ TEST_F(ModuleSystemTest, TestRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
   env()->RegisterModule("add",
-                        "exports.Add = function(x, y) { return x + y; };");
+                        "exports.$set('Add',"
+                                     "function(x, y) { return x + y; });");
   env()->RegisterModule("test",
                         "var Add = require('add').Add;"
                         "requireNative('assert').AssertTrue(Add(3, 5) == 8);");
@@ -77,10 +78,12 @@ TEST_F(ModuleSystemTest, TestNestedRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
   env()->RegisterModule("add",
-                        "exports.Add = function(x, y) { return x + y; };");
+                        "exports.$set('Add',"
+                                     "function(x, y) { return x + y; });");
   env()->RegisterModule("double",
                         "var Add = require('add').Add;"
-                        "exports.Double = function(x) { return Add(x, x); };");
+                        "exports.$set('Double',"
+                                     "function(x) { return Add(x, x); });");
   env()->RegisterModule("test",
                         "var Double = require('double').Double;"
                         "requireNative('assert').AssertTrue(Double(3) == 6);");
@@ -92,11 +95,11 @@ TEST_F(ModuleSystemTest, TestModuleInsulation) {
       env()->module_system());
   env()->RegisterModule("x",
                         "var x = 10;"
-                        "exports.X = function() { return x; };");
+                        "exports.$set('X', function() { return x; });");
   env()->RegisterModule("y",
                         "var x = 15;"
                         "require('x');"
-                        "exports.Y = function() { return x; };");
+                        "exports.$set('Y', function() { return x; });");
   env()->RegisterModule("test",
                         "var Y = require('y').Y;"
                         "var X = require('x').X;"
@@ -140,7 +143,7 @@ TEST_F(ModuleSystemTest, TestNativesAreEnabledWithinANativesEnabledScope) {
 TEST_F(ModuleSystemTest, TestLazyField) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
-  env()->RegisterModule("lazy", "exports.x = 5;");
+  env()->RegisterModule("lazy", "exports.$set('x', 5);");
 
   v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
@@ -161,7 +164,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldYieldingObject) {
       "object.__defineGetter__('z', function() { return 1; });"
       "object.x = 5;"
       "object.y = function() { return 10; };"
-      "exports.object = object;");
+      "exports.$set('object', object);");
 
   v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
@@ -183,7 +186,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
       scoped_ptr<NativeHandler>(new CounterNatives(env()->context())));
   env()->RegisterModule("lazy",
                         "requireNative('counter').Increment();"
-                        "exports.x = 5;");
+                        "exports.$set('x', 5);");
 
   v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
@@ -203,7 +206,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
 TEST_F(ModuleSystemTest, TestRequireNativesAfterLazyEvaluation) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
-  env()->RegisterModule("lazy", "exports.x = 5;");
+  env()->RegisterModule("lazy", "exports.$set('x', 5);");
   v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
   env()->module_system()->SetLazyField(object, "x", "lazy", "x");
@@ -216,8 +219,9 @@ TEST_F(ModuleSystemTest, TestRequireNativesAfterLazyEvaluation) {
 TEST_F(ModuleSystemTest, TestTransitiveRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
-  env()->RegisterModule("dependency", "exports.x = 5;");
-  env()->RegisterModule("lazy", "exports.output = require('dependency');");
+  env()->RegisterModule("dependency", "exports.$set('x', 5);");
+  env()->RegisterModule("lazy",
+                        "exports.$set('output', require('dependency'));");
 
   v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
@@ -253,7 +257,8 @@ TEST_F(ModuleSystemTest, TestModulesOnlyGetEvaledOnce) {
 TEST_F(ModuleSystemTest, TestOverrideNativeHandler) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
-  env()->OverrideNativeHandler("assert", "exports.AssertTrue = function() {};");
+  env()->OverrideNativeHandler("assert",
+                               "exports.$set('AssertTrue', function() {});");
   env()->RegisterModule("test", "requireNative('assert').AssertTrue(true);");
   ExpectNoAssertionsMade();
   env()->module_system()->Require("test");
@@ -262,7 +267,7 @@ TEST_F(ModuleSystemTest, TestOverrideNativeHandler) {
 TEST_F(ModuleSystemTest, TestOverrideNonExistentNativeHandler) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
-  env()->OverrideNativeHandler("thing", "exports.x = 5;");
+  env()->OverrideNativeHandler("thing", "exports.$set('x', 5);");
   env()->RegisterModule("test",
                         "var assert = requireNative('assert');"
                         "assert.AssertTrue(requireNative('thing').x == 5);");
@@ -303,13 +308,13 @@ TEST_F(ModuleSystemTest, TestRequireAsyncInParallel) {
       "});");
   env()->RegisterModule(
       "math",
-      "exports.AddAndSubtract = function(x, y, z) {"
+      "exports.$set('AddAndSubtract', function(x, y, z) {"
       "  return Promise.all([requireAsync('add'),"
       "                      requireAsync('subtract')"
       "  ]).then(function(modules) {"
       "    return modules[1].Subtract(modules[0].Add(x, y), z);"
       "  });"
-      "};");
+      "});");
   env()->RegisterModule("test",
                         "var AddAndSubtract = require('math').AddAndSubtract;"
                         "AddAndSubtract(3, 5, 2).then(function(result) {"
@@ -344,8 +349,8 @@ TEST_F(ModuleSystemTest, TestNestedRequireAsyncs) {
 TEST_F(ModuleSystemTest, TestRequireFromAMDModule) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
-  env()->RegisterModule("add",
-                        "exports.Add = function(x, y) { return x + y; };");
+  env()->RegisterModule(
+      "add", "exports.$set('Add', function(x, y) { return x + y; });");
   env()->RegisterModule("math",
                         "define('math', [], function() {"
                         "  var add = require('add');"

@@ -50,4 +50,4 @@ function alignSendMessageArguments(args, hasOptionsArgument) {
   return [targetId, request, responseCallback];
 }
 
-exports.alignSendMessageArguments = alignSendMessageArguments;
+exports.$set('alignSendMessageArguments', alignSendMessageArguments);

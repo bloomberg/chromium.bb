@@ -404,7 +404,7 @@ function updateSizeConstraints(boundsType, constraints) {
   currentWindowInternal.setSizeConstraints(boundsType, constraints);
 }
 
-exports.binding = appWindow.generate();
-exports.onAppWindowClosed = onAppWindowClosed;
-exports.updateAppWindowProperties = updateAppWindowProperties;
-exports.appWindowShownForTests = onAppWindowShownForTests;
+exports.$set('binding', appWindow.generate());
+exports.$set('onAppWindowClosed', onAppWindowClosed);
+exports.$set('updateAppWindowProperties', updateAppWindowProperties);
+exports.$set('appWindowShownForTests', onAppWindowShownForTests);

@@ -120,4 +120,4 @@ handleEvent('onGetUsbPrinterInfoRequested',
             function(args, callback) { callback(true); },
             printerProviderInternal.reportUsbPrinterInfo);
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

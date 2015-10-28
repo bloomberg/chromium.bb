@@ -522,4 +522,4 @@ JSONSchemaValidator.prototype.resetErrors = function() {
   this.errors = [];
 };
 
-exports.JSONSchemaValidator = JSONSchemaValidator;
+exports.$set('JSONSchemaValidator', JSONSchemaValidator);

@@ -25,45 +25,47 @@ class EventUnittest : public ModuleSystemTest {
     env()->OverrideNativeHandler(
         "event_natives",
         "var assert = requireNative('assert');"
-        "var attachedListeners = exports.attachedListeners = {};"
-        "var attachedFilteredListeners = "
-        "    exports.attachedFilteredListeners = {};"
+        "exports.$set('attachedListeners', {});"
+        "var attachedListeners = exports.attachedListeners;"
+        "exports.$set('attachedFilteredListeners', {});"
+        "var attachedFilteredListeners = exports.attachedFilteredListeners;"
         "var nextId = 0;"
         "var idToName = {};"
-        "exports.AttachEvent = function(eventName) {"
+        "exports.$set('AttachEvent', function(eventName) {"
         "  assert.AssertFalse(!!attachedListeners[eventName]);"
         "  attachedListeners[eventName] = 1;"
-        "};"
-        "exports.DetachEvent = function(eventName) {"
+        "});"
+        "exports.$set('DetachEvent', function(eventName) {"
         "  assert.AssertTrue(!!attachedListeners[eventName]);"
         "  delete attachedListeners[eventName];"
-        "};"
-        "exports.IsEventAttached = function(eventName) {"
+        "});"
+        "exports.$set('IsEventAttached', function(eventName) {"
         "  return !!attachedListeners[eventName];"
-        "};"
-        "exports.AttachFilteredEvent = function(name, filters) {"
+        "});"
+        "exports.$set('AttachFilteredEvent', function(name, filters) {"
         "  var id = nextId++;"
         "  idToName[id] = name;"
         "  attachedFilteredListeners[name] ="
         "    attachedFilteredListeners[name] || [];"
         "  attachedFilteredListeners[name][id] = filters;"
         "  return id;"
-        "};"
-        "exports.DetachFilteredEvent = function(id, manual) {"
+        "});"
+        "exports.$set('DetachFilteredEvent', function(id, manual) {"
         "  var i = attachedFilteredListeners[idToName[id]].indexOf(id);"
         "  attachedFilteredListeners[idToName[id]].splice(i, 1);"
-        "};"
-        "exports.HasFilteredListener = function(name) {"
+        "});"
+        "exports.$set('HasFilteredListener', function(name) {"
         "  return attachedFilteredListeners[name].length;"
-        "};");
+        "});");
     env()->OverrideNativeHandler("sendRequest",
-                                 "exports.sendRequest = function() {};");
+                                 "exports.$set('sendRequest', function() {});");
     env()->OverrideNativeHandler(
         "apiDefinitions",
-        "exports.GetExtensionAPIDefinitionsForTest = function() {};");
-    env()->OverrideNativeHandler("logging", "exports.DCHECK = function() {};");
+        "exports.$set('GetExtensionAPIDefinitionsForTest', function() {});");
+    env()->OverrideNativeHandler("logging",
+                                 "exports.$set('DCHECK', function() {});");
     env()->OverrideNativeHandler("schema_registry",
-                                 "exports.GetSchema = function() {};");
+                                 "exports.$set('GetSchema', function() {});");
   }
 };
 

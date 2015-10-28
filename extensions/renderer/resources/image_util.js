@@ -78,5 +78,5 @@ function loadAllImages(imageSpecs, callbacks) {
   }
 }
 
-exports.loadImageData = loadImageData;
-exports.loadAllImages = loadAllImages;
+exports.$set('loadImageData', loadImageData);
+exports.$set('loadAllImages', loadAllImages);

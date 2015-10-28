@@ -37,4 +37,4 @@ ExtensionOptionsEvents.prototype.getEvents = function() {
 };
 
 // Exports.
-exports.ExtensionOptionsEvents = ExtensionOptionsEvents;
+exports.$set('ExtensionOptionsEvents', ExtensionOptionsEvents);

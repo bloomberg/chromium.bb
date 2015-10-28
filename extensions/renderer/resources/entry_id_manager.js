@@ -47,6 +47,6 @@ function getEntryById(id) {
   return idsToEntries[id];
 }
 
-exports.registerEntry = registerEntry;
-exports.getEntryId = getEntryId;
-exports.getEntryById = getEntryById;
+exports.$set('registerEntry', registerEntry);
+exports.$set('getEntryId', getEntryId);
+exports.$set('getEntryById', getEntryById);

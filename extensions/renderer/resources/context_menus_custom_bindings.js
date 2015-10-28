@@ -23,4 +23,4 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setCustomCallback('removeAll', handlers.callbacks.removeAll);
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

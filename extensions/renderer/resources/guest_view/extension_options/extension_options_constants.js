@@ -10,4 +10,5 @@ var ExtensionOptionsConstants = {
   ATTRIBUTE_EXTENSION: 'extension'
 };
 
-exports.ExtensionOptionsConstants = $Object.freeze(ExtensionOptionsConstants);
+exports.$set('ExtensionOptionsConstants',
+             $Object.freeze(ExtensionOptionsConstants));

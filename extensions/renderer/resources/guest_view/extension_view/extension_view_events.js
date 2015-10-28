@@ -29,4 +29,4 @@ ExtensionViewEvents.prototype.handleLoadCommitEvent = function(event) {
   this.view.onLoadCommit(event.url);
 };
 
-exports.ExtensionViewEvents = ExtensionViewEvents;
+exports.$set('ExtensionViewEvents', ExtensionViewEvents);

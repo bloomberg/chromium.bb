@@ -71,4 +71,4 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
   }
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());
