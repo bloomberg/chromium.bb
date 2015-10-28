@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8FileList.h"
+#include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8SharedArrayBuffer.h"
@@ -320,6 +321,12 @@ void SerializedScriptValueWriter::writeTransferredMessagePort(uint32_t index)
 void SerializedScriptValueWriter::writeTransferredArrayBuffer(uint32_t index)
 {
     append(ArrayBufferTransferTag);
+    doWriteUint32(index);
+}
+
+void SerializedScriptValueWriter::writeTransferredImageBitmap(uint32_t index)
+{
+    append(ImageBitmapTransferTag);
     doWriteUint32(index);
 }
 
@@ -646,6 +653,16 @@ static v8::Local<v8::Object> toV8Object(DOMArrayBufferBase* impl, v8::Local<v8::
     return wrapper.As<v8::Object>();
 }
 
+static v8::Local<v8::Object> toV8Object(ImageBitmap* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (!impl)
+        return v8::Local<v8::Object>();
+    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
+    if (wrapper.IsEmpty())
+        return v8::Local<v8::Object>();
+    return wrapper.As<v8::Object>();
+}
+
 // Returns true if the provided object is to be considered a 'host object', as used in the
 // HTML5 structured clone algorithm.
 static bool isHostObject(v8::Local<v8::Object> object)
@@ -657,7 +674,7 @@ static bool isHostObject(v8::Local<v8::Object> object)
     return object->InternalFieldCount();
 }
 
-ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
     : m_scriptState(scriptState)
     , m_writer(writer)
     , m_tryCatch(tryCatch)
@@ -679,6 +696,13 @@ ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer
             // Coalesce multiple occurences of the same buffer to the first index.
             if (!m_transferredArrayBuffers.contains(v8ArrayBuffer))
                 m_transferredArrayBuffers.set(v8ArrayBuffer, i);
+        }
+    }
+    if (imageBitmaps) {
+        for (size_t i = 0; i < imageBitmaps->size(); i++) {
+            v8::Local<v8::Object> v8ImageBitmap = toV8Object(imageBitmaps->at(i).get(), creationContext, isolate());
+            if (!m_transferredImageBitmaps.contains(v8ImageBitmap))
+                m_transferredImageBitmaps.set(v8ImageBitmap, i);
         }
     }
 }
@@ -733,6 +757,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
         v8::Local<v8::Object> jsObject = value.As<v8::Object>();
 
         uint32_t arrayBufferIndex;
+        uint32_t imageBitmapIndex;
         if (V8ArrayBufferView::hasInstance(value, isolate())) {
             return writeAndGreyArrayBufferView(jsObject, next);
         } else if (V8MessagePort::hasInstance(value, isolate())) {
@@ -745,6 +770,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
             return writeTransferredArrayBuffer(value, arrayBufferIndex, next);
         } else if (V8SharedArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(jsObject, &arrayBufferIndex)) {
             return writeTransferredSharedArrayBuffer(value, arrayBufferIndex, next);
+        } else if (V8ImageBitmap::hasInstance(value, isolate()) && m_transferredImageBitmaps.tryGet(jsObject, &imageBitmapIndex)) {
+            return writeTransferredImageBitmap(value, imageBitmapIndex, next);
         }
 
         greyObject(jsObject);
@@ -1020,6 +1047,17 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredArrayBu
     if (arrayBuffer->isNeutered())
         return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
     m_writer.writeTransferredArrayBuffer(index);
+    return 0;
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredImageBitmap(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
+{
+    ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(value.As<v8::Object>());
+    if (!imageBitmap)
+        return 0;
+    if (imageBitmap->isNeutered())
+        return handleError(DataCloneError, "An ImageBitmap is neutered and could not be cloned.", next);
+    m_writer.writeTransferredImageBitmap(index);
     return 0;
 }
 
@@ -1348,6 +1386,16 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
         if (!doReadUint32(&index))
             return false;
         if (!creator.tryGetTransferredArrayBuffer(index, value))
+            return false;
+        break;
+    }
+    case ImageBitmapTransferTag: {
+        if (!m_version)
+            return false;
+        uint32_t index;
+        if (!doReadUint32(&index))
+            return false;
+        if (!creator.tryGetTransferredImageBitmap(index, value))
             return false;
         break;
     }
@@ -2063,6 +2111,17 @@ bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::L
     }
     *object = result;
     return true;
+}
+
+bool ScriptValueDeserializer::tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>* object)
+{
+    if (!m_imageBitmaps)
+        return false;
+    if (index >= m_imageBitmaps->size())
+        return false;
+    v8::Local<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
+    *object = toV8(m_imageBitmaps->at(index).get(), creationContext, m_reader.scriptState()->isolate());
+    return !object->IsEmpty();
 }
 
 bool ScriptValueDeserializer::tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>* object)

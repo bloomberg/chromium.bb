@@ -9,6 +9,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
+#include "core/frame/ImageBitmap.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -24,6 +25,7 @@ class DOMArrayBufferView;
 class DOMSharedArrayBuffer;
 class File;
 class FileList;
+class ImageBitmap;
 
 typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 
@@ -137,6 +139,7 @@ public:
     void writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags);
     void writeTransferredMessagePort(uint32_t index);
     void writeTransferredArrayBuffer(uint32_t index);
+    void writeTransferredImageBitmap(uint32_t index);
     void writeTransferredSharedArrayBuffer(uint32_t index);
     void writeObjectReference(uint32_t reference);
     void writeObject(uint32_t numProperties);
@@ -202,7 +205,7 @@ public:
         JSException
     };
 
-    ScriptValueSerializer(SerializedScriptValueWriter&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
+    ScriptValueSerializer(SerializedScriptValueWriter&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
     v8::Local<v8::Context> context() { return m_scriptState->context(); }
 
@@ -401,6 +404,7 @@ private:
     StateBase* writeAndGreyArrayBufferView(v8::Local<v8::Object>, StateBase* next);
     StateBase* writeArrayBuffer(v8::Local<v8::Value>, StateBase* next);
     StateBase* writeTransferredArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
+    StateBase* writeTransferredImageBitmap(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     StateBase* writeTransferredSharedArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     static bool shouldSerializeDensely(uint32_t length, uint32_t propertyCount);
 
@@ -433,6 +437,7 @@ private:
     ObjectPool m_objectPool;
     ObjectPool m_transferredMessagePorts;
     ObjectPool m_transferredArrayBuffers;
+    ObjectPool m_transferredImageBitmaps;
     uint32_t m_nextObjectReference;
     WebBlobInfoArray* m_blobInfo;
     BlobDataHandleMap& m_blobDataHandles;
@@ -452,6 +457,7 @@ public:
     virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
+    virtual bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool newSparseArray(uint32_t length) = 0;
     virtual bool newDenseArray(uint32_t length) = 0;
@@ -571,10 +577,11 @@ class CORE_EXPORT ScriptValueDeserializer : public ScriptValueCompositeCreator {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueDeserializer);
 public:
-    ScriptValueDeserializer(SerializedScriptValueReader& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents)
+    ScriptValueDeserializer(SerializedScriptValueReader& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents, ImageBitmapArray* imageBitmaps)
         : m_reader(reader)
         , m_transferredMessagePorts(messagePorts)
         , m_arrayBufferContents(arrayBufferContents)
+        , m_imageBitmaps(imageBitmaps)
         , m_arrayBuffers(arrayBufferContents ? arrayBufferContents->size() : 0)
         , m_version(0)
     {
@@ -595,6 +602,7 @@ public:
     void pushObjectReference(const v8::Local<v8::Value>&) override;
     bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
+    bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) override;
     uint32_t objectReferenceCount() override;
@@ -622,8 +630,10 @@ private:
     Vector<v8::Local<v8::Value>> m_stack;
     Vector<v8::Local<v8::Value>> m_objectPool;
     Vector<uint32_t> m_openCompositeReferenceStack;
+    // TODO(xidachen): Oilpan, turn these optional heap vector objects into proper fields.
     MessagePortArray* m_transferredMessagePorts;
     ArrayBufferContentsArray* m_arrayBufferContents;
+    ImageBitmapArray* m_imageBitmaps;
     Vector<v8::Local<v8::Value>> m_arrayBuffers;
     uint32_t m_version;
 };

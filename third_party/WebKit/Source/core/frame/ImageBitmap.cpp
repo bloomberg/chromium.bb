@@ -181,6 +181,21 @@ PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(Image* image, const IntR
     return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect));
 }
 
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::transfer()
+{
+    RefPtrWillBeRawPtr<ImageBitmap> bitmap = adoptRefWillBeNoop(new ImageBitmap(this, m_cropRect));
+    if (m_imageElement)
+        m_imageElement.clear();
+    if (m_bitmap)
+        m_bitmap.clear();
+    m_bitmapRect.setLocation(IntPoint(0, 0));
+    m_bitmapRect.setSize(IntSize(0, 0));
+    m_cropRect = m_bitmapRect;
+    m_bitmapOffset.setX(0);
+    m_bitmapOffset.setY(0);
+    return bitmap.release();
+}
+
 void ImageBitmap::notifyImageSourceChanged()
 {
     m_bitmap = cropImage(m_imageElement->cachedImage()->image(), m_cropRect);

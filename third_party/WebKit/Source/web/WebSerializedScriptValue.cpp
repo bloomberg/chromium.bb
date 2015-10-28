@@ -46,7 +46,7 @@ WebSerializedScriptValue WebSerializedScriptValue::fromString(const WebString& s
 WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Local<v8::Value> value)
 {
     TrackExceptionState exceptionState;
-    WebSerializedScriptValue serializedValue = SerializedScriptValueFactory::instance().create(v8::Isolate::GetCurrent(), value, 0, 0, exceptionState);
+    WebSerializedScriptValue serializedValue = SerializedScriptValueFactory::instance().create(v8::Isolate::GetCurrent(), value, nullptr, nullptr, nullptr, exceptionState);
     if (exceptionState.hadException())
         return createInvalid();
     return serializedValue;

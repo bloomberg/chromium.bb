@@ -38,6 +38,7 @@
 #include "bindings/core/v8/ScriptValueSerializer.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
@@ -101,6 +102,29 @@ static void acculumateArrayBuffersForAllWorlds(v8::Isolate* isolate, DOMArrayBuf
     }
 }
 
+PassOwnPtrWillBeRawPtr<ImageBitmapArray> SerializedScriptValue::createImageBitmaps(v8::Isolate* isolate, ImageBitmapArray& imageBitmaps, ExceptionState& exceptionState)
+{
+    ASSERT(imageBitmaps.size());
+
+    for (size_t i = 0; i < imageBitmaps.size(); i++) {
+        if (imageBitmaps[i]->isNeutered()) {
+            exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(i) + " is already neutered.");
+            return nullptr;
+        }
+    }
+
+    OwnPtrWillBeRawPtr<ImageBitmapArray> contents = adoptPtrWillBeNoop(new ImageBitmapArray(imageBitmaps.size()));
+    WillBeHeapHashSet<RawPtrWillBeMember<ImageBitmap>> visited;
+    for (size_t i = 0; i < imageBitmaps.size(); i++) {
+        if (visited.contains(imageBitmaps[i].get()))
+            continue;
+        visited.add(imageBitmaps[i].get());
+        contents->at(i) = imageBitmaps[i]->transfer();
+    }
+
+    return contents.release();
+}
+
 PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValue::createArrayBuffers(v8::Isolate* isolate, ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState)
 {
     ASSERT(arrayBuffers.size());
@@ -133,7 +157,6 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
             bool isNeuterable = true;
             for (size_t j = 0; j < bufferHandles.size(); j++)
                 isNeuterable &= bufferHandles[j]->IsNeuterable();
-
             RefPtr<DOMArrayBufferBase> toTransfer = arrayBuffers[i];
             if (!isNeuterable)
                 toTransfer = DOMArrayBuffer::create(arrayBuffers[i]->buffer());
@@ -147,7 +170,6 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
                 for (size_t j = 0; j < bufferHandles.size(); j++)
                     bufferHandles[j]->Neuter();
         }
-
     }
 
     return contents.release();
@@ -169,11 +191,12 @@ v8::Local<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, Me
     return SerializedScriptValueFactory::instance().deserialize(this, isolate, messagePorts, blobInfo);
 }
 
-bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState)
+bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, ImageBitmapArray& imageBitmaps, ExceptionState& exceptionState)
 {
     if (isUndefinedOrNull(value)) {
         ports.resize(0);
         arrayBuffers.resize(0);
+        imageBitmaps.resize(0);
         return true;
     }
 
@@ -222,6 +245,13 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
                 return false;
             }
             arrayBuffers.append(sharedArrayBuffer.release());
+        } else if (V8ImageBitmap::hasInstance(transferrable, isolate)) {
+            RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = V8ImageBitmap::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            if (imageBitmaps.contains(imageBitmap)) {
+                exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(i) + " is a duplicate of an earlier ImageBitmap.");
+                return false;
+            }
+            imageBitmaps.append(imageBitmap.release());
         } else {
             exceptionState.throwTypeError("Value at index " + String::number(i) + " does not have a transferable type.");
             return false;
@@ -257,6 +287,11 @@ SerializedScriptValue::~SerializedScriptValue()
 void SerializedScriptValue::transferArrayBuffers(v8::Isolate* isolate, ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState)
 {
     m_arrayBufferContentsArray = createArrayBuffers(isolate, arrayBuffers, exceptionState);
+}
+
+void SerializedScriptValue::transferImageBitmaps(v8::Isolate* isolate, ImageBitmapArray& imageBitmaps, ExceptionState& exceptionState)
+{
+    m_imageBitmapsArray = createImageBitmaps(isolate, imageBitmaps, exceptionState);
 }
 
 } // namespace blink
