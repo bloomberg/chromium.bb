@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -54,27 +53,23 @@ NetworkChangeNotifier::ConnectionType GetNetworkInterfaceType(DWORD ifType) {
 scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>
 GetConnectionAttributes() {
   const internal::WlanApi& wlanapi = internal::WlanApi::GetInstance();
+  scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>
+      wlan_connection_attributes;
   if (!wlanapi.initialized)
-    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+    return wlan_connection_attributes.Pass();
 
   internal::WlanHandle client;
   DWORD cur_version = 0;
   const DWORD kMaxClientVersion = 2;
-  {
-    // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 OpenHandle()"));
-    DWORD result = wlanapi.OpenHandle(kMaxClientVersion, &cur_version, &client);
-    if (result != ERROR_SUCCESS)
-      return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
-  }
+  DWORD result = wlanapi.OpenHandle(kMaxClientVersion, &cur_version, &client);
+  if (result != ERROR_SUCCESS)
+    return wlan_connection_attributes.Pass();
 
   WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
-  DWORD result =
+  result =
       wlanapi.enum_interfaces_func(client.Get(), NULL, &interface_list_ptr);
   if (result != ERROR_SUCCESS)
-    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+    return wlan_connection_attributes.Pass();
   scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter> interface_list(
       interface_list_ptr);
 
@@ -89,7 +84,7 @@ GetConnectionAttributes() {
   }
 
   if (info == NULL)
-    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
+    return wlan_connection_attributes.Pass();
 
   WLAN_CONNECTION_ATTRIBUTES* conn_info_ptr = nullptr;
   DWORD conn_info_size = 0;
@@ -98,12 +93,12 @@ GetConnectionAttributes() {
       client.Get(), &info->InterfaceGuid, wlan_intf_opcode_current_connection,
       NULL, &conn_info_size, reinterpret_cast<VOID**>(&conn_info_ptr),
       &op_code);
-  if (result != ERROR_SUCCESS)
-    return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>();
-
-  DCHECK(conn_info_ptr);
-  return scoped_ptr<WLAN_CONNECTION_ATTRIBUTES, internal::WlanApiDeleter>(
-      conn_info_ptr);
+  wlan_connection_attributes.reset(conn_info_ptr);
+  if (result == ERROR_SUCCESS)
+    DCHECK(conn_info_ptr);
+  else
+    wlan_connection_attributes.reset();
+  return wlan_connection_attributes.Pass();
 }
 
 }  // namespace
