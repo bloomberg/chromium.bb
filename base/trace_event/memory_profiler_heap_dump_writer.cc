@@ -4,6 +4,7 @@
 
 #include "base/trace_event/memory_profiler_heap_dump_writer.h"
 
+#include <iterator>
 #include <numeric>
 
 #include "base/format_macros.h"
