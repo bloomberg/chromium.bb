@@ -191,7 +191,7 @@ CrOnc.getSimpleActiveProperties = function(properties) {
   for (let k of keys) {
     var prop = CrOnc.getActiveValue(properties[k]);
     if (prop == undefined) {
-      console.error('getSimpleActiveProperties called on invalid ONC object:',
+      console.error('getSimpleActiveProperties called on invalid ONC object: ' +
                     JSON.stringify(properties));
       return undefined;
     }
@@ -388,7 +388,8 @@ CrOnc.setProperty = function(properties, key, value) {
  */
 CrOnc.setTypeProperty = function(properties, key, value) {
   if (properties.Type == undefined) {
-    console.error('Type not defined in properties: ', properties);
+    console.error('Type not defined in properties: ' +
+                  JSON.stringify(properties));
     return;
   }
   var typeKey = properties.Type + '.' + key;

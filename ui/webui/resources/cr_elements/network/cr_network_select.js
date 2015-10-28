@@ -148,7 +148,7 @@ Polymer({
     chrome.networkingPrivate.startConnect(state.GUID, function() {
       var lastError = chrome.runtime.lastError;
       if (lastError && lastError != 'connecting')
-        console.error('networkingPrivate.startConnect error:', lastError);
+        console.error('networkingPrivate.startConnect error: ' + lastError);
     });
   },
 });

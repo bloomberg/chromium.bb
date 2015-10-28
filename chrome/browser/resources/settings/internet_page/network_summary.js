@@ -219,25 +219,7 @@ Polymer({
     networkIds.forEach(function(id) {
       if (id in this.networkIds_) {
         chrome.networkingPrivate.getState(
-            id,
-            function(state) {
-              if (chrome.runtime.lastError) {
-                if (chrome.runtime.lastError.message !=
-                    'Error.NetworkUnavailable') {
-                  console.error('Unexpected networkingPrivate.getState error:',
-                                chrome.runtime.lastError, 'For:', id);
-                }
-                return;
-              }
-              // Async call, ensure id still exists.
-              if (!this.networkIds_[id])
-                return;
-              if (!state) {
-                this.networkIds_[id] = undefined;
-                return;
-              }
-              this.updateNetworkState_(state.Type, state);
-            }.bind(this));
+            id, this.getStateCallback_.bind(this, id));
       }
     }, this);
   },
@@ -256,6 +238,32 @@ Polymer({
   },
 
   /**
+   * networkingPrivate.getState event callback.
+   * @param {string} id The id of the requested state.
+   * @param {!chrome.networkingPrivate.NetworkStateProperties} state
+   * @private
+   */
+  getStateCallback_: function(id, state) {
+    if (chrome.runtime.lastError) {
+      var message = chrome.runtime.lastError.message;
+      if (message != 'Error.NetworkUnavailable') {
+        console.error(
+            'Unexpected networkingPrivate.getState error: ' + message +
+            ' For: ' + id);
+      }
+      return;
+    }
+    // Async call, ensure id still exists.
+    if (!this.networkIds_[id])
+      return;
+    if (!state) {
+      this.networkIds_[id] = undefined;
+      return;
+    }
+    this.updateNetworkState_(state.Type, state);
+  },
+
+  /**
    * Handles UI requests to connect to a network.
    * TODO(stevenjb): Handle Cellular activation, etc.
    * @param {!CrOnc.NetworkStateProperties} state The network state.
@@ -263,10 +271,13 @@ Polymer({
    */
   connectToNetwork_: function(state) {
     chrome.networkingPrivate.startConnect(state.GUID, function() {
-      if (chrome.runtime.lastError &&
-          chrome.runtime.lastError.message != 'connecting') {
-        console.error('Unexpected networkingPrivate.startConnect error:',
-                      chrome.runtime.lastError, 'For:', state.GUID);
+      if (chrome.runtime.lastError) {
+        var message = chrome.runtime.lastError.message;
+        if (message != 'connecting') {
+          console.error(
+              'Unexpected networkingPrivate.startConnect error: ' + message +
+              'For: ' + state.GUID);
+        }
       }
     });
   },

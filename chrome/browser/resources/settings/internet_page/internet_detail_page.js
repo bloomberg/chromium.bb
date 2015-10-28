@@ -393,7 +393,7 @@ Polymer({
     } else if (field == 'SIMLockStatus') {
       CrOnc.setTypeProperty(onc, 'SIMLockStatus', value);
     } else {
-      console.error('Unexpected property change event: ', field);
+      console.error('Unexpected property change event: ' + field);
       return;
     }
     this.setNetworkProperties_(onc);

@@ -153,7 +153,7 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
   if (ui_data && profile) {
     user_settings = ui_data->user_settings();
   } else if (profile) {
-    NET_LOG_ERROR("Service contains empty or invalid UIData", service_path);
+    NET_LOG_DEBUG("Service contains empty or invalid UIData", service_path);
     // TODO(pneubeck): add a conversion of user configured entries of old
     // ChromeOS versions. We will have to use a heuristic to determine which
     // properties _might_ be user configured.
