@@ -33,7 +33,6 @@
         'public/app/web_main.h',
         'public/app/web_main_delegate.h',
         'public/app/web_main_parts.h',
-        'public/app/web_main_parts.mm',
       ],
     },
     # Note: any embedder using ios_web will for now need to include either

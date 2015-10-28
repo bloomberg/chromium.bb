@@ -111,7 +111,7 @@ void WebMainLoop::CreateStartupTasks() {
 
 int WebMainLoop::PreCreateThreads() {
   if (parts_) {
-    result_code_ = parts_->PreCreateThreads();
+    parts_->PreCreateThreads();
   }
 
   return result_code_;
