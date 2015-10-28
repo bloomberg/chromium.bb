@@ -333,7 +333,7 @@ typedef void (*wl_resource_destroy_func_t)(struct wl_resource *resource);
  * parameters, in the order they appear in the protocol XML specification.
  *
  * The variable arguments' types are:
- * - type=uint: 	uint32_t
+ * - type=uint:	uint32_t
  * - type=int:		int32_t
  * - type=fixed:	wl_fixed_t
  * - type=string:	(const char *) to a nil-terminated string
