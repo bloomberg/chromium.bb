@@ -8,7 +8,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for the WebViewClient.onScaleChanged.
@@ -26,24 +28,30 @@ public class AwContentsClientOnScaleChangedTest extends AwTestBase {
         mAwContents = testContainerView.getAwContents();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     @SmallTest
     public void testScaleUp() throws Throwable {
-        getAwSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
+        getAwSettingsOnUiThread(mAwContents).setSupportZoom(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.ABOUT_HTML, "text/html", false);
-        ContentViewCore core = mAwContents.getContentViewCore();
+                CommonResources.makeHtmlPageFrom(
+                        "<meta name=\"viewport\" content=\"initial-scale=1.0, "
+                                + " minimum-scale=0.5, maximum-scale=2, user-scalable=yes\" />",
+                        "testScaleUp test page body"),
+                "text/html", false);
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mAwContents.canZoomIn();
+            }
+        }));
         int callCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
-        core.onSizeChanged(
-                core.getViewportWidthPix() / 2, core.getViewportHeightPix() / 2,
-                core.getViewportWidthPix(), core.getViewportHeightPix());
-        // TODO: Investigate on using core.zoomIn();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(mAwContents.zoomIn());
+            }
+        });
         mContentsClient.getOnScaleChangedHelper().waitForCallback(callCount);
         assertTrue("Scale ratio:" + mContentsClient.getOnScaleChangedHelper().getLastScaleRatio(),
-                mContentsClient.getOnScaleChangedHelper().getLastScaleRatio() < 1);
+                mContentsClient.getOnScaleChangedHelper().getLastScaleRatio() > 1);
     }
 }
