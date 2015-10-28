@@ -11,13 +11,17 @@ cr.define('cr.ui.LoginUITools', function() {
     /**
      * Computes max-height for an element so that it doesn't overlap shelf.
      * @param {element} DOM element
+     * @param {wholeWindow} Whether the element can go outside outer-container.
      */
-    getMaxHeightBeforeShelfOverlapping : function(element) {
+    getMaxHeightBeforeShelfOverlapping : function(element, wholeWindow) {
       var maxAllowedHeight =
           $('outer-container').offsetHeight -
           element.getBoundingClientRect().top -
           parseInt(window.getComputedStyle(element).marginTop) -
           parseInt(window.getComputedStyle(element).marginBottom);
+      if (wholeWindow)
+        maxAllowedHeight +=
+           parseInt(window.getComputedStyle($('outer-container')).bottom);
       return maxAllowedHeight;
     }
   }

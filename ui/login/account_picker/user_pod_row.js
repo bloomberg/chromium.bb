@@ -1387,17 +1387,16 @@ cr.define('login', function() {
     },
 
     /**
-     * Shows remove user warning. Used for legacy supervised users on CrOS, and
-     * for all users on desktop.
+     * Move the action box menu up if needed.
      */
-    showRemoveWarning_: function() {
-      this.actionBoxMenuRemoveElement.hidden = true;
-      this.actionBoxRemoveUserWarningElement.hidden = false;
-      this.actionBoxRemoveUserWarningButtonElement.focus();
+    moveActionMenuUpIfNeeded_: function() {
+      // Skip checking (computationally expensive) if already moved up.
+      if (this.actionBoxMenu.classList.contains('menu-moved-up'))
+        return;
 
       // Move up the menu if it overlaps shelf.
       var maxHeight = cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping(
-          this.actionBoxMenu);
+          this.actionBoxMenu, true);
       var actualHeight = parseInt(
           window.getComputedStyle(this.actionBoxMenu).height);
       if (maxHeight < actualHeight) {
@@ -1405,6 +1404,16 @@ cr.define('login', function() {
         this.actionBoxAreaElement.classList.add('menu-moved-up');
       }
       chrome.send('logRemoveUserWarningShown');
+    },
+
+    /**
+     * Shows remove user warning. Used for legacy supervised users on CrOS, and
+     * for all users on desktop.
+     */
+    showRemoveWarning_: function() {
+      this.actionBoxMenuRemoveElement.hidden = true;
+      this.actionBoxRemoveUserWarningElement.hidden = false;
+      this.actionBoxRemoveUserWarningButtonElement.focus();
 
       // Show extra statistics information for desktop users
       var message;
@@ -1432,6 +1441,8 @@ cr.define('login', function() {
             this.updateRemoveWarningDialog_.bind(this);
         chrome.send('removeUserWarningLoadStats', [this.user.profilePath]);
       }
+
+      this.moveActionMenuUpIfNeeded_();
     },
 
     /**
@@ -1494,6 +1505,8 @@ cr.define('login', function() {
           }]);
         }
       }
+
+      this.moveActionMenuUpIfNeeded_();
     },
 
     /**
