@@ -10413,14 +10413,6 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
         GL_INVALID_ENUM, "glCompressedTexSubImage2D", "target");
     return error::kNoError;
   }
-  // TODO(ccameron): Add a separate texture from |texture_target| for
-  // [Compressed]Tex[Sub]Image2D and related functions.
-  // http://crbug.com/536854
-  if (target == GL_TEXTURE_RECTANGLE_ARB) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_ENUM, "glCompressedTexSubImage2D", "target");
-    return error::kNoError;
-  }
   if (!validators_->compressed_texture_format.IsValid(format)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(
         "glCompressedTexSubImage2D", format, "format");
@@ -11171,13 +11163,6 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
     const void * data) {
   (*error) = error::kNoError;
   if (!validators_->texture_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, target, "target");
-    return false;
-  }
-  // TODO(ccameron): Add a separate texture from |texture_target| for
-  // [Compressed]Tex[Sub]Image2D and related functions.
-  // http://crbug.com/536854
-  if (target == GL_TEXTURE_RECTANGLE_ARB) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, target, "target");
     return false;
   }
