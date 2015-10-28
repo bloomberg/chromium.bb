@@ -709,6 +709,8 @@ protected:
 private:
 #if BLINK_IMPLEMENTATION
 #if ENABLE(OILPAN)
+    friend class OpenedFrameTracker;
+
     static void traceFrame(Visitor*, WebFrame*);
     static void traceFrame(InlinedGlobalMarkingVisitor, WebFrame*);
     static bool isFrameAlive(const WebFrame*);
