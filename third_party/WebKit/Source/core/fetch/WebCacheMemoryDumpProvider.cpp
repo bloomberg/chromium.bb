@@ -21,7 +21,7 @@ bool WebCacheMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOf
 {
     ASSERT(isMainThread());
     if (m_memoryCache)
-        m_memoryCache->onMemoryDump(memoryDump);
+        m_memoryCache->onMemoryDump(levelOfDetail, memoryDump);
     return true;
 }
 

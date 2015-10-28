@@ -783,12 +783,12 @@ void MemoryCache::updateFramePaintTimestamp()
     m_lastFramePaintTimeStamp = currentTime();
 }
 
-void MemoryCache::onMemoryDump(WebProcessMemoryDump* memoryDump)
+void MemoryCache::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump)
 {
     for (const auto& resourceMapIter : m_resourceMaps) {
         for (const auto& resourceIter : *resourceMapIter.value) {
             Resource* resource = resourceIter.value->m_resource.get();
-            resource->onMemoryDump(memoryDump);
+            resource->onMemoryDump(levelOfDetail, memoryDump);
         }
     }
 }

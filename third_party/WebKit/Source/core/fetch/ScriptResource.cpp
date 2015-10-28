@@ -74,9 +74,9 @@ void ScriptResource::appendData(const char* data, unsigned length)
         client->notifyAppendData(this);
 }
 
-void ScriptResource::onMemoryDump(WebProcessMemoryDump* memoryDump) const
+void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump) const
 {
-    Resource::onMemoryDump(memoryDump);
+    Resource::onMemoryDump(levelOfDetail, memoryDump);
     const String name = getMemoryDumpName() + "/decoded_script";
     auto dump = memoryDump->createMemoryAllocatorDump(name);
     dump->addScalar("size", "bytes", m_script.string().sizeInBytes());

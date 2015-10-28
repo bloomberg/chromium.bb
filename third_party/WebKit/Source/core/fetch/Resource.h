@@ -33,6 +33,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/WebDataConsumerHandle.h"
+#include "public/platform/WebMemoryDumpProvider.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"
@@ -262,7 +263,7 @@ public:
     // Used by the MemoryCache to reduce the memory consumption of the entry.
     void prune();
 
-    virtual void onMemoryDump(WebProcessMemoryDump*) const;
+    virtual void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const;
 
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
 

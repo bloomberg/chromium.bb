@@ -235,7 +235,7 @@ public:
     void updateFramePaintTimestamp();
 
     // Take memory usage snapshot for tracing.
-    void onMemoryDump(WebProcessMemoryDump*);
+    void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*);
 
 private:
     enum PruneStrategy {

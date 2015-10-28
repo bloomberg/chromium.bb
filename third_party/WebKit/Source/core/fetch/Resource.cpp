@@ -735,8 +735,10 @@ void Resource::prune()
     unlock();
 }
 
-void Resource::onMemoryDump(WebProcessMemoryDump* memoryDump) const
+void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump) const
 {
+    static const size_t kMaxURLReportLength = 128;
+
     const String dumpName = getMemoryDumpName();
     WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
     dump->addScalar("encoded_size", "bytes", m_encodedSize);
@@ -749,6 +751,15 @@ void Resource::onMemoryDump(WebProcessMemoryDump* memoryDump) const
     if (m_data) {
         dump->addScalar("purgeable_size", "bytes", isPurgeable() && !wasPurged() ? encodedSize() + overheadSize() : 0);
         m_data->onMemoryDump(dumpName, memoryDump);
+    }
+
+    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed) {
+        String urlToReport = url().string();
+        if (urlToReport.length() > kMaxURLReportLength) {
+            urlToReport.truncate(kMaxURLReportLength);
+            urlToReport = urlToReport + "...";
+        }
+        dump->addString("url", "", urlToReport);
     }
 
     const String overheadName = dumpName + "/metadata";

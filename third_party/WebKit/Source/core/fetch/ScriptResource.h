@@ -58,7 +58,7 @@ public:
     void didAddClient(ResourceClient*) override;
     void appendData(const char*, unsigned) override;
 
-    void onMemoryDump(WebProcessMemoryDump*) const override;
+    void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const override;
 
     void destroyDecodedDataForFailedRevalidation() override;
 
