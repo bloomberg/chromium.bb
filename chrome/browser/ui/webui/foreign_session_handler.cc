@@ -211,8 +211,6 @@ void ForeignSessionHandler::RegisterMessages() {
                  content::Source<ProfileSyncService>(service));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
-                 content::Source<Profile>(profile));
 
   web_ui()->RegisterMessageCallback("deleteForeignSession",
       base::Bind(&ForeignSessionHandler::HandleDeleteForeignSession,
@@ -233,11 +231,6 @@ void ForeignSessionHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
-      // Tab sync is disabled, so clean up data about collapsed sessions.
-      Profile::FromWebUI(web_ui())->GetPrefs()->ClearPref(
-          prefs::kNtpCollapsedForeignSessions);
-      // Fall through.
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:
     case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
       HandleGetForeignSessions(nullptr);

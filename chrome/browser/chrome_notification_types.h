@@ -342,10 +342,6 @@ enum NotificationType {
   // session data.
   NOTIFICATION_FOREIGN_SESSION_UPDATED,
 
-  // Foreign sessions has been disabled. New tabs should not display foreign
-  // session data.
-  NOTIFICATION_FOREIGN_SESSION_DISABLED,
-
   // All tab metadata has been loaded from disk asynchronously.
   // Sent on the UI thread.
   // The source is the Profile. There are no details.

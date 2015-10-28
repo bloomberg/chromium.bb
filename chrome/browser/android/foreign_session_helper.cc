@@ -158,8 +158,6 @@ ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
                  content::Source<ProfileSyncService>(service));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
-                 content::Source<Profile>(profile));
 }
 
 ForeignSessionHelper::~ForeignSessionHelper() {
@@ -198,11 +196,6 @@ void ForeignSessionHelper::Observe(
   JNIEnv* env = AttachCurrentThread();
 
   switch (type) {
-    case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
-      // Tab sync is disabled, so clean up data about collapsed sessions.
-      profile_->GetPrefs()->ClearPref(
-          prefs::kNtpCollapsedForeignSessions);
-      // Purposeful fall through.
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:
     case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
       Java_ForeignSessionCallback_onUpdated(env, callback_.obj());
