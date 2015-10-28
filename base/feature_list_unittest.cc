@@ -33,6 +33,7 @@ class FeatureListTest : public testing::Test {
   ~FeatureListTest() override { ClearFeatureListInstance(); }
 
   void RegisterFeatureListInstance(scoped_ptr<FeatureList> feature_list) {
+    FeatureList::ClearInstanceForTesting();
     feature_list_ = feature_list.get();
     FeatureList::SetInstance(feature_list.Pass());
   }

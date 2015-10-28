@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -205,6 +206,11 @@ InProcessBrowserTest::~InProcessBrowserTest() {
 void InProcessBrowserTest::SetUp() {
   // Browser tests will create their own g_browser_process later.
   DCHECK(!g_browser_process);
+
+  // Clear the FeatureList instance from base/test/test_suite.cc. Since this is
+  // a browser test, a FeatureList will be registered as part of normal browser
+  // start up in ChromeBrowserMainParts::SetupMetricsAndFieldTrials().
+  base::FeatureList::ClearInstanceForTesting();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
