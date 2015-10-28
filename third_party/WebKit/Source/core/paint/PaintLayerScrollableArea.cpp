@@ -244,6 +244,7 @@ void PaintLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)
     if (m_scrollCorner) {
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
+        DisableCompositingQueryAsserts compositingDisabler;
         m_scrollCorner->invalidatePaintRectangle(LayoutRect(rect));
         box().invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
     } else {
