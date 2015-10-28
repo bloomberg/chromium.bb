@@ -216,8 +216,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
 namespace {
 
-bool IsTraceEventArgsWhitelisted(const char* category_group_name,
-                                 const char* event_name) {
+bool IsTraceEventArgsWhitelisted(
+    const char* category_group_name,
+    const char* event_name,
+    base::trace_event::ArgumentNameFilterPredicate* arg_filter) {
   if (base::MatchPattern(category_group_name, "benchmark") &&
       base::MatchPattern(event_name, "whitelisted")) {
     return true;
@@ -269,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
   EXPECT_TRUE(upload_config_wrapper.TraceHasMatchingString("{"));
   EXPECT_TRUE(upload_config_wrapper.TraceHasMatchingString("find_this"));
-  EXPECT_TRUE(!upload_config_wrapper.TraceHasMatchingString("this_not_found"));
+  EXPECT_FALSE(upload_config_wrapper.TraceHasMatchingString("this_not_found"));
 }
 
 // This tests that browser metadata gets included in the trace.

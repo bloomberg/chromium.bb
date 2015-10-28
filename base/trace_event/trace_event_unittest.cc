@@ -2244,10 +2244,21 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
 
 namespace {
 
+bool IsArgNameWhitelisted(const char* arg_name) {
+  return base::MatchPattern(arg_name, "granular_arg_whitelisted");
+}
+
 bool IsTraceEventArgsWhitelisted(const char* category_group_name,
-                                 const char* event_name) {
+                                 const char* event_name,
+                                 ArgumentNameFilterPredicate* arg_filter) {
   if (base::MatchPattern(category_group_name, "toplevel") &&
       base::MatchPattern(event_name, "*")) {
+    return true;
+  }
+
+  if (base::MatchPattern(category_group_name, "benchmark") &&
+      base::MatchPattern(event_name, "granularly_whitelisted")) {
+    *arg_filter = base::Bind(&IsArgNameWhitelisted);
     return true;
   }
 
@@ -2266,6 +2277,11 @@ TEST_F(TraceEventTestFixture, ArgsWhitelisting) {
 
   TRACE_EVENT1("toplevel", "event1", "int_one", 1);
   TRACE_EVENT1("whitewashed", "event2", "int_two", 1);
+
+  TRACE_EVENT2("benchmark", "granularly_whitelisted",
+               "granular_arg_whitelisted", "whitelisted_value",
+               "granular_arg_blacklisted", "blacklisted_value");
+
   EndTraceAndFlush();
 
   const DictionaryValue* args_dict = NULL;
@@ -2287,6 +2303,17 @@ TEST_F(TraceEventTestFixture, ArgsWhitelisting) {
 
   std::string args_string;
   EXPECT_TRUE(dict->GetString("args", &args_string));
+  EXPECT_EQ(args_string, "__stripped__");
+
+  dict = FindNamePhase("granularly_whitelisted", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+
+  EXPECT_TRUE(args_dict->GetString("granular_arg_whitelisted", &args_string));
+  EXPECT_EQ(args_string, "whitelisted_value");
+
+  EXPECT_TRUE(args_dict->GetString("granular_arg_blacklisted", &args_string));
   EXPECT_EQ(args_string, "__stripped__");
 }
 

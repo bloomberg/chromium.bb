@@ -283,8 +283,14 @@ void TraceEvent::AppendAsJSON(
                 name_);
 
   // Output argument names and values, stop at first NULL argument name.
-  bool strip_args = arg_names_[0] && !argument_filter_predicate.is_null() &&
-                    !argument_filter_predicate.Run(category_group_name, name_);
+  // TODO(oysteine): The dual predicates here is a bit ugly; if the filtering
+  // capabilities need to grow even more precise we should rethink this
+  // approach
+  ArgumentNameFilterPredicate argument_name_filter_predicate;
+  bool strip_args =
+      arg_names_[0] && !argument_filter_predicate.is_null() &&
+      !argument_filter_predicate.Run(category_group_name, name_,
+                                     &argument_name_filter_predicate);
 
   if (strip_args) {
     *out += "\"__stripped__\"";
@@ -298,10 +304,15 @@ void TraceEvent::AppendAsJSON(
       *out += arg_names_[i];
       *out += "\":";
 
-      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-        convertable_values_[i]->AppendAsTraceFormat(out);
-      else
-        AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
+      if (argument_name_filter_predicate.is_null() ||
+          argument_name_filter_predicate.Run(arg_names_[i])) {
+        if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
+          convertable_values_[i]->AppendAsTraceFormat(out);
+        else
+          AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
+      } else {
+        *out += "\"__stripped__\"";
+      }
     }
 
     *out += "}";

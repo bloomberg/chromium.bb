@@ -31,8 +31,12 @@ class MessageLoop;
 
 namespace trace_event {
 
+typedef base::Callback<bool(const char* arg_name)> ArgumentNameFilterPredicate;
+
 typedef base::Callback<bool(const char* category_group_name,
-                            const char* event_name)> ArgumentFilterPredicate;
+                            const char* event_name,
+                            ArgumentNameFilterPredicate*)>
+    ArgumentFilterPredicate;
 
 // For any argument of type TRACE_VALUE_TYPE_CONVERTABLE the provided
 // class must implement this interface.
