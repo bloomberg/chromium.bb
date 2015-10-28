@@ -21,7 +21,8 @@ interface WindowManager {
   // The window's show state. Type: ShowState.
   const string kShowState_Property = "prop:show-state";
 
-  OpenWindow(WindowTreeClient client);
+  OpenWindow(WindowTreeClient client,
+             map<string, array<uint8>> properties);
 
   // Updates the window's preferred size and triggers a relayout of the window
   // within its container.

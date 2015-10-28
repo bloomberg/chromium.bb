@@ -28,7 +28,8 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
     mus::mojom::WindowTreeClientPtr window_tree_client;
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
         window_tree_client_request = GetProxy(&window_tree_client);
-    window_manager->OpenWindow(window_tree_client.Pass());
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+    window_manager->OpenWindow(window_tree_client.Pass(), properties.Pass());
     mus::WindowTreeConnection* connection = mus::WindowTreeConnection::Create(
         this, window_tree_client_request.Pass(),
         mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);

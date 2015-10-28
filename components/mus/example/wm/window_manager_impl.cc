@@ -4,8 +4,9 @@
 
 #include "components/mus/example/wm/window_manager_impl.h"
 
-#include "components/mus/example/wm/container.h"
 #include "components/mus/example/wm/move_loop.h"
+#include "components/mus/example/wm/property_util.h"
+#include "components/mus/example/wm/public/interfaces/container.mojom.h"
 #include "components/mus/example/wm/window_manager_application.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/types.h"
@@ -25,11 +26,23 @@ bool IsPointerEvent(const mojo::Event& event) {
 
 }  // namespace
 
+namespace mojo {
+
+template <>
+struct TypeConverter<const std::vector<uint8_t>, Array<uint8_t>> {
+  static const std::vector<uint8_t> Convert(const Array<uint8_t>& input) {
+    return input.storage();
+  }
+};
+
+}  // namespace mojo
+
 WindowManagerImpl::WindowManagerImpl(WindowManagerApplication* state)
     : state_(state) {}
 
 WindowManagerImpl::~WindowManagerImpl() {
-  mus::Window* parent = state_->GetWindowForContainer(Container::USER_WINDOWS);
+  mus::Window* parent =
+      state_->GetWindowForContainer(ash::mojom::CONTAINER_USER_WINDOWS);
   if (!parent)
     return;
 
@@ -37,7 +50,9 @@ WindowManagerImpl::~WindowManagerImpl() {
     child->RemoveObserver(this);
 }
 
-void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
+void WindowManagerImpl::OpenWindow(
+    mus::mojom::WindowTreeClientPtr client,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
   mus::Window* root = state_->root();
   DCHECK(root);
 
@@ -45,14 +60,18 @@ void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   const int height = (root->bounds().height - 240);
 
   mus::Window* child_window = root->connection()->NewWindow();
+  // TODO(beng): mus::Window should have a "SetSharedProperties" method that
+  //             joins the supplied map onto the internal one.
+  for (auto prop : properties)
+    child_window->SetSharedProperty(prop.GetKey(), prop.GetValue());
+
   mojo::Rect bounds;
   bounds.x = 40 + (state_->window_count() % 4) * 40;
   bounds.y = 40 + (state_->window_count() % 4) * 40;
   bounds.width = width;
   bounds.height = height;
   child_window->SetBounds(bounds);
-  state_->GetWindowForContainer(Container::USER_WINDOWS)
-      ->AddChild(child_window);
+  GetContainerForChild(child_window)->AddChild(child_window);
   child_window->Embed(client.Pass());
   child_window->AddObserver(this);
 
@@ -116,4 +135,9 @@ void WindowManagerImpl::OnWindowInputEvent(mus::Window* window,
   }
   if (!move_loop_ && event->action == mojo::EVENT_TYPE_POINTER_DOWN)
     move_loop_ = MoveLoop::Create(window, *event);
+}
+
+mus::Window* WindowManagerImpl::GetContainerForChild(mus::Window* child) {
+  ash::mojom::Container container = GetRequestedContainer(child);
+  return state_->GetWindowForContainer(container);
 }

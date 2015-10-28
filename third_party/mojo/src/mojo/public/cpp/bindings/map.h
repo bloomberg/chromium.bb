@@ -196,6 +196,9 @@ class Map {
     KeyConstRefType GetKey() { return Traits::GetKey(it_); }
     ValueConstRefType GetValue() { return Traits::GetValue(it_); }
 
+    ConstMapIterator& operator*() {
+      return *this;
+    }
     ConstMapIterator& operator++() {
       it_++;
       return *this;

@@ -26,7 +26,8 @@ class WindowManagerConnection : public ViewsDelegate,
                      mojo::ApplicationImpl* app);
   static WindowManagerConnection* Get();
 
-  mus::Window* CreateWindow();
+  mus::Window* CreateWindow(
+      const std::map<std::string, std::vector<uint8_t>>& properties);
 
   mus::mojom::WindowManager* window_manager() {
     return window_manager_.get();
@@ -37,7 +38,7 @@ class WindowManagerConnection : public ViewsDelegate,
                           mojo::ApplicationImpl* app);
   ~WindowManagerConnection() override;
 
-  // ViewsDelegate:
+  // views::ViewsDelegate:
   NativeWidget* CreateNativeWidget(
       internal::NativeWidgetDelegate* delegate) override;
   void OnBeforeWidgetInit(

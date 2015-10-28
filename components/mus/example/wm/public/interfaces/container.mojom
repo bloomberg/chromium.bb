@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_EXAMPLE_WM_IDS_H_
-#define COMPONENTS_MUS_EXAMPLE_WM_IDS_H_
+module ash.mojom;
 
-enum class Container {
+enum Container {
   ALL_USER_BACKGROUND = 1,
   USER_WORKSPACE,
   USER_BACKGROUND,
@@ -13,10 +12,10 @@ enum class Container {
   USER_WINDOWS,
   USER_STICKY_WINDOWS,
   USER_PRESENTATION_WINDOWS,
-  USER_LAUNCHER,
+  USER_SHELF,
   LOGIN_WINDOWS,
   LOGIN_APP,    // TODO(beng): what about dialog boxes login opens?
-  LOGIN_LAUNCHER,
+  LOGIN_SHELF,
   SYSTEM_MODAL_WINDOWS,
   KEYBOARD,
   MENUS,
@@ -24,4 +23,5 @@ enum class Container {
   COUNT
 };
 
-#endif  // COMPONENTS_MUS_EXAMPLE_WM_IDS_H_
+const string kWindowContainer_Property = "ash:window-container";
+

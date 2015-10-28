@@ -31,8 +31,6 @@ void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
 
 WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window)
     : mus_window_(window) {
-  if (!mus_window_)
-    mus_window_ = WindowManagerConnection::Get()->CreateWindow();
   mus_window_->AddObserver(this);
 
   context_factory_.reset(new SurfaceContextFactory(shell, mus_window_));

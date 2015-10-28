@@ -41,7 +41,6 @@ struct TypeConverter<int32_t, const std::vector<uint8_t>> {
   static int32_t Convert(const std::vector<uint8_t>& input);
 };
 
-
 }  // namespace mojo
 
 #endif  // COMPONENTS_MUS_PUBLIC_CPP_PROPERTY_TYPE_CONVERTERS_H_

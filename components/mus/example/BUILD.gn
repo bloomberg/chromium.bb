@@ -7,6 +7,7 @@ group("example") {
 
   deps = [
     "//components/mus/example/main",
+    "//components/mus/example/mock_sysui",
     "//components/mus/example/views_examples",
     "//components/mus/example/window_type_launcher",
     "//components/mus/example/wm",

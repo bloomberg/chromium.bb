@@ -4,7 +4,8 @@
 
 #include "components/mus/example/wm/window_manager_application.h"
 
-#include "components/mus/example/wm/container.h"
+#include "components/mus/example/wm/background_layout.h"
+#include "components/mus/example/wm/shelf_layout.h"
 #include "components/mus/example/wm/window_layout.h"
 #include "components/mus/example/wm/window_manager_impl.h"
 #include "components/mus/public/cpp/util.h"
@@ -18,7 +19,7 @@ WindowManagerApplication::WindowManagerApplication()
 WindowManagerApplication::~WindowManagerApplication() {}
 
 mus::Window* WindowManagerApplication::GetWindowForContainer(
-    Container container) {
+    ash::mojom::Container container) {
   const mus::Id window_id = root_->connection()->GetConnectionId() << 16 |
                             static_cast<uint16_t>(container);
   return root_->GetChildById(window_id);
@@ -45,8 +46,12 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_ = root;
   root_->AddObserver(this);
   CreateContainers();
-  layout_.reset(
-      new WindowLayout(GetWindowForContainer(Container::USER_WINDOWS)));
+  background_layout_.reset(new BackgroundLayout(
+      GetWindowForContainer(ash::mojom::CONTAINER_USER_BACKGROUND)));
+  shelf_layout_.reset(new ShelfLayout(
+      GetWindowForContainer(ash::mojom::CONTAINER_USER_SHELF)));
+  window_layout_.reset(new WindowLayout(
+      GetWindowForContainer(ash::mojom::CONTAINER_USER_WINDOWS)));
 
   window_manager_.reset(new WindowManagerImpl(this));
   for (auto request : requests_)
@@ -82,8 +87,9 @@ void WindowManagerApplication::OnWindowDestroyed(mus::Window* window) {
 
 void WindowManagerApplication::CreateContainers() {
   for (uint16_t container =
-           static_cast<uint16_t>(Container::ALL_USER_BACKGROUND);
-       container < static_cast<uint16_t>(Container::COUNT); ++container) {
+           static_cast<uint16_t>(ash::mojom::CONTAINER_ALL_USER_BACKGROUND);
+       container < static_cast<uint16_t>(ash::mojom::CONTAINER_COUNT);
+       ++container) {
     mus::Window* window = root_->connection()->NewWindow();
     DCHECK_EQ(mus::LoWord(window->id()), container)
         << "Containers must be created before other windows!";
@@ -92,4 +98,3 @@ void WindowManagerApplication::CreateContainers() {
     root_->AddChild(window);
   }
 }
-

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "components/mus/example/wm/public/interfaces/container.mojom.h"
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
@@ -17,7 +18,8 @@
 #include "mojo/application/public/cpp/interface_factory_impl.h"
 #include "mojo/common/weak_binding_set.h"
 
-enum class Container;
+class BackgroundLayout;
+class ShelfLayout;
 class WindowLayout;
 
 class WindowManagerImpl;
@@ -36,7 +38,7 @@ class WindowManagerApplication
   int window_count() { return window_count_; }
   void IncrementWindowCount() { ++window_count_; }
 
-  mus::Window* GetWindowForContainer(Container container);
+  mus::Window* GetWindowForContainer(ash::mojom::Container container);
   mus::Window* GetWindowById(mus::Id id);
 
  private:
@@ -72,7 +74,9 @@ class WindowManagerApplication
   mojo::WeakBindingSet<mus::mojom::WindowManager> window_manager_binding_;
   ScopedVector<mojo::InterfaceRequest<mus::mojom::WindowManager>> requests_;
 
-  scoped_ptr<WindowLayout> layout_;
+  scoped_ptr<BackgroundLayout> background_layout_;
+  scoped_ptr<ShelfLayout> shelf_layout_;
+  scoped_ptr<WindowLayout> window_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };

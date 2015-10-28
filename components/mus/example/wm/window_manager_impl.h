@@ -26,7 +26,9 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
 
  private:
   // mus::mojom::WindowManager:
-  void OpenWindow(mus::mojom::WindowTreeClientPtr client) override;
+  void OpenWindow(
+      mus::mojom::WindowTreeClientPtr client,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
   void SetPreferredSize(
       mus::Id window_id,
       mojo::SizePtr size,
@@ -43,6 +45,8 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   void OnWindowDestroyed(mus::Window* window) override;
   void OnWindowInputEvent(mus::Window* window,
                           const mojo::EventPtr& event) override;
+
+  mus::Window* GetContainerForChild(mus::Window* child);
 
   WindowManagerApplication* state_;
   scoped_ptr<MoveLoop> move_loop_;

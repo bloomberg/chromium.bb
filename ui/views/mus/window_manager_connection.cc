@@ -97,11 +97,14 @@ WindowManagerConnection* WindowManagerConnection::Get() {
   return connection;
 }
 
-mus::Window* WindowManagerConnection::CreateWindow() {
+mus::Window* WindowManagerConnection::CreateWindow(
+    const std::map<std::string, std::vector<uint8_t>>& properties) {
   mus::mojom::WindowTreeClientPtr window_tree_client;
   mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
       window_tree_client_request = GetProxy(&window_tree_client);
-  window_manager_->OpenWindow(window_tree_client.Pass());
+  window_manager_->OpenWindow(
+      window_tree_client.Pass(),
+      mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(properties));
   mus::WindowTreeConnection* window_tree_connection =
       mus::WindowTreeConnection::Create(
           this, window_tree_client_request.Pass(),
@@ -123,9 +126,9 @@ WindowManagerConnection::~WindowManagerConnection() {}
 
 NativeWidget* WindowManagerConnection::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-  NativeWidgetMus* native_widget =
-      new NativeWidgetMus(delegate, app_->shell(), CreateWindow());
-  return native_widget;
+  return new NativeWidgetMus(
+      delegate, app_->shell(),
+      CreateWindow(std::map<std::string, std::vector<uint8_t>>()));
 }
 
 void WindowManagerConnection::OnBeforeWidgetInit(
