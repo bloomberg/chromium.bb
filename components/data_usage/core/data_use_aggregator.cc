@@ -14,15 +14,27 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
+#if defined(OS_ANDROID)
+#include "net/android/network_library.h"
+#endif  // OS_ANDROID
+
 namespace data_usage {
 
 DataUseAggregator::DataUseAggregator()
-    : off_the_record_tx_bytes_since_last_flush_(0),
+    : connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
+      off_the_record_tx_bytes_since_last_flush_(0),
       off_the_record_rx_bytes_since_last_flush_(0),
       is_flush_pending_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+#if defined(OS_ANDROID)
+  mcc_mnc_ = net::android::GetTelephonySimOperator();
+#endif  // OS_ANDROID
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+}
 
-DataUseAggregator::~DataUseAggregator() {}
+DataUseAggregator::~DataUseAggregator() {
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+}
 
 void DataUseAggregator::AddObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -42,10 +54,10 @@ void DataUseAggregator::ReportDataUse(const net::URLRequest& request,
   net::LoadTimingInfo load_timing_info;
   request.GetLoadTimingInfo(&load_timing_info);
 
-  scoped_ptr<DataUse> data_use(new DataUse(
-      request.url(), load_timing_info.request_start,
-      request.first_party_for_cookies(), tab_id,
-      net::NetworkChangeNotifier::GetConnectionType(), tx_bytes, rx_bytes));
+  scoped_ptr<DataUse> data_use(
+      new DataUse(request.url(), load_timing_info.request_start,
+                  request.first_party_for_cookies(), tab_id, connection_type_,
+                  mcc_mnc_, tx_bytes, rx_bytes));
 
   // As an optimization, attempt to combine the newly reported data use with the
   // most recent buffered data use, if the annotations on the data use are the
@@ -78,6 +90,21 @@ void DataUseAggregator::ReportOffTheRecordDataUse(int64_t tx_bytes,
 
 base::WeakPtr<DataUseAggregator> DataUseAggregator::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void DataUseAggregator::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  connection_type_ = type;
+#if defined(OS_ANDROID)
+  mcc_mnc_ = net::android::GetTelephonySimOperator();
+#endif  // OS_ANDROID
+}
+
+void DataUseAggregator::SetMccMncForTests(const std::string& mcc_mnc) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  mcc_mnc_ = mcc_mnc;
 }
 
 void DataUseAggregator::FlushBufferedDataUse() {

@@ -241,7 +241,7 @@ TEST(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
   std::vector<const data_usage::DataUse*> data_use_sequence;
   data_usage::DataUse data_use(
       GURL("http://www.google.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, 0, 0);
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 0, 0);
   data_use_sequence.push_back(&data_use);
   data_use_sequence.push_back(&data_use);
   external_data_use_observer->OnDataUse(data_use_sequence);
@@ -296,7 +296,7 @@ TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
   std::vector<const data_usage::DataUse*> data_use_sequence;
   data_usage::DataUse data_foo(
       GURL("http://www.foo.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, 0, 0);
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 0, 0);
   data_use_sequence.push_back(&data_foo);
   data_use_sequence.push_back(&data_foo);
   external_data_use_observer->OnDataUse(data_use_sequence);
@@ -315,7 +315,7 @@ TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
   // Check |label_bar| matching rule.
   data_usage::DataUse data_bar(
       GURL("http://www.bar.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, 0, 0);
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 0, 0);
   data_use_sequence.push_back(&data_bar);
   external_data_use_observer->OnDataUse(data_use_sequence);
   for (const auto& data_report :

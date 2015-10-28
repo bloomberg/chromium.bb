@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -25,17 +26,29 @@ namespace data_usage {
 
 namespace {
 
+// Test class that can set the network operator's MCCMNC.
+class TestDataUseAggregator : public DataUseAggregator {
+ private:
+  friend class TestNetworkChangeNotifier;
+  using DataUseAggregator::OnConnectionTypeChanged;
+  using DataUseAggregator::SetMccMncForTests;
+};
+
 // Override NetworkChangeNotifier to simulate connection type changes for tests.
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
-  TestNetworkChangeNotifier()
+  explicit TestNetworkChangeNotifier(TestDataUseAggregator* data_use_aggregator)
       : net::NetworkChangeNotifier(),
+        data_use_aggregator_(data_use_aggregator),
         connection_type_to_return_(
             net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
 
   // Simulates a change of the connection type to |type|.
-  void SimulateNetworkConnectionChange(ConnectionType type) {
+  void SimulateNetworkConnectionChange(ConnectionType type,
+                                       const std::string& mcc_mnc) {
     connection_type_to_return_ = type;
+    data_use_aggregator_->OnConnectionTypeChanged(type);
+    data_use_aggregator_->SetMccMncForTests(mcc_mnc);
   }
 
   ConnectionType GetCurrentConnectionType() const override {
@@ -43,6 +56,8 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   }
 
  private:
+  TestDataUseAggregator* data_use_aggregator_;
+
   // The currently simulated network connection type.
   ConnectionType connection_type_to_return_;
 
@@ -60,17 +75,19 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
           connection_type(net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
 
     DataUseContext(int32_t tab_id,
-                   net::NetworkChangeNotifier::ConnectionType connection_type)
-        : tab_id(tab_id), connection_type(connection_type) {}
+                   net::NetworkChangeNotifier::ConnectionType connection_type,
+                   const std::string& mcc_mnc)
+        : tab_id(tab_id), connection_type(connection_type), mcc_mnc(mcc_mnc) {}
 
     int32_t tab_id;
     net::NetworkChangeNotifier::ConnectionType connection_type;
+    std::string mcc_mnc;
   };
 
   typedef std::map<const net::URLRequest*, DataUseContext> DataUseContextMap;
 
   ReportingNetworkDelegate(
-      DataUseAggregator* data_use_aggregator,
+      TestDataUseAggregator* data_use_aggregator,
       TestNetworkChangeNotifier* test_network_change_notifier)
       : data_use_aggregator_(data_use_aggregator),
         test_network_change_notifier_(test_network_change_notifier) {}
@@ -93,7 +110,7 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
     if (test_network_change_notifier_->GetCurrentConnectionType() !=
         data_use_context.connection_type) {
       test_network_change_notifier_->SimulateNetworkConnectionChange(
-          data_use_context.connection_type);
+          data_use_context.connection_type, data_use_context.mcc_mnc);
     }
     return data_use_context;
   }
@@ -112,7 +129,7 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
                                         bytes_sent, 0 /* rx_bytes */);
   }
 
-  DataUseAggregator* data_use_aggregator_;
+  TestDataUseAggregator* data_use_aggregator_;
   TestNetworkChangeNotifier* test_network_change_notifier_;
   DataUseContextMap data_use_context_map_;
 
@@ -154,7 +171,8 @@ class TestObserver : public DataUseAggregator::Observer {
 class DataUseAggregatorTest : public testing::Test {
  public:
   DataUseAggregatorTest()
-      : reporting_network_delegate_(&data_use_aggregator_,
+      : test_network_change_notifier_(&data_use_aggregator_),
+        reporting_network_delegate_(&data_use_aggregator_,
                                     &test_network_change_notifier_),
         context_(true),
         test_observer_(&data_use_aggregator_) {
@@ -169,7 +187,8 @@ class DataUseAggregatorTest : public testing::Test {
       const GURL& url,
       const GURL& first_party_for_cookies,
       int32_t tab_id,
-      net::NetworkChangeNotifier::ConnectionType connection_type) {
+      net::NetworkChangeNotifier::ConnectionType connection_type,
+      const std::string& mcc_mnc) {
     net::MockRead reads[] = {
         net::MockRead("HTTP/1.1 200 OK\r\n\r\n"), net::MockRead("hello world"),
         net::MockRead(net::SYNCHRONOUS, net::OK),
@@ -184,19 +203,14 @@ class DataUseAggregatorTest : public testing::Test {
 
     ReportingNetworkDelegate::DataUseContextMap data_use_context_map;
     data_use_context_map[request.get()] =
-        ReportingNetworkDelegate::DataUseContext(tab_id, connection_type);
+        ReportingNetworkDelegate::DataUseContext(tab_id, connection_type,
+                                                 mcc_mnc);
     reporting_network_delegate_.set_data_use_context_map(data_use_context_map);
 
     request->Start();
     loop_.RunUntilIdle();
 
     return request.Pass();
-  }
-
-  void SimulateNetworkConnectionChange(
-      net::NetworkChangeNotifier::ConnectionType connection_type) {
-    test_network_change_notifier_.SimulateNetworkConnectionChange(
-        connection_type);
   }
 
   ReportingNetworkDelegate* reporting_network_delegate() {
@@ -215,8 +229,8 @@ class DataUseAggregatorTest : public testing::Test {
 
  private:
   base::MessageLoopForIO loop_;
+  TestDataUseAggregator data_use_aggregator_;
   TestNetworkChangeNotifier test_network_change_notifier_;
-  DataUseAggregator data_use_aggregator_;
   net::MockClientSocketFactory mock_socket_factory_;
   ReportingNetworkDelegate reporting_network_delegate_;
   net::TestURLRequestContext context_;
@@ -229,16 +243,18 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
   const int32_t kFooTabId = 10;
   const net::NetworkChangeNotifier::ConnectionType kFooConnectionType =
       net::NetworkChangeNotifier::CONNECTION_2G;
+  const std::string kFooMccMnc = "foo_mcc_mnc";
   scoped_ptr<net::URLRequest> foo_request =
       ExecuteRequest(GURL("http://foo.com"), GURL("http://foofirstparty.com"),
-                     kFooTabId, kFooConnectionType);
+                     kFooTabId, kFooConnectionType, kFooMccMnc);
 
   const int32_t kBarTabId = 20;
   const net::NetworkChangeNotifier::ConnectionType kBarConnectionType =
       net::NetworkChangeNotifier::CONNECTION_WIFI;
+  const std::string kBarMccMnc = "bar_mcc_mnc";
   scoped_ptr<net::URLRequest> bar_request =
       ExecuteRequest(GURL("http://bar.com"), GURL("http://barfirstparty.com"),
-                     kBarTabId, kBarConnectionType);
+                     kBarTabId, kBarConnectionType, kBarMccMnc);
 
   auto data_use_it = test_observer()->observed_data_use().begin();
 
@@ -254,6 +270,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
               data_use_it->first_party_for_cookies);
     EXPECT_EQ(kFooTabId, data_use_it->tab_id);
     EXPECT_EQ(kFooConnectionType, data_use_it->connection_type);
+    EXPECT_EQ(kFooMccMnc, data_use_it->mcc_mnc);
 
     observed_foo_tx_bytes += data_use_it->tx_bytes;
     observed_foo_rx_bytes += data_use_it->rx_bytes;
@@ -274,6 +291,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
               data_use_it->first_party_for_cookies);
     EXPECT_EQ(kBarTabId, data_use_it->tab_id);
     EXPECT_EQ(kBarConnectionType, data_use_it->connection_type);
+    EXPECT_EQ(kBarMccMnc, data_use_it->mcc_mnc);
 
     observed_bar_tx_bytes += data_use_it->tx_bytes;
     observed_bar_rx_bytes += data_use_it->rx_bytes;
@@ -319,15 +337,19 @@ TEST_F(DataUseAggregatorTest, ReportCombinedDataUse) {
   const int32_t kFooTabId = 10;
   const net::NetworkChangeNotifier::ConnectionType kFooConnectionType =
       net::NetworkChangeNotifier::CONNECTION_2G;
+  const std::string kFooMccMnc = "foo_mcc_mnc";
   const int32_t kBarTabId = 20;
   const net::NetworkChangeNotifier::ConnectionType kBarConnectionType =
       net::NetworkChangeNotifier::CONNECTION_WIFI;
+  const std::string kBarMccMnc = "bar_mcc_mnc";
 
   ReportingNetworkDelegate::DataUseContextMap data_use_context_map;
   data_use_context_map[foo_request.get()] =
-      ReportingNetworkDelegate::DataUseContext(kFooTabId, kFooConnectionType);
+      ReportingNetworkDelegate::DataUseContext(kFooTabId, kFooConnectionType,
+                                               kFooMccMnc);
   data_use_context_map[bar_request.get()] =
-      ReportingNetworkDelegate::DataUseContext(kBarTabId, kBarConnectionType);
+      ReportingNetworkDelegate::DataUseContext(kBarTabId, kBarConnectionType,
+                                               kBarMccMnc);
   reporting_network_delegate()->set_data_use_context_map(data_use_context_map);
 
   // Run the requests.
@@ -352,6 +374,7 @@ TEST_F(DataUseAggregatorTest, ReportCombinedDataUse) {
             foo_data_use.first_party_for_cookies);
   EXPECT_EQ(kFooTabId, foo_data_use.tab_id);
   EXPECT_EQ(kFooConnectionType, foo_data_use.connection_type);
+  EXPECT_EQ(kFooMccMnc, foo_data_use.mcc_mnc);
   EXPECT_EQ(foo_request->GetTotalSentBytes(), foo_data_use.tx_bytes);
   EXPECT_EQ(foo_request->GetTotalReceivedBytes(), foo_data_use.rx_bytes);
 
@@ -366,6 +389,7 @@ TEST_F(DataUseAggregatorTest, ReportCombinedDataUse) {
             bar_data_use.first_party_for_cookies);
   EXPECT_EQ(kBarTabId, bar_data_use.tab_id);
   EXPECT_EQ(kBarConnectionType, bar_data_use.connection_type);
+  EXPECT_EQ(kBarMccMnc, bar_data_use.mcc_mnc);
   EXPECT_EQ(bar_request->GetTotalSentBytes(), bar_data_use.tx_bytes);
   EXPECT_EQ(bar_request->GetTotalReceivedBytes(), bar_data_use.rx_bytes);
 }

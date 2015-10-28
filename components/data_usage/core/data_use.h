@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/time/time.h"
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
@@ -19,8 +21,11 @@ struct DataUse {
           const GURL& first_party_for_cookies,
           int32_t tab_id,
           net::NetworkChangeNotifier::ConnectionType connection_type,
+          const std::string& mcc_mnc,
           int64_t tx_bytes,
           int64_t rx_bytes);
+
+  ~DataUse();
 
   // Returns true if |this| and |other| are identical except for byte counts.
   bool CanCombineWith(const DataUse& other) const;
@@ -32,8 +37,12 @@ struct DataUse {
   GURL first_party_for_cookies;
   int32_t tab_id;
   net::NetworkChangeNotifier::ConnectionType connection_type;
-  // TODO(sclittle): Add more network info here, e.g. for Android, SIM operator
-  // and whether the device is roaming.
+  // MCC+MNC (mobile country code + mobile network code) of the provider of the
+  // SIM when the network traffic was exchanged. Set to empty string if SIM is
+  // not present. |mcc_mnc| is set even if data was not exchanged on the
+  // cellular network. For dual SIM phones, this is set to the MCC/MNC of the
+  // SIM in slot 0.
+  std::string mcc_mnc;
 
   int64_t tx_bytes;
   int64_t rx_bytes;

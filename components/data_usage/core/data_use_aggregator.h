@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -14,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/network_change_notifier.h"
 
 namespace net {
 class URLRequest;
@@ -24,7 +26,8 @@ struct DataUse;
 
 // Class that collects and aggregates network usage, reporting the usage to
 // observers. Should only be used on the IO thread.
-class DataUseAggregator {
+class DataUseAggregator
+    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   class Observer {
    public:
@@ -36,7 +39,7 @@ class DataUseAggregator {
   };
 
   DataUseAggregator();
-  virtual ~DataUseAggregator();
+  ~DataUseAggregator() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -56,6 +59,15 @@ class DataUseAggregator {
 
   base::WeakPtr<DataUseAggregator> GetWeakPtr();
 
+ protected:
+  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
+  // Protected for testing.
+  void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // Protected for testing.
+  void SetMccMncForTests(const std::string& mcc_mnc);
+
  private:
   // Flush any buffered data use and notify observers.
   void FlushBufferedDataUse();
@@ -65,6 +77,14 @@ class DataUseAggregator {
 
   // Buffer of unreported data use.
   ScopedVector<DataUse> buffered_data_use_;
+
+  // Current connection type as notified by NetworkChangeNotifier.
+  net::NetworkChangeNotifier::ConnectionType connection_type_;
+
+  // MCC+MNC (mobile country code + mobile network code) of the current SIM
+  // provider.  Set to empty string if SIM is not present. |mcc_mnc_| is set
+  // even if the current active network is not a cellular network.
+  std::string mcc_mnc_;
 
   // The total amount of off-the-record data usage that has happened since the
   // last time the buffer was flushed.
