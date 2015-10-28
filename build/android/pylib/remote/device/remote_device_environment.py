@@ -124,6 +124,8 @@ class RemoteDeviceEnvironment(environment.Environment):
         self._runner_package, args.runner_package, 'runner_package')
     self._runner_type = command_line_override(
         self._runner_type, args.runner_type, 'runner_type')
+    self._timeouts["in-progress"] = command_line_override(
+        self._timeouts["in-progress"], args.test_timeout, 'test_timeout')
 
     if args.api_key_file:
       with open(args.api_key_file) as api_key_file:

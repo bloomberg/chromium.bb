@@ -154,6 +154,8 @@ def AddRemoteDeviceOptions(parser):
   group.add_argument('--network-config', type=int,
                      help='Integer that specifies the network environment '
                           'that the tests will be run in.')
+  group.add_argument('--test-timeout', type=int,
+                     help='Test run timeout in seconds.')
 
   device_os_group = group.add_mutually_exclusive_group()
   device_os_group.add_argument('--remote-device-minimum-os',
