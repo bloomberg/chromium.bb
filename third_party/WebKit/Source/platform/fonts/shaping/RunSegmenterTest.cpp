@@ -8,12 +8,11 @@
 #include "platform/Logging.h"
 #include "platform/fonts/OrientationIterator.h"
 #include "wtf/Assertions.h"
-#include "wtf/Threading.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 #include <gtest/gtest.h>
 #include <string>
-#include <vector>
 
 namespace blink {
 
@@ -55,21 +54,21 @@ protected:
     }
 #endif
 
-    void CheckRuns(const std::vector<SegmenterTestRun>& runs, FontOrientation orientation, FontVariant variant)
+    void CheckRuns(const Vector<SegmenterTestRun>& runs, FontOrientation orientation, FontVariant variant)
     {
         String text(String::make16BitFrom8BitSource(0, 0));
-        std::vector<SegmenterExpectedRun> expect;
+        Vector<SegmenterExpectedRun> expect;
         for (auto& run : runs) {
             unsigned lengthBefore = text.length();
             text.append(String::fromUTF8(run.text.c_str()));
-            expect.push_back(SegmenterExpectedRun(lengthBefore, text.length(), run.script, run.renderOrientation, run.smallCapsBehavior));
+            expect.append(SegmenterExpectedRun(lengthBefore, text.length(), run.script, run.renderOrientation, run.smallCapsBehavior));
         }
         RunSegmenter runSegmenter(text.characters16(), text.length(), orientation, variant);
         VerifyRuns(&runSegmenter, expect);
     }
 
     void VerifyRuns(RunSegmenter* runSegmenter,
-        const std::vector<SegmenterExpectedRun>& expect)
+        const Vector<SegmenterExpectedRun>& expect)
     {
         RunSegmenter::RunSegmenterRange segmenterRange;
         unsigned long runCount = 0;
@@ -89,7 +88,8 @@ protected:
 // Some of our compilers cannot initialize a vector from an array yet.
 #define DECLARE_RUNSVECTOR(...)                              \
     static const SegmenterTestRun runsArray[] = __VA_ARGS__; \
-    std::vector<SegmenterTestRun> runs(runsArray, runsArray + sizeof(runsArray) / sizeof(*runsArray));
+    Vector<SegmenterTestRun> runs; \
+    runs.append(runsArray, sizeof(runsArray) / sizeof(*runsArray));
 
 #define CHECK_RUNS_MIXED_NORMAL(...)    \
     DECLARE_RUNSVECTOR(__VA_ARGS__); \

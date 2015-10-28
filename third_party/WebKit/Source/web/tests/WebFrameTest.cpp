@@ -629,8 +629,8 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
         "<div class=\"initial_on\"></div>"
         "<div class=\"initial_off\"></div>");
 
-    std::vector<WebString> selectors;
-    selectors.push_back(WebString::fromUTF8("div.initial_on"));
+    Vector<WebString> selectors;
+    selectors.append(WebString::fromUTF8("div.initial_on"));
     m_frame->document().watchCSSSelectors(WebVector<WebString>(selectors));
     m_frame->view()->layout();
     runPendingTasks();
@@ -638,7 +638,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
     EXPECT_THAT(matchedSelectors(), ElementsAre("div.initial_on"));
 
     // Check that adding a watched selector calls back for already-present nodes.
-    selectors.push_back(WebString::fromUTF8("div.initial_off"));
+    selectors.append(WebString::fromUTF8("div.initial_off"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
     m_frame->view()->layout();
     runPendingTasks();
@@ -656,8 +656,8 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
 TEST_F(WebFrameCSSCallbackTest, SharedComputedStyle)
 {
     // Check that adding an element calls back when it matches an existing rule.
-    std::vector<WebString> selectors;
-    selectors.push_back(WebString::fromUTF8("span"));
+    Vector<WebString> selectors;
+    selectors.append(WebString::fromUTF8("span"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
 
     executeScript(
@@ -697,8 +697,8 @@ TEST_F(WebFrameCSSCallbackTest, CatchesAttributeChange)
 {
     loadHTML("<span></span>");
 
-    std::vector<WebString> selectors;
-    selectors.push_back(WebString::fromUTF8("span[attr=\"value\"]"));
+    Vector<WebString> selectors;
+    selectors.append(WebString::fromUTF8("span[attr=\"value\"]"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
     runPendingTasks();
 
@@ -715,8 +715,8 @@ TEST_F(WebFrameCSSCallbackTest, DisplayNone)
 {
     loadHTML("<div style='display:none'><span></span></div>");
 
-    std::vector<WebString> selectors;
-    selectors.push_back(WebString::fromUTF8("span"));
+    Vector<WebString> selectors;
+    selectors.append(WebString::fromUTF8("span"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
     runPendingTasks();
 
@@ -763,8 +763,8 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting)
         "<div id='d1'><span></span></div>"
         "<div id='d2'></div>");
 
-    std::vector<WebString> selectors;
-    selectors.push_back(WebString::fromUTF8("span"));
+    Vector<WebString> selectors;
+    selectors.append(WebString::fromUTF8("span"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
     m_frame->view()->layout();
     runPendingTasks();
@@ -786,9 +786,9 @@ TEST_F(WebFrameCSSCallbackTest, MultiSelector)
 
     // Check that selector lists match as the whole list, not as each element
     // independently.
-    std::vector<WebString> selectors;
-    selectors.push_back(WebString::fromUTF8("span"));
-    selectors.push_back(WebString::fromUTF8("span,p"));
+    Vector<WebString> selectors;
+    selectors.append(WebString::fromUTF8("span"));
+    selectors.append(WebString::fromUTF8("span,p"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
     m_frame->view()->layout();
     runPendingTasks();
@@ -802,10 +802,10 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
     loadHTML("<p><span></span></p>");
 
     // Build a list with one valid selector and one invalid.
-    std::vector<WebString> selectors;
-    selectors.push_back(WebString::fromUTF8("span"));
-    selectors.push_back(WebString::fromUTF8("[")); // Invalid.
-    selectors.push_back(WebString::fromUTF8("p span")); // Not compound.
+    Vector<WebString> selectors;
+    selectors.append(WebString::fromUTF8("span"));
+    selectors.append(WebString::fromUTF8("[")); // Invalid.
+    selectors.append(WebString::fromUTF8("p span")); // Not compound.
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
     m_frame->view()->layout();
     runPendingTasks();
@@ -3441,28 +3441,22 @@ public:
 
     void reset()
     {
-        for (size_t i = 0; i < createNotifications.size(); ++i)
-            delete createNotifications[i];
-
-        for (size_t i = 0; i < releaseNotifications.size(); ++i)
-            delete releaseNotifications[i];
-
         createNotifications.clear();
         releaseNotifications.clear();
     }
 
-    std::vector<Notification*> createNotifications;
-    std::vector<Notification*> releaseNotifications;
+    Vector<OwnPtr<Notification>> createNotifications;
+    Vector<OwnPtr<Notification>> releaseNotifications;
 
  private:
     void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
     {
-        createNotifications.push_back(new Notification(frame, context, worldId));
+        createNotifications.append(adoptPtr(new Notification(frame, context, worldId)));
     }
 
     void willReleaseScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int worldId) override
     {
-        releaseNotifications.push_back(new Notification(frame, context, worldId));
+        releaseNotifications.append(adoptPtr(new Notification(frame, context, worldId)));
     }
 };
 
@@ -3484,8 +3478,8 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload)
     ASSERT_EQ(2u, webFrameClient.createNotifications.size());
     EXPECT_EQ(0u, webFrameClient.releaseNotifications.size());
 
-    ContextLifetimeTestWebFrameClient::Notification* firstCreateNotification = webFrameClient.createNotifications[0];
-    ContextLifetimeTestWebFrameClient::Notification* secondCreateNotification = webFrameClient.createNotifications[1];
+    auto& firstCreateNotification = webFrameClient.createNotifications[0];
+    auto& secondCreateNotification = webFrameClient.createNotifications[1];
 
     EXPECT_EQ(mainFrame, firstCreateNotification->frame);
     EXPECT_EQ(mainFrame->mainWorldScriptContext(), firstCreateNotification->context);
@@ -3499,11 +3493,11 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload)
     webViewHelper.reset();
 
     ASSERT_EQ(2u, webFrameClient.releaseNotifications.size());
-    ContextLifetimeTestWebFrameClient::Notification* firstReleaseNotification = webFrameClient.releaseNotifications[0];
-    ContextLifetimeTestWebFrameClient::Notification* secondReleaseNotification = webFrameClient.releaseNotifications[1];
+    auto& firstReleaseNotification = webFrameClient.releaseNotifications[0];
+    auto& secondReleaseNotification = webFrameClient.releaseNotifications[1];
 
-    ASSERT_TRUE(firstCreateNotification->Equals(secondReleaseNotification));
-    ASSERT_TRUE(secondCreateNotification->Equals(firstReleaseNotification));
+    ASSERT_TRUE(firstCreateNotification->Equals(secondReleaseNotification.get()));
+    ASSERT_TRUE(secondCreateNotification->Equals(firstReleaseNotification.get()));
 }
 
 TEST_P(ParameterizedWebFrameTest, ContextNotificationsReload)
@@ -3524,15 +3518,15 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsReload)
 
     // The two release notifications we got should be exactly the same as the first two create notifications.
     for (size_t i = 0; i < webFrameClient.releaseNotifications.size(); ++i) {
-      EXPECT_TRUE(webFrameClient.releaseNotifications[i]->Equals(
-          webFrameClient.createNotifications[webFrameClient.createNotifications.size() - 3 - i]));
+        EXPECT_TRUE(webFrameClient.releaseNotifications[i]->Equals(
+            webFrameClient.createNotifications[webFrameClient.createNotifications.size() - 3 - i].get()));
     }
 
     // The last two create notifications should be for the current frames and context.
     WebFrame* mainFrame = webViewHelper.webView()->mainFrame();
     WebFrame* childFrame = mainFrame->firstChild();
-    ContextLifetimeTestWebFrameClient::Notification* firstRefreshNotification = webFrameClient.createNotifications[2];
-    ContextLifetimeTestWebFrameClient::Notification* secondRefreshNotification = webFrameClient.createNotifications[3];
+    auto& firstRefreshNotification = webFrameClient.createNotifications[2];
+    auto& secondRefreshNotification = webFrameClient.createNotifications[3];
 
     EXPECT_EQ(mainFrame, firstRefreshNotification->frame);
     EXPECT_EQ(mainFrame->mainWorldScriptContext(), firstRefreshNotification->context);
@@ -3566,7 +3560,7 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds)
 
     // We should now have a new create notification.
     ASSERT_EQ(1u, webFrameClient.createNotifications.size());
-    ContextLifetimeTestWebFrameClient::Notification* notification = webFrameClient.createNotifications[0];
+    auto& notification = webFrameClient.createNotifications[0];
     ASSERT_EQ(isolatedWorldId, notification->worldId);
     ASSERT_EQ(webViewHelper.webView()->mainFrame(), notification->frame);
 
@@ -3581,8 +3575,8 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds)
     // And one of them should be exactly the same as the create notification for the isolated context.
     int matchCount = 0;
     for (size_t i = 0; i < webFrameClient.releaseNotifications.size(); ++i) {
-      if (webFrameClient.releaseNotifications[i]->Equals(webFrameClient.createNotifications[0]))
-        ++matchCount;
+        if (webFrameClient.releaseNotifications[i]->Equals(webFrameClient.createNotifications[0].get()))
+            ++matchCount;
     }
     EXPECT_EQ(1, matchCount);
 }
@@ -7770,10 +7764,10 @@ class TestConsoleMessageWebFrameClient : public FrameTestHelpers::TestWebFrameCl
 public:
     virtual void didAddMessageToConsole(const WebConsoleMessage& message, const WebString& sourceName, unsigned sourceLine, const WebString& stackTrace)
     {
-        messages.push_back(message);
+        messages.append(message);
     }
 
-    std::vector<WebConsoleMessage> messages;
+    Vector<WebConsoleMessage> messages;
 };
 
 TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
@@ -7797,14 +7791,14 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     // the error shows up on the popup (calling) window's console, rather than
     // the target window.
     popupView->mainFrame()->executeScript(WebScriptSource("opener.frames[1].location.href='data:text/html,foo'"));
-    EXPECT_TRUE(webFrameClient.messages.empty());
+    EXPECT_TRUE(webFrameClient.messages.isEmpty());
     ASSERT_EQ(1u, popupWebFrameClient.messages.size());
     EXPECT_TRUE(std::string::npos != popupWebFrameClient.messages[0].text.utf8().find("Unsafe JavaScript attempt to initiate navigation"));
 
     // Try setting a cross-origin iframe element's source to a javascript: URL,
     // and check that this error is also printed on the calling window.
     popupView->mainFrame()->executeScript(WebScriptSource("opener.document.querySelectorAll('iframe')[1].src='javascript:alert()'"));
-    EXPECT_TRUE(webFrameClient.messages.empty());
+    EXPECT_TRUE(webFrameClient.messages.isEmpty());
     ASSERT_EQ(2u, popupWebFrameClient.messages.size());
     EXPECT_TRUE(std::string::npos != popupWebFrameClient.messages[1].text.utf8().find("Blocked a frame"));
 

@@ -112,9 +112,9 @@ static CString snippetForBuffer(SharedBuffer* sharedBuffer)
 static void printStats()
 {
     MutexLocker locker(statsMutex());
-    std::vector<SharedBuffer*> buffers;
-    for (std::set<SharedBuffer*>::const_iterator iter = liveBuffers().begin(); iter != liveBuffers().end(); ++iter)
-        buffers.push_back(*iter);
+    Vector<SharedBuffer*> buffers;
+    for (auto* buffer : liveBuffers())
+        buffers.append(*iter);
     std::sort(buffers.begin(), buffers.end(), sizeComparator);
 
     dataLogF("---- Shared Buffer Stats ----\n");

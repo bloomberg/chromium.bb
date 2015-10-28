@@ -12,7 +12,6 @@
 
 #include <gtest/gtest.h>
 #include <string>
-#include <vector>
 
 namespace blink {
 
@@ -358,13 +357,13 @@ const int MockScriptData::kTable[] = {
 
 class ScriptRunIteratorTest : public testing::Test {
 protected:
-    void CheckRuns(const std::vector<TestRun>& runs)
+    void CheckRuns(const Vector<TestRun>& runs)
     {
         String text(String::make16BitFrom8BitSource(0, 0));
-        std::vector<ExpectedRun> expect;
+        Vector<ExpectedRun> expect;
         for (auto& run : runs) {
             text.append(String::fromUTF8(run.text.c_str()));
-            expect.push_back(ExpectedRun(text.length(), run.code));
+            expect.append(ExpectedRun(text.length(), run.code));
         }
         ScriptRunIterator scriptRunIterator(text.characters16(), text.length());
         VerifyRuns(&scriptRunIterator, expect);
@@ -372,13 +371,13 @@ protected:
 
     // FIXME crbug.com/527329 - CheckMockRuns should be replaced by finding
     // suitable equivalent real codepoint sequences instead.
-    void CheckMockRuns(const std::vector<TestRun>& runs)
+    void CheckMockRuns(const Vector<TestRun>& runs)
     {
         String text(String::make16BitFrom8BitSource(0, 0));
-        std::vector<ExpectedRun> expect;
+        Vector<ExpectedRun> expect;
         for (const TestRun& run : runs) {
             text.append(MockScriptData::ToTestString(run.text));
-            expect.push_back({ text.length(), run.code });
+            expect.append(ExpectedRun(text.length(), run.code));
         }
 
         ScriptRunIterator scriptRunIterator(text.characters16(), text.length(),
@@ -387,7 +386,7 @@ protected:
     }
 
     void VerifyRuns(ScriptRunIterator* scriptRunIterator,
-        const std::vector<ExpectedRun>& expect)
+        const Vector<ExpectedRun>& expect)
     {
         unsigned limit;
         UScriptCode code;
@@ -415,9 +414,10 @@ TEST_F(ScriptRunIteratorTest, Empty)
 }
 
 // Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_RUNSVECTOR(...)                     \
+#define DECLARE_RUNSVECTOR(...) \
     static const TestRun runsArray[] = __VA_ARGS__; \
-    std::vector<TestRun> runs(runsArray, runsArray + sizeof(runsArray) / sizeof(*runsArray));
+    Vector<TestRun> runs; \
+    runs.append(runsArray, sizeof(runsArray) / sizeof(*runsArray));
 
 #define CHECK_RUNS(...)              \
     DECLARE_RUNSVECTOR(__VA_ARGS__); \

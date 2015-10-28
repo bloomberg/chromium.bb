@@ -51,7 +51,6 @@
 #include "public/web/WebViewClient.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
-#include <vector>
 
 namespace blink {
 
@@ -2970,10 +2969,10 @@ class ConsoleMessageWebFrameClient : public FrameTestHelpers::TestWebFrameClient
 public:
     virtual void didAddMessageToConsole(const WebConsoleMessage& msg, const WebString& sourceName, unsigned sourceLine, const WebString& stackTrace)
     {
-        messages.push_back(msg);
+        messages.append(msg);
     }
 
-    std::vector<WebConsoleMessage> messages;
+    Vector<WebConsoleMessage> messages;
 };
 
 TEST_F(ViewportTest, viewportWarnings1)
@@ -2988,7 +2987,7 @@ TEST_F(ViewportTest, viewportWarnings1)
     Page* page = webViewHelper.webViewImpl()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_TRUE(webFrameClient.messages.empty());
+    EXPECT_TRUE(webFrameClient.messages.isEmpty());
 
     EXPECT_EQ(320, constraints.layoutSize.width());
     EXPECT_EQ(352, constraints.layoutSize.height());

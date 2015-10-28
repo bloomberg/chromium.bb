@@ -156,22 +156,22 @@ private:
     // From WebPrerenderingSupport:
     void add(const WebPrerender& prerender) override
     {
-        m_addedPrerenders.push_back(prerender);
+        m_addedPrerenders.append(prerender);
     }
 
     void cancel(const WebPrerender& prerender) override
     {
-        m_canceledPrerenders.push_back(prerender);
+        m_canceledPrerenders.append(prerender);
     }
 
     void abandon(const WebPrerender& prerender) override
     {
-        m_abandonedPrerenders.push_back(prerender);
+        m_abandonedPrerenders.append(prerender);
     }
 
-    std::vector<WebPrerender> m_addedPrerenders;
-    std::vector<WebPrerender> m_canceledPrerenders;
-    std::vector<WebPrerender> m_abandonedPrerenders;
+    Vector<WebPrerender> m_addedPrerenders;
+    Vector<WebPrerender> m_canceledPrerenders;
+    Vector<WebPrerender> m_abandonedPrerenders;
 };
 
 class PrerenderingTest : public testing::Test {

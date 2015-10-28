@@ -55,8 +55,6 @@
 #include "WebVector.h"
 #include "WebWaitableEvent.h"
 
-#include <vector>
-
 class GrContext;
 
 namespace blink {

@@ -3056,10 +3056,10 @@ TEST_F(WebViewTest, TestRecordFrameTimingEvents)
     Frame* frame = webViewImpl->page()->mainFrame();
     int64_t id = frame->frameID();
 
-    std::vector<WebFrameTimingEvent> compositePairs(3);
-    compositePairs[0] = WebFrameTimingEvent(1, 2.0);
-    compositePairs[1] = WebFrameTimingEvent(2, 3.0);
-    compositePairs[2] = WebFrameTimingEvent(3, 4.0);
+    Vector<WebFrameTimingEvent> compositePairs;
+    compositePairs.append(WebFrameTimingEvent(1, 2.0));
+    compositePairs.append(WebFrameTimingEvent(2, 3.0));
+    compositePairs.append(WebFrameTimingEvent(3, 4.0));
     WebVector<WebFrameTimingEvent> compositeEvents(compositePairs);
     webViewImpl->recordFrameTimingEvent(WebView::CompositeEvent, id, compositeEvents);
     PerformanceEntryVector composites = DOMWindowPerformance::performance(*frame->domWindow())->getEntriesByType("composite");
@@ -3076,11 +3076,11 @@ TEST_F(WebViewTest, TestRecordFrameTimingEvents)
     frame = frame->tree().traverseNext();
     id += 2;
 
-    std::vector<WebFrameTimingEvent> renderPairs(4);
-    renderPairs[0] = WebFrameTimingEvent(4, 5.0, 6.0);
-    renderPairs[1] =WebFrameTimingEvent(5, 6.0, 7.0);
-    renderPairs[2] =WebFrameTimingEvent(6, 7.0, 8.0);
-    renderPairs[3] =WebFrameTimingEvent(7, 8.0, 9.0);
+    Vector<WebFrameTimingEvent> renderPairs;
+    renderPairs.append(WebFrameTimingEvent(4, 5.0, 6.0));
+    renderPairs.append(WebFrameTimingEvent(5, 6.0, 7.0));
+    renderPairs.append(WebFrameTimingEvent(6, 7.0, 8.0));
+    renderPairs.append(WebFrameTimingEvent(7, 8.0, 9.0));
     WebVector<WebFrameTimingEvent> renderEvents(renderPairs);
     webViewImpl->recordFrameTimingEvent(WebView::RenderEvent, id, renderEvents);
     composites = DOMWindowPerformance::performance(*frame->domWindow())->getEntriesByType("composite");

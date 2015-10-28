@@ -13,7 +13,6 @@
 #include "wtf/TemporaryChange.h"
 #include <gtest/gtest.h>
 #include <queue>
-#include <vector>
 
 namespace blink {
 

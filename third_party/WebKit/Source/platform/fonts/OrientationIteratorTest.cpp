@@ -9,7 +9,6 @@
 
 #include <gtest/gtest.h>
 #include <string>
-#include <vector>
 
 namespace blink {
 
@@ -38,20 +37,20 @@ protected:
     }
 #endif
 
-    void CheckRuns(const std::vector<TestRun>& runs)
+    void CheckRuns(const Vector<TestRun>& runs)
     {
         String text(String::make16BitFrom8BitSource(0, 0));
-        std::vector<ExpectedRun> expect;
+        Vector<ExpectedRun> expect;
         for (auto& run : runs) {
             text.append(String::fromUTF8(run.text.c_str()));
-            expect.push_back(ExpectedRun(text.length(), run.code));
+            expect.append(ExpectedRun(text.length(), run.code));
         }
         OrientationIterator orientationIterator(text.characters16(), text.length(), FontOrientation::VerticalMixed);
         VerifyRuns(&orientationIterator, expect);
     }
 
     void VerifyRuns(OrientationIterator* orientationIterator,
-        const std::vector<ExpectedRun>& expect)
+        const Vector<ExpectedRun>& expect)
     {
         unsigned limit;
         OrientationIterator::RenderOrientation renderOrientation;
@@ -67,15 +66,12 @@ protected:
     }
 };
 
-// Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_RUNSVECTOR(...)                     \
+// TODO(esprehn): WTF::Vector should allow initialization from a literal.
+#define CHECK_RUNS(...) \
     static const TestRun runsArray[] = __VA_ARGS__; \
-    std::vector<TestRun> runs(runsArray, runsArray + sizeof(runsArray) / sizeof(*runsArray));
-
-#define CHECK_RUNS(...)              \
-    DECLARE_RUNSVECTOR(__VA_ARGS__); \
+    Vector<TestRun> runs; \
+    runs.append(runsArray, sizeof(runsArray) / sizeof(*runsArray)); \
     CheckRuns(runs);
-
 
 TEST_F(OrientationIteratorTest, Empty)
 {

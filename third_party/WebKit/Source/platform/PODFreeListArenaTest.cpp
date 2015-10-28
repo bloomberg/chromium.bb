@@ -28,7 +28,7 @@
 
 #include "platform/testing/ArenaTestHelpers.h"
 #include "wtf/RefPtr.h"
-
+#include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -136,13 +136,13 @@ TEST_F(PODFreeListArenaTest, RunsConstructorsOnReusedObjects)
 // Make sure freeObject puts the object in the free list.
 TEST_F(PODFreeListArenaTest, AddsFreedObjectsToFreedList)
 {
-    std::vector<TestClass1*> objects;
+    Vector<TestClass1*, 100> objects;
     RefPtr<PODFreeListArena<TestClass1>> arena = PODFreeListArena<TestClass1>::create();
     for (int i = 0; i < 100; i++) {
-        objects.push_back(arena->allocateObject());
+        objects.append(arena->allocateObject());
     }
-    for (std::vector<TestClass1*>::iterator it = objects.begin(); it != objects.end(); ++it) {
-        arena->freeObject(*it);
+    for (auto* object : objects) {
+        arena->freeObject(object);
     }
     EXPECT_EQ(100, getFreeListSize(arena));
 }

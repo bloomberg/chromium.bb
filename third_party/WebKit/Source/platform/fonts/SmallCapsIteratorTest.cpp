@@ -9,7 +9,6 @@
 
 #include <gtest/gtest.h>
 #include <string>
-#include <vector>
 
 namespace blink {
 
@@ -38,20 +37,20 @@ protected:
     }
 #endif
 
-    void CheckRuns(const std::vector<TestRun>& runs)
+    void CheckRuns(const Vector<TestRun>& runs)
     {
         String text(String::make16BitFrom8BitSource(0, 0));
-        std::vector<ExpectedRun> expect;
+        Vector<ExpectedRun> expect;
         for (auto& run : runs) {
             text.append(String::fromUTF8(run.text.c_str()));
-            expect.push_back(ExpectedRun(text.length(), run.code));
+            expect.append(ExpectedRun(text.length(), run.code));
         }
         SmallCapsIterator smallCapsIterator(text.characters16(), text.length());
         VerifyRuns(&smallCapsIterator, expect);
     }
 
     void VerifyRuns(SmallCapsIterator* smallCapsIterator,
-        const std::vector<ExpectedRun>& expect)
+        const Vector<ExpectedRun>& expect)
     {
         unsigned limit;
         SmallCapsIterator::SmallCapsBehavior smallCapsBehavior;
@@ -70,7 +69,8 @@ protected:
 // Some of our compilers cannot initialize a vector from an array yet.
 #define DECLARE_RUNSVECTOR(...)                     \
     static const TestRun runsArray[] = __VA_ARGS__; \
-    std::vector<TestRun> runs(runsArray, runsArray + sizeof(runsArray) / sizeof(*runsArray));
+    Vector<TestRun> runs; \
+    runs.append(runsArray, sizeof(runsArray) / sizeof(*runsArray));
 
 #define CHECK_RUNS(...)              \
     DECLARE_RUNSVECTOR(__VA_ARGS__); \

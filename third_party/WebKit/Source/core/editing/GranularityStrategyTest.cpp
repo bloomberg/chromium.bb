@@ -15,6 +15,7 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -35,6 +36,8 @@ IntPoint visiblePositionToContentsPoint(const VisiblePosition& pos)
     return result;
 }
 
+using TextNodeVector = WillBeHeapVector<RefPtrWillBeMember<Text>>;
+
 class GranularityStrategyTest : public ::testing::Test {
 protected:
     void SetUp() override;
@@ -48,24 +51,24 @@ protected:
     void setInnerHTML(const char*);
     // Parses the text node, appending the info to m_letterPos and m_wordMiddles.
     void parseText(Text*);
-    void parseText(std::vector<Text*>);
+    void parseText(const TextNodeVector&);
 
-    PassRefPtrWillBeRawPtr<Text> setupTranslateZ(WTF::String);
-    PassRefPtrWillBeRawPtr<Text> setupTransform(WTF::String);
-    PassRefPtrWillBeRawPtr<Text> setupRotate(WTF::String);
-    void setupTextSpan(WTF::String str1, WTF::String str2, WTF::String str3, size_t selBegin, size_t selEnd);
-    void setupVerticalAlign(WTF::String str1, WTF::String str2, WTF::String str3, size_t selBegin, size_t selEnd);
-    void setupFontSize(WTF::String str1, WTF::String str2, WTF::String str3, size_t selBegin, size_t selEnd);
+    PassRefPtrWillBeRawPtr<Text> setupTranslateZ(String);
+    PassRefPtrWillBeRawPtr<Text> setupTransform(String);
+    PassRefPtrWillBeRawPtr<Text> setupRotate(String);
+    void setupTextSpan(String str1, String str2, String str3, size_t selBegin, size_t selEnd);
+    void setupVerticalAlign(String str1, String str2, String str3, size_t selBegin, size_t selEnd);
+    void setupFontSize(String str1, String str2, String str3, size_t selBegin, size_t selEnd);
 
     void testDirectionExpand();
     void testDirectionShrink();
     void testDirectionSwitchSide();
 
     // Pixel coordinates of the positions for each letter within the text being tested.
-    std::vector<IntPoint> m_letterPos;
+    Vector<IntPoint> m_letterPos;
     // Pixel coordinates of the middles of the words in the text being tested.
     // (y coordinate is based on y coordinates of m_letterPos)
-    std::vector<IntPoint> m_wordMiddles;
+    Vector<IntPoint> m_wordMiddles;
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
@@ -111,40 +114,40 @@ void GranularityStrategyTest::setInnerHTML(const char* htmlContent)
 
 void GranularityStrategyTest::parseText(Text* text)
 {
-    std::vector<Text*> vec;
-    vec.push_back(text);
-    parseText(vec);
+    TextNodeVector textNodes;
+    textNodes.append(text);
+    parseText(textNodes);
 }
 
-void GranularityStrategyTest::parseText(std::vector<Text*> textNodes)
+void GranularityStrategyTest::parseText(const TextNodeVector& textNodes)
 {
     bool wordStarted = false;
     int wordStartIndex = 0;
-    for (Text* text : textNodes) {
+    for (auto& text : textNodes) {
         int wordStartIndexOffset = m_letterPos.size();
-        WTF::String str = text->wholeText();
+        String str = text->wholeText();
         for (size_t i = 0; i < str.length(); i++) {
-            m_letterPos.push_back(visiblePositionToContentsPoint(createVisiblePosition(Position(text, i))));
+            m_letterPos.append(visiblePositionToContentsPoint(createVisiblePosition(Position(text, i))));
             char c = str.characterAt(i);
             if (isASCIIAlphanumeric(c) && !wordStarted) {
                 wordStartIndex = i + wordStartIndexOffset;
                 wordStarted = true;
             } else if (!isASCIIAlphanumeric(c) && wordStarted) {
                 IntPoint wordMiddle((m_letterPos[wordStartIndex].x() + m_letterPos[i + wordStartIndexOffset].x()) / 2, m_letterPos[wordStartIndex].y());
-                m_wordMiddles.push_back(wordMiddle);
+                m_wordMiddles.append(wordMiddle);
                 wordStarted = false;
             }
         }
     }
     if (wordStarted) {
-        Text* lastNode = textNodes[textNodes.size() - 1];
+        const auto& lastNode = textNodes.last();
         int xEnd = visiblePositionToContentsPoint(createVisiblePosition(Position(lastNode, lastNode->wholeText().length()))).x();
         IntPoint wordMiddle((m_letterPos[wordStartIndex].x() + xEnd) / 2, m_letterPos[wordStartIndex].y());
-        m_wordMiddles.push_back(wordMiddle);
+        m_wordMiddles.append(wordMiddle);
     }
 }
 
-PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTranslateZ(WTF::String str)
+PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTranslateZ(String str)
 {
     setInnerHTML(
         "<html>"
@@ -170,7 +173,7 @@ PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTranslateZ(WTF::Strin
     return text.release();
 }
 
-PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTransform(WTF::String str)
+PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTransform(String str)
 {
     setInnerHTML(
         "<html>"
@@ -196,7 +199,7 @@ PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTransform(WTF::String
     return text.release();
 }
 
-PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupRotate(WTF::String str)
+PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupRotate(String str)
 {
     setInnerHTML(
         "<html>"
@@ -222,7 +225,7 @@ PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupRotate(WTF::String st
     return text.release();
 }
 
-void GranularityStrategyTest::setupTextSpan(WTF::String str1, WTF::String str2, WTF::String str3, size_t selBegin, size_t selEnd)
+void GranularityStrategyTest::setupTextSpan(String str1, String str2, String str3, size_t selBegin, size_t selEnd)
 {
     RefPtrWillBeRawPtr<Text> text1 = document().createTextNode(str1);
     RefPtrWillBeRawPtr<Text> text2 = document().createTextNode(str2);
@@ -236,13 +239,13 @@ void GranularityStrategyTest::setupTextSpan(WTF::String str1, WTF::String str2, 
 
     document().view()->updateAllLifecyclePhases();
 
-    std::vector<IntPoint> letterPos;
-    std::vector<IntPoint> wordMiddlePos;
+    Vector<IntPoint> letterPos;
+    Vector<IntPoint> wordMiddlePos;
 
-    std::vector<Text*> textNodes;
-    textNodes.push_back(text1.get());
-    textNodes.push_back(text2.get());
-    textNodes.push_back(text3.get());
+    TextNodeVector textNodes;
+    textNodes.append(text1);
+    textNodes.append(text2);
+    textNodes.append(text3);
     parseText(textNodes);
 
     Position p1;
@@ -263,7 +266,7 @@ void GranularityStrategyTest::setupTextSpan(WTF::String str1, WTF::String str2, 
     selection().setSelection(VisibleSelection(p1, p2));
 }
 
-void GranularityStrategyTest::setupVerticalAlign(WTF::String str1, WTF::String str2, WTF::String str3, size_t selBegin, size_t selEnd)
+void GranularityStrategyTest::setupVerticalAlign(String str1, String str2, String str3, size_t selBegin, size_t selEnd)
 {
     setInnerHTML(
         "<html>"
@@ -282,7 +285,7 @@ void GranularityStrategyTest::setupVerticalAlign(WTF::String str1, WTF::String s
     setupTextSpan(str1, str2, str3, selBegin, selEnd);
 }
 
-void GranularityStrategyTest::setupFontSize(WTF::String str1, WTF::String str2, WTF::String str3, size_t selBegin, size_t selEnd)
+void GranularityStrategyTest::setupFontSize(String str1, String str2, String str3, size_t selBegin, size_t selEnd)
 {
     setInnerHTML(
         "<html>"
@@ -611,7 +614,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideFontSizes)
 TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink)
 {
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
-    WTF::String str = "ab cd efghijkl mnopqr iiin, abc";
+    String str = "ab cd efghijkl mnopqr iiin, abc";
     RefPtrWillBeRawPtr<Text> text = document().createTextNode(str);
     document().body()->appendChild(text);
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
@@ -643,7 +646,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink)
 TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary)
 {
     dummyPageHolder().frame().settings()->setDefaultFontSize(12);
-    WTF::String str = "ab cd efghijkl mnopqr iiin, abc";
+    String str = "ab cd efghijkl mnopqr iiin, abc";
     RefPtrWillBeRawPtr<Text> text = document().createTextNode(str);
     document().body()->appendChild(text);
     dummyPageHolder().frame().settings()->setSelectionStrategy(SelectionStrategy::Direction);
