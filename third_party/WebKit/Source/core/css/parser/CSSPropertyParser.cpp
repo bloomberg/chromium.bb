@@ -358,6 +358,134 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTime(CSSParserTokenRange
     return nullptr;
 }
 
+static int clampRGBComponent(const CSSPrimitiveValue& value)
+{
+    double result = value.getDoubleValue();
+    // TODO(timloh): Multiply by 2.55 and round instead of floor.
+    if (value.isPercentage())
+        result *= 2.56;
+    return clampTo<int>(result, 0, 255);
+}
+
+static bool parseRGBParameters(CSSParserTokenRange& range, RGBA32& result, bool parseAlpha)
+{
+    ASSERT(range.peek().functionId() == CSSValueRgb || range.peek().functionId() == CSSValueRgba);
+    CSSParserTokenRange args = consumeFunction(range);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> colorParameter = consumeInteger(args);
+    if (!colorParameter)
+        colorParameter = consumePercent(args, ValueRangeAll);
+    if (!colorParameter)
+        return false;
+    const bool isPercent = colorParameter->isPercentage();
+    int colorArray[3];
+    colorArray[0] = clampRGBComponent(*colorParameter);
+    for (int i = 1; i < 3; i++) {
+        if (!consumeCommaIncludingWhitespace(args))
+            return false;
+        colorParameter = isPercent ? consumePercent(args, ValueRangeAll) : consumeInteger(args);
+        if (!colorParameter)
+            return false;
+        colorArray[i] = clampRGBComponent(*colorParameter);
+    }
+    if (parseAlpha) {
+        if (!consumeCommaIncludingWhitespace(args))
+            return false;
+        double alpha;
+        if (!consumeNumberRaw(args, alpha))
+            return false;
+        // Convert the floating pointer number of alpha to an integer in the range [0, 256),
+        // with an equal distribution across all 256 values.
+        int alphaComponent = static_cast<int>(clampTo<double>(alpha, 0.0, 1.0) * nextafter(256.0, 0.0));
+        result = makeRGBA(colorArray[0], colorArray[1], colorArray[2], alphaComponent);
+    } else {
+        result = makeRGB(colorArray[0], colorArray[1], colorArray[2]);
+    }
+    return args.atEnd();
+}
+
+static bool parseHSLParameters(CSSParserTokenRange& range, RGBA32& result, bool parseAlpha)
+{
+    ASSERT(range.peek().functionId() == CSSValueHsl || range.peek().functionId() == CSSValueHsla);
+    CSSParserTokenRange args = consumeFunction(range);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> hslValue = consumeNumber(args, ValueRangeAll);
+    if (!hslValue)
+        return false;
+    double colorArray[3];
+    colorArray[0] = (((hslValue->getIntValue() % 360) + 360) % 360) / 360.0;
+    for (int i = 1; i < 3; i++) {
+        if (!consumeCommaIncludingWhitespace(args))
+            return false;
+        hslValue = consumePercent(args, ValueRangeAll);
+        if (!hslValue)
+            return false;
+        double doubleValue = hslValue->getDoubleValue();
+        colorArray[i] = clampTo<double>(doubleValue, 0.0, 100.0) / 100.0; // Needs to be value between 0 and 1.0.
+    }
+    double alpha = 1.0;
+    if (parseAlpha) {
+        if (!consumeCommaIncludingWhitespace(args))
+            return false;
+        if (!consumeNumberRaw(args, alpha))
+            return false;
+        alpha = clampTo<double>(alpha, 0.0, 1.0);
+    }
+    result = makeRGBAFromHSLA(colorArray[0], colorArray[1], colorArray[2], alpha);
+    return args.atEnd();
+}
+
+static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool acceptQuirkyColors)
+{
+    const CSSParserToken& token = range.peek();
+    String color;
+    if (acceptQuirkyColors) {
+        if (token.type() == NumberToken && token.numericValueType() == IntegerValueType
+            && token.numericValue() >= 0. && token.numericValue() < 1000000.) { // e.g. 112233
+            color = String::format("%06d", static_cast<int>(token.numericValue()));
+        } else if (token.type() == DimensionToken) { // e.g. 0001FF
+            color = String::number(static_cast<int>(token.numericValue())) + String(token.value());
+            if (color.length() > 6)
+                return false;
+            while (color.length() < 6)
+                color = "0" + color;
+        } else if (token.type() == IdentToken) { // e.g. FF0000
+            color = token.value();
+        }
+    }
+    if (token.type() == HashToken)
+        color = token.value();
+    if (!Color::parseHexColor(color, result))
+        return false;
+    range.consumeIncludingWhitespace();
+    return true;
+}
+
+static bool parseColorFunction(CSSParserTokenRange& range, RGBA32& result)
+{
+    CSSValueID functionId = range.peek().functionId();
+    if (functionId < CSSValueRgb || functionId > CSSValueHsla)
+        return false;
+    CSSParserTokenRange colorRange = range;
+    if ((functionId <= CSSValueRgba && !parseRGBParameters(colorRange, result, functionId == CSSValueRgba))
+        || (functionId >= CSSValueHsl && !parseHSLParameters(colorRange, result, functionId == CSSValueHsla)))
+        return false;
+    range = colorRange;
+    return true;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeColor(CSSParserTokenRange& range, const CSSParserContext& context, bool acceptQuirkyColors = false)
+{
+    CSSValueID id = range.peek().id();
+    if (CSSPropertyParser::isColorKeyword(id)) {
+        if (!isValueAllowedInMode(id, context.mode()))
+            return nullptr;
+        return consumeIdent(range);
+    }
+    RGBA32 color = Color::transparent;
+    if (!parseHexColor(range, color, acceptQuirkyColors) && !parseColorFunction(range, color))
+        return nullptr;
+    return cssValuePool().createColorValue(color);
+}
+
 static inline bool isCSSWideKeyword(const CSSValueID& id)
 {
     return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
@@ -1301,6 +1429,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
         return consumeWidowsOrOrphans(m_range);
+    case CSSPropertyWebkitTextFillColor:
+    case CSSPropertyWebkitTapHighlightColor:
+        return consumeColor(m_range, m_context);
+    case CSSPropertyColor:
+        return consumeColor(m_range, m_context, inQuirksMode());
     default:
         return nullptr;
     }

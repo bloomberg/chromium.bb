@@ -1570,3 +1570,5 @@ crbug.com/521730 [ Win10 ] printing/webgl-oversized-printing.html [ Timeout ]
 crbug.com/521730 [ Win10 ] printing/block-with-overflow-in-bottom-aligned-fixedpos.html [ Timeout ]
 
 crbug.com/548416 [ SnowLeopard ] virtual/syncpaint/compositing/repaint/background-attachment-fixed-scrolled.html [ Failure ]
+
+crbug.com/499780 fast/css/color-quirk.html [ NeedsRebaseline ]

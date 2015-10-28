@@ -430,11 +430,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBorderEndColor:
     case CSSPropertyWebkitBorderBeforeColor:
     case CSSPropertyWebkitBorderAfterColor:
-    case CSSPropertyColor: // <color> | inherit
     case CSSPropertyTextDecorationColor: // CSS3 text decoration colors
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitTextEmphasisColor:
-    case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:
         ASSERT(propId != CSSPropertyTextDecorationColor || RuntimeEnabledFeatures::css3TextDecorationsEnabled());
         parsedValue = parseColor(m_valueList->current(), acceptQuirkyColors(propId));
@@ -1037,12 +1035,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = true;
         break;
 
-    case CSSPropertyWebkitTapHighlightColor:
-        parsedValue = parseColor(m_valueList->current());
-        if (parsedValue)
-            m_valueList->next();
-        break;
-
         /* shorthand properties */
     case CSSPropertyBackground: {
         // Position must come before color in this array because a plain old "0" is a legal color
@@ -1245,6 +1237,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyTransitionProperty:
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
+    case CSSPropertyWebkitTapHighlightColor:
+    case CSSPropertyWebkitTextFillColor:
+    case CSSPropertyColor:
         validPrimitive = false;
         break;
 
