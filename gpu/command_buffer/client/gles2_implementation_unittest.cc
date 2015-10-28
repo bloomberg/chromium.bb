@@ -671,6 +671,10 @@ class GLES2ImplementationTest : public testing::Test {
     return gl_->GetBucketContents(bucket_id, data);
   }
 
+  bool AllowExtraTransferBufferSize() {
+    return gl_->max_extra_transfer_buffer_size_ > 0;
+  }
+
   TestContext test_contexts_[kNumTestContexts];
 
   scoped_refptr<ShareGroup> share_group_;
@@ -2370,6 +2374,11 @@ TEST_F(GLES2ImplementationTest, TexImage2D) {
 }
 
 TEST_F(GLES2ImplementationTest, TexImage2DViaMappedMem) {
+  if (!AllowExtraTransferBufferSize()) {
+    LOG(WARNING) << "Low memory device do not support MappedMem. Skipping test";
+    return;
+  }
+
   struct Cmds {
     cmds::TexImage2D tex_image_2d;
     cmd::SetToken set_token;
@@ -2722,6 +2731,11 @@ TEST_F(GLES2ImplementationTest, TexImage3DSingleCommand) {
 }
 
 TEST_F(GLES2ImplementationTest, TexImage3DViaMappedMem) {
+  if (!AllowExtraTransferBufferSize()) {
+    LOG(WARNING) << "Low memory device do not support MappedMem. Skipping test";
+    return;
+  }
+
   struct Cmds {
     cmds::TexImage3D tex_image_3d;
   };
