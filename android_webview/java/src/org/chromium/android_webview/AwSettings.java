@@ -34,6 +34,9 @@ public class AwSettings {
     private static final String LOGTAG = AwSettings.class.getSimpleName();
     private static final boolean TRACE = false;
 
+    // TODO(hush): Use android.webkit.WebSettings.MENU_ITEM_*. crbug.com/546762.
+    private static final int MENU_ITEM_NONE = 0;
+
     private static final String TAG = "AwSettings";
 
     // This class must be created on the UI thread. Afterwards, it can be
@@ -87,6 +90,7 @@ public class AwSettings {
     private boolean mVideoOverlayForEmbeddedVideoEnabled = false;
     private boolean mForceVideoOverlayForTests = false;
     private boolean mOffscreenPreRaster = false;
+    private int mDisabledMenuItems = MENU_ITEM_NONE;
 
     // Although this bit is stored on AwSettings it is actually controlled via the CookieManager.
     private boolean mAcceptThirdPartyCookies = false;
@@ -1656,6 +1660,20 @@ public class AwSettings {
                         }
                     }
                 });
+            }
+        }
+    }
+
+    public int getDisabledActionModeMenuItems() {
+        synchronized (mAwSettingsLock) {
+            return mDisabledMenuItems;
+        }
+    }
+
+    public void setDisabledActionModeMenuItems(int menuItems) {
+        synchronized (mAwSettingsLock) {
+            if (menuItems != mDisabledMenuItems) {
+                mDisabledMenuItems = menuItems;
             }
         }
     }

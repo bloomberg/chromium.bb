@@ -2204,6 +2204,10 @@ public class AwContents implements SmartClipProvider,
         mWebContents.requestAccessibilitySnapshot(callback, 0, 0);
     }
 
+    public boolean isSelectActionModeAllowed(int actionModeItem) {
+        return (mSettings.getDisabledActionModeMenuItems() & actionModeItem) != actionModeItem;
+    }
+
     //--------------------------------------------------------------------------------------------
     //  View and ViewGroup method implementations
     //--------------------------------------------------------------------------------------------

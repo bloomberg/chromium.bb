@@ -85,6 +85,12 @@
   public void onActivityResult(int,int,android.content.Intent);
 }
 
+#TODO(hush): remove after N release. crbug.com/546762
+-keep class com.android.webview.chromium.ContentSettingsAdapter {
+  public void setDisabledActionModeMenuItems(int);
+  public int getDisabledActionModeMenuItems();
+}
+
 # Ignore notes and warnings about the support library, which uses reflection and
 # may reference classes no longer in the SDK.
 -dontnote android.support.**

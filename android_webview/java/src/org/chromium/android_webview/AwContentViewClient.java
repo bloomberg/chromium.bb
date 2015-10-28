@@ -114,6 +114,11 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
         mAwContents.startProcessTextIntent(intent);
     }
 
+    @Override
+    public boolean isSelectActionModeAllowed(int actionModeItem) {
+        return mAwContents.isSelectActionModeAllowed(actionModeItem);
+    }
+
     /**
      * Called to show the web contents in fullscreen mode.
      *

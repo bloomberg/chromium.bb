@@ -173,17 +173,12 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             }
 
             @Override
-            public boolean isShareAvailable() {
-                return false;
-            }
-
-            @Override
-            public boolean isWebSearchAvailable() {
-                return false;
-            }
-
-            @Override
             public boolean isIncognito() {
+                return false;
+            }
+
+            @Override
+            public boolean isSelectActionModeAllowed(int actionModeItem) {
                 return false;
             }
         };

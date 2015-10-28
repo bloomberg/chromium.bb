@@ -2167,25 +2167,38 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 }
 
                 @Override
-                public boolean isShareAvailable() {
+                public boolean isIncognito() {
+                    return mWebContents.isIncognito();
+                }
+
+                @Override
+                public boolean isSelectActionModeAllowed(int actionModeItem) {
+                    boolean isAllowedByClient =
+                            getContentViewClient().isSelectActionModeAllowed(actionModeItem);
+                    if (actionModeItem == WebActionModeCallback.MENU_ITEM_SHARE) {
+                        return isAllowedByClient && isShareAvailable();
+                    }
+
+                    if (actionModeItem == WebActionModeCallback.MENU_ITEM_WEB_SEARCH) {
+                        return isAllowedByClient && isWebSearchAvailable();
+                    }
+
+                    return isAllowedByClient;
+                }
+
+                private boolean isShareAvailable() {
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.setType("text/plain");
                     return getContext().getPackageManager().queryIntentActivities(intent,
                             PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
                 }
 
-                @Override
-                public boolean isWebSearchAvailable() {
+                private boolean isWebSearchAvailable() {
                     if (getContentViewClient().doesPerformWebSearch()) return true;
                     Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
                     intent.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
                     return getContext().getPackageManager().queryIntentActivities(intent,
                             PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
-                }
-
-                @Override
-                public boolean isIncognito() {
-                    return mWebContents.isIncognito();
                 }
 
                 private String sanitizeQuery(String query, int maxLength) {

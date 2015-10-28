@@ -122,6 +122,17 @@ public class ContentViewClient {
     public void startProcessTextIntent(Intent intent) {}
 
     /**
+     * @param actionModeItem the flag for the action mode item in question. See
+     *        {@link WebActionModeCallback.ActionHandler} for a list of valid action
+     *        mode item flags.
+     * @return true if the action is allowed. Otherwise, the menu item
+     *         should be removed from the menu.
+     */
+    public boolean isSelectActionModeAllowed(int actionModeItem) {
+        return true;
+    }
+
+    /**
      * Called when a new content intent is requested to be started.
      */
     public void onStartContentIntent(Context context, String intentUrl) {

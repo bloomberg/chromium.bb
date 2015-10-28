@@ -543,6 +543,14 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
         return mAwSettings.getOffscreenPreRaster();
     }
 
+    public void setDisabledActionModeMenuItems(int menuItems) {
+        mAwSettings.setDisabledActionModeMenuItems(menuItems);
+    }
+
+    public int getDisabledActionModeMenuItems() {
+        return mAwSettings.getDisabledActionModeMenuItems();
+    }
+
     @Override
     public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean flag) {
         mAwSettings.setVideoOverlayForEmbeddedVideoEnabled(flag);

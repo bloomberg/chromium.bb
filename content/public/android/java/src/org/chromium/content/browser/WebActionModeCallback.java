@@ -86,16 +86,6 @@ public class WebActionModeCallback implements ActionMode.Callback {
         void onGetContentRect(Rect outRect);
 
         /**
-         * @return Whether or not share is available.
-         */
-        boolean isShareAvailable();
-
-        /**
-         * @return Whether or not web search is available.
-         */
-        boolean isWebSearchAvailable();
-
-        /**
          * @return true if the current selection is of password type.
          */
         boolean isSelectionPassword();
@@ -110,7 +100,22 @@ public class WebActionModeCallback implements ActionMode.Callback {
          *         Note: This should remain constant for the callback's lifetime.
          */
         boolean isIncognito();
+
+        /**
+         * @param actionModeItem the flag for the action mode item in question. The valid flags are
+         *        {@link #MENU_ITEM_SHARE}, {@link #MENU_ITEM_WEB_SEARCH}, and
+         *        {@link #MENU_ITEM_PROCESS_TEXT}.
+         * @return true if the menu item action is allowed. Otherwise, the menu item
+         *         should be removed from the menu.
+         */
+        boolean isSelectActionModeAllowed(int actionModeItem);
     }
+
+    // TODO(hush): Use these constants from android.webkit.WebSettings, when they are made
+    // available. crbug.com/546762.
+    public static final int MENU_ITEM_SHARE = 1 << 0;
+    public static final int MENU_ITEM_WEB_SEARCH = 1 << 1;
+    public static final int MENU_ITEM_PROCESS_TEXT = 1 << 2;
 
     protected final ActionHandler mActionHandler;
     private final Context mContext;
@@ -186,11 +191,12 @@ public class WebActionModeCallback implements ActionMode.Callback {
             menu.removeItem(R.id.select_action_menu_cut);
         }
 
-        if (mEditable || !mActionHandler.isShareAvailable()) {
+        if (mEditable || !mActionHandler.isSelectActionModeAllowed(MENU_ITEM_SHARE)) {
             menu.removeItem(R.id.select_action_menu_share);
         }
 
-        if (mEditable || mActionHandler.isIncognito() || !mActionHandler.isWebSearchAvailable()) {
+        if (mEditable || mActionHandler.isIncognito()
+                || !mActionHandler.isSelectActionModeAllowed(MENU_ITEM_WEB_SEARCH)) {
             menu.removeItem(R.id.select_action_menu_web_search);
         }
 
@@ -267,7 +273,10 @@ public class WebActionModeCallback implements ActionMode.Callback {
      * Intialize the menu items for processing text, if there is any.
      */
     private void initializeTextProcessingMenu(Menu menu) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+                || !mActionHandler.isSelectActionModeAllowed(MENU_ITEM_PROCESS_TEXT)) {
+            return;
+        }
 
         PackageManager packageManager = getContext().getPackageManager();
         List<ResolveInfo> supportedActivities =
