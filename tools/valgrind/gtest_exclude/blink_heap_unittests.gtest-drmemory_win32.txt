@@ -3,6 +3,3 @@ HeapTest.ThreadedWeakness
 
 # crbug.com/420699: Crash under Dr. Memory
 HeapTest.CheckAndMarkPointer
-
-# crbug.com/548480: Timeout under Dr. Memory
-HeapTest.TraceDeepEagerly
