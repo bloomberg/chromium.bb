@@ -91,7 +91,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html', bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-2d.html', bug=483282)
 
     # Windows only.
