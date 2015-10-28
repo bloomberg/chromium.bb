@@ -482,6 +482,7 @@ action("aggregate_vector_icons") {
     "vector_icons/omnibox_extension_app.1x.icon",
     "vector_icons/omnibox_extension_app.icon",
     "vector_icons/omnibox_http.icon",
+    "vector_icons/omnibox_keyword_search.icon",
     "vector_icons/omnibox_search.icon",
     "vector_icons/omnibox_star.1x.icon",
     "vector_icons/omnibox_star.icon",

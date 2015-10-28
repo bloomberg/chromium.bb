@@ -573,12 +573,10 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
     return image.AsImageSkia();
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::VectorIconId icon_id = model_->IsStarredMatch(match_) ?
-        gfx::VectorIconId::OMNIBOX_STAR :
-        AutocompleteMatch::TypeToVectorIcon(match_.type);
-    return gfx::CreateVectorIcon(
-        icon_id, 16,
-        color_utils::DeriveDefaultIconColor(GetColor(GetState(), TEXT)));
+    return GetVectorIcon(
+        model_->IsStarredMatch(match_)
+            ? gfx::VectorIconId::OMNIBOX_STAR
+            : AutocompleteMatch::TypeToVectorIcon(match_.type));
   }
 
   int icon = model_->IsStarredMatch(match_) ?
@@ -605,17 +603,26 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
         break;
     }
   }
-  return *(location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon));
+  return *location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon);
 }
 
-const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
+gfx::ImageSkia OmniboxResultView::GetKeywordIcon() const {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return GetVectorIcon(gfx::VectorIconId::OMNIBOX_KEYWORD_SEARCH);
+
   // NOTE: If we ever begin returning icons of varying size, then callers need
   // to ensure that |keyword_icon_| is resized each time its image is reset.
   int icon = IDR_OMNIBOX_TTS;
-  if (GetState() == SELECTED && !ui::MaterialDesignController::IsModeMaterial())
+  if (GetState() == SELECTED)
     icon = IDR_OMNIBOX_TTS_SELECTED;
 
-  return location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon);
+  return *location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon);
+}
+
+gfx::ImageSkia OmniboxResultView::GetVectorIcon(
+    gfx::VectorIconId icon_id) const {
+  return gfx::CreateVectorIcon(icon_id, 16, color_utils::DeriveDefaultIconColor(
+                                                GetColor(GetState(), TEXT)));
 }
 
 bool OmniboxResultView::ShowOnlyKeywordMatch() const {
