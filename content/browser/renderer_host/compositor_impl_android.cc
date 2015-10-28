@@ -709,7 +709,7 @@ void CompositorImpl::ScheduleComposite() {
   if (ignore_schedule_composite_ || !host_->visible())
     return;
 
-  DCHECK_IMPLIES(needs_composite_, WillComposite());
+  DCHECK(!needs_composite_ || WillComposite());
   needs_composite_ = true;
   // We currently expect layer tree invalidations at most once per frame
   // during normal operation and therefore try to composite immediately

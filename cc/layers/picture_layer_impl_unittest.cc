@@ -232,7 +232,7 @@ class PictureLayerImplTest : public testing::Test {
     // Steal from the recycled tree if possible.
     scoped_ptr<LayerImpl> pending_root = pending_tree->DetachLayerTree();
     scoped_ptr<FakePictureLayerImpl> pending_layer;
-    DCHECK_IMPLIES(pending_root, pending_root->id() == root_id_);
+    DCHECK(!pending_root || pending_root->id() == root_id_);
     if (!pending_root) {
       pending_root = LayerImpl::Create(pending_tree, root_id_);
       pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);

@@ -41,11 +41,11 @@ class TRACING_EXPORT ChildMemoryDumpManagerDelegateImpl
 
   // Pass kInvalidTracingProcessId to invalidate the id.
   void set_tracing_process_id(uint64 id) {
-    DCHECK_IMPLIES(
-        tracing_process_id_ !=
-            base::trace_event::MemoryDumpManager::kInvalidTracingProcessId,
-        id == base::trace_event::MemoryDumpManager::kInvalidTracingProcessId ||
-            id == tracing_process_id_);
+    DCHECK(tracing_process_id_ ==
+               base::trace_event::MemoryDumpManager::kInvalidTracingProcessId ||
+           id ==
+               base::trace_event::MemoryDumpManager::kInvalidTracingProcessId ||
+           id == tracing_process_id_);
     tracing_process_id_ = id;
   }
 

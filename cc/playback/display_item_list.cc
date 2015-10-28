@@ -168,7 +168,7 @@ void DisplayItemList::ProcessAppendedItems() {
     }
 
     if (retain_individual_display_items_) {
-      // Warning: this double-counts SkPicture data if use_cached_picture_ is
+      // Warning: this double-counts SkPicture data if use_cached_picture is
       // also true.
       external_memory_usage_ += item->external_memory_usage();
     }
@@ -233,7 +233,7 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   if (settings_.use_cached_picture && retain_individual_display_items_)
     return 0;
 
-  DCHECK_IMPLIES(settings_.use_cached_picture, picture_);
+  DCHECK(!settings_.use_cached_picture || picture_);
 
   size_t memory_usage = sizeof(*this);
 
@@ -303,7 +303,7 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   DCHECK(ProcessAppendedItemsCalled());
   // This should be only called once, and only after CreateAndCacheSkPicture.
   DCHECK(image_map_.empty());
-  DCHECK_IMPLIES(settings_.use_cached_picture, picture_);
+  DCHECK(!settings_.use_cached_picture || picture_);
   if (settings_.use_cached_picture && !picture_->willPlayBackBitmaps())
     return;
 

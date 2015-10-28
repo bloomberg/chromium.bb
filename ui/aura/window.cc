@@ -223,7 +223,7 @@ void Window::Show() {
   // It is not allowed that a window is visible but the layers alpha is fully
   // transparent since the window would still be considered to be active but
   // could not be seen.
-  DCHECK_IMPLIES(visible_, layer()->GetTargetOpacity() > 0.0f);
+  DCHECK(!visible_ || layer()->GetTargetOpacity() > 0.0f);
   SetVisible(true);
 }
 

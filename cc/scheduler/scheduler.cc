@@ -75,10 +75,8 @@ Scheduler::Scheduler(
   TRACE_EVENT1("cc", "Scheduler::Scheduler", "settings", settings_.AsValue());
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeeded());
-  DCHECK_IMPLIES(settings_.use_external_begin_frame_source,
-                 external_frame_source_);
-  DCHECK_IMPLIES(!settings_.use_external_begin_frame_source,
-                 synthetic_frame_source_);
+  DCHECK(!settings_.use_external_begin_frame_source || external_frame_source_);
+  DCHECK(settings_.use_external_begin_frame_source || synthetic_frame_source_);
   DCHECK(unthrottled_frame_source_);
 
   begin_retro_frame_closure_ =

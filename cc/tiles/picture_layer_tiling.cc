@@ -284,8 +284,7 @@ void PictureLayerTiling::SetRasterSourceAndResize(
 }
 
 void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
-  DCHECK_IMPLIES(tree_ == ACTIVE_TREE,
-                 !client_->GetPendingOrActiveTwinTiling(this));
+  DCHECK(tree_ != ACTIVE_TREE || !client_->GetPendingOrActiveTwinTiling(this));
   RemoveTilesInRegion(layer_invalidation, true /* recreate tiles */);
 }
 
@@ -686,8 +685,8 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
   eventually_rect =
       tiling_data_.ExpandRectIgnoringBordersToTileBounds(eventually_rect);
 
-  DCHECK_IMPLIES(!eventually_rect.IsEmpty(),
-                 gfx::Rect(tiling_size()).Contains(eventually_rect))
+  DCHECK(eventually_rect.IsEmpty() ||
+         gfx::Rect(tiling_size()).Contains(eventually_rect))
       << "tiling_size: " << tiling_size().ToString()
       << " eventually_rect: " << eventually_rect.ToString();
 

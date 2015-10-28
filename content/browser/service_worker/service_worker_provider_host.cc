@@ -108,9 +108,9 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME, provider_type_);
 
   // PlzNavigate
-  CHECK_IMPLIES(render_process_id == ChildProcessHost::kInvalidUniqueID,
-                base::CommandLine::ForCurrentProcess()->HasSwitch(
-                    switches::kEnableBrowserSideNavigation));
+  CHECK(render_process_id != ChildProcessHost::kInvalidUniqueID ||
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation));
 
   if (provider_type_ == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
     // Actual thread id is set when the service worker context gets started.

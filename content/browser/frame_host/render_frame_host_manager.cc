@@ -261,8 +261,8 @@ void RenderFrameHostManager::Init(SiteInstance* site_instance,
   // TODO(avi): While RenderViewHostImpl is-a RenderWidgetHostImpl, this must
   // hold true to avoid having two RenderWidgetHosts for the top-level frame.
   // https://crbug.com/545684
-  DCHECK_IMPLIES(frame_tree_node_->IsMainFrame(),
-                 view_routing_id == widget_routing_id);
+  DCHECK(!frame_tree_node_->IsMainFrame() ||
+         view_routing_id == widget_routing_id);
   int flags = delegate_->IsHidden() ? CREATE_RF_HIDDEN : 0;
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
                                            frame_routing_id, widget_routing_id,
@@ -670,7 +670,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
   if (!pending_render_frame_host_ && !speculative_render_frame_host_) {
-    DCHECK_IMPLIES(should_reuse_web_ui_, web_ui_);
+    DCHECK(!should_reuse_web_ui_ || web_ui_);
 
     // We should only hear this from our current renderer.
     DCHECK_EQ(render_frame_host_, render_frame_host);
@@ -1779,12 +1779,12 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       SiteIsolationPolicy::IsSwappedOutStateForbidden();
 
   CHECK(instance);
-  CHECK_IMPLIES(swapped_out_forbidden, !swapped_out);
-  CHECK_IMPLIES(!SiteIsolationPolicy::AreCrossProcessFramesPossible(),
-                frame_tree_node_->IsMainFrame());
+  CHECK(!swapped_out_forbidden || !swapped_out);
+  CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible() ||
+        frame_tree_node_->IsMainFrame());
 
   // Swapped out views should always be hidden.
-  DCHECK_IMPLIES(swapped_out, (flags & CREATE_RF_HIDDEN));
+  DCHECK(!swapped_out || (flags & CREATE_RF_HIDDEN));
 
   scoped_ptr<RenderFrameHostImpl> new_render_frame_host;
   bool success = true;

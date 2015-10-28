@@ -321,9 +321,8 @@ void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
   bool browser_side_navigation =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation);
-  CHECK_IMPLIES(browser_side_navigation, is_loading());
-  CHECK_IMPLIES(browser_side_navigation,
-                !frame_tree_node()->navigation_request());
+  CHECK(!browser_side_navigation || is_loading());
+  CHECK(!browser_side_navigation || !frame_tree_node()->navigation_request());
   SendNavigate(page_id, 0, did_create_new_entry, url);
 }
 
@@ -397,8 +396,8 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
 int32 TestRenderFrameHost::ComputeNextPageID() {
   const NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
       frame_tree_node()->navigator()->GetController()->GetPendingEntry());
-  DCHECK_IMPLIES(entry && entry->site_instance(),
-                 entry->site_instance() == GetSiteInstance());
+  DCHECK(!(entry && entry->site_instance()) ||
+         entry->site_instance() == GetSiteInstance());
   // Entry can be null when committing an error page (the pending entry was
   // cleared during DidFailProvisionalLoad).
   int page_id = entry ? entry->GetPageID() : -1;
