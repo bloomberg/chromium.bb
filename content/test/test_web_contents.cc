@@ -140,6 +140,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.was_within_same_page = false;
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(url);
+  params.contents_mime_type = std::string("text/html");
 
   rfh->SendNavigateWithParams(&params);
 }

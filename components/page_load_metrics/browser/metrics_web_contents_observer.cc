@@ -4,8 +4,10 @@
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "components/page_load_metrics/browser/page_load_metrics_macros.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,17 +48,22 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     return false;
 
   // If we have a non-empty timing, it should always have a navigation start.
-  DCHECK(!timing.navigation_start.is_null());
+  if (timing.navigation_start.is_null()) {
+    NOTREACHED();
+    return false;
+  }
 
   // If we have a DOM content loaded event, we should have a response start.
-  DCHECK_IMPLIES(
-      !timing.dom_content_loaded_event_start.is_zero(),
-      timing.response_start <= timing.dom_content_loaded_event_start);
+  if (!timing.dom_content_loaded_event_start.is_zero() &&
+      timing.response_start > timing.dom_content_loaded_event_start) {
+    NOTREACHED();
+    return false;
+  }
 
   // If we have a load event, we should have both a response start and a DCL.
   // TODO(csharrison) crbug.com/536203 shows that sometimes we can get a load
   // event without a DCL. Figure out if we can change this condition to use a
-  // DCHECK instead.
+  // NOTREACHED in the condition.
   if (!timing.load_event_start.is_zero() &&
       (timing.dom_content_loaded_event_start.is_zero() ||
        timing.response_start > timing.load_event_start ||
@@ -79,13 +86,12 @@ void RecordInternalError(InternalErrorLoadEvent event) {
 
 }  // namespace
 
-#define PAGE_LOAD_HISTOGRAM(name, sample)                           \
-  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                          \
-                             base::TimeDelta::FromMilliseconds(10), \
-                             base::TimeDelta::FromMinutes(10), 100)
-
-PageLoadTracker::PageLoadTracker(bool in_foreground)
-    : has_commit_(false), started_in_foreground_(in_foreground) {}
+PageLoadTracker::PageLoadTracker(
+    bool in_foreground,
+    base::ObserverList<PageLoadMetricsObserver, true>* observers)
+    : has_commit_(false),
+      started_in_foreground_(in_foreground),
+      observers_(observers) {}
 
 PageLoadTracker::~PageLoadTracker() {
   if (has_commit_)
@@ -105,12 +111,15 @@ void PageLoadTracker::WebContentsShown() {
     foreground_time_ = base::TimeTicks::Now();
 }
 
-void PageLoadTracker::Commit() {
+void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   has_commit_ = true;
   // We log the event that this load started. Because we don't know if a load is
   // relevant or if it will commit before now, we have to log this event at
   // commit time.
   RecordCommittedEvent(COMMITTED_LOAD_STARTED, !started_in_foreground_);
+
+  FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
+                    OnCommit(navigation_handle));
 }
 
 bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing) {
@@ -132,12 +141,32 @@ bool PageLoadTracker::HasBackgrounded() {
   return !started_in_foreground_ || !background_time_.is_null();
 }
 
+PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
+  base::TimeDelta first_background_time;
+  base::TimeDelta first_foreground_time;
+  if (!background_time_.is_null() && started_in_foreground_) {
+    first_background_time =
+        WallTimeFromTimeTicks(background_time_) - timing_.navigation_start;
+  }
+  if (!foreground_time_.is_null() && !started_in_foreground_) {
+    first_foreground_time =
+        WallTimeFromTimeTicks(foreground_time_) - timing_.navigation_start;
+  }
+  return PageLoadExtraInfo(first_background_time, first_foreground_time,
+                           started_in_foreground_);
+}
+
 void PageLoadTracker::RecordTimingHistograms() {
   DCHECK(has_commit_);
   if (timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
     return;
   }
+
+  PageLoadExtraInfo info = GetPageLoadMetricsInfo();
+  FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
+                    OnComplete(timing_, info));
+
   // This method is similar to how blink converts TimeTicks to epoch time.
   // There may be slight inaccuracies due to inter-process timestamps, but
   // this solution is the best we have right now.
@@ -252,7 +281,35 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents), in_foreground_(false) {}
 
-MetricsWebContentsObserver::~MetricsWebContentsObserver() {}
+MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+
+  MetricsWebContentsObserver* metrics = FromWebContents(web_contents);
+  if (!metrics) {
+    metrics = new MetricsWebContentsObserver(web_contents);
+    web_contents->SetUserData(UserDataKey(), metrics);
+  }
+  return metrics;
+}
+
+MetricsWebContentsObserver::~MetricsWebContentsObserver() {
+  // Reset PageLoadTrackers so observers get final notifications.
+  committed_load_.reset();
+  provisional_loads_.clear();
+  FOR_EACH_OBSERVER(PageLoadMetricsObserver, observers_,
+                    OnPageLoadMetricsGoingAway());
+}
+
+void MetricsWebContentsObserver::AddObserver(
+    PageLoadMetricsObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MetricsWebContentsObserver::RemoveObserver(
+    PageLoadMetricsObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 bool MetricsWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
@@ -275,8 +332,12 @@ void MetricsWebContentsObserver::DidStartNavigation(
   // navigation can have a concurrent cross-process navigation started
   // from the omnibox.
   DCHECK_GT(2ul, provisional_loads_.size());
+  // Passing a raw pointer to observers_ is safe because the
+  // MetricsWebContentsObserver owns the PageLoadMetricsObserver list and is
+  // torn down after the PageLoadTracker.
   provisional_loads_.insert(
-      navigation_handle, make_scoped_ptr(new PageLoadTracker(in_foreground_)));
+      navigation_handle,
+      make_scoped_ptr(new PageLoadTracker(in_foreground_, &observers_)));
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(
@@ -320,7 +381,7 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     return;
 
   committed_load_ = finished_nav.Pass();
-  committed_load_->Commit();
+  committed_load_->Commit(navigation_handle);
 }
 
 void MetricsWebContentsObserver::WasShown() {

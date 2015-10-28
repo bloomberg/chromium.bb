@@ -7,12 +7,16 @@
 
 #include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/net_errors.h"
+
+class PageLoadMetricsObserverTest;
 
 namespace content {
 class NavigationHandle;
@@ -48,7 +52,6 @@ const char kBGProvisionalEvents[] = "PageLoad.Events.Provisional.Background";
 const char kBGCommittedEvents[] = "PageLoad.Events.Committed.Background";
 
 const char kErrorEvents[] = "PageLoad.Events.InternalError";
-
 
 // NOTE: Some of these histograms are separated into a separate histogram
 // specified by the ".Background" suffix. For these events, we put them into the
@@ -150,9 +153,11 @@ enum InternalErrorLoadEvent {
 
 class PageLoadTracker {
  public:
-  explicit PageLoadTracker(bool in_foreground);
+  // Caller must guarantee that the observers pointer outlives this class.
+  PageLoadTracker(bool in_foreground,
+                  base::ObserverList<PageLoadMetricsObserver, true>* observers);
   ~PageLoadTracker();
-  void Commit();
+  void Commit(content::NavigationHandle* navigation_handle);
   void WebContentsHidden();
   void WebContentsShown();
 
@@ -163,6 +168,7 @@ class PageLoadTracker {
   bool HasBackgrounded();
 
  private:
+  PageLoadExtraInfo GetPageLoadMetricsInfo();
   void RecordTimingHistograms();
 
   bool has_commit_;
@@ -176,6 +182,9 @@ class PageLoadTracker {
 
   PageLoadTiming timing_;
 
+  // List of observers. This must outlive the class.
+  base::ObserverList<PageLoadMetricsObserver, true>* observers_;
+
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };
 
@@ -183,9 +192,17 @@ class PageLoadTracker {
 // IPC messages received from a MetricsRenderFrameObserver.
 class MetricsWebContentsObserver
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<MetricsWebContentsObserver> {
+      public content::WebContentsUserData<MetricsWebContentsObserver>,
+      public PageLoadMetricsObservable {
  public:
+  // Note that the returned metrics is owned by the web contents.
+  static MetricsWebContentsObserver* CreateForWebContents(
+      content::WebContents* web_contents);
+  explicit MetricsWebContentsObserver(content::WebContents* web_contents);
   ~MetricsWebContentsObserver() override;
+
+  void AddObserver(PageLoadMetricsObserver* observer) override;
+  void RemoveObserver(PageLoadMetricsObserver* observer) override;
 
   // content::WebContentsObserver implementation:
   bool OnMessageReceived(const IPC::Message& message,
@@ -201,9 +218,7 @@ class MetricsWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
-  explicit MetricsWebContentsObserver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
-  friend class MetricsWebContentsObserverTest;
 
   void OnTimingUpdated(content::RenderFrameHost*, const PageLoadTiming& timing);
 
@@ -218,6 +233,7 @@ class MetricsWebContentsObserver
       provisional_loads_;
   scoped_ptr<PageLoadTracker> committed_load_;
 
+  base::ObserverList<PageLoadMetricsObserver, true> observers_;
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };
 

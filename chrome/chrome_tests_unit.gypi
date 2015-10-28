@@ -151,6 +151,7 @@
       'browser/net/spdyproxy/data_reduction_proxy_chrome_settings_unittest.cc',
       'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
       'browser/net/url_info_unittest.cc',
+      'browser/page_load_metrics/observers/page_load_metrics_observers_unittest.cc',
       'browser/password_manager/chrome_password_manager_client_unittest.cc',
       'browser/password_manager/password_manager_internals_service_unittest.cc',
       'browser/password_manager/password_manager_setting_migrator_service_unittest.cc',
