@@ -150,10 +150,7 @@ void AllocationContextTracker::PushPseudoStackFrame(StackFrame frame) {
 // static
 void AllocationContextTracker::PopPseudoStackFrame(StackFrame frame) {
   auto tracker = AllocationContextTracker::GetThreadLocalTracker();
-  // Assert that pushes and pops are nested correctly. |top()| points past the
-  // top of the stack, so |top() - 1| dereferences to the topmost frame.
-  DCHECK_EQ(frame, *(tracker->pseudo_stack_.top() - 1));
-  tracker->pseudo_stack_.pop();
+  tracker->pseudo_stack_.pop(frame);
 }
 
 // static

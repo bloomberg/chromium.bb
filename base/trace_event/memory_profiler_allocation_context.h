@@ -44,9 +44,14 @@ class BASE_EXPORT AllocationStack {
     stack_.push_back(frame);
   }
 
-  inline void pop() {
-    if (!stack_.empty())
-      stack_.pop_back();
+  inline void pop(StackFrame frame) {
+    if (stack_.empty())
+      return;
+
+    // Assert that pushes and pops are nested correctly.
+    DCHECK_EQ(frame, stack_.back());
+
+    stack_.pop_back();
   }
 
  private:
