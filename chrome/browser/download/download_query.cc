@@ -237,12 +237,8 @@ static ComparisonType Compare(
 
 }  // anonymous namespace
 
-DownloadQuery::DownloadQuery()
-  : limit_(kuint32max) {
-}
-
-DownloadQuery::~DownloadQuery() {
-}
+DownloadQuery::DownloadQuery() : limit_(kuint32max), skip_(0U) {}
+DownloadQuery::~DownloadQuery() {}
 
 // AddFilter() pushes a new FilterCallback to filters_. Most FilterCallbacks are
 // Callbacks to FieldMatches<>(). Search() iterates over given DownloadItems,
@@ -432,11 +428,21 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
 }
 
 void DownloadQuery::FinishSearch(DownloadQuery::DownloadVector* results) const {
-  if (!sorters_.empty())
-    std::partial_sort(results->begin(),
-                      results->begin() + std::min(limit_, results->size()),
-                      results->end(),
-                      DownloadComparator(sorters_));
+  if (skip_ >= results->size()) {
+    results->clear();
+    return;
+  }
+
+  if (!sorters_.empty()) {
+    std::partial_sort(
+        results->begin(),
+        results->begin() + std::min(limit_ + skip_, results->size()),
+        results->end(),
+        DownloadComparator(sorters_));
+  }
+
+  results->erase(results->begin(), results->begin() + skip_);
+
   if (results->size() > limit_)
     results->resize(limit_);
 }

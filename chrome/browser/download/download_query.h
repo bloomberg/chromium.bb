@@ -35,6 +35,7 @@ class Value;
 // query.AddSorter(SORT_BYTES_RECEIVED, ASCENDING);
 // query.AddSorter(SORT_URL, DESCENDING);
 // query.Limit(20);
+// query.Skip(5);
 // DownloadVector all_items, results;
 // query.Search(all_items.begin(), all_items.end(), &results);
 class DownloadQuery {
@@ -120,6 +121,11 @@ class DownloadQuery {
   // Limit the size of search results to |limit|.
   void Limit(size_t limit) { limit_ = limit; }
 
+  // Ignore |skip| items. Note: which items are skipped are not guaranteed to
+  // always be the same. If you rely on this, you should probably be using
+  // AddSorter() in conjunction with this method.
+  void Skip(size_t skip) { skip_ = skip; }
+
   // Filters DownloadItem*s from |iter| to |last| into |results|, sorts
   // |results|, and limits the size of |results|. |results| must be non-NULL.
   template <typename InputIterator>
@@ -147,6 +153,7 @@ class DownloadQuery {
   FilterCallbackVector filters_;
   SorterVector sorters_;
   size_t limit_;
+  size_t skip_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadQuery);
 };

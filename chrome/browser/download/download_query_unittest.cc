@@ -176,6 +176,35 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_Limit) {
   ExpectStandardFilterResults();
 }
 
+TEST_F(DownloadQueryTest, DownloadQueryTest_Skip) {
+  CreateMocks(2);
+  query()->Skip(1);
+  Search();
+  EXPECT_EQ(1U, results()->size());
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_SkipMoreThanExist) {
+  query()->Skip(20);
+  Search();
+  EXPECT_EQ(0U, results()->size());
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_LimitSkipAndSort) {
+  const size_t kNumMocks = 10U;
+  CreateMocks(kNumMocks);
+  for (size_t i = 0; i < kNumMocks; ++i) {
+    EXPECT_CALL(mock(i), GetStartTime()).WillRepeatedly(Return(
+        base::Time::FromTimeT(kSomeKnownTime + 1000 * i)));
+  }
+  query()->AddSorter(DownloadQuery::SORT_START_TIME, DownloadQuery::ASCENDING);
+  query()->Limit(2);
+  query()->Skip(5);
+  Search();
+  EXPECT_EQ(2U, results()->size());
+  EXPECT_EQ(5U, results()->at(0)->GetId());
+  EXPECT_EQ(6U, results()->at(1)->GetId());
+}
+
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilename) {
   CreateMocks(2);
   EXPECT_CALL(mock(0), GetBrowserContext()).WillRepeatedly(Return(
