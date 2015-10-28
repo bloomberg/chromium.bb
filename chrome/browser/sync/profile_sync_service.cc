@@ -26,7 +26,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,9 +68,6 @@
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/sync_error.h"
@@ -1492,13 +1488,6 @@ void ProfileSyncService::OnConfigureDone(
   // Notify listeners that configuration is done.
   FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
                     OnSyncConfigurationCompleted());
-
-  // TODO(blundell): Change listeners of this notification to observe the PSS
-  // instead and remove this notification entirely.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-      content::Source<ProfileSyncService>(this),
-      content::NotificationService::NoDetails());
 
   DVLOG(1) << "PSS OnConfigureDone called with status: " << configure_status_;
   // The possible status values:

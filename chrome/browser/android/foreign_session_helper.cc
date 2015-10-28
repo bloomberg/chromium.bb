@@ -151,11 +151,14 @@ static jlong Init(JNIEnv* env,
 }
 
 ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile), scoped_observer_(this) {
   ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
       GetForProfile(profile);
-  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 content::Source<ProfileSyncService>(service));
+
+  // NOTE: The ProfileSyncService can be null in tests.
+  if (service)
+    scoped_observer_.Add(service);
+
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
                  content::Source<Profile>(profile));
 }
@@ -187,22 +190,28 @@ void ForeignSessionHelper::SetOnForeignSessionCallback(JNIEnv* env,
   callback_.Reset(env, callback);
 }
 
-void ForeignSessionHelper::Observe(
-    int type, const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void ForeignSessionHelper::FireForeignSessionCallback() {
   if (callback_.is_null())
     return;
 
   JNIEnv* env = AttachCurrentThread();
+  Java_ForeignSessionCallback_onUpdated(env, callback_.obj());
+}
 
+void ForeignSessionHelper::Observe(
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:
     case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
-      Java_ForeignSessionCallback_onUpdated(env, callback_.obj());
+      FireForeignSessionCallback();
       break;
     default:
       NOTREACHED();
   }
+}
+
+void ForeignSessionHelper::OnSyncConfigurationCompleted() {
+  FireForeignSessionCallback();
 }
 
 jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,

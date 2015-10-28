@@ -321,11 +321,6 @@ enum NotificationType {
 
   // Sync --------------------------------------------------------------------
 
-  // The sync service has finished the datatype configuration process. The
-  // source is the ProfileSyncService object of the Profile. There are no
-  // details.
-  NOTIFICATION_SYNC_CONFIGURE_DONE,
-
   // A service is requesting a sync datatype refresh for the current profile.
   // The details value is a const syncer::ModelTypeSet.
   // If the payload map is empty, it should be treated as an invalidation for

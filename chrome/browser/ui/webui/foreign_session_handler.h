@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
@@ -20,6 +22,10 @@ struct SessionTab;
 struct SessionWindow;
 }
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -27,7 +33,8 @@ class PrefRegistrySyncable;
 namespace browser_sync {
 
 class ForeignSessionHandler : public content::WebUIMessageHandler,
-                              public content::NotificationObserver {
+                              public content::NotificationObserver,
+                              public sync_driver::SyncServiceObserver {
  public:
   // Invalid value, used to note that we don't have a tab or window number.
   static const int kInvalidId = -1;
@@ -36,7 +43,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override;
 
   ForeignSessionHandler();
-  ~ForeignSessionHandler() override {}
+  ~ForeignSessionHandler() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -59,6 +66,10 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // sync_driver::SyncServiceObserver:
+  void OnStateChanged() override {}
+  void OnSyncConfigurationCompleted() override;
 
   // Returns true if tab sync is enabled for this profile, otherwise false.
   bool IsTabSyncEnabled();
@@ -86,6 +97,10 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
 
   // The Registrar used to register ForeignSessionHandler for notifications.
   content::NotificationRegistrar registrar_;
+
+  // ScopedObserver used to observe the ProfileSyncService.
+  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
+      scoped_observer_;
 
   // The time at which this WebUI was created. Used to calculate how long
   // the WebUI was present before the sessions data was visible.

@@ -124,9 +124,11 @@ scoped_ptr<base::DictionaryValue> SessionWindowToValue(
 
 }  // namespace
 
-ForeignSessionHandler::ForeignSessionHandler() {
+ForeignSessionHandler::ForeignSessionHandler() : scoped_observer_(this) {
   load_attempt_time_ = base::TimeTicks::Now();
 }
+
+ForeignSessionHandler::~ForeignSessionHandler() {}
 
 // static
 void ForeignSessionHandler::RegisterProfilePrefs(
@@ -205,10 +207,14 @@ sync_driver::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
 
 void ForeignSessionHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
+
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 content::Source<ProfileSyncService>(service));
+
+  // NOTE: The ProfileSyncService can be null in tests.
+  if (service)
+    scoped_observer_.Add(service);
+
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
                  content::Source<Profile>(profile));
 
@@ -231,13 +237,16 @@ void ForeignSessionHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:
     case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
       HandleGetForeignSessions(nullptr);
       break;
     default:
       NOTREACHED();
   }
+}
+
+void ForeignSessionHandler::OnSyncConfigurationCompleted() {
+  HandleGetForeignSessions(nullptr);
 }
 
 bool ForeignSessionHandler::IsTabSyncEnabled() {
