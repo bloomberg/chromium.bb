@@ -17,6 +17,7 @@
 // kChromeUIScheme defined in content/public/common/url_constants.h until Chrome
 // on iOS stops depending on //content downstream.
 extern const char kChromeUIScheme[];
+extern const char kDummyExtensionScheme[];
 
 // chrome: URLs (including schemes). Should be kept in sync with the
 // URL components below.
