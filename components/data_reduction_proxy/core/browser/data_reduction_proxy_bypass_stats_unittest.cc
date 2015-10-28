@@ -76,16 +76,15 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
 
   scoped_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(
       const GURL& url,
-      const std::string& raw_response_headers) {
+      const std::string& response_headers) {
     scoped_ptr<net::URLRequest> fake_request = context_.CreateRequest(
         url, net::IDLE, &delegate_);
 
     // Create a test job that will fill in the given response headers for the
     // |fake_request|.
-    scoped_refptr<net::URLRequestTestJob> test_job(
-        new net::URLRequestTestJob(fake_request.get(),
-                                   context_.network_delegate(),
-                                   raw_response_headers, std::string(), true));
+    scoped_refptr<net::URLRequestTestJob> test_job(new net::URLRequestTestJob(
+        fake_request.get(), context_.network_delegate(), response_headers,
+        std::string(), true));
 
     // Configure the interceptor to use the test job to handle the next request.
     test_job_interceptor_->set_main_intercept_job(test_job.get());
@@ -410,12 +409,9 @@ TEST_F(DataReductionProxyBypassStatsTest, RecordMissingViaHeaderBytes) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyBypassStats> bypass_stats = BuildBypassStats();
 
-    std::string raw_headers(test_cases[i].headers);
-    HeadersToRaw(&raw_headers);
-
     scoped_ptr<net::URLRequest> fake_request(
         CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
-                                            raw_headers));
+                                            test_cases[i].headers));
     fake_request->set_received_response_content_length(kResponseContentLength);
 
     EXPECT_CALL(*config(),
@@ -477,12 +473,12 @@ TEST_F(DataReductionProxyBypassStatsTest, RequestCompletionErrorCodes) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyBypassStats> bypass_stats = BuildBypassStats();
 
-    std::string raw_headers("HTTP/1.1 200 OK\n"
-                            "Via: 1.1 Chrome-Compression-Proxy\n");
-    HeadersToRaw(&raw_headers);
+    std::string response_headers(
+        "HTTP/1.1 200 OK\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n");
     scoped_ptr<net::URLRequest> fake_request(
         CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
-                                            raw_headers));
+                                            response_headers));
     if (test_cases[i].is_load_bypass_proxy) {
       fake_request->SetLoadFlags(fake_request->load_flags() |
                                  net::LOAD_BYPASS_PROXY);

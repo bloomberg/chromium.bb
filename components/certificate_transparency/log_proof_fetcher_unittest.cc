@@ -26,12 +26,12 @@ namespace certificate_transparency {
 namespace {
 
 const char kGetSTHHeaders[] =
-    "HTTP/1.1 200 OK\0"
-    "Content-Type: application/json; charset=ISO-8859-1\0";
+    "HTTP/1.1 200 OK\n"
+    "Content-Type: application/json; charset=ISO-8859-1\n";
 
 const char kGetSTHNotFoundHeaders[] =
-    "HTTP/1.1 404 Not Found\0"
-    "Content-Type: text/html; charset=iso-8859-1\0";
+    "HTTP/1.1 404 Not Found\n"
+    "Content-Type: text/html; charset=iso-8859-1\n";
 
 const char kLogSchema[] = "https";
 const char kLogHost[] = "ct.log.example.com";

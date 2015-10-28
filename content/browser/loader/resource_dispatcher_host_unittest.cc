@@ -977,11 +977,10 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   // Sets a particular response for any request from now on. To switch back to
-  // the default bahavior, pass an empty |headers|. |headers| should be raw-
-  // formatted (NULLs instead of EOLs).
+  // the default bahavior, pass an empty |headers|. |headers| should be CR[LF]
+  // terminated.
   void SetResponse(const std::string& headers, const std::string& data) {
-    response_headers_ = net::HttpUtil::AssembleRawHeaders(headers.data(),
-                                                          headers.size());
+    response_headers_ = headers;
     response_data_ = data;
   }
   void SetResponse(const std::string& headers) {

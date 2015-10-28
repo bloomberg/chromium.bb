@@ -50,8 +50,8 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
                     bool auto_advance);
 
   // Constructs a job to return the given response regardless of the request
-  // url. The headers should include the HTTP status line and be formatted as
-  // expected by HttpResponseHeaders.
+  // url. The headers should include the HTTP status line and use CRLF/LF as the
+  // line separator.
   URLRequestTestJob(URLRequest* request,
                     NetworkDelegate* network_delegate,
                     const std::string& response_headers,

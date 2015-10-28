@@ -227,9 +227,9 @@ class MockHTTPSURLRequestJob : public net::URLRequestTestJob {
 };
 
 const char kRedirectHeaders[] =
-    "HTTP/1.1 302 Found\0"
-    "Location: https://example.test\0"
-    "\0";
+    "HTTP/1.1 302 Found\n"
+    "Location: https://example.test\n"
+    "\n";
 
 class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
  public:

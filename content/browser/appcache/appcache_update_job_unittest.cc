@@ -78,28 +78,28 @@ class MockHttpServer {
                               std::string* headers,
                               std::string* body) {
     const char ok_headers[] =
-        "HTTP/1.1 200 OK\0"
-        "\0";
+        "HTTP/1.1 200 OK\n"
+        "\n";
     const char error_headers[] =
-        "HTTP/1.1 500 BOO HOO\0"
-        "\0";
+        "HTTP/1.1 500 BOO HOO\n"
+        "\n";
     const char manifest_headers[] =
-        "HTTP/1.1 200 OK\0"
-        "Content-type: text/cache-manifest\0"
-        "\0";
+        "HTTP/1.1 200 OK\n"
+        "Content-type: text/cache-manifest\n"
+        "\n";
     const char not_modified_headers[] =
-        "HTTP/1.1 304 NOT MODIFIED\0"
-        "\0";
+        "HTTP/1.1 304 NOT MODIFIED\n"
+        "\n";
     const char gone_headers[] =
-        "HTTP/1.1 410 GONE\0"
-        "\0";
+        "HTTP/1.1 410 GONE\n"
+        "\n";
     const char not_found_headers[] =
-        "HTTP/1.1 404 NOT FOUND\0"
-        "\0";
+        "HTTP/1.1 404 NOT FOUND\n"
+        "\n";
     const char no_store_headers[] =
-        "HTTP/1.1 200 OK\0"
-        "Cache-Control: no-store\0"
-        "\0";
+        "HTTP/1.1 200 OK\n"
+        "Cache-Control: no-store\n"
+        "\n";
 
     if (path == "/files/missing-mime-manifest") {
       (*headers) = std::string(ok_headers, arraysize(ok_headers));
@@ -410,16 +410,16 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
 
   static std::string retry_headers() {
     const char no_retry_after[] =
-        "HTTP/1.1 503 BOO HOO\0"
-        "\0";
+        "HTTP/1.1 503 BOO HOO\n"
+        "\n";
     const char nonzero[] =
-        "HTTP/1.1 503 BOO HOO\0"
-        "Retry-After: 60\0"
-        "\0";
+        "HTTP/1.1 503 BOO HOO\n"
+        "Retry-After: 60\n"
+        "\n";
     const char retry_after_0[] =
-        "HTTP/1.1 503 BOO HOO\0"
-        "Retry-After: 0\0"
-        "\0";
+        "HTTP/1.1 503 BOO HOO\n"
+        "Retry-After: 0\n"
+        "\n";
 
     switch (retry_after_) {
       case NO_RETRY_AFTER:
@@ -434,9 +434,9 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
 
   static std::string manifest_headers() {
     const char headers[] =
-        "HTTP/1.1 200 OK\0"
-        "Content-type: text/cache-manifest\0"
-        "\0";
+        "HTTP/1.1 200 OK\n"
+        "Content-type: text/cache-manifest\n"
+        "\n";
     return std::string(headers, arraysize(headers));
   }
 

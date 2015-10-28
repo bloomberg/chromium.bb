@@ -35,10 +35,10 @@ namespace content {
 namespace {
 
 const char kHeaders[] =
-    "HTTP/1.1 200 OK\0"
-    "Content-Type: text/javascript\0"
-    "Expires: Thu, 1 Jan 2100 20:00:00 GMT\0"
-    "\0";
+    "HTTP/1.1 200 OK\n"
+    "Content-Type: text/javascript\n"
+    "Expires: Thu, 1 Jan 2100 20:00:00 GMT\n"
+    "\n";
 const char kScriptCode[] = "// no script code\n";
 
 void EmptyCallback() {
@@ -83,10 +83,10 @@ net::URLRequestJob* CreateInvalidMimeTypeJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
   const char kPlainTextHeaders[] =
-      "HTTP/1.1 200 OK\0"
-      "Content-Type: text/plain\0"
-      "Expires: Thu, 1 Jan 2100 20:00:00 GMT\0"
-      "\0";
+      "HTTP/1.1 200 OK\n"
+      "Content-Type: text/plain\n"
+      "Expires: Thu, 1 Jan 2100 20:00:00 GMT\n"
+      "\n";
   return new net::URLRequestTestJob(
       request,
       network_delegate,

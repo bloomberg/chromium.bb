@@ -235,10 +235,10 @@ class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     const char kHeaders[] =
-        "HTTP/1.1 200 OK\0"
-        "Content-Type: text/javascript\0"
-        "Expires: Thu, 1 Jan 2100 20:00:00 GMT\0"
-        "\0";
+        "HTTP/1.1 200 OK\n"
+        "Content-Type: text/javascript\n"
+        "Expires: Thu, 1 Jan 2100 20:00:00 GMT\n"
+        "\n";
     std::string headers(kHeaders, arraysize(kHeaders));
     return new net::URLRequestTestJob(
         request, network_delegate, headers, body_, true);

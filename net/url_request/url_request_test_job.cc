@@ -17,6 +17,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 
 namespace net {
 
@@ -75,37 +76,37 @@ std::string URLRequestTestJob::test_data_4() {
 // static getter for simple response headers
 std::string URLRequestTestJob::test_headers() {
   static const char kHeaders[] =
-      "HTTP/1.1 200 OK\0"
-      "Content-type: text/html\0"
-      "\0";
+      "HTTP/1.1 200 OK\n"
+      "Content-type: text/html\n"
+      "\n";
   return std::string(kHeaders, arraysize(kHeaders));
 }
 
 // static getter for redirect response headers
 std::string URLRequestTestJob::test_redirect_headers() {
   static const char kHeaders[] =
-      "HTTP/1.1 302 MOVED\0"
-      "Location: somewhere\0"
-      "\0";
+      "HTTP/1.1 302 MOVED\n"
+      "Location: somewhere\n"
+      "\n";
   return std::string(kHeaders, arraysize(kHeaders));
 }
 
 // static getter for redirect response headers
 std::string URLRequestTestJob::test_redirect_to_url_2_headers() {
   std::string headers = "HTTP/1.1 302 MOVED";
-  headers.push_back('\0');
+  headers.push_back('\n');
   headers += "Location: ";
   headers += test_url_2().spec();
-  headers.push_back('\0');
-  headers.push_back('\0');
+  headers.push_back('\n');
+  headers.push_back('\n');
   return headers;
 }
 
 // static getter for error response headers
 std::string URLRequestTestJob::test_error_headers() {
   static const char kHeaders[] =
-      "HTTP/1.1 500 BOO HOO\0"
-      "\0";
+      "HTTP/1.1 500 BOO HOO\n"
+      "\n";
   return std::string(kHeaders, arraysize(kHeaders));
 }
 
@@ -149,13 +150,14 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       auto_advance_(auto_advance),
       stage_(WAITING),
       priority_(DEFAULT_PRIORITY),
-      response_headers_(new HttpResponseHeaders(response_headers)),
+      response_headers_(new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(response_headers.c_str(),
+                                            response_headers.size()))),
       response_data_(response_data),
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 URLRequestTestJob::~URLRequestTestJob() {
   g_pending_jobs.Get().erase(
@@ -185,7 +187,9 @@ void URLRequestTestJob::Start() {
 
 void URLRequestTestJob::StartAsync() {
   if (!response_headers_.get()) {
-    response_headers_ = new HttpResponseHeaders(test_headers());
+    std::string headers = test_headers();
+    response_headers_ = new HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
     if (request_->url().spec() == test_url_1().spec()) {
       response_data_ = test_data_1();
       stage_ = DATA_AVAILABLE;  // Simulate a synchronous response for this one.
@@ -196,8 +200,10 @@ void URLRequestTestJob::StartAsync() {
     } else if (request_->url().spec() == test_url_4().spec()) {
       response_data_ = test_data_4();
     } else if (request_->url().spec() == test_url_redirect_to_url_2().spec()) {
+      std::string redirect_headers = test_redirect_to_url_2_headers();
       response_headers_ =
-          new HttpResponseHeaders(test_redirect_to_url_2_headers());
+          new HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+              redirect_headers.c_str(), redirect_headers.size()));
     } else {
       AdvanceJob();
 

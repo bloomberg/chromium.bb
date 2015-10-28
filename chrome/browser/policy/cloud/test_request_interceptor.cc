@@ -44,9 +44,9 @@ net::URLRequestJob* BadRequestJobCallback(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
   static const char kBadHeaders[] =
-      "HTTP/1.1 400 Bad request\0"
-      "Content-type: application/protobuf\0"
-      "\0";
+      "HTTP/1.1 400 Bad request\n"
+      "Content-type: application/protobuf\n"
+      "\n";
   std::string headers(kBadHeaders, arraysize(kBadHeaders));
   return new net::URLRequestTestJob(
       request, network_delegate, headers, std::string(), true);
@@ -141,9 +141,9 @@ net::URLRequestJob* RegisterJobCallback(
   response.SerializeToString(&data);
 
   static const char kGoodHeaders[] =
-      "HTTP/1.1 200 OK\0"
-      "Content-type: application/protobuf\0"
-      "\0";
+      "HTTP/1.1 200 OK\n"
+      "Content-type: application/protobuf\n"
+      "\n";
   std::string headers(kGoodHeaders, arraysize(kGoodHeaders));
   return new net::URLRequestTestJob(
       request, network_delegate, headers, data, true);
