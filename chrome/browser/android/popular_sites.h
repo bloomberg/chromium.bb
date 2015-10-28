@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -61,11 +62,17 @@ class PopularSites {
   PopularSites(Profile* profile,
                const GURL& url,
                const FinishedCallback& callback);
+
   ~PopularSites();
 
   const std::vector<Site>& sites() const { return sites_; }
 
  private:
+  PopularSites(Profile* profile,
+               const GURL& url,
+               bool force_download,
+               const FinishedCallback& callback);
+
   // Fetch the popular sites at the given URL. |force_download| should be true
   // if any previously downloaded site list should be overwritten.
   void FetchPopularSites(const GURL& url,
@@ -84,6 +91,9 @@ class PopularSites {
   FinishedCallback callback_;
   scoped_ptr<FileDownloader> downloader_;
   std::vector<Site> sites_;
+  base::TimeTicks last_download_time_;
+
+  base::TimeDelta redownload_interval_;
   base::FilePath popular_sites_local_path_;
 
   base::WeakPtrFactory<PopularSites> weak_ptr_factory_;

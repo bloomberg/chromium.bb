@@ -36,6 +36,7 @@ const char kPopularSitesServerFilenameFormat[] = "suggested_sites_%s_%s.json";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 const char kPopularSitesDefaultVersion[] = "3";
 const char kPopularSitesLocalFilename[] = "suggested_sites.json";
+const int kPopularSitesRedownloadIntervalHours = 24;
 
 // Extract the country from the default search engine if the default search
 // engine is Google.
@@ -189,34 +190,42 @@ PopularSites::PopularSites(Profile* profile,
                            const std::string& override_version,
                            bool force_download,
                            const FinishedCallback& callback)
+    : PopularSites(profile,
+                   GetPopularSitesURL(profile, override_country,
+                                      override_version),
+                   force_download,
+                   callback) {}
+
+PopularSites::PopularSites(Profile* profile,
+                           const GURL& url,
+                           const FinishedCallback& callback)
+    : PopularSites(profile, url, true, callback) {}
+
+PopularSites::~PopularSites() {}
+
+PopularSites::PopularSites(Profile* profile,
+                           const GURL& url,
+                           bool force_download,
+                           const FinishedCallback& callback)
     : callback_(callback),
+      redownload_interval_(
+          base::TimeDelta::FromHours(kPopularSitesRedownloadIntervalHours)),
       popular_sites_local_path_(GetPopularSitesPath()),
       weak_ptr_factory_(this) {
   // Re-download the file once on every Chrome startup, but use the cached
   // local file afterwards.
   static bool first_time = true;
-  FetchPopularSites(GetPopularSitesURL(profile, override_country,
-                                       override_version),
-                    profile, first_time || force_download);
+  FetchPopularSites(url, profile, first_time || force_download);
   first_time = false;
 }
-
-PopularSites::PopularSites(Profile* profile,
-                           const GURL& url,
-                           const FinishedCallback& callback)
-    : callback_(callback),
-      popular_sites_local_path_(GetPopularSitesPath()),
-      weak_ptr_factory_(this) {
-  FetchPopularSites(url, profile, true);
-}
-
-PopularSites::~PopularSites() {}
 
 void PopularSites::FetchPopularSites(const GURL& url,
                                      Profile* profile,
                                      bool force_download) {
+  base::TimeDelta age = base::TimeTicks::Now() - last_download_time_;
+  bool redownload = force_download || (age > redownload_interval_);
   downloader_.reset(
-      new FileDownloader(url, popular_sites_local_path_, force_download,
+      new FileDownloader(url, popular_sites_local_path_, redownload,
                          profile->GetRequestContext(),
                          base::Bind(&PopularSites::OnDownloadDone,
                                     base::Unretained(this), profile)));
@@ -232,6 +241,7 @@ void PopularSites::FetchFallbackSites(Profile* profile) {
 
 void PopularSites::OnDownloadDone(Profile* profile, bool success) {
   if (success) {
+    last_download_time_ = base::TimeTicks::Now();
     ParseSiteList(popular_sites_local_path_);
     downloader_.reset();
   } else {
@@ -242,6 +252,7 @@ void PopularSites::OnDownloadDone(Profile* profile, bool success) {
 
 void PopularSites::OnDownloadFallbackDone(bool success) {
   if (success) {
+    last_download_time_ = base::TimeTicks::Now();
     ParseSiteList(popular_sites_local_path_);
   } else {
     DLOG(WARNING) << "Download fallback site list failed";
