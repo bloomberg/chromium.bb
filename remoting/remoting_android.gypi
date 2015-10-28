@@ -23,6 +23,7 @@
           'sources': [
             'android/java/src/org/chromium/chromoting/jni/Client.java',
             'android/java/src/org/chromium/chromoting/jni/JniInterface.java',
+            'android/java/src/org/chromium/chromoting/jni/TouchEventData.java',
           ],
           'variables': {
             'jni_gen_package': 'remoting',
@@ -52,6 +53,8 @@
             'client/jni/jni_client.h',
             'client/jni/jni_frame_consumer.cc',
             'client/jni/jni_frame_consumer.h',
+            'client/jni/jni_touch_event_data.cc',
+            'client/jni/jni_touch_event_data.h',
             'client/jni/remoting_jni_onload.cc',
             'client/jni/remoting_jni_registrar.cc',
             'client/jni/remoting_jni_registrar.h',

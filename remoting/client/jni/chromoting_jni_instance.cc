@@ -263,6 +263,18 @@ void ChromotingJniInstance::SendTextEvent(const std::string& text) {
   client_->input_stub()->InjectTextEvent(event);
 }
 
+void ChromotingJniInstance::SendTouchEvent(
+    const protocol::TouchEvent& touch_event) {
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::SendTouchEvent, this, touch_event));
+    return;
+  }
+
+  client_->input_stub()->InjectTouchEvent(touch_event);
+}
+
 void ChromotingJniInstance::EnableVideoChannel(bool enable) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->network_task_runner()->PostTask(

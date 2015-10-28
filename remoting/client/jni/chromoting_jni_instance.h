@@ -88,6 +88,9 @@ class ChromotingJniInstance
 
   void SendTextEvent(const std::string& text);
 
+  // Sends the provided touch event payload to the host.
+  void SendTouchEvent(const protocol::TouchEvent& touch_event);
+
   // Enables or disables the video channel. May be called from any thread.
   void EnableVideoChannel(bool enable);
 

@@ -17,6 +17,7 @@
 #include "google_apis/google_api_keys.h"
 #include "jni/JniInterface_jni.h"
 #include "remoting/base/url_request_context_getter.h"
+#include "remoting/client/jni/jni_touch_event_data.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -150,6 +151,32 @@ static void SendTextEvent(JNIEnv* env,
                           const JavaParamRef<jstring>& text) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->SendTextEvent(
       ConvertJavaStringToUTF8(env, text));
+}
+
+static void SendTouchEvent(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint eventType,
+    const JavaParamRef<jobjectArray>& touchEventObjectArray) {
+  protocol::TouchEvent touch_event;
+  touch_event.set_event_type(
+      static_cast<protocol::TouchEvent::TouchEventType>(eventType));
+
+  // Iterate over the elements in the object array and transfer the data from
+  // the java object to a native event object.
+  jsize length = env->GetArrayLength(touchEventObjectArray);
+  DCHECK_GE(length, 0);
+  for (jsize i = 0; i < length; ++i) {
+    protocol::TouchEventPoint* touch_point = touch_event.add_touch_points();
+
+    ScopedJavaLocalRef<jobject> java_touch_event(
+        env, env->GetObjectArrayElement(touchEventObjectArray, i));
+
+    JniTouchEventData::CopyTouchPointData(env, java_touch_event, touch_point);
+  }
+
+  remoting::ChromotingJniRuntime::GetInstance()->session()->SendTouchEvent(
+      touch_event);
 }
 
 static void EnableVideoChannel(JNIEnv* env,

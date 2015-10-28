@@ -100,7 +100,6 @@ public class JniInterface {
             }
         }
 
-
         /**
          * Notified on connection state change.
          * @param state The new connection state.
@@ -169,8 +168,8 @@ public class JniInterface {
     }
 
     /** Attempts to form a connection to the user-selected host. Called on the UI thread. */
-    public static void connectToHost(String username, String authToken,
-            String hostJid, String hostId, String hostPubkey, ConnectionListener listener,
+    public static void connectToHost(String username, String authToken, String hostJid,
+            String hostId, String hostPubkey, ConnectionListener listener,
             SessionAuthenticator authenticator) {
         disconnectFromHost();
 
@@ -193,8 +192,8 @@ public class JniInterface {
             return;
         }
 
-        sConnectionListener.onConnectionState(ConnectionListener.State.CLOSED,
-                ConnectionListener.Error.OK);
+        sConnectionListener.onConnectionState(
+                ConnectionListener.State.CLOSED, ConnectionListener.Error.OK);
 
         disconnectFromHostWithoutNotification();
     }
@@ -244,15 +243,15 @@ public class JniInterface {
      * @param deviceName The device name to appear in the pairing registry. Only used if createPair
      *                   is true.
      */
-    public static void handleAuthenticationResponse(String pin, boolean createPair,
-            String deviceName) {
+    public static void handleAuthenticationResponse(
+            String pin, boolean createPair, String deviceName) {
         assert sConnected;
         nativeAuthenticationResponse(pin, createPair, deviceName);
     }
 
     /** Native implementation of handleAuthenticationResponse(). */
-    private static native void nativeAuthenticationResponse(String pin, boolean createPair,
-            String deviceName);
+    private static native void nativeAuthenticationResponse(
+            String pin, boolean createPair, String deviceName);
 
     /** Saves newly-received pairing credentials to permanent storage. Called on the UI thread. */
     @CalledByNative
@@ -273,8 +272,8 @@ public class JniInterface {
     }
 
     /** Passes mouse information to the native handling code. */
-    private static native void nativeSendMouseEvent(int x, int y, int whichButton,
-            boolean buttonDown);
+    private static native void nativeSendMouseEvent(
+            int x, int y, int whichButton, boolean buttonDown);
 
     /** Injects a mouse-wheel event with delta values. Called on the UI thread. */
     public static void sendMouseWheelEvent(int deltaX, int deltaY) {
@@ -316,6 +315,14 @@ public class JniInterface {
 
     /** Passes text event information to the native handling code. */
     private static native void nativeSendTextEvent(String text);
+
+    /** Sends an array of TouchEvents to the host. Called on the UI thread. */
+    public static void sendTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
+        nativeSendTouchEvent(eventType.value(), data);
+    }
+
+    /** Passes touch event information to the native handling code. */
+    private static native void nativeSendTouchEvent(int eventType, TouchEventData[] data);
 
     /**
      * Enables or disables the video channel. Called on the UI thread in response to Activity
@@ -406,8 +413,8 @@ public class JniInterface {
      * shape from the host.
      */
     @CalledByNative
-    public static void updateCursorShape(int width, int height, int hotspotX, int hotspotY,
-                                         ByteBuffer buffer) {
+    public static void updateCursorShape(
+            int width, int height, int hotspotX, int hotspotY, ByteBuffer buffer) {
         sCursorHotspot = new Point(hotspotX, hotspotY);
 
         int[] data = new int[width * height];
