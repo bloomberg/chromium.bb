@@ -55,6 +55,9 @@ class LocationBar {
   // Updates the password icon and pops up a bubble from the icon if needed.
   virtual void UpdateManagePasswordsIconAndBubble() = 0;
 
+  // Updates the visibility and toggled state of the save credit card icon.
+  virtual void UpdateSaveCreditCardIcon() = 0;
+
   // Updates the state of the page actions.
   virtual void UpdatePageActions() = 0;
 

@@ -163,6 +163,17 @@
     Do you want Chrome to save this credit card information for completing web forms?
   </message>
 
+  <!-- Autofill save credit card bubble -->
+  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_ACCEPT" desc="Text to show for the Autofill save credit card bubble accept button.">
+    Save
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_DENY" desc="Text to show for the Autofill save credit card bubble deny button.">
+    No thanks
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL" desc="Title text for the Autofill save card bubble when the card is to be saved locally.">
+    Do you want to save this card with Chrome?
+  </message>
+
   <!-- Autofill credit card unmask prompt -->
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN" desc="Error message that encourages the user to try to re-enter their credit card CVC after a previous failed attempt.">
     Check your CVC and try again

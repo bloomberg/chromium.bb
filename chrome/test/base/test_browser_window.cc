@@ -164,6 +164,12 @@ gfx::Rect TestBrowserWindow::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
+autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
+    content::WebContents* contents,
+    autofill::SaveCardBubbleController* controller) {
+  return nullptr;
+}
+
 bool TestBrowserWindow::IsProfileResetBubbleSupported() const {
   return false;
 }

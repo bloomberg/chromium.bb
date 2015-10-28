@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -149,6 +150,28 @@ class TestPersonalDataManager : public PersonalDataManager {
     local_credit_cards_.clear();
   }
 
+  // Create Elvis card with whitespace in the credit card number.
+  void CreateTestCreditCardWithWhitespace() {
+    ClearCreditCards();
+    CreditCard* credit_card = new CreditCard;
+    test::SetCreditCardInfo(credit_card, "Elvis Presley",
+                            "4234 5678 9012 3456",  // Visa
+                            "04", "2012");
+    credit_card->set_guid("00000000-0000-0000-0000-000000000008");
+    local_credit_cards_.push_back(credit_card);
+  }
+
+  // Create Elvis card with separator characters in the credit card number.
+  void CreateTestCreditCardWithSeparators() {
+    ClearCreditCards();
+    CreditCard* credit_card = new CreditCard;
+    test::SetCreditCardInfo(credit_card, "Elvis Presley",
+                            "4234-5678-9012-3456",  // Visa
+                            "04", "2012");
+    credit_card->set_guid("00000000-0000-0000-0000-000000000009");
+    local_credit_cards_.push_back(credit_card);
+  }
+
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
     ClearCreditCards();
     CreditCard* credit_card = new CreditCard;
@@ -186,7 +209,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
     CreditCard* credit_card = new CreditCard;
     test::SetCreditCardInfo(credit_card, "Elvis Presley",
-                            "4234 5678 9012 3456",  // Visa
+                            "4234567890123456",  // Visa
                             "04", "2012");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_cards->push_back(credit_card);
@@ -1539,6 +1562,48 @@ TEST_F(AutofillManagerTest, FillCreditCardForm) {
       response_page_id, response_data, kDefaultPageID, false);
 }
 
+// Test that whitespace is stripped from the credit card number.
+TEST_F(AutofillManagerTest, FillCreditCardFormStripCardNumberWhitespace) {
+  // Same as the SetUp(), but generate Elvis card with whitespace in credit
+  // card number.
+  personal_data_.CreateTestCreditCardWithWhitespace();
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000008";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+  ExpectFilledCreditCardFormElvis(response_page_id, response_data,
+                                  kDefaultPageID, false);
+}
+
+// Test that separator characters are stripped from the credit card number.
+TEST_F(AutofillManagerTest, FillCreditCardFormStripCardNumberSeparators) {
+  // Same as the SetUp(), but generate Elvis card with separator characters in
+  // credit card number.
+  personal_data_.CreateTestCreditCardWithSeparators();
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000009";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+  ExpectFilledCreditCardFormElvis(response_page_id, response_data,
+                                  kDefaultPageID, false);
+}
+
 // Test that we correctly fill a credit card form with month input type.
 // 1. year empty, month empty
 TEST_F(AutofillManagerTest, FillCreditCardFormNoYearNoMonth) {
@@ -2601,6 +2666,45 @@ TEST_F(AutofillManagerTest, ImportFormDataCreditCardHTTPS) {
 // Tests that credit card data are saved for forms on http
 TEST_F(AutofillManagerTest, ImportFormDataCreditCardHTTP) {
   TestSaveCreditCards(false);
+}
+
+// Tests that credit card data are saved when autocomplete=off for CC field.
+TEST_F(AutofillManagerTest, CreditCardSavedWhenAutocompleteOff) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, false, false);
+
+  // Set "autocomplete=off" for cardnumber field.
+  form.fields[1].should_autocomplete = false;
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Edit the data, and submit
+  form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  form.fields[2].value = ASCIIToUTF16("11");
+  form.fields[3].value = ASCIIToUTF16("2017");
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(1);
+  FormSubmitted(form);
+}
+
+// Tests that credit card data are not saved when CC number does not pass the
+// Luhn test.
+TEST_F(AutofillManagerTest, InvalidCreditCardNumberIsNotSaved) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Edit the data, and submit.
+  std::string card("4408041234567890");
+  ASSERT_FALSE(autofill::IsValidCreditCardNumber(ASCIIToUTF16(card)));
+  form.fields[1].value = ASCIIToUTF16(card);
+  form.fields[2].value = ASCIIToUTF16("11");
+  form.fields[3].value = ASCIIToUTF16("2017");
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(0);
+  FormSubmitted(form);
 }
 
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {

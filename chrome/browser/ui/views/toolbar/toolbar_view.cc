@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
+#include "chrome/browser/ui/views/location_bar/save_credit_card_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
@@ -306,6 +307,14 @@ bool ToolbarView::IsAppMenuFocused() {
 views::View* ToolbarView::GetBookmarkBubbleAnchor() {
   views::View* star_view = location_bar()->star_view();
   return (star_view && star_view->visible()) ? star_view : app_menu_button_;
+}
+
+views::View* ToolbarView::GetSaveCreditCardBubbleAnchor() {
+  views::View* save_credit_card_icon_view =
+      location_bar()->save_credit_card_icon_view();
+  return (save_credit_card_icon_view && save_credit_card_icon_view->visible())
+             ? save_credit_card_icon_view
+             : app_menu_button_;
 }
 
 views::View* ToolbarView::GetTranslateBubbleAnchor() {

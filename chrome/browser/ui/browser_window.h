@@ -37,6 +37,11 @@ class ToolbarActionsBar;
 
 struct WebApplicationInfo;
 
+namespace autofill {
+class SaveCardBubbleController;
+class SaveCardBubbleView;
+}
+
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
@@ -244,6 +249,11 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowBookmarkAppBubble(
       const WebApplicationInfo& web_app_info,
       const ShowBookmarkAppBubbleCallback& callback) = 0;
+
+  // Shows the "Save credit card" bubble.
+  virtual autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
+      content::WebContents* contents,
+      autofill::SaveCardBubbleController* controller) = 0;
 
   // Shows the translate bubble.
   //

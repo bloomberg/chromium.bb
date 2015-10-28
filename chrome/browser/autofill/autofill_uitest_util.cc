@@ -4,41 +4,25 @@
 
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_manager.h"
 #include "content/public/test/test_utils.h"
 
 namespace autofill {
 
 // This class is used to wait for asynchronous updates to PersonalDataManager
 // to complete.
-class PdmChangeWaiter
-    : public PersonalDataManagerObserver,
-      public infobars::InfoBarManager::Observer {
+class PdmChangeWaiter : public PersonalDataManagerObserver {
  public:
   explicit PdmChangeWaiter(Browser* browser)
-      : alerted_(false),
-        has_run_message_loop_(false),
-        browser_(browser),
-        infobar_service_(InfoBarService::FromWebContents(
-            browser_->tab_strip_model()->GetActiveWebContents())) {
+      : alerted_(false), has_run_message_loop_(false), browser_(browser) {
     PersonalDataManagerFactory::GetForProfile(browser_->profile())->
         AddObserver(this);
-    infobar_service_->AddObserver(this);
   }
 
-  ~PdmChangeWaiter() override {
-    while (infobar_service_->infobar_count() > 0) {
-      infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
-    }
-    infobar_service_->RemoveObserver(this);
-  }
+  ~PdmChangeWaiter() override {}
 
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override {
@@ -51,7 +35,6 @@ class PdmChangeWaiter
 
   void OnInsufficientFormData() override { OnPersonalDataChanged(); }
 
-
   void Wait() {
     if (!alerted_) {
       has_run_message_loop_ = true;
@@ -62,16 +45,9 @@ class PdmChangeWaiter
   }
 
  private:
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override {
-    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
-        Accept();
-  }
-
   bool alerted_;
   bool has_run_message_loop_;
   Browser* browser_;
-  InfoBarService* infobar_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PdmChangeWaiter);
 };

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_controller.h"
+#include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -153,9 +154,19 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(GetRealPanResult result) {
 
 void ChromeAutofillClient::ConfirmSaveCreditCard(
     const base::Closure& save_card_callback) {
+// TODO(bondd): Implement save card bubble for OS_MACOSX.
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+  // Do lazy initialization of SaveCardBubbleControllerImpl.
+  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
+  autofill::SaveCardBubbleControllerImpl* controller =
+      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
+  controller->SetCallback(save_card_callback);
+  controller->ShowBubble();
+#else
   AutofillCCInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()), this,
       save_card_callback);
+#endif
 }
 
 bool ChromeAutofillClient::HasCreditCardScanFeature() {

@@ -26,6 +26,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/accelerator_utils.h"
+#include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
@@ -804,6 +805,17 @@ bool CanBookmarkAllTabs(const Browser* browser) {
              !chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile()) &&
              CanBookmarkCurrentPageInternal(browser, false);
 }
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+void SaveCreditCard(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  autofill::SaveCardBubbleControllerImpl* controller =
+      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+  DCHECK(controller);
+  controller->ShowBubble();
+}
+#endif
 
 void Translate(Browser* browser) {
   if (!browser->window()->IsActive())

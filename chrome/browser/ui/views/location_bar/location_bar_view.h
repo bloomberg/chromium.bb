@@ -44,6 +44,7 @@ class ManagePasswordsIconViews;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
+class SaveCreditCardIconView;
 class SelectedKeywordView;
 class StarView;
 class TemplateURLService;
@@ -175,6 +176,11 @@ class LocationBarView : public LocationBar,
   // The star. It may not be visible.
   StarView* star_view() { return star_view_; }
 
+  // The save credit card icon. It may not be visible.
+  SaveCreditCardIconView* save_credit_card_icon_view() {
+    return save_credit_card_icon_view_;
+  }
+
   // Toggles the translate icon on or off.
   void SetTranslateIconToggled(bool on);
 
@@ -302,6 +308,9 @@ class LocationBarView : public LocationBar,
   // true if the visibility of the view changed.
   bool RefreshZoomView();
 
+  // Updates |save_credit_card_icon_view_|. Returns true if visibility changed.
+  bool RefreshSaveCreditCardIconView();
+
   // Updates the Translate icon based on the current tab's Translate status.
   void RefreshTranslateIcon();
 
@@ -336,6 +345,7 @@ class LocationBarView : public LocationBar,
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
+  void UpdateSaveCreditCardIcon() override;
   void UpdatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animation) override;
@@ -451,6 +461,9 @@ class LocationBarView : public LocationBar,
 
   // The page action icon views.
   PageActionViews page_action_views_;
+
+  // The save credit card icon.
+  SaveCreditCardIconView* save_credit_card_icon_view_;
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_;

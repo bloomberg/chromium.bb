@@ -74,6 +74,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns the view to which the bookmark bubble should be anchored.
   views::View* GetBookmarkBubbleAnchor();
 
+  // Returns the view to which the "Save credit card" bubble should be anchored.
+  views::View* GetSaveCreditCardBubbleAnchor();
+
   // Returns the view to which the Translate bubble should be anchored.
   views::View* GetTranslateBubbleAnchor();
 

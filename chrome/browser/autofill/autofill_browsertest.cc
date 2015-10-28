@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -34,9 +33,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -63,28 +59,15 @@ const char kDocumentClickHandlerSubmitJS[] =
 
 // TODO(bondd): PdmChangeWaiter in autofill_uitest_util.cc is a replacement for
 // this class. Remove this class and use helper functions in that file instead.
-class WindowedPersonalDataManagerObserver
-    : public PersonalDataManagerObserver,
-      public infobars::InfoBarManager::Observer {
+class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
  public:
   explicit WindowedPersonalDataManagerObserver(Browser* browser)
-      : alerted_(false),
-        has_run_message_loop_(false),
-        browser_(browser),
-        infobar_service_(InfoBarService::FromWebContents(
-            browser_->tab_strip_model()->GetActiveWebContents())) {
+      : alerted_(false), has_run_message_loop_(false), browser_(browser) {
     PersonalDataManagerFactory::GetForProfile(browser_->profile())->
         AddObserver(this);
-    infobar_service_->AddObserver(this);
   }
 
-  ~WindowedPersonalDataManagerObserver() override {
-    infobar_service_->RemoveObserver(this);
-
-    if (infobar_service_->infobar_count() > 0) {
-      infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
-    }
-  }
+  ~WindowedPersonalDataManagerObserver() override {}
 
   void Wait() {
     if (!alerted_) {
@@ -106,19 +89,10 @@ class WindowedPersonalDataManagerObserver
 
   void OnInsufficientFormData() override { OnPersonalDataChanged(); }
 
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override {
-    ConfirmInfoBarDelegate* infobar_delegate =
-        infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
-    ASSERT_TRUE(infobar_delegate);
-    infobar_delegate->Accept();
-  }
-
  private:
   bool alerted_;
   bool has_run_message_loop_;
   Browser* browser_;
-  InfoBarService* infobar_service_;
 };
 
 class AutofillTest : public InProcessBrowserTest {
@@ -514,50 +488,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, PrefsStringSavedAsIs) {
   ASSERT_EQ(card, *personal_data_manager()->GetCreditCards()[0]);
 }
 
-// Test credit card info with an invalid number is not aggregated.
-// When filling out a form with an invalid credit card number (one that does not
-// pass the Luhn test) the credit card info should not be saved into Autofill
-// preferences.
-IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
-  std::string card("4408 0412 3456 7890");
-  ASSERT_FALSE(autofill::IsValidCreditCardNumber(ASCIIToUTF16(card)));
-  SubmitCreditCard("Bob Smith", card.c_str(), "12", "2014");
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_EQ(0u, infobar_service->infobar_count());
-}
-
-// Test whitespaces and separator chars are stripped for valid CC numbers.
-// The credit card numbers used in this test pass the Luhn test. For reference:
-// http://www.merriampark.com/anatomycc.htm
-IN_PROC_BROWSER_TEST_F(AutofillTest,
-                       WhitespacesAndSeparatorCharsStrippedForValidCCNums) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
-  SubmitCreditCard("Bob Smith", "4408 0412 3456 7893", "12", "2014");
-  SubmitCreditCard("Jane Doe", "4417-1234-5678-9113", "10", "2013");
-
-  ASSERT_EQ(2u, personal_data_manager()->GetCreditCards().size());
-  base::string16 cc1 = personal_data_manager()->GetCreditCards()[0]->GetRawInfo(
-      CREDIT_CARD_NUMBER);
-  ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc1));
-  base::string16 cc2 = personal_data_manager()->GetCreditCards()[1]->GetRawInfo(
-      CREDIT_CARD_NUMBER);
-  ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc2));
-}
-
 // Test that Autofill aggregates a minimum valid profile.
 // The minimum required address fields must be specified: First Name, Last Name,
 // Address Line 1, City, Zip Code, and State.
@@ -859,30 +789,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_UsePlusSignForInternationalNumber) {
     EXPECT_EQ(ASCIIToUTF16(expectation),
               profile->GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), ""));
   }
-}
-
-// Test CC info not offered to be saved when autocomplete=off for CC field.
-// If the credit card number field has autocomplete turned off, then the credit
-// card infobar should not offer to save the credit card info. The credit card
-// number must be a valid Luhn number.
-IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
-  FormMap data;
-  data["CREDIT_CARD_NAME"] = "Bob Smith";
-  data["CREDIT_CARD_NUMBER"] = "4408041234567893";
-  data["CREDIT_CARD_EXP_MONTH"] = "12";
-  data["CREDIT_CARD_EXP_4_DIGIT_YEAR"] = "2014";
-  FillFormAndSubmit("cc_autocomplete_off_test.html", data);
-
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_EQ(0u, infobar_service->infobar_count());
 }
 
 // Test profile not aggregated if email found in non-email field.

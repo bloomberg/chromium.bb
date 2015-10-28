@@ -37,7 +37,6 @@
       'browser/autocomplete/shortcuts_database_unittest.cc',
       'browser/autocomplete/shortcuts_provider_unittest.cc',
       'browser/autocomplete/zero_suggest_provider_unittest.cc',
-      'browser/autofill/autofill_cc_infobar_delegate_unittest.cc',
       'browser/background_sync/background_sync_controller_impl_unittest.cc',
       'browser/banners/app_banner_data_fetcher_unittest.cc',
       'browser/banners/app_banner_settings_helper_unittest.cc',
@@ -533,6 +532,7 @@
       '../tools/json_schema_compiler/test/simple_api_unittest.cc',
     ],
     'chrome_unit_tests_mac_android_sources': [
+      'browser/autofill/autofill_cc_infobar_delegate_unittest.cc',
       'browser/password_manager/save_password_infobar_delegate_unittest.cc',
     ],
     'chrome_unit_tests_android_sources': [

@@ -1,0 +1,69 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_
+
+#include "base/macros.h"
+#include "chrome/browser/ui/autofill/save_card_bubble_view.h"
+#include "chrome/browser/ui/views/managed_full_screen_bubble_delegate_view.h"
+#include "ui/views/controls/button/button.h"
+
+namespace content {
+class WebContents;
+}
+
+namespace views {
+class LabelButton;
+}
+
+namespace autofill {
+
+class SaveCardBubbleController;
+
+// This class displays the "Save credit card?" bubble that is shown when the
+// user submits a form with a credit card number that Autofill has not
+// previously saved.
+class SaveCardBubbleViews : public SaveCardBubbleView,
+                            public ManagedFullScreenBubbleDelegateView,
+                            public views::ButtonListener {
+ public:
+  // Bubble will be anchored to |anchor_view|.
+  SaveCardBubbleViews(views::View* anchor_view,
+                      content::WebContents* web_contents,
+                      SaveCardBubbleController* controller);
+
+  // SaveCardBubbleView
+  void Show() override;
+  void Close() override;
+  void ControllerGone() override;
+
+  // views::WidgetDelegate
+  views::View* GetInitiallyFocusedView() override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
+  void WindowClosing() override;
+
+  // views::ButtonListener
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+ private:
+  ~SaveCardBubbleViews() override;
+
+  // views::BubbleDelegateView
+  void Init() override;
+
+  SaveCardBubbleController* controller_;
+
+  // Button for the user to confirm saving the credit card info.
+  views::LabelButton* save_button_;
+
+  views::LabelButton* cancel_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
+};
+
+}  // namespace autofill
+
+#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_

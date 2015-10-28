@@ -189,6 +189,10 @@ void LocationBarViewMac::UpdateManagePasswordsIconAndBubble() {
   OnDecorationsChanged();
 }
 
+void LocationBarViewMac::UpdateSaveCreditCardIcon() {
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewMac::UpdatePageActions() {
   RefreshPageActionDecorations();
   Layout();

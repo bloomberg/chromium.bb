@@ -550,12 +550,21 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_PRINT:
       Print(browser_);
       break;
+
 #if defined(ENABLE_BASIC_PRINTING)
     case IDC_BASIC_PRINT:
       content::RecordAction(base::UserMetricsAction("Accel_Advanced_Print"));
       BasicPrint(browser_);
       break;
 #endif  // ENABLE_BASIC_PRINTING
+
+// TODO(bondd): Implement save credit card bubble and icon on Mac.
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+    case IDC_SAVE_CREDIT_CARD_FOR_PAGE:
+      SaveCreditCard(browser_);
+      break;
+#endif
+
     case IDC_TRANSLATE_PAGE:
       Translate(browser_);
       break;

@@ -64,6 +64,7 @@ class LocationBarViewMac : public LocationBar,
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
+  void UpdateSaveCreditCardIcon() override;
   void UpdatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animate) override;

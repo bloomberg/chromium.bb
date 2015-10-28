@@ -27,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
+#include "chrome/browser/ui/views/location_bar/save_credit_card_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
@@ -143,6 +145,7 @@ LocationBarView::LocationBarView(Browser* browser,
       zoom_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
+      save_credit_card_icon_view_(nullptr),
       translate_icon_view_(NULL),
       star_view_(NULL),
       size_animation_(this),
@@ -306,6 +309,11 @@ void LocationBarView::Init() {
 
   manage_passwords_icon_view_ = new ManagePasswordsIconViews(command_updater());
   AddChildView(manage_passwords_icon_view_);
+
+  save_credit_card_icon_view_ =
+      new SaveCreditCardIconView(command_updater(), browser_);
+  save_credit_card_icon_view_->SetVisible(false);
+  AddChildView(save_credit_card_icon_view_);
 
   translate_icon_view_ = new TranslateIconView(command_updater());
   translate_icon_view_->SetVisible(false);
@@ -573,6 +581,7 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   trailing_width += IncrementalMinimumWidth(star_view_) +
       IncrementalMinimumWidth(translate_icon_view_) +
       IncrementalMinimumWidth(open_pdf_in_reader_view_) +
+      IncrementalMinimumWidth(save_credit_card_icon_view_) +
       IncrementalMinimumWidth(manage_passwords_icon_view_) +
       IncrementalMinimumWidth(zoom_view_) +
       IncrementalMinimumWidth(mic_search_view_);
@@ -669,6 +678,10 @@ void LocationBarView::Layout() {
   if (open_pdf_in_reader_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
                                        open_pdf_in_reader_view_);
+  }
+  if (save_credit_card_icon_view_->visible()) {
+    trailing_decorations.AddDecoration(vertical_padding, location_height,
+                                       save_credit_card_icon_view_);
   }
   if (manage_passwords_icon_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
@@ -815,6 +828,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshZoomView();
   RefreshPageActionViews();
   RefreshTranslateIcon();
+  RefreshSaveCreditCardIconView();
   RefreshManagePasswordsIconView();
   content::WebContents* web_contents_for_sub_views =
       GetToolbarModel()->input_in_progress() ? NULL : GetWebContents();
@@ -988,6 +1002,25 @@ void LocationBarView::OnDefaultZoomLevelChanged() {
   RefreshZoomView();
 }
 
+bool LocationBarView::RefreshSaveCreditCardIconView() {
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents)
+    return false;
+
+  const bool was_visible = save_credit_card_icon_view_->visible();
+  // |controller| may be nullptr due to lazy initialization.
+  autofill::SaveCardBubbleControllerImpl* controller =
+      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+  bool enabled = controller && controller->IsIconVisible();
+  command_updater()->UpdateCommandEnabled(IDC_SAVE_CREDIT_CARD_FOR_PAGE,
+                                          enabled);
+  save_credit_card_icon_view_->SetVisible(enabled);
+  if (enabled)
+    save_credit_card_icon_view_->SetToggled(controller->IsIconToggled());
+
+  return was_visible != save_credit_card_icon_view_->visible();
+}
+
 void LocationBarView::RefreshTranslateIcon() {
   WebContents* web_contents = GetWebContents();
   if (!web_contents)
@@ -1088,6 +1121,13 @@ void LocationBarView::UpdateContentSettingsIcons() {
 
 void LocationBarView::UpdateManagePasswordsIconAndBubble() {
   if (RefreshManagePasswordsIconView()) {
+    Layout();
+    SchedulePaint();
+  }
+}
+
+void LocationBarView::UpdateSaveCreditCardIcon() {
+  if (RefreshSaveCreditCardIconView()) {
     Layout();
     SchedulePaint();
   }

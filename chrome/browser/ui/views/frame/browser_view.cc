@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
+#include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -1274,6 +1275,16 @@ void BrowserView::ShowBookmarkAppBubble(
     const WebApplicationInfo& web_app_info,
     const ShowBookmarkAppBubbleCallback& callback) {
   BookmarkAppBubbleView::ShowBubble(GetToolbarView(), web_app_info, callback);
+}
+
+autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
+    content::WebContents* web_contents,
+    autofill::SaveCardBubbleController* controller) {
+  autofill::SaveCardBubbleView* view = new autofill::SaveCardBubbleViews(
+      GetToolbarView()->GetSaveCreditCardBubbleAnchor(), web_contents,
+      controller);
+  view->Show();
+  return view;
 }
 
 void BrowserView::ShowTranslateBubble(

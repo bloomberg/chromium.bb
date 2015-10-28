@@ -629,6 +629,13 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   callback.Run(false, web_app_info);
 }
 
+autofill::SaveCardBubbleView* BrowserWindowCocoa::ShowSaveCreditCardBubble(
+    content::WebContents* web_contents,
+    autofill::SaveCardBubbleController* controller) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void BrowserWindowCocoa::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,
