@@ -25,8 +25,10 @@ FirstRun::FirstRunState FirstRun::first_run_ = FIRST_RUN_UNKNOWN;
 // static
 bool FirstRun::GetFirstRunSentinelFilePath(base::FilePath* path) {
   base::FilePath first_run_sentinel;
-  if (!PathService::Get(ios::DIR_USER_DATA, &first_run_sentinel))
+  if (!PathService::Get(ios::DIR_USER_DATA, &first_run_sentinel)) {
+    NOTREACHED();
     return false;
+  }
   *path = first_run_sentinel.Append(kSentinelFile);
   return true;
 }

@@ -19,7 +19,15 @@ bool IsExternalURLBlockingEnabled();
 // Whether the new bookmark collection experience is enabled.
 bool IsBookmarkCollectionEnabled();
 
+// Sets whether or not the field trial for WKWebView should be enabled. This
+// must be called at most once, and before IsWKWebViewEnabled. If this is never
+// called, IsWKWebViewEnabled will assume ineligibility.
+// Note that an explicit command line flag will ignore this setting; it controls
+// only whether the trial state will be checked in the default state.
+void SetWKWebViewTrialEligibility(bool eligible);
+
 // Whether the app uses WKWebView instead of UIWebView.
+// The returned value will not change within a given session.
 bool IsWKWebViewEnabled();
 
 // Whether keyboard commands are supported.
