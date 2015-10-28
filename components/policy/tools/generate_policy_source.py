@@ -162,7 +162,7 @@ def ParseVersionFile(version_path):
       break
   if major_version is None:
     raise RuntimeError('VERSION file does not contain major version.')
-  return major_version
+  return int(major_version)
 
 
 def main():
