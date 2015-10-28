@@ -43,6 +43,7 @@
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "content/public/common/content_descriptors.h"
 
 #if defined(OS_ANDROID)
@@ -1763,6 +1764,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
 }
 
 void InitCrashReporter(const std::string& process_type) {
+  // The maximum lengths specified by breakpad include the trailing NULL, so the
+  // actual length of the chunk is one less.
+  static_assert(crash_keys::kChunkMaxLength == 63, "kChunkMaxLength mismatch");
+  static_assert(crash_keys::kSmallSize <= crash_keys::kChunkMaxLength,
+                "crash key chunk size too small");
 #if defined(OS_ANDROID)
   // This will guarantee that the BuildInfo has been initialized and subsequent
   // calls will not require memory allocation.

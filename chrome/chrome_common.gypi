@@ -433,9 +433,6 @@
             ['include', '^common/translate'],
             ['include', '^common/zip'],
           ],
-          'include_dirs': [
-            '<(DEPTH)/breakpad/src',
-          ],
         }],
         ['disable_nacl==0', {
           'dependencies': [
@@ -499,7 +496,6 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
-            '<(DEPTH)/breakpad/src',
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
@@ -515,9 +511,6 @@
           'dependencies': [
             '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
             '../third_party/mach_override/mach_override.gyp:mach_override',
-          ],
-          'include_dirs': [
-            '<(DEPTH)/breakpad/src',
           ],
           'sources!': [
             'common/channel_info_posix.cc',

@@ -252,6 +252,7 @@
               ],
               'include_dirs': [
                 '..',
+                '../breakpad/src',
               ],
             }],
           ],

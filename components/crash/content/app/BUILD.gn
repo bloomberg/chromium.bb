@@ -30,8 +30,10 @@ source_set("app") {
 
   defines = [ "CRASH_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     ":app_non_mac",
+  ]
+  deps = [
     "//base",
   ]
 
@@ -134,6 +136,7 @@ source_set("app_breakpad_mac_to_be_deleted") {
       "//base",
       "//base:base_static",
       "//breakpad",
+      "//breakpad:client",
     ]
   }
 }

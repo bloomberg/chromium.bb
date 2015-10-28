@@ -155,7 +155,6 @@ static_library("common") {
   if (is_win || is_mac) {
     sources +=
         rebase_path(gypi_values.chrome_common_win_mac_sources, ".", "//chrome")
-    public_deps += [ "//breakpad:client" ]
   }
   if (is_win || is_mac || is_chromeos) {
     sources += rebase_path(gypi_values.chrome_common_networking_private_sources,

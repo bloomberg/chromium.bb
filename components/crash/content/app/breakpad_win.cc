@@ -32,10 +32,12 @@
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
+#include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "components/crash/content/app/crash_keys_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/hard_error_handler_win.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
@@ -527,6 +529,12 @@ void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
 }
 
 void InitCrashReporter(const std::string& process_type_switch) {
+  // The maximum lengths specified by breakpad include the trailing NULL, so the
+  // actual length of the chunk is one less.
+  static_assert(google_breakpad::CustomInfoEntry::kValueMaxLength - 1 ==
+                crash_keys::kChunkMaxLength, "kChunkMaxLength mismatch");
+  static_assert(crash_keys::kSmallSize <= crash_keys::kChunkMaxLength,
+                "crash key chunk size too small");
   const base::CommandLine& command = *base::CommandLine::ForCurrentProcess();
   if (command.HasSwitch(switches::kDisableBreakpad))
     return;

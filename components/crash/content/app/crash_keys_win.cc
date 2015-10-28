@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 
 namespace breakpad {
@@ -27,7 +28,9 @@ const size_t kMaxDynamicEntries = 256;
 
 CrashKeysWin* CrashKeysWin::keeper_;
 
-CrashKeysWin::CrashKeysWin() : dynamic_keys_offset_(0) {
+CrashKeysWin::CrashKeysWin()
+    : custom_entries_(new std::vector<google_breakpad::CustomInfoEntry>),
+      dynamic_keys_offset_(0) {
   DCHECK_EQ(static_cast<CrashKeysWin*>(NULL), keeper_);
   keeper_ = this;
 }
@@ -56,7 +59,7 @@ void CrashKeysWin::SetPluginPath(const std::wstring& path) {
   for (chunk_start = 0; chunk_start < path.size(); chunk_index++) {
     size_t chunk_length = std::min(kChunkSize, path.size() - chunk_start);
 
-    custom_entries_.push_back(google_breakpad::CustomInfoEntry(
+    custom_entries_->push_back(google_breakpad::CustomInfoEntry(
         base::StringPrintf(L"plugin-path-chunk-%i", chunk_index + 1).c_str(),
         path.substr(chunk_start, chunk_length).c_str()));
 
@@ -68,7 +71,7 @@ void CrashKeysWin::SetPluginPath(const std::wstring& path) {
 void CrashKeysWin::SetBreakpadDumpPath(CrashReporterClient* crash_client) {
   base::FilePath crash_dumps_dir_path;
   if (crash_client->GetAlternativeCrashDumpLocation(&crash_dumps_dir_path)) {
-    custom_entries_.push_back(google_breakpad::CustomInfoEntry(
+    custom_entries_->push_back(google_breakpad::CustomInfoEntry(
         L"breakpad-dump-location", crash_dumps_dir_path.value().c_str()));
   }
 }
@@ -94,24 +97,24 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
 
   // We only expect this method to be called once per process.
   // Common enties
-  custom_entries_.push_back(
+  custom_entries_->push_back(
       google_breakpad::CustomInfoEntry(L"ver", version.c_str()));
-  custom_entries_.push_back(
+  custom_entries_->push_back(
       google_breakpad::CustomInfoEntry(L"prod", product.c_str()));
-  custom_entries_.push_back(
+  custom_entries_->push_back(
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
-  custom_entries_.push_back(
+  custom_entries_->push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
-  custom_entries_.push_back(
+  custom_entries_->push_back(
       google_breakpad::CustomInfoEntry(
       L"pid", base::IntToString16(::GetCurrentProcessId()).c_str()));
-  custom_entries_.push_back(
+  custom_entries_->push_back(
       google_breakpad::CustomInfoEntry(L"channel", channel_name.c_str()));
-  custom_entries_.push_back(
+  custom_entries_->push_back(
       google_breakpad::CustomInfoEntry(L"profile-type", profile_type.c_str()));
 
   if (!special_build.empty()) {
-    custom_entries_.push_back(
+    custom_entries_->push_back(
         google_breakpad::CustomInfoEntry(L"special", special_build.c_str()));
   }
 
@@ -133,18 +136,18 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
 
   // Create space for dynamic ad-hoc keys. The names and values are set using
   // the API defined in base/debug/crash_logging.h.
-  dynamic_keys_offset_ = custom_entries_.size();
+  dynamic_keys_offset_ = custom_entries_->size();
   for (size_t i = 0; i < kMaxDynamicEntries; ++i) {
     // The names will be mutated as they are set. Un-numbered since these are
     // merely placeholders. The name cannot be empty because Breakpad's
     // HTTPUpload will interpret that as an invalid parameter.
-    custom_entries_.push_back(
+    custom_entries_->push_back(
         google_breakpad::CustomInfoEntry(L"unspecified-crash-key", L""));
   }
 
   static google_breakpad::CustomClientInfo custom_client_info;
-  custom_client_info.entries = &custom_entries_.front();
-  custom_client_info.count = custom_entries_.size();
+  custom_client_info.entries = &custom_entries_->front();
+  custom_client_info.count = custom_entries_->size();
 
   return &custom_client_info;
 }
@@ -169,7 +172,7 @@ void CrashKeysWin::SetCrashKeyValue(
   if (it == dynamic_entries_.end()) {
     if (dynamic_entries_.size() >= kMaxDynamicEntries)
       return;
-    entry = &custom_entries_[dynamic_keys_offset_++];
+    entry = &(*custom_entries_)[dynamic_keys_offset_++];
     dynamic_entries_.insert(std::make_pair(safe_key, entry));
   } else {
     entry = it->second;

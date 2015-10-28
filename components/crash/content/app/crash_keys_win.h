@@ -10,10 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "breakpad/src/client/windows/common/ipc_protocol.h"
-#include "breakpad/src/client/windows/handler/exception_handler.h"
-
 
 namespace base {
 class CommandLine;
@@ -21,6 +19,11 @@ class CommandLine;
 
 namespace crash_reporter {
 class CrashReporterClient;
+}
+
+namespace google_breakpad {
+struct CustomClientInfo;
+struct CustomInfoEntry;
 }
 
 namespace breakpad {
@@ -54,7 +57,7 @@ class CrashKeysWin {
 
   const std::vector<google_breakpad::CustomInfoEntry>& custom_info_entries()
       const {
-    return custom_entries_;
+    return *custom_entries_;
   }
 
   static CrashKeysWin* keeper() { return keeper_; }
@@ -65,7 +68,7 @@ class CrashKeysWin {
   void SetBreakpadDumpPath(crash_reporter::CrashReporterClient* crash_client);
 
   // Must not be resized after GetCustomInfo is invoked.
-  std::vector<google_breakpad::CustomInfoEntry> custom_entries_;
+  scoped_ptr<std::vector<google_breakpad::CustomInfoEntry>> custom_entries_;
 
   typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
       DynamicEntriesMap;

@@ -23,6 +23,16 @@ void SetVariationsList(const std::vector<std::string>& variations);
 
 // Crash Key Constants /////////////////////////////////////////////////////////
 
+// kChunkMaxLength is the platform-specific maximum size that a value in a
+// single chunk can be; see base::debug::InitCrashKeys. The maximum lengths
+// specified by breakpad include the trailing NULL, so the actual length of the
+// chunk is one less.
+#if defined(OS_MACOSX)
+const size_t kChunkMaxLength = 255;
+#else  // OS_MACOSX
+const size_t kChunkMaxLength = 63;
+#endif  // !OS_MACOSX
+
 // A small crash key, guaranteed to never be split into multiple pieces.
 const size_t kSmallSize = 63;
 

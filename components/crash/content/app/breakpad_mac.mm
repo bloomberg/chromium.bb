@@ -25,7 +25,9 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
+#include "breakpad/src/common/simple_string_dictionary.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/common/crash_keys.h"
 
 using crash_reporter::GetCrashReporterClient;
 
@@ -155,6 +157,14 @@ bool IsCrashReporterEnabled() {
 
 // Only called for a branded build of Chrome.app.
 void InitCrashReporter(const std::string& process_type) {
+  // The maximum lengths specified by breakpad include the trailing NULL, so the
+  // actual length of the chunk is one less.
+  static_assert(google_breakpad::SimpleStringDictionary::value_size - 1 ==
+                crash_keys::kChunkMaxLength, "kChunkMaxLength mismatch");
+  static_assert(crash_keys::kSmallSize <= crash_keys::kChunkMaxLength,
+                "crash key chunk size too small for small values");
+  static_assert(crash_keys::kMediumSize <= crash_keys::kChunkMaxLength,
+                "crash key chunk size too small for medium values");
   DCHECK(!gBreakpadRef);
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 

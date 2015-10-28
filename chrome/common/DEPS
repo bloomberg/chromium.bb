@@ -1,5 +1,4 @@
 include_rules = [
-  "+breakpad",  # For Breakpad constants.
   "+chrome/grit",  # For generated headers
   "+chromeos",  # For chromeos_switches.h
   "+components/autofill/content/common",

@@ -16,39 +16,13 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_switches.h"
 
-// Breakpad dependencies exist only on Windows and Mac desktop. Exclude them
-// from "gn check" to avoid failures on Linux (it doesn't understand ifdefs).
-#if defined(OS_MACOSX)
-#include "breakpad/src/common/simple_string_dictionary.h"  // nogncheck
-#elif defined(OS_WIN)
-#include "breakpad/src/client/windows/common/ipc_protocol.h"  // nogncheck
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 #include "chrome/common/chrome_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_switches.h"
 #endif
 
 namespace crash_keys {
-
-// The maximum lengths specified by breakpad include the trailing NULL, so
-// the actual length of the string is one less.
-#if defined(OS_MACOSX)
-static const size_t kSingleChunkLength =
-    google_breakpad::SimpleStringDictionary::value_size - 1;
-#elif defined(OS_WIN)
-static const size_t kSingleChunkLength =
-    google_breakpad::CustomInfoEntry::kValueMaxLength - 1;
-#else
-static const size_t kSingleChunkLength = 63;
-#endif
-
-// Guarantees for crash key sizes.
-static_assert(kSmallSize <= kSingleChunkLength,
-              "crash key chunk size too small");
-#if defined(OS_MACOSX)
-static_assert(kMediumSize <= kSingleChunkLength,
-              "mac has medium size crash key chunks");
-#endif
 
 const char kActiveURL[] = "url-chunk";
 
@@ -223,8 +197,7 @@ size_t RegisterChromeCrashKeys() {
     }
   }
 
-  return base::debug::InitCrashKeys(&keys.at(0), keys.size(),
-                                    kSingleChunkLength);
+  return base::debug::InitCrashKeys(&keys.at(0), keys.size(), kChunkMaxLength);
 }
 
 static bool IsBoringSwitch(const std::string& flag) {
