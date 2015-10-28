@@ -1722,7 +1722,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   CRWSessionController* sessionController =
       _webStateImpl->GetNavigationManagerImpl().GetSessionController();
-  CRWSessionEntry* fromEntry = [sessionController currentEntry];
+  // fromEntry is retained because it has the potential to be released
+  // by goDelta: if it has not been committed.
+  base::scoped_nsobject<CRWSessionEntry> fromEntry(
+      [[sessionController currentEntry] retain]);
   [sessionController goDelta:delta];
   if (fromEntry) {
     _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_HISTORY);
