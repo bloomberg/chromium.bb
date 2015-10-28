@@ -155,8 +155,11 @@ GLenum InternalFormat(gfx::BufferFormat format) {
 
 // An end to end test that tests the whole GpuMemoryBuffer lifecycle.
 TEST_P(GpuMemoryBufferTest, Lifecycle) {
-  ASSERT_TRUE((GetParam() != gfx::BufferFormat::R_8) ||
-              gl_.GetCapabilities().texture_rg);
+  if (GetParam() == gfx::BufferFormat::R_8 &&
+      !gl_.GetCapabilities().texture_rg) {
+    LOG(WARNING) << "texture_rg not supported. Skipping test.";
+    return;
+  }
 
   GLuint texture_id = 0;
   glGenTextures(1, &texture_id);
