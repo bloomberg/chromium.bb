@@ -1185,6 +1185,9 @@ public class AwContents implements SmartClipProvider,
         nativeSetShouldDownloadFavicons();
     }
 
+    public static Activity activityFromContext(Context context) {
+        return ContentViewCore.activityFromContext(context);
+    }
     /**
      * Disables contents of JS-to-Java bridge objects to be inspectable using
      * Object.keys() method and "for .. in" loops. This is intended for applications
