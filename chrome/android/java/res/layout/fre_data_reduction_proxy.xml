@@ -72,7 +72,6 @@
                         android:gravity="start"
                         android:lineSpacingMultiplier="1.4"
                         android:showText="false"
-                        android:textOff="@string/data_reduction_disabled_switch"
                         android:text="@string/data_reduction_enabled_switch"
                         android:textColor="@color/fre_text_color"
                         android:textSize="@dimen/fre_normal_text_size"
