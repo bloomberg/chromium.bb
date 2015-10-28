@@ -206,14 +206,14 @@ class AwContents : public FindHelper::Listener,
   void DetachFunctorFromView() override;
   void OnNewPicture() override;
   gfx::Point GetLocationOnScreen() override;
-  void ScrollContainerViewTo(gfx::Vector2d new_value) override;
-  void UpdateScrollState(gfx::Vector2d max_scroll_offset,
-                         gfx::SizeF contents_size_dip,
+  void ScrollContainerViewTo(const gfx::Vector2d& new_value) override;
+  void UpdateScrollState(const gfx::Vector2d& max_scroll_offset,
+                         const gfx::SizeF& contents_size_dip,
                          float page_scale_factor,
                          float min_page_scale_factor,
                          float max_page_scale_factor) override;
-  void DidOverscroll(gfx::Vector2d overscroll_delta,
-                     gfx::Vector2dF overscroll_velocity) override;
+  void DidOverscroll(const gfx::Vector2d& overscroll_delta,
+                     const gfx::Vector2dF& overscroll_velocity) override;
 
   void ParentDrawConstraintsUpdated(
       const ParentCompositorDrawConstraints& draw_constraints) override {}

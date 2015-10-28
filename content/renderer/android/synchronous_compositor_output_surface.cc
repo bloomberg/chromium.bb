@@ -133,11 +133,11 @@ void SynchronousCompositorOutputSurface::Invalidate() {
 
 scoped_ptr<cc::CompositorFrame>
 SynchronousCompositorOutputSurface::DemandDrawHw(
-    gfx::Size surface_size,
+    const gfx::Size& surface_size,
     const gfx::Transform& transform,
-    gfx::Rect viewport,
-    gfx::Rect clip,
-    gfx::Rect viewport_rect_for_tile_priority,
+    const gfx::Rect& viewport,
+    const gfx::Rect& clip,
+    const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
@@ -183,10 +183,10 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
     const gfx::Transform& transform,
-    gfx::Rect viewport,
-    gfx::Rect clip,
-    gfx::Rect viewport_rect_for_tile_priority,
-    gfx::Transform transform_for_tile_priority,
+    const gfx::Rect& viewport,
+    const gfx::Rect& clip,
+    const gfx::Rect& viewport_rect_for_tile_priority,
+    const gfx::Transform& transform_for_tile_priority,
     bool hardware_draw) {
   DCHECK(!frame_holder_.get());
 

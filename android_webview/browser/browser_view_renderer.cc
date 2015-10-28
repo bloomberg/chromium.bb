@@ -488,7 +488,7 @@ gfx::Vector2d BrowserViewRenderer::max_scroll_offset() const {
       max_scroll_offset_dip_, dip_scale_ * page_scale_factor_));
 }
 
-void BrowserViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
+void BrowserViewRenderer::ScrollTo(const gfx::Vector2d& scroll_offset) {
   gfx::Vector2d max_offset = max_scroll_offset();
   gfx::Vector2dF scroll_offset_dip;
   // To preserve the invariant that scrolling to the maximum physical pixel
@@ -542,7 +542,7 @@ void BrowserViewRenderer::DidUpdateContent() {
 }
 
 void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
-    gfx::Vector2dF scroll_offset_dip) {
+    const gfx::Vector2dF& scroll_offset_dip) {
   if (scroll_offset_dip_ == scroll_offset_dip)
     return;
   scroll_offset_dip_ = scroll_offset_dip;
@@ -627,9 +627,10 @@ BrowserViewRenderer::RootLayerStateAsValue(
   return state;
 }
 
-void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                                        gfx::Vector2dF latest_overscroll_delta,
-                                        gfx::Vector2dF current_fling_velocity) {
+void BrowserViewRenderer::DidOverscroll(
+    const gfx::Vector2dF& accumulated_overscroll,
+    const gfx::Vector2dF& latest_overscroll_delta,
+    const gfx::Vector2dF& current_fling_velocity) {
   const float physical_pixel_scale = dip_scale_ * page_scale_factor_;
   if (accumulated_overscroll == latest_overscroll_delta)
     overscroll_rounding_error_ = gfx::Vector2dF();

@@ -1004,7 +1004,7 @@ gfx::Point AwContents::GetLocationOnScreen() {
   return gfx::Point(location[0], location[1]);
 }
 
-void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
+void AwContents::ScrollContainerViewTo(const gfx::Vector2d& new_value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -1014,8 +1014,8 @@ void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
       env, obj.obj(), new_value.x(), new_value.y());
 }
 
-void AwContents::UpdateScrollState(gfx::Vector2d max_scroll_offset,
-                                   gfx::SizeF contents_size_dip,
+void AwContents::UpdateScrollState(const gfx::Vector2d& max_scroll_offset,
+                                   const gfx::SizeF& contents_size_dip,
                                    float page_scale_factor,
                                    float min_page_scale_factor,
                                    float max_page_scale_factor) {
@@ -1035,8 +1035,8 @@ void AwContents::UpdateScrollState(gfx::Vector2d max_scroll_offset,
                                     max_page_scale_factor);
 }
 
-void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta,
-                               gfx::Vector2dF overscroll_velocity) {
+void AwContents::DidOverscroll(const gfx::Vector2d& overscroll_delta,
+                               const gfx::Vector2dF& overscroll_velocity) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

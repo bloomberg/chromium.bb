@@ -174,11 +174,11 @@ void SynchronousCompositorImpl::DidDestroyRendererObjects() {
 }
 
 scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
-    gfx::Size surface_size,
+    const gfx::Size& surface_size,
     const gfx::Transform& transform,
-    gfx::Rect viewport,
-    gfx::Rect clip,
-    gfx::Rect viewport_rect_for_tile_priority,
+    const gfx::Rect& viewport,
+    const gfx::Rect& clip,
+    const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);

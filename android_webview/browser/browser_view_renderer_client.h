@@ -38,22 +38,22 @@ class BrowserViewRendererClient {
   virtual gfx::Point GetLocationOnScreen() = 0;
 
   // Try to set the view's scroll offset to |new_value|.
-  virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
+  virtual void ScrollContainerViewTo(const gfx::Vector2d& new_value) = 0;
 
   // Sets the following:
   // view's scroll offset cap to |max_scroll_offset|,
   // current contents_size to |contents_size_dip|,
   // the current page scale to |page_scale_factor| and page scale limits
   // to |min_page_scale_factor|..|max_page_scale_factor|.
-  virtual void UpdateScrollState(gfx::Vector2d max_scroll_offset,
-                                 gfx::SizeF contents_size_dip,
+  virtual void UpdateScrollState(const gfx::Vector2d& max_scroll_offset,
+                                 const gfx::SizeF& contents_size_dip,
                                  float page_scale_factor,
                                  float min_page_scale_factor,
                                  float max_page_scale_factor) = 0;
 
   // Handle overscroll.
-  virtual void DidOverscroll(gfx::Vector2d overscroll_delta,
-                             gfx::Vector2dF overscroll_velocity) = 0;
+  virtual void DidOverscroll(const gfx::Vector2d& overscroll_delta,
+                             const gfx::Vector2dF& overscroll_velocity) = 0;
 
   // Visible for testing
   // Called when the parent draw constraints in browser view renderer gets

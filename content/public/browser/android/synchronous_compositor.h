@@ -48,11 +48,11 @@ class CONTENT_EXPORT SynchronousCompositor {
   // "On demand" hardware draw. The content is first clipped to |damage_area|,
   // then transformed through |transform|, and finally clipped to |view_size|.
   virtual scoped_ptr<cc::CompositorFrame> DemandDrawHw(
-      gfx::Size surface_size,
+      const gfx::Size& surface_size,
       const gfx::Transform& transform,
-      gfx::Rect viewport,
-      gfx::Rect clip,
-      gfx::Rect viewport_rect_for_tile_priority,
+      const gfx::Rect& viewport,
+      const gfx::Rect& clip,
+      const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) = 0;
 
   // For delegated rendering, return resources from parent compositor to this.

@@ -84,7 +84,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   float page_scale_factor() const { return page_scale_factor_; }
 
   // Set the root layer scroll offset to |new_value|.
-  void ScrollTo(gfx::Vector2d new_value);
+  void ScrollTo(const gfx::Vector2d& new_value);
 
   // Android views hierarchy gluing.
   bool IsVisible() const;
@@ -110,15 +110,15 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
                             float page_scale_factor,
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
-  void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                     gfx::Vector2dF latest_overscroll_delta,
-                     gfx::Vector2dF current_fling_velocity) override;
+  void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
+                     const gfx::Vector2dF& latest_overscroll_delta,
+                     const gfx::Vector2dF& current_fling_velocity) override;
 
   void UpdateParentDrawConstraints();
   void DetachFunctorFromView();
 
  private:
-  void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_dip);
+  void SetTotalRootLayerScrollOffset(const gfx::Vector2dF& new_value_dip);
   bool CanOnDraw();
   // Posts an invalidate with fallback tick. All invalidates posted while an
   // invalidate is pending will be posted as a single invalidate after the

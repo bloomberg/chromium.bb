@@ -20,11 +20,11 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
 
   // SynchronousCompositor overrides.
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(
-      gfx::Size surface_size,
+      const gfx::Size& surface_size,
       const gfx::Transform& transform,
-      gfx::Rect viewport,
-      gfx::Rect clip,
-      gfx::Rect viewport_rect_for_tile_priority,
+      const gfx::Rect& viewport,
+      const gfx::Rect& clip,
+      const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
   void ReturnResources(const cc::CompositorFrameAck& frame_ack) override {}
   bool DemandDrawSw(SkCanvas* canvas) override;
