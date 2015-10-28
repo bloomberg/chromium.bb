@@ -226,7 +226,7 @@ TEST_F(RuleFeatureSetTest, interleavedDescendantSibling5)
     InvalidationLists invalidationLists;
     collectInvalidationSetsForClass(invalidationLists, "l");
     expectNoInvalidation(invalidationLists.descendants);
-    expectSiblingDescendantInvalidation(std::numeric_limits<unsigned>::max(), "n", "p", invalidationLists.siblings);
+    expectSiblingDescendantInvalidation(UINT_MAX, "n", "p", invalidationLists.siblings);
 }
 
 TEST_F(RuleFeatureSetTest, interleavedDescendantSibling6)
@@ -247,7 +247,7 @@ TEST_F(RuleFeatureSetTest, anySibling)
     InvalidationLists invalidationLists;
     collectInvalidationSetsForClass(invalidationLists, "q");
     expectNoInvalidation(invalidationLists.descendants);
-    expectSiblingDescendantInvalidation(std::numeric_limits<unsigned>::max(), "s", "t", invalidationLists.siblings);
+    expectSiblingDescendantInvalidation(UINT_MAX, "s", "t", invalidationLists.siblings);
 }
 
 TEST_F(RuleFeatureSetTest, any)

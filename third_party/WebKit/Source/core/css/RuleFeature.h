@@ -139,7 +139,7 @@ private:
     struct InvalidationSetFeatures {
         DISALLOW_ALLOCATION();
         InvalidationSetFeatures()
-            : maxDirectAdjacentSelectors(std::numeric_limits<unsigned>::max())
+            : maxDirectAdjacentSelectors(UINT_MAX)
             , customPseudoElement(false)
             , hasBeforeOrAfter(false)
             , treeBoundaryCrossing(false)

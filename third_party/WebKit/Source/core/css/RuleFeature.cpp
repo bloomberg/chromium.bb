@@ -487,13 +487,13 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
         }
 
         if (siblingFeatures) {
-            if (siblingFeatures->maxDirectAdjacentSelectors == std::numeric_limits<unsigned>::max())
+            if (siblingFeatures->maxDirectAdjacentSelectors == UINT_MAX)
                 continue;
 
             if (current->relation() == CSSSelector::DirectAdjacent)
                 siblingFeatures->maxDirectAdjacentSelectors++;
             else
-                siblingFeatures->maxDirectAdjacentSelectors = std::numeric_limits<unsigned>::max();
+                siblingFeatures->maxDirectAdjacentSelectors = UINT_MAX;
             continue;
         }
 

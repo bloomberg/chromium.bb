@@ -140,8 +140,8 @@ ALWAYS_INLINE bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSe
 void StyleInvalidator::SiblingData::pushInvalidationSet(const SiblingInvalidationSet& invalidationSet)
 {
     unsigned invalidationLimit;
-    if (invalidationSet.maxDirectAdjacentSelectors() == std::numeric_limits<unsigned>::max())
-        invalidationLimit = std::numeric_limits<unsigned>::max();
+    if (invalidationSet.maxDirectAdjacentSelectors() == UINT_MAX)
+        invalidationLimit = UINT_MAX;
     else
         invalidationLimit = m_elementIndex + invalidationSet.maxDirectAdjacentSelectors();
     m_invalidationEntries.append(Entry(&invalidationSet, invalidationLimit));
