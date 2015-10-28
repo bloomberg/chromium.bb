@@ -101,7 +101,9 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_isRootForIsolatedGroup(false)
     , m_hasScrollParent(false)
     , m_hasClipParent(false)
+    , m_painted(false)
     , m_textPainted(false)
+    , m_imagePainted(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
     , m_parent(0)
     , m_maskLayer(0)
@@ -300,6 +302,7 @@ void GraphicsLayer::paintIfNeeded(GraphicsContext& context)
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
     m_client->paintContentsIfNeeded(this, context, m_paintingPhase);
+    notifyFirstPaintToClient();
 }
 
 void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
@@ -319,9 +322,22 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
     }
 #endif
     m_client->paintContents(this, context, m_paintingPhase, clip);
+    notifyFirstPaintToClient();
+}
+
+void GraphicsLayer::notifyFirstPaintToClient()
+{
+    if (!m_painted) {
+        m_painted = true;
+        m_client->notifyFirstPaint();
+    }
     if (!m_textPainted && m_paintController->textPainted()) {
         m_textPainted = true;
-        m_client->notifyTextPainted();
+        m_client->notifyFirstTextPaint();
+    }
+    if (!m_imagePainted && m_paintController->imagePainted()) {
+        m_imagePainted = true;
+        m_client->notifyFirstImagePaint();
     }
 }
 

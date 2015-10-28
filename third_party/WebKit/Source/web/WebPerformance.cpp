@@ -171,9 +171,19 @@ double WebPerformance::firstLayout() const
     return millisecondsToSeconds(m_private->timing()->firstLayout());
 }
 
+double WebPerformance::firstPaint() const
+{
+    return millisecondsToSeconds(m_private->timing()->firstPaint());
+}
+
 double WebPerformance::firstTextPaint() const
 {
     return millisecondsToSeconds(m_private->timing()->firstTextPaint());
+}
+
+double WebPerformance::firstImagePaint() const
+{
+    return millisecondsToSeconds(m_private->timing()->firstImagePaint());
 }
 
 WebPerformance::WebPerformance(const PassRefPtrWillBeRawPtr<Performance>& performance)

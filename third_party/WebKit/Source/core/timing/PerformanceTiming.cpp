@@ -324,6 +324,15 @@ unsigned long long PerformanceTiming::firstLayout() const
     return monotonicTimeToIntegerMilliseconds(timing->firstLayout());
 }
 
+unsigned long long PerformanceTiming::firstPaint() const
+{
+    const DocumentTiming* timing = documentTiming();
+    if (!timing)
+        return 0;
+
+    return monotonicTimeToIntegerMilliseconds(timing->firstPaint());
+}
+
 unsigned long long PerformanceTiming::firstTextPaint() const
 {
     const DocumentTiming* timing = documentTiming();
@@ -331,6 +340,15 @@ unsigned long long PerformanceTiming::firstTextPaint() const
         return 0;
 
     return monotonicTimeToIntegerMilliseconds(timing->firstTextPaint());
+}
+
+unsigned long long PerformanceTiming::firstImagePaint() const
+{
+    const DocumentTiming* timing = documentTiming();
+    if (!timing)
+        return 0;
+
+    return monotonicTimeToIntegerMilliseconds(timing->firstImagePaint());
 }
 
 DocumentLoader* PerformanceTiming::documentLoader() const

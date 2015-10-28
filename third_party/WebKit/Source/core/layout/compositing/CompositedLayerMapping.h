@@ -150,7 +150,9 @@ public:
 
     // GraphicsLayerClient interface
     void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
-    void notifyTextPainted() override;
+    void notifyFirstPaint() override;
+    void notifyFirstTextPaint() override;
+    void notifyFirstImagePaint() override;
 
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) const override;
     void paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase) const override;

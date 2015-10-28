@@ -38,8 +38,12 @@ struct PageLoadTiming {
   // Time when the first layout is completed.
   base::TimeDelta first_layout;
 
+  // Time when the first paint is performed.
+  base::TimeDelta first_paint;
   // Time when the first non-blank text is painted.
   base::TimeDelta first_text_paint;
+  // Time when the first image is painted.
+  base::TimeDelta first_image_paint;
 
   // If you add additional members, also be sure to update operator==,
   // page_load_metrics_messages.h, and IsEmpty().

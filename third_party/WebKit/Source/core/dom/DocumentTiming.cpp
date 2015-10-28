@@ -13,14 +13,7 @@
 namespace blink {
 
 DocumentTiming::DocumentTiming(Document& document)
-    : m_domLoading(0.0)
-    , m_domInteractive(0.0)
-    , m_domContentLoadedEventStart(0.0)
-    , m_domContentLoadedEventEnd(0.0)
-    , m_domComplete(0.0)
-    , m_firstLayout(0.0)
-    , m_firstTextPaint(0.0)
-    , m_document(document)
+    : m_document(document)
 {
 }
 
@@ -77,10 +70,24 @@ void DocumentTiming::markFirstLayout()
     notifyDocumentTimingChanged();
 }
 
+void DocumentTiming::markFirstPaint()
+{
+    m_firstPaint = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstPaint", m_firstPaint);
+    notifyDocumentTimingChanged();
+}
+
 void DocumentTiming::markFirstTextPaint()
 {
     m_firstTextPaint = monotonicallyIncreasingTime();
     TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstTextPaint", m_firstTextPaint);
+    notifyDocumentTimingChanged();
+}
+
+void DocumentTiming::markFirstImagePaint()
+{
+    m_firstImagePaint = monotonicallyIncreasingTime();
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstImagePaint", m_firstImagePaint);
     notifyDocumentTimingChanged();
 }
 

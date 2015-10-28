@@ -183,6 +183,15 @@ void PageLoadTracker::RecordTimingHistograms() {
       RecordCommittedEvent(COMMITTED_LOAD_SUCCESSFUL_FIRST_LAYOUT, true);
     }
   }
+  if (!timing_.first_paint.is_zero()) {
+    if (timing_.first_paint < background_delta) {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstPaint",
+                          timing_.first_paint);
+    } else {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstPaint.Background",
+                          timing_.first_paint);
+    }
+  }
   if (!timing_.first_text_paint.is_zero()) {
     if (timing_.first_text_paint < background_delta) {
       PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstTextPaint",
@@ -191,6 +200,16 @@ void PageLoadTracker::RecordTimingHistograms() {
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Timing2.NavigationToFirstTextPaint.Background",
           timing_.first_text_paint);
+    }
+  }
+  if (!timing_.first_image_paint.is_zero()) {
+    if (timing_.first_image_paint < background_delta) {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstImagePaint",
+                          timing_.first_image_paint);
+    } else {
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.Timing2.NavigationToFirstImagePaint.Background",
+          timing_.first_image_paint);
     }
   }
   // Log time to first foreground / time to first background. Log counts that we

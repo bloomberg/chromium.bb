@@ -30415,12 +30415,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Timing2.NavigationToFirstImagePaint"
+    units="milliseconds">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first image is painted, for main frame documents. For images that render
+    progressively, this is recorded as soon as any image pixels have been drawn.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing2.NavigationToFirstLayout" units="milliseconds">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
     first layout is performed, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToFirstPaint" units="milliseconds">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first paint is performed, for main frame documents.
   </summary>
 </histogram>
 
@@ -79088,7 +79106,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Events.Provisional"/>
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstImagePaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
 </histogram_suffixes>

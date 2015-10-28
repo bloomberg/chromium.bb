@@ -2305,10 +2305,23 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
     layoutObject()->node()->document().compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime, group);
 }
 
-void CompositedLayerMapping::notifyTextPainted()
+void CompositedLayerMapping::notifyFirstPaint()
+{
+    // TODO(ksakamoto): This shouldn't be reported to Document. crbug.com/544811
+    if (Node* node = layoutObject()->node())
+        node->document().markFirstPaint();
+}
+
+void CompositedLayerMapping::notifyFirstTextPaint()
 {
     if (Node* node = layoutObject()->node())
         node->document().markFirstTextPaint();
+}
+
+void CompositedLayerMapping::notifyFirstImagePaint()
+{
+    if (Node* node = layoutObject()->node())
+        node->document().markFirstImagePaint();
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const

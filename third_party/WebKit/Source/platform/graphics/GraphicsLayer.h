@@ -290,6 +290,8 @@ private:
 
     void incrementPaintCount() { ++m_paintCount; }
 
+    void notifyFirstPaintToClient();
+
     // Helper functions used by settors to keep layer's the state consistent.
     void updateChildList();
     void updateLayerIsDrawable();
@@ -331,7 +333,9 @@ private:
     bool m_hasScrollParent : 1;
     bool m_hasClipParent : 1;
 
+    bool m_painted : 1;
     bool m_textPainted : 1;
+    bool m_imagePainted : 1;
 
     GraphicsLayerPaintingPhase m_paintingPhase;
 

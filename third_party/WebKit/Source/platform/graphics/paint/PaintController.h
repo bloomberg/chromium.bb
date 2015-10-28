@@ -127,6 +127,8 @@ public:
 
     bool textPainted() const { return m_textPainted; }
     void setTextPainted() { m_textPainted = true; }
+    bool imagePainted() const { return m_imagePainted; }
+    void setImagePainted() { m_imagePainted = true; }
 
     // Returns displayItemList added using createAndAppend() since beginning or
     // the last commitNewDisplayItems(). Use with care.
@@ -169,6 +171,7 @@ protected:
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_textPainted(false)
+        , m_imagePainted(false)
         , m_skippingCacheCount(0)
         , m_numCachedItems(0)
         , m_nextScope(1) { }
@@ -237,6 +240,7 @@ private:
 
     // Indicates this PaintController has ever had text. It is never reset to false.
     bool m_textPainted;
+    bool m_imagePainted;
 
     int m_skippingCacheCount;
 

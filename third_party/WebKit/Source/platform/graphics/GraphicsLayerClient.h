@@ -65,7 +65,9 @@ public:
     // Callback for when compositor animation started.
     virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) { }
 
-    virtual void notifyTextPainted() { }
+    virtual void notifyFirstPaint() { }
+    virtual void notifyFirstTextPaint() { }
+    virtual void notifyFirstImagePaint() { }
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) const = 0;
     // Paints the content if required, either because the content changed or its interest rect has too much unpainted area.

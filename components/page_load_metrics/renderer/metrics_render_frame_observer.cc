@@ -115,7 +115,9 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
       ClampDelta(perf.domContentLoadedEventStart(), start);
   timing.load_event_start = ClampDelta(perf.loadEventStart(), start);
   timing.first_layout = ClampDelta(perf.firstLayout(), start);
+  timing.first_paint = ClampDelta(perf.firstPaint(), start);
   timing.first_text_paint = ClampDelta(perf.firstTextPaint(), start);
+  timing.first_image_paint = ClampDelta(perf.firstImagePaint(), start);
   return timing;
 }
 

@@ -81,8 +81,12 @@ public:
 
     // The time the first document layout is performed.
     unsigned long long firstLayout() const;
+    // The time the first paint operation was performed.
+    unsigned long long firstPaint() const;
     // The time the first paint operation for visible text was performed.
     unsigned long long firstTextPaint() const;
+    // The time the first paint operation for image was performed.
+    unsigned long long firstImagePaint() const;
 
     ScriptValue toJSONForBinding(ScriptState*) const;
 
