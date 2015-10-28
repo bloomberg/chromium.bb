@@ -85,7 +85,7 @@ int TabContentsSyncedTabDelegate::GetEntryCount() const {
 
 GURL TabContentsSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
   NavigationEntry* entry = GetPossiblyPendingEntryAtIndex(web_contents_, i);
-  return entry->GetVirtualURL();
+  return entry ? entry->GetVirtualURL() : GURL();
 }
 
 GURL TabContentsSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
