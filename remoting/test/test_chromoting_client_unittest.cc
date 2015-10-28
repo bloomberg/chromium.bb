@@ -91,8 +91,8 @@ void TestChromotingClientTest::TearDown() {
   // The chromoting instance must be destroyed before the message loop.
   test_chromoting_client_.reset();
 
-  // The LibjingleTransportFactory destroys the PortAllocator via a DeleteSoon
-  // operation.  If we do not allow the message loop to run here, we run the
+  // The IceTransportFactory destroys the PortAllocator via a DeleteSoon
+  // operation. If we do not allow the message loop to run here, we run the
   // risk of the DeleteSoon task being dropped and incurring a memory leak.
   message_loop_.RunUntilIdle();
 }

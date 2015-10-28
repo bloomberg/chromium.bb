@@ -9,8 +9,10 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "remoting/protocol/datagram_channel_factory.h"
+#include "remoting/protocol/ice_transport_channel.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/transport.h"
 
@@ -18,17 +20,22 @@ namespace remoting {
 namespace protocol {
 
 class ChannelMultiplexer;
-class LibjingleTransportFactory;
 class PseudoTcpChannelFactory;
 class SecureChannelFactory;
 
 class IceTransportSession : public TransportSession,
-                            public Transport::EventHandler,
+                            public IceTransportChannel::Delegate,
                             public DatagramChannelFactory {
  public:
-  // |transport_factory| must outlive the session.
-  IceTransportSession(LibjingleTransportFactory* libjingle_transport_factory);
+  // |port_allocator| must outlive the session.
+  IceTransportSession(cricket::PortAllocator* port_allocator,
+                      const NetworkSettings& network_settings,
+                      TransportRole role);
   ~IceTransportSession() override;
+
+  // Returns a closure that must be called before transport channels start
+  // connecting .
+  base::Closure GetCanStartClosure();
 
   // TransportSession interface.
   void Start(TransportSession::EventHandler* event_handler,
@@ -39,7 +46,9 @@ class IceTransportSession : public TransportSession,
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
 
  private:
-  typedef std::map<std::string, Transport*> ChannelsMap;
+  typedef std::map<std::string, IceTransportChannel*> ChannelsMap;
+
+  void OnCanStart();
 
   // DatagramChannelFactory interface.
   void CreateChannel(const std::string& name,
@@ -48,18 +57,18 @@ class IceTransportSession : public TransportSession,
 
   // Passes transport info to a new |channel| in case it was received before the
   // channel was created.
-  void AddPendingRemoteTransportInfo(Transport* channel);
+  void AddPendingRemoteTransportInfo(IceTransportChannel* channel);
 
-  // Transport::EventHandler interface.
-  void OnTransportIceCredentials(Transport* transport,
+  // IceTransportChannel::Delegate interface.
+  void OnTransportIceCredentials(IceTransportChannel* transport,
                                  const std::string& ufrag,
                                  const std::string& password) override;
-  void OnTransportCandidate(Transport* transport,
+  void OnTransportCandidate(IceTransportChannel* transport,
                             const cricket::Candidate& candidate) override;
-  void OnTransportRouteChange(Transport* transport,
+  void OnTransportRouteChange(IceTransportChannel* transport,
                               const TransportRoute& route) override;
-  void OnTransportFailed(Transport* transport) override;
-  void OnTransportDeleted(Transport* transport) override;
+  void OnTransportFailed(IceTransportChannel* transport) override;
+  void OnTransportDeleted(IceTransportChannel* transport) override;
 
   // Creates empty |pending_transport_info_message_| and schedules timer for
   // SentTransportInfo() to sent the message later.
@@ -68,7 +77,11 @@ class IceTransportSession : public TransportSession,
   // Sends transport-info message with candidates from |pending_candidates_|.
   void SendTransportInfo();
 
-  LibjingleTransportFactory* libjingle_transport_factory_;
+  cricket::PortAllocator* port_allocator_;
+  NetworkSettings network_settings_;
+  TransportRole role_;
+
+  bool can_start_ = false;
 
   TransportSession::EventHandler* event_handler_ = nullptr;
 
@@ -84,6 +97,8 @@ class IceTransportSession : public TransportSession,
 
   scoped_ptr<IceTransportInfo> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
+
+  base::WeakPtrFactory<IceTransportSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IceTransportSession);
 };

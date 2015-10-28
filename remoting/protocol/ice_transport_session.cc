@@ -4,9 +4,9 @@
 
 #include "remoting/protocol/ice_transport_session.h"
 
+#include "base/bind.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/channel_multiplexer.h"
-#include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/pseudotcp_channel_factory.h"
 #include "remoting/protocol/secure_channel_factory.h"
 #include "remoting/protocol/stream_channel_factory.h"
@@ -23,16 +23,29 @@ const int kTransportInfoSendDelayMs = 20;
 static const char kMuxChannelName[] = "mux";
 
 IceTransportSession::IceTransportSession(
-    LibjingleTransportFactory* libjingle_transport_factory)
-    : libjingle_transport_factory_(libjingle_transport_factory) {}
+    cricket::PortAllocator* port_allocator,
+    const NetworkSettings& network_settings,
+    TransportRole role)
+    : port_allocator_(port_allocator),
+      network_settings_(network_settings),
+      role_(role),
+      weak_factory_(this) {}
 
 IceTransportSession::~IceTransportSession() {
   channel_multiplexer_.reset();
   DCHECK(channels_.empty());
 }
 
+base::Closure IceTransportSession::GetCanStartClosure() {
+  return base::Bind(&IceTransportSession::OnCanStart,
+                    weak_factory_.GetWeakPtr());
+}
+
 void IceTransportSession::Start(TransportSession::EventHandler* event_handler,
                                 Authenticator* authenticator) {
+  DCHECK(event_handler);
+  DCHECK(!event_handler_);
+
   event_handler_ = event_handler;
   pseudotcp_channel_factory_.reset(new PseudoTcpChannelFactory(this));
   secure_channel_factory_.reset(new SecureChannelFactory(
@@ -88,13 +101,25 @@ StreamChannelFactory* IceTransportSession::GetMultiplexedChannelFactory() {
   return channel_multiplexer_.get();
 }
 
+void IceTransportSession::OnCanStart() {
+  DCHECK(!can_start_);
+
+  can_start_ = true;
+  for (ChannelsMap::iterator it = channels_.begin(); it != channels_.end();
+       ++it) {
+    it->second->OnCanStart();
+  }
+}
+
 void IceTransportSession::CreateChannel(
     const std::string& name,
     const ChannelCreatedCallback& callback) {
   DCHECK(!channels_[name]);
 
-  scoped_ptr<Transport> channel =
-      libjingle_transport_factory_->CreateTransport();
+  scoped_ptr<IceTransportChannel> channel(
+      new IceTransportChannel(port_allocator_, network_settings_, role_));
+  if (can_start_)
+    channel->OnCanStart();
   channel->Connect(name, this, callback);
   AddPendingRemoteTransportInfo(channel.get());
   channels_[name] = channel.release();
@@ -109,7 +134,8 @@ void IceTransportSession::CancelChannelCreation(const std::string& name) {
   }
 }
 
-void IceTransportSession::AddPendingRemoteTransportInfo(Transport* channel) {
+void IceTransportSession::AddPendingRemoteTransportInfo(
+    IceTransportChannel* channel) {
   std::list<IceTransportInfo::IceCredentials>::iterator credentials =
       pending_remote_ice_credentials_.begin();
   while (credentials != pending_remote_ice_credentials_.end()) {
@@ -134,35 +160,35 @@ void IceTransportSession::AddPendingRemoteTransportInfo(Transport* channel) {
 }
 
 void IceTransportSession::OnTransportIceCredentials(
-    Transport* transport,
+    IceTransportChannel* channel,
     const std::string& ufrag,
     const std::string& password) {
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->ice_credentials.push_back(
-      IceTransportInfo::IceCredentials(transport->name(), ufrag, password));
+      IceTransportInfo::IceCredentials(channel->name(), ufrag, password));
 }
 
 void IceTransportSession::OnTransportCandidate(
-    Transport* transport,
+    IceTransportChannel* channel,
     const cricket::Candidate& candidate) {
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->candidates.push_back(
-      IceTransportInfo::NamedCandidate(transport->name(), candidate));
+      IceTransportInfo::NamedCandidate(channel->name(), candidate));
 }
 
-void IceTransportSession::OnTransportRouteChange(Transport* transport,
+void IceTransportSession::OnTransportRouteChange(IceTransportChannel* channel,
                                                  const TransportRoute& route) {
   if (event_handler_)
-    event_handler_->OnTransportRouteChange(transport->name(), route);
+    event_handler_->OnTransportRouteChange(channel->name(), route);
 }
 
-void IceTransportSession::OnTransportFailed(Transport* transport) {
+void IceTransportSession::OnTransportFailed(IceTransportChannel* channel) {
   event_handler_->OnTransportError(CHANNEL_CONNECTION_ERROR);
 }
 
-void IceTransportSession::OnTransportDeleted(Transport* transport) {
-  ChannelsMap::iterator it = channels_.find(transport->name());
-  DCHECK_EQ(it->second, transport);
+void IceTransportSession::OnTransportDeleted(IceTransportChannel* channel) {
+  ChannelsMap::iterator it = channels_.find(channel->name());
+  DCHECK_EQ(it->second, channel);
   channels_.erase(it);
 }
 
