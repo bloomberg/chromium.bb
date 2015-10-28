@@ -6,10 +6,12 @@
 #define COMPONENTS_SYNC_SESSIONS_SYNC_SESSIONS_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
 namespace browser_sync {
+class LocalSessionEventRouter;
 class SyncedWindowDelegatesGetter;
 }
 
@@ -32,6 +34,11 @@ class SyncSessionsClient {
   // Returns the SyncedWindowDelegatesGetter for this client.
   virtual browser_sync::SyncedWindowDelegatesGetter*
   GetSyncedWindowDelegatesGetter() = 0;
+
+  // Returns a LocalSessionEventRouter instance that is customized for the
+  // embedder's context.
+  virtual scoped_ptr<browser_sync::LocalSessionEventRouter>
+  GetLocalSessionEventRouter() = 0;
 
   // TODO(zea): add getters for the history and favicon services for the favicon
   // cache to consume once it's componentized.

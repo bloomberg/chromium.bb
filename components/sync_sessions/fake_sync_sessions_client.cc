@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/sync_sessions/fake_sync_sessions_client.h"
+#include "components/sync_sessions/local_session_event_router.h"
 
 #include "url/gurl.h"
 
@@ -17,6 +18,11 @@ bool FakeSyncSessionsClient::ShouldSyncURL(const GURL& url) const {
 
 browser_sync::SyncedWindowDelegatesGetter*
 FakeSyncSessionsClient::GetSyncedWindowDelegatesGetter() {
+  return nullptr;
+}
+
+scoped_ptr<browser_sync::LocalSessionEventRouter>
+FakeSyncSessionsClient::GetLocalSessionEventRouter() {
   return nullptr;
 }
 

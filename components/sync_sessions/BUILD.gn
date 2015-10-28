@@ -7,6 +7,7 @@ source_set("sync_sessions") {
   sources = [
     "favicon_cache.cc",
     "favicon_cache.h",
+    "local_session_event_router.h",
     "revisit/bookmarks_by_url_provider_impl.cc",
     "revisit/bookmarks_by_url_provider_impl.h",
     "revisit/bookmarks_page_revisit_observer.cc",

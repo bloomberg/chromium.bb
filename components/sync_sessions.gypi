@@ -14,6 +14,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../sync/sync.gyp:sync',
+        '../url/url.gyp:url_lib',
         'bookmarks_browser',
         'history_core_browser',
         'sync_driver',
@@ -22,6 +23,7 @@
         # Note: sources list duplicated in GN build.
         'sync_sessions/favicon_cache.cc',
         'sync_sessions/favicon_cache.h',
+        'sync_sessions/local_session_event_router.h',
         'sync_sessions/revisit/bookmarks_by_url_provider_impl.cc',
         'sync_sessions/revisit/bookmarks_by_url_provider_impl.h',
         'sync_sessions/revisit/bookmarks_page_revisit_observer.cc',

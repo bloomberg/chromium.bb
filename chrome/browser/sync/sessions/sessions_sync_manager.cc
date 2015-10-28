@@ -99,8 +99,6 @@ SessionsSyncManager::SessionsSyncManager(
   synced_window_getter_ = sessions_client_->GetSyncedWindowDelegatesGetter();
 }
 
-LocalSessionEventRouter::~LocalSessionEventRouter() {}
-
 SessionsSyncManager::~SessionsSyncManager() {
 }
 

@@ -23,6 +23,7 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/tab_node_pool.h"
 #include "components/sync_sessions/favicon_cache.h"
+#include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/synced_session_tracker.h"
 #include "components/variations/variations_associated_data.h"
 #include "sync/api/syncable_service.h"
@@ -50,36 +51,6 @@ namespace browser_sync {
 class DataTypeErrorHandler;
 class SyncedTabDelegate;
 class SyncedWindowDelegatesGetter;
-
-// An interface defining the ways in which local open tab events can interact
-// with session sync.  All local tab events flow to sync via this interface.
-// In that way it is analogous to sync changes flowing to the local model
-// via ProcessSyncChanges, just with a more granular breakdown.
-class LocalSessionEventHandler {
- public:
-  // A local navigation event took place that affects the synced session
-  // for this instance of Chrome.
-  virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) = 0;
-
-  // A local navigation occurred that triggered updates to favicon data for
-  // each page URL in |page_urls| (e.g. http://www.google.com) and the icon URL
-  // |icon_url| (e.g. http://www.google.com/favicon.ico). This is routed through
-  // Sessions Sync so that we can filter (exclude) favicon updates for pages
-  // that aren't currently part of the set of local open tabs, and pass relevant
-  // updates on to FaviconCache for out-of-band favicon syncing.
-  virtual void OnFaviconsChanged(const std::set<GURL>& page_urls,
-                                 const GURL& icon_url) = 0;
-};
-
-// The LocalSessionEventRouter is responsible for hooking itself up to various
-// notification sources in the browser process and forwarding relevant
-// events to a handler as defined in the LocalSessionEventHandler contract.
-class LocalSessionEventRouter {
- public:
-  virtual ~LocalSessionEventRouter();
-  virtual void StartRoutingTo(LocalSessionEventHandler* handler) = 0;
-  virtual void Stop() = 0;
-};
 
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.

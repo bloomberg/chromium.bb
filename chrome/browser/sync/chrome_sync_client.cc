@@ -14,8 +14,10 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
@@ -90,7 +92,7 @@ namespace browser_sync {
 // inherit from other interfaces with same methods.
 class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
  public:
-  explicit SyncSessionsClientImpl(Profile* profile) {
+  explicit SyncSessionsClientImpl(Profile* profile) : profile_(profile) {
     window_delegates_getter_.reset(
 #if defined(OS_ANDROID)
         // Android doesn't have multi-profile support, so no need to pass the
@@ -117,7 +119,16 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     return window_delegates_getter_.get();
   }
 
+  scoped_ptr<browser_sync::LocalSessionEventRouter> GetLocalSessionEventRouter()
+      override {
+    syncer::SyncableService::StartSyncFlare flare(
+        sync_start_util::GetFlareForSyncableService(profile_->GetPath()));
+    return make_scoped_ptr(
+        new NotificationServiceSessionsRouter(profile_, this, flare));
+  }
+
  private:
+  Profile* profile_;
   scoped_ptr<SyncedWindowDelegatesGetter> window_delegates_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
