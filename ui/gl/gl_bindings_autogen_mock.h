@@ -200,8 +200,24 @@ static void GL_BINDING_CALL Mock_glCopyTexSubImage3D(GLenum target,
                                                      GLint y,
                                                      GLsizei width,
                                                      GLsizei height);
+static void GL_BINDING_CALL
+Mock_glCoverFillPathInstancedNV(GLsizei numPaths,
+                                GLenum pathNameType,
+                                const void* paths,
+                                GLuint pathBase,
+                                GLenum coverMode,
+                                GLenum transformType,
+                                const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glCoverFillPathNV(GLuint path,
                                                    GLenum coverMode);
+static void GL_BINDING_CALL
+Mock_glCoverStrokePathInstancedNV(GLsizei numPaths,
+                                  GLenum pathNameType,
+                                  const void* paths,
+                                  GLuint pathBase,
+                                  GLenum coverMode,
+                                  GLenum transformType,
+                                  const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glCoverStrokePathNV(GLuint name,
                                                      GLenum coverMode);
 static GLuint GL_BINDING_CALL Mock_glCreateProgram(void);
@@ -766,6 +782,15 @@ static void GL_BINDING_CALL Mock_glShaderSource(GLuint shader,
                                                 GLsizei count,
                                                 const char* const* str,
                                                 const GLint* length);
+static void GL_BINDING_CALL
+Mock_glStencilFillPathInstancedNV(GLsizei numPaths,
+                                  GLenum pathNameType,
+                                  const void* paths,
+                                  GLuint pathBase,
+                                  GLenum fillMode,
+                                  GLuint mask,
+                                  GLenum transformType,
+                                  const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glStencilFillPathNV(GLuint path,
                                                      GLenum fillMode,
                                                      GLuint mask);
@@ -786,13 +811,42 @@ static void GL_BINDING_CALL Mock_glStencilOpSeparate(GLenum face,
                                                      GLenum fail,
                                                      GLenum zfail,
                                                      GLenum zpass);
+static void GL_BINDING_CALL
+Mock_glStencilStrokePathInstancedNV(GLsizei numPaths,
+                                    GLenum pathNameType,
+                                    const void* paths,
+                                    GLuint pathBase,
+                                    GLint ref,
+                                    GLuint mask,
+                                    GLenum transformType,
+                                    const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glStencilStrokePathNV(GLuint path,
                                                        GLint reference,
                                                        GLuint mask);
+static void GL_BINDING_CALL
+Mock_glStencilThenCoverFillPathInstancedNV(GLsizei numPaths,
+                                           GLenum pathNameType,
+                                           const void* paths,
+                                           GLuint pathBase,
+                                           GLenum fillMode,
+                                           GLuint mask,
+                                           GLenum coverMode,
+                                           GLenum transformType,
+                                           const GLfloat* transformValues);
 static void GL_BINDING_CALL Mock_glStencilThenCoverFillPathNV(GLuint path,
                                                               GLenum fillMode,
                                                               GLuint mask,
                                                               GLenum coverMode);
+static void GL_BINDING_CALL
+Mock_glStencilThenCoverStrokePathInstancedNV(GLsizei numPaths,
+                                             GLenum pathNameType,
+                                             const void* paths,
+                                             GLuint pathBase,
+                                             GLint ref,
+                                             GLuint mask,
+                                             GLenum coverMode,
+                                             GLenum transformType,
+                                             const GLfloat* transformValues);
 static void GL_BINDING_CALL
 Mock_glStencilThenCoverStrokePathNV(GLuint path,
                                     GLint reference,

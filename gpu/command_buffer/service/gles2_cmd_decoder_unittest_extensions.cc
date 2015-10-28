@@ -111,6 +111,56 @@ TEST_P(GLES2DecoderTestDisabledExtensions, CHROMIUMPathRenderingDisabled) {
     cmd.Init(kClientPathId, 1, 2, GL_BOUNDING_BOX_CHROMIUM);
     EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
+  {
+    cmds::StencilFillPathInstancedCHROMIUM cmd;
+    GLuint* paths = GetSharedMemoryAs<GLuint*>();
+    paths[0] = kClientPathId;
+    cmd.Init(1, GL_UNSIGNED_INT, shared_memory_id_, shared_memory_offset_, 0,
+             GL_COUNT_UP_CHROMIUM, 1, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
+  {
+    cmds::StencilStrokePathInstancedCHROMIUM cmd;
+    GLuint* paths = GetSharedMemoryAs<GLuint*>();
+    paths[0] = kClientPathId;
+    cmd.Init(1, GL_UNSIGNED_INT, shared_memory_id_, shared_memory_offset_, 0,
+             0x80, 0x80, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
+  {
+    cmds::CoverFillPathInstancedCHROMIUM cmd;
+    GLuint* paths = GetSharedMemoryAs<GLuint*>();
+    paths[0] = kClientPathId;
+    cmd.Init(1, GL_UNSIGNED_INT, shared_memory_id_, shared_memory_offset_, 0,
+             GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
+  {
+    cmds::CoverStrokePathInstancedCHROMIUM cmd;
+    GLuint* paths = GetSharedMemoryAs<GLuint*>();
+    paths[0] = kClientPathId;
+    cmd.Init(1, GL_UNSIGNED_INT, shared_memory_id_, shared_memory_offset_, 0,
+             GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
+  {
+    cmds::StencilThenCoverFillPathInstancedCHROMIUM cmd;
+    GLuint* paths = GetSharedMemoryAs<GLuint*>();
+    paths[0] = kClientPathId;
+    cmd.Init(1, GL_UNSIGNED_INT, shared_memory_id_, shared_memory_offset_, 0,
+             GL_COUNT_UP_CHROMIUM, 1,
+             GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
+  {
+    cmds::StencilThenCoverStrokePathInstancedCHROMIUM cmd;
+    GLuint* paths = GetSharedMemoryAs<GLuint*>();
+    paths[0] = kClientPathId;
+    cmd.Init(1, GL_UNSIGNED_INT, shared_memory_id_, shared_memory_offset_, 0,
+             0x80, 0x80, GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, 0,
+             0);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
 }
 
 class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
@@ -136,11 +186,275 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
     cmds::GenPathsCHROMIUM cmd;
     cmd.Init(client_path_id_, 1);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+    // The tests use client_path_id_ to test all sorts of drawing. The NVPR API
+    // behaves differently with a path name that is "used" but not which does
+    // not "allocate path object state" and a path name that is a name of a real
+    // path object. The drawing with former causes GL error while latter works
+    // ok, even if there is nothing in the actual path object. To remain
+    // compatible with the API, we allocate path object state even when using
+    // the mock API.
+    EXPECT_CALL(*gl_,
+                PathCommandsNV(kServicePathId, 0, NULL, 0, GL_FLOAT, NULL))
+        .RetiresOnSaturation();
+    cmds::PathCommandsCHROMIUM pcmd;
+    pcmd.Init(client_path_id_, 0, 0, 0, 0, GL_FLOAT, 0, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(pcmd));
   }
 
  protected:
   template <typename TypeParam>
   void TestPathCommandsCHROMIUMCoordTypes();
+
+  struct InstancedTestcase {
+    GLsizei num_paths;
+    GLenum path_name_type;
+    const void* paths;
+    GLuint path_base;
+    GLenum fill_mode;
+    GLuint reference;
+    GLuint mask;
+    GLenum transform_type;
+    const GLfloat* transform_values;
+    size_t sizeof_paths;             // Used for copying to shm buffer.
+    size_t sizeof_transform_values;  // Used for copying to shm buffer.
+    error::Error expected_error;
+    GLint expected_gl_error;
+    bool expect_gl_call;
+  };
+
+  void CallAllInstancedCommands(const InstancedTestcase& testcase) {
+    // Note: for testcases that expect a call, We do not compare the 'paths'
+    // array during EXPECT_CALL due to it being void*. Instead, we rely on the
+    // fact that if the path base was not added correctly, the paths wouldn't
+    // exists and the call wouldn't come through.
+
+    bool copy_paths = false;  // Paths are copied for each call that has paths,
+                              // since the implementation modifies the memory
+                              // area.
+    void* paths = NULL;
+    uint32 paths_shm_id = 0;
+    uint32 paths_shm_offset = 0;
+    GLfloat* transforms = NULL;
+    uint32 transforms_shm_id = 0;
+    uint32 transforms_shm_offset = 0;
+
+    if (testcase.transform_values) {
+      transforms = GetSharedMemoryAs<GLfloat*>();
+      transforms_shm_id = shared_memory_id_;
+      transforms_shm_offset = shared_memory_offset_;
+      memcpy(transforms, testcase.transform_values,
+             testcase.sizeof_transform_values);
+    } else {
+      DCHECK(testcase.sizeof_transform_values == 0);
+    }
+    if (testcase.paths) {
+      paths =
+          GetSharedMemoryAsWithOffset<void*>(testcase.sizeof_transform_values);
+      paths_shm_id = shared_memory_id_;
+      paths_shm_offset =
+          shared_memory_offset_ + testcase.sizeof_transform_values;
+      copy_paths = true;
+    } else {
+      DCHECK(testcase.sizeof_paths == 0);
+    }
+
+    if (testcase.expect_gl_call) {
+      EXPECT_CALL(*gl_, StencilFillPathInstancedNV(
+                            testcase.num_paths, GL_UNSIGNED_INT, _, 0,
+                            testcase.fill_mode, testcase.mask,
+                            testcase.transform_type, transforms))
+          .RetiresOnSaturation();
+    }
+    if (copy_paths) {
+      memcpy(paths, testcase.paths, testcase.sizeof_paths);
+    }
+    {
+      cmds::StencilFillPathInstancedCHROMIUM sfi_cmd;
+      sfi_cmd.Init(testcase.num_paths, testcase.path_name_type, paths_shm_id,
+                   paths_shm_offset, testcase.path_base, testcase.fill_mode,
+                   testcase.mask, testcase.transform_type, transforms_shm_id,
+                   transforms_shm_offset);
+      EXPECT_EQ(testcase.expected_error, ExecuteCmd(sfi_cmd));
+      EXPECT_EQ(testcase.expected_gl_error, GetGLError());
+    }
+
+    if (testcase.expect_gl_call) {
+      EXPECT_CALL(*gl_, StencilStrokePathInstancedNV(
+                            testcase.num_paths, GL_UNSIGNED_INT, _, 0,
+                            testcase.reference, testcase.mask,
+                            testcase.transform_type, transforms))
+          .RetiresOnSaturation();
+    }
+    if (copy_paths) {
+      memcpy(paths, testcase.paths, testcase.sizeof_paths);
+    }
+    {
+      cmds::StencilStrokePathInstancedCHROMIUM ssi_cmd;
+      ssi_cmd.Init(testcase.num_paths, testcase.path_name_type, paths_shm_id,
+                   paths_shm_offset, testcase.path_base, testcase.reference,
+                   testcase.mask, testcase.transform_type, transforms_shm_id,
+                   transforms_shm_offset);
+      EXPECT_EQ(testcase.expected_error, ExecuteCmd(ssi_cmd));
+      EXPECT_EQ(testcase.expected_gl_error, GetGLError());
+    }
+
+    if (testcase.expect_gl_call) {
+      EXPECT_CALL(*gl_, CoverFillPathInstancedNV(
+                            testcase.num_paths, GL_UNSIGNED_INT, _, 0,
+                            GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV,
+                            testcase.transform_type, transforms))
+          .RetiresOnSaturation();
+    }
+    if (copy_paths) {
+      memcpy(paths, testcase.paths, testcase.sizeof_paths);
+    }
+    {
+      cmds::CoverFillPathInstancedCHROMIUM cfi_cmd;
+      cfi_cmd.Init(testcase.num_paths, testcase.path_name_type, paths_shm_id,
+                   paths_shm_offset, testcase.path_base,
+                   GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                   testcase.transform_type, transforms_shm_id,
+                   transforms_shm_offset);
+      EXPECT_EQ(testcase.expected_error, ExecuteCmd(cfi_cmd));
+      EXPECT_EQ(testcase.expected_gl_error, GetGLError());
+    }
+    if (testcase.expect_gl_call) {
+      EXPECT_CALL(*gl_, CoverStrokePathInstancedNV(
+                            testcase.num_paths, GL_UNSIGNED_INT, _, 0,
+                            GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV,
+                            testcase.transform_type, transforms))
+          .RetiresOnSaturation();
+    }
+    if (copy_paths) {
+      memcpy(paths, testcase.paths, testcase.sizeof_paths);
+    }
+
+    {
+      cmds::CoverStrokePathInstancedCHROMIUM csi_cmd;
+      csi_cmd.Init(testcase.num_paths, testcase.path_name_type, paths_shm_id,
+                   paths_shm_offset, testcase.path_base,
+                   GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                   testcase.transform_type, transforms_shm_id,
+                   transforms_shm_offset);
+      EXPECT_EQ(testcase.expected_error, ExecuteCmd(csi_cmd));
+      EXPECT_EQ(testcase.expected_gl_error, GetGLError());
+    }
+
+    if (testcase.expect_gl_call) {
+      EXPECT_CALL(*gl_, StencilThenCoverFillPathInstancedNV(
+                            testcase.num_paths, GL_UNSIGNED_INT, _, 0,
+                            testcase.fill_mode, testcase.mask,
+                            GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV,
+                            testcase.transform_type, transforms))
+          .RetiresOnSaturation();
+    }
+    if (copy_paths) {
+      memcpy(paths, testcase.paths, testcase.sizeof_paths);
+    }
+    {
+      cmds::StencilThenCoverFillPathInstancedCHROMIUM stcfi_cmd;
+      stcfi_cmd.Init(testcase.num_paths, testcase.path_name_type, paths_shm_id,
+                     paths_shm_offset, testcase.path_base, testcase.fill_mode,
+                     testcase.mask, GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                     testcase.transform_type, transforms_shm_id,
+                     transforms_shm_offset);
+      EXPECT_EQ(testcase.expected_error, ExecuteCmd(stcfi_cmd));
+      EXPECT_EQ(testcase.expected_gl_error, GetGLError());
+    }
+
+    if (testcase.expect_gl_call) {
+      EXPECT_CALL(*gl_, StencilThenCoverStrokePathInstancedNV(
+                            testcase.num_paths, GL_UNSIGNED_INT, _, 0,
+                            testcase.reference, testcase.mask,
+                            GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV,
+                            testcase.transform_type, transforms))
+          .RetiresOnSaturation();
+    }
+    if (copy_paths) {
+      memcpy(paths, testcase.paths, testcase.sizeof_paths);
+    }
+    {
+      cmds::StencilThenCoverStrokePathInstancedCHROMIUM stcsi_cmd;
+      stcsi_cmd.Init(testcase.num_paths, testcase.path_name_type, paths_shm_id,
+                     paths_shm_offset, testcase.path_base, testcase.reference,
+                     testcase.mask, GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                     testcase.transform_type, transforms_shm_id,
+                     transforms_shm_offset);
+      EXPECT_EQ(testcase.expected_error, ExecuteCmd(stcsi_cmd));
+      EXPECT_EQ(testcase.expected_gl_error, GetGLError());
+    }
+  }
+
+  void CallAllInstancedCommandsWithInvalidSHM(GLsizei num_paths,
+                                              const GLuint* paths,
+                                              GLuint* paths_shm,
+                                              uint32 paths_shm_id,
+                                              uint32 paths_shm_offset,
+                                              uint32 transforms_shm_id,
+                                              uint32 transforms_shm_offset) {
+    const GLuint kPathBase = 0;
+    const GLenum kFillMode = GL_INVERT;
+    const GLuint kMask = 0x80;
+    const GLuint kReference = 0xFF;
+    const GLuint kTransformType = GL_AFFINE_3D_CHROMIUM;
+    memcpy(paths_shm, paths, sizeof(GLuint) * num_paths);
+    {
+      cmds::StencilFillPathInstancedCHROMIUM sfi_cmd;
+      sfi_cmd.Init(num_paths, GL_UNSIGNED_INT, paths_shm_id, paths_shm_offset,
+                   kPathBase, kFillMode, kMask, kTransformType,
+                   transforms_shm_id, transforms_shm_offset);
+      EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(sfi_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+    memcpy(paths_shm, paths, sizeof(GLuint) * num_paths);
+    {
+      cmds::StencilStrokePathInstancedCHROMIUM ssi_cmd;
+      ssi_cmd.Init(num_paths, GL_UNSIGNED_INT, paths_shm_id, paths_shm_offset,
+                   kPathBase, kReference, kMask, kTransformType,
+                   transforms_shm_id, transforms_shm_offset);
+      EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(ssi_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+    memcpy(paths_shm, paths, sizeof(GLuint) * num_paths);
+    {
+      cmds::CoverFillPathInstancedCHROMIUM cfi_cmd;
+      cfi_cmd.Init(num_paths, GL_UNSIGNED_INT, paths_shm_id, paths_shm_offset,
+                   kPathBase, GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                   kTransformType, transforms_shm_id, transforms_shm_offset);
+      EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cfi_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+    memcpy(paths_shm, paths, sizeof(GLuint) * num_paths);
+    {
+      cmds::CoverStrokePathInstancedCHROMIUM csi_cmd;
+      csi_cmd.Init(num_paths, GL_UNSIGNED_INT, paths_shm_id, paths_shm_offset,
+                   kPathBase, GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                   kTransformType, transforms_shm_id, transforms_shm_offset);
+      EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(csi_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+    memcpy(paths_shm, paths, sizeof(GLuint) * num_paths);
+    {
+      cmds::StencilThenCoverFillPathInstancedCHROMIUM stcfi_cmd;
+      stcfi_cmd.Init(num_paths, GL_UNSIGNED_INT, paths_shm_id, paths_shm_offset,
+                     kPathBase, kFillMode, kMask,
+                     GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, kTransformType,
+                     transforms_shm_id, transforms_shm_offset);
+      EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(stcfi_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+    memcpy(paths_shm, paths, sizeof(GLuint) * num_paths);
+    {
+      cmds::StencilThenCoverStrokePathInstancedCHROMIUM stcsi_cmd;
+      stcsi_cmd.Init(num_paths, GL_UNSIGNED_INT, paths_shm_id, paths_shm_offset,
+                     kPathBase, kReference, kMask,
+                     GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, kTransformType,
+                     transforms_shm_id, transforms_shm_offset);
+      EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(stcsi_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+  }
 
   GLuint client_path_id_;
   static const GLuint kServicePathId = 311;
@@ -187,7 +501,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, GenDeletePaths) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(delete_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  // DeletePaths client 0 causes no calls and no errors.
+  // DeletePaths client id 0 causes no calls and no errors.
   delete_cmd.Init(0, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(delete_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -976,6 +1290,325 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   TestPathCommandsCHROMIUMCoordTypes<GLshort>();
   TestPathCommandsCHROMIUMCoordTypes<GLushort>();
   TestPathCommandsCHROMIUMCoordTypes<GLfloat>();
+}
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
+       StencilXFillPathInstancedCHROMIUMInvalidArgs) {
+  cmds::StencilFillPathInstancedCHROMIUM sfi_cmd;
+  cmds::StencilThenCoverFillPathInstancedCHROMIUM stcfi_cmd;
+
+  const GLuint kPaths[] = {client_path_id_, client_path_id_ + 5,
+                           client_path_id_, client_path_id_ + 18};
+  const GLsizei kPathCount = arraysize(kPaths);
+
+  struct {
+    GLenum fill_mode;
+    GLuint mask;
+    GLint expected_error;
+  } testcases[] = {
+      // Using invalid fill mode produces invalid enum.
+      {GL_COUNT_UP_CHROMIUM - 1, 0x7F, GL_INVALID_ENUM},
+      {GL_COUNT_DOWN_CHROMIUM + 1, 0x7F, GL_INVALID_ENUM},
+      // Using /mask/+1 which is not power of two produces invalid value.
+      {GL_COUNT_UP_CHROMIUM, 0x80, GL_INVALID_VALUE},
+      {GL_COUNT_DOWN_CHROMIUM, 4, GL_INVALID_VALUE}};
+
+  GLuint* paths = GetSharedMemoryAs<GLuint*>();
+
+  for (size_t i = 0; i < arraysize(testcases); ++i) {
+    memcpy(paths, kPaths, sizeof(kPaths));
+    sfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
+                 shared_memory_offset_, 0, testcases[i].fill_mode,
+                 testcases[i].mask, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(sfi_cmd));
+    EXPECT_EQ(testcases[i].expected_error, GetGLError());
+
+    memcpy(paths, kPaths, sizeof(kPaths));
+    stcfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
+                   shared_memory_offset_, 0, testcases[i].fill_mode,
+                   testcases[i].mask,
+                   GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(stcfi_cmd));
+    EXPECT_EQ(testcases[i].expected_error, GetGLError());
+  }
+}
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
+       StencilXFillPathInstancedCHROMIUMFillMode) {
+  SetupExpectationsForApplyingDefaultDirtyState();
+
+  // Test different fill modes.
+  cmds::StencilFillPathInstancedCHROMIUM sfi_cmd;
+  cmds::StencilThenCoverFillPathInstancedCHROMIUM stcfi_cmd;
+
+  const GLuint kPaths[] = {client_path_id_, client_path_id_ + 5,
+                           client_path_id_, client_path_id_ + 18};
+  const GLsizei kPathCount = arraysize(kPaths);
+
+  static const GLenum kFillModes[] = {GL_INVERT, GL_COUNT_UP_CHROMIUM,
+                                      GL_COUNT_DOWN_CHROMIUM};
+  const GLuint kMask = 0x7F;
+
+  GLuint* paths = GetSharedMemoryAs<GLuint*>();
+
+  for (size_t i = 0; i < arraysize(kFillModes); ++i) {
+    memcpy(paths, kPaths, sizeof(kPaths));
+    EXPECT_CALL(
+        *gl_, StencilFillPathInstancedNV(kPathCount, GL_UNSIGNED_INT, paths, 0,
+                                         kFillModes[i], kMask, GL_NONE, NULL))
+        .RetiresOnSaturation();
+    sfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
+                 shared_memory_offset_, 0, kFillModes[i], kMask, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(sfi_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    memcpy(paths, kPaths, sizeof(kPaths));
+    EXPECT_CALL(*gl_,
+                StencilThenCoverFillPathInstancedNV(
+                    kPathCount, GL_UNSIGNED_INT, paths, 0, kFillModes[i], kMask,
+                    GL_BOUNDING_BOX_OF_BOUNDING_BOXES_NV, GL_NONE, NULL))
+        .RetiresOnSaturation();
+    stcfi_cmd.Init(kPathCount, GL_UNSIGNED_INT, shared_memory_id_,
+                   shared_memory_offset_, 0, kFillModes[i], kMask,
+                   GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(stcfi_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+}
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedCalls) {
+  SetupExpectationsForApplyingDefaultDirtyState();
+
+  const GLuint kPaths[] = {0, client_path_id_, 15, client_path_id_};
+  const GLsizei kPathCount = arraysize(kPaths);
+
+  // The path base will be client_path_id_, and so 0 is a
+  // valid path.
+  const GLuint kPathBase = client_path_id_;
+  const GLuint kPathsWithBase[] = {0, 5, 0, 18};
+
+  const GLshort kShortPathBase = client_path_id_ * 2;
+  const GLshort kShortPathsWithBase[] = {
+      -static_cast<GLshort>(client_path_id_), 5,
+      -static_cast<GLshort>(client_path_id_), 18};
+
+  const GLenum kFillMode = GL_INVERT;
+  const GLuint kMask = 0x80;
+  const GLuint kReference = 0xFF;
+
+  GLfloat transform_values[12 * kPathCount];
+  for (GLsizei i = 0; i < kPathCount; ++i) {
+    for (int j = 0; j < 12; ++j) {
+      transform_values[i * 12 + j] = 0.1f * j + i;
+    }
+  }
+
+  // Path name overflows to correct path.
+  const GLuint kBigPathBase = std::numeric_limits<GLuint>::max();
+  const GLuint kPathsWithBigBase[] = {client_path_id_ + 1, 5,
+                                      client_path_id_ + 1, 18};
+
+  // Path name underflows. As a technical limitation, we can not get to correct
+  // path,
+  // so test just tests that there is no GL error.
+  const GLuint kNegativePathBase = 1;
+  const GLbyte kNegativePathsWithBaseByte[] = {-1, -2, -5, -18};
+  const GLint kNegativePathsWithBaseInt[] = {-2, -3, -4, -5};
+
+  InstancedTestcase testcases[] = {
+      // Test a normal call.
+      {kPathCount, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
+       GL_NONE, NULL, sizeof(kPaths), 0, error::kNoError, GL_NO_ERROR, true},
+      // Test that the path base is applied correctly for each instanced call.
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_NONE, NULL, sizeof(kPaths), 0, error::kNoError,
+       GL_NO_ERROR, true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask,
+
+       // Test all possible transform types. The float array is big enough for
+       // all the variants.  The contents of the array in call is not checked,
+       // though.
+       GL_TRANSLATE_X_CHROMIUM, transform_values, sizeof(kPaths),
+       sizeof(transform_values), error::kNoError, GL_NO_ERROR, true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_TRANSLATE_Y_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kNoError, GL_NO_ERROR,
+       true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_TRANSLATE_2D_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kNoError, GL_NO_ERROR,
+       true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_TRANSLATE_3D_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kNoError, GL_NO_ERROR,
+       true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_AFFINE_2D_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kNoError, GL_NO_ERROR,
+       true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_AFFINE_3D_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kNoError, GL_NO_ERROR,
+       true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_TRANSPOSE_AFFINE_2D_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kNoError, GL_NO_ERROR,
+       true},
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBase, kPathBase, kFillMode,
+       kReference, kMask, GL_TRANSPOSE_AFFINE_3D_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kNoError, GL_NO_ERROR,
+       true},
+      {kPathCount, GL_SHORT, kShortPathsWithBase, kShortPathBase, kFillMode,
+       kReference, kMask, GL_TRANSPOSE_AFFINE_3D_CHROMIUM, transform_values,
+       sizeof(kShortPathsWithBase), sizeof(transform_values), error::kNoError,
+       GL_NO_ERROR, true},
+
+      // Test that if using path base causes path id to overflow, we get no
+      // error.
+      {kPathCount, GL_UNSIGNED_INT, kPathsWithBigBase, kBigPathBase, kFillMode,
+       kReference, kMask, GL_TRANSLATE_X_CHROMIUM, transform_values,
+       sizeof(kPathsWithBigBase), sizeof(transform_values), error::kNoError,
+       GL_NO_ERROR, true},
+      // Test that if using path base causes path id to underflow, we get no
+      // error.
+      {kPathCount, GL_BYTE, kNegativePathsWithBaseByte, kNegativePathBase,
+       kFillMode, kReference, kMask, GL_TRANSLATE_X_CHROMIUM, transform_values,
+       sizeof(kNegativePathsWithBaseByte), sizeof(transform_values),
+       error::kNoError, GL_NO_ERROR, false},
+      {kPathCount, GL_INT, kNegativePathsWithBaseInt, kNegativePathBase,
+       kFillMode, kReference, kMask, GL_TRANSLATE_X_CHROMIUM, transform_values,
+       sizeof(kNegativePathsWithBaseInt), sizeof(transform_values),
+       error::kNoError, GL_NO_ERROR, false},
+
+  };
+
+  for (size_t i = 0; i < arraysize(testcases); ++i) {
+    SCOPED_TRACE(testing::Message() << "InstancedCalls testcase " << i);
+    CallAllInstancedCommands(testcases[i]);
+  }
+}
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedNoCalls) {
+  const GLuint kPaths[] = {1, client_path_id_, 5, client_path_id_};
+  const GLsizei kPathCount = arraysize(kPaths);
+
+  const GLenum kFillMode = GL_INVERT;
+  const GLuint kMask = 0x80;
+  const GLuint kReference = 0xFF;
+  GLfloat transform_values[12 * kPathCount];
+  for (GLsizei i = 0; i < kPathCount; ++i) {
+    for (int j = 0; j < 12; ++j) {
+      transform_values[i * 12 + j] = 0.1f * j + i;
+    }
+  }
+
+  // The path base will be client_path_id_, and so 0 is a valid path and others
+  // should be invalid.
+  const GLuint kInvalidPathBase = client_path_id_;
+  const GLuint kInvalidPathsWithBase[] = {1, client_path_id_, 5, 18};
+
+  InstancedTestcase testcases[] = {
+      // Zero path count produces no error, no call.
+      {0, GL_UNSIGNED_INT, NULL, 0, kFillMode, kReference, kMask, GL_NONE, NULL,
+       0, 0, error::kNoError, GL_NO_ERROR, false},
+
+      // Zero path count, even with path data, produces no error, no call.
+      {0, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
+       GL_TRANSLATE_X_CHROMIUM, transform_values, sizeof(kPaths),
+       sizeof(transform_values), error::kNoError, GL_NO_ERROR, false},
+
+      // Negative path count produces error.
+      {-1, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
+       GL_TRANSLATE_X_CHROMIUM, transform_values, sizeof(kPaths),
+       sizeof(transform_values), error::kNoError, GL_INVALID_VALUE, false},
+
+      // Passing paths count but not having the shm data is a connection error.
+      {kPathCount, GL_UNSIGNED_INT, NULL, 0, kFillMode, kReference, kMask,
+       GL_TRANSLATE_X_CHROMIUM, transform_values, 0, sizeof(transform_values),
+       error::kOutOfBounds, GL_NO_ERROR, false},
+
+      // Huge path count would cause huge transfer buffer, it does not go
+      // through.
+      {std::numeric_limits<GLsizei>::max() - 3, GL_UNSIGNED_INT, kPaths, 0,
+       kFillMode, kReference, kMask, GL_TRANSLATE_X_CHROMIUM, transform_values,
+       sizeof(kPaths), sizeof(transform_values), error::kOutOfBounds,
+       GL_NO_ERROR, false},
+
+      // Test that the path base is applied correctly for each instanced call.
+      // In this case no path is marked as used, and so no GL function should be
+      // called and no error should be generated.
+      {kPathCount, GL_UNSIGNED_INT, kInvalidPathsWithBase, kInvalidPathBase,
+       kFillMode, kReference, kMask, GL_TRANSLATE_X_CHROMIUM, transform_values,
+       sizeof(kInvalidPathsWithBase), sizeof(transform_values), error::kNoError,
+       GL_NO_ERROR, false},
+
+      // Test that using correct paths but invalid transform type produces
+      // invalid enum.
+      {kPathCount, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
+       GL_TRANSLATE_X_CHROMIUM - 1, transform_values, sizeof(kPaths),
+       sizeof(transform_values), error::kNoError, GL_INVALID_ENUM, false},
+
+      // Test that if we have transform, not having the shm data is a connection
+      // error.
+      {kPathCount, GL_UNSIGNED_INT, kPaths, 0, kFillMode, kReference, kMask,
+       GL_TRANSLATE_X_CHROMIUM, NULL, sizeof(kPaths), 0, error::kOutOfBounds,
+       GL_NO_ERROR, false},
+
+  };
+  for (size_t i = 0; i < arraysize(testcases); ++i) {
+    SCOPED_TRACE(testing::Message() << "InstancedNoCalls testcase " << i);
+    CallAllInstancedCommands(testcases[i]);
+  }
+}
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedInvalidSHMValues) {
+  const GLuint kPaths[] = {1, client_path_id_, 5, client_path_id_};
+  const GLsizei kPathCount = arraysize(kPaths);
+  GLfloat transform_values[12 * kPathCount];
+  for (GLsizei i = 0; i < kPathCount; ++i) {
+    for (int j = 0; j < 12; ++j) {
+      transform_values[i * 12 + j] = 0.1f * j + i;
+    }
+  }
+  enum {
+    kPathsSHMIdInvalid = 1,
+    kPathsSHMOffsetInvalid = 1 << 1,
+    kTransformsHMIdInvalid = 1 << 2,
+    kTransformsHMOffsetInvalid = 1 << 3,
+    kFirstTestcase = kPathsSHMIdInvalid,
+    kLastTestcase = kTransformsHMOffsetInvalid
+  };
+
+  for (int testcase = kFirstTestcase; testcase <= kLastTestcase; ++testcase) {
+    GLfloat* transforms = GetSharedMemoryAs<GLfloat*>();
+    uint32 transforms_shm_id = shared_memory_id_;
+    uint32 transforms_shm_offset = shared_memory_offset_;
+    memcpy(transforms, transform_values, sizeof(transform_values));
+
+    GLuint* paths =
+        GetSharedMemoryAsWithOffset<GLuint*>(sizeof(transform_values));
+    uint32 paths_shm_id = shared_memory_id_;
+    uint32 paths_shm_offset = shared_memory_offset_ + sizeof(transform_values);
+
+    if (testcase & kPathsSHMIdInvalid) {
+      paths_shm_id = kInvalidSharedMemoryId;
+    }
+    if (testcase & kPathsSHMOffsetInvalid) {
+      paths_shm_offset = kInvalidSharedMemoryOffset;
+    }
+    if (testcase & kTransformsHMIdInvalid) {
+      transforms_shm_id = kInvalidSharedMemoryId;
+    }
+    if (testcase & kTransformsHMOffsetInvalid) {
+      transforms_shm_offset = kInvalidSharedMemoryOffset;
+    }
+    SCOPED_TRACE(testing::Message() << "InstancedInvalidSHMValues testcase "
+                                    << testcase);
+    CallAllInstancedCommandsWithInvalidSHM(
+        kPathCount, kPaths, paths, paths_shm_id, paths_shm_offset,
+        transforms_shm_id, transforms_shm_offset);
+  }
 }
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h"

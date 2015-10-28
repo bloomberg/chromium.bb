@@ -94,6 +94,18 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
 // TODO(gman): StencilThenCoverStrokePathCHROMIUM
 
+// TODO(gman): StencilFillPathInstancedCHROMIUM
+
+// TODO(gman): StencilStrokePathInstancedCHROMIUM
+
+// TODO(gman): CoverFillPathInstancedCHROMIUM
+
+// TODO(gman): CoverStrokePathInstancedCHROMIUM
+
+// TODO(gman): StencilThenCoverFillPathInstancedCHROMIUM
+
+// TODO(gman): StencilThenCoverStrokePathInstancedCHROMIUM
+
 TEST_P(GLES2DecoderTestWithBlendEquationAdvanced, BlendBarrierKHRValidArgs) {
   EXPECT_CALL(*gl_, BlendBarrierKHR());
   SpecializedSetup<cmds::BlendBarrierKHR, 0>(true);

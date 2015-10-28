@@ -1789,6 +1789,88 @@ void MojoGLES2Impl::StencilThenCoverStrokePathCHROMIUM(GLuint path,
   MojoGLES2MakeCurrent(context_);
   glStencilThenCoverStrokePathCHROMIUM(path, reference, mask, coverMode);
 }
+void MojoGLES2Impl::StencilFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MojoGLES2MakeCurrent(context_);
+  glStencilFillPathInstancedCHROMIUM(numPaths, pathNameType, paths, pathBase,
+                                     fillMode, mask, transformType,
+                                     transformValues);
+}
+void MojoGLES2Impl::StencilStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MojoGLES2MakeCurrent(context_);
+  glStencilStrokePathInstancedCHROMIUM(numPaths, pathNameType, paths, pathBase,
+                                       reference, mask, transformType,
+                                       transformValues);
+}
+void MojoGLES2Impl::CoverFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MojoGLES2MakeCurrent(context_);
+  glCoverFillPathInstancedCHROMIUM(numPaths, pathNameType, paths, pathBase,
+                                   coverMode, transformType, transformValues);
+}
+void MojoGLES2Impl::CoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MojoGLES2MakeCurrent(context_);
+  glCoverStrokePathInstancedCHROMIUM(numPaths, pathNameType, paths, pathBase,
+                                     coverMode, transformType, transformValues);
+}
+void MojoGLES2Impl::StencilThenCoverFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MojoGLES2MakeCurrent(context_);
+  glStencilThenCoverFillPathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
+      transformType, transformValues);
+}
+void MojoGLES2Impl::StencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MojoGLES2MakeCurrent(context_);
+  glStencilThenCoverStrokePathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, reference, mask, coverMode,
+      transformType, transformValues);
+}
 GLenum MojoGLES2Impl::GetGraphicsResetStatusKHR() {
   MojoGLES2MakeCurrent(context_);
   return glGetGraphicsResetStatusKHR();

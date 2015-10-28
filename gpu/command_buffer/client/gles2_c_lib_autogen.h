@@ -1591,6 +1591,84 @@ void GL_APIENTRY GLES2StencilThenCoverStrokePathCHROMIUM(GLuint path,
   gles2::GetGLContext()->StencilThenCoverStrokePathCHROMIUM(path, reference,
                                                             mask, coverMode);
 }
+void GL_APIENTRY
+GLES2StencilFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      const GLvoid* paths,
+                                      GLuint pathBase,
+                                      GLenum fillMode,
+                                      GLuint mask,
+                                      GLenum transformType,
+                                      const GLfloat* transformValues) {
+  gles2::GetGLContext()->StencilFillPathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, transformType,
+      transformValues);
+}
+void GL_APIENTRY
+GLES2StencilStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                        GLenum pathNameType,
+                                        const GLvoid* paths,
+                                        GLuint pathBase,
+                                        GLint reference,
+                                        GLuint mask,
+                                        GLenum transformType,
+                                        const GLfloat* transformValues) {
+  gles2::GetGLContext()->StencilStrokePathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, reference, mask, transformType,
+      transformValues);
+}
+void GL_APIENTRY
+GLES2CoverFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                    GLenum pathNameType,
+                                    const GLvoid* paths,
+                                    GLuint pathBase,
+                                    GLenum coverMode,
+                                    GLenum transformType,
+                                    const GLfloat* transformValues) {
+  gles2::GetGLContext()->CoverFillPathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, coverMode, transformType,
+      transformValues);
+}
+void GL_APIENTRY
+GLES2CoverStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      const GLvoid* paths,
+                                      GLuint pathBase,
+                                      GLenum coverMode,
+                                      GLenum transformType,
+                                      const GLfloat* transformValues) {
+  gles2::GetGLContext()->CoverStrokePathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, coverMode, transformType,
+      transformValues);
+}
+void GL_APIENTRY
+GLES2StencilThenCoverFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                               GLenum pathNameType,
+                                               const GLvoid* paths,
+                                               GLuint pathBase,
+                                               GLenum fillMode,
+                                               GLuint mask,
+                                               GLenum coverMode,
+                                               GLenum transformType,
+                                               const GLfloat* transformValues) {
+  gles2::GetGLContext()->StencilThenCoverFillPathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
+      transformType, transformValues);
+}
+void GL_APIENTRY GLES2StencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  gles2::GetGLContext()->StencilThenCoverStrokePathInstancedCHROMIUM(
+      numPaths, pathNameType, paths, pathBase, reference, mask, coverMode,
+      transformType, transformValues);
+}
 GLenum GL_APIENTRY GLES2GetGraphicsResetStatusKHR() {
   return gles2::GetGLContext()->GetGraphicsResetStatusKHR();
 }
@@ -2831,6 +2909,36 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glStencilThenCoverStrokePathCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glStencilThenCoverStrokePathCHROMIUM),
+    },
+    {
+        "glStencilFillPathInstancedCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glStencilFillPathInstancedCHROMIUM),
+    },
+    {
+        "glStencilStrokePathInstancedCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glStencilStrokePathInstancedCHROMIUM),
+    },
+    {
+        "glCoverFillPathInstancedCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glCoverFillPathInstancedCHROMIUM),
+    },
+    {
+        "glCoverStrokePathInstancedCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glCoverStrokePathInstancedCHROMIUM),
+    },
+    {
+        "glStencilThenCoverFillPathInstancedCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glStencilThenCoverFillPathInstancedCHROMIUM),
+    },
+    {
+        "glStencilThenCoverStrokePathInstancedCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glStencilThenCoverStrokePathInstancedCHROMIUM),
     },
     {
         "glGetGraphicsResetStatusKHR",

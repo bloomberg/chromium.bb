@@ -2986,6 +2986,122 @@ void StencilThenCoverStrokePathCHROMIUM(GLuint path,
   }
 }
 
+void StencilFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      uint32_t paths_shm_id,
+                                      uint32_t paths_shm_offset,
+                                      GLuint pathBase,
+                                      GLenum fillMode,
+                                      GLuint mask,
+                                      GLenum transformType,
+                                      uint32_t transformValues_shm_id,
+                                      uint32_t transformValues_shm_offset) {
+  gles2::cmds::StencilFillPathInstancedCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::StencilFillPathInstancedCHROMIUM>();
+  if (c) {
+    c->Init(numPaths, pathNameType, paths_shm_id, paths_shm_offset, pathBase,
+            fillMode, mask, transformType, transformValues_shm_id,
+            transformValues_shm_offset);
+  }
+}
+
+void StencilStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                        GLenum pathNameType,
+                                        uint32_t paths_shm_id,
+                                        uint32_t paths_shm_offset,
+                                        GLuint pathBase,
+                                        GLint reference,
+                                        GLuint mask,
+                                        GLenum transformType,
+                                        uint32_t transformValues_shm_id,
+                                        uint32_t transformValues_shm_offset) {
+  gles2::cmds::StencilStrokePathInstancedCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::StencilStrokePathInstancedCHROMIUM>();
+  if (c) {
+    c->Init(numPaths, pathNameType, paths_shm_id, paths_shm_offset, pathBase,
+            reference, mask, transformType, transformValues_shm_id,
+            transformValues_shm_offset);
+  }
+}
+
+void CoverFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                    GLenum pathNameType,
+                                    uint32_t paths_shm_id,
+                                    uint32_t paths_shm_offset,
+                                    GLuint pathBase,
+                                    GLenum coverMode,
+                                    GLenum transformType,
+                                    uint32_t transformValues_shm_id,
+                                    uint32_t transformValues_shm_offset) {
+  gles2::cmds::CoverFillPathInstancedCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::CoverFillPathInstancedCHROMIUM>();
+  if (c) {
+    c->Init(numPaths, pathNameType, paths_shm_id, paths_shm_offset, pathBase,
+            coverMode, transformType, transformValues_shm_id,
+            transformValues_shm_offset);
+  }
+}
+
+void CoverStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      uint32_t paths_shm_id,
+                                      uint32_t paths_shm_offset,
+                                      GLuint pathBase,
+                                      GLenum coverMode,
+                                      GLenum transformType,
+                                      uint32_t transformValues_shm_id,
+                                      uint32_t transformValues_shm_offset) {
+  gles2::cmds::CoverStrokePathInstancedCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::CoverStrokePathInstancedCHROMIUM>();
+  if (c) {
+    c->Init(numPaths, pathNameType, paths_shm_id, paths_shm_offset, pathBase,
+            coverMode, transformType, transformValues_shm_id,
+            transformValues_shm_offset);
+  }
+}
+
+void StencilThenCoverFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    uint32_t paths_shm_id,
+    uint32_t paths_shm_offset,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    uint32_t transformValues_shm_id,
+    uint32_t transformValues_shm_offset) {
+  gles2::cmds::StencilThenCoverFillPathInstancedCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::StencilThenCoverFillPathInstancedCHROMIUM>();
+  if (c) {
+    c->Init(numPaths, pathNameType, paths_shm_id, paths_shm_offset, pathBase,
+            fillMode, mask, coverMode, transformType, transformValues_shm_id,
+            transformValues_shm_offset);
+  }
+}
+
+void StencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    uint32_t paths_shm_id,
+    uint32_t paths_shm_offset,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    uint32_t transformValues_shm_id,
+    uint32_t transformValues_shm_offset) {
+  gles2::cmds::StencilThenCoverStrokePathInstancedCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::StencilThenCoverStrokePathInstancedCHROMIUM>();
+  if (c) {
+    c->Init(numPaths, pathNameType, paths_shm_id, paths_shm_offset, pathBase,
+            reference, mask, coverMode, transformType, transformValues_shm_id,
+            transformValues_shm_offset);
+  }
+}
+
 void BlendBarrierKHR() {
   gles2::cmds::BlendBarrierKHR* c = GetCmdSpace<gles2::cmds::BlendBarrierKHR>();
   if (c) {

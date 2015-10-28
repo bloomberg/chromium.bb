@@ -788,6 +788,57 @@ void StencilThenCoverStrokePathCHROMIUM(GLuint path,
                                         GLint reference,
                                         GLuint mask,
                                         GLenum coverMode) override;
+void StencilFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      const GLvoid* paths,
+                                      GLuint pathBase,
+                                      GLenum fillMode,
+                                      GLuint mask,
+                                      GLenum transformType,
+                                      const GLfloat* transformValues) override;
+void StencilStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) override;
+void CoverFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                    GLenum pathNameType,
+                                    const GLvoid* paths,
+                                    GLuint pathBase,
+                                    GLenum coverMode,
+                                    GLenum transformType,
+                                    const GLfloat* transformValues) override;
+void CoverStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      const GLvoid* paths,
+                                      GLuint pathBase,
+                                      GLenum coverMode,
+                                      GLenum transformType,
+                                      const GLfloat* transformValues) override;
+void StencilThenCoverFillPathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) override;
+void StencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) override;
 GLenum GetGraphicsResetStatusKHR() override;
 void BlendBarrierKHR() override;
 void ApplyScreenSpaceAntialiasingCHROMIUM() override;

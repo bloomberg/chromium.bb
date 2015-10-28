@@ -5970,6 +5970,326 @@ void GLES2Implementation::PathCommandsCHROMIUM(GLuint path,
   CheckGLError();
 }
 
+bool GLES2Implementation::PrepareInstancedPathCommand(
+    const char* function_name,
+    GLsizei num_paths,
+    GLenum path_name_type,
+    const void* paths,
+    GLenum transform_type,
+    const GLfloat* transform_values,
+    ScopedTransferBufferPtr* buffer,
+    uint32* out_paths_shm_id,
+    size_t* out_paths_offset,
+    uint32* out_transforms_shm_id,
+    size_t* out_transforms_offset) {
+  if (num_paths < 0) {
+    SetGLError(GL_INVALID_VALUE, function_name, "numPaths < 0");
+    return false;
+  }
+  uint32 path_name_size =
+      GLES2Util::GetGLTypeSizeForGLPathNameType(path_name_type);
+
+  if (path_name_size == 0) {
+    SetGLError(GL_INVALID_ENUM, function_name, "invalid pathNameType");
+    return false;
+  }
+
+  uint32 transforms_component_count =
+      GLES2Util::GetComponentCountForGLTransformType(transform_type);
+
+  if (transform_type != GL_NONE && transforms_component_count == 0) {
+    SetGLError(GL_INVALID_ENUM, function_name, "invalid transformType");
+    return false;
+  }
+
+  if (num_paths == 0) {
+    // This might still be a valid or an invalid GL call. Make an empty call to
+    // the service side to check the rest of the parameters. We check the above
+    // parameters client-side, in order to get same GL errors whether num_paths
+    // == 0 or not. We do not check the parameters below, as they are anyway
+    // checked by the service side. We can not check all the parameters
+    // client-side, since the validators are not available.
+    *out_paths_shm_id = 0;
+    *out_paths_offset = 0;
+    *out_transforms_shm_id = 0;
+    *out_transforms_offset = 0;
+    return true;
+  }
+
+  if (!paths) {
+    SetGLError(GL_INVALID_VALUE, function_name, "missing paths");
+    return false;
+  }
+
+  if (transform_type != GL_NONE && !transform_values) {
+    SetGLError(GL_INVALID_VALUE, function_name, "missing transforms");
+    return false;
+  }
+
+  uint32 paths_size;
+  if (!SafeMultiplyUint32(path_name_size, num_paths, &paths_size)) {
+    SetGLError(GL_INVALID_OPERATION, function_name, "overflow");
+    return false;
+  }
+
+  // The multiplication below will not overflow.
+  DCHECK(transforms_component_count <= 12);
+  uint32 one_transform_size = sizeof(GLfloat) * transforms_component_count;
+
+  uint32 transforms_size;
+  if (!SafeMultiplyUint32(one_transform_size, num_paths, &transforms_size)) {
+    SetGLError(GL_INVALID_OPERATION, function_name, "overflow");
+    return false;
+  }
+
+  uint32 required_buffer_size;
+  if (!SafeAddUint32(transforms_size, paths_size, &required_buffer_size)) {
+    SetGLError(GL_INVALID_OPERATION, function_name, "overflow");
+    return false;
+  }
+
+  buffer->Reset(required_buffer_size);
+
+  if (!buffer->valid() || buffer->size() < required_buffer_size) {
+    SetGLError(GL_OUT_OF_MEMORY, function_name, "too large");
+    return false;
+  }
+
+  // Copy transforms first, they may have more strict alignment.
+  if (transforms_size > 0) {
+    unsigned char* transforms_addr =
+        static_cast<unsigned char*>(buffer->address());
+    memcpy(transforms_addr, transform_values, transforms_size);
+    *out_transforms_shm_id = buffer->shm_id();
+    *out_transforms_offset = buffer->offset();
+  } else {
+    *out_transforms_shm_id = 0;
+    *out_transforms_offset = 0;
+  }
+
+  DCHECK(paths_size > 0);
+  unsigned char* paths_addr =
+      static_cast<unsigned char*>(buffer->address()) + transforms_size;
+  memcpy(paths_addr, paths, paths_size);
+  *out_paths_shm_id = buffer->shm_id();
+  *out_paths_offset = buffer->offset() + transforms_size;
+
+  return true;
+}
+
+void GLES2Implementation::StencilFillPathInstancedCHROMIUM(
+    GLsizei num_paths,
+    GLenum path_name_type,
+    const GLvoid* paths,
+    GLuint path_base,
+    GLenum fill_mode,
+    GLuint mask,
+    GLenum transform_type,
+    const GLfloat* transform_values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glStencilFillPathInstancedCHROMIUM(" << num_paths
+                     << ", " << path_name_type << ", " << paths << ", "
+                     << path_base << ", " << fill_mode << ", " << mask << ", "
+                     << transform_type << ", " << transform_values << ")");
+
+  ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
+  uint32 paths_shm_id = 0;
+  size_t paths_offset = 0;
+  uint32 transforms_shm_id = 0;
+  size_t transforms_offset = 0;
+  if (!PrepareInstancedPathCommand(
+          "glStencilFillPathInstancedCHROMIUM", num_paths, path_name_type,
+          paths, transform_type, transform_values, &buffer, &paths_shm_id,
+          &paths_offset, &transforms_shm_id, &transforms_offset)) {
+    return;
+  }
+
+  helper_->StencilFillPathInstancedCHROMIUM(
+      num_paths, path_name_type, paths_shm_id, paths_offset, path_base,
+      fill_mode, mask, transform_type, transforms_shm_id, transforms_offset);
+
+  CheckGLError();
+}
+
+void GLES2Implementation::StencilStrokePathInstancedCHROMIUM(
+    GLsizei num_paths,
+    GLenum path_name_type,
+    const GLvoid* paths,
+    GLuint path_base,
+    GLint ref,
+    GLuint mask,
+    GLenum transform_type,
+    const GLfloat* transform_values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glStencilStrokePathInstancedCHROMIUM(" << num_paths
+                     << ", " << path_name_type << ", " << paths << ", "
+                     << path_base << ", " << ref << ", " << mask << ", "
+                     << transform_type << ", " << transform_values << ")");
+
+  ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
+  uint32 paths_shm_id = 0;
+  size_t paths_offset = 0;
+  uint32 transforms_shm_id = 0;
+  size_t transforms_offset = 0;
+  if (!PrepareInstancedPathCommand(
+          "glStencilStrokePathInstancedCHROMIUM", num_paths, path_name_type,
+          paths, transform_type, transform_values, &buffer, &paths_shm_id,
+          &paths_offset, &transforms_shm_id, &transforms_offset)) {
+    return;
+  }
+
+  helper_->StencilStrokePathInstancedCHROMIUM(
+      num_paths, path_name_type, paths_shm_id, paths_offset, path_base, ref,
+      mask, transform_type, transforms_shm_id, transforms_offset);
+
+  CheckGLError();
+}
+
+void GLES2Implementation::CoverFillPathInstancedCHROMIUM(
+    GLsizei num_paths,
+    GLenum path_name_type,
+    const GLvoid* paths,
+    GLuint path_base,
+    GLenum cover_mode,
+    GLenum transform_type,
+    const GLfloat* transform_values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCoverFillPathInstancedCHROMIUM("
+                     << num_paths << ", " << path_name_type << ", " << paths
+                     << ", " << path_base << ", " << cover_mode << ", "
+                     << transform_type << ", " << transform_values << ")");
+
+  ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
+  uint32 paths_shm_id = 0;
+  size_t paths_offset = 0;
+  uint32 transforms_shm_id = 0;
+  size_t transforms_offset = 0;
+  if (!PrepareInstancedPathCommand(
+          "glCoverFillPathInstancedCHROMIUM", num_paths, path_name_type, paths,
+          transform_type, transform_values, &buffer, &paths_shm_id,
+          &paths_offset, &transforms_shm_id, &transforms_offset)) {
+    return;
+  }
+
+  helper_->CoverFillPathInstancedCHROMIUM(
+      num_paths, path_name_type, paths_shm_id, paths_offset, path_base,
+      cover_mode, transform_type, transforms_shm_id, transforms_offset);
+
+  CheckGLError();
+}
+
+void GLES2Implementation::CoverStrokePathInstancedCHROMIUM(
+    GLsizei num_paths,
+    GLenum path_name_type,
+    const GLvoid* paths,
+    GLuint path_base,
+    GLenum cover_mode,
+    GLenum transform_type,
+    const GLfloat* transform_values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glCoverStrokePathInstancedCHROMIUM(" << num_paths
+                     << ", " << path_name_type << ", " << paths << ", "
+                     << path_base << ", " << cover_mode << ", "
+                     << transform_type << ", " << transform_values << ")");
+
+  ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
+  uint32 paths_shm_id = 0;
+  size_t paths_offset = 0;
+  uint32 transforms_shm_id = 0;
+  size_t transforms_offset = 0;
+  if (!PrepareInstancedPathCommand(
+          "glCoverStrokePathInstancedCHROMIUM", num_paths, path_name_type,
+          paths, transform_type, transform_values, &buffer, &paths_shm_id,
+          &paths_offset, &transforms_shm_id, &transforms_offset)) {
+    return;
+  }
+
+  helper_->CoverStrokePathInstancedCHROMIUM(
+      num_paths, path_name_type, paths_shm_id, paths_offset, path_base,
+      cover_mode, transform_type, transforms_shm_id, transforms_offset);
+
+  CheckGLError();
+}
+
+void GLES2Implementation::StencilThenCoverFillPathInstancedCHROMIUM(
+    GLsizei num_paths,
+    GLenum path_name_type,
+    const GLvoid* paths,
+    GLuint path_base,
+    GLenum fill_mode,
+    GLuint mask,
+    GLenum cover_mode,
+    GLenum transform_type,
+    const GLfloat* transform_values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glStencilThenCoverFillPathInstancedCHROMIUM("
+          << num_paths << ", " << path_name_type << ", " << paths << ", "
+          << path_base << ", " << cover_mode << ", " << fill_mode << ", "
+          << mask << ", " << transform_type << ", " << transform_values << ")");
+
+  ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
+  uint32 paths_shm_id = 0;
+  size_t paths_offset = 0;
+  uint32 transforms_shm_id = 0;
+  size_t transforms_offset = 0;
+  if (!PrepareInstancedPathCommand(
+          "glStencilThenCoverFillPathInstancedCHROMIUM", num_paths,
+          path_name_type, paths, transform_type, transform_values, &buffer,
+          &paths_shm_id, &paths_offset, &transforms_shm_id,
+          &transforms_offset)) {
+    return;
+  }
+
+  helper_->StencilThenCoverFillPathInstancedCHROMIUM(
+      num_paths, path_name_type, paths_shm_id, paths_offset, path_base,
+      fill_mode, mask, cover_mode, transform_type, transforms_shm_id,
+      transforms_offset);
+
+  CheckGLError();
+}
+
+void GLES2Implementation::StencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei num_paths,
+    GLenum path_name_type,
+    const GLvoid* paths,
+    GLuint path_base,
+    GLint ref,
+    GLuint mask,
+    GLenum cover_mode,
+    GLenum transform_type,
+    const GLfloat* transform_values) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glStencilThenCoverStrokePathInstancedCHROMIUM("
+                     << num_paths << ", " << path_name_type << ", " << paths
+                     << ", " << path_base << ", " << cover_mode << ", " << ref
+                     << ", " << mask << ", " << transform_type << ", "
+                     << transform_values << ")");
+
+  ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
+  uint32 paths_shm_id = 0;
+  size_t paths_offset = 0;
+  uint32 transforms_shm_id = 0;
+  size_t transforms_offset = 0;
+  if (!PrepareInstancedPathCommand(
+          "glStencilThenCoverStrokePathInstancedCHROMIUM", num_paths,
+          path_name_type, paths, transform_type, transform_values, &buffer,
+          &paths_shm_id, &paths_offset, &transforms_shm_id,
+          &transforms_offset)) {
+    return;
+  }
+
+  helper_->StencilThenCoverStrokePathInstancedCHROMIUM(
+      num_paths, path_name_type, paths_shm_id, paths_offset, path_base, ref,
+      mask, cover_mode, transform_type, transforms_shm_id, transforms_offset);
+
+  CheckGLError();
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

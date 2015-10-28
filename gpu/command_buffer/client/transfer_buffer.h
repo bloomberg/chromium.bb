@@ -146,6 +146,14 @@ class GPU_EXPORT ScopedTransferBufferPtr {
     Reset(size);
   }
 
+  // Constructs an empty and invalid allocation that should be Reset() later.
+  ScopedTransferBufferPtr(CommandBufferHelper* helper,
+                          TransferBufferInterface* transfer_buffer)
+      : buffer_(NULL),
+        size_(0),
+        helper_(helper),
+        transfer_buffer_(transfer_buffer) {}
+
   ~ScopedTransferBufferPtr() {
     Release();
   }

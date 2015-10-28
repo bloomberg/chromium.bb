@@ -647,6 +647,17 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   const std::string& GetLogPrefix() const;
 
+  bool PrepareInstancedPathCommand(const char* function_name,
+                                   GLsizei num_paths,
+                                   GLenum path_name_type,
+                                   const void* paths,
+                                   GLenum transform_type,
+                                   const GLfloat* transform_values,
+                                   ScopedTransferBufferPtr* buffer,
+                                   uint32* out_paths_shm_id,
+                                   size_t* out_paths_offset,
+                                   uint32* out_transforms_shm_id,
+                                   size_t* out_transforms_offset);
 #if defined(GL_CLIENT_FAIL_GL_ERRORS)
   void CheckGLError();
   void FailGLError(GLenum error);

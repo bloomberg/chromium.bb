@@ -343,6 +343,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x8F96, "GL_RGB8_SNORM",
     },
     {
+        0x9091, "GL_TRANSLATE_3D_CHROMIUM",
+    },
+    {
         0x8260, "GL_UNDEFINED_VERTEX_EXT",
     },
     {
@@ -1549,7 +1552,19 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x9253, "GL_DMP_PROGRAM_BINARY_DMP",
     },
     {
+        0x9096, "GL_TRANSPOSE_AFFINE_2D_CHROMIUM",
+    },
+    {
+        0x9094, "GL_AFFINE_3D_CHROMIUM",
+    },
+    {
         0x8DC8, "GL_UNSIGNED_INT_VEC4",
+    },
+    {
+        0x9092, "GL_AFFINE_2D_CHROMIUM",
+    },
+    {
+        0x9090, "GL_TRANSLATE_2D_CHROMIUM",
     },
     {
         0x3000, "GL_CLIP_DISTANCE0_APPLE",
@@ -2656,7 +2671,13 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x83FA, "GL_PERFQUERY_FLUSH_INTEL",
     },
     {
+        0x909C, "GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM",
+    },
+    {
         0x0D03, "GL_PACK_SKIP_ROWS",
+    },
+    {
+        0x908E, "GL_TRANSLATE_X_CHROMIUM",
     },
     {
         0x84F3, "GL_FENCE_STATUS_NV",
@@ -2714,6 +2735,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x1004, "GL_TEXTURE_BORDER_COLOR_EXT",
+    },
+    {
+        0x908F, "GL_TRANSLATE_Y_CHROMIUM",
     },
     {
         0x8A2D, "GL_MAX_FRAGMENT_UNIFORM_BLOCKS",
@@ -2873,6 +2897,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x00000200, "GL_DEPTH_BUFFER_BIT1_QCOM",
+    },
+    {
+        0x9098, "GL_TRANSPOSE_AFFINE_3D_CHROMIUM",
     },
     {
         0x78EC, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM",
@@ -4030,6 +4057,27 @@ std::string GLES2Util::GetStringPathFillMode(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringPathInstancedCoverMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_CONVEX_HULL_CHROMIUM, "GL_CONVEX_HULL_CHROMIUM"},
+      {GL_BOUNDING_BOX_CHROMIUM, "GL_BOUNDING_BOX_CHROMIUM"},
+      {GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+       "GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringPathNameType(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_UNSIGNED_BYTE, "GL_UNSIGNED_BYTE"},   {GL_BYTE, "GL_BYTE"},
+      {GL_UNSIGNED_SHORT, "GL_UNSIGNED_SHORT"}, {GL_SHORT, "GL_SHORT"},
+      {GL_UNSIGNED_INT, "GL_UNSIGNED_INT"},     {GL_INT, "GL_INT"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringPathParameter(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_PATH_STROKE_WIDTH_CHROMIUM, "GL_PATH_STROKE_WIDTH_CHROMIUM"},
@@ -4037,6 +4085,22 @@ std::string GLES2Util::GetStringPathParameter(uint32_t value) {
       {GL_PATH_JOIN_STYLE_CHROMIUM, "GL_PATH_JOIN_STYLE_CHROMIUM"},
       {GL_PATH_MITER_LIMIT_CHROMIUM, "GL_PATH_MITER_LIMIT_CHROMIUM"},
       {GL_PATH_STROKE_BOUND_CHROMIUM, "GL_PATH_STROKE_BOUND_CHROMIUM"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringPathTransformType(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_NONE, "GL_NONE"},
+      {GL_TRANSLATE_X_CHROMIUM, "GL_TRANSLATE_X_CHROMIUM"},
+      {GL_TRANSLATE_Y_CHROMIUM, "GL_TRANSLATE_Y_CHROMIUM"},
+      {GL_TRANSLATE_2D_CHROMIUM, "GL_TRANSLATE_2D_CHROMIUM"},
+      {GL_TRANSLATE_3D_CHROMIUM, "GL_TRANSLATE_3D_CHROMIUM"},
+      {GL_AFFINE_2D_CHROMIUM, "GL_AFFINE_2D_CHROMIUM"},
+      {GL_AFFINE_3D_CHROMIUM, "GL_AFFINE_3D_CHROMIUM"},
+      {GL_TRANSPOSE_AFFINE_2D_CHROMIUM, "GL_TRANSPOSE_AFFINE_2D_CHROMIUM"},
+      {GL_TRANSPOSE_AFFINE_3D_CHROMIUM, "GL_TRANSPOSE_AFFINE_3D_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

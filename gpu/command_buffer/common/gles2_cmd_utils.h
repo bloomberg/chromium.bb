@@ -131,6 +131,9 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static uint32_t GLErrorToErrorBit(uint32_t gl_error);
 
+  static size_t GetComponentCountForGLTransformType(uint32_t type);
+  static size_t GetGLTypeSizeForGLPathNameType(uint32_t type);
+
   static uint32_t GLErrorBitToGLError(uint32_t error_bit);
 
   static uint32_t IndexToGLFaceTarget(int index);

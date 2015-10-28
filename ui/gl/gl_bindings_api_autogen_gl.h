@@ -183,7 +183,21 @@ void glCopyTexSubImage3DFn(GLenum target,
                            GLint y,
                            GLsizei width,
                            GLsizei height) override;
+void glCoverFillPathInstancedNVFn(GLsizei numPaths,
+                                  GLenum pathNameType,
+                                  const void* paths,
+                                  GLuint pathBase,
+                                  GLenum coverMode,
+                                  GLenum transformType,
+                                  const GLfloat* transformValues) override;
 void glCoverFillPathNVFn(GLuint path, GLenum coverMode) override;
+void glCoverStrokePathInstancedNVFn(GLsizei numPaths,
+                                    GLenum pathNameType,
+                                    const void* paths,
+                                    GLuint pathBase,
+                                    GLenum coverMode,
+                                    GLenum transformType,
+                                    const GLfloat* transformValues) override;
 void glCoverStrokePathNVFn(GLuint name, GLenum coverMode) override;
 GLuint glCreateProgramFn(void) override;
 GLuint glCreateShaderFn(GLenum type) override;
@@ -548,6 +562,14 @@ void glShaderSourceFn(GLuint shader,
                       GLsizei count,
                       const char* const* str,
                       const GLint* length) override;
+void glStencilFillPathInstancedNVFn(GLsizei numPaths,
+                                    GLenum pathNameType,
+                                    const void* paths,
+                                    GLuint pathBase,
+                                    GLenum fillMode,
+                                    GLuint mask,
+                                    GLenum transformType,
+                                    const GLfloat* transformValues) override;
 void glStencilFillPathNVFn(GLuint path, GLenum fillMode, GLuint mask) override;
 void glStencilFuncFn(GLenum func, GLint ref, GLuint mask) override;
 void glStencilFuncSeparateFn(GLenum face,
@@ -561,13 +583,41 @@ void glStencilOpSeparateFn(GLenum face,
                            GLenum fail,
                            GLenum zfail,
                            GLenum zpass) override;
+void glStencilStrokePathInstancedNVFn(GLsizei numPaths,
+                                      GLenum pathNameType,
+                                      const void* paths,
+                                      GLuint pathBase,
+                                      GLint ref,
+                                      GLuint mask,
+                                      GLenum transformType,
+                                      const GLfloat* transformValues) override;
 void glStencilStrokePathNVFn(GLuint path,
                              GLint reference,
                              GLuint mask) override;
+void glStencilThenCoverFillPathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) override;
 void glStencilThenCoverFillPathNVFn(GLuint path,
                                     GLenum fillMode,
                                     GLuint mask,
                                     GLenum coverMode) override;
+void glStencilThenCoverStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) override;
 void glStencilThenCoverStrokePathNVFn(GLuint path,
                                       GLint reference,
                                       GLuint mask,

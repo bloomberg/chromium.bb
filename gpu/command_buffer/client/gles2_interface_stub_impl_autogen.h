@@ -1084,6 +1084,60 @@ void GLES2InterfaceStub::StencilThenCoverStrokePathCHROMIUM(
     GLint /* reference */,
     GLuint /* mask */,
     GLenum /* coverMode */) {}
+void GLES2InterfaceStub::StencilFillPathInstancedCHROMIUM(
+    GLsizei /* numPaths */,
+    GLenum /* pathNameType */,
+    const GLvoid* /* paths */,
+    GLuint /* pathBase */,
+    GLenum /* fillMode */,
+    GLuint /* mask */,
+    GLenum /* transformType */,
+    const GLfloat* /* transformValues */) {}
+void GLES2InterfaceStub::StencilStrokePathInstancedCHROMIUM(
+    GLsizei /* numPaths */,
+    GLenum /* pathNameType */,
+    const GLvoid* /* paths */,
+    GLuint /* pathBase */,
+    GLint /* reference */,
+    GLuint /* mask */,
+    GLenum /* transformType */,
+    const GLfloat* /* transformValues */) {}
+void GLES2InterfaceStub::CoverFillPathInstancedCHROMIUM(
+    GLsizei /* numPaths */,
+    GLenum /* pathNameType */,
+    const GLvoid* /* paths */,
+    GLuint /* pathBase */,
+    GLenum /* coverMode */,
+    GLenum /* transformType */,
+    const GLfloat* /* transformValues */) {}
+void GLES2InterfaceStub::CoverStrokePathInstancedCHROMIUM(
+    GLsizei /* numPaths */,
+    GLenum /* pathNameType */,
+    const GLvoid* /* paths */,
+    GLuint /* pathBase */,
+    GLenum /* coverMode */,
+    GLenum /* transformType */,
+    const GLfloat* /* transformValues */) {}
+void GLES2InterfaceStub::StencilThenCoverFillPathInstancedCHROMIUM(
+    GLsizei /* numPaths */,
+    GLenum /* pathNameType */,
+    const GLvoid* /* paths */,
+    GLuint /* pathBase */,
+    GLenum /* fillMode */,
+    GLuint /* mask */,
+    GLenum /* coverMode */,
+    GLenum /* transformType */,
+    const GLfloat* /* transformValues */) {}
+void GLES2InterfaceStub::StencilThenCoverStrokePathInstancedCHROMIUM(
+    GLsizei /* numPaths */,
+    GLenum /* pathNameType */,
+    const GLvoid* /* paths */,
+    GLuint /* pathBase */,
+    GLint /* reference */,
+    GLuint /* mask */,
+    GLenum /* coverMode */,
+    GLenum /* transformType */,
+    const GLfloat* /* transformValues */) {}
 GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
   return 0;
 }

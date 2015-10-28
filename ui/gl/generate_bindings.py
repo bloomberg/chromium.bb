@@ -245,8 +245,18 @@ GL_FUNCTIONS = [
       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
       'GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height', },
 { 'return_type': 'void',
+  'names': ['glCoverFillPathInstancedNV'],
+  'arguments': 'GLsizei numPaths, GLenum pathNameType, const void* paths, '
+  'GLuint pathBase, GLenum coverMode, GLenum transformType, '
+  'const GLfloat* transformValues' },
+{ 'return_type': 'void',
   'names': ['glCoverFillPathNV'],
   'arguments': 'GLuint path, GLenum coverMode' },
+{ 'return_type': 'void',
+  'names': ['glCoverStrokePathInstancedNV'],
+  'arguments': 'GLsizei numPaths, GLenum pathNameType, const void* paths, '
+  'GLuint pathBase, GLenum coverMode, GLenum transformType, '
+  'const GLfloat* transformValues' },
 { 'return_type': 'void',
   'names': ['glCoverStrokePathNV'],
   'arguments': 'GLuint name, GLenum coverMode' },
@@ -926,6 +936,11 @@ GL_FUNCTIONS = [
   });
 """, },
 { 'return_type': 'void',
+  'names': ['glStencilFillPathInstancedNV'],
+  'arguments': 'GLsizei numPaths, GLenum pathNameType, const void* paths, '
+  'GLuint pathBase, GLenum fillMode, GLuint mask, GLenum transformType, '
+  'const GLfloat* transformValues' },
+{ 'return_type': 'void',
   'names': ['glStencilFillPathNV'],
   'arguments': 'GLuint path, GLenum fillMode, GLuint mask' },
 { 'return_type': 'void',
@@ -947,11 +962,28 @@ GL_FUNCTIONS = [
   'names': ['glStencilOpSeparate'],
   'arguments': 'GLenum face, GLenum fail, GLenum zfail, GLenum zpass', },
 { 'return_type': 'void',
+  'names': ['glStencilStrokePathInstancedNV'],
+  'arguments': 'GLsizei numPaths, GLenum pathNameType, const void* paths, '
+  'GLuint pathBase, GLint ref, GLuint mask, GLenum transformType, '
+  'const GLfloat* transformValues' },
+{ 'return_type': 'void',
   'names': ['glStencilStrokePathNV'],
   'arguments': 'GLuint path, GLint reference, GLuint mask' },
 { 'return_type': 'void',
+  'names': ['glStencilThenCoverFillPathInstancedNV'],
+  'arguments': 'GLsizei numPaths, GLenum pathNameType, const void* paths, '
+  'GLuint pathBase, GLenum fillMode, GLuint mask, GLenum coverMode, '
+  'GLenum transformType, const GLfloat* transformValues',
+  'is_optional': True, },
+{ 'return_type': 'void',
   'names': ['glStencilThenCoverFillPathNV'],
   'arguments': 'GLuint path, GLenum fillMode, GLuint mask, GLenum coverMode',
+  'is_optional': True, },
+{ 'return_type': 'void',
+  'names': ['glStencilThenCoverStrokePathInstancedNV'],
+  'arguments': 'GLsizei numPaths, GLenum pathNameType, const void* paths, '
+  'GLuint pathBase, GLint ref, GLuint mask, GLenum coverMode, '
+  'GLenum transformType, const GLfloat* transformValues',
   'is_optional': True, },
 { 'return_type': 'void',
   'names': ['glStencilThenCoverStrokePathNV'],

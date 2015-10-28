@@ -355,6 +355,18 @@
   GLES2_GET_FUN(StencilThenCoverFillPathCHROMIUM)
 #define glStencilThenCoverStrokePathCHROMIUM \
   GLES2_GET_FUN(StencilThenCoverStrokePathCHROMIUM)
+#define glStencilFillPathInstancedCHROMIUM \
+  GLES2_GET_FUN(StencilFillPathInstancedCHROMIUM)
+#define glStencilStrokePathInstancedCHROMIUM \
+  GLES2_GET_FUN(StencilStrokePathInstancedCHROMIUM)
+#define glCoverFillPathInstancedCHROMIUM \
+  GLES2_GET_FUN(CoverFillPathInstancedCHROMIUM)
+#define glCoverStrokePathInstancedCHROMIUM \
+  GLES2_GET_FUN(CoverStrokePathInstancedCHROMIUM)
+#define glStencilThenCoverFillPathInstancedCHROMIUM \
+  GLES2_GET_FUN(StencilThenCoverFillPathInstancedCHROMIUM)
+#define glStencilThenCoverStrokePathInstancedCHROMIUM \
+  GLES2_GET_FUN(StencilThenCoverStrokePathInstancedCHROMIUM)
 #define glGetGraphicsResetStatusKHR GLES2_GET_FUN(GetGraphicsResetStatusKHR)
 #define glBlendBarrierKHR GLES2_GET_FUN(BlendBarrierKHR)
 #define glApplyScreenSpaceAntialiasingCHROMIUM \

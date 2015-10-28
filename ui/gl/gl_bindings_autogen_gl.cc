@@ -95,7 +95,9 @@ void DriverGL::InitializeStaticBindings() {
   fn.glCopyTexSubImage2DFn = reinterpret_cast<glCopyTexSubImage2DProc>(
       GetGLProcAddress("glCopyTexSubImage2D"));
   fn.glCopyTexSubImage3DFn = 0;
+  fn.glCoverFillPathInstancedNVFn = 0;
   fn.glCoverFillPathNVFn = 0;
+  fn.glCoverStrokePathInstancedNVFn = 0;
   fn.glCoverStrokePathNVFn = 0;
   fn.glCreateProgramFn = reinterpret_cast<glCreateProgramProc>(
       GetGLProcAddress("glCreateProgram"));
@@ -329,6 +331,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glShaderBinaryFn = 0;
   fn.glShaderSourceFn =
       reinterpret_cast<glShaderSourceProc>(GetGLProcAddress("glShaderSource"));
+  fn.glStencilFillPathInstancedNVFn = 0;
   fn.glStencilFillPathNVFn = 0;
   fn.glStencilFuncFn =
       reinterpret_cast<glStencilFuncProc>(GetGLProcAddress("glStencilFunc"));
@@ -342,8 +345,11 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glStencilOpProc>(GetGLProcAddress("glStencilOp"));
   fn.glStencilOpSeparateFn = reinterpret_cast<glStencilOpSeparateProc>(
       GetGLProcAddress("glStencilOpSeparate"));
+  fn.glStencilStrokePathInstancedNVFn = 0;
   fn.glStencilStrokePathNVFn = 0;
+  fn.glStencilThenCoverFillPathInstancedNVFn = 0;
   fn.glStencilThenCoverFillPathNVFn = 0;
+  fn.glStencilThenCoverStrokePathInstancedNVFn = 0;
   fn.glStencilThenCoverStrokePathNVFn = 0;
   fn.glTestFenceAPPLEFn = 0;
   fn.glTestFenceNVFn = 0;
@@ -751,10 +757,24 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glCopyTexSubImage3D"));
   }
 
+  debug_fn.glCoverFillPathInstancedNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glCoverFillPathInstancedNVFn =
+        reinterpret_cast<glCoverFillPathInstancedNVProc>(
+            GetGLProcAddress("glCoverFillPathInstancedNV"));
+  }
+
   debug_fn.glCoverFillPathNVFn = 0;
   if (ext.b_GL_NV_path_rendering) {
     fn.glCoverFillPathNVFn = reinterpret_cast<glCoverFillPathNVProc>(
         GetGLProcAddress("glCoverFillPathNV"));
+  }
+
+  debug_fn.glCoverStrokePathInstancedNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glCoverStrokePathInstancedNVFn =
+        reinterpret_cast<glCoverStrokePathInstancedNVProc>(
+            GetGLProcAddress("glCoverStrokePathInstancedNV"));
   }
 
   debug_fn.glCoverStrokePathNVFn = 0;
@@ -1659,10 +1679,24 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glShaderBinary"));
   }
 
+  debug_fn.glStencilFillPathInstancedNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilFillPathInstancedNVFn =
+        reinterpret_cast<glStencilFillPathInstancedNVProc>(
+            GetGLProcAddress("glStencilFillPathInstancedNV"));
+  }
+
   debug_fn.glStencilFillPathNVFn = 0;
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilFillPathNVFn = reinterpret_cast<glStencilFillPathNVProc>(
         GetGLProcAddress("glStencilFillPathNV"));
+  }
+
+  debug_fn.glStencilStrokePathInstancedNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilStrokePathInstancedNVFn =
+        reinterpret_cast<glStencilStrokePathInstancedNVProc>(
+            GetGLProcAddress("glStencilStrokePathInstancedNV"));
   }
 
   debug_fn.glStencilStrokePathNVFn = 0;
@@ -1671,11 +1705,25 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glStencilStrokePathNV"));
   }
 
+  debug_fn.glStencilThenCoverFillPathInstancedNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilThenCoverFillPathInstancedNVFn =
+        reinterpret_cast<glStencilThenCoverFillPathInstancedNVProc>(
+            GetGLProcAddress("glStencilThenCoverFillPathInstancedNV"));
+  }
+
   debug_fn.glStencilThenCoverFillPathNVFn = 0;
   if (ext.b_GL_NV_path_rendering) {
     fn.glStencilThenCoverFillPathNVFn =
         reinterpret_cast<glStencilThenCoverFillPathNVProc>(
             GetGLProcAddress("glStencilThenCoverFillPathNV"));
+  }
+
+  debug_fn.glStencilThenCoverStrokePathInstancedNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilThenCoverStrokePathInstancedNVFn =
+        reinterpret_cast<glStencilThenCoverStrokePathInstancedNVProc>(
+            GetGLProcAddress("glStencilThenCoverStrokePathInstancedNV"));
   }
 
   debug_fn.glStencilThenCoverStrokePathNVFn = 0;
@@ -2400,12 +2448,52 @@ static void GL_BINDING_CALL Debug_glCopyTexSubImage3D(GLenum target,
                                              zoffset, x, y, width, height);
 }
 
+static void GL_BINDING_CALL
+Debug_glCoverFillPathInstancedNV(GLsizei numPaths,
+                                 GLenum pathNameType,
+                                 const void* paths,
+                                 GLuint pathBase,
+                                 GLenum coverMode,
+                                 GLenum transformType,
+                                 const GLfloat* transformValues) {
+  GL_SERVICE_LOG("glCoverFillPathInstancedNV"
+                 << "(" << numPaths << ", "
+                 << GLEnums::GetStringEnum(pathNameType) << ", "
+                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
+                 << GLEnums::GetStringEnum(coverMode) << ", "
+                 << GLEnums::GetStringEnum(transformType) << ", "
+                 << static_cast<const void*>(transformValues) << ")");
+  g_driver_gl.debug_fn.glCoverFillPathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, coverMode, transformType,
+      transformValues);
+}
+
 static void GL_BINDING_CALL Debug_glCoverFillPathNV(GLuint path,
                                                     GLenum coverMode) {
   GL_SERVICE_LOG("glCoverFillPathNV"
                  << "(" << path << ", " << GLEnums::GetStringEnum(coverMode)
                  << ")");
   g_driver_gl.debug_fn.glCoverFillPathNVFn(path, coverMode);
+}
+
+static void GL_BINDING_CALL
+Debug_glCoverStrokePathInstancedNV(GLsizei numPaths,
+                                   GLenum pathNameType,
+                                   const void* paths,
+                                   GLuint pathBase,
+                                   GLenum coverMode,
+                                   GLenum transformType,
+                                   const GLfloat* transformValues) {
+  GL_SERVICE_LOG("glCoverStrokePathInstancedNV"
+                 << "(" << numPaths << ", "
+                 << GLEnums::GetStringEnum(pathNameType) << ", "
+                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
+                 << GLEnums::GetStringEnum(coverMode) << ", "
+                 << GLEnums::GetStringEnum(transformType) << ", "
+                 << static_cast<const void*>(transformValues) << ")");
+  g_driver_gl.debug_fn.glCoverStrokePathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, coverMode, transformType,
+      transformValues);
 }
 
 static void GL_BINDING_CALL Debug_glCoverStrokePathNV(GLuint name,
@@ -4032,6 +4120,27 @@ static void GL_BINDING_CALL Debug_glShaderSource(GLuint shader,
   });
 }
 
+static void GL_BINDING_CALL
+Debug_glStencilFillPathInstancedNV(GLsizei numPaths,
+                                   GLenum pathNameType,
+                                   const void* paths,
+                                   GLuint pathBase,
+                                   GLenum fillMode,
+                                   GLuint mask,
+                                   GLenum transformType,
+                                   const GLfloat* transformValues) {
+  GL_SERVICE_LOG("glStencilFillPathInstancedNV"
+                 << "(" << numPaths << ", "
+                 << GLEnums::GetStringEnum(pathNameType) << ", "
+                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
+                 << GLEnums::GetStringEnum(fillMode) << ", " << mask << ", "
+                 << GLEnums::GetStringEnum(transformType) << ", "
+                 << static_cast<const void*>(transformValues) << ")");
+  g_driver_gl.debug_fn.glStencilFillPathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, transformType,
+      transformValues);
+}
+
 static void GL_BINDING_CALL Debug_glStencilFillPathNV(GLuint path,
                                                       GLenum fillMode,
                                                       GLuint mask) {
@@ -4096,12 +4205,55 @@ static void GL_BINDING_CALL Debug_glStencilOpSeparate(GLenum face,
   g_driver_gl.debug_fn.glStencilOpSeparateFn(face, fail, zfail, zpass);
 }
 
+static void GL_BINDING_CALL
+Debug_glStencilStrokePathInstancedNV(GLsizei numPaths,
+                                     GLenum pathNameType,
+                                     const void* paths,
+                                     GLuint pathBase,
+                                     GLint ref,
+                                     GLuint mask,
+                                     GLenum transformType,
+                                     const GLfloat* transformValues) {
+  GL_SERVICE_LOG(
+      "glStencilStrokePathInstancedNV"
+      << "(" << numPaths << ", " << GLEnums::GetStringEnum(pathNameType) << ", "
+      << static_cast<const void*>(paths) << ", " << pathBase << ", " << ref
+      << ", " << mask << ", " << GLEnums::GetStringEnum(transformType) << ", "
+      << static_cast<const void*>(transformValues) << ")");
+  g_driver_gl.debug_fn.glStencilStrokePathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, ref, mask, transformType,
+      transformValues);
+}
+
 static void GL_BINDING_CALL Debug_glStencilStrokePathNV(GLuint path,
                                                         GLint reference,
                                                         GLuint mask) {
   GL_SERVICE_LOG("glStencilStrokePathNV"
                  << "(" << path << ", " << reference << ", " << mask << ")");
   g_driver_gl.debug_fn.glStencilStrokePathNVFn(path, reference, mask);
+}
+
+static void GL_BINDING_CALL
+Debug_glStencilThenCoverFillPathInstancedNV(GLsizei numPaths,
+                                            GLenum pathNameType,
+                                            const void* paths,
+                                            GLuint pathBase,
+                                            GLenum fillMode,
+                                            GLuint mask,
+                                            GLenum coverMode,
+                                            GLenum transformType,
+                                            const GLfloat* transformValues) {
+  GL_SERVICE_LOG("glStencilThenCoverFillPathInstancedNV"
+                 << "(" << numPaths << ", "
+                 << GLEnums::GetStringEnum(pathNameType) << ", "
+                 << static_cast<const void*>(paths) << ", " << pathBase << ", "
+                 << GLEnums::GetStringEnum(fillMode) << ", " << mask << ", "
+                 << GLEnums::GetStringEnum(coverMode) << ", "
+                 << GLEnums::GetStringEnum(transformType) << ", "
+                 << static_cast<const void*>(transformValues) << ")");
+  g_driver_gl.debug_fn.glStencilThenCoverFillPathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
+      transformType, transformValues);
 }
 
 static void GL_BINDING_CALL
@@ -4115,6 +4267,28 @@ Debug_glStencilThenCoverFillPathNV(GLuint path,
                  << ")");
   g_driver_gl.debug_fn.glStencilThenCoverFillPathNVFn(path, fillMode, mask,
                                                       coverMode);
+}
+
+static void GL_BINDING_CALL
+Debug_glStencilThenCoverStrokePathInstancedNV(GLsizei numPaths,
+                                              GLenum pathNameType,
+                                              const void* paths,
+                                              GLuint pathBase,
+                                              GLint ref,
+                                              GLuint mask,
+                                              GLenum coverMode,
+                                              GLenum transformType,
+                                              const GLfloat* transformValues) {
+  GL_SERVICE_LOG(
+      "glStencilThenCoverStrokePathInstancedNV"
+      << "(" << numPaths << ", " << GLEnums::GetStringEnum(pathNameType) << ", "
+      << static_cast<const void*>(paths) << ", " << pathBase << ", " << ref
+      << ", " << mask << ", " << GLEnums::GetStringEnum(coverMode) << ", "
+      << GLEnums::GetStringEnum(transformType) << ", "
+      << static_cast<const void*>(transformValues) << ")");
+  g_driver_gl.debug_fn.glStencilThenCoverStrokePathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
+      transformType, transformValues);
 }
 
 static void GL_BINDING_CALL
@@ -4999,9 +5173,17 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glCopyTexSubImage3DFn = fn.glCopyTexSubImage3DFn;
     fn.glCopyTexSubImage3DFn = Debug_glCopyTexSubImage3D;
   }
+  if (!debug_fn.glCoverFillPathInstancedNVFn) {
+    debug_fn.glCoverFillPathInstancedNVFn = fn.glCoverFillPathInstancedNVFn;
+    fn.glCoverFillPathInstancedNVFn = Debug_glCoverFillPathInstancedNV;
+  }
   if (!debug_fn.glCoverFillPathNVFn) {
     debug_fn.glCoverFillPathNVFn = fn.glCoverFillPathNVFn;
     fn.glCoverFillPathNVFn = Debug_glCoverFillPathNV;
+  }
+  if (!debug_fn.glCoverStrokePathInstancedNVFn) {
+    debug_fn.glCoverStrokePathInstancedNVFn = fn.glCoverStrokePathInstancedNVFn;
+    fn.glCoverStrokePathInstancedNVFn = Debug_glCoverStrokePathInstancedNV;
   }
   if (!debug_fn.glCoverStrokePathNVFn) {
     debug_fn.glCoverStrokePathNVFn = fn.glCoverStrokePathNVFn;
@@ -5720,6 +5902,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glShaderSourceFn = fn.glShaderSourceFn;
     fn.glShaderSourceFn = Debug_glShaderSource;
   }
+  if (!debug_fn.glStencilFillPathInstancedNVFn) {
+    debug_fn.glStencilFillPathInstancedNVFn = fn.glStencilFillPathInstancedNVFn;
+    fn.glStencilFillPathInstancedNVFn = Debug_glStencilFillPathInstancedNV;
+  }
   if (!debug_fn.glStencilFillPathNVFn) {
     debug_fn.glStencilFillPathNVFn = fn.glStencilFillPathNVFn;
     fn.glStencilFillPathNVFn = Debug_glStencilFillPathNV;
@@ -5748,13 +5934,30 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glStencilOpSeparateFn = fn.glStencilOpSeparateFn;
     fn.glStencilOpSeparateFn = Debug_glStencilOpSeparate;
   }
+  if (!debug_fn.glStencilStrokePathInstancedNVFn) {
+    debug_fn.glStencilStrokePathInstancedNVFn =
+        fn.glStencilStrokePathInstancedNVFn;
+    fn.glStencilStrokePathInstancedNVFn = Debug_glStencilStrokePathInstancedNV;
+  }
   if (!debug_fn.glStencilStrokePathNVFn) {
     debug_fn.glStencilStrokePathNVFn = fn.glStencilStrokePathNVFn;
     fn.glStencilStrokePathNVFn = Debug_glStencilStrokePathNV;
   }
+  if (!debug_fn.glStencilThenCoverFillPathInstancedNVFn) {
+    debug_fn.glStencilThenCoverFillPathInstancedNVFn =
+        fn.glStencilThenCoverFillPathInstancedNVFn;
+    fn.glStencilThenCoverFillPathInstancedNVFn =
+        Debug_glStencilThenCoverFillPathInstancedNV;
+  }
   if (!debug_fn.glStencilThenCoverFillPathNVFn) {
     debug_fn.glStencilThenCoverFillPathNVFn = fn.glStencilThenCoverFillPathNVFn;
     fn.glStencilThenCoverFillPathNVFn = Debug_glStencilThenCoverFillPathNV;
+  }
+  if (!debug_fn.glStencilThenCoverStrokePathInstancedNVFn) {
+    debug_fn.glStencilThenCoverStrokePathInstancedNVFn =
+        fn.glStencilThenCoverStrokePathInstancedNVFn;
+    fn.glStencilThenCoverStrokePathInstancedNVFn =
+        Debug_glStencilThenCoverStrokePathInstancedNV;
   }
   if (!debug_fn.glStencilThenCoverStrokePathNVFn) {
     debug_fn.glStencilThenCoverStrokePathNVFn =
@@ -6371,8 +6574,32 @@ void GLApiBase::glCopyTexSubImage3DFn(GLenum target,
                                     y, width, height);
 }
 
+void GLApiBase::glCoverFillPathInstancedNVFn(GLsizei numPaths,
+                                             GLenum pathNameType,
+                                             const void* paths,
+                                             GLuint pathBase,
+                                             GLenum coverMode,
+                                             GLenum transformType,
+                                             const GLfloat* transformValues) {
+  driver_->fn.glCoverFillPathInstancedNVFn(numPaths, pathNameType, paths,
+                                           pathBase, coverMode, transformType,
+                                           transformValues);
+}
+
 void GLApiBase::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
   driver_->fn.glCoverFillPathNVFn(path, coverMode);
+}
+
+void GLApiBase::glCoverStrokePathInstancedNVFn(GLsizei numPaths,
+                                               GLenum pathNameType,
+                                               const void* paths,
+                                               GLuint pathBase,
+                                               GLenum coverMode,
+                                               GLenum transformType,
+                                               const GLfloat* transformValues) {
+  driver_->fn.glCoverStrokePathInstancedNVFn(numPaths, pathNameType, paths,
+                                             pathBase, coverMode, transformType,
+                                             transformValues);
 }
 
 void GLApiBase::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
@@ -7305,6 +7532,19 @@ void GLApiBase::glShaderSourceFn(GLuint shader,
   driver_->fn.glShaderSourceFn(shader, count, str, length);
 }
 
+void GLApiBase::glStencilFillPathInstancedNVFn(GLsizei numPaths,
+                                               GLenum pathNameType,
+                                               const void* paths,
+                                               GLuint pathBase,
+                                               GLenum fillMode,
+                                               GLuint mask,
+                                               GLenum transformType,
+                                               const GLfloat* transformValues) {
+  driver_->fn.glStencilFillPathInstancedNVFn(numPaths, pathNameType, paths,
+                                             pathBase, fillMode, mask,
+                                             transformType, transformValues);
+}
+
 void GLApiBase::glStencilFillPathNVFn(GLuint path,
                                       GLenum fillMode,
                                       GLuint mask) {
@@ -7341,10 +7581,39 @@ void GLApiBase::glStencilOpSeparateFn(GLenum face,
   driver_->fn.glStencilOpSeparateFn(face, fail, zfail, zpass);
 }
 
+void GLApiBase::glStencilStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  driver_->fn.glStencilStrokePathInstancedNVFn(numPaths, pathNameType, paths,
+                                               pathBase, ref, mask,
+                                               transformType, transformValues);
+}
+
 void GLApiBase::glStencilStrokePathNVFn(GLuint path,
                                         GLint reference,
                                         GLuint mask) {
   driver_->fn.glStencilStrokePathNVFn(path, reference, mask);
+}
+
+void GLApiBase::glStencilThenCoverFillPathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  driver_->fn.glStencilThenCoverFillPathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
+      transformType, transformValues);
 }
 
 void GLApiBase::glStencilThenCoverFillPathNVFn(GLuint path,
@@ -7352,6 +7621,21 @@ void GLApiBase::glStencilThenCoverFillPathNVFn(GLuint path,
                                                GLuint mask,
                                                GLenum coverMode) {
   driver_->fn.glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
+}
+
+void GLApiBase::glStencilThenCoverStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  driver_->fn.glStencilThenCoverStrokePathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
+      transformType, transformValues);
 }
 
 void GLApiBase::glStencilThenCoverStrokePathNVFn(GLuint path,
@@ -8164,9 +8448,37 @@ void TraceGLApi::glCopyTexSubImage3DFn(GLenum target,
                                  width, height);
 }
 
+void TraceGLApi::glCoverFillPathInstancedNVFn(GLsizei numPaths,
+                                              GLenum pathNameType,
+                                              const void* paths,
+                                              GLuint pathBase,
+                                              GLenum coverMode,
+                                              GLenum transformType,
+                                              const GLfloat* transformValues) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverFillPathInstancedNV")
+  gl_api_->glCoverFillPathInstancedNVFn(numPaths, pathNameType, paths, pathBase,
+                                        coverMode, transformType,
+                                        transformValues);
+}
+
 void TraceGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverFillPathNV")
   gl_api_->glCoverFillPathNVFn(path, coverMode);
+}
+
+void TraceGLApi::glCoverStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glCoverStrokePathInstancedNV")
+  gl_api_->glCoverStrokePathInstancedNVFn(numPaths, pathNameType, paths,
+                                          pathBase, coverMode, transformType,
+                                          transformValues);
 }
 
 void TraceGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
@@ -9292,6 +9604,22 @@ void TraceGLApi::glShaderSourceFn(GLuint shader,
   gl_api_->glShaderSourceFn(shader, count, str, length);
 }
 
+void TraceGLApi::glStencilFillPathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glStencilFillPathInstancedNV")
+  gl_api_->glStencilFillPathInstancedNVFn(numPaths, pathNameType, paths,
+                                          pathBase, fillMode, mask,
+                                          transformType, transformValues);
+}
+
 void TraceGLApi::glStencilFillPathNVFn(GLuint path,
                                        GLenum fillMode,
                                        GLuint mask) {
@@ -9335,11 +9663,44 @@ void TraceGLApi::glStencilOpSeparateFn(GLenum face,
   gl_api_->glStencilOpSeparateFn(face, fail, zfail, zpass);
 }
 
+void TraceGLApi::glStencilStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glStencilStrokePathInstancedNV")
+  gl_api_->glStencilStrokePathInstancedNVFn(numPaths, pathNameType, paths,
+                                            pathBase, ref, mask, transformType,
+                                            transformValues);
+}
+
 void TraceGLApi::glStencilStrokePathNVFn(GLuint path,
                                          GLint reference,
                                          GLuint mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilStrokePathNV")
   gl_api_->glStencilStrokePathNVFn(path, reference, mask);
+}
+
+void TraceGLApi::glStencilThenCoverFillPathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glStencilThenCoverFillPathInstancedNV")
+  gl_api_->glStencilThenCoverFillPathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
+      transformType, transformValues);
 }
 
 void TraceGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
@@ -9349,6 +9710,23 @@ void TraceGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "TraceGLAPI::glStencilThenCoverFillPathNV")
   gl_api_->glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
+}
+
+void TraceGLApi::glStencilThenCoverStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glStencilThenCoverStrokePathInstancedNV")
+  gl_api_->glStencilThenCoverStrokePathInstancedNVFn(
+      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
+      transformType, transformValues);
 }
 
 void TraceGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
@@ -10268,10 +10646,38 @@ void NoContextGLApi::glCopyTexSubImage3DFn(GLenum target,
       << "Trying to call glCopyTexSubImage3D() without current GL context";
 }
 
+void NoContextGLApi::glCoverFillPathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  NOTREACHED() << "Trying to call glCoverFillPathInstancedNV() without current "
+                  "GL context";
+  LOG(ERROR) << "Trying to call glCoverFillPathInstancedNV() without current "
+                "GL context";
+}
+
 void NoContextGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
   NOTREACHED()
       << "Trying to call glCoverFillPathNV() without current GL context";
   LOG(ERROR) << "Trying to call glCoverFillPathNV() without current GL context";
+}
+
+void NoContextGLApi::glCoverStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  NOTREACHED() << "Trying to call glCoverStrokePathInstancedNV() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glCoverStrokePathInstancedNV() without current "
+                "GL context";
 }
 
 void NoContextGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
@@ -11607,6 +12013,21 @@ void NoContextGLApi::glShaderSourceFn(GLuint shader,
   LOG(ERROR) << "Trying to call glShaderSource() without current GL context";
 }
 
+void NoContextGLApi::glStencilFillPathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  NOTREACHED() << "Trying to call glStencilFillPathInstancedNV() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glStencilFillPathInstancedNV() without current "
+                "GL context";
+}
+
 void NoContextGLApi::glStencilFillPathNVFn(GLuint path,
                                            GLenum fillMode,
                                            GLuint mask) {
@@ -11658,6 +12079,21 @@ void NoContextGLApi::glStencilOpSeparateFn(GLenum face,
       << "Trying to call glStencilOpSeparate() without current GL context";
 }
 
+void NoContextGLApi::glStencilStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  NOTREACHED() << "Trying to call glStencilStrokePathInstancedNV() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glStencilStrokePathInstancedNV() without "
+                "current GL context";
+}
+
 void NoContextGLApi::glStencilStrokePathNVFn(GLuint path,
                                              GLint reference,
                                              GLuint mask) {
@@ -11665,6 +12101,22 @@ void NoContextGLApi::glStencilStrokePathNVFn(GLuint path,
       << "Trying to call glStencilStrokePathNV() without current GL context";
   LOG(ERROR)
       << "Trying to call glStencilStrokePathNV() without current GL context";
+}
+
+void NoContextGLApi::glStencilThenCoverFillPathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  NOTREACHED() << "Trying to call glStencilThenCoverFillPathInstancedNV() "
+                  "without current GL context";
+  LOG(ERROR) << "Trying to call glStencilThenCoverFillPathInstancedNV() "
+                "without current GL context";
 }
 
 void NoContextGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
@@ -11675,6 +12127,22 @@ void NoContextGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
                   "current GL context";
   LOG(ERROR) << "Trying to call glStencilThenCoverFillPathNV() without current "
                 "GL context";
+}
+
+void NoContextGLApi::glStencilThenCoverStrokePathInstancedNVFn(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  NOTREACHED() << "Trying to call glStencilThenCoverStrokePathInstancedNV() "
+                  "without current GL context";
+  LOG(ERROR) << "Trying to call glStencilThenCoverStrokePathInstancedNV() "
+                "without current GL context";
 }
 
 void NoContextGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,

@@ -845,6 +845,60 @@ glStencilThenCoverStrokePathCHROMIUM(GLuint path,
                                      GLuint mask,
                                      GLenum coverMode);
 
+GL_APICALL void GL_APIENTRY
+glStencilFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                   GLenum pathNameType,
+                                   const GLvoid* paths,
+                                   GLuint pathBase,
+                                   GLenum fillMode,
+                                   GLuint mask,
+                                   GLenum transformType,
+                                   const GLfloat* transformValues);
+GL_APICALL void GL_APIENTRY
+glStencilStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                     GLenum pathNameType,
+                                     const GLvoid* paths,
+                                     GLuint pathBase,
+                                     GLint ref,
+                                     GLuint mask,
+                                     GLenum transformType,
+                                     const GLfloat* transformValues);
+GL_APICALL void GL_APIENTRY
+glCoverFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                 GLenum pathNameType,
+                                 const GLvoid* paths,
+                                 GLuint pathBase,
+                                 GLenum coverMode,
+                                 GLenum transformType,
+                                 const GLfloat* transformValues);
+GL_APICALL void GL_APIENTRY
+glCoverStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                   GLenum pathNameType,
+                                   const GLvoid* paths,
+                                   GLuint pathBase,
+                                   GLenum coverMode,
+                                   GLenum transformType,
+                                   const GLfloat* transformValues);
+GL_APICALL void GL_APIENTRY
+glStencilThenCoverFillPathInstancedCHROMIUM(GLsizei numPaths,
+                                            GLenum pathNameType,
+                                            const GLvoid* paths,
+                                            GLuint pathBase,
+                                            GLenum fillMode,
+                                            GLuint mask,
+                                            GLenum coverMode,
+                                            GLenum transformType,
+                                            const GLfloat* transformValues);
+GL_APICALL void GL_APIENTRY
+glStencilThenCoverStrokePathInstancedCHROMIUM(GLsizei numPaths,
+                                              GLenum pathNameType,
+                                              const GLvoid* paths,
+                                              GLuint pathBase,
+                                              GLint ref,
+                                              GLuint mask,
+                                              GLenum coverMode,
+                                              GLenum transformType,
+                                              const GLfloat* transformValues);
 #endif
 
 typedef void(GL_APIENTRYP PFNGLMATRIXLOADFCHROMIUMPROC)(GLenum matrixMode,
@@ -892,6 +946,60 @@ typedef void(GL_APIENTRYP* PFNGLSTENCILTHENCOVERSTROKEPATHCHROMIUMPROC)(
     GLint reference,
     GLuint mask,
     GLenum coverMode);
+typedef void(GL_APIENTRYP PFNGLSTENCILFILLPATHINSTANCEDCHROMIUMPROC)(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues);
+typedef void(GL_APIENTRYP PFNGLSTENCILSTROKEPATHINSTANCEDCHROMIUMPROC)(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues);
+typedef void(GL_APIENTRYP PFNGLCOVERFILLPATHINSTANCEDCHROMIUMPROC)(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues);
+typedef void(GL_APIENTRYP PFNGLCOVERSTROKEPATHINSTANCEDCHROMIUMPROC)(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues);
+typedef void(GL_APIENTRYP PFNGLSTENCILTHENCOVERFILLPATHINSTANCEDCHROMIUMPROC)(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues);
+typedef void(GL_APIENTRYP PFNGLSTENCILTHENCOVERSTROKEPATHINSTANCEDCHROMIUMPROC)(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const GLvoid* paths,
+    GLuint pathBase,
+    GLint reference,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues);
 
 #ifndef GL_CLOSE_PATH_CHROMIUM
 #define GL_CLOSE_PATH_CHROMIUM 0x00
@@ -953,6 +1061,30 @@ typedef void(GL_APIENTRYP* PFNGLSTENCILTHENCOVERSTROKEPATHCHROMIUMPROC)(
 #ifndef GL_BOUNDING_BOX_CHROMIUM
 #define GL_BOUNDING_BOX_CHROMIUM 0x908D
 #endif
+#ifndef GL_TRANSLATE_X_CHROMIUM
+#define GL_TRANSLATE_X_CHROMIUM 0x908E
+#endif
+#ifndef GL_TRANSLATE_Y_CHROMIUM
+#define GL_TRANSLATE_Y_CHROMIUM 0x908F
+#endif
+#ifndef GL_TRANSLATE_2D_CHROMIUM
+#define GL_TRANSLATE_2D_CHROMIUM 0x9090
+#endif
+#ifndef GL_TRANSLATE_3D_CHROMIUM
+#define GL_TRANSLATE_3D_CHROMIUM 0x9091
+#endif
+#ifndef GL_AFFINE_2D_CHROMIUM
+#define GL_AFFINE_2D_CHROMIUM 0x9092
+#endif
+#ifndef GL_AFFINE_3D_CHROMIUM
+#define GL_AFFINE_3D_CHROMIUM 0x9094
+#endif
+#ifndef GL_TRANSPOSE_AFFINE_2D_CHROMIUM
+#define GL_TRANSPOSE_AFFINE_2D_CHROMIUM 0x9096
+#endif
+#ifndef GL_TRANSPOSE_AFFINE_3D_CHROMIUM
+#define GL_TRANSPOSE_AFFINE_3D_CHROMIUM 0x9098
+#endif
 #ifndef GL_SQUARE_CHROMIUM
 #define GL_SQUARE_CHROMIUM 0x90a3
 #endif
@@ -976,6 +1108,9 @@ typedef void(GL_APIENTRYP* PFNGLSTENCILTHENCOVERSTROKEPATHCHROMIUMPROC)(
 #endif
 #ifndef GL_PATH_STENCIL_VALUE_MASK_CHROMIUM
 #define GL_PATH_STENCIL_VALUE_MASK_CHROMIUM 0x90B9
+#endif
+#ifndef GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM
+#define GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM 0x909C
 #endif
 
 #endif /* GL_CHROMIUM_path_rendering */

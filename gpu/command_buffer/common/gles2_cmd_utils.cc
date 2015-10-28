@@ -739,6 +739,26 @@ size_t GLES2Util::GetGLTypeSizeForTexturesAndBuffers(uint32 type) {
   }
 }
 
+size_t GLES2Util::GetComponentCountForGLTransformType(uint32 type) {
+  switch (type) {
+    case GL_TRANSLATE_X_CHROMIUM:
+    case GL_TRANSLATE_Y_CHROMIUM:
+      return 1;
+    case GL_TRANSLATE_2D_CHROMIUM:
+      return 2;
+    case GL_TRANSLATE_3D_CHROMIUM:
+      return 3;
+    case GL_AFFINE_2D_CHROMIUM:
+    case GL_TRANSPOSE_AFFINE_2D_CHROMIUM:
+      return 6;
+    case GL_AFFINE_3D_CHROMIUM:
+    case GL_TRANSPOSE_AFFINE_3D_CHROMIUM:
+      return 12;
+    default:
+      return 0;
+  }
+}
+
 size_t GLES2Util::GetGLTypeSizeForPathCoordType(uint32 type) {
   switch (type) {
     case GL_BYTE:
@@ -751,6 +771,25 @@ size_t GLES2Util::GetGLTypeSizeForPathCoordType(uint32 type) {
       return sizeof(GLushort);  // NOLINT
     case GL_FLOAT:
       return sizeof(GLfloat);  // NOLINT
+    default:
+      return 0;
+  }
+}
+
+size_t GLES2Util::GetGLTypeSizeForGLPathNameType(uint32 type) {
+  switch (type) {
+    case GL_BYTE:
+      return sizeof(GLbyte);  // NOLINT
+    case GL_UNSIGNED_BYTE:
+      return sizeof(GLubyte);  // NOLINT
+    case GL_SHORT:
+      return sizeof(GLshort);  // NOLINT
+    case GL_UNSIGNED_SHORT:
+      return sizeof(GLushort);  // NOLINT
+    case GL_INT:
+      return sizeof(GLint);  // NOLINT
+    case GL_UNSIGNED_INT:
+      return sizeof(GLuint);  // NOLINT
     default:
       return 0;
   }

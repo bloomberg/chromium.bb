@@ -424,6 +424,16 @@ static const GLenum valid_path_fill_mode_table[] = {
     GL_INVERT, GL_COUNT_UP_CHROMIUM, GL_COUNT_DOWN_CHROMIUM,
 };
 
+static const GLenum valid_path_instanced_cover_mode_table[] = {
+    GL_CONVEX_HULL_CHROMIUM, GL_BOUNDING_BOX_CHROMIUM,
+    GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+};
+
+static const GLenum valid_path_name_type_table[] = {
+    GL_UNSIGNED_BYTE, GL_BYTE,         GL_UNSIGNED_SHORT,
+    GL_SHORT,         GL_UNSIGNED_INT, GL_INT,
+};
+
 static const GLenum valid_path_parameter_table[] = {
     GL_PATH_STROKE_WIDTH_CHROMIUM, GL_PATH_END_CAPS_CHROMIUM,
     GL_PATH_JOIN_STYLE_CHROMIUM,   GL_PATH_MITER_LIMIT_CHROMIUM,
@@ -436,6 +446,18 @@ static const GLint valid_path_parameter_cap_values_table[] = {
 
 static const GLint valid_path_parameter_join_values_table[] = {
     GL_MITER_REVERT_CHROMIUM, GL_BEVEL_CHROMIUM, GL_ROUND_CHROMIUM,
+};
+
+static const GLenum valid_path_transform_type_table[] = {
+    GL_NONE,
+    GL_TRANSLATE_X_CHROMIUM,
+    GL_TRANSLATE_Y_CHROMIUM,
+    GL_TRANSLATE_2D_CHROMIUM,
+    GL_TRANSLATE_3D_CHROMIUM,
+    GL_AFFINE_2D_CHROMIUM,
+    GL_AFFINE_3D_CHROMIUM,
+    GL_TRANSPOSE_AFFINE_2D_CHROMIUM,
+    GL_TRANSPOSE_AFFINE_3D_CHROMIUM,
 };
 
 static const GLenum valid_pixel_store_table[] = {
@@ -1010,6 +1032,11 @@ Validators::Validators()
                       arraysize(valid_path_cover_mode_table)),
       path_fill_mode(valid_path_fill_mode_table,
                      arraysize(valid_path_fill_mode_table)),
+      path_instanced_cover_mode(
+          valid_path_instanced_cover_mode_table,
+          arraysize(valid_path_instanced_cover_mode_table)),
+      path_name_type(valid_path_name_type_table,
+                     arraysize(valid_path_name_type_table)),
       path_parameter(valid_path_parameter_table,
                      arraysize(valid_path_parameter_table)),
       path_parameter_cap_values(
@@ -1018,6 +1045,8 @@ Validators::Validators()
       path_parameter_join_values(
           valid_path_parameter_join_values_table,
           arraysize(valid_path_parameter_join_values_table)),
+      path_transform_type(valid_path_transform_type_table,
+                          arraysize(valid_path_transform_type_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_store_alignment(valid_pixel_store_alignment_table,
                             arraysize(valid_pixel_store_alignment_table)),

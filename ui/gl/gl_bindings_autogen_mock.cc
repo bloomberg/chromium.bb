@@ -481,10 +481,38 @@ void GL_BINDING_CALL MockGLInterface::Mock_glCopyTexSubImage3D(GLenum target,
                                 width, height);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glCoverFillPathInstancedNV(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glCoverFillPathInstancedNV");
+  interface_->CoverFillPathInstancedNV(numPaths, pathNameType, paths, pathBase,
+                                       coverMode, transformType,
+                                       transformValues);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glCoverFillPathNV(GLuint path,
                                                              GLenum coverMode) {
   MakeFunctionUnique("glCoverFillPathNV");
   interface_->CoverFillPathNV(path, coverMode);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glCoverStrokePathInstancedNV(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glCoverStrokePathInstancedNV");
+  interface_->CoverStrokePathInstancedNV(numPaths, pathNameType, paths,
+                                         pathBase, coverMode, transformType,
+                                         transformValues);
 }
 
 void GL_BINDING_CALL
@@ -2055,6 +2083,21 @@ MockGLInterface::Mock_glShaderSource(GLuint shader,
   interface_->ShaderSource(shader, count, str, length);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glStencilFillPathInstancedNV(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilFillPathInstancedNV");
+  interface_->StencilFillPathInstancedNV(numPaths, pathNameType, paths,
+                                         pathBase, fillMode, mask,
+                                         transformType, transformValues);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glStencilFillPathNV(GLuint path,
                                                                GLenum fillMode,
                                                                GLuint mask) {
@@ -2103,6 +2146,21 @@ void GL_BINDING_CALL MockGLInterface::Mock_glStencilOpSeparate(GLenum face,
   interface_->StencilOpSeparate(face, fail, zfail, zpass);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glStencilStrokePathInstancedNV(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilStrokePathInstancedNV");
+  interface_->StencilStrokePathInstancedNV(numPaths, pathNameType, paths,
+                                           pathBase, ref, mask, transformType,
+                                           transformValues);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glStencilStrokePathNV(GLuint path,
                                             GLint reference,
@@ -2112,12 +2170,46 @@ MockGLInterface::Mock_glStencilStrokePathNV(GLuint path,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilThenCoverFillPathInstancedNV(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilThenCoverFillPathInstancedNV");
+  interface_->StencilThenCoverFillPathInstancedNV(
+      numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
+      transformType, transformValues);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glStencilThenCoverFillPathNV(GLuint path,
                                                    GLenum fillMode,
                                                    GLuint mask,
                                                    GLenum coverMode) {
   MakeFunctionUnique("glStencilThenCoverFillPathNV");
   interface_->StencilThenCoverFillPathNV(path, fillMode, mask, coverMode);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glStencilThenCoverStrokePathInstancedNV(
+    GLsizei numPaths,
+    GLenum pathNameType,
+    const void* paths,
+    GLuint pathBase,
+    GLint ref,
+    GLuint mask,
+    GLenum coverMode,
+    GLenum transformType,
+    const GLfloat* transformValues) {
+  MakeFunctionUnique("glStencilThenCoverStrokePathInstancedNV");
+  interface_->StencilThenCoverStrokePathInstancedNV(
+      numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
+      transformType, transformValues);
 }
 
 void GL_BINDING_CALL
@@ -2809,8 +2901,12 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glCopyTexSubImage2D);
   if (strcmp(name, "glCopyTexSubImage3D") == 0)
     return reinterpret_cast<void*>(Mock_glCopyTexSubImage3D);
+  if (strcmp(name, "glCoverFillPathInstancedNV") == 0)
+    return reinterpret_cast<void*>(Mock_glCoverFillPathInstancedNV);
   if (strcmp(name, "glCoverFillPathNV") == 0)
     return reinterpret_cast<void*>(Mock_glCoverFillPathNV);
+  if (strcmp(name, "glCoverStrokePathInstancedNV") == 0)
+    return reinterpret_cast<void*>(Mock_glCoverStrokePathInstancedNV);
   if (strcmp(name, "glCoverStrokePathNV") == 0)
     return reinterpret_cast<void*>(Mock_glCoverStrokePathNV);
   if (strcmp(name, "glCreateProgram") == 0)
@@ -3256,6 +3352,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glShaderBinary);
   if (strcmp(name, "glShaderSource") == 0)
     return reinterpret_cast<void*>(Mock_glShaderSource);
+  if (strcmp(name, "glStencilFillPathInstancedNV") == 0)
+    return reinterpret_cast<void*>(Mock_glStencilFillPathInstancedNV);
   if (strcmp(name, "glStencilFillPathNV") == 0)
     return reinterpret_cast<void*>(Mock_glStencilFillPathNV);
   if (strcmp(name, "glStencilFunc") == 0)
@@ -3270,10 +3368,17 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glStencilOp);
   if (strcmp(name, "glStencilOpSeparate") == 0)
     return reinterpret_cast<void*>(Mock_glStencilOpSeparate);
+  if (strcmp(name, "glStencilStrokePathInstancedNV") == 0)
+    return reinterpret_cast<void*>(Mock_glStencilStrokePathInstancedNV);
   if (strcmp(name, "glStencilStrokePathNV") == 0)
     return reinterpret_cast<void*>(Mock_glStencilStrokePathNV);
+  if (strcmp(name, "glStencilThenCoverFillPathInstancedNV") == 0)
+    return reinterpret_cast<void*>(Mock_glStencilThenCoverFillPathInstancedNV);
   if (strcmp(name, "glStencilThenCoverFillPathNV") == 0)
     return reinterpret_cast<void*>(Mock_glStencilThenCoverFillPathNV);
+  if (strcmp(name, "glStencilThenCoverStrokePathInstancedNV") == 0)
+    return reinterpret_cast<void*>(
+        Mock_glStencilThenCoverStrokePathInstancedNV);
   if (strcmp(name, "glStencilThenCoverStrokePathNV") == 0)
     return reinterpret_cast<void*>(Mock_glStencilThenCoverStrokePathNV);
   if (strcmp(name, "glTestFenceAPPLE") == 0)

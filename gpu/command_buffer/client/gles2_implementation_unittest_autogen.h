@@ -3295,4 +3295,11 @@ TEST_F(GLES2ImplementationTest, StencilThenCoverStrokePathCHROMIUM) {
   gl_->StencilThenCoverStrokePathCHROMIUM(1, 2, 3, GL_CONVEX_HULL_CHROMIUM);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+// TODO(zmo): Implement unit test for StencilFillPathInstancedCHROMIUM
+// TODO(zmo): Implement unit test for StencilStrokePathInstancedCHROMIUM
+// TODO(zmo): Implement unit test for CoverFillPathInstancedCHROMIUM
+// TODO(zmo): Implement unit test for CoverStrokePathInstancedCHROMIUM
+// TODO(zmo): Implement unit test for StencilThenCoverFillPathInstancedCHROMIUM
+// TODO(zmo): Implement unit test for
+// StencilThenCoverStrokePathInstancedCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

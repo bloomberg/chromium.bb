@@ -1562,6 +1562,25 @@ _NAMED_TYPE_INFO = {
       'GL_COUNT_DOWN_CHROMIUM',
     ],
   },
+  'PathInstancedCoverMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_CONVEX_HULL_CHROMIUM',
+      'GL_BOUNDING_BOX_CHROMIUM',
+      'GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM',
+    ],
+  },
+  'PathNameType': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_UNSIGNED_BYTE',
+      'GL_BYTE',
+      'GL_UNSIGNED_SHORT',
+      'GL_SHORT',
+      'GL_UNSIGNED_INT',
+      'GL_INT',
+    ],
+  },
   'PathParameter': {
     'type': 'GLenum',
     'valid': [
@@ -1587,6 +1606,20 @@ _NAMED_TYPE_INFO = {
       'GL_BEVEL_CHROMIUM',
       'GL_ROUND_CHROMIUM',
     ]
+  },
+  'PathTransformType': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NONE',
+      'GL_TRANSLATE_X_CHROMIUM',
+      'GL_TRANSLATE_Y_CHROMIUM',
+      'GL_TRANSLATE_2D_CHROMIUM',
+      'GL_TRANSLATE_3D_CHROMIUM',
+      'GL_AFFINE_2D_CHROMIUM',
+      'GL_AFFINE_3D_CHROMIUM',
+      'GL_TRANSPOSE_AFFINE_2D_CHROMIUM',
+      'GL_TRANSPOSE_AFFINE_3D_CHROMIUM',
+    ],
   },
   'ReadPixelType': {
     'type': 'GLenum',
@@ -4230,7 +4263,42 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
-
+  'StencilFillPathInstancedCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'StencilStrokePathInstancedCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'CoverFillPathInstancedCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'CoverStrokePathInstancedCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'StencilThenCoverFillPathInstancedCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'StencilThenCoverStrokePathInstancedCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
 }
 
 

@@ -20,7 +20,7 @@ namespace gpu {
 
 class CHROMIUMPathRenderingTest : public testing::Test {
  public:
-  static const GLsizei kResolution = 100;
+  static const GLsizei kResolution = 300;
 
  protected:
   void SetUp() override {
@@ -123,8 +123,9 @@ class CHROMIUMPathRenderingTest : public testing::Test {
   }
 
   void VerifyTestPatternFill(float x, float y) {
-    static const float kFillCoords[] = {
-        55.0f, 55.0f, 50.0f, 28.0f, 66.0f, 63.0f};
+    SCOPED_TRACE(testing::Message() << "Verifying fill at " << x << "," << y);
+    static const float kFillCoords[] = {55.0f, 54.0f, 50.0f,
+                                        28.0f, 66.0f, 63.0f};
     static const uint8 kBlue[] = {0, 0, 255, 255};
 
     for (size_t i = 0; i < arraysize(kFillCoords); i += 2) {
@@ -136,6 +137,8 @@ class CHROMIUMPathRenderingTest : public testing::Test {
   }
 
   void VerifyTestPatternBg(float x, float y) {
+    SCOPED_TRACE(testing::Message() << "Verifying background at " << x << ","
+                                    << y);
     const float kBackgroundCoords[] = {80.0f, 80.0f, 20.0f, 20.0f, 90.0f, 1.0f};
     const uint8 kExpectedColor[] = {0, 0, 0, 0};
 
@@ -149,6 +152,7 @@ class CHROMIUMPathRenderingTest : public testing::Test {
   }
 
   void VerifyTestPatternStroke(float x, float y) {
+    SCOPED_TRACE(testing::Message() << "Verifying stroke at " << x << "," << y);
     // Inside the stroke we should have green.
     const uint8 kGreen[] = {0, 255, 0, 255};
     EXPECT_TRUE(GLTestHelper::CheckPixels(x + 50, y + 53, 1, 1, 0, kGreen));
@@ -525,6 +529,21 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingInvalidArgs) {
   glStencilThenCoverFillPathCHROMIUM(path, GL_COUNT_UP_CHROMIUM, 0x7F,
                                      GL_BOUNDING_BOX_CHROMIUM + 1);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
+  // For instanced variants, we need this to error the same way
+  // regardless of whether # of paths == 0 would cause an early return.
+  for (int path_count = 0; path_count <= 1; ++path_count) {
+    SCOPED_TRACE(testing::Message()
+                 << "Invalid fillmode instanced test for path count "
+                 << path_count);
+    glStencilFillPathInstancedCHROMIUM(path_count, GL_UNSIGNED_INT, &path, 0,
+                                       GL_COUNT_UP_CHROMIUM - 1, 0x7F, GL_NONE,
+                                       NULL);
+    EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
+    glStencilThenCoverFillPathInstancedCHROMIUM(
+        path_count, GL_UNSIGNED_INT, &path, 0, GL_COUNT_UP_CHROMIUM - 1, 0x7F,
+        GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, NULL);
+    EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
+  }
 
   // Using mask+1 not being power of two causes INVALID_VALUE with up/down fill
   // mode.
@@ -533,6 +552,19 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingInvalidArgs) {
   glStencilThenCoverFillPathCHROMIUM(path, GL_COUNT_DOWN_CHROMIUM, 12,
                                      GL_BOUNDING_BOX_CHROMIUM);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
+  for (int path_count = 0; path_count <= 1; ++path_count) {
+    SCOPED_TRACE(testing::Message()
+                 << "Invalid mask instanced test for path count "
+                 << path_count);
+    glStencilFillPathInstancedCHROMIUM(path_count, GL_UNSIGNED_INT, &path, 0,
+                                       GL_COUNT_UP_CHROMIUM, 0x30, GL_NONE,
+                                       NULL);
+    EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
+    glStencilThenCoverFillPathInstancedCHROMIUM(
+        path_count, GL_UNSIGNED_INT, &path, 0, GL_COUNT_DOWN_CHROMIUM, 0xFE,
+        GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_NONE, NULL);
+    EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), glGetError());
+  }
 
   glDeletePathsCHROMIUM(path, 1);
 }
@@ -617,6 +649,146 @@ TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingThenFunctions) {
   VerifyTestPatternFill(0.0f, 0.0f);
   VerifyTestPatternBg(0.0f, 0.0f);
   VerifyTestPatternStroke(0.0f, 0.0f);
+}
+
+// Tests that drawing with *Instanced functions work.
+TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingInstanced) {
+  if (!GLTestHelper::HasExtension("GL_CHROMIUM_path_rendering")) {
+    return;
+  }
+  static const float kBlue[] = {0.0f, 0.0f, 1.0f, 1.0f};
+  static const float kGreen[] = {0.0f, 1.0f, 0.0f, 1.0f};
+
+  SetupStateForTestPattern();
+
+  GLuint path = glGenPathsCHROMIUM(1);
+  SetupPathStateForTestPattern(path);
+
+  const GLuint kPaths[] = {1, 1, 1, 1, 1};
+  const GLsizei kPathCount = arraysize(kPaths);
+  const GLfloat kShapeSize = 80.0f;
+  static const GLfloat kTransforms[kPathCount * 12] = {
+      1.0f, 0.0f, 0.0f, 0.0f,           1.0f,       0.0f,
+      0.0f, 0.0f, 1.0f, 0.0f,           0.0f,       0.0f,
+      1.0f, 0.0f, 0.0f, 0.0f,           1.0f,       0.0f,
+      0.0f, 0.0f, 1.0f, kShapeSize,     0.0f,       0.0f,
+      1.0f, 0.0f, 0.0f, 0.0f,           1.0f,       0.0f,
+      0.0f, 0.0f, 1.0f, kShapeSize * 2, 0.0f,       0.0f,
+      1.0f, 0.0f, 0.0f, 0.0f,           1.0f,       0.0f,
+      0.0f, 0.0f, 1.0f, 0.0f,           kShapeSize, 0.0f,
+      1.0f, 0.0f, 0.0f, 0.0f,           1.0f,       0.0f,
+      0.0f, 0.0f, 1.0f, kShapeSize,     kShapeSize, 0.0f};
+
+  // The test pattern is the same as in the simple draw case above,
+  // except that the path is drawn kPathCount times with different offsets.
+  glPathStencilFuncCHROMIUM(GL_ALWAYS, 0, 0xFF);
+  glStencilStrokePathInstancedCHROMIUM(kPathCount, GL_UNSIGNED_INT, kPaths,
+                                       path - 1, 0x80, 0x80,
+                                       GL_AFFINE_3D_CHROMIUM, kTransforms);
+
+  glPathStencilFuncCHROMIUM(GL_ALWAYS, 0, 0x7F);
+  glUniform4fv(color_loc_, 1, kBlue);
+  glStencilFillPathInstancedCHROMIUM(kPathCount, GL_UNSIGNED_INT, kPaths,
+                                     path - 1, GL_COUNT_UP_CHROMIUM, 0x7F,
+                                     GL_AFFINE_3D_CHROMIUM, kTransforms);
+  glStencilFunc(GL_LESS, 0, 0x7F);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
+  glCoverFillPathInstancedCHROMIUM(kPathCount, GL_UNSIGNED_INT, kPaths,
+                                   path - 1,
+                                   GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                                   GL_AFFINE_3D_CHROMIUM, kTransforms);
+  glStencilFunc(GL_EQUAL, 0x80, 0x80);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
+  glUniform4fv(color_loc_, 1, kGreen);
+  glCoverStrokePathInstancedCHROMIUM(kPathCount, GL_UNSIGNED_INT, kPaths,
+                                     path - 1,
+                                     GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
+                                     GL_AFFINE_3D_CHROMIUM, kTransforms);
+
+  glDeletePathsCHROMIUM(path, 1);
+
+  // Verify the image.
+  VerifyTestPatternFill(0.0f, 0.0f);
+  VerifyTestPatternBg(0.0f, 0.0f);
+  VerifyTestPatternStroke(0.0f, 0.0f);
+
+  VerifyTestPatternFill(kShapeSize, 0.0f);
+  VerifyTestPatternBg(kShapeSize, 0.0f);
+  VerifyTestPatternStroke(kShapeSize, 0.0f);
+
+  VerifyTestPatternFill(kShapeSize * 2, 0.0f);
+  VerifyTestPatternBg(kShapeSize * 2, 0.0f);
+  VerifyTestPatternStroke(kShapeSize * 2, 0.0f);
+
+  VerifyTestPatternFill(0.0f, kShapeSize);
+  VerifyTestPatternBg(0.0f, kShapeSize);
+  VerifyTestPatternStroke(0.0f, kShapeSize);
+
+  VerifyTestPatternFill(kShapeSize, kShapeSize);
+  VerifyTestPatternBg(kShapeSize, kShapeSize);
+  VerifyTestPatternStroke(kShapeSize, kShapeSize);
+}
+
+TEST_F(CHROMIUMPathRenderingTest, TestPathRenderingThenFunctionsInstanced) {
+  if (!GLTestHelper::HasExtension("GL_CHROMIUM_path_rendering")) {
+    return;
+  }
+  static const float kBlue[] = {0.0f, 0.0f, 1.0f, 1.0f};
+  static const float kGreen[] = {0.0f, 1.0f, 0.0f, 1.0f};
+
+  SetupStateForTestPattern();
+
+  GLuint path = glGenPathsCHROMIUM(1);
+  SetupPathStateForTestPattern(path);
+
+  const GLuint kPaths[] = {1, 1, 1, 1, 1};
+  const GLsizei kPathCount = arraysize(kPaths);
+  const GLfloat kShapeSize = 80.0f;
+  static const GLfloat kTransforms[] = {
+      0.0f, 0.0f, kShapeSize, 0.0f,       kShapeSize * 2,
+      0.0f, 0.0f, kShapeSize, kShapeSize, kShapeSize,
+  };
+
+  glPathStencilFuncCHROMIUM(GL_ALWAYS, 0, 0xFF);
+  glStencilFunc(GL_EQUAL, 0x80, 0x80);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
+  glUniform4fv(color_loc_, 1, kGreen);
+  glStencilThenCoverStrokePathInstancedCHROMIUM(
+      kPathCount, GL_UNSIGNED_INT, kPaths, path - 1, 0x80, 0x80,
+      GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_TRANSLATE_2D_CHROMIUM,
+      kTransforms);
+
+  glPathStencilFuncCHROMIUM(GL_ALWAYS, 0, 0x7F);
+  glStencilFunc(GL_LESS, 0, 0x7F);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO);
+  glUniform4fv(color_loc_, 1, kBlue);
+  glStencilThenCoverFillPathInstancedCHROMIUM(
+      kPathCount, GL_UNSIGNED_INT, kPaths, path - 1, GL_COUNT_UP_CHROMIUM, 0x7F,
+      GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM, GL_TRANSLATE_2D_CHROMIUM,
+      kTransforms);
+
+  glDeletePathsCHROMIUM(path, 1);
+
+  // Verify the image.
+  VerifyTestPatternFill(0.0f, 0.0f);
+  VerifyTestPatternBg(0.0f, 0.0f);
+  VerifyTestPatternStroke(0.0f, 0.0f);
+
+  VerifyTestPatternFill(kShapeSize, 0.0f);
+  VerifyTestPatternBg(kShapeSize, 0.0f);
+  VerifyTestPatternStroke(kShapeSize, 0.0f);
+
+  VerifyTestPatternFill(kShapeSize * 2, 0.0f);
+  VerifyTestPatternBg(kShapeSize * 2, 0.0f);
+  VerifyTestPatternStroke(kShapeSize * 2, 0.0f);
+
+  VerifyTestPatternFill(0.0f, kShapeSize);
+  VerifyTestPatternBg(0.0f, kShapeSize);
+  VerifyTestPatternStroke(0.0f, kShapeSize);
+
+  VerifyTestPatternFill(kShapeSize, kShapeSize);
+  VerifyTestPatternBg(kShapeSize, kShapeSize);
+  VerifyTestPatternStroke(kShapeSize, kShapeSize);
 }
 
 }  // namespace gpu

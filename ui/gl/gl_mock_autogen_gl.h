@@ -169,7 +169,23 @@ MOCK_METHOD9(CopyTexSubImage3D,
                   GLint y,
                   GLsizei width,
                   GLsizei height));
+MOCK_METHOD7(CoverFillPathInstancedNV,
+             void(GLsizei numPaths,
+                  GLenum pathNameType,
+                  const void* paths,
+                  GLuint pathBase,
+                  GLenum coverMode,
+                  GLenum transformType,
+                  const GLfloat* transformValues));
 MOCK_METHOD2(CoverFillPathNV, void(GLuint path, GLenum coverMode));
+MOCK_METHOD7(CoverStrokePathInstancedNV,
+             void(GLsizei numPaths,
+                  GLenum pathNameType,
+                  const void* paths,
+                  GLuint pathBase,
+                  GLenum coverMode,
+                  GLenum transformType,
+                  const GLfloat* transformValues));
 MOCK_METHOD2(CoverStrokePathNV, void(GLuint name, GLenum coverMode));
 MOCK_METHOD0(CreateProgram, GLuint());
 MOCK_METHOD1(CreateShader, GLuint(GLenum type));
@@ -546,6 +562,15 @@ MOCK_METHOD4(ShaderSource,
                   GLsizei count,
                   const char* const* str,
                   const GLint* length));
+MOCK_METHOD8(StencilFillPathInstancedNV,
+             void(GLsizei numPaths,
+                  GLenum pathNameType,
+                  const void* paths,
+                  GLuint pathBase,
+                  GLenum fillMode,
+                  GLuint mask,
+                  GLenum transformType,
+                  const GLfloat* transformValues));
 MOCK_METHOD3(StencilFillPathNV,
              void(GLuint path, GLenum fillMode, GLuint mask));
 MOCK_METHOD3(StencilFunc, void(GLenum func, GLint ref, GLuint mask));
@@ -556,10 +581,39 @@ MOCK_METHOD2(StencilMaskSeparate, void(GLenum face, GLuint mask));
 MOCK_METHOD3(StencilOp, void(GLenum fail, GLenum zfail, GLenum zpass));
 MOCK_METHOD4(StencilOpSeparate,
              void(GLenum face, GLenum fail, GLenum zfail, GLenum zpass));
+MOCK_METHOD8(StencilStrokePathInstancedNV,
+             void(GLsizei numPaths,
+                  GLenum pathNameType,
+                  const void* paths,
+                  GLuint pathBase,
+                  GLint ref,
+                  GLuint mask,
+                  GLenum transformType,
+                  const GLfloat* transformValues));
 MOCK_METHOD3(StencilStrokePathNV,
              void(GLuint path, GLint reference, GLuint mask));
+MOCK_METHOD9(StencilThenCoverFillPathInstancedNV,
+             void(GLsizei numPaths,
+                  GLenum pathNameType,
+                  const void* paths,
+                  GLuint pathBase,
+                  GLenum fillMode,
+                  GLuint mask,
+                  GLenum coverMode,
+                  GLenum transformType,
+                  const GLfloat* transformValues));
 MOCK_METHOD4(StencilThenCoverFillPathNV,
              void(GLuint path, GLenum fillMode, GLuint mask, GLenum coverMode));
+MOCK_METHOD9(StencilThenCoverStrokePathInstancedNV,
+             void(GLsizei numPaths,
+                  GLenum pathNameType,
+                  const void* paths,
+                  GLuint pathBase,
+                  GLint ref,
+                  GLuint mask,
+                  GLenum coverMode,
+                  GLenum transformType,
+                  const GLfloat* transformValues));
 MOCK_METHOD4(StencilThenCoverStrokePathNV,
              void(GLuint path, GLint reference, GLuint mask, GLenum coverMode));
 MOCK_METHOD1(TestFenceAPPLE, GLboolean(GLuint fence));
