@@ -1449,7 +1449,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "sync_chrome": false,
         "vm_tests": []
     },
@@ -2874,7 +2873,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "image_test": false,
         "images": [
             "base",
@@ -2944,7 +2942,6 @@
                 "chrome_sdk": false,
                 "dev_installer_prebuilts": false,
                 "grouped": true,
-                "hw_tests": [],
                 "image_test": false,
                 "images": [
                     "base",
@@ -2968,7 +2965,6 @@
                 "chrome_sdk_build_chrome": false,
                 "dev_installer_prebuilts": false,
                 "grouped": true,
-                "hw_tests": [],
                 "image_test": false,
                 "images": [
                     "base",
@@ -2986,7 +2982,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "image_test": false,
         "images": [
             "base",
@@ -3123,7 +3118,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "image_test": false,
         "images": [
             "base",
@@ -7334,7 +7328,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "important": true,
         "paygen": false,
         "signer_tests": false,
@@ -9107,7 +9100,6 @@
         "dev_manifest": "kayle.xml",
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests": [],
         "hwqual": false,
         "images": [
             "base"
@@ -9855,7 +9847,6 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "disk_layout": "base",
-        "hw_tests": [],
         "hwqual": false,
         "image_test": false,
         "important": true,
@@ -10034,7 +10025,6 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "disk_layout": "base",
-        "hw_tests": [],
         "hwqual": false,
         "image_test": false,
         "important": true,
@@ -10234,7 +10224,6 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "disk_layout": "base",
-        "hw_tests": [],
         "hwqual": false,
         "image_test": false,
         "signer_tests": false,
@@ -13617,7 +13606,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "important": true,
         "paygen": false,
         "profile": "minimal",
@@ -13688,7 +13676,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "sync_chrome": false,
         "vm_tests": []
     },
@@ -15342,7 +15329,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "sync_chrome": false,
         "vm_tests": []
     },
@@ -18275,7 +18261,6 @@
         ],
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
@@ -18298,7 +18283,6 @@
                 "chrome_sdk": false,
                 "dev_installer_prebuilts": false,
                 "grouped": true,
-                "hw_tests": [],
                 "name": "storm-release",
                 "paygen_skip_testing": true,
                 "signer_tests": false,
@@ -18316,7 +18300,6 @@
                 "chrome_sdk_build_chrome": false,
                 "dev_installer_prebuilts": false,
                 "grouped": true,
-                "hw_tests": [],
                 "name": "arkham-release",
                 "sync_chrome": false,
                 "unittests": null,
@@ -18332,7 +18315,6 @@
                 "chrome_sdk": false,
                 "chrome_sdk_build_chrome": false,
                 "grouped": true,
-                "hw_tests": [],
                 "name": "whirlwind-release",
                 "sync_chrome": false,
                 "unittests": null,
@@ -18342,7 +18324,6 @@
         "chrome_sdk": false,
         "description": "Release Builds (canary) (internal); Group config (boards: storm, arkham, whirlwind)",
         "dev_installer_prebuilts": false,
-        "hw_tests": [],
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
@@ -23327,6 +23308,9 @@
         ],
         "chrome_sdk": false,
         "description": "Commit Queue (internal)",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"jetstream_cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23367,7 +23351,6 @@
             "whirlwind"
         ],
         "chrome_sdk": false,
-        "hw_tests": [],
         "sync_chrome": false,
         "vm_tests": []
     },

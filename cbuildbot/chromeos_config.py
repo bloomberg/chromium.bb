@@ -901,7 +901,6 @@ def GetConfig():
       dev_installer_prebuilts=False,
       # TODO(gauravsh): crbug.com/356414 Start running tests on Brillo configs.
       vm_tests=[],
-      hw_tests=[],
   )
 
   moblab = config_lib.BuildConfig(
@@ -1680,6 +1679,12 @@ def GetConfig():
       'x86-zgb',
   ])
 
+
+  # Jetstream devices run unique hw tests
+  _paladin_jetstream_hwtest_boards = frozenset([
+      'whirlwind',
+  ])
+
   _paladin_moblab_hwtest_boards = frozenset([
       'guado_moblab',
   ])
@@ -1708,6 +1713,13 @@ def GetConfig():
                 config_lib.HWTestConfig(
                     constants.HWTEST_MOBLAB_QUICK_SUITE,
                     blocking=True, num=1, timeout=120*60,
+                    pool=constants.HWTEST_PALADIN_POOL)
+            ])
+      if board in _paladin_jetstream_hwtest_boards:
+        customizations.update(
+            hw_tests=[
+                config_lib.HWTestConfig(
+                    constants.HWTEST_JETSTREAM_COMMIT_SUITE,
                     pool=constants.HWTEST_PALADIN_POOL)
             ])
       if board not in _paladin_important_boards:
