@@ -282,7 +282,7 @@ public class CastRouteController implements RouteController {
             if ("client_connect".equals(messageType)) {
                 success = handleClientConnectMessage(jsonMessage);
             } else if ("v2_message".equals(messageType)) {
-                success = handleCastV2Message(message, jsonMessage);
+                success = handleCastV2Message(jsonMessage);
             } else if ("app_message".equals(messageType)) {
                 success = handleAppMessage(message, jsonMessage);
             } else {
@@ -321,7 +321,7 @@ public class CastRouteController implements RouteController {
     //        "timeoutMillis": 0,
     //        "clientId": "144042901280235697"
     //    }
-    private boolean handleCastV2Message(String message, JSONObject jsonMessage)
+    private boolean handleCastV2Message(JSONObject jsonMessage)
             throws JSONException {
         assert "v2_message".equals(jsonMessage.getString("type"));
 
@@ -334,7 +334,37 @@ public class CastRouteController implements RouteController {
             close();
             return true;
         } else if (Arrays.asList(MEDIA_MESSAGE_TYPES).contains(messageType)) {
+            if ("SET_VOLUME".equals(messageType)) {
+                return handleVolumeMessage(jsonCastMessage.getJSONObject("volume"));
+            }
             return sendCastMessage(jsonMessage.getString("message"), MEDIA_NAMESPACE);
+        }
+
+        return true;
+    }
+
+    // SET_VOLUME messages have a |level| and |muted| properties. One of them is
+    // |null| and the other one isn't. |muted| is expected to be a boolean while
+    // |level| is a float from 0.0 to 1.0.
+    // Example:
+    // {
+    //   "volume" {
+    //     "level": 0.9,
+    //     "muted": null
+    //   }
+    // }
+    private boolean handleVolumeMessage(JSONObject volume) throws JSONException {
+        if (volume == null) return false;
+
+        try {
+            if (!volume.isNull("muted")) {
+                Cast.CastApi.setMute(mApiClient, volume.getBoolean("muted"));
+            }
+            if (!volume.isNull("level")) {
+                Cast.CastApi.setVolume(mApiClient, volume.getDouble("level"));
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to send volume command: " + e);
         }
 
         return true;
