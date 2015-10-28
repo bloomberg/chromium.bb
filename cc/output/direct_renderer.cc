@@ -240,7 +240,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // otherwise the framebuffer will be missing the overlay contents.
   if (root_render_pass->copy_requests.empty()) {
     overlay_processor_->ProcessForOverlays(
-        resource_provider_, render_passes_in_draw_order, &frame.overlay_list);
+        resource_provider_, render_passes_in_draw_order, &frame.overlay_list,
+        &frame.root_damage_rect);
   }
 
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {

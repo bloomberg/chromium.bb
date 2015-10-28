@@ -175,6 +175,7 @@ OverlayCandidate::OverlayCandidate()
       use_output_surface_for_resource(false),
       resource_id(0),
       plane_z_order(0),
+      needs_blending(false),
       overlay_handled(false) {}
 
 OverlayCandidate::~OverlayCandidate() {}
@@ -196,6 +197,8 @@ bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
   candidate->format = RGBA_8888;
   candidate->clip_rect = quad->shared_quad_state->clip_rect;
   candidate->is_clipped = quad->shared_quad_state->is_clipped;
+  candidate->needs_blending =
+      quad->shared_quad_state->opacity < 1.0f || quad->needs_blending;
 
   switch (quad->material) {
     case DrawQuad::TEXTURE_CONTENT:
