@@ -4,6 +4,8 @@
 
 #include "ui/app_list/app_list_constants.h"
 
+#include "ui/gfx/color_palette.h"
+
 namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF2, 0xF2, 0xF2);
@@ -89,6 +91,8 @@ const int kListBadgeIconSize = 16;
 const int kListBadgeIconOffsetX = 6;
 const int kListBadgeIconOffsetY = 6;
 const int kTileIconSize = 48;
+
+const SkColor kIconColor = gfx::kChromeIconGrey;
 
 // Preferred number of columns and rows in the centered app list apps grid.
 const int kCenteredPreferredCols = 6;

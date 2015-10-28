@@ -65,6 +65,8 @@ APP_LIST_EXPORT extern const int kListBadgeIconOffsetX;
 APP_LIST_EXPORT extern const int kListBadgeIconOffsetY;
 APP_LIST_EXPORT extern const int kTileIconSize;
 
+APP_LIST_EXPORT extern const SkColor kIconColor;
+
 APP_LIST_EXPORT extern const int kCenteredPreferredCols;
 APP_LIST_EXPORT extern const int kCenteredPreferredRows;
 
