@@ -162,6 +162,8 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
   bool EnsureDatabaseVersion();
   bool ResetSchema();
   bool UpgradeSchema(int current_version);
+  bool InsertOrReplaceHostQuota(
+      const std::string& host, StorageType type, int64 quota);
 
   static bool CreateSchema(
       sql::Connection* database,
