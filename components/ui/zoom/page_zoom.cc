@@ -105,8 +105,8 @@ void PageZoom::Zoom(content::WebContents* web_contents,
         content::RecordAction(UserMetricsAction("ZoomMinus"));
         return;
       }
-      content::RecordAction(UserMetricsAction("ZoomMinus_AtMinimum"));
     }
+    content::RecordAction(UserMetricsAction("ZoomMinus_AtMinimum"));
   } else {
     // Iterate through the zoom levels in normal order to find the next
     // higher level based on the current zoom level for this page.
