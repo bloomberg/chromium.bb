@@ -45,6 +45,7 @@
         android:layout_toEndOf="@id/icon_frame"
         android:layout_toStartOf="@id/time"
         android:layout_alignParentTop="true"
+        android:layout_marginTop="4dp"
         android:singleLine="true"
         android:ellipsize="end"
         style="@style/WebNotificationTitle"/>
@@ -65,6 +66,9 @@
         android:layout_toEndOf="@id/icon_frame"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/title"
+        android:layout_marginTop="-1dp"
+        android:layout_marginBottom="-1dp"
+        android:layout_marginEnd="6dp"
         android:singleLine="true"
         android:ellipsize="end"
         style="@style/WebNotificationBody"/>

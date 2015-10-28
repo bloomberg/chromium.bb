@@ -283,6 +283,8 @@
         parent="@style/TextAppearance.StatusBar.EventContent.Title"/>
     <style name="WebNotificationBody"
         parent="@style/TextAppearance.StatusBar.EventContent.Line2"/>
+    <style name="WebNotificationBodyBig"
+        parent="@style/TextAppearance.StatusBar.EventContent"/>
     <style name="WebNotificationOrigin"
         parent="@style/TextAppearance.StatusBar.EventContent.Info"/>
     <style name="WebNotificationTime"

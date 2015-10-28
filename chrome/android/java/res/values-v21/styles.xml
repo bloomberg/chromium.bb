@@ -66,6 +66,8 @@
         parent="@android:style/TextAppearance.Material.Notification.Title"/>
     <style name="WebNotificationBody"
         parent="@android:style/TextAppearance.Material.Notification.Line2"/>
+    <style name="WebNotificationBodyBig"
+        parent="@android:style/TextAppearance.Material.Notification"/>
     <style name="WebNotificationOrigin"
         parent="@android:style/TextAppearance.Material.Notification.Info"/>
     <style name="WebNotificationTime"
