@@ -176,6 +176,10 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
         return CompositingReasonSquashingNearestFixedPositionMismatch;
     ASSERT(layer->layoutObject()->style()->position() != FixedPosition);
 
+    if ((squashingLayer.layoutObject()->style()->subtreeWillChangeContents() && squashingLayer.layoutObject()->style()->isRunningAnimationOnCompositor())
+        || squashingLayer.layoutObject()->style()->shouldCompositeForCurrentAnimations())
+        return CompositingReasonSquashingLayerIsAnimating;
+
     return CompositingReasonNone;
 }
 

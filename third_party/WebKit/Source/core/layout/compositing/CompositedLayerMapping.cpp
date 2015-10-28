@@ -2428,7 +2428,7 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
     } else if (graphicsLayer == m_squashingContainmentLayer.get()) {
         name = "Squashing Containment Layer";
     } else if (graphicsLayer == m_squashingLayer.get()) {
-        name = "Squashing Layer";
+        name = "Squashing Layer (first squashed layer: " + (m_squashedLayers.size() > 0 ? m_squashedLayers[0].paintLayer->debugName() : "") + ")";
     } else if (graphicsLayer == m_ancestorClippingLayer.get()) {
         name = "Ancestor Clipping Layer";
     } else if (graphicsLayer == m_foregroundLayer.get()) {
