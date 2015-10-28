@@ -30,6 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
+#include "core/dom/StyleEngine.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -255,8 +256,13 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID u
 
     didMutate(changed ? PropertyChanged : NoChanges);
 
-    if (changed)
-        mutationScope.enqueueMutationRecord();
+    if (!changed)
+        return;
+
+    Element* parent = parentElement();
+    if (parent && parent->inActiveDocument() && parent->document().styleResolver())
+        parent->document().styleEngine().attributeChangedForElement(HTMLNames::styleAttr, *parent);
+    mutationScope.enqueueMutationRecord();
 }
 
 StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::contextStyleSheet() const
