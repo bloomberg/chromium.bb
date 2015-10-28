@@ -5,17 +5,37 @@
 #include "components/mus/example/wm/window_manager_impl.h"
 
 #include "components/mus/example/wm/container.h"
+#include "components/mus/example/wm/move_loop.h"
 #include "components/mus/example/wm/window_manager_application.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "ui/mojo/events/input_events.mojom.h"
+
+namespace {
+
+bool IsPointerEvent(const mojo::Event& event) {
+  return event.action == mojo::EVENT_TYPE_POINTER_CANCEL ||
+         event.action == mojo::EVENT_TYPE_POINTER_DOWN ||
+         event.action == mojo::EVENT_TYPE_POINTER_MOVE ||
+         event.action == mojo::EVENT_TYPE_POINTER_UP;
+}
+
+}  // namespace
 
 WindowManagerImpl::WindowManagerImpl(WindowManagerApplication* state)
     : state_(state) {}
 
-WindowManagerImpl::~WindowManagerImpl() {}
+WindowManagerImpl::~WindowManagerImpl() {
+  mus::Window* parent = state_->GetWindowForContainer(Container::USER_WINDOWS);
+  if (!parent)
+    return;
+
+  for (mus::Window* child : parent->children())
+    child->RemoveObserver(this);
+}
 
 void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   mus::Window* root = state_->root();
@@ -34,6 +54,7 @@ void WindowManagerImpl::OpenWindow(mus::mojom::WindowTreeClientPtr client) {
   state_->GetWindowForContainer(Container::USER_WINDOWS)
       ->AddChild(child_window);
   child_window->Embed(client.Pass());
+  child_window->AddObserver(this);
 
   state_->IncrementWindowCount();
 }
@@ -80,4 +101,19 @@ void WindowManagerImpl::GetDisplays(const GetDisplaysCallback& callback) {
   displays[0]->device_pixel_ratio =
       state_->root()->viewport_metrics().device_pixel_ratio;
   callback.Run(displays.Pass());
+}
+
+void WindowManagerImpl::OnWindowDestroyed(mus::Window* window) {
+  window->RemoveObserver(this);
+}
+
+void WindowManagerImpl::OnWindowInputEvent(mus::Window* window,
+                                           const mojo::EventPtr& event) {
+  if (move_loop_ && IsPointerEvent(*event)) {
+    if (move_loop_->Move(*event) == MoveLoop::DONE)
+      move_loop_.reset();
+    return;
+  }
+  if (!move_loop_ && event->action == mojo::EVENT_TYPE_POINTER_DOWN)
+    move_loop_ = MoveLoop::Create(window, *event);
 }

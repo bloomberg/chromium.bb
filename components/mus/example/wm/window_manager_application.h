@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/mus/public/cpp/types.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -23,6 +24,7 @@ class WindowManagerImpl;
 
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
+      public mus::WindowObserver,
       public mus::WindowTreeDelegate,
       public mojo::InterfaceFactory<mus::mojom::WindowManager> {
  public:
@@ -51,6 +53,9 @@ class WindowManagerApplication
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mus::mojom::WindowManager> request) override;
+
+  // mus::WindowObserver:
+  void OnWindowDestroyed(mus::Window* window) override;
 
   // Sets up the window containers used for z-space management.
   void CreateContainers();

@@ -18,6 +18,8 @@ mojo_native_application("example_wm") {
   sources = [
     "container.h",
     "main.cc",
+    "move_loop.cc",
+    "move_loop.h",
     "window_layout.cc",
     "window_layout.h",
     "window_manager_application.cc",
@@ -32,6 +34,8 @@ mojo_native_application("example_wm") {
     "//components/mus/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
+    "//mojo/converters/geometry",
+    "//ui/mojo/events:interfaces",
   ]
 
   data_deps = [

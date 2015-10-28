@@ -43,12 +43,10 @@ bool WindowManagerApplication::ConfigureIncomingConnection(
 
 void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_ = root;
+  root_->AddObserver(this);
   CreateContainers();
   layout_.reset(
       new WindowLayout(GetWindowForContainer(Container::USER_WINDOWS)));
-
-  host_->EnableWindowDraggingForChildren(
-      GetWindowForContainer(Container::USER_WINDOWS)->id());
 
   window_manager_.reset(new WindowManagerImpl(this));
   for (auto request : requests_)
@@ -71,6 +69,15 @@ void WindowManagerApplication::Create(
     requests_.push_back(
         new mojo::InterfaceRequest<mus::mojom::WindowManager>(request.Pass()));
   }
+}
+
+void WindowManagerApplication::OnWindowDestroyed(mus::Window* window) {
+  DCHECK_EQ(window, root_);
+  root_->RemoveObserver(this);
+  // Delete the |window_manager_| here so that WindowManager doesn't have to
+  // worry about the possibility of |root_| being null.
+  window_manager_.reset();
+  root_ = nullptr;
 }
 
 void WindowManagerApplication::CreateContainers() {

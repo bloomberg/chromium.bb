@@ -7,7 +7,6 @@
 #include "cc/surfaces/surface_hittest.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
-#include "components/mus/ws/move_loop.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
@@ -15,20 +14,10 @@
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace mus {
 namespace ws {
-namespace {
-
-bool IsPointerEvent(const mojo::Event& event) {
-  return event.action == mojo::EVENT_TYPE_POINTER_CANCEL ||
-         event.action == mojo::EVENT_TYPE_POINTER_DOWN ||
-         event.action == mojo::EVENT_TYPE_POINTER_MOVE ||
-         event.action == mojo::EVENT_TYPE_POINTER_UP;
-}
-
-}  // namespace
-
 namespace {
 
 bool IsMouseEventFlag(int32_t event_flags) {
@@ -45,6 +34,17 @@ bool IsOnlyOneMouseButtonDown(mojo::EventFlags flags) {
   return mouse_only_flags == mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
          mouse_only_flags == mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
          mouse_only_flags == mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON;
+}
+
+bool IsLocationInNonclientArea(const ServerWindow* target,
+                               const gfx::Point& location) {
+  return target->parent() &&
+         !target->client_area().Contains(location);
+}
+
+gfx::Point EventLocationToPoint(const mojo::Event& event) {
+  return gfx::ToFlooredPoint(gfx::PointF(event.pointer_data->location->x,
+                                         event.pointer_data->location->y));
 }
 
 }  // namespace
@@ -141,7 +141,10 @@ class EventMatcher {
 ////////////////////////////////////////////////////////////////////////////////
 
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
-    : delegate_(delegate), root_(nullptr), capture_window_(nullptr) {}
+    : delegate_(delegate),
+      root_(nullptr),
+      capture_window_(nullptr),
+      capture_in_nonclient_area_(false) {}
 
 EventDispatcher::~EventDispatcher() {}
 
@@ -176,37 +179,32 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
     }
   }
 
-  // If there is a MoveLoop all pointer events are forwarded to it.
-  if (move_loop_ && IsPointerEvent(*event)) {
-    if (move_loop_->Move(*event) == MoveLoop::DONE) {
-      move_loop_.reset();
-      ResetCaptureWindowIfPointerUp(*event);
-    }
-
-    return;
-  }
-
   ServerWindow* target = FindEventTarget(event.get());
+  bool in_nonclient_area = false;
 
   if (IsMouseEventFlag(event->flags)) {
-    if (!capture_window_ && (event->action == mojo::EVENT_TYPE_POINTER_DOWN))
+    if (!capture_window_ && target &&
+        (event->action == mojo::EVENT_TYPE_POINTER_DOWN)) {
+      // TODO(sky): |capture_window_| needs to be reset when window removed
+      // from hierarchy.
       capture_window_ = target;
-    else
-      ResetCaptureWindowIfPointerUp(*event);
+      // TODO(sky): this needs to happen for pointer down events too.
+      capture_in_nonclient_area_ =
+          IsLocationInNonclientArea(target, EventLocationToPoint(*event));
+      in_nonclient_area = capture_in_nonclient_area_;
+    } else if (event->action == mojo::EVENT_TYPE_POINTER_UP &&
+               IsOnlyOneMouseButtonDown(event->flags)) {
+      capture_window_ = nullptr;
+    }
+    in_nonclient_area = capture_in_nonclient_area_;
   }
 
   if (target) {
-    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN) {
+    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN)
       delegate_->SetFocusedWindowFromEventDispatcher(target);
 
-      if (!move_loop_) {
-        move_loop_ = MoveLoop::Create(target, *event);
-        if (move_loop_)
-          return;
-      }
-    }
-
-    delegate_->DispatchInputEventToWindow(target, event.Pass());
+    delegate_->DispatchInputEventToWindow(target, in_nonclient_area,
+                                          event.Pass());
   }
 }
 
@@ -251,14 +249,8 @@ ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
 
   event_location->x = location.x();
   event_location->y = location.y();
-  return target;
-}
 
-void EventDispatcher::ResetCaptureWindowIfPointerUp(const mojo::Event& event) {
-  if (event.action == mojo::EVENT_TYPE_POINTER_UP &&
-      IsOnlyOneMouseButtonDown(event.flags)) {
-    capture_window_ = nullptr;
-  }
+  return target;
 }
 
 }  // namespace ws

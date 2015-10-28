@@ -20,7 +20,9 @@ class EventDispatcherDelegate {
   virtual void SetFocusedWindowFromEventDispatcher(ServerWindow* window) = 0;
   virtual ServerWindow* GetFocusedWindowForEventDispatcher() = 0;
 
+  // |in_nonclient_area| is true if the event occurred in the non-client area.
   virtual void DispatchInputEventToWindow(ServerWindow* target,
+                                          bool in_nonclient_area,
                                           mojo::EventPtr event) = 0;
 
  protected:

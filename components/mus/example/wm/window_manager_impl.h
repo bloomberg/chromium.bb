@@ -12,6 +12,7 @@
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 
+class MoveLoop;
 class WindowManagerApplication;
 
 using WindowManagerErrorCodeCallback =
@@ -38,7 +39,13 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
                     const WindowManagerErrorCodeCallback& callback) override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
 
+  // mus::WindowObserver:
+  void OnWindowDestroyed(mus::Window* window) override;
+  void OnWindowInputEvent(mus::Window* window,
+                          const mojo::EventPtr& event) override;
+
   WindowManagerApplication* state_;
+  scoped_ptr<MoveLoop> move_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };

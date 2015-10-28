@@ -2,25 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_MOVE_LOOP_H_
-#define COMPONENTS_MUS_WS_MOVE_LOOP_H_
+#ifndef COMPONENTS_MUS_EXAMPLE_WM_MOVE_LOOP_H_
+#define COMPONENTS_MUS_EXAMPLE_WM_MOVE_LOOP_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/ws/server_window_observer.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
-namespace mus {
-namespace ws {
-
-class ServerWindow;
-
-// MoveLoop is responsible for moving/resizing windows. EventDispatcher
-// attempts to create a MoveLoop on every POINTER_DOWN event. Once a MoveLoop
-// is created it is fed events until an event is received that stops the loop.
-class MoveLoop : public ServerWindowObserver {
+// MoveLoop is responsible for moving/resizing windows.
+class MoveLoop : public mus::WindowObserver {
  public:
   enum MoveResult {
     // The move is still ongoing.
@@ -35,14 +28,14 @@ class MoveLoop : public ServerWindowObserver {
   // If a move/resize loop should occur for the specified parameters creates
   // and returns a new MoveLoop. All events should be funneled to the MoveLoop
   // until done (Move()).
-  static scoped_ptr<MoveLoop> Create(ServerWindow* target,
+  static scoped_ptr<MoveLoop> Create(mus::Window* target,
                                      const mojo::Event& event);
 
   // Processes an event for a move/resize loop.
   MoveResult Move(const mojo::Event& event);
 
  private:
-  MoveLoop(ServerWindow* target, const mojo::Event& event);
+  MoveLoop(mus::Window* target, const mojo::Event& event);
 
   // Does the actual move/resize.
   void MoveImpl(const mojo::Event& event);
@@ -54,18 +47,16 @@ class MoveLoop : public ServerWindowObserver {
 
   void Revert();
 
-  // ServerWindowObserver:
-  void OnWindowHierarchyChanged(ServerWindow* window,
-                                ServerWindow* new_parent,
-                                ServerWindow* old_parent) override;
-  void OnWindowBoundsChanged(ServerWindow* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
-  void OnWindowVisibilityChanged(ServerWindow* window) override;
+  // mus::WindowObserver:
+  void OnTreeChanged(const TreeChangeParams& params) override;
+  void OnWindowBoundsChanged(mus::Window* window,
+                             const mojo::Rect& old_bounds,
+                             const mojo::Rect& new_bounds) override;
+  void OnWindowVisibilityChanged(mus::Window* window) override;
 
   // The window this MoveLoop is acting on. |target_| is set to null if the
   // window unexpectedly changes while the move is in progress.
-  ServerWindow* target_;
+  mus::Window* target_;
 
   // The id of the pointer that triggered the move.
   const int32_t pointer_id_;
@@ -83,7 +74,4 @@ class MoveLoop : public ServerWindowObserver {
   DISALLOW_COPY_AND_ASSIGN(MoveLoop);
 };
 
-}  // namespace ws
-}  // namespace mus
-
-#endif  // COMPONENTS_MUS_WS_MOVE_LOOP_H_
+#endif  // COMPONENTS_MUS_EXAMPLE_WM_MOVE_LOOP_H_

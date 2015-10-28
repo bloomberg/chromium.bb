@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/ws/move_loop.h"
+#include "components/mus/example/wm/move_loop.h"
 
 #include "base/auto_reset.h"
-#include "components/mus/ws/server_window.h"
+#include "components/mus/public/cpp/window.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/events/input_event_constants.mojom.h"
 
-namespace mus {
-namespace ws {
 namespace {
 
 gfx::Point EventLocationToPoint(const mojo::Event& event) {
@@ -40,13 +39,12 @@ MoveLoop::~MoveLoop() {
 }
 
 // static
-scoped_ptr<MoveLoop> MoveLoop::Create(ServerWindow* target,
+scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
                                       const mojo::Event& event) {
-  DCHECK(event.action == mojo::EVENT_TYPE_POINTER_DOWN);
+  DCHECK_EQ(event.action, mojo::EVENT_TYPE_POINTER_DOWN);
   const gfx::Point location(EventLocationToPoint(event));
-  if (!target->parent() || !target->parent()->is_draggable_window_container() ||
-      !gfx::Rect(target->bounds().size()).Contains(location) ||
-      target->client_area().Contains(location)) {
+  if (!gfx::Rect(target->bounds().To<gfx::Rect>().size()).Contains(location) ||
+      target->client_area().To<gfx::Rect>().Contains(location)) {
     return nullptr;
   }
 
@@ -90,11 +88,11 @@ MoveLoop::MoveResult MoveLoop::Move(const mojo::Event& event) {
   return MoveResult::CONTINUE;
 }
 
-MoveLoop::MoveLoop(ServerWindow* target, const mojo::Event& event)
+MoveLoop::MoveLoop(mus::Window* target, const mojo::Event& event)
     : target_(target),
       pointer_id_(event.pointer_data->pointer_id),
       initial_event_screen_location_(EventScreenLocationToPoint(event)),
-      initial_window_bounds_(target->bounds()),
+      initial_window_bounds_(target->bounds().To<gfx::Rect>()),
       changing_bounds_(false) {
   target->AddObserver(this);
 }
@@ -105,7 +103,7 @@ void MoveLoop::MoveImpl(const mojo::Event& event) {
   const gfx::Rect new_bounds(initial_window_bounds_.origin() + delta,
                              initial_window_bounds_.size());
   base::AutoReset<bool> resetter(&changing_bounds_, true);
-  target_->SetBounds(new_bounds);
+  target_->SetBounds(*mojo::Rect::From(new_bounds));
 }
 
 void MoveLoop::Cancel() {
@@ -115,28 +113,23 @@ void MoveLoop::Cancel() {
 
 void MoveLoop::Revert() {
   base::AutoReset<bool> resetter(&changing_bounds_, true);
-  target_->SetBounds(initial_window_bounds_);
+  target_->SetBounds(*mojo::Rect::From(initial_window_bounds_));
 }
 
-void MoveLoop::OnWindowHierarchyChanged(ServerWindow* window,
-                                        ServerWindow* new_parent,
-                                        ServerWindow* old_parent) {
-  DCHECK_EQ(window, target_);
-  Cancel();
+void MoveLoop::OnTreeChanged(const TreeChangeParams& params) {
+  if (params.target == target_)
+    Cancel();
 }
 
-void MoveLoop::OnWindowBoundsChanged(ServerWindow* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) {
+void MoveLoop::OnWindowBoundsChanged(mus::Window* window,
+                                     const mojo::Rect& old_bounds,
+                                     const mojo::Rect& new_bounds) {
   DCHECK_EQ(window, target_);
   if (!changing_bounds_)
     Cancel();
 }
 
-void MoveLoop::OnWindowVisibilityChanged(ServerWindow* window) {
+void MoveLoop::OnWindowVisibilityChanged(mus::Window* window) {
   DCHECK_EQ(window, target_);
   Cancel();
 }
-
-}  // namespace ws
-}  // namespace mus

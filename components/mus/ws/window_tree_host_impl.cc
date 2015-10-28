@@ -119,14 +119,6 @@ void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {
   event_dispatcher_.RemoveAccelerator(id);
 }
 
-void WindowTreeHostImpl::EnableWindowDraggingForChildren(
-    Id transport_window_id) {
-  ServerWindow* window =
-      root_->GetChildWindow(WindowIdFromTransportId(transport_window_id));
-  if (window)
-    window->set_is_draggable_window_container(true);
-}
-
 void WindowTreeHostImpl::OnClientClosed() {
   // |display_manager_.reset()| destroys the display-manager first, and then
   // sets |display_manager_| to nullptr. However, destroying |display_manager_|
@@ -247,13 +239,19 @@ ServerWindow* WindowTreeHostImpl::GetFocusedWindowForEventDispatcher() {
 }
 
 void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
+                                                    bool in_nonclient_area,
                                                     mojo::EventPtr event) {
-  // If the window is an embed root, forward to the embedded window, not the
-  // owner.
+  // If the event is in the non-client area the event goes to the owner of
+  // the window. Otherwise if the window is an embed root, forward to the
+  // embedded window.
   WindowTreeImpl* connection =
-      connection_manager_->GetConnectionWithRoot(target->id());
-  if (!connection)
+      in_nonclient_area
+          ? connection_manager_->GetConnection(target->id().connection_id)
+          : connection_manager_->GetConnectionWithRoot(target->id());
+  if (!connection) {
+    DCHECK(!in_nonclient_area);
     connection = connection_manager_->GetConnection(target->id().connection_id);
+  }
   connection->client()->OnWindowInputEvent(WindowIdToTransportId(target->id()),
                                            event.Pass(),
                                            base::Bind(&base::DoNothing));

@@ -15,18 +15,12 @@
 #include "ui/mojo/events/input_events.mojom.h"
 #include "ui/mojo/events/input_key_codes.mojom.h"
 
-namespace gfx {
-class Point;
-}
-
 namespace mus {
 namespace ws {
 
 class EventDispatcherDelegate;
-class MoveLoop;
-class ServerWindow;
-
 class EventMatcher;
+class ServerWindow;
 
 // Handles dispatching events to the right location as well as updating focus.
 class EventDispatcher {
@@ -55,18 +49,17 @@ class EventDispatcher {
   // make sure it is in the returned target's coordinate space.
   ServerWindow* FindEventTarget(mojo::Event* event);
 
-  void ResetCaptureWindowIfPointerUp(const mojo::Event& event);
-
   EventDispatcherDelegate* delegate_;
   ServerWindow* root_;
 
   cc::SurfaceId surface_id_;
   ServerWindow* capture_window_;
 
+  // Was the capture the result of clicking in the non-client area?
+  bool capture_in_nonclient_area_;
+
   using Entry = std::pair<uint32_t, EventMatcher>;
   std::map<uint32_t, EventMatcher> accelerators_;
-
-  scoped_ptr<MoveLoop> move_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };
