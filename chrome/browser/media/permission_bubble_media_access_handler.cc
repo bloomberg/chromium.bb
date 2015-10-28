@@ -90,17 +90,16 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
           : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
   // TODO(raymes): This function may be called for a media request coming from
   // Flash or from WebRTC. However, whether or not this is a request for Flash,
-  // in which case we would use MEDIA_OPEN_DEVICE, isn't plumbed through.
-  // Fortunately, post M47, WebRTC requests can't be made from HTTP so we can
-  // assume all HTTP requests are for Flash for the purpose of the permission
-  // check. This special case should be removed after HTTP access for Flash has
-  // been deprecated (crbug.com/526324). See crbug.com/547654 for more details.
-  content::MediaStreamRequestType request_type =
-      security_origin.SchemeIs(url::kHttpScheme) ? content::MEDIA_OPEN_DEVICE
-                                                 : content::MEDIA_DEVICE_ACCESS;
+  // in which case we would use MEDIA_OPEN_DEVICE_PEPPER_ONLY, isn't plumbed
+  // through. Fortunately, post M47, WebRTC requests can't be made from HTTP so
+  // we can assume all HTTP requests are for Flash for the purpose of the
+  // permission check. This special case should be removed after HTTP access for
+  // Flash has been deprecated (crbug.com/526324). See crbug.com/547654 for more
+  // details.
+  bool is_insecure_pepper_request = security_origin.SchemeIs(url::kHttpScheme);
 
   MediaPermission permission(
-      content_settings_type, request_type, security_origin,
+      content_settings_type, is_insecure_pepper_request, security_origin,
       web_contents->GetLastCommittedURL().GetOrigin(), profile);
   content::MediaStreamRequestResult unused;
   return permission.GetPermissionStatus(&unused) == CONTENT_SETTING_ALLOW;

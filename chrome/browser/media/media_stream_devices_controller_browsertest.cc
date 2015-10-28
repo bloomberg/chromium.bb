@@ -691,8 +691,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   SetContentSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ALLOW);
 
   MediaStreamDevicesController controller(
-      GetWebContents(), CreateRequestWithType(example_audio_id(), std::string(),
-                                              content::MEDIA_OPEN_DEVICE),
+      GetWebContents(),
+      CreateRequestWithType(example_audio_id(), std::string(),
+                            content::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
       base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
                  this));
   ASSERT_FALSE(controller.IsAskingForAudio());

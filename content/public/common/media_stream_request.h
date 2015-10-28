@@ -50,7 +50,7 @@ enum MediaStreamRequestType {
   MEDIA_DEVICE_ACCESS = 0,
   MEDIA_GENERATE_STREAM,
   MEDIA_ENUMERATE_DEVICES,
-  MEDIA_OPEN_DEVICE  // Only used in requests made by Pepper.
+  MEDIA_OPEN_DEVICE_PEPPER_ONLY  // Only used in requests made by Pepper.
 };
 
 // Facing mode for video capture.

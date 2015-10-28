@@ -39,9 +39,10 @@ ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatus(
                                      false);
 }
 
-ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusForPepper(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) const {
+ContentSetting MediaStreamDevicePermissionContext::
+    GetPermissionStatusAllowingInsecureForPepper(
+        const GURL& requesting_origin,
+        const GURL& embedding_origin) const {
   return GetPermissionStatusInternal(requesting_origin, embedding_origin, true);
 }
 
@@ -98,8 +99,8 @@ ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusInternal(
   // even if a content setting is set to "allow" if the origin is insecure. In
   // reality we shouldn't really need to check this here as we should respect
   // the user's content setting. The problem is that pepper requests allow
-  // insecure origins to be persisted. We should stop allowing this, do some
-  // sort of migration and remove this check. See crbug.com/512301.
+  // insecure origins to be persisted. We should remove this after
+  // crbug.com/526324 is fixed.
   if (!ShouldPersistContentSetting(setting, requesting_origin,
                                    is_pepper_request) &&
       !requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
@@ -113,7 +114,7 @@ ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusInternal(
 
 bool MediaStreamDevicePermissionContext::IsRestrictedToSecureOrigins() const {
   // Flash currently doesn't require secure origin to use mic/camera. If we
-  // return true here, it'll break the use case like http://tinychat.com. Please
-  // see crbug.com/512301.
+  // return true here, it'll break the use case like http://tinychat.com.
+  // TODO(raymes): Change this to true after crbug.com/526324 is fixed.
   return false;
 }

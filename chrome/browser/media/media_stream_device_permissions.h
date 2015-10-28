@@ -19,6 +19,7 @@ enum MediaStreamDevicePolicy {
 };
 
 // Returns true if the given media content setting should be persisted.
+// TODO(raymes): Remove |is_pepper_request| after crbug.com/526324 is fixed.
 bool ShouldPersistContentSetting(ContentSetting setting,
                                  const GURL& origin,
                                  bool is_pepper_request);

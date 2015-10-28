@@ -57,7 +57,7 @@ enum DevicePermissionActions {
 // |request|.
 bool ContentTypeIsRequested(ContentSettingsType type,
                             const content::MediaStreamRequest& request) {
-  if (request.request_type == content::MEDIA_OPEN_DEVICE)
+  if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY)
     return true;
 
   if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
@@ -79,7 +79,7 @@ MediaStreamDevicesController::MediaStreamDevicesController(
       request_(request),
       callback_(callback),
       persist_permission_changes_(true) {
-  if (request_.request_type == content::MEDIA_OPEN_DEVICE) {
+  if (request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
     UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
                           content::IsOriginSecure(request_.security_origin));
   }
@@ -251,7 +251,7 @@ content::MediaStreamDevices MediaStreamDevicesController::GetDevices(
 
   content::MediaStreamDevices devices;
   switch (request_.request_type) {
-    case content::MEDIA_OPEN_DEVICE: {
+    case content::MEDIA_OPEN_DEVICE_PEPPER_ONLY: {
       const content::MediaStreamDevice* device = NULL;
       // For open device request, when requested device_id is empty, pick
       // the first available of the given type. If requested device_id is
@@ -392,7 +392,8 @@ void MediaStreamDevicesController::StorePermission(
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromURLNoWildcard(request_.security_origin);
 
-  bool is_pepper_request = request_.request_type == content::MEDIA_OPEN_DEVICE;
+  bool is_pepper_request =
+      request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY;
 
   if (IsAskingForAudio() && new_audio_setting != CONTENT_SETTING_ASK) {
     if (ShouldPersistContentSetting(new_audio_setting, request_.security_origin,
@@ -479,8 +480,11 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   }
 
   if (ContentTypeIsRequested(content_type, request)) {
+    bool is_insecure_pepper_request =
+        request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY &&
+        request.security_origin.SchemeIs(url::kHttpScheme);
     MediaPermission permission(
-        content_type, request.request_type, request.security_origin,
+        content_type, is_insecure_pepper_request, request.security_origin,
         web_contents_->GetLastCommittedURL().GetOrigin(), profile_);
     return permission.GetPermissionStatusWithDeviceRequired(requested_device_id,
                                                             denial_reason);

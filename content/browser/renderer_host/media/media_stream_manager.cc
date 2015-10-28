@@ -842,15 +842,11 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
   } else {
     NOTREACHED();
   }
-  DeviceRequest* request = new DeviceRequest(requester,
-                                             render_process_id,
-                                             render_frame_id,
-                                             page_request_id,
-                                             security_origin,
-                                             false,  // user gesture
-                                             MEDIA_OPEN_DEVICE,
-                                             options,
-                                             sc);
+  DeviceRequest* request =
+      new DeviceRequest(requester, render_process_id, render_frame_id,
+                        page_request_id, security_origin,
+                        false,  // user gesture
+                        MEDIA_OPEN_DEVICE_PEPPER_ONLY, options, sc);
 
   const std::string& label = AddRequest(request);
   // Post a task and handle the request asynchronously. The reason is that the
@@ -1706,7 +1702,7 @@ void MediaStreamManager::HandleRequestDone(const std::string& label,
            << ", {label = " << label <<  "})";
 
   switch (request->request_type) {
-    case MEDIA_OPEN_DEVICE:
+    case MEDIA_OPEN_DEVICE_PEPPER_ONLY:
       FinalizeOpenDevice(label, request);
       break;
     case MEDIA_GENERATE_STREAM: {
