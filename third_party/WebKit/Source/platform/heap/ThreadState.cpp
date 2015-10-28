@@ -90,6 +90,9 @@ RecursiveMutex& ThreadState::threadAttachMutex()
 ThreadState::ThreadState()
     : m_thread(currentThread())
     , m_persistentRegion(adoptPtr(new PersistentRegion()))
+#if OS(WIN) && COMPILER(MSVC)
+    , m_threadStackSize(0)
+#endif
     , m_startOfStack(reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart()))
     , m_endOfStack(reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart()))
     , m_safePointScopeMarker(nullptr)
@@ -161,6 +164,41 @@ void ThreadState::shutdown()
 
     // Thread-local storage shouldn't be disposed, so we don't call ~ThreadSpecific().
 }
+
+#if OS(WIN) && COMPILER(MSVC)
+size_t ThreadState::threadStackSize()
+{
+    if (m_threadStackSize)
+        return m_threadStackSize;
+
+    // Notice that we cannot use the TIB's StackLimit for the stack end, as it
+    // tracks the end of the committed range. We're after the end of the reserved
+    // stack area (most of which will be uncommitted, most times.)
+    MEMORY_BASIC_INFORMATION stackInfo;
+    memset(&stackInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
+    size_t resultSize = VirtualQuery(&stackInfo, &stackInfo, sizeof(MEMORY_BASIC_INFORMATION));
+    ASSERT_UNUSED(resultSize, resultSize >= sizeof(MEMORY_BASIC_INFORMATION));
+    Address stackEnd = reinterpret_cast<Address>(stackInfo.AllocationBase);
+
+    Address stackStart = reinterpret_cast<Address>(StackFrameDepth::getStackStart());
+    RELEASE_ASSERT(stackStart && stackStart > stackEnd);
+    m_threadStackSize = static_cast<size_t>(stackStart - stackEnd);
+    // When the third last page of the reserved stack is accessed as a
+    // guard page, the second last page will be committed (along with removing
+    // the guard bit on the third last) _and_ a stack overflow exception
+    // is raised.
+    //
+    // We have zero interest in running into stack overflow exceptions while
+    // marking objects, so simply consider the last three pages + one above
+    // as off-limits and adjust the reported stack size accordingly.
+    //
+    // http://blogs.msdn.com/b/satyem/archive/2012/08/13/thread-s-stack-memory-management.aspx
+    // explains the details.
+    RELEASE_ASSERT(m_threadStackSize > 4 * 0x1000);
+    m_threadStackSize -= 4 * 0x1000;
+    return m_threadStackSize;
+}
+#endif
 
 void ThreadState::attachMainThread()
 {
