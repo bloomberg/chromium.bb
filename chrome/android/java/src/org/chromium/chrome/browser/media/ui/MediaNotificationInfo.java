@@ -31,6 +31,11 @@ public class MediaNotificationInfo {
     public static final int ACTION_SWIPEAWAY = 1 << 2;
 
     /**
+     * The invalid notification id.
+     */
+    public static final int INVALID_ID = -1;
+
+    /**
      * Use this class to construct an instance of {@link MediaNotificationInfo}.
      */
     public static final class Builder {
@@ -42,6 +47,7 @@ public class MediaNotificationInfo {
         private boolean mIsPrivate = true;
         private int mIcon = -1;
         private int mActions = ACTION_PLAY_PAUSE | ACTION_SWIPEAWAY;
+        private int mId = INVALID_ID;
         private MediaNotificationListener mListener = null;
 
         /**
@@ -63,6 +69,7 @@ public class MediaNotificationInfo {
                     mIsPrivate,
                     mIcon,
                     mActions,
+                    mId,
                     mListener);
         }
 
@@ -98,6 +105,11 @@ public class MediaNotificationInfo {
 
         public Builder setActions(int actions) {
             mActions = actions;
+            return this;
+        }
+
+        public Builder setId(int id) {
+            mId = id;
             return this;
         }
 
@@ -143,6 +155,11 @@ public class MediaNotificationInfo {
     public final int icon;
 
     /**
+     * The id to use for the notification itself.
+     */
+    public final int id;
+
+    /**
      * The listener for the control events.
      */
     public final MediaNotificationListener listener;
@@ -185,6 +202,7 @@ public class MediaNotificationInfo {
             boolean isPrivate,
             int icon,
             int actions,
+            int id,
             MediaNotificationListener listener) {
         this.title = title;
         this.isPaused = isPaused;
@@ -193,6 +211,7 @@ public class MediaNotificationInfo {
         this.isPrivate = isPrivate;
         this.icon = icon;
         this.mActions = actions;
+        this.id = id;
         this.listener = listener;
     }
 
@@ -207,6 +226,7 @@ public class MediaNotificationInfo {
                 && tabId == other.tabId
                 && icon == other.icon
                 && mActions == other.mActions
+                && id == other.id
                 && TextUtils.equals(title, other.title)
                 && TextUtils.equals(origin, other.origin)
                 && listener.equals(other.listener);
@@ -221,6 +241,7 @@ public class MediaNotificationInfo {
         result = 31 * result + tabId;
         result = 31 * result + icon;
         result = 31 * result + mActions;
+        result = 31 * result + id;
         result = 31 * result + listener.hashCode();
         return result;
     }

@@ -20,6 +20,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -32,10 +33,15 @@ import org.chromium.chrome.browser.tab.Tab;
  * A class for notifications that provide information and optional media controls for a given media.
  * Internally implements a Service for transforming notification Intents into
  * {@link MediaNotificationListener} calls for all registered listeners.
+ * There's one service started for a distinct notification id.
  */
 public class MediaNotificationManager {
+    // We're always used on the UI thread but the LOCK is required by lint when creating the
+    // singleton.
     private static final Object LOCK = new Object();
-    private static MediaNotificationManager sInstance;
+
+    // Maps the notification ids to their corresponding notification managers.
+    private static SparseArray<MediaNotificationManager> sManagers;
 
     /**
      * Service used to transform intent requests triggered from the notification into
@@ -44,15 +50,24 @@ public class MediaNotificationManager {
      */
     public static class ListenerService extends Service {
         private static final String ACTION_PLAY =
-                "NotificationMediaPlaybackControls.ListenerService.PLAY";
+                "MediaNotificationManager.ListenerService.PLAY";
         private static final String ACTION_PAUSE =
-                "NotificationMediaPlaybackControls.ListenerService.PAUSE";
+                "MediaNotificationManager.ListenerService.PAUSE";
         private static final String ACTION_STOP =
-                "NotificationMediaPlaybackControls.ListenerService.STOP";
+                "MediaNotificationManager.ListenerService.STOP";
+        private static final String EXTRA_NOTIFICATION_ID =
+                "MediaNotificationManager.ListenerService.NOTIFICATION_ID";
+
+        // The notification id this service instance corresponds to.
+        private int mNotificationId = MediaNotificationInfo.INVALID_ID;
+
+        private static Intent getIntent(Context context, int notificationId) {
+            return new Intent(context, ListenerService.class)
+                    .putExtra(EXTRA_NOTIFICATION_ID, notificationId);
+        }
 
         private PendingIntent getPendingIntent(String action) {
-            Intent intent = new Intent(this, ListenerService.class);
-            intent.setAction(action);
+            Intent intent = getIntent(this, mNotificationId).setAction(action);
             return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         }
 
@@ -62,36 +77,39 @@ public class MediaNotificationManager {
         }
 
         @Override
-        public void onCreate() {
-            super.onCreate();
-
-            // This would only happen if we have been recreated by the OS after Chrome has died.
-            // In this case, there can be no media playback happening so we don't have to show
-            // the notification.
-            if (sInstance == null) return;
-
-            onServiceStarted(this);
-        }
-
-        @Override
         public void onDestroy() {
             super.onDestroy();
 
-            if (sInstance == null) return;
+            MediaNotificationManager manager = getManager(mNotificationId);
+            if (manager == null) return;
 
-            onServiceDestroyed();
+            manager.onServiceDestroyed(mNotificationId);
         }
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            if (intent == null
-                    || sInstance == null
-                    || sInstance.mMediaNotificationInfo == null
-                    || sInstance.mMediaNotificationInfo.listener == null) {
-                stopSelf();
-                return START_NOT_STICKY;
-            }
+            if (!processIntent(intent)) stopSelf();
 
+            return START_NOT_STICKY;
+        }
+
+        private boolean processIntent(Intent intent) {
+            if (intent == null) return false;
+
+            mNotificationId = intent.getIntExtra(
+                    EXTRA_NOTIFICATION_ID, MediaNotificationInfo.INVALID_ID);
+            if (mNotificationId == MediaNotificationInfo.INVALID_ID) return false;
+
+            MediaNotificationManager manager = getManager(mNotificationId);
+            if (manager == null || manager.mMediaNotificationInfo == null) return false;
+
+            manager.onServiceStarted(this);
+
+            processAction(intent, manager);
+            return true;
+        }
+
+        private void processAction(Intent intent, MediaNotificationManager manager) {
             String action = intent.getAction();
 
             // Before Android L, instead of using the MediaSession callback, the system will fire
@@ -100,47 +118,39 @@ public class MediaNotificationManager {
                 assert Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
 
                 KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                if (event == null) return START_NOT_STICKY;
-                if (event.getAction() != KeyEvent.ACTION_DOWN) return START_NOT_STICKY;
+                if (event == null) return;
+                if (event.getAction() != KeyEvent.ACTION_DOWN) return;
 
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_MEDIA_PLAY:
-                        sInstance.onPlay(
+                        manager.onPlay(
                                 MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         break;
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        sInstance.onPause(
+                        manager.onPause(
                                 MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         break;
                     case KeyEvent.KEYCODE_HEADSETHOOK:
                     case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                        if (sInstance.mMediaNotificationInfo.isPaused) {
-                            sInstance.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+                        if (manager.mMediaNotificationInfo.isPaused) {
+                            manager.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         } else {
-                            sInstance.onPause(
+                            manager.onPause(
                                     MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
                         }
                         break;
                     default:
                         break;
                 }
-                return START_NOT_STICKY;
-            }
-
-            if (ACTION_STOP.equals(action)) {
-                sInstance.onStop(
+            } else if (ACTION_STOP.equals(action)) {
+                manager.onStop(
                         MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
                 stopSelf();
-                return START_NOT_STICKY;
-            }
-
-            if (ACTION_PLAY.equals(action)) {
-                sInstance.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
+            } else if (ACTION_PLAY.equals(action)) {
+                manager.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
             } else if (ACTION_PAUSE.equals(action)) {
-                sInstance.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
+                manager.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
             }
-
-            return START_NOT_STICKY;
         }
     }
 
@@ -155,54 +165,65 @@ public class MediaNotificationManager {
     public static void show(Context applicationContext,
                             MediaNotificationInfo.Builder notificationInfoBuilder) {
         synchronized (LOCK) {
-            if (sInstance == null) {
-                sInstance = new MediaNotificationManager(applicationContext);
+            if (sManagers == null) {
+                sManagers = new SparseArray<MediaNotificationManager>();
             }
         }
-        sInstance.mNotificationInfoBuilder = notificationInfoBuilder;
-        sInstance.showNotification(notificationInfoBuilder.build());
+
+        MediaNotificationInfo notificationInfo = notificationInfoBuilder.build();
+        MediaNotificationManager manager = sManagers.get(notificationInfo.id);
+        if (manager == null) {
+            manager = new MediaNotificationManager(applicationContext);
+            sManagers.put(notificationInfo.id, manager);
+        }
+
+        manager.mNotificationInfoBuilder = notificationInfoBuilder;
+        manager.showNotification(notificationInfoBuilder.build());
     }
 
     /**
-     * Hides the notification for the specified tabId.
+     * Hides the notification for the specified tabId and notificationId
      *
      * @param tabId the id of the tab that showed the notification or invalid tab id.
+     * @param notificationId the id of the notification to hide for this tab.
      */
-    public static void hide(int tabId) {
-        if (sInstance == null) return;
-        sInstance.hideNotification(tabId);
+    public static void hide(int tabId, int notificationId) {
+        MediaNotificationManager manager = getManager(notificationId);
+        if (manager == null) return;
+
+        manager.hideNotification(tabId);
     }
 
     /**
-     * Hides any notification if shown by this service.
-     */
-    public static void clear() {
-        if (sInstance == null) return;
-        sInstance.clearNotification();
-    }
-
-    /**
-     * Registers the started {@link Service} with the singleton and creates the notification.
+     * Hides notifications with the specified id for all tabs if shown.
      *
-     * @param service the service that was started
+     * @param notificationId the id of the notification to hide for all tabs.
      */
-    private static void onServiceStarted(ListenerService service) {
-        assert sInstance != null;
-        assert sInstance.mService == null;
-        sInstance.mService = service;
-        sInstance.updateNotification();
+    public static void clear(int notificationId) {
+        MediaNotificationManager manager = getManager(notificationId);
+        if (manager == null) return;
+
+        manager.clearNotification();
+        sManagers.remove(notificationId);
     }
 
     /**
-     * Handles the destruction
+     * Hides notifications with all known ids for all tabs if shown.
      */
-    private static void onServiceDestroyed() {
-        assert sInstance != null;
-        assert sInstance.mService != null;
+    public static void clearAll() {
+        if (sManagers == null) return;
 
-        clear();
-        sInstance.mNotificationBuilder = null;
-        sInstance.mService = null;
+        for (int i = 0; i < sManagers.size(); ++i) {
+            MediaNotificationManager manager = sManagers.valueAt(i);
+            manager.clearNotification();
+        }
+        sManagers.clear();
+    }
+
+    private static MediaNotificationManager getManager(int notificationId) {
+        if (sManagers == null) return null;
+
+        return sManagers.get(notificationId);
     }
 
     private final Context mContext;
@@ -225,18 +246,25 @@ public class MediaNotificationManager {
 
     private MediaSessionCompat mMediaSession;
 
-    private final MediaSessionCompat.Callback mMediaSessionCallback =
-            new MediaSessionCompat.Callback() {
-                @Override
-                public void onPlay() {
-                    sInstance.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                }
+    private static final class MediaSessionCallback extends MediaSessionCompat.Callback {
+        private final MediaNotificationManager mManager;
 
-                @Override
-                public void onPause() {
-                    sInstance.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                }
-    };
+        private MediaSessionCallback(MediaNotificationManager manager) {
+            mManager = manager;
+        }
+
+        @Override
+        public void onPlay() {
+            mManager.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+        }
+
+        @Override
+        public void onPause() {
+            mManager.onPause(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+        }
+    }
+
+    private final MediaSessionCallback mMediaSessionCallback = new MediaSessionCallback(this);
 
     private MediaNotificationManager(Context context) {
         mContext = context;
@@ -248,6 +276,28 @@ public class MediaNotificationManager {
         mMediaSessionIcon = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         mMediaSessionIcon.eraseColor(ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.media_session_icon_color));
+    }
+
+    /**
+     * Registers the started {@link Service} with the manager and creates the notification.
+     *
+     * @param service the service that was started
+     */
+    private void onServiceStarted(ListenerService service) {
+        mService = service;
+        updateNotification();
+    }
+
+    /**
+     * Handles the service destruction destruction.
+     */
+    private void onServiceDestroyed(int notificationId) {
+        if (mService == null) return;
+
+        if (notificationId != -1) clear(notificationId);
+
+        mNotificationBuilder = null;
+        mService = null;
     }
 
     private void onPlay(int actionSource) {
@@ -282,9 +332,7 @@ public class MediaNotificationManager {
     }
 
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
-        mContext.startService(new Intent(mContext, ListenerService.class));
-
-        assert mediaNotificationInfo != null;
+        mContext.startService(ListenerService.getIntent(mContext, mediaNotificationInfo.id));
 
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
 
@@ -293,16 +341,20 @@ public class MediaNotificationManager {
     }
 
     private void clearNotification() {
+        if (mMediaNotificationInfo == null) return;
+
+        int notificationId = mMediaNotificationInfo.id;
+
         NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
-        manager.cancel(R.id.media_playback_notification);
+        manager.cancel(notificationId);
 
         if (mMediaSession != null) {
             mMediaSession.setActive(false);
             mMediaSession.release();
             mMediaSession = null;
         }
+        mContext.stopService(ListenerService.getIntent(mContext, notificationId));
         mMediaNotificationInfo = null;
-        mContext.stopService(new Intent(mContext, ListenerService.class));
     }
 
     private void hideNotification(int tabId) {
@@ -440,9 +492,9 @@ public class MediaNotificationManager {
             mService.stopForeground(false /* removeNotification */);
 
             NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
-            manager.notify(R.id.media_playback_notification, notification);
+            manager.notify(mMediaNotificationInfo.id, notification);
         } else {
-            mService.startForeground(R.id.media_playback_notification, notification);
+            mService.startForeground(mMediaNotificationInfo.id, notification);
         }
     }
 

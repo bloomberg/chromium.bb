@@ -62,9 +62,9 @@ public class MediaSessionTabHelper {
             @Override
             public void destroy() {
                 if (mTab == null) {
-                    MediaNotificationManager.clear();
+                    MediaNotificationManager.clear(R.id.media_playback_notification);
                 } else {
-                    MediaNotificationManager.hide(mTab.getId());
+                    MediaNotificationManager.hide(mTab.getId(), R.id.media_playback_notification);
                 }
                 super.destroy();
             }
@@ -72,7 +72,7 @@ public class MediaSessionTabHelper {
             @Override
             public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
                 if (!isControllable) {
-                    MediaNotificationManager.hide(mTab.getId());
+                    MediaNotificationManager.hide(mTab.getId(), R.id.media_playback_notification);
                     return;
                 }
                 String origin = mTab.getUrl();
@@ -93,6 +93,7 @@ public class MediaSessionTabHelper {
                                 .setIcon(R.drawable.audio_playing)
                                 .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
                                         | MediaNotificationInfo.ACTION_SWIPEAWAY)
+                                .setId(R.id.media_playback_notification)
                                 .setListener(mControlsListener));
             }
         };
@@ -126,7 +127,7 @@ public class MediaSessionTabHelper {
 
             cleanupWebContents();
 
-            MediaNotificationManager.hide(mTab.getId());
+            MediaNotificationManager.hide(mTab.getId(), R.id.media_playback_notification);
             mTab.removeObserver(this);
             mTab = null;
         }
