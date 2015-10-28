@@ -56,8 +56,10 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
 
 void HTMLLegendElement::focus(bool, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
-    if (isFocusable())
+    if (isFocusable()) {
         Element::focus(true, type, sourceCapabilities);
+        return;
+    }
 
     // To match other browsers' behavior, never restore previous selection.
     if (HTMLFormControlElement* control = associatedControl())
