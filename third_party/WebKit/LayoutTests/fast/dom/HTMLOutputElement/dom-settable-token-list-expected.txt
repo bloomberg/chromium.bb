@@ -18,7 +18,7 @@ PASS element.htmlFor.toString() is "x  x"
 PASS element.htmlFor.toString() is "y x"
 PASS element.htmlFor.toString() is ""
 PASS element.htmlFor.toString() is ""
-PASS element.htmlFor.toString() is " y y "
+PASS element.htmlFor.toString() is "y y"
 PASS element.htmlFor.toString() is "y"
 - Ensure that we can handle empty form attribute correctly
 PASS list.value is "x"

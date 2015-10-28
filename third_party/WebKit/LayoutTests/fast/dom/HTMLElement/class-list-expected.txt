@@ -15,7 +15,7 @@ PASS element.className is "x  x"
 PASS element.className is "y x"
 PASS element.className is ""
 PASS element.className is ""
-PASS element.className is " y y "
+PASS element.className is "y y"
 PASS element.className is "y"
 Ensure that we can handle empty class name correctly
 PASS element.classList.toggle('x') is true
@@ -98,8 +98,11 @@ PASS element.classList.add("a", {toString: function() { throw new Error("user er
 PASS element.className is ""
 PASS element.classList.add() did not throw exception.
 PASS observer.takeRecords().length is 1
-PASS element.className is "b d  "
-PASS element.className is "d  "
+PASS element.className is "b c"
+PASS element.className is "a c"
+PASS element.className is "a b"
+PASS element.className is "b d"
+PASS element.className is "d"
 PASS element.className is "a b c"
 PASS element.classList.remove('a', 'b', '') threw expected DOMException with code 12
 PASS element.className is "a b"

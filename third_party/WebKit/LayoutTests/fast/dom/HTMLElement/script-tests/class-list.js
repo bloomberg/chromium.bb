@@ -70,7 +70,7 @@ shouldBeEqualToString('element.className', '');
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/011.htm
 createElement(' y x  y ');
 element.classList.remove('x');
-shouldBeEqualToString('element.className', ' y y ');
+shouldBeEqualToString('element.className', 'y y');
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/012.htm
 createElement(' x y  x ');
@@ -324,13 +324,24 @@ observer.observe(element, {attributes: true});
 element.classList.add('a', 'c');
 shouldBe('observer.takeRecords().length', '1');
 
+createElement(' a  b c  ');
+element.classList.remove('a');
+shouldBeEqualToString("element.className", "b c");
+
+createElement(' a  b c  ');
+element.classList.remove('b');
+shouldBeEqualToString("element.className", "a c");
+
+createElement(' a  b c  ');
+element.classList.remove('c');
+shouldBeEqualToString("element.className", "a b");
 
 createElement('a b c d  ');
 element.classList.remove('a', 'c');
-shouldBeEqualToString('element.className', 'b d  ');
+shouldBeEqualToString('element.className', 'b d');
 
 element.classList.remove('b', 'b');
-shouldBeEqualToString('element.className', 'd  ');
+shouldBeEqualToString('element.className', 'd');
 
 createElement('a b c null d undefined 0 false');
 element.classList.remove(null, {toString: function() { return 'd' }}, undefined, 0, false);

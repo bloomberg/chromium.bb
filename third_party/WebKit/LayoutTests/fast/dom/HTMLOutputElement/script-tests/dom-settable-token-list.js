@@ -71,7 +71,7 @@ shouldBeEqualToString('element.htmlFor.toString()', '');
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/011.htm
 createElement(' y x  y ');
 element.htmlFor.remove('x');
-shouldBeEqualToString('element.htmlFor.toString()', ' y y ');
+shouldBeEqualToString('element.htmlFor.toString()', 'y y');
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/012.htm
 createElement(' x y  x ');

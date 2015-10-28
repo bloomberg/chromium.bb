@@ -242,7 +242,7 @@ AtomicString DOMTokenList::removeTokens(const AtomicString& input, const Vector<
     // Step 5
     while (position < inputLength) {
         if (isHTMLSpace<UChar>(input[position])) { // 6
-            output.append(input[position++]); // 6.1, 6.2
+            position++;
             continue; // 6.3
         }
 
@@ -263,14 +263,17 @@ AtomicString DOMTokenList::removeTokens(const AtomicString& input, const Vector<
             while (j > 0 && isHTMLSpace<UChar>(output[j - 1]))
                 --j;
             output.resize(j);
-
-            // Step 8.3
-            if (position < inputLength && !output.isEmpty())
-                output.append(' ');
         } else {
             output.append(token); // Step 9
         }
+
+        if (position < inputLength && !output.isEmpty())
+            output.append(' ');
     }
+
+    size_t j = output.length();
+    if (j > 0 && isHTMLSpace<UChar>(output[j - 1]))
+        output.resize(j - 1);
 
     return output.toAtomicString();
 }
