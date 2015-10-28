@@ -4,28 +4,48 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_android.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "jni/ChromeBluetoothRemoteGattCharacteristic_jni.h"
+
+using base::android::AttachCurrentThread;
 
 namespace device {
 
 // static
 scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>
 BluetoothRemoteGattCharacteristicAndroid::Create(
-    const std::string& instanceId) {
-  return make_scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>(
+    const std::string& instanceId,
+    jobject /* BluetoothGattCharacteristicWrapper */
+    bluetooth_gatt_characteristic_wrapper) {
+  scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> characteristic(
       new BluetoothRemoteGattCharacteristicAndroid(instanceId));
+
+  characteristic->j_characteristic_.Reset(
+      Java_ChromeBluetoothRemoteGattCharacteristic_create(
+          AttachCurrentThread(), bluetooth_gatt_characteristic_wrapper));
+
+  return characteristic;
 }
 
 BluetoothRemoteGattCharacteristicAndroid::
     ~BluetoothRemoteGattCharacteristicAndroid() {}
+
+// static
+bool BluetoothRemoteGattCharacteristicAndroid::RegisterJNI(JNIEnv* env) {
+  return RegisterNativesImpl(
+      env);  // Generated in ChromeBluetoothRemoteGattCharacteristic_jni.h
+}
 
 std::string BluetoothRemoteGattCharacteristicAndroid::GetIdentifier() const {
   return instanceId_;
 }
 
 BluetoothUUID BluetoothRemoteGattCharacteristicAndroid::GetUUID() const {
-  NOTIMPLEMENTED();
-  return BluetoothUUID();
+  return device::BluetoothUUID(ConvertJavaStringToUTF8(
+      Java_ChromeBluetoothRemoteGattCharacteristic_getUUID(
+          AttachCurrentThread(), j_characteristic_.obj())));
 }
 
 bool BluetoothRemoteGattCharacteristicAndroid::IsLocal() const {

@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_ANDROID_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_ANDROID_H_
 
+#include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 
@@ -16,18 +17,23 @@ namespace device {
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
     : public BluetoothGattCharacteristic {
  public:
-  // Create a BluetoothRemoteGattServiceAndroid instance and associated Java
-  // ChromeBluetoothRemoteGattService using the provided
-  // |bluetooth_remote_gatt_service_wrapper|.
+  // Create a BluetoothRemoteGattCharacteristicAndroid instance and associated
+  // Java
+  // ChromeBluetoothRemoteGattCharacteristic using the provided
+  // |bluetooth_gatt_characteristic_wrapper|.
   //
-  // The ChromeBluetoothRemoteGattService instance will hold a Java reference
-  // to |bluetooth_remote_gatt_service_wrapper|.
-  //
-  // TODO(scheib): Actually create the Java object. crbug.com/545682
+  // The ChromeBluetoothRemoteGattCharacteristic instance will hold a Java
+  // reference
+  // to |bluetooth_gatt_characteristic_wrapper|.
   static scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> Create(
-      const std::string& instanceId);
+      const std::string& instanceId,
+      jobject /* BluetoothGattCharacteristicWrapper */
+      bluetooth_gatt_characteristic_wrapper);
 
   ~BluetoothRemoteGattCharacteristicAndroid() override;
+
+  // Register C++ methods exposed to Java using JNI.
+  static bool RegisterJNI(JNIEnv* env);
 
   // BluetoothGattCharacteristic interface:
   std::string GetIdentifier() const override;
@@ -53,6 +59,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
 
  private:
   BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId);
+
+  // Java object
+  // org.chromium.device.bluetooth.ChromeBluetoothRemoteGattCharacteristic.
+  base::android::ScopedJavaGlobalRef<jobject> j_characteristic_;
 
   // Adapter unique instance ID.
   std::string instanceId_;

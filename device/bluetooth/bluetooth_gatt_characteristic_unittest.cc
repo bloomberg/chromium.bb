@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_android.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -79,6 +79,44 @@ TEST_F(BluetoothGattCharacteristicTest, GetIdentifier) {
   EXPECT_NE(char4->GetIdentifier(), char6->GetIdentifier());
 
   EXPECT_NE(char5->GetIdentifier(), char6->GetIdentifier());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+TEST_F(BluetoothGattCharacteristicTest, GetUUID) {
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(),
+                               GetConnectErrorCallback());
+  SimulateGattConnection(device);
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+  BluetoothGattService* service = device->GetGattServices()[0];
+
+  // Create 3 characteristics. Two of them are duplicates.
+  std::string uuid_str1("11111111-0000-1000-8000-00805f9b34fb");
+  std::string uuid_str2("22222222-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID uuid1(uuid_str1);
+  BluetoothUUID uuid2(uuid_str2);
+  SimulateGattCharacteristic(service, uuid_str1);
+  SimulateGattCharacteristic(service, uuid_str2);
+  SimulateGattCharacteristic(service, uuid_str2);
+  BluetoothGattCharacteristic* char1 = service->GetCharacteristics()[0];
+  BluetoothGattCharacteristic* char2 = service->GetCharacteristics()[1];
+  BluetoothGattCharacteristic* char3 = service->GetCharacteristics()[2];
+
+  // Swap as needed to have char1 point to the the characteristic with uuid1.
+  if (char2->GetUUID() == uuid1) {
+    std::swap(char1, char2);
+  } else if (char3->GetUUID() == uuid1) {
+    std::swap(char1, char3);
+  }
+
+  EXPECT_EQ(uuid1, char1->GetUUID());
+  EXPECT_EQ(uuid2, char2->GetUUID());
+  EXPECT_EQ(uuid2, char3->GetUUID());
 }
 #endif  // defined(OS_ANDROID)
 

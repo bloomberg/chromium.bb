@@ -4,7 +4,7 @@
 
 #include "device/bluetooth/bluetooth_gatt_service.h"
 
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_android.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -112,20 +112,30 @@ TEST_F(BluetoothGattServiceTest, GetCharacteristics_and_GetCharacteristic) {
   services.push_back("00000000-0000-1000-8000-00805f9b34fb");
   SimulateGattServicesDiscovered(device, services);
   BluetoothGattService* service = device->GetGattServices()[0];
-  std::string characteristic_uuid1 = "00000001-0000-1000-8000-00805f9b34fb";
-  std::string characteristic_uuid2 = "00000002-0000-1000-8000-00805f9b34fb";
+  std::string characteristic_uuid1 = "11111111-0000-1000-8000-00805f9b34fb";
+  std::string characteristic_uuid2 = "22222222-0000-1000-8000-00805f9b34fb";
   std::string characteristic_uuid3 = characteristic_uuid2;  // Duplicate UUID.
+  std::string characteristic_uuid4 = "33333333-0000-1000-8000-00805f9b34fb";
   SimulateGattCharacteristic(service, characteristic_uuid1);
   SimulateGattCharacteristic(service, characteristic_uuid2);
   SimulateGattCharacteristic(service, characteristic_uuid3);
+  SimulateGattCharacteristic(service, characteristic_uuid4);
 
-  EXPECT_EQ(3u, service->GetCharacteristics().size());
+  // Verify that GetCharacteristic can retrieve characteristics again by ID,
+  // and that the same Characteristics come back.
+  EXPECT_EQ(4u, service->GetCharacteristics().size());
   std::string char_id1 = service->GetCharacteristics()[0]->GetIdentifier();
   std::string char_id2 = service->GetCharacteristics()[1]->GetIdentifier();
   std::string char_id3 = service->GetCharacteristics()[2]->GetIdentifier();
-  EXPECT_TRUE(service->GetCharacteristic(char_id1));
-  EXPECT_TRUE(service->GetCharacteristic(char_id2));
-  EXPECT_TRUE(service->GetCharacteristic(char_id3));
+  std::string char_id4 = service->GetCharacteristics()[3]->GetIdentifier();
+  BluetoothUUID char_uuid1 = service->GetCharacteristics()[0]->GetUUID();
+  BluetoothUUID char_uuid2 = service->GetCharacteristics()[1]->GetUUID();
+  BluetoothUUID char_uuid3 = service->GetCharacteristics()[2]->GetUUID();
+  BluetoothUUID char_uuid4 = service->GetCharacteristics()[3]->GetUUID();
+  EXPECT_EQ(char_uuid1, service->GetCharacteristic(char_id1)->GetUUID());
+  EXPECT_EQ(char_uuid2, service->GetCharacteristic(char_id2)->GetUUID());
+  EXPECT_EQ(char_uuid3, service->GetCharacteristic(char_id3)->GetUUID());
+  EXPECT_EQ(char_uuid4, service->GetCharacteristic(char_id4)->GetUUID());
 }
 #endif  // defined(OS_ANDROID)
 

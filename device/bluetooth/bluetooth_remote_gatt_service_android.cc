@@ -133,7 +133,8 @@ void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
 
   characteristics_.set(
       instanceIdString,
-      BluetoothRemoteGattCharacteristicAndroid::Create(instanceIdString));
+      BluetoothRemoteGattCharacteristicAndroid::Create(
+          instanceIdString, bluetooth_gatt_characteristic_wrapper));
 }
 
 BluetoothRemoteGattServiceAndroid::BluetoothRemoteGattServiceAndroid(
