@@ -10,12 +10,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/scoped_mach_vm.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
 #include "base/process/process_metrics.h"
@@ -30,22 +28,6 @@
 namespace base {
 
 namespace {
-
-const base::Feature kMacMemoryMechanismMach {
-  "MacSharedMemoryMechanismMach", base::FEATURE_ENABLED_BY_DEFAULT
-};
-
-SharedMemoryHandle::Type GetABTestMechanism() {
-  return base::FeatureList::IsEnabled(kMacMemoryMechanismMach)
-             ? SharedMemoryHandle::MACH
-             : SharedMemoryHandle::POSIX;
-}
-
-// Emits a histogram entry indicating which type of SharedMemory was created.
-void EmitMechanism(SharedMemoryHandle::Type type) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.SharedMemory.Mechanism", type,
-                            SharedMemoryHandle::TypeMax);
-}
 
 // Returns whether the operation succeeded.
 // |new_handle| is an output variable, populated on success. The caller takes
@@ -245,17 +227,6 @@ bool SharedMemory::CreateAnonymousPosix(size_t size) {
   return Create(options);
 }
 
-bool SharedMemory::CreateAndMapAnonymousMach(size_t size) {
-  SharedMemoryCreateOptions options;
-
-  // A/B test the mechanism. Once the experiment is over, this will always be
-  // set to SharedMemoryHandle::MACH.
-  // http://crbug.com/547261
-  options.type = GetABTestMechanism();
-  options.size = size;
-  return Create(options) && Map(size);
-}
-
 // static
 bool SharedMemory::GetSizeFromSharedMemoryHandle(
     const SharedMemoryHandle& handle,
@@ -276,8 +247,6 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   if (options.size > static_cast<size_t>(std::numeric_limits<int>::max()))
     return false;
-
-  EmitMechanism(options.type);
 
   if (options.type == SharedMemoryHandle::MACH) {
     shm_ = SharedMemoryHandle(options.size);

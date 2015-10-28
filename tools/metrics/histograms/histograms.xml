@@ -30021,15 +30021,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="OSX.SharedMemory.Mechanism" enum="OSXSharedMemoryMechanism">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    A histogram entry is emitted each time a base::SharedMemory object is
-    constructed. The value of the entry indicates the mechanism used to back the
-    shared memory region.
-  </summary>
-</histogram>
-
 <histogram name="OSX.SystemHotkeyMap.LoadSuccess" enum="BooleanSuccess">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -67953,15 +67944,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="2" label="SHARED_SPACES">
     The &quot;Screens Have Separate Spaces&quot; option is off.
-  </int>
-</enum>
-
-<enum name="OSXSharedMemoryMechanism" type="int">
-  <int value="0" label="POSIX">
-    The shared memory region is backed by a POSIX fd.
-  </int>
-  <int value="1" label="MACH">
-    The shared memory region is backed by a Mach memory object.
   </int>
 </enum>
 
