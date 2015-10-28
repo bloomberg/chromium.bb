@@ -99,15 +99,17 @@ void RunDestroyCallback(
   callback.Run(*success);
 }
 
-void InitFromTaskRunner(LevelDB* database, const base::FilePath& database_dir,
-                        bool* success) {
+inline void InitFromTaskRunner(LevelDB* database,
+                               const base::FilePath& database_dir,
+                               bool* success) {
   DCHECK(success);
 
   // TODO(cjhopman): Histogram for database size.
   *success = database->Init(database_dir);
 }
 
-void DestroyFromTaskRunner(const base::FilePath& database_dir, bool* success) {
+inline void DestroyFromTaskRunner(const base::FilePath& database_dir,
+                                  bool* success) {
   CHECK(success);
 
   *success = LevelDB::Destroy(database_dir);
