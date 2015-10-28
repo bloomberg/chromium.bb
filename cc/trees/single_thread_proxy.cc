@@ -514,19 +514,6 @@ void SingleThreadProxy::PostFrameTimingEventsOnImplThread(
                                             main_frame_events.Pass());
 }
 
-void SingleThreadProxy::LayoutAndUpdateLayers() {
-  if (layer_tree_host_->output_surface_lost()) {
-    RequestNewOutputSurface();
-    // RequestNewOutputSurface could have synchronously created an output
-    // surface, so check again before returning.
-    if (layer_tree_host_->output_surface_lost())
-      return;
-  }
-
-  layer_tree_host_->Layout();
-  layer_tree_host_->UpdateLayers();
-}
-
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc,benchmark", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());

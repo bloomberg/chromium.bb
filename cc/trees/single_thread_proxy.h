@@ -116,7 +116,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void RequestNewOutputSurface();
 
   // Called by the legacy path where RenderWidget does the scheduling.
-  void LayoutAndUpdateLayers();
   void CompositeImmediately(base::TimeTicks frame_begin_time);
 
  protected:

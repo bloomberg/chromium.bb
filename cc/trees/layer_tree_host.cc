@@ -671,7 +671,16 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(!settings_.single_thread_proxy_scheduler);
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
 
-  proxy->LayoutAndUpdateLayers();
+  if (output_surface_lost()) {
+    proxy->RequestNewOutputSurface();
+    // RequestNewOutputSurface could have synchronously created an output
+    // surface, so check again before returning.
+    if (output_surface_lost())
+      return;
+  }
+
+  Layout();
+  UpdateLayers();
 }
 
 void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
