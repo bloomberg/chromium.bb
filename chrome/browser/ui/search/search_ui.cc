@@ -6,13 +6,17 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 
 namespace chrome {
 
 SkColor GetDetachedBookmarkBarBackgroundColor(ThemeService* theme_service) {
   if (!theme_service->UsingDefaultTheme())
     return theme_service->GetColor(ThemeProperties::COLOR_TOOLBAR);
-  return SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1);
+
+  return ui::MaterialDesignController::IsModeMaterial()
+             ? SK_ColorWHITE
+             : SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1);
 }
 
 SkColor GetDetachedBookmarkBarSeparatorColor(ThemeService* theme_service) {

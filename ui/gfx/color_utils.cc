@@ -78,6 +78,10 @@ double ContrastRatio(double foreground_luminance, double background_luminance) {
 
 // ----------------------------------------------------------------------------
 
+double GetContrastRatio(SkColor color_a, SkColor color_b) {
+  return ContrastRatio(RelativeLuminance(color_a), RelativeLuminance(color_b));
+}
+
 unsigned char GetLuminanceForColor(SkColor color) {
   return base::saturated_cast<unsigned char>(
       (0.3 * SkColorGetR(color)) +

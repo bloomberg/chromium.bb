@@ -131,8 +131,8 @@ static const int kToolbarAttachedBookmarkBarOverlap = 3;
 static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
                                           // toolbar above serve as the margin.
 static const int kBottomMargin = 2;
-static const int kLeftMargin = 1;
-static const int kRightMargin = 1;
+// The margin at the start and end of the bar, in dp, indexed by MD mode.
+static const int kHorizontalMargin[] = {1, 4, 4};
 
 // Padding between buttons.
 static const int kButtonPadding = 0;
@@ -186,6 +186,10 @@ bool animations_enabled = true;
 
 gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
+}
+
+int GetHorizontalMargin() {
+  return kHorizontalMargin[ui::MaterialDesignController::GetMode()];
 }
 
 // BookmarkButtonBase -----------------------------------------------
@@ -246,10 +250,7 @@ class BookmarkButton : public BookmarkButtonBase {
                  const GURL& url,
                  const base::string16& title,
                  Profile* profile)
-      : BookmarkButtonBase(listener, title),
-        url_(url),
-        profile_(profile) {
-  }
+      : BookmarkButtonBase(listener, title), url_(url), profile_(profile) {}
 
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override {
@@ -808,7 +809,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   // Bookmarks" folder, along with appropriate margins and button padding.
   // It should also contain the Managed and/or Supervised Bookmarks folders,
   // if they are visible.
-  int width = kLeftMargin;
+  int width = GetHorizontalMargin();
 
   int height = chrome::kBookmarkBarHeight;
   if (IsDetached()) {
@@ -852,10 +853,10 @@ void BookmarkBarView::Layout() {
   if (!model_)
     return;
 
-  int x = kLeftMargin;
+  int x = GetHorizontalMargin();
   int top_margin = IsDetached() ? kDetachedTopMargin : 0;
   int y = top_margin;
-  int width = View::width() - kRightMargin - kLeftMargin;
+  int width = View::width() - 2 * GetHorizontalMargin();
   int height = chrome::kBookmarkBarHeight - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
@@ -1010,7 +1011,7 @@ void BookmarkBarView::PaintChildren(const ui::PaintContext& context) {
     int h = height();
     if (index == GetBookmarkButtonCount()) {
       if (index == 0) {
-        x = kLeftMargin;
+        x = GetHorizontalMargin();
       } else {
         x = GetBookmarkButton(index - 1)->x() +
             GetBookmarkButton(index - 1)->width();
