@@ -233,9 +233,8 @@ class SSLClientSocketOpenSSL::SSLContext {
     // is currently not sent on the network.
     // TODO(haavardm): Remove setting quiet shutdown once 118366 is fixed.
     SSL_CTX_set_quiet_shutdown(ssl_ctx_.get(), 1);
-    // TODO(kristianm): Only select this if ssl_config_.next_proto is not empty.
-    // It would be better if the callback were not a global setting,
-    // but that is an OpenSSL issue.
+    // Note that SSL_OP_DISABLE_NPN is used to disable NPN if
+    // ssl_config_.next_proto is empty.
     SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
                                      NULL);
 
@@ -948,6 +947,9 @@ int SSLClientSocketOpenSSL::Init() {
     SSL_set_alpn_protos(ssl_, wire_protos.empty() ? NULL : &wire_protos[0],
                         wire_protos.size());
   }
+
+  if (ssl_config_.npn_protos.empty())
+    SSL_set_options(ssl_, SSL_OP_DISABLE_NPN);
 
   if (ssl_config_.signed_cert_timestamps_enabled) {
     SSL_enable_signed_cert_timestamps(ssl_);

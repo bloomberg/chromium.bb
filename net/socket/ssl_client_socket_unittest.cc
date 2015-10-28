@@ -2982,12 +2982,16 @@ TEST_F(SSLClientSocketTest, NPNServerPreference) {
   EXPECT_EQ("spdy/3.1", proto);
 }
 
+// If npn_protos.empty(), then NPN should be disabled, even if
+// !alpn_protos.empty().  Tlslite does not support ALPN, therefore if NPN is
+// disabled in the client, no protocol should be negotiated.
 TEST_F(SSLClientSocketTest, NPNClientDisabled) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.npn_protocols.push_back(std::string("http/1.1"));
   ASSERT_TRUE(StartTestServer(server_options));
 
   SSLConfig client_config;
+  client_config.alpn_protos.push_back(kProtoHTTP11);
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
