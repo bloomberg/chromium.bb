@@ -51,7 +51,7 @@ function startSession() {
  */
 function checkSession() {
   if (!startSessionPromise) {
-    sendResult(false, 'Failed to start session');
+    sendResult(false, 'Did not attempt to start session');
   } else {
     startSessionPromise.then(function(session) {
       if(!session) {
@@ -69,6 +69,30 @@ function checkSession() {
   }
 }
 
+/**
+ * Checks the start() request fails with expected error and message substring.
+ * @param {!string} expectedErrorName
+ * @param {!string} expectedErrorMessageSubstring
+ */
+function checkStartFailed(expectedErrorName, expectedErrorMessageSubstring) {
+  if (!startSessionPromise) {
+    sendResult(false, 'Did not attempt to start session');
+  } else {
+    startSessionPromise.then(function(session) {
+      sendResult(false, 'start() unexpectedly succeeded.');
+    }).catch(function(e) {
+      if (expectedErrorName != e.name) {
+        sendResult(false, 'Got unexpected error: ' + e.name);
+      }
+      if (e.message.indexOf(expectedErrorMessageSubstring) == -1) {
+        sendResult(false,
+          'Error message is not correct, it should contain "' +
+          expectedErrorMessageSubstring + '"');
+      }
+      sendResult(true, '');
+    })
+  }
+}
 
 /**
  * Stops current session.

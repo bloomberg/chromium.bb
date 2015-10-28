@@ -35,6 +35,12 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   void ChooseSink(content::WebContents* web_contents,
                   const std::string& sink_name);
 
+  // Checks that the request initiated from |web_contents| to start session
+  // failed with expected |error_name| and |error_message_substring|.
+  void CheckStartFailed(content::WebContents* web_contents,
+                        const std::string& error_name,
+                        const std::string& error_message_substring);
+
   // Execute javascript and check the return value.
   static void ExecuteJavaScriptAPI(content::WebContents* web_contents,
                             const std::string& script);

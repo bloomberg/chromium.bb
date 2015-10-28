@@ -36,7 +36,7 @@ const base::FilePath::StringPieceType kResourcePath = FILE_PATH_LITERAL(
 const char kTestSinkName[] = "test-sink-1";
 // The javascript snippets.
 const char kCheckSessionScript[] = "checkSession();";
-const char kCheckSessionFailedScript[] = "checkSessionFailedToStart();";
+const char kCheckStartFailedScript[] = "checkStartFailed('%s', '%s');";
 const char kStartSessionScript[] = "startSession();";
 const char kStopSessionScript[] = "stopSession()";
 const char kWaitDeviceScript[] = "waitUntilDeviceAvailable();";
@@ -142,6 +142,16 @@ void MediaRouterIntegrationBrowserTest::ChooseSink(
   std::string script = base::StringPrintf(
       kChooseSinkScript, sink_name.c_str());
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, script));
+}
+
+void MediaRouterIntegrationBrowserTest::CheckStartFailed(
+    content::WebContents* web_contents,
+    const std::string& error_name,
+    const std::string& error_message_substring) {
+  std::string script(base::StringPrintf(kCheckStartFailedScript,
+                                        error_name.c_str(),
+                                        error_message_substring.c_str()));
+  ExecuteJavaScriptAPI(web_contents, script);
 }
 
 void MediaRouterIntegrationBrowserTest::ClickDialog() {
@@ -326,29 +336,29 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       MANUAL_Fail_No_Provider) {
+                       MANUAL_Fail_NoProvider) {
   SetTestData(FILE_PATH_LITERAL("no_provider.json"));
-  OpenTestPage(FILE_PATH_LITERAL("no_provider.html"));
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   StartSession(web_contents);
   ChooseSink(web_contents, kTestSinkName);
-  ExecuteJavaScriptAPI(web_contents, kCheckSessionFailedScript);
+  CheckStartFailed(web_contents, "UnknownError", "No provider supports it");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       MANUAL_Fail_Create_Route) {
+                       MANUAL_Fail_CreateRoute) {
   SetTestData(FILE_PATH_LITERAL("fail_create_route.json"));
-  OpenTestPage(FILE_PATH_LITERAL("fail_create_route.html"));
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
   StartSession(web_contents);
   ChooseSink(web_contents, kTestSinkName);
-  ExecuteJavaScriptAPI(web_contents, kCheckSessionFailedScript);
+  CheckStartFailed(web_contents, "UnknownError", "Unknown sink");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
@@ -401,6 +411,23 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
       new_web_contents,
       base::StringPrintf("checkReconnectSessionFails('%s');",
                          session_id.c_str()));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_StartCancelled) {
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
+  content::TestNavigationObserver test_navigation_observer(web_contents, 1);
+  StartSession(web_contents);
+
+  MediaRouterDialogControllerImpl* controller =
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
+  EXPECT_TRUE(controller->IsShowingMediaRouterDialog());
+  controller->HideMediaRouterDialog();
+  CheckStartFailed(web_contents, "AbortError", "Dialog closed.");
 }
 
 }  // namespace media_router
