@@ -234,8 +234,6 @@ source_set("unit_tests") {
     "//base:prefs_test_support",
     "//base/test:test_support",
     "//components/os_crypt",
-    "//components/policy",
-    "//components/policy:policy_component",
     "//components/pref_registry:test_support",
     "//components/version_info",
     "//net:test_support",
@@ -248,5 +246,9 @@ source_set("unit_tests") {
 
   if (enable_configuration_policy) {
     sources += [ "sync_policy_handler_unittest.cc" ]
+    deps += [
+      "//components/policy",
+      "//components/policy:policy_component",
+    ]
   }
 }

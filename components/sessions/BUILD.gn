@@ -51,11 +51,11 @@ if (!is_ios) {
 
     public_deps = [
       ":shared",
+      "//ios/web",
     ]
 
     deps = [
       "//base",
-      # '../ios/web/ios_web.gyp:ios_web',  TODO(GYP) iOS.
     ]
   }
 }
@@ -150,20 +150,29 @@ source_set("test_support") {
   }
 }
 
-if (!is_ios && !is_android) {
+if (!is_android) {
   source_set("unit_tests") {
     testonly = true
     sources = [
-      "content/content_serialized_navigation_builder_unittest.cc",
-      "content/content_serialized_navigation_driver_unittest.cc",
       "core/serialized_navigation_entry_unittest.cc",
       "core/session_backend_unittest.cc",
       "core/session_types_unittest.cc",
       "ios/ios_serialized_navigation_builder_unittest.cc",
       "ios/ios_serialized_navigation_driver_unittest.cc",
     ]
-    deps = [
+
+    if (!is_ios) {
+      sources += [
+        "content/content_serialized_navigation_builder_unittest.cc",
+        "content/content_serialized_navigation_driver_unittest.cc",
+      ]
+    }
+
+    public_deps = [
       ":sessions",
+    ]
+
+    deps = [
       ":test_support",
       "//base/test:test_support",
       "//testing/gtest",

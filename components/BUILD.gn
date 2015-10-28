@@ -30,6 +30,7 @@ group("all_components") {
     "//components/google/core/browser",
     "//components/search",
     "//components/search_engines",
+    "//components/sessions",
     "//components/sync_bookmarks",
     "//components/undo",
     "//components/strings",
@@ -121,7 +122,6 @@ group("all_components") {
       "//components/resources:components_resources",
       "//components/search_provider_logos",
       "//components/security_interstitials/core",
-      "//components/sessions",
       "//components/signin/core/browser",
       "//components/ssl_config",
       "//components/startup_metric_utils",
@@ -474,6 +474,8 @@ test("components_unittests") {
         "//components/policy/core/common:unit_tests",
       ]
     }
+  } else {
+    deps += [ "//components/sessions:unit_tests" ]
   }
 
   if (toolkit_views) {
