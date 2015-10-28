@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/ImageListInterpolationType.h"
+#include "core/animation/CSSImageListInterpolationType.h"
 
-#include "core/animation/ImageInterpolationType.h"
+#include "core/animation/CSSImageInterpolationType.h"
 #include "core/animation/ImageListPropertyFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -35,13 +35,13 @@ private:
             return true;
         if (!underlyingValue || !m_underlyingValue)
             return false;
-        return ListInterpolationFunctions::equalValues(m_underlyingValue->component(), underlyingValue->component(), ImageInterpolationType::equalNonInterpolableValues);
+        return ListInterpolationFunctions::equalValues(m_underlyingValue->component(), underlyingValue->component(), CSSImageInterpolationType::equalNonInterpolableValues);
     }
 
     OwnPtr<InterpolationValue> m_underlyingValue;
 };
 
-PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
 {
     if (!underlyingValue) {
         conversionCheckers.append(UnderlyingImageListChecker::create(*this, nullptr));
@@ -51,20 +51,20 @@ PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertNeutral(c
     return underlyingValue->clone();
 }
 
-PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertInitial() const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertInitial() const
 {
     StyleImageList initialImageList;
     ImageListPropertyFunctions::getInitialImageList(cssProperty(), initialImageList);
     return maybeConvertStyleImageList(initialImageList);
 }
 
-PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertStyleImageList(const StyleImageList& imageList) const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertStyleImageList(const StyleImageList& imageList) const
 {
     if (imageList.size() == 0)
         return nullptr;
 
     InterpolationComponent listComponent = ListInterpolationFunctions::createList(imageList.size(), [&imageList](size_t index) {
-        return ImageInterpolationType::maybeConvertStyleImage(*imageList[index], false);
+        return CSSImageInterpolationType::maybeConvertStyleImage(*imageList[index], false);
     });
     if (!listComponent)
         return nullptr;
@@ -98,7 +98,7 @@ private:
     StyleImageList m_inheritedImageList;
 };
 
-PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (!state || !state->parentStyle())
         return nullptr;
@@ -109,7 +109,7 @@ PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertInherit(c
     return maybeConvertStyleImageList(inheritedImageList);
 }
 
-PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
 {
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
         return nullptr;
@@ -125,7 +125,7 @@ PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertValue(con
     OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
     for (size_t i = 0; i < length; i++) {
-        InterpolationComponent component = ImageInterpolationType::maybeConvertCSSValue(*valueList.item(i), false);
+        InterpolationComponent component = CSSImageInterpolationType::maybeConvertCSSValue(*valueList.item(i), false);
         if (!component)
             return nullptr;
         interpolableList->set(i, component.interpolableValue.release());
@@ -134,29 +134,29 @@ PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertValue(con
     return InterpolationValue::create(*this, interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> ImageListInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> CSSImageListInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
 {
     PairwiseInterpolationComponent component = ListInterpolationFunctions::mergeSingleConversions(
         startValue.mutableComponent(), endValue.mutableComponent(),
-        ImageInterpolationType::mergeSingleConversionComponents);
+        CSSImageInterpolationType::mergeSingleConversionComponents);
     if (!component)
         return nullptr;
     return PairwisePrimitiveInterpolation::create(*this, component);
 }
 
-PassOwnPtr<InterpolationValue> ImageListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     StyleImageList underlyingImageList;
     ImageListPropertyFunctions::getImageList(cssProperty(), *environment.state().style(), underlyingImageList);
     return maybeConvertStyleImageList(underlyingImageList);
 }
 
-void ImageListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
+void CSSImageListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
 {
     underlyingValue.set(&value);
 }
 
-void ImageListInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
+void CSSImageListInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
     const size_t length = interpolableList.length();
@@ -165,7 +165,7 @@ void ImageListInterpolationType::apply(const InterpolableValue& interpolableValu
     ASSERT(nonInterpolableList.length() == length);
     StyleImageList imageList(length);
     for (size_t i = 0; i < length; i++)
-        imageList[i] = ImageInterpolationType::resolveStyleImage(cssProperty(), *interpolableList.get(i), nonInterpolableList.get(i), environment.state());
+        imageList[i] = CSSImageInterpolationType::resolveStyleImage(cssProperty(), *interpolableList.get(i), nonInterpolableList.get(i), environment.state());
     ImageListPropertyFunctions::setImageList(cssProperty(), *environment.state().style(), imageList);
 }
 

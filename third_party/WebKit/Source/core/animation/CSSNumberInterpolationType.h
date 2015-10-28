@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NumberInterpolationType_h
-#define NumberInterpolationType_h
+#ifndef CSSNumberInterpolationType_h
+#define CSSNumberInterpolationType_h
 
 #include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
-class NumberInterpolationType : public CSSInterpolationType {
+class CSSNumberInterpolationType : public CSSInterpolationType {
 public:
-    NumberInterpolationType(CSSPropertyID property)
+    CSSNumberInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     { }
 
@@ -28,4 +28,4 @@ private:
 
 } // namespace blink
 
-#endif // NumberInterpolationType_h
+#endif // CSSNumberInterpolationType_h

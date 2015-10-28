@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/ColorInterpolationType.h"
+#include "core/animation/CSSColorInterpolationType.h"
 
 #include "core/animation/ColorPropertyFunctions.h"
 #include "core/css/parser/CSSPropertyParser.h"
@@ -33,7 +33,7 @@ static PassOwnPtr<InterpolableValue> createInterpolableColorForIndex(Interpolabl
     return list.release();
 }
 
-PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(const Color& color)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(const Color& color)
 {
     OwnPtr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
     list->set(Red, InterpolableNumber::create(color.red() * color.alpha()));
@@ -47,7 +47,7 @@ PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(co
     return list.release();
 }
 
-PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(CSSValueID keyword)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(CSSValueID keyword)
 {
     switch (keyword) {
     case CSSValueCurrentcolor:
@@ -66,14 +66,14 @@ PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(CS
     }
 }
 
-PassOwnPtr<InterpolableValue> ColorInterpolationType::createInterpolableColor(const StyleColor& color)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(const StyleColor& color)
 {
     if (color.isCurrentColor())
         return createInterpolableColorForIndex(Currentcolor);
     return createInterpolableColor(color.color());
 }
 
-PassOwnPtr<InterpolableValue> ColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value)
+PassOwnPtr<InterpolableValue> CSSColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value)
 {
     if (value.isColorValue())
         return createInterpolableColor(toCSSColorValue(value).value());
@@ -96,7 +96,7 @@ static void addPremultipliedColor(double& red, double& green, double& blue, doub
     alpha += fraction * colorAlpha;
 }
 
-Color ColorInterpolationType::resolveInterpolableColor(const InterpolableValue& interpolableColor, const StyleResolverState& state, bool isVisited, bool isTextDecoration)
+Color CSSColorInterpolationType::resolveInterpolableColor(const InterpolableValue& interpolableColor, const StyleResolverState& state, bool isVisited, bool isTextDecoration)
 {
     const InterpolableList& list = toInterpolableList(interpolableColor);
     ASSERT(list.length() == InterpolableColorIndexCount);
@@ -162,18 +162,18 @@ private:
     const StyleColor m_color;
 };
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return convertStyleColorPair(StyleColor(Color::transparent), StyleColor(Color::transparent));
 }
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertInitial() const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertInitial() const
 {
     const StyleColor initialColor = ColorPropertyFunctions::getInitialColor(cssProperty());
     return convertStyleColorPair(initialColor, initialColor);
 }
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (!state || !state->parentStyle())
         return nullptr;
@@ -189,7 +189,7 @@ enum InterpolableColorPairIndex {
     InterpolableColorPairIndexCount,
 };
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (cssProperty() == CSSPropertyColor && value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
         return maybeConvertInherit(state, conversionCheckers);
@@ -203,7 +203,7 @@ PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertValue(const C
     return InterpolationValue::create(*this, colorPair.release());
 }
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::convertStyleColorPair(const StyleColor& unvisitedColor, const StyleColor& visitedColor) const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::convertStyleColorPair(const StyleColor& unvisitedColor, const StyleColor& visitedColor) const
 {
     OwnPtr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
     colorPair->set(Unvisited, createInterpolableColor(unvisitedColor));
@@ -211,14 +211,14 @@ PassOwnPtr<InterpolationValue> ColorInterpolationType::convertStyleColorPair(con
     return InterpolationValue::create(*this, colorPair.release());
 }
 
-PassOwnPtr<InterpolationValue> ColorInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     return convertStyleColorPair(
         ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *environment.state().style()),
         ColorPropertyFunctions::getVisitedColor(cssProperty(), *environment.state().style()));
 }
 
-void ColorInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
+void CSSColorInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
 {
     const InterpolableList& colorPair = toInterpolableList(interpolableValue);
     ASSERT(colorPair.length() == InterpolableColorPairIndexCount);

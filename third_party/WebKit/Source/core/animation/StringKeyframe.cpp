@@ -6,16 +6,20 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/animation/AngleSVGInterpolation.h"
+#include "core/animation/CSSColorInterpolationType.h"
+#include "core/animation/CSSImageInterpolationType.h"
+#include "core/animation/CSSImageListInterpolationType.h"
+#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/CSSNumberInterpolationType.h"
+#include "core/animation/CSSPaintInterpolationType.h"
+#include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
-#include "core/animation/ColorInterpolationType.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
 #include "core/animation/DefaultSVGInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/FilterStyleInterpolation.h"
-#include "core/animation/ImageInterpolationType.h"
-#include "core/animation/ImageListInterpolationType.h"
 #include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
 #include "core/animation/IntegerSVGInterpolation.h"
@@ -23,21 +27,17 @@
 #include "core/animation/InvalidatableStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
-#include "core/animation/LengthInterpolationType.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthSVGInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
-#include "core/animation/NumberInterpolationType.h"
 #include "core/animation/NumberOptionalNumberSVGInterpolation.h"
 #include "core/animation/NumberSVGInterpolation.h"
-#include "core/animation/PaintInterpolationType.h"
 #include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
-#include "core/animation/ShadowListInterpolationType.h"
 #include "core/animation/TransformSVGInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -191,7 +191,7 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyWordSpacing:
     case CSSPropertyX:
     case CSSPropertyY:
-        applicableTypes->append(new LengthInterpolationType(property));
+        applicableTypes->append(new CSSLengthInterpolationType(property));
         break;
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
@@ -207,11 +207,11 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyWebkitColumnCount:
     case CSSPropertyWidows:
     case CSSPropertyZIndex:
-        applicableTypes->append(new NumberInterpolationType(property));
+        applicableTypes->append(new CSSNumberInterpolationType(property));
         break;
     case CSSPropertyLineHeight:
-        applicableTypes->append(new LengthInterpolationType(property));
-        applicableTypes->append(new NumberInterpolationType(property));
+        applicableTypes->append(new CSSLengthInterpolationType(property));
+        applicableTypes->append(new CSSNumberInterpolationType(property));
         break;
     case CSSPropertyBackgroundColor:
     case CSSPropertyBorderBottomColor:
@@ -226,24 +226,24 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     case CSSPropertyTextDecorationColor:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitTextStrokeColor:
-        applicableTypes->append(new ColorInterpolationType(property));
+        applicableTypes->append(new CSSColorInterpolationType(property));
         break;
     case CSSPropertyFill:
     case CSSPropertyStroke:
-        applicableTypes->append(new PaintInterpolationType(property));
+        applicableTypes->append(new CSSPaintInterpolationType(property));
         break;
     case CSSPropertyBoxShadow:
     case CSSPropertyTextShadow:
-        applicableTypes->append(new ShadowListInterpolationType(property));
+        applicableTypes->append(new CSSShadowListInterpolationType(property));
         break;
     case CSSPropertyBorderImageSource:
     case CSSPropertyListStyleImage:
     case CSSPropertyWebkitMaskBoxImageSource:
-        applicableTypes->append(new ImageInterpolationType(property));
+        applicableTypes->append(new CSSImageInterpolationType(property));
         break;
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage:
-        applicableTypes->append(new ImageListInterpolationType(property));
+        applicableTypes->append(new CSSImageListInterpolationType(property));
         break;
     default:
         // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.

@@ -2,36 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShadowListInterpolationType_h
-#define ShadowListInterpolationType_h
+#ifndef CSSLengthInterpolationType_h
+#define CSSLengthInterpolationType_h
 
 #include "core/animation/CSSInterpolationType.h"
+#include "core/animation/LengthPropertyFunctions.h"
 
 namespace blink {
 
-class ShadowList;
+class ComputedStyle;
 
-class ShadowListInterpolationType : public CSSInterpolationType {
+class CSSLengthInterpolationType : public CSSInterpolationType {
 public:
-    ShadowListInterpolationType(CSSPropertyID property)
-        : CSSInterpolationType(property)
-    { }
+    CSSLengthInterpolationType(CSSPropertyID);
 
     PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
-private:
-    PassOwnPtr<InterpolationValue> convertShadowList(const ShadowList*, double zoom) const;
-    PassOwnPtr<InterpolationValue> createNeutralValue() const;
+    static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
+    static PassOwnPtr<InterpolableValue> createInterpolablePixels(double pixels);
+    static InterpolationComponent maybeConvertCSSValue(const CSSValue&);
 
+private:
+    float effectiveZoom(const ComputedStyle&) const;
+
+    PassOwnPtr<InterpolationValue> maybeConvertLength(const Length&, float zoom) const;
     PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
     PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState*, ConversionCheckers&) const final;
-    PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const final;
+
+    PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue&, InterpolationValue&) const final;
+
+    const ValueRange m_valueRange;
 };
 
 } // namespace blink
 
-#endif // ShadowListInterpolationType_h
+#endif // CSSLengthInterpolationType_h

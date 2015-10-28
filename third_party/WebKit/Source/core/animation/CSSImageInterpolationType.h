@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageInterpolationType_h
-#define ImageInterpolationType_h
+#ifndef CSSImageInterpolationType_h
+#define CSSImageInterpolationType_h
 
 #include "core/animation/CSSInterpolationType.h"
 
@@ -11,9 +11,9 @@ namespace blink {
 
 class StyleImage;
 
-class ImageInterpolationType : public CSSInterpolationType {
+class CSSImageInterpolationType : public CSSInterpolationType {
 public:
-    ImageInterpolationType(CSSPropertyID property)
+    CSSImageInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     { }
 
@@ -40,4 +40,4 @@ private:
 
 } // namespace blink
 
-#endif // ImageInterpolationType_h
+#endif // CSSImageInterpolationType_h

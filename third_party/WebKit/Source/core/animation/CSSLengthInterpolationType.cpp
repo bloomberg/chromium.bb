@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/LengthInterpolationType.h"
+#include "core/animation/CSSLengthInterpolationType.h"
 
 #include "core/animation/LengthPropertyFunctions.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -15,35 +15,35 @@ namespace blink {
 
 // This class is implemented as a singleton whose instance represents the presence of percentages being used in a Length value
 // while nullptr represents the absence of any percentages.
-class LengthNonInterpolableValue : public NonInterpolableValue {
+class CSSLengthNonInterpolableValue : public NonInterpolableValue {
 public:
-    ~LengthNonInterpolableValue() final { ASSERT_NOT_REACHED(); }
-    static PassRefPtr<LengthNonInterpolableValue> create(bool hasPercentage)
+    ~CSSLengthNonInterpolableValue() final { ASSERT_NOT_REACHED(); }
+    static PassRefPtr<CSSLengthNonInterpolableValue> create(bool hasPercentage)
     {
-        DEFINE_STATIC_REF(LengthNonInterpolableValue, singleton, adoptRef(new LengthNonInterpolableValue()));
+        DEFINE_STATIC_REF(CSSLengthNonInterpolableValue, singleton, adoptRef(new CSSLengthNonInterpolableValue()));
         ASSERT(singleton);
         return hasPercentage ? singleton : nullptr;
     }
-    static PassRefPtr<LengthNonInterpolableValue> merge(const NonInterpolableValue* a, const NonInterpolableValue* b)
+    static PassRefPtr<CSSLengthNonInterpolableValue> merge(const NonInterpolableValue* a, const NonInterpolableValue* b)
     {
         return create(hasPercentage(a) || hasPercentage(b));
     }
     static bool hasPercentage(const NonInterpolableValue* nonInterpolableValue)
     {
-        ASSERT(!nonInterpolableValue || nonInterpolableValue->type() == LengthNonInterpolableValue::staticType);
+        ASSERT(!nonInterpolableValue || nonInterpolableValue->type() == CSSLengthNonInterpolableValue::staticType);
         return static_cast<bool>(nonInterpolableValue);
     }
 
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
 private:
-    LengthNonInterpolableValue() { }
+    CSSLengthNonInterpolableValue() { }
 };
 
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE(LengthNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(LengthNonInterpolableValue);
+DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSLengthNonInterpolableValue);
+DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSLengthNonInterpolableValue);
 
-LengthInterpolationType::LengthInterpolationType(CSSPropertyID property)
+CSSLengthInterpolationType::CSSLengthInterpolationType(CSSPropertyID property)
     : CSSInterpolationType(property)
     , m_valueRange(LengthPropertyFunctions::valueRange(property))
 { }
@@ -57,19 +57,19 @@ static PassOwnPtr<InterpolableList> createNeutralInterpolableValue()
     return values.release();
 }
 
-float LengthInterpolationType::effectiveZoom(const ComputedStyle& style) const
+float CSSLengthInterpolationType::effectiveZoom(const ComputedStyle& style) const
 {
     return LengthPropertyFunctions::isZoomedLength(cssProperty()) ? style.effectiveZoom() : 1;
 }
 
-PassOwnPtr<InterpolableValue> LengthInterpolationType::createInterpolablePixels(double pixels)
+PassOwnPtr<InterpolableValue> CSSLengthInterpolationType::createInterpolablePixels(double pixels)
 {
     OwnPtr<InterpolableList> interpolableList = createNeutralInterpolableValue();
     interpolableList->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixels));
     return interpolableList.release();
 }
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const Length& length, float zoom) const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertLength(const Length& length, float zoom) const
 {
     if (!length.isSpecified())
         return nullptr;
@@ -79,10 +79,10 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertLength(const
     values->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixelsAndPercent.pixels / zoom));
     values->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(pixelsAndPercent.percent));
 
-    return InterpolationValue::create(*this, values.release(), LengthNonInterpolableValue::create(length.hasPercent()));
+    return InterpolationValue::create(*this, values.release(), CSSLengthNonInterpolableValue::create(length.hasPercent()));
 }
 
-InterpolationComponent LengthInterpolationType::maybeConvertCSSValue(const CSSValue& value)
+InterpolationComponent CSSLengthInterpolationType::maybeConvertCSSValue(const CSSValue& value)
 {
     if (!value.isPrimitiveValue())
         return nullptr;
@@ -105,7 +105,7 @@ InterpolationComponent LengthInterpolationType::maybeConvertCSSValue(const CSSVa
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
         values->set(i, InterpolableNumber::create(valueArray.at(i)));
 
-    return InterpolationComponent(values.release(), LengthNonInterpolableValue::create(hasPercentage));
+    return InterpolationComponent(values.release(), CSSLengthNonInterpolableValue::create(hasPercentage));
 }
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
@@ -134,12 +134,12 @@ private:
     const Length m_length;
 };
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return InterpolationValue::create(*this, createNeutralInterpolableValue());
 }
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInitial() const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertInitial() const
 {
     Length initialLength;
     if (!LengthPropertyFunctions::getInitialLength(cssProperty(), initialLength))
@@ -147,7 +147,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInitial() co
     return maybeConvertLength(initialLength, 1);
 }
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (!state || !state->parentStyle())
         return nullptr;
@@ -158,7 +158,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertInherit(cons
     return maybeConvertLength(inheritedLength, effectiveZoom(*state->parentStyle()));
 }
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers& conversionCheckers) const
 {
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID()) {
         CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
@@ -174,7 +174,7 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertValue(const 
     return InterpolationValue::create(*this, component);
 }
 
-PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     Length underlyingLength;
     if (!LengthPropertyFunctions::getLength(cssProperty(), *environment.state().style(), underlyingLength))
@@ -182,19 +182,19 @@ PassOwnPtr<InterpolationValue> LengthInterpolationType::maybeConvertUnderlyingVa
     return maybeConvertLength(underlyingLength, effectiveZoom(*environment.state().style()));
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> LengthInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> CSSLengthInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
 {
     return PairwisePrimitiveInterpolation::create(*this,
         startValue.mutableComponent().interpolableValue.release(),
         endValue.mutableComponent().interpolableValue.release(),
-        LengthNonInterpolableValue::merge(startValue.nonInterpolableValue(), endValue.nonInterpolableValue()));
+        CSSLengthNonInterpolableValue::merge(startValue.nonInterpolableValue(), endValue.nonInterpolableValue()));
 }
 
-void LengthInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
+void CSSLengthInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
 {
     InterpolationComponent& underlyingComponent = underlyingValue.mutableComponent();
     underlyingComponent.interpolableValue->scaleAndAdd(underlyingFraction, value.interpolableValue());
-    underlyingComponent.nonInterpolableValue = LengthNonInterpolableValue::merge(underlyingValue->nonInterpolableValue(), value.nonInterpolableValue());
+    underlyingComponent.nonInterpolableValue = CSSLengthNonInterpolableValue::merge(underlyingValue->nonInterpolableValue(), value.nonInterpolableValue());
 }
 
 static bool isPixelsOrPercentOnly(const InterpolableList& values)
@@ -232,10 +232,10 @@ static Length resolveInterpolablePixelsOrPercentageLength(const InterpolableList
     return createLength(pixels, percentage, hasPercentage, range);
 }
 
-Length LengthInterpolationType::resolveInterpolableLength(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, const CSSToLengthConversionData& conversionData, ValueRange range)
+Length CSSLengthInterpolationType::resolveInterpolableLength(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, const CSSToLengthConversionData& conversionData, ValueRange range)
 {
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
-    bool hasPercentage = LengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
+    bool hasPercentage = CSSLengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
     double pixels = 0;
     double percentage = 0;
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
@@ -293,11 +293,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> createCSSValue(const InterpolableList& v
     }
 }
 
-void LengthInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
+void CSSLengthInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
     StyleResolverState& state = environment.state();
     const InterpolableList& values = toInterpolableList(interpolableValue);
-    bool hasPercentage = LengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
+    bool hasPercentage = CSSLengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
     if (isPixelsOrPercentOnly(values)) {
         Length length = resolveInterpolablePixelsOrPercentageLength(values, hasPercentage, m_valueRange, effectiveZoom(*state.style()));
         if (LengthPropertyFunctions::setLength(cssProperty(), *state.style(), length)) {

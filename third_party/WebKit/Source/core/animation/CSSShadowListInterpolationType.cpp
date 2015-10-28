@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/ShadowListInterpolationType.h"
+#include "core/animation/CSSShadowListInterpolationType.h"
 
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/animation/ShadowInterpolationFunctions.h"
@@ -15,7 +15,7 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::convertShadowList(const ShadowList* shadowList, double zoom) const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::convertShadowList(const ShadowList* shadowList, double zoom) const
 {
     if (!shadowList)
         return createNeutralValue();
@@ -27,18 +27,18 @@ PassOwnPtr<InterpolationValue> ShadowListInterpolationType::convertShadowList(co
     return InterpolationValue::create(*this, listComponent);
 }
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::createNeutralValue() const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::createNeutralValue() const
 {
     InterpolationComponent emptyListComponent = ListInterpolationFunctions::createEmptyList();
     return InterpolationValue::create(*this, emptyListComponent);
 }
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return createNeutralValue();
 }
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertInitial() const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertInitial() const
 {
     return convertShadowList(ShadowListPropertyFunctions::getInitialShadowList(cssProperty()), 1);
 }
@@ -71,7 +71,7 @@ private:
     RefPtr<ShadowList> m_shadowList;
 };
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (!state || !state->parentStyle())
         return nullptr;
@@ -80,7 +80,7 @@ PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertInherit(
     return convertShadowList(parentShadowList, state->parentStyle()->effectiveZoom());
 }
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
 {
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
         return createNeutralValue();
@@ -97,7 +97,7 @@ PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertValue(co
     return InterpolationValue::create(*this, listComponent);
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> ShadowListInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> CSSShadowListInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
 {
     PairwiseInterpolationComponent component = ListInterpolationFunctions::mergeSingleConversions(
         startValue.mutableComponent(), endValue.mutableComponent(),
@@ -107,14 +107,14 @@ PassOwnPtr<PairwisePrimitiveInterpolation> ShadowListInterpolationType::mergeSin
     return PairwisePrimitiveInterpolation::create(*this, component);
 }
 
-PassOwnPtr<InterpolationValue> ShadowListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     if (!environment.state().style())
         return nullptr;
     return convertShadowList(ShadowListPropertyFunctions::getShadowList(cssProperty(), *environment.state().style()), environment.state().style()->effectiveZoom());
 }
 
-void ShadowListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
+void CSSShadowListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
 {
     ListInterpolationFunctions::composite(underlyingValue, underlyingFraction, value,
         ShadowInterpolationFunctions::nonInterpolableValuesAreCompatible,
@@ -134,7 +134,7 @@ static PassRefPtr<ShadowList> createShadowList(const InterpolableValue& interpol
     return ShadowList::adopt(shadows);
 }
 
-void ShadowListInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
+void CSSShadowListInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
     ShadowListPropertyFunctions::setShadowList(cssProperty(), *environment.state().style(), createShadowList(interpolableValue, nonInterpolableValue, environment.state()));
 }

@@ -2,40 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ColorInterpolationType_h
-#define ColorInterpolationType_h
+#ifndef CSSShadowListInterpolationType_h
+#define CSSShadowListInterpolationType_h
 
-#include "core/CSSValueKeywords.h"
 #include "core/animation/CSSInterpolationType.h"
-#include "platform/graphics/Color.h"
 
 namespace blink {
 
-class StyleColor;
+class ShadowList;
 
-class ColorInterpolationType : public CSSInterpolationType {
+class CSSShadowListInterpolationType : public CSSInterpolationType {
 public:
-    ColorInterpolationType(CSSPropertyID property)
+    CSSShadowListInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     { }
 
     PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
+    void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
-    static PassOwnPtr<InterpolableValue> createInterpolableColor(const Color&);
-    static PassOwnPtr<InterpolableValue> createInterpolableColor(CSSValueID);
-    static PassOwnPtr<InterpolableValue> createInterpolableColor(const StyleColor&);
-    static PassOwnPtr<InterpolableValue> maybeCreateInterpolableColor(const CSSValue&);
-    static Color resolveInterpolableColor(const InterpolableValue& interpolableColor, const StyleResolverState&, bool isVisited = false, bool isTextDecoration = false);
-
 private:
+    PassOwnPtr<InterpolationValue> convertShadowList(const ShadowList*, double zoom) const;
+    PassOwnPtr<InterpolationValue> createNeutralValue() const;
+
     PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
     PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState*, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> convertStyleColorPair(const StyleColor&, const StyleColor&) const;
+    PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const final;
 };
 
 } // namespace blink
 
-#endif // ColorInterpolationType_h
+#endif // CSSShadowListInterpolationType_h

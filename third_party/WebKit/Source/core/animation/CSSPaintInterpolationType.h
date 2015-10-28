@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintInterpolationType_h
-#define PaintInterpolationType_h
+#ifndef CSSPaintInterpolationType_h
+#define CSSPaintInterpolationType_h
 
 #include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
-class PaintInterpolationType : public CSSInterpolationType {
+class CSSPaintInterpolationType : public CSSInterpolationType {
 public:
-    PaintInterpolationType(CSSPropertyID property)
+    CSSPaintInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     { }
 
@@ -27,4 +27,4 @@ private:
 
 } // namespace blink
 
-#endif // PaintInterpolationType_h
+#endif // CSSPaintInterpolationType_h

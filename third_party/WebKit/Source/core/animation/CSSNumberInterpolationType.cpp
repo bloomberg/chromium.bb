@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/NumberInterpolationType.h"
+#include "core/animation/CSSNumberInterpolationType.h"
 
 #include "core/animation/NumberPropertyFunctions.h"
 #include "core/css/resolver/StyleBuilder.h"
@@ -39,17 +39,17 @@ private:
     const double m_number;
 };
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::createNumberValue(double number) const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::createNumberValue(double number) const
 {
     return InterpolationValue::create(*this, InterpolableNumber::create(number));
 }
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
 {
     return createNumberValue(0);
 }
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertInitial() const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInitial() const
 {
     double initialNumber;
     if (!NumberPropertyFunctions::getInitialNumber(cssProperty(), initialNumber))
@@ -57,7 +57,7 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertInitial() co
     return createNumberValue(initialNumber);
 }
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
 {
     if (!state || !state->parentStyle())
         return nullptr;
@@ -68,14 +68,14 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertInherit(cons
     return createNumberValue(inheritedNumber);
 }
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
 {
     if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isNumber())
         return nullptr;
     return createNumberValue(toCSSPrimitiveValue(value).getDoubleValue());
 }
 
-PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     double underlyingNumber;
     if (!NumberPropertyFunctions::getNumber(cssProperty(), *environment.state().style(), underlyingNumber))
@@ -83,7 +83,7 @@ PassOwnPtr<InterpolationValue> NumberInterpolationType::maybeConvertUnderlyingVa
     return createNumberValue(underlyingNumber);
 }
 
-void NumberInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
+void CSSNumberInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
 {
     double clampedNumber = NumberPropertyFunctions::clampNumber(cssProperty(), toInterpolableNumber(interpolableValue).value());
     if (!NumberPropertyFunctions::setNumber(cssProperty(), *environment.state().style(), clampedNumber))
