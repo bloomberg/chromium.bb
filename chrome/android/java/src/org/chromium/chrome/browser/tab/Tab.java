@@ -99,11 +99,10 @@ import java.util.List;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
- *
- * Tab is the base class of ChromeTab; the semi-arbitrary separation between these two classes
- * exists mainly for historical reasons and will be reworked at some point. It is intended to be
- * extended either on Java or both Java and C++, with ownership managed by this base class.
- *
+ * <p>
+ * This class is intended to be extended either on Java or both Java and C++, with ownership managed
+ * by this base class.
+ * <p>
  * Extending just Java:
  *  - Just extend the class normally.  Do not override initializeNative().
  * Extending Java and C++:
