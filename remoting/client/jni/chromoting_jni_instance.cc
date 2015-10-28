@@ -21,7 +21,7 @@
 #include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/libjingle_transport_factory.h"
+#include "remoting/protocol/ice_transport_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/performance_tracker.h"
@@ -416,7 +416,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
                                               network_settings));
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::LibjingleTransportFactory(
+      new protocol::IceTransportFactory(
           signaling_.get(), port_allocator.Pass(), network_settings,
           protocol::TransportRole::CLIENT));
 

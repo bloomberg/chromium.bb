@@ -6,8 +6,8 @@
 
 #include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/chromium_socket_factory.h"
+#include "remoting/protocol/ice_transport_factory.h"
 #include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/session_manager.h"
 
@@ -24,7 +24,7 @@ scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
                                               network_settings));
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::LibjingleTransportFactory(
+      new protocol::IceTransportFactory(
           signal_strategy, port_allocator.Pass(), network_settings,
           protocol::TransportRole::SERVER));
 

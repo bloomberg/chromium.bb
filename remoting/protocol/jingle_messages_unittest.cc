@@ -251,7 +251,11 @@ TEST(JingleMessageTest, IceTransportInfo) {
   EXPECT_TRUE(message.ParseXml(source_message.get(), &error)) << error;
 
   EXPECT_EQ(message.action, JingleMessage::TRANSPORT_INFO);
-  EXPECT_EQ(message.candidates.size(), 2U);
+
+  IceTransportInfo transport_info;
+  EXPECT_TRUE(transport_info.ParseXml(message.transport_info.get()));
+  EXPECT_EQ(transport_info.ice_credentials.size(), 2U);
+  EXPECT_EQ(transport_info.candidates.size(), 2U);
 
   scoped_ptr<XmlElement> formatted_message(message.ToXml());
   ASSERT_TRUE(formatted_message.get());

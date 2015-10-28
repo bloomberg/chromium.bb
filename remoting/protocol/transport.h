@@ -1,22 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// This file defines the interface for peer-to-peer transport. There
-// are two types of transport: StreamTransport and DatagramTransport.
-// They must both be created using TransportFactory instances and they
-// provide the same interface, except that one should be used for
-// reliable stream connection and the other one for unreliable
-// datagram connection. The Transport interface itself doesn't provide
-// methods to send/receive data. Instead it creates an instance of
-// P2PDatagramSocket which provides access to the data channel. After a
-// new transport is Initialize()'ed the Connect() method must be called.
-// Connect() starts asynchronous creation and initialization of the
-// connection socket that can be used later to send and receive data.
-// The socket is passed to the callback specified in the Connect() call.
-// The Transport object must exist during the whole lifetime of the
-// connection socket. Later deletion of the connection socket causes
-// teardown of the corresponding Transport object.
 
 #ifndef REMOTING_PROTOCOL_TRANSPORT_H_
 #define REMOTING_PROTOCOL_TRANSPORT_H_
@@ -28,16 +12,23 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/ip_endpoint.h"
+#include "remoting/protocol/errors.h"
 
 namespace cricket {
 class Candidate;
 }  // namespace cricket
 
+namespace buzz {
+class XmlElement;
+}  // namespace buzz
+
 namespace remoting {
 namespace protocol {
 
-class ChannelAuthenticator;
+class Authenticator;
+class DatagramChannelFactory;
 class P2PDatagramSocket;
+class StreamChannelFactory;
 
 enum class TransportRole {
   SERVER,
@@ -62,6 +53,10 @@ struct TransportRoute {
   net::IPEndPoint local_address;
 };
 
+// Transport objects are responsible for establishing P2P connections.
+//
+// TODO(sergeyu): Remove this interface and rename TransportSession interface to
+// Transport.
 class Transport : public base::NonThreadSafe {
  public:
   class EventHandler {
@@ -122,6 +117,49 @@ class Transport : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(Transport);
 };
 
+// TransportSession represents a P2P connection that consists of one or more
+// channels.
+class TransportSession {
+ public:
+  class EventHandler {
+   public:
+    // Called to send a transport-info message.
+    virtual void OnOutgoingTransportInfo(
+        scoped_ptr<buzz::XmlElement> message) = 0;
+
+    // Called when transport route changes.
+    virtual void OnTransportRouteChange(const std::string& channel_name,
+                                        const TransportRoute& route) = 0;
+
+    // Called when there is an error connecting the session.
+    virtual void OnTransportError(ErrorCode error) = 0;
+  };
+
+  TransportSession() {}
+  virtual ~TransportSession() {}
+
+  // Starts transport session. Both parameters must outlive TransportSession.
+  virtual void Start(EventHandler* event_handler,
+                     Authenticator* authenticator) = 0;
+
+  // Called to process incoming transport message. Returns false if
+  // |transport_info| is in invalid format.
+  virtual bool ProcessTransportInfo(buzz::XmlElement* transport_info) = 0;
+
+  // Channel factory for the session that creates raw ICE channels.
+  virtual DatagramChannelFactory* GetDatagramChannelFactory() = 0;
+
+  // Channel factory for the session that creates stream channels.
+  virtual StreamChannelFactory* GetStreamChannelFactory() = 0;
+
+  // Returns a factory that creates multiplexed channels over a single stream
+  // channel.
+  virtual StreamChannelFactory* GetMultiplexedChannelFactory() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TransportSession);
+};
+
 class TransportFactory {
  public:
   TransportFactory() { }
@@ -133,7 +171,8 @@ class TransportFactory {
   // necessary while the session is being authenticated.
   virtual void PrepareTokens() = 0;
 
-  virtual scoped_ptr<Transport> CreateTransport() = 0;
+  // Creates a new TransportSession. The factory must outlive the session.
+  virtual scoped_ptr<TransportSession> CreateTransportSession() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportFactory);

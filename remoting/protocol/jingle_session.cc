@@ -13,16 +13,11 @@
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/authenticator.h"
-#include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/channel_multiplexer.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/pseudotcp_channel_factory.h"
 #include "remoting/protocol/quic_channel_factory.h"
-#include "remoting/protocol/secure_channel_factory.h"
 #include "remoting/protocol/session_config.h"
-#include "remoting/protocol/stream_channel_factory.h"
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/p2p/base/candidate.h"
@@ -33,11 +28,6 @@ namespace remoting {
 namespace protocol {
 
 namespace {
-
-// Delay after candidate creation before sending transport-info message to
-// accumulate multiple candidates. This is an optimization to reduce number of
-// transport-info messages.
-const int kTransportInfoSendDelayMs = 20;
 
 // How long we should wait for a response from the other end. This value is used
 // for all requests except |transport-info|.
@@ -51,9 +41,6 @@ const int kSessionInitiateAndAcceptTimeout = kDefaultMessageTimeout * 3;
 
 // Timeout for the transport-info messages.
 const int kTransportInfoTimeout = 10 * 60;
-
-// Name of the multiplexed channel.
-const char kMuxChannelName[] = "mux";
 
 ErrorCode AuthRejectionReasonToErrorCode(
     Authenticator::RejectionReason reason) {
@@ -78,14 +65,13 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 }
 
 JingleSession::~JingleSession() {
-  channel_multiplexer_.reset();
   quic_channel_factory_.reset();
+  transport_session_.reset();
+
   STLDeleteContainerPointers(pending_requests_.begin(),
                              pending_requests_.end());
   STLDeleteContainerPointers(transport_info_requests_.begin(),
                              transport_info_requests_.end());
-
-  DCHECK(channels_.empty());
 
   session_manager_->SessionDestroyed(this);
 }
@@ -116,6 +102,8 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   // clients generate the same session ID concurrently.
   session_id_ = base::Uint64ToString(base::RandGenerator(kuint64max));
 
+  transport_session_ =
+      session_manager_->transport_factory_->CreateTransportSession();
   quic_channel_factory_.reset(new QuicChannelFactory(session_id_, false));
 
   // Send session-initiate message.
@@ -162,6 +150,9 @@ void JingleSession::InitializeIncomingConnection(
       CloseInternal(INCOMPATIBLE_PROTOCOL);
     }
   }
+
+  transport_session_ =
+      session_manager_->transport_factory_->CreateTransportSession();
 }
 
 void JingleSession::AcceptIncomingConnection(
@@ -231,18 +222,9 @@ const SessionConfig& JingleSession::config() {
   return *config_;
 }
 
-StreamChannelFactory* JingleSession::GetTransportChannelFactory() {
+TransportSession* JingleSession::GetTransportSession() {
   DCHECK(CalledOnValidThread());
-  return secure_channel_factory_.get();
-}
-
-StreamChannelFactory* JingleSession::GetMultiplexedChannelFactory() {
-  DCHECK(CalledOnValidThread());
-  if (!channel_multiplexer_.get()) {
-    channel_multiplexer_.reset(
-        new ChannelMultiplexer(GetTransportChannelFactory(), kMuxChannelName));
-  }
-  return channel_multiplexer_.get();
+  return transport_session_.get();
 }
 
 StreamChannelFactory* JingleSession::GetQuicChannelFactory() {
@@ -254,81 +236,6 @@ void JingleSession::Close() {
   DCHECK(CalledOnValidThread());
 
   CloseInternal(OK);
-}
-
-void JingleSession::AddPendingRemoteTransportInfo(Transport* channel) {
-  std::list<JingleMessage::IceCredentials>::iterator credentials =
-      pending_remote_ice_credentials_.begin();
-  while (credentials != pending_remote_ice_credentials_.end()) {
-    if (credentials->channel == channel->name()) {
-      channel->SetRemoteCredentials(credentials->ufrag, credentials->password);
-      credentials = pending_remote_ice_credentials_.erase(credentials);
-    } else {
-      ++credentials;
-    }
-  }
-
-  std::list<JingleMessage::NamedCandidate>::iterator candidate =
-      pending_remote_candidates_.begin();
-  while (candidate != pending_remote_candidates_.end()) {
-    if (candidate->name == channel->name()) {
-      channel->AddRemoteCandidate(candidate->candidate);
-      candidate = pending_remote_candidates_.erase(candidate);
-    } else {
-      ++candidate;
-    }
-  }
-}
-
-void JingleSession::CreateChannel(const std::string& name,
-                                  const ChannelCreatedCallback& callback) {
-  DCHECK(!channels_[name]);
-
-  scoped_ptr<Transport> channel =
-      session_manager_->transport_factory_->CreateTransport();
-  channel->Connect(name, this, callback);
-  AddPendingRemoteTransportInfo(channel.get());
-  channels_[name] = channel.release();
-}
-
-void JingleSession::CancelChannelCreation(const std::string& name) {
-  ChannelsMap::iterator it = channels_.find(name);
-  if (it != channels_.end()) {
-    DCHECK(!it->second->is_connected());
-    delete it->second;
-    DCHECK(channels_.find(name) == channels_.end());
-  }
-}
-
-void JingleSession::OnTransportIceCredentials(Transport* transport,
-                                              const std::string& ufrag,
-                                              const std::string& password) {
-  EnsurePendingTransportInfoMessage();
-  pending_transport_info_message_->ice_credentials.push_back(
-      JingleMessage::IceCredentials(transport->name(), ufrag, password));
-}
-
-void JingleSession::OnTransportCandidate(Transport* transport,
-                                         const cricket::Candidate& candidate) {
-  EnsurePendingTransportInfoMessage();
-  pending_transport_info_message_->candidates.push_back(
-      JingleMessage::NamedCandidate(transport->name(), candidate));
-}
-
-void JingleSession::OnTransportRouteChange(Transport* transport,
-                                           const TransportRoute& route) {
-  if (event_handler_)
-    event_handler_->OnSessionRouteChange(transport->name(), route);
-}
-
-void JingleSession::OnTransportFailed(Transport* transport) {
-  CloseInternal(CHANNEL_CONNECTION_ERROR);
-}
-
-void JingleSession::OnTransportDeleted(Transport* transport) {
-  ChannelsMap::iterator it = channels_.find(transport->name());
-  DCHECK_EQ(it->second, transport);
-  channels_.erase(it);
 }
 
 void JingleSession::SendMessage(const JingleMessage& message) {
@@ -386,37 +293,29 @@ void JingleSession::OnMessageResponse(
   }
 }
 
-void JingleSession::EnsurePendingTransportInfoMessage() {
-  // |transport_info_timer_| must be running iff
-  // |pending_transport_info_message_| exists.
-  DCHECK_EQ(pending_transport_info_message_ != nullptr,
-            transport_info_timer_.IsRunning());
-
-  if (!pending_transport_info_message_) {
-    pending_transport_info_message_.reset(new JingleMessage(
-        peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_));
-    // Delay sending the new candidates in case we get more candidates
-    // that we can send in one message.
-    transport_info_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
-        this, &JingleSession::SendTransportInfo);
-  }
-}
-
-void JingleSession::SendTransportInfo() {
-  DCHECK(pending_transport_info_message_);
+void JingleSession::OnOutgoingTransportInfo(
+    scoped_ptr<XmlElement> transport_info) {
+  JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
+  message.transport_info = transport_info.Pass();
 
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
-      pending_transport_info_message_->ToXml(),
-      base::Bind(&JingleSession::OnTransportInfoResponse,
-                 base::Unretained(this)));
-  pending_transport_info_message_.reset();
+      message.ToXml(), base::Bind(&JingleSession::OnTransportInfoResponse,
+                                  base::Unretained(this)));
   if (request) {
     request->SetTimeout(base::TimeDelta::FromSeconds(kTransportInfoTimeout));
     transport_info_requests_.push_back(request.release());
   } else {
     LOG(ERROR) << "Failed to send a transport-info message";
   }
+}
+
+void JingleSession::OnTransportRouteChange(const std::string& channel_name,
+                                           const TransportRoute& route) {
+  event_handler_->OnSessionRouteChange(channel_name, route);
+}
+
+void JingleSession::OnTransportError(ErrorCode error) {
+  CloseInternal(error);
 }
 
 void JingleSession::OnTransportInfoResponse(IqRequest* request,
@@ -469,8 +368,12 @@ void JingleSession::OnIncomingMessage(const JingleMessage& message,
       break;
 
     case JingleMessage::TRANSPORT_INFO:
-      reply_callback.Run(JingleMessageReply::NONE);
-      ProcessTransportInfo(message);
+      if (transport_session_->ProcessTransportInfo(
+              message.transport_info.get())) {
+        reply_callback.Run(JingleMessageReply::NONE);
+      } else {
+        reply_callback.Run(JingleMessageReply::BAD_REQUEST);
+      }
       break;
 
     case JingleMessage::SESSION_TERMINATE:
@@ -542,34 +445,6 @@ void JingleSession::OnSessionInfo(const JingleMessage& message,
 
   authenticator_->ProcessMessage(message.info.get(), base::Bind(
       &JingleSession::ProcessAuthenticationStep, base::Unretained(this)));
-}
-
-void JingleSession::ProcessTransportInfo(const JingleMessage& message) {
-  for (std::list<JingleMessage::IceCredentials>::const_iterator it =
-           message.ice_credentials.begin();
-       it != message.ice_credentials.end(); ++it) {
-    ChannelsMap::iterator channel = channels_.find(it->channel);
-    if (channel != channels_.end()) {
-      channel->second->SetRemoteCredentials(it->ufrag, it->password);
-    } else {
-      // Transport info was received before the channel was created.
-      // This could happen due to messages being reordered on the wire.
-      pending_remote_ice_credentials_.push_back(*it);
-    }
-  }
-
-  for (std::list<JingleMessage::NamedCandidate>::const_iterator it =
-           message.candidates.begin();
-       it != message.candidates.end(); ++it) {
-    ChannelsMap::iterator channel = channels_.find(it->name);
-    if (channel != channels_.end()) {
-      channel->second->AddRemoteCandidate(it->candidate);
-    } else {
-      // Transport info was received before the channel was created.
-      // This could happen due to messages being reordered on the wire.
-      pending_remote_candidates_.push_back(*it);
-    }
-  }
 }
 
 void JingleSession::OnTerminate(const JingleMessage& message,
@@ -672,13 +547,13 @@ void JingleSession::ContinueAuthenticationStep() {
 }
 
 void JingleSession::OnAuthenticated() {
-  pseudotcp_channel_factory_.reset(new PseudoTcpChannelFactory(this));
-  secure_channel_factory_.reset(
-      new SecureChannelFactory(pseudotcp_channel_factory_.get(),
-                               authenticator_.get()));
+  transport_session_->Start(this, authenticator_.get());
 
-  if (quic_channel_factory_)
-    quic_channel_factory_->Start(this, authenticator_->GetAuthKey());
+  if (quic_channel_factory_) {
+    quic_channel_factory_->Start(
+        transport_session_->GetDatagramChannelFactory(),
+        authenticator_->GetAuthKey());
+  }
 
   SetState(AUTHENTICATED);
 }
