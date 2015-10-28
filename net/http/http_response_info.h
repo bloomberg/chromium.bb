@@ -29,11 +29,9 @@ class NET_EXPORT HttpResponseInfo {
  public:
   // Describes the kind of connection used to fetch this response.
   //
-  // NOTE: This is persisted to the cache, so make sure not to reorder
-  // these values.
-  //
-  // TODO(akalin): Better yet, just use a string instead of an enum,
-  // like |npn_negotiated_protocol|.
+  // NOTE: Please keep in sync with Net.HttpResponseInfo.ConnectionInfo
+  // histogram.  Because of that, and also because these values are persisted to
+  // the cache, please make sure not to delete or reorder values.
   enum ConnectionInfo {
     CONNECTION_INFO_UNKNOWN = 0,
     CONNECTION_INFO_HTTP1 = 1,

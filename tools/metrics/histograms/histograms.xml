@@ -23244,6 +23244,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpResponseInfo.ConnectionInfo" enum="ConnectionInfo">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    Application protocol used in HTTP response.  Recorded every time a
+    URLRequest completes.
+  </summary>
+</histogram>
+
 <histogram name="Net.HttpServerProperties.UpdatePrefs"
     enum="HttpServerPropertiesUpdatePrefsLocation">
   <owner>rtenneti@chromium.org</owner>
@@ -55018,6 +55026,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="EAP Remote TLS"/>
   <int value="9" label="Out-of-range"/>
   <int value="10" label="Pin Missing"/>
+</enum>
+
+<enum name="ConnectionInfo" type="int">
+  <summary>
+    Application protocol used for HTTP response as defined in
+    net::HttpResponseInfo::ConnectionInfo.
+  </summary>
+  <int value="0" label="unknown"/>
+  <int value="1" label="HTTP/0.9, HTTP/1.0, or HTTP/1.1"/>
+  <int value="2" label="SPDY/2 (deprecated)"/>
+  <int value="3" label="SPDY/3"/>
+  <int value="4" label="HTTP/2"/>
+  <int value="5" label="QUIC"/>
+  <int value="6" label="HTTP/2 draft-14"/>
+  <int value="7" label="HTTP/2 draft-15"/>
 </enum>
 
 <enum name="ConnectionResult" type="int">

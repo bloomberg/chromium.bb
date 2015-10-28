@@ -675,6 +675,12 @@ void ResourceLoader::CallDidFinishLoading() {
 }
 
 void ResourceLoader::RecordHistograms() {
+  if (request_->response_info().network_accessed) {
+    UMA_HISTOGRAM_ENUMERATION("Net.HttpResponseInfo.ConnectionInfo",
+                              request_->response_info().connection_info,
+                              net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
+  }
+
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   if (info->GetResourceType() == RESOURCE_TYPE_PREFETCH) {
