@@ -141,7 +141,9 @@ void LinuxSandbox::EngageSeccompSandbox() {
 
   // The Broker is now bound to this process and should only be destroyed when
   // the process exits or is killed.
-  ANNOTATE_LEAKING_OBJECT_PTR(broker_.release());
+  sandbox::syscall_broker::BrokerProcess* leaked_broker = broker_.release();
+  ALLOW_UNUSED_LOCAL(leaked_broker);
+  ANNOTATE_LEAKING_OBJECT_PTR(leaked_broker);
 }
 
 void LinuxSandbox::Seal() {
