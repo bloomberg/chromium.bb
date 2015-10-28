@@ -22,6 +22,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -131,6 +132,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/WebKit/public/platform/WebImageGenerator.h"
@@ -276,20 +278,6 @@ class RenderViewZoomer : public RenderViewVisitor {
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
-
-std::string HostToCustomHistogramSuffix(const std::string& host) {
-  if (host == "mail.google.com")
-    return ".gmail";
-  if (host == "docs.google.com" || host == "drive.google.com")
-    return ".docs";
-  if (host == "plus.google.com")
-    return ".plus";
-  if (host == "inbox.google.com")
-    return ".inbox";
-  if (host == "www.youtube.com")
-    return ".youtube";
-  return std::string();
-}
 
 void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
@@ -501,6 +489,62 @@ void RenderThreadImpl::HistogramCustomizer::SetCommonHost(
     common_host_histogram_suffix_ = HostToCustomHistogramSuffix(host);
     blink::mainThreadIsolate()->SetCreateHistogramFunction(CreateHistogram);
   }
+}
+
+std::string RenderThreadImpl::HistogramCustomizer::HostToCustomHistogramSuffix(
+    const std::string& host) {
+  if (host == "mail.google.com")
+    return ".gmail";
+  if (host == "docs.google.com" || host == "drive.google.com")
+    return ".docs";
+  if (host == "plus.google.com")
+    return ".plus";
+  if (host == "inbox.google.com")
+    return ".inbox";
+  if (host == "www.youtube.com")
+    return ".youtube";
+  if (IsAlexaTop10NonGoogleSite(host))
+    return ".top10";
+
+  return std::string();
+}
+
+bool RenderThreadImpl::HistogramCustomizer::IsAlexaTop10NonGoogleSite(
+    const std::string& host) {
+  // The Top10 sites have different TLD and/or subdomains depending on the
+  // localization.
+  if (host == "sina.com.cn")
+    return true;
+
+  std::string sanitized_host =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          host, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+  if (sanitized_host == "facebook.com")
+    return true;
+  if (sanitized_host == "baidu.com")
+    return true;
+  if (sanitized_host == "qq.com")
+    return true;
+  if (sanitized_host == "twitter.com")
+    return true;
+  if (sanitized_host == "taobao.com")
+    return true;
+  if (sanitized_host == "live.com")
+    return true;
+
+  if (!sanitized_host.empty()) {
+    std::vector<base::StringPiece> host_tokens = base::SplitStringPiece(
+        sanitized_host, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+    if (host_tokens.size() >= 2) {
+      if ((host_tokens[0] == "yahoo") || (host_tokens[0] == "amazon") ||
+          (host_tokens[0] == "wikipedia")) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 // static

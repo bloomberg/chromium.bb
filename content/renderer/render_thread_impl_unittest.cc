@@ -80,4 +80,18 @@ TEST_F(RenderThreadImplUnittest, CustomHistogramsForTwoRenderViews) {
                 kCustomizableHistogram_));
 }
 
+TEST_F(RenderThreadImplUnittest, IdentifyAlexaTop10NonGoogleSite) {
+  EXPECT_TRUE(histogram_customizer_.IsAlexaTop10NonGoogleSite("www.amazon.de"));
+  EXPECT_TRUE(histogram_customizer_.IsAlexaTop10NonGoogleSite("amazon.de"));
+  EXPECT_TRUE(histogram_customizer_.IsAlexaTop10NonGoogleSite("amazon.co.uk"));
+  EXPECT_TRUE(
+      histogram_customizer_.IsAlexaTop10NonGoogleSite("jp.wikipedia.org"));
+  EXPECT_TRUE(
+      histogram_customizer_.IsAlexaTop10NonGoogleSite("www.facebook.com"));
+  EXPECT_FALSE(histogram_customizer_.IsAlexaTop10NonGoogleSite(""));
+  EXPECT_FALSE(
+      histogram_customizer_.IsAlexaTop10NonGoogleSite("www.google.com"));
+  EXPECT_FALSE(histogram_customizer_.IsAlexaTop10NonGoogleSite("madeup"));
+}
+
 }  // namespace content

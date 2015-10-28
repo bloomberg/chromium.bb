@@ -382,7 +382,15 @@ class CONTENT_EXPORT RenderThreadImpl
     std::string ConvertToCustomHistogramName(const char* histogram_name) const;
 
    private:
+    FRIEND_TEST_ALL_PREFIXES(RenderThreadImplUnittest,
+                             IdentifyAlexaTop10NonGoogleSite);
     friend class RenderThreadImplUnittest;
+
+    // Converts a host name to a suffix for histograms
+    std::string HostToCustomHistogramSuffix(const std::string& host);
+
+    // Helper function to identify a certain set of top pages
+    bool IsAlexaTop10NonGoogleSite(const std::string& host);
 
     // Used for updating the information on which is the common host which all
     // RenderView's share (if any). If there is no common host, this function is
