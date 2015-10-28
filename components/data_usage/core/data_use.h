@@ -15,7 +15,7 @@ namespace data_usage {
 
 struct DataUse {
   DataUse(const GURL& url,
-          const base::Time& request_time,
+          const base::TimeTicks& request_start,
           const GURL& first_party_for_cookies,
           int32_t tab_id,
           net::NetworkChangeNotifier::ConnectionType connection_type,
@@ -26,8 +26,9 @@ struct DataUse {
   bool CanCombineWith(const DataUse& other) const;
 
   GURL url;
-  // The time when the request that is associated with these bytes was started.
-  base::Time request_time;
+  // The TimeTicks when the request that is associated with these bytes was
+  // started.
+  base::TimeTicks request_start;
   GURL first_party_for_cookies;
   int32_t tab_id;
   net::NetworkChangeNotifier::ConnectionType connection_type;

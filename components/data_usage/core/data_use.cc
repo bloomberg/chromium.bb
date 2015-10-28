@@ -7,14 +7,14 @@
 namespace data_usage {
 
 DataUse::DataUse(const GURL& url,
-                 const base::Time& request_time,
+                 const base::TimeTicks& request_start,
                  const GURL& first_party_for_cookies,
                  int32_t tab_id,
                  net::NetworkChangeNotifier::ConnectionType connection_type,
                  int64_t tx_bytes,
                  int64_t rx_bytes)
     : url(url),
-      request_time(request_time),
+      request_start(request_start),
       first_party_for_cookies(first_party_for_cookies),
       tab_id(tab_id),
       connection_type(connection_type),
@@ -22,7 +22,7 @@ DataUse::DataUse(const GURL& url,
       rx_bytes(rx_bytes) {}
 
 bool DataUse::CanCombineWith(const DataUse& other) const {
-  return url == other.url && request_time == other.request_time &&
+  return url == other.url && request_start == other.request_start &&
          first_party_for_cookies == other.first_party_for_cookies &&
          tab_id == other.tab_id && connection_type == other.connection_type;
 }

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/data_usage/core/data_use.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/socket/socket_test_util.h"
@@ -245,7 +246,10 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
   int64_t observed_foo_tx_bytes = 0, observed_foo_rx_bytes = 0;
   while (data_use_it != test_observer()->observed_data_use().end() &&
          data_use_it->url == GURL("http://foo.com")) {
-    EXPECT_EQ(foo_request->request_time(), data_use_it->request_time);
+    net::LoadTimingInfo foo_load_timing_info;
+    foo_request->GetLoadTimingInfo(&foo_load_timing_info);
+
+    EXPECT_EQ(foo_load_timing_info.request_start, data_use_it->request_start);
     EXPECT_EQ(GURL("http://foofirstparty.com"),
               data_use_it->first_party_for_cookies);
     EXPECT_EQ(kFooTabId, data_use_it->tab_id);
@@ -261,8 +265,11 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
   // Then, the |bar_request| data use should have happened.
   int64_t observed_bar_tx_bytes = 0, observed_bar_rx_bytes = 0;
   while (data_use_it != test_observer()->observed_data_use().end()) {
+    net::LoadTimingInfo bar_load_timing_info;
+    bar_request->GetLoadTimingInfo(&bar_load_timing_info);
+
     EXPECT_EQ(GURL("http://bar.com"), data_use_it->url);
-    EXPECT_EQ(bar_request->request_time(), data_use_it->request_time);
+    EXPECT_EQ(bar_load_timing_info.request_start, data_use_it->request_start);
     EXPECT_EQ(GURL("http://barfirstparty.com"),
               data_use_it->first_party_for_cookies);
     EXPECT_EQ(kBarTabId, data_use_it->tab_id);
@@ -338,7 +345,9 @@ TEST_F(DataUseAggregatorTest, ReportCombinedDataUse) {
   // DataUse element.
   const DataUse& foo_data_use = test_observer()->observed_data_use().front();
   EXPECT_EQ(GURL("http://foo.com"), foo_data_use.url);
-  EXPECT_EQ(foo_request->request_time(), foo_data_use.request_time);
+  net::LoadTimingInfo foo_load_timing_info;
+  foo_request->GetLoadTimingInfo(&foo_load_timing_info);
+  EXPECT_EQ(foo_load_timing_info.request_start, foo_data_use.request_start);
   EXPECT_EQ(GURL("http://foofirstparty.com"),
             foo_data_use.first_party_for_cookies);
   EXPECT_EQ(kFooTabId, foo_data_use.tab_id);
@@ -350,7 +359,9 @@ TEST_F(DataUseAggregatorTest, ReportCombinedDataUse) {
   // DataUse element.
   const DataUse& bar_data_use = test_observer()->observed_data_use().back();
   EXPECT_EQ(GURL("http://bar.com"), bar_data_use.url);
-  EXPECT_EQ(bar_request->request_time(), bar_data_use.request_time);
+  net::LoadTimingInfo bar_load_timing_info;
+  bar_request->GetLoadTimingInfo(&bar_load_timing_info);
+  EXPECT_EQ(bar_load_timing_info.request_start, bar_data_use.request_start);
   EXPECT_EQ(GURL("http://barfirstparty.com"),
             bar_data_use.first_party_for_cookies);
   EXPECT_EQ(kBarTabId, bar_data_use.tab_id);

@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/data_usage/core/data_use.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
@@ -38,11 +39,13 @@ void DataUseAggregator::ReportDataUse(const net::URLRequest& request,
                                       int64_t tx_bytes,
                                       int64_t rx_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  net::LoadTimingInfo load_timing_info;
+  request.GetLoadTimingInfo(&load_timing_info);
 
   scoped_ptr<DataUse> data_use(new DataUse(
-      request.url(), request.request_time(), request.first_party_for_cookies(),
-      tab_id, net::NetworkChangeNotifier::GetConnectionType(), tx_bytes,
-      rx_bytes));
+      request.url(), load_timing_info.request_start,
+      request.first_party_for_cookies(), tab_id,
+      net::NetworkChangeNotifier::GetConnectionType(), tx_bytes, rx_bytes));
 
   // As an optimization, attempt to combine the newly reported data use with the
   // most recent buffered data use, if the annotations on the data use are the
