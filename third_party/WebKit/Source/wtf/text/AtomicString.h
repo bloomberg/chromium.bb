@@ -136,9 +136,6 @@ public:
 
     static void remove(StringImpl*);
 
-#if USE(CF)
-    AtomicString(CFStringRef s) :  m_string(add(s)) { }
-#endif
 #ifdef __OBJC__
     AtomicString(NSString* s) : m_string(add((CFStringRef)s)) { }
     operator NSString*() const { return m_string; }

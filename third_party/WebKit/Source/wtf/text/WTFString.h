@@ -396,11 +396,6 @@ public:
     String isolatedCopy() const;
     bool isSafeToSendToAnotherThread() const;
 
-#if USE(CF)
-    String(CFStringRef);
-    RetainPtr<CFStringRef> createCFString() const;
-#endif
-
 #ifdef __OBJC__
     String(NSString*);
 

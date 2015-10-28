@@ -175,7 +175,6 @@
             'text/StringBuffer.h',
             'text/StringBuilder.cpp',
             'text/StringBuilder.h',
-            'text/StringCF.cpp',
             'text/StringConcatenate.cpp',
             'text/StringConcatenate.h',
             'text/StringHash.h',

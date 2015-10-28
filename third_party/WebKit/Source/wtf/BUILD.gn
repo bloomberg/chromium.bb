@@ -91,7 +91,6 @@ component("wtf") {
     sources -= [
       "text/StringImplCF.cpp",
       "text/AtomicStringCF.cpp",
-      "text/StringCF.cpp",
     ]
   }
 }
