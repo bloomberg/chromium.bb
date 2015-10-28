@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/public/common/dwrite_font_platform_win.h"
@@ -501,6 +502,8 @@ void SetPreSandboxWarmupFontMgrForTesting(SkFontMgr* fontmgr) {
 }
 
 void WarmupDirectWrite() {
+  TRACE_EVENT0("startup", "content::WarmupDirectWrite");
+
   // The objects used here are intentionally not freed as we want the Skia
   // code to use these objects after warmup.
   SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());

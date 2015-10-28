@@ -34,6 +34,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "content/public/common/content_switches.h"
@@ -932,6 +933,8 @@ bool FontCollectionLoader::IsFileCached(UINT32 font_key) {
 }
 
 bool FontCollectionLoader::LoadCacheFile() {
+  TRACE_EVENT0("startup", "FontCollectionLoader::LoadCacheFile");
+
   std::string font_cache_handle_string =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kFontCacheSharedHandle);
@@ -1098,6 +1101,8 @@ mswr::ComPtr<IDWriteFontCollection> g_font_collection;
 IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
   if (g_font_collection.Get() != NULL)
     return g_font_collection.Get();
+
+  TRACE_EVENT0("startup", "content::GetCustomFontCollection");
 
   base::TimeTicks start_tick = base::TimeTicks::Now();
 
