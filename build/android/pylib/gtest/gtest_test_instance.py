@@ -353,7 +353,7 @@ class GtestTestInstance(test_instance.TestInstance):
 
       if result_type:
         test_name = matcher.group(2)
-        duration = matcher.group(3) if matcher.group(3) else 0
+        duration = int(matcher.group(3)) if matcher.group(3) else 0
         results.append(base_test_result.BaseTestResult(
             test_name, result_type, duration,
             log=('\n'.join(log) if log else '')))
