@@ -764,6 +764,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)updateCurrentBackForwardListItemHolder {
+  // WebUI pages (which are loaded via loadHTMLString:baseURL:) have no entry
+  // in the back/forward list, so the current item will still be the previous
+  // page, and should not be associated.
+  if (_webUIManager)
+    return;
+
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
   // If |decidePolicyForNavigationAction| gets called for every load,
