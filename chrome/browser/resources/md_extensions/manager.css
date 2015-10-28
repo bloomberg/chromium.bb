@@ -11,3 +11,7 @@
     display: flex;
   };
 }
+
+#item-list {
+  -webkit-margin-start: 250px;
+}

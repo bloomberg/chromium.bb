@@ -48,10 +48,21 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS);
   source->AddLocalizedString("keyboardShortcuts",
                              IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS);
+  source->AddLocalizedString("itemId", IDS_MD_EXTENSIONS_ITEM_ID);
+  source->AddLocalizedString("itemInspectViews",
+                             IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS);
+  source->AddLocalizedString("itemAllowIncognito",
+                             IDS_MD_EXTENSIONS_ITEM_ALLOW_INCOGNITO);
+  source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
+  source->AddLocalizedString("itemEnabled", IDS_MD_EXTENSIONS_ITEM_ENABLED);
+  source->AddLocalizedString("itemDisabled", IDS_MD_EXTENSIONS_ITEM_DISABLED);
 
   source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);
+  source->AddResourcePath("item.css", IDR_MD_EXTENSIONS_ITEM_CSS);
+  source->AddResourcePath("item.html", IDR_MD_EXTENSIONS_ITEM_HTML);
+  source->AddResourcePath("item.js", IDR_MD_EXTENSIONS_ITEM_JS);
   source->AddResourcePath("sidebar.css", IDR_MD_EXTENSIONS_SIDEBAR_CSS);
   source->AddResourcePath("sidebar.html", IDR_MD_EXTENSIONS_SIDEBAR_HTML);
   source->AddResourcePath("sidebar.js", IDR_MD_EXTENSIONS_SIDEBAR_JS);

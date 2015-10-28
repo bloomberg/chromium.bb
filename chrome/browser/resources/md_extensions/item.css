@@ -1,0 +1,78 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.content-section {
+  padding: 20px;
+}
+
+#icon-wrapper {
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  margin: 0 24px;
+}
+
+#icon {
+  height: 32px;
+  width: 32px;
+}
+
+/* TODO(devlin): Combine this with downloads style. */
+#card {
+  background: white;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .05), 0 1px 4px 0 rgba(0, 0, 0, .08),
+              0 3px 1px -2px rgba(0, 0, 0, .2);
+  color: #5A5A5A;
+  display: flex;
+  min-height: 103px;
+  width: 622px;
+}
+
+#card.disabled {
+  opacity: 0.6;
+}
+
+#content {
+  -webkit-border-start: 1px solid #C5C5C5;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+#name {
+  color: #222;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+#controls {
+  padding-top: 20px;
+}
+
+#version {
+  -webkit-margin-start: 50px;
+  flex: 1;
+}
+
+.checkbox {
+  --paper-checkbox-checked-color: rgb(66, 133, 244);
+  --primary-text-color: #5A5A5A;
+}
+
+#details-container {
+  border-top: 1px solid #C5C5C5;
+  color: #5A5A5A;
+}
+
+#extension-id {
+  padding-bottom: 10px;
+}
+
+#inspect-views {
+  padding-bottom: 20px;
+}
+
+#inspect-views paper-button {
+  color: rgb(51, 103, 214);
+}

@@ -15,10 +15,11 @@
  * @group Chrome UI Behavior
  */
 
+/** @polymerBehavior */
 var I18nBehavior = {
   /**
    * @param {string} id The ID of the string to translate.
-   * @param {...var_args} Placeholders required by the string ($1-9).
+   * @param {...string} var_args Placeholders required by the string ($1-9).
    * @return {string} A translated, substituted string.
    */
   i18n: function(id, var_args) {
