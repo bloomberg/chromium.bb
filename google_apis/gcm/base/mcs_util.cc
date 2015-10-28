@@ -259,4 +259,12 @@ int GetTTL(const google::protobuf::MessageLite& protobuf) {
   return data_message->ttl();
 }
 
+bool IsImmediateAckRequested(const google::protobuf::MessageLite& protobuf) {
+  if (protobuf.GetTypeName() != kProtoNames[kDataMessageStanzaTag])
+    return false;
+  const mcs_proto::DataMessageStanza* data_message =
+      reinterpret_cast<const mcs_proto::DataMessageStanza*>(&protobuf);
+  return data_message->has_immediate_ack() && data_message->immediate_ack();
+}
+
 }  // namespace gcm

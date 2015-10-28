@@ -253,6 +253,22 @@ message DataMessageStanza {
 
   // Optional field containing the binary payload of the message.
   optional bytes raw_data = 21;
+
+  // Not used.
+  // The maximum delay of the message, in seconds.
+  // optional int32 max_delay = 22;
+
+  // Not used.
+  // How long the message was delayed before it was sent, in seconds.
+  // optional int32 actual_delay = 23;
+
+  // If set the server requests immediate ack. Used for important messages and
+  // for testing.
+  optional bool immediate_ack = 24;
+
+  // Not used.
+  // Enables message receipts from MCS/GCM back to CCS clients
+  // optional bool delivery_receipt_requested = 25;
 }
 
 /**

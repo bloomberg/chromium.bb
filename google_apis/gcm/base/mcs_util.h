@@ -89,6 +89,10 @@ GCM_EXPORT bool HasTTLExpired(const google::protobuf::MessageLite& protobuf,
                               base::Clock* clock);
 GCM_EXPORT int GetTTL(const google::protobuf::MessageLite& protobuf);
 
+// Returns whether the message was sent with an immediate ack request.
+GCM_EXPORT bool IsImmediateAckRequested(
+    const google::protobuf::MessageLite& protobuf);
+
 }  // namespace gcm
 
 #endif  // GOOGLE_APIS_GCM_BASE_MCS_UTIL_H_

@@ -681,8 +681,9 @@ void MCSClient::HandlePacketFromWire(
            << ", stream id " << stream_id_in_ << " and last stream id received "
            << last_stream_id_received;
 
-  if (unacked_server_ids_.size() > 0 &&
-      unacked_server_ids_.size() % kUnackedMessageBeforeStreamAck == 0) {
+  if ((unacked_server_ids_.size() > 0 &&
+       unacked_server_ids_.size() % kUnackedMessageBeforeStreamAck == 0) ||
+      IsImmediateAckRequested(*protobuf)) {
     SendMessage(MCSMessage(kIqStanzaTag, BuildStreamAck()));
   }
 
