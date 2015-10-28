@@ -94,8 +94,10 @@ class BluetoothTestBase : public testing::Test {
   // Simulates failure to discover services.
   virtual void SimulateGattServicesDiscoveryError(BluetoothDevice* device) {}
 
+  // Simulates a Characteristic on a service.
   virtual void SimulateGattCharacteristic(BluetoothGattService* service,
-                                          const std::string& uuid){};
+                                          const std::string& uuid,
+                                          int properties) {}
 
   // Remove the device from the adapter and delete it.
   virtual void DeleteDevice(BluetoothDevice* device);

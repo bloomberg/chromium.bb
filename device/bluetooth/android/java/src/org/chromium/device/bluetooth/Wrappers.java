@@ -365,6 +365,10 @@ class Wrappers {
             return mCharacteristic.getInstanceId();
         }
 
+        public int getProperties() {
+            return mCharacteristic.getProperties();
+        }
+
         public UUID getUuid() {
             return mCharacteristic.getUuid();
         }

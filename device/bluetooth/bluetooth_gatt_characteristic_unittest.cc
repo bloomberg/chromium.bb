@@ -46,12 +46,12 @@ TEST_F(BluetoothGattCharacteristicTest, GetIdentifier) {
   BluetoothGattService* service2 = device2->GetGattServices()[0];
   BluetoothGattService* service3 = device2->GetGattServices()[1];
   // 6 characteristics (same UUID), 2 on each service.
-  SimulateGattCharacteristic(service1, uuid);
-  SimulateGattCharacteristic(service1, uuid);
-  SimulateGattCharacteristic(service2, uuid);
-  SimulateGattCharacteristic(service2, uuid);
-  SimulateGattCharacteristic(service3, uuid);
-  SimulateGattCharacteristic(service3, uuid);
+  SimulateGattCharacteristic(service1, uuid, /* properties */ 0);
+  SimulateGattCharacteristic(service1, uuid, /* properties */ 0);
+  SimulateGattCharacteristic(service2, uuid, /* properties */ 0);
+  SimulateGattCharacteristic(service2, uuid, /* properties */ 0);
+  SimulateGattCharacteristic(service3, uuid, /* properties */ 0);
+  SimulateGattCharacteristic(service3, uuid, /* properties */ 0);
   BluetoothGattCharacteristic* char1 = service1->GetCharacteristics()[0];
   BluetoothGattCharacteristic* char2 = service1->GetCharacteristics()[1];
   BluetoothGattCharacteristic* char3 = service2->GetCharacteristics()[0];
@@ -100,9 +100,9 @@ TEST_F(BluetoothGattCharacteristicTest, GetUUID) {
   std::string uuid_str2("22222222-0000-1000-8000-00805f9b34fb");
   BluetoothUUID uuid1(uuid_str1);
   BluetoothUUID uuid2(uuid_str2);
-  SimulateGattCharacteristic(service, uuid_str1);
-  SimulateGattCharacteristic(service, uuid_str2);
-  SimulateGattCharacteristic(service, uuid_str2);
+  SimulateGattCharacteristic(service, uuid_str1, /* properties */ 0);
+  SimulateGattCharacteristic(service, uuid_str2, /* properties */ 0);
+  SimulateGattCharacteristic(service, uuid_str2, /* properties */ 0);
   BluetoothGattCharacteristic* char1 = service->GetCharacteristics()[0];
   BluetoothGattCharacteristic* char2 = service->GetCharacteristics()[1];
   BluetoothGattCharacteristic* char3 = service->GetCharacteristics()[2];
@@ -117,6 +117,34 @@ TEST_F(BluetoothGattCharacteristicTest, GetUUID) {
   EXPECT_EQ(uuid1, char1->GetUUID());
   EXPECT_EQ(uuid2, char2->GetUUID());
   EXPECT_EQ(uuid2, char3->GetUUID());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+TEST_F(BluetoothGattCharacteristicTest, GetProperties) {
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(),
+                               GetConnectErrorCallback());
+  SimulateGattConnection(device);
+  std::vector<std::string> services;
+  std::string uuid("00000000-0000-1000-8000-00805f9b34fb");
+  services.push_back(uuid);
+  SimulateGattServicesDiscovered(device, services);
+  BluetoothGattService* service = device->GetGattServices()[0];
+
+  // Create two characteristics with different properties:
+  SimulateGattCharacteristic(service, uuid, /* properties */ 0);
+  SimulateGattCharacteristic(service, uuid, /* properties */ 7);
+
+  // Read the properties. Because ordering is unknown swap as necessary.
+  int properties1 = service->GetCharacteristics()[0]->GetProperties();
+  int properties2 = service->GetCharacteristics()[1]->GetProperties();
+  if (properties2 == 0)
+    std::swap(properties1, properties2);
+  EXPECT_EQ(0, properties1);
+  EXPECT_EQ(7, properties2);
 }
 #endif  // defined(OS_ANDROID)
 

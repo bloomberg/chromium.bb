@@ -44,4 +44,11 @@ final class ChromeBluetoothRemoteGattCharacteristic {
     private String getUUID() {
         return mCharacteristic.getUuid().toString();
     }
+
+    // Implements BluetoothRemoteGattCharacteristicAndroid::GetProperties.
+    @CalledByNative
+    private int getProperties() {
+        // TODO(scheib): Must read Extended Properties Descriptor. crbug.com/548449
+        return mCharacteristic.getProperties();
+    }
 }

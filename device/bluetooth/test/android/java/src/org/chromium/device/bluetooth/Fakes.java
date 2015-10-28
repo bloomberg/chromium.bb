@@ -317,7 +317,7 @@ class Fakes {
         // Create a characteristic and add it to this service.
         @CalledByNative("FakeBluetoothGattService")
         private static void addCharacteristic(
-                ChromeBluetoothRemoteGattService chromeService, String uuidString) {
+                ChromeBluetoothRemoteGattService chromeService, String uuidString, int properties) {
             FakeBluetoothGattService fakeService =
                     (FakeBluetoothGattService) chromeService.mService;
             UUID uuid = UUID.fromString(uuidString);
@@ -330,7 +330,7 @@ class Fakes {
                 }
             }
             fakeService.mCharacteristics.add(new FakeBluetoothGattCharacteristic(
-                    uuid, /* instanceId */ countOfDuplicateUUID));
+                    /* instanceId */ countOfDuplicateUUID, properties, uuid));
         }
 
         // -----------------------------------------------------------------------------------------
@@ -357,18 +357,25 @@ class Fakes {
      */
     static class FakeBluetoothGattCharacteristic
             extends Wrappers.BluetoothGattCharacteristicWrapper {
-        final UUID mUuid;
         final int mInstanceId;
+        final int mProperties;
+        final UUID mUuid;
 
-        public FakeBluetoothGattCharacteristic(UUID uuid, int instanceId) {
+        public FakeBluetoothGattCharacteristic(int instanceId, int properties, UUID uuid) {
             super(null);
-            mUuid = uuid;
             mInstanceId = instanceId;
+            mProperties = properties;
+            mUuid = uuid;
         }
 
         @Override
         public int getInstanceId() {
             return mInstanceId;
+        }
+
+        @Override
+        public int getProperties() {
+            return mProperties;
         }
 
         @Override

@@ -116,10 +116,10 @@ TEST_F(BluetoothGattServiceTest, GetCharacteristics_and_GetCharacteristic) {
   std::string characteristic_uuid2 = "22222222-0000-1000-8000-00805f9b34fb";
   std::string characteristic_uuid3 = characteristic_uuid2;  // Duplicate UUID.
   std::string characteristic_uuid4 = "33333333-0000-1000-8000-00805f9b34fb";
-  SimulateGattCharacteristic(service, characteristic_uuid1);
-  SimulateGattCharacteristic(service, characteristic_uuid2);
-  SimulateGattCharacteristic(service, characteristic_uuid3);
-  SimulateGattCharacteristic(service, characteristic_uuid4);
+  SimulateGattCharacteristic(service, characteristic_uuid1, /* properties */ 0);
+  SimulateGattCharacteristic(service, characteristic_uuid2, /* properties */ 0);
+  SimulateGattCharacteristic(service, characteristic_uuid3, /* properties */ 0);
+  SimulateGattCharacteristic(service, characteristic_uuid4, /* properties */ 0);
 
   // Verify that GetCharacteristic can retrieve characteristics again by ID,
   // and that the same Characteristics come back.

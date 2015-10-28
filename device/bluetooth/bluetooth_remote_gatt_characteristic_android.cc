@@ -66,8 +66,8 @@ BluetoothGattService* BluetoothRemoteGattCharacteristicAndroid::GetService()
 
 BluetoothGattCharacteristic::Properties
 BluetoothRemoteGattCharacteristicAndroid::GetProperties() const {
-  NOTIMPLEMENTED();
-  return 0;
+  return Java_ChromeBluetoothRemoteGattCharacteristic_getProperties(
+      AttachCurrentThread(), j_characteristic_.obj());
 }
 
 BluetoothGattCharacteristic::Permissions

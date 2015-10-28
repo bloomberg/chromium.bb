@@ -143,14 +143,15 @@ void BluetoothTestAndroid::SimulateGattServicesDiscoveryError(
 
 void BluetoothTestAndroid::SimulateGattCharacteristic(
     BluetoothGattService* service,
-    const std::string& uuid) {
+    const std::string& uuid,
+    int properties) {
   BluetoothRemoteGattServiceAndroid* service_android =
       static_cast<BluetoothRemoteGattServiceAndroid*>(service);
   JNIEnv* env = base::android::AttachCurrentThread();
 
   Java_FakeBluetoothGattService_addCharacteristic(
       env, service_android->GetJavaObject().obj(),
-      base::android::ConvertUTF8ToJavaString(env, uuid).obj());
+      base::android::ConvertUTF8ToJavaString(env, uuid).obj(), properties);
 }
 
 void BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled(
