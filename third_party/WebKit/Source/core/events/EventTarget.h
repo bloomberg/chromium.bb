@@ -277,18 +277,6 @@ public:
     EventListener* on##attribute() { return getAttributeEventListener(EventTypeNames::eventName); } \
     void setOn##attribute(PassRefPtrWillBeRawPtr<EventListener> listener) { setAttributeEventListener(EventTypeNames::eventName, listener); } \
 
-#define DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(recipient, attribute) \
-    EventListener* on##attribute(); \
-    void setOn##attribute(PassRefPtrWillBeRawPtr<EventListener> listener);
-
-#define DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(type, recipient, attribute) \
-    EventListener* type::on##attribute() { return recipient ? recipient->getAttributeEventListener(EventTypeNames::attribute) : nullptr; } \
-    void type::setOn##attribute(PassRefPtrWillBeRawPtr<EventListener> listener) \
-    { \
-        if (recipient) \
-            recipient->setAttributeEventListener(EventTypeNames::attribute, listener); \
-    }
-
 inline bool EventTarget::hasEventListeners() const
 {
     // FIXME: We should have a const version of eventTargetData.
