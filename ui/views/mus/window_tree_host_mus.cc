@@ -83,7 +83,7 @@ void WindowTreeHostMojo::HideImpl() {
 }
 
 gfx::Rect WindowTreeHostMojo::GetBounds() const {
-  return mus_window_->bounds().To<gfx::Rect>();
+  return mus_window_->bounds();
 }
 
 void WindowTreeHostMojo::SetBounds(const gfx::Rect& bounds) {
@@ -118,14 +118,12 @@ void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
 // WindowTreeHostMojo, WindowObserver implementation:
 
 void WindowTreeHostMojo::OnWindowBoundsChanged(mus::Window* window,
-                                               const mojo::Rect& old_bounds,
-                                               const mojo::Rect& new_bounds) {
-  gfx::Rect old_bounds2 = old_bounds.To<gfx::Rect>();
-  gfx::Rect new_bounds2 = new_bounds.To<gfx::Rect>();
-  if (old_bounds2.origin() != new_bounds2.origin())
-    OnHostMoved(new_bounds2.origin());
-  if (old_bounds2.size() != new_bounds2.size())
-    OnHostResized(new_bounds2.size());
+                                               const gfx::Rect& old_bounds,
+                                               const gfx::Rect& new_bounds) {
+  if (old_bounds.origin() != new_bounds.origin())
+    OnHostMoved(new_bounds.origin());
+  if (old_bounds.size() != new_bounds.size())
+    OnHostResized(new_bounds.size());
 }
 
 void WindowTreeHostMojo::OnWindowFocusChanged(mus::Window* gained_focus,

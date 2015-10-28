@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "components/mus/public/cpp/window.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/events/input_event_constants.mojom.h"
@@ -43,8 +42,8 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
                                       const mojo::Event& event) {
   DCHECK_EQ(event.action, mojo::EVENT_TYPE_POINTER_DOWN);
   const gfx::Point location(EventLocationToPoint(event));
-  if (!gfx::Rect(target->bounds().To<gfx::Rect>().size()).Contains(location) ||
-      target->client_area().To<gfx::Rect>().Contains(location)) {
+  if (!gfx::Rect(target->bounds().size()).Contains(location) ||
+      target->client_area().Contains(location)) {
     return nullptr;
   }
 
@@ -92,7 +91,7 @@ MoveLoop::MoveLoop(mus::Window* target, const mojo::Event& event)
     : target_(target),
       pointer_id_(event.pointer_data->pointer_id),
       initial_event_screen_location_(EventScreenLocationToPoint(event)),
-      initial_window_bounds_(target->bounds().To<gfx::Rect>()),
+      initial_window_bounds_(target->bounds()),
       changing_bounds_(false) {
   target->AddObserver(this);
 }
@@ -103,7 +102,7 @@ void MoveLoop::MoveImpl(const mojo::Event& event) {
   const gfx::Rect new_bounds(initial_window_bounds_.origin() + delta,
                              initial_window_bounds_.size());
   base::AutoReset<bool> resetter(&changing_bounds_, true);
-  target_->SetBounds(*mojo::Rect::From(new_bounds));
+  target_->SetBounds(new_bounds);
 }
 
 void MoveLoop::Cancel() {
@@ -113,7 +112,7 @@ void MoveLoop::Cancel() {
 
 void MoveLoop::Revert() {
   base::AutoReset<bool> resetter(&changing_bounds_, true);
-  target_->SetBounds(*mojo::Rect::From(initial_window_bounds_));
+  target_->SetBounds(initial_window_bounds_);
 }
 
 void MoveLoop::OnTreeChanged(const TreeChangeParams& params) {
@@ -122,8 +121,8 @@ void MoveLoop::OnTreeChanged(const TreeChangeParams& params) {
 }
 
 void MoveLoop::OnWindowBoundsChanged(mus::Window* window,
-                                     const mojo::Rect& old_bounds,
-                                     const mojo::Rect& new_bounds) {
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) {
   DCHECK_EQ(window, target_);
   if (!changing_bounds_)
     Cancel();

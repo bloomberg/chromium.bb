@@ -25,8 +25,8 @@ class LayoutManager : public mus::WindowObserver {
   void OnTreeChanged(
       const mus::WindowObserver::TreeChangeParams& params) override;
   void OnWindowBoundsChanged(mus::Window* window,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override;
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
   void OnWindowSharedPropertyChanged(
       mus::Window* window,
       const std::string& name,

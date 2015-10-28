@@ -144,8 +144,8 @@ bool ReorderImpl(Window::Children* children,
 class ScopedSetBoundsNotifier {
  public:
   ScopedSetBoundsNotifier(Window* window,
-                          const mojo::Rect& old_bounds,
-                          const mojo::Rect& new_bounds)
+                          const gfx::Rect& old_bounds,
+                          const gfx::Rect& new_bounds)
       : window_(window), old_bounds_(old_bounds), new_bounds_(new_bounds) {
     FOR_EACH_OBSERVER(
         WindowObserver, *WindowPrivate(window_).observers(),
@@ -158,8 +158,8 @@ class ScopedSetBoundsNotifier {
 
  private:
   Window* window_;
-  const mojo::Rect old_bounds_;
-  const mojo::Rect new_bounds_;
+  const gfx::Rect old_bounds_;
+  const gfx::Rect new_bounds_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
@@ -202,11 +202,11 @@ void Window::Destroy() {
   LocalDestroy();
 }
 
-void Window::SetBounds(const mojo::Rect& bounds) {
+void Window::SetBounds(const gfx::Rect& bounds) {
   if (!OwnsWindow(connection_, this))
     return;
 
-  if (bounds_.Equals(bounds))
+  if (bounds_ == bounds)
     return;
 
   if (connection_)
@@ -214,7 +214,7 @@ void Window::SetBounds(const mojo::Rect& bounds) {
   LocalSetBounds(bounds_, bounds);
 }
 
-void Window::SetClientArea(const mojo::Rect& client_area) {
+void Window::SetClientArea(const gfx::Rect& client_area) {
   if (!OwnsWindow(connection_, this) && !IsConnectionRoot(this))
     return;
 
@@ -535,25 +535,17 @@ bool Window::LocalReorder(Window* relative, mojom::OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
-void Window::LocalSetBounds(const mojo::Rect& old_bounds,
-                            const mojo::Rect& new_bounds) {
-  DCHECK(old_bounds.x == bounds_.x);
-  DCHECK(old_bounds.y == bounds_.y);
-  DCHECK(old_bounds.width == bounds_.width);
-  DCHECK(old_bounds.height == bounds_.height);
+void Window::LocalSetBounds(const gfx::Rect& old_bounds,
+                            const gfx::Rect& new_bounds) {
+  DCHECK(old_bounds == bounds_);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
-  if (bounds_.width != new_bounds.width ||
-      bounds_.height != new_bounds.height) {
-    client_area_.x = 0;
-    client_area_.y = 0;
-    client_area_.width = new_bounds.width;
-    client_area_.height = new_bounds.height;
-  }
+  if (bounds_.size() != new_bounds.size())
+    client_area_ = gfx::Rect(new_bounds.size());
   bounds_ = new_bounds;
 }
 
-void Window::LocalSetClientArea(const mojo::Rect& new_client_area) {
-  const mojo::Rect old_client_area = client_area_;
+void Window::LocalSetClientArea(const gfx::Rect& new_client_area) {
+  const gfx::Rect old_client_area = client_area_;
   client_area_ = new_client_area;
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowClientAreaChanged(this, old_client_area));

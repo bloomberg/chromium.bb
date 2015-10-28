@@ -68,6 +68,7 @@ mojo_native_application("apptests") {
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
     "//mojo/common:common_base",
+    "//mojo/converters/geometry",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
   ]

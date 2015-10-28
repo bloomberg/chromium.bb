@@ -151,8 +151,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
 
     // The resize and setDeviceScaleFactor() needs to be after setting the main
     // frame.
-    const gfx::Size size_in_pixels(params->window->bounds().width,
-                                   params->window->bounds().height);
+    const gfx::Size size_in_pixels(params->window->bounds().size());
     const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
         params->window->viewport_metrics().device_pixel_ratio, size_in_pixels);
     web_view()->resize(size_in_dips);
@@ -643,10 +642,9 @@ void HTMLFrame::SwapToRemote() {
           cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
                                    base::Bind(&SatisfyCallback),
                                    base::Bind(&RequireCallback));
-    surface_layer_->SetSurfaceId(
-        cc::SurfaceId(owned_window_->window()->id()),
-        global_state()->device_pixel_ratio(),
-        owned_window_->window()->bounds().To<gfx::Rect>().size());
+    surface_layer_->SetSurfaceId(cc::SurfaceId(owned_window_->window()->id()),
+                                 global_state()->device_pixel_ratio(),
+                                 owned_window_->window()->bounds().size());
 
     web_layer_.reset(new cc_blink::WebLayerImpl(surface_layer_));
   }
@@ -745,8 +743,8 @@ void HTMLFrame::FrameDetachedImpl(blink::WebFrame* web_frame) {
 }
 
 void HTMLFrame::OnWindowBoundsChanged(mus::Window* window,
-                                      const Rect& old_bounds,
-                                      const Rect& new_bounds) {
+                                      const gfx::Rect& old_bounds,
+                                      const gfx::Rect& new_bounds) {
   DCHECK_EQ(window, window_);
   if (html_widget_)
     html_widget_->OnWindowBoundsChanged(window);
@@ -1001,8 +999,7 @@ void HTMLFrame::initializeChildFrame(const blink::WebRect& frame_rect,
                               frame_rect.height);
   const gfx::Rect rect_in_pixels(gfx::ConvertRectToPixel(
       global_state()->device_pixel_ratio(), rect_in_dip));
-  const mojo::RectPtr mojo_rect_in_pixels(mojo::Rect::From(rect_in_pixels));
-  window_->SetBounds(*mojo_rect_in_pixels);
+  window_->SetBounds(rect_in_pixels);
 }
 
 void HTMLFrame::navigate(const blink::WebURLRequest& request,
@@ -1028,16 +1025,14 @@ void HTMLFrame::frameRectsChanged(const blink::WebRect& frame_rect) {
                               frame_rect.height);
   const gfx::Rect rect_in_pixels(gfx::ConvertRectToPixel(
       global_state()->device_pixel_ratio(), rect_in_dip));
-  const mojo::RectPtr mojo_rect_in_pixels(mojo::Rect::From(rect_in_pixels));
-  owned_window_->window()->SetBounds(*mojo_rect_in_pixels);
+  owned_window_->window()->SetBounds(rect_in_pixels);
 
   if (!surface_layer_)
     return;
 
-  surface_layer_->SetSurfaceId(
-      cc::SurfaceId(owned_window_->window()->id()),
-      global_state()->device_pixel_ratio(),
-      owned_window_->window()->bounds().To<gfx::Rect>().size());
+  surface_layer_->SetSurfaceId(cc::SurfaceId(owned_window_->window()->id()),
+                               global_state()->device_pixel_ratio(),
+                               owned_window_->window()->bounds().size());
 }
 
 }  // namespace mojo

@@ -90,11 +90,10 @@ void PhoneBrowserApplicationDelegate::OnConnectionLost(
 
 void PhoneBrowserApplicationDelegate::OnWindowBoundsChanged(
     mus::Window* view,
-    const mojo::Rect& old_bounds,
-    const mojo::Rect& new_bounds) {
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
   CHECK_EQ(view, root_);
-  content_->SetBounds(
-      *mojo::Rect::From(gfx::Rect(0, 0, new_bounds.width, new_bounds.height)));
+  content_->SetBounds(gfx::Rect(new_bounds.size()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

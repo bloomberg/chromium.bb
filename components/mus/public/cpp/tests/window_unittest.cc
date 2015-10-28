@@ -7,41 +7,12 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "components/mus/public/cpp/lib/window_private.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/util.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
-#include "ui/gfx/geometry/size.h"
-
-namespace mojo {
-
-template <>
-struct TypeConverter<const std::vector<uint8_t>, gfx::Size> {
-  static const std::vector<uint8_t> Convert(const gfx::Size& input) {
-    std::vector<uint8_t> vec(8);
-    vec[0] = (input.width() >> 24) & 0xFF;
-    vec[1] = (input.width() >> 16) & 0xFF;
-    vec[2] = (input.width() >> 8) & 0xFF;
-    vec[3] = input.width() & 0xFF;
-    vec[4] = (input.height() >> 24) & 0xFF;
-    vec[5] = (input.height() >> 16) & 0xFF;
-    vec[6] = (input.height() >> 8) & 0xFF;
-    vec[7] = input.height() & 0xFF;
-    return vec;
-  }
-};
-
-template <>
-struct TypeConverter < gfx::Size, const std::vector<uint8_t> > {
-  static gfx::Size Convert(const std::vector<uint8_t>& input) {
-    return gfx::Size(
-      input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3],
-      input[4] << 24 | input[5] << 16 | input[6] << 8 | input[7]);
-  }
-};
-
-}  // namespace mojo
+#include "ui/gfx/geometry/rect.h"
 
 namespace mus {
 
@@ -596,9 +567,9 @@ std::string WindowIdToString(Id id) {
                    : base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
 }
 
-std::string RectToString(const mojo::Rect& rect) {
-  return base::StringPrintf("%d,%d %dx%d", rect.x, rect.y, rect.width,
-                            rect.height);
+std::string RectToString(const gfx::Rect& rect) {
+  return base::StringPrintf("%d,%d %dx%d", rect.x(), rect.y(), rect.width(),
+                            rect.height());
 }
 
 class BoundsChangeObserver : public WindowObserver {
@@ -617,16 +588,16 @@ class BoundsChangeObserver : public WindowObserver {
  private:
   // Overridden from WindowObserver:
   void OnWindowBoundsChanging(Window* window,
-                              const mojo::Rect& old_bounds,
-                              const mojo::Rect& new_bounds) override {
+                              const gfx::Rect& old_bounds,
+                              const gfx::Rect& new_bounds) override {
     changes_.push_back(base::StringPrintf(
         "window=%s old_bounds=%s new_bounds=%s phase=changing",
         WindowIdToString(window->id()).c_str(),
         RectToString(old_bounds).c_str(), RectToString(new_bounds).c_str()));
   }
   void OnWindowBoundsChanged(Window* window,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override {
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
     changes_.push_back(base::StringPrintf(
         "window=%s old_bounds=%s new_bounds=%s phase=changed",
         WindowIdToString(window->id()).c_str(),
@@ -645,9 +616,7 @@ TEST_F(WindowObserverTest, SetBounds) {
   TestWindow w1;
   {
     BoundsChangeObserver observer(&w1);
-    mojo::Rect rect;
-    rect.width = rect.height = 100;
-    w1.SetBounds(rect);
+    w1.SetBounds(gfx::Rect(0, 0, 100, 100));
 
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(2U, changes.size());

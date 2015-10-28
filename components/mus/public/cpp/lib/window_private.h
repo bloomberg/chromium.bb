@@ -50,11 +50,11 @@ class WindowPrivate {
   void LocalReorder(Window* relative, mojom::OrderDirection direction) {
     window_->LocalReorder(relative, direction);
   }
-  void LocalSetBounds(const mojo::Rect& old_bounds,
-                      const mojo::Rect& new_bounds) {
+  void LocalSetBounds(const gfx::Rect& old_bounds,
+                      const gfx::Rect& new_bounds) {
     window_->LocalSetBounds(old_bounds, new_bounds);
   }
-  void LocalSetClientArea(const mojo::Rect& new_client_area) {
+  void LocalSetClientArea(const gfx::Rect& new_client_area) {
     window_->LocalSetClientArea(new_client_area);
   }
   void LocalSetDrawn(bool drawn) { window_->LocalSetDrawn(drawn); }

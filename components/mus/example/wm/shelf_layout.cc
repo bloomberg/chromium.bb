@@ -8,6 +8,7 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
+#include "ui/gfx/geometry/rect.h"
 
 ShelfLayout::ShelfLayout(mus::Window* owner) : LayoutManager(owner) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);
@@ -19,10 +20,10 @@ void ShelfLayout::WindowAdded(mus::Window* window) {
 }
 
 void ShelfLayout::LayoutWindow(mus::Window* window) {
-  mojo::Size preferred_size = GetWindowPreferredSize(window);
+  gfx::Size preferred_size = GetWindowPreferredSize(window);
 
-  mojo::Rect container_bounds = owner()->bounds();
-  container_bounds.x = 0;
-  container_bounds.y = container_bounds.height - preferred_size.height;
+  gfx::Rect container_bounds = owner()->bounds();
+  container_bounds.set_origin(
+      gfx::Point(0, container_bounds.height() - preferred_size.height()));
   window->SetBounds(container_bounds);
 }

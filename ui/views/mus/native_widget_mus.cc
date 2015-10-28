@@ -85,8 +85,7 @@ void NativeWidgetMus::UpdateClientAreaInWindowManager() {
   if (!non_client_view || !non_client_view->client_view())
     return;
 
-  window_->SetClientArea(
-      *mojo::Rect::From(non_client_view->client_view()->bounds()));
+  window_->SetClientArea(non_client_view->client_view()->bounds());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,9 +247,7 @@ void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {
-  gfx::Rect bounds = window_->bounds().To<gfx::Rect>();
-  bounds.set_size(size);
-  window_->RequestBoundsChange(bounds);
+  window_->RequestBoundsChange(gfx::Rect(window_->bounds().size()));
 }
 
 void NativeWidgetMus::StackAbove(gfx::NativeView native_view) {

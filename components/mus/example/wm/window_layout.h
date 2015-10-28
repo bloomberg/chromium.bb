@@ -19,7 +19,7 @@ class WindowLayout : public LayoutManager {
   void LayoutWindow(mus::Window* window) override;
 
   void FitToContainer(mus::Window* window);
-  void CenterWindow(mus::Window* window, const mojo::Size& preferred_size);
+  void CenterWindow(mus::Window* window, const gfx::Size& preferred_size);
 
   DISALLOW_COPY_AND_ASSIGN(WindowLayout);
 };

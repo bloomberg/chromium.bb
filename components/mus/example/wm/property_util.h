@@ -8,6 +8,11 @@
 #include "components/mus/example/wm/public/interfaces/container.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 
+namespace gfx {
+class Rect;
+class Size;
+}
+
 namespace mus {
 class Window;
 }
@@ -17,9 +22,9 @@ class Window;
 
 mus::mojom::ShowState GetWindowShowState(mus::Window* window);
 
-mojo::Rect GetWindowUserSetBounds(mus::Window* window);
+gfx::Rect GetWindowUserSetBounds(mus::Window* window);
 
-mojo::Size GetWindowPreferredSize(mus::Window* window);
+gfx::Size GetWindowPreferredSize(mus::Window* window);
 
 ash::mojom::Container GetRequestedContainer(mus::Window* window);
 

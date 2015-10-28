@@ -75,8 +75,8 @@ class WebViewImpl : public mojom::WebView,
 
   // Overridden from mus::WindowObserver:
   void OnWindowBoundsChanged(mus::Window* window,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override;
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
   void OnWindowDestroyed(mus::Window* window) override;
 
   // Overridden from FrameTreeDelegate:

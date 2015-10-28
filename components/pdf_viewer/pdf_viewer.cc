@@ -124,7 +124,7 @@ class BitmapUploader : public mus::mojom::SurfaceClient {
 
  private:
   void Upload() {
-    gfx::Rect bounds(view_->bounds().To<gfx::Rect>());
+    const gfx::Rect bounds(view_->bounds());
     mus::mojom::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
     mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();
 
@@ -392,8 +392,8 @@ class PDFView : public mus::WindowTreeDelegate,
 
   // WindowObserver:
   void OnWindowBoundsChanged(mus::Window* view,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override {
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
     DrawBitmap();
   }
 

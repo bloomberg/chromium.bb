@@ -49,13 +49,13 @@ class WindowObserver {
   virtual void OnWindowDestroyed(Window* window) {}
 
   virtual void OnWindowBoundsChanging(Window* window,
-                                      const mojo::Rect& old_bounds,
-                                      const mojo::Rect& new_bounds) {}
+                                      const gfx::Rect& old_bounds,
+                                      const gfx::Rect& new_bounds) {}
   virtual void OnWindowBoundsChanged(Window* window,
-                                     const mojo::Rect& old_bounds,
-                                     const mojo::Rect& new_bounds) {}
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) {}
   virtual void OnWindowClientAreaChanged(Window* window,
-                                         const mojo::Rect& old_client_area) {}
+                                         const gfx::Rect& old_client_area) {}
 
   virtual void OnWindowViewportMetricsChanged(
       Window* window,

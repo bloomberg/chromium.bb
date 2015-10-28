@@ -76,8 +76,6 @@ mojo_sdk_source_set("cpp") {
 source_set("common") {
   sources = [
     "args.h",
-    "keys.cc",
-    "keys.h",
     "lib/args.cc",
     "types.h",
     "util.h",

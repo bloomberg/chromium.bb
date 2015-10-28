@@ -4,9 +4,7 @@
 
 #include "components/mus/example/wm/background_layout.h"
 
-#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_property.h"
 
 BackgroundLayout::BackgroundLayout(mus::Window* owner) : LayoutManager(owner) {}
 BackgroundLayout::~BackgroundLayout() {}
@@ -16,8 +14,5 @@ void BackgroundLayout::WindowAdded(mus::Window* window) {
 }
 
 void BackgroundLayout::LayoutWindow(mus::Window* window) {
-  mojo::Rect container_bounds = owner()->bounds();
-  container_bounds.x = 0;
-  container_bounds.y = 0;
-  window->SetBounds(container_bounds);
+  window->SetBounds(gfx::Rect(owner()->bounds().size()));
 }

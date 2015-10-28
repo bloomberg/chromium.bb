@@ -75,8 +75,7 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
   client_->TopLevelNavigationStarted(pending_url.spec());
 
   content_ = root_->connection()->NewWindow();
-  content_->SetBounds(*mojo::Rect::From(
-      gfx::Rect(0, 0, root_->bounds().width, root_->bounds().height)));
+  content_->SetBounds(gfx::Rect(root_->bounds().size()));
   root_->AddChild(content_);
   content_->SetVisible(true);
   content_->AddObserver(this);
@@ -167,15 +166,10 @@ void WebViewImpl::OnConnectionLost(mus::WindowTreeConnection* connection) {
 // WebViewImpl, mus::WindowObserver implementation:
 
 void WebViewImpl::OnWindowBoundsChanged(mus::Window* window,
-                                        const mojo::Rect& old_bounds,
-                                        const mojo::Rect& new_bounds) {
-  if (window != content_) {
-    mojo::Rect rect;
-    rect.width = new_bounds.width;
-    rect.height = new_bounds.height;
-    if (content_)
-      content_->SetBounds(rect);
-  }
+                                        const gfx::Rect& old_bounds,
+                                        const gfx::Rect& new_bounds) {
+  if (window != content_ && content_)
+    content_->SetBounds(gfx::Rect(new_bounds.size()));
 }
 
 void WebViewImpl::OnWindowDestroyed(mus::Window* window) {

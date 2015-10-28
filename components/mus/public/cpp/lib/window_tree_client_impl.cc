@@ -15,7 +15,6 @@
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mus {
@@ -48,7 +47,8 @@ Window* AddWindowToConnection(WindowTreeClientImpl* client,
       window_data->properties
           .To<std::map<std::string, std::vector<uint8_t>>>());
   client->AddWindow(window);
-  private_window.LocalSetBounds(mojo::Rect(), *window_data->bounds);
+  private_window.LocalSetBounds(gfx::Rect(),
+                                window_data->bounds.To<gfx::Rect>());
   if (parent)
     WindowPrivate(parent).LocalAddChild(window);
   return window;
@@ -161,15 +161,16 @@ bool WindowTreeClientImpl::OwnsWindow(Id id) const {
   return HiWord(id) == connection_id_;
 }
 
-void WindowTreeClientImpl::SetBounds(Id window_id, const mojo::Rect& bounds) {
+void WindowTreeClientImpl::SetBounds(Id window_id, const gfx::Rect& bounds) {
   DCHECK(tree_);
-  tree_->SetWindowBounds(window_id, bounds.Clone(), ActionCompletedCallback());
+  tree_->SetWindowBounds(window_id, mojo::Rect::From(bounds),
+                         ActionCompletedCallback());
 }
 
 void WindowTreeClientImpl::SetClientArea(Id window_id,
-                                         const mojo::Rect& client_area) {
+                                         const gfx::Rect& client_area) {
   DCHECK(tree_);
-  tree_->SetClientArea(window_id, client_area.Clone());
+  tree_->SetClientArea(window_id, mojo::Rect::From(client_area));
 }
 
 void WindowTreeClientImpl::SetFocus(Id window_id) {
@@ -347,7 +348,8 @@ void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,
                                                  mojo::RectPtr old_bounds,
                                                  mojo::RectPtr new_bounds) {
   Window* window = GetWindowById(window_id);
-  WindowPrivate(window).LocalSetBounds(*old_bounds, *new_bounds);
+  WindowPrivate(window)
+      .LocalSetBounds(old_bounds.To<gfx::Rect>(), new_bounds.To<gfx::Rect>());
 }
 
 void WindowTreeClientImpl::OnClientAreaChanged(uint32_t window_id,
@@ -355,7 +357,7 @@ void WindowTreeClientImpl::OnClientAreaChanged(uint32_t window_id,
                                                mojo::RectPtr new_client_area) {
   Window* window = GetWindowById(window_id);
   if (window)
-    WindowPrivate(window).LocalSetClientArea(*new_client_area);
+    WindowPrivate(window).LocalSetClientArea(new_client_area.To<gfx::Rect>());
 }
 
 namespace {

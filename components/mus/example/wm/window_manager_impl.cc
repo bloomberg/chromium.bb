@@ -13,6 +13,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
 namespace {
@@ -56,8 +57,8 @@ void WindowManagerImpl::OpenWindow(
   mus::Window* root = state_->root();
   DCHECK(root);
 
-  const int width = (root->bounds().width - 240);
-  const int height = (root->bounds().height - 240);
+  const int width = (root->bounds().width() - 240);
+  const int height = (root->bounds().height() - 240);
 
   mus::Window* child_window = root->connection()->NewWindow();
   // TODO(beng): mus::Window should have a "SetSharedProperties" method that
@@ -65,11 +66,8 @@ void WindowManagerImpl::OpenWindow(
   for (auto prop : properties)
     child_window->SetSharedProperty(prop.GetKey(), prop.GetValue());
 
-  mojo::Rect bounds;
-  bounds.x = 40 + (state_->window_count() % 4) * 40;
-  bounds.y = 40 + (state_->window_count() % 4) * 40;
-  bounds.width = width;
-  bounds.height = height;
+  gfx::Rect bounds(40 + (state_->window_count() % 4) * 40,
+                   40 + (state_->window_count() % 4) * 40, width, height);
   child_window->SetBounds(bounds);
   GetContainerForChild(child_window)->AddChild(child_window);
   child_window->Embed(client.Pass());
@@ -83,8 +81,8 @@ void WindowManagerImpl::SetPreferredSize(
     mojo::SizePtr size,
     const WindowManagerErrorCodeCallback& callback) {
   mus::Window* window = state_->GetWindowById(window_id);
-  window->SetSharedProperty<mojo::Size>(
-      mus::mojom::WindowManager::kPreferredSize_Property, *size);
+  window->SetSharedProperty<gfx::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, size.To<gfx::Size>());
 
   callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
@@ -94,7 +92,7 @@ void WindowManagerImpl::SetBounds(
     mojo::RectPtr bounds,
     const WindowManagerErrorCodeCallback& callback) {
   mus::Window* window = state_->root()->GetChildById(window_id);
-  window->SetBounds(*bounds);
+  window->SetBounds(bounds->To<gfx::Rect>());
   callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }
 
@@ -114,8 +112,8 @@ void WindowManagerImpl::GetDisplays(const GetDisplaysCallback& callback) {
   displays[0]->id = 2001;
   displays[0]->bounds = mojo::Rect::New();
   displays[0]->bounds->y = 0;
-  displays[0]->bounds->width = state_->root()->bounds().width;
-  displays[0]->bounds->height = state_->root()->bounds().width;
+  displays[0]->bounds->width = state_->root()->bounds().width();
+  displays[0]->bounds->height = state_->root()->bounds().width();
   displays[0]->work_area = displays[0]->bounds.Clone();
   displays[0]->device_pixel_ratio =
       state_->root()->viewport_metrics().device_pixel_ratio;

@@ -5,8 +5,15 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_PROPERTY_TYPE_CONVERTERS_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_PROPERTY_TYPE_CONVERTERS_H_
 
-#include "components/mus/public/interfaces/window_manager.mojom.h"
-#include "ui/mojo/geometry/geometry.mojom.h"
+#include <stdint.h>
+#include <vector>
+
+#include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
+
+namespace gfx {
+class Rect;
+class Size;
+}
 
 namespace mojo {
 
@@ -15,21 +22,21 @@ namespace mojo {
 //             replace this with serialization code generated @ bindings.
 
 template <>
-struct TypeConverter<const std::vector<uint8_t>, Rect> {
-  static const std::vector<uint8_t> Convert(const Rect& input);
+struct TypeConverter<const std::vector<uint8_t>, gfx::Rect> {
+  static const std::vector<uint8_t> Convert(const gfx::Rect& input);
 };
 template <>
-struct TypeConverter<Rect, const std::vector<uint8_t>> {
-  static Rect Convert(const std::vector<uint8_t>& input);
+struct TypeConverter<gfx::Rect, const std::vector<uint8_t>> {
+  static gfx::Rect Convert(const std::vector<uint8_t>& input);
 };
 
 template <>
-struct TypeConverter<const std::vector<uint8_t>, Size> {
-  static const std::vector<uint8_t> Convert(const Size& input);
+struct TypeConverter<const std::vector<uint8_t>, gfx::Size> {
+  static const std::vector<uint8_t> Convert(const gfx::Size& input);
 };
 template <>
-struct TypeConverter<Size, const std::vector<uint8_t>> {
-  static Size Convert(const std::vector<uint8_t>& input);
+struct TypeConverter<gfx::Size, const std::vector<uint8_t>> {
+  static gfx::Size Convert(const std::vector<uint8_t>& input);
 };
 
 template <>

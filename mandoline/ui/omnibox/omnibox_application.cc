@@ -13,7 +13,6 @@
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -139,7 +138,7 @@ void OmniboxImpl::OnEmbed(mus::Window* root) {
   params.native_widget =
       new views::NativeWidgetViewManager(widget, app_->shell(), root);
   params.delegate = widget_delegate;
-  params.bounds = root->bounds().To<gfx::Rect>();
+  params.bounds = root->bounds();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   widget->Init(params);
   widget->Show();

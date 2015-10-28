@@ -17,10 +17,9 @@
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
-#include "ui/mojo/geometry/geometry.mojom.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
-class Rect;
 class Size;
 }
 
@@ -61,11 +60,11 @@ class Window {
   Id id() const { return id_; }
 
   // Geometric disposition.
-  const mojo::Rect& bounds() const { return bounds_; }
-  void SetBounds(const mojo::Rect& bounds);
+  const gfx::Rect& bounds() const { return bounds_; }
+  void SetBounds(const gfx::Rect& bounds);
 
-  const mojo::Rect& client_area() const { return client_area_; }
-  void SetClientArea(const mojo::Rect& client_area);
+  const gfx::Rect& client_area() const { return client_area_; }
+  void SetClientArea(const gfx::Rect& client_area);
 
   // Visibility (also see IsDrawn()). When created windows are hidden.
   bool visible() const { return visible_; }
@@ -200,9 +199,8 @@ class Window {
   void LocalRemoveChild(Window* child);
   // Returns true if the order actually changed.
   bool LocalReorder(Window* relative, mojom::OrderDirection direction);
-  void LocalSetBounds(const mojo::Rect& old_bounds,
-                      const mojo::Rect& new_bounds);
-  void LocalSetClientArea(const mojo::Rect& new_client_area);
+  void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
+  void LocalSetClientArea(const gfx::Rect& new_client_area);
   void LocalSetViewportMetrics(const mojom::ViewportMetrics& old_metrics,
                                const mojom::ViewportMetrics& new_metrics);
   void LocalSetDrawn(bool drawn);
@@ -233,8 +231,8 @@ class Window {
 
   base::ObserverList<WindowObserver> observers_;
 
-  mojo::Rect bounds_;
-  mojo::Rect client_area_;
+  gfx::Rect bounds_;
+  gfx::Rect client_area_;
 
   mojom::ViewportMetricsPtr viewport_metrics_;
 

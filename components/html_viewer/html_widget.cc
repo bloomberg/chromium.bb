@@ -45,8 +45,7 @@ void InitializeWebLayerTreeView(WebLayerTreeViewImpl* web_layer_tree_view,
 void UpdateWebViewSizeFromViewSize(mus::Window* window,
                                    blink::WebWidget* web_widget,
                                    WebLayerTreeViewImpl* web_layer_tree_view) {
-  const gfx::Size size_in_pixels(window->bounds().width,
-                                 window->bounds().height);
+  const gfx::Size size_in_pixels(window->bounds().size());
   const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
       window->viewport_metrics().device_pixel_ratio, size_in_pixels);
   web_widget->resize(

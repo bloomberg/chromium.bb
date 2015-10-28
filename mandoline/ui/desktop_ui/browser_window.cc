@@ -352,18 +352,16 @@ void BrowserWindow::Layout(views::View* host) {
                                 toolbar_bounds.width(), 5);
 
   // The content view bounds are in physical pixels.
-  mojo::Rect content_bounds_mojo;
-  content_bounds_mojo.x = DIPSToPixels(progress_bar_bounds.x());
-  content_bounds_mojo.y = DIPSToPixels(progress_bar_bounds.bottom()+ 10);
-  content_bounds_mojo.width = DIPSToPixels(progress_bar_bounds.width());
-  content_bounds_mojo.height =
-      host->bounds().height() - content_bounds_mojo.y - DIPSToPixels(10);
-  content_->SetBounds(content_bounds_mojo);
+  gfx::Rect content_bounds(DIPSToPixels(progress_bar_bounds.x()),
+                           DIPSToPixels(progress_bar_bounds.bottom() + 10), 0,
+                           0);
+  content_bounds.set_width(DIPSToPixels(progress_bar_bounds.width()));
+  content_bounds.set_height(host->bounds().height() - content_bounds.y() -
+                            DIPSToPixels(10));
+  content_->SetBounds(content_bounds);
 
   // The omnibox view bounds are in physical pixels.
-  omnibox_view_->SetBounds(
-      mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(
-          bounds_in_physical_pixels));
+  omnibox_view_->SetBounds(bounds_in_physical_pixels);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,7 +407,7 @@ void BrowserWindow::Init(mus::Window* root) {
   params.native_widget =
       new views::NativeWidgetViewManager(widget, app_->shell(), root_);
   params.delegate = widget_delegate;
-  params.bounds = root_->bounds().To<gfx::Rect>();
+  params.bounds = root_->bounds();
   widget->Init(params);
   widget->Show();
   root_->SetFocus();

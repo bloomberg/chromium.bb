@@ -14,9 +14,9 @@ import "ui/mojo/geometry/geometry.mojom";
 // created by calls to OpenWindow() from the *same connection* to the window
 // manager. The callback indicates success or failure.
 interface WindowManager {
-  // The window bounds as set by user input. Type: mojo::Rect.
+  // The window bounds as set by user input. Type: gfx::Rect.
   const string kUserSetBounds_Property = "prop:user-set-bounds";
-  // The window's preferred size as defined by its content. Type: mojo::Size.
+  // The window's preferred size as defined by its content. Type: gfx::Size.
   const string kPreferredSize_Property = "prop:preferred-size";
   // The window's show state. Type: ShowState.
   const string kShowState_Property = "prop:show-state";

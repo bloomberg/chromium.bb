@@ -18,8 +18,8 @@ WindowLayout::~WindowLayout() {}
 
 void WindowLayout::LayoutWindow(mus::Window* window) {
   mus::mojom::ShowState show_state = GetWindowShowState(window);
-  mojo::Rect user_set_bounds = GetWindowUserSetBounds(window);
-  mojo::Size preferred_size = GetWindowPreferredSize(window);
+  gfx::Rect user_set_bounds = GetWindowUserSetBounds(window);
+  gfx::Size preferred_size = GetWindowPreferredSize(window);
 
   // Maximized/fullscreen/presentation windows should be sized to the bounds
   // of the container.
@@ -37,10 +37,10 @@ void WindowLayout::LayoutWindow(mus::Window* window) {
       FitToContainer(window);
       break;
     case mus::mojom::SHOW_STATE_RESTORED: {
-      if (user_set_bounds != mojo::Rect()) {
+      if (!user_set_bounds.IsEmpty()) {
         // If the bounds are unchanged, this will do nothing.
         window->SetBounds(user_set_bounds);
-      } else if (preferred_size != mojo::Size()) {
+      } else if (!preferred_size.IsEmpty()) {
         CenterWindow(window, preferred_size);
       }
     }
@@ -53,18 +53,14 @@ void WindowLayout::LayoutWindow(mus::Window* window) {
 }
 
 void WindowLayout::FitToContainer(mus::Window* window) {
-  mojo::Rect container_bounds = owner()->bounds();
-  container_bounds.x = 0;
-  container_bounds.y = 0;
-  window->SetBounds(container_bounds);
+  window->SetBounds(gfx::Rect(owner()->bounds().size()));
 }
 
 void WindowLayout::CenterWindow(mus::Window* window,
-                                const mojo::Size& preferred_size) {
-  mojo::Rect bounds;
-  bounds.x = (owner()->bounds().width - preferred_size.width) / 2;
-  bounds.y = (owner()->bounds().height - preferred_size.height) / 2;
-  bounds.width = preferred_size.width;
-  bounds.height = preferred_size.height;
+                                const gfx::Size& preferred_size) {
+  const gfx::Rect bounds(
+      (owner()->bounds().width() - preferred_size.width()) / 2,
+      (owner()->bounds().height() - preferred_size.height()) / 2,
+      preferred_size.width(), preferred_size.height());
   window->SetBounds(bounds);
 }

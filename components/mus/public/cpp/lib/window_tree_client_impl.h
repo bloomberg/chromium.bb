@@ -12,7 +12,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace gfx {
-class Rect;
 class Size;
 }
 
@@ -52,8 +51,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Returns true if the specified window was created by this connection.
   bool OwnsWindow(Id id) const;
 
-  void SetBounds(Id window_id, const mojo::Rect& bounds);
-  void SetClientArea(Id window_id, const mojo::Rect& client_area);
+  void SetBounds(Id window_id, const gfx::Rect& bounds);
+  void SetClientArea(Id window_id, const gfx::Rect& client_area);
   void SetFocus(Id window_id);
   void SetVisible(Id window_id, bool visible);
   void SetProperty(Id window_id,

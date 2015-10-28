@@ -50,8 +50,8 @@ class PhoneBrowserApplicationDelegate
 
   // Overridden from mus::WindowObserver:
   void OnWindowBoundsChanged(mus::Window* view,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override;
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
   // Overridden from web_view::mojom::WebViewClient:
   void TopLevelNavigateRequest(mojo::URLRequestPtr request) override;

@@ -34,10 +34,9 @@ void LayoutManager::OnTreeChanged(
   }
 }
 
-void LayoutManager::OnWindowBoundsChanged(
-    mus::Window* window,
-    const mojo::Rect& old_bounds,
-    const mojo::Rect& new_bounds) {
+void LayoutManager::OnWindowBoundsChanged(mus::Window* window,
+                                          const gfx::Rect& old_bounds,
+                                          const gfx::Rect& new_bounds) {
   if (window != owner_)
     return;
 

@@ -96,7 +96,7 @@ void TestRunnerApplicationDelegate::OnEmbed(mus::Window* root) {
 
   content_ = root_->connection()->NewWindow();
   root_->AddChild(content_);
-  content_->SetBounds(*mojo::Rect::From(gfx::Rect(kViewportSize)));
+  content_->SetBounds(gfx::Rect(kViewportSize));
   content_->SetVisible(true);
 
   std::cout << "#READY\n";

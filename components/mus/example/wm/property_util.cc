@@ -7,6 +7,8 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 mus::mojom::ShowState GetWindowShowState(mus::Window* window) {
   if (window->HasSharedProperty(
@@ -18,22 +20,22 @@ mus::mojom::ShowState GetWindowShowState(mus::Window* window) {
   return mus::mojom::SHOW_STATE_RESTORED;
 }
 
-mojo::Rect GetWindowUserSetBounds(mus::Window* window) {
+gfx::Rect GetWindowUserSetBounds(mus::Window* window) {
   if (window->HasSharedProperty(
       mus::mojom::WindowManager::kUserSetBounds_Property)) {
-    return window->GetSharedProperty<mojo::Rect>(
+    return window->GetSharedProperty<gfx::Rect>(
         mus::mojom::WindowManager::kUserSetBounds_Property);
   }
-  return mojo::Rect();
+  return gfx::Rect();
 }
 
-mojo::Size GetWindowPreferredSize(mus::Window* window) {
+gfx::Size GetWindowPreferredSize(mus::Window* window) {
   if (window->HasSharedProperty(
       mus::mojom::WindowManager::kPreferredSize_Property)) {
-    return window->GetSharedProperty<mojo::Size>(
+    return window->GetSharedProperty<gfx::Size>(
         mus::mojom::WindowManager::kPreferredSize_Property);
   }
-  return mojo::Size();
+  return gfx::Size();
 }
 
 ash::mojom::Container GetRequestedContainer(mus::Window* window) {

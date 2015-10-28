@@ -50,8 +50,8 @@ class MoveLoop : public mus::WindowObserver {
   // mus::WindowObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
   void OnWindowBoundsChanged(mus::Window* window,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override;
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
   void OnWindowVisibilityChanged(mus::Window* window) override;
 
   // The window this MoveLoop is acting on. |target_| is set to null if the

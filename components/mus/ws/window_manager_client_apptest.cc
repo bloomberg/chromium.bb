@@ -33,8 +33,8 @@ class BoundsChangeObserver : public WindowObserver {
  private:
   // Overridden from WindowObserver:
   void OnWindowBoundsChanged(Window* window,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override {
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
     DCHECK_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
@@ -61,7 +61,7 @@ class ClientAreaChangeObserver : public WindowObserver {
  private:
   // Overridden from WindowObserver:
   void OnWindowClientAreaChanged(Window* window,
-                                 const mojo::Rect& old_client_area) override {
+                                 const gfx::Rect& old_client_area) override {
     DCHECK_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
@@ -353,11 +353,9 @@ TEST_F(WindowServerTest, SetBounds) {
   Window* window_in_embedded = embedded->GetWindowById(window->id());
   EXPECT_EQ(window->bounds(), window_in_embedded->bounds());
 
-  mojo::Rect rect;
-  rect.width = rect.height = 100;
-  window->SetBounds(rect);
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
-  EXPECT_EQ(window->bounds(), window_in_embedded->bounds());
+  EXPECT_TRUE(window->bounds() == window_in_embedded->bounds());
 }
 
 // Verifies that bounds changes applied to a window owned by a different
@@ -370,17 +368,12 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
   ASSERT_NE(nullptr, embedded);
 
   Window* window_in_embedded = embedded->GetWindowById(window->id());
-  mojo::Rect rect;
-  rect.width = 800;
-  rect.height = 600;
-  window->SetBounds(rect);
+  window->SetBounds(gfx::Rect(0, 0, 800, 600));
   ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
 
-  rect.width = 1024;
-  rect.height = 768;
-  window_in_embedded->SetBounds(rect);
+  window_in_embedded->SetBounds(gfx::Rect(0, 0, 1024, 768));
   // Bounds change should have been rejected.
-  EXPECT_EQ(window->bounds(), window_in_embedded->bounds());
+  EXPECT_TRUE(window->bounds() == window_in_embedded->bounds());
 }
 
 // Verifies that a window can only be destroyed by the connection that created
@@ -881,19 +874,17 @@ TEST_F(WindowServerTest, ClientAreaChanged) {
   WindowTreeConnection* embedded_connection = Embed(embed_window).connection;
 
   // Verify change from embedded makes it to parent.
-  embedded_connection->GetRoot()->SetClientArea(
-      *mojo::Rect::From(gfx::Rect(1, 2, 3, 4)));
+  embedded_connection->GetRoot()->SetClientArea(gfx::Rect(1, 2, 3, 4));
   ASSERT_TRUE(WaitForClientAreaToChange(embed_window));
-  EXPECT_TRUE(gfx::Rect(1, 2, 3, 4) ==
-              embed_window->client_area().To<gfx::Rect>());
+  EXPECT_TRUE(gfx::Rect(1, 2, 3, 4) == embed_window->client_area());
 
   // Verify bounds change results in resetting client area in embedded.
-  embed_window->SetBounds(*mojo::Rect::From(gfx::Rect(21, 22, 23, 24)));
+  embed_window->SetBounds(gfx::Rect(21, 22, 23, 24));
   WaitForBoundsToChange(embedded_connection->GetRoot());
   EXPECT_TRUE(gfx::Rect(21, 22, 23, 24) ==
-              embedded_connection->GetRoot()->bounds().To<gfx::Rect>());
+              embedded_connection->GetRoot()->bounds());
   EXPECT_TRUE(gfx::Rect(0, 0, 23, 24) ==
-              embedded_connection->GetRoot()->client_area().To<gfx::Rect>());
+              embedded_connection->GetRoot()->client_area());
 }
 
 }  // namespace ws

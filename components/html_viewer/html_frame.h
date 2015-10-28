@@ -266,8 +266,8 @@ class HTMLFrame : public blink::WebFrameClient,
 
   // mus::WindowObserver methods:
   void OnWindowBoundsChanged(mus::Window* window,
-                             const mojo::Rect& old_bounds,
-                             const mojo::Rect& new_bounds) override;
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
   void OnWindowDestroyed(mus::Window* window) override;
   void OnWindowInputEvent(mus::Window* window,
                           const mojo::EventPtr& event) override;
