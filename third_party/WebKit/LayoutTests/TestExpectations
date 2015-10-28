@@ -335,7 +335,7 @@ crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
-crbug.com/504745 [ Linux ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Timeout Failure ]
+crbug.com/504745 [ Linux Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
