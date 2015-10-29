@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -22,16 +24,23 @@ namespace chromeos {
 class ShillClientHelper::RefHolder {
  public:
   explicit RefHolder(base::WeakPtr<ShillClientHelper> helper)
-      : helper_(helper) {
+      : helper_(helper),
+        origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
     helper_->AddRef();
   }
   ~RefHolder() {
-    if (helper_)
-      helper_->Release();
+    // Release the helper on the origin thread.
+    base::Closure closure = base::Bind(&ShillClientHelper::Release, helper_);
+    if (origin_task_runner_->BelongsToCurrentThread()) {
+      closure.Run();
+    } else {
+      origin_task_runner_->PostTask(FROM_HERE, closure);
+    }
   }
 
  private:
   base::WeakPtr<ShillClientHelper> helper_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
 };
 
 namespace {
