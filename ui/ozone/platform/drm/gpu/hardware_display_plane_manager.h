@@ -123,6 +123,8 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
                     const OverlayPlane& overlay,
                     uint32_t crtc_index) const;
 
+  void ResetCurrentPlaneList(HardwareDisplayPlaneList* plane_list) const;
+
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.
   DrmDevice* drm_;

@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 
+#include <drm_fourcc.h>
+
 #include <set>
 
 #include "base/logging.h"
@@ -178,6 +180,20 @@ bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
   return true;
 }
 
+void HardwareDisplayPlaneManager::ResetCurrentPlaneList(
+    HardwareDisplayPlaneList* plane_list) const {
+  for (auto* hardware_plane : plane_list->plane_list) {
+    hardware_plane->set_in_use(false);
+    hardware_plane->set_owning_crtc(0);
+  }
+
+  plane_list->plane_list.clear();
+  plane_list->legacy_page_flips.clear();
+#if defined(USE_DRM_ATOMIC)
+  plane_list->atomic_property_set.reset(drmModeAtomicAlloc());
+#endif
+}
+
 void HardwareDisplayPlaneManager::BeginFrame(
     HardwareDisplayPlaneList* plane_list) {
   for (auto* plane : plane_list->old_plane_list) {
@@ -197,18 +213,24 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
   }
 
   size_t plane_idx = 0;
+  HardwareDisplayPlane* primary_plane = nullptr;
+  gfx::Rect primary_display_bounds;
+  gfx::Rect primary_src_rect;
+  uint32_t primary_format;
   for (const auto& plane : overlay_list) {
     HardwareDisplayPlane* hw_plane =
         FindNextUnusedPlane(&plane_idx, crtc_index, plane);
     if (!hw_plane) {
       LOG(ERROR) << "Failed to find a free plane for crtc " << crtc_id;
+      ResetCurrentPlaneList(plane_list);
       return false;
     }
 
     gfx::Rect fixed_point_rect;
+    uint32_t fourcc_format = plane.buffer->GetFramebufferPixelFormat();
     if (hw_plane->type() != HardwareDisplayPlane::kDummy) {
       const gfx::Size& size = plane.buffer->GetSize();
-      gfx::RectF crop_rect = gfx::RectF(plane.crop_rect);
+      gfx::RectF crop_rect = plane.crop_rect;
       crop_rect.Scale(size.width(), size.height());
 
       // This returns a number in 16.16 fixed point, required by the DRM overlay
@@ -221,14 +243,37 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
                                    to_fixed_point(crop_rect.height()));
     }
 
-    plane_list->plane_list.push_back(hw_plane);
-    hw_plane->set_owning_crtc(crtc_id);
-    if (SetPlaneData(plane_list, hw_plane, plane, crtc_id, fixed_point_rect,
-                     crtc)) {
-      hw_plane->set_in_use(true);
+    // If Overlay completely covers primary and isn't transparent, than use
+    // it as primary. This reduces the no of planes which need to be read in
+    // display controller side.
+    if (primary_plane) {
+      bool needs_blending = true;
+      if (fourcc_format == DRM_FORMAT_XRGB8888)
+        needs_blending = false;
+      // TODO(kalyank): Check if we can move this optimization to
+      // DrmOverlayCandidatesHost.
+      if (!needs_blending && primary_format == fourcc_format &&
+          primary_display_bounds == plane.display_bounds &&
+          fixed_point_rect == primary_src_rect) {
+        ResetCurrentPlaneList(plane_list);
+        hw_plane = primary_plane;
+      }
     } else {
+      primary_plane = hw_plane;
+      primary_display_bounds = plane.display_bounds;
+      primary_src_rect = fixed_point_rect;
+      primary_format = fourcc_format;
+    }
+
+    if (!SetPlaneData(plane_list, hw_plane, plane, crtc_id, fixed_point_rect,
+                      crtc)) {
+      ResetCurrentPlaneList(plane_list);
       return false;
     }
+
+    plane_list->plane_list.push_back(hw_plane);
+    hw_plane->set_owning_crtc(crtc_id);
+    hw_plane->set_in_use(true);
   }
   return true;
 }

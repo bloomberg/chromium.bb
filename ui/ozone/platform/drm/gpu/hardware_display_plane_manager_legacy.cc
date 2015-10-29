@@ -83,9 +83,15 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
       }
     }
   }
-  plane_list->plane_list.swap(plane_list->old_plane_list);
-  plane_list->plane_list.clear();
-  plane_list->legacy_page_flips.clear();
+
+  if (ret) {
+    plane_list->plane_list.swap(plane_list->old_plane_list);
+    plane_list->plane_list.clear();
+    plane_list->legacy_page_flips.clear();
+  } else {
+    ResetCurrentPlaneList(plane_list);
+  }
+
   return ret;
 }
 

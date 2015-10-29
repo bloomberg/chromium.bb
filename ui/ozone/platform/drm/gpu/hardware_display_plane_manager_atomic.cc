@@ -65,7 +65,6 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   } else {
     plane_list->plane_list.swap(plane_list->old_plane_list);
   }
-  plane_list->plane_list.clear();
 
   uint32_t flags = 0;
   if (test_only) {
@@ -78,8 +77,11 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
                               crtcs.size(),
                               base::Bind(&AtomicPageFlipCallback, crtcs))) {
     PLOG(ERROR) << "Failed to commit properties";
+    ResetCurrentPlaneList(plane_list);
     return false;
   }
+
+  plane_list->plane_list.clear();
   plane_list->atomic_property_set.reset(drmModeAtomicAlloc());
   return true;
 }
