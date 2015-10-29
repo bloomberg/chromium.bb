@@ -113,13 +113,17 @@ class ExclusiveAccessBubbleViews::ExclusiveAccessView
  private:
   ExclusiveAccessBubbleViews* bubble_;
 
-  // Clickable hint text for exiting fullscreen mode.
+  // Clickable hint text for exiting fullscreen mode. (Non-simplified mode
+  // only.)
   views::Link* link_;
-  // Instruction for exiting mouse lock.
-  views::Label* mouse_lock_exit_instruction_;
-  // Informational label: 'www.foo.com has gone fullscreen'.
+  // Informational label: 'www.foo.com has gone fullscreen'. (Non-simplified
+  // mode only.)
   views::Label* message_label_;
+  // Clickable buttons to exit fullscreen. (Non-simplified mode only.)
   ButtonView* button_view_;
+  // Instruction for exiting fullscreen / mouse lock. Only present if there is
+  // no link or button (always present in simplified mode).
+  views::Label* exit_instruction_;
   const base::string16 browser_fullscreen_exit_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessView);
@@ -132,9 +136,9 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
     ExclusiveAccessBubbleType bubble_type)
     : bubble_(bubble),
       link_(nullptr),
-      mouse_lock_exit_instruction_(nullptr),
       message_label_(nullptr),
       button_view_(nullptr),
+      exit_instruction_(nullptr),
       browser_fullscreen_exit_accelerator_(accelerator) {
   views::BubbleBorder::Shadow shadow_type = views::BubbleBorder::BIG_SHADOW;
 #if defined(OS_LINUX)
@@ -172,12 +176,12 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
     message_label_->SetBackgroundColor(background_color);
   }
 
-  mouse_lock_exit_instruction_ =
+  exit_instruction_ =
       new views::Label(bubble_->GetInstructionText(), medium_font_list);
-  mouse_lock_exit_instruction_->set_collapse_when_hidden(true);
+  exit_instruction_->set_collapse_when_hidden(true);
 
-  mouse_lock_exit_instruction_->SetEnabledColor(foreground_color);
-  mouse_lock_exit_instruction_->SetBackgroundColor(background_color);
+  exit_instruction_->SetEnabledColor(foreground_color);
+  exit_instruction_->SetBackgroundColor(background_color);
 
   link_ = new views::Link();
   link_->set_collapse_when_hidden(true);
@@ -217,7 +221,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
     layout->AddView(message_label_);
   }
   layout->AddView(button_view_);
-  layout->AddView(mouse_lock_exit_instruction_);
+  layout->AddView(exit_instruction_);
   layout->AddView(link_);
 
   gfx::Insets padding(kPaddingPx, kPaddingPx, kPaddingPx, kPaddingPx);
@@ -258,7 +262,7 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
 
   if (exclusive_access_bubble::ShowButtonsForType(bubble_type)) {
     link_->SetVisible(false);
-    mouse_lock_exit_instruction_->SetVisible(false);
+    exit_instruction_->SetVisible(false);
     button_view_->SetVisible(true);
     button_view_->deny_button()->SetText(bubble_->GetCurrentDenyButtonText());
     button_view_->deny_button()->SetMinSize(gfx::Size());
@@ -289,7 +293,7 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
     }
 #endif
     link_->SetVisible(link_visible);
-    mouse_lock_exit_instruction_->SetVisible(!link_visible);
+    exit_instruction_->SetVisible(!link_visible);
     button_view_->SetVisible(false);
   }
 }
