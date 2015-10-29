@@ -67,7 +67,7 @@ void Fatal(ScriptContext* context, const std::string& message) {
 
 void Warn(v8::Isolate* isolate, const std::string& message) {
   ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(isolate->GetCallingContext());
+      ScriptContextSet::GetContextByV8Context(isolate->GetCurrentContext());
   console::Warn(script_context ? script_context->GetRenderFrame() : nullptr,
                 message);
 }

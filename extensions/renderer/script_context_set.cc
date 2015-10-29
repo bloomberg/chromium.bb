@@ -71,12 +71,6 @@ ScriptContext* ScriptContextSet::GetCurrent() const {
                               : nullptr;
 }
 
-ScriptContext* ScriptContextSet::GetCalling() const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Local<v8::Context> calling = isolate->GetCallingContext();
-  return calling.IsEmpty() ? nullptr : GetByV8Context(calling);
-}
-
 ScriptContext* ScriptContextSet::GetByV8Context(
     const v8::Local<v8::Context>& v8_context) const {
   for (ScriptContext* script_context : contexts_) {

@@ -69,10 +69,6 @@ class ScriptContextSet {
   // NULL if no such context exists.
   ScriptContext* GetCurrent() const;
 
-  // Gets the ScriptContext corresponding to v8::Context::GetCalling(), or
-  // NULL if no such context exists.
-  ScriptContext* GetCalling() const;
-
   // Gets the ScriptContext corresponding to the specified
   // v8::Context or NULL if no such context exists.
   ScriptContext* GetByV8Context(const v8::Local<v8::Context>& context) const;

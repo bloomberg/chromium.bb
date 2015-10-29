@@ -46,7 +46,7 @@ void ObjectBackedNativeHandler::Router(
   if (handler_function_value.IsEmpty() ||
       handler_function_value->IsUndefined()) {
     ScriptContext* script_context = ScriptContextSet::GetContextByV8Context(
-        args.GetIsolate()->GetCallingContext());
+        args.GetIsolate()->GetCurrentContext());
     console::Error(script_context ? script_context->GetRenderFrame() : nullptr,
                    "Extension view no longer exists");
     return;

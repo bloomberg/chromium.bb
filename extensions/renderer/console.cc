@@ -43,7 +43,7 @@ void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
     message += *v8::String::Utf8Value(info[i]);
   }
 
-  v8::Local<v8::Context> context = info.GetIsolate()->GetCallingContext();
+  v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
   if (context.IsEmpty()) {
     LOG(WARNING) << "Could not log \"" << message << "\": no context given";
     return;

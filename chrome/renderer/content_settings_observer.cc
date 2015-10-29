@@ -425,10 +425,10 @@ bool ContentSettingsObserver::allowStorage(bool local) {
 bool ContentSettingsObserver::allowReadFromClipboard(bool default_value) {
   bool allowed = default_value;
 #if defined(ENABLE_EXTENSIONS)
-  extensions::ScriptContext* calling_context =
-      extension_dispatcher_->script_context_set().GetCalling();
-  if (calling_context) {
-    allowed |= calling_context->HasAPIPermission(
+  extensions::ScriptContext* current_context =
+      extension_dispatcher_->script_context_set().GetCurrent();
+  if (current_context) {
+    allowed |= current_context->HasAPIPermission(
         extensions::APIPermission::kClipboardRead);
   }
 #endif
@@ -440,14 +440,14 @@ bool ContentSettingsObserver::allowWriteToClipboard(bool default_value) {
 #if defined(ENABLE_EXTENSIONS)
   // All blessed extension pages could historically write to the clipboard, so
   // preserve that for compatibility.
-  extensions::ScriptContext* calling_context =
-      extension_dispatcher_->script_context_set().GetCalling();
-  if (calling_context) {
-    if (calling_context->effective_context_type() ==
+  extensions::ScriptContext* current_context =
+      extension_dispatcher_->script_context_set().GetCurrent();
+  if (current_context) {
+    if (current_context->effective_context_type() ==
         extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
       allowed = true;
     } else {
-      allowed |= calling_context->HasAPIPermission(
+      allowed |= current_context->HasAPIPermission(
           extensions::APIPermission::kClipboardWrite);
     }
   }
