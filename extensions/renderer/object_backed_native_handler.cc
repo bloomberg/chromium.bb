@@ -41,7 +41,8 @@ void ObjectBackedNativeHandler::Router(
   v8::Local<v8::Object> data = args.Data().As<v8::Object>();
 
   v8::Local<v8::Value> handler_function_value =
-      data->Get(v8::String::NewFromUtf8(args.GetIsolate(), kHandlerFunction));
+      data->GetHiddenValue(
+          v8::String::NewFromUtf8(args.GetIsolate(), kHandlerFunction));
   // See comment in header file for why we do this.
   if (handler_function_value.IsEmpty() ||
       handler_function_value->IsUndefined()) {
@@ -51,7 +52,9 @@ void ObjectBackedNativeHandler::Router(
                    "Extension view no longer exists");
     return;
   }
-  DCHECK(handler_function_value->IsExternal());
+  // This CHECK is *important*. Otherwise, we'll go around happily executing
+  // something random.  See crbug.com/548273.
+  CHECK(handler_function_value->IsExternal());
   static_cast<HandlerFunction*>(
       handler_function_value.As<v8::External>()->Value())->Run(args);
 }
@@ -64,7 +67,7 @@ void ObjectBackedNativeHandler::RouteFunction(
   v8::Context::Scope context_scope(context_->v8_context());
 
   v8::Local<v8::Object> data = v8::Object::New(isolate);
-  data->Set(
+  data->SetHiddenValue(
       v8::String::NewFromUtf8(isolate, kHandlerFunction),
       v8::External::New(isolate, new HandlerFunction(handler_function)));
   v8::Local<v8::FunctionTemplate> function_template =
@@ -86,11 +89,12 @@ void ObjectBackedNativeHandler::Invalidate() {
   for (size_t i = 0; i < router_data_.Size(); i++) {
     v8::Local<v8::Object> data = router_data_.Get(i);
     v8::Local<v8::Value> handler_function_value =
-        data->Get(v8::String::NewFromUtf8(isolate, kHandlerFunction));
+        data->GetHiddenValue(
+            v8::String::NewFromUtf8(isolate, kHandlerFunction));
     CHECK(!handler_function_value.IsEmpty());
     delete static_cast<HandlerFunction*>(
         handler_function_value.As<v8::External>()->Value());
-    data->Delete(v8::String::NewFromUtf8(isolate, kHandlerFunction));
+    data->DeleteHiddenValue(v8::String::NewFromUtf8(isolate, kHandlerFunction));
   }
 
   router_data_.Clear();

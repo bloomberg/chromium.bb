@@ -138,5 +138,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, NoExportOverriding) {
   EXPECT_EQ("success", result);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, HandlerFunctionTypeChecking) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/extensions/api_test/bindings/handler_function_type_checking.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(web_contents->IsCrashed());
+  // See handler_function_type_checking.html.
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+          "document.getElementById('status').textContent.trim());",
+      &result));
+  EXPECT_EQ("success", result);
+}
+
 }  // namespace
 }  // namespace extensions
