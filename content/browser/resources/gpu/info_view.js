@@ -23,6 +23,8 @@ cr.define('gpu', function() {
       cr.ui.TabPanel.prototype.decorate.apply(this);
 
       browserBridge.addEventListener('gpuInfoUpdate', this.refresh.bind(this));
+      browserBridge.addEventListener('gpuMemoryBufferInfoUpdate',
+                                     this.refresh.bind(this));
       browserBridge.addEventListener('logMessagesChange',
                                      this.refresh.bind(this));
       browserBridge.addEventListener('clientInfoChange',
@@ -152,6 +154,7 @@ cr.define('gpu', function() {
       var workaroundsDiv = this.querySelector('.workarounds-div');
       var workaroundsList = this.querySelector('.workarounds-list');
       var gpuInfo = browserBridge.gpuInfo;
+      var gpuMemoryBufferInfo = browserBridge.gpuMemoryBufferInfo;
       var i;
       if (gpuInfo) {
         // Not using jstemplate here for blacklist status because we construct
@@ -216,6 +219,12 @@ cr.define('gpu', function() {
           problemsList.hidden = true;
           workaroundsList.hidden = true;
         }
+        if (gpuMemoryBufferInfo.gpu_memory_buffer_info)
+          this.setTable_('gpu-memory-buffer-info',
+                         gpuMemoryBufferInfo.gpu_memory_buffer_info);
+        else
+          this.setTable_('gpu-memory-buffer-info', []);
+
         if (gpuInfo.basic_info)
           this.setTable_('basic-info', gpuInfo.basic_info);
         else

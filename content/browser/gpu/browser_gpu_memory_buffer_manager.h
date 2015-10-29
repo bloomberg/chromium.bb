@@ -93,6 +93,9 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       uint32 sync_point);
   void ProcessRemoved(base::ProcessHandle process_handle, int client_id);
 
+  bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
+                                            gfx::BufferUsage usage) const;
+
  private:
   struct BufferInfo {
     BufferInfo()
@@ -134,9 +137,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int32 surface_id);
-
-  bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
-                                            gfx::BufferUsage usage) const;
 
   // Functions that handle synchronous buffer creation requests.
   void HandleCreateGpuMemoryBufferOnIO(CreateGpuMemoryBufferRequest* request);

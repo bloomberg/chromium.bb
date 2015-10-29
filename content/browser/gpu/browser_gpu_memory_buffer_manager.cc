@@ -424,6 +424,13 @@ void BrowserGpuMemoryBufferManager::ProcessRemoved(
   clients_.erase(client_it);
 }
 
+bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration(
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) const {
+  return native_configurations_.find(std::make_pair(format, usage)) !=
+         native_configurations_.end();
+}
+
 scoped_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
     const gfx::Size& size,
@@ -448,13 +455,6 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   request.event.Wait();
   return request.result.Pass();
-}
-
-bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration(
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage) const {
-  return native_configurations_.find(std::make_pair(format, usage)) !=
-         native_configurations_.end();
 }
 
 void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
