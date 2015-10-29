@@ -114,7 +114,7 @@ function test()
                     var uri = WebInspector.networkMapping.uiSourceCodeForURLForAnyTarget(url).uri();
                     InspectorTest.addResult("    " + url + " -> " + uri);
                 }
-                WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, contentCommitted, this);
+                WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.WorkingCopyCommitted, contentCommitted, this);
                 uiSourceCodes[0].addRevision("<Modified UISourceCode content>");
             }
 
