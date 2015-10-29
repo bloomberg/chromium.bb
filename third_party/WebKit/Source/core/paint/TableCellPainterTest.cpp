@@ -6,7 +6,6 @@
 
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayerPainter.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -15,6 +14,8 @@ using TableCellPainterTest = PaintControllerPaintTest;
 // TODO(wangxianzhu): Create a version for slimming paint v2 when it supports interest rect
 TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
 {
+    RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
+
     setBodyInnerHTML(
         "<style>"
         "  td { width: 200px; height: 200px; border: none; }"
@@ -31,22 +32,28 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     LayoutObject& cell1 = *document().getElementById("cell1")->layoutObject();
     LayoutObject& cell2 = *document().getElementById("cell2")->layoutObject();
 
-    GraphicsContext context(rootPaintController());
-    PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 200, 200), GlobalPaintNormalPhase, LayoutSize());
-    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootPaintController().commitNewDisplayItems();
+    rootPaintController().invalidateAll();
+    updateLifecyclePhasesBeforePaint();
+    IntRect interestRect(0, 0, 200, 200);
+    paint(&interestRect);
+    commit();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
+        TestDisplayItem(rootLayer, subsequenceType),
+        TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow),
+        TestDisplayItem(rootLayer, endSubsequenceType));
 
-    PaintLayerPaintingInfo paintingInfo1(&rootLayer, LayoutRect(0, 300, 200, 200), GlobalPaintNormalPhase, LayoutSize());
-    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo1, PaintLayerPaintingCompositingAllPhases);
-    rootPaintController().commitNewDisplayItems();
+    updateLifecyclePhasesBeforePaint();
+    interestRect = IntRect(0, 300, 200, 1000);
+    paint(&interestRect);
+    commit();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow));
+        TestDisplayItem(rootLayer, subsequenceType),
+        TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow),
+        TestDisplayItem(rootLayer, endSubsequenceType));
 }
 
 } // namespace blink

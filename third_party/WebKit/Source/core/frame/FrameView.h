@@ -82,7 +82,7 @@ typedef unsigned long long DOMTimeStamp;
 class CORE_EXPORT FrameView final : public Widget, public ScrollableArea {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameView);
 
-    friend class PaintControllerPaintTestForSlimmingPaintV2;
+    friend class PaintControllerPaintTestBase;
     friend class Internals;
     friend class LayoutPart; // for invalidateTreeIfNeeded
 
@@ -232,8 +232,7 @@ public:
     // Run all needed lifecycle stages. After calling this method, all frames will be in the lifecycle state PaintInvalidationClean.
     // If lifecycle throttling is allowed (see DocumentLifecycle::PreventThrottlingScope), some frames may skip the lifecycle update
     // (e.g., based on visibility) and will not end up being PaintInvalidationClean.
-    // TODO(pdr): Update callers to pass in the interest rect.
-    void updateAllLifecyclePhases(const LayoutRect* interestRect = nullptr);
+    void updateAllLifecyclePhases();
 
     // Computes the style, layout and compositing lifecycle stages if needed. After calling this method, all frames wil lbe in a lifecycle
     // state >= CompositingClean, and scrolling has been updated (unless throttling is allowed).
@@ -632,13 +631,13 @@ private:
         AllPhases,
     };
 
-    void updateLifecyclePhasesInternal(LifeCycleUpdateOption, const LayoutRect* interestRect);
+    void updateLifecyclePhasesInternal(LifeCycleUpdateOption);
     void invalidateTreeIfNeededRecursive();
     void scrollContentsIfNeededRecursive();
     void updateStyleAndLayoutIfNeededRecursive();
     void updatePaintProperties();
-    void synchronizedPaint(const LayoutRect* interestRect);
-    void synchronizedPaintRecursively(GraphicsLayer*, const LayoutRect* interestRect);
+    void synchronizedPaint();
+    void synchronizedPaintRecursively(GraphicsLayer*);
     void compositeForSlimmingPaintV2();
 
     void reset();

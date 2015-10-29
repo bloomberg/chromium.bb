@@ -326,7 +326,8 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
     IntSize size = expandedIntSize(layer->size());
 
     SkPictureBuilder pictureBuilder(FloatRect(0, 0, size.width(), size.height()));
-    layer->paint(pictureBuilder.context(), IntRect(IntPoint(0, 0), size));
+    IntRect interestRect(IntPoint(0, 0), size);
+    layer->paint(pictureBuilder.context(), &interestRect);
 
     RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(pictureBuilder.endRecording()));
 

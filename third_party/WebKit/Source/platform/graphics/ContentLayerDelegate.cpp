@@ -110,7 +110,8 @@ void ContentLayerDelegate::paintContents(
         disabledMode = GraphicsContext::FullyDisabled;
     GraphicsContext context(*paintController, disabledMode);
 
-    m_painter->paint(context, clip);
+    IntRect interestRect = clip;
+    m_painter->paint(context, &interestRect);
 
     paintController->commitNewDisplayItems();
     paintArtifactToWebDisplayItemList(webDisplayItemList, paintController->paintArtifact(), clip);

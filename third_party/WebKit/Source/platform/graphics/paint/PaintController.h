@@ -121,6 +121,7 @@ public:
     const Vector<PaintChunk>& paintChunks() const { return paintArtifact().paintChunks(); }
 
     bool clientCacheIsValid(DisplayItemClient) const;
+    bool cacheIsEmpty() const { return m_currentPaintArtifact.isEmpty(); }
 
     bool displayItemConstructionIsDisabled() const { return m_constructionDisabled; }
     void setDisplayItemConstructionIsDisabled(const bool disable) { m_constructionDisabled = disable; }

@@ -2403,23 +2403,23 @@ void FrameView::updateWidgetPositionsIfNeeded()
     updateWidgetPositions();
 }
 
-void FrameView::updateAllLifecyclePhases(const LayoutRect* interestRect)
+void FrameView::updateAllLifecyclePhases()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases, interestRect);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases);
 }
 
 // TODO(chrishtr): add a scrolling update lifecycle phase.
 void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling, nullptr);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
 }
 
 void FrameView::updateLifecycleToLayoutClean()
 {
-    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean, nullptr);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean);
 }
 
-void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, const LayoutRect* interestRect)
+void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
 {
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
@@ -2458,7 +2458,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
                 updatePaintProperties();
 
             if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-                synchronizedPaint(interestRect);
+                synchronizedPaint();
                 if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                     compositeForSlimmingPaintV2();
             }
@@ -2485,7 +2485,7 @@ void FrameView::updatePaintProperties()
     forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean); });
 }
 
-void FrameView::synchronizedPaint(const LayoutRect* interestRect)
+void FrameView::synchronizedPaint()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
@@ -2498,7 +2498,7 @@ void FrameView::synchronizedPaint(const LayoutRect* interestRect)
 
     // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree.
     if (rootGraphicsLayer) {
-        synchronizedPaintRecursively(rootGraphicsLayer, interestRect);
+        synchronizedPaintRecursively(rootGraphicsLayer);
     }
 
     forAllFrameViews([](FrameView& frameView) {
@@ -2507,22 +2507,18 @@ void FrameView::synchronizedPaint(const LayoutRect* interestRect)
     });
 }
 
-void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer, const LayoutRect* interestRect)
+void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 {
     ASSERT(graphicsLayer->paintController());
     GraphicsContext context(*graphicsLayer->paintController());
 
-    // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
-    if (interestRect)
-        graphicsLayer->paint(context, roundedIntRect(*interestRect));
-    else
-        graphicsLayer->paintIfNeeded(context);
+    graphicsLayer->paint(context, nullptr);
 
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         graphicsLayer->paintController()->commitNewDisplayItems();
 
     for (auto& child : graphicsLayer->children())
-        synchronizedPaintRecursively(child, interestRect);
+        synchronizedPaintRecursively(child);
 }
 
 void FrameView::compositeForSlimmingPaintV2()

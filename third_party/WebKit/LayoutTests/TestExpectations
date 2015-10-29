@@ -7,6 +7,7 @@ crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scr
 crbug.com/524134 crbug.com/539546 virtual/spv2/paint/selection/text-selection-drag.html [ Pass Failure ]
 crbug.com/524134 virtual/spv2/paint/paintlayer/non-self-painting-layer-overrides-visibility.html [ Crash Failure Timeout ]
 crbug.com/524134 virtual/spv2/paint/invalidation/spv2/focus-ring-on-continuation-move.html [ Failure ]
+crbug.com/524134 virtual/spv2/paint/overflow/interest-rect-change-scroll-down.html [ Failure ]
 
 crbug.com/524236 virtual/spv2/paint/invalidation/spv2/clipping-should-not-repaint-composited-descendants-as-text.html [ Failure ]
 crbug.com/524236 virtual/spv2/paint/invalidation/spv2/scroll-fixed-layer-no-content-as-text.html [ Failure ]

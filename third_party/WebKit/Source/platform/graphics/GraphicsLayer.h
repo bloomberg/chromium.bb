@@ -245,8 +245,7 @@ public:
     static void unregisterContentsLayer(WebLayer*);
 
     // GraphicsContextPainter implementation.
-    void paint(GraphicsContext&, const IntRect& clip) override;
-    void paintIfNeeded(GraphicsContext&) override;
+    void paint(GraphicsContext&, const IntRect* clip) override;
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;

@@ -78,7 +78,36 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     }
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
-    document().view()->updateAllLifecyclePhases();
+    updateLifecyclePhasesBeforePaint();
+    paint();
+
+    if (rootLayerScrolls) {
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 9,
+            TestDisplayItem(layoutView(), cachedBackgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(container1, cachedBackgroundType),
+            TestDisplayItem(container1Layer, subsequenceType),
+            TestDisplayItem(content1, backgroundType),
+            TestDisplayItem(container1Layer, endSubsequenceType),
+            TestDisplayItem(container2, cachedBackgroundType),
+            TestDisplayItem(container2Layer, cachedSubsequenceType),
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    } else {
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 11,
+            TestDisplayItem(layoutView(), cachedBackgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(htmlLayer, subsequenceType),
+            TestDisplayItem(container1, cachedBackgroundType),
+            TestDisplayItem(container1Layer, subsequenceType),
+            TestDisplayItem(content1, backgroundType),
+            TestDisplayItem(container1Layer, endSubsequenceType),
+            TestDisplayItem(container2, cachedBackgroundType),
+            TestDisplayItem(container2Layer, cachedSubsequenceType),
+            TestDisplayItem(htmlLayer, endSubsequenceType),
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    }
+
+    commit();
 
     if (rootLayerScrolls) {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
@@ -137,12 +166,15 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
     PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2a = *document().getElementById("content2a")->layoutObject();
+    LayoutObject& content2b = *document().getElementById("content2b")->layoutObject();
     LayoutObject& container3 = *document().getElementById("container3")->layoutObject();
     PaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
     LayoutObject& content3 = *document().getElementById("content3")->layoutObject();
 
-    LayoutRect interestRect(0, 0, 400, 300);
-    document().view()->updateAllLifecyclePhases(&interestRect);
+    updateLifecyclePhasesBeforePaint();
+    IntRect interestRect(0, 0, 400, 300);
+    paint(&interestRect);
+    commit();
 
     // Container1 is fully in the interest rect;
     // Container2 is partly (including its stacking chidren) in the interest rect;
@@ -186,16 +218,48 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
             TestDisplayItem(rootLayer, endSubsequenceType));
     }
 
-    LayoutRect newInterestRect(0, 100, 300, 300);
-    document().view()->updateAllLifecyclePhases(&newInterestRect);
+    updateLifecyclePhasesBeforePaint();
+    IntRect newInterestRect(0, 100, 300, 1000);
+    paint(&newInterestRect);
 
     // Container1 becomes partly in the interest rect, but uses cached subsequence
     // because it was fully painted before;
     // Container2's intersection with the interest rect changes;
     // Content2b is out of the interest rect and outputs nothing;
     // Container3 becomes out of the interest rect and outputs nothing.
+
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 10,
+            TestDisplayItem(layoutView(), cachedBackgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(container1, cachedBackgroundType),
+            TestDisplayItem(container1Layer, cachedSubsequenceType),
+            TestDisplayItem(container2, cachedBackgroundType),
+            TestDisplayItem(container2Layer, subsequenceType),
+            TestDisplayItem(content2a, cachedBackgroundType),
+            TestDisplayItem(content2b, backgroundType),
+            TestDisplayItem(container2Layer, endSubsequenceType),
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    } else {
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 12,
+            TestDisplayItem(layoutView(), cachedBackgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(htmlLayer, subsequenceType),
+            TestDisplayItem(container1, cachedBackgroundType),
+            TestDisplayItem(container1Layer, cachedSubsequenceType),
+            TestDisplayItem(container2, cachedBackgroundType),
+            TestDisplayItem(container2Layer, subsequenceType),
+            TestDisplayItem(content2a, cachedBackgroundType),
+            TestDisplayItem(content2b, backgroundType),
+            TestDisplayItem(container2Layer, endSubsequenceType),
+            TestDisplayItem(htmlLayer, endSubsequenceType),
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    }
+
+    commit();
+
+    if (rootLayerScrolls) {
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 12,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
@@ -205,10 +269,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
             TestDisplayItem(container2, backgroundType),
             TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, backgroundType),
+            TestDisplayItem(content2b, backgroundType),
             TestDisplayItem(container2Layer, endSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     } else {
-        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 13,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 14,
             TestDisplayItem(layoutView(), backgroundType),
             TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(htmlLayer, subsequenceType),
@@ -219,193 +284,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
             TestDisplayItem(container2, backgroundType),
             TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, backgroundType),
+            TestDisplayItem(content2b, backgroundType),
             TestDisplayItem(container2Layer, endSubsequenceType),
             TestDisplayItem(htmlLayer, endSubsequenceType),
             TestDisplayItem(rootLayer, endSubsequenceType));
     }
-}
-
-TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
-{
-    setBodyInnerHTML(
-        "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
-        "  <div id='content1' style='position: absolute; width: 100px; height: 100px; background-color: red'></div>"
-        "</div>"
-        "<div id='container2' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
-        "  <div id='content2' style='position: absolute; width: 100px; height: 100px; background-color: green'></div>"
-        "</div>");
-    document().view()->updateAllLifecyclePhases();
-
-    PaintLayer& rootLayer = *layoutView().layer();
-    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
-    LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
-    PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
-    LayoutObject& content1 = *document().getElementById("content1")->layoutObject();
-    LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
-    PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
-    LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 13,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(htmlLayer, subsequenceType),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(container1Layer, subsequenceType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, endSubsequenceType),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(container2Layer, subsequenceType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, endSubsequenceType),
-        TestDisplayItem(htmlLayer, endSubsequenceType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
-
-    toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
-    updateLifecyclePhasesToPaintClean();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), cachedBackgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(htmlLayer, subsequenceType),
-        TestDisplayItem(container1, cachedBackgroundType),
-        TestDisplayItem(container1Layer, subsequenceType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, endSubsequenceType),
-        TestDisplayItem(container2, cachedBackgroundType),
-        TestDisplayItem(container2Layer, cachedSubsequenceType),
-        TestDisplayItem(htmlLayer, endSubsequenceType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
-
-    compositeForSlimmingPaintV2();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 13,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(htmlLayer, subsequenceType),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(container1Layer, subsequenceType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, endSubsequenceType),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(container2Layer, subsequenceType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, endSubsequenceType),
-        TestDisplayItem(htmlLayer, endSubsequenceType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
-
-    // Repeated painting should just generate a CachedDisplayItemList item.
-    updateLifecyclePhasesToPaintClean();
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 1,
-        TestDisplayItem(*rootLayer.compositedLayerMapping(), DisplayItem::CachedDisplayItemList));
-
-    compositeForSlimmingPaintV2();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 13,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(htmlLayer, subsequenceType),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(container1Layer, subsequenceType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, endSubsequenceType),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(container2Layer, subsequenceType),
-        TestDisplayItem(content2, backgroundType),
-        TestDisplayItem(container2Layer, endSubsequenceType),
-        TestDisplayItem(htmlLayer, endSubsequenceType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
-}
-
-TEST_F(PaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInterestRectChange)
-{
-    setBodyInnerHTML(
-        "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
-        "  <div id='content1' style='position: absolute; width: 100px; height: 100px; background-color: green'></div>"
-        "</div>"
-        "<div id='container2' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
-        "  <div id='content2a' style='position: absolute; width: 100px; height: 100px; background-color: green'></div>"
-        "  <div id='content2b' style='position: absolute; top: 200px; width: 100px; height: 100px; background-color: green'></div>"
-        "</div>"
-        "<div id='container3' style='position: absolute; z-index: 2; left: 300px; top: 0; width: 200px; height: 200px; background-color: blue'>"
-        "  <div id='content3' style='position: absolute; width: 200px; height: 200px; background-color: green'></div>"
-        "</div>");
-    rootPaintController().invalidateAll();
-
-    PaintLayer& rootLayer = *layoutView().layer();
-    PaintLayer& htmlLayer = *toLayoutBoxModelObject(document().documentElement()->layoutObject())->layer();
-    LayoutObject& container1 = *document().getElementById("container1")->layoutObject();
-    PaintLayer& container1Layer = *toLayoutBoxModelObject(container1).layer();
-    LayoutObject& content1 = *document().getElementById("content1")->layoutObject();
-    LayoutObject& container2 = *document().getElementById("container2")->layoutObject();
-    PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
-    LayoutObject& content2a = *document().getElementById("content2a")->layoutObject();
-    LayoutObject& container3 = *document().getElementById("container3")->layoutObject();
-    PaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
-    LayoutObject& content3 = *document().getElementById("content3")->layoutObject();
-
-    LayoutRect interestRect(0, 0, 400, 300);
-    document().view()->updateAllLifecyclePhases(&interestRect);
-
-    // Container1 is fully in the interest rect;
-    // Container2 is partly (including its stacking chidren) in the interest rect;
-    // Content2b is out of the interest rect and output nothing;
-    // Container3 is partly in the interest rect.
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 17,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(htmlLayer, subsequenceType),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(container1Layer, subsequenceType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, endSubsequenceType),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(container2Layer, subsequenceType),
-        TestDisplayItem(content2a, backgroundType),
-        TestDisplayItem(container2Layer, endSubsequenceType),
-        TestDisplayItem(container3, backgroundType),
-        TestDisplayItem(container3Layer, subsequenceType),
-        TestDisplayItem(content3, backgroundType),
-        TestDisplayItem(container3Layer, endSubsequenceType),
-        TestDisplayItem(htmlLayer, endSubsequenceType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
-
-    // Container1 becomes partly in the interest rect, but uses cached subsequence
-    // because it was fully painted before;
-    // Container2's intersection with the interest rect changes;
-    // Content2b is out of the interest rect and outputs nothing;
-    // Container3 becomes out of the interest rect and outputs nothing.
-    LayoutRect newInterestRect(0, 100, 300, 300);
-    updateLifecyclePhasesToPaintClean(&newInterestRect);
-
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), cachedBackgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(htmlLayer, subsequenceType),
-        TestDisplayItem(container1, cachedBackgroundType),
-        TestDisplayItem(container1Layer, cachedSubsequenceType),
-        TestDisplayItem(container2, cachedBackgroundType),
-        TestDisplayItem(container2Layer, subsequenceType),
-        TestDisplayItem(content2a, cachedBackgroundType),
-        TestDisplayItem(container2Layer, endSubsequenceType),
-        TestDisplayItem(htmlLayer, endSubsequenceType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
-
-    compositeForSlimmingPaintV2();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 13,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(htmlLayer, subsequenceType),
-        TestDisplayItem(container1, backgroundType),
-        TestDisplayItem(container1Layer, subsequenceType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, endSubsequenceType),
-        TestDisplayItem(container2, backgroundType),
-        TestDisplayItem(container2Layer, subsequenceType),
-        TestDisplayItem(content2a, backgroundType),
-        TestDisplayItem(container2Layer, endSubsequenceType),
-        TestDisplayItem(htmlLayer, endSubsequenceType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
 }
 
 } // namespace blink

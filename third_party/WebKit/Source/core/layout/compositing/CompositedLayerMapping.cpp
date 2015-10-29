@@ -2172,6 +2172,8 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     scrollbar->paint(&context, CullRect(transformedClip));
 }
 
+// The following should be kept in sync with the code computing potential_new_recorded_viewport in
+// cc::DisplayListRecordingSource::UpdateAndExpandInvalidation() before we keep only one copy of the algorithm.
 static const int kPixelDistanceToRecord = 4000;
 
 IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphicsLayer, LayoutObject* owningLayoutObject)
@@ -2198,31 +2200,74 @@ IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphic
         localInterestRect.move(-graphicsLayer->offsetFromLayoutObject());
     }
     // Expand by interest rect padding amount.
-    localInterestRect.expand(IntRectOutsets(kPixelDistanceToRecord, kPixelDistanceToRecord, kPixelDistanceToRecord, kPixelDistanceToRecord));
+    localInterestRect.inflate(kPixelDistanceToRecord);
     localInterestRect.intersect(enclosingIntRect(graphicsLayerBounds));
     return localInterestRect;
 }
 
-void CompositedLayerMapping::paintContentsIfNeeded(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase) const
+// The following should be kept in sync with cc::DisplayListRecordingSource::ExposesEnoughNewArea()
+// before we keep only one copy of the algorithm.
+static const int kMinimumDistanceBeforeRepaint = 512;
+
+bool CompositedLayerMapping::interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    if (previousInterestRect.isEmpty() && newInterestRect.isEmpty())
+        return false;
 
-    // TODO(chrishtr): Also paint if the interest rect has changed sufficiently.
-    if (!m_owningLayer.needsRepaint()) {
-        context.paintController().createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
-        return;
-    }
+    // Repaint when going from empty to not-empty, to cover cases where the layer is
+    // painted for the first time, or otherwise becomes visible.
+    if (previousInterestRect.isEmpty())
+        return true;
 
-    IntRect interestRect;
-    if (graphicsLayer == m_graphicsLayer || graphicsLayer == m_squashingLayer)
-        interestRect = computeInterestRect(graphicsLayer, m_owningLayer.layoutObject());
-    else
-        interestRect = enclosingIntRect(FloatRect(FloatPoint(), graphicsLayer->size()));
+    // Repaint if the new interest rect includes area outside of a skirt around the existing interest rect.
+    IntRect expandedPreviousInterestRect(previousInterestRect);
+    expandedPreviousInterestRect.inflate(kMinimumDistanceBeforeRepaint);
+    if (!expandedPreviousInterestRect.contains(newInterestRect))
+        return true;
 
-    paintContents(graphicsLayer, context, graphicsLayerPaintingPhase, interestRect);
+    // Even if the new interest rect doesn't include enough new area to satisfy the condition above,
+    // repaint anyway if it touches a layer edge not touched by the existing interest rect.
+    // Because it's impossible to expose more area in the direction, repainting cannot be deferred
+    // until the exposed new area satisfies the condition above.
+    if (newInterestRect.x() == 0 && previousInterestRect.x() != 0)
+        return true;
+    if (newInterestRect.y() == 0 && previousInterestRect.y() != 0)
+        return true;
+    if (newInterestRect.maxX() == layerSize.width() && previousInterestRect.maxX() != layerSize.width())
+        return true;
+    if (newInterestRect.maxY() == layerSize.height() && previousInterestRect.maxY() != layerSize.height())
+        return true;
+
+    return false;
 }
 
-void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
+void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect* interestRect) const
+{
+    IntRect defaultInterestRect;
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        if (!interestRect) {
+            if (graphicsLayer == m_graphicsLayer || graphicsLayer == m_squashingLayer)
+                defaultInterestRect = computeInterestRect(graphicsLayer, m_owningLayer.layoutObject());
+            else
+                defaultInterestRect = enclosingIntRect(FloatRect(FloatPoint(), graphicsLayer->size()));
+            interestRect = &defaultInterestRect;
+        }
+
+        if (!m_owningLayer.needsRepaint()
+            && !context.paintController().cacheIsEmpty()
+            && !interestRectChangedEnoughToRepaint(m_previousPaintInterestRect, *interestRect, expandedIntSize(graphicsLayer->size()))) {
+            context.paintController().createAndAppend<CachedDisplayItem>(*this, DisplayItem::CachedDisplayItemList);
+            return;
+        }
+
+        m_previousPaintInterestRect = *interestRect;
+    }
+
+    ASSERT(interestRect);
+    paintContentsInternal(graphicsLayer, context, graphicsLayerPaintingPhase, *interestRect);
+}
+
+void CompositedLayerMapping::paintContentsInternal(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;

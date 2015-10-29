@@ -9,78 +9,107 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
-class PaintControllerPaintTest : public RenderingTest {
+class PaintControllerPaintTestBase : public RenderingTest {
 public:
-    PaintControllerPaintTest()
+    PaintControllerPaintTestBase(bool enableSlimmingPaintV2)
         : m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         , m_originalSlimmingPaintOffsetCachingEnabled(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
-        { }
+        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        , m_enableSlimmingPaintV2(enableSlimmingPaintV2)
+    { }
 
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
     PaintController& rootPaintController() { return *layoutView().layer()->graphicsLayerBacking()->paintController(); }
 
-private:
     void SetUp() override
     {
         RenderingTest::SetUp();
         enableCompositing();
         GraphicsLayer::setDrawDebugRedFillForTesting(false);
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_enableSlimmingPaintV2);
     }
     void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(m_originalSlimmingPaintSynchronizedPaintingEnabled);
         RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(m_originalSlimmingPaintOffsetCachingEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
         GraphicsLayer::setDrawDebugRedFillForTesting(true);
     }
-
-    bool m_originalSlimmingPaintSynchronizedPaintingEnabled;
-    bool m_originalSlimmingPaintOffsetCachingEnabled;
-};
-
-// Slimming paint v2 has subtly different behavior on some paint tests. This
-// class is used to test only v2 behavior while maintaining v1 test coverage.
-class PaintControllerPaintTestForSlimmingPaintV2 : public RenderingTest {
-public:
-    PaintControllerPaintTestForSlimmingPaintV2()
-        : m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
-
-protected:
-    LayoutView& layoutView() { return *document().layoutView(); }
-    PaintController& rootPaintController() { return *layoutView().layer()->graphicsLayerBacking()->paintController(); }
 
     // Expose some document lifecycle steps for checking new display items before commiting.
-    void updateLifecyclePhasesToPaintClean(const LayoutRect* interestRect = nullptr)
+    void updateLifecyclePhasesBeforePaint()
     {
-        document().view()->updateLifecyclePhasesInternal(FrameView::OnlyUpToCompositingCleanPlusScrolling, nullptr);
-        document().view()->invalidateTreeIfNeededRecursive();
-        document().view()->updatePaintProperties();
-        document().view()->synchronizedPaint(interestRect);
+        // This doesn't do all steps that FrameView does, but is enough for current tests.
+        FrameView* frameView = document().view();
+        frameView->updateLifecyclePhasesInternal(FrameView::OnlyUpToCompositingCleanPlusScrolling);
+        frameView->invalidateTreeIfNeededRecursive();
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            document().view()->updatePaintProperties();
     }
-    void compositeForSlimmingPaintV2() { document().view()->compositeForSlimmingPaintV2(); }
+
+    void updateLifecyclePhasesToPaintClean()
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+        updateLifecyclePhasesBeforePaint();
+        document().view()->synchronizedPaint();
+    }
+
+    void paint(const IntRect* interestRect = nullptr)
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+        // For v1, only root graphics layer is supported.
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !interestRect) {
+            document().view()->synchronizedPaint();
+        } else {
+            document().view()->lifecycle().advanceTo(DocumentLifecycle::InPaint);
+            GraphicsContext context(rootPaintController());
+            layoutView().layer()->graphicsLayerBacking()->paint(context, interestRect);
+            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+                document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+        }
+    }
+
+    // TODO(who removes pre-v2 code): rename to composite().
+    void commit()
+    {
+        // For v1, only root graphics layer is supported.
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            document().view()->compositeForSlimmingPaintV2();
+        } else {
+            rootPaintController().commitNewDisplayItems();
+            document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+        }
+    }
 
 private:
-    void SetUp() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-
-        RenderingTest::SetUp();
-        enableCompositing();
-        GraphicsLayer::setDrawDebugRedFillForTesting(false);
-    }
-
-    void TearDown() override
-    {
-        GraphicsLayer::setDrawDebugRedFillForTesting(true);
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
-    }
-
+    bool m_originalSlimmingPaintSynchronizedPaintingEnabled;
+    bool m_originalSlimmingPaintOffsetCachingEnabled;
     bool m_originalSlimmingPaintV2Enabled;
+    bool m_enableSlimmingPaintV2;
+};
+
+class PaintControllerPaintTest : public PaintControllerPaintTestBase {
+public:
+    PaintControllerPaintTest() : PaintControllerPaintTestBase(false) { }
+};
+
+class PaintControllerPaintTestForSlimmingPaintV2 : public PaintControllerPaintTestBase {
+public:
+    PaintControllerPaintTestForSlimmingPaintV2() : PaintControllerPaintTestBase(true) { }
+};
+
+class PaintControllerPaintTestForSlimmingPaintV1AndV2
+    : public PaintControllerPaintTestBase
+    , public testing::WithParamInterface<bool> {
+public:
+    PaintControllerPaintTestForSlimmingPaintV1AndV2() : PaintControllerPaintTestBase(GetParam()) { }
 };
 
 class TestDisplayItem final : public DisplayItem {

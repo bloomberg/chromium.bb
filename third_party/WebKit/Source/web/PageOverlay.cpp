@@ -97,12 +97,7 @@ void PageOverlay::update()
     m_layer->setNeedsDisplay();
 }
 
-void PageOverlay::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& gc, GraphicsLayerPaintingPhase phase, const IntRect& inClip) const
-{
-    paintContentsIfNeeded(graphicsLayer, gc, phase);
-}
-
-void PageOverlay::paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase) const
+void PageOverlay::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& gc, GraphicsLayerPaintingPhase phase, const IntRect* inClip) const
 {
     ASSERT(m_layer);
     WebGraphicsContextImpl contextWrapper(gc, *this, DisplayItem::PageOverlay);

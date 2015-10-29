@@ -154,8 +154,7 @@ public:
     void notifyFirstTextPaint() override;
     void notifyFirstImagePaint() override;
 
-    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) const override;
-    void paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase) const override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect* clip) const override;
     bool isTrackingPaintInvalidations() const override;
 
 #if ENABLE(ASSERT)
@@ -214,6 +213,7 @@ public:
 
 private:
     static IntRect computeInterestRect(const GraphicsLayer*, LayoutObject* owningLayoutObject);
+    static bool interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize);
 
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
 
@@ -315,6 +315,8 @@ private:
     // Clear the groupedMapping entry on the layer at the given index, only if that layer does
     // not appear earlier in the set of layers for this object.
     bool invalidateLayerIfNoPrecedingEntry(size_t);
+
+    void paintContentsInternal(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const;
 
     PaintLayer& m_owningLayer;
 
@@ -438,6 +440,8 @@ private:
 
     unsigned m_backgroundLayerPaintsFixedRootBackground : 1;
     unsigned m_scrollingContentsAreEmpty : 1;
+
+    mutable IntRect m_previousPaintInterestRect;
 
     friend class CompositedLayerMappingTest;
 };

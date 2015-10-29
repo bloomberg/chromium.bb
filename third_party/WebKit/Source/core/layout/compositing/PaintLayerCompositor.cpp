@@ -800,19 +800,21 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     scrollbar->paint(&context, CullRect(transformedClip));
 }
 
-void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip) const
+void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect* clip) const
 {
-    if (graphicsLayer == layerForHorizontalScrollbar())
-        paintScrollbar(m_layoutView.frameView()->horizontalScrollbar(), context, clip);
-    else if (graphicsLayer == layerForVerticalScrollbar())
-        paintScrollbar(m_layoutView.frameView()->verticalScrollbar(), context, clip);
-    else if (graphicsLayer == layerForScrollCorner())
-        FramePainter(*m_layoutView.frameView()).paintScrollCorner(&context, clip);
-}
+    IntRect defaultClip;
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && !clip) {
+        defaultClip.setSize(m_layoutView.layoutSize(IncludeScrollbars));
+        clip = &defaultClip;
+    }
+    ASSERT(clip);
 
-void PaintLayerCompositor::paintContentsIfNeeded(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase phase) const
-{
-    paintContents(graphicsLayer, context, phase, IntRect());
+    if (graphicsLayer == layerForHorizontalScrollbar())
+        paintScrollbar(m_layoutView.frameView()->horizontalScrollbar(), context, *clip);
+    else if (graphicsLayer == layerForVerticalScrollbar())
+        paintScrollbar(m_layoutView.frameView()->verticalScrollbar(), context, *clip);
+    else if (graphicsLayer == layerForScrollCorner())
+        FramePainter(*m_layoutView.frameView()).paintScrollCorner(&context, *clip);
 }
 
 bool PaintLayerCompositor::supportsFixedRootBackgroundCompositing() const

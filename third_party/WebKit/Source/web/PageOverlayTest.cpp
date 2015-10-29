@@ -155,9 +155,10 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
     PaintController* paintController = graphicsLayer->paintController();
     ASSERT(paintController);
     GraphicsContext graphicsContext(*paintController);
-    graphicsLayer->paint(graphicsContext, rect);
+    IntRect intRect = rect;
+    graphicsLayer->paint(graphicsContext, &intRect);
 
-    graphicsContext.beginRecording(IntRect(rect));
+    graphicsContext.beginRecording(intRect);
     paintController->commitNewDisplayItems();
     paintController->paintArtifact().replay(graphicsContext);
     graphicsContext.endRecording()->playback(&canvas);

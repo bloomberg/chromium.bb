@@ -278,7 +278,7 @@ void PaintController::commitNewDisplayItems()
         && m_newDisplayItemList.last().type() == DisplayItem::CachedDisplayItemList) {
         // The whole display item list is cached.
         ASSERT(m_newDisplayItemList.size() == 1
-            || (m_newDisplayItemList.size() == 2 && m_newDisplayItemList[0].type() == DisplayItem::DebugRedFill));
+            || (m_newDisplayItemList.size() == 2 && DisplayItem::nonCachedType(m_newDisplayItemList[0].type()) == DisplayItem::DebugRedFill));
         ASSERT(m_invalidations.isEmpty());
         ASSERT(m_clientsCheckedPaintInvalidation.isEmpty());
         m_newDisplayItemList.clear();

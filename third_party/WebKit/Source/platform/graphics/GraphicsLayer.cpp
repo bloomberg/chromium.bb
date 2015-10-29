@@ -293,20 +293,10 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
         setNeedsDisplay();
 }
 
-void GraphicsLayer::paintIfNeeded(GraphicsContext& context)
+void GraphicsLayer::paint(GraphicsContext& context, const IntRect* clip)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
-    if (!m_client)
-        return;
-    if (firstPaintInvalidationTrackingEnabled())
-        m_debugInfo.clearAnnotatedInvalidateRects();
-    incrementPaintCount();
-    m_client->paintContentsIfNeeded(this, context, m_paintingPhase);
-    notifyFirstPaintToClient();
-}
+    ASSERT(clip || RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
 
-void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
-{
     if (!m_client)
         return;
     if (firstPaintInvalidationTrackingEnabled())

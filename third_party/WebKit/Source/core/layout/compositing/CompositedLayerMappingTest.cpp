@@ -24,6 +24,11 @@ protected:
         return CompositedLayerMapping::computeInterestRect(graphicsLayer, owningLayoutObject);
     }
 
+    bool interestRectChangedEnoughToRepaint(const IntRect& previousInterestRect, const IntRect& newInterestRect, const IntSize& layerSize)
+    {
+        return CompositedLayerMapping::interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize);
+    }
+
 private:
     void SetUp() override
     {
@@ -201,6 +206,71 @@ TEST_F(CompositedLayerMappingTest, ClippedBigLayer)
     ASSERT_TRUE(paintLayer->graphicsLayerBacking());
     // Offscreen layers are painted as usual.
     EXPECT_TRUE(checkRectsEqual(IntRect(0, 0, 4001, 4001), computeInterestRect(paintLayer->graphicsLayerBacking(), paintLayer->layoutObject())));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty)
+{
+    IntSize layerSize(1000, 1000);
+    // Both empty means there is nothing to do.
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(IntRect(), IntRect(), layerSize));
+    // Going from empty to non-empty means we must re-record because it could be the first frame after construction or Clear.
+    EXPECT_TRUE(interestRectChangedEnoughToRepaint(IntRect(), IntRect(0, 0, 1, 1), layerSize));
+    // Going from non-empty to empty is not special-cased.
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(IntRect(0, 0, 1, 1), IntRect(), layerSize));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintNotBigEnough)
+{
+    IntSize layerSize(1000, 1000);
+    IntRect previousInterestRect(100, 100, 100, 100);
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(previousInterestRect, IntRect(100, 100, 90, 90), layerSize));
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(previousInterestRect, IntRect(100, 100, 100, 100), layerSize));
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(previousInterestRect, IntRect(1, 1, 200, 200), layerSize));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintNotBigEnoughButNewAreaTouchesEdge)
+{
+    IntSize layerSize(500, 500);
+    IntRect previousInterestRect(100, 100, 100, 100);
+    // Top edge.
+    EXPECT_TRUE(interestRectChangedEnoughToRepaint(previousInterestRect, IntRect(100, 0, 100, 200), layerSize));
+    // Left edge.
+    EXPECT_TRUE(interestRectChangedEnoughToRepaint(previousInterestRect, IntRect(0, 100, 200, 100), layerSize));
+    // Bottom edge.
+    EXPECT_TRUE(interestRectChangedEnoughToRepaint(previousInterestRect, IntRect(100, 100, 100, 400), layerSize));
+    // Right edge.
+    EXPECT_TRUE(interestRectChangedEnoughToRepaint(previousInterestRect, IntRect(100, 100, 400, 100), layerSize));
+}
+
+// Verifies that having a current viewport that touches a layer edge does not
+// force re-recording.
+TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintCurrentViewportTouchesEdge)
+{
+    IntSize layerSize(500, 500);
+    IntRect newInterestRect(100, 100, 300, 300);
+    // Top edge.
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(IntRect(100, 0, 100, 100), newInterestRect, layerSize));
+    // Left edge.
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(IntRect(0, 100, 100, 100), newInterestRect, layerSize));
+    // Bottom edge.
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(IntRect(300, 400, 100, 100), newInterestRect, layerSize));
+    // Right edge.
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(IntRect(400, 300, 100, 100), newInterestRect, layerSize));
+}
+
+TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintScrollScenarios)
+{
+    IntSize layerSize(1000, 1000);
+    IntRect previousInterestRect(100, 100, 100, 100);
+    IntRect newInterestRect(previousInterestRect);
+    newInterestRect.move(512, 0);
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize));
+    newInterestRect.move(0, 512);
+    EXPECT_FALSE(interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize));
+    newInterestRect.move(1, 0);
+    EXPECT_TRUE(interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize));
+    newInterestRect.move(-1, 1);
+    EXPECT_TRUE(interestRectChangedEnoughToRepaint(previousInterestRect, newInterestRect, layerSize));
 }
 
 } // namespace blink

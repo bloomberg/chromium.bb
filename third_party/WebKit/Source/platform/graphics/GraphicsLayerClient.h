@@ -69,9 +69,7 @@ public:
     virtual void notifyFirstTextPaint() { }
     virtual void notifyFirstImagePaint() { }
 
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) const = 0;
-    // Paints the content if required, either because the content changed or its interest rect has too much unpainted area.
-    virtual void paintContentsIfNeeded(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase) const = 0;
+    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect* inClip) const = 0;
     virtual bool isTrackingPaintInvalidations() const { return false; }
 
     virtual String debugName(const GraphicsLayer*) = 0;
