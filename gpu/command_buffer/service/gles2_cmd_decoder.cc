@@ -190,6 +190,33 @@ struct Vec4f {
   GLfloat v[4];
 };
 
+// Returns the union of |rect1| and |rect2| if one of the rectangles is empty,
+// contains the other rectangle or shares an edge with the other rectangle.
+bool CombineAdjacentRects(const gfx::Rect& rect1,
+                          const gfx::Rect& rect2,
+                          gfx::Rect* result) {
+  // Return |rect2| if |rect1| is empty or |rect2| contains |rect1|.
+  if (rect1.IsEmpty() || rect2.Contains(rect1)) {
+    *result = rect2;
+    return true;
+  }
+
+  // Return |rect1| if |rect2| is empty or |rect1| contains |rect2|.
+  if (rect2.IsEmpty() || rect1.Contains(rect2)) {
+    *result = rect1;
+    return true;
+  }
+
+  // Return the union of |rect1| and |rect2| if they share an edge.
+  if (rect1.SharesEdgeWith(rect2)) {
+    *result = gfx::UnionRects(rect1, rect2);
+    return true;
+  }
+
+  // Return false if it's not possible to combine |rect1| and |rect2|.
+  return false;
+}
+
 GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
   switch (internalformat) {
     case GL_R8:
@@ -11066,9 +11093,9 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   if (xoffset != 0 || yoffset != 0 || width != size.width() ||
       height != size.height()) {
     gfx::Rect cleared_rect;
-    if (TextureManager::CombineAdjacentRects(
-            texture->GetLevelClearedRect(target, level),
-            gfx::Rect(xoffset, yoffset, width, height), &cleared_rect)) {
+    if (CombineAdjacentRects(texture->GetLevelClearedRect(target, level),
+                             gfx::Rect(xoffset, yoffset, width, height),
+                             &cleared_rect)) {
       DCHECK_GE(cleared_rect.size().GetArea(),
                 texture->GetLevelClearedRect(target, level).size().GetArea());
       texture_manager()->SetLevelClearedRect(texture_ref, target, level,
@@ -11122,6 +11149,149 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   ExitCommandProcessingEarly();
 }
 
+bool GLES2DecoderImpl::ValidateTexSubImage2D(
+    error::Error* error,
+    const char* function_name,
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type,
+    const void * data) {
+  (*error) = error::kNoError;
+  if (!validators_->texture_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, target, "target");
+    return false;
+  }
+  if (width < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "width < 0");
+    return false;
+  }
+  if (height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "height < 0");
+    return false;
+  }
+  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
+      &state_, target);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        function_name, "unknown texture for target");
+    return false;
+  }
+  Texture* texture = texture_ref->texture();
+  GLenum current_type = 0;
+  GLenum internal_format = 0;
+  if (!texture->GetLevelType(target, level, &current_type, &internal_format)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, function_name, "level does not exist.");
+    return false;
+  }
+  if (!texture_manager()->ValidateTextureParameters(state_.GetErrorState(),
+      function_name, format, type, internal_format, level)) {
+    return false;
+  }
+  if (type != current_type && !feature_info_->IsES3Enabled()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        function_name, "type does not match type of texture.");
+    return false;
+  }
+  if (!texture->ValidForTexture(
+          target, level, xoffset, yoffset, 0, width, height, 1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "bad dimensions.");
+    return false;
+  }
+  if ((GLES2Util::GetChannelsForFormat(format) &
+       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0
+      && !feature_info_->IsES3Enabled()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        function_name, "can not supply data for depth or stencil textures");
+    return false;
+  }
+  if (data == NULL) {
+    (*error) = error::kOutOfBounds;
+    return false;
+  }
+  return true;
+}
+
+error::Error GLES2DecoderImpl::DoTexSubImage2D(
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type,
+    const void * data) {
+  error::Error error = error::kNoError;
+  if (!ValidateTexSubImage2D(&error, "glTexSubImage2D", target, level,
+      xoffset, yoffset, width, height, format, type, data)) {
+    return error;
+  }
+  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
+      &state_, target);
+  Texture* texture = texture_ref->texture();
+  GLsizei tex_width = 0;
+  GLsizei tex_height = 0;
+  bool ok = texture->GetLevelSize(
+      target, level, &tex_width, &tex_height, nullptr);
+  DCHECK(ok);
+  if (xoffset != 0 || yoffset != 0 ||
+      width != tex_width || height != tex_height) {
+    gfx::Rect cleared_rect;
+    if (CombineAdjacentRects(texture->GetLevelClearedRect(target, level),
+                             gfx::Rect(xoffset, yoffset, width, height),
+                             &cleared_rect)) {
+      DCHECK_GE(cleared_rect.size().GetArea(),
+                texture->GetLevelClearedRect(target, level).size().GetArea());
+      texture_manager()->SetLevelClearedRect(texture_ref, target, level,
+                                             cleared_rect);
+    } else {
+      // Otherwise clear part of texture level that is not already cleared.
+      if (!texture_manager()->ClearTextureLevel(this, texture_ref, target,
+                                                level)) {
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexSubImage2D",
+                           "dimensions too big");
+        return error::kNoError;
+      }
+    }
+    ScopedTextureUploadTimer timer(&texture_state_);
+    glTexSubImage2D(
+        target, level, xoffset, yoffset, width, height, format, type, data);
+    return error::kNoError;
+  }
+
+  if (!texture_state_.texsubimage_faster_than_teximage &&
+      !texture->IsImmutable() &&
+      !texture->HasImages()) {
+    ScopedTextureUploadTimer timer(&texture_state_);
+    GLenum internal_format;
+    GLenum tex_type;
+    texture->GetLevelType(target, level, &tex_type, &internal_format);
+    // NOTE: In OpenGL ES 2.0 border is always zero. If that changes we'll need
+    // to look it up.
+    glTexImage2D(
+        target, level, internal_format, width, height, 0, format, type, data);
+  } else {
+    ScopedTextureUploadTimer timer(&texture_state_);
+    glTexSubImage2D(
+        target, level, xoffset, yoffset, width, height, format, type, data);
+  }
+  texture_manager()->SetLevelCleared(texture_ref, target, level, true);
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32 immediate_data_size,
                                                    const void* cmd_data) {
   const gles2::cmds::TexSubImage2D& c =
@@ -11146,23 +11316,10 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32 immediate_data_size,
       NULL, NULL)) {
     return error::kOutOfBounds;
   }
-
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.pixels_shm_id, c.pixels_shm_offset, data_size);
-  if (!pixels)
-    return error::kOutOfBounds;
-
-  TextureManager::DoTexSubImageArguments args = {
-      target, level,  xoffset, yoffset, width,
-      height, format, type,    pixels,  data_size};
-  texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
-                                              &framebuffer_state_,
-                                              "glTexSubImage2D", args);
-
-  // This may be a slow command.  Exit command processing to allow for
-  // context preemption and GPU watchdog checks.
-  ExitCommandProcessingEarly();
-  return error::kNoError;
+  return DoTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
 error::Error GLES2DecoderImpl::DoTexSubImage3D(
@@ -13100,9 +13257,9 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   if (xoffset != 0 || yoffset != 0 || width != dest_width ||
       height != dest_height) {
     gfx::Rect cleared_rect;
-    if (TextureManager::CombineAdjacentRects(
-            dest_texture->GetLevelClearedRect(target, 0),
-            gfx::Rect(xoffset, yoffset, width, height), &cleared_rect)) {
+    if (CombineAdjacentRects(dest_texture->GetLevelClearedRect(target, 0),
+                             gfx::Rect(xoffset, yoffset, width, height),
+                             &cleared_rect)) {
       DCHECK_GE(cleared_rect.size().GetArea(),
                 dest_texture->GetLevelClearedRect(target, 0).size().GetArea());
       texture_manager()->SetLevelClearedRect(dest_texture_ref, target, 0,
@@ -13438,9 +13595,9 @@ void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
   if (xoffset != 0 || yoffset != 0 || width != dest_width ||
       height != dest_height) {
     gfx::Rect cleared_rect;
-    if (TextureManager::CombineAdjacentRects(
-            dest_texture->GetLevelClearedRect(target, 0),
-            gfx::Rect(xoffset, yoffset, width, height), &cleared_rect)) {
+    if (CombineAdjacentRects(dest_texture->GetLevelClearedRect(target, 0),
+                             gfx::Rect(xoffset, yoffset, width, height),
+                             &cleared_rect)) {
       DCHECK_GE(cleared_rect.size().GetArea(),
                 dest_texture->GetLevelClearedRect(target, 0).size().GetArea());
       texture_manager()->SetLevelClearedRect(dest_texture_ref, target, 0,
