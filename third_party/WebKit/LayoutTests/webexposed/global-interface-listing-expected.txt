@@ -3558,7 +3558,11 @@ interface NodeIterator
 interface NodeList
     getter length
     method constructor
+    method entries
+    method forEach
     method item
+    method keys
+    method values
 interface Notification : EventTarget
     static getter maxActions
     static getter permission

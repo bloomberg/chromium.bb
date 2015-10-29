@@ -24,6 +24,7 @@
 #ifndef NodeList_h
 #define NodeList_h
 
+#include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
@@ -32,7 +33,7 @@ namespace blink {
 
 class Node;
 
-class CORE_EXPORT NodeList : public RefCountedWillBeGarbageCollectedFinalized<NodeList>, public ScriptWrappable {
+class CORE_EXPORT NodeList : public RefCountedWillBeGarbageCollectedFinalized<NodeList>, public ScriptWrappable, public ValueIterable<Node *> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~NodeList() { }
@@ -51,6 +52,9 @@ public:
 
 protected:
     NodeList() { }
+
+private:
+    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };
 
 } // namespace blink

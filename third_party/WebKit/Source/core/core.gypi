@@ -2402,6 +2402,7 @@
             'dom/NodeIterator.h',
             'dom/NodeIteratorBase.cpp',
             'dom/NodeIteratorBase.h',
+            'dom/NodeList.cpp',
             'dom/NodeListsNodeData.cpp',
             'dom/NodeListsNodeData.h',
             'dom/NodeRareData.cpp',

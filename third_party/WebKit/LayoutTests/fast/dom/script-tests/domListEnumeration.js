@@ -97,7 +97,7 @@ var resultArray = new Array();
 var nodeList = document.querySelectorAll('ol');
 resultArray = iterateList(nodeList);
 
-shouldBe("resultArray.length", "5");
+shouldBe("resultArray.length", "9");
 shouldBe("resultArray[0].i", "'0'");
 shouldBe("resultArray[0].item", "nodeList.item(0)");
 shouldBe("resultArray[1].i", "'1'");
