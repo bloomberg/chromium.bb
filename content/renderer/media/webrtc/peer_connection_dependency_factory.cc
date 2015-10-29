@@ -295,7 +295,6 @@ PeerConnectionDependencyFactory::GetPcFactory() {
   return pc_factory_;
 }
 
-
 void PeerConnectionDependencyFactory::WillDestroyCurrentMessageLoop() {
   CleanupPeerConnectionFactory();
 }
@@ -427,6 +426,8 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   rtc::scoped_ptr<PeerConnectionIdentityStore> identity_store(
       new PeerConnectionIdentityStore(
+          base::ThreadTaskRunnerHandle::Get(),
+          GetWebRtcSignalingThread(),
           GURL(web_frame->document().url()),
           GURL(web_frame->document().firstPartyForCookies())));
 
@@ -737,6 +738,11 @@ PeerConnectionDependencyFactory::CreateAudioCapturer(
   return WebRtcAudioCapturer::CreateCapturer(
       render_frame_id, device_info, constraints, GetWebRtcAudioDevice(),
       audio_source);
+}
+
+void PeerConnectionDependencyFactory::EnsureInitialized() {
+  DCHECK(CalledOnValidThread());
+  GetPcFactory();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

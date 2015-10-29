@@ -129,6 +129,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
+  void EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() const;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread() const;
 

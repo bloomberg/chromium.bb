@@ -18,19 +18,22 @@ namespace content {
 class PeerConnectionIdentityStore
     : public webrtc::DtlsIdentityStoreInterface {
  public:
-  PeerConnectionIdentityStore(const GURL& origin,
-                              const GURL& first_party_for_cookies);
+  PeerConnectionIdentityStore(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
+      const GURL& origin,
+      const GURL& first_party_for_cookies);
   ~PeerConnectionIdentityStore() override;
 
   // webrtc::DtlsIdentityStoreInterface override;
   void RequestIdentity(
-      rtc::KeyType key_type,
+      rtc::KeyParams key_params,
       const rtc::scoped_refptr<webrtc::DtlsIdentityRequestObserver>& observer)
           override;
 
  private:
-  base::ThreadChecker signaling_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   const GURL url_;
   const GURL first_party_for_cookies_;
 

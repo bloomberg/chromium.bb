@@ -6,6 +6,8 @@
 
 #include "content/renderer/media/peer_connection_identity_store.h"
 #include "content/renderer/media/rtc_certificate.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/render_thread_impl.h"
 #include "third_party/webrtc/base/rtccertificate.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
 #include "url/gurl.h"
@@ -32,36 +34,57 @@ rtc::KeyParams WebRTCKeyParamsToKeyParams(
 class RTCCertificateIdentityObserver
     : public webrtc::DtlsIdentityRequestObserver {
  public:
-  RTCCertificateIdentityObserver() : observer_(nullptr) {}
+  RTCCertificateIdentityObserver(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread)
+      : main_thread_(main_thread),
+        signaling_thread_(signaling_thread),
+        observer_(nullptr) {
+    DCHECK(main_thread_);
+    DCHECK(signaling_thread_);
+  }
   ~RTCCertificateIdentityObserver() override {}
 
   // Perform |store|->RequestIdentity with this identity observer and ensure
   // that this identity observer is not deleted until the request has completed
   // by holding on to a reference to itself for the duration of the request.
   void RequestIdentity(
-      webrtc::DtlsIdentityStoreInterface* store,
       const blink::WebRTCKeyParams& key_params,
+      const GURL& url,
+      const GURL& first_party_for_cookies,
       blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer) {
-    DCHECK(!self_ref_) << "Already have a RequestIdentity in progress.";
-    self_ref_ = this;
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    DCHECK(!observer_) << "Already have a RequestIdentity in progress.";
+    DCHECK(observer);
     key_params_ = key_params;
     observer_ = observer;
-    DCHECK(observer_);
-    // Request identity with |this| as the observer. OnSuccess/OnFailure will be
-    // called asynchronously.
-    store->RequestIdentity(WebRTCKeyParamsToKeyParams(key_params).type(), this);
+    // Identity request must be performed on the WebRTC signaling thread.
+    signaling_thread_->PostTask(FROM_HERE, base::Bind(
+        &RTCCertificateIdentityObserver::RequestIdentityOnWebRtcSignalingThread,
+        this, url, first_party_for_cookies));
   }
 
  private:
-  void OnFailure(int error) override {
-    DCHECK(self_ref_) << "Not initialized. See RequestIdentity.";
-    DCHECK(observer_);
-    observer_->onError();
-    // Stop referencing self. If this is the last reference then this will
-    // result in "delete this".
-    self_ref_ = nullptr;
+  void RequestIdentityOnWebRtcSignalingThread(
+      GURL url,
+      GURL first_party_for_cookies) {
+    DCHECK(signaling_thread_->BelongsToCurrentThread());
+    rtc::scoped_ptr<PeerConnectionIdentityStore> store(
+        new PeerConnectionIdentityStore(
+            main_thread_, signaling_thread_, url, first_party_for_cookies));
+    // Request identity with |this| as the observer. OnSuccess/OnFailure will be
+    // called asynchronously.
+    store->RequestIdentity(WebRTCKeyParamsToKeyParams(key_params_), this);
   }
 
+  // webrtc::DtlsIdentityRequestObserver implementation.
+  void OnFailure(int error) override {
+    DCHECK(signaling_thread_->BelongsToCurrentThread());
+    DCHECK(observer_);
+    main_thread_->PostTask(FROM_HERE, base::Bind(
+        &RTCCertificateIdentityObserver::DoCallbackOnMainThread,
+        this, nullptr));
+  }
   void OnSuccess(const std::string& der_cert,
                  const std::string& der_private_key) override {
     std::string pem_cert = rtc::SSLIdentity::DerToPem(
@@ -76,21 +99,30 @@ class RTCCertificateIdentityObserver
         rtc::SSLIdentity::FromPEMStrings(pem_key, pem_cert));
     OnSuccess(identity.Pass());
   }
-
   void OnSuccess(rtc::scoped_ptr<rtc::SSLIdentity> identity) override {
-    DCHECK(self_ref_) << "Not initialized. See RequestIdentity.";
+    DCHECK(signaling_thread_->BelongsToCurrentThread());
     DCHECK(observer_);
     rtc::scoped_refptr<rtc::RTCCertificate> certificate =
         rtc::RTCCertificate::Create(identity.Pass());
-    observer_->onSuccess(new RTCCertificate(key_params_, certificate));
-    // Stop referencing self. If this is the last reference then this will
-    // result in "delete this".
-    self_ref_ = nullptr;
+    main_thread_->PostTask(FROM_HERE, base::Bind(
+        &RTCCertificateIdentityObserver::DoCallbackOnMainThread,
+        this, new RTCCertificate(key_params_, certificate)));
   }
 
-  // The reference to self protects |this| from being deleted before the request
-  // has completed. Upon completion we stop referencing ourselves.
-  rtc::scoped_refptr<RTCCertificateIdentityObserver> self_ref_;
+  void DoCallbackOnMainThread(blink::WebRTCCertificate* certificate) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    DCHECK(observer_);
+    if (certificate)
+      observer_->onSuccess(certificate);
+    else
+      observer_->onError();
+  }
+
+  // The main thread is the renderer thread.
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  // The signaling thread is a WebRTC thread used to invoke
+  // PeerConnectionIdentityStore::RequestIdentity on, as is required.
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   blink::WebRTCKeyParams key_params_;
   blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer_;
 
@@ -104,12 +136,27 @@ void RTCCertificateGenerator::generateCertificate(
     const blink::WebURL& url,
     const blink::WebURL& first_party_for_cookies,
     blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer) {
-  rtc::scoped_ptr<PeerConnectionIdentityStore> store(
-      new PeerConnectionIdentityStore(url, first_party_for_cookies));
+  DCHECK(isValidKeyParams(key_params));
+
+#if defined(ENABLE_WEBRTC)
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread =
+      base::ThreadTaskRunnerHandle::Get();
+
+  PeerConnectionDependencyFactory* pc_dependency_factory =
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
+  pc_dependency_factory->EnsureInitialized();
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread =
+      pc_dependency_factory->GetWebRtcSignalingThread();
+
   rtc::scoped_refptr<RTCCertificateIdentityObserver> identity_observer(
-      new rtc::RefCountedObject<RTCCertificateIdentityObserver>());
+      new rtc::RefCountedObject<RTCCertificateIdentityObserver>(
+          main_thread, signaling_thread));
   // |identity_observer| lives until request has completed.
-  identity_observer->RequestIdentity(store.get(), key_params, observer);
+  identity_observer->RequestIdentity(
+      key_params, url, first_party_for_cookies, observer);
+#else
+  observer->onError();
+#endif
 }
 
 bool RTCCertificateGenerator::isValidKeyParams(
