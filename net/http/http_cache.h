@@ -106,7 +106,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     ~DefaultBackend() override;
 
     // Returns a factory for an in-memory cache.
-    static BackendFactory* InMemory(int max_bytes);
+    static scoped_ptr<BackendFactory> InMemory(int max_bytes);
 
     // BackendFactory implementation.
     int CreateBackend(NetLog* net_log,
@@ -136,15 +136,13 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // If |set_up_quic_server_info| is true, configures the cache to track
   // information about servers supporting QUIC.
   HttpCache(HttpNetworkSession* session,
-            BackendFactory* backend_factory,
+            scoped_ptr<BackendFactory> backend_factory,
             bool set_up_quic_server_info);
 
-  // Initialize the cache from its component parts. The lifetime of the
-  // |network_layer| and |backend_factory| are managed by the HttpCache and
-  // will be destroyed using |delete| when the HttpCache is destroyed.
-  HttpCache(HttpTransactionFactory* network_layer,
-            NetLog* net_log,
-            BackendFactory* backend_factory,
+  // Initialize the cache from its component parts. |network_layer| and
+  // |backend_factory| will be destroyed when the HttpCache is.
+  HttpCache(scoped_ptr<HttpTransactionFactory> network_layer,
+            scoped_ptr<BackendFactory> backend_factory,
             bool set_up_quic_server_info);
 
   ~HttpCache() override;
@@ -380,10 +378,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Removes the transaction |trans|, from the pending list of |pending_op|.
   bool RemovePendingTransactionFromPendingOp(PendingOp* pending_op,
                                              Transaction* trans);
-
-  // Instantiates and sets QUIC server info factory.
-  void SetupQuicServerInfoFactory(HttpNetworkSession* session);
-
   // Resumes processing the pending list of |entry|.
   void ProcessPendingQueue(ActiveEntry* entry);
 

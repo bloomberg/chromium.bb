@@ -233,12 +233,12 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       new net::HttpNetworkSession(network_session_params));
   main_http_factory_.reset(new net::HttpCache(
       http_network_session_.get(),
-      new net::HttpCache::DefaultBackend(
+      make_scoped_ptr(new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
           net::CACHE_BACKEND_SIMPLE,
           cache_path_,
           20 * 1024 * 1024,  // 20M
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE))),
       true /* set_up_quic_server_info */));
 
   url_request_context_->set_http_transaction_factory(main_http_factory_.get());

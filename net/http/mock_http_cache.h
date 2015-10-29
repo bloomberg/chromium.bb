@@ -177,7 +177,8 @@ class MockBackendFactory : public HttpCache::BackendFactory {
 class MockHttpCache {
  public:
   MockHttpCache();
-  explicit MockHttpCache(HttpCache::BackendFactory* disk_cache_factory);
+  explicit MockHttpCache(
+      scoped_ptr<HttpCache::BackendFactory> disk_cache_factory);
 
   HttpCache* http_cache() { return &http_cache_; }
 

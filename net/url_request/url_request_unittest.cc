@@ -7297,7 +7297,7 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
       new HttpNetworkLayer(&network_session));
   network_layer->OnSuspend();
 
-  HttpCache http_cache(network_layer.release(), default_context_.net_log(),
+  HttpCache http_cache(network_layer.Pass(),
                        HttpCache::DefaultBackend::InMemory(0), true);
 
   TestURLRequestContext context(true);

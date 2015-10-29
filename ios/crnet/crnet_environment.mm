@@ -416,11 +416,11 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   base::FilePath cache_path =
       base::mac::NSStringToFilePath([dirs objectAtIndex:0]);
   cache_path = cache_path.Append(FILE_PATH_LITERAL("crnet"));
-  net::HttpCache::DefaultBackend* main_backend =
+  scoped_ptr<net::HttpCache::DefaultBackend> main_backend(
       new net::HttpCache::DefaultBackend(net::DISK_CACHE,
                                          net::CACHE_BACKEND_DEFAULT, cache_path,
                                          0,  // Default cache size.
-                                         network_cache_thread_->task_runner());
+                                         network_cache_thread_->task_runner()));
 
   net::HttpNetworkSession::Params params;
   params.host_resolver = main_context_->host_resolver();
@@ -456,7 +456,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   net::HttpNetworkSession* http_network_session =
       new net::HttpNetworkSession(params);
   net::HttpCache* main_cache = new net::HttpCache(
-      http_network_session, main_backend, true /* set_up_quic_server_info */);
+      http_network_session, main_backend.Pass(),
+      true /* set_up_quic_server_info */);
   main_context_->set_http_transaction_factory(main_cache);
 
   // Cookies

@@ -389,12 +389,12 @@ class ProfileIOData {
   // Creates main network transaction factory.
   scoped_ptr<net::HttpCache> CreateMainHttpFactory(
       net::HttpNetworkSession* session,
-      net::HttpCache::BackendFactory* main_backend) const;
+      scoped_ptr<net::HttpCache::BackendFactory> main_backend) const;
 
   // Creates network transaction factory.
   scoped_ptr<net::HttpCache> CreateHttpFactory(
       net::HttpNetworkSession* shared_session,
-      net::HttpCache::BackendFactory* backend) const;
+      scoped_ptr<net::HttpCache::BackendFactory> backend) const;
 
   void SetCookieSettingsForTesting(
       content_settings::CookieSettings* cookie_settings);

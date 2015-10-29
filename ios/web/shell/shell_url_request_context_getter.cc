@@ -130,15 +130,16 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->host_resolver();
 
     base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
-    net::HttpCache::DefaultBackend* main_backend =
+    scoped_ptr<net::HttpCache::DefaultBackend> main_backend(
         new net::HttpCache::DefaultBackend(net::DISK_CACHE,
                                            net::CACHE_BACKEND_DEFAULT,
-                                           cache_path, 0, cache_task_runner_);
+                                           cache_path, 0, cache_task_runner_));
 
     storage_->set_http_network_session(
         make_scoped_ptr(new net::HttpNetworkSession(network_session_params)));
     storage_->set_http_transaction_factory(make_scoped_ptr(
-        new net::HttpCache(storage_->http_network_session(), main_backend,
+        new net::HttpCache(storage_->http_network_session(),
+                           main_backend.Pass(),
                            true /* set_up_quic_server_info */)));
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
