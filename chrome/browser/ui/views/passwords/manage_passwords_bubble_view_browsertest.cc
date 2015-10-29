@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "content/public/browser/notification_types.h"
@@ -377,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
   ScopedVector<autofill::PasswordForm> local_credentials;
-  test_form()->origin = GURL("https://example.com");;
+  test_form()->origin = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
   local_credentials.push_back(new autofill::PasswordForm(*test_form()));
@@ -389,6 +390,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
 
   EXPECT_FALSE(browser()->window()->IsActive());
   ManagePasswordsBubbleView::set_auto_signin_toast_timeout(0);
+  // Get rid of the warm welcome which makes the bubble sticky.
+  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
+      browser()->profile()->GetPrefs());
   SetupAutoSignin(local_credentials.Pass());
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsBubbleShowing());

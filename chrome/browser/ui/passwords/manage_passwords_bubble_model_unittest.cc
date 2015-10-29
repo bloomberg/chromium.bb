@@ -84,12 +84,23 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
  public:
   ManagePasswordsBubbleModelTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        test_web_contents_(
-            content::WebContentsTester::CreateTestWebContents(&profile_,
-                                                              nullptr)),
         field_trials_(nullptr) {}
+  ~ManagePasswordsBubbleModelTest() override = default;
 
-  void TearDown() override { model_.reset(); }
+  void SetUp() override {
+    test_web_contents_.reset(
+        content::WebContentsTester::CreateTestWebContents(&profile_, nullptr));
+    // Create the test UIController here so that it's bound to
+    // |test_web_contents_| and therefore accessible to the model.
+    new testing::StrictMock<ManagePasswordsUIControllerMockWithMockNavigation>(
+        test_web_contents_.get());
+  }
+
+  void TearDown() override {
+    // Reset WebContents first. It can happen if the user closes the tab.
+    test_web_contents_.reset();
+    model_.reset();
+  }
 
   PrefService* prefs() { return profile_.GetPrefs(); }
 
@@ -98,12 +109,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
  protected:
   void SetUpWithState(password_manager::ui::State state,
                       ManagePasswordsBubbleModel::DisplayReason reason) {
-    // Create the test UIController here so that it's bound to
-    // |test_web_contents_| and therefore accessible to the model.
-    ManagePasswordsUIControllerMockWithMockNavigation* mock =
-        new testing::StrictMock<
-            ManagePasswordsUIControllerMockWithMockNavigation>(
-            test_web_contents_.get());
+    ManagePasswordsUIControllerMock* mock = controller();
     mock->SetState(state);
     model_.reset(
         new ManagePasswordsBubbleModel(test_web_contents_.get(), reason));
@@ -295,32 +301,29 @@ TEST_F(ManagePasswordsBubbleModelTest, DismissCredential) {
 
 TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
   base::HistogramTester histogram_tester;
+  // Pop up the first time with the warm welcome.
   PretendAutoSigningIn();
+  EXPECT_TRUE(model_->ShouldShowAutoSigninWarmWelcome());
+  model_->OnAutoSignOKClicked();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::CLICKED_OK);
+  EXPECT_FALSE(model_->ShouldShowAutoSigninWarmWelcome());
+  model_.reset();
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_OK,
+      1);
+
+  // Pop up the second time without the warm welcome.
+  PretendAutoSigningIn();
+  EXPECT_FALSE(model_->ShouldShowAutoSigninWarmWelcome());
   model_->OnAutoSignInToastTimeout();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);
   model_.reset();
-
-  histogram_tester.ExpectUniqueSample(
+  histogram_tester.ExpectBucketCount(
       kUIDismissalReasonMetric,
       password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT,
-      1);
-}
-
-TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninAndManagedBubble) {
-  base::HistogramTester histogram_tester;
-  PretendAutoSigningIn();
-  model_->OnAutoSignInToastTimeout();
-  model_->OnAutoSignInClicked();
-  EXPECT_EQ(model_->dismissal_reason(),
-            password_manager::metrics_util::AUTO_SIGNIN_TOAST_CLICKED);
-  model_.reset();
-
-  EXPECT_TRUE(controller()->manage_accounts());
-
-  histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::AUTO_SIGNIN_TOAST_CLICKED,
       1);
 }
 

@@ -17,7 +17,6 @@ ManagePasswordsUIControllerMock::ManagePasswordsUIControllerMock(
       updated_password_(false),
       never_saved_password_(false),
       choose_credential_(false),
-      manage_accounts_(false),
       state_overridden_(false),
       state_(password_manager::ui::INACTIVE_STATE),
       password_manager_(&client_) {
@@ -58,10 +57,6 @@ void ManagePasswordsUIControllerMock::SetState(
 
 void ManagePasswordsUIControllerMock::UnsetState() {
   state_overridden_ = false;
-}
-
-void ManagePasswordsUIControllerMock::ManageAccounts() {
-  manage_accounts_ = true;
 }
 
 void ManagePasswordsUIControllerMock::UpdateBubbleAndIconVisibility() {

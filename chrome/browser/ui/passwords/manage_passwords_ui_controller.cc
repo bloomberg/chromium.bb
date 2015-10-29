@@ -316,13 +316,6 @@ void ManagePasswordsUIController::NeverSavePasswordInternal() {
   form_manager->PermanentlyBlacklist();
 }
 
-void ManagePasswordsUIController::ManageAccounts() {
-  DCHECK_EQ(password_manager::ui::AUTO_SIGNIN_STATE, state());
-  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
-  UpdateBubbleAndIconVisibility();
-}
-
 void ManagePasswordsUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {

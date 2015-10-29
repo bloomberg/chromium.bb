@@ -13,32 +13,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/feedback/feedback_data.h"
-#include "components/feedback/feedback_util.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using autofill::PasswordFormMap;
-using feedback::FeedbackData;
-using content::WebContents;
 namespace metrics_util = password_manager::metrics_util;
 
 namespace {
@@ -148,6 +136,22 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
             confirmation_text_id, save_confirmation_link, &offset);
     save_confirmation_link_range_ =
         gfx::Range(offset, offset + save_confirmation_link.length());
+  } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
+    if (GetSmartLockBrandingState(GetProfile()) ==
+        password_bubble_experiment::SmartLockBranding::FULL) {
+      size_t offset;
+      base::string16 brand_name =
+          l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+      autosignin_welcome_text_ = l10n_util::GetStringFUTF16(
+          IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME, brand_name,
+          &offset);
+      autosignin_welcome_link_range_ =
+          gfx::Range(offset, offset + brand_name.length());
+    } else {
+      autosignin_welcome_text_ = l10n_util::GetStringFUTF16(
+          IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME,
+          l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND));
+    }
   }
 
   manage_link_ =
@@ -201,8 +205,8 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
     Profile* profile = GetProfile();
     if (profile && (GetSmartLockBrandingState(profile) ==
                     password_bubble_experiment::SmartLockBranding::FULL)) {
-      profile->GetPrefs()->SetBoolean(
-          password_manager::prefs::kWasSavePrompFirstRunExperienceShown, true);
+      password_bubble_experiment::RecordSavePromptFirstRunExperienceWasShown(
+          profile->GetPrefs());
     }
   }
   ManagePasswordsUIController* manage_passwords_ui_controller =
@@ -233,6 +237,7 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
   if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
     LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
 }
+
 void ManagePasswordsBubbleModel::OnCancelClicked() {
   DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state_);
   dismissal_reason_ = metrics_util::CLICKED_CANCEL;
@@ -308,14 +313,17 @@ void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
+  DCHECK_EQ(password_manager::ui::AUTO_SIGNIN_STATE, state_);
   dismissal_reason_ = metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT;
 }
 
-void ManagePasswordsBubbleModel::OnAutoSignInClicked() {
-  dismissal_reason_ = metrics_util::AUTO_SIGNIN_TOAST_CLICKED;
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->ManageAccounts();
+void ManagePasswordsBubbleModel::OnAutoSignOKClicked() {
+  DCHECK_EQ(password_manager::ui::AUTO_SIGNIN_STATE, state_);
+  dismissal_reason_ = metrics_util::CLICKED_OK;
+  Profile* profile = GetProfile();
+  DCHECK(profile);
+  password_bubble_experiment::
+      RecordAutoSignInPromptFirstRunExperienceWasShown(profile->GetPrefs());
 }
 
 void ManagePasswordsBubbleModel::OnPasswordAction(
@@ -357,13 +365,16 @@ bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
 
 bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
   Profile* profile = GetProfile();
-  if (GetSmartLockBrandingState(profile) ==
-      password_bubble_experiment::SmartLockBranding::FULL) {
-    PrefService* prefs = profile->GetPrefs();
-    return !prefs->GetBoolean(
-        password_manager::prefs::kWasSavePrompFirstRunExperienceShown);
-  }
-  return false;
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  return password_bubble_experiment::ShouldShowSavePromptFirstRunExperience(
+      sync_service, profile->GetPrefs());
+}
+
+bool ManagePasswordsBubbleModel::ShouldShowAutoSigninWarmWelcome() const {
+  Profile* profile = GetProfile();
+  return password_bubble_experiment::
+      ShouldShowAutoSignInPromptFirstRunExperience(profile->GetPrefs());
 }
 
 // static

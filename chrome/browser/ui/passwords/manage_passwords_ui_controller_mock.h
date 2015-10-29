@@ -62,9 +62,6 @@ class ManagePasswordsUIControllerMock
   void SetState(password_manager::ui::State state);
   void UnsetState();
 
-  void ManageAccounts() override;
-  bool manage_accounts() const { return manage_accounts_; }
-
   void UpdateBubbleAndIconVisibility() override;
 
   void UpdateAndroidAccountChooserInfoBarVisibility() override;
@@ -84,7 +81,6 @@ class ManagePasswordsUIControllerMock
   bool updated_password_;
   bool never_saved_password_;
   bool choose_credential_;
-  bool manage_accounts_;
   bool state_overridden_;
   password_manager::ui::State state_;
   base::TimeDelta elapsed_;

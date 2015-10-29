@@ -522,20 +522,6 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSignin) {
   ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
 }
 
-TEST_F(ManagePasswordsUIControllerTest, AutoSigninClickThrough) {
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
-  controller()->OnAutoSignin(local_credentials.Pass());
-  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->state());
-  EXPECT_EQ(test_local_form().origin, controller()->origin());
-  ASSERT_FALSE(controller()->GetCurrentForms().empty());
-  EXPECT_EQ(test_local_form(), *controller()->GetCurrentForms()[0]);
-  ExpectIconStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
-
-  controller()->ManageAccounts();
-  ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
-}
-
 TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   local_credentials.push_back(new autofill::PasswordForm(test_local_form()));

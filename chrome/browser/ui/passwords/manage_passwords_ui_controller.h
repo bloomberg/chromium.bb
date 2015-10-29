@@ -100,10 +100,6 @@ class ManagePasswordsUIController
   // state, and will state in this state.
   virtual void NeverSavePassword();
 
-  // Called from the model. The controller should switch to MANAGE_STATE and pop
-  // up a bubble.
-  virtual void ManageAccounts();
-
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage();
 

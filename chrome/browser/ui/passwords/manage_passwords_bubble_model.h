@@ -72,9 +72,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // timeout.
   void OnAutoSignInToastTimeout();
 
-  // Called by the view code when user clicks on the auto sign-in toast in order
-  // to manage credentials.
-  void OnAutoSignInClicked();
+  // Called by the view code when the user clicks "Ok, got it".
+  void OnAutoSignOKClicked();
 
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
@@ -115,6 +114,14 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
     return title_brand_link_range_;
   }
 
+  const base::string16& autosignin_welcome_text() const {
+    return autosignin_welcome_text_;
+  }
+
+  const gfx::Range& autosignin_welcome_link_range() const {
+    return autosignin_welcome_link_range_;
+  }
+
   Profile* GetProfile() const;
 
   // Returns true iff the multiple account selection prompt for account update
@@ -124,6 +131,9 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // True if the save bubble should display the warm welcome for Google Smart
   // Lock.
   bool ShouldShowGoogleSmartLockWelcome() const;
+
+  // True if the autosignin toast should display the warm welcome message.
+  bool ShouldShowAutoSigninWarmWelcome() const;
 
 #if defined(UNIT_TEST)
   // Gets and sets the reason the bubble was displayed.
@@ -172,6 +182,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   base::string16 manage_link_;
   base::string16 save_confirmation_text_;
   gfx::Range save_confirmation_link_range_;
+  base::string16 autosignin_welcome_text_;
+  gfx::Range autosignin_welcome_link_range_;
   password_manager::metrics_util::UIDisplayDisposition display_disposition_;
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
   password_manager::metrics_util::UpdatePasswordSubmissionEvent

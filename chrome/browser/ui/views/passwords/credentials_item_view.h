@@ -49,6 +49,10 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   // AccountAvatarFetcherDelegate:
   void UpdateAvatar(const gfx::ImageSkia& image) override;
 
+  // Returns horizontal offset of the username label from the left side of the
+  // view.
+  int GetLabelOffset() const;
+
  private:
   // views::LabelButton:
   gfx::Size GetPreferredSize() const override;
