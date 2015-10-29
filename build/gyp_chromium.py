@@ -40,6 +40,7 @@ sys.path.insert(1, os.path.join(chrome_src, 'remoting', 'tools', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'liblouis'))
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'build', 'scripts'))
+sys.path.insert(1, os.path.join(chrome_src, 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
