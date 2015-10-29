@@ -464,6 +464,8 @@ void ThreadState::threadLocalWeakProcessing()
     ASSERT(checkThread());
     ASSERT(!sweepForbidden());
     TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
+    double timeStamp = WTF::currentTimeMS();
+
     SweepForbiddenScope forbiddenScope(this);
     if (isMainThread())
         ScriptForbiddenScope::enter();
@@ -481,8 +483,11 @@ void ThreadState::threadLocalWeakProcessing()
     // Perform thread-specific weak processing.
     while (popAndInvokeThreadLocalWeakCallback(&weakProcessingVisitor)) { }
 
-    if (isMainThread())
+    if (isMainThread()) {
         ScriptForbiddenScope::exit();
+        double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - timeStamp;
+        Platform::current()->histogramCustomCounts("BlinkGC.timeForThreadLocalWeakProcessing", timeForThreadLocalWeakProcessing, 1, 10 * 1000, 50);
+    }
 }
 
 CrossThreadPersistentRegion& ThreadState::crossThreadPersistentRegion()

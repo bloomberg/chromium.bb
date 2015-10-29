@@ -2901,6 +2901,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BlinkGC.TimeForThreadLocalWeakProcessing" units="milliseconds">
+  <owner>haraken@chromium.org</owner>
+  <summary>Duration of time taken to run thread-local weak processing.</summary>
+</histogram>
+
 <histogram name="BlinkGC.TotalAllocatedSpace" units="KB">
   <owner>haraken@chromium.org</owner>
   <summary>
