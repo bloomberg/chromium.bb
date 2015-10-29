@@ -100,10 +100,16 @@ function FileManager() {
   this.providersModel_ = null;
 
   /**
-   * Handler for command events.
-   * @type {CommandHandler}
+   * Controller for actions for current selection.
+   * @private {ActionsController}
    */
-  this.commandHandler = null;
+  this.actionsController_ = null;
+
+  /**
+   * Handler for command events.
+   * @private {CommandHandler}
+   */
+  this.commandHandler_ = null;
 
   /**
    * Handler for the change of file selection.
@@ -313,6 +319,18 @@ FileManager.prototype = /** @struct */ {
     return this.folderShortcutsModel_;
   },
   /**
+   * @return {ActionsController}
+   */
+  get actionsController() {
+    return this.actionsController_;
+  },
+  /**
+   * @return {CommandHandler}
+   */
+  get commandHandler() {
+    return this.commandHandler_;
+  },
+  /**
    * @return {ProvidersModel}
    */
   get providersModel() {
@@ -454,7 +472,7 @@ FileManager.prototype = /** @struct */ {
 
     assert(this.directoryModel_);
     assert(this.spinnerController_);
-    assert(this.commandHandler);
+    assert(this.commandHandler_);
     assert(this.selectionHandler_);
     assert(this.launchParams_);
     assert(this.volumeManager_);
@@ -464,7 +482,7 @@ FileManager.prototype = /** @struct */ {
         this.directoryModel_,
         this.ui_.listContainer,
         this.spinnerController_,
-        this.commandHandler,
+        this.commandHandler_,
         this.selectionHandler_);
     this.sortMenuController_ = new SortMenuController(
         this.ui_.sortButton,
@@ -475,7 +493,7 @@ FileManager.prototype = /** @struct */ {
         this.ui_.gearButtonToggleRipple,
         this.ui_.gearMenu,
         this.directoryModel_,
-        this.commandHandler);
+        this.commandHandler_);
     this.toolbarController_ = new ToolbarController(
         this.ui_.toolbar,
         this.ui_.dialogNavigationList,
@@ -486,6 +504,11 @@ FileManager.prototype = /** @struct */ {
     this.emptyFolderController_ = new EmptyFolderController(
         this.ui_.emptyFolder,
         this.directoryModel_);
+    this.actionsController_ = new ActionsController(
+        this.volumeManager_, assert(this.metadataModel_), this.directoryModel_,
+        assert(this.folderShortcutsModel_),
+        this.backgroundPage_.background.driveSyncHandler,
+        this.selectionHandler_, assert(this.ui_));
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       importer.importEnabled().then(
@@ -566,7 +589,7 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.initCommands_ = function() {
     assert(this.ui_.textContextMenu);
 
-    this.commandHandler = new CommandHandler(this);
+    this.commandHandler_ = new CommandHandler(this);
 
     // TODO(hirono): Move the following block to the UI part.
     var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
@@ -762,15 +785,13 @@ FileManager.prototype = /** @struct */ {
     assert(this.volumeManager_);
     this.metadataModel_ = MetadataModel.create(this.volumeManager_);
     this.thumbnailModel_ = new ThumbnailModel(this.metadataModel_);
-
-    // Create the providers model.
     this.providersModel_ = new ProvidersModel(this.volumeManager_);
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);
     assert(this.launchParams_);
     this.ui_ = new FileManagerUI(
-        this.providersModel_, this.dialogDom_, this.launchParams_);
+        assert(this.providersModel_), this.dialogDom_, this.launchParams_);
 
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {

@@ -303,6 +303,9 @@ testcase.pinFileOnMobileNetwork = function() {
           return remoteCall.waitForElement(
               windowId, '#file-context-menu:not([hidden])');
         }).then(function() {
+          return remoteCall.waitForElement(windowId,
+              ['[command="#toggle-pinned"]']);
+        }).then(function() {
           return remoteCall.callRemoteTestUtil(
               'fakeMouseClick', windowId, ['[command="#toggle-pinned"]']);
         }).then(function(result) {

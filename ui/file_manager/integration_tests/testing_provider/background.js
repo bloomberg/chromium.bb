@@ -47,6 +47,11 @@ chrome.fileSystemProvider.onUnmountRequested.addListener(
           });
     });
 
+chrome.fileSystemProvider.onGetActionsRequested.addListener(
+    function(options, onSuccess, onError) {
+      onSucces([]);
+    });
+
 // If the manifest for device or file source is used, then mount a fake file
 // system on install.
 if (chrome.runtime.getManifest().name === "Testing Provider Device" ||

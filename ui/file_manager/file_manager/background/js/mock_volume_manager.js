@@ -8,7 +8,9 @@
  */
 function MockVolumeManager() {
   this.volumeInfoList = new VolumeInfoList();
-
+  this.driveConnectionState = {
+    type: VolumeManagerCommon.DriveConnectionType.ONLINE
+  };
   this.createVolumeInfo(
       VolumeManagerCommon.VolumeType.DRIVE,
       'drive',
@@ -96,6 +98,14 @@ MockVolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 };
 
 /**
+ * @return {VolumeManagerCommon.DriveConnectionState} Current drive connection
+ *     state.
+ */
+MockVolumeManager.prototype.getDriveConnectionState = function() {
+  return this.driveConnectionState;
+};
+
+/**
  * Utility function to create a mock VolumeInfo.
  * @param {VolumeType} type Volume type.
  * @param {string} volumeId Volume id.
@@ -132,6 +142,9 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
  */
 function MockVolumeManagerWrapper() {
   this.volumeInfoList = new cr.ui.ArrayDataModel([]);
+  this.driveConnectionState = {
+    type: VolumeManagerCommon.DriveConnectionType.ONLINE
+  };
   this.createVolumeInfo(
       VolumeManagerCommon.VolumeType.DRIVE,
       'drive',
@@ -214,6 +227,15 @@ MockVolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo =
   return VolumeManager.prototype.getCurrentProfileVolumeInfo.call(
       this, volumeType);
 };
+
+/**
+ * @return {VolumeManagerCommon.DriveConnectionState} Current drive connection
+ *     state.
+ */
+MockVolumeManagerWrapper.getDriveConnectionState = function() {
+  return this.driveConnectionState;
+};
+
 /**
  * Utility function to create a mock VolumeInfo.
  * @param {VolumeType} type Volume type.

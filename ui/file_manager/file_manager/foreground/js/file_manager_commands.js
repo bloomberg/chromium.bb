@@ -26,16 +26,6 @@ cr.ui.Command.prototype.setHidden = function(value) {
 var Command = function() {};
 
 /**
- * Metadata property names used by Command.
- * These metadata is expected to be cached.
- * @const {!Array<string>}
- */
-Command.METADATA_PREFETCH_PROPERTY_NAMES = [
-  'hosted',
-  'pinned'
-];
-
-/**
  * Handles the execute event.
  * @param {!Event} event Command event.
  * @param {!FileManager} fileManager FileManager.
@@ -163,34 +153,6 @@ CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly =
  */
 CommandUtil.canExecuteAlways = function(event) {
   event.canExecute = true;
-};
-
-/**
- * Obtains target entries that can be pinned from the selection.
- * If directories are included in the selection, it just returns an empty
- * array to avoid confusing because pinning directory is not supported
- * currently.
- *
- * @return {!Array<!Entry>} Target entries.
- */
-CommandUtil.getPinTargetEntries = function() {
-  // If current directory is not on drive, no entry can be pinned.
-  if (!fileManager.isOnDrive())
-    return [];
-
-  var hasDirectory = false;
-  var results = fileManager.getSelection().entries.filter(function(entry) {
-    hasDirectory = hasDirectory || entry.isDirectory;
-    if (!entry || hasDirectory)
-      return false;
-    var metadata = fileManager.metadataModel.getCache(
-        [entry], ['hosted', 'pinned'])[0];
-    if (metadata.hosted)
-      return false;
-    entry.pinned = metadata.pinned;
-    return true;
-  });
-  return hasDirectory ? [] : results;
 };
 
 /**
@@ -1108,66 +1070,16 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager
    */
   execute: function(event, fileManager) {
-    var pin = !event.command.checked;
-    event.command.checked = pin;
-    var entries = CommandUtil.getPinTargetEntries();
-    if (entries.length == 0)
-      return;
-    var currentEntry;
-    var error = false;
-    var metadataModel = fileManager.metadataModel;
-    var steps = {
-      // Pick an entry and pin it.
-      start: function() {
-        // Check if all the entries are pinned or not.
-        if (entries.length == 0)
-          return;
-        currentEntry = entries.shift();
-        chrome.fileManagerPrivate.pinDriveFile(
-            currentEntry,
-            pin,
-            steps.entryPinned);
-      },
-
-      // Check the result of pinning
-      entryPinned: function() {
-        // Convert to boolean.
-        error = !!chrome.runtime.lastError;
-        if (error && pin) {
-          metadataModel.get([currentEntry], ['size']).then(
-              function(results) {
-                steps.showError(results[0].size);
-              });
-          return;
-        }
-        metadataModel.notifyEntriesChanged([currentEntry]);
-        metadataModel.get([currentEntry], ['pinned']).then(steps.updateUI);
-      },
-
-      // Update the user interface according to the cache state.
-      updateUI: function() {
-        fileManager.ui.listContainer.currentView.updateListItemsMetadata(
-            'external', [currentEntry]);
-        if (!error)
-          steps.start();
-      },
-
-      // Show the error
-      showError: function(size) {
-        fileManager.ui.alertDialog.showHtml(
-            str('DRIVE_OUT_OF_SPACE_HEADER'),
-            strf('DRIVE_OUT_OF_SPACE_MESSAGE',
-                 unescape(currentEntry.name),
-                 util.bytesToString(size)),
-            null, null, null);
-      }
-    };
-    steps.start();
-
-    var driveSyncHandler =
-        fileManager.backgroundPage.background.driveSyncHandler;
-    if (pin && driveSyncHandler.isSyncSuppressed())
-      driveSyncHandler.showDisabledMobileSyncNotification();
+    var actionsModel = fileManager.actionsController.getActionsModelFor(
+        event.target);
+    var saveForOfflineAction = actionsModel ? actionsModel.getAction(
+        ActionsModel.CommonActionId.SAVE_FOR_OFFLINE) : null;
+    var offlineNotNeededAction = actionsModel ? actionsModel.getAction(
+        ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY) : null;
+    // Saving for offline has a priority if both actions are available.
+    var action = saveForOfflineAction || offlineNotNeededAction;
+    if (action)
+      action.execute();
   },
 
   /**
@@ -1175,18 +1087,20 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    var entries = CommandUtil.getPinTargetEntries();
-    var checked = true;
-    for (var i = 0; i < entries.length; i++) {
-      checked = checked && entries[i].pinned;
-    }
-    if (entries.length > 0) {
-      event.canExecute = true;
-      event.command.setHidden(false);
-      event.command.checked = checked;
-    } else {
-      event.canExecute = false;
-      event.command.setHidden(true);
+    var actionsModel = fileManager.actionsController.getActionsModelFor(
+        event.target);
+    var saveForOfflineAction = actionsModel ? actionsModel.getAction(
+        ActionsModel.CommonActionId.SAVE_FOR_OFFLINE) : null;
+    var offlineNotNeededAction = actionsModel ? actionsModel.getAction(
+        ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY) : null;
+    var action = saveForOfflineAction || offlineNotNeededAction;
+
+    event.canExecute = action && action.canExecute();
+    // If model is not computed yet, then keep the previous visibility to avoid
+    // flickering.
+    if (actionsModel) {
+      event.command.setHidden(actionsModel && !action);
+      event.command.checked = !!offlineNotNeededAction;
     }
   }
 });
@@ -1234,31 +1148,30 @@ CommandHandler.COMMANDS_['share'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    var entries = fileManager.getSelection().entries;
-    if (entries.length != 1) {
-      console.warn('Unable to share multiple items at once.');
-      return;
-    }
-    // Add the overlapped class to prevent the applicaiton window from
-    // captureing mouse events.
-    fileManager.ui.shareDialog.showEntry(entries[0], function(result) {
-      if (result == ShareDialog.Result.NETWORK_ERROR)
-        fileManager.ui.errorDialog.show(str('SHARE_ERROR'), null, null, null);
-    }.bind(this));
+    // To toolbar buttons are always related to the file list, even though the
+    // focus is on the navigation list. This assumption will break once we add
+    // Share to the context menu on the navigation list. crbug.com/530418
+    var actionsModel = fileManager.actionsController.getActionsModelForContext(
+        ActionsController.Context.FILE_LIST);
+    var action = actionsModel ? actionsModel.getAction(
+        ActionsModel.CommonActionId.SHARE) : null;
+    if (action)
+      action.execute();
   },
   /**
    * @param {!Event} event Command event.
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    var selection = fileManager.getSelection();
-    var isDriveOffline =
-        fileManager.volumeManager.getDriveConnectionState().type ===
-            VolumeManagerCommon.DriveConnectionType.OFFLINE;
-    event.canExecute = fileManager.isOnDrive() &&
-        !isDriveOffline &&
-        selection && selection.totalCount == 1;
-    event.command.setHidden(!fileManager.isOnDrive());
+    var actionsModel = fileManager.actionsController.getActionsModelForContext(
+        ActionsController.Context.FILE_LIST);
+    var action = actionsModel ? actionsModel.getAction(
+        ActionsModel.CommonActionId.SHARE) : null;
+    event.canExecute = action && action.canExecute();
+    // If model is not computed yet, then keep the previous visibility to avoid
+    // flickering.
+    if (actionsModel)
+      event.command.setHidden(actionsModel && !action);
   }
 });
 
@@ -1272,39 +1185,25 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var entry = CommandUtil.getCommandEntry(event.target);
-    if (!entry) {
-      console.warn('create-folder-shortcut command executed on an element ' +
-                   'which does not have corresponding entry.');
-      return;
-    }
-    if (fileManager.folderShortcutsModel.exists(entry))
-      return;
-    fileManager.folderShortcutsModel.add(entry);
+    var actionsModel = fileManager.actionsController.getActionsModelFor(
+        event.target);
+    var action = actionsModel ? actionsModel.getAction(
+        ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT) : null;
+    if (action)
+      action.execute();
   },
-
   /**
    * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager The file manager instance.
+   * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    var entry = CommandUtil.getCommandEntry(event.target);
-    var folderShortcutExists =
-        entry && fileManager.folderShortcutsModel.exists(entry);
-
-    var onlyOneFolderSelected = true;
-    // Only on list, user can select multiple files. The command is enabled only
-    // when a single file is selected.
-    if (event.target instanceof cr.ui.List) {
-      var items = event.target.selectedItems;
-      onlyOneFolderSelected = (items.length == 1 && items[0].isDirectory);
-    }
-
-    var location = entry && fileManager.volumeManager.getLocationInfo(entry);
-    var eligible = location && location.isEligibleForFolderShortcut;
-    event.canExecute =
-        eligible && onlyOneFolderSelected && !folderShortcutExists;
-    event.command.setHidden(!eligible || !onlyOneFolderSelected);
+    var actionsModel = fileManager.actionsController.getActionsModelFor(
+        event.target);
+    var action = actionsModel ? actionsModel.getAction(
+        ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT) : null;
+    event.canExecute = action && action.canExecute();
+    if (actionsModel)
+      event.command.setHidden(!action);
   }
 });
 
@@ -1318,27 +1217,25 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var entry = CommandUtil.getCommandEntry(event.target);
-    if (!entry) {
-      console.warn('remove-folder-shortcut command executed on an element ' +
-                   'which does not have corresponding entry.');
-      return;
-    }
-    fileManager.folderShortcutsModel.remove(entry);
+    var actionsModel = fileManager.actionsController.getActionsModelFor(
+        event.target);
+    var action = actionsModel ? actionsModel.getAction(
+        ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT) : null;
+    if (action)
+      action.execute();
   },
-
   /**
    * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager The file manager instance.
+   * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    var entry = CommandUtil.getCommandEntry(event.target);
-    var location = entry && fileManager.volumeManager.getLocationInfo(entry);
-
-    var eligible = location && location.isEligibleForFolderShortcut;
-    var isShortcut = entry && fileManager.folderShortcutsModel.exists(entry);
-    event.canExecute = isShortcut && eligible;
-    event.command.setHidden(!event.canExecute);
+    var actionsModel = fileManager.actionsController.getActionsModelFor(
+        event.target);
+    var action = actionsModel ? actionsModel.getAction(
+        ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT) : null;
+    event.canExecute = action && action.canExecute();
+    if (actionsModel)
+      event.command.setHidden(!action);
   }
 });
 

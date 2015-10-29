@@ -1194,15 +1194,6 @@ function EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly) {
       this.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE;
 
   /**
-   * Whether the given path can be a target path of folder shortcut.
-   * @type {boolean}
-   */
-  this.isEligibleForFolderShortcut =
-      !this.isSpecialSearchRoot &&
-      !this.isRootEntry &&
-      this.isDriveBased;
-
-  /**
    * Whether the entry is read only or not.
    * @type {boolean}
    */

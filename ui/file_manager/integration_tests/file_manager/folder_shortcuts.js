@@ -164,10 +164,12 @@ function createShortcut(windowId, directory) {
         windowId, '#file-context-menu:not([hidden])');
   }).then(function() {
     return remoteCall.waitForElement(
-        windowId, '[command="#create-folder-shortcut"]');
+        windowId,
+        '[command="#create-folder-shortcut"]:not([hidden]):not([disabled])');
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId, ['[command="#create-folder-shortcut"]']);
+        'fakeMouseClick', windowId,
+        ['[command="#create-folder-shortcut"]:not([hidden]):not([disabled])']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.waitForElement(windowId, directory.navItem);
@@ -182,19 +184,30 @@ function createShortcut(windowId, directory) {
  * @return {Promise} Promise fullfilled on success.
  */
 function removeShortcut(windowId, directory) {
-  return remoteCall.callRemoteTestUtil(
+  // Focus the item first since actions are calculated asynchronously. The
+  // context menu wouldn't show if there are no visible items. Focusing first,
+  // will force the actions controller to refresh actions.
+  // TODO(mtomasz): Remove this hack (if possible).
+  return remoteCall.callRemoteTestUtil('focus',
+      windowId, [directory.navItem]).then(function(result) {
+    chrome.test.assertTrue(result);
+    return remoteCall.callRemoteTestUtil(
       'fakeMouseRightClick',
       windowId,
-      [directory.navItem]).then(function(result) {
+      [directory.navItem]);
+  }).then(function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.waitForElement(
         windowId, '#roots-context-menu:not([hidden])');
   }).then(function() {
     return remoteCall.waitForElement(
-        windowId, '[command="#remove-folder-shortcut"]');
+        windowId,
+        '[command="#remove-folder-shortcut"]:not([hidden]):not([disabled])');
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId, ['[command="#remove-folder-shortcut"]']);
+        'fakeMouseClick', windowId,
+        ['#roots-context-menu [command="#remove-folder-shortcut"]:' +
+         'not([hidden])']);
   }).then(function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.waitForElementLost(windowId, directory.navItem);

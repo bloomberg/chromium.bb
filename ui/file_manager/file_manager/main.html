@@ -134,10 +134,7 @@
       <cr-menu-item command="#open-with"
                 visibleif="full-page" hidden></cr-menu-item>
       <hr id="tasks-separator" visibleif="full-page" hidden>
-      <cr-menu-item command="#toggle-pinned" checkable></cr-menu-item>
-      <cr-menu-item command="#share"></cr-menu-item>
-      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
-      <hr command="#share">
+      <hr id="actions-separator" hidden>
       <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#paste" visibleif="full-page"></cr-menu-item>
@@ -285,14 +282,14 @@
            hidden>
         <div class="buttons">
           <button id="cloud-import-button"
-                  class="icon-button manual-display"
+                  class="icon-button"
                   tabindex="15"
                   i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
                   has-tooltip>
             <iron-icon icon="cloud-queue"></iron-icon>
           </button>
           <button id="cloud-import-details-button"
-                  class="icon-button manual-display"
+                  class="icon-button"
                   tabindex="-1"
                   i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
                   has-tooltip>

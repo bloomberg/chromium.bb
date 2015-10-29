@@ -698,8 +698,9 @@ FileListContext.createPrefetchPropertyNames_ = function() {
        i++) {
     set[ListContainer.METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
   }
-  for (var i = 0; i < Command.METADATA_PREFETCH_PROPERTY_NAMES.length; i++) {
-    set[Command.METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
+  for (var i = 0; i < ActionsModel.METADATA_PREFETCH_PROPERTY_NAMES.length;
+       i++) {
+    set[ActionsModel.METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
   }
   for (var i = 0;
        i < FileSelection.METADATA_PREFETCH_PROPERTY_NAMES.length;

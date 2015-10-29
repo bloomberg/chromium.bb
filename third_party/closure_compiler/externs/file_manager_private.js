@@ -656,7 +656,7 @@ chrome.fileManagerPrivate.getCustomActions = function(entries, callback) {};
  * @param {string} actionId
  * @param {function()} callback
  */
-chrome.fileManagerPrivate.executeAction = function(
+chrome.fileManagerPrivate.executeCustomAction = function(
     entries, actionId, callback) {};
 
 /** @type {!ChromeEvent} */

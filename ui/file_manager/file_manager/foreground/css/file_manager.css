@@ -333,10 +333,6 @@ body.check-select .dialog-header
   background-color: rgba(153, 153, 153, 0.20);
 }
 
-.dialog-header .icon-button[disabled]:not(.manual-display) {
-  display: none !important;
-}
-
 .dialog-header iron-icon,
 .dialog-header .icon {
   height: 16px;

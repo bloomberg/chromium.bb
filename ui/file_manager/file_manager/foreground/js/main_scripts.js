@@ -95,6 +95,8 @@
 //<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container.js">
 //<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container_error_dialog.js">
 //
+//<include src="actions_controller.js">
+//<include src="actions_model.js">
 //<include src="app_state_controller.js">
 //<include src="column_visibility_controller.js">
 //<include src="dialog_action_controller.js">
@@ -135,6 +137,7 @@
 //<include src="thumbnail_loader.js">
 //<include src="list_thumbnail_loader.js">
 //<include src="providers_model.js">
+//<include src="ui/actions_submenu.js">
 //<include src="ui/banners.js" >
 //<include src="ui/conflict_dialog.js">
 //<include src="ui/default_task_dialog.js">

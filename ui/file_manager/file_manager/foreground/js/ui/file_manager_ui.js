@@ -289,6 +289,12 @@ function FileManagerUI(providersModel, element, launchParam) {
   this.providersMenu = new ProvidersMenu(providersModel,
       util.queryDecoratedElement('#add-new-services-menu', cr.ui.Menu));
 
+  /**
+   * @public {!ActionsSubmenu}
+   * @const
+   */
+  this.actionsSubmenu = new ActionsSubmenu(this.fileContextMenu);
+
   // Initialize attributes.
   this.element.setAttribute('type', this.dialogType_);
 
