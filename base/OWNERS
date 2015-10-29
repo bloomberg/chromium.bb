@@ -24,6 +24,7 @@ per-file security_unittest.cc=jln@chromium.org
 # For Android-specific changes:
 per-file *android*=nyquist@chromium.org
 per-file *android*=rmcilroy@chromium.org
+per-file *android*=torne@chromium.org
 per-file *android*=yfriedman@chromium.org
 
 # For FeatureList API:
