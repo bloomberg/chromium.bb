@@ -128,6 +128,12 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     }
 
     @Override
+    protected void tabModelSwitched(boolean incognito) {
+        super.tabModelSwitched(incognito);
+        getTabModelSelector().commitAllTabClosures();
+    }
+
+    @Override
     public void init(TabModelSelector selector, TabCreatorManager creator,
             TabContentManager content, ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
