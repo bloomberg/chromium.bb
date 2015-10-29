@@ -1109,10 +1109,7 @@ fake_server::FakeServer* SyncTest::GetFakeServer() const {
 
 void SyncTest::TriggerSyncForModelTypes(int index,
                                         syncer::ModelTypeSet model_types) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-      content::Source<Profile>(GetProfile(index)),
-      content::Details<const syncer::ModelTypeSet>(&model_types));
+  GetSyncService(index)->TriggerRefresh(model_types);
 }
 
 void SyncTest::SetPreexistingPreferencesFileContents(

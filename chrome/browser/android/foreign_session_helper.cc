@@ -177,11 +177,13 @@ jboolean ForeignSessionHelper::IsTabSyncEnabled(JNIEnv* env, jobject obj) {
 }
 
 void ForeignSessionHelper::TriggerSessionSync(JNIEnv* env, jobject obj) {
+  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
+      GetForProfile(profile_);
+  if (!service)
+    return;
+
   const syncer::ModelTypeSet types(syncer::SESSIONS);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-      content::Source<Profile>(profile_),
-      content::Details<const syncer::ModelTypeSet>(&types));
+  service->TriggerRefresh(types);
 }
 
 void ForeignSessionHelper::SetOnForeignSessionCallback(JNIEnv* env,
