@@ -396,6 +396,12 @@ TEST_F(MenuButtonTest, ActivateNonDropDownOnGestureTap) {
   CreateMenuButtonWithButtonListener(&button_listener);
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+
+  // Move the mouse outside the menu button so that it doesn't impact the
+  // button state.
+  generator.MoveMouseTo(400, 400);
+  EXPECT_FALSE(button()->IsMouseHovered());
+
   generator.GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener on gesture tap event, while
@@ -403,6 +409,9 @@ TEST_F(MenuButtonTest, ActivateNonDropDownOnGestureTap) {
   EXPECT_EQ(button(), button_listener.last_sender());
   EXPECT_EQ(ui::ET_GESTURE_TAP, button_listener.last_event_type());
   EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
+
+  // The button should go back to it's normal state since the gesture ended.
+  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
 }
 
 // Tests if the listener is notified correctly when a gesture tap happens on a
@@ -412,12 +421,21 @@ TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+
+  // Move the mouse outside the menu button so that it doesn't impact the
+  // button state.
+  generator.MoveMouseTo(400, 400);
+  EXPECT_FALSE(button()->IsMouseHovered());
+
   generator.GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
   EXPECT_EQ(button(), menu_button_listener.last_source());
   EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+
+  // The button should go back to it's normal state since the gesture ended.
+  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
 }
 
 // Tests that the button enters a hovered state upon a tap down, before becoming
