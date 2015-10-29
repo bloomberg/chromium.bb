@@ -7841,7 +7841,7 @@
       'caption': '''Maximize the first browser window on first run''',
       'tags': [],
       'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will unconditionally maximize the the first window shown on first run.
-      If this policy is set to false or not configured, a heuristic will decide whether to maximize the first window shown, based on the screen size.''',
+      If this policy is set to false or not configured, the decision whether to maximize the first window shown will be based on the screen size.''',
     },
     {
       'name': 'SSLErrorOverrideAllowed',
