@@ -1351,8 +1351,7 @@ void WebTestProxyBase::CheckDone(blink::WebLocalFrame* frame,
   if (frame != test_interfaces_->GetTestRunner()->topLoadingFrame())
     return;
   if (reason != MainResourceLoadFailed &&
-      (frame->isResourceLoadInProgress() || frame->isLoading() ||
-       frame->isPrinting()))
+      (frame->isResourceLoadInProgress() || frame->isLoading()))
     return;
   test_interfaces_->GetTestRunner()->setTopLoadingFrame(frame, true);
 }
