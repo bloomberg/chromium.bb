@@ -319,7 +319,7 @@ void LayerTreeHostImpl::CommitComplete() {
   // change the results. When doing commit to the active tree, this must happen
   // after ActivateAnimations() in order for this ticking to be propogated to
   // layers on the active tree.
-  Animate();
+  AnimatePendingTreeAfterCommit();
 
   // LayerTreeHost may have changed the GPU rasterization flags state, which
   // may require an update of the tree resources.
@@ -396,7 +396,15 @@ bool LayerTreeHostImpl::CanDraw() const {
   return true;
 }
 
+void LayerTreeHostImpl::AnimatePendingTreeAfterCommit() {
+  AnimateInternal(false);
+}
+
 void LayerTreeHostImpl::Animate() {
+  AnimateInternal(true);
+}
+
+void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
   DCHECK(task_runner_provider_->IsImplThread());
   base::TimeTicks monotonic_time = CurrentBeginFrameArgs().frame_time;
 
@@ -405,23 +413,36 @@ void LayerTreeHostImpl::Animate() {
   // DCHECK(monotonic_time == current_begin_frame_tracker_.Current().frame_time)
   //  << "Called animate with unknown frame time!?";
 
+  bool did_animate = false;
+
   if (input_handler_client_) {
     // This animates fling scrolls. But on Android WebView root flings are
     // controlled by the application, so the compositor does not animate them.
     bool ignore_fling = settings_.ignore_root_layer_flings &&
                         IsCurrentlyScrollingInnerViewport();
-    if (!ignore_fling)
+    if (!ignore_fling) {
+      // This does not set did_animate, because if the InputHandlerClient
+      // changes anything it will be through the InputHandler interface which
+      // does SetNeedsRedraw.
       input_handler_client_->Animate(monotonic_time);
+    }
   }
 
-  AnimatePageScale(monotonic_time);
-  AnimateLayers(monotonic_time);
-  AnimateScrollbars(monotonic_time);
-  AnimateTopControls(monotonic_time);
+  did_animate |= AnimatePageScale(monotonic_time);
+  did_animate |= AnimateLayers(monotonic_time);
+  did_animate |= AnimateScrollbars(monotonic_time);
+  did_animate |= AnimateTopControls(monotonic_time);
 
-  // Animating stuff can change the root scroll offset, so inform the
-  // synchronous input handler.
-  UpdateRootLayerStateForSynchronousInputHandler();
+  if (active_tree) {
+    // Animating stuff can change the root scroll offset, so inform the
+    // synchronous input handler.
+    UpdateRootLayerStateForSynchronousInputHandler();
+    if (did_animate) {
+      // If the tree changed, then we want to draw at the end of the current
+      // frame.
+      SetNeedsRedraw();
+    }
+  }
 }
 
 bool LayerTreeHostImpl::PrepareTiles() {
@@ -3028,9 +3049,9 @@ void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {
     InnerViewportScrollLayer()->ScrollBy(unused_delta);
 }
 
-void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
+bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   if (!page_scale_animation_)
-    return;
+    return false;
 
   gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
 
@@ -3043,7 +3064,6 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
       page_scale_animation_->ScrollOffsetAtTime(monotonic_time));
 
   ScrollViewportInnerFirst(next_scroll.DeltaFrom(scroll_total));
-  SetNeedsRedraw();
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
     page_scale_animation_ = nullptr;
@@ -3053,11 +3073,12 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   } else {
     SetNeedsAnimate();
   }
+  return true;
 }
 
-void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
+bool LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
   if (!top_controls_manager_->animation())
-    return;
+    return false;
 
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
 
@@ -3065,26 +3086,27 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
     SetNeedsAnimate();
 
   if (active_tree_->TotalScrollOffset().y() == 0.f)
-    return;
+    return false;
 
   if (scroll.IsZero())
-    return;
+    return false;
 
   ScrollViewportBy(gfx::ScaleVector2d(
       scroll, 1.f / active_tree_->current_page_scale_factor()));
-  SetNeedsRedraw();
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
+  return true;
 }
 
-void LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
+bool LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
   for (auto& it : scrollbar_animation_controllers_)
     it.second->Animate(monotonic_time);
+  return !scrollbar_animation_controllers_.empty();
 }
 
-void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
+bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled)
-    return;
+    return false;
 
   bool animated = false;
   if (animation_host_) {
@@ -3097,8 +3119,15 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
 
   // TODO(ajuma): Only do this if the animations are on the active tree, or if
   // they are on the pending tree waiting for some future time to start.
+  // TODO(ajuma): We currently have a single signal from the animation
+  // host/registrar, so on the last frame of an animation we will still request
+  // an extra SetNeedsAnimate here.
   if (animated)
     SetNeedsAnimate();
+  // TODO(danakj): We could return true only if the animations are on the active
+  // tree. There's no need to cause a draw to take place from animations
+  // starting/ticking on the pending tree.
+  return animated;
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {

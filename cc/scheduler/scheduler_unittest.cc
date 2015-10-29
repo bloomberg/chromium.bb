@@ -56,6 +56,8 @@ class FakeSchedulerClient : public SchedulerClient {
   void Reset() {
     actions_.clear();
     states_.clear();
+    animate_causes_redraw_ = false;
+    animate_causes_animate_ = false;
     draw_will_happen_ = true;
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
@@ -86,6 +88,12 @@ class FakeSchedulerClient : public SchedulerClient {
     return ActionIndex(action) >= 0;
   }
 
+  void SetAnimateCausesRedraw(bool animate_causes_redraw) {
+    animate_causes_redraw_ = animate_causes_redraw;
+  }
+  void SetAnimateCausesAnimate(bool animate_causes_animate) {
+    animate_causes_animate_ = animate_causes_animate;
+  }
   void SetDrawWillHappen(bool draw_will_happen) {
     draw_will_happen_ = draw_will_happen;
   }
@@ -106,6 +114,10 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   void ScheduledActionAnimate() override {
     PushAction("ScheduledActionAnimate");
+    if (animate_causes_redraw_)
+      scheduler_->SetNeedsRedraw();
+    if (animate_causes_animate_)
+      scheduler_->SetNeedsAnimate();
   }
   DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     PushAction("ScheduledActionDrawAndSwapIfPossible");
@@ -178,6 +190,8 @@ class FakeSchedulerClient : public SchedulerClient {
     return scheduler_->BeginImplFrameDeadlinePending() == state;
   }
 
+  bool animate_causes_redraw_;
+  bool animate_causes_animate_;
   bool draw_will_happen_;
   bool swap_will_happen_if_draw_happens_;
   bool automatic_swap_ack_;
@@ -3081,24 +3095,10 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
   client_->Reset();
 
-  // Next vsync.
-  AdvanceFrame();
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
-  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
-  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  client_->Reset();
-
-  // Continue with animation.
-  scheduler_->SetNeedsAnimate();
-  EXPECT_NO_ACTION(client_);
-
-  // Android onDraw.
-  scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForOutputSurface();
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
-  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  client_->Reset();
+  // Testing the case where the animate ticks a fling scroll.
+  client_->SetAnimateCausesRedraw(true);
+  // The animation isn't done so it'll cause another tick in the future.
+  client_->SetAnimateCausesAnimate(true);
 
   // Next vsync.
   AdvanceFrame();
@@ -3108,6 +3108,25 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
+  // Android onDraw. This doesn't consume the animate tick.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // The animate changes stuff on the screen, but ends here, so does not
+  // cause another animate step.
+  client_->SetAnimateCausesRedraw(true);
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   scheduler_->OnDrawForOutputSurface();
@@ -3115,7 +3134,7 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
-  // Idle on next vsync.
+  // Idle on next vsync, as the animate has completed.
   AdvanceFrame();
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
   EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);

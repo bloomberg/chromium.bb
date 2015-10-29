@@ -229,9 +229,10 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void BeginMainFrameAborted(CommitEarlyOutReason reason);
   virtual void BeginCommit();
   virtual void CommitComplete();
-  virtual void Animate();
   virtual void UpdateAnimationState(bool start_ready_animations);
   void ActivateAnimations();
+  void Animate();
+  void AnimatePendingTreeAfterCommit();
   void MainThreadHasStoppedFlinging();
   void DidAnimateScrollOffset();
   void SetViewportDamage(const gfx::Rect& damage_rect);
@@ -612,7 +613,7 @@ class CC_EXPORT LayerTreeHostImpl
       int id);
 
   // Virtual for testing.
-  virtual void AnimateLayers(base::TimeTicks monotonic_time);
+  virtual bool AnimateLayers(base::TimeTicks monotonic_time);
 
   bool is_likely_to_require_a_draw() const {
     return is_likely_to_require_a_draw_;
@@ -638,6 +639,8 @@ class CC_EXPORT LayerTreeHostImpl
   void ReleaseTreeResources();
   void RecreateTreeResources();
 
+  void AnimateInternal(bool active_tree);
+
   void UpdateGpuRasterizationStatus();
 
   Viewport* viewport() { return viewport_.get(); }
@@ -653,9 +656,9 @@ class CC_EXPORT LayerTreeHostImpl
       LayerImpl* scrolling_layer_impl,
       InputHandler::ScrollInputType type);
 
-  void AnimatePageScale(base::TimeTicks monotonic_time);
-  void AnimateScrollbars(base::TimeTicks monotonic_time);
-  void AnimateTopControls(base::TimeTicks monotonic_time);
+  bool AnimatePageScale(base::TimeTicks monotonic_time);
+  bool AnimateScrollbars(base::TimeTicks monotonic_time);
+  bool AnimateTopControls(base::TimeTicks monotonic_time);
 
   void TrackDamageForAllSurfaces(
       LayerImpl* root_draw_layer,

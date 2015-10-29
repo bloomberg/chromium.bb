@@ -1110,10 +1110,10 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
   EXPECT_FALSE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
 
-  host_impl_->Animate();
+  host_impl_->AnimatePendingTreeAfterCommit();
 
-  // An animation exists on the pending layer. Doing Animate() requests another
-  // frame.
+  // An animation exists on the pending layer. Doing
+  // AnimatePendingTreeAfterCommit() requests another frame.
   // In reality, animations without has_set_start_time() == true do not need to
   // be continuously ticked on the pending tree, so it should not request
   // another animation frame here. But we currently do so blindly if any
@@ -1178,10 +1178,8 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   // An animation exists on the active layer. Doing Animate() requests another
   // frame after the current one.
   EXPECT_TRUE(did_request_animate_);
-  // TODO(danakj): We also need to draw in the current frame if something
-  // animated, but this is currently handled by
-  // SchedulerStateMachine::WillAnimate.
-  EXPECT_FALSE(did_request_redraw_);
+  // The animation should cause us to draw at the frame's deadline.
+  EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
 }
 
@@ -4848,14 +4846,10 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(.5f, scroll_watcher.min_page_scale_factor());
   EXPECT_EQ(4.f, scroll_watcher.max_page_scale_factor());
 
-  // Reset the page scale for the rest of the test.
-  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
-  EXPECT_EQ(2.f, scroll_watcher.page_scale_factor());
-  EXPECT_EQ(.5f, scroll_watcher.min_page_scale_factor());
-  EXPECT_EQ(4.f, scroll_watcher.max_page_scale_factor());
-
   // Animating page scale can change the root offset, so it should update the
-  // delegate.
+  // delegate. Also resets the page scale to 1 for the rest of the test.
+  host_impl_->LayerTreeHostImpl::StartPageScaleAnimation(
+      gfx::Vector2d(0, 0), false, 1.f, base::TimeDelta());
   host_impl_->Animate();
   EXPECT_EQ(1.f, scroll_watcher.page_scale_factor());
   EXPECT_EQ(.5f, scroll_watcher.min_page_scale_factor());

@@ -1971,7 +1971,7 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineImmediatelyWhenInvisible) {
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
-TEST(SchedulerStateMachineTest, TestSetNeedsAnimate) {
+TEST(SchedulerStateMachineTest, TestSetNeedsAnimateWithDraw) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   SET_UP_STATE(state)
@@ -1984,10 +1984,33 @@ TEST(SchedulerStateMachineTest, TestSetNeedsAnimate) {
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
 
+  // The animation will request draw if it ticks anything.
+  state.SetNeedsRedraw(true);
+
   state.OnBeginImplFrameDeadlinePending();
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+}
+
+TEST(SchedulerStateMachineTest, TestSetNeedsAnimateWithoutDraw) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  SET_UP_STATE(state)
+
+  // Test requesting an animation but not changing anything won't draw.
+  state.SetNeedsAnimate();
+  EXPECT_TRUE(state.BeginFrameNeeded());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+
+  // The animation does not do anything, so no draw is rquested.
+
+  state.OnBeginImplFrameDeadlinePending();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 TEST(SchedulerStateMachineTest, TestAnimateBeforeCommit) {
@@ -2006,11 +2029,6 @@ TEST(SchedulerStateMachineTest, TestAnimateBeforeCommit) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-
-  state.OnBeginImplFrameDeadlinePending();
-  state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
 }
 
 TEST(SchedulerStateMachineTest, TestAnimateAfterCommitBeforeDraw) {
@@ -2033,6 +2051,10 @@ TEST(SchedulerStateMachineTest, TestAnimateAfterCommitBeforeDraw) {
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+
+  // Set the redraw bit before the animate step so we can verify ordering,
+  // which mimics a redraw caused by something other than the animation itself.
+  state.SetNeedsRedraw(true);
 
   state.OnBeginImplFrameDeadlinePending();
   state.OnBeginImplFrameDeadline();

@@ -563,8 +563,6 @@ void SchedulerStateMachine::WillAnimate() {
   last_frame_number_animate_performed_ = current_frame_number_;
   animate_funnel_ = true;
   needs_animate_ = false;
-  // TODO(skyostil): Instead of assuming this, require the client to tell us.
-  SetNeedsRedraw();
 }
 
 void SchedulerStateMachine::WillSendBeginMainFrame() {
