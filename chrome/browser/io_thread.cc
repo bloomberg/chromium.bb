@@ -155,6 +155,11 @@ const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 // determined by the operating system.
 const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
 
+// Field trial for NPN.
+const char kNpnTrialName[] = "NPN";
+const char kNpnTrialEnabledGroupNamePrefix[] = "Enable";
+const char kNpnTrialDisabledGroupNamePrefix[] = "Disable";
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -884,6 +889,9 @@ void IOThread::InitializeNetworkOptions(const base::CommandLine& command_line) {
 
   ConfigureTCPFastOpen(command_line);
 
+  ConfigureNPNGlobals(base::FieldTrialList::FindFullName(kNpnTrialName),
+                      globals_);
+
   // TODO(rch): Make the client socket factory a per-network session
   // instance, constructed from a NetworkSession::Params, to allow us
   // to move this option to IOThread::Globals &
@@ -902,6 +910,7 @@ void IOThread::ConfigureTCPFastOpen(const base::CommandLine& command_line) {
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_if_supported);
 }
 
+// static
 void IOThread::ConfigureSpdyGlobals(
     const base::CommandLine& command_line,
     base::StringPiece spdy_trial_group,
@@ -962,6 +971,16 @@ void IOThread::ConfigureSpdyGlobals(
 
   // Enable HTTP/1.1 in all cases as the last protocol.
   globals->next_protos.push_back(net::kProtoHTTP11);
+}
+
+// static
+void IOThread::ConfigureNPNGlobals(base::StringPiece npn_trial_group,
+                                   IOThread::Globals* globals) {
+  if (npn_trial_group.starts_with(kNpnTrialEnabledGroupNamePrefix)) {
+    globals->enable_npn.set(true);
+  } else if (npn_trial_group.starts_with(kNpnTrialDisabledGroupNamePrefix)) {
+    globals->enable_npn.set(false);
+  }
 }
 
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -1051,6 +1070,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->use_alternative_services);
   globals.alternative_service_probability_threshold.CopyToIfSet(
       &params->alternative_service_probability_threshold);
+
+  globals.enable_npn.CopyToIfSet(&params->enable_npn);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
   globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);

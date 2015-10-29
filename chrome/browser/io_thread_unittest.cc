@@ -40,6 +40,11 @@ class IOThreadPeer {
                                    spdy_trial_params, globals);
   }
 
+  static void ConfigureNPNGlobals(base::StringPiece npn_trial_group,
+                                  IOThread::Globals* globals) {
+    IOThread::ConfigureNPNGlobals(npn_trial_group, globals);
+  }
+
   static void InitializeNetworkSessionParamsFromGlobals(
       const IOThread::Globals& globals,
       net::HttpNetworkSession::Params* params) {
@@ -66,6 +71,10 @@ class IOThreadTest : public testing::Test {
   void ConfigureSpdyGlobals() {
     IOThreadPeer::ConfigureSpdyGlobals(command_line_, field_trial_group_,
                                        field_trial_params_, &globals_);
+  }
+
+  void ConfigureNPNGlobals() {
+    IOThreadPeer::ConfigureNPNGlobals(field_trial_group_, &globals_);
   }
 
   void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params) {
@@ -135,6 +144,22 @@ TEST_F(IOThreadTest, SpdyCommandLineUseSpdyOff) {
   field_trial_group_ = "Spdy4Enabled";
   ConfigureSpdyGlobals();
   EXPECT_EQ(0u, globals_.next_protos.size());
+}
+
+TEST_F(IOThreadTest, NPNFieldTrialEnabled) {
+  field_trial_group_ = "Enable-experiment";
+  ConfigureNPNGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.enable_npn);
+}
+
+TEST_F(IOThreadTest, NPNFieldTrialDisabled) {
+  field_trial_group_ = "Disable-holdback";
+  ConfigureNPNGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_FALSE(params.enable_npn);
 }
 
 TEST_F(IOThreadTest, DisableQuicByDefault) {

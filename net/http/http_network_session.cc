@@ -93,6 +93,7 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       use_alternative_services(false),
       alternative_service_probability_threshold(1),
+      enable_npn(true),
       enable_quic(false),
       enable_quic_for_proxies(false),
       enable_quic_port_selection(true),
@@ -330,7 +331,7 @@ void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
 }
 
 void HttpNetworkSession::GetNpnProtos(NextProtoVector* npn_protos) const {
-  if (HttpStreamFactory::spdy_enabled()) {
+  if (HttpStreamFactory::spdy_enabled() && params_.enable_npn) {
     *npn_protos = next_protos_;
     DisableHTTP2(npn_protos);
   } else {

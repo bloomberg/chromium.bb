@@ -188,6 +188,8 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> use_alternative_services;
     Optional<double> alternative_service_probability_threshold;
 
+    Optional<bool> enable_npn;
+
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_for_proxies;
     Optional<bool> enable_quic_port_selection;
@@ -289,6 +291,10 @@ class IOThread : public content::BrowserThreadDelegate {
                                    base::StringPiece quic_trial_group,
                                    const VariationParameters& quic_trial_params,
                                    Globals* globals);
+
+  // Configures NPN in |globals| based on the field trial group.
+  static void ConfigureNPNGlobals(base::StringPiece npn_trial_group,
+                                  Globals* globals);
 
   // Global state must be initialized on the IO thread, then this
   // method must be invoked on the UI thread.

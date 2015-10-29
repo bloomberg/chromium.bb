@@ -111,6 +111,9 @@ class NET_EXPORT HttpNetworkSession
     // than this value.
     double alternative_service_probability_threshold;
 
+    // Enables NPN support.  Note that ALPN is always enabled.
+    bool enable_npn;
+
     // Enables QUIC support.
     bool enable_quic;
     // Enables QUIC for proxies.
