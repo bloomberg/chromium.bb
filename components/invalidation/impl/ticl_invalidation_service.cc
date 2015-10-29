@@ -70,6 +70,8 @@ TiclInvalidationService::TiclInvalidationService(
 
 TiclInvalidationService::~TiclInvalidationService() {
   DCHECK(CalledOnValidThread());
+  invalidator_registrar_->UpdateInvalidatorState(
+      syncer::INVALIDATOR_SHUTTING_DOWN);
   settings_provider_->RemoveObserver(this);
   identity_provider_->RemoveActiveAccountRefreshTokenObserver(this);
   identity_provider_->RemoveObserver(this);

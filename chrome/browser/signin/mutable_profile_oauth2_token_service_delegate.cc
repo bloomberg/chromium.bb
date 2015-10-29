@@ -238,7 +238,10 @@ MutableProfileOAuth2TokenServiceDelegate::GetRequestContext() const {
 
 void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
-  DCHECK(!primary_account_id.empty());
+  if (primary_account_id.empty()) {
+    FireRefreshTokensLoaded();
+    return;
+  }
   ValidateAccountId(primary_account_id);
   DCHECK(loading_primary_account_id_.empty());
   DCHECK_EQ(0, web_data_service_request_);

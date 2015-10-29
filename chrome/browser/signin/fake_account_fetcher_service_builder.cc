@@ -18,7 +18,6 @@ scoped_ptr<KeyedService> FakeAccountFetcherServiceBuilder::BuildForTests(
   Profile* profile = Profile::FromBrowserContext(context);
   service->Initialize(ChromeSigninClientFactory::GetForProfile(profile),
                       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-                      AccountTrackerServiceFactory::GetForProfile(profile),
-                      nullptr);
+                      AccountTrackerServiceFactory::GetForProfile(profile));
   return scoped_ptr<KeyedService>(service);
 }

@@ -281,7 +281,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
   FakeAccountFetcherService* account_fetcher_service =
       static_cast<FakeAccountFetcherService*>(
           AccountFetcherServiceFactory::GetForProfile(profile()));
-  account_fetcher_service->EnableNetworkFetches();
+  account_fetcher_service->OnRefreshTokensLoaded();
 
   ASSERT_TRUE(signin_client()->get_signed_in_password().empty());
 

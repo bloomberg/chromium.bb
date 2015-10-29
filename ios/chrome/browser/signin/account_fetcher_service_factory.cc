@@ -5,8 +5,6 @@
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 
 #include "base/memory/singleton.h"
-#include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -25,7 +23,6 @@ AccountFetcherServiceFactory::AccountFetcherServiceFactory()
   DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
-  DependsOn(GetKeyedServiceProvider()->GetProfileInvalidationProviderFactory());
 }
 
 AccountFetcherServiceFactory::~AccountFetcherServiceFactory() {}
@@ -52,16 +49,10 @@ scoped_ptr<KeyedService> AccountFetcherServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   scoped_ptr<AccountFetcherService> service(new AccountFetcherService());
-  invalidation::ProfileInvalidationProvider* invalidation_provider =
-      ios::GetKeyedServiceProvider()
-          ->GetProfileInvalidationProviderForBrowserState(browser_state);
-  invalidation::InvalidationService* invalidation_service =
-      invalidation_provider->GetInvalidationService();
   service->Initialize(
       SigninClientFactory::GetForBrowserState(browser_state),
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
-      invalidation_service);
+      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state));
   return service.Pass();
 }
 

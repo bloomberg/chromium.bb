@@ -529,6 +529,10 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 
 void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
     const std::string& primary_account_id) {
+  if (primary_account_id.empty()) {
+    FireRefreshTokensLoaded();
+    return;
+  }
   if (fire_refresh_token_loaded_ == RT_HAS_BEEN_VALIDATED) {
     fire_refresh_token_loaded_ = RT_LOADED;
     FireRefreshTokensLoaded();

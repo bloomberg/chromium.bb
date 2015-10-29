@@ -31,6 +31,7 @@ class ChildAccountInfoFetcherImpl : public ChildAccountInfoFetcher,
  private:
   void FetchIfNotInProgress();
   void HandleFailure();
+  void UnregisterInvalidationHandler();
 
   // OAuth2TokenService::Consumer:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,

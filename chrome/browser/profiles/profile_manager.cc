@@ -27,6 +27,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/password_manager_setting_migrator_service.h"
@@ -62,6 +63,8 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
+#include "components/invalidation/public/invalidation_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -1113,7 +1116,15 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
       MaybeActivateDataReductionProxy(true);
 
   GaiaCookieManagerServiceFactory::GetForProfile(profile)->Init();
-  AccountFetcherServiceFactory::GetForProfile(profile)->EnableNetworkFetches();
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile);
+  // Chrome OS login and guest profiles do not support invalidation. This is
+  // fine as they do not have GAIA credentials anyway. http://crbug.com/358169
+  invalidation::InvalidationService* invalidation_service =
+      invalidation_provider ? invalidation_provider->GetInvalidationService()
+                            : nullptr;
+  AccountFetcherServiceFactory::GetForProfile(profile)
+      ->SetupInvalidations(invalidation_service);
   AccountReconcilorFactory::GetForProfile(profile);
 
   // Service is responsible for migration of the legacy password manager

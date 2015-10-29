@@ -74,7 +74,7 @@ ChildAccountInfoFetcherImpl::ChildAccountInfoFetcherImpl(
 ChildAccountInfoFetcherImpl::~ChildAccountInfoFetcherImpl() {
   TRACE_EVENT_ASYNC_END0("AccountFetcherService", kFetcherId, this);
   if (invalidation_service_)
-    invalidation_service_->UnregisterInvalidationHandler(this);
+    UnregisterInvalidationHandler();
 }
 
 void ChildAccountInfoFetcherImpl::FetchIfNotInProgress() {
@@ -137,8 +137,7 @@ void ChildAccountInfoFetcherImpl::OnGetUserInfoSuccess(
           invalidation_service_->UpdateRegisteredInvalidationIds(
               this, syncer::ObjectIdSet());
       DCHECK(insert_success);
-      invalidation_service_->UnregisterInvalidationHandler(this);
-      invalidation_service_ = nullptr;
+      UnregisterInvalidationHandler();
     }
     fetcher_service_->SetIsChildAccount(account_id_, is_child_account);
   } else {
@@ -160,8 +159,15 @@ void ChildAccountInfoFetcherImpl::HandleFailure() {
                &ChildAccountInfoFetcherImpl::FetchIfNotInProgress);
 }
 
+void ChildAccountInfoFetcherImpl::UnregisterInvalidationHandler() {
+  invalidation_service_->UnregisterInvalidationHandler(this);
+  invalidation_service_ = nullptr;
+}
+
 void ChildAccountInfoFetcherImpl::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
+  if (state == syncer::INVALIDATOR_SHUTTING_DOWN)
+    UnregisterInvalidationHandler();
 }
 
 void ChildAccountInfoFetcherImpl::OnIncomingInvalidation(

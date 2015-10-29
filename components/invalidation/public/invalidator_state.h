@@ -19,6 +19,9 @@ enum InvalidatorState {
   // Our credentials have been rejected.
   INVALIDATION_CREDENTIALS_REJECTED,
 
+  // Called just before shutdown so handlers can unregister themselves.
+  INVALIDATOR_SHUTTING_DOWN,
+
   // Invalidations are fully working.
   INVALIDATIONS_ENABLED
 };

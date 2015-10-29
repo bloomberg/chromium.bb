@@ -44,7 +44,7 @@ SigninManager::SigninManager(SigninClient* client,
 SigninManager::~SigninManager() {}
 
 void SigninManager::InitTokenService() {
-  if (token_service_ && IsAuthenticated())
+  if (token_service_)
     token_service_->LoadCredentials(GetAuthenticatedAccountId());
 }
 
