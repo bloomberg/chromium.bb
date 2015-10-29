@@ -295,6 +295,7 @@ Address BaseHeap::lazySweep(size_t allocationSize, size_t gcInfoIndex)
 
     TRACE_EVENT0("blink_gc", "BaseHeap::lazySweepPages");
     ThreadState::SweepForbiddenScope scope(threadState());
+    double startTime = WTF::currentTimeMS();
 
     if (threadState()->isMainThread())
         ScriptForbiddenScope::enter();
@@ -304,6 +305,7 @@ Address BaseHeap::lazySweep(size_t allocationSize, size_t gcInfoIndex)
     if (threadState()->isMainThread())
         ScriptForbiddenScope::exit();
 
+    threadState()->accumulateSweepingTime(WTF::currentTimeMS() - startTime);
     Heap::reportMemoryUsageForTracing();
 
     return result;
@@ -361,7 +363,6 @@ void BaseHeap::completeSweep()
     while (m_firstUnsweptPage) {
         sweepUnsweptPage();
     }
-
     Heap::reportMemoryUsageForTracing();
 }
 

@@ -93,6 +93,7 @@ ThreadState::ThreadState()
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
     , m_gcForbiddenCount(0)
+    , m_accumulatedSweepingTime(0)
     , m_vectorBackingHeapIndex(BlinkGC::Vector1HeapIndex)
     , m_currentHeapAges(0)
     , m_isTerminating(false)
@@ -782,6 +783,7 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
     bool sweepCompleted = true;
     SweepForbiddenScope scope(this);
     {
+        double startTime = WTF::currentTimeMS();
         if (isMainThread())
             ScriptForbiddenScope::enter();
 
@@ -801,6 +803,7 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
 
         if (isMainThread())
             ScriptForbiddenScope::exit();
+        accumulateSweepingTime(WTF::currentTimeMS() - startTime);
     }
 
     if (sweepCompleted)
@@ -1018,14 +1021,16 @@ void ThreadState::preSweep()
     // a dead object gets resurrected.
     invokePreFinalizers();
 
+    m_accumulatedSweepingTime = 0;
+
 #if defined(ADDRESS_SANITIZER)
     poisonEagerHeap(BlinkGC::SetPoison);
 #endif
-
     eagerSweep();
 #if defined(ADDRESS_SANITIZER)
     poisonAllHeaps();
 #endif
+
     if (previousGCState == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.
         completeSweep();
@@ -1071,6 +1076,7 @@ void ThreadState::eagerSweep()
 
     SweepForbiddenScope scope(this);
     {
+        double startTime = WTF::currentTimeMS();
         if (isMainThread())
             ScriptForbiddenScope::enter();
 
@@ -1078,6 +1084,7 @@ void ThreadState::eagerSweep()
 
         if (isMainThread())
             ScriptForbiddenScope::exit();
+        accumulateSweepingTime(WTF::currentTimeMS() - startTime);
     }
 }
 
@@ -1100,13 +1107,15 @@ void ThreadState::completeSweep()
             ScriptForbiddenScope::enter();
 
         TRACE_EVENT0("blink_gc", "ThreadState::completeSweep");
-        double timeStamp = WTF::currentTimeMS();
+        double startTime = WTF::currentTimeMS();
 
         static_assert(BlinkGC::EagerSweepHeapIndex == 0, "Eagerly swept heaps must be processed first.");
         for (int i = 0; i < BlinkGC::NumberOfHeaps; i++)
             m_heaps[i]->completeSweep();
 
-        Platform::current()->histogramCustomCounts("BlinkGC.CompleteSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
+        double timeForCompleteSweep = WTF::currentTimeMS() - startTime;
+        Platform::current()->histogramCustomCounts("BlinkGC.CompleteSweep", timeForCompleteSweep, 0, 10 * 1000, 50);
+        accumulateSweepingTime(timeForCompleteSweep);
 
         if (isMainThread())
             ScriptForbiddenScope::exit();
@@ -1137,6 +1146,7 @@ void ThreadState::postSweep()
         Platform::current()->histogramCustomCounts("BlinkGC.ObjectSizeBeforeGC", Heap::objectSizeAtLastGC() / 1024, 1, 4 * 1024 * 1024, 50);
         Platform::current()->histogramCustomCounts("BlinkGC.ObjectSizeAfterGC", Heap::markedObjectSize() / 1024, 1, 4 * 1024 * 1024, 50);
         Platform::current()->histogramCustomCounts("BlinkGC.CollectionRate", static_cast<int>(100 * collectionRate), 1, 100, 20);
+        Platform::current()->histogramCustomCounts("BlinkGC.TimeForSweepingAllObjects", m_accumulatedSweepingTime, 1, 10 * 1000, 50);
     }
 
     switch (gcState()) {

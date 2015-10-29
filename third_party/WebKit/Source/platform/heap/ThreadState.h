@@ -504,6 +504,8 @@ public:
     void allocationPointAdjusted(int heapIndex);
     void promptlyFreed(size_t gcInfoIndex);
 
+    void accumulateSweepingTime(double time) { m_accumulatedSweepingTime += time; }
+
 #if OS(WIN) && COMPILER(MSVC)
     size_t threadStackSize();
 #endif
@@ -623,8 +625,9 @@ private:
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_gcForbiddenCount;
-    BaseHeap* m_heaps[BlinkGC::NumberOfHeaps];
+    double m_accumulatedSweepingTime;
 
+    BaseHeap* m_heaps[BlinkGC::NumberOfHeaps];
     int m_vectorBackingHeapIndex;
     size_t m_heapAges[BlinkGC::NumberOfHeaps];
     size_t m_currentHeapAges;

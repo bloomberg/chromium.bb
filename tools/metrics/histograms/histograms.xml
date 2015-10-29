@@ -2937,6 +2937,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BlinkGC.TimeForSweepingAllObjects" units="milliseconds">
+  <owner>haraken@chromium.org</owner>
+  <summary>Accumulated time taken to sweep all objects.</summary>
+</histogram>
+
 <histogram name="BlinkGC.TimeForThreadLocalWeakProcessing" units="milliseconds">
   <owner>haraken@chromium.org</owner>
   <summary>Duration of time taken to run thread-local weak processing.</summary>
