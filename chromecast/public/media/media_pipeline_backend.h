@@ -52,17 +52,19 @@ class MediaPipelineBackend {
     // cannot push the buffer now, it must store the buffer, return
     // |kBufferPending| and execute the push at a later time when it becomes
     // possible to do so.  The implementation must then invoke
-    // Client::OnPushComplete.  Pushing a pending buffer should be aborted if
-    // Stop is called; OnPushAudioComplete need not be invoked in this case.
+    // Delegate::OnPushBufferComplete.  Pushing a pending buffer should be
+    // aborted if Stop is called; OnPushAudioComplete need not be invoked in
+    // this case.
     // If |kBufferPending| is returned, the pipeline will stop pushing any
-    // further buffers until OnPushComplete is invoked.
-    // OnPushComplete should be only be invoked to indicate completion of a
-    // pending buffer push - not for the immediate |kBufferSuccess| return case.
+    // further buffers until OnPushBufferComplete is invoked.
+    // OnPushBufferComplete should be only be invoked to indicate completion of
+    // a pending buffer push - not for the immediate |kBufferSuccess| return
+    // case.
     // The buffer's lifetime is managed by the caller code - it MUST NOT be
     // deleted by the MediaPipelineBackend implementation, and MUST NOT be
     // dereferenced after completion of buffer push (i.e.
-    // kBufferSuccess/kBufferFailure for synchronous completion, OnPushComplete
-    // for kBufferPending case).
+    // returning kBufferSuccess/kBufferFailure for synchronous completion,
+    // calling OnPushBufferComplete() for kBufferPending case).
     virtual BufferStatus PushBuffer(CastDecoderBuffer* buffer) = 0;
 
     // Returns the playback statistics since this decoder's creation.  Only
@@ -184,11 +186,13 @@ class MediaPipelineBackend {
   // Resumes media playback.  Called only when in paused state.
   virtual bool Resume() = 0;
 
-  // Gets the current playback timestamp in microseconds.
+  // Gets the current playback timestamp in microseconds. Only called when in
+  // the "playing" or "paused" states.
   virtual int64_t GetCurrentPts() = 0;
 
   // Sets the playback rate.  |rate| > 0.  If this is not called, a default rate
-  // of 1.0 is assumed. Returns true if successful.
+  // of 1.0 is assumed. Returns true if successful. Only called when in
+  // the "playing" or "paused" states.
   virtual bool SetPlaybackRate(float rate) = 0;
 };
 
