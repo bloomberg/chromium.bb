@@ -5,6 +5,7 @@
 {
   'includes': [
     'khronos_glcts.gypi',
+    'khronos_glcts_defaults.gypi',
   ],
   'targets': [
     {
