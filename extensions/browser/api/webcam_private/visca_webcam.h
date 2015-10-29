@@ -17,20 +17,18 @@ namespace extensions {
 
 class ViscaWebcam : public Webcam {
  public:
-  ViscaWebcam();
+  ViscaWebcam(const std::string& path, const std::string& extension_id);
 
   using OpenCompleteCallback = base::Callback<void(bool)>;
 
   // Open and initialize the web camera. This is done by the following three
-  // steps (in order): 1. Open the serial port; 2. Request address; 3. Clear the
-  // command buffer. After these three steps completes, |open_callback| will be
-  // called.
-  void Open(const std::string& path,
-            const std::string& extension_id,
-            const OpenCompleteCallback& open_callback);
+  // steps (in order): 1. Open the serial port;  2. Request address; 3. Clear
+  // the command buffer. After these three steps completes, |open_callback| will
+  // be called.
+  void Open(const OpenCompleteCallback& open_callback);
 
  private:
-  friend class ViscaWebcamTest;
+  ~ViscaWebcam() override;
 
   enum InquiryType {
     INQUIRY_PAN,
@@ -41,23 +39,15 @@ class ViscaWebcam : public Webcam {
   using CommandCompleteCallback =
       base::Callback<void(bool, const std::vector<char>&)>;
 
-  // Private because WebCam is base::RefCounted.
-  ~ViscaWebcam() override;
-
-  void OpenOnIOThread(const std::string& path,
-                      const std::string& extension_id,
-                      const OpenCompleteCallback& open_callback);
-
+  void OpenOnIOThread(const OpenCompleteCallback& open_callback);
   // Callback function that will be called after the serial connection has been
   // opened successfully.
   void OnConnected(const OpenCompleteCallback& open_callback, bool success);
-
   // Callback function that will be called after the address has been set
   // successfully.
   void OnAddressSetCompleted(const OpenCompleteCallback& open_callback,
                              bool success,
                              const std::vector<char>& response);
-
   // Callback function that will be called after the command buffer has been
   // cleared successfully.
   void OnClearAllCompleted(const OpenCompleteCallback& open_callback,
@@ -87,7 +77,6 @@ class ViscaWebcam : public Webcam {
                           bool success,
                           const std::vector<char>& response);
 
-  void ProcessNextCommand();
   void PostOpenFailureTask(const OpenCompleteCallback& open_callback);
 
   // Webcam Overrides:
@@ -112,18 +101,13 @@ class ViscaWebcam : public Webcam {
              bool zoom,
              const SetPTZCompleteCallback& callback) override;
 
-  // Used only in unit tests in place of Open().
-  void OpenForTesting(scoped_ptr<SerialConnection> serial_connection);
-
-  // Used only in unit tests to retrieve |serial_connection_| since this class
-  // owns it.
-  SerialConnection* GetSerialConnectionForTesting();
+  const std::string path_;
+  const std::string extension_id_;
 
   scoped_ptr<SerialConnection> serial_connection_;
 
   // Stores the response for the current command.
   std::vector<char> data_buffer_;
-
   // Queues commands till the current command completes.
   std::deque<std::pair<std::vector<char>, CommandCompleteCallback>> commands_;
 

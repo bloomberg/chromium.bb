@@ -76,12 +76,10 @@ bool WebcamPrivateAPI::OpenSerialWebcam(
   if (webcam_resource)
     return false;
 
-  ViscaWebcam* visca_webcam = new ViscaWebcam;
-  visca_webcam->Open(
-      device_path, extension_id,
-      base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, device_path,
-                 make_scoped_refptr(visca_webcam), callback));
+  ViscaWebcam* visca_webcam(new ViscaWebcam(device_path, extension_id));
+  visca_webcam->Open(base::Bind(
+      &WebcamPrivateAPI::OnOpenSerialWebcam, weak_ptr_factory_.GetWeakPtr(),
+      extension_id, device_path, make_scoped_refptr(visca_webcam), callback));
   return true;
 }
 

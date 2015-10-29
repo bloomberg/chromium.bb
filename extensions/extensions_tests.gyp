@@ -63,9 +63,6 @@
           'dependencies': [
             '<(DEPTH)/chromeos/chromeos.gyp:chromeos_test_support',
           ],
-          'sources': [
-            'browser/api/webcam_private/visca_webcam_unittest.cc',
-          ],
         }],
       ],
     },

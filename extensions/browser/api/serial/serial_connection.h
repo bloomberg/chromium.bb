@@ -34,15 +34,15 @@ class SerialConnection : public ApiResource,
   // This is the callback type expected by Receive. Note that an error result
   // does not necessarily imply an empty |data| string, since a receive may
   // complete partially before being interrupted by an error condition.
-  using ReceiveCompleteCallback =
-      base::Callback<void(const std::vector<char>& data,
-                          api::serial::ReceiveError error)>;
+  typedef base::Callback<void(const std::vector<char>& data,
+                              api::serial::ReceiveError error)>
+      ReceiveCompleteCallback;
 
   // This is the callback type expected by Send. Note that an error result
   // does not necessarily imply 0 bytes sent, since a send may complete
   // partially before being interrupted by an error condition.
-  using SendCompleteCallback =
-      base::Callback<void(int bytes_sent, api::serial::SendError error)>;
+  typedef base::Callback<void(int bytes_sent, api::serial::SendError error)>
+      SendCompleteCallback;
 
   SerialConnection(const std::string& port,
                    const std::string& owner_extension_id);
@@ -72,19 +72,19 @@ class SerialConnection : public ApiResource,
   // Initiates an asynchronous Open of the device. It is the caller's
   // responsibility to ensure that this SerialConnection stays alive
   // until |callback| is run.
-  virtual void Open(const api::serial::ConnectionOptions& options,
-                    const OpenCompleteCallback& callback);
+  void Open(const api::serial::ConnectionOptions& options,
+            const OpenCompleteCallback& callback);
 
   // Begins an asynchronous receive operation. Calling this while a Receive
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
-  virtual bool Receive(const ReceiveCompleteCallback& callback);
+  bool Receive(const ReceiveCompleteCallback& callback);
 
   // Begins an asynchronous send operation. Calling this while a Send
   // is already pending is a no-op and returns |false| without calling
   // |callback|.
-  virtual bool Send(const std::vector<char>& data,
-                    const SendCompleteCallback& callback);
+  bool Send(const std::vector<char>& data,
+            const SendCompleteCallback& callback);
 
   // Flushes input and output buffers.
   bool Flush() const;
