@@ -22,8 +22,10 @@ class Window;
 
 mus::mojom::ShowState GetWindowShowState(mus::Window* window);
 
+void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds);
 gfx::Rect GetWindowUserSetBounds(mus::Window* window);
 
+void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size);
 gfx::Size GetWindowPreferredSize(mus::Window* window);
 
 ash::mojom::Container GetRequestedContainer(mus::Window* window);

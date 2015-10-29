@@ -5,6 +5,7 @@
 #include "components/mus/example/wm/move_loop.h"
 
 #include "base/auto_reset.h"
+#include "components/mus/example/wm/property_util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -93,6 +94,7 @@ MoveLoop::MoveLoop(mus::Window* target, const mus::mojom::Event& event)
       pointer_id_(event.pointer_data->pointer_id),
       initial_event_screen_location_(EventScreenLocationToPoint(event)),
       initial_window_bounds_(target->bounds()),
+      initial_user_set_bounds_(GetWindowUserSetBounds(target)),
       changing_bounds_(false) {
   target->AddObserver(this);
 }
@@ -104,6 +106,7 @@ void MoveLoop::MoveImpl(const mus::mojom::Event& event) {
                              initial_window_bounds_.size());
   base::AutoReset<bool> resetter(&changing_bounds_, true);
   target_->SetBounds(new_bounds);
+  SetWindowUserSetBounds(target_, new_bounds);
 }
 
 void MoveLoop::Cancel() {
@@ -114,6 +117,7 @@ void MoveLoop::Cancel() {
 void MoveLoop::Revert() {
   base::AutoReset<bool> resetter(&changing_bounds_, true);
   target_->SetBounds(initial_window_bounds_);
+  SetWindowUserSetBounds(target_, initial_user_set_bounds_);
 }
 
 void MoveLoop::OnTreeChanged(const TreeChangeParams& params) {

@@ -80,9 +80,8 @@ void WindowManagerImpl::SetPreferredSize(
     mus::Id window_id,
     mojo::SizePtr size,
     const WindowManagerErrorCodeCallback& callback) {
-  mus::Window* window = state_->GetWindowById(window_id);
-  window->SetSharedProperty<gfx::Size>(
-      mus::mojom::WindowManager::kPreferredSize_Property, size.To<gfx::Size>());
+  SetWindowPreferredSize(state_->GetWindowById(window_id),
+                         size.To<gfx::Size>());
 
   callback.Run(mus::mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
 }

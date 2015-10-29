@@ -67,6 +67,8 @@ class MoveLoop : public mus::WindowObserver {
   // Original bounds of the window.
   const gfx::Rect initial_window_bounds_;
 
+  const gfx::Rect initial_user_set_bounds_;
+
   // Set to true when MoveLoop changes the bounds of |target_|. The move is
   // canceled if the bounds change unexpectedly during the move.
   bool changing_bounds_;

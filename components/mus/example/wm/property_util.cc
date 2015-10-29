@@ -20,6 +20,16 @@ mus::mojom::ShowState GetWindowShowState(mus::Window* window) {
   return mus::mojom::SHOW_STATE_RESTORED;
 }
 
+void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds) {
+  if (bounds.IsEmpty()) {
+    window->ClearSharedProperty(
+        mus::mojom::WindowManager::kUserSetBounds_Property);
+  } else {
+    window->SetSharedProperty<gfx::Rect>(
+        mus::mojom::WindowManager::kUserSetBounds_Property, bounds);
+  }
+}
+
 gfx::Rect GetWindowUserSetBounds(mus::Window* window) {
   if (window->HasSharedProperty(
       mus::mojom::WindowManager::kUserSetBounds_Property)) {
@@ -27,6 +37,11 @@ gfx::Rect GetWindowUserSetBounds(mus::Window* window) {
         mus::mojom::WindowManager::kUserSetBounds_Property);
   }
   return gfx::Rect();
+}
+
+void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size) {
+  window->SetSharedProperty<gfx::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, size);
 }
 
 gfx::Size GetWindowPreferredSize(mus::Window* window) {
