@@ -86,6 +86,40 @@ to `GarbageCollected<T>` objects also apply to `GarbageCollectedFinalized<T>`.
 
 ## Class properties
 
+### USING_PRE_FINALIZER
+
+`USING_PRE_FINALIZER(ClassName, functionName)` in a class declaration declares the class has a *pre-finalizer* of name
+`functionName`.
+
+A pre-finalizer is a user-defined member function of a garbage-collected class that is called when the object is going
+to be swept but before the garbage collector actually sweeps any objects. Therefore, it is allowed for a pre-finalizer
+to touch any other on-heap objects, while a destructor is not. It is useful for doing some cleanups that cannot be done
+with a destructor.
+
+A pre-finalizer must have the following function signature: `void preFinalizer()`. You can change the function name.
+
+```c++
+class YourClass : public GarbageCollectedFinalized<YourClass> {
+    USING_PRE_FINALIZER(YourClass, dispose);
+public:
+    void dispose()
+    {
+        m_other->dispose(); // OK; you can touch other on-heap objects in a pre-finalizer.
+    }
+    ~YourClass()
+    {
+        // m_other->dispose(); // BAD.
+    }
+
+private:
+    Member<OtherClass> m_other;
+};
+```
+
+Pre-finalizers have some implications on the garbage collector's performance: the garbage-collector needs to iterate
+all registered pre-finalizers at every GC. Therefore, a pre-finalizer should be avoided unless it is really necessary.
+Especially, avoid defining a pre-finalizer in a class that can be allocated a lot.
+
 ### EAGERLY_FINALIZE
 
 ### USING_GARBAGE_COLLECTED_MIXIN
