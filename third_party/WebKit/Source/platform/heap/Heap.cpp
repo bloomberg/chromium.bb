@@ -526,12 +526,17 @@ void Heap::postMarkingProcessing(Visitor* visitor)
 void Heap::globalWeakProcessing(Visitor* visitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::globalWeakProcessing");
+    double timeStamp = WTF::currentTimeMS();
+
     // Call weak callbacks on objects that may now be pointing to dead objects.
     while (popAndInvokeGlobalWeakCallback(visitor)) { }
 
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
     ASSERT(s_markingStack->isEmpty());
+
+    double timeForGlobalWeakProcessing = WTF::currentTimeMS() - timeStamp;
+    Platform::current()->histogramCustomCounts("BlinkGC.TimeForGlobalWeakPrcessing", timeForGlobalWeakProcessing, 1, 10 * 1000, 50);
 }
 
 void Heap::collectAllGarbage()
