@@ -261,6 +261,21 @@ message PerfDataProto {
 
     // Branch stack info.
     repeated BranchStackEntry branch_stack = 12;
+
+    // Not added from original: fields 13 and 14.
+
+    // Sample weight for special events.
+    optional uint64 weight = 15;
+
+    // Sample data source flags.
+    // Possible flag values:
+    // http://lxr.free-electrons.com/source/include/uapi/linux/perf_event.h#L849
+    optional uint64 data_src = 16;
+
+    // Sample transaction flags for special events.
+    // Flag fields:
+    // http://lxr.free-electrons.com/source/include/uapi/linux/perf_event.h#L209
+    optional uint64 transaction = 17;
   }
 
   // ForkEvent is used for both FORK and EXIT events, which have the same data
