@@ -104,11 +104,11 @@ void IconLabelBubbleView::Layout() {
   // In MD mode, both extension icons and Chrome-provided icons are 16px,
   // so it's not necessary to handle them differently. TODO(estade): clean
   // this up when MD is on by default.
-  bool icon_needs_extra_padding =
-      !is_extension_icon_ && !ui::MaterialDesignController::IsModeMaterial();
+  bool icon_has_enough_padding =
+      !is_extension_icon_ || ui::MaterialDesignController::IsModeMaterial();
   const int image_width = image()->GetPreferredSize().width();
   image_->SetBounds(std::min((width() - image_width) / 2,
-                             GetBubbleOuterPadding(icon_needs_extra_padding)),
+                             GetBubbleOuterPadding(icon_has_enough_padding)),
                     0, image_->GetPreferredSize().width(), height());
 
   const int padding = GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING);
