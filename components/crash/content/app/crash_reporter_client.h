@@ -57,6 +57,11 @@ class CrashReporterClient {
 #endif
 
 #if defined(OS_WIN)
+  // Returns true if the pipe name to connect to breakpad should be computed and
+  // stored in the process's environment block. By default, returns true for the
+  // "browser" process.
+  virtual bool ShouldCreatePipeName(const base::string16& process_type);
+
   // Returns true if an alternative location to store the minidump files was
   // specified. Returns true if |crash_dir| was set.
   virtual bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir);

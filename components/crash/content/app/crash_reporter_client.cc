@@ -34,6 +34,11 @@ void CrashReporterClient::SetCrashReporterClientIdFromGUID(
 #endif
 
 #if defined(OS_WIN)
+bool CrashReporterClient::ShouldCreatePipeName(
+    const base::string16& process_type) {
+  return process_type == L"browser";
+}
+
 bool CrashReporterClient::GetAlternativeCrashDumpLocation(
     base::FilePath* crash_dir) {
   return false;

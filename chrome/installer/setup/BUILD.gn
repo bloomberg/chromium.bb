@@ -23,7 +23,7 @@ if (is_win) {
     deps = [
       ":lib",
       "//build/config/sanitizers:deps",
-      "//chrome/common:version_header",
+      "//components/crash/content/app",
     ]
   }
 
@@ -37,6 +37,8 @@ if (is_win) {
       "install.h",
       "install_worker.cc",
       "install_worker.h",
+      "installer_crash_reporter_client.cc",
+      "installer_crash_reporter_client.h",
       "setup_constants.cc",
       "setup_constants.h",
       "setup_util.cc",
@@ -47,10 +49,12 @@ if (is_win) {
 
     public_deps = [
       "//base",
-      "//breakpad:breakpad_handler",
       "//chrome/common:constants",
+      "//chrome/common:version_header",
       "//chrome/installer/util",
       "//chrome_elf:constants",
+      "//components/crash/content/app:lib",
+      "//components/crash/core/common",
       "//courgette:courgette_lib",
       "//rlz:rlz_lib",
       "//third_party/bspatch",

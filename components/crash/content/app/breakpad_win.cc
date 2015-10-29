@@ -584,10 +584,11 @@ void InitCrashReporter(const std::string& process_type_switch) {
     default_filter = &ServiceExceptionFilter;
   }
 
-  if (process_type == L"browser") {
+  if (GetCrashReporterClient()->ShouldCreatePipeName(process_type))
     InitPipeNameEnvVar(is_per_user_install);
+
+  if (process_type == L"browser")
     GetCrashReporterClient()->InitBrowserCrashDumpsRegKey();
-  }
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string pipe_name_ascii;

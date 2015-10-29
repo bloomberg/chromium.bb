@@ -14,6 +14,8 @@
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/leak_annotations.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -36,19 +38,17 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version.h"
 #include "chrome/installer/setup/archive_patch_helper.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
+#include "chrome/installer/setup/installer_crash_reporter_client.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/uninstall.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -69,6 +69,8 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/user_experiment.h"
+#include "components/crash/content/app/breakpad_win.h"
+#include "components/crash/content/app/crash_keys_win.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/installer/util/updating_app_registration_data.h"
@@ -82,14 +84,8 @@ using installer::Product;
 using installer::ProductState;
 using installer::Products;
 
-const MINIDUMP_TYPE kLargerDumpType = static_cast<MINIDUMP_TYPE>(
-    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
-    MiniDumpWithUnloadedModules |  // Get unloaded modules when available.
-    MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by stack.
-
 namespace {
 
-const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 const wchar_t kDisplayVersion[] = L"DisplayVersion";
 const wchar_t kMsiDisplayVersionOverwriteDelay[] = L"10";  // seconds as string
@@ -1295,77 +1291,53 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   return handled;
 }
 
-// Returns the Custom information for the client identified by the exe path
-// passed in. This information is used for crash reporting.
-google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
-  base::string16 version;
-  scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfo(base::FilePath(exe_path)));
-  if (version_info.get())
-    version = version_info->product_version();
-
-  if (version.empty())
-    version = L"0.1.0.0";
-
-  // Report crashes under the same product name as the browser. This string
-  // MUST match server-side configuration.
-  base::string16 product(base::ASCIIToUTF16(PRODUCT_SHORTNAME_STRING));
-  static google_breakpad::CustomInfoEntry ver_entry(L"ver", version.c_str());
-  static google_breakpad::CustomInfoEntry prod_entry(L"prod", product.c_str());
-  static google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
-  static google_breakpad::CustomInfoEntry type_entry(L"ptype",
-                                                     L"Chrome Installer");
-  static google_breakpad::CustomInfoEntry entries[] = {
-      ver_entry, prod_entry, plat_entry, type_entry };
-  static google_breakpad::CustomClientInfo custom_info = {
-      entries, arraysize(entries) };
-  return &custom_info;
+#if defined(COMPONENT_BUILD)
+// Installed via base::debug::SetCrashKeyReportingFunctions.
+void SetCrashKeyValue(const base::StringPiece& key,
+                      const base::StringPiece& value) {
+  DCHECK(breakpad::CrashKeysWin::keeper());
+  breakpad::CrashKeysWin::keeper()->SetCrashKeyValue(base::UTF8ToUTF16(key),
+                                                     base::UTF8ToUTF16(value));
 }
 
-// Initialize crash reporting for this process. This involves connecting to
-// breakpad, etc.
-scoped_ptr<google_breakpad::ExceptionHandler> InitializeCrashReporting(
-    bool system_install) {
-  // Only report crashes if the user allows it.
-  if (!GoogleUpdateSettings::GetCollectStatsConsent())
-    return scoped_ptr<google_breakpad::ExceptionHandler>();
+// Installed via base::debug::SetCrashKeyReportingFunctions.
+void ClearCrashKey(const base::StringPiece& key) {
+  DCHECK(breakpad::CrashKeysWin::keeper());
+  breakpad::CrashKeysWin::keeper()->ClearCrashKeyValue(base::UTF8ToUTF16(key));
+}
+#endif  // COMPONENT_BUILD
 
-  // Get the alternate dump directory. We use the temp path.
-  base::FilePath temp_directory;
-  if (!base::GetTempDir(&temp_directory) || temp_directory.empty())
-    return scoped_ptr<google_breakpad::ExceptionHandler>();
+void ConfigureCrashReporting(const InstallerState& installer_state) {
+  // This is inspired by work done in various parts of Chrome startup to connect
+  // to the crash service. Since the installer does not split its work between
+  // a stub .exe and a main .dll, crash reporting can be configured in one place
+  // right here.
 
-  wchar_t exe_path[MAX_PATH * 2] = {0};
-  GetModuleFileName(NULL, exe_path, arraysize(exe_path));
+  // Create the crash client and install it (a la MainDllLoader::Launch).
+  InstallerCrashReporterClient *crash_client =
+      new InstallerCrashReporterClient(!installer_state.system_install());
+  ANNOTATE_LEAKING_OBJECT_PTR(crash_client);
+  crash_reporter::SetCrashReporterClient(crash_client);
 
-  // Build the pipe name. It can be either:
-  // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
-  // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
-  base::string16 user_sid = kSystemPrincipalSid;
+  breakpad::InitCrashReporter("Chrome Installer");
 
-  if (!system_install) {
-    if (!base::win::GetUserSidString(&user_sid)) {
-      return scoped_ptr<google_breakpad::ExceptionHandler>();
-    }
-  }
+  // Set up crash keys and the client id (a la child_process_logging::Init()).
+#if defined(COMPONENT_BUILD)
+  // breakpad::InitCrashReporter takes care of this for static builds but not
+  // component builds due to intricacies of chrome.exe and chrome.dll sharing a
+  // copy of base.dll in that case (for details, see the comment in
+  // components/crash/content/app/breakpad_win.cc).
+  crash_client->RegisterCrashKeys();
+  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValue, &ClearCrashKey);
+#endif // COMPONENT_BUILD
 
-  base::string16 pipe_name = kGoogleUpdatePipeName;
-  pipe_name += user_sid;
-
-#ifdef _WIN64
-  // The protocol for connecting to the out-of-process Breakpad crash
-  // reporter is different for x86-32 and x86-64: the message sizes
-  // are different because the message struct contains a pointer.  As
-  // a result, there are two different named pipes to connect to.  The
-  // 64-bit one is distinguished with an "-x64" suffix.
-  pipe_name += L"-x64";
-#endif
-
-  return scoped_ptr<google_breakpad::ExceptionHandler>(
-      new google_breakpad::ExceptionHandler(
-          temp_directory.value(), NULL, NULL, NULL,
-          google_breakpad::ExceptionHandler::HANDLER_ALL, kLargerDumpType,
-          pipe_name.c_str(), GetCustomInfo(exe_path)));
+  scoped_ptr<metrics::ClientInfo> client_info =
+      GoogleUpdateSettings::LoadMetricsClientInfo();
+  if (client_info)
+    crash_client->SetCrashReporterClientIdFromGUID(client_info->client_id);
+  // TODO(grt): A lack of a client_id at this point generally means that Chrome
+  // has yet to have been launched and picked one. Consider creating it and
+  // setting it here for Chrome to use.
 }
 
 // Uninstalls multi-install Chrome Frame if the current operation is a
@@ -1755,8 +1727,13 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   prefs.GetBool(installer::master_preferences::kSystemLevel, &system_install);
   VLOG(1) << "system install is " << system_install;
 
-  scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
-      InitializeCrashReporting(system_install));
+  InstallationState original_state;
+  original_state.Initialize();
+
+  InstallerState installer_state;
+  installer_state.Initialize(cmd_line, prefs, original_state);
+
+  ConfigureCrashReporting(installer_state);
 
   // Make sure the process exits cleanly on unexpected errors.
   base::EnableTerminationOnHeapCorruption();
@@ -1764,11 +1741,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   base::win::RegisterInvalidParamHandler();
   base::win::SetupCRT(cmd_line);
 
-  InstallationState original_state;
-  original_state.Initialize();
-
-  InstallerState installer_state;
-  installer_state.Initialize(cmd_line, prefs, original_state);
   const bool is_uninstall = cmd_line.HasSwitch(installer::switches::kUninstall);
 
   // Check to make sure current system is WinXP or later. If not, log

@@ -1,5 +1,5 @@
 include_rules = [
-  "+breakpad",
+  "+components/crash",
   "+components/variations",
   "+google_update",
   "+rlz",
