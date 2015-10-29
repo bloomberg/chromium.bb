@@ -28,7 +28,7 @@ namespace autofill {
 SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          content::WebContents* web_contents,
                                          SaveCardBubbleController* controller)
-    : ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller),
       save_button_(nullptr),
       cancel_button_(nullptr) {

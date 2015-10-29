@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/managed_full_screen_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -11,13 +11,12 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/gfx/geometry/rect.h"
 
-ManagedFullScreenBubbleDelegateView::ManagedFullScreenBubbleDelegateView(
+LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
     views::View* anchor_view,
     content::WebContents* web_contents)
-    : BubbleDelegateView(
-        anchor_view,
-        anchor_view ?
-            views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE) {
+    : BubbleDelegateView(anchor_view,
+                         anchor_view ? views::BubbleBorder::TOP_RIGHT
+                                     : views::BubbleBorder::NONE) {
   // Add observer to close the bubble if the fullscreen state changes.
   if (web_contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -28,10 +27,9 @@ ManagedFullScreenBubbleDelegateView::ManagedFullScreenBubbleDelegateView(
   }
 }
 
-ManagedFullScreenBubbleDelegateView::~ManagedFullScreenBubbleDelegateView() {
-}
+LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}
 
-void ManagedFullScreenBubbleDelegateView::Observe(
+void LocationBarBubbleDelegateView::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -40,22 +38,21 @@ void ManagedFullScreenBubbleDelegateView::Observe(
   Close();
 }
 
-void ManagedFullScreenBubbleDelegateView::Close() {
+void LocationBarBubbleDelegateView::Close() {
   views::Widget* widget = GetWidget();
   if (!widget->IsClosed())
     widget->Close();
 }
 
-void ManagedFullScreenBubbleDelegateView::AdjustForFullscreen(
+void LocationBarBubbleDelegateView::AdjustForFullscreen(
     const gfx::Rect& screen_bounds) {
   if (GetAnchorView())
     return;
 
   const int kBubblePaddingFromScreenEdge = 20;
-  int bubble_half_width = width() / 2;
-  const int x_pos = base::i18n::IsRTL() ?
-      (screen_bounds.x() + bubble_half_width + kBubblePaddingFromScreenEdge) :
-      (screen_bounds.right() - bubble_half_width -
-          kBubblePaddingFromScreenEdge);
+  int horizontal_offset = width() / 2 + kBubblePaddingFromScreenEdge;
+  const int x_pos = base::i18n::IsRTL()
+                        ? (screen_bounds.x() + horizontal_offset)
+                        : (screen_bounds.right() - horizontal_offset);
   SetAnchorRect(gfx::Rect(x_pos, screen_bounds.y(), 0, 0));
 }

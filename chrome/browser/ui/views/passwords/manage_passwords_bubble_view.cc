@@ -957,7 +957,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     content::WebContents* web_contents,
     ManagePasswordsIconViews* anchor_view,
     ManagePasswordsBubbleModel::DisplayReason reason)
-    : ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       model_(web_contents, reason),
       anchor_view_(anchor_view),
       initially_focused_view_(NULL) {
@@ -991,7 +991,7 @@ void ManagePasswordsBubbleView::Init() {
 
 void ManagePasswordsBubbleView::Close() {
   mouse_handler_.reset();
-  ManagedFullScreenBubbleDelegateView::Close();
+  LocationBarBubbleDelegateView::Close();
 }
 
 void ManagePasswordsBubbleView::OnWidgetClosing(views::Widget* /*widget*/) {

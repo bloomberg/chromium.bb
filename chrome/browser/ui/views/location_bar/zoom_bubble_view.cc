@@ -110,7 +110,7 @@ ZoomBubbleView::ZoomBubbleView(
     content::WebContents* web_contents,
     bool auto_close,
     ImmersiveModeController* immersive_mode_controller)
-    : ManagedFullScreenBubbleDelegateView(anchor_view, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       image_button_(NULL),
       label_(NULL),
       web_contents_(web_contents),
@@ -212,7 +212,7 @@ void ZoomBubbleView::Close() {
   // this. Additionally web_contents_ may have been destroyed.
   zoom_bubble_ = NULL;
   web_contents_ = NULL;
-  ManagedFullScreenBubbleDelegateView::Close();
+  LocationBarBubbleDelegateView::Close();
 }
 
 void ZoomBubbleView::ButtonPressed(views::Button* sender,

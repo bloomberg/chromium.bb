@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_MANAGED_FULL_SCREEN_BUBBLE_DELEGATE_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_MANAGED_FULL_SCREEN_BUBBLE_DELEGATE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_BUBBLE_DELEGATE_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_BUBBLE_DELEGATE_VIEW_H_
 
+#include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -15,15 +16,15 @@ class NotificationSource;
 class WebContents;
 };
 
-// View used to automatically close a bubble when the browser transitions in or
-// out of fullscreen mode.
-class ManagedFullScreenBubbleDelegateView
-    : public views::BubbleDelegateView,
-      public content::NotificationObserver {
+// Base class for bubbles that are shown from location bar icons. The bubble
+// will automatically close when the browser transitions in or out of fullscreen
+// mode.
+class LocationBarBubbleDelegateView : public views::BubbleDelegateView,
+                                      public content::NotificationObserver {
  public:
-  ManagedFullScreenBubbleDelegateView(views::View* anchor_view,
-                                      content::WebContents* web_contents);
-  ~ManagedFullScreenBubbleDelegateView() override;
+  LocationBarBubbleDelegateView(views::View* anchor_view,
+                                content::WebContents* web_contents);
+  ~LocationBarBubbleDelegateView() override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -44,7 +45,7 @@ class ManagedFullScreenBubbleDelegateView
   // Used to register for fullscreen change notifications.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagedFullScreenBubbleDelegateView);
+  DISALLOW_COPY_AND_ASSIGN(LocationBarBubbleDelegateView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_MANAGED_FULL_SCREEN_BUBBLE_DELEGATE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_BUBBLE_DELEGATE_VIEW_H_

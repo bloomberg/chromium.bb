@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
-#include "chrome/browser/ui/views/managed_full_screen_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 
 namespace content {
@@ -26,7 +26,7 @@ class SaveCardBubbleController;
 // user submits a form with a credit card number that Autofill has not
 // previously saved.
 class SaveCardBubbleViews : public SaveCardBubbleView,
-                            public ManagedFullScreenBubbleDelegateView,
+                            public LocationBarBubbleDelegateView,
                             public views::ButtonListener {
  public:
   // Bubble will be anchored to |anchor_view|.

@@ -9,7 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/managed_full_screen_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_icon_image.h"
@@ -30,7 +30,7 @@ class ImageButton;
 }  // namespace views
 
 // View used to display the zoom percentage when it has changed.
-class ZoomBubbleView : public ManagedFullScreenBubbleDelegateView,
+class ZoomBubbleView : public LocationBarBubbleDelegateView,
                        public views::ButtonListener,
                        public ImmersiveModeController::Observer,
                        public extensions::IconImage::Observer {
@@ -75,7 +75,7 @@ class ZoomBubbleView : public ManagedFullScreenBubbleDelegateView,
                  ImmersiveModeController* immersive_mode_controller);
   ~ZoomBubbleView() override;
 
-  // ManagedFullScreenBubbleDelegateView:
+  // LocationBarBubbleDelegateView:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;

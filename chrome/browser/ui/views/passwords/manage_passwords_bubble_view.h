@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/views/managed_full_screen_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 
 class ManagePasswordsIconViews;
 
@@ -22,7 +22,7 @@ class WebContents;
 // 2. ManageView: Displays the current page's saved credentials.
 // 3. BlacklistedView: Informs the user that the current page is blacklisted.
 //
-class ManagePasswordsBubbleView : public ManagedFullScreenBubbleDelegateView {
+class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
  public:
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
@@ -68,7 +68,7 @@ class ManagePasswordsBubbleView : public ManagedFullScreenBubbleDelegateView {
                             ManagePasswordsBubbleModel::DisplayReason reason);
   ~ManagePasswordsBubbleView() override;
 
-  // ManagedFullScreenBubbleDelegateView:
+  // LocationBarBubbleDelegateView:
   views::View* GetInitiallyFocusedView() override;
   void Init() override;
   void Close() override;
