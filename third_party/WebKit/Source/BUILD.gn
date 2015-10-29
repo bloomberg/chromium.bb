@@ -64,10 +64,41 @@ config("config") {
     cflags += [ "-Wno-uninitialized" ]
   }
 
-  if (is_clang) {
-    if (blink_gc_plugin && clang_use_chrome_plugins) {
-      # TODO(GYP)
-      #'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
+  if (is_clang && blink_gc_plugin && clang_use_chrome_plugins) {
+    if (is_mac || is_ios) {
+      cflags += [
+        "-Xclang",
+        "-load",
+        "-Xclang",
+        rebase_path(
+            "//third_party/llvm-build/Release+Asserts/lib/libBlinkGCPlugin.dylib",
+            root_build_dir),
+      ]
+    } else if (is_linux) {
+      cflags += [
+        "-Xclang",
+        "-load",
+        "-Xclang",
+        rebase_path(
+            "//third_party/llvm-build/Release+Asserts/lib/libBlinkGCPlugin.so",
+            root_build_dir),
+      ]
+    }
+
+    cflags += [
+      "-Xclang",
+      "-add-plugin",
+      "-Xclang",
+      "blink-gc-plugin",
+    ]
+
+    if (enable_oilpan) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-blink-gc-plugin",
+        "-Xclang",
+        "enable-oilpan",
+      ]
     }
   }
 
