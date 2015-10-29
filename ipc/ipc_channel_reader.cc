@@ -246,9 +246,9 @@ ChannelReader::AttachmentIdSet ChannelReader::GetBrokeredAttachments(
 
 #if USE_ATTACHMENT_BROKER
   MessageAttachmentSet* set = msg->attachment_set();
-  std::vector<BrokerableAttachment*> brokerable_attachments_copy =
-      set->GetBrokerableAttachments();
-  for (const BrokerableAttachment* attachment : brokerable_attachments_copy) {
+  std::vector<scoped_refptr<IPC::BrokerableAttachment>>
+      brokerable_attachments_copy(set->GetBrokerableAttachments());
+  for (const auto& attachment : brokerable_attachments_copy) {
     if (attachment->NeedsBrokering()) {
       AttachmentBroker* broker = GetAttachmentBroker();
       DCHECK(broker);

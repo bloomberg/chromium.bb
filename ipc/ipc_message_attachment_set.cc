@@ -175,26 +175,18 @@ void MessageAttachmentSet::CommitAllDescriptors() {
   consumed_descriptor_highwater_ = 0;
 }
 
-std::vector<BrokerableAttachment*>
+std::vector<scoped_refptr<IPC::BrokerableAttachment>>
 MessageAttachmentSet::GetBrokerableAttachments() const {
-  std::vector<BrokerableAttachment*> output;
-  for (const scoped_refptr<MessageAttachment>& attachment :
-       brokerable_attachments_) {
-      output.push_back(static_cast<BrokerableAttachment*>(attachment.get()));
-  }
-  return output;
+  return brokerable_attachments_;
 }
 
 void MessageAttachmentSet::ReplacePlaceholderWithAttachment(
     const scoped_refptr<BrokerableAttachment>& attachment) {
+  DCHECK_NE(BrokerableAttachment::PLACEHOLDER, attachment->GetBrokerableType());
   for (auto it = brokerable_attachments_.begin();
        it != brokerable_attachments_.end(); ++it) {
-    BrokerableAttachment* brokerable_attachment =
-        static_cast<BrokerableAttachment*>(it->get());
-
-    if (brokerable_attachment->GetBrokerableType() ==
-            BrokerableAttachment::PLACEHOLDER &&
-        brokerable_attachment->GetIdentifier() == attachment->GetIdentifier()) {
+    if ((*it)->GetBrokerableType() == BrokerableAttachment::PLACEHOLDER &&
+        (*it)->GetIdentifier() == attachment->GetIdentifier()) {
       *it = attachment;
       return;
     }

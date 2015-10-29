@@ -87,7 +87,8 @@ class IPC_EXPORT MessageAttachmentSet
   void CommitAllDescriptors();
 
   // Returns a vector of all brokerable attachments.
-  std::vector<BrokerableAttachment*> GetBrokerableAttachments() const;
+  std::vector<scoped_refptr<IPC::BrokerableAttachment>>
+  GetBrokerableAttachments() const;
 
   // Replaces a placeholder brokerable attachment with |attachment|, matching
   // them by their id.

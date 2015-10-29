@@ -107,7 +107,7 @@ bool ChannelWin::ProcessMessageForDelivery(Message* message) {
   if (message->HasBrokerableAttachments()) {
     DCHECK(GetAttachmentBroker());
     DCHECK(peer_pid_ != base::kNullProcessId);
-    for (BrokerableAttachment* attachment :
+    for (const scoped_refptr<IPC::BrokerableAttachment>& attachment :
          message->attachment_set()->GetBrokerableAttachments()) {
       if (!GetAttachmentBroker()->SendAttachmentToProcess(attachment,
                                                           peer_pid_)) {

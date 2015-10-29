@@ -22,8 +22,9 @@ class IPC_EXPORT AttachmentBrokerUnprivilegedMac
   ~AttachmentBrokerUnprivilegedMac() override;
 
   // IPC::AttachmentBroker overrides.
-  bool SendAttachmentToProcess(BrokerableAttachment* attachment,
-                               base::ProcessId destination_process) override;
+  bool SendAttachmentToProcess(
+      const scoped_refptr<IPC::BrokerableAttachment>& attachment,
+      base::ProcessId destination_process) override;
 
   // IPC::Listener overrides.
   bool OnMessageReceived(const Message& message) override;

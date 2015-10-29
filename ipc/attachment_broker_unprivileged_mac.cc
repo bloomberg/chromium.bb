@@ -50,12 +50,12 @@ AttachmentBrokerUnprivilegedMac::AttachmentBrokerUnprivilegedMac() {}
 AttachmentBrokerUnprivilegedMac::~AttachmentBrokerUnprivilegedMac() {}
 
 bool AttachmentBrokerUnprivilegedMac::SendAttachmentToProcess(
-    BrokerableAttachment* attachment,
+    const scoped_refptr<IPC::BrokerableAttachment>& attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::MACH_PORT: {
       internal::MachPortAttachmentMac* mach_port_attachment =
-          static_cast<internal::MachPortAttachmentMac*>(attachment);
+          static_cast<internal::MachPortAttachmentMac*>(attachment.get());
       internal::MachPortAttachmentMac::WireFormat format =
           mach_port_attachment->GetWireFormat(destination_process);
       bool success =

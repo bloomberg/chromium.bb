@@ -42,8 +42,9 @@ class MockAttachmentBroker : public AttachmentBroker {
  public:
   typedef std::set<scoped_refptr<BrokerableAttachment>> AttachmentSet;
 
-  bool SendAttachmentToProcess(BrokerableAttachment* attachment,
-                               base::ProcessId destination_process) override {
+  bool SendAttachmentToProcess(
+      const scoped_refptr<BrokerableAttachment>& attachment,
+      base::ProcessId destination_process) override {
     return false;
   }
 

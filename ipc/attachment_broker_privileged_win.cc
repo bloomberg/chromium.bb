@@ -19,12 +19,12 @@ AttachmentBrokerPrivilegedWin::AttachmentBrokerPrivilegedWin() {}
 AttachmentBrokerPrivilegedWin::~AttachmentBrokerPrivilegedWin() {}
 
 bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
-    BrokerableAttachment* attachment,
+    const scoped_refptr<IPC::BrokerableAttachment>& attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::WIN_HANDLE: {
       const internal::HandleAttachmentWin* handle_attachment =
-          static_cast<const internal::HandleAttachmentWin*>(attachment);
+          static_cast<const internal::HandleAttachmentWin*>(attachment.get());
       HandleWireFormat wire_format =
           handle_attachment->GetWireFormat(destination_process);
       HandleWireFormat new_wire_format =

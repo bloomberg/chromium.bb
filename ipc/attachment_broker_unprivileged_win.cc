@@ -17,12 +17,12 @@ AttachmentBrokerUnprivilegedWin::AttachmentBrokerUnprivilegedWin() {}
 AttachmentBrokerUnprivilegedWin::~AttachmentBrokerUnprivilegedWin() {}
 
 bool AttachmentBrokerUnprivilegedWin::SendAttachmentToProcess(
-    BrokerableAttachment* attachment,
+    const scoped_refptr<BrokerableAttachment>& attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::WIN_HANDLE: {
       const internal::HandleAttachmentWin* handle_attachment =
-          static_cast<const internal::HandleAttachmentWin*>(attachment);
+          static_cast<const internal::HandleAttachmentWin*>(attachment.get());
       internal::HandleAttachmentWin::WireFormat format =
           handle_attachment->GetWireFormat(destination_process);
       return get_sender()->Send(

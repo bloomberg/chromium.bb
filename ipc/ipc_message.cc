@@ -147,16 +147,15 @@ Message::NextMessageInfo::~NextMessageInfo() {}
 Message::SerializedAttachmentIds
 Message::SerializedIdsOfBrokerableAttachments() {
   DCHECK(HasBrokerableAttachments());
-  std::vector<BrokerableAttachment*> attachments =
-      attachment_set_->GetBrokerableAttachments();
+  std::vector<scoped_refptr<IPC::BrokerableAttachment>> attachments(
+      attachment_set_->GetBrokerableAttachments());
   CHECK_LE(attachments.size(), std::numeric_limits<size_t>::max() /
                                    BrokerableAttachment::kNonceSize);
   size_t size = attachments.size() * BrokerableAttachment::kNonceSize;
   char* buffer = static_cast<char*>(malloc(size));
   for (size_t i = 0; i < attachments.size(); ++i) {
-    const BrokerableAttachment* attachment = attachments[i];
     char* start_range = buffer + i * BrokerableAttachment::kNonceSize;
-    BrokerableAttachment::AttachmentId id = attachment->GetIdentifier();
+    BrokerableAttachment::AttachmentId id = attachments[i]->GetIdentifier();
     id.SerializeToBuffer(start_range, BrokerableAttachment::kNonceSize);
   }
   SerializedAttachmentIds ids;
