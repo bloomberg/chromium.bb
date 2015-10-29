@@ -36,25 +36,70 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
  public:
   TestGlobalWebStateObserver()
       : GlobalWebStateObserver(),
+        navigation_items_pruned_called_(false),
+        navigation_item_changed_called_(false),
+        navigation_item_committed_called_(false),
         did_start_loading_called_(false),
-        did_stop_loading_called_(false) {}
+        did_stop_loading_called_(false),
+        page_loaded_called_with_success_(false),
+        web_state_destroyed_called_(false) {}
 
   // Methods returning true if the corresponding GlobalWebStateObserver method
   // has been called.
+  bool navigation_items_pruned_called() const {
+    return navigation_items_pruned_called_;
+  }
+  bool navigation_item_changed_called() const {
+    return navigation_item_changed_called_;
+  }
+  bool navigation_item_committed_called() const {
+    return navigation_item_committed_called_;
+  }
   bool did_start_loading_called() const { return did_start_loading_called_; }
   bool did_stop_loading_called() const { return did_stop_loading_called_; }
+  bool page_loaded_called_with_success() const {
+    return page_loaded_called_with_success_;
+  }
+  bool web_state_destroyed_called() const {
+    return web_state_destroyed_called_;
+  }
 
  private:
   // GlobalWebStateObserver implementation:
+  void NavigationItemsPruned(WebState* web_state,
+                             size_t pruned_item_count) override {
+    navigation_items_pruned_called_ = true;
+  }
+  void NavigationItemChanged(WebState* web_state) override {
+    navigation_item_changed_called_ = true;
+  }
+  void NavigationItemCommitted(
+      WebState* web_state,
+      const LoadCommittedDetails& load_details) override {
+    navigation_item_committed_called_ = true;
+  }
   void WebStateDidStartLoading(WebState* web_state) override {
     did_start_loading_called_ = true;
   }
   void WebStateDidStopLoading(WebState* web_state) override {
     did_stop_loading_called_ = true;
   }
+  void PageLoaded(WebState* web_state,
+                  PageLoadCompletionStatus load_completion_status) override {
+    page_loaded_called_with_success_ =
+        load_completion_status == PageLoadCompletionStatus::SUCCESS;
+  }
+  void WebStateDestroyed(WebState* web_state) override {
+    web_state_destroyed_called_ = true;
+  }
 
+  bool navigation_items_pruned_called_;
+  bool navigation_item_changed_called_;
+  bool navigation_item_committed_called_;
   bool did_start_loading_called_;
   bool did_stop_loading_called_;
+  bool page_loaded_called_with_success_;
+  bool web_state_destroyed_called_;
 };
 
 // Test observer to check that the WebStateObserver methods are called as
@@ -64,36 +109,56 @@ class TestWebStateObserver : public WebStateObserver {
   TestWebStateObserver(WebState* web_state)
       : WebStateObserver(web_state),
         provisional_navigation_started_called_(false),
+        navigation_items_pruned_called_(false),
+        navigation_item_changed_called_(false),
         navigation_item_committed_called_(false),
-        page_loaded_called_(false),
+        page_loaded_called_with_success_(false),
         url_hash_changed_called_(false),
         history_state_changed_called_(false),
         web_state_destroyed_called_(false) {}
 
   // Methods returning true if the corresponding WebStateObserver method has
   // been called.
-  bool provisional_navigation_started_called() {
+  bool provisional_navigation_started_called() const {
     return provisional_navigation_started_called_;
   };
-  bool navigation_item_committed_called() {
+  bool navigation_items_pruned_called() const {
+    return navigation_items_pruned_called_;
+  }
+  bool navigation_item_changed_called() const {
+    return navigation_item_changed_called_;
+  }
+  bool navigation_item_committed_called() const {
     return navigation_item_committed_called_;
   }
-  bool page_loaded_called() { return page_loaded_called_; }
-  bool url_hash_changed_called() { return url_hash_changed_called_; }
-  bool history_state_changed_called() { return history_state_changed_called_; }
-  bool web_state_destroyed_called() { return web_state_destroyed_called_; }
+  bool page_loaded_called_with_success() const {
+    return page_loaded_called_with_success_;
+  }
+  bool url_hash_changed_called() const { return url_hash_changed_called_; }
+  bool history_state_changed_called() const {
+    return history_state_changed_called_;
+  }
+  bool web_state_destroyed_called() const {
+    return web_state_destroyed_called_;
+  }
 
  private:
   // WebStateObserver implementation:
   void ProvisionalNavigationStarted(const GURL& url) override {
     provisional_navigation_started_called_ = true;
   }
+  void NavigationItemsPruned(size_t pruned_item_count) override {
+    navigation_items_pruned_called_ = true;
+  }
+  void NavigationItemChanged() override {
+    navigation_item_changed_called_ = true;
+  }
   void NavigationItemCommitted(
       const LoadCommittedDetails& load_details) override {
     navigation_item_committed_called_ = true;
   }
   void PageLoaded(PageLoadCompletionStatus load_completion_status) override {
-    page_loaded_called_ =
+    page_loaded_called_with_success_ =
         load_completion_status == PageLoadCompletionStatus::SUCCESS;
   }
   void UrlHashChanged() override { url_hash_changed_called_ = true; }
@@ -105,8 +170,10 @@ class TestWebStateObserver : public WebStateObserver {
   }
 
   bool provisional_navigation_started_called_;
+  bool navigation_items_pruned_called_;
+  bool navigation_item_changed_called_;
   bool navigation_item_committed_called_;
-  bool page_loaded_called_;
+  bool page_loaded_called_with_success_;
   bool url_hash_changed_called_;
   bool history_state_changed_called_;
   bool web_state_destroyed_called_;
@@ -232,18 +299,28 @@ TEST_F(WebStateTest, ObserverTest) {
   web_state_->OnProvisionalNavigationStarted(GURL("http://test"));
   EXPECT_TRUE(observer->provisional_navigation_started_called());
 
-  // Test that NavigtionItemCommitted() is called.
+  // Test that NavigationItemsPruned() is called.
+  EXPECT_FALSE(observer->navigation_items_pruned_called());
+  web_state_->OnNavigationItemsPruned(1);
+  EXPECT_TRUE(observer->navigation_items_pruned_called());
+
+  // Test that NavigationItemChanged() is called.
+  EXPECT_FALSE(observer->navigation_item_changed_called());
+  web_state_->OnNavigationItemChanged();
+  EXPECT_TRUE(observer->navigation_item_changed_called());
+
+  // Test that NavigationItemCommitted() is called.
   EXPECT_FALSE(observer->navigation_item_committed_called());
   LoadCommittedDetails details;
   web_state_->OnNavigationItemCommitted(details);
   EXPECT_TRUE(observer->navigation_item_committed_called());
 
-  // Test that DidFinishLoad() is called, only when there is no error.
-  EXPECT_FALSE(observer->page_loaded_called());
+  // Test that OnPageLoaded() is called with success when there is no error.
+  EXPECT_FALSE(observer->page_loaded_called_with_success());
   web_state_->OnPageLoaded(GURL("http://test"), false);
-  EXPECT_FALSE(observer->page_loaded_called());
+  EXPECT_FALSE(observer->page_loaded_called_with_success());
   web_state_->OnPageLoaded(GURL("http://test"), true);
-  EXPECT_TRUE(observer->page_loaded_called());
+  EXPECT_TRUE(observer->page_loaded_called_with_success());
 
   // Test that UrlHashChanged() is called.
   EXPECT_FALSE(observer->url_hash_changed_called());
@@ -268,6 +345,22 @@ TEST_F(WebStateTest, GlobalObserverTest) {
   scoped_ptr<TestGlobalWebStateObserver> observer(
       new TestGlobalWebStateObserver());
 
+  // Test that NavigationItemsPruned() is called.
+  EXPECT_FALSE(observer->navigation_items_pruned_called());
+  web_state_->OnNavigationItemsPruned(1);
+  EXPECT_TRUE(observer->navigation_items_pruned_called());
+
+  // Test that NavigationItemChanged() is called.
+  EXPECT_FALSE(observer->navigation_item_changed_called());
+  web_state_->OnNavigationItemChanged();
+  EXPECT_TRUE(observer->navigation_item_changed_called());
+
+  // Test that NavigationItemCommitted() is called.
+  EXPECT_FALSE(observer->navigation_item_committed_called());
+  LoadCommittedDetails details;
+  web_state_->OnNavigationItemCommitted(details);
+  EXPECT_TRUE(observer->navigation_item_committed_called());
+
   // Test that WebStateDidStartLoading() is called.
   EXPECT_FALSE(observer->did_start_loading_called());
   web_state_->SetIsLoading(true);
@@ -277,6 +370,18 @@ TEST_F(WebStateTest, GlobalObserverTest) {
   EXPECT_FALSE(observer->did_stop_loading_called());
   web_state_->SetIsLoading(false);
   EXPECT_TRUE(observer->did_stop_loading_called());
+
+  // Test that OnPageLoaded() is called with success when there is no error.
+  EXPECT_FALSE(observer->page_loaded_called_with_success());
+  web_state_->OnPageLoaded(GURL("http://test"), false);
+  EXPECT_FALSE(observer->page_loaded_called_with_success());
+  web_state_->OnPageLoaded(GURL("http://test"), true);
+  EXPECT_TRUE(observer->page_loaded_called_with_success());
+
+  // Test that WebStateDestroyed() is called.
+  EXPECT_FALSE(observer->web_state_destroyed_called());
+  web_state_.reset();
+  EXPECT_TRUE(observer->web_state_destroyed_called());
 }
 
 // Verifies that policy deciders are correctly called by the web state.

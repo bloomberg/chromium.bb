@@ -553,6 +553,15 @@ void WebStateImpl::NavigateToPendingEntry() {
   [web_controller_ loadCurrentURL];
 }
 
+void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
+  FOR_EACH_OBSERVER(WebStateObserver, observers_,
+                    NavigationItemsPruned(pruned_item_count));
+}
+
+void WebStateImpl::OnNavigationItemChanged() {
+  FOR_EACH_OBSERVER(WebStateObserver, observers_, NavigationItemChanged());
+}
+
 void WebStateImpl::OnNavigationItemCommitted(
     const LoadCommittedDetails& load_details) {
   FOR_EACH_OBSERVER(WebStateObserver, observers_,

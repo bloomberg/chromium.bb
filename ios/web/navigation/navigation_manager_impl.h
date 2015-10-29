@@ -65,6 +65,7 @@ class NavigationManagerImpl : public NavigationManager {
   // Helper functions for communicating with the facade layer.
   // TODO(stuartmorgan): Make these private once the logic triggering them moves
   // into this layer.
+  void OnNavigationItemsPruned(size_t pruned_item_count);
   void OnNavigationItemChanged();
   void OnNavigationItemCommitted();
 

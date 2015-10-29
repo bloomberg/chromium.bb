@@ -36,8 +36,15 @@ class GlobalWebStateEventTracker {
   void OnWebStateCreated(WebState* web_state);
 
   // Forward to the registered observers.
+  void NavigationItemsPruned(WebState* web_state, size_t pruned_item_count);
+  void NavigationItemChanged(WebState* web_state);
+  void NavigationItemCommitted(WebState* web_state,
+                               const LoadCommittedDetails& load_details);
   void WebStateDidStartLoading(WebState* web_state);
   void WebStateDidStopLoading(WebState* web_state);
+  void PageLoaded(WebState* web_state,
+                  PageLoadCompletionStatus load_completion_status);
+  void WebStateDestroyed(WebState* web_state);
 
   GlobalWebStateEventTracker();
   ~GlobalWebStateEventTracker();

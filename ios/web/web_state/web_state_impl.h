@@ -246,6 +246,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // NavigationManagerDelegate:
   void NavigateToPendingEntry() override;
+  void OnNavigationItemsPruned(size_t pruned_item_count) override;
+  void OnNavigationItemChanged() override;
   void OnNavigationItemCommitted(
       const LoadCommittedDetails& load_details) override;
   WebState* GetWebState() override;

@@ -36,6 +36,12 @@ class WebStateObserver {
   // This method is invoked when a load request is registered.
   virtual void ProvisionalNavigationStarted(const GURL& url) {}
 
+  // This method is invoked when committed navigation items have been pruned.
+  virtual void NavigationItemsPruned(size_t pruned_item_count) {}
+
+  // This method is invoked when a navigation item has changed.
+  virtual void NavigationItemChanged() {}
+
   // This method is invoked when a new non-pending navigation item is created.
   // This corresponds to one NavigationManager item being created
   // (in the case of new navigations) or renavigated to (for back/forward

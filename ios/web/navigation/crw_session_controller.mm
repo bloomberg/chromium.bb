@@ -465,9 +465,8 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   [_entries removeObjectsInRange:remove];
   if (_previousNavigationIndex >= forwardEntryStartIndex)
     _previousNavigationIndex = -1;
-  if (_navigationManager && _navigationManager->GetFacadeDelegate()) {
-    _navigationManager->GetFacadeDelegate()->OnNavigationItemsPruned(
-        remove.length);
+  if (_navigationManager) {
+    _navigationManager->OnNavigationItemsPruned(remove.length);
   }
 }
 

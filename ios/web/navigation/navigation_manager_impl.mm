@@ -91,8 +91,16 @@ NavigationManagerFacadeDelegate* NavigationManagerImpl::GetFacadeDelegate()
   return facade_delegate_;
 }
 
+void NavigationManagerImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
+  delegate_->OnNavigationItemsPruned(pruned_item_count);
+
+  if (facade_delegate_)
+    facade_delegate_->OnNavigationItemsPruned(pruned_item_count);
+}
 
 void NavigationManagerImpl::OnNavigationItemChanged() {
+  delegate_->OnNavigationItemChanged();
+
   if (facade_delegate_)
     facade_delegate_->OnNavigationItemChanged();
 }
