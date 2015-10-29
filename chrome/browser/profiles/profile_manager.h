@@ -90,7 +90,7 @@ class ProfileManager : public base::NonThreadSafe,
   void CreateProfileAsync(const base::FilePath& profile_path,
                           const CreateCallback& callback,
                           const base::string16& name,
-                          const base::string16& icon_url,
+                          const std::string& icon_url,
                           const std::string& supervised_user_id);
 
   // Returns true if the profile pointer is known to point to an existing
@@ -141,7 +141,7 @@ class ProfileManager : public base::NonThreadSafe,
   // asynchronously.
   static base::FilePath CreateMultiProfileAsync(
       const base::string16& name,
-      const base::string16& icon_url,
+      const std::string& icon_url,
       const CreateCallback& callback,
       const std::string& supervised_user_id);
 

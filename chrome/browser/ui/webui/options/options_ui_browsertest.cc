@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, NavigateBackFromOverlayDialog) {
       base::Bind(&RunClosureWhenProfileInitialized,
                  run_loop.QuitClosure()),
                  base::string16(),
-                 base::string16(),
+                 std::string(),
                  std::string());
   run_loop.Run();
 

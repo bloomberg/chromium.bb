@@ -102,7 +102,7 @@ class ProfileStoreImpl : public ProfileStore {
                    weak_factory_.GetWeakPtr(),
                    callback),
         base::string16(),
-        base::string16(),
+        std::string(),
         std::string());
   }
 

@@ -135,7 +135,7 @@ class ProfileManagerTest : public testing::Test {
         base::Bind(&MockObserver::OnProfileCreated,
                    base::Unretained(mock_observer)),
         base::UTF8ToUTF16(name),
-        base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(0)),
+        profiles::GetDefaultAvatarIconUrl(0),
         is_supervised ? "Dummy ID" : std::string());
   }
 

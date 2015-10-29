@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(path_profile2,
                                       base::Bind(&UnblockOnProfileCreation),
-                                      base::string16(), base::string16(),
+                                      base::string16(), std::string(),
                                       std::string());
 
   // Spin to allow profile creation to take place, loop is terminated

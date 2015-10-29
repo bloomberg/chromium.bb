@@ -269,7 +269,7 @@ void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
       GetProfileInfoCache().ChooseAvatarIconIndexForNewProfile();
   ProfileManager::CreateMultiProfileAsync(
       base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
-      base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(icon_index)),
+      profiles::GetDefaultAvatarIconUrl(icon_index),
       base::Bind(&OneClickSigninSyncStarter::CompleteInitForNewProfile,
                  weak_pointer_factory_.GetWeakPtr(), desktop_type_),
       std::string());

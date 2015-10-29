@@ -344,7 +344,7 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
         ProfileManager::GetGuestProfilePath(),
         base::Bind(&ChangeAppControllerForProfile),
         base::string16(),
-        base::string16(),
+        std::string(),
         std::string());
   }
   [[self window] makeKeyAndOrderFront:self];

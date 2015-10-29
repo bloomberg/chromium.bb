@@ -86,7 +86,7 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
   profile_creation_start_time_ = base::TimeTicks::Now();
 
   base::string16 name;
-  base::string16 icon;
+  std::string icon;
   bool create_shortcut = false;
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
     base::TrimWhitespace(name, base::TRIM_ALL, &name);

@@ -73,7 +73,7 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
                    base::Unretained(this),
                    run_loop.QuitClosure()),
         base::string16(),
-        base::string16(),
+        std::string(),
         std::string());
     run_loop.Run();
 

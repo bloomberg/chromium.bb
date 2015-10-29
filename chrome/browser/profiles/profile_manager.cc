@@ -399,7 +399,7 @@ void ProfileManager::CreateProfileAsync(
     const base::FilePath& profile_path,
     const CreateCallback& callback,
     const base::string16& name,
-    const base::string16& icon_url,
+    const std::string& icon_url,
     const std::string& supervised_user_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT1("browser,startup",
@@ -426,8 +426,8 @@ void ProfileManager::CreateProfileAsync(
     ProfileInfoCache& cache = GetProfileInfoCache();
     // Get the icon index from the user's icon url
     size_t icon_index;
-    std::string icon_url_std = base::UTF16ToASCII(icon_url);
-    if (profiles::IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
+    DCHECK(base::IsStringASCII(icon_url));
+    if (profiles::IsDefaultAvatarIconUrl(icon_url, &icon_index)) {
       // add profile to cache with user selected name and avatar
       cache.AddProfileToCache(profile_path, name, std::string(),
                               base::string16(), icon_index, supervised_user_id);
@@ -587,7 +587,7 @@ Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
 // static
 base::FilePath ProfileManager::CreateMultiProfileAsync(
     const base::string16& name,
-    const base::string16& icon_url,
+    const std::string& icon_url,
     const CreateCallback& callback,
     const std::string& supervised_user_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -690,19 +690,17 @@ void ProfileManager::ScheduleProfileForDeletion(
     }
   }
 
-  base::FilePath new_path;
   if (last_non_supervised_profile_path.empty()) {
-    base::string16 new_avatar_url = base::string16();
-    base::string16 new_profile_name = base::string16();
+    std::string new_avatar_url;
+    base::string16 new_profile_name;
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
     int avatar_index = profiles::GetPlaceholderAvatarIndex();
-    new_avatar_url =
-        base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(avatar_index));
+    new_avatar_url = profiles::GetDefaultAvatarIconUrl(avatar_index);
     new_profile_name = cache.ChooseNameForNewProfile(avatar_index);
 #endif
 
-    new_path = GenerateNextProfileDirectoryPath();
+    base::FilePath new_path(GenerateNextProfileDirectoryPath());
     CreateProfileAsync(new_path,
                        base::Bind(&ProfileManager::OnNewActiveProfileLoaded,
                                   base::Unretained(this),
@@ -733,7 +731,7 @@ void ProfileManager::ScheduleProfileForDeletion(
                                   last_non_supervised_profile_path,
                                   callback),
                        base::string16(),
-                       base::string16(),
+                       std::string(),
                        std::string());
     return;
   }

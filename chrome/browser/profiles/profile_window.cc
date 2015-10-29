@@ -302,7 +302,7 @@ void SwitchToProfile(const base::FilePath& path,
                  false,
                  desktop_type),
       base::string16(),
-      base::string16(),
+      std::string(),
       std::string());
 }
 
@@ -320,7 +320,7 @@ void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
                  false,
                  desktop_type),
       base::string16(),
-      base::string16(),
+      std::string(),
       std::string());
 }
 #endif
@@ -341,8 +341,7 @@ void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
   int placeholder_avatar_index = profiles::GetPlaceholderAvatarIndex();
   ProfileManager::CreateMultiProfileAsync(
       cache.ChooseNameForNewProfile(placeholder_avatar_index),
-      base::UTF8ToUTF16(profiles::GetDefaultAvatarIconUrl(
-          placeholder_avatar_index)),
+      profiles::GetDefaultAvatarIconUrl(placeholder_avatar_index),
       base::Bind(&OpenBrowserWindowForProfile,
                  callback,
                  true,
@@ -445,7 +444,7 @@ void CreateSystemProfileForUserManager(
                  profile_open_action,
                  callback),
       base::string16(),
-      base::string16(),
+      std::string(),
       std::string());
 }
 

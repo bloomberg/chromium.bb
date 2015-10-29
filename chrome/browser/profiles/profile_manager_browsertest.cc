@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
-      base::string16(), base::string16(), std::string());
+      base::string16(), std::string(), std::string());
 
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by OnUnblockOnProfileCreation when the profile is created.
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   // invoked (so they can do things like sign in the profile, etc).
   ProfileManager::CreateMultiProfileAsync(
       base::string16(), // name
-      base::string16(), // icon url
+      std::string(), // icon url
       base::Bind(ProfileCreationComplete),
       std::string());
   // Wait for profile to finish loading.
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       path_profile2, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
-      base::string16(), base::string16(), std::string());
+      base::string16(), std::string(), std::string());
 
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by OnUnblockOnProfileCreation when the profile is created.
@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   profile_manager->CreateProfileAsync(
       path_profile2,
       base::Bind(&EphemeralProfileCreationComplete),
-      base::string16(), base::string16(), std::string());
+      base::string16(), std::string(), std::string());
 
   // Spin to allow profile creation to take place.
   content::RunMessageLoop();

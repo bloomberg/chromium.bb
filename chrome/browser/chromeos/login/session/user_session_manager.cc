@@ -894,13 +894,9 @@ void UserSessionManager::PrepareProfile() {
   // path or not. See https://codereview.chromium.org/171423009
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
-      base::Bind(&UserSessionManager::OnProfileCreated,
-                 AsWeakPtr(),
-                 user_context_,
-                 is_demo_session),
-      base::string16(),
-      base::string16(),
-      std::string());
+      base::Bind(&UserSessionManager::OnProfileCreated, AsWeakPtr(),
+                 user_context_, is_demo_session),
+      base::string16(), std::string(), std::string());
 }
 
 void UserSessionManager::OnProfileCreated(const UserContext& user_context,
