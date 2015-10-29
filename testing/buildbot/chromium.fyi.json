@@ -502,7 +502,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
@@ -1254,7 +1257,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
@@ -1462,7 +1468,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
@@ -4527,7 +4536,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
@@ -4719,7 +4731,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
@@ -5016,7 +5031,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
@@ -5196,7 +5214,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [

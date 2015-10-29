@@ -652,7 +652,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       },
       {
         "isolate_name": "telemetry_perf_unittests",
@@ -1018,7 +1021,10 @@
     "isolated_scripts": [
       {
         "isolate_name": "telemetry_gpu_unittests",
-        "name": "telemetry_gpu_unittests"
+        "name": "telemetry_gpu_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       },
       {
         "isolate_name": "telemetry_perf_unittests",
