@@ -36,11 +36,22 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     return return_value;
   }
 
+  ServerWindow* GetAndClearLastTarget() {
+    ServerWindow* result = last_target_;
+    last_target_ = nullptr;
+    return result;
+  }
   ServerWindow* last_target() { return last_target_; }
 
   bool GetAndClearLastInNonclientArea() {
     const bool result = last_in_nonclient_area_;
     last_in_nonclient_area_ = false;
+    return result;
+  }
+
+  ServerWindow* GetAndClearLastFocusedWindow() {
+    ServerWindow* result = focused_window_;
+    focused_window_ = nullptr;
     return result;
   }
 
@@ -339,6 +350,154 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
       mojom::Event::From(static_cast<const ui::Event&>(press_event2)));
   ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
   EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+}
+
+TEST(EventDispatcherTest, DontFocusOnSecondDown) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  ServerWindow child1(&window_delegate, WindowId(1, 3));
+  root.Add(&child1);
+  child1.SetVisible(true);
+
+  ServerWindow child2(&window_delegate, WindowId(1, 4));
+  root.Add(&child2);
+  child2.SetVisible(true);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child1.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child2.SetBounds(gfx::Rect(50, 51, 11, 12));
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  // Press on child1. First press event should change focus.
+  const ui::MouseEvent press_event(
+      ui::ET_MOUSE_PRESSED, gfx::PointF(12.f, 12.f), gfx::PointF(12.f, 12.f),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
+  EXPECT_EQ(&child1, event_dispatcher_delegate.last_target());
+  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastFocusedWindow());
+
+  // Press (with a different pointer id) on child2. Event should go to child2,
+  // but focus should not change.
+  const ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(53.f, 54.f), 2, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(touch_event)));
+  EXPECT_EQ(&child2, event_dispatcher_delegate.last_target());
+  EXPECT_EQ(nullptr, event_dispatcher_delegate.GetAndClearLastFocusedWindow());
+}
+
+TEST(EventDispatcherTest, TwoPointersActive) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  ServerWindow child1(&window_delegate, WindowId(1, 3));
+  root.Add(&child1);
+  child1.SetVisible(true);
+
+  ServerWindow child2(&window_delegate, WindowId(1, 4));
+  root.Add(&child2);
+  child2.SetVisible(true);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child1.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child2.SetBounds(gfx::Rect(50, 51, 11, 12));
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  // Press on child1.
+  const ui::TouchEvent touch_event1(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(12.f, 13.f), 1, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(touch_event1)));
+  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+
+  // Drag over child2, child1 should get the drag.
+  const ui::TouchEvent drag_event1(ui::ET_TOUCH_MOVED, gfx::PointF(53.f, 54.f),
+                                   1, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
+  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+
+  // Press on child2 with a different touch id.
+  const ui::TouchEvent touch_event2(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(54.f, 55.f), 2, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(touch_event2)));
+  EXPECT_EQ(&child2, event_dispatcher_delegate.GetAndClearLastTarget());
+
+  // Drag over child1 with id 2, child2 should continue to get the drag.
+  const ui::TouchEvent drag_event2(ui::ET_TOUCH_MOVED, gfx::PointF(13.f, 14.f),
+                                   2, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(drag_event2)));
+  EXPECT_EQ(&child2, event_dispatcher_delegate.GetAndClearLastTarget());
+
+  // Drag again with id 1, child1 should continue to get it.
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
+  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+
+  // Release touch id 1, and click on 2. 2 should get it.
+  const ui::TouchEvent touch_release(
+      ui::ET_TOUCH_RELEASED, gfx::PointF(54.f, 55.f), 1, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(touch_release)));
+  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+  const ui::TouchEvent touch_event3(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(54.f, 55.f), 2, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(touch_event3)));
+  EXPECT_EQ(&child2, event_dispatcher_delegate.GetAndClearLastTarget());
+}
+
+TEST(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  scoped_ptr<ServerWindow> child(
+      new ServerWindow(&window_delegate, WindowId(1, 3)));
+  root.Add(child.get());
+  child->SetVisible(true);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  // Press on child.
+  const ui::TouchEvent touch_event1(
+      ui::ET_TOUCH_PRESSED, gfx::PointF(12.f, 13.f), 1, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(touch_event1)));
+  EXPECT_EQ(child.get(), event_dispatcher_delegate.GetAndClearLastTarget());
+
+  event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
+
+  // Delete child, and continue the drag. Event should not be dispatched.
+  child.reset();
+
+  const ui::TouchEvent drag_event1(ui::ET_TOUCH_MOVED, gfx::PointF(53.f, 54.f),
+                                   1, base::TimeDelta());
+  dispatcher.OnEvent(
+      mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
+  EXPECT_EQ(nullptr, event_dispatcher_delegate.GetAndClearLastTarget());
+  EXPECT_EQ(nullptr,
+            event_dispatcher_delegate.GetAndClearLastDispatchedEvent().get());
 }
 
 }  // namespace ws

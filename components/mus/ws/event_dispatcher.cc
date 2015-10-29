@@ -4,6 +4,8 @@
 
 #include "components/mus/ws/event_dispatcher.h"
 
+#include <set>
+
 #include "cc/surfaces/surface_hittest.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
@@ -19,12 +21,6 @@
 namespace mus {
 namespace ws {
 namespace {
-
-bool IsMouseEventFlag(int32_t event_flags) {
-  return !!(event_flags & (mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
-                           mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
-                           mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
-}
 
 bool IsOnlyOneMouseButtonDown(mojom::EventFlags flags) {
   const uint32_t mouse_only_flags =
@@ -141,12 +137,17 @@ class EventMatcher {
 ////////////////////////////////////////////////////////////////////////////////
 
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
-    : delegate_(delegate),
-      root_(nullptr),
-      capture_window_(nullptr),
-      capture_in_nonclient_area_(false) {}
+    : delegate_(delegate), root_(nullptr) {}
 
-EventDispatcher::~EventDispatcher() {}
+EventDispatcher::~EventDispatcher() {
+  std::set<ServerWindow*> pointer_targets;
+  for (const auto& pair : pointer_targets_) {
+    if (pair.second.window &&
+        pointer_targets.insert(pair.second.window).second) {
+      pair.second.window->RemoveObserver(this);
+    }
+  }
+}
 
 void EventDispatcher::AddAccelerator(uint32_t id,
                                      mojom::EventMatcherPtr event_matcher) {
@@ -179,33 +180,109 @@ void EventDispatcher::OnEvent(mojom::EventPtr event) {
     }
   }
 
-  ServerWindow* target = FindEventTarget(event.get());
-  bool in_nonclient_area = false;
+  if (event->key_data) {
+    ProcessKeyEvent(event.Pass());
+    return;
+  }
 
-  if (IsMouseEventFlag(event->flags)) {
-    if (!capture_window_ && target &&
-        (event->action == mojom::EVENT_TYPE_POINTER_DOWN)) {
-      // TODO(sky): |capture_window_| needs to be reset when window removed
-      // from hierarchy.
-      capture_window_ = target;
-      // TODO(sky): this needs to happen for pointer down events too.
-      capture_in_nonclient_area_ =
-          IsLocationInNonclientArea(target, EventLocationToPoint(*event));
-      in_nonclient_area = capture_in_nonclient_area_;
-    } else if (event->action == mojom::EVENT_TYPE_POINTER_UP &&
-               IsOnlyOneMouseButtonDown(event->flags)) {
-      capture_window_ = nullptr;
+  if (event->pointer_data.get()) {
+    ProcessPointerEvent(event.Pass());
+    return;
+  }
+
+  NOTREACHED();
+}
+
+void EventDispatcher::ProcessKeyEvent(mojom::EventPtr event) {
+  ServerWindow* focused_window =
+      delegate_->GetFocusedWindowForEventDispatcher();
+  if (focused_window)
+    delegate_->DispatchInputEventToWindow(focused_window, false, event.Pass());
+}
+
+void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
+  const int32_t pointer_id = event->pointer_data->pointer_id;
+  if (event->action == mojom::EVENT_TYPE_WHEEL ||
+      (event->action == mojom::EVENT_TYPE_POINTER_MOVE &&
+       pointer_targets_.count(pointer_id) == 0)) {
+    PointerTarget pointer_target;
+    if (pointer_targets_.count(pointer_id) != 0) {
+      pointer_target = pointer_targets_[pointer_id];
+    } else {
+      gfx::Point location(EventLocationToPoint(*event));
+      pointer_target.window =
+          FindDeepestVisibleWindow(root_, surface_id_, &location);
     }
-    in_nonclient_area = capture_in_nonclient_area_;
+    DispatchToPointerTarget(pointer_target, event.Pass());
+    return;
   }
 
-  if (target) {
-    if (event->action == mojom::EVENT_TYPE_POINTER_DOWN)
+  // Pointer down implicitly captures.
+  if (pointer_targets_.count(pointer_id) == 0) {
+    DCHECK(event->action == mojom::EVENT_TYPE_POINTER_DOWN);
+    const bool is_first_pointer_down = pointer_targets_.empty();
+    gfx::Point location(EventLocationToPoint(*event));
+    ServerWindow* target =
+        FindDeepestVisibleWindow(root_, surface_id_, &location);
+    DCHECK(target);
+    if (!IsObservingWindow(target))
+      target->AddObserver(this);
+
+    pointer_targets_[pointer_id].window = target;
+    pointer_targets_[pointer_id].in_nonclient_area =
+        IsLocationInNonclientArea(target, location);
+
+    if (is_first_pointer_down)
       delegate_->SetFocusedWindowFromEventDispatcher(target);
-
-    delegate_->DispatchInputEventToWindow(target, in_nonclient_area,
-                                          event.Pass());
   }
+
+  // Release capture on pointer up. For mouse we only release if there are
+  // no buttons down.
+  const bool should_reset_target =
+      (event->action == mojom::EVENT_TYPE_POINTER_UP ||
+       event->action == mojom::EVENT_TYPE_POINTER_CANCEL) &&
+      (event->pointer_data->kind != mojom::POINTER_KIND_MOUSE ||
+       IsOnlyOneMouseButtonDown(event->flags));
+
+  DispatchToPointerTarget(pointer_targets_[pointer_id], event.Pass());
+
+  if (should_reset_target) {
+    ServerWindow* target = pointer_targets_[pointer_id].window;
+    pointer_targets_.erase(pointer_id);
+    if (target && !IsObservingWindow(target))
+      target->RemoveObserver(this);
+  }
+}
+
+void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
+                                              mojom::EventPtr event) {
+  if (!target.window)
+    return;
+
+  gfx::Point location(EventLocationToPoint(*event));
+  gfx::Transform transform(GetTransformToWindow(surface_id_, target.window));
+  transform.TransformPoint(&location);
+  event->pointer_data->location->x = location.x();
+  event->pointer_data->location->y = location.y();
+  delegate_->DispatchInputEventToWindow(target.window, target.in_nonclient_area,
+                                        event.Pass());
+}
+
+void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
+  window->RemoveObserver(this);
+
+  for (auto& pair : pointer_targets_) {
+    if (pair.second.window == window)
+      pair.second.window = nullptr;
+  }
+}
+
+bool EventDispatcher::IsObservingWindow(ServerWindow* window) {
+  for (const auto& pair : pointer_targets_) {
+    if (pair.second.window == window)
+      return true;
+  }
+  return false;
 }
 
 bool EventDispatcher::FindAccelerator(const mojom::Event& event,
@@ -220,31 +297,18 @@ bool EventDispatcher::FindAccelerator(const mojom::Event& event,
   return false;
 }
 
-ServerWindow* EventDispatcher::FindEventTarget(mojom::Event* event) {
-  ServerWindow* focused_window =
-      delegate_->GetFocusedWindowForEventDispatcher();
-  if (event->key_data)
-    return focused_window;
+void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,
+                                                  ServerWindow* new_parent,
+                                                  ServerWindow* old_parent) {
+  CancelPointerEventsToTarget(window);
+}
 
-  DCHECK(event->pointer_data) << "Unknown event type: " << event->action;
-  mojom::LocationData* event_location = event->pointer_data->location.get();
-  DCHECK(event_location);
-  gfx::Point location(static_cast<int>(event_location->x),
-                      static_cast<int>(event_location->y));
+void EventDispatcher::OnWindowVisibilityChanged(ServerWindow* window) {
+  CancelPointerEventsToTarget(window);
+}
 
-  ServerWindow* target = capture_window_;
-
-  if (!target) {
-    target = FindDeepestVisibleWindow(root_, surface_id_, &location);
-  } else {
-    gfx::Transform transform(GetTransformToWindow(surface_id_, target));
-    transform.TransformPoint(&location);
-  }
-
-  event_location->x = location.x();
-  event_location->y = location.y();
-
-  return target;
+void EventDispatcher::OnWindowDestroyed(ServerWindow* window) {
+  CancelPointerEventsToTarget(window);
 }
 
 }  // namespace ws

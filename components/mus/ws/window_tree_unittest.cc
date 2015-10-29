@@ -260,6 +260,7 @@ EventPtr CreatePointerDownEvent(int x, int y) {
   event->pointer_data->location = LocationData::New();
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
+  event->pointer_data->kind = mojom::POINTER_KIND_TOUCH;
   return event.Pass();
 }
 
@@ -271,6 +272,7 @@ EventPtr CreatePointerUpEvent(int x, int y) {
   event->pointer_data->location = LocationData::New();
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
+  event->pointer_data->kind = mojom::POINTER_KIND_TOUCH;
   return event.Pass();
 }
 
