@@ -124,7 +124,7 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   void RouteWireFormatToAnother(const MachPortWireFormat& wire_format);
 
   // The port provider must live at least as long as the AttachmentBroker.
-  base::PortProvider* port_provider_;
+  const base::PortProvider* port_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivilegedMac);
 };

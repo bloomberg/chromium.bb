@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
+#include "base/synchronization/lock.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_listener.h"
@@ -101,6 +102,8 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   // This method is exposed for testing only.
   AttachmentVector* get_attachments() { return &attachments_; }
 
+  base::Lock* get_lock() { return &lock_; }
+
  private:
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(AttachmentBrokerUnprivilegedWinTest,
@@ -117,6 +120,10 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   AttachmentVector attachments_;
 
   std::vector<Observer*> observers_;
+
+  // The AttachmentBroker can be accessed from any thread, so modifications to
+  // internal state must be guarded by a lock.
+  base::Lock lock_;
   DISALLOW_COPY_AND_ASSIGN(AttachmentBroker);
 };
 

@@ -31,6 +31,7 @@ AttachmentBroker::~AttachmentBroker() {}
 bool AttachmentBroker::GetAttachmentWithId(
     BrokerableAttachment::AttachmentId id,
     scoped_refptr<BrokerableAttachment>* out_attachment) {
+  base::AutoLock auto_lock(*get_lock());
   for (AttachmentVector::iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
     if ((*it)->GetIdentifier() == id) {
@@ -43,12 +44,14 @@ bool AttachmentBroker::GetAttachmentWithId(
 }
 
 void AttachmentBroker::AddObserver(AttachmentBroker::Observer* observer) {
+  base::AutoLock auto_lock(*get_lock());
   auto it = std::find(observers_.begin(), observers_.end(), observer);
   if (it == observers_.end())
     observers_.push_back(observer);
 }
 
 void AttachmentBroker::RemoveObserver(AttachmentBroker::Observer* observer) {
+  base::AutoLock auto_lock(*get_lock());
   auto it = std::find(observers_.begin(), observers_.end(), observer);
   if (it != observers_.end())
     observers_.erase(it);
@@ -64,14 +67,22 @@ void AttachmentBroker::DeregisterCommunicationChannel(Endpoint* endpoint) {
 
 void AttachmentBroker::HandleReceivedAttachment(
     const scoped_refptr<BrokerableAttachment>& attachment) {
-  attachments_.push_back(attachment);
+  {
+    base::AutoLock auto_lock(*get_lock());
+    attachments_.push_back(attachment);
+  }
   NotifyObservers(attachment->GetIdentifier());
 }
 
 void AttachmentBroker::NotifyObservers(
     const BrokerableAttachment::AttachmentId& id) {
   // Make a copy of observers_ to avoid mutations during iteration.
-  std::vector<Observer*> observers = observers_;
+  std::vector<Observer*> observers;
+  {
+    base::AutoLock auto_lock(*get_lock());
+    observers = observers_;
+  }
+
   for (Observer* observer : observers) {
     observer->ReceivedBrokerableAttachmentWithId(id);
   }

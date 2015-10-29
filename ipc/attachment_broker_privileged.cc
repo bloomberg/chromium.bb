@@ -87,6 +87,7 @@ void AttachmentBrokerPrivileged::CreateBrokerIfNeeded() {
 
 void AttachmentBrokerPrivileged::RegisterCommunicationChannel(
     Endpoint* endpoint) {
+  base::AutoLock auto_lock(*get_lock());
   endpoint->SetAttachmentBrokerEndpoint(true);
   auto it = std::find(endpoints_.begin(), endpoints_.end(), endpoint);
   DCHECK(endpoints_.end() == it);
@@ -95,12 +96,14 @@ void AttachmentBrokerPrivileged::RegisterCommunicationChannel(
 
 void AttachmentBrokerPrivileged::DeregisterCommunicationChannel(
     Endpoint* endpoint) {
+  base::AutoLock auto_lock(*get_lock());
   auto it = std::find(endpoints_.begin(), endpoints_.end(), endpoint);
   if (it != endpoints_.end())
     endpoints_.erase(it);
 }
 
 Sender* AttachmentBrokerPrivileged::GetSenderWithProcessId(base::ProcessId id) {
+  base::AutoLock auto_lock(*get_lock());
   auto it = std::find_if(endpoints_.begin(), endpoints_.end(),
                          [id](Endpoint* c) { return c->GetPeerPID() == id; });
   if (it == endpoints_.end())
