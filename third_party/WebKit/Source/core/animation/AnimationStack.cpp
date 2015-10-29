@@ -32,7 +32,7 @@
 #include "core/animation/AnimationStack.h"
 
 #include "core/animation/CompositorAnimations.h"
-#include "core/animation/InvalidatableStyleInterpolation.h"
+#include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
@@ -50,8 +50,8 @@ void copyToActiveInterpolationsMap(const Vector<RefPtr<Interpolation>>& source, 
         ActiveInterpolations& activeInterpolations = entry.storedValue->value;
         if (!entry.isNewEntry
             && RuntimeEnabledFeatures::stackedCSSPropertyAnimationsEnabled()
-            && interpolation->isInvalidatableStyleInterpolation()
-            && toInvalidatableStyleInterpolation(*interpolation).dependsOnUnderlyingValue()) {
+            && interpolation->isInvalidatableInterpolation()
+            && toInvalidatableInterpolation(*interpolation).dependsOnUnderlyingValue()) {
             activeInterpolations.append(interpolation.get());
         } else {
             activeInterpolations.at(0) = interpolation.get();

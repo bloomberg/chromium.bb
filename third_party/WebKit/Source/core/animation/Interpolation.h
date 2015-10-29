@@ -21,7 +21,7 @@ public:
     virtual void interpolate(int iteration, double fraction);
 
     virtual bool isStyleInterpolation() const { return false; }
-    virtual bool isInvalidatableStyleInterpolation() const { return false; }
+    virtual bool isInvalidatableInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
     virtual bool isSVGInterpolation() const { return false; }
 

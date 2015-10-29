@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InvalidatableStyleInterpolation_h
-#define InvalidatableStyleInterpolation_h
+#ifndef InvalidatableInterpolation_h
+#define InvalidatableInterpolation_h
 
 #include "core/animation/InterpolationType.h"
 #include "core/animation/InterpolationValue.h"
@@ -14,14 +14,14 @@ namespace blink {
 
 // TODO(alancutter): This class will replace *StyleInterpolation, SVGInterpolation, Interpolation.
 // For now it needs to distinguish itself during the refactor and temporarily has an ugly name.
-class CORE_EXPORT InvalidatableStyleInterpolation : public Interpolation {
+class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
 public:
-    static PassRefPtr<InvalidatableStyleInterpolation> create(
+    static PassRefPtr<InvalidatableInterpolation> create(
         const Vector<const InterpolationType*>& InterpolationTypes,
         const PropertySpecificKeyframe& startKeyframe,
         const PropertySpecificKeyframe& endKeyframe)
     {
-        return adoptRef(new InvalidatableStyleInterpolation(InterpolationTypes, startKeyframe, endKeyframe));
+        return adoptRef(new InvalidatableInterpolation(InterpolationTypes, startKeyframe, endKeyframe));
     }
 
     PropertyHandle property() const final { return m_interpolationTypes.first()->property(); }
@@ -30,10 +30,10 @@ public:
     virtual void apply(InterpolationEnvironment&) const { ASSERT_NOT_REACHED(); }
     static void applyStack(const ActiveInterpolations&, InterpolationEnvironment&);
 
-    virtual bool isInvalidatableStyleInterpolation() const { return true; }
+    virtual bool isInvalidatableInterpolation() const { return true; }
 
 private:
-    InvalidatableStyleInterpolation(
+    InvalidatableInterpolation(
         const Vector<const InterpolationType*>& interpolationTypes,
         const PropertySpecificKeyframe& startKeyframe,
         const PropertySpecificKeyframe& endKeyframe)
@@ -65,8 +65,8 @@ private:
     mutable OwnPtr<InterpolationValue> m_cachedValue;
 };
 
-DEFINE_TYPE_CASTS(InvalidatableStyleInterpolation, Interpolation, value, value->isInvalidatableStyleInterpolation(), value.isInvalidatableStyleInterpolation());
+DEFINE_TYPE_CASTS(InvalidatableInterpolation, Interpolation, value, value->isInvalidatableInterpolation(), value.isInvalidatableInterpolation());
 
 } // namespace blink
 
-#endif // InvalidatableStyleInterpolation_h
+#endif // InvalidatableInterpolation_h

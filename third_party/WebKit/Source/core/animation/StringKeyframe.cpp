@@ -24,7 +24,7 @@
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
 #include "core/animation/IntegerSVGInterpolation.h"
 #include "core/animation/InterpolationType.h"
-#include "core/animation/InvalidatableStyleInterpolation.h"
+#include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
@@ -282,7 +282,7 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
     CSSPropertyID property = propertyHandle.cssProperty();
     const Vector<const InterpolationType*>* applicableTypes = applicableTypesForProperty(property);
     if (applicableTypes)
-        return InvalidatableStyleInterpolation::create(*applicableTypes, *this, end);
+        return InvalidatableInterpolation::create(*applicableTypes, *this, end);
 
     // TODO(alancutter): Remove the remainder of this function.
 

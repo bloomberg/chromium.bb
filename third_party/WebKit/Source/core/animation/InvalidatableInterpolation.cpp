@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/InvalidatableStyleInterpolation.h"
+#include "core/animation/InvalidatableInterpolation.h"
 
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
@@ -11,7 +11,7 @@
 
 namespace blink {
 
-void InvalidatableStyleInterpolation::interpolate(int, double fraction)
+void InvalidatableInterpolation::interpolate(int, double fraction)
 {
     if (fraction == m_currentFraction)
         return;
@@ -25,7 +25,7 @@ void InvalidatableStyleInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedPairConversion is null.
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableStyleInterpolation::maybeConvertPairwise(const InterpolationEnvironment* environment, const UnderlyingValue& underlyingValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment* environment, const UnderlyingValue& underlyingValue) const
 {
     ASSERT(m_currentFraction != 0 && m_currentFraction != 1);
     for (const auto& interpolationType : m_interpolationTypes) {
@@ -40,7 +40,7 @@ PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableStyleInterpolation::mayb
     return nullptr;
 }
 
-PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
+PassOwnPtr<InterpolationValue> InvalidatableInterpolation::convertSingleKeyframe(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
 {
     if (keyframe.isNeutral() && !underlyingValue)
         return nullptr;
@@ -57,7 +57,7 @@ PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKey
     return nullptr;
 }
 
-PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<InterpolationValue> InvalidatableInterpolation::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     for (const auto& interpolationType : m_interpolationTypes) {
         OwnPtr<InterpolationValue> result = interpolationType->maybeConvertUnderlyingValue(environment);
@@ -67,17 +67,17 @@ PassOwnPtr<InterpolationValue> InvalidatableStyleInterpolation::maybeConvertUnde
     return nullptr;
 }
 
-bool InvalidatableStyleInterpolation::dependsOnUnderlyingValue() const
+bool InvalidatableInterpolation::dependsOnUnderlyingValue() const
 {
     return (m_startKeyframe->underlyingFraction() != 0 && m_currentFraction != 1) || (m_endKeyframe->underlyingFraction() != 0 && m_currentFraction != 0);
 }
 
-bool InvalidatableStyleInterpolation::isNeutralKeyframeActive() const
+bool InvalidatableInterpolation::isNeutralKeyframeActive() const
 {
     return (m_startKeyframe->isNeutral() && m_currentFraction != 1) || (m_endKeyframe->isNeutral() && m_currentFraction != 0);
 }
 
-void InvalidatableStyleInterpolation::clearCache() const
+void InvalidatableInterpolation::clearCache() const
 {
     m_isCached = false;
     m_cachedPairConversion.clear();
@@ -85,7 +85,7 @@ void InvalidatableStyleInterpolation::clearCache() const
     m_cachedValue.clear();
 }
 
-bool InvalidatableStyleInterpolation::isCacheValid(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
+bool InvalidatableInterpolation::isCacheValid(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
 {
     if (!m_isCached)
         return false;
@@ -103,7 +103,7 @@ bool InvalidatableStyleInterpolation::isCacheValid(const InterpolationEnvironmen
     return true;
 }
 
-const InterpolationValue* InvalidatableStyleInterpolation::ensureValidInterpolation(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
+const InterpolationValue* InvalidatableInterpolation::ensureValidInterpolation(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
 {
     ASSERT(!std::isnan(m_currentFraction));
     if (isCacheValid(environment, underlyingValue))
@@ -129,7 +129,7 @@ const InterpolationValue* InvalidatableStyleInterpolation::ensureValidInterpolat
     return m_cachedValue.get();
 }
 
-void InvalidatableStyleInterpolation::setFlagIfInheritUsed(InterpolationEnvironment& environment) const
+void InvalidatableInterpolation::setFlagIfInheritUsed(InterpolationEnvironment& environment) const
 {
     if (!property().isCSSProperty())
         return;
@@ -143,7 +143,7 @@ void InvalidatableStyleInterpolation::setFlagIfInheritUsed(InterpolationEnvironm
     }
 }
 
-double InvalidatableStyleInterpolation::underlyingFraction() const
+double InvalidatableInterpolation::underlyingFraction() const
 {
     if (m_currentFraction == 0)
         return m_startKeyframe->underlyingFraction();
@@ -152,14 +152,14 @@ double InvalidatableStyleInterpolation::underlyingFraction() const
     return m_cachedPairConversion->interpolateUnderlyingFraction(m_startKeyframe->underlyingFraction(), m_endKeyframe->underlyingFraction(), m_currentFraction);
 }
 
-void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& interpolations, InterpolationEnvironment& environment)
+void InvalidatableInterpolation::applyStack(const ActiveInterpolations& interpolations, InterpolationEnvironment& environment)
 {
     ASSERT(!interpolations.isEmpty());
     size_t startingIndex = 0;
 
     // Compute the underlying value to composite onto.
     UnderlyingValue underlyingValue;
-    const InvalidatableStyleInterpolation& firstInterpolation = toInvalidatableStyleInterpolation(*interpolations.at(startingIndex));
+    const InvalidatableInterpolation& firstInterpolation = toInvalidatableInterpolation(*interpolations.at(startingIndex));
     if (firstInterpolation.dependsOnUnderlyingValue()) {
         underlyingValue.set(firstInterpolation.maybeConvertUnderlyingValue(environment));
     } else {
@@ -179,7 +179,7 @@ void InvalidatableStyleInterpolation::applyStack(const ActiveInterpolations& int
     // Composite interpolations onto the underlying value.
     bool shouldApply = false;
     for (size_t i = startingIndex; i < interpolations.size(); i++) {
-        const InvalidatableStyleInterpolation& currentInterpolation = toInvalidatableStyleInterpolation(*interpolations.at(i));
+        const InvalidatableInterpolation& currentInterpolation = toInvalidatableInterpolation(*interpolations.at(i));
         ASSERT(currentInterpolation.dependsOnUnderlyingValue());
         const InterpolationValue* currentValue = currentInterpolation.ensureValidInterpolation(environment, underlyingValue);
         if (!currentValue)
