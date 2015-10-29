@@ -20,6 +20,44 @@ promise_test(function(t) {
         function() {});
   }, 'fetch non-HTTP(S) CORS');
 
+// Tests for data: scheme.
+promise_test(function(t) {
+    return fetch('data:,Foobar')
+      .then(function(response) {
+          assert_equals(response.status, 200);
+          assert_equals(response.statusText, 'OK');
+          assert_equals(response.headers.get('Content-Type'),
+                        'text/plain;charset=US-ASCII');
+          assert_equals(size(response.headers), 1);
+          return response.text();
+        })
+      .then(function(text) {
+          assert_equals(text, 'Foobar');
+        });
+  }, 'fetch data: URL');
+
+promise_test(function(t) {
+    return fetch('data:text/html;charset=utf-8;base64,5paH5a2X')
+      .then(function(response) {
+          assert_equals(response.status, 200);
+          assert_equals(response.statusText, 'OK');
+          assert_equals(response.headers.get('Content-Type'),
+                        'text/html;charset=utf-8');
+          assert_equals(size(response.headers), 1);
+          return response.text();
+        })
+      .then(function(text) {
+          assert_equals(text, '\u6587\u5b57');
+        });
+  }, 'fetch data: URL with non-ASCII characters');
+
+promise_test(function(t) {
+    return fetch('data:text/html;base64,***')
+      .then(
+        t.unreached_func('fetching invalid data: URL must fail'),
+        function() {});
+  }, 'fetch invalid data: URL');
+
 // https://fetch.spec.whatwg.org/#concept-basic-fetch
 // The last statement:
 // Otherwise

@@ -156,6 +156,7 @@ private:
     void performBasicFetch();
     void performNetworkError(const String& message);
     void performHTTPFetch(bool corsFlag, bool corsPreflightFlag);
+    void performDataFetch();
     void failed(const String& message);
     void notifyFinished();
     Document* document() const;
@@ -205,9 +206,30 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
 
     m_responseHttpStatusCode = response.httpStatusCode();
 
-    // Recompute the tainting if the request was redirected to a different
-    // origin.
-    if (!SecurityOrigin::create(response.url())->isSameSchemeHostPort(m_request->origin().get())) {
+    if (response.url().protocolIsData()) {
+        if (m_request->url() == response.url()) {
+            // A direct request to data.
+            m_request->setResponseTainting(FetchRequestData::BasicTainting);
+        } else {
+            // A redirect to data: scheme occured.
+            // Redirects to data URLs are rejected by the spec because
+            // same-origin data-URL flag is unset, except for no-cors mode.
+            // TODO(hiroshige): currently redirects to data URLs in no-cors
+            // mode is also rejected by Chromium side.
+            switch (m_request->mode()) {
+            case WebURLRequest::FetchRequestModeNoCORS:
+                m_request->setResponseTainting(FetchRequestData::OpaqueTainting);
+                break;
+            case WebURLRequest::FetchRequestModeSameOrigin:
+            case WebURLRequest::FetchRequestModeCORS:
+            case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
+                performNetworkError("Fetch API cannot load " + m_request->url().string() + ". Redirects to data: URL are allowed only when mode is \"no-cors\".");
+                return;
+            }
+        }
+    } else if (!SecurityOrigin::create(response.url())->isSameSchemeHostPort(m_request->origin().get())) {
+        // Recompute the tainting if the request was redirected to a different
+        // origin.
         switch (m_request->mode()) {
         case WebURLRequest::FetchRequestModeSameOrigin:
             ASSERT_NOT_REACHED();
@@ -271,6 +293,16 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
     }
 
     Response* r = Response::create(m_resolver->executionContext(), taintedResponse);
+    if (response.url().protocolIsData()) {
+        // An "Access-Control-Allow-Origin" header is added for data: URLs
+        // but no headers except for "Content-Type" should exist,
+        // according to the spec:
+        // https://fetch.spec.whatwg.org/#concept-basic-fetch
+        // "... return a response whose header list consist of a single header
+        //  whose name is `Content-Type` and value is the MIME type and
+        //  parameters returned from obtaining a resource"
+        r->headers()->headerList()->remove("Access-Control-Allow-Origin");
+    }
     r->headers()->setGuard(Headers::ImmutableGuard);
 
     if (m_request->integrity().isEmpty()) {
@@ -447,6 +479,8 @@ void FetchManager::Loader::performBasicFetch()
     if (SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(m_request->url().protocol())) {
         // "Return the result of performing an HTTP fetch using |request|."
         performHTTPFetch(false, false);
+    } else if (m_request->url().protocolIsData()) {
+        performDataFetch();
     } else {
         // FIXME: implement other protocols.
         performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme \"" + m_request->url().protocol() + "\" is not supported.");
@@ -546,6 +580,41 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         threadableLoaderOptions.crossOriginRequestPolicy = UseAccessControl;
         break;
     }
+    InspectorInstrumentation::willStartFetch(executionContext(), this);
+    m_loader = ThreadableLoader::create(*executionContext(), this, request, threadableLoaderOptions, resourceLoaderOptions);
+    if (!m_loader)
+        performNetworkError("Can't create ThreadableLoader");
+}
+
+// performDataFetch() is almost the same as performHTTPFetch(), except for:
+// - We set AllowCrossOriginRequests to allow requests to data: URLs in
+//   'same-origin' mode.
+// - We reject non-GET method.
+void FetchManager::Loader::performDataFetch()
+{
+    ASSERT(m_request->url().protocolIsData());
+
+    // Spec: https://fetch.spec.whatwg.org/#concept-basic-fetch
+    // If |request|'s method is `GET` .... Otherwise, return a network error.
+    if (m_request->method() != "GET") {
+        performNetworkError("Only 'GET' method is allowed for data URLs in Fetch API.");
+        return;
+    }
+
+    ResourceRequest request(m_request->url());
+    request.setRequestContext(m_request->context());
+    request.setUseStreamOnResponse(true);
+    request.setHTTPMethod(m_request->method());
+    request.setFetchRedirectMode(WebURLRequest::FetchRedirectModeError);
+
+    ResourceLoaderOptions resourceLoaderOptions;
+    resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
+    resourceLoaderOptions.securityOrigin = m_request->origin().get();
+
+    ThreadableLoaderOptions threadableLoaderOptions;
+    threadableLoaderOptions.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
+
     InspectorInstrumentation::willStartFetch(executionContext(), this);
     m_loader = ThreadableLoader::create(*executionContext(), this, request, threadableLoaderOptions, resourceLoaderOptions);
     if (!m_loader)

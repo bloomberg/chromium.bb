@@ -75,6 +75,10 @@ var hasContentLength =
   checkFetchResponseHeader.bind(this, 'content-length', true);
 var noContentLength =
   checkFetchResponseHeader.bind(this, 'content-length', false);
+var hasContentType =
+  checkFetchResponseHeader.bind(this, 'content-type', true);
+var noContentType =
+  checkFetchResponseHeader.bind(this, 'content-type', false);
 var hasServerHeader =
   checkFetchResponseHeader.bind(this, 'x-serviceworker-serverheader', true);
 var noServerHeader =
@@ -303,7 +307,8 @@ function headersToArray(headers) {
   // checkFetchResponseHeader is used only for the header names listed below.
   // FIXME: Replace it with the original code below when Firefox supports
   // iterable.
-  ['content-length', 'x-serviceworker-serverheader'].forEach(function(name) {
+  ['content-length', 'content-type', 'x-serviceworker-serverheader'].forEach(
+    function(name) {
       for (var value of headers.getAll(name))
         ret.push([name, value]);
     });
