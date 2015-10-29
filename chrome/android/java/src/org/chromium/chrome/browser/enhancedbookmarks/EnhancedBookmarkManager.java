@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -293,7 +294,25 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         if (!state.isValid(mEnhancedBookmarksModel)) {
             state = UIState.createAllBookmarksState(mEnhancedBookmarksModel);
         }
-        if (!mStateStack.isEmpty()) {
+        boolean saveUrl = true;
+        if (mStateStack.isEmpty()) {
+            // When offline page feature is enabled, show offline filter view if there is offline
+            // page and there is no network connection.
+            if (mEnhancedBookmarksModel.getOfflinePageBridge() != null
+                    && !mEnhancedBookmarksModel.getOfflinePageBridge().getAllPages().isEmpty()
+                    && !OfflinePageUtils.isConnected(ApplicationStatus.getApplicationContext())) {
+                UIState filterState = UIState.createFilterState(
+                        EnhancedBookmarkFilter.OFFLINE_PAGES, mEnhancedBookmarksModel);
+                if (state.mState != UIState.STATE_LOADING) {
+                    state = filterState;
+                } else {
+                    state.mUrl = filterState.mUrl;
+                }
+                // Showing offline filter view is just a temporary thing and it will not be saved
+                // to the preference.
+                saveUrl = false;
+            }
+        } else {
             if (mStateStack.peek().equals(state)) return;
             if (mStateStack.peek().mState == UIState.STATE_LOADING) {
                 mStateStack.pop();
@@ -302,7 +321,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         mStateStack.push(state);
         if (state.mState != UIState.STATE_LOADING) {
             // Loading state may be pushed to the stack but should never be stored in preferences.
-            saveUrlToPreference(state.mUrl);
+            if (saveUrl) saveUrlToPreference(state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
             if (mUrlChangeListener != null) mUrlChangeListener.onBookmarkUIStateChange(state.mUrl);
         }
