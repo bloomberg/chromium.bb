@@ -2030,7 +2030,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     // width.  Use the width from the style context.
     // FIXME: Account for writing-mode in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
-    if (hasOverrideLogicalContentWidth() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isLayoutGrid())) {
+    if (hasOverrideLogicalContentWidth() && parent()->isFlexibleBoxIncludingDeprecated()) {
         computedValues.m_extent = overrideLogicalContentWidth() + borderAndPaddingLogicalWidth();
         return;
     }
@@ -2048,14 +2048,6 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     LayoutUnit containerLogicalWidth = std::max(LayoutUnit(), containingBlockLogicalWidthForContent());
     bool hasPerpendicularContainingBlock = cb->isHorizontalWritingMode() != isHorizontalWritingMode();
 
-    if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->logicalMinWidth().isAuto() && style()->overflowX() == OVISIBLE) {
-        LayoutUnit minLogicalWidth = minPreferredLogicalWidth();
-        if (containerLogicalWidth < minLogicalWidth) {
-            computedValues.m_extent = constrainLogicalWidthByMinMax(minLogicalWidth, containerLogicalWidth, cb);
-            return;
-        }
-    }
-
     if (isInline() && !isInlineBlockOrInlineTable()) {
         // just calculate margins
         computedValues.m_margins.m_start = minimumValueForLength(styleToUse.marginStart(), containerLogicalWidth);
@@ -2068,6 +2060,10 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     // Width calculations
     if (treatAsReplaced) {
         computedValues.m_extent = logicalWidthLength.value() + borderAndPaddingLogicalWidth();
+    } else if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->logicalMinWidth().isAuto() && style()->overflowX() == OVISIBLE && containerLogicalWidth < minPreferredLogicalWidth()) {
+        // TODO (lajava) Move this logic to the LayoutGrid class.
+        // Implied minimum size of Grid items.
+        computedValues.m_extent = constrainLogicalWidthByMinMax(minPreferredLogicalWidth(), containerLogicalWidth, cb);
     } else {
         LayoutUnit containerWidthInInlineDirection = containerLogicalWidth;
         if (hasPerpendicularContainingBlock)
@@ -2199,6 +2195,12 @@ bool LayoutBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
 {
     if (isFloating() || isInlineBlockOrInlineTable())
         return true;
+
+    if (parent()->isLayoutGrid()) {
+        bool hasAutoSizeInRowAxis = isHorizontalWritingMode() ? styleRef().width().isAuto() : styleRef().height().isAuto();
+        bool allowedToStretchChildAlongRowAxis = hasAutoSizeInRowAxis && !styleRef().marginStartUsing(parent()->style()).isAuto() && !styleRef().marginEndUsing(parent()->style()).isAuto();
+        return !allowedToStretchChildAlongRowAxis || ComputedStyle::resolveJustification(parent()->styleRef(), styleRef(), ItemPositionStretch) != ItemPositionStretch;
+    }
 
     // Flexible box items should shrink wrap, so we lay them out at their intrinsic widths.
     // In the case of columns that have a stretch alignment, we go ahead and layout at the

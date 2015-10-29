@@ -1644,29 +1644,12 @@ LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
 {
-    // We clear both width and height override values because we will decide now whether they
-    // are allowed or not, evaluating the conditions which might have changed since the old
-    // values were set.
-    child.clearOverrideSize();
+    // We clear height override values because we will decide now whether it's allowed or
+    // not, evaluating the conditions which might have changed since the old values were set.
+    child.clearOverrideLogicalContentHeight();
 
     auto& childStyle = child.styleRef();
     bool isHorizontalMode = isHorizontalWritingMode();
-    bool hasAutoSizeInRowAxis = isHorizontalMode ? childStyle.width().isAuto() : childStyle.height().isAuto();
-    bool allowedToStretchChildAlongRowAxis = hasAutoSizeInRowAxis && !childStyle.marginStartUsing(style()).isAuto() && !childStyle.marginEndUsing(style()).isAuto();
-    if (!allowedToStretchChildAlongRowAxis || ComputedStyle::resolveJustification(styleRef(), childStyle, ItemPositionStretch) != ItemPositionStretch) {
-        bool hasAutoMinSizeInRowAxis = isHorizontalMode ? childStyle.minWidth().isAuto() : childStyle.minHeight().isAuto();
-        bool canShrinkToFitInRowAxisForChild = !hasAutoMinSizeInRowAxis || child.minPreferredLogicalWidth() <= child.overrideContainingBlockContentLogicalWidth();
-        // TODO(lajava): how to handle orthogonality in this case ?.
-        // TODO(lajava): grid track sizing and positioning do not support orthogonal modes yet.
-        if (hasAutoSizeInRowAxis && canShrinkToFitInRowAxisForChild) {
-            LayoutUnit childWidthToFitContent = std::max(std::min(child.maxPreferredLogicalWidth(), child.overrideContainingBlockContentLogicalWidth()  - child.marginLogicalWidth()), child.minPreferredLogicalWidth());
-            LayoutUnit desiredLogicalWidth = child.constrainLogicalHeightByMinMax(childWidthToFitContent, -1);
-            child.setOverrideLogicalContentWidth(desiredLogicalWidth - child.borderAndPaddingLogicalWidth());
-            if (desiredLogicalWidth != child.logicalWidth())
-                child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
-        }
-    }
-
     bool hasAutoSizeInColumnAxis = isHorizontalMode ? childStyle.height().isAuto() : childStyle.width().isAuto();
     bool allowedToStretchChildAlongColumnAxis = hasAutoSizeInColumnAxis && !childStyle.marginBeforeUsing(style()).isAuto() && !childStyle.marginAfterUsing(style()).isAuto();
     if (allowedToStretchChildAlongColumnAxis && ComputedStyle::resolveAlignment(styleRef(), childStyle, ItemPositionStretch) == ItemPositionStretch) {
