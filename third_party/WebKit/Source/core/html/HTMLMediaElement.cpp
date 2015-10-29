@@ -823,7 +823,7 @@ void HTMLMediaElement::loadInternal()
     m_textTracksWhenResourceSelectionBegan.clear();
     if (m_textTracks) {
         for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-            TextTrack* track = m_textTracks->item(i);
+            TextTrack* track = m_textTracks->anonymousIndexedGetter(i);
             if (track->mode() != TextTrack::disabledKeyword())
                 m_textTracksWhenResourceSelectionBegan.append(track);
         }
@@ -3166,11 +3166,12 @@ bool HTMLMediaElement::hasClosedCaptions() const
 {
     if (m_textTracks) {
         for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-            if (m_textTracks->item(i)->readinessState() == TextTrack::FailedToLoad)
+            TextTrack* track = m_textTracks->anonymousIndexedGetter(i);
+            if (track->readinessState() == TextTrack::FailedToLoad)
                 continue;
 
-            if (m_textTracks->item(i)->kind() == TextTrack::captionsKeyword()
-                || m_textTracks->item(i)->kind() == TextTrack::subtitlesKeyword())
+            if (track->kind() == TextTrack::captionsKeyword()
+                || track->kind() == TextTrack::subtitlesKeyword())
                 return true;
         }
     }
@@ -3295,7 +3296,7 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
     // non-default tracks should be displayed based on language preferences if
     // the user has turned captions on).
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-        TextTrack* textTrack = m_textTracks->item(i);
+        TextTrack* textTrack = m_textTracks->anonymousIndexedGetter(i);
         String kind = textTrack->kind();
 
         if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword())

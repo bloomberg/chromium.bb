@@ -698,8 +698,6 @@ public:
         V8IDBObjectStore_IndexNames_AttributeGetter = 825,
         V8IDBTransaction_ObjectStoreNames_AttributeGetter = 826,
         V8Navigator_GetStorageUpdates_Method = 827,
-        V8TextTrackCueList_Item_Method = 828,
-        V8TextTrackList_Item_Method = 829,
         TextInputFired = 830,
         V8TextEvent_Data_AttributeGetter = 831,
         V8TextEvent_InitTextEvent_Method = 832,

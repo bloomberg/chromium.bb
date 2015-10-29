@@ -4644,7 +4644,6 @@ interface TextTrackCueList
     getter length
     method constructor
     method getCueById
-    method item
 interface TextTrackList : EventTarget
     getter length
     getter onaddtrack
@@ -4652,7 +4651,6 @@ interface TextTrackList : EventTarget
     getter onremovetrack
     method constructor
     method getTrackById
-    method item
     setter onaddtrack
     setter onchange
     setter onremovetrack

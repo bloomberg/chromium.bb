@@ -44,7 +44,7 @@ public:
 
     unsigned long length() const;
 
-    TextTrackCue* item(unsigned index) const;
+    TextTrackCue* anonymousIndexedGetter(unsigned index) const;
     TextTrackCue* getCueById(const AtomicString&) const;
 
     bool add(TextTrackCue*);

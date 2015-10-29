@@ -55,7 +55,7 @@ public:
     int getTrackIndexRelativeToRenderedTracks(TextTrack*);
     bool contains(TextTrack*) const;
 
-    TextTrack* item(unsigned index);
+    TextTrack* anonymousIndexedGetter(unsigned index);
     TextTrack* getTrackById(const AtomicString& id);
     void append(TextTrack*);
     void remove(TextTrack*);

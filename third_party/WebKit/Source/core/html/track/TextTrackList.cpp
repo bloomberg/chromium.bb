@@ -112,7 +112,7 @@ int TextTrackList::getTrackIndexRelativeToRenderedTracks(TextTrack *textTrack)
     return -1;
 }
 
-TextTrack* TextTrackList::item(unsigned index)
+TextTrack* TextTrackList::anonymousIndexedGetter(unsigned index)
 {
     // 4.8.10.12.1 Text track model
     // The text tracks are sorted as follows:
@@ -142,7 +142,7 @@ TextTrack* TextTrackList::getTrackById(const AtomicString& id)
     // TextTrackList object whose id IDL attribute would return a value equal
     // to the value of the id argument.
     for (unsigned i = 0; i < length(); ++i) {
-        TextTrack* track = item(i);
+        TextTrack* track = anonymousIndexedGetter(i);
         if (track->id() == id)
             return track;
     }
@@ -316,7 +316,7 @@ void TextTrackList::scheduleRemoveTrackEvent(TextTrack* track)
 bool TextTrackList::hasShowingTracks()
 {
     for (unsigned i = 0; i < length(); ++i) {
-        if (item(i)->mode() == TextTrack::showingKeyword())
+        if (anonymousIndexedGetter(i)->mode() == TextTrack::showingKeyword())
             return true;
     }
     return false;

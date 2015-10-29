@@ -40,7 +40,7 @@ unsigned long TextTrackCueList::length() const
     return m_list.size();
 }
 
-TextTrackCue* TextTrackCueList::item(unsigned index) const
+TextTrackCue* TextTrackCueList::anonymousIndexedGetter(unsigned index) const
 {
     if (index < m_list.size())
         return m_list[index].get();

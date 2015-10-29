@@ -29,7 +29,6 @@
     GarbageCollected,
 ] interface TextTrackCueList {
     readonly attribute unsigned long length;
-    // TODO(philipj): This getter should be anonymous.
-    [Measure] getter TextTrackCue item(unsigned long index);
+    getter TextTrackCue (unsigned long index);
     TextTrackCue? getCueById(DOMString id);
 };

@@ -202,7 +202,7 @@ void TextTrack::removeAllCues()
         cueTimeline()->removeCues(this, m_cues.get());
 
     for (size_t i = 0; i < m_cues->length(); ++i)
-        m_cues->item(i)->setTrack(0);
+        m_cues->anonymousIndexedGetter(i)->setTrack(0);
 
     m_cues = nullptr;
 }
