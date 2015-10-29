@@ -1173,8 +1173,6 @@ source_set("test_support") {
     sources += [
       "extensions/api/messaging/native_messaging_test_util.cc",
       "extensions/api/messaging/native_messaging_test_util.h",
-      "extensions/extension_notification_observer.cc",
-      "extensions/extension_notification_observer.h",
       "extensions/mock_extension_special_storage_policy.cc",
       "extensions/mock_extension_special_storage_policy.h",
       "extensions/test_blacklist.cc",

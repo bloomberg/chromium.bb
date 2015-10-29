@@ -2019,8 +2019,6 @@
             'browser/extensions/api/messaging/native_messaging_test_util.h',
             'browser/extensions/extension_action_test_util.cc',
             'browser/extensions/extension_action_test_util.h',
-            'browser/extensions/extension_notification_observer.cc',
-            'browser/extensions/extension_notification_observer.h',
             'browser/extensions/mock_extension_special_storage_policy.cc',
             'browser/extensions/mock_extension_special_storage_policy.h',
             'browser/extensions/test_blacklist.cc',

@@ -42,7 +42,6 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
-#include "chrome/browser/extensions/extension_notification_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -100,6 +99,7 @@
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
@@ -8338,9 +8338,9 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
 
   std::set<std::string> id_set;
   id_set.insert(id);
-  extensions::ExtensionNotificationObserver notifications(
-      content::NotificationService::AllSources(), id_set);
 
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(profile()));
   // Installation should be allowed but the extension should never have been
   // loaded and it should be blacklisted in prefs.
   service()->OnExtensionInstalled(
@@ -8351,8 +8351,7 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
   base::RunLoop().RunUntilIdle();
 
   // Extension was installed but not loaded.
-  EXPECT_TRUE(notifications.CheckNotifications(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED));
+  observer.WaitForExtensionWillBeInstalled();
   EXPECT_TRUE(service()->GetInstalledExtension(id));
 
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
