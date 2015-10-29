@@ -12,10 +12,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "storage/common/storage_common_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
+class WaitableEvent;
 }
 
 namespace storage {
@@ -74,24 +76,22 @@ class STORAGE_COMMON_EXPORT DatabaseConnectionsWrapper
  public:
   DatabaseConnectionsWrapper();
 
-  // The Wait and Has methods should only be called on the
-  // main thread (the thread on which the wrapper is constructed).
-  void WaitForAllDatabasesToClose();
   bool HasOpenConnections();
-
-  // Add and Remove may be called on any thread.
   void AddOpenConnection(const std::string& origin_identifier,
                          const base::string16& database_name);
   void RemoveOpenConnection(const std::string& origin_identifier,
                             const base::string16& database_name);
+
+  // Returns true if all databases are closed.
+  bool WaitForAllDatabasesToClose(base::TimeDelta timeout);
+
  private:
   ~DatabaseConnectionsWrapper();
   friend class base::RefCountedThreadSafe<DatabaseConnectionsWrapper>;
 
-  bool waiting_for_dbs_to_close_;
   base::Lock open_connections_lock_;
   DatabaseConnections open_connections_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  base::WaitableEvent* waiting_to_close_event_ = nullptr;
 };
 
 }  // namespace storage

@@ -4,8 +4,11 @@
 
 #include "content/child/web_database_observer_impl.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/database_messages.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -54,8 +57,10 @@ int DetermineHistogramResult(int websql_error, int sqlite_error) {
 
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender)
     : sender_(sender),
-      open_connections_(new storage::DatabaseConnectionsWrapper) {
+      open_connections_(new storage::DatabaseConnectionsWrapper),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(sender);
+  DCHECK(main_thread_task_runner_);
 }
 
 WebDatabaseObserverImpl::~WebDatabaseObserverImpl() {
@@ -83,8 +88,13 @@ void WebDatabaseObserverImpl::databaseModified(
 void WebDatabaseObserverImpl::databaseClosed(
     const WebString& origin_identifier,
     const WebString& database_name) {
-  sender_->Send(new DatabaseHostMsg_Closed(
-      origin_identifier.utf8(), database_name));
+  DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&IPC::SyncMessageFilter::Send),
+          sender_,
+          new DatabaseHostMsg_Closed(origin_identifier.utf8(), database_name)));
   open_connections_->RemoveOpenConnection(origin_identifier.utf8(),
                                           database_name);
 }
@@ -156,8 +166,10 @@ void WebDatabaseObserverImpl::reportVacuumDatabaseResult(
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
 }
 
-void WebDatabaseObserverImpl::WaitForAllDatabasesToClose() {
-  open_connections_->WaitForAllDatabasesToClose();
+bool WebDatabaseObserverImpl::WaitForAllDatabasesToClose(
+    base::TimeDelta timeout) {
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  return open_connections_->WaitForAllDatabasesToClose(timeout);
 }
 
 void WebDatabaseObserverImpl::HandleSqliteError(

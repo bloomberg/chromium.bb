@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 
 namespace storage {
@@ -121,27 +122,13 @@ bool DatabaseConnections::RemoveConnectionsHelper(
   return true;
 }
 
-DatabaseConnectionsWrapper::DatabaseConnectionsWrapper()
-    : waiting_for_dbs_to_close_(false),
-      main_thread_(base::ThreadTaskRunnerHandle::Get()) {
+DatabaseConnectionsWrapper::DatabaseConnectionsWrapper() {
 }
 
 DatabaseConnectionsWrapper::~DatabaseConnectionsWrapper() {
 }
 
-void DatabaseConnectionsWrapper::WaitForAllDatabasesToClose() {
-  // We assume that new databases won't be open while we're waiting.
-  DCHECK(main_thread_->BelongsToCurrentThread());
-  if (HasOpenConnections()) {
-    base::AutoReset<bool> auto_reset(&waiting_for_dbs_to_close_, true);
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
-    base::MessageLoop::current()->Run();
-  }
-}
-
 bool DatabaseConnectionsWrapper::HasOpenConnections() {
-  DCHECK(main_thread_->BelongsToCurrentThread());
   base::AutoLock auto_lock(open_connections_lock_);
   return !open_connections_.IsEmpty();
 }
@@ -149,7 +136,6 @@ bool DatabaseConnectionsWrapper::HasOpenConnections() {
 void DatabaseConnectionsWrapper::AddOpenConnection(
     const std::string& origin_identifier,
     const base::string16& database_name) {
-  // We add to the collection immediately on any thread.
   base::AutoLock auto_lock(open_connections_lock_);
   open_connections_.AddConnection(origin_identifier, database_name);
 }
@@ -157,19 +143,27 @@ void DatabaseConnectionsWrapper::AddOpenConnection(
 void DatabaseConnectionsWrapper::RemoveOpenConnection(
     const std::string& origin_identifier,
     const base::string16& database_name) {
-  // But only remove from the collection on the main thread
-  // so we can handle the waiting_for_dbs_to_close_ case.
-  if (!main_thread_->BelongsToCurrentThread()) {
-    main_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&DatabaseConnectionsWrapper::RemoveOpenConnection, this,
-                   origin_identifier, database_name));
-    return;
-  }
   base::AutoLock auto_lock(open_connections_lock_);
   open_connections_.RemoveConnection(origin_identifier, database_name);
-  if (waiting_for_dbs_to_close_ && open_connections_.IsEmpty())
-    base::MessageLoop::current()->QuitWhenIdle();
+  if (waiting_to_close_event_ && open_connections_.IsEmpty())
+    waiting_to_close_event_->Signal();
+}
+
+bool DatabaseConnectionsWrapper::WaitForAllDatabasesToClose(
+    base::TimeDelta timeout) {
+  base::WaitableEvent waitable_event(true, false);
+  {
+    base::AutoLock auto_lock(open_connections_lock_);
+    if (open_connections_.IsEmpty())
+      return true;
+    waiting_to_close_event_ = &waitable_event;
+  }
+  waitable_event.TimedWait(timeout);
+  {
+    base::AutoLock auto_lock(open_connections_lock_);
+    waiting_to_close_event_ = nullptr;
+    return open_connections_.IsEmpty();
+  }
 }
 
 }  // namespace storage

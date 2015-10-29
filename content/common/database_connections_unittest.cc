@@ -26,16 +26,6 @@ void RemoveConnectionTask(
   obj->RemoveOpenConnection(origin_id, database_name);
 }
 
-void ScheduleRemoveConnectionTask(
-    base::Thread* thread,  const std::string& origin_id,
-    const base::string16& database_name,
-    scoped_refptr<DatabaseConnectionsWrapper> obj,
-    bool* did_task_execute) {
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&RemoveConnectionTask, origin_id, database_name,
-                            obj, did_task_execute));
-}
-
 }  // anonymous namespace
 
 TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
@@ -115,29 +105,21 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   EXPECT_TRUE(obj->HasOpenConnections());
   obj->RemoveOpenConnection(kOriginId, kName);
   EXPECT_FALSE(obj->HasOpenConnections());
-  obj->WaitForAllDatabasesToClose();  // should return immediately
-
-  // Test WaitForAllDatabasesToClose with the last connection
-  // being removed on the current thread.
-  obj->AddOpenConnection(kOriginId, kName);
-  bool did_task_execute = false;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RemoveConnectionTask, kOriginId, kName, obj,
-                            &did_task_execute));
-  obj->WaitForAllDatabasesToClose();  // should return after the task executes
-  EXPECT_TRUE(did_task_execute);
-  EXPECT_FALSE(obj->HasOpenConnections());
+  EXPECT_TRUE(obj->WaitForAllDatabasesToClose(base::TimeDelta()));
 
   // Test WaitForAllDatabasesToClose with the last connection
   // being removed on another thread.
   obj->AddOpenConnection(kOriginId, kName);
+  EXPECT_FALSE(obj->WaitForAllDatabasesToClose(base::TimeDelta()));
   base::Thread thread("WrapperTestThread");
   thread.Start();
-  did_task_execute = false;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ScheduleRemoveConnectionTask, &thread, kOriginId,
-                            kName, obj, &did_task_execute));
-  obj->WaitForAllDatabasesToClose();  // should return after the task executes
+  bool did_task_execute = false;
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&RemoveConnectionTask, kOriginId, kName, obj,
+                            &did_task_execute));
+  // Use a long timeout value to avoid timeouts on test bots.
+  EXPECT_TRUE(obj->WaitForAllDatabasesToClose(
+      base::TimeDelta::FromSeconds(15)));
   EXPECT_TRUE(did_task_execute);
   EXPECT_FALSE(obj->HasOpenConnections());
 }

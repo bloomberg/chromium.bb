@@ -819,13 +819,10 @@ void RenderThreadImpl::Shutdown() {
 
   // Wait for all databases to be closed.
   if (blink_platform_impl_) {
-    // WaitForAllDatabasesToClose might run a nested message loop. To avoid
-    // processing timer events while we're already in the process of shutting
-    // down blink, put a ScopePageLoadDeferrer on the stack.
-    WebView::willEnterModalLoop();
-    blink_platform_impl_->web_database_observer_impl()
-        ->WaitForAllDatabasesToClose();
-    WebView::didExitModalLoop();
+    // Crash the process if they fail to close after a generous amount of time.
+    bool all_closed = blink_platform_impl_->web_database_observer_impl()
+        ->WaitForAllDatabasesToClose(base::TimeDelta::FromSeconds(60));
+    CHECK(all_closed);
   }
 
   // Shutdown in reverse of the initialization order.

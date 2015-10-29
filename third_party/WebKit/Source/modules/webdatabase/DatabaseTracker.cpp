@@ -106,60 +106,36 @@ void DatabaseTracker::addOpenDatabase(Database* database)
     databaseSet->add(database);
 }
 
-class NotifyDatabaseObserverOnCloseTask final : public ExecutionContextTask {
-public:
-    static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(Database* database)
-    {
-        return adoptPtr(new NotifyDatabaseObserverOnCloseTask(database));
-    }
-
-    void performTask(ExecutionContext*) override
-    {
-        databaseClosed(m_database.get());
-    }
-
-private:
-    explicit NotifyDatabaseObserverOnCloseTask(Database* database)
-        : m_database(database)
-    {
-    }
-
-    CrossThreadPersistent<Database> m_database;
-};
-
 void DatabaseTracker::removeOpenDatabase(Database* database)
 {
-    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
-    MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-    ASSERT(m_openDatabaseMap);
-    DatabaseNameMap* nameMap = m_openDatabaseMap->get(originIdentifier);
-    if (!nameMap)
-        return;
+    {
+        MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
+        String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
+        ASSERT(m_openDatabaseMap);
+        DatabaseNameMap* nameMap = m_openDatabaseMap->get(originIdentifier);
+        if (!nameMap)
+            return;
 
-    String name(database->stringIdentifier());
-    DatabaseSet* databaseSet = nameMap->get(name);
-    if (!databaseSet)
-        return;
+        String name(database->stringIdentifier());
+        DatabaseSet* databaseSet = nameMap->get(name);
+        if (!databaseSet)
+            return;
 
-    DatabaseSet::iterator found = databaseSet->find(database);
-    if (found == databaseSet->end())
-        return;
+        DatabaseSet::iterator found = databaseSet->find(database);
+        if (found == databaseSet->end())
+            return;
 
-    databaseSet->remove(found);
-    if (databaseSet->isEmpty()) {
-        nameMap->remove(name);
-        delete databaseSet;
-        if (nameMap->isEmpty()) {
-            m_openDatabaseMap->remove(originIdentifier);
-            delete nameMap;
+        databaseSet->remove(found);
+        if (databaseSet->isEmpty()) {
+            nameMap->remove(name);
+            delete databaseSet;
+            if (nameMap->isEmpty()) {
+                m_openDatabaseMap->remove(originIdentifier);
+                delete nameMap;
+            }
         }
     }
-
-    ExecutionContext* executionContext = database->databaseContext()->executionContext();
-    if (!executionContext->isContextThread())
-        executionContext->postTask(BLINK_FROM_HERE, NotifyDatabaseObserverOnCloseTask::create(database));
-    else
-        databaseClosed(database);
+    databaseClosed(database);
 }
 
 void DatabaseTracker::prepareToOpenDatabase(Database* database)
@@ -176,11 +152,7 @@ void DatabaseTracker::prepareToOpenDatabase(Database* database)
 
 void DatabaseTracker::failedToOpenDatabase(Database* database)
 {
-    ExecutionContext* executionContext = database->databaseContext()->executionContext();
-    if (!executionContext->isContextThread())
-        executionContext->postTask(BLINK_FROM_HERE, NotifyDatabaseObserverOnCloseTask::create(database));
-    else
-        databaseClosed(database);
+    databaseClosed(database);
 }
 
 unsigned long long DatabaseTracker::getMaxSizeForDatabase(const Database* database)
