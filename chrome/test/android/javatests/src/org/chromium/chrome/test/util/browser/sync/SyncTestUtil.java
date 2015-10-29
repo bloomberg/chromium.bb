@@ -32,9 +32,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -279,14 +279,12 @@ public final class SyncTestUtil {
      * Returns whether the sync engine has keep everything synced set to true.
      */
     public static boolean isSyncEverythingEnabled(final Context context) {
-        final AtomicBoolean result = new AtomicBoolean();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public void run() {
-                result.set(ProfileSyncService.get().hasKeepEverythingSynced());
+            public Boolean call() {
+                return ProfileSyncService.get().hasKeepEverythingSynced();
             }
         });
-        return result.get();
     }
 
     /**

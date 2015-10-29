@@ -19,7 +19,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -32,14 +32,12 @@ public class PrerenderTestHelper {
     private static final int MAX_NUM_REPEATS_FOR_TRAINING = 7;
 
     private static boolean hasTabPrerenderedUrl(final Tab tab, final String url) {
-        final AtomicBoolean result = new AtomicBoolean();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
-            public void run() {
-                result.set(tab.hasPrerenderedUrl(url));
+            public Boolean call() {
+                return tab.hasPrerenderedUrl(url);
             }
         });
-        return result.get();
     }
 
     /**
