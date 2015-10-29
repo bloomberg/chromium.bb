@@ -3761,11 +3761,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChildProcess.Crashed2" enum="ProcessType2">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>wfh@chromium.org</owner>
   <summary>Count of child process crashes grouped by process type.</summary>
 </histogram>
 
 <histogram name="ChildProcess.CrashedWasAlive" enum="ProcessType">
+  <obsolete>
+    Deprecated as of 10/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Count of child process crashes that we miscounted because we took the exit
@@ -3793,6 +3796,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChildProcess.DefaultCase" enum="ProcessType">
+  <obsolete>
+    Deprecated as of 10/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Count of child process crashes for which we were not able to understand the
@@ -3811,7 +3817,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChildProcess.Disconnected2" enum="ProcessType2">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>wfh@chromium.org</owner>
   <summary>
     Count of child process abnormal channel disconnects grouped by process type.
   </summary>
@@ -3830,7 +3836,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChildProcess.DisconnectedAlive2" enum="ProcessType2">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>wfh@chromium.org</owner>
   <summary>
     Count of child process abnormal channel disconnects that are not classified
     and reported because we took the exit code too early. Grouped by process
@@ -3858,7 +3864,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChildProcess.Killed2" enum="ProcessType2">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>wfh@chromium.org</owner>
   <summary>Count of child process kills grouped by process type.</summary>
 </histogram>
 
@@ -3871,14 +3877,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ChildProcess.KilledByExtensionAPI">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nasko@chromium.org</owner>
   <summary>
-    Count of child processes killed by the extension API
-    (experimental.processes.terminate)
+    Count of child processes killed by the extension API (processes.terminate).
   </summary>
 </histogram>
 
 <histogram name="ChildProcess.KilledWasAlive" enum="ProcessType">
+  <obsolete>
+    Deprecated as of 10/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Count of child process kills that we miscounted because we took the exit
