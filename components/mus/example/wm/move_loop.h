@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/mojo/events/input_events.mojom.h"
 
 // MoveLoop is responsible for moving/resizing windows.
 class MoveLoop : public mus::WindowObserver {

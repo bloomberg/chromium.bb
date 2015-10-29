@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/event.h"
-#include "ui/mojo/events/input_event_constants.mojom.h"
 
 namespace mojo {
 namespace {

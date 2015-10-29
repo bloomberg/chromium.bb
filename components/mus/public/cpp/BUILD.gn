@@ -58,7 +58,6 @@ mojo_sdk_source_set("cpp") {
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",
     "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]
 

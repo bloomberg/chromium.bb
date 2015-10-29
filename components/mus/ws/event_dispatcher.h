@@ -9,11 +9,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/surface_id.h"
+#include "components/mus/public/interfaces/input_event_constants.mojom.h"
+#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
+#include "components/mus/public/interfaces/input_events.mojom.h"
+#include "components/mus/public/interfaces/input_key_codes.mojom.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/mojo/events/input_event_constants.mojom.h"
-#include "ui/mojo/events/input_event_matcher.mojom.h"
-#include "ui/mojo/events/input_events.mojom.h"
-#include "ui/mojo/events/input_key_codes.mojom.h"
 
 namespace mus {
 namespace ws {

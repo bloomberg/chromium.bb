@@ -17,6 +17,5 @@ mojom("interfaces") {
     "//components/mus/public/interfaces",
     "//mojo/application/public/interfaces",
     "//mojo/services/network/public/interfaces",
-    "//ui/mojo/events:interfaces",
   ]
 }

@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_EVENT_MATCHER_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_EVENT_MATCHER_H_
 
-#include "ui/mojo/events/input_event_constants.mojom.h"
-#include "ui/mojo/events/input_event_matcher.mojom.h"
-#include "ui/mojo/events/input_key_codes.mojom.h"
+#include "components/mus/public/interfaces/input_event_constants.mojom.h"
+#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
+#include "components/mus/public/interfaces/input_key_codes.mojom.h"
 
 namespace mus {
 

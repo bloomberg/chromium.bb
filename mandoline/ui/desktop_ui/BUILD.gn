@@ -48,7 +48,6 @@ source_set("lib") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
     "//ui/views",
     "//ui/views/mus",
     "//url",

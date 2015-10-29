@@ -43,7 +43,6 @@ mojo_native_application("example_wm") {
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
-    "//ui/mojo/events:interfaces",
   ]
 
   data_deps = [

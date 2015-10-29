@@ -35,7 +35,6 @@ source_set("lib") {
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
     "//ui/views",
     "//ui/views/mus",
   ]

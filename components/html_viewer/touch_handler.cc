@@ -4,13 +4,13 @@
 
 #include "components/html_viewer/touch_handler.h"
 
+#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
-#include "ui/mojo/events/input_events.mojom.h"
 
 namespace html_viewer {
 namespace {

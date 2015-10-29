@@ -28,7 +28,6 @@ mojo_native_application("window_type_launcher") {
     "//ui/aura",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
     "//ui/views",
     "//ui/views/mus",
   ]

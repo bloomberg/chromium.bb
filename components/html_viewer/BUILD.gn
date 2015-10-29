@@ -191,7 +191,6 @@ source_set("lib") {
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//ui/base:base",
-    "//ui/mojo/events:interfaces",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/events/blink",

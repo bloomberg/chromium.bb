@@ -10,6 +10,10 @@ mojom("interfaces") {
     "compositor_frame.mojom",
     "gpu.mojom",
     "gpu_capabilities.mojom",
+    "input_event_constants.mojom",
+    "input_event_matcher.mojom",
+    "input_events.mojom",
+    "input_key_codes.mojom",
     "mus_constants.mojom",
     "quads.mojom",
     "surface_id.mojom",
@@ -25,7 +29,6 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//ui/mojo/events:interfaces",
     "//ui/mojo/ime:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]

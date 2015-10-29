@@ -6,9 +6,9 @@
 #define MOJO_CONVERTERS_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "mojo/converters/input_events/mojo_input_events_export.h"
 #include "ui/events/event.h"
-#include "ui/mojo/events/input_events.mojom.h"
 
 namespace mojo {
 

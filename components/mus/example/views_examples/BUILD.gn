@@ -26,7 +26,6 @@ mojo_native_application("views_examples") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
     "//ui/views",
     "//ui/views/examples:views_examples_lib",
     "//ui/views/mus",

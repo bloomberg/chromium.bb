@@ -13,8 +13,8 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "ui/mojo/events/input_events.mojom.h"
 
 namespace {
 

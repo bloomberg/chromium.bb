@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "components/mus/public/cpp/window.h"
-#include "ui/mojo/events/input_events.mojom.h"
+#include "components/mus/public/interfaces/input_events.mojom.h"
 
 namespace mus {
 

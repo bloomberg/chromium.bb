@@ -6,9 +6,9 @@
 
 #include "base/auto_reset.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/mojo/events/input_event_constants.mojom.h"
 
 namespace {
 
