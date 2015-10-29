@@ -322,7 +322,7 @@ crbug.com/498539 [ Precise Lion Win7 SnowLeopard ] inspector/agents-enable-disab
 crbug.com/498539 [ Precise Win7 SnowLeopard ] inspector/elements/styles-1/edit-inspector-stylesheet.html [ Failure Pass Timeout ]
 crbug.com/498539 [ SnowLeopard ] http/tests/inspector/extensions-network-redirect.html [ Crash Pass ]
 crbug.com/498539 [ SnowLeopard ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
-crbug.com/498539 [ Win7 ] http/tests/inspector/service-workers/service-worker-manager.html [ Crash Pass ]
+crbug.com/498539 [ Win7 ] http/tests/inspector50/service-workers/service-worker-manager.html [ Crash Pass ]
 crbug.com/521092 http/tests/inspector/service-workers/service-workers-view.html [ Crash Failure Pass ]
 crbug.com/498539 [ Win7 Release ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failure Pass ]
@@ -335,7 +335,7 @@ crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
-crbug.com/504745 [ Linux Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
+crbug.com/548904 [ Linux Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
