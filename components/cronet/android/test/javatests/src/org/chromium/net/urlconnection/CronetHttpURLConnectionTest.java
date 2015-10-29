@@ -780,6 +780,21 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    // Tests that redirects across the HTTP and HTTPS boundary are not followed.
+    public void testDoNotFollowRedirectsIfSchemesDontMatch() throws Exception {
+        URL url = new URL(NativeTestServer.getFileURL("/redirect_invalid_scheme.html"));
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setInstanceFollowRedirects(true);
+        assertEquals(302, connection.getResponseCode());
+        assertEquals("Found", connection.getResponseMessage());
+        // Redirect is not followed, but the url is updated to the Location header.
+        assertEquals("https://127.0.0.1:8000/success.txt", connection.getURL().toString());
+        connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
     public void testGetResponseHeadersAsMap() throws Exception {
         URL url = new URL(NativeTestServer.getFileURL("/success.txt"));
         HttpURLConnection connection =

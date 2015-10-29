@@ -437,18 +437,24 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         public void onRedirectReceived(
                 UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
             mOnRedirectCalled = true;
-            if (instanceFollowRedirects) {
-                try {
-                    url = new URL(newLocationUrl);
-                } catch (MalformedURLException e) {
-                    // Ignored.
+            try {
+                URL newUrl = new URL(newLocationUrl);
+                boolean sameProtocol = newUrl.getProtocol().equals(url.getProtocol());
+                if (instanceFollowRedirects) {
+                    // Update the url variable even if the redirect will not be
+                    // followed due to different protocols.
+                    url = newUrl;
                 }
-                mRequest.followRedirect();
-            } else {
-                mResponseInfo = info;
-                mRequest.cancel();
-                setResponseDataCompleted();
+                if (instanceFollowRedirects && sameProtocol) {
+                    mRequest.followRedirect();
+                    return;
+                }
+            } catch (MalformedURLException e) {
+                // Ignored. Just cancel the request and not follow the redirect.
             }
+            mResponseInfo = info;
+            mRequest.cancel();
+            setResponseDataCompleted();
         }
 
         @Override
