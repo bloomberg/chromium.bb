@@ -442,7 +442,7 @@ void ContextualSearchDelegate::DecodeSearchTermsFromJsonResponse(
       *display_text = *search_term;
     }
     // Extract mentions for selection expansion.
-    base::ListValue* mentions_list;
+    base::ListValue* mentions_list = NULL;
     dict->GetList(kContextualSearchMentions, &mentions_list);
     if (mentions_list != NULL && mentions_list->GetSize() >= 2)
       ExtractMentionsStartEnd(*mentions_list, mention_start, mention_end);
