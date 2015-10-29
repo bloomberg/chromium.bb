@@ -31,13 +31,13 @@
 #ifndef MessageLoopInterruptor_h
 #define MessageLoopInterruptor_h
 
-#include "platform/heap/ThreadState.h"
+#include "platform/heap/BlinkGCInterruptor.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
-class MessageLoopInterruptor : public ThreadState::Interruptor {
+class MessageLoopInterruptor : public BlinkGCInterruptor {
 public:
     explicit MessageLoopInterruptor(WebTaskRunner* taskRunner) : m_taskRunner(taskRunner) { }
 

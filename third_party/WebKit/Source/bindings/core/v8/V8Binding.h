@@ -1027,7 +1027,7 @@ enum DeleteResult {
     DeleteUnknownProperty
 };
 
-class V8IsolateInterruptor : public ThreadState::Interruptor {
+class V8IsolateInterruptor : public BlinkGCInterruptor {
     WTF_MAKE_FAST_ALLOCATED(V8IsolateInterruptor);
 public:
     explicit V8IsolateInterruptor(v8::Isolate* isolate)

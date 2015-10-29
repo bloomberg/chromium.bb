@@ -32,7 +32,9 @@
 #define PendingGCRunner_h
 
 #include "platform/heap/ThreadState.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 

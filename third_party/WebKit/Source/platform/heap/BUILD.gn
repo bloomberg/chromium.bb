@@ -8,6 +8,8 @@ source_set("heap") {
   visibility = [ "//third_party/WebKit/Source/platform" ]
 
   sources = [
+    "BlinkGCInterruptor.cpp",
+    "BlinkGCInterruptor.h",
     "BlinkGCMemoryDumpProvider.cpp",
     "BlinkGCMemoryDumpProvider.h",
     "CallbackStack.cpp",

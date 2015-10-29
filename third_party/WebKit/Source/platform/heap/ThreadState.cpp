@@ -1275,7 +1275,7 @@ void ThreadState::copyStackUntilSafePointScope()
     }
 }
 
-void ThreadState::addInterruptor(PassOwnPtr<Interruptor> interruptor)
+void ThreadState::addInterruptor(PassOwnPtr<BlinkGCInterruptor> interruptor)
 {
     ASSERT(checkThread());
     SafePointScope scope(BlinkGC::HeapPointersOnStack);
@@ -1285,7 +1285,7 @@ void ThreadState::addInterruptor(PassOwnPtr<Interruptor> interruptor)
     }
 }
 
-void ThreadState::removeInterruptor(Interruptor* interruptor)
+void ThreadState::removeInterruptor(BlinkGCInterruptor* interruptor)
 {
     ASSERT(checkThread());
     SafePointScope scope(BlinkGC::HeapPointersOnStack);
@@ -1295,14 +1295,6 @@ void ThreadState::removeInterruptor(Interruptor* interruptor)
         RELEASE_ASSERT(index != kNotFound);
         m_interruptors.remove(index);
     }
-}
-
-void ThreadState::Interruptor::onInterrupted()
-{
-    ThreadState* state = ThreadState::current();
-    ASSERT(state);
-    ASSERT(!state->isAtSafePoint());
-    state->safePoint(BlinkGC::HeapPointersOnStack);
 }
 
 ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()

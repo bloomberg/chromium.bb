@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
+#include "platform/heap/BlinkGCInterruptor.h"
 #include "platform/heap/ThreadingTraits.h"
 #include "public/platform/WebThread.h"
 #include "wtf/AddressSanitizer.h"
@@ -322,8 +323,8 @@ public:
     //   - periodically check if GC is requested from another thread by calling a safePoint() method;
     //   - use SafePointScope around long running loops that have no safePoint() invocation inside,
     //     such loops must not touch any heap object;
-    //   - register an Interruptor that can interrupt long running loops that have no calls to safePoint and
-    //     are not wrapped in a SafePointScope (e.g. Interruptor for JavaScript code)
+    //   - register an BlinkGCInterruptor that can interrupt long running loops that have no calls to safePoint and
+    //     are not wrapped in a SafePointScope (e.g. BlinkGCInterruptor for JavaScript code)
     //
 
     // Request all other threads to stop. Must only be called if the current thread is at safepoint.
@@ -339,30 +340,8 @@ public:
     void leaveSafePoint(SafePointAwareMutexLocker* = nullptr);
     bool isAtSafePoint() const { return m_atSafePoint; }
 
-    // If attached thread enters long running loop that can call back
-    // into Blink and leaving and reentering safepoint at every
-    // transition between this loop and Blink is deemed too expensive
-    // then instead of marking this loop as a GC safepoint thread
-    // can provide an interruptor object which would allow GC
-    // to temporarily interrupt and pause this long running loop at
-    // an arbitrary moment creating a safepoint for a GC.
-    class PLATFORM_EXPORT Interruptor {
-    public:
-        virtual ~Interruptor() { }
-
-        // Request the interruptor to interrupt the thread and
-        // call onInterrupted on that thread once interruption
-        // succeeds.
-        virtual void requestInterrupt() = 0;
-
-    protected:
-        // This method is called on the interrupted thread to
-        // create a safepoint for a GC.
-        void onInterrupted();
-    };
-
-    void addInterruptor(PassOwnPtr<Interruptor>);
-    void removeInterruptor(Interruptor*);
+    void addInterruptor(PassOwnPtr<BlinkGCInterruptor>);
+    void removeInterruptor(BlinkGCInterruptor*);
 
     void recordStackEnd(intptr_t* endOfStack)
     {
@@ -607,10 +586,8 @@ private:
     void clearHeapAges();
     int heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex);
 
-    using InterruptorVector = Vector<OwnPtr<Interruptor>>;
-
     // Should only be called under protection of threadAttachMutex().
-    const InterruptorVector& interruptors() const { return m_interruptors; }
+    const Vector<OwnPtr<BlinkGCInterruptor>>& interruptors() const { return m_interruptors; }
 
     friend class SafePointAwareMutexLocker;
     friend class SafePointBarrier;
@@ -642,7 +619,7 @@ private:
     void* m_safePointScopeMarker;
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
-    InterruptorVector m_interruptors;
+    Vector<OwnPtr<BlinkGCInterruptor>> m_interruptors;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_gcForbiddenCount;
