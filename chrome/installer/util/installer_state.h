@@ -29,7 +29,6 @@ class CommandLine;
 
 namespace installer {
 
-class ChannelInfo;
 class InstallationState;
 class MasterPreferences;
 
