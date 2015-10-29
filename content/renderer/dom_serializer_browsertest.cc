@@ -193,7 +193,7 @@ class DomSerializerTests : public ContentBrowserTest,
     ASSERT_FALSE(it->second);
 
     // Add data to corresponding frame's content.
-    serialized_frame_map_[frame_url.spec()] += data.data();
+    serialized_frame_map_[frame_url.spec()] += data;
 
     // Current frame is completed saving, change the finish status.
     if (status == WebPageSerializerClient::CurrentFrameIsFinished)

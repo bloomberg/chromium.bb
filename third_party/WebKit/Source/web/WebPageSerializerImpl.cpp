@@ -282,9 +282,8 @@ void WebPageSerializerImpl::encodeAndFlushBuffer(
     CString encodedContent = param->textEncoding.encode(content, WTF::EntitiesForUnencodables);
 
     // Send result to the client.
-    m_client->didSerializeDataForFrame(param->url,
-                                       WebCString(encodedContent.data(), encodedContent.length()),
-                                       status);
+    m_client->didSerializeDataForFrame(
+        param->url, WebCString(encodedContent), status);
 }
 
 // TODO(yosin): We should utilize |MarkupFormatter| here to share code,
@@ -478,7 +477,7 @@ bool WebPageSerializerImpl::serialize()
     } else {
         // Report empty contents for invalid URLs.
         m_client->didSerializeDataForFrame(
-            url, WebCString("", 0),
+            url, WebCString(),
             WebPageSerializerClient::CurrentFrameIsFinished);
     }
 
