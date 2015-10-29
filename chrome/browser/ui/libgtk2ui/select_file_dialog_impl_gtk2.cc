@@ -493,13 +493,20 @@ GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(const std::string& title,
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
   if (!default_path.empty()) {
-    // Since the file may not already exist, we use
-    // set_current_folder() followed by set_current_name(), as per the
-    // recommendation of the GTK docs.
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
-        default_path.DirName().value().c_str());
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
-        default_path.BaseName().value().c_str());
+    if (CallDirectoryExistsOnUIThread(default_path)) {
+      // If this is an existing directory, navigate to that directory, with no
+      // filename.
+      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                          default_path.value().c_str());
+    } else {
+      // The default path does not exist, or is an existing file. We use
+      // set_current_folder() followed by set_current_name(), as per the
+      // recommendation of the GTK docs.
+      gtk_file_chooser_set_current_folder(
+          GTK_FILE_CHOOSER(dialog), default_path.DirName().value().c_str());
+      gtk_file_chooser_set_current_name(
+          GTK_FILE_CHOOSER(dialog), default_path.BaseName().value().c_str());
+    }
   } else if (!last_saved_path_->empty()) {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
                                         last_saved_path_->value().c_str());
