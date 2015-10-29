@@ -738,6 +738,6 @@
  "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 309071, "revb": 309081, "type": "absolute", "better": "lower", "improve": 612377, "regress": 676839, "sha1": "63dbfdc5"},
  "xp-release/sizes/chrome_child.dll/chrome_child.dll": {"reva": 333423, "revb": 333458, "type": "absolute", "better": "lower", "improve": 41918438, "regress": 46335207, "sha1": "223ee3af"},
  "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 325850, "revb": 325904, "type": "absolute", "better": "lower", "improve": 34587904, "regress": 38335719, "sha1": "3846b983"},
- "xp-release/sizes/setup.exe/setup.exe": {"reva": 314972, "revb": 314998, "type": "absolute", "better": "lower", "improve": 882816, "regress": 975744, "sha1": "682290df"},
+ "xp-release/sizes/setup.exe/setup.exe": {"reva": 356918, "revb": 356955, "type": "absolute", "better": "lower", "improve": 987392, "regress": 1091328, "sha1": "71351154"},
  "load": true
 }
