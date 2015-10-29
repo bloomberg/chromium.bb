@@ -344,7 +344,7 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
         text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
     }
 
-    CString frameHTML = document.encoding().normalizeAndEncode(text, WTF::EntitiesForUnencodables);
+    CString frameHTML = document.encoding().encode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
 

@@ -252,6 +252,7 @@ TEST_F(PageSerializerTest, IFrames)
     registerURL("simple_iframe.html", "text/html");
     registerURL("object_iframe.html", "text/html");
     registerURL("embed_iframe.html", "text/html");
+    registerURL("encoded_iframe.html", "text/html");
 
     registerURL("top.png", "image.png", "image/png");
     registerURL("simple.png", "image.png", "image/png");
@@ -260,17 +261,24 @@ TEST_F(PageSerializerTest, IFrames)
 
     serialize("top_frame.html");
 
-    EXPECT_EQ(8U, getResources().size());
+    EXPECT_EQ(9U, getResources().size());
 
     EXPECT_TRUE(isSerialized("top_frame.html", "text/html"));
     EXPECT_TRUE(isSerialized("simple_iframe.html", "text/html"));
     EXPECT_TRUE(isSerialized("object_iframe.html", "text/html"));
     EXPECT_TRUE(isSerialized("embed_iframe.html", "text/html"));
+    EXPECT_TRUE(isSerialized("encoded_iframe.html", "text/html"));
 
     EXPECT_TRUE(isSerialized("top.png", "image/png"));
     EXPECT_TRUE(isSerialized("simple.png", "image/png"));
     EXPECT_TRUE(isSerialized("object.png", "image/png"));
     EXPECT_TRUE(isSerialized("embed.png", "image/png"));
+
+    // Ensure that page contents are not NFC-normalized before encoding.
+    String expectedMetaCharset = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=EUC-KR\">";
+    EXPECT_TRUE(getSerializedData("encoded_iframe.html", "text/html").contains(expectedMetaCharset));
+    EXPECT_TRUE(getSerializedData("encoded_iframe.html", "text/html").contains("\xE4\xC5\xD1\xE2"));
+    EXPECT_FALSE(getSerializedData("encoded_iframe.html", "text/html").contains("\xE4\xC5\xE4\xC5"));
 }
 
 // Tests that when serializing a page with blank frames these are reported with their resources.
