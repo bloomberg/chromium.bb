@@ -1552,5 +1552,3 @@ crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/548416 [ SnowLeopard ] virtual/syncpaint/compositing/repaint/background-attachment-fixed-scrolled.html [ Failure ]
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
-
-crbug.com/547390 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ NeedsRebaseline ]
