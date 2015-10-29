@@ -397,6 +397,36 @@ public class MediaNotificationManager {
             contentView.setOnClickPendingIntent(R.id.stop,
                     mService.getPendingIntent(ListenerService.ACTION_STOP));
         }
+
+        contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
+        contentView.setTextViewText(R.id.status, mMediaNotificationInfo.origin);
+        if (mNotificationIcon != null) {
+            contentView.setImageViewBitmap(R.id.icon, mNotificationIcon);
+        } else {
+            contentView.setImageViewResource(R.id.icon, mMediaNotificationInfo.icon);
+        }
+
+        if (mMediaNotificationInfo.supportsPlayPause()) {
+            if (mMediaNotificationInfo.isPaused) {
+                contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
+                contentView.setContentDescription(R.id.playpause, mPlayDescription);
+                contentView.setOnClickPendingIntent(R.id.playpause,
+                        mService.getPendingIntent(ListenerService.ACTION_PLAY));
+            } else {
+                // If we're here, the notification supports play/pause button and is playing.
+                contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_pause);
+                contentView.setContentDescription(R.id.playpause, mPauseDescription);
+                contentView.setOnClickPendingIntent(R.id.playpause,
+                        mService.getPendingIntent(ListenerService.ACTION_PAUSE));
+            }
+
+            // Even though we create the new view everytime, Android seems to remember the last
+            // visibility state rather than use the default one. So set it explicitly.
+            contentView.setViewVisibility(R.id.playpause, View.VISIBLE);
+        } else {
+            contentView.setViewVisibility(R.id.playpause, View.GONE);
+        }
+
         return contentView;
     }
 
@@ -457,31 +487,7 @@ public class MediaNotificationManager {
                     .setContentIntent(PendingIntent.getActivity(mContext, tabId, tabIntent, 0));
         }
 
-        RemoteViews contentView = createContentView();
-        contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
-        contentView.setTextViewText(R.id.status, mMediaNotificationInfo.origin);
-        if (mNotificationIcon != null) {
-            contentView.setImageViewBitmap(R.id.icon, mNotificationIcon);
-        } else {
-            contentView.setImageViewResource(R.id.icon, mMediaNotificationInfo.icon);
-        }
-
-        if (!mMediaNotificationInfo.supportsPlayPause()) {
-            contentView.setViewVisibility(R.id.playpause, View.GONE);
-        } else if (mMediaNotificationInfo.isPaused) {
-            contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
-            contentView.setContentDescription(R.id.playpause, mPlayDescription);
-            contentView.setOnClickPendingIntent(R.id.playpause,
-                    mService.getPendingIntent(ListenerService.ACTION_PLAY));
-        } else {
-            // If we're here, the notification supports play/pause button and is playing.
-            contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_pause);
-            contentView.setContentDescription(R.id.playpause, mPauseDescription);
-            contentView.setOnClickPendingIntent(R.id.playpause,
-                    mService.getPendingIntent(ListenerService.ACTION_PAUSE));
-        }
-
-        mNotificationBuilder.setContent(contentView);
+        mNotificationBuilder.setContent(createContentView());
         mNotificationBuilder.setVisibility(
                 mMediaNotificationInfo.isPrivate ? NotificationCompat.VISIBILITY_PRIVATE
                                                  : NotificationCompat.VISIBILITY_PUBLIC);
