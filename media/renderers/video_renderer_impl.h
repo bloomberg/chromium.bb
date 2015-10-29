@@ -256,6 +256,10 @@ class MEDIA_EXPORT VideoRendererImpl
   bool render_first_frame_and_stop_;
   bool posted_maybe_stop_after_first_paint_;
 
+  // Memory usage of |algorithm_| recorded during the last UpdateStats_Locked()
+  // call.
+  int64_t last_video_memory_usage_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
 

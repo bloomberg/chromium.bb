@@ -54,6 +54,7 @@ VideoRendererImpl::VideoRendererImpl(
       time_progressing_(false),
       render_first_frame_and_stop_(false),
       posted_maybe_stop_after_first_paint_(false),
+      last_video_memory_usage_(0),
       weak_factory_(this) {
   if (gpu_factories &&
       gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
@@ -550,10 +551,14 @@ void VideoRendererImpl::UpdateStats_Locked() {
     PipelineStatistics statistics;
     statistics.video_frames_decoded = frames_decoded_;
     statistics.video_frames_dropped = frames_dropped_;
-    task_runner_->PostTask(FROM_HERE, base::Bind(statistics_cb_, statistics));
 
+    const size_t memory_usage = algorithm_->GetMemoryUsage();
+    statistics.video_memory_usage = memory_usage - last_video_memory_usage_;
+
+    task_runner_->PostTask(FROM_HERE, base::Bind(statistics_cb_, statistics));
     frames_decoded_ = 0;
     frames_dropped_ = 0;
+    last_video_memory_usage_ = memory_usage;
   }
 }
 

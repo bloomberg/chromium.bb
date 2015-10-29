@@ -917,6 +917,15 @@ void FFmpegDemuxer::AddTextStreams() {
   }
 }
 
+int64_t FFmpegDemuxer::GetMemoryUsage() const {
+  int64_t allocation_size = 0;
+  for (const auto& stream : streams_) {
+    if (stream)
+      allocation_size += stream->MemoryUsage();
+  }
+  return allocation_size;
+}
+
 // Helper for calculating the bitrate of the media based on information stored
 // in |format_context| or failing that the size and duration of the media.
 //

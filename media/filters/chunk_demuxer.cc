@@ -1310,6 +1310,12 @@ TimeDelta ChunkDemuxer::GetStartTime() const {
   return TimeDelta();
 }
 
+int64_t ChunkDemuxer::GetMemoryUsage() const {
+  base::AutoLock auto_lock(lock_);
+  return (audio_ ? audio_->GetBufferedSize() : 0) +
+         (video_ ? video_->GetBufferedSize() : 0);
+}
+
 void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
   DVLOG(1) << "StartWaitingForSeek()";
   base::AutoLock auto_lock(lock_);

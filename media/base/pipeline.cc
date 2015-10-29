@@ -466,12 +466,14 @@ void Pipeline::AddBufferedTimeRange(TimeDelta start, TimeDelta end) {
 }
 
 // Called from any thread.
-void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
+void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats_delta) {
   base::AutoLock auto_lock(lock_);
-  statistics_.audio_bytes_decoded += stats.audio_bytes_decoded;
-  statistics_.video_bytes_decoded += stats.video_bytes_decoded;
-  statistics_.video_frames_decoded += stats.video_frames_decoded;
-  statistics_.video_frames_dropped += stats.video_frames_dropped;
+  statistics_.audio_bytes_decoded += stats_delta.audio_bytes_decoded;
+  statistics_.video_bytes_decoded += stats_delta.video_bytes_decoded;
+  statistics_.video_frames_decoded += stats_delta.video_frames_decoded;
+  statistics_.video_frames_dropped += stats_delta.video_frames_dropped;
+  statistics_.audio_memory_usage += stats_delta.audio_memory_usage;
+  statistics_.video_memory_usage += stats_delta.video_memory_usage;
 }
 
 void Pipeline::StartTask() {

@@ -1988,6 +1988,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744)));
+  EXPECT_EQ(212949, demuxer_->GetMemoryUsage());
 }
 
 TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
@@ -2007,6 +2008,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
   EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, audio->liveness());
   DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
   EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, video->liveness());
+  EXPECT_EQ(212949, demuxer_->GetMemoryUsage());
 }
 
 TEST_F(ChunkDemuxerTest, WebMFile_AudioOnly) {
@@ -2026,6 +2028,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioOnly) {
   ASSERT_TRUE(ParseWebMFile("bear-320x240-audio-only.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744),
                             HAS_AUDIO));
+  EXPECT_EQ(18624, demuxer_->GetMemoryUsage());
 }
 
 TEST_F(ChunkDemuxerTest, WebMFile_VideoOnly) {
@@ -2045,6 +2048,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_VideoOnly) {
   ASSERT_TRUE(ParseWebMFile("bear-320x240-video-only.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2703),
                             HAS_VIDEO));
+  EXPECT_EQ(194325, demuxer_->GetMemoryUsage());
 }
 
 TEST_F(ChunkDemuxerTest, WebMFile_AltRefFrames) {

@@ -260,6 +260,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_EQ(backward_capacity, loader_->buffer_.backward_capacity());
     EXPECT_EQ(forward_bytes, loader_->buffer_.forward_bytes());
     EXPECT_EQ(forward_capacity, loader_->buffer_.forward_capacity());
+    EXPECT_EQ(backward_bytes + forward_bytes, loader_->GetMemoryUsage());
   }
 
   void ConfirmLoaderBufferBackwardCapacity(int expected_backward_capacity) {

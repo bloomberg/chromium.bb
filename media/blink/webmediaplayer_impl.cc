@@ -147,6 +147,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
       context_3d_cb_(params.context_3d_cb()),
+      adjust_allocated_memory_cb_(params.adjust_allocated_memory_cb()),
+      last_reported_memory_usage_(0),
       supports_save_(true),
       chunk_demuxer_(NULL),
       // Threaded compositing isn't enabled universally yet.
@@ -165,6 +167,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                                           AsWeakPtr(),
                                           base::Bind(&IgnoreCdmAttached))),
       renderer_factory_(renderer_factory.Pass()) {
+  DCHECK(!adjust_allocated_memory_cb_.is_null());
+
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -209,6 +213,9 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
   waiter.Wait();
 
+  if (last_reported_memory_usage_)
+    adjust_allocated_memory_cb_.Run(-last_reported_memory_usage_);
+
   compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_);
 
   media_log_->AddEvent(
@@ -244,6 +251,9 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
+  memory_usage_reporting_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
+      &WebMediaPlayerImpl::ReportMemoryUsage);
 
   // Media source pipelines can start immediately.
   if (load_type == LoadTypeMediaSource) {
@@ -1081,6 +1091,25 @@ void WebMediaPlayerImpl::UpdatePausedTime() {
   // incorrectly discard what it thinks is a seek to the existing time.
   paused_time_ =
       ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
+}
+
+void WebMediaPlayerImpl::ReportMemoryUsage() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  const PipelineStatistics stats = pipeline_.GetStatistics();
+  const int64_t current_memory_usage =
+      stats.audio_memory_usage + stats.video_memory_usage +
+      (data_source_ ? data_source_->GetMemoryUsage() : 0) +
+      (demuxer_ ? demuxer_->GetMemoryUsage() : 0);
+
+  DVLOG(2) << "Memory Usage -- Audio: " << stats.audio_memory_usage
+           << ", Video: " << stats.video_memory_usage << ", DataSource: "
+           << (data_source_ ? data_source_->GetMemoryUsage() : 0)
+           << ", Demuxer: " << (demuxer_ ? demuxer_->GetMemoryUsage() : 0);
+
+  const int64_t delta = current_memory_usage - last_reported_memory_usage_;
+  last_reported_memory_usage_ = current_memory_usage;
+  adjust_allocated_memory_cb_.Run(delta);
 }
 
 }  // namespace media

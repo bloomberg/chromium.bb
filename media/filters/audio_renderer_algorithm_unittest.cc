@@ -216,6 +216,9 @@ class AudioRendererAlgorithmTest : public testing::Test {
       FillAlgorithmQueue();
     }
 
+    EXPECT_EQ(algorithm_.frames_buffered() * channels_ * sizeof(float),
+              static_cast<size_t>(algorithm_.GetMemoryUsage()));
+
     int frames_consumed =
         ComputeConsumedFrames(initial_frames_enqueued, initial_frames_buffered);
 

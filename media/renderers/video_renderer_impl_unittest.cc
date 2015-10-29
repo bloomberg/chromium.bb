@@ -677,6 +677,7 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
     EXPECT_EQ(0u, last_pipeline_statistics_.video_frames_dropped);
+    EXPECT_EQ(460800, last_pipeline_statistics_.video_memory_usage);
   }
 
   // Consider the case that rendering is faster than we setup the test event.
@@ -704,6 +705,7 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   // reported
   EXPECT_EQ(0u, last_pipeline_statistics_.video_frames_dropped);
   EXPECT_EQ(4u, last_pipeline_statistics_.video_frames_decoded);
+  EXPECT_EQ(460800, last_pipeline_statistics_.video_memory_usage);
 
   AdvanceTimeInMs(30);
   WaitForEnded();

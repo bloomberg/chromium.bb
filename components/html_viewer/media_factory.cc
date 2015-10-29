@@ -28,6 +28,8 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "third_party/WebKit/public/web/WebKit.h"
+#include "v8/include/v8.h"
 
 namespace html_viewer {
 
@@ -98,6 +100,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       media::WebMediaPlayerParams::DeferLoadCB(), CreateAudioRendererSink(),
       media_log, GetMediaThreadTaskRunner(), GetMediaThreadTaskRunner(),
       compositor_task_runner_, media::WebMediaPlayerParams::Context3DCB(),
+      base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
+                 base::Unretained(blink::mainThreadIsolate())),
       GetMediaPermission(), initial_cdm);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 

@@ -350,6 +350,15 @@ size_t VideoRendererAlgorithm::EffectiveFramesQueued() const {
   return renderable_frame_count;
 }
 
+int64_t VideoRendererAlgorithm::GetMemoryUsage() const {
+  int64_t allocation_size = 0;
+  for (const auto& ready_frame : frame_queue_) {
+    allocation_size += VideoFrame::AllocationSize(
+        ready_frame.frame->format(), ready_frame.frame->coded_size());
+  }
+  return allocation_size;
+}
+
 void VideoRendererAlgorithm::EnqueueFrame(
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK(frame);

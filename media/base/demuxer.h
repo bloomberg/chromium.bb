@@ -87,6 +87,9 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   // a null Time is returned.
   virtual base::Time GetTimelineOffset() const = 0;
 
+  // Returns the memory usage in bytes for the demuxer.
+  virtual int64_t GetMemoryUsage() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);
 };

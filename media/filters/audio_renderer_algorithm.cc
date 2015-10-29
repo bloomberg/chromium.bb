@@ -223,6 +223,10 @@ void AudioRendererAlgorithm::IncreaseQueueCapacity() {
   capacity_ = std::min(2 * capacity_, max_capacity);
 }
 
+int64_t AudioRendererAlgorithm::GetMemoryUsage() const {
+  return audio_buffer_.frames() * channels_ * sizeof(float);
+}
+
 bool AudioRendererAlgorithm::CanPerformWsola() const {
   const int search_block_size = num_candidate_blocks_ + (ola_window_size_ - 1);
   const int frames = audio_buffer_.frames();

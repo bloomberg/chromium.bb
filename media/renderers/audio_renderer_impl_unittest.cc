@@ -113,7 +113,10 @@ class AudioRendererImplTest : public ::testing::Test {
         .WillOnce(DoAll(SaveArg<2>(&output_cb_), RunCallback<1>(false)));
   }
 
-  MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
+  void OnStatistics(const PipelineStatistics& stats) {
+    last_statistics_.audio_memory_usage += stats.audio_memory_usage;
+  }
+
   MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
@@ -276,6 +279,8 @@ class AudioRendererImplTest : public ::testing::Test {
         base::Bind(base::ResetAndReturn(&decode_cb_), AudioDecoder::kOk));
 
     base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(last_statistics_.audio_memory_usage,
+              renderer_->algorithm_->GetMemoryUsage());
   }
 
   // Delivers frames until |renderer_|'s internal buffer is full and no longer
@@ -359,6 +364,7 @@ class AudioRendererImplTest : public ::testing::Test {
   scoped_refptr<FakeAudioRendererSink> sink_;
   AudioHardwareConfig hardware_config_;
   base::SimpleTestTickClock* tick_clock_;
+  PipelineStatistics last_statistics_;
 
  private:
   void DecodeDecoder(const scoped_refptr<DecoderBuffer>& buffer,
@@ -393,6 +399,7 @@ class AudioRendererImplTest : public ::testing::Test {
   void DeliverBuffer(AudioDecoder::Status status,
                      const scoped_refptr<AudioBuffer>& buffer) {
     CHECK(!decode_cb_.is_null());
+
     if (buffer.get() && !buffer->end_of_stream())
       output_cb_.Run(buffer);
     base::ResetAndReturn(&decode_cb_).Run(status);

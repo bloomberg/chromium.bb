@@ -183,6 +183,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::Time GetTimelineOffset() const override;
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
   base::TimeDelta GetStartTime() const override;
+  int64_t GetMemoryUsage() const override;
 
   // Methods used by an external object to control this demuxer.
   //

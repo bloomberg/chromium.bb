@@ -113,6 +113,9 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
   // If already deferred, connections will be immediately closed.
   void OnBufferingHaveEnough();
 
+  // Returns an estimate of the number of bytes held by the data source.
+  int64_t GetMemoryUsage() const;
+
   // DataSource implementation.
   // Called from demuxer thread.
   void Stop() override;

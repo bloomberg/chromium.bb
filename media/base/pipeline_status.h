@@ -38,22 +38,17 @@ enum PipelineStatus {
 
 typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;
 
-// TODO(scherkus): this should be moved alongside host interface definitions.
 struct PipelineStatistics {
-  PipelineStatistics()
-      : audio_bytes_decoded(0),
-        video_bytes_decoded(0),
-        video_frames_decoded(0),
-        video_frames_dropped(0) {
-  }
-
-  uint32 audio_bytes_decoded;  // Should be uint64?
-  uint32 video_bytes_decoded;  // Should be uint64?
-  uint32 video_frames_decoded;
-  uint32 video_frames_dropped;
+  uint64_t audio_bytes_decoded = 0;  // Should be uint64?
+  uint32 video_bytes_decoded = 0;    // Should be uint64?
+  uint32 video_frames_decoded = 0;
+  uint32 video_frames_dropped = 0;
+  int64_t audio_memory_usage = 0;
+  int64_t video_memory_usage = 0;
 };
 
-// Used for updating pipeline statistics.
+// Used for updating pipeline statistics; the passed value should be a delta
+// of all attributes since the last update.
 typedef base::Callback<void(const PipelineStatistics&)> StatisticsCB;
 
 }  // namespace media

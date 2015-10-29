@@ -118,6 +118,7 @@ class BufferedDataSourceTest : public testing::Test {
       : view_(WebView::create(NULL)),
         frame_(
             WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_)),
+        bytes_received_(0),
         preload_(BufferedDataSource::AUTO) {
     view_->setMainFrame(frame_);
   }
@@ -197,6 +198,7 @@ class BufferedDataSourceTest : public testing::Test {
         .WillOnce(Invoke(data_source_.get(),
                          &MockBufferedDataSource::CreateMockResourceLoader));
     message_loop_.RunUntilIdle();
+    bytes_received_ = 0;
   }
 
   void Respond(const WebURLResponse& response) {
@@ -210,6 +212,8 @@ class BufferedDataSourceTest : public testing::Test {
 
     loader()->didReceiveData(url_loader(), data.get(), size, size);
     message_loop_.RunUntilIdle();
+    bytes_received_ += size;
+    EXPECT_EQ(bytes_received_, data_source_->GetMemoryUsage());
   }
 
   void FinishLoading() {
@@ -299,6 +303,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   StrictMock<MockBufferedDataSourceHost> host_;
   base::MessageLoop message_loop_;
+  int bytes_received_;
 
  private:
   // Used for calling BufferedDataSource::Read().
@@ -481,6 +486,7 @@ TEST_F(BufferedDataSourceTest, Http_RetryOnError) {
           DoAll(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
                 Invoke(data_source_.get(),
                        &MockBufferedDataSource::CreateMockResourceLoader)));
+  bytes_received_ = 0;
   loader()->didFail(url_loader(), response_generator_->GenerateError());
   run_loop.Run();
   Respond(response_generator_->Generate206(kDataSize));

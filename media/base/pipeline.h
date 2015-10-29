@@ -227,7 +227,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void OnError(PipelineStatus error);
 
   // Callback executed by filters to update statistics.
-  void OnUpdateStatistics(const PipelineStatistics& stats);
+  void OnUpdateStatistics(const PipelineStatistics& stats_delta);
 
   // The following "task" methods correspond to the public methods, but these
   // methods are run as the result of posting a task to the Pipeline's

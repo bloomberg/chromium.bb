@@ -197,6 +197,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   base::Time GetTimelineOffset() const override;
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
   base::TimeDelta GetStartTime() const override;
+  int64_t GetMemoryUsage() const override;
 
   // Calls |encrypted_media_init_data_cb_| with the initialization data
   // encountered in the file.

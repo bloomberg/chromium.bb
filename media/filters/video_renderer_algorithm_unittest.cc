@@ -570,6 +570,7 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutCadence) {
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(3)));
   EXPECT_EQ(4u, algorithm_.EffectiveFramesQueued());
   EXPECT_EQ(4u, frames_queued());
+  EXPECT_EQ(384, algorithm_.GetMemoryUsage());
 
   // Issue a render call that should drop the first two frames and mark the 3rd
   // as consumed.
@@ -582,6 +583,7 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutCadence) {
   EXPECT_EQ(tg.interval(2), frame->timestamp());
   EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
   EXPECT_EQ(2u, frames_queued());
+  EXPECT_EQ(192, algorithm_.GetMemoryUsage());
 
   // Rendering one more frame should return 0 effective frames queued.
   frame = RenderAndStep(&tg, &frames_dropped);
@@ -591,6 +593,7 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutCadence) {
   EXPECT_EQ(tg.interval(3), frame->timestamp());
   EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
   EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(96, algorithm_.GetMemoryUsage());
 }
 
 // The maximum acceptable drift should be updated once we have two frames.

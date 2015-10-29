@@ -117,6 +117,9 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // be counted as effective.
   size_t EffectiveFramesQueued() const;
 
+  // Returns an estimate of the amount of memory (in bytes) used for frames.
+  int64_t GetMemoryUsage() const;
+
   // Tells the algorithm that Render() callbacks have been suspended for a known
   // reason and such stoppage shouldn't be counted against future frames.
   void set_time_stopped() { was_time_moving_ = false; }

@@ -215,12 +215,17 @@ class MEDIA_EXPORT AudioRendererImpl
   BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
+  StatisticsCB statistics_cb_;
 
   // Callback provided to Flush().
   base::Closure flush_cb_;
 
   // Overridable tick clock for testing.
   scoped_ptr<base::TickClock> tick_clock_;
+
+  // Memory usage of |algorithm_| recorded during the last
+  // HandleSplicerBuffer_Locked() call.
+  int64_t last_audio_memory_usage_;
 
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------

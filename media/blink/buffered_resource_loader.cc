@@ -765,6 +765,10 @@ void BufferedResourceLoader::CancelUponDeferral() {
     active_loader_.reset();
 }
 
+int64_t BufferedResourceLoader::GetMemoryUsage() const {
+  return buffer_.forward_bytes() + buffer_.backward_bytes();
+}
+
 bool BufferedResourceLoader::VerifyPartialResponse(
     const WebURLResponse& response) {
   int64 first_byte_position, last_byte_position, instance_size;

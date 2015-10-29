@@ -57,6 +57,7 @@ AudioRendererImpl::AudioRendererImpl(
       hardware_config_(hardware_config),
       media_log_(media_log),
       tick_clock_(new base::DefaultTickClock()),
+      last_audio_memory_usage_(0),
       playback_rate_(0.0),
       state_(kUninitialized),
       buffering_state_(BUFFERING_HAVE_NOTHING),
@@ -334,6 +335,7 @@ void AudioRendererImpl::Initialize(
   buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
+  statistics_cb_ = statistics_cb;
 
   const AudioParameters& hw_params = hardware_config_.GetOutputConfig();
   expecting_config_changes_ = stream->SupportsConfigChanges();
@@ -513,6 +515,12 @@ bool AudioRendererImpl::HandleSplicerBuffer_Locked(
   // audio playback.
   if (first_packet_timestamp_ == kNoTimestamp())
     first_packet_timestamp_ = buffer->timestamp();
+
+  const size_t memory_usage = algorithm_->GetMemoryUsage();
+  PipelineStatistics stats;
+  stats.audio_memory_usage = memory_usage - last_audio_memory_usage_;
+  last_audio_memory_usage_ = memory_usage;
+  task_runner_->PostTask(FROM_HERE, base::Bind(statistics_cb_, stats));
 
   switch (state_) {
     case kUninitialized:

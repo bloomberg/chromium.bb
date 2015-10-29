@@ -237,6 +237,11 @@ void BufferedDataSource::OnBufferingHaveEnough() {
     loader_->CancelUponDeferral();
 }
 
+int64_t BufferedDataSource::GetMemoryUsage() const {
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+  return loader_ ? loader_->GetMemoryUsage() : 0;
+}
+
 void BufferedDataSource::Read(
     int64 position, int size, uint8* data,
     const DataSource::ReadCB& read_cb) {

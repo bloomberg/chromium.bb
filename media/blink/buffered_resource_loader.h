@@ -210,6 +210,9 @@ class MEDIA_EXPORT BufferedResourceLoader
   // a Service Worker it is empty.
   const GURL response_original_url() const { return response_original_url_; }
 
+  // Returns an estimate of the amount of memory owned by the resource loader.
+  int64_t GetMemoryUsage() const;
+
  private:
   friend class BufferedDataSourceTest;
   friend class BufferedResourceLoaderTest;

@@ -2164,6 +2164,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       audio_renderer_sink, media_log, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(),
       render_thread->compositor_task_runner(), context_3d_cb,
+      base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
+                 base::Unretained(blink::mainThreadIsolate())),
       GetMediaPermission(), initial_cdm);
 
 // TODO(xhwang, watk): Find a better way to specify these ifdef conditions.

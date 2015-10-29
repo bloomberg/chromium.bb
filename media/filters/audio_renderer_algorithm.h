@@ -69,6 +69,9 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Increase the capacity of |audio_buffer_| if possible.
   void IncreaseQueueCapacity();
 
+  // Returns an estimate of the amount of memory (in bytes) used for frames.
+  int64_t GetMemoryUsage() const;
+
   // Returns the number of frames left in |audio_buffer_|, which may be larger
   // than QueueCapacity() in the event that EnqueueBuffer() delivered more data
   // than |audio_buffer_| was intending to hold.

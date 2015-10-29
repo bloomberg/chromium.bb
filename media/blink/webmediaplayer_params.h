@@ -33,6 +33,13 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
   typedef base::Callback<Context3D()> Context3DCB;
 
+  // Callback to tell V8 about the amount of memory used by the WebMediaPlayer
+  // instance.  The input parameter is the delta in bytes since the last call to
+  // AdjustAllocatedMemoryCB and the return value is the total number of bytes
+  // used by objects external to V8.  Note: this value includes things that are
+  // not the WebMediaPlayer!
+  typedef base::Callback<int64_t(int64_t)> AdjustAllocatedMemoryCB;
+
   // |defer_load_cb|, |audio_renderer_sink|, |compositor_task_runner|, and
   // |context_3d_cb| may be null.
   WebMediaPlayerParams(
@@ -43,6 +50,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const Context3DCB& context_3d,
+      const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
       MediaPermission* media_permission,
       blink::WebContentDecryptionModule* initial_cdm);
 
@@ -79,6 +87,9 @@ class MEDIA_EXPORT WebMediaPlayerParams {
     return initial_cdm_;
   }
 
+  AdjustAllocatedMemoryCB adjust_allocated_memory_cb() const {
+    return adjust_allocated_memory_cb_;
+  }
 
  private:
   DeferLoadCB defer_load_cb_;
@@ -88,6 +99,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   scoped_refptr<base::TaskRunner> worker_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   Context3DCB context_3d_cb_;
+  AdjustAllocatedMemoryCB adjust_allocated_memory_cb_;
 
   // TODO(xhwang): Remove after prefixed EME API support is removed.
   MediaPermission* media_permission_;
