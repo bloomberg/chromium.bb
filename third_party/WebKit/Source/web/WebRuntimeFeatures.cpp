@@ -66,6 +66,11 @@ void WebRuntimeFeatures::enableApplicationCache(bool enable)
     RuntimeEnabledFeatures::setApplicationCacheEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableAudioOutputDevices(bool enable)
+{
+    RuntimeEnabledFeatures::setAudioOutputDevicesEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableCompositedSelectionUpdate(bool enable)
 {
     RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(enable);
