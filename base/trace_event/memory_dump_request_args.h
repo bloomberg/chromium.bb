@@ -8,6 +8,7 @@
 // This file defines the types and structs used to issue memory dump requests.
 // These are also used in the IPCs for coordinating inter-process memory dumps.
 
+#include <stdint.h>
 #include <string>
 
 #include "base/base_export.h"
@@ -42,13 +43,13 @@ struct BASE_EXPORT MemoryDumpRequestArgs {
   // Globally unique identifier. In multi-process dumps, all processes issue a
   // local dump with the same guid. This allows the trace importers to
   // reconstruct the global dump.
-  uint64 dump_guid;
+  uint64_t dump_guid;
 
   MemoryDumpType dump_type;
   MemoryDumpLevelOfDetail level_of_detail;
 };
 
-using MemoryDumpCallback = Callback<void(uint64 dump_guid, bool success)>;
+using MemoryDumpCallback = Callback<void(uint64_t dump_guid, bool success)>;
 
 BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);
 
