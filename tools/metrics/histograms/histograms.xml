@@ -2923,6 +2923,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BlinkGC.TimeForInvokingPreFinalizers" units="milliseconds">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    Duration of time taken to run ThreadState::invokePreFinalizers().
+  </summary>
+</histogram>
+
 <histogram name="BlinkGC.TimeForStoppingThreads" units="milliseconds">
   <owner>haraken@chromium.org</owner>
   <summary>

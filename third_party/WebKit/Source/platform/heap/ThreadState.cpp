@@ -1327,6 +1327,7 @@ void ThreadState::invokePreFinalizers()
     ASSERT(checkThread());
     ASSERT(!sweepForbidden());
     TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
+    double timeStamp = WTF::currentTimeMS();
 
     if (isMainThread())
         ScriptForbiddenScope::enter();
@@ -1343,8 +1344,11 @@ void ThreadState::invokePreFinalizers()
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.
     m_orderedPreFinalizers.removeAll(deadPreFinalizers);
 
-    if (isMainThread())
+    if (isMainThread()) {
         ScriptForbiddenScope::exit();
+        double timeForInvokingPreFinalizers = WTF::currentTimeMS() - timeStamp;
+        Platform::current()->histogramCustomCounts("BlinkGC.TimeForInvokingPreFinalizers", timeForInvokingPreFinalizers, 1, 10 * 1000, 50);
+    }
 }
 
 void ThreadState::clearHeapAges()
