@@ -5,6 +5,7 @@
 #ifndef InterpolationEnvironment_h
 #define InterpolationEnvironment_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -38,8 +39,8 @@ public:
 
 private:
     StyleResolverState* m_state;
-    SVGElement* m_svgElement;
-    const SVGPropertyBase* m_svgBaseValue;
+    RawPtrWillBeMember<SVGElement> m_svgElement;
+    RawPtrWillBeMember<const SVGPropertyBase> m_svgBaseValue;
 };
 
 } // namespace blink
