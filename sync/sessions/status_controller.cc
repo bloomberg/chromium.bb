@@ -101,6 +101,10 @@ int StatusController::num_server_overwrites() const {
   return model_neutral_.num_server_overwrites;
 }
 
+int StatusController::num_local_overwrites() const {
+  return model_neutral_.num_local_overwrites;
+}
+
 int StatusController::num_encryption_conflicts() const {
   return model_neutral_.num_encryption_conflicts;
 }

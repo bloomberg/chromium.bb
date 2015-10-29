@@ -2817,6 +2817,49 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
   EXPECT_EQ(0, GetCommitCounters(BOOKMARKS).num_commits_conflict);
 }
 
+// Test conflict resolution when handling an update for an item with specified
+// Parent ID and having an implicit (unset) Parent ID in the update.
+TEST_F(SyncerTest, ConflictWithImplicitParent) {
+  // Make sure PREFERENCES root exists so that we can get its parent ID.
+  mock_server_->AddUpdateSpecifics(1, 0, "Folder", 10, 10, true, 1,
+                                   DefaultPreferencesSpecifics());
+  mock_server_->SetLastUpdateServerTag(ModelTypeToRootTag(PREFERENCES));
+  EXPECT_TRUE(SyncShareNudge());
+
+  Id pref_root_id;
+  {
+    // Preferences type root should have been created by the update above.
+    // We need it in order to get its ID.
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+
+    Entry pref_root(&trans, GET_TYPE_ROOT, PREFERENCES);
+    ASSERT_TRUE(pref_root.good());
+    pref_root_id = pref_root.GetId();
+  }
+
+  // Fake an item which is both unsynced and unapplied with
+  // PARENT_ID set to |pref_root_id| and SERVER_PARENT_ID unset.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry entry(&trans, CREATE, PREFERENCES, pref_root_id, "bob");
+    entry.PutServerNonUniqueName("bob");
+    entry.PutId(ids_.FromNumber(20));
+    entry.PutBaseVersion(1);
+    entry.PutServerVersion(1);
+    entry.PutIsUnsynced(true);
+    entry.PutIsUnappliedUpdate(true);
+    entry.PutSpecifics(DefaultPreferencesSpecifics());
+    entry.PutServerSpecifics(DefaultPreferencesSpecifics());
+    entry.PutIsDel(false);
+  }
+
+  EXPECT_TRUE(SyncShareNudge());
+  // Since the hierarchy isn't really changed (the type has flat hierarchy)
+  // this conflict must be discarded.
+  EXPECT_EQ(0, session_->status_controller().num_local_overwrites());
+  EXPECT_EQ(0, session_->status_controller().num_server_overwrites());
+}
+
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
   int64 newfolder_metahandle;
 

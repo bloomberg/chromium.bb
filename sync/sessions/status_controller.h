@@ -55,6 +55,7 @@ class SYNC_EXPORT_PRIVATE StatusController {
   int num_updates_applied() const;
 
   int num_server_overwrites() const;
+  int num_local_overwrites() const;
 
   // The time at which we started the first sync cycle in this session.
   base::Time sync_start_time() const {

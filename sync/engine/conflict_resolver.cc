@@ -125,7 +125,9 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // See http://crbug.com/77339.
     bool name_matches = entry.GetNonUniqueName() ==
         entry.GetServerNonUniqueName();
-    bool parent_matches = entry.GetParentId() == entry.GetServerParentId();
+    // The parent is implicit type root folder or the parent ID matches.
+    bool parent_matches = entry.GetServerParentId().IsNull() ||
+                          entry.GetParentId() == entry.GetServerParentId();
     bool entry_deleted = entry.GetIsDel();
     // The position check might fail spuriously if one of the positions was
     // based on a legacy random suffix, rather than a deterministic one based on
