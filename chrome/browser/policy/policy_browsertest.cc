@@ -2871,8 +2871,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   audio_handler->RemoveAudioObserver(test_observer.get());
 }
 
-// Disabled, see http://crbug.com/315308.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_PRE_SessionLengthLimit) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
   // Indicate that the session started 2 hours ago and no user activity has
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
@@ -2881,8 +2880,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_PRE_SessionLengthLimit) {
           .ToInternalValue());
 }
 
-// Disabled, see http://crbug.com/315308.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SessionLengthLimit) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
   registrar.Add(&observer,
