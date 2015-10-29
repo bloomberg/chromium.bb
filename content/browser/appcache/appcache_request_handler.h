@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -36,13 +37,15 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // These are called on each request intercept opportunity.
   AppCacheURLRequestJob* MaybeLoadResource(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate);
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate);
   AppCacheURLRequestJob* MaybeLoadFallbackForRedirect(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       const GURL& location);
   AppCacheURLRequestJob* MaybeLoadFallbackForResponse(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate);
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate);
 
   void GetExtraResponseInfo(int64* cache_id, GURL* manifest_url);
 
@@ -75,6 +78,15 @@ class CONTENT_EXPORT AppCacheRequestHandler
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
 
+  // Called just before the request is restarted. Grabs the reason for
+  // restarting, so can correctly continue to handle the request.
+  void OnPrepareToRestart();
+
+  // Helper method to create an AppCacheURLRequestJob and populate job_.
+  // Caller takes ownership of returned value.
+  AppCacheURLRequestJob* CreateJob(net::URLRequest* request,
+                                   net::NetworkDelegate* network_delegate);
+
   // Helper to retrieve a pointer to the storage object.
   AppCacheStorage* storage() const;
 
@@ -85,8 +97,9 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Main-resource loading -------------------------------------
   // Frame and SharedWorker main resources are handled here.
 
-  void MaybeLoadMainResource(net::URLRequest* request,
-                             net::NetworkDelegate* network_delegate);
+  AppCacheURLRequestJob* MaybeLoadMainResource(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate);
 
   // AppCacheStorage::Delegate methods
   void OnMainResponseFound(const GURL& url,
@@ -100,8 +113,9 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
 
-  void MaybeLoadSubResource(net::URLRequest* request,
-                            net::NetworkDelegate* network_delegate);
+  AppCacheURLRequestJob* MaybeLoadSubResource(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate);
   void ContinueMaybeLoadSubResource();
 
   // AppCacheHost::Observer override
@@ -137,17 +151,30 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // request and any redirects will be handled by the network library.
   bool cache_entry_not_found_;
 
+  // True if the next time this request is started, the response should be
+  // delivered from the network, bypassing the AppCache. Cleared after the next
+  // intercept opportunity.
+  bool is_delivering_network_response_;
+
   // True if this->MaybeLoadResource(...) has been called in the past.
   bool maybe_load_resource_executed_;
 
-  // The job we use to deliver a response.
-  scoped_refptr<AppCacheURLRequestJob> job_;
+  // The job we use to deliver a response. Only NULL during the following times:
+  // 1) Before request has started a job.
+  // 2) Request is not being handled by appcache.
+  // 3) Request has been cancelled, and the job killed.
+  base::WeakPtr<AppCacheURLRequestJob> job_;
 
   // During a cross site navigation, we transfer ownership the AppcacheHost
   // from the old processes structures over to the new structures.
   scoped_ptr<AppCacheHost> host_for_cross_site_transfer_;
   int old_process_id_;
   int old_host_id_;
+
+  // Cached information about the response being currently served by the
+  // AppCache, if there is one.
+  int cache_id_;
+  GURL manifest_url_;
 
   friend class content::AppCacheRequestHandlerTest;
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);

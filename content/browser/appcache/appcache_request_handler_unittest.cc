@@ -399,6 +399,10 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(job_->is_waiting());
     EXPECT_TRUE(job_->is_delivering_network_response());
 
+    // The handler expects to the job to tell it that the request is going to
+    // be restarted before it sees the next request.
+    handler_->OnPrepareToRestart();
+
     // When the request is restarted, the existing job is dropped so a
     // real network job gets created. We expect NULL here which will cause
     // the net library to create a real job.
@@ -462,6 +466,10 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(job_->is_waiting());
     EXPECT_TRUE(job_->is_delivering_network_response());
 
+    // The handler expects to the job to tell it that the request is going to
+    // be restarted before it sees the next request.
+    handler_->OnPrepareToRestart();
+
     // When the request is restarted, the existing job is dropped so a
     // real network job gets created. We expect NULL here which will cause
     // the net library to create a real job.
@@ -483,6 +491,13 @@ class AppCacheRequestHandlerTest : public testing::Test {
     job_ = handler_->MaybeLoadFallbackForResponse(
         request_.get(), request_->context()->network_delegate());
     EXPECT_FALSE(job_.get());
+
+    // GetExtraResponseInfo should return no information.
+    int64 cache_id = kAppCacheNoCacheId;
+    GURL manifest_url;
+    handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
+    EXPECT_EQ(kAppCacheNoCacheId, cache_id);
+    EXPECT_TRUE(manifest_url.is_empty());
 
     TestFinished();
   }

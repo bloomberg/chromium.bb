@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_executable_handler.h"
@@ -31,11 +32,17 @@ class CONTENT_EXPORT AppCacheURLRequestJob
     : public net::URLRequestJob,
       public AppCacheStorage::Delegate {
  public:
+  // Callback that will be invoked before the request is restarted. The caller
+  // can use this opportunity to grab state from the AppCacheURLRequestJob to
+  // determine how it should behave when the request is restarted.
+  using OnPrepareToRestartCallback = base::Closure;
+
   AppCacheURLRequestJob(net::URLRequest* request,
                         net::NetworkDelegate* network_delegate,
                         AppCacheStorage* storage,
                         AppCacheHost* host,
-                        bool is_main_resource);
+                        bool is_main_resource,
+                        const OnPrepareToRestartCallback& restart_callback_);
 
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and
@@ -93,8 +100,11 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   ~AppCacheURLRequestJob() override;
 
  private:
-  friend class content::AppCacheRequestHandlerTest;
-  friend class content::AppCacheURLRequestJobTest;
+  friend class AppCacheRequestHandlerTest;
+  friend class AppCacheURLRequestJobTest;
+
+  // Friend so it can get a weak pointer.
+  friend class AppCacheRequestHandler;
 
   enum DeliveryType {
     AWAITING_DELIVERY_ORDERS,
@@ -102,6 +112,8 @@ class CONTENT_EXPORT AppCacheURLRequestJob
     NETWORK_DELIVERY,
     ERROR_DELIVERY
   };
+
+  base::WeakPtr<AppCacheURLRequestJob> GetWeakPtr();
 
   // Returns true if one of the Deliver methods has been called.
   bool has_delivery_orders() const {
@@ -146,6 +158,10 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   bool GetMimeType(std::string* mime_type) const override;
   int GetResponseCode() const override;
 
+  // Invokes |prepare_to_restart_callback_| and then calls
+  // net::URLRequestJob::NotifyRestartRequired.
+  void NotifyRestartRequired();
+
   AppCacheHost* host_;
   AppCacheStorage* storage_;
   base::TimeTicks start_time_tick_;
@@ -167,6 +183,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   scoped_ptr<AppCacheResponseReader> reader_;
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCacheGroup> group_;
+  const OnPrepareToRestartCallback on_prepare_to_restart_callback_;
   base::WeakPtrFactory<AppCacheURLRequestJob> weak_factory_;
 };
 

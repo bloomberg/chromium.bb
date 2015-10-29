@@ -44,6 +44,21 @@ const char kHttpBasicBody[] = "Hello";
 const int kNumBlocks = 4;
 const int kBlockSize = 1024;
 
+// Used as an AppCacheURLRequestJob::OnPrepareToRestartCallback for requests
+// that aren't expected to be restarted.
+void ExpectNotRestarted() {
+  ADD_FAILURE() << "Request unexpectedly restarted";
+}
+
+// Used as an AppCacheURLRequestJob::OnPrepareToRestartCallback for requests
+// that are expected to be restarted. Allows tests to verify it was called by
+// setting |*value| to true when invoked.
+void SetIfCalled(bool* value) {
+  // Expected to be called only once.
+  EXPECT_FALSE(*value);
+  *value = true;
+}
+
 class MockURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   MockURLRequestJobFactory() : job_(NULL) {
@@ -237,6 +252,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     written_response_id_ = 0;
     reader_deletion_count_down_ = 0;
     writer_deletion_count_down_ = 0;
+
+    restart_callback_invoked_ = false;
 
     url_request_delegate_.reset(new MockURLRequestDelegate(this));
     job_factory_.reset(new MockURLRequestJobFactory());
@@ -438,7 +455,9 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Create an instance and see that it looks as expected.
 
-    job = new AppCacheURLRequestJob(request.get(), NULL, storage, NULL, false);
+    job = new AppCacheURLRequestJob(
+      request.get(), NULL, storage, NULL, false,
+      base::Bind(&ExpectNotRestarted));
     EXPECT_TRUE(job->is_waiting());
     EXPECT_FALSE(job->is_delivering_appcache_response());
     EXPECT_FALSE(job->is_delivering_network_response());
@@ -462,17 +481,23 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // Create an instance, give it a delivery order and see that
     // it looks as expected.
 
-    job = new AppCacheURLRequestJob(request.get(), NULL, storage, NULL, false);
+    job = new AppCacheURLRequestJob(
+        request.get(), NULL, storage, NULL, false,
+        base::Bind(&ExpectNotRestarted));
     job->DeliverErrorResponse();
     EXPECT_TRUE(job->is_delivering_error_response());
     EXPECT_FALSE(job->has_been_started());
 
-    job = new AppCacheURLRequestJob(request.get(), NULL, storage, NULL, false);
+    job = new AppCacheURLRequestJob(
+        request.get(), NULL, storage, NULL, false,
+        base::Bind(&ExpectNotRestarted));
     job->DeliverNetworkResponse();
     EXPECT_TRUE(job->is_delivering_network_response());
     EXPECT_FALSE(job->has_been_started());
 
-    job = new AppCacheURLRequestJob(request.get(), NULL, storage, NULL, false);
+    job = new AppCacheURLRequestJob(
+        request.get(), NULL, storage, NULL, false,
+        base::Bind(&ExpectNotRestarted));
     const GURL kManifestUrl("http://blah/");
     const int64 kCacheId(1);
     const int64 kGroupId(1);
@@ -504,10 +529,11 @@ class AppCacheURLRequestJobTest : public testing::Test {
                                              net::DEFAULT_PRIORITY,
                                              url_request_delegate_.get());
 
-    // Setup to create an AppCacheURLRequestJob with orders to deliver
+    // Set up to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
     AppCacheURLRequestJob* mock_job = new AppCacheURLRequestJob(
-        request_.get(), NULL, storage, NULL, false);
+        request_.get(), NULL, storage, NULL, false,
+        base::Bind(&SetIfCalled, &restart_callback_invoked_));
     job_factory_->SetJob(mock_job);
     mock_job->DeliverNetworkResponse();
     EXPECT_TRUE(mock_job->is_delivering_network_response());
@@ -524,6 +550,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void VerifyDeliverNetworkResponse() {
     EXPECT_EQ(request_->status().error(),
               net::ERR_INTERNET_DISCONNECTED);
+    EXPECT_TRUE(restart_callback_invoked_);
     TestFinished();
   }
 
@@ -543,7 +570,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
     AppCacheURLRequestJob* mock_job = new AppCacheURLRequestJob(
-        request_.get(), NULL, storage, NULL, false);
+        request_.get(), NULL, storage, NULL, false,
+        base::Bind(&ExpectNotRestarted));
     job_factory_->SetJob(mock_job);
     mock_job->DeliverErrorResponse();
     EXPECT_TRUE(mock_job->is_delivering_error_response());
@@ -594,7 +622,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
     scoped_refptr<AppCacheURLRequestJob> job(new AppCacheURLRequestJob(
-        request_.get(), NULL, storage, NULL, false));
+        request_.get(), NULL, storage, NULL, false,
+        base::Bind(&ExpectNotRestarted)));
 
     if (start_after_delivery_orders) {
       job->DeliverAppCachedResponse(
@@ -712,7 +741,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Create job with orders to deliver an appcached entry.
     scoped_refptr<AppCacheURLRequestJob> job(new AppCacheURLRequestJob(
-        request_.get(), NULL, storage, NULL, false));
+        request_.get(), NULL, storage, NULL, false,
+        base::Bind(&ExpectNotRestarted)));
     job->DeliverAppCachedResponse(
         GURL(), 0, 111,
         AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_),
@@ -819,6 +849,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   scoped_refptr<IOBuffer> write_buffer_;
   int expected_write_result_;
   int writer_deletion_count_down_;
+
+  bool restart_callback_invoked_;
 
   scoped_ptr<MockURLRequestJobFactory> job_factory_;
   scoped_ptr<net::URLRequestContext> empty_context_;
