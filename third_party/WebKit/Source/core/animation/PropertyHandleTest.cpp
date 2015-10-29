@@ -53,7 +53,7 @@ TEST_F(PropertyHandleTest, Accessors)
 
     EXPECT_FALSE(PropertyHandle(CSSPropertyOpacity).isSVGAttribute());
     EXPECT_TRUE(PropertyHandle(amplitudeAttr).isSVGAttribute());
-    EXPECT_EQ(PropertyHandle(amplitudeAttr).svgAttribute(), &amplitudeAttr);
+    EXPECT_EQ(PropertyHandle(amplitudeAttr).svgAttribute(), amplitudeAttr);
 }
 
 }

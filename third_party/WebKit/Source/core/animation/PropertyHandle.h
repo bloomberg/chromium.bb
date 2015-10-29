@@ -37,7 +37,7 @@ public:
     CSSPropertyID cssProperty() const { ASSERT(isCSSProperty()); return property; }
 
     bool isSVGAttribute() const { return handleType == HandleSVGAttribute; }
-    const QualifiedName* svgAttribute() const { ASSERT(isSVGAttribute()); return attribute; }
+    const QualifiedName& svgAttribute() const { ASSERT(isSVGAttribute()); return *attribute; }
 
 private:
     enum HandleType {
