@@ -31,6 +31,9 @@ def WaitForViaHeader(tab, url="http://check.googlezip.net/test.html"):
         'var xmlhttp = new XMLHttpRequest();'
         'xmlhttp.open("HEAD",url,true);'
         'xmlhttp.onload=function(e) {'
+          # Store the last response received for debugging, this will be shown
+          # in telemetry dumps if the request fails or times out.
+          'window.last_xhr_response_headers = xmlhttp.getAllResponseHeaders();'
           'var via=xmlhttp.getResponseHeader("via");'
           'if (via && via.indexOf(wanted_via) != -1) {'
             'window.via_header_found = true;'
@@ -49,8 +52,13 @@ def WaitForViaHeader(tab, url="http://check.googlezip.net/test.html"):
 
   # Ensure the page has started loading before attempting the DRP check.
   tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 60)
+
+  expected_via_header = metrics.CHROME_PROXY_VIA_HEADER
+  if ChromeProxyValidation.extra_via_header:
+    expected_via_header = ChromeProxyValidation.extra_via_header
+
   tab.WaitForJavaScriptExpression(
-    'PollDRPCheck("%s", "%s")' % (url, metrics.CHROME_PROXY_VIA_HEADER), 60)
+      'PollDRPCheck("%s", "%s")' % (url, expected_via_header), 60)
 
 
 class ChromeProxyValidation(page_test.PageTest):
