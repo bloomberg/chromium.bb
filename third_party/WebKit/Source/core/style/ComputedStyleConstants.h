@@ -26,6 +26,8 @@
 #ifndef ComputedStyleConstants_h
 #define ComputedStyleConstants_h
 
+#include <cstddef>
+
 namespace blink {
 
 // Sides used when drawing borders and outlines. The values should run clockwise from top.

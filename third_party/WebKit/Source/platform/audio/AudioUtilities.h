@@ -26,6 +26,7 @@
 #define AudioUtilities_h
 
 #include "platform/PlatformExport.h"
+#include <cstddef>
 
 namespace blink {
 namespace AudioUtilities {

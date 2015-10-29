@@ -22,6 +22,7 @@
 #ifndef TypeTraits_h
 #define TypeTraits_h
 
+#include <cstddef>
 #include <utility>
 
 namespace WTF {

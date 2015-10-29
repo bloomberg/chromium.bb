@@ -30,6 +30,7 @@
 #define AudioSourceProvider_h
 
 #include "platform/PlatformExport.h"
+#include <cstddef>
 
 namespace blink {
 

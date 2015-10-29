@@ -31,6 +31,7 @@
 #ifndef VDMXParser_h
 #define VDMXParser_h
 
+#include <cstddef>
 #include <stdint.h>
 
 namespace blink {

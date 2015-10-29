@@ -29,6 +29,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include <cmath>
+#include <cstddef>
 #include <limits>
 
 #if COMPILER(MSVC)

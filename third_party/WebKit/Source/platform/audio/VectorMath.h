@@ -26,6 +26,7 @@
 #define VectorMath_h
 
 #include "platform/PlatformExport.h"
+#include <cstddef>
 
 // Defines the interface for several vector math functions whose implementation will ideally be optimized.
 

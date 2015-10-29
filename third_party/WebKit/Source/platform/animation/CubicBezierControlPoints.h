@@ -5,6 +5,8 @@
 #ifndef CubicBezierControlPoints_h
 #define CubicBezierControlPoints_h
 
+#include <cstddef>
+
 namespace blink {
 
 struct CubicBezierControlPoints {

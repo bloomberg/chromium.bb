@@ -23,6 +23,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/WTFExport.h"
+#include <cstddef>
 
 namespace WTF {
 

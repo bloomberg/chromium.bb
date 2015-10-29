@@ -115,7 +115,5 @@
 // Helps us catch if anyone uses new or delete by accident in code and doesn't include "config.h".
 #undef new
 #undef delete
-#include <ciso646>
-#include <cstddef>
 
 #endif

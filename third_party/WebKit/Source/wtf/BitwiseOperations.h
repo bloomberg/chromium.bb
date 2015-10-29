@@ -39,7 +39,7 @@
 
 #include "wtf/CPU.h"
 #include "wtf/Compiler.h"
-
+#include <cstddef>
 #include <stdint.h>
 
 #if COMPILER(MSVC)

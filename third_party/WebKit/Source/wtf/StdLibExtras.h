@@ -29,6 +29,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include "wtf/CheckedArithmetic.h"
+#include <cstddef>
 
 #if ENABLE(ASSERT)
 #include "wtf/Noncopyable.h"

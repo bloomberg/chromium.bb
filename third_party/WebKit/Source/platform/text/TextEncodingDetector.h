@@ -32,6 +32,7 @@
 #define TextEncodingDetector_h
 
 #include "platform/PlatformExport.h"
+#include <cstddef>
 
 namespace WTF {
 class TextEncoding;

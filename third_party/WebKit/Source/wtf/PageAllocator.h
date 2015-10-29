@@ -34,6 +34,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
 #include "wtf/WTFExport.h"
+#include <cstddef>
 #include <stdint.h>
 
 namespace WTF {

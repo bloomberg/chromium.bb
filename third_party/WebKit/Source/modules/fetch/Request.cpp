@@ -143,7 +143,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
                 exceptionState.throwTypeError("Referrer '" + init.referrer.referrer + "' is not a valid URL.");
                 return nullptr;
             }
-            if (parsedReferrer.protocolIsAbout() && parsedReferrer.host().isEmpty() and parsedReferrer.path() == "client") {
+            if (parsedReferrer.protocolIsAbout() && parsedReferrer.host().isEmpty() && parsedReferrer.path() == "client") {
                 // 5. If |parsedReferrer|'s non-relative flag is set, scheme is
                 // "about", and path contains a single string "client", set
                 // request's referrer to "client" and terminate these substeps.

@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
+#include <cstddef>
 #include <stdint.h>
 
 namespace blink {

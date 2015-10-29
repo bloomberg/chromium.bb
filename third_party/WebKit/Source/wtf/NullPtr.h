@@ -31,6 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // nullptr_t type and nullptr object. They are defined in the same namespaces they
 // would be in compiler and library that had the support.
 
+// Need to include one of the standard C++ library anyway in order to have
+// __GLIBCXX__ or _STLPORT_VERSION.
+#include <cstddef>
+
 // libstdc++ supports nullptr_t starting with gcc 4.6. STLport doesn't define it.
 #if (defined(__GLIBCXX__) && __GLIBCXX__ < 20110325) || defined(_STLPORT_VERSION)
 namespace std {
