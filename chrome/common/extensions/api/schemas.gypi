@@ -69,7 +69,6 @@
       'passwords_private.idl',
       'permissions.json',
       'preferences_private.json',
-      'reading_list_private.json',
       'resources_private.idl',
       'screenlock_private.idl',
       'search_engines_private.idl',

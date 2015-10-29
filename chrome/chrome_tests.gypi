@@ -191,7 +191,6 @@
       'browser/extensions/api/preferences_private/preferences_private_apitest.cc',
       'browser/extensions/api/processes/processes_apitest.cc',
       'browser/extensions/api/proxy/proxy_apitest.cc',
-      'browser/extensions/api/reading_list_private/reading_list_private_apitest.cc',
       'browser/extensions/api/resources_private/resources_private_apitest.cc',
       'browser/extensions/api/screenlock_private/screenlock_private_apitest.cc',
       'browser/extensions/api/search_engines_private/search_engines_private_apitest.cc',

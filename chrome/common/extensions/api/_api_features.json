@@ -687,10 +687,6 @@
     "extension_types": ["platform_app"],
     "contexts": ["blessed_extension"]
   },
-  "readingListPrivate": {
-    "dependencies": ["permission:readingListPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "resourcesPrivate": [{
     "dependencies": ["permission:resourcesPrivate"],
     "contexts": ["blessed_extension"]

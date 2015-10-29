@@ -58925,9 +58925,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="658" label="MEDIAGALLERIES_ADDUSERSELECTEDFOLDER"/>
   <int value="659"
       label="PREFERENCESPRIVATE_GETSYNCCATEGORIESWITHOUTPASSPHRASE"/>
-  <int value="660" label="READINGLISTPRIVATE_ADDENTRY"/>
-  <int value="661" label="READINGLISTPRIVATE_REMOVEENTRY"/>
-  <int value="662" label="READINGLISTPRIVATE_GETENTRIES"/>
+  <int value="660" label="DELETED_READINGLISTPRIVATE_ADDENTRY"/>
+  <int value="661" label="DELETED_READINGLISTPRIVATE_REMOVEENTRY"/>
+  <int value="662" label="DELETED_READINGLISTPRIVATE_GETENTRIES"/>
   <int value="663" label="MEDIAGALLERIES_STARTMEDIASCAN"/>
   <int value="664" label="MEDIAGALLERIES_CANCELMEDIASCAN"/>
   <int value="665" label="MEDIAGALLERIES_ADDSCANRESULTS"/>

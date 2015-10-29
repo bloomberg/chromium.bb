@@ -879,15 +879,6 @@
       "F9119B8B18C7C82B51E7BC6FF816B694F2EC3E89"  // http://crbug.com/439526
     ]
   }],
-  "readingListPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension"],
-    "whitelist": [
-      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2", // http://crbug.com/312900
-      "D57DE394F36DC1C3220E7604C575D29C51A6C495", // http://crbug.com/319444
-      "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"  // http://crbug.com/371562
-    ]
-  },
   "resourcesPrivate": {
     "channel": "stable",
     "extension_types": [

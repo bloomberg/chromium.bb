@@ -840,7 +840,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kPreferencesPrivate);
   skip.insert(APIPermission::kPrincipalsPrivate);
   skip.insert(APIPermission::kImageWriterPrivate);
-  skip.insert(APIPermission::kReadingListPrivate);
   skip.insert(APIPermission::kResourcesPrivate);
   skip.insert(APIPermission::kRtcPrivate);
   skip.insert(APIPermission::kStreamsPrivate);

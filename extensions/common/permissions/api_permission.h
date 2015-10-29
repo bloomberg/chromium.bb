@@ -167,7 +167,7 @@ class APIPermission {
     kProcesses,
     kProxy,
     kImageWriterPrivate,
-    kReadingListPrivate,
+    kDeleted_ReadingListPrivate,
     kRtcPrivate,
     kSearchProvider,
     kSearchEnginesPrivate,
