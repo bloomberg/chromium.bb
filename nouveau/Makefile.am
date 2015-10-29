@@ -14,8 +14,17 @@ libdrm_nouveau_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
 
 libdrm_nouveau_la_SOURCES = $(LIBDRM_NOUVEAU_FILES)
 
-libdrm_nouveauincludedir = ${includedir}/libdrm
+libdrm_nouveauincludedir = ${includedir}/libdrm/nouveau
 libdrm_nouveauinclude_HEADERS = $(LIBDRM_NOUVEAU_H_FILES)
+
+libdrm_nouveaunvifincludedir = ${includedir}/libdrm/nouveau/nvif
+libdrm_nouveaunvifinclude_HEADERS = nvif/class.h \
+				    nvif/cl0080.h \
+				    nvif/cl9097.h \
+				    nvif/if0002.h \
+				    nvif/if0003.h \
+				    nvif/ioctl.h \
+				    nvif/unpack.h
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_nouveau.pc

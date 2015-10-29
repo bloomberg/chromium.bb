@@ -200,6 +200,7 @@ struct drm_nouveau_sarea {
 #define DRM_NOUVEAU_GROBJ_ALLOC        0x04
 #define DRM_NOUVEAU_NOTIFIEROBJ_ALLOC  0x05
 #define DRM_NOUVEAU_GPUOBJ_FREE        0x06
+#define DRM_NOUVEAU_NVIF               0x07
 #define DRM_NOUVEAU_GEM_NEW            0x40
 #define DRM_NOUVEAU_GEM_PUSHBUF        0x41
 #define DRM_NOUVEAU_GEM_CPU_PREP       0x42
