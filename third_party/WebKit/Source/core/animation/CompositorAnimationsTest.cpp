@@ -44,7 +44,6 @@
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 #include "core/dom/Document.h"
 #include "core/layout/LayoutObject.h"
-#include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
@@ -84,7 +83,6 @@ protected:
     RefPtrWillBePersistent<Document> m_document;
     RefPtrWillBePersistent<Element> m_element;
     Persistent<AnimationTimeline> m_timeline;
-    OwnPtr<DummyPageHolder> m_pageHolder;
 
     virtual void SetUp()
     {
@@ -107,8 +105,7 @@ protected:
         m_keyframeVector5 = createCompositableFloatKeyframeVector(5);
         m_keyframeAnimationEffect5 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector5);
 
-        m_pageHolder = DummyPageHolder::create();
-        m_document = &m_pageHolder->document();
+        m_document = Document::create();
         m_document->animationClock().resetTimeForTesting();
         m_timeline = AnimationTimeline::create(m_document.get());
         m_element = m_document->createElement("test", ASSERT_NO_EXCEPTION);

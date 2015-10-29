@@ -52,8 +52,9 @@ void updateAnimationTiming(Document& document, TimingUpdateReason reason)
 
 } // namespace
 
-void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document)
+void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
+    document.animationClock().updateTime(monotonicAnimationStartTime);
     updateAnimationTiming(document, TimingUpdateForAnimationFrame);
 }
 
