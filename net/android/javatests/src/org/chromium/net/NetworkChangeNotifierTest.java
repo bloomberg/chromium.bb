@@ -573,7 +573,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         assertFalse(ncn.isReceiverRegisteredForTesting());
 
         RegistrationPolicyApplicationStatus policy =
-                (RegistrationPolicyApplicationStatus) mReceiver.getRegistrationPolicy();
+                (RegistrationPolicyApplicationStatus) ncn.getRegistrationPolicy();
         policy.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(ncn.isReceiverRegisteredForTesting());
 
