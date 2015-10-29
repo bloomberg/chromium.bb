@@ -49,10 +49,11 @@ void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
   unsigned char* src_data =
       reinterpret_cast<unsigned char*>(bmp->getAddr32(0, 0));
   for (int i = 0; i < w * h; i++) {
-    src_data[i * 4 + 0] = static_cast<unsigned char>(i % 255);
-    src_data[i * 4 + 1] = static_cast<unsigned char>(i % 255);
-    src_data[i * 4 + 2] = static_cast<unsigned char>(i % 255);
-    src_data[i * 4 + 3] = static_cast<unsigned char>(i % 255);
+    const int alpha = i % 256;
+    src_data[i * 4 + 0] = static_cast<unsigned char>(alpha);
+    src_data[i * 4 + 1] = static_cast<unsigned char>((i + 16) % (alpha + 1));
+    src_data[i * 4 + 2] = static_cast<unsigned char>((i + 32) % (alpha + 1));
+    src_data[i * 4 + 3] = static_cast<unsigned char>((i + 64) % (alpha + 1));
   }
 }
 
@@ -160,20 +161,16 @@ TEST(SkBitmapOperationsTest, CreateBlendedBitmap) {
 
 // Test our masking functions.
 TEST(SkBitmapOperationsTest, CreateMaskedBitmap) {
-  int src_w = 16, src_h = 16;
+  const int src_w = 16, src_h = 16;
 
   SkBitmap src;
   FillDataToBitmap(src_w, src_h, &src);
 
-  // Generate alpha mask
   SkBitmap alpha;
   alpha.allocN32Pixels(src_w, src_h);
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
-      *alpha.getAddr32(x, y) = SkColorSetARGB((i + 128) % 255,
-                                              (i + 128) % 255,
-                                              (i + 64) % 255,
-                                              (i + 0) % 255);
+      *alpha.getAddr32(x, y) = SkPackARGB32(i % 256, 0, 0, 0);
       i++;
     }
   }
@@ -183,24 +180,29 @@ TEST(SkBitmapOperationsTest, CreateMaskedBitmap) {
   SkAutoLockPixels src_lock(src);
   SkAutoLockPixels alpha_lock(alpha);
   SkAutoLockPixels masked_lock(masked);
+
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
-      // Test that the alpha is equal.
-      SkColor src_pixel = SkUnPreMultiply::PMColorToColor(*src.getAddr32(x, y));
-      SkColor alpha_pixel =
-          SkUnPreMultiply::PMColorToColor(*alpha.getAddr32(x, y));
-      SkColor masked_pixel = *masked.getAddr32(x, y);
+      int alpha_pixel = *alpha.getAddr32(x, y);
+      int src_pixel = *src.getAddr32(x, y);
+      int masked_pixel = *masked.getAddr32(x, y);
 
-      int alpha_value = SkAlphaMul(SkColorGetA(src_pixel),
-                                   SkAlpha255To256(SkColorGetA(alpha_pixel)));
-      int alpha_value_256 = SkAlpha255To256(alpha_value);
-      SkColor expected_pixel = SkColorSetARGB(
-          alpha_value,
-          SkAlphaMul(SkColorGetR(src_pixel), alpha_value_256),
-          SkAlphaMul(SkColorGetG(src_pixel), alpha_value_256),
-          SkAlphaMul(SkColorGetB(src_pixel), alpha_value_256));
+      int scale = SkAlpha255To256(SkGetPackedA32(alpha_pixel));
 
-      EXPECT_EQ(expected_pixel, masked_pixel);
+      int src_a = (src_pixel >> SK_A32_SHIFT) & 0xFF;
+      int src_r = (src_pixel >> SK_R32_SHIFT) & 0xFF;
+      int src_g = (src_pixel >> SK_G32_SHIFT) & 0xFF;
+      int src_b = (src_pixel >> SK_B32_SHIFT) & 0xFF;
+
+      int masked_a = (masked_pixel >> SK_A32_SHIFT) & 0xFF;
+      int masked_r = (masked_pixel >> SK_R32_SHIFT) & 0xFF;
+      int masked_g = (masked_pixel >> SK_G32_SHIFT) & 0xFF;
+      int masked_b = (masked_pixel >> SK_B32_SHIFT) & 0xFF;
+
+      EXPECT_EQ((src_a * scale) >> 8, masked_a);
+      EXPECT_EQ((src_r * scale) >> 8, masked_r);
+      EXPECT_EQ((src_g * scale) >> 8, masked_g);
+      EXPECT_EQ((src_b * scale) >> 8, masked_b);
     }
   }
 }
