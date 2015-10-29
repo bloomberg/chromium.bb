@@ -418,8 +418,8 @@ void HTMLInputElement::updateTouchEventHandlerRegistry()
             registry.didAddEventHandler(*this, EventHandlerRegistry::TouchEvent);
         else
             registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchEvent);
+        m_hasTouchEventHandler = hasTouchEventHandler;
     }
-    m_hasTouchEventHandler = hasTouchEventHandler;
 }
 
 void HTMLInputElement::initializeTypeInParsing()
@@ -1549,6 +1549,8 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
     // FIXME: Remove type check.
     if (type() == InputTypeNames::radio)
         oldDocument.formController().radioButtonGroupScope().removeButton(this);
+
+    updateTouchEventHandlerRegistry();
 
     HTMLTextFormControlElement::didMoveToNewDocument(oldDocument);
 }
