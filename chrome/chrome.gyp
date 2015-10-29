@@ -566,7 +566,6 @@
             '../third_party/android_media/android_media.gyp:android_media_java',
             '../third_party/android_protobuf/android_protobuf.gyp:protobuf_nano_javalib',
             '../third_party/android_swipe_refresh/android_swipe_refresh.gyp:android_swipe_refresh_java',
-            '../third_party/android_tools/android_tools.gyp:android_support_design_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_recyclerview_javalib',
