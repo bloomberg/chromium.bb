@@ -74,22 +74,22 @@ namespace WTF {
 // Provides customizable overrides of fastMalloc/fastFree and operator new/delete
 //
 // Provided functionality:
-//    Macro: WTF_MAKE_FAST_ALLOCATED
+//    Macro: USING_FAST_MALLOC
 //
 // Example usage:
 //    class Widget {
-//        WTF_MAKE_FAST_ALLOCATED(Widget)
+//        USING_FAST_MALLOC(Widget)
 //    ...
 //    };
 //
 //    struct Data {
-//        WTF_MAKE_FAST_ALLOCATED(Data)
+//        USING_FAST_MALLOC(Data)
 //    public:
 //    ...
 //    };
 //
 
-#define WTF_MAKE_FAST_ALLOCATED(type) \
+#define USING_FAST_MALLOC(type) \
 public: \
     void* operator new(size_t, void* p) { return p; } \
     void* operator new[](size_t, void* p) { return p; } \

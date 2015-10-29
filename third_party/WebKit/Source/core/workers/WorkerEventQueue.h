@@ -39,7 +39,7 @@ class Event;
 class ExecutionContext;
 
 class WorkerEventQueue final : public EventQueue {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerEventQueue);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerEventQueue);
 public:
 
     static PassOwnPtrWillBeRawPtr<WorkerEventQueue> create(ExecutionContext*);

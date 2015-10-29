@@ -22,7 +22,7 @@ namespace blink {
 class ContentSecurityPolicy;
 
 class CSPDirectiveList {
-    WTF_MAKE_FAST_ALLOCATED(CSPDirectiveList);
+    USING_FAST_MALLOC(CSPDirectiveList);
     WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
 public:
     static PassOwnPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);

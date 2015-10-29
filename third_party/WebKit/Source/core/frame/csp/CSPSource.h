@@ -16,7 +16,7 @@ class ContentSecurityPolicy;
 class KURL;
 
 class CORE_EXPORT CSPSource {
-    WTF_MAKE_FAST_ALLOCATED(CSPSource);
+    USING_FAST_MALLOC(CSPSource);
 public:
     enum WildcardDisposition {
         HasWildcard,

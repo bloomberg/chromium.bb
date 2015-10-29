@@ -38,7 +38,7 @@ class ExceptionState;
 
 class NamedNodeMap final : public NoBaseWillBeGarbageCollected<NamedNodeMap>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NamedNodeMap);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(NamedNodeMap);
     friend class Element;
 public:
     static PassOwnPtrWillBeRawPtr<NamedNodeMap> create(Element* element)

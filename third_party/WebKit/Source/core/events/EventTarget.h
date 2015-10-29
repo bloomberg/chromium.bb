@@ -68,7 +68,7 @@ using FiringEventIteratorVector = Vector<FiringEventIterator, 1>;
 
 class CORE_EXPORT EventTargetData final : public NoBaseWillBeGarbageCollectedFinalized<EventTargetData> {
     WTF_MAKE_NONCOPYABLE(EventTargetData);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(EventTargetData);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(EventTargetData);
 public:
     EventTargetData();
     ~EventTargetData();

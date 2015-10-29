@@ -41,7 +41,7 @@ namespace blink {
 
 template<class KeyType>
 class DOMWrapperMap {
-    WTF_MAKE_FAST_ALLOCATED(DOMWrapperMap);
+    USING_FAST_MALLOC(DOMWrapperMap);
 public:
     explicit DOMWrapperMap(v8::Isolate* isolate)
         : m_isolate(isolate)

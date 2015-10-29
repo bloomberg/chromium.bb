@@ -15,7 +15,7 @@ namespace blink {
 
 class CORE_EXPORT SerializedScriptValueFactory {
     WTF_MAKE_NONCOPYABLE(SerializedScriptValueFactory);
-    WTF_MAKE_FAST_ALLOCATED(SerializedScriptValueFactory);
+    USING_FAST_MALLOC(SerializedScriptValueFactory);
 public:
     SerializedScriptValueFactory() { }
 

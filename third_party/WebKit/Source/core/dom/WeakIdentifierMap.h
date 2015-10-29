@@ -36,7 +36,7 @@ template<typename T,
     bool isGarbageCollected = IsGarbageCollectedType<T>::value> class WeakIdentifierMap;
 
 template<typename T, typename Generator, typename Traits> class WeakIdentifierMap<T, Generator, Traits, false> {
-    WTF_MAKE_FAST_ALLOCATED(WeakIdentifierMap);
+    USING_FAST_MALLOC(WeakIdentifierMap);
 public:
     using IdentifierType = typename Generator::IdentifierType;
     using ReferenceType = RawPtr<WeakIdentifierMap<T, Generator, Traits, false>>;

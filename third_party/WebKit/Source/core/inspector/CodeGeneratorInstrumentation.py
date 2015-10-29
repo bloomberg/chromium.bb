@@ -122,7 +122,7 @@ ${forward_list}
 
 class CORE_EXPORT InstrumentingAgents : public RefCountedWillBeGarbageCollectedFinalized<InstrumentingAgents> {
     WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InstrumentingAgents);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InstrumentingAgents);
 public:
     static PassRefPtrWillBeRawPtr<InstrumentingAgents> create()
     {

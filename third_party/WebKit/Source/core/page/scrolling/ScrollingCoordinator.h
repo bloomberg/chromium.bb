@@ -52,7 +52,7 @@ class WebCompositorAnimationTimeline;
 
 class CORE_EXPORT ScrollingCoordinator final : public NoBaseWillBeGarbageCollectedFinalized<ScrollingCoordinator> {
     WTF_MAKE_NONCOPYABLE(ScrollingCoordinator);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScrollingCoordinator);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ScrollingCoordinator);
 public:
     static PassOwnPtrWillBeRawPtr<ScrollingCoordinator> create(Page*);
 

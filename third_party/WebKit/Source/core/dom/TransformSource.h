@@ -27,7 +27,7 @@
 namespace blink {
 
 class TransformSource {
-    WTF_MAKE_NONCOPYABLE(TransformSource); WTF_MAKE_FAST_ALLOCATED(TransformSource);
+    WTF_MAKE_NONCOPYABLE(TransformSource); USING_FAST_MALLOC(TransformSource);
 public:
     explicit TransformSource(xmlDocPtr source);
     ~TransformSource();

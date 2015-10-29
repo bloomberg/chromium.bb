@@ -34,7 +34,7 @@ namespace blink {
 class HitTestLocation;
 
 class ClipRect {
-    WTF_MAKE_FAST_ALLOCATED(ClipRect);
+    USING_FAST_MALLOC(ClipRect);
 public:
     ClipRect()
         : m_hasRadius(false)

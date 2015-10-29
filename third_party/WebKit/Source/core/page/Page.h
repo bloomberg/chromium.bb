@@ -71,7 +71,7 @@ float deviceScaleFactor(LocalFrame*);
 
 class CORE_EXPORT Page final : public NoBaseWillBeGarbageCollectedFinalized<Page>, public WillBeHeapSupplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate, public MemoryPurgeClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Page);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Page);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(Page);
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
 public:

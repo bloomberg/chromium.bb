@@ -68,7 +68,7 @@ FrameNavigationDisabler::~FrameNavigationDisabler()
 }
 
 class ScheduledNavigation : public NoBaseWillBeGarbageCollectedFinalized<ScheduledNavigation> {
-    WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScheduledNavigation);
+    WTF_MAKE_NONCOPYABLE(ScheduledNavigation); USING_FAST_MALLOC_WILL_BE_REMOVED(ScheduledNavigation);
 public:
     ScheduledNavigation(double delay, Document* originDocument, bool replacesCurrentItem, bool isLocationChange)
         : m_delay(delay)

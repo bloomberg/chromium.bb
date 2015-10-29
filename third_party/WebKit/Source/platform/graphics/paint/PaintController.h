@@ -34,7 +34,7 @@ static const size_t kInitialDisplayItemListCapacityBytes = 512;
 // cache invalidation, and merging.
 class PLATFORM_EXPORT PaintController {
     WTF_MAKE_NONCOPYABLE(PaintController);
-    WTF_MAKE_FAST_ALLOCATED(PaintController);
+    USING_FAST_MALLOC(PaintController);
 public:
     static PassOwnPtr<PaintController> create()
     {

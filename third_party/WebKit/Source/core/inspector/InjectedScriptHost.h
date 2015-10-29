@@ -79,7 +79,7 @@ public:
     void disconnect();
 
     class InspectableObject : public NoBaseWillBeGarbageCollectedFinalized<InspectableObject> {
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectableObject);
+        USING_FAST_MALLOC_WILL_BE_REMOVED(InspectableObject);
     public:
         virtual ScriptValue get(ScriptState*);
         virtual ~InspectableObject() { }

@@ -75,7 +75,7 @@ class CSSSelectorList;
 // in case of selectors like [attr="value"].
 //
 class CORE_EXPORT CSSSelector {
-    WTF_MAKE_FAST_ALLOCATED(CSSSelector);
+    USING_FAST_MALLOC(CSSSelector);
 public:
     CSSSelector();
     CSSSelector(const CSSSelector&);

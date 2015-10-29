@@ -40,7 +40,7 @@ namespace blink {
 // This class decodes a BMP image.  It is used in the BMP and ICO decoders,
 // which wrap it in the appropriate code to read file headers, etc.
 class PLATFORM_EXPORT BMPImageReader {
-    WTF_MAKE_FAST_ALLOCATED(BMPImageReader);
+    USING_FAST_MALLOC(BMPImageReader);
 public:
     // Read a value from |data[offset]|, converting from little to native
     // endianness.

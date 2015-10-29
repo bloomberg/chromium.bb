@@ -60,7 +60,7 @@ enum V8ContextEmbedderDataField {
 };
 
 class CORE_EXPORT V8PerContextData final {
-    WTF_MAKE_FAST_ALLOCATED(V8PerContextData);
+    USING_FAST_MALLOC(V8PerContextData);
     WTF_MAKE_NONCOPYABLE(V8PerContextData);
 public:
     static PassOwnPtr<V8PerContextData> create(v8::Local<v8::Context>);

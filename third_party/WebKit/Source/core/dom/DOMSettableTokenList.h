@@ -49,7 +49,7 @@ class DOMSettableTokenList final
 #endif
     {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMSettableTokenList);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMSettableTokenList);
 public:
     static PassRefPtrWillBeRawPtr<DOMSettableTokenList> create(DOMSettableTokenListObserver* observer = nullptr)
     {

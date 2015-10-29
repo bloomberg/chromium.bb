@@ -45,7 +45,7 @@ class ContentSettingCallbacks;
 class WorkerClients;
 
 class FileSystemClient {
-    WTF_MAKE_FAST_ALLOCATED(FileSystemClient);
+    USING_FAST_MALLOC(FileSystemClient);
     WTF_MAKE_NONCOPYABLE(FileSystemClient);
 public:
     FileSystemClient() { }

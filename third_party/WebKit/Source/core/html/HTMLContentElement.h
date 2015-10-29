@@ -39,7 +39,7 @@
 namespace blink {
 
 class HTMLContentSelectFilter : public NoBaseWillBeGarbageCollectedFinalized<HTMLContentSelectFilter> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLContentSelectFilter);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLContentSelectFilter);
 public:
     virtual ~HTMLContentSelectFilter() { }
     virtual bool canSelectNode(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth) const = 0;

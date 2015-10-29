@@ -61,7 +61,7 @@ class SharedBuffer;
 // from ResourceClient, to get the function calls in case the requested data has arrived.
 // This class also does the actual communication with the loader to obtain the resource from the network.
 class CORE_EXPORT Resource : public NoBaseWillBeGarbageCollectedFinalized<Resource> {
-    WTF_MAKE_NONCOPYABLE(Resource); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Resource);
+    WTF_MAKE_NONCOPYABLE(Resource); USING_FAST_MALLOC_WILL_BE_REMOVED(Resource);
     friend class InspectorResource;
 
 public:

@@ -45,7 +45,7 @@
 namespace blink {
 
 class DatabaseTask {
-    WTF_MAKE_NONCOPYABLE(DatabaseTask); WTF_MAKE_FAST_ALLOCATED(DatabaseTask);
+    WTF_MAKE_NONCOPYABLE(DatabaseTask); USING_FAST_MALLOC(DatabaseTask);
 public:
     virtual ~DatabaseTask();
 

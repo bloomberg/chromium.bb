@@ -356,7 +356,7 @@ static void mult(BigInt& aRef, const BigInt& bRef)
 }
 
 struct P5Node {
-    WTF_MAKE_NONCOPYABLE(P5Node); WTF_MAKE_FAST_ALLOCATED(P5Node);
+    WTF_MAKE_NONCOPYABLE(P5Node); USING_FAST_MALLOC(P5Node);
 public:
     P5Node() { }
     BigInt val;

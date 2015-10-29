@@ -172,7 +172,7 @@ double CSSCalcValue::computeLengthPx(const CSSToLengthConversionData& conversion
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CSSCalcExpressionNode)
 
 class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSCalcPrimitiveValue);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CSSCalcPrimitiveValue);
 public:
 
     static PassRefPtrWillBeRawPtr<CSSCalcPrimitiveValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value, bool isInteger)

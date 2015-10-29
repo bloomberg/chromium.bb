@@ -54,7 +54,7 @@ private:
 };
 
 class CORE_EXPORT DocumentMarkerController final : public NoBaseWillBeGarbageCollected<DocumentMarkerController> {
-    WTF_MAKE_NONCOPYABLE(DocumentMarkerController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DocumentMarkerController);
+    WTF_MAKE_NONCOPYABLE(DocumentMarkerController); USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentMarkerController);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentMarkerController);
 public:
 

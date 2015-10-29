@@ -64,7 +64,7 @@ struct FillSize {
 
 // FIXME(Oilpan): Move FillLayer to Oilpan's heap.
 class CORE_EXPORT FillLayer {
-    WTF_MAKE_FAST_ALLOCATED(FillLayer);
+    USING_FAST_MALLOC(FillLayer);
 public:
     FillLayer(EFillLayerType, bool useInitialValues = false);
     ~FillLayer();

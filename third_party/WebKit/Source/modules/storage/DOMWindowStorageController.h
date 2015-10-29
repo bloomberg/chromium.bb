@@ -19,7 +19,7 @@ class Event;
 class MODULES_EXPORT DOMWindowStorageController final : public NoBaseWillBeGarbageCollected<DOMWindowStorageController>, public WillBeHeapSupplement<Document>, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorageController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMWindowStorageController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowStorageController);
 public:
     DECLARE_VIRTUAL_TRACE();
 

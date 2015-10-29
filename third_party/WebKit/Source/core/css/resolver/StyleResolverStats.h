@@ -38,7 +38,7 @@
 namespace blink {
 
 class StyleResolverStats {
-    WTF_MAKE_FAST_ALLOCATED(StyleResolverStats);
+    USING_FAST_MALLOC(StyleResolverStats);
 public:
     static PassOwnPtr<StyleResolverStats> create()
     {

@@ -29,7 +29,7 @@
 namespace blink {
 
 class SpaceSplitString {
-    WTF_MAKE_FAST_ALLOCATED(SpaceSplitString);
+    USING_FAST_MALLOC(SpaceSplitString);
 public:
     enum CaseFolding { ShouldNotFoldCase, ShouldFoldCase };
     SpaceSplitString() { }

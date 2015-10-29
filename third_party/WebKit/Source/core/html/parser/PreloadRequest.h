@@ -17,7 +17,7 @@ namespace blink {
 class Document;
 
 class PreloadRequest {
-    WTF_MAKE_FAST_ALLOCATED(PreloadRequest);
+    USING_FAST_MALLOC(PreloadRequest);
 public:
     enum RequestType { RequestTypePreload, RequestTypePreconnect };
 

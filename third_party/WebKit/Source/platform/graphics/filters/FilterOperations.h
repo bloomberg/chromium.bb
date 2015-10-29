@@ -40,7 +40,7 @@ class PLATFORM_EXPORT FilterOperations {
 #if ENABLE(OILPAN)
     DISALLOW_ALLOCATION();
 #else
-    WTF_MAKE_FAST_ALLOCATED(FilterOperations);
+    USING_FAST_MALLOC(FilterOperations);
 #endif
 public:
     FilterOperations();

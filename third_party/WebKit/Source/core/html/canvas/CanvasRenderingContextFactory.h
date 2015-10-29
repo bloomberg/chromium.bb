@@ -17,7 +17,7 @@ namespace blink {
 class HTMLCanvasElement;
 
 class CORE_EXPORT CanvasRenderingContextFactory {
-    WTF_MAKE_FAST_ALLOCATED(CanvasRenderingContextFactory);
+    USING_FAST_MALLOC(CanvasRenderingContextFactory);
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContextFactory);
 public:
     CanvasRenderingContextFactory() = default;

@@ -80,7 +80,7 @@ namespace blink {
 using namespace HTMLNames;
 
 class ListAttributeTargetObserver : public IdTargetObserver {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ListAttributeTargetObserver);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ListAttributeTargetObserver);
 public:
     static PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver> create(const AtomicString& id, HTMLInputElement*);
     DECLARE_VIRTUAL_TRACE();

@@ -34,7 +34,7 @@ class Document;
 class ImageResource;
 
 class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleFetchedImage);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImage);
 public:
     static PassRefPtrWillBeRawPtr<StyleFetchedImage> create(ImageResource* image, Document* document)
     {

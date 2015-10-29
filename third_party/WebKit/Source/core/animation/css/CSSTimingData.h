@@ -15,7 +15,7 @@ namespace blink {
 struct Timing;
 
 class CSSTimingData {
-    WTF_MAKE_FAST_ALLOCATED(CSSTimingData);
+    USING_FAST_MALLOC(CSSTimingData);
 public:
     ~CSSTimingData() { }
 

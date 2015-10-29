@@ -83,7 +83,7 @@ class LayoutBoxModelObject;
 // PaintLayerStackingNodeIterator and
 // PaintLayerStackingNodeReverseIterator.
 class CORE_EXPORT PaintLayerStackingNode {
-    WTF_MAKE_FAST_ALLOCATED(PaintLayerStackingNode);
+    USING_FAST_MALLOC(PaintLayerStackingNode);
     WTF_MAKE_NONCOPYABLE(PaintLayerStackingNode);
 public:
     explicit PaintLayerStackingNode(PaintLayer*);

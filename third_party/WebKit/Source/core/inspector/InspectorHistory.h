@@ -42,10 +42,10 @@ class ExceptionState;
 
 class InspectorHistory final : public NoBaseWillBeGarbageCollected<InspectorHistory> {
     WTF_MAKE_NONCOPYABLE(InspectorHistory);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorHistory);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorHistory);
 public:
     class Action : public RefCountedWillBeGarbageCollectedFinalized<Action> {
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Action);
+        USING_FAST_MALLOC_WILL_BE_REMOVED(Action);
     public:
         explicit Action(const String& name);
         virtual ~Action();

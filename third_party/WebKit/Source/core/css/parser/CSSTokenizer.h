@@ -22,7 +22,7 @@ class CSSParserTokenRange;
 
 class CORE_EXPORT CSSTokenizer {
     WTF_MAKE_NONCOPYABLE(CSSTokenizer);
-    WTF_MAKE_FAST_ALLOCATED(CSSTokenizer);
+    USING_FAST_MALLOC(CSSTokenizer);
 public:
     class CORE_EXPORT Scope {
         DISALLOW_ALLOCATION();

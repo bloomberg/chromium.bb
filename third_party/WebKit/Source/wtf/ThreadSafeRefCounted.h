@@ -40,7 +40,7 @@ namespace WTF {
 
 class WTF_EXPORT ThreadSafeRefCountedBase {
     WTF_MAKE_NONCOPYABLE(ThreadSafeRefCountedBase);
-    WTF_MAKE_FAST_ALLOCATED(ThreadSafeRefCountedBase);
+    USING_FAST_MALLOC(ThreadSafeRefCountedBase);
 public:
     ThreadSafeRefCountedBase(int initialRefCount = 1)
         : m_refCount(initialRefCount)

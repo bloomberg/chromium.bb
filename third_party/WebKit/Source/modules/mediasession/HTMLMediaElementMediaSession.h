@@ -17,7 +17,7 @@ namespace blink {
 // MediaSession with HTMLMediaElement.
 class HTMLMediaElementMediaSession final : public NoBaseWillBeGarbageCollected<HTMLMediaElementMediaSession>, public WillBeHeapSupplement<HTMLMediaElement> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementMediaSession);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLMediaElementMediaSession);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLMediaElementMediaSession);
 public:
     static MediaSession* session(HTMLMediaElement&);
     static void setSession(HTMLMediaElement&, MediaSession*, ExceptionState&);

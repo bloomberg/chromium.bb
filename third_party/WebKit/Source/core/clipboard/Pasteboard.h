@@ -40,7 +40,7 @@ class Image;
 class KURL;
 
 class CORE_EXPORT Pasteboard {
-    WTF_MAKE_NONCOPYABLE(Pasteboard); WTF_MAKE_FAST_ALLOCATED(Pasteboard);
+    WTF_MAKE_NONCOPYABLE(Pasteboard); USING_FAST_MALLOC(Pasteboard);
 public:
     enum SmartReplaceOption {
         CanSmartReplace,

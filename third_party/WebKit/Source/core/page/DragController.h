@@ -51,7 +51,7 @@ class PlatformMouseEvent;
 
 class CORE_EXPORT DragController final : public NoBaseWillBeGarbageCollectedFinalized<DragController> {
     WTF_MAKE_NONCOPYABLE(DragController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DragController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DragController);
 public:
     ~DragController();
 

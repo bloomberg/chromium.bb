@@ -44,7 +44,7 @@ struct ProgressItem;
 // browser which shows a progress bar during loading.
 // We should find a better way for Android to get this data and remove this!
 class CORE_EXPORT ProgressTracker final : public NoBaseWillBeGarbageCollectedFinalized<ProgressTracker> {
-    WTF_MAKE_NONCOPYABLE(ProgressTracker); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ProgressTracker);
+    WTF_MAKE_NONCOPYABLE(ProgressTracker); USING_FAST_MALLOC_WILL_BE_REMOVED(ProgressTracker);
 public:
     static PassOwnPtrWillBeRawPtr<ProgressTracker> create(LocalFrame*);
 

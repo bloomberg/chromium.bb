@@ -12,7 +12,7 @@
 namespace blink {
 
 class GranularityStrategy {
-    WTF_MAKE_FAST_ALLOCATED(GranularityStrategy);
+    USING_FAST_MALLOC(GranularityStrategy);
 public:
     virtual ~GranularityStrategy();
     virtual SelectionStrategy GetType() const = 0;

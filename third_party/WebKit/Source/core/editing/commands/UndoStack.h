@@ -41,7 +41,7 @@ class LocalFrame;
 class UndoStep;
 
 class UndoStack final : public NoBaseWillBeGarbageCollected<UndoStack> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(UndoStack);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(UndoStack);
     WTF_MAKE_NONCOPYABLE(UndoStack);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UndoStack)
 public:

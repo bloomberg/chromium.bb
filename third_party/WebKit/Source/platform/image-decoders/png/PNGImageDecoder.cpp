@@ -87,7 +87,7 @@ void PNGAPI pngFailed(png_structp png, png_const_charp)
 namespace blink {
 
 class PNGImageReader {
-    WTF_MAKE_FAST_ALLOCATED(PNGImageReader);
+    USING_FAST_MALLOC(PNGImageReader);
 public:
     PNGImageReader(PNGImageDecoder* decoder)
         : m_decoder(decoder)

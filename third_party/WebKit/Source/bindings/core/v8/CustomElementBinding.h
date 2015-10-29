@@ -39,7 +39,7 @@
 namespace blink {
 
 class CustomElementBinding {
-    WTF_MAKE_FAST_ALLOCATED(CustomElementBinding);
+    USING_FAST_MALLOC(CustomElementBinding);
 public:
     static PassOwnPtr<CustomElementBinding> create(v8::Isolate*, v8::Local<v8::Object> prototype);
     ~CustomElementBinding();

@@ -38,7 +38,7 @@ namespace blink {
 // WebCoreStringResource is a helper class for v8ExternalString. It is used
 // to manage the life-cycle of the underlying buffer of the external string.
 class WebCoreStringResourceBase {
-    WTF_MAKE_FAST_ALLOCATED(WebCoreStringResourceBase);
+    USING_FAST_MALLOC(WebCoreStringResourceBase);
     WTF_MAKE_NONCOPYABLE(WebCoreStringResourceBase);
 public:
     explicit WebCoreStringResourceBase(const String& string)

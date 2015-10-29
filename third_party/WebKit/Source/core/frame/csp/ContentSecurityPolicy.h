@@ -67,7 +67,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVecto
 typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
 
 class CORE_EXPORT ContentSecurityPolicy : public RefCountedWillBeGarbageCollectedFinalized<ContentSecurityPolicy> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ContentSecurityPolicy);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ContentSecurityPolicy);
 public:
     // CSP Level 1 Directives
     static const char ConnectSrc[];

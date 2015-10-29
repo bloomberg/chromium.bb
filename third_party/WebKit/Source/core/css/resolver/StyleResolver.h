@@ -80,7 +80,7 @@ using ActiveInterpolationsMap = HashMap<PropertyHandle, Vector<RefPtr<Interpolat
 
 // This class selects a ComputedStyle for a given element based on a collection of stylesheets.
 class CORE_EXPORT StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
-    WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleResolver);
+    WTF_MAKE_NONCOPYABLE(StyleResolver); USING_FAST_MALLOC_WILL_BE_REMOVED(StyleResolver);
 public:
     static PassOwnPtrWillBeRawPtr<StyleResolver> create(Document& document)
     {

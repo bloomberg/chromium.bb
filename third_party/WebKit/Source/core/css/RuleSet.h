@@ -121,7 +121,7 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData), "RuleData should s
 
 class CORE_EXPORT RuleSet : public NoBaseWillBeGarbageCollectedFinalized<RuleSet> {
     WTF_MAKE_NONCOPYABLE(RuleSet);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(RuleSet);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(RuleSet);
 public:
     static PassOwnPtrWillBeRawPtr<RuleSet> create() { return adoptPtrWillBeNoop(new RuleSet); }
 

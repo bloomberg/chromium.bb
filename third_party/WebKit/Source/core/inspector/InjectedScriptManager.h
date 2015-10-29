@@ -47,7 +47,7 @@ class ScriptValue;
 
 class CORE_EXPORT InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InjectedScriptManager);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InjectedScriptManager);
 public:
     static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForPage();
     static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForWorker();

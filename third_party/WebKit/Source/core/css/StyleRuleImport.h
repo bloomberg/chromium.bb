@@ -34,7 +34,7 @@ class MediaQuerySet;
 class StyleSheetContents;
 
 class StyleRuleImport : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleImport);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleImport);
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleImport> create(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet>);
 

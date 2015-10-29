@@ -24,7 +24,7 @@ class ScriptValue;
 
 class PromiseTracker final {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
-    WTF_MAKE_FAST_ALLOCATED(PromiseTracker);
+    USING_FAST_MALLOC(PromiseTracker);
 public:
     class CORE_EXPORT Listener {
     public:

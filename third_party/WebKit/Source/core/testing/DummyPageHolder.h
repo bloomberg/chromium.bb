@@ -63,7 +63,7 @@ extern void RootLayerScrollsFrameSettingOverride(Settings&);
 
 class DummyPageHolder {
     WTF_MAKE_NONCOPYABLE(DummyPageHolder);
-    WTF_MAKE_FAST_ALLOCATED(DummyPageHolder);
+    USING_FAST_MALLOC(DummyPageHolder);
 public:
     static PassOwnPtr<DummyPageHolder> create(
         const IntSize& initialViewSize = IntSize(),

@@ -10,7 +10,7 @@
 namespace blink {
 
 class SuspendableTask {
-    WTF_MAKE_FAST_ALLOCATED(SuspendableTask);
+    USING_FAST_MALLOC(SuspendableTask);
 public:
     SuspendableTask() { }
     virtual void run() = 0;

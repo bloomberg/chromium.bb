@@ -62,7 +62,7 @@ class KURL;
 class PaintController;
 
 class PLATFORM_EXPORT GraphicsContext {
-    WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED(GraphicsContext);
+    WTF_MAKE_NONCOPYABLE(GraphicsContext); USING_FAST_MALLOC(GraphicsContext);
 public:
     enum DisabledMode {
         NothingDisabled = 0, // Run as normal.

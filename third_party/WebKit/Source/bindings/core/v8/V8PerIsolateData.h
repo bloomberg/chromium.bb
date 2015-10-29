@@ -50,11 +50,11 @@ struct WrapperTypeInfo;
 typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
 
 class CORE_EXPORT V8PerIsolateData {
-    WTF_MAKE_FAST_ALLOCATED(V8PerIsolateData);
+    USING_FAST_MALLOC(V8PerIsolateData);
     WTF_MAKE_NONCOPYABLE(V8PerIsolateData);
 public:
     class EndOfScopeTask {
-        WTF_MAKE_FAST_ALLOCATED(EndOfScopeTask);
+        USING_FAST_MALLOC(EndOfScopeTask);
     public:
         virtual ~EndOfScopeTask() { }
         virtual void run() = 0;

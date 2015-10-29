@@ -49,7 +49,7 @@ public:
 };
 
 class CORE_EXPORT InspectorState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorState);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorState);
 public:
     InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);
 
@@ -92,7 +92,7 @@ private:
 class CORE_EXPORT InspectorCompositeState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCompositeState);
     WTF_MAKE_NONCOPYABLE(InspectorCompositeState);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorCompositeState);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorCompositeState);
 public:
     InspectorCompositeState(InspectorStateClient* inspectorStateClient)
         : m_client(inspectorStateClient)

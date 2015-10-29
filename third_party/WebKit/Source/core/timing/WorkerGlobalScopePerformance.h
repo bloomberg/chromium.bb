@@ -41,7 +41,7 @@ class WorkerGlobalScope;
 
 class WorkerGlobalScopePerformance final : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerGlobalScopePerformance);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerGlobalScopePerformance);
 public:
     static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
 

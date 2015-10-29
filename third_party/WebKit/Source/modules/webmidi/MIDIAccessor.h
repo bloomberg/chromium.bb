@@ -42,7 +42,7 @@ namespace blink {
 class MIDIAccessorClient;
 
 class MIDIAccessor final : public WebMIDIAccessorClient {
-    WTF_MAKE_FAST_ALLOCATED(MIDIAccessor);
+    USING_FAST_MALLOC(MIDIAccessor);
 public:
     static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
 

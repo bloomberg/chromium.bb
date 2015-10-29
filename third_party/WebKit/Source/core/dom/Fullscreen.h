@@ -48,7 +48,7 @@ class CORE_EXPORT Fullscreen final
     : public NoBaseWillBeGarbageCollectedFinalized<Fullscreen>
     , public WillBeHeapSupplement<Document>
     , public DocumentLifecycleObserver {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Fullscreen);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(Fullscreen);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 public:
     virtual ~Fullscreen();

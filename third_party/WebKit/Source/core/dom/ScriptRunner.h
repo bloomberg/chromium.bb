@@ -42,7 +42,7 @@ class ScriptLoader;
 class WebTaskRunner;
 
 class CORE_EXPORT ScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
-    WTF_MAKE_NONCOPYABLE(ScriptRunner); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScriptRunner);
+    WTF_MAKE_NONCOPYABLE(ScriptRunner); USING_FAST_MALLOC_WILL_BE_REMOVED(ScriptRunner);
 public:
     static PassOwnPtrWillBeRawPtr<ScriptRunner> create(Document* document)
     {

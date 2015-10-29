@@ -87,7 +87,7 @@ public:
 #endif
 
     class MicrotaskSuppression {
-        WTF_MAKE_FAST_ALLOCATED(MicrotaskSuppression);
+        USING_FAST_MALLOC(MicrotaskSuppression);
         WTF_MAKE_NONCOPYABLE(MicrotaskSuppression);
     public:
         MicrotaskSuppression(v8::Isolate* isolate)

@@ -41,7 +41,7 @@
 namespace blink {
 
 class MODULES_EXPORT QuotaTracker {
-    WTF_MAKE_FAST_ALLOCATED(QuotaTracker);
+    USING_FAST_MALLOC(QuotaTracker);
     WTF_MAKE_NONCOPYABLE(QuotaTracker);
 public:
     static QuotaTracker& instance();

@@ -47,7 +47,7 @@ class Node;
 
 class DOMDataStore {
     WTF_MAKE_NONCOPYABLE(DOMDataStore);
-    WTF_MAKE_FAST_ALLOCATED(DOMDataStore);
+    USING_FAST_MALLOC(DOMDataStore);
 public:
     DOMDataStore(v8::Isolate* isolate, bool isMainWorld)
         : m_isMainWorld(isMainWorld)

@@ -49,7 +49,7 @@ class PaintLayerFilterInfo;
 typedef HashMap<const PaintLayer*, PaintLayerFilterInfo*> PaintLayerFilterInfoMap;
 
 class PaintLayerFilterInfo final : public DocumentResourceClient {
-    WTF_MAKE_FAST_ALLOCATED(PaintLayerFilterInfo);
+    USING_FAST_MALLOC(PaintLayerFilterInfo);
     WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
 public:
     static PaintLayerFilterInfo* filterInfoForLayer(const PaintLayer*);

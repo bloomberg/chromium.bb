@@ -27,7 +27,7 @@ class MODULES_EXPORT ScreenOrientationController final
     , public PlatformEventController {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
     WTF_MAKE_NONCOPYABLE(ScreenOrientationController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScreenOrientationController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ScreenOrientationController);
 public:
     ~ScreenOrientationController() override;
 

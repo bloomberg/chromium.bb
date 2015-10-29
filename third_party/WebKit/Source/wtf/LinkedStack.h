@@ -38,7 +38,7 @@ namespace WTF {
 
 template <typename T>
 class LinkedStack {
-    WTF_MAKE_FAST_ALLOCATED(LinkedStack);
+    USING_FAST_MALLOC(LinkedStack);
 public:
     LinkedStack() : m_size(0) { }
 
@@ -60,9 +60,9 @@ public:
 
     // This inner class used to be private but is now public on account of a
     // possible MSVC bug. It can be made private again if we get rid of
-    // WTF_MAKE_FAST_ALLOCATED ever.
+    // USING_FAST_MALLOC ever.
     class Node {
-        WTF_MAKE_FAST_ALLOCATED(LinkedStack::Node);
+        USING_FAST_MALLOC(LinkedStack::Node);
     public:
         Node(const T&, PassOwnPtr<Node> next);
 

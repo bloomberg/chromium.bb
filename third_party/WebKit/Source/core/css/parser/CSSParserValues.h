@@ -76,7 +76,7 @@ struct CSSParserValue {
 };
 
 class CORE_EXPORT CSSParserValueList {
-    WTF_MAKE_FAST_ALLOCATED(CSSParserValueList);
+    USING_FAST_MALLOC(CSSParserValueList);
 public:
     CSSParserValueList()
         : m_current(0)
@@ -116,14 +116,14 @@ private:
 };
 
 struct CSSParserFunction {
-    WTF_MAKE_FAST_ALLOCATED(CSSParserFunction);
+    USING_FAST_MALLOC(CSSParserFunction);
 public:
     CSSValueID id;
     OwnPtr<CSSParserValueList> args;
 };
 
 struct CSSParserCalcFunction {
-    WTF_MAKE_FAST_ALLOCATED(CSSParserCalcFunction);
+    USING_FAST_MALLOC(CSSParserCalcFunction);
 public:
     CSSParserCalcFunction(CSSParserTokenRange args_) : args(args_) {}
     CSSParserTokenRange args;

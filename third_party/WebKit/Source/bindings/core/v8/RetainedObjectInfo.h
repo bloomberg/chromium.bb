@@ -37,7 +37,7 @@
 namespace blink {
 
 class RetainedObjectInfo : public v8::RetainedObjectInfo {
-    WTF_MAKE_FAST_ALLOCATED(RetainedObjectInfo);
+    USING_FAST_MALLOC(RetainedObjectInfo);
 public:
     virtual intptr_t GetEquivalenceClass() = 0;
 };

@@ -42,7 +42,7 @@ namespace blink {
 class WorkerClients final : public NoBaseWillBeGarbageCollectedFinalized<WorkerClients>, public WillBeHeapSupplementable<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
     WTF_MAKE_NONCOPYABLE(WorkerClients);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerClients);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerClients);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerClients> create()
     {

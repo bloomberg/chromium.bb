@@ -42,7 +42,7 @@ class WebSharedWorkerRepositoryClient;
 
 class SharedWorkerRepositoryClientImpl final : public SharedWorkerRepositoryClient {
     WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClientImpl);
-    WTF_MAKE_FAST_ALLOCATED(SharedWorkerRepositoryClientImpl);
+    USING_FAST_MALLOC(SharedWorkerRepositoryClientImpl);
 public:
     static PassOwnPtr<SharedWorkerRepositoryClientImpl> create(WebSharedWorkerRepositoryClient* client)
     {

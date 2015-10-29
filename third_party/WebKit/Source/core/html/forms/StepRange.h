@@ -40,7 +40,7 @@ public:
     };
 
     struct StepDescription {
-        WTF_MAKE_FAST_ALLOCATED(StepDescription);
+        USING_FAST_MALLOC(StepDescription);
     public:
         int defaultStep;
         int defaultStepBase;

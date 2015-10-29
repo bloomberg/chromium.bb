@@ -37,7 +37,7 @@
 namespace blink {
 
 class CORE_EXPORT HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader>, public ResourcePreloader {
-    WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLResourcePreloader);
+    WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLResourcePreloader);
     friend class HTMLResourcePreloaderTest;
 public:
     static PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> create(Document&);

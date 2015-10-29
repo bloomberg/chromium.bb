@@ -66,7 +66,7 @@ enum InputToLoadPerfMetricReportPolicy {
 struct CrossThreadResourceRequestData;
 
 class PLATFORM_EXPORT ResourceRequest {
-    WTF_MAKE_FAST_ALLOCATED(ResourceRequest);
+    USING_FAST_MALLOC(ResourceRequest);
 public:
     class ExtraData : public RefCounted<ExtraData> {
     public:
@@ -298,7 +298,7 @@ inline bool operator==(const ResourceRequest& a, const ResourceRequest& b) { ret
 inline bool operator!=(ResourceRequest& a, const ResourceRequest& b) { return !(a == b); }
 
 struct CrossThreadResourceRequestData {
-    WTF_MAKE_NONCOPYABLE(CrossThreadResourceRequestData); WTF_MAKE_FAST_ALLOCATED(CrossThreadResourceRequestData);
+    WTF_MAKE_NONCOPYABLE(CrossThreadResourceRequestData); USING_FAST_MALLOC(CrossThreadResourceRequestData);
 public:
     CrossThreadResourceRequestData() { }
     KURL m_url;

@@ -13,7 +13,7 @@ class MutableStylePropertySet;
 class StylePropertySet;
 
 class StyleRuleKeyframe final : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleKeyframe);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleKeyframe);
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleKeyframe> create(PassOwnPtr<Vector<double>> keys, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
     {

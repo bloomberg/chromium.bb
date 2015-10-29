@@ -32,7 +32,7 @@ enum ClipRectsCacheSlot {
 };
 
 class ClipRectsCache {
-    WTF_MAKE_FAST_ALLOCATED(ClipRectsCache);
+    USING_FAST_MALLOC(ClipRectsCache);
 public:
     struct Entry {
         Entry()

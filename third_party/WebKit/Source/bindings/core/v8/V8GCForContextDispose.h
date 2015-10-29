@@ -36,7 +36,7 @@
 namespace blink {
 
 class V8GCForContextDispose {
-    WTF_MAKE_FAST_ALLOCATED(V8GCForContextDispose);
+    USING_FAST_MALLOC(V8GCForContextDispose);
     WTF_MAKE_NONCOPYABLE(V8GCForContextDispose);
 public:
     void notifyContextDisposed(bool isMainFrame);

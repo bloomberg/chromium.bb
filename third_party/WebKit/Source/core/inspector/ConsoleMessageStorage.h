@@ -18,7 +18,7 @@ class WorkerGlobalScopeProxy;
 
 class ConsoleMessageStorage final : public NoBaseWillBeGarbageCollected<ConsoleMessageStorage> {
     WTF_MAKE_NONCOPYABLE(ConsoleMessageStorage);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ConsoleMessageStorage);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ConsoleMessageStorage);
 public:
     static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> create()
     {

@@ -13,7 +13,7 @@ namespace blink {
 // A proxy class to invoke functions implemented in bindings/modules
 // from bindings/core.
 class ModuleProxy {
-    WTF_MAKE_FAST_ALLOCATED(ModuleProxy);
+    USING_FAST_MALLOC(ModuleProxy);
 public:
     static ModuleProxy& moduleProxy();
 

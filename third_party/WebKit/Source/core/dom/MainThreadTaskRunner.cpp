@@ -36,7 +36,7 @@
 namespace blink {
 
 class MainThreadTask : public WebTaskRunner::Task {
-    WTF_MAKE_NONCOPYABLE(MainThreadTask); WTF_MAKE_FAST_ALLOCATED(MainThreadTask);
+    WTF_MAKE_NONCOPYABLE(MainThreadTask); USING_FAST_MALLOC(MainThreadTask);
 public:
     MainThreadTask(WeakPtrWillBeRawPtr<MainThreadTaskRunner> runner, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
         : m_runner(runner)

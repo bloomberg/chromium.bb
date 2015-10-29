@@ -63,7 +63,7 @@ struct PixelsAndPercent {
 class CalculationValue;
 
 class PLATFORM_EXPORT Length {
-    WTF_MAKE_FAST_ALLOCATED(Length);
+    USING_FAST_MALLOC(Length);
 public:
     Length()
         :  m_intValue(0), m_quirk(false), m_type(Auto), m_isFloat(false)

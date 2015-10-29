@@ -19,7 +19,7 @@ class Element;
 
 class CanvasRenderingContext2DState final : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext2DState>, public CSSFontSelectorClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CanvasRenderingContext2DState);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CanvasRenderingContext2DState);
 public:
     static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2DState> create()
     {

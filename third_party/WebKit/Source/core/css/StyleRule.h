@@ -35,7 +35,7 @@ class CSSRule;
 class CSSStyleSheet;
 
 class CORE_EXPORT StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleBase);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleBase);
 public:
     enum Type {
         Charset,
@@ -102,7 +102,7 @@ private:
 };
 
 class CORE_EXPORT StyleRule : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRule);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRule);
 public:
     // Adopts the selector list
     static PassRefPtrWillBeRawPtr<StyleRule> create(CSSSelectorList& selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
@@ -266,7 +266,7 @@ private:
 
 // This should only be used within the CSS Parser
 class StyleRuleCharset : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleCharset);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleCharset);
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleCharset> create() { return adoptRefWillBeNoop(new StyleRuleCharset()); }
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleBase::traceAfterDispatch(visitor); }

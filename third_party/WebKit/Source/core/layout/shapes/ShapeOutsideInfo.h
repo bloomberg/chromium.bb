@@ -83,7 +83,7 @@ private:
 };
 
 class ShapeOutsideInfo final {
-    WTF_MAKE_FAST_ALLOCATED(ShapeOutsideInfo);
+    USING_FAST_MALLOC(ShapeOutsideInfo);
 public:
     void setReferenceBoxLogicalSize(LayoutSize);
 

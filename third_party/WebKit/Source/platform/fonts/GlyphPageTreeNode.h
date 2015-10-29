@@ -70,7 +70,7 @@ class GlyphPageTreeNode;
 class SystemFallbackGlyphPageTreeNode;
 
 class PLATFORM_EXPORT GlyphPageTreeNodeBase {
-    WTF_MAKE_FAST_ALLOCATED(GlyphPageTreeNodeBase); WTF_MAKE_NONCOPYABLE(GlyphPageTreeNodeBase);
+    USING_FAST_MALLOC(GlyphPageTreeNodeBase); WTF_MAKE_NONCOPYABLE(GlyphPageTreeNodeBase);
 public:
     GlyphPageTreeNode* parent() const { return m_parent; }
 

@@ -21,7 +21,7 @@ class WorkerThread;
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
 class CORE_EXPORT WorkerInspectorProxy final : public NoBaseWillBeGarbageCollectedFinalized<WorkerInspectorProxy> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerInspectorProxy);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerInspectorProxy);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerInspectorProxy> create();
 

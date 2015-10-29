@@ -44,7 +44,7 @@ namespace blink {
 static const unsigned s_fontSizePrecisionMultiplier = 100;
 
 struct FontCacheKey {
-    WTF_MAKE_FAST_ALLOCATED(FontCacheKey);
+    USING_FAST_MALLOC(FontCacheKey);
 public:
     FontCacheKey()
         : m_creationParams()

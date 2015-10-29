@@ -37,7 +37,7 @@
 namespace blink {
 
 class CORE_EXPORT CoreInitializer {
-    WTF_MAKE_FAST_ALLOCATED(CoreInitializer);
+    USING_FAST_MALLOC(CoreInitializer);
 public:
     CoreInitializer() : m_isInited(false) { }
     // Should be called by clients before trying to create Frames.

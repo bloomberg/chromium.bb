@@ -32,7 +32,7 @@ namespace blink {
 class HTMLMetaCharsetParser;
 
 class CORE_EXPORT TextResourceDecoder {
-    WTF_MAKE_FAST_ALLOCATED(TextResourceDecoder);
+    USING_FAST_MALLOC(TextResourceDecoder);
     WTF_MAKE_NONCOPYABLE(TextResourceDecoder);
 public:
     enum EncodingSource {

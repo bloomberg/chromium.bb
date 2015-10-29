@@ -13,7 +13,7 @@ class ExecutionContext;
 class WebEncryptedMediaClient;
 
 class MediaKeysClient {
-    WTF_MAKE_FAST_ALLOCATED(MediaKeysClient);
+    USING_FAST_MALLOC(MediaKeysClient);
 public:
     virtual WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) = 0;
 

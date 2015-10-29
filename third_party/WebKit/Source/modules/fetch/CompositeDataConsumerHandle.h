@@ -22,7 +22,7 @@ class WebThread;
 // the handle by using |update| method.
 class MODULES_EXPORT CompositeDataConsumerHandle final : public WebDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(CompositeDataConsumerHandle);
-    WTF_MAKE_FAST_ALLOCATED(CompositeDataConsumerHandle);
+    USING_FAST_MALLOC(CompositeDataConsumerHandle);
     class Context;
 public:
     // An Updater is bound to the creator thread.

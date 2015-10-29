@@ -86,7 +86,7 @@ enum class DragInitiator;
 
 class CORE_EXPORT EventHandler final : public NoBaseWillBeGarbageCollectedFinalized<EventHandler> {
     WTF_MAKE_NONCOPYABLE(EventHandler);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(EventHandler);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(EventHandler);
 public:
     explicit EventHandler(LocalFrame*);
     ~EventHandler();

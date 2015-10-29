@@ -38,7 +38,7 @@ class FontDescription;
 class SimpleFontData;
 
 class CSSFontFaceSource : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFaceSource> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSFontFaceSource);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CSSFontFaceSource);
     WTF_MAKE_NONCOPYABLE(CSSFontFaceSource);
 public:
     virtual ~CSSFontFaceSource();

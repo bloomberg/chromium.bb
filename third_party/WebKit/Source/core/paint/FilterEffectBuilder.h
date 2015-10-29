@@ -41,7 +41,7 @@ class FilterOperations;
 class Element;
 
 class CORE_EXPORT FilterEffectBuilder final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectBuilder> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FilterEffectBuilder);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(FilterEffectBuilder);
 public:
     static PassRefPtrWillBeRawPtr<FilterEffectBuilder> create()
     {

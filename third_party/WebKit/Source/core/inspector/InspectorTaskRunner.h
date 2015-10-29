@@ -17,13 +17,13 @@ namespace blink {
 
 class CORE_EXPORT InspectorTaskRunner final {
     WTF_MAKE_NONCOPYABLE(InspectorTaskRunner);
-    WTF_MAKE_FAST_ALLOCATED(InspectorTaskRunner);
+    USING_FAST_MALLOC(InspectorTaskRunner);
 public:
     explicit InspectorTaskRunner(v8::Isolate*);
     ~InspectorTaskRunner();
 
     class Task {
-        WTF_MAKE_FAST_ALLOCATED(Task);
+        USING_FAST_MALLOC(Task);
     public:
         virtual ~Task() { }
         virtual void run() = 0;
@@ -34,7 +34,7 @@ public:
     void runPendingTasks();
 
     class CORE_EXPORT IgnoreInterruptsScope final {
-        WTF_MAKE_FAST_ALLOCATED(IgnoreInterruptsScope);
+        USING_FAST_MALLOC(IgnoreInterruptsScope);
     public:
         explicit IgnoreInterruptsScope(InspectorTaskRunner*);
         ~IgnoreInterruptsScope();

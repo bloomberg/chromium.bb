@@ -22,7 +22,7 @@ class WebURL;
 // WebCredentialManagerClient's methods to make them visible to the bindings code.
 class MODULES_EXPORT CredentialManagerClient final : public NoBaseWillBeGarbageCollectedFinalized<CredentialManagerClient>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CredentialManagerClient);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CredentialManagerClient);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CredentialManagerClient);
 public:
     explicit CredentialManagerClient(WebCredentialManagerClient*);
     virtual ~CredentialManagerClient();

@@ -42,7 +42,7 @@ class LayoutView;
 
 class CORE_EXPORT CaretBase {
     WTF_MAKE_NONCOPYABLE(CaretBase);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CaretBase);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CaretBase);
 protected:
     enum CaretVisibility { Visible, Hidden };
     explicit CaretBase(CaretVisibility = Hidden);

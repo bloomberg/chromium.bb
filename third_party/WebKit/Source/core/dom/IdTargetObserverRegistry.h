@@ -38,7 +38,7 @@ class IdTargetObserver;
 
 class IdTargetObserverRegistry final : public NoBaseWillBeGarbageCollectedFinalized<IdTargetObserverRegistry> {
     WTF_MAKE_NONCOPYABLE(IdTargetObserverRegistry);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(IdTargetObserverRegistry);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(IdTargetObserverRegistry);
     friend class IdTargetObserver;
 public:
     static PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> create();

@@ -65,7 +65,7 @@ enum CompositingStateTransitionType {
 // There is one PaintLayerCompositor per LayoutView.
 
 class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
-    WTF_MAKE_FAST_ALLOCATED(PaintLayerCompositor);
+    USING_FAST_MALLOC(PaintLayerCompositor);
 public:
     explicit PaintLayerCompositor(LayoutView&);
     ~PaintLayerCompositor() override;

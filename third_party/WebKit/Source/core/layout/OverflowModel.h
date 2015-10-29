@@ -76,7 +76,7 @@ namespace blink {
 // to keep this invariant.
 class OverflowModel {
     WTF_MAKE_NONCOPYABLE(OverflowModel);
-    WTF_MAKE_FAST_ALLOCATED(OverflowModel);
+    USING_FAST_MALLOC(OverflowModel);
 public:
     OverflowModel(const LayoutRect& layoutRect, const LayoutRect& visualRect)
         : m_layoutOverflow(layoutRect)

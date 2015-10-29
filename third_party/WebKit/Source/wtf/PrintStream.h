@@ -38,7 +38,7 @@ class CString;
 class String;
 
 class WTF_EXPORT PrintStream {
-    WTF_MAKE_FAST_ALLOCATED(PrintStream); WTF_MAKE_NONCOPYABLE(PrintStream);
+    USING_FAST_MALLOC(PrintStream); WTF_MAKE_NONCOPYABLE(PrintStream);
 public:
     PrintStream();
     virtual ~PrintStream();

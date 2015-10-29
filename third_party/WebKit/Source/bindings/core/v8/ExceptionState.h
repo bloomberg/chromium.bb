@@ -49,7 +49,7 @@ class ScriptState;
 
 class CORE_EXPORT ExceptionState {
     WTF_MAKE_NONCOPYABLE(ExceptionState);
-    WTF_MAKE_FAST_ALLOCATED(ExceptionState);
+    USING_FAST_MALLOC(ExceptionState);
 public:
     enum Context {
         ConstructionContext,

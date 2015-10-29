@@ -15,7 +15,7 @@
 namespace blink {
 
 class CORE_EXPORT InterpolableValue {
-    WTF_MAKE_FAST_ALLOCATED(InterpolableValue);
+    USING_FAST_MALLOC(InterpolableValue);
 public:
     virtual ~InterpolableValue() { }
 

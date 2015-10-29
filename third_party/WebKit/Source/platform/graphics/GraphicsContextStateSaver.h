@@ -35,7 +35,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT GraphicsContextStateSaver {
-    WTF_MAKE_FAST_ALLOCATED(GraphicsContextStateSaver);
+    USING_FAST_MALLOC(GraphicsContextStateSaver);
 public:
     GraphicsContextStateSaver(GraphicsContext& context, bool saveAndRestore = true)
         : m_context(context)

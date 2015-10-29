@@ -19,7 +19,7 @@ class ScriptStreamer;
 
 // A singleton thread for running background tasks for script streaming.
 class CORE_EXPORT ScriptStreamerThread {
-    WTF_MAKE_FAST_ALLOCATED(ScriptStreamerThread);
+    USING_FAST_MALLOC(ScriptStreamerThread);
     WTF_MAKE_NONCOPYABLE(ScriptStreamerThread);
 public:
     static void init();

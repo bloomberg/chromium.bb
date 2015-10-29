@@ -60,7 +60,7 @@ typedef EventSender<ImageLoader> ImageEventSender;
 
 class CORE_EXPORT ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, public ImageResourceClient {
     WILL_BE_USING_PRE_FINALIZER(ImageLoader, dispose);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ImageLoader);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ImageLoader);
 public:
     explicit ImageLoader(Element*);
     ~ImageLoader() override;

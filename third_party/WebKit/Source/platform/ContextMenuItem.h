@@ -49,7 +49,7 @@ enum ContextMenuItemType {
 };
 
 class PLATFORM_EXPORT ContextMenuItem {
-    WTF_MAKE_FAST_ALLOCATED(ContextMenuItem);
+    USING_FAST_MALLOC(ContextMenuItem);
 public:
     ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String& title, const String& icon, ContextMenu* subMenu = 0);
     ContextMenuItem(ContextMenuItemType, ContextMenuAction, const String& title, const String& icon, bool enabled, bool checked);

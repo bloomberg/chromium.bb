@@ -42,7 +42,7 @@
 namespace blink {
 
 class MutationObserverInterestGroup final : public NoBaseWillBeGarbageCollected<MutationObserverInterestGroup> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MutationObserverInterestGroup);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(MutationObserverInterestGroup);
 public:
     static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createForChildListMutation(Node& target)
     {

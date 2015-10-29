@@ -39,7 +39,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT AcceleratedImageBufferSurface : public ImageBufferSurface {
-    WTF_MAKE_NONCOPYABLE(AcceleratedImageBufferSurface); WTF_MAKE_FAST_ALLOCATED(AcceleratedImageBufferSurface);
+    WTF_MAKE_NONCOPYABLE(AcceleratedImageBufferSurface); USING_FAST_MALLOC(AcceleratedImageBufferSurface);
 public:
     AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
     ~AcceleratedImageBufferSurface() override { }

@@ -54,7 +54,7 @@ typedef String ErrorString;
 
 class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, InspectorFrontend::HeapProfiler>, public InspectorBackendDispatcher::HeapProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, InjectedScriptManager*);
     ~InspectorHeapProfilerAgent() override;

@@ -12,7 +12,7 @@ namespace blink {
 // This class is never actually stored anywhere currently, but only used for
 // the parser to pass to a stylesheet
 class StyleRuleNamespace final : public StyleRuleBase {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleNamespace);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleNamespace);
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleNamespace> create(AtomicString prefix, AtomicString uri)
     {

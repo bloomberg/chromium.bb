@@ -46,7 +46,7 @@ public:
     // additional objects based on the given policy. The constructor and the
     // destructor blocks during the setup and the teardown.
     class Thread final {
-        WTF_MAKE_FAST_ALLOCATED(Thread);
+        USING_FAST_MALLOC(Thread);
     public:
         // Initialization policy of a thread.
         enum InitializationPolicy {
@@ -181,7 +181,7 @@ public:
         };
 
         class ReaderImpl final : public WebDataConsumerHandle::Reader {
-            WTF_MAKE_FAST_ALLOCATED(ReaderImpl);
+            USING_FAST_MALLOC(ReaderImpl);
         public:
             ReaderImpl(const String& name, PassRefPtr<Context> context) : m_name(name.isolatedCopy()), m_context(context)
             {
@@ -200,7 +200,7 @@ public:
             RefPtr<Context> m_context;
         };
         class DataConsumerHandle final : public WebDataConsumerHandle {
-            WTF_MAKE_FAST_ALLOCATED(DataConsumerHandle);
+            USING_FAST_MALLOC(DataConsumerHandle);
         public:
             static PassOwnPtr<WebDataConsumerHandle> create(const String& name, PassRefPtr<Context> context)
             {
@@ -388,7 +388,7 @@ public:
 
     // ReplayingHandle stores commands via |add| and replays the stored commends when read.
     class ReplayingHandle final : public WebDataConsumerHandle {
-        WTF_MAKE_FAST_ALLOCATED(ReplayingHandle);
+        USING_FAST_MALLOC(ReplayingHandle);
     public:
         static PassOwnPtr<ReplayingHandle> create() { return adoptPtr(new ReplayingHandle()); }
         ~ReplayingHandle();
@@ -443,7 +443,7 @@ public:
     };
 
     class HandleReadResult final {
-        WTF_MAKE_FAST_ALLOCATED(HandleReadResult);
+        USING_FAST_MALLOC(HandleReadResult);
     public:
         HandleReadResult(WebDataConsumerHandle::Result result, const Vector<char>& data) : m_result(result), m_data(data) { }
         WebDataConsumerHandle::Result result() const { return m_result; }
@@ -458,7 +458,7 @@ public:
     // Reader::read on the thread on which it is created. When reading is done
     // or failed, it calls the given callback with the result.
     class HandleReader final : public WebDataConsumerHandle::Client {
-        WTF_MAKE_FAST_ALLOCATED(HandleReader);
+        USING_FAST_MALLOC(HandleReader);
     public:
         using OnFinishedReading = WTF::Function<void(PassOwnPtr<HandleReadResult>)>;
 
@@ -476,7 +476,7 @@ public:
     // HandleTwoPhaseReader does the same as HandleReader, but it uses
     // |beginRead| / |endRead| instead of |read|.
     class HandleTwoPhaseReader final : public WebDataConsumerHandle::Client {
-        WTF_MAKE_FAST_ALLOCATED(HandleTwoPhaseReader);
+        USING_FAST_MALLOC(HandleTwoPhaseReader);
     public:
         using OnFinishedReading = WTF::Function<void(PassOwnPtr<HandleReadResult>)>;
 

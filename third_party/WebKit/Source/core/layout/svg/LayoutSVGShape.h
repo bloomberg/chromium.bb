@@ -47,7 +47,7 @@ enum ShapeGeometryCodePath {
 
 struct LayoutSVGShapeRareData {
     WTF_MAKE_NONCOPYABLE(LayoutSVGShapeRareData);
-    WTF_MAKE_FAST_ALLOCATED(LayoutSVGShapeRareData);
+    USING_FAST_MALLOC(LayoutSVGShapeRareData);
 public:
     LayoutSVGShapeRareData() {}
     Path m_cachedNonScalingStrokePath;

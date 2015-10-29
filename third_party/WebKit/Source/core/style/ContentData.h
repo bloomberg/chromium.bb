@@ -37,7 +37,7 @@ class LayoutObject;
 class ComputedStyle;
 
 class ContentData : public NoBaseWillBeGarbageCollectedFinalized<ContentData> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ContentData);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ContentData);
 public:
     static PassOwnPtrWillBeRawPtr<ContentData> create(PassRefPtrWillBeRawPtr<StyleImage>);
     static PassOwnPtrWillBeRawPtr<ContentData> create(const String&);

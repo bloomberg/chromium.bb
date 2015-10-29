@@ -17,7 +17,7 @@ class SecurityOrigin;
 enum class FrameDetachType;
 
 class CORE_EXPORT FrameClient : public NoBaseWillBeGarbageCollectedFinalized<FrameClient> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FrameClient);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(FrameClient);
 public:
     virtual bool inShadowTree() const = 0;
 

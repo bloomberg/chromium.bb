@@ -44,7 +44,7 @@ class WorkerLoaderProxy;
 // passed to and used on the main thread. Each did* method relays the given
 // data to the client wrapper on the worker context thread.
 class WorkerLoaderClientBridge : public ThreadableLoaderClient {
-    WTF_MAKE_FAST_ALLOCATED(WorkerLoaderClientBridge);
+    USING_FAST_MALLOC(WorkerLoaderClientBridge);
 public:
     static PassOwnPtr<ThreadableLoaderClient> create(PassRefPtr<ThreadableLoaderClientWrapper>, PassRefPtr<WorkerLoaderProxy>);
     ~WorkerLoaderClientBridge() override;

@@ -21,14 +21,14 @@ class InterpolationEnvironment;
 // - Converts from animation keyframe(s) to interpolation compatible representations: maybeConvertPairwise() and maybeConvertSingle()
 // - Applies interpolation compatible representations of values to a StyleResolverState: apply()
 class InterpolationType {
-    WTF_MAKE_FAST_ALLOCATED(InterpolationType);
+    USING_FAST_MALLOC(InterpolationType);
     WTF_MAKE_NONCOPYABLE(InterpolationType);
 public:
     PropertyHandle property() const { return m_property; }
 
     // Represents logic for determining whether a conversion decision is no longer valid given the current environment.
     class ConversionChecker {
-        WTF_MAKE_FAST_ALLOCATED(ConversionChecker);
+        USING_FAST_MALLOC(ConversionChecker);
         WTF_MAKE_NONCOPYABLE(ConversionChecker);
     public:
         virtual ~ConversionChecker() { }

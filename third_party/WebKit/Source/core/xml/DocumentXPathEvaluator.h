@@ -38,7 +38,7 @@ class XPathResult;
 
 class DocumentXPathEvaluator final : public NoBaseWillBeGarbageCollected<DocumentXPathEvaluator>, public WillBeHeapSupplement<Document> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DocumentXPathEvaluator);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentXPathEvaluator);
 public:
     static DocumentXPathEvaluator& from(WillBeHeapSupplementable<Document>&);
 

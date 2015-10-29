@@ -164,7 +164,7 @@ static bool hasTransparentBackgroundColor(StylePropertySet*);
 static PassRefPtrWillBeRawPtr<CSSValue> backgroundColorInEffect(Node*);
 
 class HTMLElementEquivalent : public NoBaseWillBeGarbageCollected<HTMLElementEquivalent> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLElementEquivalent);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLElementEquivalent);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(HTMLElementEquivalent);
 public:
     static PassOwnPtrWillBeRawPtr<HTMLElementEquivalent> create(CSSPropertyID propertyID, CSSValueID primitiveValue, const HTMLQualifiedName& tagName)

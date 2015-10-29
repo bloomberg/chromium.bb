@@ -39,7 +39,7 @@ namespace blink {
 // AudioDSPKernel does the processing for one channel of an AudioDSPKernelProcessor.
 
 class PLATFORM_EXPORT AudioDSPKernel {
-    WTF_MAKE_FAST_ALLOCATED(AudioDSPKernel);
+    USING_FAST_MALLOC(AudioDSPKernel);
 public:
     AudioDSPKernel(AudioDSPKernelProcessor* kernelProcessor)
         : m_kernelProcessor(kernelProcessor)

@@ -21,7 +21,7 @@ class V8DebuggerClient;
 struct ScriptBreakpoint;
 
 class CORE_EXPORT V8Debugger {
-    WTF_MAKE_FAST_ALLOCATED(V8Debugger);
+    USING_FAST_MALLOC(V8Debugger);
 public:
     static PassOwnPtr<V8Debugger> create(v8::Isolate*, V8DebuggerClient*);
     virtual ~V8Debugger() { }

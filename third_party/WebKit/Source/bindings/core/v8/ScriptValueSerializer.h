@@ -214,7 +214,7 @@ public:
 
 protected:
     class StateBase {
-        WTF_MAKE_FAST_ALLOCATED(StateBase);
+        USING_FAST_MALLOC(StateBase);
         WTF_MAKE_NONCOPYABLE(StateBase);
     public:
         virtual ~StateBase() { }

@@ -46,7 +46,7 @@ enum TextJustify {
 };
 
 class PLATFORM_EXPORT TextRun {
-    WTF_MAKE_FAST_ALLOCATED(TextRun);
+    USING_FAST_MALLOC(TextRun);
 public:
     enum ExpansionBehaviorFlags {
         ForbidTrailingExpansion = 0 << 0,

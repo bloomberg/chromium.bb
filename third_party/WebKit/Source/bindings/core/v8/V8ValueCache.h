@@ -66,7 +66,7 @@ public:
 
 
 class CORE_EXPORT StringCache {
-    WTF_MAKE_FAST_ALLOCATED(StringCache);
+    USING_FAST_MALLOC(StringCache);
     WTF_MAKE_NONCOPYABLE(StringCache);
 public:
     explicit StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }

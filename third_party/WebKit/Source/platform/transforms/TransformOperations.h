@@ -33,7 +33,7 @@
 namespace blink {
 class FloatBox;
 class PLATFORM_EXPORT TransformOperations {
-    WTF_MAKE_FAST_ALLOCATED(TransformOperations);
+    USING_FAST_MALLOC(TransformOperations);
 public:
     explicit TransformOperations(bool makeIdentity = false);
 

@@ -52,7 +52,7 @@ class ExecutionContext;
 
 class ImageBitmapFactories final : public NoBaseWillBeGarbageCollectedFinalized<ImageBitmapFactories>, public WillBeHeapSupplement<LocalDOMWindow>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ImageBitmapFactories);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ImageBitmapFactories);
 
 public:
     static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Blob*, ExceptionState&);

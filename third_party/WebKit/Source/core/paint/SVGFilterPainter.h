@@ -17,7 +17,7 @@ class LayoutObject;
 class LayoutSVGResourceFilter;
 
 class SVGFilterRecordingContext {
-    WTF_MAKE_FAST_ALLOCATED(SVGFilterRecordingContext);
+    USING_FAST_MALLOC(SVGFilterRecordingContext);
     WTF_MAKE_NONCOPYABLE(SVGFilterRecordingContext);
 public:
     explicit SVGFilterRecordingContext(GraphicsContext* initialContext) : m_initialContext(initialContext) { }

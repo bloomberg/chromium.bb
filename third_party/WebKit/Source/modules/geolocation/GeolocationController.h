@@ -43,7 +43,7 @@ class GeolocationPosition;
 class MODULES_EXPORT GeolocationController final : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
     WTF_MAKE_NONCOPYABLE(GeolocationController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(GeolocationController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(GeolocationController);
 public:
     virtual ~GeolocationController();
 

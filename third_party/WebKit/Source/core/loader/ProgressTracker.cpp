@@ -54,7 +54,7 @@ static const double finalProgressValue = 0.9; // 1.0 - initialProgressValue
 static const int progressItemDefaultEstimatedLength = 1024 * 1024;
 
 struct ProgressItem {
-    WTF_MAKE_NONCOPYABLE(ProgressItem); WTF_MAKE_FAST_ALLOCATED(ProgressItem);
+    WTF_MAKE_NONCOPYABLE(ProgressItem); USING_FAST_MALLOC(ProgressItem);
 public:
     ProgressItem(long long length)
         : bytesReceived(0)

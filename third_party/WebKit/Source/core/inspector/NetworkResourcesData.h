@@ -79,10 +79,10 @@ private:
 };
 
 class NetworkResourcesData {
-    WTF_MAKE_FAST_ALLOCATED(NetworkResourcesData);
+    USING_FAST_MALLOC(NetworkResourcesData);
 public:
     class ResourceData {
-        WTF_MAKE_FAST_ALLOCATED(ResourceData);
+        USING_FAST_MALLOC(ResourceData);
         friend class NetworkResourcesData;
     public:
         ResourceData(const String& requestId, const String& loaderId);

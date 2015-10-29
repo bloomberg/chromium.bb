@@ -18,7 +18,7 @@ class GraphicsContext;
 // Emits display items which represent a region which is scrollable, so that it
 // can be translated by the scroll offset.
 class CORE_EXPORT ScrollRecorder {
-    WTF_MAKE_FAST_ALLOCATED(ScrollRecorder);
+    USING_FAST_MALLOC(ScrollRecorder);
 public:
     ScrollRecorder(GraphicsContext&, const DisplayItemClientWrapper&, PaintPhase, const IntSize& currentOffset);
     ~ScrollRecorder();

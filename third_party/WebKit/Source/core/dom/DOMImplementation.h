@@ -41,7 +41,7 @@ class XMLDocument;
 
 class CORE_EXPORT DOMImplementation final : public NoBaseWillBeGarbageCollected<DOMImplementation>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMImplementation);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMImplementation);
 public:
     static PassOwnPtrWillBeRawPtr<DOMImplementation> create(Document& document)
     {

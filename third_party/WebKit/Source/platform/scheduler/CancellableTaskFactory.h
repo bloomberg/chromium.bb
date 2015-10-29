@@ -22,7 +22,7 @@ class TraceLocation;
 
 class PLATFORM_EXPORT CancellableTaskFactory {
     WTF_MAKE_NONCOPYABLE(CancellableTaskFactory);
-    WTF_MAKE_FAST_ALLOCATED(CancellableTaskFactory);
+    USING_FAST_MALLOC(CancellableTaskFactory);
 public:
     // A pair of mutually exclusive factory methods are provided for constructing
     // a CancellableTaskFactory, one for when a Oilpan heap object owns a

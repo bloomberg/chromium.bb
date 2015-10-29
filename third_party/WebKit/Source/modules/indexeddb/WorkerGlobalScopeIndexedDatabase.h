@@ -38,7 +38,7 @@ class WorkerGlobalScope;
 
 class WorkerGlobalScopeIndexedDatabase final : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeIndexedDatabase>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeIndexedDatabase);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerGlobalScopeIndexedDatabase);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerGlobalScopeIndexedDatabase);
 public:
     virtual ~WorkerGlobalScopeIndexedDatabase();
     static WorkerGlobalScopeIndexedDatabase& from(WillBeHeapSupplementable<WorkerGlobalScope>&);

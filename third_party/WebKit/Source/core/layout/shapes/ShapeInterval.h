@@ -36,7 +36,7 @@ namespace blink {
 
 template <typename T>
 class ShapeInterval {
-    WTF_MAKE_FAST_ALLOCATED(ShapeInterval);
+    USING_FAST_MALLOC(ShapeInterval);
 public:
     ShapeInterval()
         : m_x1(-1)

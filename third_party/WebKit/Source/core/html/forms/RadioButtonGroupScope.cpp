@@ -28,7 +28,7 @@
 namespace blink {
 
 class RadioButtonGroup : public NoBaseWillBeGarbageCollected<RadioButtonGroup> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(RadioButtonGroup);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(RadioButtonGroup);
 public:
     static PassOwnPtrWillBeRawPtr<RadioButtonGroup> create();
     bool isEmpty() const { return m_members.isEmpty(); }

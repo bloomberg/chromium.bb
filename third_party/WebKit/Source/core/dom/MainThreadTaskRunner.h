@@ -44,7 +44,7 @@ class ExecutionContextTask;
 
 class CORE_EXPORT MainThreadTaskRunner final : public NoBaseWillBeGarbageCollectedFinalized<MainThreadTaskRunner> {
     WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MainThreadTaskRunner);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(MainThreadTaskRunner);
 
 public:
     static PassOwnPtrWillBeRawPtr<MainThreadTaskRunner> create(ExecutionContext*);

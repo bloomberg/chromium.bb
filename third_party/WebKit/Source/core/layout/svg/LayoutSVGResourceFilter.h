@@ -32,7 +32,7 @@
 namespace blink {
 
 class FilterData final : public NoBaseWillBeGarbageCollectedFinalized<FilterData> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FilterData);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(FilterData);
 public:
     /*
      * The state transitions should follow the following:

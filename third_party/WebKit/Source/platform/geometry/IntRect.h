@@ -49,7 +49,7 @@ class FloatRect;
 class LayoutRect;
 
 class PLATFORM_EXPORT IntRect {
-    WTF_MAKE_FAST_ALLOCATED(IntRect);
+    USING_FAST_MALLOC(IntRect);
 public:
     IntRect() { }
     IntRect(const IntPoint& location, const IntSize& size)

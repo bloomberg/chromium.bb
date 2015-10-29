@@ -45,7 +45,7 @@ class Element;
 class FloatBox;
 
 class CORE_EXPORT CompositorAnimations {
-    WTF_MAKE_FAST_ALLOCATED(CompositorAnimations);
+    USING_FAST_MALLOC(CompositorAnimations);
     WTF_MAKE_NONCOPYABLE(CompositorAnimations);
 public:
     static CompositorAnimations* instance() { return instance(0); }

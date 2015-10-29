@@ -76,7 +76,7 @@ private:
 };
 
 class ContextFeaturesClient {
-    WTF_MAKE_FAST_ALLOCATED(ContextFeaturesClient);
+    USING_FAST_MALLOC(ContextFeaturesClient);
 public:
     static PassOwnPtr<ContextFeaturesClient> empty();
 

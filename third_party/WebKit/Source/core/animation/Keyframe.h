@@ -21,7 +21,7 @@ class ComputedStyle;
 
 // FIXME: Make Keyframe immutable
 class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
-    WTF_MAKE_FAST_ALLOCATED(Keyframe);
+    USING_FAST_MALLOC(Keyframe);
     WTF_MAKE_NONCOPYABLE(Keyframe);
 public:
     virtual ~Keyframe() { }
@@ -54,7 +54,7 @@ public:
     virtual bool isStringKeyframe() const { return false; }
 
     class PropertySpecificKeyframe {
-        WTF_MAKE_FAST_ALLOCATED(PropertySpecificKeyframe);
+        USING_FAST_MALLOC(PropertySpecificKeyframe);
         WTF_MAKE_NONCOPYABLE(PropertySpecificKeyframe);
     public:
         virtual ~PropertySpecificKeyframe() { }

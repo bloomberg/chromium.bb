@@ -60,7 +60,7 @@ namespace blink {
 namespace {
 
 class PageInspectorProxy final : public InspectorFrontendChannel {
-    WTF_MAKE_FAST_ALLOCATED(PageInspectorProxy);
+    USING_FAST_MALLOC(PageInspectorProxy);
 public:
     explicit PageInspectorProxy(WorkerGlobalScope* workerGlobalScope) : m_workerGlobalScope(workerGlobalScope) { }
     ~PageInspectorProxy() override { }
@@ -79,7 +79,7 @@ private:
 };
 
 class WorkerStateClient final : public InspectorStateClient {
-    WTF_MAKE_FAST_ALLOCATED(WorkerStateClient);
+    USING_FAST_MALLOC(WorkerStateClient);
 public:
     WorkerStateClient(WorkerGlobalScope* context) { }
     ~WorkerStateClient() override { }

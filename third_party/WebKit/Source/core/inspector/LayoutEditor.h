@@ -25,7 +25,7 @@ class JSONObject;
 class ScriptController;
 
 class CORE_EXPORT LayoutEditor final : public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(LayoutEditor);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(LayoutEditor);
 public:
     static PassOwnPtrWillBeRawPtr<LayoutEditor> create(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent, ScriptController* scriptController)
     {

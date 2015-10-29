@@ -38,7 +38,7 @@
 namespace blink {
 
 class CORE_EXPORT NetworkStateNotifier {
-    WTF_MAKE_NONCOPYABLE(NetworkStateNotifier); WTF_MAKE_FAST_ALLOCATED(NetworkStateNotifier);
+    WTF_MAKE_NONCOPYABLE(NetworkStateNotifier); USING_FAST_MALLOC(NetworkStateNotifier);
 public:
     class NetworkStateObserver {
     public:

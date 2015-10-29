@@ -91,7 +91,7 @@ private:
 };
 
 class FormController final : public NoBaseWillBeGarbageCollectedFinalized<FormController> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FormController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(FormController);
 public:
     static PassOwnPtrWillBeRawPtr<FormController> create()
     {

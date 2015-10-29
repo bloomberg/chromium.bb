@@ -43,7 +43,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT AsyncFileSystemCallbacks {
-    WTF_MAKE_FAST_ALLOCATED(AsyncFileSystemCallbacks);
+    USING_FAST_MALLOC(AsyncFileSystemCallbacks);
     WTF_MAKE_NONCOPYABLE(AsyncFileSystemCallbacks);
 public:
     AsyncFileSystemCallbacks() : m_blockUntilCompletion(false) { }

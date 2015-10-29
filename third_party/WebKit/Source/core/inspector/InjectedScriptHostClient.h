@@ -10,7 +10,7 @@
 namespace blink {
 
 class InjectedScriptHostClient  {
-    WTF_MAKE_FAST_ALLOCATED(InjectedScriptHostClient);
+    USING_FAST_MALLOC(InjectedScriptHostClient);
 public:
     virtual void muteWarningsAndDeprecations() { }
     virtual void unmuteWarningsAndDeprecations() { }

@@ -32,7 +32,7 @@ namespace blink {
 
 class SelectionEditor final : public NoBaseWillBeGarbageCollectedFinalized<SelectionEditor>, public VisibleSelectionChangeObserver {
     WTF_MAKE_NONCOPYABLE(SelectionEditor);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SelectionEditor);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(SelectionEditor);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 public:
     // TODO(yosin) We should move |EAlteration| and |VerticalDirection| out

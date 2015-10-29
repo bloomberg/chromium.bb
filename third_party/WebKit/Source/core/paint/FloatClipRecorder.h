@@ -14,7 +14,7 @@
 namespace blink {
 
 class FloatClipRecorder {
-    WTF_MAKE_FAST_ALLOCATED(FloatClipRecorder);
+    USING_FAST_MALLOC(FloatClipRecorder);
     WTF_MAKE_NONCOPYABLE(FloatClipRecorder);
 public:
     FloatClipRecorder(GraphicsContext&, const DisplayItemClientWrapper&, PaintPhase, const FloatRect&);

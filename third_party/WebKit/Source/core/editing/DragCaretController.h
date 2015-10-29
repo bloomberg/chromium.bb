@@ -34,7 +34,7 @@ class CullRect;
 
 class DragCaretController final : public NoBaseWillBeGarbageCollectedFinalized<DragCaretController>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(DragCaretController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DragCaretController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DragCaretController);
 public:
     static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 

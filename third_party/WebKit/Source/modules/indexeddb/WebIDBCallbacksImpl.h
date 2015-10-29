@@ -45,7 +45,7 @@ struct WebIDBMetadata;
 struct WebIDBValue;
 
 class WebIDBCallbacksImpl final : public WebIDBCallbacks {
-    WTF_MAKE_FAST_ALLOCATED(WebIDBCallbacksImpl);
+    USING_FAST_MALLOC(WebIDBCallbacksImpl);
 public:
     static PassOwnPtr<WebIDBCallbacksImpl> create(IDBRequest*);
 

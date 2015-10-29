@@ -46,7 +46,7 @@ class HTMLImportChild;
 // A LinkResource subclasss used for @rel=import.
 //
 class LinkImport final : public LinkResource, public HTMLImportChildClient {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(LinkImport);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(LinkImport);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
 public:
 

@@ -20,7 +20,7 @@ class CORE_EXPORT DOMWindowPerformance final : public NoBaseWillBeGarbageCollect
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPerformance);
     WTF_MAKE_NONCOPYABLE(DOMWindowPerformance);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMWindowPerformance);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowPerformance);
 public:
     static DOMWindowPerformance& from(LocalDOMWindow&);
     static Performance* performance(DOMWindow&);

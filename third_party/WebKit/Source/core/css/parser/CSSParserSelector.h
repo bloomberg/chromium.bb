@@ -26,7 +26,7 @@
 namespace blink {
 
 class CSSParserSelector {
-    WTF_MAKE_NONCOPYABLE(CSSParserSelector); WTF_MAKE_FAST_ALLOCATED(CSSParserSelector);
+    WTF_MAKE_NONCOPYABLE(CSSParserSelector); USING_FAST_MALLOC(CSSParserSelector);
 public:
     CSSParserSelector();
     explicit CSSParserSelector(const QualifiedName&, bool isImplicit = false);

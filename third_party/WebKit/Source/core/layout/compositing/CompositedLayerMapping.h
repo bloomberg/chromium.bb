@@ -70,7 +70,7 @@ enum GraphicsLayerUpdateScope {
 // but this is likely to evolve soon.
 class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
-    WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); WTF_MAKE_FAST_ALLOCATED(CompositedPaintLayerMapping);
+    WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); USING_FAST_MALLOC(CompositedPaintLayerMapping);
 public:
     explicit CompositedLayerMapping(PaintLayer&);
     ~CompositedLayerMapping() override;

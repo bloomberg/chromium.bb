@@ -42,7 +42,7 @@ class SharedBuffer;
 
 // Allows transfer of data in multiple chunks from a SharedBuffer to a provided buffer.
 class CORE_EXPORT SharedBufferReader {
-    WTF_MAKE_FAST_ALLOCATED(SharedBufferReader);
+    USING_FAST_MALLOC(SharedBufferReader);
 public:
     SharedBufferReader(PassRefPtr<SharedBuffer>);
 

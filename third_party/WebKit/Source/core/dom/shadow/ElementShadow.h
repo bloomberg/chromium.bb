@@ -41,7 +41,7 @@ namespace blink {
 
 class CORE_EXPORT ElementShadow final : public NoBaseWillBeGarbageCollectedFinalized<ElementShadow> {
     WTF_MAKE_NONCOPYABLE(ElementShadow);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ElementShadow);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ElementShadow);
 public:
     static PassOwnPtrWillBeRawPtr<ElementShadow> create();
     ~ElementShadow();

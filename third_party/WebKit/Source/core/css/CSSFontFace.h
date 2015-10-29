@@ -43,7 +43,7 @@ class RemoteFontFaceSource;
 class SimpleFontData;
 
 class CORE_EXPORT CSSFontFace final : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFace> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSFontFace);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CSSFontFace);
     WTF_MAKE_NONCOPYABLE(CSSFontFace);
 public:
     struct UnicodeRange;

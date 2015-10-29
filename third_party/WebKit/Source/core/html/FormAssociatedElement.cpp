@@ -39,7 +39,7 @@ namespace blink {
 using namespace HTMLNames;
 
 class FormAttributeTargetObserver : public IdTargetObserver {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FormAttributeTargetObserver);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(FormAttributeTargetObserver);
 public:
     static PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
     DECLARE_VIRTUAL_TRACE();

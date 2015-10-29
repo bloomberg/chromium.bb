@@ -36,7 +36,7 @@ class LayoutObject;
 
 class LayoutImageResource : public NoBaseWillBeGarbageCollectedFinalized<LayoutImageResource> {
     WTF_MAKE_NONCOPYABLE(LayoutImageResource);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(LayoutImageResource);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(LayoutImageResource);
 public:
     virtual ~LayoutImageResource();
 

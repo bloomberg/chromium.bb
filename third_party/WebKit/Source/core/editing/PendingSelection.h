@@ -33,7 +33,7 @@ class FrameSelection;
 class LayoutView;
 
 class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PendingSelection);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PendingSelection);
 public:
     static PassOwnPtrWillBeRawPtr<PendingSelection> create(FrameSelection& frameSelection)
     {

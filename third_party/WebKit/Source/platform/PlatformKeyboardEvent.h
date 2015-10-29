@@ -34,7 +34,7 @@
 namespace blink {
 
 class PlatformKeyboardEvent : public PlatformEvent {
-    WTF_MAKE_FAST_ALLOCATED(PlatformKeyboardEvent);
+    USING_FAST_MALLOC(PlatformKeyboardEvent);
 public:
     PlatformKeyboardEvent()
         : PlatformEvent(PlatformEvent::KeyDown)

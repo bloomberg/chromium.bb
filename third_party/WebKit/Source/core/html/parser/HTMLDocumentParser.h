@@ -67,7 +67,7 @@ class ParsedChunkQueue;
 class PumpSession;
 
 class HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLDocumentParser);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLDocumentParser);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
 public:
     static PassRefPtrWillBeRawPtr<HTMLDocumentParser> create(HTMLDocument& document, bool reportErrors, ParserSynchronizationPolicy backgroundParsingPolicy)
@@ -92,7 +92,7 @@ public:
     void resumeScheduledTasks() final;
 
     struct ParsedChunk {
-        WTF_MAKE_FAST_ALLOCATED(ParsedChunk);
+        USING_FAST_MALLOC(ParsedChunk);
     public:
         OwnPtr<CompactHTMLTokenStream> tokens;
         PreloadRequestStream preloads;

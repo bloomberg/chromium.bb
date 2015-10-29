@@ -98,7 +98,7 @@ class LayoutScrollbarPart;
 // are painted by their associated GraphicsLayer that sets the paint flag
 // PaintLayerPaintingOverlayScrollbars.
 class CORE_EXPORT PaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<PaintLayerScrollableArea>, public ScrollableArea {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PaintLayerScrollableArea);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PaintLayerScrollableArea);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PaintLayerScrollableArea);
     friend class Internals;
 

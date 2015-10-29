@@ -30,7 +30,7 @@
 namespace blink {
 
 class MediaQueryResult : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryResult> {
-    WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MediaQueryResult);
+    WTF_MAKE_NONCOPYABLE(MediaQueryResult); USING_FAST_MALLOC_WILL_BE_REMOVED(MediaQueryResult);
 public:
     MediaQueryResult(const MediaQueryExp& expr, bool result)
 #if ENABLE(OILPAN)

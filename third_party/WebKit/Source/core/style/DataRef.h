@@ -30,7 +30,7 @@
 namespace blink {
 
 template <typename T> class DataRef {
-    WTF_MAKE_FAST_ALLOCATED(DataRef);
+    USING_FAST_MALLOC(DataRef);
 public:
     const T* get() const { return m_data.get(); }
 

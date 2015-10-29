@@ -11,7 +11,7 @@
 namespace blink {
 
 class SerializedScriptValueForModulesFactory final : public SerializedScriptValueFactory {
-    WTF_MAKE_FAST_ALLOCATED(SerializedScriptValueForModulesFactory);
+    USING_FAST_MALLOC(SerializedScriptValueForModulesFactory);
     WTF_MAKE_NONCOPYABLE(SerializedScriptValueForModulesFactory);
 public:
     SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() { }

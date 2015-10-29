@@ -32,7 +32,7 @@ class CSSCursorImageValue;
 class SVGCursorElement;
 
 class SVGElementRareData : public NoBaseWillBeGarbageCollectedFinalized<SVGElementRareData> {
-    WTF_MAKE_NONCOPYABLE(SVGElementRareData); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGElementRareData);
+    WTF_MAKE_NONCOPYABLE(SVGElementRareData); USING_FAST_MALLOC_WILL_BE_REMOVED(SVGElementRareData);
 public:
     SVGElementRareData(SVGElement* owner)
 #if ENABLE(OILPAN)

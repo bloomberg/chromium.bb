@@ -50,7 +50,7 @@ class WebPluginContainerImpl;
 // the requested plugin.
 class WebHelperPluginImpl final : public WebHelperPlugin {
     WTF_MAKE_NONCOPYABLE(WebHelperPluginImpl);
-    WTF_MAKE_FAST_ALLOCATED(WebHelperPluginImpl);
+    USING_FAST_MALLOC(WebHelperPluginImpl);
 public:
     // WebHelperPlugin methods:
     WebPlugin* getPlugin() override;

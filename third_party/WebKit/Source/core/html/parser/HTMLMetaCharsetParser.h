@@ -37,7 +37,7 @@ namespace blink {
 class HTMLTokenizer;
 
 class HTMLMetaCharsetParser {
-    WTF_MAKE_NONCOPYABLE(HTMLMetaCharsetParser); WTF_MAKE_FAST_ALLOCATED(HTMLMetaCharsetParser);
+    WTF_MAKE_NONCOPYABLE(HTMLMetaCharsetParser); USING_FAST_MALLOC(HTMLMetaCharsetParser);
 public:
     static PassOwnPtr<HTMLMetaCharsetParser> create() { return adoptPtr(new HTMLMetaCharsetParser()); }
 

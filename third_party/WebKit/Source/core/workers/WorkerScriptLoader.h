@@ -49,7 +49,7 @@ class ExecutionContext;
 class TextResourceDecoder;
 
 class CORE_EXPORT WorkerScriptLoader final : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
-    WTF_MAKE_FAST_ALLOCATED(WorkerScriptLoader);
+    USING_FAST_MALLOC(WorkerScriptLoader);
 public:
     static PassRefPtr<WorkerScriptLoader> create()
     {

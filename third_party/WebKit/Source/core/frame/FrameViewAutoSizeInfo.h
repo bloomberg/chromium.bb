@@ -17,7 +17,7 @@ class FrameView;
 
 class FrameViewAutoSizeInfo final : public NoBaseWillBeGarbageCollected<FrameViewAutoSizeInfo> {
     WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FrameViewAutoSizeInfo);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(FrameViewAutoSizeInfo);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FrameViewAutoSizeInfo);
 public:
     static PassOwnPtrWillBeRawPtr<FrameViewAutoSizeInfo> create(FrameView* frameView)

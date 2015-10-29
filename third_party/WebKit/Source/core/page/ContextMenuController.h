@@ -46,7 +46,7 @@ class LocalFrame;
 class Page;
 
 class CORE_EXPORT ContextMenuController final : public NoBaseWillBeGarbageCollectedFinalized<ContextMenuController> {
-    WTF_MAKE_NONCOPYABLE(ContextMenuController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ContextMenuController);
+    WTF_MAKE_NONCOPYABLE(ContextMenuController); USING_FAST_MALLOC_WILL_BE_REMOVED(ContextMenuController);
 public:
     static PassOwnPtrWillBeRawPtr<ContextMenuController> create(Page*, ContextMenuClient*);
     ~ContextMenuController();

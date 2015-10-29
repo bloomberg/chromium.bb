@@ -39,7 +39,7 @@ class PlatformMouseEvent;
 
 class CORE_EXPORT PointerLockController final : public NoBaseWillBeGarbageCollected<PointerLockController> {
     WTF_MAKE_NONCOPYABLE(PointerLockController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PointerLockController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PointerLockController);
 public:
     static PassOwnPtrWillBeRawPtr<PointerLockController> create(Page*);
 

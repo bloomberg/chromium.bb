@@ -41,7 +41,7 @@
 namespace blink {
 
 class CORE_EXPORT HTMLParserThread {
-    WTF_MAKE_FAST_ALLOCATED(HTMLParserThread);
+    USING_FAST_MALLOC(HTMLParserThread);
 public:
     static void init();
     static void shutdown();

@@ -14,7 +14,7 @@ namespace blink {
 class GraphicsContext;
 
 class PLATFORM_EXPORT ClipRecorder {
-    WTF_MAKE_FAST_ALLOCATED(ClipRecorder);
+    USING_FAST_MALLOC(ClipRecorder);
 public:
     ClipRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type, const LayoutRect& clipRect);
     ~ClipRecorder();

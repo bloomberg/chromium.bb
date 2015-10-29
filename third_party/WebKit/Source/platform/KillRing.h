@@ -32,7 +32,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT KillRing {
-    WTF_MAKE_FAST_ALLOCATED(KillRing);
+    USING_FAST_MALLOC(KillRing);
 public:
     void append(const String&);
     void prepend(const String&);

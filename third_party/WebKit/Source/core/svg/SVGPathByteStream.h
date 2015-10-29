@@ -33,7 +33,7 @@ union ByteType {
 };
 
 class SVGPathByteStream {
-    WTF_MAKE_FAST_ALLOCATED(SVGPathByteStream);
+    USING_FAST_MALLOC(SVGPathByteStream);
 public:
     static PassOwnPtr<SVGPathByteStream> create()
     {

@@ -19,7 +19,7 @@ class MODULES_EXPORT PermissionController final
     , public LocalFrameLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(PermissionController);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PermissionController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PermissionController);
 public:
     virtual ~PermissionController();
 

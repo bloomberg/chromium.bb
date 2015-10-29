@@ -141,7 +141,7 @@ private:
 // You need to call clear() once you no longer need the context. Otherwise, the context will leak.
 class ScriptStateProtectingContext {
     WTF_MAKE_NONCOPYABLE(ScriptStateProtectingContext);
-    WTF_MAKE_FAST_ALLOCATED(ScriptStateProtectingContext);
+    USING_FAST_MALLOC(ScriptStateProtectingContext);
 public:
     ScriptStateProtectingContext(ScriptState* scriptState)
         : m_scriptState(scriptState)

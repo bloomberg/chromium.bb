@@ -60,7 +60,7 @@ class ResourceRequest;
 class CORE_EXPORT PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public LocalFrameLifecycleObserver, private WebURLLoaderClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PingLoader);
     WTF_MAKE_NONCOPYABLE(PingLoader);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PingLoader);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PingLoader);
 public:
     ~PingLoader() override;
 

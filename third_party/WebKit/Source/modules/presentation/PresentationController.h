@@ -30,7 +30,7 @@ class MODULES_EXPORT PresentationController final
     , public LocalFrameLifecycleObserver
     , public WebPresentationController {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PresentationController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PresentationController);
     WTF_MAKE_NONCOPYABLE(PresentationController);
 public:
     ~PresentationController() override;

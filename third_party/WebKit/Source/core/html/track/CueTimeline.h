@@ -29,7 +29,7 @@ typedef Vector<CueInterval> CueList;
 // This class manages the timeline and rendering updates of cues associated
 // with TextTracks. Owned by a HTMLMediaElement.
 class CueTimeline final : public NoBaseWillBeGarbageCollectedFinalized<CueTimeline> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CueTimeline);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CueTimeline);
 public:
     CueTimeline(HTMLMediaElement&);
 

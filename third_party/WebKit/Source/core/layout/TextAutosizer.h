@@ -52,7 +52,7 @@ class LayoutBlock;
 // http://tinyurl.com/TextAutosizer
 
 class CORE_EXPORT TextAutosizer final : public NoBaseWillBeGarbageCollectedFinalized<TextAutosizer> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(TextAutosizer);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(TextAutosizer);
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
 public:
     static PassOwnPtrWillBeRawPtr<TextAutosizer> create(const Document* document)
@@ -140,7 +140,7 @@ private:
     // belong to a supercluster will share a common multiplier and
     // text-length-based autosizing status.
     struct Supercluster {
-        WTF_MAKE_FAST_ALLOCATED(Supercluster);
+        USING_FAST_MALLOC(Supercluster);
     public:
         explicit Supercluster(const BlockSet* roots)
             : m_roots(roots)
@@ -155,7 +155,7 @@ private:
     };
 
     struct Cluster {
-        WTF_MAKE_FAST_ALLOCATED(Cluster);
+        USING_FAST_MALLOC(Cluster);
     public:
         explicit Cluster(const LayoutBlock* root, BlockFlags flags, Cluster* parent, Supercluster* supercluster = nullptr)
             : m_root(root)

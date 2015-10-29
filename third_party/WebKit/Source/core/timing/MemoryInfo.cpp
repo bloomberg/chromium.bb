@@ -55,7 +55,7 @@ static void getHeapSize(HeapInfo& info)
 }
 
 class HeapSizeCache {
-    WTF_MAKE_NONCOPYABLE(HeapSizeCache); WTF_MAKE_FAST_ALLOCATED(HeapSizeCache);
+    WTF_MAKE_NONCOPYABLE(HeapSizeCache); USING_FAST_MALLOC(HeapSizeCache);
 public:
     HeapSizeCache()
         : m_lastUpdateTime(monotonicallyIncreasingTime() - TwentyMinutesInSeconds)

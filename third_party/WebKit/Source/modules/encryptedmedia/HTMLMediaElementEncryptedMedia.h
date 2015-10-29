@@ -26,7 +26,7 @@ class WebMediaPlayer;
 
 class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public NoBaseWillBeGarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement>, public WebMediaPlayerEncryptedMediaClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia);
 public:
     // encrypted media extensions (v0.1b)
     static void webkitGenerateKeyRequest(HTMLMediaElement&, const String& keySystem, PassRefPtr<DOMUint8Array> initData, ExceptionState&);

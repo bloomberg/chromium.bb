@@ -22,7 +22,7 @@ namespace blink {
 // transforms).
 class ObjectPaintProperties {
     WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
-    WTF_MAKE_FAST_ALLOCATED(ObjectPaintProperties);
+    USING_FAST_MALLOC(ObjectPaintProperties);
 public:
     static PassOwnPtr<ObjectPaintProperties> create()
     {

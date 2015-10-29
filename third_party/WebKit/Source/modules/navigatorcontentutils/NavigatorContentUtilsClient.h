@@ -36,7 +36,7 @@ namespace blink {
 class LocalFrame;
 
 class NavigatorContentUtilsClient {
-    WTF_MAKE_FAST_ALLOCATED(NavigatorContentUtilsClient);
+    USING_FAST_MALLOC(NavigatorContentUtilsClient);
 public:
     virtual ~NavigatorContentUtilsClient() { }
     virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title) = 0;

@@ -52,7 +52,7 @@ class TextResourceDecoder;
 class ThreadableLoader;
 
 class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
-    WTF_MAKE_FAST_ALLOCATED(FileReaderLoader);
+    USING_FAST_MALLOC(FileReaderLoader);
 public:
     enum ReadType {
         ReadAsArrayBuffer,

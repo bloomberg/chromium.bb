@@ -39,7 +39,7 @@
 namespace blink {
 
 struct Timing {
-    WTF_MAKE_FAST_ALLOCATED(Timing);
+    USING_FAST_MALLOC(Timing);
 public:
     enum FillMode {
         FillModeAuto,

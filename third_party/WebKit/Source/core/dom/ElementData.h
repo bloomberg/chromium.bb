@@ -47,7 +47,7 @@ class UniqueElementData;
 // ElementData represents very common, but not necessarily unique to an element,
 // data such as attributes, inline style, and parsed class names and ids.
 class ElementData : public RefCountedWillBeGarbageCollectedFinalized<ElementData> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ElementData);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ElementData);
 public:
 #if ENABLE(OILPAN)
     // Override GarbageCollectedFinalized's finalizeGarbageCollectedObject to

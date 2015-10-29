@@ -55,7 +55,7 @@ struct FilterTokenRequest {
 };
 
 class XSSAuditor {
-    WTF_MAKE_FAST_ALLOCATED(XSSAuditor);
+    USING_FAST_MALLOC(XSSAuditor);
     WTF_MAKE_NONCOPYABLE(XSSAuditor);
 public:
     XSSAuditor();

@@ -54,7 +54,7 @@ using MediaQueryResultList = WillBeHeapVector<RefPtrWillBeMember<MediaQueryResul
 // of stylesheets to only those which are probable to match.
 
 class CORE_EXPORT MediaQueryEvaluator {
-    WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); WTF_MAKE_FAST_ALLOCATED(MediaQueryEvaluator);
+    WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); USING_FAST_MALLOC(MediaQueryEvaluator);
 public:
     // Creates evaluator which evaluates only simple media queries
     // Evaluator returns true for "all", and returns value of \mediaFeatureResult

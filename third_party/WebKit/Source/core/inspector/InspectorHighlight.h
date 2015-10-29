@@ -18,7 +18,7 @@ class Color;
 class JSONValue;
 
 struct CORE_EXPORT InspectorHighlightConfig {
-    WTF_MAKE_FAST_ALLOCATED(InspectorHighlightConfig);
+    USING_FAST_MALLOC(InspectorHighlightConfig);
 public:
     InspectorHighlightConfig();
 

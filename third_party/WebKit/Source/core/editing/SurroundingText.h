@@ -41,7 +41,7 @@ namespace blink {
 class Range;
 
 class CORE_EXPORT SurroundingText {
-    WTF_MAKE_FAST_ALLOCATED(SurroundingText);
+    USING_FAST_MALLOC(SurroundingText);
     WTF_MAKE_NONCOPYABLE(SurroundingText);
 public:
     SurroundingText(const Range&, unsigned maxLength);

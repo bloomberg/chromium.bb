@@ -48,7 +48,7 @@ class ScriptWrappable;
     SCRIPT_PROMISE_PROPERTIES(V, Resolver)
 
 class CORE_EXPORT V8HiddenValue {
-    WTF_MAKE_FAST_ALLOCATED(V8HiddenValue);
+    USING_FAST_MALLOC(V8HiddenValue);
     WTF_MAKE_NONCOPYABLE(V8HiddenValue);
 public:
     static PassOwnPtr<V8HiddenValue> create() { return adoptPtr(new V8HiddenValue()); }

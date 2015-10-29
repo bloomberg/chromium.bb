@@ -66,7 +66,7 @@ private:
 };
 
 class XMLDocumentParser final : public ScriptableDocumentParser, public ScriptResourceClient {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(XMLDocumentParser);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(XMLDocumentParser);
 public:
     static PassRefPtrWillBeRawPtr<XMLDocumentParser> create(Document& document, FrameView* view)
     {
@@ -97,7 +97,7 @@ public:
     static bool supportsXMLVersion(const String&);
 
     class PendingCallback {
-        WTF_MAKE_FAST_ALLOCATED(PendingCallback);
+        USING_FAST_MALLOC(PendingCallback);
     public:
         virtual ~PendingCallback() { }
         virtual void call(XMLDocumentParser*) = 0;

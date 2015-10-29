@@ -43,7 +43,7 @@ class DOMWindow;
 class DOMWindowQuota final : public NoBaseWillBeGarbageCollected<DOMWindowQuota>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowQuota);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowQuota);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMWindowQuota);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowQuota);
 public:
     static DOMWindowQuota& from(LocalDOMWindow&);
     static DeprecatedStorageInfo* webkitStorageInfo(DOMWindow&);

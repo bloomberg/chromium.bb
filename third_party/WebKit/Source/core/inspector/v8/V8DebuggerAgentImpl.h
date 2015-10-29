@@ -45,7 +45,7 @@ class CORE_EXPORT V8DebuggerAgentImpl
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
     WTF_MAKE_NONCOPYABLE(V8DebuggerAgentImpl);
-    WTF_MAKE_FAST_ALLOCATED(V8DebuggerAgentImpl);
+    USING_FAST_MALLOC(V8DebuggerAgentImpl);
 public:
     V8DebuggerAgentImpl(InjectedScriptManager*, V8DebuggerImpl*, int contextGroupId);
     ~V8DebuggerAgentImpl() override;

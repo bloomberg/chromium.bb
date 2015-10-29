@@ -20,7 +20,7 @@ class ScriptPromiseResolver;
 // that will resolve the underlying promise depending on the result passed to
 // the callback.
 class LockOrientationCallback final : public WebLockOrientationCallback {
-    WTF_MAKE_FAST_ALLOCATED(LockOrientationCallback);
+    USING_FAST_MALLOC(LockOrientationCallback);
     WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
 public:
     explicit LockOrientationCallback(ScriptPromiseResolver*);

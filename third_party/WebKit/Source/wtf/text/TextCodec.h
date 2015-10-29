@@ -72,7 +72,7 @@ static_assert(DataEOF, "DataEOF should be truthy");
 
 
 class TextCodec {
-    WTF_MAKE_NONCOPYABLE(TextCodec); WTF_MAKE_FAST_ALLOCATED(TextCodec);
+    WTF_MAKE_NONCOPYABLE(TextCodec); USING_FAST_MALLOC(TextCodec);
 public:
     TextCodec() { }
     virtual ~TextCodec();

@@ -254,7 +254,7 @@ private:
     };
 
     class CompositorState {
-        WTF_MAKE_FAST_ALLOCATED(CompositorState);
+        USING_FAST_MALLOC(CompositorState);
         WTF_MAKE_NONCOPYABLE(CompositorState);
     public:
         CompositorState(Animation& animation)

@@ -99,7 +99,7 @@ private:
 
 struct CrossThreadResourceTimingInfoData {
     WTF_MAKE_NONCOPYABLE(CrossThreadResourceTimingInfoData);
-    WTF_MAKE_FAST_ALLOCATED(CrossThreadResourceTimingInfoData);
+    USING_FAST_MALLOC(CrossThreadResourceTimingInfoData);
 public:
     CrossThreadResourceTimingInfoData() {}
 

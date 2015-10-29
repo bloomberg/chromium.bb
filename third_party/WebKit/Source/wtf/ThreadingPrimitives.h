@@ -77,7 +77,7 @@ typedef void* PlatformCondition;
 #endif
 
 class WTF_EXPORT MutexBase {
-    WTF_MAKE_NONCOPYABLE(MutexBase); WTF_MAKE_FAST_ALLOCATED(MutexBase);
+    WTF_MAKE_NONCOPYABLE(MutexBase); USING_FAST_MALLOC(MutexBase);
 public:
     ~MutexBase();
 

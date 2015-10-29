@@ -13,7 +13,7 @@ struct CSSParserString;
 
 class CSSTokenizerInputStream {
     WTF_MAKE_NONCOPYABLE(CSSTokenizerInputStream);
-    WTF_MAKE_FAST_ALLOCATED(CSSTokenizerInputStream);
+    USING_FAST_MALLOC(CSSTokenizerInputStream);
 public:
     CSSTokenizerInputStream(String input);
 

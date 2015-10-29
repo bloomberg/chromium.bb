@@ -69,7 +69,7 @@ struct LineSegment {
 // physical coordinates.
 
 class CORE_EXPORT Shape {
-    WTF_MAKE_FAST_ALLOCATED(Shape);
+    USING_FAST_MALLOC(Shape);
 public:
     struct DisplayPaths {
         STACK_ALLOCATED();

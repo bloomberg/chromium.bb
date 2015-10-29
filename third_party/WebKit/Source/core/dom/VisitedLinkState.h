@@ -39,7 +39,7 @@ namespace blink {
 class Document;
 
 class VisitedLinkState : public NoBaseWillBeGarbageCollectedFinalized<VisitedLinkState> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(VisitedLinkState);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(VisitedLinkState);
 public:
     static PassOwnPtrWillBeRawPtr<VisitedLinkState> create(const Document& document)
     {

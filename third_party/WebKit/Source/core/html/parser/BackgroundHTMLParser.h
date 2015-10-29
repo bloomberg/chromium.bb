@@ -46,11 +46,11 @@ class XSSAuditor;
 class WebTaskRunner;
 
 class BackgroundHTMLParser {
-    WTF_MAKE_FAST_ALLOCATED(BackgroundHTMLParser);
+    USING_FAST_MALLOC(BackgroundHTMLParser);
     WTF_MAKE_NONCOPYABLE(BackgroundHTMLParser);
 public:
     struct Configuration {
-        WTF_MAKE_FAST_ALLOCATED(Configuration);
+        USING_FAST_MALLOC(Configuration);
     public:
         Configuration();
         HTMLParserOptions options;
@@ -68,7 +68,7 @@ public:
     static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, PassOwnPtr<WebTaskRunner>);
 
     struct Checkpoint {
-        WTF_MAKE_FAST_ALLOCATED(CheckPoint);
+        USING_FAST_MALLOC(CheckPoint);
     public:
         WeakPtr<HTMLDocumentParser> parser;
         OwnPtr<HTMLToken> token;

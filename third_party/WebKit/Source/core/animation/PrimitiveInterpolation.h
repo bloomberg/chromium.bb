@@ -18,7 +18,7 @@ class StyleResolverState;
 // Represents a conversion from a pair of keyframes to something compatible with interpolation.
 // This is agnostic to whether the keyframes are compatible with each other or not.
 class PrimitiveInterpolation {
-    WTF_MAKE_FAST_ALLOCATED(PrimitiveInterpolation);
+    USING_FAST_MALLOC(PrimitiveInterpolation);
     WTF_MAKE_NONCOPYABLE(PrimitiveInterpolation);
 public:
     virtual ~PrimitiveInterpolation() { }

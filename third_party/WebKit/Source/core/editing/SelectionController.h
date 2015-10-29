@@ -41,7 +41,7 @@ class LocalFrame;
 
 class SelectionController final : public NoBaseWillBeGarbageCollected<SelectionController> {
     WTF_MAKE_NONCOPYABLE(SelectionController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SelectionController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(SelectionController);
 public:
     static PassOwnPtrWillBeRawPtr<SelectionController> create(LocalFrame&);
     DECLARE_TRACE();

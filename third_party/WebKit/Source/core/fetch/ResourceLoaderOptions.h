@@ -80,7 +80,7 @@ enum CORSEnabled {
 };
 
 struct ResourceLoaderOptions {
-    WTF_MAKE_FAST_ALLOCATED(ResourceLoaderOptions);
+    USING_FAST_MALLOC(ResourceLoaderOptions);
 public:
     ResourceLoaderOptions()
         : dataBufferingPolicy(BufferData)

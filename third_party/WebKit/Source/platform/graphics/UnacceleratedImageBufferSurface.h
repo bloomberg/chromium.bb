@@ -39,7 +39,7 @@ class SkSurface;
 namespace blink {
 
 class PLATFORM_EXPORT UnacceleratedImageBufferSurface : public ImageBufferSurface {
-    WTF_MAKE_NONCOPYABLE(UnacceleratedImageBufferSurface); WTF_MAKE_FAST_ALLOCATED(UnacceleratedImageBufferSurface);
+    WTF_MAKE_NONCOPYABLE(UnacceleratedImageBufferSurface); USING_FAST_MALLOC(UnacceleratedImageBufferSurface);
 public:
     UnacceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels);
     ~UnacceleratedImageBufferSurface() override;

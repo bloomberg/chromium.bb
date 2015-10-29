@@ -37,7 +37,7 @@ class UserMediaRequest;
 class UserMediaController final : public NoBaseWillBeGarbageCollected<UserMediaController>, public WillBeHeapSupplement<LocalFrame> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(UserMediaController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(UserMediaController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(UserMediaController);
 public:
     static PassOwnPtrWillBeRawPtr<UserMediaController> create(UserMediaClient*);
 

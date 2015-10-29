@@ -38,7 +38,7 @@ class SVGSVGElement;
 class Element;
 
 class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
-    WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SVGDocumentExtensions);
+    WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); USING_FAST_MALLOC_WILL_BE_REMOVED(SVGDocumentExtensions);
 public:
     typedef WillBeHeapHashSet<RawPtrWillBeMember<Element>> SVGPendingElements;
     explicit SVGDocumentExtensions(Document*);

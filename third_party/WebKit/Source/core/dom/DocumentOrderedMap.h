@@ -45,7 +45,7 @@ class Element;
 class TreeScope;
 
 class DocumentOrderedMap : public NoBaseWillBeGarbageCollected<DocumentOrderedMap> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DocumentOrderedMap);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentOrderedMap);
 public:
     static PassOwnPtrWillBeRawPtr<DocumentOrderedMap> create();
     void add(const AtomicString&, Element*);

@@ -25,7 +25,7 @@ class SecurityOrigin;
 // staying alive. PingLoader providing the service.
 class CORE_EXPORT BeaconLoader final : public PingLoader {
     WTF_MAKE_NONCOPYABLE(BeaconLoader);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(BeaconLoader);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(BeaconLoader);
 public:
     ~BeaconLoader() override { }
 

@@ -16,7 +16,7 @@ class Document;
 class Event;
 
 class CORE_EXPORT DeviceSingleWindowEventController : public NoBaseWillBeGarbageCollectedFinalized<DeviceSingleWindowEventController>, public PlatformEventController, public DOMWindowLifecycleObserver {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DeviceSingleWindowEventController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DeviceSingleWindowEventController);
 public:
     virtual ~DeviceSingleWindowEventController();
 

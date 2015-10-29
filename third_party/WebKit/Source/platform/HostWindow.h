@@ -37,7 +37,7 @@ struct WebScreenInfo;
 
 class PLATFORM_EXPORT HostWindow : public NoBaseWillBeGarbageCollectedFinalized<HostWindow> {
     WTF_MAKE_NONCOPYABLE(HostWindow);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HostWindow);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HostWindow);
 public:
     HostWindow() { }
     virtual ~HostWindow() { }

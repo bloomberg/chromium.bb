@@ -32,7 +32,7 @@
 namespace blink {
 
 class DocumentResourceReference final : public DocumentResourceClient {
-    WTF_MAKE_FAST_ALLOCATED(DocumentResourceReference);
+    USING_FAST_MALLOC(DocumentResourceReference);
 public:
     DocumentResourceReference(DocumentResource* document) : m_document(document) { m_document->addClient(this); }
     ~DocumentResourceReference() override { m_document->removeClient(this); }

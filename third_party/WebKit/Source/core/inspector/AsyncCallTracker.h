@@ -55,7 +55,7 @@ class XMLHttpRequest;
 
 class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker> {
     WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(AsyncCallTracker);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(AsyncCallTracker);
 public:
     AsyncCallTracker(V8DebuggerAgent*, InstrumentingAgents*);
     ~AsyncCallTracker();

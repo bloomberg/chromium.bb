@@ -1028,7 +1028,7 @@ enum DeleteResult {
 };
 
 class V8IsolateInterruptor : public BlinkGCInterruptor {
-    WTF_MAKE_FAST_ALLOCATED(V8IsolateInterruptor);
+    USING_FAST_MALLOC(V8IsolateInterruptor);
 public:
     explicit V8IsolateInterruptor(v8::Isolate* isolate)
         : m_isolate(isolate)

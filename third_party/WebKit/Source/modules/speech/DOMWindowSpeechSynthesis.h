@@ -39,7 +39,7 @@ class DOMWindow;
 class MODULES_EXPORT DOMWindowSpeechSynthesis final : public NoBaseWillBeGarbageCollected<DOMWindowSpeechSynthesis>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowSpeechSynthesis);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMWindowSpeechSynthesis);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowSpeechSynthesis);
 public:
     static SpeechSynthesis* speechSynthesis(DOMWindow&);
     static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);

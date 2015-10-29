@@ -17,7 +17,7 @@ class ProcessingInstruction;
 class DocumentXSLT final : public NoBaseWillBeGarbageCollected<DocumentXSLT>, public WillBeHeapSupplement<Document> {
     WTF_MAKE_NONCOPYABLE(DocumentXSLT);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DocumentXSLT);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentXSLT);
 public:
     Document* transformSourceDocument()
     {

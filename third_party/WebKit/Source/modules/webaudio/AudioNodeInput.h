@@ -40,7 +40,7 @@ class AudioNodeOutput;
 // The number of channels of the input's bus is the maximum of the number of channels of all its connections.
 
 class AudioNodeInput final : public AudioSummingJunction {
-    WTF_MAKE_FAST_ALLOCATED(AudioNodeInput);
+    USING_FAST_MALLOC(AudioNodeInput);
 public:
     static PassOwnPtr<AudioNodeInput> create(AudioHandler&);
 

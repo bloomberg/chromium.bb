@@ -17,7 +17,7 @@ class GraphicsContext;
 class LayoutObject;
 
 class CompositingRecorder {
-    WTF_MAKE_FAST_ALLOCATED(CompositingRecorder);
+    USING_FAST_MALLOC(CompositingRecorder);
 public:
     CompositingRecorder(GraphicsContext&, const DisplayItemClientWrapper&, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
 

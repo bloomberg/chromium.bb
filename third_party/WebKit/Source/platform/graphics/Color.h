@@ -59,7 +59,7 @@ struct NamedColor {
 PLATFORM_EXPORT const NamedColor* findColor(register const char* str, register unsigned len);
 
 class PLATFORM_EXPORT Color {
-    WTF_MAKE_FAST_ALLOCATED(Color);
+    USING_FAST_MALLOC(Color);
 public:
     Color() : m_color(Color::transparent) { }
     Color(RGBA32 color) : m_color(color) { }

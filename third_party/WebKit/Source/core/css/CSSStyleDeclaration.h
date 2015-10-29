@@ -37,7 +37,7 @@ class MutableStylePropertySet;
 
 class CORE_EXPORT CSSStyleDeclaration : public NoBaseWillBeGarbageCollectedFinalized<CSSStyleDeclaration>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSStyleDeclaration);
+    WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration); USING_FAST_MALLOC_WILL_BE_REMOVED(CSSStyleDeclaration);
 public:
     virtual ~CSSStyleDeclaration() { }
 

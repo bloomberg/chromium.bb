@@ -19,7 +19,7 @@ class GraphicsContext;
 class LayoutBoxModelObject;
 
 class CORE_EXPORT LayerClipRecorder {
-    WTF_MAKE_FAST_ALLOCATED(LayerClipRecorder);
+    USING_FAST_MALLOC(LayerClipRecorder);
 public:
 
     enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };

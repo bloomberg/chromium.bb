@@ -13,7 +13,7 @@ namespace blink {
 class PaintLayerPainterTest
     : public PaintControllerPaintTest
     , public testing::WithParamInterface<FrameSettingOverrideFunction> {
-    WTF_MAKE_FAST_ALLOCATED(PaintLayerPainterTest);
+    USING_FAST_MALLOC(PaintLayerPainterTest);
 public:
     FrameSettingOverrideFunction settingOverrider() const override { return GetParam(); }
 };

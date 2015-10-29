@@ -38,7 +38,7 @@ class ExceptionState;
 
 class DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable, public ValueIterable<String> {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMTokenList);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMTokenList);
     WTF_MAKE_NONCOPYABLE(DOMTokenList);
 public:
     DOMTokenList() { }

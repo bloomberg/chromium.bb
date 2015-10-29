@@ -35,7 +35,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT Cursor {
-    WTF_MAKE_FAST_ALLOCATED(Cursor);
+    USING_FAST_MALLOC(Cursor);
 public:
     enum Type {
         Pointer = 0,

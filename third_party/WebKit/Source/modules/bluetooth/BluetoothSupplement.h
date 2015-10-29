@@ -16,7 +16,7 @@ class WebBluetooth;
 // code in modules/.
 class BLINK_EXPORT BluetoothSupplement : public NoBaseWillBeGarbageCollected<BluetoothSupplement>, public WillBeHeapSupplement<LocalFrame> {
     WTF_MAKE_NONCOPYABLE(BluetoothSupplement);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(BluetoothSupplement);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(BluetoothSupplement);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothSupplement);
 
 public:

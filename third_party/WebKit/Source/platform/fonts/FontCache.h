@@ -63,7 +63,7 @@ enum PurgeSeverity { PurgeIfNeeded, ForcePurge };
 class PLATFORM_EXPORT FontCache {
     friend class FontCachePurgePreventer;
 
-    WTF_MAKE_NONCOPYABLE(FontCache); WTF_MAKE_FAST_ALLOCATED(FontCache);
+    WTF_MAKE_NONCOPYABLE(FontCache); USING_FAST_MALLOC(FontCache);
 public:
     static FontCache* fontCache();
 

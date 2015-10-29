@@ -48,7 +48,7 @@ typedef String ErrorString;
 
 class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, InspectorFrontend::Profiler>, public InspectorBackendDispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorProfilerAgent);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorProfilerAgent);
 public:
     class Client {
     public:

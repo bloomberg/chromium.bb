@@ -51,7 +51,7 @@ class FloatBox;
 // Oilpan doesn't (yet) have an ability to allocate the TransformationMatrix
 // with 16-byte alignment. PartitionAlloc has the ability.
 class PLATFORM_EXPORT TransformationMatrix {
-    WTF_MAKE_FAST_ALLOCATED(TransformationMatrix);
+    USING_FAST_MALLOC(TransformationMatrix);
 public:
 
 #if CPU(APPLE_ARMV7S) || defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)

@@ -42,7 +42,7 @@ class IntRect;
 class TransformationMatrix;
 
 class PLATFORM_EXPORT AffineTransform {
-    WTF_MAKE_FAST_ALLOCATED(AffineTransform);
+    USING_FAST_MALLOC(AffineTransform);
 public:
     typedef double Transform[6];
 

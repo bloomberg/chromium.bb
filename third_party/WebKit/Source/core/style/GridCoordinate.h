@@ -47,7 +47,7 @@ const size_t kGridMaxTracks = 1000000;
 // and |resolvedFinalPosition| are grid areas' indexes, NOT grid lines'. Iterating over the
 // span should include both |resolvedInitialPosition| and |resolvedFinalPosition| to be correct.
 struct GridSpan {
-    WTF_MAKE_FAST_ALLOCATED(GridSpan);
+    USING_FAST_MALLOC(GridSpan);
 public:
     static PassOwnPtr<GridSpan> create(const GridResolvedPosition& resolvedInitialPosition, const GridResolvedPosition& resolvedFinalPosition)
     {
@@ -144,7 +144,7 @@ public:
 
 // This represents a grid area that spans in both rows' and columns' direction.
 struct GridCoordinate {
-    WTF_MAKE_FAST_ALLOCATED(GridCoordinate);
+    USING_FAST_MALLOC(GridCoordinate);
 public:
     // HashMap requires a default constuctor.
     GridCoordinate()

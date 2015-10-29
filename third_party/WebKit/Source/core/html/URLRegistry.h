@@ -47,7 +47,7 @@ public:
 };
 
 class CORE_EXPORT URLRegistry {
-    WTF_MAKE_FAST_ALLOCATED(URLRegistry);
+    USING_FAST_MALLOC(URLRegistry);
 public:
     virtual ~URLRegistry() { }
     virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) = 0;

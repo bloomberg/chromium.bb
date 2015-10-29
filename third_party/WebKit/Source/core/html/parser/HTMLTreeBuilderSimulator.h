@@ -36,7 +36,7 @@ class HTMLTokenizer;
 class HTMLTreeBuilder;
 
 class HTMLTreeBuilderSimulator {
-    WTF_MAKE_FAST_ALLOCATED(HTMLTreeBuilderSimulator);
+    USING_FAST_MALLOC(HTMLTreeBuilderSimulator);
 private:
     enum Namespace {
         HTML,

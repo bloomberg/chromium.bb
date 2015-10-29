@@ -35,7 +35,7 @@ namespace blink {
 #define HIT_TEST_CACHE_SIZE (2)
 
 class CORE_EXPORT HitTestCache final : public NoBaseWillBeGarbageCollectedFinalized<HitTestCache> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HitTestCache);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(HitTestCache);
     WTF_MAKE_NONCOPYABLE(HitTestCache);
 public:
     static PassOwnPtrWillBeRawPtr<HitTestCache> create()

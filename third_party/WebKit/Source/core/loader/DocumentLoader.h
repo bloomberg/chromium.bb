@@ -61,7 +61,7 @@ class ResourceLoader;
 class ThreadedDataReceiver;
 
 class CORE_EXPORT DocumentLoader : public RefCountedWillBeGarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DocumentLoader);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentLoader);
 public:
     static PassRefPtrWillBeRawPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
     {

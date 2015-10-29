@@ -34,7 +34,7 @@ namespace blink {
 class CSSParserSelector;
 
 class CORE_EXPORT CSSSelectorList {
-    WTF_MAKE_FAST_ALLOCATED(CSSSelectorList);
+    USING_FAST_MALLOC(CSSSelectorList);
 public:
     CSSSelectorList() : m_selectorArray(nullptr) { }
     CSSSelectorList(const CSSSelectorList&);

@@ -11,7 +11,7 @@
 namespace blink {
 
 class CompositorWorkerMessagingProxy final : public WorkerMessagingProxy {
-    WTF_MAKE_FAST_ALLOCATED(CompositorWorkerMessagingProxy);
+    USING_FAST_MALLOC(CompositorWorkerMessagingProxy);
 public:
     explicit CompositorWorkerMessagingProxy(InProcessWorkerBase*);
 

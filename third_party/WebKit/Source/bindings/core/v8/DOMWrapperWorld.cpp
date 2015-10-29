@@ -46,7 +46,7 @@
 namespace blink {
 
 class DOMObjectHolderBase {
-    WTF_MAKE_FAST_ALLOCATED(DOMObjectHolderBase);
+    USING_FAST_MALLOC(DOMObjectHolderBase);
 public:
     DOMObjectHolderBase(v8::Isolate* isolate, v8::Local<v8::Value> wrapper)
         : m_wrapper(isolate, wrapper)

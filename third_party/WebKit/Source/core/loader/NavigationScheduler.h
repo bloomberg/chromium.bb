@@ -51,7 +51,7 @@ class ScheduledNavigation;
 
 class CORE_EXPORT NavigationScheduler final : public NoBaseWillBeGarbageCollectedFinalized<NavigationScheduler> {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NavigationScheduler);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(NavigationScheduler);
 public:
     static PassOwnPtrWillBeRawPtr<NavigationScheduler> create(LocalFrame* frame)
     {

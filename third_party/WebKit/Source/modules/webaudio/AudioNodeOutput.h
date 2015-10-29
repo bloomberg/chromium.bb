@@ -38,7 +38,7 @@ class AudioNodeInput;
 // AudioNodeOutput represents a single output for an AudioNode.
 // It may be connected to one or more AudioNodeInputs.
 class AudioNodeOutput final {
-    WTF_MAKE_FAST_ALLOCATED(AudioNodeOutput);
+    USING_FAST_MALLOC(AudioNodeOutput);
 public:
     // It's OK to pass 0 for numberOfChannels in which case
     // setNumberOfChannels() must be called later on.

@@ -150,7 +150,7 @@ private:
 };
 
 class CORE_EXPORT ScopedAXObjectCache {
-    WTF_MAKE_FAST_ALLOCATED(ScopedAXObjectCache);
+    USING_FAST_MALLOC(ScopedAXObjectCache);
     WTF_MAKE_NONCOPYABLE(ScopedAXObjectCache);
 public:
     static PassOwnPtr<ScopedAXObjectCache> create(Document&);

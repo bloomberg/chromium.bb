@@ -168,7 +168,7 @@ ScriptValue nodeAsScriptValue(ScriptState* scriptState, Node* node)
 } // namespace
 
 class InspectorRevalidateDOMTask final : public NoBaseWillBeGarbageCollectedFinalized<InspectorRevalidateDOMTask> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorRevalidateDOMTask);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorRevalidateDOMTask);
 public:
     explicit InspectorRevalidateDOMTask(InspectorDOMAgent*);
     void scheduleStyleAttrRevalidationFor(Element*);

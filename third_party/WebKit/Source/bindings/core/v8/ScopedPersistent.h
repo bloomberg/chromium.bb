@@ -39,7 +39,7 @@ namespace blink {
 
 template<typename T>
 class ScopedPersistent {
-    WTF_MAKE_FAST_ALLOCATED(ScopedPersistent);
+    USING_FAST_MALLOC(ScopedPersistent);
     WTF_MAKE_NONCOPYABLE(ScopedPersistent);
 public:
     ScopedPersistent() { }

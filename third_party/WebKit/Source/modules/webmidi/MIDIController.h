@@ -41,7 +41,7 @@ class MIDIClient;
 
 class MIDIController final : public NoBaseWillBeGarbageCollectedFinalized<MIDIController>, public WillBeHeapSupplement<LocalFrame> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MIDIController);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(MIDIController);
 public:
     virtual ~MIDIController();
 

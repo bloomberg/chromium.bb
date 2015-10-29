@@ -71,7 +71,7 @@ public:
     void setTracingSessionId(const String&);
 
     class WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorWorkerAgent::WorkerAgentClient);
+        USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorWorkerAgent::WorkerAgentClient);
     public:
         static PassOwnPtrWillBeRawPtr<WorkerAgentClient> create(InspectorFrontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);
         WorkerAgentClient(InspectorFrontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);

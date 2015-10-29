@@ -47,7 +47,7 @@ class MainThreadDebugger;
 class CORE_EXPORT PageDebuggerAgent final
     : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PageDebuggerAgent);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(PageDebuggerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectedFrames*, InjectedScriptManager*);
     ~PageDebuggerAgent() override;

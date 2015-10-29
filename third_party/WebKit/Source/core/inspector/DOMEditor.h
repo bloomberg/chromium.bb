@@ -47,7 +47,7 @@ typedef String ErrorString;
 
 class DOMEditor final : public NoBaseWillBeGarbageCollected<DOMEditor> {
     WTF_MAKE_NONCOPYABLE(DOMEditor);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DOMEditor);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMEditor);
 public:
     explicit DOMEditor(InspectorHistory*);
 

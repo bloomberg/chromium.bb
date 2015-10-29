@@ -55,7 +55,7 @@ class StyleSheet;
 class StyleSheetContents;
 
 class CORE_EXPORT StyleEngine final : public NoBaseWillBeGarbageCollectedFinalized<StyleEngine>, public CSSFontSelectorClient  {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleEngine);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleEngine);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
 public:
 

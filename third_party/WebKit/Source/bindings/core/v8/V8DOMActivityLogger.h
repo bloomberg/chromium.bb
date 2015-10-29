@@ -41,7 +41,7 @@ namespace blink {
 class KURL;
 
 class CORE_EXPORT V8DOMActivityLogger {
-    WTF_MAKE_FAST_ALLOCATED(V8DOMActivityLogger);
+    USING_FAST_MALLOC(V8DOMActivityLogger);
 public:
     virtual ~V8DOMActivityLogger() { }
 

@@ -33,7 +33,7 @@ namespace blink {
 
 class NodeMutationObserverData final : public NoBaseWillBeGarbageCollected<NodeMutationObserverData> {
     WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NodeMutationObserverData);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(NodeMutationObserverData);
 public:
     WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>> registry;
     WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>> transientRegistry;
@@ -57,7 +57,7 @@ private:
 
 class NodeRareData : public NoBaseWillBeGarbageCollectedFinalized<NodeRareData>, public NodeRareDataBase {
     WTF_MAKE_NONCOPYABLE(NodeRareData);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NodeRareData);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(NodeRareData);
 public:
     static NodeRareData* create(LayoutObject* layoutObject)
     {

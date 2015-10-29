@@ -43,7 +43,7 @@ class SecurityOrigin;
 class ExecutionContext;
 
 class DatabaseManager {
-    WTF_MAKE_NONCOPYABLE(DatabaseManager); WTF_MAKE_FAST_ALLOCATED(DatabaseManager);
+    WTF_MAKE_NONCOPYABLE(DatabaseManager); USING_FAST_MALLOC(DatabaseManager);
 public:
     static DatabaseManager& manager();
     static void terminateDatabaseThread();

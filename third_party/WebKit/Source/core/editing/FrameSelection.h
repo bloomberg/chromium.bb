@@ -65,7 +65,7 @@ enum class SelectionDirectionalMode { NonDirectional, Directional };
 
 class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FrameSelection);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(FrameSelection);
 public:
     static PassOwnPtrWillBeRawPtr<FrameSelection> create(LocalFrame* frame = nullptr)
     {

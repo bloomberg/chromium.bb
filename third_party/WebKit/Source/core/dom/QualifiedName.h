@@ -46,7 +46,7 @@ struct QualifiedNameData {
 };
 
 class CORE_EXPORT QualifiedName {
-    WTF_MAKE_FAST_ALLOCATED(QualifiedName);
+    USING_FAST_MALLOC(QualifiedName);
 public:
     class QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {
     public:

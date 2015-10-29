@@ -42,7 +42,7 @@ class HTMLLinkElement;
 class LocalFrame;
 
 class LinkResource : public NoBaseWillBeGarbageCollectedFinalized<LinkResource>  {
-    WTF_MAKE_NONCOPYABLE(LinkResource); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(LinkResource);
+    WTF_MAKE_NONCOPYABLE(LinkResource); USING_FAST_MALLOC_WILL_BE_REMOVED(LinkResource);
 public:
     enum Type {
         Style,
