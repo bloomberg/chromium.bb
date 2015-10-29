@@ -57,14 +57,19 @@ class CONTENT_EXPORT AudioOutputDeviceEnumerator {
                               CachePolicy cache_policy);
   ~AudioOutputDeviceEnumerator();
 
-  // Must be called on the IO thread. |callback| is also invoked
-  // on the IO thread.
+  // Does an enumeration and provides the results to the callback.
+  // If there are no physical devices, the result contains a single entry with
+  // the default parameters provided by the underlying audio manager.
+  // The behavior with no physical devices is there to ease the transition
+  // from the use of RenderThreadImpl::GetAudioHardwareConfig(), which always
+  // provides default parameters, even if there are no devices.
+  // See https://crbug.com/549125.
   void Enumerate(const AudioOutputDeviceEnumerationCB& callback);
 
-  // Invalidates the current cache. Must be called on the IO thread.
+  // Invalidates the current cache.
   void InvalidateCache();
 
-  // Sets the cache policy. Must be called on the IO thread.
+  // Sets the cache policy.
   void SetCachePolicy(CachePolicy cache_policy);
 
  private:
