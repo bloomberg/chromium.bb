@@ -124,10 +124,9 @@ class CC_EXPORT ResourceProvider
 
   // Creates a resource for a particular texture target (the distinction between
   // texture targets has no effect in software mode).
-  ResourceId CreateResourceWithTextureTarget(const gfx::Size& size,
-                                             GLenum target,
-                                             TextureHint hint,
-                                             ResourceFormat format);
+  ResourceId CreateResourceWithImageTextureTarget(const gfx::Size& size,
+                                                  TextureHint hint,
+                                                  ResourceFormat format);
 
   // Wraps an IOSurface into a GL resource.
   ResourceId CreateResourceFromIOSurface(const gfx::Size& size,

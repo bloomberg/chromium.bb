@@ -23,8 +23,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
     : resource_pool_(
           ResourcePool::Create(resource_provider,
-                               base::ThreadTaskRunnerHandle::Get().get(),
-                               GL_TEXTURE_2D)),
+                               base::ThreadTaskRunnerHandle::Get().get())),
       tile_manager_(
           new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
       raster_source_(FakeDisplayListRasterSource::CreateInfiniteFilled()),

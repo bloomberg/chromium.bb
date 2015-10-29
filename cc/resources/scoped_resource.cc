@@ -29,15 +29,14 @@ void ScopedResource::Allocate(const gfx::Size& size,
 #endif
 }
 
-void ScopedResource::AllocateWithTextureTarget(const gfx::Size& size,
-                                               GLenum target,
-                                               ResourceFormat format) {
+void ScopedResource::AllocateWithImageTextureTarget(const gfx::Size& size,
+                                                    ResourceFormat format) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
-  set_id(resource_provider_->CreateResourceWithTextureTarget(
-      size, target, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format));
+  set_id(resource_provider_->CreateResourceWithImageTextureTarget(
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format));
 
 #if DCHECK_IS_ON()
   allocate_thread_id_ = base::PlatformThread::CurrentId();

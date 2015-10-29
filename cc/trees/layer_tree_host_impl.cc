@@ -2141,8 +2141,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
   ContextProvider* context_provider = output_surface_->context_provider();
   if (!context_provider) {
-    *resource_pool = ResourcePool::Create(resource_provider_.get(),
-                                          GetTaskRunner(), GL_TEXTURE_2D);
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
     *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, resource_provider_.get());
@@ -2152,8 +2152,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   if (use_gpu_rasterization_) {
     DCHECK(resource_provider_->output_surface()->worker_context_provider());
 
-    *resource_pool = ResourcePool::Create(resource_provider_.get(),
-                                          GetTaskRunner(), GL_TEXTURE_2D);
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
@@ -2176,8 +2176,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   }
 
   if (use_zero_copy) {
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
+    *resource_pool = ResourcePool::CreateForImageTextureTarget(
+        resource_provider_.get(), GetTaskRunner());
 
     *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, resource_provider_.get(),
@@ -2185,8 +2185,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     return;
   }
 
-  *resource_pool = ResourcePool::Create(resource_provider_.get(),
-                                        GetTaskRunner(), GL_TEXTURE_2D);
+  *resource_pool =
+      ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
   int max_copy_texture_chromium_size = context_provider->ContextCapabilities()
                                            .gpu.max_copy_texture_chromium_size;

@@ -399,18 +399,15 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
   return 0;
 }
 
-ResourceId ResourceProvider::CreateResourceWithTextureTarget(
+ResourceId ResourceProvider::CreateResourceWithImageTextureTarget(
     const gfx::Size& size,
-    GLenum target,
     TextureHint hint,
     ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
-    case RESOURCE_TYPE_GL_TEXTURE:
-      return CreateGLTexture(size,
-                             target,
-                             hint,
-                             format);
+    case RESOURCE_TYPE_GL_TEXTURE: {
+      return CreateGLTexture(size, GetImageTextureTarget(format), hint, format);
+    }
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size);

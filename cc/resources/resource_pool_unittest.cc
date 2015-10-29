@@ -26,8 +26,8 @@ class ResourcePoolTest : public testing::Test {
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    resource_pool_ = ResourcePool::Create(resource_provider_.get(),
-                                          task_runner_.get(), GL_TEXTURE_2D);
+    resource_pool_ =
+        ResourcePool::Create(resource_provider_.get(), task_runner_.get());
   }
 
  protected:

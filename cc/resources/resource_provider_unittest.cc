@@ -2591,8 +2591,8 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   int texture_id = 1;
 
   // Check that the texture gets created with the right sampler settings.
-  ResourceId id = resource_provider->CreateResourceWithTextureTarget(
-      size, GL_TEXTURE_2D, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  ResourceId id = resource_provider->CreateResource(
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
   EXPECT_CALL(*context,
               texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
