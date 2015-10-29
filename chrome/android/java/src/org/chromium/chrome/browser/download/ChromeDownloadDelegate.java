@@ -63,8 +63,6 @@ public class ChromeDownloadDelegate
     // Pending download request for a dangerous file.
     private DownloadInfo mPendingRequest;
 
-    private final EmptyTabObserver mTabObserver;
-
     @Override
     public void onConfirmInfoBarButtonClicked(ConfirmInfoBar infoBar, boolean confirm) {
         assert mTab != null;
@@ -140,12 +138,13 @@ public class ChromeDownloadDelegate
             Context context, TabModelSelector tabModelSelector, Tab tab) {
         mContext = context;
         mTab = tab;
-        mTabObserver = new EmptyTabObserver() {
+        mTab.addObserver(new EmptyTabObserver() {
             @Override
             public void onDestroyed(Tab tab) {
                 mTab = null;
             }
-        };
+        });
+
         mTabModelSelector = tabModelSelector;
         mPendingRequest = null;
     }

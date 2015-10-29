@@ -5,23 +5,34 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.Context;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.DownloadInfo;
 
 /**
  * Tests for ChromeDownloadDelegate class.
  */
-public class ChromeDownloadDelegateTest extends InstrumentationTestCase {
+public class ChromeDownloadDelegateTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    public ChromeDownloadDelegateTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
 
     /**
      * Mock class for test.
      */
     static class MockChromeDownloadDelegate extends ChromeDownloadDelegate {
-        public MockChromeDownloadDelegate(Context context) {
-            super(context, null, null);
+        public MockChromeDownloadDelegate(Context context, Tab tab) {
+            super(context, null, tab);
         }
 
         @Override
@@ -83,8 +94,9 @@ public class ChromeDownloadDelegateTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Download"})
     public void testShouldInterceptContextMenuDownload() {
+        Tab tab = new Tab(0, false, getActivity().getWindowAndroid());
         ChromeDownloadDelegate delegate =
-                new MockChromeDownloadDelegate(getInstrumentation().getTargetContext());
+                new MockChromeDownloadDelegate(getInstrumentation().getTargetContext(), tab);
         assertFalse(delegate.shouldInterceptContextMenuDownload("file://test/test.html"));
         assertFalse(delegate.shouldInterceptContextMenuDownload("http://test/test.html"));
         assertFalse(delegate.shouldInterceptContextMenuDownload("ftp://test/test.dm"));
