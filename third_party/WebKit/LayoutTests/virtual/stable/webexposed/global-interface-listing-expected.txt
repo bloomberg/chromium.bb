@@ -949,10 +949,6 @@ interface Element : Node
     getter onpaste
     getter onsearch
     getter onselectstart
-    getter ontouchcancel
-    getter ontouchend
-    getter ontouchmove
-    getter ontouchstart
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
     getter onwheel
@@ -1013,10 +1009,6 @@ interface Element : Node
     setter onpaste
     setter onsearch
     setter onselectstart
-    setter ontouchcancel
-    setter ontouchend
-    setter ontouchmove
-    setter ontouchstart
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
     setter onwheel
@@ -1498,6 +1490,10 @@ interface HTMLElement : Element
     getter onsuspend
     getter ontimeupdate
     getter ontoggle
+    getter ontouchcancel
+    getter ontouchend
+    getter ontouchmove
+    getter ontouchstart
     getter onvolumechange
     getter onwaiting
     getter outerText
@@ -1575,6 +1571,10 @@ interface HTMLElement : Element
     setter onsuspend
     setter ontimeupdate
     setter ontoggle
+    setter ontouchcancel
+    setter ontouchend
+    setter ontouchmove
+    setter ontouchstart
     setter onvolumechange
     setter onwaiting
     setter outerText
@@ -3605,6 +3605,10 @@ interface SVGElement : Element
     getter onsuspend
     getter ontimeupdate
     getter ontoggle
+    getter ontouchcancel
+    getter ontouchend
+    getter ontouchmove
+    getter ontouchstart
     getter onvolumechange
     getter onwaiting
     getter ownerSVGElement
@@ -3671,6 +3675,10 @@ interface SVGElement : Element
     setter onsuspend
     setter ontimeupdate
     setter ontoggle
+    setter ontouchcancel
+    setter ontouchend
+    setter ontouchmove
+    setter ontouchstart
     setter onvolumechange
     setter onwaiting
     setter style

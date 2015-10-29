@@ -125,10 +125,6 @@ enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scro
     attribute EventHandler onpaste;
     attribute EventHandler onsearch;
     attribute EventHandler onselectstart;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
     attribute EventHandler onwheel;
 };
 

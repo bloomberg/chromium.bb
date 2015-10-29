@@ -174,10 +174,6 @@
     attribute EventHandler onanimationstart;
     [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
     attribute EventHandler onsearch;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
     attribute EventHandler ontransitionend;
     attribute EventHandler onwebkitanimationend;
     attribute EventHandler onwebkitanimationiteration;

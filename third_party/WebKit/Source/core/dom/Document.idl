@@ -181,12 +181,6 @@ interface Document : Node {
                                                       [Default=Undefined] optional unrestricted float force);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
-    // FIXME: The spec doesn't define these event handler attributes.
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
-
     // Custom Elements
     // http://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
     // FIXME: The registerElement return type should be Function.

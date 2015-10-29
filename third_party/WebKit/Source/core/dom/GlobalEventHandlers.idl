@@ -108,4 +108,11 @@
     [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerout;
     [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerenter;
     [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerleave;
+
+    // Touch Events
+    // https://w3c.github.io/touch-events/#extensions-to-the-globaleventhandlers-interface
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
 };
