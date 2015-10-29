@@ -20,6 +20,9 @@ UI_BASE_EXPORT
   base::scoped_nsobject<NSImage> pressedImage_;
 }
 
+// Disables a click within the button from activating the application.
+@property(nonatomic) BOOL disableActivationOnClick;
+
 // Sets the default image.
 - (void)setDefaultImage:(NSImage*)image;
 

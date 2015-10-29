@@ -780,6 +780,7 @@
   [closeButton_ setAutoresizingMask:NSViewMinYMargin];
   [closeButton_ setTarget:self];
   [closeButton_ setAction:@selector(close:)];
+  [closeButton_ setDisableActivationOnClick:YES];
   [[closeButton_ cell]
       accessibilitySetOverrideValue:NSAccessibilityCloseButtonSubrole
                        forAttribute:NSAccessibilitySubroleAttribute];
