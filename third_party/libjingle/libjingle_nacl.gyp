@@ -250,8 +250,8 @@
         '<(webrtc_xmllite)/xmlparser.h',
         '<(webrtc_xmllite)/xmlprinter.cc',
         '<(webrtc_xmllite)/xmlprinter.h',
-        '<(webrtc_system_wrappers)/interface/field_trial_default.h',
-        '<(webrtc_system_wrappers)/interface/field_trial.h',
+        '<(webrtc_system_wrappers)/include/field_trial_default.h',
+        '<(webrtc_system_wrappers)/include/field_trial.h',
         '<(webrtc_system_wrappers)/source/field_trial_default.cc',
       ],
       'sources!': [

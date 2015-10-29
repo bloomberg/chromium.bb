@@ -21,7 +21,7 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
-#include "third_party/webrtc/system_wrappers/interface/tick_util.h"
+#include "third_party/webrtc/system_wrappers/include/tick_util.h"
 
 #define NOTIFY_ERROR(x)                             \
   do {                                              \
