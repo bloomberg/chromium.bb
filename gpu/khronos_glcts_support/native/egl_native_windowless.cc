@@ -28,9 +28,9 @@ class Surface : public tcu::egl::WindowSurface {
         width_(width),
         height_(height) {}
 
-  int getWidth() const { return width_; }
+  int getWidth() const override { return width_; }
 
-  int getHeight() const { return height_; }
+  int getHeight() const override { return height_; }
 
  private:
   const int width_;
@@ -48,13 +48,13 @@ class Window : public tcu::NativeWindow {
         eglDisplay_(display),
         surface_(display, config, attribList, width, height) {}
 
-  virtual ~Window() {}
+  ~Window() override {}
 
-  tcu::egl::Display& getEglDisplay() { return eglDisplay_; }
+  tcu::egl::Display& getEglDisplay() override { return eglDisplay_; }
 
-  tcu::egl::WindowSurface& getEglSurface() { return surface_; }
+  tcu::egl::WindowSurface& getEglSurface() override { return surface_; }
 
-  void processEvents() { return; }
+  void processEvents() override { return; }
 
  private:
   tcu::egl::Display& eglDisplay_;
@@ -65,14 +65,14 @@ class Platform : public tcu::EglPlatform {
  public:
   Platform() : tcu::EglPlatform::EglPlatform() {}
 
-  virtual ~Platform() {}
+  ~Platform() override {}
 
   tcu::NativeWindow* createWindow(tcu::NativeDisplay& dpy,
                                   EGLConfig config,
                                   const EGLint* attribList,
                                   int width,
                                   int height,
-                                  qpVisibility visibility) {
+                                  qpVisibility visibility) override {
     tcu::egl::Display& eglDisplay = dpy.getEglDisplay();
     egl::Display* display =
         static_cast<egl::Display*>(eglDisplay.getEGLDisplay());
