@@ -104,6 +104,12 @@ public:
 
     void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override { }
 
+    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
+    {
+        static const unsigned char tracingIsDisabled = 0;
+        return &tracingIsDisabled;
+    }
+
     WebThread* currentThread() override { return &m_mockWebThread; }
 
     WebTaskRunner* loadingTaskRunner() override
@@ -524,8 +530,8 @@ TEST_F(ScriptRunnerTest, LateNotifications)
 
 TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    OwnPtrWillBePersistent<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    OwnPtrWillBePersistent<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
 
     EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
@@ -537,6 +543,10 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
     m_scriptRunner->notifyScriptReady(scriptLoader2.get(), ScriptRunner::ASYNC_EXECUTION);
 
     m_scriptRunner.release();
+
+#if ENABLE(OILPAN)
+    Heap::collectAllGarbage();
+#endif
 
     // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not access dead object.
     EXPECT_CALL(*scriptLoader1, execute()).Times(0);
