@@ -219,8 +219,8 @@ TEST_P(GLES2DecoderTest, TexSubImage2DValidArgs) {
 }
 
 TEST_P(GLES2DecoderTest, TexSubImage2DBadArgs) {
-  const int kWidth = 16;
-  const int kHeight = 8;
+  const int kWidth = 8;
+  const int kHeight = 4;
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D,
                1,
