@@ -36,8 +36,6 @@ Added support for arch=x64 as an alias to arch=x86_64
 Added debug logging and --verbose parameter.
 Used fast ELF symbolizer for symbols.py and tombstones
 Used multiprocessing to pre-process logcat before symbolizing it
-Added code address adjustment for the debuggerd output from pre-M Android
-    where relocations are packed.
 
 Android relocation packing tool details:
     Copy sources from AOSP bionic/tools/relocation_packer

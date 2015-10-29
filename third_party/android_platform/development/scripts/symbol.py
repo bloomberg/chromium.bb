@@ -148,8 +148,7 @@ def FindToolchain():
     toolchain_info = (label, platform, target);
     if os.path.exists(ToolPath("addr2line", toolchain_info)):
       TOOLCHAIN_INFO = toolchain_info
-      print ("Using toolchain from: "
-             + os.path.normpath(ToolPath("", TOOLCHAIN_INFO)))
+      print "Using toolchain from :" + ToolPath("", TOOLCHAIN_INFO)
       return toolchain_info
 
   raise Exception("Could not find tool chain")
