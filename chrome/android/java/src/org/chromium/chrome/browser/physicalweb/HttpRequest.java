@@ -70,7 +70,6 @@ abstract class HttpRequest<T> implements Runnable {
         // Make the request
         try {
             urlConnection = (HttpURLConnection) mUrl.openConnection();
-            urlConnection.setDoOutput(true);
             writeToUrlConnection(urlConnection);
             responseCode = urlConnection.getResponseCode();
             inputStream = new BufferedInputStream(urlConnection.getInputStream());

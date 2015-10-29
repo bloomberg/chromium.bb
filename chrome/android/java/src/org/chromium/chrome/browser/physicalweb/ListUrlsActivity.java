@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.physicalweb;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.chromium.chrome.R;
@@ -23,7 +23,7 @@ import java.util.HashSet;
  */
 public class ListUrlsActivity extends ListActivity {
     private static final String TAG = "PhysicalWeb";
-    private ArrayAdapter<PwsResult> mAdapter;
+    private NearbyUrlsAdapter mAdapter;
     private PwsClient mPwsClient;
 
     @Override
@@ -49,9 +49,15 @@ public class ListUrlsActivity extends ListActivity {
                 Collection<String> siteUrls = new HashSet<>();
                 for (PwsResult pwsResult : pwsResults) {
                     String siteUrl = pwsResult.siteUrl;
+                    String iconUrl = pwsResult.iconUrl;
+
                     if (siteUrl != null && !siteUrls.contains(siteUrl)) {
                         siteUrls.add(siteUrl);
                         mAdapter.add(pwsResult);
+
+                        if (iconUrl != null) {
+                            fetchIcon(iconUrl);
+                        }
                     }
                 }
             }
@@ -70,6 +76,15 @@ public class ListUrlsActivity extends ListActivity {
         PwsResult pwsResult = mAdapter.getItem(position);
         Intent intent = createNavigateToUrlIntent(pwsResult);
         startActivity(intent);
+    }
+
+    private void fetchIcon(String iconUrl) {
+        mPwsClient.fetchIcon(iconUrl, new PwsClient.FetchIconCallback() {
+            @Override
+            public void onIconReceived(String url, Bitmap bitmap) {
+                mAdapter.setIcon(url, bitmap);
+            }
+        });
     }
 
     private static Intent createNavigateToUrlIntent(PwsResult pwsResult) {

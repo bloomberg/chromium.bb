@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
 import org.chromium.base.Log;
@@ -33,6 +34,18 @@ class PwsClient {
          * @param pwsResults The results returned by the PWS.
          */
         public void onPwsResults(Collection<PwsResult> pwsResults);
+    }
+
+    /**
+     * Callback that is run after receiving the response to an icon fetch request.
+     */
+    public interface FetchIconCallback {
+        /**
+         * Handle newly returned favicon Bitmaps.
+         * @param iconUrl The favicon URL.
+         * @param iconBitmap The icon image data.
+         */
+        public void onIconReceived(String iconUrl, Bitmap iconBitmap);
     }
 
     private static JSONObject createResolveScanPayload(Collection<String> urls)
@@ -90,12 +103,14 @@ class PwsClient {
         // Create the response callback.
         JsonObjectHttpRequest.RequestCallback requestCallback =
                 new JsonObjectHttpRequest.RequestCallback() {
+            @Override
             public void onResponse(JSONObject result) {
                 ThreadUtils.assertOnUiThread();
                 Collection<PwsResult> pwsResults = parseResolveScanResponse(result);
                 resolveScanCallback.onPwsResults(pwsResults);
             }
 
+            @Override
             public void onError(int responseCode, Exception e) {
                 ThreadUtils.assertOnUiThread();
                 String httpErr = "";
@@ -117,6 +132,44 @@ class PwsClient {
             return;
         } catch (JSONException e) {
             Log.e(TAG, "Error creating PWS JSON payload", e);
+            return;
+        }
+        // The callback will be called on the main thread.
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(request);
+    }
+
+    /**
+     * Send an HTTP request to fetch a favicon.
+     * @param iconUrl The URL of the favicon.
+     * @param fetchIconCallback The callback to be run when the icon is received.
+     */
+    public void fetchIcon(final String iconUrl,
+            final FetchIconCallback fetchIconCallback) {
+        // Create the response callback.
+        BitmapHttpRequest.RequestCallback requestCallback =
+                new BitmapHttpRequest.RequestCallback() {
+            @Override
+            public void onResponse(Bitmap iconBitmap) {
+                fetchIconCallback.onIconReceived(iconUrl, iconBitmap);
+            }
+
+            @Override
+            public void onError(int responseCode, Exception e) {
+                ThreadUtils.assertOnUiThread();
+                String httpErr = "";
+                if (responseCode > 0) {
+                    httpErr = ", HTTP " + responseCode;
+                }
+                Log.e(TAG, "Error requesting icon%s", httpErr, e);
+            }
+        };
+
+        // Create the request.
+        BitmapHttpRequest request = null;
+        try {
+            request = new BitmapHttpRequest(iconUrl, requestCallback);
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "Error creating icon request", e);
             return;
         }
         // The callback will be called on the main thread.

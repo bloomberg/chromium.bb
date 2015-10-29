@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.physicalweb;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,16 +15,41 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
+import java.util.HashMap;
+
 /**
  * Adapter for displaying nearby URLs and associated metadata.
  */
 class NearbyUrlsAdapter extends ArrayAdapter<PwsResult> {
+    private final HashMap<String, Bitmap> mIconUrlToIconMap;
 
     /**
      * Construct an empty NearbyUrlsAdapter.
      */
     public NearbyUrlsAdapter(Context context) {
         super(context, 0);
+        mIconUrlToIconMap = new HashMap<>();
+    }
+
+    /**
+     * Update the favicon for a nearby URL.
+     * @param iconUrl The icon URL as returned by PWS
+     * @param icon The favicon to display
+     */
+    public void setIcon(String iconUrl, Bitmap icon) {
+        if (iconUrl != null && icon != null) {
+            mIconUrlToIconMap.put(iconUrl, icon);
+            notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Clear the list, forgetting cached URL metadata and icons.
+     */
+    @Override
+    public void clear() {
+        super.clear();
+        mIconUrlToIconMap.clear();
     }
 
     /**
@@ -46,10 +72,12 @@ class NearbyUrlsAdapter extends ArrayAdapter<PwsResult> {
         ImageView iconImageView = (ImageView) view.findViewById(R.id.nearby_urls_icon);
 
         PwsResult pwsResult = getItem(position);
+        Bitmap iconBitmap = mIconUrlToIconMap.get(pwsResult.iconUrl);
+
         titleTextView.setText(pwsResult.title);
         urlTextView.setText(pwsResult.siteUrl);
         descriptionTextView.setText(pwsResult.description);
-        iconImageView.setImageBitmap(null);
+        iconImageView.setImageBitmap(iconBitmap);
 
         return view;
     }
