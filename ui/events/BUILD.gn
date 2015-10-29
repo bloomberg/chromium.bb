@@ -154,8 +154,15 @@ component("events") {
     ]
   }
 
+  if (use_ozone || (is_android && use_aura)) {
+    sources += [ "events_default.cc" ]
+  }
+
   if (use_ozone) {
-    sources += [ "ozone/events_ozone.cc" ]
+    sources += [
+      "ozone/events_ozone.cc",
+      "ozone/events_ozone.h",
+    ]
     deps += [ "//ui/events/ozone:events_ozone_layout" ]
   }
 
@@ -171,7 +178,7 @@ component("events") {
     ]
   }
 
-  if (is_win || is_mac || use_x11 || use_ozone) {
+  if (is_win || is_mac || use_x11 || use_ozone || (is_android && use_aura)) {
     sources -= [ "events_stub.cc" ]
   }
 }

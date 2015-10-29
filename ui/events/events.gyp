@@ -172,9 +172,14 @@
             'gestures/motion_event_aura.h',
           ],
         }],
+        ['use_ozone==1 or (OS=="android" and use_aura==1)', {
+          'sources': [
+            'events_default.cc',
+          ],
+        }],
         # We explicitly enumerate the platforms we _do_ provide native cracking
         # for here.
-        ['OS=="win" or OS=="mac" or use_x11==1 or use_ozone==1', {
+        ['OS=="win" or OS=="mac" or use_x11==1 or use_ozone==1 or (OS=="android" and use_aura==1)', {
           'sources!': [
             'events_stub.cc',
           ],

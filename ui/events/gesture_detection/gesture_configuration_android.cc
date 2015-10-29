@@ -37,7 +37,11 @@ class GestureConfigurationAndroid : public GestureConfiguration {
     // TODO(jdduke): Enable this on Android M after the implicit conflict with
     // stylus selection is resolved.
     set_stylus_scale_enabled(false);
+#if defined(USE_AURA)
+    set_gesture_begin_end_types_enabled(true);
+#else
     set_gesture_begin_end_types_enabled(false);
+#endif
     set_long_press_time_in_ms(ViewConfiguration::GetLongPressTimeoutInMs());
     set_max_distance_between_taps_for_double_tap(
         ViewConfiguration::GetDoubleTapSlopInDips());
