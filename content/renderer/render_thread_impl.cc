@@ -1305,12 +1305,6 @@ void RenderThreadImpl::IdleHandler() {
   // something is left to do.
   bool continue_timer = !webkit_shared_timer_suspended_;
 
-  if (blink::mainThreadIsolate() &&
-      !blink::mainThreadIsolate()->IdleNotificationDeadline(
-          blink_platform_impl_->monotonicallyIncreasingTime() + 1.0)) {
-    continue_timer = true;
-  }
-
   // Schedule next invocation. When the tab is originally hidden, an invocation
   // is scheduled for kInitialIdleHandlerDelayMs in
   // RenderThreadImpl::WidgetHidden in order to race to a minimal heap.
@@ -1966,6 +1960,7 @@ void RenderThreadImpl::WidgetRestored() {
 }
 
 void RenderThreadImpl::OnRendererHidden() {
+  blink::mainThreadIsolate()->IsolateInBackgroundNotification();
   // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
@@ -1973,9 +1968,9 @@ void RenderThreadImpl::OnRendererHidden() {
 }
 
 void RenderThreadImpl::OnRendererVisible() {
+  blink::mainThreadIsolate()->IsolateInForegroundNotification();
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
-
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }
 
