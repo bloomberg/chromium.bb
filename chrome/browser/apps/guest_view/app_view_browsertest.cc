@@ -12,8 +12,10 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/guest_view/app_view/app_view_constants.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/process_manager.h"
@@ -193,71 +195,66 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewEmbedSelfShouldFail) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
-  const extensions::Extension* mock_bad_app =
+  const extensions::Extension* bad_app =
       LoadAndLaunchPlatformApp("app_view/bad_app", "AppViewTest.LAUNCHED");
 
   content::RenderProcessHost* bad_app_render_process_host =
       extensions::AppWindowRegistry::Get(browser()->profile())
-          ->GetCurrentAppWindowForApp(mock_bad_app->id())
+          ->GetCurrentAppWindowForApp(bad_app->id())
           ->web_contents()
           ->GetRenderProcessHost();
 
-  // Monitor |mock_bad_app|'s RenderProcessHost for its exiting.
+  // Monitor |bad_app|'s RenderProcessHost for its exiting.
   RenderProcessHostObserverForExit exit_observer(bad_app_render_process_host);
 
   // Choosing a |guest_instance_id| which does not exist.
   int invalid_guest_instance_id =
       test_guest_view_manager()->GetNextInstanceID();
-  // Call the desired function to verify that the |mock_bad_app| gets killed if
+  // Call the desired function to verify that the |bad_app| gets killed if
   // the provided |guest_instance_id| is not mapped to any "GuestView"'s.
   extensions::AppViewGuest::CompletePendingRequest(
       browser()->profile(), GURL("about:blank"), invalid_guest_instance_id,
-      mock_bad_app->id(), bad_app_render_process_host);
+      bad_app->id(), bad_app_render_process_host);
   exit_observer.WaitUntilRenderProcessHostKilled();
 }
 
-// Failing on msan bot: crbug.com/507940 and Linux dbg http://crbug.com/533318
-#if defined(MEMORY_SANITIZER) || (defined(OS_LINUX) && !defined(NDEBUG))
-#define MAYBE_KillGuestCommunicatingWithWrongAppView \
-        DISABLED_KillGuestCommunicatingWithWrongAppView
-#else
-#define MAYBE_KillGuestCommunicatingWithWrongAppView \
-        KillGuestCommunicatingWithWrongAppView
-#endif
-
-IN_PROC_BROWSER_TEST_F(AppViewTest,
-                       MAYBE_KillGuestCommunicatingWithWrongAppView) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
   const extensions::Extension* host_app =
       LoadAndLaunchPlatformApp("app_view/host_app", "AppViewTest.LAUNCHED");
-  const extensions::Extension* mock_guest_extension =
+  const extensions::Extension* guest_app =
       InstallPlatformApp("app_view/guest_app");
-  const extensions::Extension* mock_bad_app =
+  const extensions::Extension* bad_app =
       LoadAndLaunchPlatformApp("app_view/bad_app", "AppViewTest.LAUNCHED");
-
+  // The host app attemps to embed the guest
   EXPECT_TRUE(content::ExecuteScript(
       extensions::AppWindowRegistry::Get(browser()->profile())
           ->GetCurrentAppWindowForApp(host_app->id())
           ->web_contents(),
       base::StringPrintf("onAppCommand('%s', '%s');", "EMBED",
-                         mock_guest_extension->id().c_str())));
+                         guest_app->id().c_str())));
   ExtensionTestMessageListener on_embed_requested_listener(
-      "AppViewTest.EmbedRequested", true);
+      "AppViewTest.EmbedRequested", false);
   EXPECT_TRUE(on_embed_requested_listener.WaitUntilSatisfied());
-  // Now assume the bad application is somehow sending a message to complete a
-  // pending request to attach to <appview>. It should be killed.
-  content::RenderProcessHost* bad_app_render_process_host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(mock_bad_app->id())
-          ->render_process_host();
-  RenderProcessHostObserverForExit bad_app_obs(bad_app_render_process_host);
-  // Make the false request.
+  // While the host is waiting for the guest to accept/deny embedding, the bad
+  // app sends a request to the host.
   int guest_instance_id =
       extensions::AppViewGuest::GetAllRegisteredInstanceIdsForTesting()[0];
-  extensions::AppViewGuest::CompletePendingRequest(
-      browser()->profile(), GURL("about:blank"), guest_instance_id,
-      mock_bad_app->id(), bad_app_render_process_host);
-
-  on_embed_requested_listener.Reply("continue");
-  // Make sure the bad application has been terminated.
+  RenderProcessHostObserverForExit bad_app_obs(
+      extensions::ProcessManager::Get(browser()->profile())
+          ->GetBackgroundHostForExtension(bad_app->id())
+          ->render_process_host());
+  scoped_ptr<base::DictionaryValue> fake_embed_request_param(
+      new base::DictionaryValue);
+  fake_embed_request_param->SetInteger(appview::kGuestInstanceID,
+                                       guest_instance_id);
+  fake_embed_request_param->SetString(appview::kEmbedderID, host_app->id());
+  extensions::AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
+      browser()->profile(), fake_embed_request_param.Pass(), bad_app);
   bad_app_obs.WaitUntilRenderProcessHostKilled();
+  // Now ask the guest to continue embedding.
+  ASSERT_TRUE(
+      ExecuteScript(extensions::ProcessManager::Get(browser()->profile())
+                        ->GetBackgroundHostForExtension(guest_app->id())
+                        ->web_contents(),
+                    "continueEmbedding();"));
 }

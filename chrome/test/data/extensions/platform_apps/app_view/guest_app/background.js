@@ -11,14 +11,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
 chrome.app.runtime.onEmbedRequested.addListener(function(request) {
   console.log('Embed request received at the guest app.');
   window.request = request;
-  chrome.test.sendMessage('AppViewTest.EmbedRequested', function(response) {
-    if (response === 'continue') {
-      continueEmbedding();
-    }
-  });
+  chrome.test.sendMessage('AppViewTest.EmbedRequested');
 });
 
-function continueEmbedding() {
+window.continueEmbedding = function() {
   console.log('Moving on with the embedding.');
   if (window.request) {
     request.allow('window.html');
