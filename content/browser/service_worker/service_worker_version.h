@@ -505,7 +505,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DidEnsureLiveRegistrationForStartWorker(
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& protect);
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
   void StartWorkerInternal();
 
   void DidSkipWaiting(int request_id);

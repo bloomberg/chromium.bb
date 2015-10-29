@@ -376,6 +376,46 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 }
 
+TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
+  // Start the worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+
+  // Delete the registration.
+  status = SERVICE_WORKER_ERROR_FAILED;
+  helper_->context()->storage()->DeleteRegistration(
+      registration_->id(), registration_->pattern().GetOrigin(),
+      CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
+
+  // The live registration is marked as deleted, but still exists.
+  ASSERT_TRUE(registration_->is_deleted());
+
+  // Stop the worker.
+  ServiceWorkerStatusCode stop_status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StopWorker(CreateReceiverOnCurrentThread(&stop_status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, stop_status);
+
+  // Dispatch an event on the unregistered and stopped but still live worker.
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
+                               base::Bind(&base::DoNothing),
+                               base::Bind(&ReceiveFetchResult, &status));
+  base::RunLoop().RunUntilIdle();
+
+  // Dispatch an event should return SERVICE_WORKER_OK since the worker
+  // should have been restarted to dispatch the event.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+  // The worker should be now started again.
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+}
+
 TEST_F(ServiceWorkerVersionTest, ReceiveMessageFromWorker) {
   // Start worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;

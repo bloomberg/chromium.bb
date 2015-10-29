@@ -1889,7 +1889,19 @@ void ServiceWorkerVersion::OnRegisterForeignFetchScopes(
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     const StatusCallback& callback,
     ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& protect) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  scoped_refptr<ServiceWorkerRegistration> protect = registration;
+  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+    // When the registration has already been deleted from the storage but its
+    // active worker is still controlling clients, the event should be
+    // dispatched on the worker. However, the storage cannot find the
+    // registration. To handle the case, check the live registrations here.
+    protect = context_->GetLiveRegistration(registration_id_);
+    if (protect) {
+      DCHECK(protect->is_deleted());
+      status = SERVICE_WORKER_OK;
+    }
+  }
   if (status != SERVICE_WORKER_OK) {
     RecordStartWorkerResult(status);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
