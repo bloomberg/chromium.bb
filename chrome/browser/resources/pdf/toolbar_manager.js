@@ -43,7 +43,7 @@ function isMouseNearTopToolbar(e) {
  */
 function isMouseNearSideToolbar(e) {
   var atSide = e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
-  if (document.dir == 'rtl')
+  if (isRTL())
     atSide = e.x < SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
   var atBottom = e.y > window.innerHeight - SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM;
   return atSide && atBottom;

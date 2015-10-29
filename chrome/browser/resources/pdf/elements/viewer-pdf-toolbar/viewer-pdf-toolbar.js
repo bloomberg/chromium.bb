@@ -10,7 +10,6 @@
     ],
 
     properties: {
-      strings: Object,
       /**
        * The current loading progress of the PDF document (0 - 100).
        */

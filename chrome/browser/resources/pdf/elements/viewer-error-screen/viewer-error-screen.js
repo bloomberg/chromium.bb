@@ -5,8 +5,6 @@
 Polymer({
   is: 'viewer-error-screen',
   properties: {
-    strings: Object,
-
     reloadFn: {
       type: Object,
       value: null,

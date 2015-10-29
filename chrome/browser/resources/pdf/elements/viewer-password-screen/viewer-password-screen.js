@@ -6,8 +6,6 @@ Polymer({
   is: 'viewer-password-screen',
 
   properties: {
-    strings: Object,
-
     invalid: Boolean,
 
     active: {

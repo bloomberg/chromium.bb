@@ -587,13 +587,9 @@ PDFViewer.prototype = {
    */
   handleStrings_: function(strings) {
     if (this.isMaterial_) {
-      this.errorScreen_.strings = strings;
-      this.passwordScreen_.strings = strings;
-      if (this.materialToolbar_)
-        this.materialToolbar_.strings = strings;
-      this.zoomToolbar_.strings = strings;
-      document.documentElement.lang = strings['language'];
-      document.dir = strings['textdirection'];
+      window.loadTimeData.data = strings;
+      i18nTemplate.process(document, loadTimeData);
+      this.zoomToolbar_.updateTooltips();
     } else {
       this.passwordScreen_.text = strings.passwordPrompt;
       this.progressBar_.text = strings.pageLoading;
@@ -773,8 +769,8 @@ PDFViewer.prototype = {
       // will be half a scrollbar width further left than the spec but if there
       // is a scrollbar visible it will be half a scrollbar width further right
       // than the spec. In RTL layout, the zoom toolbar is on the left side, but
-      // the scrollbar is still on the left, so this is not necessary.
-      if (document.dir == 'ltr') {
+      // the scrollbar is still on the right, so this is not necessary.
+      if (!isRTL()) {
         this.zoomToolbar_.style.right = -verticalScrollbarWidth +
             (scrollbarWidth / 2) + 'px';
       }

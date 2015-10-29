@@ -25,39 +25,38 @@
 
         <div class="flex-1" id="pageselector-container">
           <viewer-page-selector id="pageselector" class="invisible"
-              doc-length="{{docLength}}" page-no="{{pageNo}}"
-              strings="{{strings}}">
+              doc-length="{{docLength}}" page-no="{{pageNo}}">
           </viewer-page-selector>
         </div>
 
         <div id="buttons" class="invisible flex-5">
           <viewer-toolbar-dropdown id="bookmarks"
                                    hidden$="[[!bookmarks.length]]"
-                                   header="{{strings.bookmarks}}"
                                    open-icon="bookmark"
-                                   closed-icon="bookmark-border">
+                                   closed-icon="bookmark-border"
+                                   i18n-values="header:bookmarks">
               <viewer-bookmarks-content bookmarks="{{bookmarks}}">
               </viewer-bookmarks-content>
           </viewer-toolbar-dropdown>
 
           <paper-icon-button id="rotate-right" icon="image:rotate-right"
-              on-click="rotateRight" alt="{{strings.tooltipRotateCW}}"
-              title="{{strings.tooltipRotateCW}}">
+              on-click="rotateRight"
+              i18n-values="aria-label:tooltipRotateCW;title:tooltipRotateCW">
           </paper-icon-button>
 
           <paper-icon-button id="rotate-left" icon="image:rotate-left"
-              on-click="rotateLeft" alt="{{strings.tooltipRotateCCW}}"
-              title="{{strings.tooltipRotateCCW}}">
+              on-click="rotateLeft"
+              i18n-values="aria-label:tooltipRotateCCW;title:tooltipRotateCCW">
           </paper-icon-button>
 
           <paper-icon-button id="save" icon="save"
-              on-click="save" alt="{{strings.tooltipSave}}"
-              title="{{strings.tooltipSave}}">
+              on-click="save"
+              i18n-values="aria-label:tooltipSave;title:tooltipSave">
           </paper-icon-button>
 
           <paper-icon-button id="print" icon="print"
-              on-click="print" alt="{{strings.tooltipPrint}}"
-              title="{{strings.tooltipPrint}}">
+              on-click="print"
+              i18n-values="aria-label:tooltipPrint;title:tooltipPrint">
           </paper-icon-button>
         </div>
       </div>
