@@ -30,12 +30,6 @@
 #define HAVE_STRINGS_H 1
 #endif
 
-#if !defined(HAVE_STRNSTR)
-#if OS(MACOSX) || (OS(FREEBSD) && !defined(__GLIBC__))
-#define HAVE_STRNSTR 1
-#endif
-#endif
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -91,22 +85,6 @@ inline int strncasecmp(const char* s1, const char* s2, size_t len)
 inline int strcasecmp(const char* s1, const char* s2)
 {
     return _stricmp(s1, s2);
-}
-
-#endif
-
-#if !HAVE(STRNSTR)
-
-inline char* strnstr(const char* buffer, const char* target, size_t bufferLength)
-{
-    size_t targetLength = strlen(target);
-    if (targetLength == 0)
-        return const_cast<char*>(buffer);
-    for (const char* start = buffer; *start && start + targetLength <= buffer + bufferLength; start++) {
-        if (*start == *target && strncmp(start + 1, target + 1, targetLength - 1) == 0)
-            return const_cast<char*>(start);
-    }
-    return 0;
 }
 
 #endif
