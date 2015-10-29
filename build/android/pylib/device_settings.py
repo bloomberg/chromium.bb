@@ -10,6 +10,7 @@ _LOCK_SCREEN_SETTINGS_PATH = '/data/system/locksettings.db'
 _ALTERNATE_LOCK_SCREEN_SETTINGS_PATH = (
     '/data/data/com.android.providers.settings/databases/settings.db')
 PASSWORD_QUALITY_UNSPECIFIED = '0'
+_COMPATIBLE_BUILD_TYPES = ['userdebug', 'eng']
 
 
 def ConfigureContentSettings(device, desired_settings):
@@ -27,7 +28,7 @@ def ConfigureContentSettings(device, desired_settings):
     desired_settings: A list of (table, [(key: value), ...]) for all
         settings to configure.
   """
-  if device.build_type == 'userdebug':
+  if device.build_type in _COMPATIBLE_BUILD_TYPES:
     for table, key_value in desired_settings:
       settings = content_settings.ContentSettings(table, device)
       for key, value in key_value:
@@ -56,8 +57,9 @@ def SetLockScreenSettings(device):
   Raises:
     Exception if the setting was not properly set.
   """
-  if device.build_type != 'userdebug':
-    logging.warning('Unable to disable lockscreen on user builds.')
+  if device.build_type not in _COMPATIBLE_BUILD_TYPES:
+    logging.warning('Unable to disable lockscreen on %s builds.',
+                    device.build_type)
     return
 
   def get_lock_settings(table):
