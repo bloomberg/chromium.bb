@@ -21,6 +21,8 @@ component("android") {
     "overscroll_glow.h",
     "overscroll_refresh.cc",
     "overscroll_refresh.h",
+    "resources/crushed_sprite_resource.cc",
+    "resources/crushed_sprite_resource.h",
     "resources/resource_manager.cc",
     "resources/resource_manager.h",
     "resources/resource_manager_impl.cc",

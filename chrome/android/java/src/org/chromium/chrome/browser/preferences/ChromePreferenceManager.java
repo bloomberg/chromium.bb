@@ -35,6 +35,8 @@ public class ChromePreferenceManager {
     private static final String CONTEXTUAL_SEARCH_TAP_COUNT = "contextual_search_tap_count";
     private static final String CONTEXTUAL_SEARCH_PEEK_PROMO_SHOW_COUNT =
             "contextual_search_peek_promo_show_count";
+    private static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
+            "contextual_search_last_animation_time";
     private static final String ENABLE_CUSTOM_TABS = "enable_custom_tabs";
 
     private static final int SIGNIN_PROMO_CYCLE_IN_DAYS = 120;
@@ -248,6 +250,23 @@ public class ChromePreferenceManager {
      */
     public void setContextualSearchPeekPromoShowCount(int count) {
         writeInt(CONTEXTUAL_SEARCH_PEEK_PROMO_SHOW_COUNT, count);
+    }
+
+    /**
+     * @return The last time the search provider icon was animated on tap.
+     */
+    public long getContextualSearchLastAnimationTime() {
+        return mSharedPreferences.getLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME, 0);
+    }
+
+    /**
+     * Sets the last time the search provider icon was animated on tap.
+     * @param time The last time the search provider icon was animated on tap.
+     */
+    public void setContextualSearchLastAnimationTime(long time) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME, time);
+        ed.apply();
     }
 
     /**

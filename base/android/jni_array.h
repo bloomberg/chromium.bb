@@ -99,6 +99,13 @@ BASE_EXPORT void JavaArrayOfByteArrayToStringVector(
     jobjectArray array,
     std::vector<std::string>* out);
 
+// Assuming |array| is an int[][] (array of int arrays), replaces the
+// contents of |out| with the corresponding vectors of ints.
+BASE_EXPORT void JavaArrayOfIntArrayToIntVector(
+    JNIEnv* env,
+    jobjectArray array,
+    std::vector<std::vector<int>>* out);
+
 }  // namespace android
 }  // namespace base
 

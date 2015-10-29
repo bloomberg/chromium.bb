@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 class ContextualSearchPolicy {
     private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
     private static final int REMAINING_NOT_APPLICABLE = -1;
+    private static final int ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
     private static ContextualSearchPolicy sInstance;
 
@@ -302,6 +303,39 @@ class ContextualSearchPolicy {
      */
     boolean maySendBasePageUrl() {
         return !isUserUndecided();
+    }
+
+    /**
+     * The search provider icon is animated every time on long press if the user has never opened
+     * the panel before and once a day on tap.
+     *
+     * @param selectionType The type of selection made by the user.
+     * @param isShowing Whether the panel is showing.
+     * @return Whether the search provider icon should be animated.
+     */
+    boolean shouldAnimateSearchProviderIcon(SelectionType selectionType, boolean isShowing) {
+        if (isShowing) {
+            return false;
+        }
+
+        if (selectionType == SelectionType.TAP) {
+            long currentTimeMillis = System.currentTimeMillis();
+            long lastAnimatedTimeMillis =
+                    mPreferenceManager.getContextualSearchLastAnimationTime();
+            if (Math.abs(currentTimeMillis - lastAnimatedTimeMillis) > ONE_DAY_IN_MILLIS) {
+                mPreferenceManager.setContextualSearchLastAnimationTime(currentTimeMillis);
+                return true;
+            } else {
+                return false;
+            }
+        } else if (selectionType == SelectionType.LONG_PRESS) {
+            // If the panel has never been opened before, getPromoOpenCount() will be 0.
+            // Once the panel has been opened, regardless of whether or not the user has opted-in or
+            // opted-out, the promo open count will be greater than zero.
+            return getPromoOpenCount() == 0;
+        }
+
+        return false;
     }
 
     // --------------------------------------------------------------------------------------------

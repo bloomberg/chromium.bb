@@ -15,6 +15,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.resources.ResourceLoader.ResourceLoaderCallback;
 import org.chromium.ui.resources.dynamics.DynamicResource;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
+import org.chromium.ui.resources.sprites.CrushedSpriteResource;
+import org.chromium.ui.resources.sprites.CrushedSpriteResourceLoader;
 import org.chromium.ui.resources.statics.StaticResourceLoader;
 import org.chromium.ui.resources.system.SystemResourceLoader;
 
@@ -27,6 +29,7 @@ public class ResourceManager implements ResourceLoaderCallback {
     private final SparseArray<ResourceLoader> mResourceLoaders = new SparseArray<ResourceLoader>();
     private final SparseArray<SparseArray<LayoutResource>> mLoadedResources =
             new SparseArray<SparseArray<LayoutResource>>();
+    private final CrushedSpriteResourceLoader mCrushedSpriteResourceLoader;
 
     private final float mPxToDp;
 
@@ -45,6 +48,7 @@ public class ResourceManager implements ResourceLoaderCallback {
                 AndroidResourceType.DYNAMIC_BITMAP, this));
         registerResourceLoader(new SystemResourceLoader(
                 AndroidResourceType.SYSTEM, this, context));
+        mCrushedSpriteResourceLoader = new CrushedSpriteResourceLoader(this, resources);
 
         mNativeResourceManagerPtr = staticResourceManagerPtr;
     }
@@ -110,13 +114,26 @@ public class ResourceManager implements ResourceLoaderCallback {
         return bucket != null ? bucket.get(resId) : null;
     }
 
+    @SuppressWarnings("cast")
     @Override
     public void onResourceLoaded(int resType, int resId, Resource resource) {
         if (resource == null) return;
 
-        saveMetadataForLoadedResource(resType, resId, resource);
+        if (resType != AndroidResourceType.CRUSHED_SPRITE) {
+            saveMetadataForLoadedResource(resType, resId, resource);
+        }
 
         if (mNativeResourceManagerPtr == 0) return;
+        if (resType == AndroidResourceType.CRUSHED_SPRITE) {
+            if (resource.getBitmap() != null) {
+                CrushedSpriteResource crushedResource = (CrushedSpriteResource) resource;
+                nativeOnCrushedSpriteResourceReady(mNativeResourceManagerPtr, resId,
+                        crushedResource.getBitmap(), crushedResource.getFrameRectangles(),
+                        crushedResource.getSpriteWidth(), crushedResource.getSpriteHeight());
+            }
+            return;
+        }
+
         Rect padding = resource.getPadding();
         Rect aperture = resource.getAperture();
 
@@ -153,6 +170,20 @@ public class ResourceManager implements ResourceLoaderCallback {
     }
 
     @CalledByNative
+    private void crushedSpriteResourceRequested(int bitmapResId, int metatadataResId,
+            boolean reloading) {
+        if (reloading) {
+            Bitmap bitmap = mCrushedSpriteResourceLoader.reloadResource(bitmapResId);
+            if (bitmap != null) {
+                nativeOnCrushedSpriteResourceReloaded(mNativeResourceManagerPtr, bitmapResId,
+                        bitmap);
+            }
+        } else {
+            mCrushedSpriteResourceLoader.loadResource(bitmapResId, metatadataResId);
+        }
+    }
+
+    @CalledByNative
     private long getNativePtr() {
         return mNativeResourceManagerPtr;
     }
@@ -165,5 +196,9 @@ public class ResourceManager implements ResourceLoaderCallback {
             int resId, Bitmap bitmap, int paddingLeft, int paddingTop, int paddingRight,
             int paddingBottom, int apertureLeft, int apertureTop, int apertureRight,
             int apertureBottom);
+    private native void nativeOnCrushedSpriteResourceReady(long nativeResourceManagerImpl,
+            int bitmapResId, Bitmap bitmap, int[][] frameRects, int spriteWidth, int spriteHeight);
+    private native void nativeOnCrushedSpriteResourceReloaded(long nativeResourceManagerImpl,
+            int bitmapResId, Bitmap bitmap);
 
 }

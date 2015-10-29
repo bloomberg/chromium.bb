@@ -77,6 +77,9 @@
     <dimen name="contextual_search_text_size">18sp</dimen>
     <dimen name="contextual_search_peek_promo_height">48dp</dimen>
     <dimen name="contextual_search_peek_promo_padding">12dp</dimen>
+    <!-- TODO(twellington): Consider moving this to the JSON sprite metadata and
+                            scaling the sprite in contextual_search_layer.cc -->
+    <dimen name="contextual_search_sprite_size">36dp</dimen>
 
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>

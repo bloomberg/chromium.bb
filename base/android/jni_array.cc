@@ -229,9 +229,25 @@ void JavaArrayOfByteArrayToStringVector(
         env, static_cast<jbyteArray>(
             env->GetObjectArrayElement(array, i)));
     jsize bytes_len = env->GetArrayLength(bytes_array.obj());
-    jbyte* bytes = env->GetByteArrayElements(bytes_array.obj(), NULL);
+    jbyte* bytes = env->GetByteArrayElements(bytes_array.obj(), nullptr);
     (*out)[i].assign(reinterpret_cast<const char*>(bytes), bytes_len);
     env->ReleaseByteArrayElements(bytes_array.obj(), bytes, JNI_ABORT);
+  }
+}
+
+void JavaArrayOfIntArrayToIntVector(
+    JNIEnv* env,
+    jobjectArray array,
+    std::vector<std::vector<int>>* out) {
+  DCHECK(out);
+  size_t len = SafeGetArrayLength(env, array);
+  out->resize(len);
+  for (size_t i = 0; i < len; ++i) {
+    ScopedJavaLocalRef<jintArray> int_array(
+        env, static_cast<jintArray>(env->GetObjectArrayElement(array, i)));
+    jint* ints = env->GetIntArrayElements(int_array.obj(), nullptr);
+    JavaIntArrayToIntVector(env, int_array.obj(), &((*out)[i]));
+    env->ReleaseIntArrayElements(int_array.obj(), ints, JNI_ABORT);
   }
 }
 

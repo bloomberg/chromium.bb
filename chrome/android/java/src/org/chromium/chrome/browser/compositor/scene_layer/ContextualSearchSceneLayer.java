@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchIconSpriteControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPeekPromoControl;
 import org.chromium.content.browser.ContentViewCore;
@@ -69,6 +70,12 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         boolean searchBarShadowVisible = mSearchPanel.getSearchBarShadowVisible();
         float searchBarShadowOpacity = mSearchPanel.getSearchBarShadowOpacity();
 
+        ContextualSearchIconSpriteControl spriteControl =
+                mSearchPanel.getIconSpriteControl();
+        boolean searchProviderIconSpriteVisible = spriteControl.isVisible();
+        float searchProviderIconCompletionPercentage = spriteControl.getCompletionPercentage();
+        float searchProviderIconSpriteSize = spriteControl.getSizePx();
+
         float arrowIconOpacity = mSearchPanel.getArrowIconOpacity();
         float arrowIconRotation = mSearchPanel.getArrowIconRotation();
 
@@ -85,7 +92,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchContextViewId,
                 searchTermViewId,
                 R.drawable.contextual_search_bar_shadow,
-                R.drawable.google_icon,
+                0, // Passing 0 so that the icon sprite will be used instead of a static icon.
                 R.drawable.breadcrumb_arrow,
                 ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
                 R.drawable.progress_bar_background,
@@ -93,6 +100,8 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 R.id.contextual_search_opt_out_promo,
                 R.drawable.contextual_search_promo_ripple,
                 searchPeekPromoTextViewId,
+                R.drawable.google_icon_sprite,
+                R.raw.google_icon_sprite,
                 contentViewCore,
                 searchPromoVisible,
                 searchPromoHeightPx,
@@ -115,6 +124,9 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchBarBorderHeight * mDpToPx,
                 searchBarShadowVisible,
                 searchBarShadowOpacity,
+                searchProviderIconSpriteVisible,
+                searchProviderIconCompletionPercentage,
+                searchProviderIconSpriteSize,
                 arrowIconOpacity,
                 arrowIconRotation,
                 closeIconOpacity,
@@ -149,7 +161,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             int searchContextResourceId,
             int searchTermResourceId,
             int searchBarShadowResourceId,
-            int searchProviderIconResourceId,
+            int panelIconResourceId,
             int arrowUpResourceId,
             int closeIconResourceId,
             int progressBarBackgroundResourceId,
@@ -157,6 +169,8 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             int searchPromoResourceId,
             int peekPromoRippleResourceId,
             int peekPromoTextResourceId,
+            int searchProviderIconSpriteBitmapResourceId,
+            int searchProviderIconSpriteMetadataResourceId,
             ContentViewCore contentViewCore,
             boolean searchPromoVisible,
             float searchPromoHeight,
@@ -179,6 +193,9 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             float searchBarBorderHeight,
             boolean searchBarShadowVisible,
             float searchBarShadowOpacity,
+            boolean searchProviderIconSpriteVisible,
+            float searchProviderIconCompletionPercentage,
+            float searchProviderIconSpriteSize,
             float arrowIconOpacity,
             float arrowIconRotation,
             float closeIconOpacity,

@@ -5,10 +5,12 @@
 #include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "chrome/browser/android/compositor/layer/contextual_search_layer.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/ContextualSearchSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
+#include "ui/gfx/android/java_bitmap.h"
 
 namespace chrome {
 namespace android {
@@ -28,7 +30,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jint search_context_resource_id,
     jint search_term_resource_id,
     jint search_bar_shadow_resource_id,
-    jint search_provider_icon_resource_id,
+    jint panel_icon_resource_id,
     jint arrow_up_resource_id,
     jint close_icon_resource_id,
     jint progress_bar_background_resource_id,
@@ -36,6 +38,8 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jint search_promo_resource_id,
     jint peek_promo_ripple_resource_id,
     jint peek_promo_text_resource_id,
+    jint search_provider_icon_sprite_bitmap_resource_id,
+    jint search_provider_icon_sprite_metadata_resource_id,
     jobject jcontent_view_core,
     jboolean search_promo_visible,
     jfloat search_promo_height,
@@ -58,6 +62,9 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat search_bar_border_height,
     jboolean search_bar_shadow_visible,
     jfloat search_bar_shadow_opacity,
+    jboolean search_provider_icon_sprite_visible,
+    jfloat search_provider_icon_sprite_completion_percentage,
+    jfloat search_provider_icon_sprite_size,
     jfloat arrow_icon_opacity,
     jfloat arrow_icon_rotation,
     jfloat close_icon_opacity,
@@ -90,7 +97,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       search_context_resource_id,
       search_term_resource_id,
       search_bar_shadow_resource_id,
-      search_provider_icon_resource_id,
+      panel_icon_resource_id,
       arrow_up_resource_id,
       close_icon_resource_id,
       progress_bar_background_resource_id,
@@ -98,6 +105,8 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       search_promo_resource_id,
       peek_promo_ripple_resource_id,
       peek_promo_text_resource_id,
+      search_provider_icon_sprite_bitmap_resource_id,
+      search_provider_icon_sprite_metadata_resource_id,
       content_view_core,
       search_promo_visible,
       search_promo_height,
@@ -120,6 +129,9 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       search_bar_border_height,
       search_bar_shadow_visible,
       search_bar_shadow_opacity,
+      search_provider_icon_sprite_visible,
+      search_provider_icon_sprite_completion_percentage,
+      search_provider_icon_sprite_size,
       arrow_icon_opacity,
       arrow_icon_rotation,
       close_icon_opacity,

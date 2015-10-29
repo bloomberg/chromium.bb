@@ -9,9 +9,11 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
+#include "chrome/browser/android/compositor/layer/crushed_sprite_layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/color_utils.h"
@@ -43,7 +45,7 @@ void ContextualSearchLayer::SetProperties(
     int search_context_resource_id,
     int search_term_resource_id,
     int search_bar_shadow_resource_id,
-    int search_provider_icon_resource_id,
+    int panel_icon_resource_id,
     int arrow_up_resource_id,
     int close_icon_resource_id,
     int progress_bar_background_resource_id,
@@ -51,6 +53,8 @@ void ContextualSearchLayer::SetProperties(
     int search_promo_resource_id,
     int peek_promo_ripple_resource_id,
     int peek_promo_text_resource_id,
+    int search_provider_icon_sprite_bitmap_resource_id,
+    int search_provider_icon_sprite_metadata_resource_id,
     content::ContentViewCore* content_view_core,
     bool search_promo_visible,
     float search_promo_height,
@@ -73,6 +77,9 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_border_height,
     bool search_bar_shadow_visible,
     float search_bar_shadow_opacity,
+    bool search_provider_icon_sprite_visible,
+    float search_provider_icon_sprite_completion_percentage,
+    float search_provider_icon_sprite_size,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
     float close_icon_opacity,
@@ -92,12 +99,8 @@ void ContextualSearchLayer::SetProperties(
   ui::ResourceManager::Resource* panel_shadow_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      panel_shadow_resource_id);
-  ui::ResourceManager::Resource* search_provider_icon_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     search_provider_icon_resource_id);
 
   DCHECK(panel_shadow_resource);
-  DCHECK(search_provider_icon_resource);
 
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
@@ -106,6 +109,11 @@ void ContextualSearchLayer::SetProperties(
   float search_bar_bottom = search_bar_top + search_bar_height;
 
   bool is_rtl = l10n_util::IsLayoutRtl();
+
+  // If |panel_icon_resource_id| != 0, the static resource associated with that
+  // id will be displayed. If |panel_icon_resource_id| == 0, then the
+  // search provider icon sprite will be shown instead.
+  bool should_use_static_icon = panel_icon_resource_id != 0;
 
   // ---------------------------------------------------------------------------
   // Panel Shadow
@@ -159,8 +167,7 @@ void ContextualSearchLayer::SetProperties(
         color_utils::AlphaBlend(kPeekPromoRippleBackgroundColor,
                                 kSearchBarBackgroundColor,
                                 kPeekPromoBackgroundMaximumAlphaBlend *
-                                    search_peek_promo_ripple_opacity
-                                ));
+                                    search_peek_promo_ripple_opacity));
 
     // -----------------------------------------------------------------
     // Peek Promo Ripple
@@ -255,27 +262,80 @@ void ContextualSearchLayer::SetProperties(
   }
 
   // ---------------------------------------------------------------------------
-  // Search Provider Icon
+  // Panel Icon (Static)
   // ---------------------------------------------------------------------------
-  // Positions the Search Provider Icon at the start of the Search Bar.
-  float search_provider_icon_left;
-  if (is_rtl) {
-    search_provider_icon_left = search_panel_width -
-        search_provider_icon_resource->size.width() - search_bar_margin_side;
-  } else {
-    search_provider_icon_left = search_bar_margin_side;
+  if (should_use_static_icon) {
+    if (panel_icon_->parent() != layer_) {
+      layer_->AddChild(panel_icon_);
+    }
+    ui::ResourceManager::Resource* panel_icon_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                       panel_icon_resource_id);
+    DCHECK(panel_icon_resource);
+
+    // Positions the Icon at the start of the Search Bar.
+    float search_provider_icon_left;
+    if (is_rtl) {
+      search_provider_icon_left = search_panel_width -
+          panel_icon_resource->size.width() - search_bar_margin_side;
+    } else {
+      search_provider_icon_left = search_bar_margin_side;
+    }
+
+    // Centers the Icon vertically in the Search Bar.
+    float search_provider_icon_top = search_bar_top +
+        search_bar_height / 2 -
+        panel_icon_resource->size.height() / 2;
+
+    panel_icon_->SetUIResourceId(
+        panel_icon_resource->ui_resource->id());
+    panel_icon_->SetBounds(panel_icon_resource->size);
+    panel_icon_->SetPosition(
+        gfx::PointF(search_provider_icon_left, search_provider_icon_top));
   }
 
-  // Centers the Search Provider Icon vertically in the Search Bar.
-  float search_provider_icon_top = search_bar_top +
-      search_bar_height / 2 -
-      search_provider_icon_resource->size.height() / 2;
+  // ---------------------------------------------------------------------------
+  // Search Provider Icon Sprite (Animated)
+  // ---------------------------------------------------------------------------
+  if (!should_use_static_icon) {
+    if (search_provider_icon_sprite_visible) {
+      if (search_provider_icon_sprite_->layer()->parent() != layer_) {
+        layer_->AddChild(search_provider_icon_sprite_->layer());
+      }
 
-  search_provider_icon_->SetUIResourceId(
-      search_provider_icon_resource->ui_resource->id());
-  search_provider_icon_->SetBounds(search_provider_icon_resource->size);
-  search_provider_icon_->SetPosition(
-      gfx::PointF(search_provider_icon_left, search_provider_icon_top));
+      search_provider_icon_sprite_->DrawSpriteFrame(
+          resource_manager_,
+          search_provider_icon_sprite_bitmap_resource_id,
+          search_provider_icon_sprite_metadata_resource_id,
+          search_provider_icon_sprite_completion_percentage);
+
+      // Positions the Search Provider Icon at the start of the Search Bar.
+      float icon_x;
+      if (is_rtl) {
+        icon_x = search_panel_width - search_provider_icon_sprite_size -
+            search_bar_margin_side;
+      } else {
+        icon_x = search_bar_margin_side;
+      }
+
+      // Centers the Search Provider Icon vertically in the Search Bar.
+      float icon_y = search_bar_top + search_bar_height / 2
+          - search_provider_icon_sprite_size / 2;
+      search_provider_icon_sprite_->layer()->SetPosition(
+          gfx::PointF(icon_x, icon_y));
+
+      // Scales the layer to the correct size.
+      search_provider_icon_sprite_->layer()->SetBounds(
+          gfx::Size(search_provider_icon_sprite_size,
+                    search_provider_icon_sprite_size));
+
+    } else {
+      if (search_provider_icon_sprite_->layer().get() &&
+          search_provider_icon_sprite_->layer()->parent()) {
+        search_provider_icon_sprite_->layer()->RemoveFromParent();
+      }
+    }
+  }
 
   // ---------------------------------------------------------------------------
   // Arrow Icon
@@ -518,8 +578,9 @@ ContextualSearchLayer::ContextualSearchLayer(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       search_bar_shadow_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      search_provider_icon_(
+      panel_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      search_provider_icon_sprite_(CrushedSpriteLayer::Create()),
       arrow_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       close_icon_(
@@ -570,9 +631,8 @@ ContextualSearchLayer::ContextualSearchLayer(
   search_term_->SetIsDrawable(true);
   layer_->AddChild(search_term_);
 
-  // Search Provider Icon
-  search_provider_icon_->SetIsDrawable(true);
-  layer_->AddChild(search_provider_icon_);
+  // Panel Icon
+  panel_icon_->SetIsDrawable(true);
 
   // Arrow Icon
   arrow_icon_->SetIsDrawable(true);

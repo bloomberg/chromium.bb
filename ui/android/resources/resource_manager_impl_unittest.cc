@@ -129,4 +129,43 @@ TEST_F(ResourceManagerTest, PreloadEnsureResource) {
   EXPECT_EQ(kResourceId, GetUIResourceId(kTestResourceType));
 }
 
+TEST_F(ResourceManagerTest, ProcessCrushedSpriteFrameRects) {
+  const size_t kNumFrames = 3;
+
+  // Create input
+  std::vector<int> frame0 = {35, 30, 38, 165, 18, 12, 0, 70, 0, 146, 72, 2};
+  std::vector<int> frame1 = {};
+  std::vector<int> frame2 = {0, 0, 73, 0, 72, 72};
+  std::vector<std::vector<int>> frame_rects_vector;
+  frame_rects_vector.push_back(frame0);
+  frame_rects_vector.push_back(frame1);
+  frame_rects_vector.push_back(frame2);
+
+  // Create expected output
+  CrushedSpriteResource::SrcDstRects expected_rects(kNumFrames);
+  gfx::Rect frame0_rect0_src(38, 165, 18, 12);
+  gfx::Rect frame0_rect0_dst(35, 30, 18, 12);
+  gfx::Rect frame0_rect1_src(0, 146, 72, 2);
+  gfx::Rect frame0_rect1_dst(0, 70, 72, 2);
+  gfx::Rect frame2_rect0_src(73, 0, 72, 72);
+  gfx::Rect frame2_rect0_dst(0, 0, 72, 72);
+  expected_rects[0].push_back(
+      std::pair<gfx::Rect, gfx::Rect>(frame0_rect0_src, frame0_rect0_dst));
+  expected_rects[0].push_back(
+      std::pair<gfx::Rect, gfx::Rect>(frame0_rect1_src, frame0_rect1_dst));
+  expected_rects[2].push_back(
+      std::pair<gfx::Rect, gfx::Rect>(frame2_rect0_src, frame2_rect0_dst));
+
+  // Check actual against expected
+  CrushedSpriteResource::SrcDstRects actual_rects =
+      resource_manager_.ProcessCrushedSpriteFrameRects(frame_rects_vector);
+  EXPECT_EQ(kNumFrames, actual_rects.size());
+  for (size_t i = 0; i < kNumFrames; i++) {
+    EXPECT_EQ(expected_rects[i].size(), actual_rects[i].size());
+    for (size_t j = 0; j < actual_rects[i].size(); j++) {
+      EXPECT_EQ(expected_rects[i][j], actual_rects[i][j]);
+    }
+  }
+}
+
 }  // namespace ui

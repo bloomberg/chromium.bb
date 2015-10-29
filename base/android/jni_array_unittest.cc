@@ -86,6 +86,17 @@ TEST(JniArray, LongConversions) {
   CheckLongConversion(env, kLongs, kLen, ToJavaLongArray(env, vec));
 }
 
+void CheckIntArrayConversion(JNIEnv* env,
+                             ScopedJavaLocalRef<jintArray> jints,
+                             std::vector<int> int_vector,
+                             const size_t len) {
+  jint value;
+  for (size_t i = 0; i < len; ++i) {
+    env->GetIntArrayRegion(jints.obj(), i, 1, &value);
+    ASSERT_EQ(int_vector[i], value);
+  }
+}
+
 TEST(JniArray, JavaIntArrayToIntVector) {
   const int kInts[] = {0, 1, -1};
   const size_t kLen = arraysize(kInts);
@@ -105,11 +116,7 @@ TEST(JniArray, JavaIntArrayToIntVector) {
 
   ASSERT_EQ(static_cast<jsize>(ints.size()), env->GetArrayLength(jints.obj()));
 
-  jint value;
-  for (size_t i = 0; i < kLen; ++i) {
-    env->GetIntArrayRegion(jints.obj(), i, 1, &value);
-    ASSERT_EQ(ints[i], value);
-  }
+  CheckIntArrayConversion(env, jints, ints, kLen);
 }
 
 TEST(JniArray, JavaLongArrayToInt64Vector) {
@@ -228,6 +235,50 @@ TEST(JniArray, JavaArrayOfByteArrayToStringVector) {
     snprintf(text, sizeof text, "%d", i);
     EXPECT_STREQ(text, vec[i].c_str());
   }
+}
+
+TEST(JniArray, JavaArrayOfIntArrayToIntVector) {
+  const size_t kNumItems = 4;
+  JNIEnv* env = AttachCurrentThread();
+
+  // Create an int[][] object.
+  ScopedJavaLocalRef<jclass> int_array_clazz(env, env->FindClass("[I"));
+  ASSERT_TRUE(int_array_clazz.obj());
+
+  ScopedJavaLocalRef<jobjectArray> array(
+      env, env->NewObjectArray(kNumItems, int_array_clazz.obj(), nullptr));
+  ASSERT_TRUE(array.obj());
+
+  // Populate int[][] object.
+  const int kInts0[] = {0, 1, -1, kint32min, kint32max};
+  const size_t kLen0 = arraysize(kInts0);
+  ScopedJavaLocalRef<jintArray> int_array0 = ToJavaIntArray(env, kInts0, kLen0);
+  env->SetObjectArrayElement(array.obj(), 0, int_array0.obj());
+
+  const int kInts1[] = {3, 4, 5};
+  const size_t kLen1 = arraysize(kInts1);
+  ScopedJavaLocalRef<jintArray> int_array1 = ToJavaIntArray(env, kInts1, kLen1);
+  env->SetObjectArrayElement(array.obj(), 1, int_array1.obj());
+
+  const int kInts2[] = {};
+  const size_t kLen2 = 0;
+  ScopedJavaLocalRef<jintArray> int_array2 = ToJavaIntArray(env, kInts2, kLen2);
+  env->SetObjectArrayElement(array.obj(), 2, int_array2.obj());
+
+  const int kInts3[] = {16};
+  const size_t kLen3 = arraysize(kInts3);
+  ScopedJavaLocalRef<jintArray> int_array3 = ToJavaIntArray(env, kInts3, kLen3);
+  env->SetObjectArrayElement(array.obj(), 3, int_array3.obj());
+
+  // Convert to std::vector<std::vector<int>>, check the content.
+  std::vector<std::vector<int>> out;
+  JavaArrayOfIntArrayToIntVector(env, array.obj(), &out);
+
+  EXPECT_EQ(kNumItems, out.size());
+  CheckIntArrayConversion(env, int_array0, out[0], kLen0);
+  CheckIntArrayConversion(env, int_array1, out[1], kLen1);
+  CheckIntArrayConversion(env, int_array2, out[2], kLen2);
+  CheckIntArrayConversion(env, int_array3, out[3], kLen3);
 }
 
 }  // namespace android

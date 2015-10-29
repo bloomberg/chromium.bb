@@ -41,7 +41,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     /**
      * The maximum animation duration in milliseconds.
      */
-    private static final long MAXIMUM_ANIMATION_DURATION_MS = 350;
+    static final long MAXIMUM_ANIMATION_DURATION_MS = 350;
 
     /**
      * The minimum animation duration in milliseconds.

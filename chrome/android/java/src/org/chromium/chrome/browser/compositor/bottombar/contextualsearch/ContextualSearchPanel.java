@@ -186,6 +186,9 @@ public class ContextualSearchPanel extends OverlayPanel {
             if (getPeekPromoControl().isVisible()) {
                 getPeekPromoControl().animateAppearance();
             }
+            if (getIconSpriteControl().shouldAnimateAppearance()) {
+                getIconSpriteControl().animateApperance();
+            }
         }
 
         if (fromState == PanelState.PEEKED
@@ -647,6 +650,29 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     protected float getPeekPromoHeight() {
         return getPeekPromoControl().getHeightPx();
+    }
+
+    // ============================================================================================
+    // Search Provider Icon Sprite
+    // ============================================================================================
+
+    private ContextualSearchIconSpriteControl mIconSpriteControl;
+
+    /**
+     * @return The {@link ContextualSearchIconSpriteControl} for the panel.
+     */
+    public ContextualSearchIconSpriteControl getIconSpriteControl() {
+        if (mIconSpriteControl == null) {
+            mIconSpriteControl = new ContextualSearchIconSpriteControl(this, mContext);
+        }
+        return mIconSpriteControl;
+    }
+
+    /**
+     * @param shouldAnimateIconSprite Whether the search provider icon sprite should be animated.
+     */
+    public void setShouldAnimateIconSprite(boolean shouldAnimateIconSprite) {
+        getIconSpriteControl().setShouldAnimateAppearance(shouldAnimateIconSprite);
     }
 
     // ============================================================================================
