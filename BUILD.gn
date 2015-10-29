@@ -291,6 +291,10 @@ group("both_gn_and_gyp") {
       ]
     }
 
+    if (target_cpu != "x64") {
+      deps += [ "//third_party/android_platform:android_relocation_packer_unittests($host_toolchain)" ]
+    }
+
     if (has_chrome_android_internal) {
       deps += [ "//clank" ]  # TODO(GYP) ??
     }

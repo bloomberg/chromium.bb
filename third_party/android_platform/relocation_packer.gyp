@@ -23,6 +23,18 @@
       'bionic/tools/relocation_packer/src/sleb128_unittest.cc',
       'bionic/tools/relocation_packer/src/run_all_unittests.cc',
     ],
+    'relocation_packer_test_data_sources': [
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm32.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm32_packed.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm64.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm64_packed.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_ia32.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_ia32_packed.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_x64.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_x64_packed.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_mips32.so',
+      'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_mips32_packed.so',
+    ],
   },
   'targets': [
     {
@@ -51,7 +63,7 @@
       ],
     },
     {
-      # TODO(GN)
+      # GN: //third_party/android_platform:android_relocation_packer_unittests
       'target_name': 'android_relocation_packer_unittests',
       'toolsets': ['host'],
       'type': 'executable',
@@ -69,16 +81,7 @@
         {
           'destination': '<(PRODUCT_DIR)',
           'files': [
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm32.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm32_packed.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm64.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm64_packed.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_ia32.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_ia32_packed.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_x64.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_x64_packed.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_mips32.so',
-            'bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_mips32_packed.so',
+            '<@(relocation_packer_test_data_sources)'
           ],
         },
       ],

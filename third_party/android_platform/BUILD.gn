@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
 import("config.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
@@ -28,5 +29,22 @@ if (current_toolchain == host_toolchain) {
       "//third_party/elfutils:libelf",
     ]
     sources = gypi_values.relocation_packer_main_source
+  }
+
+  copy("copy_android_relocation_packer_test_data") {
+    sources = gypi_values.relocation_packer_test_data_sources
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
+  }
+
+  # GYP: //third_party/android_platform/relocation_packer.gyp:android_relocation_packer_unittests
+  test("android_relocation_packer_unittests") {
+    deps = [
+      ":android_lib_relocation_packer",
+      ":copy_android_relocation_packer_test_data",
+      "//testing/gtest",
+    ]
+    sources = gypi_values.relocation_packer_test_sources
   }
 }
