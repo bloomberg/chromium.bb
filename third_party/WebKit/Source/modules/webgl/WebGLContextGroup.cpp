@@ -49,8 +49,7 @@ WebGLContextGroup::~WebGLContextGroup()
 WebGraphicsContext3D* WebGLContextGroup::getAWebGraphicsContext3D()
 {
     ASSERT(!m_contexts.isEmpty());
-    HashSet<WebGLRenderingContextBase*>::iterator it = m_contexts.begin();
-    return (*it)->webContext();
+    return (*m_contexts.begin())->webContext();
 }
 
 void WebGLContextGroup::addContext(WebGLRenderingContextBase* context)
@@ -80,8 +79,7 @@ void WebGLContextGroup::addObject(WebGLSharedObject* object)
 void WebGLContextGroup::detachAndRemoveAllObjects()
 {
     while (!m_groupObjects.isEmpty()) {
-        HashSet<RawPtrWillBeUntracedMember<WebGLSharedObject>>::iterator it = m_groupObjects.begin();
-        (*it)->detachContextGroup();
+        (*m_groupObjects.begin())->detachContextGroup();
     }
 }
 

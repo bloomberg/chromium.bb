@@ -64,15 +64,14 @@ private:
 
     void detachAndRemoveAllObjects();
 
-    // FIXME: Oilpan: this object is not on the heap, but keeps bare
-    // pointers to garbage collected objects in the two hash sets
-    // below. The objects are responsible for managing their
+    // FIXME: Oilpan: this object is not on the heap, but keeps untraced
+    // pointers to on-heap objects in the two hash sets below.
+    // The objects are responsible for managing their
     // registration with WebGLContextGroup, and vice versa, the
     // WebGLContextGroup takes care of detaching the group objects if
     // the set of WebGLRenderingContextBase contexts becomes empty.
-    HashSet<WebGLRenderingContextBase*> m_contexts;
-    GC_PLUGIN_IGNORE("http://crbug.com/516610")
-    HashSet<RawPtrWillBeUntracedMember<WebGLSharedObject>> m_groupObjects;
+    HashSet<RawPtrWillBeUntracedMember<WebGLRenderingContextBase>> m_contexts;
+    HashSet<UntracedMember<WebGLSharedObject>> m_groupObjects;
 };
 
 } // namespace blink
