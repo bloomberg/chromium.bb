@@ -351,6 +351,9 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_UNKNOWN_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if Chrome cannot determine what kind of transport the website used. This string must be the same as IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT.">
         Your connection to this site is not private.
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CT_ERROR" desc="Text that is displayed in the header of the Website Settings popup if the website has provided Signed Certificate Timestamps but none are valid.">
+        This site supplied invalid Certificate Transparency information.
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_BROKEN_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses nominally secure transport that had authentication or other cryptpgraphic errors.">
         Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN">$1<ex>www.example.com</ex></ph>.
       </message>
@@ -9387,19 +9390,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_LINK" desc="This is the text of the link pointing to Chrome's Site Settings page. This appears at the bottom of the Permissions pane of the Page Information Window.">
         Site settings
-      </message>
-
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT" desc="The text of the identity section when the page is secure and no Certificate Transparency information is present.">
-        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>. No Certificate Transparency information was supplied by the server.
-      </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_VERIFIED" desc="The text of the identity section when the page is secure and a Signed Certificate Timestamp from a known Certificate Transparency log is present and valid.">
-        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>. Valid Certificate Transparency information was supplied by the server.
-      </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_UNVERIFIED" desc="The text of the identity section when the page is secure and contains a Signed Certificate Timestamp from an unknown Certificate Transparency log.">
-        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>. Certificate Transparency information was supplied by the server, but one or more of the Certificate Transparency logs were not recognized.
-      </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_INVALID" desc="The text of the identity section when the page is secure, but it contains a Signed Certificate Timestamp from a known Certificate Transparency log that failed to verify.">
-        The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>. Certificate Transparency information was supplied by the server, but it was invalid.
       </message>
 
       <message name="IDS_PAGEINFO_ADDRESS" desc="Locality as reported in the EV identity text.">

@@ -159,6 +159,8 @@ base::string16 WebsiteSettingsUI::IdentityInfo::GetSecuritySummary() const {
       return l10n_util::GetStringUTF16(IDS_CERT_POLICY_PROVIDED_CERT_HEADER);
     case WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN:
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_UNKNOWN_TRANSPORT);
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR:
+      return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_CT_ERROR);
     case WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_INTERNAL_PAGE);
     case WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT:
@@ -280,6 +282,7 @@ int WebsiteSettingsUI::GetIdentityIconID(
       resource_id = IDR_PAGEINFO_WARNING_MAJOR;
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_ERROR:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR:
       resource_id = IDR_PAGEINFO_BAD;
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:

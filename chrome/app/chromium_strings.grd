@@ -1175,6 +1175,20 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         You can help make Chromium safer and easier to use by automatically reporting details of possible security incidents to Google.
       </message>
 
+      <!-- Page Information Window -->
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT" desc="The text of the identity section when the page is secure and no Certificate Transparency information is present.">
+        Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate. The server did not supply any Certificate Transparency information.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_VERIFIED" desc="The text of the identity section when the page is secure and a Signed Certificate Timestamp from a known Certificate Transparency log is present and valid.">
+        Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate. The server supplied valid Certificate Transparency information.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_UNVERIFIED" desc="The text of the identity section when the page is secure and contains a Signed Certificate Timestamp from an unknown Certificate Transparency log.">
+        Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate. The server supplied Certificate Transparency information, but Chromium did not recognize any of the Certificate Transparency logs.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_INVALID" desc="The text of the identity section when the page is secure, but it contains a Signed Certificate Timestamp from a known Certificate Transparency log that failed to verify.">
+        Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate. The server supplied Certificate Transparency information, but it was invalid.
+      </message>
+
       <!-- SSL Interstitial V2 strings -->
       <message name="IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3" desc="Body text for the explanation shown if the user clicks on the details windows, the certificate is invalid and the user has an old version of Windows (before WINDOWS XP SP3) running.">
       Your computer is running an old version of Microsoft Windows that cannot process this website's security certificate. Because of this problem, Chromium can't tell whether the certificate came from <ph name="SITE">$1<ex>google.com</ex></ph> or from someone on your network pretending to be <ph name="SITE">$1<ex>google.com</ex></ph>. Please update your computer to a more recent version of Windows.

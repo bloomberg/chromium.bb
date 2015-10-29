@@ -510,6 +510,172 @@ TEST_F(WebsiteSettingsTest, HTTPSSHA1Major) {
                 website_settings()->site_identity_status()));
 }
 
+// All SCTs are from unknown logs.
+TEST_F(WebsiteSettingsTest, UnknownSCTs) {
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_BAD, WebsiteSettingsUI::GetIdentityIconID(
+                                  website_settings()->site_identity_status()));
+}
+
+// All SCTs are invalid.
+TEST_F(WebsiteSettingsTest, InvalidSCTs) {
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_INVALID);
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_INVALID);
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_BAD, WebsiteSettingsUI::GetIdentityIconID(
+                                  website_settings()->site_identity_status()));
+}
+
+// All SCTs are valid.
+TEST_F(WebsiteSettingsTest, ValidSCTs) {
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_OK);
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_OK);
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(),
+              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_GOOD, WebsiteSettingsUI::GetIdentityIconID(
+                                   website_settings()->site_identity_status()));
+}
+
+// All SCTs are valid for an EV cert.
+TEST_F(WebsiteSettingsTest, ValidSCTsEV) {
+  scoped_refptr<net::X509Certificate> ev_cert =
+      net::X509Certificate::CreateFromBytes(
+          reinterpret_cast<const char*>(google_der), sizeof(google_der));
+  int ev_cert_id = 1;
+  EXPECT_CALL(*cert_store(), RetrieveCert(ev_cert_id, _))
+      .WillRepeatedly(DoAll(SetArgPointee<1>(ev_cert), Return(true)));
+
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = ev_cert_id;
+  security_info_.cert_status = net::CERT_STATUS_IS_EV;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_OK);
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_OK);
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(),
+              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_GOOD, WebsiteSettingsUI::GetIdentityIconID(
+                                   website_settings()->site_identity_status()));
+}
+
+// A mix of unknown and invalid SCTs.
+TEST_F(WebsiteSettingsTest, UnknownAndInvalidSCTs) {
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_INVALID);
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_BAD, WebsiteSettingsUI::GetIdentityIconID(
+                                  website_settings()->site_identity_status()));
+}
+
+// At least one SCT is valid and one is from an unknown log.
+TEST_F(WebsiteSettingsTest, ValidAndUnknownSCTs) {
+  security_info_.security_level = SecurityStateModel::SECURE;
+  security_info_.scheme_is_cryptographic = true;
+  security_info_.cert_id = cert_id();
+  security_info_.cert_status = 0;
+  security_info_.security_bits = 81;  // No error if > 80.
+  int status = 0;
+  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+  security_info_.connection_status = status;
+
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_OK);
+  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
+
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(),
+              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(IDR_PAGEINFO_GOOD, WebsiteSettingsUI::GetIdentityIconID(
+                                   website_settings()->site_identity_status()));
+}
+
 #if !defined(OS_ANDROID)
 TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());

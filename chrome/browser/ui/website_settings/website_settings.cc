@@ -97,7 +97,8 @@ ContentSettingsType kPermissionType[] = {
 #endif
 };
 
-bool CertificateTransparencyStatusMatch(
+// Returns true if any of the given statuses match |status|.
+bool CertificateTransparencyStatusMatchAny(
     const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
     net::ct::SCTVerifyStatus status) {
   for (const auto& verify_status : sct_verify_statuses) {
@@ -115,34 +116,37 @@ int GetSiteIdentityDetailsMessageByCTInfo(
     return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_NO_CT
                   : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT);
 
-  if (CertificateTransparencyStatusMatch(sct_verify_statuses,
-                                         net::ct::SCT_STATUS_OK))
+  // Any valid SCT.
+  if (CertificateTransparencyStatusMatchAny(sct_verify_statuses,
+                                            net::ct::SCT_STATUS_OK))
     return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_VERIFIED
                   : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_VERIFIED);
 
-  if (CertificateTransparencyStatusMatch(sct_verify_statuses,
-                                         net::ct::SCT_STATUS_INVALID))
+  // Any invalid SCT.
+  if (CertificateTransparencyStatusMatchAny(sct_verify_statuses,
+                                            net::ct::SCT_STATUS_INVALID))
     return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_INVALID
                   : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_INVALID);
 
-  // status is SCT_STATUS_LOG_UNKNOWN
+  // All SCTs are from unknown logs.
   return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_UNVERIFIED
                 : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_UNVERIFIED);
 }
 
 // This function will return SITE_IDENTITY_STATUS_CERT or
-// SITE_IDENTITY_STATUS_EV_CERT depending on |is_ev| unless there are SCTs
-// which failed verification, in which case it will return
+// SITE_IDENTITY_STATUS_EV_CERT depending on |is_ev| unless all SCTs
+// failed verification, in which case it will return
 // SITE_IDENTITY_STATUS_ERROR.
 WebsiteSettings::SiteIdentityStatus GetSiteIdentityStatusByCTInfo(
     const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
     bool is_ev) {
-  if (CertificateTransparencyStatusMatch(sct_verify_statuses,
-                                         net::ct::SCT_STATUS_INVALID))
-    return WebsiteSettings::SITE_IDENTITY_STATUS_ERROR;
+  if (sct_verify_statuses.empty() ||
+      CertificateTransparencyStatusMatchAny(sct_verify_statuses,
+                                            net::ct::SCT_STATUS_OK))
+    return is_ev ? WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT
+                 : WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
 
-  return is_ev ? WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT
-               : WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
+  return WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR;
 }
 
 base::string16 GetSimpleSiteName(const GURL& url, Profile* profile) {
@@ -629,6 +633,7 @@ void WebsiteSettings::Init(
       site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_CONTENT ||
       site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_SCRIPT ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ERROR ||
+      site_identity_status_ == SITE_IDENTITY_STATUS_CT_ERROR ||
       site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT ||
       site_identity_status_ ==
