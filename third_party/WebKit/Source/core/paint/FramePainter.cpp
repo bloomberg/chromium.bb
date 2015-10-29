@@ -27,11 +27,11 @@ namespace blink {
 
 bool FramePainter::s_inPaintContents = false;
 
-void FramePainter::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect)
+void FramePainter::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const CullRect& rect)
 {
     frameView().notifyPageThatContentAreaWillPaint();
 
-    IntRect documentDirtyRect = rect;
+    IntRect documentDirtyRect = rect.m_rect;
     IntRect visibleAreaWithoutScrollbars(frameView().location(), frameView().visibleContentRect().size());
     documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
 
@@ -47,7 +47,7 @@ void FramePainter::paint(GraphicsContext* context, const GlobalPaintFlags global
 
     // Now paint the scrollbars.
     if (!frameView().scrollbarsSuppressed() && (frameView().horizontalScrollbar() || frameView().verticalScrollbar())) {
-        IntRect scrollViewDirtyRect = rect;
+        IntRect scrollViewDirtyRect = rect.m_rect;
         IntRect visibleAreaWithScrollbars(frameView().location(), frameView().visibleContentRect(IncludeScrollbars).size());
         scrollViewDirtyRect.intersect(visibleAreaWithScrollbars);
         scrollViewDirtyRect.moveBy(-frameView().location());
@@ -184,7 +184,7 @@ void FramePainter::paintScrollbar(GraphicsContext* context, Scrollbar* bar, cons
         context->fillRect(toFill, frameView().baseBackgroundColor());
     }
 
-    bar->paint(context, rect);
+    bar->paint(context, CullRect(rect));
 }
 
 const FrameView& FramePainter::frameView()

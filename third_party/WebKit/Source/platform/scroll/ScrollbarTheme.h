@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class CullRect;
 class GraphicsContext;
 class PlatformMouseEvent;
 class ScrollbarThemeClient;
@@ -46,7 +47,7 @@ public:
 
     virtual void updateEnabledState(const ScrollbarThemeClient*) { }
 
-    virtual bool paint(const ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
+    virtual bool paint(const ScrollbarThemeClient*, GraphicsContext*, const CullRect&);
 
     virtual ScrollbarPart hitTest(const ScrollbarThemeClient*, const IntPoint&);
 

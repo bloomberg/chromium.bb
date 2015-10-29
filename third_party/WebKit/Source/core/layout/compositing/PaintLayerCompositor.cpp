@@ -58,6 +58,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
@@ -796,7 +797,7 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     translation.translate(-paintOffset.x(), -paintOffset.y());
     TransformRecorder transformRecorder(context, *scrollbar, translation);
 
-    scrollbar->paint(&context, transformedClip);
+    scrollbar->paint(&context, CullRect(transformedClip));
 }
 
 void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip) const

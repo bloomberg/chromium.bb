@@ -35,13 +35,15 @@
 
 namespace blink {
 
+class CullRect;
+
 class PLATFORM_EXPORT ScrollbarThemeMacNonOverlayAPI : public ScrollbarThemeMacCommon {
 public:
     int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
     bool usesOverlayScrollbars() const override { return false; }
     ScrollbarButtonsPlacement buttonsPlacement() const override;
 
-    bool paint(const ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect) override;
+    bool paint(const ScrollbarThemeClient*, GraphicsContext*, const CullRect&) override;
 
 protected:
     IntRect trackRect(const ScrollbarThemeClient*, bool painting = false) override;

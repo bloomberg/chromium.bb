@@ -26,14 +26,15 @@
 #ifndef PaintInfo_h
 #define PaintInfo_h
 
-// TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should move
-// PaintLayerFlags to PaintPhase and rename it. Thus removing the need for this #include.
 #include "core/CoreExport.h"
+// TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should move
+// PaintLayerFlags to PaintPhase and rename it. Thus removing the need for this #include.#include "core/paint/PaintLayerPaintingInfo.h"
 #include "core/paint/PaintLayerPaintingInfo.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Allocator.h"
@@ -48,34 +49,6 @@ class LayoutInline;
 class LayoutBoxModelObject;
 class LayoutObject;
 class PaintInvalidationState;
-
-class CORE_EXPORT CullRect {
-public:
-    explicit CullRect(const IntRect& rect) : m_rect(rect) { }
-    CullRect(const CullRect&, const IntPoint& offset);
-
-    bool intersectsCullRect(const AffineTransform&, const FloatRect& boundingBox) const;
-    void updateCullRect(const AffineTransform& localToParentTransform);
-    bool intersectsCullRect(const IntRect&) const;
-    bool intersectsCullRect(const LayoutRect&) const;
-    bool intersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
-    bool intersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
-
-private:
-    IntRect m_rect;
-
-    // TODO(chrishtr): temporary while we implement CullRect everywhere.
-    friend class ReplicaPainter;
-    friend class GridPainter;
-    friend class PartPainter;
-    friend class ScrollableAreaPainter;
-    friend class SVGPaintContext;
-    friend class SVGShapePainter;
-    friend class TableSectionPainter;
-    friend class ThemePainterMac;
-    friend class SVGInlineTextBoxPainter;
-    friend class SVGRootInlineBoxPainter;
-};
 
 struct CORE_EXPORT PaintInfo {
     ALLOW_ONLY_INLINE_ALLOCATION();

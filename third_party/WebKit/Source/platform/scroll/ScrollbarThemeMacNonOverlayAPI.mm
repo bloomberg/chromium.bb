@@ -33,6 +33,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/mac/ThemeMac.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
@@ -67,7 +68,7 @@ void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement(ScrollbarButtonsPlace
 //     - drawing using WebThemeEngine functions
 //     - drawing tickmarks
 //     - Skia specific changes
-bool ScrollbarThemeMacNonOverlayAPI::paint(const ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
+bool ScrollbarThemeMacNonOverlayAPI::paint(const ScrollbarThemeClient* scrollbar, GraphicsContext* context, const CullRect& cullRect)
 {
     DisplayItem::Type displayItemType = scrollbar->orientation() == HorizontalScrollbar ? DisplayItem::ScrollbarHorizontal : DisplayItem::ScrollbarVertical;
     if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, displayItemType))
@@ -112,7 +113,7 @@ bool ScrollbarThemeMacNonOverlayAPI::paint(const ScrollbarThemeClient* scrollbar
         trackInfo.bounds = IntRect(IntPoint(), scrollbar->frameRect().size());
 
         IntRect bufferRect(scrollbar->frameRect());
-        bufferRect.intersect(damageRect);
+        bufferRect.intersect(cullRect.m_rect);
         bufferRect.move(-scrollbar->frameRect().x(), -scrollbar->frameRect().y());
 
         imageBuffer = ImageBuffer::create(bufferRect.size());

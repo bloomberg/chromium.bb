@@ -29,6 +29,7 @@
 #include <algorithm>
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -176,13 +177,13 @@ void Scrollbar::updateThumbProportion()
     updateThumb();
 }
 
-void Scrollbar::paint(GraphicsContext* context, const IntRect& damageRect) const
+void Scrollbar::paint(GraphicsContext* context, const CullRect& cullRect) const
 {
-    if (!frameRect().intersects(damageRect))
+    if (!cullRect.intersectsCullRect(frameRect()))
         return;
 
-    if (!theme()->paint(this, context, damageRect))
-        Widget::paint(context, damageRect);
+    if (!theme()->paint(this, context, cullRect))
+        Widget::paint(context, cullRect);
 }
 
 void Scrollbar::autoscrollTimerFired(Timer<Scrollbar>*)

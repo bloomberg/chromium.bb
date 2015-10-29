@@ -92,6 +92,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollAnimator.h"
@@ -3760,17 +3761,17 @@ ScrollBehavior FrameView::scrollBehaviorStyle() const
     return ScrollBehaviorInstant;
 }
 
-void FrameView::paint(GraphicsContext* context, const IntRect& rect) const
+void FrameView::paint(GraphicsContext* context, const CullRect& cullRect) const
 {
-    paint(context, GlobalPaintNormalPhase, rect);
+    paint(context, GlobalPaintNormalPhase, cullRect);
 }
 
-void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect) const
+void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const CullRect& cullRect) const
 {
     // TODO(skyostil): Remove this early-out in favor of painting cached scrollbars.
     if (shouldThrottleRendering())
         return;
-    FramePainter(*this).paint(context, globalPaintFlags, rect);
+    FramePainter(*this).paint(context, globalPaintFlags, cullRect);
 }
 
 void FrameView::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect) const

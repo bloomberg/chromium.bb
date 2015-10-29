@@ -95,9 +95,6 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
     if (paintingOverlayControls)
         adjustedPaintOffset = scrollableArea().cachedOverlayScrollbarOffset();
 
-    IntRect localDamageRect = cullRect.m_rect;
-    localDamageRect.moveBy(-adjustedPaintOffset);
-
     CullRect adjustedCullRect(cullRect, -adjustedPaintOffset);
 
     // Overlay scrollbars paint in a second pass through the layer tree so that they will paint
@@ -131,11 +128,11 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
     {
         if (scrollableArea().horizontalScrollbar() && !scrollableArea().layerForHorizontalScrollbar()) {
             TransformRecorder translateRecorder(*context, *scrollableArea().horizontalScrollbar(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
-            scrollableArea().horizontalScrollbar()->paint(context, localDamageRect);
+            scrollableArea().horizontalScrollbar()->paint(context, adjustedCullRect);
         }
         if (scrollableArea().verticalScrollbar() && !scrollableArea().layerForVerticalScrollbar()) {
             TransformRecorder translateRecorder(*context, *scrollableArea().verticalScrollbar(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
-            scrollableArea().verticalScrollbar()->paint(context, localDamageRect);
+            scrollableArea().verticalScrollbar()->paint(context, adjustedCullRect);
         }
     }
 

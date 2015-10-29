@@ -514,8 +514,8 @@ public:
     }
 
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
-    void paint(GraphicsContext*, const IntRect&) const override;
-    void paint(GraphicsContext*, const GlobalPaintFlags, const IntRect&) const;
+    void paint(GraphicsContext*, const CullRect&) const override;
+    void paint(GraphicsContext*, const GlobalPaintFlags, const CullRect&) const;
     void paintContents(GraphicsContext*, const GlobalPaintFlags, const IntRect& damageRect) const;
 
     // Widget overrides to ensure that our children's visibility status is kept up to date when we get shown and hidden.

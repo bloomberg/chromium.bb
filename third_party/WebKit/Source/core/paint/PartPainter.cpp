@@ -107,15 +107,15 @@ void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& p
     IntPoint widgetLocation = widget->frameRect().location();
     IntPoint paintLocation(roundToInt(adjustedPaintOffset.x() + m_layoutPart.borderLeft() + m_layoutPart.paddingLeft()),
         roundToInt(adjustedPaintOffset.y() + m_layoutPart.borderTop() + m_layoutPart.paddingTop()));
-    IntRect paintRect = paintInfo.cullRect().m_rect;
 
     IntSize widgetPaintOffset = paintLocation - widgetLocation;
     // When painting widgets into compositing layers, tx and ty are relative to the enclosing compositing layer,
-    // not the root. In this case, shift the CTM and adjust the paintRect to be root-relative to fix plugin drawing.
+    // not the root. In this case, shift the CTM and adjust the CullRect to be root-relative to fix plugin drawing.
     TransformRecorder transform(*paintInfo.context, m_layoutPart,
         AffineTransform::translation(widgetPaintOffset.width(), widgetPaintOffset.height()));
-    paintRect.move(-widgetPaintOffset);
-    widget->paint(paintInfo.context, paintRect);
+
+    CullRect adjustedCullRect(paintInfo.cullRect(), -widgetPaintOffset);
+    widget->paint(paintInfo.context, adjustedCullRect);
 }
 
 } // namespace blink

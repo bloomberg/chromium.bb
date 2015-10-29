@@ -62,6 +62,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "wtf/CurrentTime.h"
@@ -2168,7 +2169,7 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     TransformRecorder transformRecorder(context, *scrollbar, AffineTransform::translation(-scrollbarRect.x(), -scrollbarRect.y()));
     IntRect transformedClip = clip;
     transformedClip.moveBy(scrollbarRect.location());
-    scrollbar->paint(&context, transformedClip);
+    scrollbar->paint(&context, CullRect(transformedClip));
 }
 
 static const int kPixelDistanceToRecord = 4000;

@@ -107,7 +107,7 @@ public:
     void setProportion(int visibleSize, int totalSize);
     void setPressedPos(int p) { m_pressedPos = p; }
 
-    void paint(GraphicsContext*, const IntRect& damageRect) const final;
+    void paint(GraphicsContext*, const CullRect&) const final;
 
     bool isOverlayScrollbar() const override;
     bool shouldParticipateInHitTesting();

@@ -30,6 +30,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -50,14 +51,14 @@ namespace blink {
 
 bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 
-static inline bool shouldPaintScrollbarPart(const IntRect& partRect, const IntRect& damageRect)
+static inline bool shouldPaintScrollbarPart(const IntRect& partRect, const CullRect& cullRect)
 {
-    return (!partRect.isEmpty()) || damageRect.intersects(partRect);
+    return (!partRect.isEmpty()) || cullRect.intersectsCullRect(partRect);
 }
 
-bool ScrollbarTheme::paint(const ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
+bool ScrollbarTheme::paint(const ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const CullRect& cullRect)
 {
-    // Create the ScrollbarControlPartMask based on the damageRect
+    // Create the ScrollbarControlPartMask based on the cullRect
     ScrollbarControlPartMask scrollMask = NoPart;
 
     IntRect backButtonStartPaintRect;
@@ -66,16 +67,16 @@ bool ScrollbarTheme::paint(const ScrollbarThemeClient* scrollbar, GraphicsContex
     IntRect forwardButtonEndPaintRect;
     if (hasButtons(scrollbar)) {
         backButtonStartPaintRect = backButtonRect(scrollbar, BackButtonStartPart, true);
-        if (shouldPaintScrollbarPart(backButtonStartPaintRect, damageRect))
+        if (shouldPaintScrollbarPart(backButtonStartPaintRect, cullRect))
             scrollMask |= BackButtonStartPart;
         backButtonEndPaintRect = backButtonRect(scrollbar, BackButtonEndPart, true);
-        if (shouldPaintScrollbarPart(backButtonEndPaintRect, damageRect))
+        if (shouldPaintScrollbarPart(backButtonEndPaintRect, cullRect))
             scrollMask |= BackButtonEndPart;
         forwardButtonStartPaintRect = forwardButtonRect(scrollbar, ForwardButtonStartPart, true);
-        if (shouldPaintScrollbarPart(forwardButtonStartPaintRect, damageRect))
+        if (shouldPaintScrollbarPart(forwardButtonStartPaintRect, cullRect))
             scrollMask |= ForwardButtonStartPart;
         forwardButtonEndPaintRect = forwardButtonRect(scrollbar, ForwardButtonEndPart, true);
-        if (shouldPaintScrollbarPart(forwardButtonEndPaintRect, damageRect))
+        if (shouldPaintScrollbarPart(forwardButtonEndPaintRect, cullRect))
             scrollMask |= ForwardButtonEndPart;
     }
 
@@ -88,11 +89,11 @@ bool ScrollbarTheme::paint(const ScrollbarThemeClient* scrollbar, GraphicsContex
     if (thumbPresent) {
         IntRect track = trackRect(scrollbar);
         splitTrack(scrollbar, track, startTrackRect, thumbRect, endTrackRect);
-        if (shouldPaintScrollbarPart(thumbRect, damageRect))
+        if (shouldPaintScrollbarPart(thumbRect, cullRect))
             scrollMask |= ThumbPart;
-        if (shouldPaintScrollbarPart(startTrackRect, damageRect))
+        if (shouldPaintScrollbarPart(startTrackRect, cullRect))
             scrollMask |= BackTrackPart;
-        if (shouldPaintScrollbarPart(endTrackRect, damageRect))
+        if (shouldPaintScrollbarPart(endTrackRect, cullRect))
             scrollMask |= ForwardTrackPart;
     }
 

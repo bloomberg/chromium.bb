@@ -665,6 +665,8 @@
       'graphics/paint/ClipPathRecorder.h',
       'graphics/paint/ClipRecorder.cpp',
       'graphics/paint/ClipRecorder.h',
+      'graphics/paint/CullRect.cpp',
+      'graphics/paint/CullRect.h',
       'graphics/paint/DisplayItem.cpp',
       'graphics/paint/DisplayItem.h',
       'graphics/paint/DisplayItemCacheSkipper.h',

@@ -50,6 +50,7 @@
 #include "platform/JSONValues.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "web/PageOverlay.h"
@@ -116,7 +117,7 @@ public:
         GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
         FrameView* view = m_overlay->overlayMainFrame()->view();
         ASSERT(!view->needsLayout());
-        view->paint(&graphicsContext, IntRect(0, 0, view->width(), view->height()));
+        view->paint(&graphicsContext, CullRect(IntRect(0, 0, view->width(), view->height())));
     }
 
 private:

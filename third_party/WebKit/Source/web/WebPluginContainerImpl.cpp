@@ -69,6 +69,7 @@
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/CullRect.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
@@ -110,19 +111,19 @@ void WebPluginContainerImpl::layoutIfNeeded()
     m_webPlugin->layoutIfNeeded();
 }
 
-void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect) const
+void WebPluginContainerImpl::paint(GraphicsContext* context, const CullRect& cullRect) const
 {
     if (!parent())
         return;
 
     // Don't paint anything if the plugin doesn't intersect.
-    if (!frameRect().intersects(rect))
+    if (!cullRect.intersectsCullRect(frameRect()))
         return;
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, LayoutPoint()))
         return;
 
-    LayoutObjectDrawingRecorder drawingRecorder(*context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, rect, LayoutPoint());
+    LayoutObjectDrawingRecorder drawingRecorder(*context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, cullRect.m_rect, LayoutPoint());
     context->save();
 
     ASSERT(parent()->isFrameView());
@@ -135,7 +136,7 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect
 
     WebCanvas* canvas = context->canvas();
 
-    IntRect windowRect = view->contentsToRootFrame(rect);
+    IntRect windowRect = view->contentsToRootFrame(cullRect.m_rect);
     m_webPlugin->paint(canvas, windowRect);
 
     context->restore();
