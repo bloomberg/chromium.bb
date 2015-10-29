@@ -103,7 +103,7 @@ class ClientManager {
 
     public ClientManager(Context context) {
         mContext = context.getApplicationContext();
-        RequestThrottler.purgeOldEntries(mContext);
+        RequestThrottler.loadInBackground(mContext);
     }
 
     /** Creates a new session.

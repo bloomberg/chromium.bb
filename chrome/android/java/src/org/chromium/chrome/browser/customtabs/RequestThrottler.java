@@ -6,11 +6,13 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +45,7 @@ class RequestThrottler {
     private static final String LAST_REQUEST = "last_request_";
     private static final String BANNED_UNTIL = "banned_until_";
 
-    private static SparseArray<RequestThrottler> sUidToThrottler = new SparseArray<>();
+    private static SparseArray<RequestThrottler> sUidToThrottler = null;
 
     private final SharedPreferences mSharedPreferences;
     private final int mUid;
@@ -121,7 +123,12 @@ class RequestThrottler {
     }
 
     /** @return the {@link Throttler} for a given UID. */
+    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public static RequestThrottler getForUid(Context context, int uid) {
+        if (sUidToThrottler == null) {
+            sUidToThrottler = new SparseArray<>();
+            purgeOldEntries(context);
+        }
         RequestThrottler throttler = sUidToThrottler.get(uid);
         if (throttler == null) {
             throttler = new RequestThrottler(context, uid);
@@ -163,7 +170,7 @@ class RequestThrottler {
 
     /** Resets the banning state. */
     void reset() {
-        sUidToThrottler.remove(mUid);
+        if (sUidToThrottler != null) sUidToThrottler.remove(mUid);
         mSharedPreferences.edit()
                 .remove(SCORE + mUid)
                 .remove(LAST_REQUEST + mUid)
@@ -171,8 +178,28 @@ class RequestThrottler {
                 .apply();
     }
 
+    /**
+     * Loads the SharedPreferences in the background.
+     *
+     * SharedPreferences#edit() blocks until the preferences are loaded from disk. This results in a
+     * StrictMode violation as this may be called from the UI thread. This loads the preferences in
+     * the background to hopefully avoid the violation (if the next edit() call happens once the
+     * preferences are loaded).
+     *
+     * @param context The application context.
+     */
+    static void loadInBackground(final Context context) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                context.getSharedPreferences(PREFERENCES_NAME, 0).edit();
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     /** Removes all the UIDs that haven't been seen since at least {@link FORGET_AFTER_MS}. */
-    static void purgeOldEntries(Context context) {
+    private static void purgeOldEntries(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         long now = System.currentTimeMillis();
@@ -198,6 +225,6 @@ class RequestThrottler {
     static void purgeAllEntriesForTesting(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, 0);
         sharedPreferences.edit().clear().apply();
-        sUidToThrottler.clear();
+        if (sUidToThrottler != null) sUidToThrottler.clear();
     }
 }
