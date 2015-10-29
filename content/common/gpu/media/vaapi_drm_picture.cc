@@ -144,8 +144,7 @@ bool VaapiDrmPicture::Initialize() {
 
 bool VaapiDrmPicture::DownloadFromSurface(
     const scoped_refptr<VASurface>& va_surface) {
-  return vaapi_wrapper_->BlitSurface(va_surface->id(), va_surface->size(),
-                                     va_surface_->id(), va_surface_->size());
+  return vaapi_wrapper_->BlitSurface(va_surface, va_surface_);
 }
 
 // static
@@ -178,9 +177,8 @@ scoped_refptr<ui::NativePixmap> VaapiDrmPicture::ScalePixmap(
   }
 
   DCHECK(scaled_pixmap_);
-  bool vpp_result = vaapi_wrapper_->BlitSurface(
-      va_surface_->id(), va_surface_->size(), scaled_va_surface_->id(),
-      scaled_va_surface_->size());
+  bool vpp_result =
+      vaapi_wrapper_->BlitSurface(va_surface_, scaled_va_surface_);
   if (!vpp_result) {
     LOG(ERROR) << "Failed scaling NativePixmap";
     scaled_pixmap_ = nullptr;
