@@ -465,7 +465,7 @@ void ThreadState::threadLocalWeakProcessing()
     ASSERT(checkThread());
     ASSERT(!sweepForbidden());
     TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
-    double timeStamp = WTF::currentTimeMS();
+    double startTime = WTF::currentTimeMS();
 
     SweepForbiddenScope forbiddenScope(this);
     if (isMainThread())
@@ -486,7 +486,7 @@ void ThreadState::threadLocalWeakProcessing()
 
     if (isMainThread()) {
         ScriptForbiddenScope::exit();
-        double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - timeStamp;
+        double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;
         Platform::current()->histogramCustomCounts("BlinkGC.timeForThreadLocalWeakProcessing", timeForThreadLocalWeakProcessing, 1, 10 * 1000, 50);
     }
 }
@@ -1337,7 +1337,7 @@ void ThreadState::invokePreFinalizers()
     ASSERT(checkThread());
     ASSERT(!sweepForbidden());
     TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
-    double timeStamp = WTF::currentTimeMS();
+    double startTime = WTF::currentTimeMS();
 
     if (isMainThread())
         ScriptForbiddenScope::enter();
@@ -1356,7 +1356,7 @@ void ThreadState::invokePreFinalizers()
 
     if (isMainThread()) {
         ScriptForbiddenScope::exit();
-        double timeForInvokingPreFinalizers = WTF::currentTimeMS() - timeStamp;
+        double timeForInvokingPreFinalizers = WTF::currentTimeMS() - startTime;
         Platform::current()->histogramCustomCounts("BlinkGC.TimeForInvokingPreFinalizers", timeForInvokingPreFinalizers, 1, 10 * 1000, 50);
     }
 }

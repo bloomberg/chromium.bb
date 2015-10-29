@@ -88,13 +88,13 @@ public:
 
         ASSERT(m_state->checkThread());
 
-        double timeStamp = WTF::currentTimeMS();
+        double startTime = WTF::currentTimeMS();
         // TODO(haraken): In an unlikely coincidence that two threads decide
         // to collect garbage at the same time, avoid doing two GCs in
         // a row.
         if (LIKELY(gcType != BlinkGC::ThreadTerminationGC && ThreadState::stopThreads()))
             m_parkedAllThreads = true;
-        double timeForStoppingThreads = WTF::currentTimeMS() - timeStamp;
+        double timeForStoppingThreads = WTF::currentTimeMS() - startTime;
         Platform::current()->histogramCustomCounts("BlinkGC.TimeForStoppingThreads", timeForStoppingThreads, 1, 1000, 50);
 
         switch (gcType) {
@@ -390,7 +390,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
         "lazySweeping", gcType == BlinkGC::GCWithoutSweep,
         "gcReason", gcReasonString(reason));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
-    double timeStamp = WTF::currentTimeMS();
+    double startTime = WTF::currentTimeMS();
 
     if (gcType == BlinkGC::TakeSnapshot)
         BlinkGCMemoryDumpProvider::instance()->clearProcessDumpForCurrentGC();
@@ -425,7 +425,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     // we should have crashed during marking before getting here.)
     orphanedPagePool()->decommitOrphanedPages();
 
-    double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
+    double markingTimeInMilliseconds = WTF::currentTimeMS() - startTime;
     s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;
 
 #if PRINT_HEAP_STATS
@@ -526,7 +526,7 @@ void Heap::postMarkingProcessing(Visitor* visitor)
 void Heap::globalWeakProcessing(Visitor* visitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::globalWeakProcessing");
-    double timeStamp = WTF::currentTimeMS();
+    double startTime = WTF::currentTimeMS();
 
     // Call weak callbacks on objects that may now be pointing to dead objects.
     while (popAndInvokeGlobalWeakCallback(visitor)) { }
@@ -535,7 +535,7 @@ void Heap::globalWeakProcessing(Visitor* visitor)
     // callback phase, so the marking stack should still be empty here.
     ASSERT(s_markingStack->isEmpty());
 
-    double timeForGlobalWeakProcessing = WTF::currentTimeMS() - timeStamp;
+    double timeForGlobalWeakProcessing = WTF::currentTimeMS() - startTime;
     Platform::current()->histogramCustomCounts("BlinkGC.TimeForGlobalWeakPrcessing", timeForGlobalWeakProcessing, 1, 10 * 1000, 50);
 }
 
