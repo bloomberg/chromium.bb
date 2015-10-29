@@ -172,13 +172,12 @@ static inline void updateGuidVersionMap(DatabaseGuid guid, String newVersion)
     guidToVersionMap().set(guid, newVersion.isEmpty() ? String() : newVersion.isolatedCopy());
 }
 
-typedef HashMap<DatabaseGuid, HashSet<Database*>*> GuidDatabaseMap;
-static GuidDatabaseMap& guidToDatabaseMap()
+static HashCountedSet<DatabaseGuid>& guidCount()
 {
     // Ensure the the mutex is locked.
     ASSERT(guidMutex().locked());
-    DEFINE_STATIC_LOCAL_NOASSERT(GuidDatabaseMap, map, ());
-    return map;
+    DEFINE_STATIC_LOCAL_NOASSERT(HashCountedSet<DatabaseGuid>, guidCount, ());
+    return guidCount;
 }
 
 static DatabaseGuid guidForOriginAndName(const String& origin, const String& name)
@@ -222,13 +221,7 @@ Database::Database(DatabaseContext* databaseContext, const String& name, const S
     {
         SafePointAwareMutexLocker locker(guidMutex());
         m_guid = guidForOriginAndName(securityOrigin()->toString(), name);
-        HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
-        if (!hashSet) {
-            hashSet = new HashSet<Database*>;
-            guidToDatabaseMap().set(m_guid, hashSet);
-        }
-
-        hashSet->add(this);
+        guidCount().add(m_guid);
     }
 
     m_filename = DatabaseManager::manager().fullPathForDatabase(securityOrigin(), m_name);
@@ -381,13 +374,8 @@ void Database::closeDatabase()
     {
         SafePointAwareMutexLocker locker(guidMutex());
 
-        HashSet<Database*>* hashSet = guidToDatabaseMap().get(m_guid);
-        ASSERT(hashSet);
-        ASSERT(hashSet->contains(this));
-        hashSet->remove(this);
-        if (hashSet->isEmpty()) {
-            guidToDatabaseMap().remove(m_guid);
-            delete hashSet;
+        ASSERT(guidCount().contains(m_guid));
+        if (guidCount().remove(m_guid)) {
             guidToVersionMap().remove(m_guid);
         }
     }
