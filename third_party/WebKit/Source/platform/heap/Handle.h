@@ -75,21 +75,18 @@ public:
     {
         initialize();
         checkPointer();
-        recordBacktrace();
     }
 
     PersistentBase(T& raw) : m_raw(&raw)
     {
         initialize();
         checkPointer();
-        recordBacktrace();
     }
 
     PersistentBase(const PersistentBase& other) : m_raw(other)
     {
         initialize();
         checkPointer();
-        recordBacktrace();
     }
 
     template<typename U>
@@ -97,7 +94,6 @@ public:
     {
         initialize();
         checkPointer();
-        recordBacktrace();
     }
 
     template<typename U>
@@ -105,7 +101,6 @@ public:
     {
         initialize();
         checkPointer();
-        recordBacktrace();
     }
 
     template<typename U>
@@ -113,7 +108,6 @@ public:
     {
         initialize();
         checkPointer();
-        recordBacktrace();
     }
 
     ~PersistentBase()
@@ -196,7 +190,6 @@ private:
     {
         m_raw = ptr;
         checkPointer();
-        recordBacktrace();
         if (m_raw) {
             if (!m_persistentNode)
                 initialize();
@@ -261,17 +254,6 @@ private:
 #endif
     }
 
-#if ENABLE(GC_PROFILING)
-    void recordBacktrace()
-    {
-        if (m_raw)
-            m_tracingName = Heap::createBacktraceString();
-    }
-
-    String m_tracingName;
-#else
-    inline void recordBacktrace() const { }
-#endif
     // m_raw is accessed most, so put it at the first field.
     T* m_raw;
     PersistentNode* m_persistentNode = nullptr;

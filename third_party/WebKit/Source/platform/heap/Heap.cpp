@@ -49,15 +49,6 @@
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
-#if ENABLE(GC_PROFILING)
-#include "platform/TracedValue.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
-#include <stdio.h>
-#include <utility>
-#endif
 
 namespace blink {
 
@@ -254,50 +245,6 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 #endif
     return nullptr;
 }
-
-#if ENABLE(GC_PROFILING)
-const GCInfo* Heap::findGCInfo(Address address)
-{
-    return ThreadState::findGCInfoFromAllThreads(address);
-}
-#endif
-
-#if ENABLE(GC_PROFILING)
-String Heap::createBacktraceString()
-{
-    int framesToShow = 3;
-    int stackFrameSize = 16;
-    ASSERT(stackFrameSize >= framesToShow);
-    using FramePointer = void*;
-    FramePointer* stackFrame = static_cast<FramePointer*>(alloca(sizeof(FramePointer) * stackFrameSize));
-    WTFGetBacktrace(stackFrame, &stackFrameSize);
-
-    StringBuilder builder;
-    builder.append("Persistent");
-    bool didAppendFirstName = false;
-    // Skip frames before/including "blink::Persistent".
-    bool didSeePersistent = false;
-    for (int i = 0; i < stackFrameSize && framesToShow > 0; ++i) {
-        FrameToNameScope frameToName(stackFrame[i]);
-        if (!frameToName.nullableName())
-            continue;
-        if (strstr(frameToName.nullableName(), "blink::Persistent")) {
-            didSeePersistent = true;
-            continue;
-        }
-        if (!didSeePersistent)
-            continue;
-        if (!didAppendFirstName) {
-            didAppendFirstName = true;
-            builder.append(" ... Backtrace:");
-        }
-        builder.append("\n\t");
-        builder.append(frameToName.nullableName());
-        --framesToShow;
-    }
-    return builder.toString().replace("blink::", "");
-}
-#endif
 
 void Heap::pushTraceCallback(void* object, TraceCallback callback)
 {

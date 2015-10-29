@@ -35,7 +35,7 @@
 
 namespace WTF {
 
-#if ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING) || ENABLE(DETAILED_MEMORY_INFRA)
+#if ENABLE(INSTANCE_COUNTER) || ENABLE(DETAILED_MEMORY_INFRA)
 
 #if COMPILER(CLANG)
 const size_t extractNameFunctionPrefixLength = sizeof("const char *WTF::extractNameFunction() [T = ") - 1;
@@ -149,6 +149,6 @@ String dumpRefCountedInstanceCounts()
     return String("{}");
 }
 
-#endif // ENABLE(INSTANCE_COUNTER) || ENABLE(GC_PROFILING)
+#endif // ENABLE(INSTANCE_COUNTER) || ENABLE(DETAILED_MEMORY_INFRA)
 
 } // namespace WTF

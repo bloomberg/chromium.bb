@@ -48,10 +48,6 @@
 #include "wtf/DataLog.h"
 #include "wtf/Partitions.h"
 #include "wtf/ThreadingPrimitives.h"
-#if ENABLE(GC_PROFILING)
-#include "platform/TracedValue.h"
-#include "wtf/text/StringHash.h"
-#endif
 
 #if OS(WIN)
 #include <stddef.h>
@@ -63,10 +59,6 @@ extern "C" void* __libc_stack_end;  // NOLINT
 
 #if defined(MEMORY_SANITIZER)
 #include <sanitizer/msan_interface.h>
-#endif
-
-#if ENABLE(GC_PROFILING)
-#include <limits>
 #endif
 
 #if OS(FREEBSD)
@@ -110,9 +102,6 @@ ThreadState::ThreadState()
     , m_traceDOMWrappers(nullptr)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
-#endif
-#if ENABLE(GC_PROFILING)
-    , m_nextFreeListSnapshotTime(-std::numeric_limits<double>::infinity())
 #endif
 {
     ASSERT(checkThread());
@@ -424,99 +413,6 @@ ThreadState::GCSnapshotInfo::GCSnapshotInfo(size_t numObjectTypes)
     , deadSize(Vector<size_t>(numObjectTypes))
 {
 }
-
-#if ENABLE(GC_PROFILING)
-const GCInfo* ThreadState::findGCInfo(Address address)
-{
-    if (BasePage* page = findPageFromAddress(address))
-        return page->findGCInfo(address);
-    return nullptr;
-}
-
-size_t ThreadState::SnapshotInfo::getClassTag(const GCInfo* gcInfo)
-{
-    ClassTagMap::AddResult result = classTags.add(gcInfo, classTags.size());
-    if (result.isNewEntry) {
-        liveCount.append(0);
-        deadCount.append(0);
-        liveSize.append(0);
-        deadSize.append(0);
-        generations.append(GenerationCountsVector());
-        generations.last().fill(0, 8);
-    }
-    return result.storedValue->value;
-}
-
-void ThreadState::snapshot()
-{
-    SnapshotInfo info(this);
-    RefPtr<TracedValue> json = TracedValue::create();
-
-#define SNAPSHOT_HEAP(HeapType)                                    \
-    {                                                              \
-        json->beginDictionary();                                   \
-        json->setString("name", #HeapType);                        \
-        m_heaps[BlinkGC::HeapType##HeapIndex]->snapshot(json.get(), &info); \
-        json->endDictionary();                                     \
-    }
-    json->beginArray("heaps");
-    SNAPSHOT_HEAP(EagerSweep);
-    SNAPSHOT_HEAP(NormalPage1);
-    SNAPSHOT_HEAP(NormalPage2);
-    SNAPSHOT_HEAP(NormalPage3);
-    SNAPSHOT_HEAP(NormalPage4);
-    SNAPSHOT_HEAP(Vector1);
-    SNAPSHOT_HEAP(Vector2);
-    SNAPSHOT_HEAP(Vector3);
-    SNAPSHOT_HEAP(Vector4);
-    SNAPSHOT_HEAP(InlineVector);
-    SNAPSHOT_HEAP(HashTable);
-    SNAPSHOT_HEAP(LargeObject);
-    FOR_EACH_TYPED_HEAP(SNAPSHOT_HEAP);
-    json->endArray();
-#undef SNAPSHOT_HEAP
-
-    json->setInteger("allocatedSpace", Heap::allocatedSpace());
-    json->setInteger("objectSpace", Heap::allocatedObjectSize());
-    json->setInteger("pageCount", info.pageCount);
-    json->setInteger("freeSize", info.freeSize);
-
-    Vector<String> classNameVector(info.classTags.size());
-    for (SnapshotInfo::ClassTagMap::iterator it = info.classTags.begin(); it != info.classTags.end(); ++it)
-        classNameVector[it->value] = it->key->className();
-
-    size_t liveSize = 0;
-    size_t deadSize = 0;
-    json->beginArray("classes");
-    for (size_t i = 0; i < classNameVector.size(); ++i) {
-        json->beginDictionary();
-        json->setString("name", classNameVector[i]);
-        json->setInteger("liveCount", info.liveCount[i]);
-        json->setInteger("deadCount", info.deadCount[i]);
-        json->setInteger("liveSize", info.liveSize[i]);
-        json->setInteger("deadSize", info.deadSize[i]);
-        liveSize += info.liveSize[i];
-        deadSize += info.deadSize[i];
-
-        json->beginArray("generations");
-        for (size_t j = 0; j < numberOfGenerationsToTrack; ++j)
-            json->pushInteger(info.generations[i][j]);
-        json->endArray();
-        json->endDictionary();
-    }
-    json->endArray();
-    json->setInteger("liveSize", liveSize);
-    json->setInteger("deadSize", deadSize);
-
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("blink_gc", "ThreadState", this, json.release());
-}
-
-void ThreadState::incrementMarkedObjectsAge()
-{
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        m_heaps[i]->incrementMarkedObjectsAge();
-}
-#endif
 
 void ThreadState::pushThreadLocalWeakCallback(void* object, WeakCallback callback)
 {
@@ -1007,10 +903,6 @@ void ThreadState::setGCState(GCState gcState)
         ASSERT_NOT_REACHED();
     }
     m_gcState = gcState;
-#if ENABLE(GC_PROFILING)
-    if (isMainThread())
-        TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadState::gcState", static_cast<int>(m_gcState));
-#endif
 }
 
 #undef VERIFY_STATE_TRANSITION
@@ -1082,25 +974,6 @@ void ThreadState::preGC()
 void ThreadState::postGC(BlinkGC::GCType gcType)
 {
     ASSERT(isInGC());
-
-#if ENABLE(GC_PROFILING)
-    // We snapshot the heap prior to sweeping to get numbers for both resources
-    // that have been allocated since the last GC and for resources that are
-    // going to be freed.
-    bool gcTracingEnabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
-
-    if (gcTracingEnabled) {
-        bool disabledByDefaultGCTracingEnabled;
-        TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"), &disabledByDefaultGCTracingEnabled);
-
-        snapshot();
-        if (disabledByDefaultGCTracingEnabled)
-            collectAndReportMarkSweepStats();
-        incrementMarkedObjectsAge();
-    }
-#endif
-
     for (int i = 0; i < BlinkGC::NumberOfHeaps; i++)
         m_heaps[i]->prepareForSweep();
 
@@ -1155,10 +1028,6 @@ void ThreadState::preSweep()
         // The default behavior is lazy sweeping.
         scheduleIdleLazySweep();
     }
-
-#if ENABLE(GC_PROFILING)
-    snapshotFreeListIfNecessary();
-#endif
 }
 
 #if defined(ADDRESS_SANITIZER)
@@ -1284,7 +1153,7 @@ void ThreadState::prepareForThreadStateTermination()
         m_heaps[i]->prepareHeapForTermination();
 }
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
+#if ENABLE(ASSERT)
 BasePage* ThreadState::findPageFromAddress(Address address)
 {
     for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i) {
@@ -1603,101 +1472,5 @@ void ThreadState::takeSnapshot(SnapshotType type)
     WebMemoryAllocatorDump* classesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(classesDumpName);
     BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->addOwnershipEdge(classesDump->guid(), heapsDump->guid());
 }
-
-#if ENABLE(GC_PROFILING)
-const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
-{
-    bool needLockForIteration = !ThreadState::current()->isInGC();
-    if (needLockForIteration)
-        threadAttachMutex().lock();
-
-    for (ThreadState* state : attachedThreads()) {
-        if (const GCInfo* gcInfo = state->findGCInfo(address)) {
-            if (needLockForIteration)
-                threadAttachMutex().unlock();
-            return gcInfo;
-        }
-    }
-    if (needLockForIteration)
-        threadAttachMutex().unlock();
-    return nullptr;
-}
-
-void ThreadState::snapshotFreeListIfNecessary()
-{
-    bool enabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"), &enabled);
-    if (!enabled)
-        return;
-
-    static const double recordIntervalSeconds = 0.010;
-    double now = monotonicallyIncreasingTime();
-    if (now > m_nextFreeListSnapshotTime) {
-        snapshotFreeList();
-        m_nextFreeListSnapshotTime = now + recordIntervalSeconds;
-    }
-}
-
-void ThreadState::snapshotFreeList()
-{
-    RefPtr<TracedValue> json = TracedValue::create();
-
-#define SNAPSHOT_FREE_LIST(HeapType)                           \
-    {                                                          \
-        json->beginDictionary();                               \
-        json->setString("name", #HeapType);                    \
-        m_heaps[BlinkGC::HeapType##HeapIndex]->snapshotFreeList(*json); \
-        json->endDictionary();                                 \
-    }
-
-    json->beginArray("heaps");
-    SNAPSHOT_FREE_LIST(EagerSweep);
-    SNAPSHOT_FREE_LIST(NormalPage1);
-    SNAPSHOT_FREE_LIST(NormalPage2);
-    SNAPSHOT_FREE_LIST(NormalPage3);
-    SNAPSHOT_FREE_LIST(NormalPage4);
-    SNAPSHOT_FREE_LIST(Vector1);
-    SNAPSHOT_FREE_LIST(Vector2);
-    SNAPSHOT_FREE_LIST(Vector3);
-    SNAPSHOT_FREE_LIST(Vector4);
-    SNAPSHOT_FREE_LIST(InlineVector);
-    SNAPSHOT_FREE_LIST(HashTable);
-    SNAPSHOT_FREE_LIST(LargeObject);
-    FOR_EACH_TYPED_HEAP(SNAPSHOT_FREE_LIST);
-    json->endArray();
-
-#undef SNAPSHOT_FREE_LIST
-
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "FreeList", this, json.release());
-}
-
-void ThreadState::collectAndReportMarkSweepStats() const
-{
-    if (!isMainThread())
-        return;
-
-    ClassAgeCountsMap markingClassAgeCounts;
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        m_heaps[i]->countMarkedObjects(markingClassAgeCounts);
-    reportMarkSweepStats("MarkingStats", markingClassAgeCounts);
-
-    ClassAgeCountsMap sweepingClassAgeCounts;
-    for (int i = 0; i < BlinkGC::NumberOfHeaps; ++i)
-        m_heaps[i]->countObjectsToSweep(sweepingClassAgeCounts);
-    reportMarkSweepStats("SweepingStats", sweepingClassAgeCounts);
-}
-
-void ThreadState::reportMarkSweepStats(const char* statsName, const ClassAgeCountsMap& classAgeCounts) const
-{
-    RefPtr<TracedValue> json = TracedValue::create();
-    for (ClassAgeCountsMap::const_iterator it = classAgeCounts.begin(), end = classAgeCounts.end(); it != end; ++it) {
-        json->beginArray(it->key.ascii().data());
-        for (size_t age = 0; age <= maxHeapObjectAge; ++age)
-            json->pushInteger(it->value.ages[age]);
-        json->endArray();
-    }
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink_gc"), statsName, this, json.release());
-}
-#endif
 
 } // namespace blink

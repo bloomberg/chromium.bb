@@ -119,17 +119,6 @@ using UsingPreFinazlizerMacroNeedsTrailingSemiColon = char
 #define WILL_BE_USING_PRE_FINALIZER(Class, method)
 #endif
 
-#if ENABLE(GC_PROFILING)
-const size_t numberOfGenerationsToTrack = 8;
-const size_t maxHeapObjectAge = numberOfGenerationsToTrack - 1;
-
-struct AgeCounts {
-    int ages[numberOfGenerationsToTrack];
-    AgeCounts() { std::fill(ages, ages + numberOfGenerationsToTrack, 0); }
-};
-typedef HashMap<String, AgeCounts> ClassAgeCountsMap;
-#endif
-
 class PLATFORM_EXPORT ThreadState {
     WTF_MAKE_NONCOPYABLE(ThreadState);
 public:
@@ -390,7 +379,7 @@ public:
         return m_heaps[heapIndex];
     }
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
+#if ENABLE(ASSERT)
     // Infrastructure to determine if an address is within one of the
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
@@ -422,46 +411,6 @@ public:
         Vector<size_t> liveSize;
         Vector<size_t> deadSize;
     };
-
-#if ENABLE(GC_PROFILING)
-    const GCInfo* findGCInfo(Address);
-    static const GCInfo* findGCInfoFromAllThreads(Address);
-
-    struct SnapshotInfo {
-        ThreadState* state;
-
-        size_t freeSize;
-        size_t pageCount;
-
-        // Map from base-classes to a snapshot class-ids (used as index below).
-        using ClassTagMap = HashMap<const GCInfo*, size_t>;
-        ClassTagMap classTags;
-
-        // Map from class-id (index) to count/size.
-        Vector<int> liveCount;
-        Vector<int> deadCount;
-        Vector<size_t> liveSize;
-        Vector<size_t> deadSize;
-
-        // Map from class-id (index) to a vector of generation counts.
-        // For i < 7, the count is the number of objects that died after surviving |i| GCs.
-        // For i == 7, the count is the number of objects that survived at least 7 GCs.
-        using GenerationCountsVector = Vector<int, numberOfGenerationsToTrack>;
-        Vector<GenerationCountsVector> generations;
-
-        explicit SnapshotInfo(ThreadState* state) : state(state), freeSize(0), pageCount(0) { }
-
-        size_t getClassTag(const GCInfo*);
-    };
-
-    void snapshot();
-    void incrementMarkedObjectsAge();
-
-    void snapshotFreeListIfNecessary();
-
-    void collectAndReportMarkSweepStats() const;
-    void reportMarkSweepStats(const char* statsName, const ClassAgeCountsMap&) const;
-#endif
 
     void pushThreadLocalWeakCallback(void*, WeakCallback);
     bool popAndInvokeThreadLocalWeakCallback(Visitor*);
@@ -655,9 +604,6 @@ private:
     void invokePreFinalizers();
 
     void takeSnapshot(SnapshotType);
-#if ENABLE(GC_PROFILING)
-    void snapshotFreeList();
-#endif
     void clearHeapAges();
     int heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex);
 
@@ -726,9 +672,6 @@ private:
     void* m_asanFakeStack;
 #endif
 
-#if ENABLE(GC_PROFILING)
-    double m_nextFreeListSnapshotTime;
-#endif
     // Ideally we want to allocate an array of size |gcInfoTableMax| but it will
     // waste memory. Thus we limit the array size to 2^8 and share one entry
     // with multiple types of vectors. This won't be an issue in practice,

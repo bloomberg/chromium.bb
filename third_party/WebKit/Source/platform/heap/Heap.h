@@ -75,7 +75,7 @@ public:
     static void shutdown();
     static void doShutdown();
 
-#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
+#if ENABLE(ASSERT)
     static BasePage* findPageFromAddress(Address);
     static BasePage* findPageFromAddress(const void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(const_cast<void*>(pointer))); }
 #endif
@@ -211,19 +211,6 @@ public:
     // Conservatively checks whether an address is a pointer in any of the
     // thread heaps.  If so marks the object pointed to as live.
     static Address checkAndMarkPointer(Visitor*, Address);
-
-#if ENABLE(GC_PROFILING)
-    // Dump the path to specified object on the next GC.  This method is to be
-    // invoked from GDB.
-    static void dumpPathToObjectOnNextGC(void* p);
-
-    // Forcibly find GCInfo of the object at Address.  This is slow and should
-    // only be used for debug purposes.  It involves finding the heap page and
-    // scanning the heap page for an object header.
-    static const GCInfo* findGCInfo(Address);
-
-    static String createBacktraceString();
-#endif
 
     static size_t objectPayloadSizeForTesting();
 

@@ -87,13 +87,11 @@ private:
 };
 static_assert(WTF::NeedsTracing<IntWrapper>::value, "NeedsTracing macro failed to recognize trace method.");
 
-#if !ENABLE(GC_PROFILING)
 struct SameSizeAsPersistent {
     void* m_pointer[4];
 };
 
 static_assert(sizeof(Persistent<IntWrapper>) <= sizeof(SameSizeAsPersistent), "Persistent handle should stay small");
-#endif
 
 class ThreadMarker {
 public:
@@ -2336,13 +2334,6 @@ TEST(HeapTest, LargeHeapObjects)
         Persistent<LargeHeapObject> object = LargeHeapObject::create();
         ASSERT(ThreadState::current()->findPageFromAddress(object));
         ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<char*>(object.get()) + sizeof(LargeHeapObject) - 1));
-#if ENABLE(GC_PROFILING)
-        const GCInfo* info = ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()));
-        EXPECT_NE(reinterpret_cast<const GCInfo*>(0), info);
-        EXPECT_EQ(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeHeapObject) - 1));
-        EXPECT_NE(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeHeapObject)));
-        EXPECT_NE(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) - 1));
-#endif
         clearOutOldGarbage();
         size_t afterAllocation = Heap::allocatedSpace();
         {
