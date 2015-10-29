@@ -4,6 +4,7 @@
 
 #include "content/common/host_discardable_shared_memory_manager.h"
 
+#include "base/threading/simple_thread.h"
 #include "content/public/common/child_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -230,6 +231,51 @@ TEST_F(HostDiscardableSharedMemoryManagerTest,
   // Unlock segment 2.
   memory2.SetNow(base::Time::FromDoubleT(3));
   memory2.Unlock(0, 0);
+}
+
+class HostDiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest
+    : public testing::Test {
+ protected:
+  // Overridden from testing::Test:
+  void SetUp() override {
+    manager_.reset(new HostDiscardableSharedMemoryManager);
+  }
+
+  // This test requires a message loop.
+  base::MessageLoop message_loop_;
+  scoped_ptr<HostDiscardableSharedMemoryManager> manager_;
+};
+
+class SetMemoryLimitRunner : public base::DelegateSimpleThread::Delegate {
+ public:
+  SetMemoryLimitRunner(HostDiscardableSharedMemoryManager* manager,
+                       size_t limit)
+      : manager_(manager), limit_(limit) {}
+  ~SetMemoryLimitRunner() override {}
+
+  void Run() override { manager_->SetMemoryLimit(limit_); }
+
+ private:
+  HostDiscardableSharedMemoryManager* const manager_;
+  const size_t limit_;
+};
+
+TEST_F(HostDiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest,
+       SetMemoryLimitOnSimpleThread) {
+  const int kDataSize = 1024;
+
+  base::SharedMemoryHandle shared_handle;
+  manager_->AllocateLockedDiscardableSharedMemoryForChild(
+      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
+      kDataSize, 0, &shared_handle);
+  ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
+
+  // Set the memory limit to a value that will require EnforceMemoryPolicy()
+  // to be schedule on a thread without a message loop.
+  SetMemoryLimitRunner runner(manager_.get(), kDataSize - 1);
+  base::DelegateSimpleThread thread(&runner, "memory_limit_setter");
+  thread.Start();
+  thread.Join();
 }
 
 }  // namespace

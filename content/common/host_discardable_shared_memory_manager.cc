@@ -123,9 +123,17 @@ HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
       memory_pressure_listener_(new base::MemoryPressureListener(
           base::Bind(&HostDiscardableSharedMemoryManager::OnMemoryPressure,
                      base::Unretained(this)))),
+      // Current thread might not have a task runner in tests.
+      enforce_memory_policy_task_runner_(
+          base::ThreadTaskRunnerHandle::IsSet()
+              ? base::ThreadTaskRunnerHandle::Get()
+              : nullptr),
       enforce_memory_policy_pending_(false),
       weak_ptr_factory_(this) {
   DCHECK_NE(memory_limit_, 0u);
+  enforce_memory_policy_callback_ =
+      base::Bind(&HostDiscardableSharedMemoryManager::EnforceMemoryPolicy,
+                 weak_ptr_factory_.GetWeakPtr());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this);
 }
@@ -486,10 +494,9 @@ void HostDiscardableSharedMemoryManager::ScheduleEnforceMemoryPolicy() {
     return;
 
   enforce_memory_policy_pending_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&HostDiscardableSharedMemoryManager::EnforceMemoryPolicy,
-                 weak_ptr_factory_.GetWeakPtr()),
+  DCHECK(enforce_memory_policy_task_runner_);
+  enforce_memory_policy_task_runner_->PostDelayedTask(
+      FROM_HERE, enforce_memory_policy_callback_,
       base::TimeDelta::FromMilliseconds(kEnforceMemoryPolicyDelayMs));
 }
 
