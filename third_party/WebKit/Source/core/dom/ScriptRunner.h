@@ -97,6 +97,10 @@ private:
 #ifndef NDEBUG
     bool m_hasEverBeenSuspended;
 #endif
+
+#if !ENABLE(OILPAN)
+    WeakPtrFactory<ScriptRunner> m_weakPointerFactoryForTasks;
+#endif
 };
 
 } // namespace blink

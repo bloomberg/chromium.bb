@@ -42,6 +42,9 @@ ScriptRunner::ScriptRunner(Document* document)
     , m_taskRunner(Platform::current()->currentThread()->scheduler()->loadingTaskRunner())
     , m_numberOfInOrderScriptsWithPendingNotification(0)
     , m_isSuspended(false)
+#if !ENABLE(OILPAN)
+    , m_weakPointerFactoryForTasks(this)
+#endif
 {
     ASSERT(document);
 #ifndef NDEBUG
@@ -60,7 +63,7 @@ class ScriptRunner::Task : public WebTaskRunner::Task {
     WTF_MAKE_NONCOPYABLE(Task);
 
 public:
-    explicit Task(ScriptRunner* scriptRunner)
+    explicit Task(WeakPtrWillBeRawPtr<ScriptRunner> scriptRunner)
         : m_scriptRunner(scriptRunner)
     {
     }
@@ -75,7 +78,7 @@ public:
     }
 
 private:
-    RawPtrWillBeWeakPersistent<ScriptRunner> m_scriptRunner;
+    WeakPtrWillBeWeakPersistent<ScriptRunner> m_scriptRunner;
 };
 
 #if !ENABLE(OILPAN)
@@ -123,7 +126,14 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, Execution
 
 void ScriptRunner::postTask(const WebTraceLocation& webTraceLocation)
 {
-    m_taskRunner->postTask(webTraceLocation, new Task(this));
+    // TODO(altimin): Replace all this with `new Task(this)` when Oilpan is here.
+    WeakPtrWillBeRawPtr<ScriptRunner> scriptRunnerForTask;
+#if !ENABLE(OILPAN)
+    scriptRunnerForTask = m_weakPointerFactoryForTasks.createWeakPtr();
+#else
+    scriptRunnerForTask = this;
+#endif
+    m_taskRunner->postTask(webTraceLocation, new Task(scriptRunnerForTask));
 }
 
 void ScriptRunner::suspend()

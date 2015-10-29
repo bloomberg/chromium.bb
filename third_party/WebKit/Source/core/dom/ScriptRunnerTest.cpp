@@ -522,4 +522,27 @@ TEST_F(ScriptRunnerTest, LateNotifications)
     EXPECT_THAT(m_order, ElementsAre(1, 2));
 }
 
+TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
+{
+    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+
+    EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
+
+    m_scriptRunner->queueScriptForExecution(scriptLoader1.get(), ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->queueScriptForExecution(scriptLoader2.get(), ScriptRunner::ASYNC_EXECUTION);
+
+    m_scriptRunner->notifyScriptReady(scriptLoader1.get(), ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoader2.get(), ScriptRunner::ASYNC_EXECUTION);
+
+    m_scriptRunner.release();
+
+    // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not access dead object.
+    EXPECT_CALL(*scriptLoader1, execute()).Times(0);
+    EXPECT_CALL(*scriptLoader2, execute()).Times(0);
+
+    m_platform.runAllTasks();
+}
+
 } // namespace blink
