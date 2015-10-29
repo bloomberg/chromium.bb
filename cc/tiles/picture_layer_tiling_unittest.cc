@@ -57,6 +57,7 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
 
   using PictureLayerTiling::ComputeSkewport;
   using PictureLayerTiling::RemoveTileAt;
+  using PictureLayerTiling::RemoveTilesInRegion;
 
  protected:
   TestablePictureLayerTiling(
@@ -444,6 +445,30 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeOverBorderPixelsDeletesTiles) {
   // border pixels.
   EXPECT_EQ(gfx::Rect(original_layer_size),
             tiling_->TilingDataForTesting().TileBounds(0, 0));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, RemoveOutsideLayerKeepsTiles) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_size(100, 100);
+  InitializeActive(tile_size, 1.f, layer_size);
+  SetLiveRectAndVerifyTiles(gfx::Rect(layer_size));
+
+  // In all cases here, the tiling should remain with one tile, since the remove
+  // region doesn't intersect it.
+
+  bool recreate_tiles = false;
+  // Top
+  tiling_->RemoveTilesInRegion(gfx::Rect(50, -1, 1, 1), recreate_tiles);
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
+  // Bottom
+  tiling_->RemoveTilesInRegion(gfx::Rect(50, 100, 1, 1), recreate_tiles);
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
+  // Left
+  tiling_->RemoveTilesInRegion(gfx::Rect(-1, 50, 1, 1), recreate_tiles);
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
+  // Right
+  tiling_->RemoveTilesInRegion(gfx::Rect(100, 50, 1, 1), recreate_tiles);
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, LiveTilesExactlyCoverLiveTileRect) {

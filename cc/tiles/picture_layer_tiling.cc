@@ -300,27 +300,22 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
   // hash_map instead of a vector in the SmallMap.
   base::SmallMap<base::hash_map<TileMapKey, gfx::Rect>, 16> remove_tiles;
   gfx::Rect expanded_live_tiles_rect =
-      tiling_data_.ExpandRectIgnoringBordersToTileBounds(live_tiles_rect_);
+      tiling_data_.ExpandRectToTileBounds(live_tiles_rect_);
   for (Region::Iterator iter(layer_invalidation); iter.has_rect();
        iter.next()) {
     gfx::Rect layer_rect = iter.rect();
     // The pixels which are invalid in content space.
     gfx::Rect invalid_content_rect =
         gfx::ScaleToEnclosingRect(layer_rect, contents_scale_);
-    // Consider tiles inside the live tiles rect even if only their border
-    // pixels intersect the invalidation. But don't consider tiles outside
-    // the live tiles rect with the same conditions, as they won't exist.
     gfx::Rect coverage_content_rect = invalid_content_rect;
-    int border_pixels = tiling_data_.border_texels();
-    coverage_content_rect.Inset(-border_pixels, -border_pixels);
     // Avoid needless work by not bothering to invalidate where there aren't
     // tiles.
     coverage_content_rect.Intersect(expanded_live_tiles_rect);
     if (coverage_content_rect.IsEmpty())
       continue;
-    // Since the content_rect includes border pixels already, don't include
-    // borders when iterating to avoid double counting them.
-    bool include_borders = false;
+    // Since the content_rect needs to invalidate things that only touch a
+    // border of a tile, we need to include the borders while iterating.
+    bool include_borders = true;
     for (TilingData::Iterator iter(&tiling_data_, coverage_content_rect,
                                    include_borders);
          iter; ++iter) {
