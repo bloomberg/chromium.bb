@@ -24,6 +24,7 @@ const char* const kPublicSessionWhitelist[] = {
     "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
     "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
     "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
+    "lfnfbcjdepjffcaiagkdmlmiipelnfbb",  // Citrix Receiver (branded)
     "mfaihdlpglflfgpfjcifdjdjcckigekc",  // ARC Runtime
     "ngjnkanfphagcaokhjecbgkboelgfcnf",  // Print button
     "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
