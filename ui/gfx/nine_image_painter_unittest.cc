@@ -4,13 +4,46 @@
 
 #include "ui/gfx/nine_image_painter.h"
 
+#include "base/base64.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
+
+static std::string GetPNGDataUrl(const SkBitmap& bitmap) {
+  std::vector<unsigned char> png_data;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data);
+  std::string data_url;
+  data_url.insert(data_url.end(), png_data.begin(), png_data.end());
+  base::Base64Encode(data_url, &data_url);
+  data_url.insert(0, "data:image/png;base64,");
+
+  return data_url;
+}
+
+void ExpectRedWithGreenRect(const SkBitmap& bitmap,
+                            const Rect& outer_rect,
+                            const Rect& green_rect) {
+  for (int y = outer_rect.y(); y < outer_rect.bottom(); y++) {
+    SCOPED_TRACE(y);
+    for (int x = outer_rect.x(); x < outer_rect.right(); x++) {
+      SCOPED_TRACE(x);
+      if (green_rect.Contains(x, y)) {
+        ASSERT_EQ(SK_ColorGREEN, bitmap.getColor(x, y))
+            << "Output image:\n" << GetPNGDataUrl(bitmap);
+      } else {
+        ASSERT_EQ(SK_ColorRED, bitmap.getColor(x, y)) << "Output image:\n"
+                                                      << GetPNGDataUrl(bitmap);
+      }
+    }
+  }
+}
 
 TEST(NineImagePainterTest, GetSubsetRegions) {
   SkBitmap src;
@@ -31,22 +64,25 @@ TEST(NineImagePainterTest, GetSubsetRegions) {
   EXPECT_EQ(gfx::Rect(36, 47, 4, 3), rects[8]);
 }
 
-TEST(NineImagePainterTest, PaintScale) {
+TEST(NineImagePainterTest, PaintHighDPI) {
   SkBitmap src;
   src.allocN32Pixels(100, 100);
   src.eraseColor(SK_ColorRED);
   src.eraseArea(SkIRect::MakeXYWH(10, 10, 80, 80), SK_ColorGREEN);
 
-  gfx::ImageSkia image(gfx::ImageSkiaRep(src, 0.0f));
+  float image_scale = 2.f;
+
+  gfx::ImageSkia image(gfx::ImageSkiaRep(src, image_scale));
   gfx::Insets insets(10, 10, 10, 10);
   gfx::NineImagePainter painter(image, insets);
 
-  int image_scale = 2;
   bool is_opaque = true;
-  gfx::Canvas canvas(gfx::Size(400, 400), image_scale, is_opaque);
-  canvas.Scale(2, 1);
+  gfx::Canvas canvas(gfx::Size(100, 100), image_scale, is_opaque);
 
-  gfx::Rect bounds(0, 0, 100, 100);
+  gfx::Vector2d offset(20, 10);
+  canvas.Translate(offset);
+
+  gfx::Rect bounds(0, 0, 50, 50);
   painter.Paint(&canvas, bounds);
 
   SkBitmap result;
@@ -54,16 +90,11 @@ TEST(NineImagePainterTest, PaintScale) {
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 
-  SkIRect green_rect = SkIRect::MakeLTRB(40, 20, 360, 180);
-  for (int y = 0; y < 200; y++) {
-    for (int x = 0; x < 400; x++) {
-      if (green_rect.contains(x, y)) {
-        ASSERT_EQ(SK_ColorGREEN, result.getColor(x, y));
-      } else {
-        ASSERT_EQ(SK_ColorRED, result.getColor(x, y));
-      }
-    }
-  }
+  gfx::Vector2d paint_offset =
+      gfx::ToFlooredVector2d(gfx::ScaleVector2d(offset, image_scale));
+  gfx::Rect green_rect = gfx::Rect(10, 10, 80, 80) + paint_offset;
+  gfx::Rect outer_rect = gfx::Rect(100, 100) + paint_offset;
+  ExpectRedWithGreenRect(result, outer_rect, green_rect);
 }
 
 TEST(NineImagePainterTest, PaintStaysInBounds) {
@@ -136,23 +167,26 @@ TEST(NineImagePainterTest, PaintWithBoundOffset) {
   }
 }
 
-TEST(NineImagePainterTest, PaintWithNagativeScale) {
+TEST(NineImagePainterTest, PaintWithScale) {
   SkBitmap src;
   src.allocN32Pixels(100, 100);
   src.eraseColor(SK_ColorRED);
   src.eraseArea(SkIRect::MakeXYWH(10, 10, 80, 80), SK_ColorGREEN);
 
-  gfx::ImageSkia image(gfx::ImageSkiaRep(src, 0.0f));
+  float image_scale = 2.f;
+
+  gfx::ImageSkia image(gfx::ImageSkiaRep(src, image_scale));
   gfx::Insets insets(10, 10, 10, 10);
   gfx::NineImagePainter painter(image, insets);
 
-  int image_scale = 2;
   bool is_opaque = true;
   gfx::Canvas canvas(gfx::Size(400, 400), image_scale, is_opaque);
-  canvas.Translate(gfx::Vector2d(200, 200));
-  canvas.Scale(-2, -1);
 
-  gfx::Rect bounds(0, 0, 100, 100);
+  gfx::Vector2d offset(20, 10);
+  canvas.Translate(offset);
+  canvas.Scale(2, 1);
+
+  gfx::Rect bounds(0, 0, 50, 50);
   painter.Paint(&canvas, bounds);
 
   SkBitmap result;
@@ -160,16 +194,45 @@ TEST(NineImagePainterTest, PaintWithNagativeScale) {
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 
-  SkIRect green_rect = SkIRect::MakeLTRB(40, 220, 360, 380);
-  for (int y = 200; y < 400; y++) {
-    for (int x = 0; x < 400; x++) {
-      if (green_rect.contains(x, y)) {
-        ASSERT_EQ(SK_ColorGREEN, result.getColor(x, y));
-      } else {
-        ASSERT_EQ(SK_ColorRED, result.getColor(x, y));
-      }
-    }
-  }
+  gfx::Vector2d paint_offset =
+      gfx::ToFlooredVector2d(gfx::ScaleVector2d(offset, image_scale));
+  gfx::Rect green_rect = gfx::Rect(20, 10, 160, 80) + paint_offset;
+  gfx::Rect outer_rect = gfx::Rect(200, 100) + paint_offset;
+  ExpectRedWithGreenRect(result, outer_rect, green_rect);
+}
+
+TEST(NineImagePainterTest, PaintWithNegativeScale) {
+  SkBitmap src;
+  src.allocN32Pixels(100, 100);
+  src.eraseColor(SK_ColorRED);
+  src.eraseArea(SkIRect::MakeXYWH(10, 10, 80, 80), SK_ColorGREEN);
+
+  float image_scale = 2.f;
+
+  gfx::ImageSkia image(gfx::ImageSkiaRep(src, image_scale));
+  gfx::Insets insets(10, 10, 10, 10);
+  gfx::NineImagePainter painter(image, insets);
+
+  bool is_opaque = true;
+  gfx::Canvas canvas(gfx::Size(400, 400), image_scale, is_opaque);
+  canvas.Translate(gfx::Vector2d(70, 60));
+  canvas.Scale(-1, -1);
+
+  gfx::Rect bounds(0, 0, 50, 50);
+  painter.Paint(&canvas, bounds);
+
+  SkBitmap result;
+  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  result.allocN32Pixels(size.width(), size.height());
+  canvas.sk_canvas()->readPixels(&result, 0, 0);
+
+  // The painting space is 50x50 and the scale of -1,-1 means an offset of 50,50
+  // would put the output in the top left corner. Since the offset is 70,60 it
+  // moves by 20,10. Since the output is 2x DPI it will become offset by 40,20.
+  gfx::Vector2d paint_offset(40, 20);
+  gfx::Rect green_rect = gfx::Rect(10, 10, 80, 80) + paint_offset;
+  gfx::Rect outer_rect = gfx::Rect(100, 100) + paint_offset;
+  ExpectRedWithGreenRect(result, outer_rect, green_rect);
 }
 
 }  // namespace gfx

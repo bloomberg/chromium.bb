@@ -22,35 +22,28 @@ namespace gfx {
 
 namespace {
 
-// The following functions calculate width and height of the image in pixels
-// for the scale factor.
-int ImageWidthInPixels(const ImageSkia& i, float scale) {
-  if (i.isNull())
+int ImageRepWidthInPixels(const ImageSkiaRep& rep) {
+  if (rep.is_null())
     return 0;
-  ImageSkiaRep image_rep = i.GetRepresentation(scale);
-  return image_rep.pixel_width() * scale / image_rep.scale();
+  return rep.pixel_width();
 }
 
-int ImageHeightInPixels(const ImageSkia& i, float scale) {
-  if (i.isNull())
+int ImageRepHeightInPixels(const ImageSkiaRep& rep) {
+  if (rep.is_null())
     return 0;
-  ImageSkiaRep image_rep = i.GetRepresentation(scale);
-  return image_rep.pixel_height() * scale / image_rep.scale();
+  return rep.pixel_height();
 }
 
-// Stretches the given image over the specified canvas area.
 void Fill(Canvas* c,
-          const ImageSkia& i,
+          const ImageSkiaRep& rep,
           int x,
           int y,
           int w,
           int h,
           const SkPaint& paint) {
-  if (i.isNull())
+  if (rep.is_null())
     return;
-  c->DrawImageIntInPixel(i, 0, 0, ImageWidthInPixels(i, c->image_scale()),
-                         ImageHeightInPixels(i, c->image_scale()),
-                         x, y, w, h, false, paint);
+  c->DrawImageIntInPixel(rep, x, y, w, h, false, paint);
 }
 
 }  // namespace
@@ -95,59 +88,47 @@ void NineImagePainter::Paint(Canvas* canvas,
   if (IsEmpty())
     return;
 
-  ScopedCanvas scoped_canvas(canvas);
-
-  // Get the current transform from the canvas and apply it to the logical
-  // bounds passed in. This will give us the pixel bounds which can be used
-  // to draw the images at the correct locations.
-  // We should not scale the bounds by the canvas->image_scale() as that can be
-  // different from the real scale in the canvas transform.
-  SkMatrix matrix = canvas->sk_canvas()->getTotalMatrix();
-  if (!matrix.rectStaysRect())
-    return;  // Invalid transform.
+  // Painting at physical device pixels (undo device scale factor).
+  float scale = canvas->SaveAndUnscale();
 
   // Since the drawing from the following Fill() calls assumes the mapped origin
   // is at (0,0), we need to translate the canvas to the mapped origin.
-  SkPoint corners_f[2];
-  corners_f[0] = SkPoint::Make(bounds.x(), bounds.y());
-  corners_f[1] = SkPoint::Make(bounds.right(), bounds.bottom());
-  matrix.mapPoints(corners_f, 2);
-  SkIPoint corners_in_pixels[2];
-  corners_in_pixels[0] = SkIPoint::Make(SkDScalarRoundToInt(corners_f[0].x()),
-                                        SkDScalarRoundToInt(corners_f[0].y()));
-  corners_in_pixels[1] = SkIPoint::Make(SkDScalarRoundToInt(corners_f[1].x()),
-                                        SkDScalarRoundToInt(corners_f[1].y()));
-  matrix.setTranslateX(SkIntToScalar(corners_in_pixels[0].x()));
-  matrix.setTranslateY(SkIntToScalar(corners_in_pixels[0].y()));
-  canvas->sk_canvas()->setMatrix(matrix);
+  const int left_in_pixels = ToRoundedInt(bounds.x() * scale);
+  const int top_in_pixels = ToRoundedInt(bounds.y() * scale);
+  const int right_in_pixels = ToRoundedInt(bounds.right() * scale);
+  const int bottom_in_pixels = ToRoundedInt(bounds.bottom() * scale);
 
-  // Width and height should always be positive even when corners were flipped.
-  const int width_in_pixels =
-      SkMax32(corners_in_pixels[0].x(), corners_in_pixels[1].x()) -
-      SkMin32(corners_in_pixels[0].x(), corners_in_pixels[1].x());
-  const int height_in_pixels =
-      SkMax32(corners_in_pixels[0].y(), corners_in_pixels[1].y()) -
-      SkMin32(corners_in_pixels[0].y(), corners_in_pixels[1].y());
-  const float scale_x = fabsf(matrix.getScaleX());
-  const float scale_y = fabsf(matrix.getScaleY());
+  const int width_in_pixels = right_in_pixels - left_in_pixels;
+  const int height_in_pixels = bottom_in_pixels - top_in_pixels;
+
+  // Since the drawing from the following Fill() calls assumes the mapped origin
+  // is at (0,0), we need to translate the canvas to the mapped origin.
+  canvas->Translate(gfx::Vector2d(left_in_pixels, top_in_pixels));
+
+  ImageSkiaRep image_reps[9];
+  static_assert(arraysize(image_reps) == arraysize(images_), "");
+  for (size_t i = 0; i < arraysize(image_reps); ++i) {
+    image_reps[i] = images_[i].GetRepresentation(scale);
+    DCHECK(image_reps[i].is_null() || image_reps[i].scale() == scale);
+  }
 
   // In case the corners and edges don't all have the same width/height, we draw
   // the center first, and extend it out in all directions to the edges of the
   // images with the smallest widths/heights.  This way there will be no
   // unpainted areas, though some corners or edges might overlap the center.
-  int i0w = ImageWidthInPixels(images_[0], scale_x);
-  int i2w = ImageWidthInPixels(images_[2], scale_x);
-  int i3w = ImageWidthInPixels(images_[3], scale_x);
-  int i5w = ImageWidthInPixels(images_[5], scale_x);
-  int i6w = ImageWidthInPixels(images_[6], scale_x);
-  int i8w = ImageWidthInPixels(images_[8], scale_x);
+  int i0w = ImageRepWidthInPixels(image_reps[0]);
+  int i2w = ImageRepWidthInPixels(image_reps[2]);
+  int i3w = ImageRepWidthInPixels(image_reps[3]);
+  int i5w = ImageRepWidthInPixels(image_reps[5]);
+  int i6w = ImageRepWidthInPixels(image_reps[6]);
+  int i8w = ImageRepWidthInPixels(image_reps[8]);
 
-  int i0h = ImageHeightInPixels(images_[0], scale_y);
-  int i1h = ImageHeightInPixels(images_[1], scale_y);
-  int i2h = ImageHeightInPixels(images_[2], scale_y);
-  int i6h = ImageHeightInPixels(images_[6], scale_y);
-  int i7h = ImageHeightInPixels(images_[7], scale_y);
-  int i8h = ImageHeightInPixels(images_[8], scale_y);
+  int i0h = ImageRepHeightInPixels(image_reps[0]);
+  int i1h = ImageRepHeightInPixels(image_reps[1]);
+  int i2h = ImageRepHeightInPixels(image_reps[2]);
+  int i6h = ImageRepHeightInPixels(image_reps[6]);
+  int i7h = ImageRepHeightInPixels(image_reps[7]);
+  int i8h = ImageRepHeightInPixels(image_reps[8]);
 
   bool has_room_for_border =
       i0w + i2w <= width_in_pixels && i3w + i5w <= width_in_pixels &&
@@ -165,29 +146,25 @@ void NineImagePainter::Paint(Canvas* canvas,
   SkPaint paint;
   paint.setAlpha(alpha);
 
-  Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
+  Fill(canvas, image_reps[4], i4x, i4y, i4w, i4h, paint);
 
-  if (!has_room_for_border)
-    return;
+  if (has_room_for_border) {
+    Fill(canvas, image_reps[0], 0, 0, i0w, i0h, paint);
+    Fill(canvas, image_reps[1], i0w, 0, width_in_pixels - i0w - i2w, i1h,
+         paint);
+    Fill(canvas, image_reps[2], width_in_pixels - i2w, 0, i2w, i2h, paint);
+    Fill(canvas, image_reps[3], 0, i0h, i3w, height_in_pixels - i0h - i6h,
+         paint);
+    Fill(canvas, image_reps[5], width_in_pixels - i5w, i2h, i5w,
+         height_in_pixels - i2h - i8h, paint);
+    Fill(canvas, image_reps[6], 0, height_in_pixels - i6h, i6w, i6h, paint);
+    Fill(canvas, image_reps[7], i6w, height_in_pixels - i7h,
+         width_in_pixels - i6w - i8w, i7h, paint);
+    Fill(canvas, image_reps[8], width_in_pixels - i8w, height_in_pixels - i8h,
+         i8w, i8h, paint);
+  }
 
-  Fill(canvas, images_[0], 0, 0, i0w, i0h, paint);
-
-  Fill(canvas, images_[1], i0w, 0, width_in_pixels - i0w - i2w, i1h, paint);
-
-  Fill(canvas, images_[2], width_in_pixels - i2w, 0, i2w, i2h, paint);
-
-  Fill(canvas, images_[3], 0, i0h, i3w, height_in_pixels - i0h - i6h, paint);
-
-  Fill(canvas, images_[5], width_in_pixels - i5w, i2h, i5w,
-       height_in_pixels - i2h - i8h, paint);
-
-  Fill(canvas, images_[6], 0, height_in_pixels - i6h, i6w, i6h, paint);
-
-  Fill(canvas, images_[7], i6w, height_in_pixels - i7h,
-       width_in_pixels - i6w - i8w, i7h, paint);
-
-  Fill(canvas, images_[8], width_in_pixels - i8w, height_in_pixels - i8h, i8w,
-       i8h, paint);
+  canvas->Restore();
 }
 
 // static
