@@ -235,7 +235,13 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
     return nullptr;
 }
 
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, layoutObjectCounter, ("LayoutObject"));
+#ifndef NDEBUG
+static WTF::RefCountedLeakCounter& layoutObjectCounter()
+{
+    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticLayoutObjectCounter, ("LayoutObject"));
+    return staticLayoutObjectCounter;
+}
+#endif
 
 LayoutObject::LayoutObject(Node* node)
     : ImageResourceClient()
@@ -255,7 +261,7 @@ LayoutObject::LayoutObject(Node* node)
         m_previousPositionFromPaintInvalidationBacking = uninitializedPaintOffset();
 
 #ifndef NDEBUG
-    layoutObjectCounter.increment();
+    layoutObjectCounter().increment();
 #endif
     InstanceCounters::incrementCounter(InstanceCounters::LayoutObjectCounter);
 }
@@ -264,7 +270,7 @@ LayoutObject::~LayoutObject()
 {
     ASSERT(!m_hasAXObject);
 #ifndef NDEBUG
-    layoutObjectCounter.decrement();
+    layoutObjectCounter().decrement();
 #endif
     InstanceCounters::decrementCounter(InstanceCounters::LayoutObjectCounter);
 }

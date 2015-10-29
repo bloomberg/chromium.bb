@@ -61,16 +61,22 @@ int64_t generateFrameID()
     return ++next;
 }
 
-} // namespace
+#ifndef NDEBUG
+WTF::RefCountedLeakCounter& frameCounter()
+{
+    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticFrameCounter, ("Frame"));
+    return staticFrameCounter;
+}
+#endif
 
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
+} // namespace
 
 Frame::~Frame()
 {
     InstanceCounters::decrementCounter(InstanceCounters::FrameCounter);
     ASSERT(!m_owner);
 #ifndef NDEBUG
-    frameCounter.decrement();
+    frameCounter().decrement();
 #endif
 }
 
@@ -301,7 +307,7 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     ASSERT(page());
 
 #ifndef NDEBUG
-    frameCounter.increment();
+    frameCounter().increment();
 #endif
 
     if (m_owner) {

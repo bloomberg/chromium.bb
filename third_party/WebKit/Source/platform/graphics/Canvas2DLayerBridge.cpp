@@ -51,7 +51,13 @@ enum {
     MaxCanvasAnimationBacklog = 2, // Make sure the the GPU is never more than two animation frames behind.
 };
 
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, canvas2DLayerBridgeInstanceCounter, ("Canvas2DLayerBridge"));
+#ifndef NDEBUG
+WTF::RefCountedLeakCounter& canvas2DLayerBridgeInstanceCounter()
+{
+    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticCanvas2DLayerBridgeInstanceCounter, ("Canvas2DLayerBridge"));
+    return staticCanvas2DLayerBridgeInstanceCounter;
+}
+#endif
 }
 
 namespace blink {
@@ -120,7 +126,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
     startRecording();
 #ifndef NDEBUG
-    canvas2DLayerBridgeInstanceCounter.increment();
+    canvas2DLayerBridgeInstanceCounter().increment();
 #endif
 }
 
@@ -130,7 +136,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     m_layer.clear();
     ASSERT(m_mailboxes.size() == 0);
 #ifndef NDEBUG
-    canvas2DLayerBridgeInstanceCounter.decrement();
+    canvas2DLayerBridgeInstanceCounter().decrement();
 #endif
 }
 

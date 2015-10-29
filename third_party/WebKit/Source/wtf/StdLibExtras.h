@@ -89,25 +89,6 @@ private:
     static type* name = PassRefPtr<type>(arguments).leakRef();
 #endif
 
-// Use this macro to declare and define a debug-only global variable that may have a
-// non-trivial constructor and destructor. When building with clang, this will suppress
-// warnings about global constructors and exit-time destructors.
-#ifndef NDEBUG
-#if COMPILER(CLANG)
-#define DEFINE_DEBUG_ONLY_GLOBAL(type, name, arguments) \
-    _Pragma("clang diagnostic push") \
-    _Pragma("clang diagnostic ignored \"-Wglobal-constructors\"") \
-    _Pragma("clang diagnostic ignored \"-Wexit-time-destructors\"") \
-    static type name arguments; \
-    _Pragma("clang diagnostic pop")
-#else
-#define DEFINE_DEBUG_ONLY_GLOBAL(type, name, arguments) \
-    static type name arguments;
-#endif // COMPILER(CLANG)
-#else
-#define DEFINE_DEBUG_ONLY_GLOBAL(type, name, arguments)
-#endif // NDEBUG
-
 /*
  * The reinterpret_cast<Type1*>([pointer to Type2]) expressions - where
  * sizeof(Type1) > sizeof(Type2) - cause the following warning on ARM with GCC:

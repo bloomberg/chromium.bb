@@ -55,8 +55,15 @@
 #endif
 
 namespace blink {
-
-DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, rangeCounter, ("Range"));
+namespace {
+#ifndef NDEBUG
+WTF::RefCountedLeakCounter& rangeCounter()
+{
+    DEFINE_STATIC_LOCAL(WTF::RefCountedLeakCounter, staticRangeCounter, ("Range"));
+    return staticRangeCounter;
+}
+#endif
+} // namespace
 
 inline Range::Range(Document& ownerDocument)
     : m_ownerDocument(&ownerDocument)
@@ -64,7 +71,7 @@ inline Range::Range(Document& ownerDocument)
     , m_end(m_ownerDocument)
 {
 #ifndef NDEBUG
-    rangeCounter.increment();
+    rangeCounter().increment();
 #endif
 
     m_ownerDocument->attachRange(this);
@@ -81,7 +88,7 @@ inline Range::Range(Document& ownerDocument, Node* startContainer, int startOffs
     , m_end(m_ownerDocument)
 {
 #ifndef NDEBUG
-    rangeCounter.increment();
+    rangeCounter().increment();
 #endif
 
     m_ownerDocument->attachRange(this);
@@ -130,7 +137,7 @@ Range::~Range()
 #endif
 
 #ifndef NDEBUG
-    rangeCounter.decrement();
+    rangeCounter().decrement();
 #endif
 }
 #endif
