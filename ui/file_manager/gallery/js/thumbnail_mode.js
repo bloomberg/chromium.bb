@@ -372,7 +372,9 @@ ThumbnailView.prototype.moveSelection_ = function(direction, selectRange) {
   }
 
   var vertical = direction === 'Up' || direction === 'Down';
-  var baseIndex = this.selectionModel_.leadIndex;
+  var baseIndex = this.selectionModel_.leadIndex !== -1 ?
+      this.selectionModel_.leadIndex :
+      this.selectionModel_.selectedIndex;
   var baseRect = this.getThumbnailRect(baseIndex);
   var baseCenter = baseRect.left + baseRect.width / 2;
   var minHorizontalGap = Number.MAX_VALUE;
