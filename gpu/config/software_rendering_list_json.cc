@@ -1156,7 +1156,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 107,
-      "description": "Haswell Intel drivers are buggy on kernals < 3.19.1",
+      "description": "Haswell GT1 Intel drivers are buggy on kernels < 3.19.1",
       "cr_bugs": [463243],
       "os": {
         "type": "linux",
@@ -1166,8 +1166,9 @@ LONG_STRING_CONST(
         }
       },
       "vendor_id": "0x8086",
-      "device_id": ["0x0402", "0x0406", "0x040a", "0x0412", "0x0416", "0x041a",
-                    "0x0a04", "0x0a16", "0x0a22", "0x0a26", "0x0a2a"],
+      "device_id": ["0x0402", "0x0406", "0x040a", "0x040b", "0x040e",
+                    "0x0a02", "0x0a06", "0x0a0a", "0x0a0b", "0x0a0e",
+                    "0x0d02", "0x0d06", "0x0d0a", "0x0d0b", "0x0d0e"],
       "features": [
         "all"
       ]
