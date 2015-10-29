@@ -810,7 +810,11 @@ test("content_gl_tests") {
   ]
 
   if (is_android) {
-    deps += [ "//testing/android/native_test:native_test_native_code" ]
+    apk_deps = [
+      "//content/public/test/android:content_java_test_support",
+      "//content/shell/android:copy_content_shell_assets",
+    ]
+    apk_asset_location = "$root_build_dir/content_shell/assets"
   } else {
     data_deps = [
       "//third_party/ffmpeg",

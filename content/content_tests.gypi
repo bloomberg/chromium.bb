@@ -1845,7 +1845,7 @@
     ['OS == "android"', {
       'targets': [
         {
-          # TODO(GN)
+          # GN: //content/test:content_gl_tests
           'target_name': 'content_gl_tests_apk',
           'type': 'none',
           'dependencies': [
@@ -1860,7 +1860,7 @@
           ],
         },
         {
-          # TODO(GN)
+          # GN: //content/test:content_unittests
           'target_name': 'content_unittests_apk',
           'type': 'none',
           'dependencies': [
