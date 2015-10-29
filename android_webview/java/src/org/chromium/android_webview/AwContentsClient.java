@@ -27,7 +27,6 @@ import android.webkit.WebChromeClient;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.content.browser.ContentViewCore;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -182,9 +181,6 @@ public abstract class AwContentsClient {
         // Pass the package name as application ID so that the intent from the
         // same application can be opened in the same tab.
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        if (ContentViewCore.activityFromContext(context) == null) {
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        }
 
         try {
             context.startActivity(intent);
