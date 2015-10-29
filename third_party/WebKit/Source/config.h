@@ -96,19 +96,6 @@
 #define WTF_USE_NEW_THEME 1
 #endif /* OS(MACOSX) */
 
-#if OS(WIN)
-
-// If we don't define these, they get defined in windef.h.
-// We want to use std::min and std::max.
-#ifndef max
-#define max max
-#endif
-#ifndef min
-#define min min
-#endif
-
-#endif /* OS(WIN) */
-
 #ifdef __cplusplus
 
 // These undefs match up with defines in build/mac/Prefix.h for Mac OS X.
