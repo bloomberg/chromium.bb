@@ -172,7 +172,7 @@ private:
     }
     static PassRefPtr<StringImpl> addFromLiteralData(const char* characters, unsigned length);
     static PassRefPtr<StringImpl> addSlowCase(StringImpl*);
-#if USE(CF)
+#if OS(MACOSX)
     static PassRefPtr<StringImpl> add(CFStringRef);
 #endif
 

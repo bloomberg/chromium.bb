@@ -44,14 +44,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if USE(CF)
+#if OS(MACOSX)
 #include <AvailabilityMacros.h>
 #include <CoreFoundation/CFString.h>
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
 #define WTF_USE_APPLE_SYSTEM_LOG 1
 #include <asl.h>
 #endif
-#endif // USE(CF)
+#endif // OS(MACOSX)
 
 #if COMPILER(MSVC)
 #include <crtdbg.h>
@@ -75,7 +75,7 @@
 WTF_ATTRIBUTE_PRINTF(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args)
 {
-#if USE(CF) && !OS(WIN)
+#if OS(MACOSX)
     if (strstr(format, "%@")) {
         CFStringRef cfFormat = CFStringCreateWithCString(nullptr, format, kCFStringEncodingUTF8);
 

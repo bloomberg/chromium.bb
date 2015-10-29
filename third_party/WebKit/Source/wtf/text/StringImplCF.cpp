@@ -21,7 +21,7 @@
 #include "config.h"
 #include "wtf/text/StringImpl.h"
 
-#if USE(CF)
+#if OS(MACOSX)
 
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
@@ -160,4 +160,4 @@ RetainPtr<CFStringRef> StringImpl::createCFString()
 
 }
 
-#endif // USE(CF)
+#endif // OS(MACOSX)

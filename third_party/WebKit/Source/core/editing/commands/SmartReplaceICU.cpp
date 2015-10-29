@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/editing/commands/SmartReplace.h"
 
-#if !USE(CF)
+#if !OS(MACOSX)
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 #include <unicode/uset.h>
@@ -96,4 +96,4 @@ bool isCharacterSmartReplaceExempt(UChar32 c, bool isPreviousCharacter)
 
 }
 
-#endif // !USE(CF)
+#endif // !OS(MACOSX)

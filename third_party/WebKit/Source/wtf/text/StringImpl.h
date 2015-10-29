@@ -32,7 +32,7 @@
 #include "wtf/text/Unicode.h"
 #include <limits.h>
 
-#if USE(CF)
+#if OS(MACOSX)
 typedef const struct __CFString * CFStringRef;
 #endif
 
@@ -404,7 +404,7 @@ public:
     PassRefPtr<StringImpl> replace(unsigned index, unsigned len, StringImpl*);
     PassRefPtr<StringImpl> upconvertedString();
 
-#if USE(CF)
+#if OS(MACOSX)
     RetainPtr<CFStringRef> createCFString();
 #endif
 #ifdef __OBJC__

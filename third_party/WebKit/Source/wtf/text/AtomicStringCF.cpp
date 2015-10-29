@@ -26,7 +26,7 @@
 #include "config.h"
 #include "wtf/text/AtomicString.h"
 
-#if USE(CF)
+#if OS(MACOSX)
 
 #include "wtf/text/CString.h"
 #include <CoreFoundation/CoreFoundation.h>
@@ -53,4 +53,4 @@ PassRefPtr<StringImpl> AtomicString::add(CFStringRef string)
 
 } // namespace WTF
 
-#endif // USE(CF)
+#endif // OS(MACOSX)

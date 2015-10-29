@@ -292,7 +292,7 @@
           # implementation.
           ['exclude', 'KillRingNone\\.cpp$'],
 
-          # The Mac build is USE(CF).
+          # The Mac build uses Core Foundation.
           ['include', 'CF\\.cpp$'],
 
           # Use native Mac font code from core.
