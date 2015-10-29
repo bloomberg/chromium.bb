@@ -13,6 +13,7 @@
 #include "content/public/common/security_style.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -313,7 +314,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void NavigationStopped() {}
 
   // This indicates that the next navigation was triggered by a user gesture.
+  // TODO(dominickn): remove this method in favor of DidGetUserInteraction,
+  // with the appropriate filtering by input event type.
   virtual void DidGetUserGesture() {}
+
+  // Called when there has been direct user interaction with the WebContents.
+  // Direct user input includes 1) any mouse down event; 2) any raw key down
+  // event; and 3) any gesture tap event (including taps and scrolls).
+  virtual void DidGetUserInteraction(const blink::WebInputEvent::Type type) {}
 
   // This method is invoked when a RenderViewHost of this WebContents was
   // configured to ignore UI events, and an UI event took place.

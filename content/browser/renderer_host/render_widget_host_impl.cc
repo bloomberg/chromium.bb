@@ -1855,6 +1855,14 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
     OnUserGesture();
   }
 
+  if (delegate_) {
+    if (event.type == WebInputEvent::MouseDown ||
+        event.type == WebInputEvent::GestureTapDown ||
+        event.type == WebInputEvent::RawKeyDown) {
+      delegate_->OnUserInteraction(event.type);
+    }
+  }
+
   return view_ ? view_->FilterInputEvent(event)
                : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }

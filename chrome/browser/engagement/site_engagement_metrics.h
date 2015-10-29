@@ -20,6 +20,7 @@ class SiteEngagementMetrics {
     ENGAGEMENT_NAVIGATION,
     ENGAGEMENT_KEYPRESS,
     ENGAGEMENT_MOUSE,
+    ENGAGEMENT_TOUCH_GESTURE,
     ENGAGEMENT_LAST,
   };
 
@@ -35,7 +36,7 @@ class SiteEngagementMetrics {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
-  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementHelperTest,
                            MixedInputEngagementAccumulation);
   static const char kTotalEngagementHistogram[];
   static const char kTotalOriginsHistogram[];

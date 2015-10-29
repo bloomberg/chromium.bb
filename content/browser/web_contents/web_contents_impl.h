@@ -471,6 +471,7 @@ class CONTENT_EXPORT WebContentsImpl
   RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
   void OnUserGesture() override;
+  void OnUserInteraction(const blink::WebInputEvent::Type type) override;
   void OnIgnoredUIEvent() override;
   void RendererUnresponsive(RenderViewHost* render_view_host) override;
   void RendererResponsive(RenderViewHost* render_view_host) override;

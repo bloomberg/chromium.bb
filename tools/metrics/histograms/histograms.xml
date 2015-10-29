@@ -72380,6 +72380,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Navigation"/>
   <int value="1" label="Keypress"/>
   <int value="2" label="Mouse"/>
+  <int value="3" label="Touch gesture"/>
 </enum>
 
 <enum name="SiteIsolationMimeType" type="int">

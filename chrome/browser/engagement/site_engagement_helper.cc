@@ -8,7 +8,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -23,90 +22,28 @@ int g_seconds_tracking_delay_after_show = 5;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SiteEngagementHelper);
 
-SiteEngagementHelper::InputTracker::InputTracker(SiteEngagementHelper* helper)
-    : helper_(helper),
+SiteEngagementHelper::InputTracker::InputTracker(
+    content::WebContents* web_contents,
+    SiteEngagementHelper* helper)
+    : WebContentsObserver(web_contents),
+      helper_(helper),
       pause_timer_(new base::Timer(true, false)),
-      host_(nullptr),
-      is_tracking_(false) {
-  key_press_event_callback_ =
-      base::Bind(&SiteEngagementHelper::InputTracker::HandleKeyPressEvent,
-                 base::Unretained(this));
-  mouse_event_callback_ =
-      base::Bind(&SiteEngagementHelper::InputTracker::HandleMouseEvent,
-                 base::Unretained(this));
-}
+      is_tracking_(false) {}
 
 SiteEngagementHelper::InputTracker::~InputTracker() {}
 
-// Record that there was some user input, and defer handling of the input event.
-// web_contents() will return nullptr if the observed contents have been
-// deleted; if the contents exist, record engagement for the site. Once the
-// timer finishes running, the callbacks detecting user input will be registered
-// again.
-bool SiteEngagementHelper::InputTracker::HandleKeyPressEvent(
-    const content::NativeWebKeyboardEvent& event) {
-  // Only respond to raw key down to avoid multiple triggering on a single input
-  // (e.g. keypress is a key down then key up).
-  if (event.type == blink::WebInputEvent::RawKeyDown) {
-    Pause();
-    helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
-  }
-  return false;
-}
-
-bool SiteEngagementHelper::InputTracker::HandleMouseEvent(
-    const blink::WebMouseEvent& event) {
-  // Only respond to mouse down with a button or mouse move events (e.g. a click
-  // is a mouse down and mouse up) to avoid cases where multiple events come in
-  // before we can pause tracking.
-  if ((event.button != blink::WebMouseEvent::ButtonNone &&
-       event.type == blink::WebInputEvent::MouseDown) ||
-      event.type == blink::WebInputEvent::MouseWheel) {
-    Pause();
-    helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_MOUSE);
-  }
-  return false;
-}
-
-void SiteEngagementHelper::InputTracker::Start(content::RenderViewHost* host,
-                                               base::TimeDelta initial_delay) {
-  DCHECK(!host_);
-  DCHECK(host);
-  host_ = host;
+void SiteEngagementHelper::InputTracker::Start(base::TimeDelta initial_delay) {
   StartTimer(initial_delay);
 }
 
 void SiteEngagementHelper::InputTracker::Pause() {
-  RemoveCallbacks();
+  is_tracking_ = false;
   StartTimer(base::TimeDelta::FromSeconds(g_seconds_between_user_input_check));
 }
 
-void SiteEngagementHelper::InputTracker::SwitchRenderViewHost(
-    content::RenderViewHost* old_host,
-    content::RenderViewHost* new_host) {
-  DCHECK(host_);
-  DCHECK(new_host);
-
-  bool was_tracking = is_tracking_;
-  if (old_host) {
-    DCHECK_EQ(host_, old_host);
-    RemoveCallbacks();
-  }
-
-  host_ = new_host;
-
-  if (was_tracking)
-    AddCallbacks();
-}
-
 void SiteEngagementHelper::InputTracker::Stop() {
+  is_tracking_ = false;
   pause_timer_->Stop();
-  RemoveCallbacks();
-  host_ = nullptr;
-}
-
-bool SiteEngagementHelper::InputTracker::IsActive() const {
-  return host_ != nullptr;
 }
 
 void SiteEngagementHelper::InputTracker::SetPauseTimerForTesting(
@@ -117,26 +54,41 @@ void SiteEngagementHelper::InputTracker::SetPauseTimerForTesting(
 void SiteEngagementHelper::InputTracker::StartTimer(base::TimeDelta delay) {
   pause_timer_->Start(
       FROM_HERE, delay,
-      base::Bind(&SiteEngagementHelper::InputTracker::AddCallbacks,
+      base::Bind(&SiteEngagementHelper::InputTracker::StartTracking,
                  base::Unretained(this)));
 }
 
-void SiteEngagementHelper::InputTracker::AddCallbacks() {
-  content::WebContents* contents = helper_->web_contents();
-  if (!contents)
-    return;
-
-  host_->GetWidget()->AddKeyPressEventCallback(key_press_event_callback_);
-  host_->GetWidget()->AddMouseEventCallback(mouse_event_callback_);
+void SiteEngagementHelper::InputTracker::StartTracking() {
   is_tracking_ = true;
 }
 
-void SiteEngagementHelper::InputTracker::RemoveCallbacks() {
-  if (is_tracking_) {
-    host_->GetWidget()->RemoveKeyPressEventCallback(key_press_event_callback_);
-    host_->GetWidget()->RemoveMouseEventCallback(mouse_event_callback_);
-    is_tracking_ = false;
+// Record that there was some user input, and defer handling of the input event.
+// Once the timer finishes running, the callbacks detecting user input will be
+// registered again.
+void SiteEngagementHelper::InputTracker::DidGetUserInteraction(
+    const blink::WebInputEvent::Type type) {
+  // Only respond to raw key down to avoid multiple triggering on a single input
+  // (e.g. keypress is a key down then key up).
+  if (!is_tracking_)
+    return;
+
+  // This switch has a default NOTREACHED case because it will not test all
+  // of the values of the WebInputEvent::Type enum (hence it won't require the
+  // compiler verifying that all cases are covered).
+  switch (type) {
+    case blink::WebInputEvent::RawKeyDown:
+      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+      break;
+    case blink::WebInputEvent::MouseDown:
+      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+      break;
+    case blink::WebInputEvent::GestureTapDown:
+      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
+      break;
+    default:
+      NOTREACHED();
   }
+  Pause();
 }
 
 SiteEngagementHelper::~SiteEngagementHelper() {
@@ -145,9 +97,9 @@ SiteEngagementHelper::~SiteEngagementHelper() {
     input_tracker_.Stop();
 }
 
-SiteEngagementHelper::SiteEngagementHelper(content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      input_tracker_(this),
+SiteEngagementHelper::SiteEngagementHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      input_tracker_(web_contents, this),
       record_engagement_(false) {}
 
 void SiteEngagementHelper::RecordUserInput(
@@ -186,25 +138,13 @@ void SiteEngagementHelper::DidNavigateMainFrame(
     service->HandleNavigation(params.url, params.transition);
 
   input_tracker_.Start(
-      web_contents()->GetRenderViewHost(),
       base::TimeDelta::FromSeconds(g_seconds_tracking_delay_after_navigation));
-}
-
-void SiteEngagementHelper::RenderViewHostChanged(
-    content::RenderViewHost* old_host,
-    content::RenderViewHost* new_host) {
-  // On changing the render view host, we need to re-register the callbacks
-  // listening for user input.
-  if (input_tracker_.IsActive()) {
-    input_tracker_.SwitchRenderViewHost(old_host, new_host);
-  }
 }
 
 void SiteEngagementHelper::WasShown() {
   // Ensure that the input callbacks are registered when we come into view.
   if (record_engagement_) {
     input_tracker_.Start(
-        web_contents()->GetRenderViewHost(),
         base::TimeDelta::FromSeconds(g_seconds_tracking_delay_after_show));
   }
 }

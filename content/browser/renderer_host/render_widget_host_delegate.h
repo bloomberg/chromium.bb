@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
@@ -63,6 +64,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // specified mouse wheel event.  Returns true if the browser has handled
   // the event itself.
   virtual bool HandleWheelEvent(const blink::WebMouseWheelEvent& event);
+
+  // Notification the user has performed a direct interaction (mouse down, raw
+  // key down, or gesture tap) while focus was on the page. This is used to
+  // inform the delegate that a user is interacting with a site.
+  virtual void OnUserInteraction(const blink::WebInputEvent::Type type) {}
 
   // Callback to give the browser a chance to handle the specified gesture
   // event before sending it to the renderer.
