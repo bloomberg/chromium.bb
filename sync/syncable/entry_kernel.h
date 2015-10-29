@@ -13,8 +13,8 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/util/immutable.h"
+#include "sync/internal_api/public/util/proto_value_ptr.h"
 #include "sync/syncable/metahandle_set.h"
-#include "sync/syncable/proto_value_ptr.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/util/time.h"
 

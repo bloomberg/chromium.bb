@@ -29,6 +29,7 @@ proto_library("protocol_internal") {
     "device_info_specifics.proto",
     "dictionary_specifics.proto",
     "encryption.proto",
+    "entity_metadata.proto",
     "experiment_status.proto",
     "experiments_specifics.proto",
     "extension_setting_specifics.proto",

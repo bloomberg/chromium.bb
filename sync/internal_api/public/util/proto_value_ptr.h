@@ -10,6 +10,10 @@
 #include "sync/protocol/attachments.pb.h"
 #include "sync/protocol/sync.pb.h"
 
+namespace syncer_v2 {
+class EntityData;
+}
+
 namespace syncer {
 namespace syncable {
 
@@ -80,6 +84,7 @@ class ProtoValuePtr {
   }
 
  private:
+  friend class syncer_v2::EntityData;
   friend struct EntryKernel;
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, BasicTest);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, SharingTest);

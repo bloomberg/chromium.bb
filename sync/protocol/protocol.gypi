@@ -27,6 +27,7 @@
       '<(sync_proto_sources_dir)/device_info_specifics.proto',
       '<(sync_proto_sources_dir)/dictionary_specifics.proto',
       '<(sync_proto_sources_dir)/encryption.proto',
+      '<(sync_proto_sources_dir)/entity_metadata.proto',
       '<(sync_proto_sources_dir)/experiment_status.proto',
       '<(sync_proto_sources_dir)/experiments_specifics.proto',
       '<(sync_proto_sources_dir)/extension_setting_specifics.proto',
