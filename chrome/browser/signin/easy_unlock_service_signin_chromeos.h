@@ -18,6 +18,10 @@
 #include "chromeos/login/login_state.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
+namespace chromeos {
+class EasyUnlockChallengeWrapper;
+}
+
 // EasyUnlockService instance that should be used for signin profile.
 class EasyUnlockServiceSignin
     : public EasyUnlockService,
@@ -30,6 +34,17 @@ class EasyUnlockServiceSignin
   // Sets |user_id| as the current user of the service. Note this does
   // not change the focused user on the login screen.
   void SetCurrentUser(const std::string& user_id);
+
+  // Wraps the challenge for the remote device identified by |user_id| and the
+  // |device_public_key|. The |channel_binding_data| is signed by the TPM
+  // included in the wrapped challenge.
+  // |callback| will be invoked when wrapping is complete. If the user data is
+  // not loaded yet, then |callback| will be invoked with an empty string.
+  void WrapChallengeForUserAndDevice(
+      const std::string& user_id,
+      const std::string& device_public_key,
+      const std::string& channel_binding_data,
+      base::Callback<void(const std::string& wraped_challenge)> callback);
 
  private:
   // The load state of a user's cryptohome key data.
@@ -130,6 +145,9 @@ class EasyUnlockServiceSignin
 
   // The timestamp for the most recent time when a user pod was focused.
   base::TimeTicks user_pod_last_focused_timestamp_;
+
+  // Handles wrapping the user's challenge with the TPM.
+  scoped_ptr<chromeos::EasyUnlockChallengeWrapper> challenge_wrapper_;
 
   base::WeakPtrFactory<EasyUnlockServiceSignin> weak_ptr_factory_;
 

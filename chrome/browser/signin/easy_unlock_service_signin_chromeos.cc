@@ -13,7 +13,10 @@
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_challenge_wrapper.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
@@ -110,6 +113,36 @@ EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {
 
 void EasyUnlockServiceSignin::SetCurrentUser(const std::string& user_id) {
   OnFocusedUserChanged(user_id);
+}
+
+void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
+    const std::string& user_id,
+    const std::string& device_public_key,
+    const std::string& channel_binding_data,
+    base::Callback<void(const std::string& wraped_challenge)> callback) {
+  std::map<std::string, UserData*>::const_iterator it =
+      user_data_.find(user_id);
+  if (it == user_data_.end() || it->second->state != USER_DATA_STATE_LOADED) {
+    PA_LOG(ERROR) << "TPM data not loaded for " << user_id;
+    callback.Run(std::string());
+    return;
+  }
+
+  std::string device_public_key_base64;
+  proximity_auth::Base64UrlEncode(device_public_key, &device_public_key_base64);
+  for (const auto& device_data : it->second->devices) {
+    if (device_data.public_key == device_public_key_base64) {
+      PA_LOG(INFO) << "Wrapping challenge for " << user_id << "...";
+      challenge_wrapper_.reset(new chromeos::EasyUnlockChallengeWrapper(
+          device_data.challenge, channel_binding_data, user_id,
+          EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile())));
+      challenge_wrapper_->WrapChallenge(callback);
+      return;
+    }
+  }
+
+  PA_LOG(ERROR) << "Unable to find device record for " << user_id;
+  callback.Run(std::string());
 }
 
 EasyUnlockService::Type EasyUnlockServiceSignin::GetType() const {

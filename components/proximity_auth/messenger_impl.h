@@ -41,12 +41,10 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
   void DispatchUnlockEvent() override;
   void RequestDecryption(const std::string& challenge) override;
   void RequestUnlock() override;
+  SecureContext* GetSecureContext() const override;
 
   // Exposed for testing.
   Connection* connection() { return connection_.get(); }
-
- protected:
-  SecureContext* secure_context() { return secure_context_.get(); }
 
  private:
   // Internal data structure to represent a pending message that either hasn't

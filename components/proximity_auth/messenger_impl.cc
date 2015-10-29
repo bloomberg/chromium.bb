@@ -113,11 +113,10 @@ void MessengerImpl::RequestDecryption(const std::string& challenge) {
     PA_LOG(WARNING) << "Dropping decryption request, as remote device "
                     << "does not support protocol v3.1.";
     FOR_EACH_OBSERVER(MessengerObserver, observers_,
-                      OnDecryptResponse(scoped_ptr<std::string>()));
+                      OnDecryptResponse(std::string()));
     return;
   }
 
-  // TODO(isherman): Compute the encrypted message data for realz.
   const std::string encrypted_message_data = challenge;
   std::string encrypted_message_data_base64;
   Base64UrlEncode(encrypted_message_data, &encrypted_message_data_base64);
@@ -141,6 +140,10 @@ void MessengerImpl::RequestUnlock() {
   message.SetString(kTypeKey, kMessageTypeUnlockRequest);
   queued_messages_.push_back(PendingMessage(message));
   ProcessMessageQueue();
+}
+
+SecureContext* MessengerImpl::GetSecureContext() const {
+  return secure_context_.get();
 }
 
 MessengerImpl::PendingMessage::PendingMessage() {}
@@ -263,16 +266,14 @@ void MessengerImpl::HandleDecryptResponseMessage(
     const base::DictionaryValue& message) {
   std::string base64_data;
   std::string decrypted_data;
-  scoped_ptr<std::string> response;
   if (!message.GetString(kDataKey, &base64_data) || base64_data.empty()) {
     PA_LOG(ERROR) << "Decrypt response missing '" << kDataKey << "' value.";
   } else if (!Base64UrlDecode(base64_data, &decrypted_data)) {
     PA_LOG(ERROR) << "Unable to base64-decode decrypt response.";
-  } else {
-    response.reset(new std::string(decrypted_data));
   }
+
   FOR_EACH_OBSERVER(MessengerObserver, observers_,
-                    OnDecryptResponse(response.Pass()));
+                    OnDecryptResponse(decrypted_data));
 }
 
 void MessengerImpl::HandleUnlockResponseMessage(
@@ -335,7 +336,7 @@ void MessengerImpl::OnSendCompleted(const Connection& connection,
   // notify observers right away.
   if (pending_message_->type == kMessageTypeDecryptRequest) {
     FOR_EACH_OBSERVER(MessengerObserver, observers_,
-                      OnDecryptResponse(scoped_ptr<std::string>()));
+                      OnDecryptResponse(std::string()));
   } else if (pending_message_->type == kMessageTypeUnlockRequest) {
     FOR_EACH_OBSERVER(MessengerObserver, observers_, OnUnlockResponse(false));
   } else if (pending_message_->type == kMessageTypeLocalEvent) {

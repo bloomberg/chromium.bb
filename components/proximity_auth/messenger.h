@@ -8,6 +8,7 @@
 namespace proximity_auth {
 
 class MessengerObserver;
+class SecureContext;
 
 // A messenger handling the Easy Unlock protocol, capable of parsing events from
 // the remote device and sending events for the local device.
@@ -34,6 +35,10 @@ class Messenger {
   // Sends a simple request to the remote device to unlock the screen.
   // OnUnlockResponse is called for each observer when the response is returned.
   virtual void RequestUnlock() = 0;
+
+  // Returns the SecureContext instance used by the messenger. Ownership of the
+  // SecureContext is not passed.
+  virtual SecureContext* GetSecureContext() const = 0;
 };
 
 }  // namespace proximity_auth

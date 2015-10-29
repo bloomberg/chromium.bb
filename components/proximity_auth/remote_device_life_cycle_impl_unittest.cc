@@ -48,6 +48,8 @@ class StubSecureContext : public SecureContext {
     return SecureContext::PROTOCOL_VERSION_THREE_ONE;
   }
 
+  std::string GetChannelBindingData() const override { return std::string(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StubSecureContext);
 };
@@ -230,6 +232,18 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
  private:
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthRemoteDeviceLifeCycleImplTest);
 };
+
+TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, GetRemoteDevice) {
+  RemoteDevice expected_remote_device = CreateClassicRemoteDeviceForTest();
+  RemoteDevice remote_device = life_cycle_.GetRemoteDevice();
+  EXPECT_EQ(expected_remote_device.user_id, remote_device.user_id);
+  EXPECT_EQ(expected_remote_device.name, remote_device.name);
+  EXPECT_EQ(expected_remote_device.public_key, remote_device.public_key);
+  EXPECT_EQ(expected_remote_device.bluetooth_address,
+            remote_device.bluetooth_address);
+  EXPECT_EQ(expected_remote_device.persistent_symmetric_key,
+            remote_device.persistent_symmetric_key);
+}
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticateAndDisconnect) {
   StartLifeCycle();

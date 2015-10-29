@@ -6,6 +6,7 @@
 #define COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_LIFE_CYCLE_H
 
 #include "base/macros.h"
+#include "components/proximity_auth/remote_device.h"
 
 namespace proximity_auth {
 
@@ -54,6 +55,9 @@ class RemoteDeviceLifeCycle {
 
   // Starts the life cycle.
   virtual void Start() = 0;
+
+  // Returns the RemoteDevice instance that this life cycle manages.
+  virtual RemoteDevice GetRemoteDevice() const = 0;
 
   // Returns the current state of in the life cycle.
   virtual State GetState() const = 0;

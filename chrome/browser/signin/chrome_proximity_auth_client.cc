@@ -18,12 +18,14 @@
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/version_info/version_info.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
+#include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 #endif
 
 using proximity_auth::ScreenlockState;
@@ -60,6 +62,27 @@ void ChromeProximityAuthClient::FinalizeSignin(const std::string& secret) {
   EasyUnlockService* service = EasyUnlockService::Get(profile_);
   if (service)
     service->FinalizeSignin(secret);
+}
+
+void ChromeProximityAuthClient::GetChallengeForUserAndDevice(
+    const std::string& user_id,
+    const std::string& remote_public_key,
+    const std::string& channel_binding_data,
+    base::Callback<void(const std::string& challenge)> callback) {
+#if defined(OS_CHROMEOS)
+  EasyUnlockService* easy_unlock_service = EasyUnlockService::Get(profile_);
+  if (easy_unlock_service->GetType() == EasyUnlockService::TYPE_REGULAR) {
+    PA_LOG(ERROR) << "Unable to get challenge when user is logged in.";
+    callback.Run(std::string());
+    return;
+  }
+
+  static_cast<EasyUnlockServiceSignin*>(easy_unlock_service)
+      ->WrapChallengeForUserAndDevice(user_id, remote_public_key,
+                                      channel_binding_data, callback);
+#else
+  callback.Run(std::string());
+#endif
 }
 
 PrefService* ChromeProximityAuthClient::GetPrefService() {

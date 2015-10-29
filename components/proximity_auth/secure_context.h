@@ -36,6 +36,10 @@ class SecureContext {
 
   // Returns the protocol version that was used during authentication.
   virtual ProtocolVersion GetProtocolVersion() const = 0;
+
+  // Returns data specific to the current session that can be used in
+  // cryptographic operations to bind to the channel.
+  virtual std::string GetChannelBindingData() const = 0;
 };
 
 }  // namespace proximity_auth

@@ -24,9 +24,9 @@ class MessengerObserver {
   virtual void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update){};
 
   // Called when a response to a 'decrypt_request' is received, with the
-  // |decrypted_bytes| that were returned by the remote device. A null pointer
+  // |decrypted_bytes| that were returned by the remote device. An empty string
   // indicates failure.
-  virtual void OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes){};
+  virtual void OnDecryptResponse(const std::string& decrypted_bytes){};
 
   // Called when a response to a 'unlock_request' is received.
   // |success| is true iff the request was made successfully.

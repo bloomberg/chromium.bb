@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/screenlock_state.h"
@@ -39,10 +40,20 @@ class ProximityAuthClient {
   // attempt must be in progress before calling this function.
   virtual void FinalizeUnlock(bool success) = 0;
 
-  // Finalizes a sign-in attempt initiated by the user. If |success| is true,
+  // Finalizes a sign-in attempt initiated by the user. If |secret| is valid,
   // the user is signed in; otherwise, the auth attempt is rejected. An auth
   // attempt must be in progress before calling this function.
   virtual void FinalizeSignin(const std::string& secret) = 0;
+
+  // Gets the wrapped challenge for the given |user_id| and |remote_public_key|
+  // of the user's remote device. The challenge binds to the secure channel
+  // using |channel_binding_data|.
+  // |callback| will be invoked when the challenge is acquired.
+  virtual void GetChallengeForUserAndDevice(
+      const std::string& user_id,
+      const std::string& remote_public_key,
+      const std::string& channel_binding_data,
+      base::Callback<void(const std::string& challenge)> callback) = 0;
 
   // Returns the PrefService used by the profile.
   virtual PrefService* GetPrefService() = 0;

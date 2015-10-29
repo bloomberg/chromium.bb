@@ -46,6 +46,7 @@ class MockSecureContext : public SecureContext {
 
   MOCK_CONST_METHOD0(GetReceivedAuthMessage, std::string());
   MOCK_CONST_METHOD0(GetProtocolVersion, ProtocolVersion());
+  MOCK_CONST_METHOD0(GetChannelBindingData, std::string());
 
   void Encode(const std::string& message,
               const MessageCallback& callback) override {
@@ -75,12 +76,12 @@ class MockMessengerObserver : public MessengerObserver {
   MOCK_METHOD1(OnRemoteStatusUpdate,
                void(const RemoteStatusUpdate& status_update));
   MOCK_METHOD1(OnDecryptResponseProxy,
-               void(const std::string* decrypted_bytes));
+               void(const std::string& decrypted_bytes));
   MOCK_METHOD1(OnUnlockResponse, void(bool success));
   MOCK_METHOD0(OnDisconnected, void());
 
-  virtual void OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes) {
-    OnDecryptResponseProxy(decrypted_bytes.get());
+  virtual void OnDecryptResponse(const std::string& decrypted_bytes) {
+    OnDecryptResponseProxy(decrypted_bytes);
   }
 
  private:
@@ -103,7 +104,7 @@ class TestMessenger : public MessengerImpl {
     return static_cast<FakeConnection*>(connection());
   }
   MockSecureContext* GetMockSecureContext() {
-    return static_cast<MockSecureContext*>(secure_context());
+    return static_cast<MockSecureContext*>(GetSecureContext());
   }
 
  private:
@@ -213,7 +214,7 @@ TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendMessageFails) {
   MockMessengerObserver observer(&messenger);
   messenger.RequestDecryption(kChallenge);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
+  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
   messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
@@ -234,7 +235,7 @@ TEST(ProximityAuthMessengerImplTest,
   messenger.RequestDecryption(kChallenge);
   messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
+  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
   messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{\"type\":\"decrypt_response\"}, but encoded");
 }
@@ -246,7 +247,7 @@ TEST(ProximityAuthMessengerImplTest,
   messenger.RequestDecryption(kChallenge);
   messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
+  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
   messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
@@ -261,7 +262,7 @@ TEST(ProximityAuthMessengerImplTest,
   messenger.RequestDecryption(kChallenge);
   messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(Pointee(Eq("a winner is you"))));
+  EXPECT_CALL(observer, OnDecryptResponseProxy("a winner is you"));
   messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
@@ -277,7 +278,7 @@ TEST(ProximityAuthMessengerImplTest,
   messenger.RequestDecryption(kChallenge);
   messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(Pointee(Eq("\xFF\xE6"))));
+  EXPECT_CALL(observer, OnDecryptResponseProxy("\xFF\xE6"));
   messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","
@@ -435,7 +436,7 @@ TEST(ProximityAuthMessengerImplTest, BuffersMessages_WhileSending) {
   messenger.RequestDecryption(kChallenge);
   messenger.RequestUnlock();
 
-  EXPECT_CALL(observer, OnDecryptResponseProxy(nullptr));
+  EXPECT_CALL(observer, OnDecryptResponseProxy(std::string()));
   messenger.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 
   EXPECT_CALL(observer, OnUnlockResponse(false));
@@ -455,7 +456,7 @@ TEST(ProximityAuthMessengerImplTest, BuffersMessages_WhileAwaitingReply) {
   messenger.RequestUnlock();
 
   // Now simulate a response arriving for the original decryption request.
-  EXPECT_CALL(observer, OnDecryptResponseProxy(Pointee(Eq("a winner is you"))));
+  EXPECT_CALL(observer, OnDecryptResponseProxy("a winner is you"));
   messenger.GetFakeConnection()->ReceiveMessageWithPayload(
       "{"
       "\"type\":\"decrypt_response\","

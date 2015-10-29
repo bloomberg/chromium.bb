@@ -27,7 +27,10 @@ class UnlockManager;
 class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
                             public ScreenlockBridge::Observer {
  public:
-  ProximityAuthSystem(RemoteDevice remote_device,
+  enum ScreenlockType { SESSION_LOCK, SIGN_IN };
+
+  ProximityAuthSystem(ScreenlockType screenlock_type,
+                      RemoteDevice remote_device,
                       ProximityAuthClient* proximity_auth_client);
   ~ProximityAuthSystem() override;
 

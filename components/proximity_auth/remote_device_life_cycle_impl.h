@@ -36,6 +36,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // RemoteDeviceLifeCycle:
   void Start() override;
+  RemoteDevice GetRemoteDevice() const override;
   RemoteDeviceLifeCycle::State GetState() const override;
   Messenger* GetMessenger() override;
   void AddObserver(Observer* observer) override;

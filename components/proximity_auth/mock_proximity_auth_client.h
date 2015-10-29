@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
@@ -27,6 +28,12 @@ class MockProximityAuthClient : public ProximityAuthClient {
                void(proximity_auth::ScreenlockState state));
   MOCK_METHOD1(FinalizeUnlock, void(bool success));
   MOCK_METHOD1(FinalizeSignin, void(const std::string& secret));
+  MOCK_METHOD4(
+      GetChallengeForUserAndDevice,
+      void(const std::string& user_id,
+           const std::string& remote_public_key,
+           const std::string& channel_binding_data,
+           base::Callback<void(const std::string& challenge)> callback));
   MOCK_CONST_METHOD0(GetAuthenticatedUsername, std::string(void));
   MOCK_METHOD0(GetPrefService, PrefService*(void));
   MOCK_METHOD0(GetDeviceClassifier, cryptauth::DeviceClassifier(void));

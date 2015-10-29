@@ -388,6 +388,8 @@
         'browser/chromeos/login/easy_unlock/bootstrap_user_context_initializer.h',
         'browser/chromeos/login/easy_unlock/bootstrap_user_flow.cc',
         'browser/chromeos/login/easy_unlock/bootstrap_user_flow.h',
+        'browser/chromeos/login/easy_unlock/easy_unlock_challenge_wrapper.cc',
+        'browser/chromeos/login/easy_unlock/easy_unlock_challenge_wrapper.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_create_keys_operation.cc',
         'browser/chromeos/login/easy_unlock/easy_unlock_create_keys_operation.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_get_keys_operation.cc',

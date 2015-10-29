@@ -23,12 +23,13 @@ const int kWakeUpTimeoutSeconds = 2;
 }  // namespace
 
 ProximityAuthSystem::ProximityAuthSystem(
+    ScreenlockType screenlock_type,
     RemoteDevice remote_device,
     ProximityAuthClient* proximity_auth_client)
     : remote_device_(remote_device),
       proximity_auth_client_(proximity_auth_client),
       unlock_manager_(new UnlockManager(
-          UnlockManager::ScreenlockType::SESSION_LOCK,
+          screenlock_type,
           make_scoped_ptr<ProximityMonitor>(new ProximityMonitorImpl(
               remote_device,
               make_scoped_ptr(new base::DefaultTickClock()))),

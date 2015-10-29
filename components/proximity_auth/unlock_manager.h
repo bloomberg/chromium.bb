@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/messenger_observer.h"
+#include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -34,18 +35,13 @@ class UnlockManager : public MessengerObserver,
 #endif  // defined(OS_CHROMEOS)
                       public device::BluetoothAdapter::Observer {
  public:
-  enum class ScreenlockType {
-    SESSION_LOCK,
-    SIGN_IN,
-  };
-
   // The |proximity_auth_client| is not owned and should outlive the constructed
   // unlock manager.
   // TODO(isherman): Rather than passing a single ProximityMonitor instance, we
   // should pass a factory, as the UnlockManager should create and destroy
   // ProximityMonitors as needed.  Currently, the expectations are misaligned
   // between the ProximityMonitor and the UnlockManager classes.
-  UnlockManager(ScreenlockType screenlock_type,
+  UnlockManager(ProximityAuthSystem::ScreenlockType screenlock_type,
                 scoped_ptr<ProximityMonitor> proximity_monitor,
                 ProximityAuthClient* proximity_auth_client);
   ~UnlockManager() override;
@@ -79,7 +75,7 @@ class UnlockManager : public MessengerObserver,
   // MessengerObserver:
   void OnUnlockEventSent(bool success) override;
   void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update) override;
-  void OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes) override;
+  void OnDecryptResponse(const std::string& decrypted_bytes) override;
   void OnUnlockResponse(bool success) override;
   void OnDisconnected() override;
 
@@ -112,6 +108,10 @@ class UnlockManager : public MessengerObserver,
   // device for decryption.
   void SendSignInChallenge();
 
+  // Called with the sign-in |challenge| so we can send it to the remote device
+  // for decryption.
+  void OnGotSignInChallenge(const std::string& challenge);
+
   // Returns the current state for the screen lock UI.
   ScreenlockState GetScreenlockState();
 
@@ -140,7 +140,7 @@ class UnlockManager : public MessengerObserver,
   Messenger* GetMessenger();
 
   // Whether |this| manager is being used for sign-in or session unlock.
-  const ScreenlockType screenlock_type_;
+  const ProximityAuthSystem::ScreenlockType screenlock_type_;
 
   // Whether the user is present at the remote device. Unset if no remote status
   // update has yet been received.

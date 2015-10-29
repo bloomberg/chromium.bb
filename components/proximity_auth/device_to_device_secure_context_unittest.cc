@@ -39,7 +39,7 @@ class ProximityAuthDeviceToDeviceSecureContextTest : public testing::Test {
 };
 
 TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, GetProperties) {
-  EXPECT_EQ(kResponderAuthMessage, secure_context_.GetReceivedAuthMessage());
+  EXPECT_EQ(kResponderAuthMessage, secure_context_.GetChannelBindingData());
   EXPECT_EQ(kProtocolVersion, secure_context_.GetProtocolVersion());
 }
 

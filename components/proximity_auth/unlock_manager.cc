@@ -14,6 +14,8 @@
 #include "components/proximity_auth/metrics.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/proximity_monitor.h"
+#include "components/proximity_auth/remote_device.h"
+#include "components/proximity_auth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 #if defined(OS_CHROMEOS)
@@ -75,9 +77,10 @@ metrics::RemoteSecuritySettingsState GetRemoteSecuritySettingsState(
 
 }  // namespace
 
-UnlockManager::UnlockManager(ScreenlockType screenlock_type,
-                             scoped_ptr<ProximityMonitor> proximity_monitor,
-                             ProximityAuthClient* proximity_auth_client)
+UnlockManager::UnlockManager(
+    ProximityAuthSystem::ScreenlockType screenlock_type,
+    scoped_ptr<ProximityMonitor> proximity_monitor,
+    ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
       life_cycle_(nullptr),
       proximity_monitor_(proximity_monitor.Pass()),
@@ -132,7 +135,7 @@ bool UnlockManager::IsUnlockAllowed() {
           life_cycle_->GetState() ==
               RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED &&
           proximity_monitor_->IsUnlockAllowed() &&
-          (screenlock_type_ != ScreenlockType::SIGN_IN ||
+          (screenlock_type_ != ProximityAuthSystem::SIGN_IN ||
            (GetMessenger() && GetMessenger()->SupportsSignIn())));
 }
 
@@ -169,9 +172,6 @@ void UnlockManager::OnUnlockEventSent(bool success) {
     return;
   }
 
-  if (sign_in_secret_ && success)
-    proximity_auth_client_->FinalizeSignin(*sign_in_secret_);
-
   AcceptAuthAttempt(success);
 }
 
@@ -192,18 +192,18 @@ void UnlockManager::OnRemoteStatusUpdate(
   SetWakingUpState(false);
 }
 
-void UnlockManager::OnDecryptResponse(scoped_ptr<std::string> decrypted_bytes) {
+void UnlockManager::OnDecryptResponse(const std::string& decrypted_bytes) {
   if (!is_attempting_auth_) {
     PA_LOG(ERROR) << "[Unlock] Decrypt response received but not attempting "
                   << "auth.";
     return;
   }
 
-  if (!decrypted_bytes) {
-    PA_LOG(INFO) << "[Unlock] Failed to decrypt sign-in challenge.";
+  if (decrypted_bytes.empty()) {
+    PA_LOG(WARNING) << "[Unlock] Failed to decrypt sign-in challenge.";
     AcceptAuthAttempt(false);
   } else {
-    sign_in_secret_ = decrypted_bytes.Pass();
+    sign_in_secret_.reset(new std::string(decrypted_bytes));
     GetMessenger()->DispatchUnlockEvent();
   }
 }
@@ -307,7 +307,7 @@ void UnlockManager::OnAuthAttempted(
                  reject_auth_attempt_weak_ptr_factory_.GetWeakPtr(), false),
       base::TimeDelta::FromSeconds(kAuthAttemptTimeoutSecs));
 
-  if (screenlock_type_ == ScreenlockType::SIGN_IN) {
+  if (screenlock_type_ == ProximityAuthSystem::SIGN_IN) {
     SendSignInChallenge();
   } else {
     if (GetMessenger()->SupportsSignIn()) {
@@ -321,8 +321,22 @@ void UnlockManager::OnAuthAttempted(
 }
 
 void UnlockManager::SendSignInChallenge() {
-  // TODO(isherman): Implement.
-  NOTIMPLEMENTED();
+  if (!life_cycle_ || !GetMessenger() || !GetMessenger()->GetSecureContext()) {
+    PA_LOG(ERROR) << "Not ready to send sign-in challenge";
+    return;
+  }
+
+  RemoteDevice remote_device = life_cycle_->GetRemoteDevice();
+  proximity_auth_client_->GetChallengeForUserAndDevice(
+      remote_device.user_id, remote_device.public_key,
+      GetMessenger()->GetSecureContext()->GetChannelBindingData(),
+      base::Bind(&UnlockManager::OnGotSignInChallenge,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void UnlockManager::OnGotSignInChallenge(const std::string& challenge) {
+  PA_LOG(INFO) << "Got sign-in challenge, sending for decryption...";
+  GetMessenger()->RequestDecryption(challenge);
 }
 
 ScreenlockState UnlockManager::GetScreenlockState() {
@@ -344,7 +358,7 @@ ScreenlockState UnlockManager::GetScreenlockState() {
     return ScreenlockState::NO_BLUETOOTH;
 
   Messenger* messenger = GetMessenger();
-  if (screenlock_type_ == ScreenlockType::SIGN_IN && messenger &&
+  if (screenlock_type_ == ProximityAuthSystem::SIGN_IN && messenger &&
       !messenger->SupportsSignIn())
     return ScreenlockState::PHONE_UNSUPPORTED;
 
@@ -440,7 +454,14 @@ void UnlockManager::AcceptAuthAttempt(bool should_accept) {
     proximity_monitor_->RecordProximityMetricsOnAuthSuccess();
 
   is_attempting_auth_ = false;
-  proximity_auth_client_->FinalizeUnlock(should_accept);
+  if (screenlock_type_ == ProximityAuthSystem::SIGN_IN) {
+    PA_LOG(INFO) << "Finalizing sign-in...";
+    proximity_auth_client_->FinalizeSignin(sign_in_secret_ ? *sign_in_secret_
+                                                           : std::string());
+  } else {
+    PA_LOG(INFO) << "Finalizing unlock...";
+    proximity_auth_client_->FinalizeUnlock(should_accept);
+  }
 }
 
 UnlockManager::RemoteScreenlockState

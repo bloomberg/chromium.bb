@@ -35,11 +35,7 @@ class DeviceToDeviceSecureContext : public SecureContext {
   void Encode(const std::string& message,
               const MessageCallback& callback) override;
   ProtocolVersion GetProtocolVersion() const override;
-
-  // Returns the message received from the remote device that authenticates it.
-  // This message should have been received during the handshake that
-  // establishes the secure channel.
-  std::string GetReceivedAuthMessage() const;
+  std::string GetChannelBindingData() const override;
 
  private:
   // Callback for unwrapping a secure message. |callback| will be invoked with

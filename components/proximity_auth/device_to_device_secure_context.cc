@@ -72,7 +72,7 @@ void DeviceToDeviceSecureContext::Encode(const std::string& message,
       create_options, callback);
 }
 
-std::string DeviceToDeviceSecureContext::GetReceivedAuthMessage() const {
+std::string DeviceToDeviceSecureContext::GetChannelBindingData() const {
   return responder_auth_message_;
 }
 

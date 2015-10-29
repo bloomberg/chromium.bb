@@ -688,7 +688,6 @@ void EasyUnlockService::UpdateAppState() {
 
     if (!bluetooth_waking_up) {
       app_manager_->DisableAppIfLoaded();
-      ResetScreenlockState();
       proximity_auth_system_.reset();
 #if defined(OS_CHROMEOS)
       power_monitor_.reset();
@@ -840,6 +839,9 @@ void EasyUnlockService::OnRemoteDeviceChanged(
   if (remote_device) {
     PA_LOG(INFO) << "Remote device changed, recreating ProximityAuthSystem.";
     proximity_auth_system_.reset(new proximity_auth::ProximityAuthSystem(
+        GetType() == TYPE_SIGNIN
+            ? proximity_auth::ProximityAuthSystem::SIGN_IN
+            : proximity_auth::ProximityAuthSystem::SESSION_LOCK,
         *remote_device, proximity_auth_client()));
     proximity_auth_system_->Start();
   } else {

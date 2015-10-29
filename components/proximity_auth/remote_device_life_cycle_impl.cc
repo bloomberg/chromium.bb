@@ -57,6 +57,10 @@ void RemoteDeviceLifeCycleImpl::Start() {
   FindConnection();
 }
 
+RemoteDevice RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
+  return remote_device_;
+}
+
 RemoteDeviceLifeCycle::State RemoteDeviceLifeCycleImpl::GetState() const {
   return state_;
 }
