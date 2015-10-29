@@ -789,8 +789,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
 
   manifest_manager_ = new ManifestManager(this);
-
-  GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -5281,7 +5279,8 @@ void RenderFrameImpl::RegisterMojoServices() {
 
 mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
     const GURL& url) {
-  DCHECK(mojo_shell_);
+  if (!mojo_shell_)
+    GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
   mojo::ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url);
