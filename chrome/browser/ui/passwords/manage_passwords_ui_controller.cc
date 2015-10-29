@@ -406,11 +406,6 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
 #endif
 }
 
-bool ManagePasswordsUIController::ShouldShowMultipleAccountUpdateUI() const {
-  return state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
-         GetCurrentForms().size() > 1 && !PasswordOverridden();
-}
-
 void ManagePasswordsUIController::WebContentsDestroyed() {
   password_manager::PasswordStore* password_store =
       GetPasswordStore(web_contents());

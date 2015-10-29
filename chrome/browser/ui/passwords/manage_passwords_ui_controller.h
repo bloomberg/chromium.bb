@@ -151,10 +151,6 @@ class ManagePasswordsUIController
   // newly submitted form the password is different from stored one.
   bool PasswordOverridden() const;
 
-  // Returns true if the multiple account selection prompt for account update
-  // should be presented.
-  bool ShouldShowMultipleAccountUpdateUI() const;
-
  protected:
   explicit ManagePasswordsUIController(
       content::WebContents* web_contents);

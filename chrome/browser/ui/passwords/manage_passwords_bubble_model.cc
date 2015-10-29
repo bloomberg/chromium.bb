@@ -358,9 +358,8 @@ Profile* ManagePasswordsBubbleModel::GetProfile() const {
 }
 
 bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
-  ManagePasswordsUIController* controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  return controller->ShouldShowMultipleAccountUpdateUI();
+  return state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
+         local_credentials_.size() > 1 && !password_overridden_;
 }
 
 bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
