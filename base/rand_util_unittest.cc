@@ -19,10 +19,16 @@ const int kIntMax = std::numeric_limits<int>::max();
 
 }  // namespace
 
-TEST(RandUtilTest, SameMinAndMax) {
+TEST(RandUtilTest, RandInt) {
   EXPECT_EQ(base::RandInt(0, 0), 0);
   EXPECT_EQ(base::RandInt(kIntMin, kIntMin), kIntMin);
   EXPECT_EQ(base::RandInt(kIntMax, kIntMax), kIntMax);
+
+  // Check that the DCHECKS in RandInt() don't fire due to internal overflow.
+  // There was a 50% chance of that happening, so calling it 40 times means
+  // the chances of this passing by accident are tiny (9e-13).
+  for (int i = 0; i < 40; ++i)
+    base::RandInt(kIntMin, kIntMax);
 }
 
 TEST(RandUtilTest, RandDouble) {
