@@ -2866,6 +2866,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Duration of time taken to run Heap::collectGarbage().</summary>
 </histogram>
 
+<histogram name="BlinkGC.CollectionRate" units="percent">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    The percentage of objects that have been collected by a Blink GC. 0 is
+    passed if there were no objects when a Blink GC started.
+  </summary>
+</histogram>
+
 <histogram name="BlinkGC.CommittedSize" units="MB">
   <owner>haraken@chromium.org</owner>
   <summary>
@@ -2882,6 +2890,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BlinkGC.GCReason" enum="GCReason">
   <owner>haraken@chromium.org</owner>
   <summary>A type of Blink GC.</summary>
+</histogram>
+
+<histogram name="BlinkGC.ObjectSizeAfterGC" units="KB">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    The size of allocated objects just after Blink GC is triggered.
+  </summary>
+</histogram>
+
+<histogram name="BlinkGC.ObjectSizeBeforeGC" units="KB">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    The size of allocated objects just before Blink GC is triggered.
+  </summary>
 </histogram>
 
 <histogram name="BlinkGC.PerformPendingSweep" units="milliseconds">
