@@ -168,7 +168,8 @@ function test()
                 InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideFailure);
 
                 InspectorTest.addResult("Committing uiSourceCode with live edit failure:");
-                uiSourceCode.commitWorkingCopy(function() { });
+                uiSourceCode.commitWorkingCopy();
+
                 dumpUISourceCodeAndScriptContents();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
@@ -197,7 +198,8 @@ function test()
                 InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideSuccess);
 
                 InspectorTest.addResult("Committing uiSourceCode again (with live edit success now):");
-                uiSourceCode.commitWorkingCopy(function() { });
+                uiSourceCode.commitWorkingCopy();
+
                 dumpUISourceCodeAndScriptContents();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);

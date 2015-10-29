@@ -45,6 +45,7 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor)
         this.consoleModel = new WebInspector.ConsoleModel(this);
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
         this.resourceTreeModel._inspectedPageURL = InspectorTest.resourceTreeModel._inspectedPageURL;
+        this.resourceTreeModel._cachedResourcesProcessed = true;
         this.domModel = new WebInspector.DOMModel(this);
         this.cssModel = new WebInspector.CSSStyleModel(this);
         this.runtimeModel = new WebInspector.RuntimeModel(this);
