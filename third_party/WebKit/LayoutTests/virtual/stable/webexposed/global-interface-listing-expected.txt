@@ -2702,6 +2702,7 @@ interface KeyboardEvent : UIEvent
     attribute DOM_KEY_LOCATION_STANDARD
     getter altKey
     getter charCode
+    getter code
     getter ctrlKey
     getter keyCode
     getter keyIdentifier
