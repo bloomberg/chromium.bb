@@ -34,22 +34,31 @@ class FlagChanger(object):
     # Store the flags as a set to facilitate adding and removing flags.
     self._state_stack = [set(self._TokenizeFlags(stored_flags))]
 
+  def ReplaceFlags(self, flags):
+    """Replaces the flags in the command line with the ones provided.
+       Saves the current flags state on the stack, so a call to Restore will
+       change the state back to the one preceeding the call to ReplaceFlags.
+
+    Args:
+      flags: A sequence of command line flags to set, eg. ['--single-process'].
+             Note: this should include flags only, not the name of a command
+             to run (ie. there is no need to start the sequence with 'chrome').
+    """
+    new_flags = set(flags)
+    self._state_stack.append(new_flags)
+    self._UpdateCommandLineFile()
+
   def AddFlags(self, flags):
     """Appends flags to the command line if they aren't already there.
        Saves the current flags state on the stack, so a call to Restore will
        change the state back to the one preceeding the call to AddFlags.
 
     Args:
-      flags: A list of flags to add on, eg. ['--single-process'].
+      flags: A sequence of flags to add on, eg. ['--single-process'].
     """
-    if flags:
-      assert flags[0] != 'chrome'
-
     new_flags = self._state_stack[-1].copy()
-    for flag in flags:
-      new_flags.add(flag)
-    self._state_stack.append(new_flags)
-    self._UpdateCommandLineFile()
+    new_flags.update(flags)
+    self.ReplaceFlags(new_flags)
 
   def RemoveFlags(self, flags):
     """Removes flags from the command line, if they exist.
@@ -60,19 +69,14 @@ class FlagChanger(object):
        two nested states.
 
     Args:
-      flags: A list of flags to remove, eg. ['--single-process'].  Note that we
-             expect a complete match when removing flags; if you want to remove
-             a switch with a value, you must use the exact string used to add
-             it in the first place.
+      flags: A sequence of flags to remove, eg. ['--single-process'].  Note
+             that we expect a complete match when removing flags; if you want
+             to remove a switch with a value, you must use the exact string
+             used to add it in the first place.
     """
-    if flags:
-      assert flags[0] != 'chrome'
-
     new_flags = self._state_stack[-1].copy()
-    for flag in flags:
-      new_flags.discard(flag)
-    self._state_stack.append(new_flags)
-    self._UpdateCommandLineFile()
+    new_flags.difference_update(flags)
+    self.ReplaceFlags(new_flags)
 
   def Restore(self):
     """Restores the flags to their state prior to the last AddFlags or
