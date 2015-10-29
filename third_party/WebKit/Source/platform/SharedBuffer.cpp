@@ -114,7 +114,7 @@ static void printStats()
     MutexLocker locker(statsMutex());
     Vector<SharedBuffer*> buffers;
     for (auto* buffer : liveBuffers())
-        buffers.append(*iter);
+        buffers.append(buffer);
     std::sort(buffers.begin(), buffers.end(), sizeComparator);
 
     dataLogF("---- Shared Buffer Stats ----\n");
