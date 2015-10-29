@@ -48,7 +48,7 @@
 #include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
 
-#if USE(PTHREADS)
+#if OS(POSIX)
 #include <pthread.h>
 #elif OS(WIN)
 #include <windows.h>
@@ -98,14 +98,14 @@ private:
 #endif
     };
 
-#if USE(PTHREADS)
+#if OS(POSIX)
     pthread_key_t m_key;
 #elif OS(WIN)
     int m_index;
 #endif
 };
 
-#if USE(PTHREADS)
+#if OS(POSIX)
 
 typedef pthread_key_t ThreadSpecificKey;
 
@@ -227,7 +227,7 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
 
     Data* data = static_cast<Data*>(ptr);
 
-#if USE(PTHREADS)
+#if OS(POSIX)
     // We want get() to keep working while data destructor works, because it can be called indirectly by the destructor.
     // Some pthreads implementations zero out the pointer before calling destroy(), so we temporarily reset it.
     pthread_setspecific(data->owner->m_key, ptr);
@@ -236,7 +236,7 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
     data->value->~T();
     Partitions::fastFree(data->value);
 
-#if USE(PTHREADS)
+#if OS(POSIX)
     pthread_setspecific(data->owner->m_key, 0);
 #elif OS(WIN)
     TlsSetValue(tlsKeys()[data->owner->m_index], 0);

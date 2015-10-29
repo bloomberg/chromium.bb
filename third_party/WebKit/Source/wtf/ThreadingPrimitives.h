@@ -41,13 +41,13 @@
 #include <windows.h>
 #endif
 
-#if USE(PTHREADS)
+#if OS(POSIX)
 #include <pthread.h>
 #endif
 
 namespace WTF {
 
-#if USE(PTHREADS)
+#if OS(POSIX)
 struct PlatformMutex {
     pthread_mutex_t m_internalMutex;
 #if ENABLE(ASSERT)

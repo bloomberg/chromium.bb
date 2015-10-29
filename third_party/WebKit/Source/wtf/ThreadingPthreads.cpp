@@ -31,7 +31,7 @@
 #include "config.h"
 #include "wtf/Threading.h"
 
-#if USE(PTHREADS)
+#if OS(POSIX)
 
 #include "wtf/DateMath.h"
 #include "wtf/HashMap.h"
@@ -44,12 +44,9 @@
 #include "wtf/dtoa.h"
 #include "wtf/dtoa/cached-powers.h"
 #include <errno.h>
-
-#if !COMPILER(MSVC)
 #include <limits.h>
 #include <sched.h>
 #include <sys/time.h>
-#endif
 
 #if OS(MACOSX)
 #include <objc/objc-auto.h>
@@ -267,4 +264,4 @@ void willCreateThread()
 
 } // namespace WTF
 
-#endif // USE(PTHREADS)
+#endif // OS(POSIX)

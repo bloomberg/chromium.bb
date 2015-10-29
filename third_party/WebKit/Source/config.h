@@ -96,10 +96,6 @@
 #define WTF_USE_CF 1
 #endif /* OS(MACOSX) */
 
-#if OS(POSIX)
-#define WTF_USE_PTHREADS 1
-#endif /* OS(POSIX) */
-
 #if OS(MACOSX)
 #define WTF_USE_NEW_THEME 1
 #endif /* OS(MACOSX) */
