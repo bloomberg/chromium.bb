@@ -358,7 +358,7 @@ void GeofencingManager::DispatchGeofencingEvent(
     return;
   }
 
-  service_worker_context_->FindRegistrationForId(
+  service_worker_context_->FindReadyRegistrationForId(
       registration->service_worker_registration_id,
       registration->service_worker_origin,
       base::Bind(&GeofencingManager::DeliverGeofencingEvent,
@@ -386,14 +386,6 @@ void GeofencingManager::DeliverGeofencingEvent(
     return;
   }
 
-  ServiceWorkerVersion* active_version =
-      service_worker_registration->active_version();
-  if (!active_version) {
-    // TODO(mek): No active version, potentially because one is still being
-    //     installed. Handle this somehow.
-    return;
-  }
-
   // Hold on to the service worker registration in the callback to keep it alive
   // until the callback dies. Otherwise the registration could be released when
   // this method returns - before the event is delivered to the service worker.
@@ -401,6 +393,10 @@ void GeofencingManager::DeliverGeofencingEvent(
       base::Bind(&GeofencingManager::DeliverGeofencingEventEnd,
                  this,
                  service_worker_registration);
+
+  ServiceWorkerVersion* active_version =
+      service_worker_registration->active_version();
+  DCHECK(active_version);
   active_version->DispatchGeofencingEvent(dispatch_event_callback,
                                           event_type,
                                           registration->region_id,

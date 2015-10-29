@@ -298,11 +298,11 @@ class BackgroundSyncManagerTest : public testing::Test {
 
     // Hang onto the registrations as they need to be "live" when
     // calling BackgroundSyncManager::Register.
-    helper_->context_wrapper()->FindRegistrationForId(
+    helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_1_, GURL(kPattern1).GetOrigin(),
         base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_1_));
 
-    helper_->context_wrapper()->FindRegistrationForId(
+    helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_2_, GURL(kPattern1).GetOrigin(),
         base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_2_));
     base::RunLoop().RunUntilIdle();

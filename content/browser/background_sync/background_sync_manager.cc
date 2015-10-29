@@ -1081,7 +1081,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
           LookupActiveRegistration(service_worker_id, sw_id_and_key.second);
       DCHECK(registration);
 
-      service_worker_context_->FindRegistrationForId(
+      service_worker_context_->FindReadyRegistrationForId(
           service_worker_id, active_registrations_[service_worker_id].origin,
           base::Bind(&BackgroundSyncManager::FireReadyEventsDidFindRegistration,
                      weak_ptr_factory_.GetWeakPtr(), sw_id_and_key.second,

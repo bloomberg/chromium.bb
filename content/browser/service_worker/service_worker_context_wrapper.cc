@@ -548,20 +548,6 @@ void ServiceWorkerContextWrapper::FindRegistrationForDocument(
       net::SimplifyUrlForRequest(document_url), callback);
 }
 
-void ServiceWorkerContextWrapper::FindRegistrationForId(
-    int64_t registration_id,
-    const GURL& origin,
-    const FindRegistrationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!context_core_) {
-    // FindRegistrationForId() can run the callback synchronously.
-    callback.Run(SERVICE_WORKER_ERROR_ABORT, nullptr);
-    return;
-  }
-  context_core_->storage()->FindRegistrationForId(registration_id,
-                                                  origin.GetOrigin(), callback);
-}
-
 void ServiceWorkerContextWrapper::FindReadyRegistrationForId(
     int64_t registration_id,
     const GURL& origin,

@@ -167,7 +167,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
 
-    embedded_worker_helper_->context_wrapper()->FindRegistrationForId(
+    embedded_worker_helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_, GURL(kServiceWorkerPattern).GetOrigin(),
         base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_));
     base::RunLoop().RunUntilIdle();

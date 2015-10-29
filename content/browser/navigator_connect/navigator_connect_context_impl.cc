@@ -110,7 +110,7 @@ void NavigatorConnectContextImpl::PostMessage(
     for (const auto& sent_port : sent_message_ports)
       MessagePortService::GetInstance()->HoldMessages(sent_port.id);
 
-    service_worker_context_->FindRegistrationForId(
+    service_worker_context_->FindReadyRegistrationForId(
         port.service_worker_registration_id,
         port.service_worker_registration_origin,
         base::Bind(&NavigatorConnectContextImpl::DeliverMessage, this, port.id,
@@ -213,10 +213,7 @@ void NavigatorConnectContextImpl::DeliverMessage(
 
   ServiceWorkerVersion* active_version =
       service_worker_registration->active_version();
-  if (!active_version) {
-    // TODO(mek): Do something when no active version exists.
-    return;
-  }
+  DCHECK(active_version);
 
   const Port& port = ports_[port_id];
   NavigatorConnectClient client(port.target_url, port.client_origin, port_id);
