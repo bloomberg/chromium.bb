@@ -5,7 +5,7 @@
 /* Controls bar. */
 .controls {
   align-items: center;
-  background-color: #fff;
+  background-color: white;
   display: flex;
   flex-direction: column;
   height: 64px;
@@ -358,11 +358,15 @@
   pointer-events: none;
 }
 
+.media-button files-toggle-ripple::shadow .ripple.activated {
+  opacity: 0.1;
+}
+
 /* Invisible div used to compute the width required for the elapsed time. */
 .time-controls > .time > .duration,
 .time-controls > .time > .current {
   align-items: center;
-  color: #3d3d3d;
+  color: rgb(51, 51, 51);
   display: flex;
   flex-direction: row;
   font-size: 12px;
