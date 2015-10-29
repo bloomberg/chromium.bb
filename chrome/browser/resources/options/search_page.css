@@ -13,8 +13,6 @@
 /* Container for the elements that make up the search bubble. */
 .search-bubble {
   left: 0;
-  margin-top: 5px;
-  pointer-events: none;
   position: absolute;
   top: -1000px;  /* Minor hack: position off-screen by default. */
   /* Create a z-context for search-bubble-innards, its after and before. */
@@ -61,6 +59,14 @@
   top: -7px;
   width: 12px;
   z-index: -1;
+}
+
+/* Turns the arrow direction downwards, when the bubble is placed above the
+ * anchor element */
+.search-bubble-innards.above::after {
+  -webkit-transform: rotate(-135deg);
+  bottom: -7px;
+  top: auto;
 }
 
 .search-bubble-wrapper {

@@ -45,6 +45,11 @@ cr.define('options', function() {
       // making sure the bubbles stay in the correct location as sections
       // may dynamically change size at any time.
       this.intervalId = setInterval(this.updatePosition.bind(this), 250);
+
+      this.addEventListener('mouseover', function() {
+        this.innards_.classList.toggle('above');
+        this.updatePosition();
+      });
     },
 
     /**
@@ -103,7 +108,13 @@ cr.define('options', function() {
       // Position the bubble below the location of the owner.
       var left = owner.offsetLeft + owner.offsetWidth / 2 -
           this.offsetWidth / 2;
-      var top = owner.offsetTop + owner.offsetHeight;
+
+      var BUBBLE_EDGE_OFFSET = 5;
+      var top = owner.offsetTop;
+      if (this.innards_.classList.contains('above'))
+        top -= this.offsetHeight + BUBBLE_EDGE_OFFSET;
+      else
+        top += owner.offsetHeight + BUBBLE_EDGE_OFFSET;
 
       // Update the position in the CSS.  Cache the last values for
       // best performance.
