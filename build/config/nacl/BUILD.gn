@@ -25,13 +25,28 @@ config("nexe_defines") {
   ]
 }
 
+config("nacl_warnings") {
+  if (is_win) {
+    # Some NaCl code uses forward declarations of static const variables,
+    # with initialized definitions later on.  (The alternative would be
+    # many, many more forward declarations of everything used in that
+    # const variable's initializer before the definition.)  The Windows
+    # compiler is too stupid to notice that there is an initializer later
+    # in the file, and warns about the forward declaration.
+    cflags = [ "/wd4132" ]
+  }
+}
+
 # The base target that all targets in the NaCl build should depend on.
 # This allows configs to be modified for everything in the NaCl build, even when
 # the NaCl build is composed into the Chrome build.  (GN has no functionality to
-# add flags to everythin in //native_client, having a base target works around
+# add flags to everything in //native_client, having a base target works around
 # that limitation.)
 source_set("nacl_base") {
-  public_configs = [ ":nacl_defines" ]
+  public_configs = [
+    ":nacl_defines",
+    ":nacl_warnings",
+  ]
   if (current_os == "nacl") {
     public_configs += [ ":nexe_defines" ]
   }
