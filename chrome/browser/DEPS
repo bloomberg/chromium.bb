@@ -82,6 +82,7 @@ include_rules = [
   "+components/rappor",
   "+components/renderer_context_menu",
   "+components/rlz",
+  "+components/safe_browsing_db",
   "+components/safe_json",
   "+components/search",
   "+components/search_engines",

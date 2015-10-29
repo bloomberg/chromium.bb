@@ -120,6 +120,7 @@
         'packed_ct_ev_whitelist.gypi',
         'page_load_metrics.gypi',
         'power.gypi',
+        'safe_browsing_db.gypi',
         'safe_json.gypi',
         'visitedlink.gypi',
         'wallpaper.gypi',

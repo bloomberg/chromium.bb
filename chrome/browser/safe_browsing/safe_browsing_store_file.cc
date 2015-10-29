@@ -9,6 +9,7 @@
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "components/safe_browsing_db/prefix_set.h"
 
 namespace {
 

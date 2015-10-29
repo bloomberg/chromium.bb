@@ -7,25 +7,12 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "components/google/core/browser/google_util.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
-
-#if defined(OS_WIN)
-#include "chrome/installer/util/browser_distribution.h"
-#endif
-
-static const char kReportParams[] = "?tpl=%s&url=%s";
-
-SBFullHash SBFullHashForString(const base::StringPiece& str) {
-  SBFullHash h;
-  crypto::SHA256HashString(str, &h.full_hash, sizeof(h.full_hash));
-  return h;
-}
 
 // SBCachedFullHashResult ------------------------------------------------------
 
@@ -481,28 +468,6 @@ void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls) {
       urls->push_back(hosts[h] + paths[p]);
     }
   }
-}
-
-GURL GeneratePhishingReportUrl(const std::string& report_page,
-                               const std::string& url_to_report,
-                               bool is_client_side_detection) {
-  const std::string current_esc = net::EscapeQueryParamValue(url_to_report,
-                                                             true);
-
-#if defined(OS_WIN)
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::string client_name(dist->GetSafeBrowsingName());
-#else
-  std::string client_name("googlechrome");
-#endif
-  if (is_client_side_detection)
-    client_name.append("_csd");
-
-  GURL report_url(report_page + base::StringPrintf(kReportParams,
-                                                   client_name.c_str(),
-                                                   current_esc.c_str()));
-  return google_util::AppendGoogleLocaleParam(
-      report_url, g_browser_process->GetApplicationLocale());
 }
 
 SBFullHash StringToSBFullHash(const std::string& hash_in) {
