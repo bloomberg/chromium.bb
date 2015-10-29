@@ -64,29 +64,23 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
 class GpuMemoryBufferBufferHandle final
     : public VideoCaptureBufferPool::BufferHandle {
  public:
-  GpuMemoryBufferBufferHandle(const std::vector<void*>& data,
-                              const gfx::Size& dimensions,
+  GpuMemoryBufferBufferHandle(const gfx::Size& dimensions,
                               ScopedVector<gfx::GpuMemoryBuffer>* gmbs)
-      : data_(data), dimensions_(dimensions), gmbs_(gmbs) {
-#ifndef NDEBUG
-    DCHECK_EQ(data.size(), gmbs->size());
-    for (const auto& gmb : *gmbs)
-      DCHECK(gmb);
-    for (const auto& data_ptr : data)
-      DCHECK(data_ptr);
-#endif
+      : dimensions_(dimensions), gmbs_(gmbs) {
+    DCHECK(gmbs);
   }
   ~GpuMemoryBufferBufferHandle() override {}
 
   gfx::Size dimensions() const override { return dimensions_; }
   size_t mapped_size() const override { return dimensions_.GetArea(); }
   void* data(int plane) override {
-    DCHECK_GE(plane, media::VideoFrame::kYPlane);
-    DCHECK_LT(plane, static_cast<int>(data_.size()));
-    return data_.at(plane);
+    DCHECK_GE(plane, 0);
+    DCHECK_LT(plane, static_cast<int>(gmbs_->size()));
+    DCHECK((*gmbs_)[plane]);
+    return (*gmbs_)[plane]->memory(0);
   }
   ClientBuffer AsClientBuffer(int plane) override {
-    DCHECK_GE(plane, media::VideoFrame::kYPlane);
+    DCHECK_GE(plane, 0);
     DCHECK_LT(plane, static_cast<int>(gmbs_->size()));
     return (*gmbs_)[plane]->AsClientBuffer();
   }
@@ -98,7 +92,6 @@ class GpuMemoryBufferBufferHandle final
 #endif
 
  private:
-  const std::vector<void*> data_;
   const gfx::Size dimensions_;
   ScopedVector<gfx::GpuMemoryBuffer>* const gmbs_;
 };
@@ -145,13 +138,10 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
   ~GpuMemoryBufferTracker() override;
 
   scoped_ptr<BufferHandle> GetBufferHandle() override {
-    std::vector<void*> data;
     DCHECK_EQ(gpu_memory_buffers_.size(),
               media::VideoFrame::NumPlanes(pixel_format()));
-    for (const auto& gmb : gpu_memory_buffers_)
-      data.push_back(gmb->memory(0));
-    return make_scoped_ptr(new GpuMemoryBufferBufferHandle(
-        data, dimensions_, &gpu_memory_buffers_));
+    return make_scoped_ptr(
+        new GpuMemoryBufferBufferHandle(dimensions_, &gpu_memory_buffers_));
   }
   bool ShareToProcess(base::ProcessHandle process_handle,
                       base::SharedMemoryHandle* new_handle) override {
