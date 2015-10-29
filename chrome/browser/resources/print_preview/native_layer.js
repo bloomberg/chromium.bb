@@ -357,6 +357,7 @@ cr.define('print_preview', function() {
         'landscape': printTicketStore.landscape.getValue(),
         'color': this.getNativeColorModel_(destination, printTicketStore.color),
         'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
+        'distillPage': printTicketStore.distillPage.getValue(),
         'marginsType': printTicketStore.marginsType.getValue(),
         'generateDraftData': true, // TODO(rltoscano): What should this be?
         'duplex': printTicketStore.duplex.getValue() ?

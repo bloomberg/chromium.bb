@@ -134,6 +134,7 @@ enum PrintSettingsBuckets {
   NON_DEFAULT_MEDIA,
   COPIES,
   NON_DEFAULT_MARGINS,
+  DISTILL_PAGE,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -282,6 +283,13 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
                           &external_preview) && external_preview) {
     ReportPrintSettingHistogram(EXTERNAL_PDF_PREVIEW);
   }
+
+  bool distill_page = false;
+  if (settings.GetBoolean(printing::kSettingDistillPageEnabled,
+                          &distill_page) && distill_page) {
+    ReportPrintSettingHistogram(DISTILL_PAGE);
+  }
+
 }
 
 // Callback that stores a PDF file on disk.
