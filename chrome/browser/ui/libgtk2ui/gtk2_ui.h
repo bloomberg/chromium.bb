@@ -74,6 +74,7 @@ class Gtk2UI : public views::LinuxUI {
   // ui::LinuxUI:
   void Initialize() override;
   gfx::Image GetThemeImageNamed(int id) const override;
+  bool GetTint(int id, color_utils::HSL* tint) const override;
   bool GetColor(int id, SkColor* color) const override;
   bool HasCustomImage(int id) const override;
   SkColor GetFocusRingColor() const override;

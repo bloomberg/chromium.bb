@@ -580,6 +580,14 @@ gfx::Image Gtk2UI::GetThemeImageNamed(int id) const {
   return image;
 }
 
+bool Gtk2UI::GetTint(int id, color_utils::HSL* tint) const {
+  // We don't set any tints and the default tints don't work so well so make
+  // sure this is never called by mistake. All colors that might make use of
+  // tint should have an entry in |colors_|.
+  NOTREACHED();
+  return false;
+}
+
 bool Gtk2UI::GetColor(int id, SkColor* color) const {
   ColorMap::const_iterator it = colors_.find(id);
   if (it != colors_.end()) {

@@ -24,6 +24,10 @@ namespace aura {
 class Window;
 }
 
+namespace color_utils {
+struct HSL;
+}
+
 namespace gfx {
 class Image;
 }
@@ -79,6 +83,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   // Returns a themed image per theme_provider.h
   virtual gfx::Image GetThemeImageNamed(int id) const = 0;
+  virtual bool GetTint(int id, color_utils::HSL* tint) const = 0;
   virtual bool GetColor(int id, SkColor* color) const = 0;
   virtual bool HasCustomImage(int id) const = 0;
 
