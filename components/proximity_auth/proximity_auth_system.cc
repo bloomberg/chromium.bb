@@ -57,6 +57,7 @@ void ProximityAuthSystem::OnSuspend() {
   PA_LOG(INFO) << "Preparing for device suspension.";
   DCHECK(!suspended_);
   suspended_ = true;
+  unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
   remote_device_life_cycle_.reset();
 }
 
