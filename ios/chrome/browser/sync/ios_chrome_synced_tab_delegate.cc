@@ -66,7 +66,7 @@ int IOSChromeSyncedTabDelegate::GetEntryCount() const {
 
 GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
-  return item->GetVirtualURL();
+  return item ? item->GetVirtualURL() : GURL();
 }
 
 GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
