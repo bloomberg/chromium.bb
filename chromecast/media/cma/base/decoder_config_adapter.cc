@@ -69,6 +69,8 @@ VideoCodec ToVideoCodec(const ::media::VideoCodec video_codec) {
       return kCodecVP8;
     case ::media::kCodecVP9:
       return kCodecVP9;
+    case ::media::kCodecHEVC:
+      return kCodecHEVC;
     default:
       LOG(ERROR) << "Unsupported video codec " << video_codec;
   }
