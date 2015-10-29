@@ -446,9 +446,16 @@ public class NotificationUIManager {
                                       persistentNotificationId, origin, tag, actionIndex));
         }
         // Site settings button is always the last action button.
-        notificationBuilder.addAction(0 /* actionIcon */,
-                                      res.getString(R.string.notification_site_settings_button),
-                                      pendingSettingsIntent);
+        if (actionTitles.length == 0) {
+            notificationBuilder.addAction(R.drawable.settings_cog,
+                                          res.getString(R.string.page_info_site_settings_button),
+                                          pendingSettingsIntent);
+        } else {
+            // Hide site settings icon and use shorter text when website provided action buttons.
+            notificationBuilder.addAction(0 /* actionIcon */,
+                                          res.getString(R.string.notification_site_settings_button),
+                                          pendingSettingsIntent);
+        }
 
         notificationBuilder.setDefaults(makeDefaults(vibrationPattern.length, silent));
         if (vibrationPattern.length > 0) {
