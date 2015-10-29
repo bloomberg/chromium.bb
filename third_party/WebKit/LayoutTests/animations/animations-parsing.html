@@ -1079,6 +1079,36 @@ shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
 shouldBe("style.webkitAnimation", "''");
 shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
 
+style.animation = ",";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "running,";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = ", alternate";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = ", commas,";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "test,, 5s";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
 // FIXME : https://code.google.com/p/chromium/issues/detail?id=273092
 /*style.animation = "ease-in ease-otu 5s";
 shouldBe("style.animation", "''");

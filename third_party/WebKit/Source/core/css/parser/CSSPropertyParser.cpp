@@ -1331,6 +1331,52 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeAnimationPropertyList(CSSProp
     return list.release();
 }
 
+bool CSSPropertyParser::consumeAnimationShorthand(const StylePropertyShorthand& shorthand, bool useLegacyParsing, bool important)
+{
+    const unsigned longhandCount = shorthand.length();
+    RefPtrWillBeRawPtr<CSSValueList> longhands[8];
+    ASSERT(longhandCount <= 8);
+    for (size_t i = 0; i < longhandCount; ++i)
+        longhands[i] = CSSValueList::createCommaSeparated();
+
+    do {
+        bool parsedLonghand[8] = { false };
+        do {
+            bool foundProperty = false;
+            for (size_t i = 0; i < longhandCount; ++i) {
+                if (parsedLonghand[i])
+                    continue;
+
+                if (RefPtrWillBeRawPtr<CSSValue> value = consumeAnimationValue(shorthand.properties()[i], m_range, m_context, useLegacyParsing)) {
+                    parsedLonghand[i] = true;
+                    foundProperty = true;
+                    longhands[i]->append(value.release());
+                    break;
+                }
+            }
+            if (!foundProperty)
+                return false;
+        } while (!m_range.atEnd() && m_range.peek().type() != CommaToken);
+
+        // TODO(timloh): This will make invalid longhands, see crbug.com/386459
+        for (size_t i = 0; i < longhandCount; ++i) {
+            if (!parsedLonghand[i])
+                longhands[i]->append(cssValuePool().createImplicitInitialValue());
+            parsedLonghand[i] = false;
+        }
+    } while (consumeCommaIncludingWhitespace(m_range));
+
+    for (size_t i = 0; i < longhandCount; ++i) {
+        if (!isValidAnimationPropertyList(shorthand.properties()[i], *longhands[i]))
+            return false;
+    }
+
+    for (size_t i = 0; i < longhandCount; ++i)
+        addProperty(shorthand.properties()[i], longhands[i].release(), important);
+
+    return m_range.atEnd();
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeWidowsOrOrphans(CSSParserTokenRange& range)
 {
     // Support for auto is non-standard and for backwards compatibility.
@@ -1808,13 +1854,15 @@ bool CSSPropertyParser::consumeColumns(bool important)
     return true;
 }
 
-bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
+bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
+    CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
+
     m_range.consumeWhitespace();
     CSSPropertyID oldShorthand = m_currentShorthand;
     // TODO(rob.buis): Remove this when the legacy property parser is gone
-    m_currentShorthand = propId;
-    switch (propId) {
+    m_currentShorthand = property;
+    switch (property) {
     case CSSPropertyWebkitMarginCollapse: {
         CSSValueID id = m_range.consumeIncludingWhitespace().id();
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyWebkitMarginBeforeCollapse, id))
@@ -1866,6 +1914,10 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, bool important)
         m_currentShorthand = oldShorthand;
         return consumeColumns(important);
     }
+    case CSSPropertyAnimation:
+        return consumeAnimationShorthand(animationShorthandForParsing(), unresolvedProperty == CSSPropertyAliasWebkitAnimation, important);
+    case CSSPropertyTransition:
+        return consumeAnimationShorthand(transitionShorthandForParsing(), false, important);
     default:
         m_currentShorthand = oldShorthand;
         return false;

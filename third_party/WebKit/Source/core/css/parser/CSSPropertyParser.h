@@ -140,23 +140,10 @@ private:
 
     void addFillValue(RefPtrWillBeRawPtr<CSSValue>& lval, PassRefPtrWillBeRawPtr<CSSValue> rval);
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationDelay();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationDirection();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationDuration();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationFillMode();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationIterationCount();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationName(bool allowQuotedName);
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationPlayState();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty();
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunction();
-
     bool parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result);
 
     // Legacy parsing allows <string>s for animation-name
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(CSSPropertyID, bool useLegacyParsing);
-    PassRefPtrWillBeRawPtr<CSSValueList> parseAnimationPropertyList(CSSPropertyID, bool useLegacyParsing);
-    bool parseAnimationShorthand(bool useLegacyParsing, bool important);
-    bool parseTransitionShorthand(bool important);
+    bool consumeAnimationShorthand(const StylePropertyShorthand&, bool useLegacyParsing, bool important);
 
     bool consumeColumns(bool important);
 
