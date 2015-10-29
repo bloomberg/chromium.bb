@@ -407,6 +407,8 @@
         'browser/sync/glue/sync_start_util.h',
         'browser/sync/ios_chrome_synced_tab_delegate.cc',
         'browser/sync/ios_chrome_synced_tab_delegate.h',
+        'browser/sync/sessions/ios_chrome_local_session_event_router.cc',
+        'browser/sync/sessions/ios_chrome_local_session_event_router.h',
         'browser/sync/sync_observer_bridge.h',
         'browser/sync/sync_observer_bridge.mm',
         'browser/sync/sync_setup_service.cc',
