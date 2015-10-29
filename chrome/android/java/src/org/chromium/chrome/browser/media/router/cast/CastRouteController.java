@@ -538,9 +538,12 @@ public class CastRouteController implements RouteController, MediaNotificationLi
      * Modifies the received MediaStatus message to match the format expected by the client.
      */
     private void sanitizeMediaStatusMessage(JSONObject object) throws JSONException {
+        object.put("sessionId", mSessionId);
+
         JSONArray mediaStatus = object.getJSONArray("status");
         for (int i = 0; i < mediaStatus.length(); ++i) {
             JSONObject status = mediaStatus.getJSONObject(i);
+            status.put("sessionId", mSessionId);
             if (!status.has("supportedMediaCommands")) continue;
 
             JSONArray commands = new JSONArray();
