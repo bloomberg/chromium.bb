@@ -114,6 +114,6 @@ TEST_F(GetPathInfoTest, GenDir) {
   EXPECT_EQ("//out/Debug/gen/ABS_PATH/foo", Call("/foo/bar.txt", "gen_dir"));
 #if defined(OS_WIN)
   EXPECT_EQ("//out/Debug/gen/ABS_PATH/C/foo",
-            Call("/C:/foo/bar.txt", "out_dir"));
+            Call("/C:/foo/bar.txt", "gen_dir"));
 #endif
 }
