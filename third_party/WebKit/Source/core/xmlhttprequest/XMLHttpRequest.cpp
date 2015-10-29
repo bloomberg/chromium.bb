@@ -62,6 +62,7 @@
 #include "core/streams/Stream.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
+#include "platform/FileMetadata.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
@@ -1447,7 +1448,7 @@ PassRefPtr<BlobDataHandle> XMLHttpRequest::createBlobDataHandleFromResponse()
     String filePath = m_response.downloadedFilePath();
     // If we errored out or got no data, we return an empty handle.
     if (!filePath.isEmpty() && m_lengthDownloadedToFile) {
-        blobData->appendFile(filePath);
+        blobData->appendFile(filePath, 0, m_lengthDownloadedToFile, invalidFileTime());
         // FIXME: finalResponseMIMETypeWithFallback() defaults to
         // text/xml which may be incorrect. Replace it with
         // finalResponseMIMEType() after compatibility investigation.

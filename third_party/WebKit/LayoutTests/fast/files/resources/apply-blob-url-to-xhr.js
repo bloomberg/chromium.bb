@@ -55,6 +55,48 @@ function sendXMLHttpRequestAsync(method, url)
     });
 }
 
+function sendXMLHttpRequestAsyncWithBlobSlice(method, url)
+{
+    return new Promise(function (resolve) {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = 'blob';
+
+        var blob_read = false;
+        var onloadend_called = false;
+        xhr.onload = function()
+        {
+            log("Status: " + xhr.status);
+            var blob = xhr.response.slice(0, 1);
+            var reader = new FileReader();
+            reader.addEventListener("loadend", function()
+            {
+                log("First byte of response: " + reader.result);
+                blob_read = true;
+                if (onloadend_called)
+                    resolve();
+            });
+            reader.readAsText(blob);
+        };
+        xhr.onerror = function()
+        {
+            log("Error event is dispatched");
+        };
+        xhr.onloadend = function()
+        {
+            onloadend_called = true;
+            if (blob_read)
+                resolve();
+        };
+
+        xhr.open(method, url, true);
+        try {
+            xhr.send();
+        } catch (error) {
+            log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + replaceUUID(error.message));
+        }
+    });
+}
+
 function runXHRs(file)
 {
     var fileURL = URL.createObjectURL(file);
@@ -76,6 +118,10 @@ function runXHRs(file)
     {
         log("Test that async XMLHttpRequest POST fails.");
         return sendXMLHttpRequestAsync("POST", fileURL);
+    }).then(function()
+    {
+        log("Test the slicing the blob response doesn't crash the browser.")
+        return sendXMLHttpRequestAsyncWithBlobSlice("GET", fileURL);
     }).then(function()
     {
         log("Test that async XMLHttpRequest GET fails after the blob URL is revoked.");

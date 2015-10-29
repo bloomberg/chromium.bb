@@ -34,6 +34,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "core/fileapi/Blob.h"
+#include "platform/FileMetadata.h"
 #include "platform/blob/BlobData.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -47,7 +48,7 @@ WebBlob WebBlob::createFromUUID(const WebString& uuid, const WebString& type, lo
 WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
-    blobData->appendFile(path);
+    blobData->appendFile(path, 0, size, invalidFileTime());
     return Blob::create(BlobDataHandle::create(blobData.release(), size));
 }
 
