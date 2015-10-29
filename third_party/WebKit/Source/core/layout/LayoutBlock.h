@@ -370,14 +370,13 @@ private:
     virtual void removeLeftoverAnonymousBlock(LayoutBlock* child);
 
     static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);
+    void makeChildrenInlineIfPossible();
 
     void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(LineLayoutItem(this), LineLayoutItem(child)); }
 
     void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild) override;
 
     bool isSelfCollapsingBlock() const override;
-
-    void removeAnonymousWrappersIfRequired();
 
     void insertIntoTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
     static void removeFromTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);

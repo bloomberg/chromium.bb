@@ -269,7 +269,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
     LayoutBox::styleDidChange(diff, oldStyle);
 
     if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow()) {
-        toLayoutBlock(parent())->removeAnonymousWrappersIfRequired();
+        toLayoutBlock(parent())->makeChildrenInlineIfPossible();
         // Reparent to an adjacent anonymous block if one is available.
         if (previousSibling() && previousSibling()->isAnonymousBlock())
             toLayoutBlock(parent())->moveChildTo(toLayoutBlock(previousSibling()), this, nullptr, false);
@@ -604,11 +604,15 @@ static bool canMergeContiguousAnonymousBlocks(LayoutObject* oldChild, LayoutObje
     return true;
 }
 
-void LayoutBlock::removeAnonymousWrappersIfRequired()
+void LayoutBlock::makeChildrenInlineIfPossible()
 {
     ASSERT(isLayoutBlockFlow());
-    Vector<LayoutBox*, 16> blocksToRemove;
-    for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+    // Collapsing away anonymous wrappers isn't relevant for the children of anonymous blocks.
+    if (isAnonymousBlock())
+        return;
+
+    Vector<LayoutBlock*, 3> blocksToRemove;
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isFloatingOrOutOfFlowPositioned())
             continue;
 
@@ -621,13 +625,16 @@ void LayoutBlock::removeAnonymousWrappersIfRequired()
         // We are only interested in removing anonymous wrappers if there are inline siblings underneath them.
         if (!child->childrenInline())
             return;
+        // Ruby elements use anonymous wrappers for ruby runs and ruby bases by design, so we don't remove them.
+        if (child->isRubyRun() || child->isRubyBase())
+            return;
 
-        if (child->isAnonymousBlock())
-            blocksToRemove.append(child);
+        blocksToRemove.append(toLayoutBlock(child));
     }
 
     for (size_t i = 0; i < blocksToRemove.size(); i++)
-        collapseAnonymousBlockChild(this, toLayoutBlock(blocksToRemove[i]));
+        collapseAnonymousBlockChild(this, blocksToRemove[i]);
+    setChildrenInline(true);
 }
 
 void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child)
@@ -644,20 +651,6 @@ void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* 
 
     parent->children()->removeChildNode(parent, child, child->hasLayer());
     child->destroy();
-}
-
-static inline bool shouldMakeChildrenInline(const LayoutBlock* block)
-{
-    if (!block->isLayoutBlockFlow())
-        return false;
-    LayoutObject* child = block->firstChild();
-    while (child) {
-        // TODO(rhogan): If we encounter anonymous blocks with inline children we should fold them in here.
-        if (!child->isFloatingOrOutOfFlowPositioned())
-            return false;
-        child = child->nextSibling();
-    }
-    return true;
 }
 
 void LayoutBlock::removeChild(LayoutObject* oldChild)
@@ -762,9 +755,9 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             setContinuation(nullptr);
             destroy();
         }
-    } else if (!beingDestroyed() && !oldChild->isFloatingOrOutOfFlowPositioned() && shouldMakeChildrenInline(this)) {
+    } else if (!beingDestroyed() && !oldChild->isFloatingOrOutOfFlowPositioned() && isLayoutBlockFlow()) {
         // If the child we're removing means that we can now treat all children as inline without the need for anonymous blocks, then do that.
-        setChildrenInline(true);
+        makeChildrenInlineIfPossible();
     }
 }
 
