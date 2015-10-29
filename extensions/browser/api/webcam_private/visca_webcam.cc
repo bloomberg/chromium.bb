@@ -95,6 +95,11 @@ int ShiftResponseLowerBits(char c, size_t shift) {
   return static_cast<int>(c & 0x0F) << shift;
 }
 
+bool CanBuildResponseInt(const std::vector<char>& response,
+                         size_t start_index) {
+  return response.size() >= start_index + 4;
+}
+
 int BuildResponseInt(const std::vector<char>& response, size_t start_index) {
   return ShiftResponseLowerBits(response[start_index], 12) +
          ShiftResponseLowerBits(response[start_index + 1], 8) +
@@ -126,25 +131,23 @@ int GetPositiveValue(int value) {
 
 namespace extensions {
 
-ViscaWebcam::ViscaWebcam(const std::string& path,
-                         const std::string& extension_id)
-    : path_(path),
-      extension_id_(extension_id),
-      pan_(0),
-      tilt_(0),
-      weak_ptr_factory_(this) {}
+ViscaWebcam::ViscaWebcam() : pan_(0), tilt_(0), weak_ptr_factory_(this) {}
 
 ViscaWebcam::~ViscaWebcam() {
 }
 
-void ViscaWebcam::Open(const OpenCompleteCallback& open_callback) {
+void ViscaWebcam::Open(const std::string& path,
+                       const std::string& extension_id,
+                       const OpenCompleteCallback& open_callback) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ViscaWebcam::OpenOnIOThread, weak_ptr_factory_.GetWeakPtr(),
-                 open_callback));
+                 path, extension_id, open_callback));
 }
 
-void ViscaWebcam::OpenOnIOThread(const OpenCompleteCallback& open_callback) {
+void ViscaWebcam::OpenOnIOThread(const std::string& path,
+                                 const std::string& extension_id,
+                                 const OpenCompleteCallback& open_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   api::serial::ConnectionOptions options;
@@ -161,7 +164,7 @@ void ViscaWebcam::OpenOnIOThread(const OpenCompleteCallback& open_callback) {
   options.parity_bit = api::serial::PARITY_BIT_NO;
   options.stop_bits = api::serial::STOP_BITS_ONE;
 
-  serial_connection_.reset(new SerialConnection(path_, extension_id_));
+  serial_connection_.reset(new SerialConnection(path, extension_id));
   serial_connection_->Open(
       options, base::Bind(&ViscaWebcam::OnConnected,
                           weak_ptr_factory_.GetWeakPtr(), open_callback));
@@ -221,6 +224,7 @@ void ViscaWebcam::Send(const std::vector<char>& command,
 void ViscaWebcam::OnSendCompleted(const CommandCompleteCallback& callback,
                                   int bytes_sent,
                                   api::serial::SendError error) {
+  // TODO(xdai): Check |bytes_sent|?
   if (error == api::serial::SEND_ERROR_NONE) {
     ReceiveLoop(callback);
   } else {
@@ -239,34 +243,39 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
                                      api::serial::ReceiveError error) {
   data_buffer_.insert(data_buffer_.end(), data.begin(), data.end());
 
-  if (error == api::serial::RECEIVE_ERROR_NONE) {
-    // Loop until encounter the terminator.
-    if (static_cast<int>(data_buffer_.back()) != kViscaTerminator) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
-                                weak_ptr_factory_.GetWeakPtr(), callback));
-    } else {
-      // Clear |data_buffer_|.
-      std::vector<char> response;
-      response.swap(data_buffer_);
-
-      if ((static_cast<int>(response[1]) & 0xF0) == kViscaResponseError) {
-        callback.Run(false, response);
-      } else if ((static_cast<int>(response[1]) & 0xF0) != kViscaResponseAck &&
-                 (static_cast<int>(response[1]) & 0xFF) !=
-                     kViscaResponseNetworkChange) {
-        callback.Run(true, response);
-      } else {
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
-      }
-    }
-  } else {
+  if (error != api::serial::RECEIVE_ERROR_NONE || data_buffer_.empty()) {
     // Clear |data_buffer_|.
     std::vector<char> response;
     response.swap(data_buffer_);
     callback.Run(false, response);
+    return;
+  }
+
+  // Success case. If waiting for more data, then loop until encounter the
+  // terminator.
+  if (data_buffer_.back() != kViscaTerminator) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
+                              weak_ptr_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  // Success case, and a complete response has been received.
+  // Clear |data_buffer_|.
+  std::vector<char> response;
+  response.swap(data_buffer_);
+
+  if (response.size() < 2 ||
+      (static_cast<int>(response[1]) & 0xF0) == kViscaResponseError) {
+    callback.Run(false, response);
+  } else if ((static_cast<int>(response[1]) & 0xF0) != kViscaResponseAck &&
+             (static_cast<int>(response[1]) & 0xFF) !=
+                 kViscaResponseNetworkChange) {
+    callback.Run(true, response);
+  } else {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
+                              weak_ptr_factory_.GetWeakPtr(), callback));
   }
 }
 
@@ -276,58 +285,73 @@ void ViscaWebcam::OnCommandCompleted(const SetPTZCompleteCallback& callback,
   // TODO(xdai): Error handling according to |response|.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, success));
-  commands_.pop_front();
-
-  // If there are pending commands, process the next one.
-  if (!commands_.empty()) {
-    const std::vector<char> next_command = commands_.front().first;
-    const CommandCompleteCallback next_callback = commands_.front().second;
-    serial_connection_->Send(
-        next_command,
-        base::Bind(&ViscaWebcam::OnSendCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), next_callback));
-  }
+  ProcessNextCommand();
 }
 
 void ViscaWebcam::OnInquiryCompleted(InquiryType type,
                                      const GetPTZCompleteCallback& callback,
                                      bool success,
                                      const std::vector<char>& response) {
-  int value = 0;
   if (!success) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, false, value));
-  } else {
-    switch (type) {
-      case INQUIRY_PAN:
-        // See kGetPanTiltCommand for the format of response.
-        pan_ = BuildResponseInt(response, 2);
-        value = GetPositiveValue(pan_);
-        break;
-      case INQUIRY_TILT:
-        // See kGetPanTiltCommand for the format of response.
-        tilt_ = BuildResponseInt(response, 6);
-        value = GetPositiveValue(tilt_);
-        break;
-      case INQUIRY_ZOOM:
-        // See kGetZoomCommand for the format of response.
-        value = BuildResponseInt(response, 2);
-        break;
-    }
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, true, value));
+                            base::Bind(callback, false, 0));
+    ProcessNextCommand();
+    return;
   }
+
+  bool is_valid_response = false;
+  switch (type) {
+    case INQUIRY_PAN:
+      is_valid_response = CanBuildResponseInt(response, 2);
+      break;
+    case INQUIRY_TILT:
+      is_valid_response = CanBuildResponseInt(response, 6);
+      break;
+    case INQUIRY_ZOOM:
+      is_valid_response = CanBuildResponseInt(response, 2);
+      break;
+  }
+  if (!is_valid_response) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, false, 0));
+    ProcessNextCommand();
+    return;
+  }
+
+  int value = 0;
+  switch (type) {
+    case INQUIRY_PAN:
+      // See kGetPanTiltCommand for the format of response.
+      pan_ = BuildResponseInt(response, 2);
+      value = GetPositiveValue(pan_);
+      break;
+    case INQUIRY_TILT:
+      // See kGetPanTiltCommand for the format of response.
+      tilt_ = BuildResponseInt(response, 6);
+      value = GetPositiveValue(tilt_);
+      break;
+    case INQUIRY_ZOOM:
+      // See kGetZoomCommand for the format of response.
+      value = BuildResponseInt(response, 2);
+      break;
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, true, value));
+  ProcessNextCommand();
+}
+
+void ViscaWebcam::ProcessNextCommand() {
   commands_.pop_front();
 
+  if (commands_.empty())
+    return;
+
   // If there are pending commands, process the next one.
-  if (!commands_.empty()) {
-    const std::vector<char> next_command = commands_.front().first;
-    const CommandCompleteCallback next_callback = commands_.front().second;
-    serial_connection_->Send(
-        next_command,
-        base::Bind(&ViscaWebcam::OnSendCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), next_callback));
-  }
+  const std::vector<char> next_command = commands_.front().first;
+  const CommandCompleteCallback next_callback = commands_.front().second;
+  serial_connection_->Send(
+      next_command, base::Bind(&ViscaWebcam::OnSendCompleted,
+                               weak_ptr_factory_.GetWeakPtr(), next_callback));
 }
 
 void ViscaWebcam::PostOpenFailureTask(
@@ -387,7 +411,7 @@ void ViscaWebcam::SetTilt(int value,
 }
 
 void ViscaWebcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
-  int actual_value = std::min(value, 0);
+  int actual_value = std::max(value, 0);
   std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetZoomCommand);
   ResponseToCommand(&command, 4, actual_value);
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
@@ -457,6 +481,15 @@ void ViscaWebcam::Reset(bool pan,
     const int kDefaultZoom = 100;
     SetZoom(kDefaultZoom, callback);
   }
+}
+
+void ViscaWebcam::OpenForTesting(
+    scoped_ptr<SerialConnection> serial_connection) {
+  serial_connection_ = serial_connection.Pass();
+}
+
+SerialConnection* ViscaWebcam::GetSerialConnectionForTesting() {
+  return serial_connection_.get();
 }
 
 }  // namespace extensions

@@ -201,18 +201,16 @@ test("extensions_unittests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
-  data_deps = [ "//third_party/mesa:osmesa" ]
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
 
   if (is_win) {
     deps += [ "//base/allocator" ]
   }
 
   if (is_chromeos) {
-    sources += [
-      # TODO(rockot): There are two implementations of VpnServiceFactory, a
-      # stub in app_shell and a real one in Chrome. This is wrong.
-      "shell/browser/api/vpn_provider/vpn_service_factory.cc",
-    ]
+    sources += [ "browser/api/webcam_private/visca_webcam_unittest.cc" ]
 
     deps += [ "//chromeos:test_support" ]
   }
@@ -265,7 +263,9 @@ test("extensions_browsertests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
-  data_deps = [ "//third_party/mesa:osmesa" ]
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
 
   if (is_win) {
     deps += [ "//base/allocator" ]
