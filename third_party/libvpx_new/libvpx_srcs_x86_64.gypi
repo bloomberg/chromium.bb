@@ -349,6 +349,7 @@
     '<(libvpx_source)/vpx_dsp/x86/inv_txfm_ssse3_x86_64.asm',
     '<(libvpx_source)/vpx_dsp/x86/inv_wht_sse2.asm',
     '<(libvpx_source)/vpx_dsp/x86/loopfilter_mmx.asm',
+    '<(libvpx_source)/vpx_dsp/x86/quantize_avx_x86_64.asm',
     '<(libvpx_source)/vpx_dsp/x86/quantize_ssse3_x86_64.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad4d_sse2.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad_mmx.asm',
