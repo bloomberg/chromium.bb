@@ -41,6 +41,7 @@
       'chromevox/background/keymaps/classic_keymap.json',
       'chromevox/background/keymaps/experimental.json',
       'chromevox/background/keymaps/flat_keymap.json',
+      'chromevox/background/keymaps/next_keymap.json',
     ],
     'chromevox_assets_chromevox_background_mathmaps_functions': [
       'chromevox/background/mathmaps/functions/algebra.json',

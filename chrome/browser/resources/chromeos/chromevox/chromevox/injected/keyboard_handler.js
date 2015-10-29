@@ -8,7 +8,6 @@ goog.require('cvox.ChromeVox');
 goog.require('cvox.KeyMap');
 goog.require('cvox.KeySequence');
 goog.require('cvox.KeyUtil');
-goog.require('cvox.KeyboardHelpWidget');
 
 /**
  * @fileoverview Handles user keyboard input events.
@@ -26,7 +25,7 @@ cvox.ChromeVoxKbHandler.handlerKeyMap;
 /**
  * Handler for ChromeVox commands. Returns undefined if the command does not
  * exist. Otherwise, returns the result of executing the command.
- * @type {function(string) : boolean|undefined}
+ * @type {function(string): boolean|undefined}
  */
 cvox.ChromeVoxKbHandler.commandHandler;
 

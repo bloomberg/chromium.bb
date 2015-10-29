@@ -1826,6 +1826,9 @@
       <message desc="Name of the classic key map." name="IDS_CHROMEVOX_KEYMAP_CLASSIC">
         Classic keymap
       </message>
+      <message desc="Name of the key map for release of ChromeVox named Next." name="IDS_CHROMEVOX_KEYMAP_NEXT">
+        Next keymap
+      </message>
       <message desc="Name of the flat key map." name="IDS_CHROMEVOX_KEYMAP_FLAT">
         Flat keymap
       </message>

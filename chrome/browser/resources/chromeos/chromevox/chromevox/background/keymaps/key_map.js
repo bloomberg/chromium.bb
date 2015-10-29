@@ -74,6 +74,9 @@ cvox.KeyMap.AVAILABLE_MAP_INFO = {
 'keymap_flat': {
     'file': 'flat_keymap.json'
   },
+'keymap_next': {
+    'file': 'next_keymap.json'
+  },
 'keymap_experimental': {
     'file': 'experimental.json'
   }
@@ -323,6 +326,16 @@ cvox.KeyMap.fromDefaults = function() {
   return /** @type {!cvox.KeyMap} */ (
     cvox.KeyMap.fromPath(cvox.KeyMap.KEYMAP_PATH +
         cvox.KeyMap.AVAILABLE_MAP_INFO['keymap_classic'].file));
+};
+
+
+/**
+ * Convenience method for getting a ChromeVox Next key map.
+ * @return {cvox.KeyMap} The Next key map.
+ */
+cvox.KeyMap.fromNext = function() {
+  return cvox.KeyMap.fromPath(cvox.KeyMap.KEYMAP_PATH +
+      cvox.KeyMap.AVAILABLE_MAP_INFO['keymap_next'].file);
 };
 
 

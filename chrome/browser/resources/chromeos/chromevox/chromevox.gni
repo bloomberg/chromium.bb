@@ -125,7 +125,6 @@ chromevox_modules = [
   "cvox2/background/automation_predicate.js",
   "cvox2/background/automation_util.js",
   "cvox2/background/background.js",
-  "cvox2/background/classic_compatibility.js",
   "cvox2/background/cursors.js",
   "cvox2/background/earcon_engine.js",
   "cvox2/background/next_earcons.js",

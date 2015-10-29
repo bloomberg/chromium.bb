@@ -12,13 +12,13 @@ goog.provide('global');
 
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
-goog.require('ClassicCompatibility');
 goog.require('NextEarcons');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxEditableTextBase');
+goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ClassicEarcons');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.NavBraille');
@@ -65,9 +65,6 @@ Background = function() {
    * @private
    */
   this.mode_ = ChromeVoxMode.COMPAT;
-
-  /** @type {!ClassicCompatibility} @private */
-  this.compat_ = new ClassicCompatibility();
 
   // Manually bind all functions to |this|.
   for (var func in this) {
@@ -136,6 +133,13 @@ Background = function() {
       }
     }).bind(this)
   });
+
+  document.addEventListener(
+      'keydown', cvox.ChromeVoxKbHandler.basicKeyDownActionsListener, true);
+  cvox.ChromeVoxKbHandler.commandHandler = this.onGotCommand.bind(this);
+
+  // Classic keymap.
+  cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
 };
 
 Background.prototype = {
@@ -170,18 +174,16 @@ Background.prototype = {
   },
 
   /**
-   * Handles chrome.commands.onCommand.
+   * Handles ChromeVox Next commands.
    * @param {string} command
-   * @param {boolean=} opt_skipCompat Whether to skip compatibility checks.
+   * @return {boolean} True if the command should propagate.
    */
-  onGotCommand: function(command, opt_skipCompat) {
+  onGotCommand: function(command) {
     if (!this.currentRange_)
-      return;
+      return true;
 
-    if (!opt_skipCompat && this.mode_ === ChromeVoxMode.COMPAT) {
-      if (this.compat_.onGotCommand(command))
-        return;
-    }
+    if (this.mode_ == ChromeVoxMode.CLASSIC)
+      return true;
 
     var current = this.currentRange_;
     var dir = Dir.FORWARD;
@@ -200,9 +202,11 @@ Background.prototype = {
       case 'previousWord':
         current = current.move(cursors.Unit.WORD, Dir.BACKWARD);
         break;
+      case 'forward':
       case 'nextLine':
         current = current.move(cursors.Unit.LINE, Dir.FORWARD);
         break;
+      case 'backward':
       case 'previousLine':
         current = current.move(cursors.Unit.LINE, Dir.BACKWARD);
         break;
@@ -296,9 +300,11 @@ Background.prototype = {
         pred = AutomationPredicate.visitedLink;
         predErrorMsg = 'no_previous_visited_link';
         break;
+      case 'right':
       case 'nextElement':
         current = current.move(cursors.Unit.DOM_NODE, Dir.FORWARD);
         break;
+      case 'left':
       case 'previousElement':
         current = current.move(cursors.Unit.DOM_NODE, Dir.BACKWARD);
         break;
@@ -318,6 +324,7 @@ Background.prototype = {
         if (node)
           current = cursors.Range.fromNode(node);
         break;
+      case 'forceClickOnCurrentItem':
       case 'doDefault':
         if (this.currentRange_) {
           var actionNode = this.currentRange_.start.node;
@@ -327,7 +334,7 @@ Background.prototype = {
         }
         // Skip all other processing; if focus changes, we should get an event
         // for that.
-        return;
+        return false;
       case 'continuousRead':
         global.isReadingContinuously = true;
         var continueReading = function(prevRange) {
@@ -347,14 +354,14 @@ Background.prototype = {
         }.bind(this);
 
         continueReading(null);
-        return;
+        return false;
       case 'showContextMenu':
         if (this.currentRange_) {
           var actionNode = this.currentRange_.start.node;
           if (actionNode.role == RoleType.inlineTextBox)
             actionNode = actionNode.parent;
           actionNode.showContextMenu();
-          return;
+          return false;
         }
         break;
       case 'showOptionsPage':
@@ -380,6 +387,8 @@ Background.prototype = {
         cvox.ChromeVox.tts.speak(isClassic ?
             'classic' : 'next', cvox.QueueMode.FLUSH, {doNotInterrupt: true});
         break;
+      default:
+        return true;
     }
 
     if (pred) {
@@ -393,7 +402,7 @@ Background.prototype = {
           cvox.ChromeVox.tts.speak(Msgs.getMsg(predErrorMsg),
                                    cvox.QueueMode.FLUSH);
         }
-        return;
+        return false;
       }
     }
 
@@ -411,6 +420,8 @@ Background.prototype = {
               this.currentRange_, prevRange, Output.EventType.NAVIGATE)
           .go();
     }
+
+    return false;
   },
 
   /**
@@ -425,22 +436,22 @@ Background.prototype = {
 
     switch (evt.command) {
       case cvox.BrailleKeyCommand.PAN_LEFT:
-        this.onGotCommand('previousElement', true);
+        this.onGotCommand('previousElement');
         break;
       case cvox.BrailleKeyCommand.PAN_RIGHT:
-        this.onGotCommand('nextElement', true);
+        this.onGotCommand('nextElement');
         break;
       case cvox.BrailleKeyCommand.LINE_UP:
-        this.onGotCommand('previousLine', true);
+        this.onGotCommand('previousLine');
         break;
       case cvox.BrailleKeyCommand.LINE_DOWN:
-        this.onGotCommand('nextLine', true);
+        this.onGotCommand('nextLine');
         break;
       case cvox.BrailleKeyCommand.TOP:
-        this.onGotCommand('goToBeginning', true);
+        this.onGotCommand('goToBeginning');
         break;
       case cvox.BrailleKeyCommand.BOTTOM:
-        this.onGotCommand('goToEnd', true);
+        this.onGotCommand('goToEnd');
         break;
       case cvox.BrailleKeyCommand.ROUTING:
         this.brailleRoutingCommand_(
@@ -765,17 +776,10 @@ Background.prototype = {
    *                                     defaults to false.
    */
   setChromeVoxMode: function(mode, opt_injectClassic) {
-    if (mode === ChromeVoxMode.NEXT ||
-        mode === ChromeVoxMode.COMPAT ||
-        mode === ChromeVoxMode.FORCE_NEXT) {
-      if (chrome.commands &&
-          !chrome.commands.onCommand.hasListener(this.onGotCommand))
-        chrome.commands.onCommand.addListener(this.onGotCommand);
-    } else {
-      if (chrome.commands &&
-          chrome.commands.onCommand.hasListener(this.onGotCommand))
-        chrome.commands.onCommand.removeListener(this.onGotCommand);
-    }
+    if (mode === ChromeVoxMode.CLASSIC || mode === ChromeVoxMode.COMPAT)
+      cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
+    else
+      cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
 
     chrome.tabs.query({active: true}, function(tabs) {
       if (mode === ChromeVoxMode.CLASSIC) {

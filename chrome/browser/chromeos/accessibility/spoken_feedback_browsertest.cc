@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
 
   // Compat next button.
   SendKeyPressWithSearchAndShift(ui::VKEY_N);
-  SendKeyPressWithSearchAndShift(ui::VKEY_B);
+  SendKeyPress(ui::VKEY_B);
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 
@@ -386,6 +386,11 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   }
   SendKeyPress(ui::VKEY_RETURN);
 
+  while (true) {
+    if (base::MatchPattern(speech_monitor_.GetNextUtterance(), "*Bluetooth"))
+      break;
+  }
+
   // Navigate to return to previous menu button and press it.
   while (true) {
     SendKeyPress(ui::VKEY_TAB);
@@ -396,7 +401,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   SendKeyPress(ui::VKEY_RETURN);
 
   while (true) {
-    std::string utterance = speech_monitor_.GetNextUtterance();
     if (base::MatchPattern(speech_monitor_.GetNextUtterance(), "*Bluetooth"))
       break;
   }

@@ -1,0 +1,296 @@
+{
+  "bindings": [
+    {
+      "command": "previousElement",
+      "sequence": {
+        "keys": {
+          "keyCode": [37],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousLine",
+      "sequence": {
+        "keys": {
+          "keyCode": [38],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextElement",
+      "sequence": {
+        "keys": {
+          "keyCode": [39],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextLine",
+      "sequence": {
+        "keys": {
+          "keyCode": [40],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextCharacter",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [39]
+        }
+      }
+    },
+    {
+      "command": "previousCharacter",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [37]
+        }
+      }
+    },
+    {
+      "command": "nextWord",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [39],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousWord",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [37],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextButton",
+      "sequence": {
+        "keys": {
+          "keyCode": [66],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousButton",
+      "sequence": {
+        "keys": {
+          "keyCode": [66],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextCheckBox",
+      "sequence": {
+        "keys": {
+          "keyCode": [88],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousCheckBox",
+      "sequence": {
+        "keys": {
+          "keyCode": [88],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextCombobox",
+      "sequence": {
+        "keys": {
+          "keyCode": [67],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousCombobox",
+      "sequence": {
+        "keys": {
+          "keyCode": [67],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextEditText",
+      "sequence": {
+        "keys": {
+          "keyCode": [69],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousEditText",
+      "sequence": {
+        "keys": {
+          "keyCode": [69],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextFormField",
+      "sequence": {
+        "keys": {
+          "keyCode": [70],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousFormField",
+      "sequence": {
+        "keys": {
+          "keyCode": [70],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextHeading",
+      "sequence": {
+        "keys": {
+          "keyCode": [72],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousHeading",
+      "sequence": {
+        "keys": {
+          "keyCode": [72],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextLink",
+      "sequence": {
+        "keys": {
+          "keyCode": [67],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousLink",
+      "sequence": {
+        "keys": {
+          "keyCode": [76],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextTable",
+      "sequence": {
+        "keys": {
+          "keyCode": [84],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousTable",
+      "sequence": {
+        "keys": {
+          "keyCode": [84],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextVisitedLink",
+      "sequence": {
+        "keys": {
+          "keyCode": [86],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "previousVisitedLink",
+      "sequence": {
+        "keys": {
+          "keyCode": [86],
+          "metaKey": [true],
+          "shiftKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToEnd",
+      "sequence": {
+        "keys": {
+          "keyCode": [39],
+          "metaKey": [true],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "goToBeginning",
+      "sequence": {
+        "keys": {
+          "keyCode": [37],
+          "metaKey": [true],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "doDefault",
+      "sequence": {
+        "keys": {
+          "keyCode": [32],
+          "metaKey": [true]
+        }
+      }
+    },
+    {
+      "command": "showContextMenu",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [32]
+        }
+      }
+    },
+    {
+      "command": "continuousRead",
+      "sequence": {
+        "keys": {
+          "keyCode": [82],
+          "metaKey": [true]
+        }
+      }
+    }
+  ]
+}

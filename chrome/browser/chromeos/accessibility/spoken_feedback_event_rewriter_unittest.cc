@@ -100,39 +100,6 @@ class SpokenFeedbackEventRewriterTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(SpokenFeedbackEventRewriterTest);
 };
 
-TEST_F(SpokenFeedbackEventRewriterTest, PressAndReleaseCvoxKeys) {
-  // Mock ChromeVox enabled.
-  delegate_->set_is_spoken_feedback_enabled(true);
-
-  // Send Search+Shift.
-  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
-  ASSERT_EQ(1U, event_capturer_.captured_events().size());
-  generator_->PressKey(ui::VKEY_SHIFT, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
-  ASSERT_EQ(2U, event_capturer_.captured_events().size());
-
-  // Mock successful commands lookup and dispatch.
-  delegate_->set_dispatch_result(true);
-
-  // Send the right arrow key, which gets successfully looked up and dispatched
-  // as a ChromeVox command, so the event gets discarded.
-  generator_->PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
-  ASSERT_EQ(2U, event_capturer_.captured_events().size());
-
-  event_capturer_.Reset();
-
-  // Released keys previously captured get eaten even without successful
-  // dispatch.
-  delegate_->set_dispatch_result(false);
-  generator_->ReleaseKey(ui::VKEY_RIGHT,
-                         ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
-  ASSERT_EQ(0U, event_capturer_.captured_events().size());
-
-  // Modifiers were not discarded, so we let them continue.
-  generator_->ReleaseKey(ui::VKEY_SHIFT, ui::EF_COMMAND_DOWN);
-  generator_->ReleaseKey(ui::VKEY_LWIN, 0);
-  ASSERT_EQ(2U, event_capturer_.captured_events().size());
-}
-
 TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
   // Send Search+Shift+Right.
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
