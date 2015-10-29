@@ -50,7 +50,7 @@ private:
     void clearCache() const;
     bool isCacheValid(const InterpolationEnvironment&, const UnderlyingValue&) const;
     bool isNeutralKeyframeActive() const;
-    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment*, const UnderlyingValue&) const;
+    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment&, const UnderlyingValue&) const;
     PassOwnPtr<InterpolationValue> convertSingleKeyframe(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&) const;
     void setFlagIfInheritUsed(InterpolationEnvironment&) const;
     double underlyingFraction() const;

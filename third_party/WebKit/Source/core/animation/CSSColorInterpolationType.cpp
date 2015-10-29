@@ -173,12 +173,12 @@ PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertInitial() 
     return convertStyleColorPair(initialColor, initialColor);
 }
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state || !state->parentStyle())
+    if (!state.parentStyle())
         return nullptr;
     // Visited color can never explicitly inherit from parent visited color so only use the unvisited color.
-    const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *state->parentStyle());
+    const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *state.parentStyle());
     conversionCheckers.append(ParentColorChecker::create(*this, cssProperty(), inheritedColor));
     return convertStyleColorPair(inheritedColor, inheritedColor);
 }
@@ -189,7 +189,7 @@ enum InterpolableColorPairIndex {
     InterpolableColorPairIndexCount,
 };
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (cssProperty() == CSSPropertyColor && value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
         return maybeConvertInherit(state, conversionCheckers);

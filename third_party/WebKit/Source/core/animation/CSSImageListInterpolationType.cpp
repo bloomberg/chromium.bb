@@ -98,18 +98,18 @@ private:
     StyleImageList m_inheritedImageList;
 };
 
-PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state || !state->parentStyle())
+    if (!state.parentStyle())
         return nullptr;
 
     StyleImageList inheritedImageList;
-    ImageListPropertyFunctions::getImageList(cssProperty(), *state->parentStyle(), inheritedImageList);
+    ImageListPropertyFunctions::getImageList(cssProperty(), *state.parentStyle(), inheritedImageList);
     conversionCheckers.append(ParentImageListChecker::create(*this, cssProperty(), inheritedImageList));
     return maybeConvertStyleImageList(inheritedImageList);
 }
 
-PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSImageListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
         return nullptr;

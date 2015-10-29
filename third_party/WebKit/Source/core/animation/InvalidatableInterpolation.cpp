@@ -25,7 +25,7 @@ void InvalidatableInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedPairConversion is null.
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment* environment, const UnderlyingValue& underlyingValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
 {
     ASSERT(m_currentFraction != 0 && m_currentFraction != 1);
     for (const auto& interpolationType : m_interpolationTypes) {
@@ -47,7 +47,7 @@ PassOwnPtr<InterpolationValue> InvalidatableInterpolation::convertSingleKeyframe
     for (const auto& interpolationType : m_interpolationTypes) {
         if (keyframe.isNeutral() && underlyingValue->type() != *interpolationType)
             continue;
-        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &environment, underlyingValue, m_conversionCheckers);
+        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, environment, underlyingValue, m_conversionCheckers);
         if (result) {
             ASSERT(result->type() == *interpolationType);
             return result.release();
@@ -114,7 +114,7 @@ const InterpolationValue* InvalidatableInterpolation::ensureValidInterpolation(c
     } else if (m_currentFraction == 1) {
         m_cachedValue = convertSingleKeyframe(*m_endKeyframe, environment, underlyingValue);
     } else {
-        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(&environment, underlyingValue);
+        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(environment, underlyingValue);
         if (pairwiseConversion) {
             m_cachedValue = pairwiseConversion->initialValue();
             m_cachedPairConversion = pairwiseConversion.release();

@@ -43,7 +43,7 @@ public:
     };
     using ConversionCheckers = Vector<OwnPtr<ConversionChecker>>;
 
-    virtual PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment* environment, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
+    virtual PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
     {
         OwnPtr<InterpolationValue> startValue = maybeConvertSingle(startKeyframe, environment, underlyingValue, conversionCheckers);
         if (!startValue)
@@ -54,7 +54,7 @@ public:
         return mergeSingleConversions(*startValue, *endValue);
     }
 
-    virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment*, const UnderlyingValue&, ConversionCheckers&) const = 0;
+    virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const = 0;
 
     virtual PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const = 0;
 

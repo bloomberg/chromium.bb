@@ -71,16 +71,16 @@ private:
     RefPtr<ShadowList> m_shadowList;
 };
 
-PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state || !state->parentStyle())
+    if (!state.parentStyle())
         return nullptr;
-    const ShadowList* parentShadowList = ShadowListPropertyFunctions::getShadowList(cssProperty(), *state->parentStyle());
+    const ShadowList* parentShadowList = ShadowListPropertyFunctions::getShadowList(cssProperty(), *state.parentStyle());
     conversionCheckers.append(ParentShadowListChecker::create(*this, cssProperty(), const_cast<ShadowList*>(parentShadowList))); // Take ref.
-    return convertShadowList(parentShadowList, state->parentStyle()->effectiveZoom());
+    return convertShadowList(parentShadowList, state.parentStyle()->effectiveZoom());
 }
 
-PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSShadowListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
         return createNeutralValue();

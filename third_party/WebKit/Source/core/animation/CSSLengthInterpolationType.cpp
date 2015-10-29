@@ -147,18 +147,18 @@ PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertInitial()
     return maybeConvertLength(initialLength, 1);
 }
 
-PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state || !state->parentStyle())
+    if (!state.parentStyle())
         return nullptr;
     Length inheritedLength;
-    if (!LengthPropertyFunctions::getLength(cssProperty(), *state->parentStyle(), inheritedLength))
+    if (!LengthPropertyFunctions::getLength(cssProperty(), *state.parentStyle(), inheritedLength))
         return nullptr;
     conversionCheckers.append(ParentLengthChecker::create(*this, cssProperty(), inheritedLength));
-    return maybeConvertLength(inheritedLength, effectiveZoom(*state->parentStyle()));
+    return maybeConvertLength(inheritedLength, effectiveZoom(*state.parentStyle()));
 }
 
-PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSLengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers& conversionCheckers) const
 {
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID()) {
         CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();

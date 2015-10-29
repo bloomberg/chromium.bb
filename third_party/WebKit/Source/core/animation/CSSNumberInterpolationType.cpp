@@ -57,18 +57,18 @@ PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInitial()
     return createNumberValue(initialNumber);
 }
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state || !state->parentStyle())
+    if (!state.parentStyle())
         return nullptr;
     double inheritedNumber;
-    if (!NumberPropertyFunctions::getNumber(cssProperty(), *state->parentStyle(), inheritedNumber))
+    if (!NumberPropertyFunctions::getNumber(cssProperty(), *state.parentStyle(), inheritedNumber))
         return nullptr;
     conversionCheckers.append(ParentNumberChecker::create(*this, cssProperty(), inheritedNumber));
     return createNumberValue(inheritedNumber);
 }
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
     if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isNumber())
         return nullptr;

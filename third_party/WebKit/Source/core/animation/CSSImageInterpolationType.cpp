@@ -184,19 +184,19 @@ private:
     RefPtrWillBePersistent<StyleImage> m_inheritedImage;
 };
 
-PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state || !state->parentStyle())
+    if (!state.parentStyle())
         return nullptr;
 
-    const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(cssProperty(), *state->parentStyle());
+    const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(cssProperty(), *state.parentStyle());
     StyleImage* refableImage = const_cast<StyleImage*>(inheritedImage);
     conversionCheckers.append(ParentImageChecker::create(*this, cssProperty(), refableImage));
     InterpolationComponent component = maybeConvertStyleImage(inheritedImage, true);
     return component ? InterpolationValue::create(*this, component) : nullptr;
 }
 
-PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
     InterpolationComponent component = maybeConvertCSSValue(value, true);
     return component ? InterpolationValue::create(*this, component) : nullptr;

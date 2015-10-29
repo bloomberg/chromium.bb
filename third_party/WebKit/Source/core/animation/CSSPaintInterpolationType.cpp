@@ -66,12 +66,12 @@ private:
     const StyleColor m_color;
 };
 
-PassOwnPtr<InterpolationValue> CSSPaintInterpolationType::maybeConvertInherit(const StyleResolverState* state, ConversionCheckers& conversionCheckers) const
+PassOwnPtr<InterpolationValue> CSSPaintInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    if (!state || !state->parentStyle())
+    if (!state.parentStyle())
         return nullptr;
     StyleColor parentColor;
-    if (!PaintPropertyFunctions::getColor(cssProperty(), *state->parentStyle(), parentColor)) {
+    if (!PaintPropertyFunctions::getColor(cssProperty(), *state.parentStyle(), parentColor)) {
         conversionCheckers.append(ParentPaintChecker::create(*this, cssProperty()));
         return nullptr;
     }
@@ -79,7 +79,7 @@ PassOwnPtr<InterpolationValue> CSSPaintInterpolationType::maybeConvertInherit(co
     return InterpolationValue::create(*this, CSSColorInterpolationType::createInterpolableColor(parentColor));
 }
 
-PassOwnPtr<InterpolationValue> CSSPaintInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtr<InterpolationValue> CSSPaintInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
     OwnPtr<InterpolableValue> interpolableColor = CSSColorInterpolationType::maybeCreateInterpolableColor(value);
     if (!interpolableColor)
