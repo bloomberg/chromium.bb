@@ -72,7 +72,7 @@ def _BatteryStatus(device, blacklist):
       if not battery.GetCharging():
         battery.SetCharging(True)
       if blacklist:
-        blacklist.Extend([device.adb.GetDeviceSerial()])
+        blacklist.Extend([device.adb.GetDeviceSerial()], reason='low_battery')
 
   except device_errors.CommandFailedError:
     logging.exception('Failed to get battery information for %s',
@@ -173,16 +173,16 @@ def DeviceStatus(devices, blacklist):
           logging.exception('Failure while getting device status for %s.',
                             str(device))
           if blacklist:
-            blacklist.Extend([serial])
+            blacklist.Extend([serial], reason='status_check_failure')
 
         except device_errors.CommandTimeoutError:
           logging.exception('Timeout while getting device status for %s.',
                             str(device))
           if blacklist:
-            blacklist.Extend([serial])
+            blacklist.Extend([serial], reason='status_check_timeout')
 
     elif blacklist:
-      blacklist.Extend([serial])
+      blacklist.Extend([serial], reason='offline')
 
     device_status['blacklisted'] = _IsBlacklisted(serial, blacklist)
 
@@ -238,7 +238,7 @@ def RecoverDevices(devices, blacklist):
     except (IOError, device_errors.DeviceUnreachableError):
       logging.exception('Unable to reset USB for %s.', serial)
       if blacklist:
-        blacklist.Extend([serial])
+        blacklist.Extend([serial], reason='usb_failure')
 
   def blacklisting_recovery(device):
     if _IsBlacklisted(device.adb.GetDeviceSerial(), blacklist):
@@ -268,22 +268,26 @@ def RecoverDevices(devices, blacklist):
       except device_errors.CommandFailedError:
         logging.exception('Failed to reboot %s.', str(device))
         if blacklist:
-          blacklist.Extend([device.adb.GetDeviceSerial()])
+          blacklist.Extend([device.adb.GetDeviceSerial()],
+                           reason='reboot_failure')
       except device_errors.CommandTimeoutError:
         logging.exception('Timed out while rebooting %s.', str(device))
         if blacklist:
-          blacklist.Extend([device.adb.GetDeviceSerial()])
+          blacklist.Extend([device.adb.GetDeviceSerial()],
+                           reason='reboot_timeout')
 
       try:
         device.WaitUntilFullyBooted(retries=0)
       except device_errors.CommandFailedError:
         logging.exception('Failure while waiting for %s.', str(device))
         if blacklist:
-          blacklist.Extend([device.adb.GetDeviceSerial()])
+          blacklist.Extend([device.adb.GetDeviceSerial()],
+                           reason='reboot_failure')
       except device_errors.CommandTimeoutError:
         logging.exception('Timed out while waiting for %s.', str(device))
         if blacklist:
-          blacklist.Extend([device.adb.GetDeviceSerial()])
+          blacklist.Extend([device.adb.GetDeviceSerial()],
+                           reason='reboot_timeout')
 
   device_utils.DeviceUtils.parallel(devices).pMap(blacklisting_recovery)
 

@@ -104,12 +104,12 @@ def main():
     except device_errors.CommandFailedError:
       logging.exception('Failed to install %s', args.apk_name)
       if blacklist:
-        blacklist.Extend([str(device)])
+        blacklist.Extend([str(device)], reason='install_failure')
         logging.warning('Blacklisting %s', str(device))
     except device_errors.CommandTimeoutError:
       logging.exception('Timed out while installing %s', args.apk_name)
       if blacklist:
-        blacklist.Extend([str(device)])
+        blacklist.Extend([str(device)], reason='install_timeout')
         logging.warning('Blacklisting %s', str(device))
 
   device_utils.DeviceUtils.parallel(devices).pMap(blacklisting_install)

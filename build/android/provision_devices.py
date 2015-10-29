@@ -122,12 +122,12 @@ def ProvisionDevice(device, blacklist, options):
   except device_errors.CommandTimeoutError:
     logging.exception('Timed out waiting for device %s. Adding to blacklist.',
                       str(device))
-    blacklist.Extend([str(device)])
+    blacklist.Extend([str(device)], reason='provision_timeout')
 
   except device_errors.CommandFailedError:
     logging.exception('Failed to provision device %s. Adding to blacklist.',
                       str(device))
-    blacklist.Extend([str(device)])
+    blacklist.Extend([str(device)], reason='provision_failure')
 
 def CheckExternalStorage(device):
   """Checks that storage is writable and if not makes it writable.

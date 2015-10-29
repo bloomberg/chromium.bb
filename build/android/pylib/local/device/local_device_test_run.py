@@ -31,7 +31,7 @@ def handle_shard_failures_with(on_failure):
   Args:
     f: the function being decorated. The function must take at least one
       argument, and that argument must be the device.
-    on_failure: A unary function to call on failure.
+    on_failure: A binary function to call on failure.
   """
   def decorator(f):
     @functools.wraps(f)
@@ -45,7 +45,7 @@ def handle_shard_failures_with(on_failure):
       except device_errors.DeviceUnreachableError:
         logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
       if on_failure:
-        on_failure(dev)
+        on_failure(dev, f.__name__)
       return None
 
     return wrapper
