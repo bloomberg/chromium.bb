@@ -24,12 +24,13 @@ goog.require('goog.testing.jsunit');
  * corresponding menuitem.
  */
 function testCommandMenuItem() {
-  // Test 1: The case that the comamnd label is set.
+  // Test 1: The case that the command label is set and other attributes copied.
   var command = new cr.ui.Command();
   command.id = 'the-command';
   command.label = 'CommandLabel';
-  command.disabled = false;
-  command.hidden = false;
+  command.disabled = true;
+  command.hidden = true;
+  command.checked = true;
   document.body.appendChild(command);
 
   var menuItem = new cr.ui.MenuItem();
@@ -38,14 +39,14 @@ function testCommandMenuItem() {
   // Confirms the label is copied from the command.
   assertEquals('CommandLabel', menuItem.label);
   // Confirms the attributes are copied from the command.
-  assertEquals(false, menuItem.disabled);
-  assertEquals(false, menuItem.hidden);
+  assertEquals(true, menuItem.disabled);
+  assertEquals(true, menuItem.hidden);
+  assertEquals(true, menuItem.checked);
 
-  // Test 2: The case that the comamnd label is not set.
+  // Test 2: The case that the command label is not set, and other attributes
+  // have default values.
   var command2 = new cr.ui.Command();
   command2.id = 'the-command2';
-  command2.disabled = false;
-  command2.hidden = false;
   document.body.appendChild(command2);
 
   var menuItem2 = new cr.ui.MenuItem();
@@ -57,6 +58,7 @@ function testCommandMenuItem() {
   // Confirms the attributes are copied from the command.
   assertEquals(false, menuItem2.disabled);
   assertEquals(false, menuItem2.hidden);
+  assertEquals(false, menuItem2.checked);
 }
 
 </script>

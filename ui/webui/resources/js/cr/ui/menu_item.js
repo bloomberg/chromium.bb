@@ -83,6 +83,7 @@ cr.define('cr.ui', function() {
           this.label = command.label;
         this.disabled = command.disabled;
         this.hidden = command.hidden;
+        this.checked = command.checked;
 
         this.command_.addEventListener('labelChange', this);
         this.command_.addEventListener('disabledChange', this);
