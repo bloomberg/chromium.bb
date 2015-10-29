@@ -7,22 +7,6 @@
             document.getElementById("console").appendChild(document.createTextNode(s + "\n"));
         }
 
-        function shouldThrow(a)
-        {
-            var message;
-            try {
-                var evalA = eval(a);
-                message = "FAIL: '" + a + "' should have thrown. It was instead '" + evalA + "'.";
-            } catch (e) {
-                message = "PASS: '" + a + "' threw '" + e.toString() + "'.";
-            }
-            if (window.testRunner) {
-                alert(message);
-            } else {
-                log(message);
-            }
-        }
-
         function shouldBe(a, b, shouldNotPrintValues)
         {
             var evalA, evalB;
@@ -359,7 +343,7 @@
             shouldBe("window.document", "documentOld");
             shouldBe("window.embeds", "embedsOld");
             shouldBe("window.event", "eventOld");
-            shouldThrow("window.frameElement");
+            shouldBe("window.frameElement", "null");
             shouldBe("window.frames", "framesOld");
             shouldBe("window.history", "historyOld");
             shouldBe("window.images", "imagesOld");

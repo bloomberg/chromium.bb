@@ -7395,8 +7395,9 @@ TEST_F(WebFrameSwapTest, FrameElementInFramesWithRemoteParent)
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
 
     v8::Local<v8::Value> frameElement = childFrame->executeScriptAndReturnValue(WebScriptSource("window.frameElement"));
-    // frameElement shouldn't be accessible cross-origin.
-    EXPECT_TRUE(frameElement.IsEmpty());
+    // frameElement should be null if cross-origin.
+    ASSERT_FALSE(frameElement.IsEmpty());
+    EXPECT_TRUE(frameElement->IsNull());
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated clients.
     reset();
