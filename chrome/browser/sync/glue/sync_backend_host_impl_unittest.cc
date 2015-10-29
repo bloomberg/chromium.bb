@@ -12,8 +12,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -32,6 +34,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
@@ -227,6 +230,12 @@ class SyncBackendHostTest : public testing::Test {
   void InitializeBackend(bool expect_success) {
     EXPECT_CALL(mock_frontend_, OnBackendInitialized(_, _, _, expect_success)).
         WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+    SyncBackendHost::HttpPostProviderFactoryGetter
+        http_post_provider_factory_getter =
+            base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
+                       base::Unretained(network_resources_.get()),
+                       make_scoped_refptr(profile_->GetRequestContext()),
+                       base::Bind(&EmptyNetworkTimeUpdate));
     backend_->Initialize(
         &mock_frontend_, scoped_ptr<base::Thread>(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
@@ -234,7 +243,8 @@ class SyncBackendHostTest : public testing::Test {
         syncer::WeakHandle<syncer::JsEventHandler>(), GURL(std::string()),
         std::string(), credentials_, true, fake_manager_factory_.Pass(),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
-        base::Closure(), network_resources_.get(), saved_nigori_state_.Pass());
+        base::Closure(), http_post_provider_factory_getter,
+        saved_nigori_state_.Pass());
     base::RunLoop run_loop;
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                    run_loop.QuitClosure(),

@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -53,7 +54,8 @@ class FakeProfileSyncService : public ProfileSyncService {
             profile,
             make_scoped_ptr<SigninManagerWrapper>(NULL),
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-            browser_sync::MANUAL_START),
+            browser_sync::MANUAL_START,
+            base::Bind(&EmptyNetworkTimeUpdate)),
         sync_initialized_(true),
         initialized_state_violation_(false) {}
 

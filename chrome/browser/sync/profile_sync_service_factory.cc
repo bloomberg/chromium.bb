@@ -7,8 +7,10 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
+#include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -30,12 +32,14 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/startup_controller.h"
 #include "components/sync_driver/sync_util.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -46,6 +50,27 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #endif
+
+namespace {
+
+void UpdateNetworkTimeOnUIThread(base::Time network_time,
+                                 base::TimeDelta resolution,
+                                 base::TimeDelta latency,
+                                 base::TimeTicks post_time) {
+  g_browser_process->network_time_tracker()->UpdateNetworkTime(
+      network_time, resolution, latency, post_time);
+}
+
+void UpdateNetworkTime(const base::Time& network_time,
+                       const base::TimeDelta& resolution,
+                       const base::TimeDelta& latency) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&UpdateNetworkTimeOnUIThread, network_time, resolution,
+                 latency, base::TimeTicks::Now()));
+}
+
+}  // anonymous namespace
 
 // static
 ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
@@ -161,9 +186,9 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
           token_service, url_request_context_getter));
   scoped_ptr<browser_sync::ChromeSyncClient> sync_client(
       new browser_sync::ChromeSyncClient(profile, sync_factory.Pass()));
-  ProfileSyncService* pss =
-      new ProfileSyncService(sync_client.Pass(), profile, signin_wrapper.Pass(),
-                             token_service, behavior);
+  ProfileSyncService* pss = new ProfileSyncService(
+      sync_client.Pass(), profile, signin_wrapper.Pass(), token_service,
+      behavior, base::Bind(&UpdateNetworkTime));
   pss->Initialize();
   return pss;
 }

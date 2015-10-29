@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -132,7 +133,7 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources,
+      const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
       override {}
 };
@@ -157,7 +158,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources,
+      const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
       override {
     delete_dir_param_->push_back(delete_sync_data_folder);
@@ -165,7 +166,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
         frontend, sync_thread.Pass(), db_thread, file_thread, event_handler,
         service_url, sync_user_agent, credentials, delete_sync_data_folder,
         sync_manager_factory.Pass(), unrecoverable_error_handler,
-        report_unrecoverable_error_function, network_resources,
+        report_unrecoverable_error_function, http_post_provider_factory_getter,
         saved_nigori_state.Pass());
   }
 
@@ -286,7 +287,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_.reset(new ProfileSyncService(
         sync_client.Pass(), profile_,
         make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
-        behavior));
+        behavior, base::Bind(&EmptyNetworkTimeUpdate)));
     service_->SetClearingBrowseringDataForTesting(
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
                    base::Unretained(this)));

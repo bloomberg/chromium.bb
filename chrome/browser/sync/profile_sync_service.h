@@ -44,6 +44,7 @@
 #include "net/base/backoff_entry.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/network_time_update_callback.h"
 #include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/user_share.h"
@@ -233,7 +234,8 @@ class ProfileSyncService : public sync_driver::SyncService,
       Profile* profile,
       scoped_ptr<SigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
-      browser_sync::ProfileSyncServiceStartBehavior start_behavior);
+      browser_sync::ProfileSyncServiceStartBehavior start_behavior,
+      const syncer::NetworkTimeUpdateCallback& network_time_update_callback);
   ~ProfileSyncService() override;
 
   // Initializes the object. This must be called at most once, and
@@ -798,6 +800,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // OnConfigureStart has not yet been called, and is reset to zero once
   // OnConfigureDone is called.
   base::Time sync_configure_start_time_;
+
+  // Callback to update the network time; used for initializing the backend.
+  syncer::NetworkTimeUpdateCallback network_time_update_callback_;
 
   // Indicates if this is the first time sync is being configured.  This value
   // is equal to !HasSyncSetupCompleted() at the time of OnBackendInitialized().

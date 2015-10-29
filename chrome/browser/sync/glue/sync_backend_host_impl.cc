@@ -8,15 +8,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
-#include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/sync_driver/glue/sync_backend_registrar.h"
 #include "components/sync_driver/invalidation_helper.h"
@@ -32,7 +29,6 @@
 #include "sync/internal_api/public/http_bridge.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/internal_components_factory_impl.h"
-#include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -48,28 +44,6 @@
 using syncer::InternalComponentsFactory;
 
 namespace browser_sync {
-
-namespace {
-
-void UpdateNetworkTimeOnUIThread(base::Time network_time,
-                                 base::TimeDelta resolution,
-                                 base::TimeDelta latency,
-                                 base::TimeTicks post_time) {
-  g_browser_process->network_time_tracker()->UpdateNetworkTime(
-      network_time, resolution, latency, post_time);
-}
-
-void UpdateNetworkTime(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const base::Time& network_time,
-    const base::TimeDelta& resolution,
-    const base::TimeDelta& latency) {
-  ui_thread->PostTask(FROM_HERE,
-                      base::Bind(&UpdateNetworkTimeOnUIThread, network_time,
-                                 resolution, latency, base::TimeTicks::Now()));
-}
-
-}  // namespace
 
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
@@ -117,7 +91,7 @@ void SyncBackendHostImpl::Initialize(
     const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
         unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
-    syncer::NetworkResources* network_resources,
+    const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
     scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state) {
   registrar_.reset(new browser_sync::SyncBackendRegistrar(
       name_, sync_client_, sync_thread.Pass(), ui_thread_, db_thread,
@@ -158,9 +132,7 @@ void SyncBackendHostImpl::Initialize(
       registrar_->sync_thread()->message_loop(), registrar_.get(), routing_info,
       workers, sync_client_->GetExtensionsActivity(), event_handler,
       sync_service_url, sync_user_agent,
-      network_resources->GetHttpPostProviderFactory(
-          make_scoped_refptr(profile_->GetRequestContext()),
-          base::Bind(&UpdateNetworkTime, ui_thread_),
+      http_post_provider_factory_getter.Run(
           core_->GetRequestContextCancelationSignal()),
       credentials, invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
       sync_manager_factory.Pass(), delete_sync_data_folder,

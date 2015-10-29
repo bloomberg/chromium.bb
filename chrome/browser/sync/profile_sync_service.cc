@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -195,7 +196,8 @@ ProfileSyncService::ProfileSyncService(
     Profile* profile,
     scoped_ptr<SigninManagerWrapper> signin_wrapper,
     ProfileOAuth2TokenService* oauth2_token_service,
-    ProfileSyncServiceStartBehavior start_behavior)
+    ProfileSyncServiceStartBehavior start_behavior,
+    const syncer::NetworkTimeUpdateCallback& network_time_update_callback)
     : OAuth2TokenService::Consumer("sync"),
       last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
@@ -205,6 +207,7 @@ ProfileSyncService::ProfileSyncService(
       sync_service_url_(
           GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
                             chrome::GetChannel())),
+      network_time_update_callback_(network_time_update_callback),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
       sync_disabled_by_admin_(false),
@@ -508,27 +511,31 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
   SyncCredentials credentials = GetCredentials();
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-      profile_->GetRequestContext());
-
   if (backend_mode_ == SYNC && delete_stale_data)
     ClearStaleErrors();
 
-  backend_->Initialize(this, sync_thread_.Pass(),
-                       content::BrowserThread::GetMessageLoopProxyForThread(
-                           content::BrowserThread::DB),
-                       content::BrowserThread::GetMessageLoopProxyForThread(
-                           content::BrowserThread::FILE),
-                       GetJsEventHandler(), sync_service_url_,
-                       local_device_->GetSyncUserAgent(), credentials,
-                       delete_stale_data,
-                       scoped_ptr<syncer::SyncManagerFactory>(
-                           new syncer::SyncManagerFactory(GetManagerType()))
-                           .Pass(),
-                       MakeWeakHandle(weak_factory_.GetWeakPtr()),
-                       base::Bind(browser_sync::ChromeReportUnrecoverableError,
-                                  chrome::GetChannel()),
-                       network_resources_.get(), saved_nigori_state_.Pass());
+  SyncBackendHost::HttpPostProviderFactoryGetter
+      http_post_provider_factory_getter =
+          base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
+                     base::Unretained(network_resources_.get()),
+                     make_scoped_refptr(profile_->GetRequestContext()),
+                     network_time_update_callback_);
+
+  backend_->Initialize(
+      this, sync_thread_.Pass(),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::DB),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE),
+      GetJsEventHandler(), sync_service_url_, local_device_->GetSyncUserAgent(),
+      credentials, delete_stale_data,
+      scoped_ptr<syncer::SyncManagerFactory>(
+          new syncer::SyncManagerFactory(GetManagerType()))
+          .Pass(),
+      MakeWeakHandle(weak_factory_.GetWeakPtr()),
+      base::Bind(browser_sync::ChromeReportUnrecoverableError,
+                 chrome::GetChannel()),
+      http_post_provider_factory_getter, saved_nigori_state_.Pass());
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {

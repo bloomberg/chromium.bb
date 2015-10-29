@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
@@ -118,10 +119,10 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
             token_service, profile_->GetRequestContext()));
     scoped_ptr<sync_driver::SyncClient> sync_client(
         new browser_sync::ChromeSyncClient(profile_.get(), factory.Pass()));
-    scoped_ptr<ProfileSyncService> pss(
-        new ProfileSyncService(sync_client.Pass(), profile_.get(),
-                               make_scoped_ptr<SigninManagerWrapper>(NULL),
-                               token_service, browser_sync::MANUAL_START));
+    scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
+        sync_client.Pass(), profile_.get(),
+        make_scoped_ptr<SigninManagerWrapper>(NULL), token_service,
+        browser_sync::MANUAL_START, base::Bind(&EmptyNetworkTimeUpdate)));
     pss->GetSyncClient()->Initialize(pss.get());
     DataTypeController::StateMap controller_states;
     pss->GetDataTypeControllerStates(&controller_states);
@@ -145,10 +146,10 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
           token_service, profile_->GetRequestContext()));
   scoped_ptr<sync_driver::SyncClient> sync_client(
       new browser_sync::ChromeSyncClient(profile_.get(), factory.Pass()));
-  scoped_ptr<ProfileSyncService> pss(
-      new ProfileSyncService(sync_client.Pass(), profile_.get(),
-                             make_scoped_ptr<SigninManagerWrapper>(NULL),
-                             token_service, browser_sync::MANUAL_START));
+  scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
+      sync_client.Pass(), profile_.get(),
+      make_scoped_ptr<SigninManagerWrapper>(NULL), token_service,
+      browser_sync::MANUAL_START, base::Bind(&EmptyNetworkTimeUpdate)));
   pss->GetSyncClient()->Initialize(pss.get());
   DataTypeController::StateMap controller_states;
   pss->GetDataTypeControllerStates(&controller_states);

@@ -88,7 +88,8 @@ class TestProfileSyncServiceNoBackup : public ProfileSyncService {
                            profile,
                            signin_wrapper.Pass(),
                            oauth2_token_service,
-                           start_behavior) {}
+                           start_behavior,
+                           base::Bind(&EmptyNetworkTimeUpdate)) {}
 
  protected:
   bool NeedBackup() const override { return false; }

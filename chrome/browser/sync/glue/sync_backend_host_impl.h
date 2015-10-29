@@ -40,7 +40,6 @@ class InvalidationService;
 }
 
 namespace syncer {
-class NetworkResources;
 class SyncManagerFactory;
 class UnrecoverableErrorHandler;
 }
@@ -95,7 +94,7 @@ class SyncBackendHostImpl
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      syncer::NetworkResources* network_resources,
+      const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
       override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;

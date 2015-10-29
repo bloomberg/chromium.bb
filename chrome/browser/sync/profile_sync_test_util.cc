@@ -11,6 +11,10 @@
 
 using content::BrowserThread;
 
+void EmptyNetworkTimeUpdate(const base::Time&,
+                            const base::TimeDelta&,
+                            const base::TimeDelta&) {}
+
 SyncServiceObserverMock::SyncServiceObserverMock() {
 }
 
