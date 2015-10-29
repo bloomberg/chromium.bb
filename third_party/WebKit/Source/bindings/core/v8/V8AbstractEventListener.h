@@ -69,7 +69,7 @@ public:
 
     // Implementation of EventListener interface.
 
-    bool operator==(const EventListener& other) override { return this == &other; }
+    bool operator==(const EventListener& other) const override { return this == &other; }
 
     void handleEvent(ExecutionContext*, Event*) final;
     virtual void handleEvent(ScriptState*, Event*);

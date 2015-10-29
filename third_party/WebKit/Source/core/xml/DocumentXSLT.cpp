@@ -34,7 +34,7 @@ public:
     using V8AbstractEventListener::deref;
 #endif
 
-    virtual bool operator==(const EventListener&)
+    bool operator==(const EventListener&) const override
     {
         return true;
     }

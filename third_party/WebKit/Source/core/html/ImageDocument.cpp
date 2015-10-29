@@ -67,7 +67,7 @@ public:
             : 0;
     }
 
-    virtual bool operator==(const EventListener& other);
+    bool operator==(const EventListener& other) const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -453,7 +453,7 @@ void ImageEventListener::handleEvent(ExecutionContext*, Event* event)
     }
 }
 
-bool ImageEventListener::operator==(const EventListener& listener)
+bool ImageEventListener::operator==(const EventListener& listener) const
 {
     if (const ImageEventListener* imageEventListener = ImageEventListener::cast(&listener))
         return m_doc == imageEventListener->m_doc;

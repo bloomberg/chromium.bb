@@ -413,7 +413,7 @@ public:
 
     void start(ExecutionContext*);
 
-    bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) const override
     {
         return this == &other;
     }

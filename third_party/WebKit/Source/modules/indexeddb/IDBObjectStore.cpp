@@ -421,7 +421,7 @@ public:
         return adoptRefWillBeNoop(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
     }
 
-    bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) const override
     {
         return this == &other;
     }

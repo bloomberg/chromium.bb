@@ -96,7 +96,7 @@ public:
 
     ~GetDatabaseNamesCallback() override { }
 
-    bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) const override
     {
         return this == &other;
     }
@@ -162,7 +162,7 @@ public:
 
     ~OpenDatabaseCallback() override { }
 
-    bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) const override
     {
         return this == &other;
     }
@@ -203,7 +203,7 @@ public:
 
     ~UpgradeDatabaseCallback() override { }
 
-    bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) const override
     {
         return this == &other;
     }
@@ -441,7 +441,7 @@ public:
 
     ~OpenCursorCallback() override { }
 
-    bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) const override
     {
         return this == &other;
     }
@@ -733,7 +733,7 @@ public:
 
     ~ClearObjectStoreListener() override { }
 
-    bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) const override
     {
         return this == &other;
     }
