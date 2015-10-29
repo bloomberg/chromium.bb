@@ -73,6 +73,8 @@ void RenderWidgetHostViewChildFrame::Focus() {
 }
 
 bool RenderWidgetHostViewChildFrame::HasFocus() const {
+  if (frame_connector_)
+    return frame_connector_->HasFocus();
   return false;
 }
 

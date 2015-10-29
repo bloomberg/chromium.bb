@@ -100,6 +100,10 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void GetScreenInfo(blink::WebScreenInfo* results);
   void UpdateCursor(const WebCursor& cursor);
 
+  // Determines whether the root RenderWidgetHostView (and thus the current
+  // page) has focus.
+  bool HasFocus();
+
  private:
   // Handlers for messages received from the parent frame.
   void OnCompositorFrameSwappedACK(

@@ -170,6 +170,13 @@ void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
     root_view->UpdateCursor(cursor);
 }
 
+bool CrossProcessFrameConnector::HasFocus() {
+  RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
+  if (root_view)
+    return root_view->HasFocus();
+  return false;
+}
+
 void CrossProcessFrameConnector::OnForwardInputEvent(
     const blink::WebInputEvent* event) {
   if (!view_)

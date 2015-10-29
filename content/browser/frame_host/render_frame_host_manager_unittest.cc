@@ -51,6 +51,20 @@
 namespace content {
 namespace {
 
+// Helper to check that the provided RenderProcessHost received exactly one
+// page focus message with the provided focus and routing ID values.
+void VerifyPageFocusMessage(MockRenderProcessHost* rph,
+                            bool expected_focus,
+                            int expected_routing_id) {
+  const IPC::Message* message =
+      rph->sink().GetUniqueMessageMatching(InputMsg_SetFocus::ID);
+  EXPECT_TRUE(message);
+  EXPECT_EQ(expected_routing_id, message->routing_id());
+  InputMsg_SetFocus::Param params;
+  EXPECT_TRUE(InputMsg_SetFocus::Read(message, &params));
+  EXPECT_EQ(expected_focus, base::get<0>(params));
+}
+
 class RenderFrameHostManagerTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
@@ -2486,7 +2500,7 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
 // current page.
 //
 // TODO(alexmos): Move this test to FrameTree unit tests once NavigateToEntry
-// is moved to a common place.
+// is moved to a common place.  See https://crbug.com/547275.
 TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   // This test only makes sense when cross-site subframes use separate
   // processes.
@@ -2556,20 +2570,6 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       root->render_manager()->GetRenderFrameProxyHost(host3->GetSiteInstance());
   EXPECT_TRUE(proxyC);
 
-  // Helper to check that the provided RenderProcessHost received exactly one
-  // page focus message with the provided focus and routing ID values.
-  auto verify_focus_message = [](MockRenderProcessHost* rph,
-                                 bool expected_focus,
-                                 int expected_routing_id) {
-    const IPC::Message* message =
-        rph->sink().GetUniqueMessageMatching(InputMsg_SetFocus::ID);
-    EXPECT_TRUE(message);
-    EXPECT_EQ(expected_routing_id, message->routing_id());
-    InputMsg_SetFocus::Param params;
-    EXPECT_TRUE(InputMsg_SetFocus::Read(message, &params));
-    EXPECT_EQ(expected_focus, base::get<0>(params));
-  };
-
   // Focus the main page, and verify that the focus message was sent to all
   // processes.  The message to A should be sent through the main frame's
   // RenderViewHost, and the message to B and C should be send through proxies
@@ -2578,10 +2578,10 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   host1->GetProcess()->sink().ClearMessages();
   host3->GetProcess()->sink().ClearMessages();
   main_test_rfh()->GetRenderWidgetHost()->Focus();
-  verify_focus_message(main_test_rfh()->GetProcess(), true,
-                       main_test_rfh()->GetRenderViewHost()->GetRoutingID());
-  verify_focus_message(host1->GetProcess(), true, proxyB->GetRoutingID());
-  verify_focus_message(host3->GetProcess(), true, proxyC->GetRoutingID());
+  VerifyPageFocusMessage(main_test_rfh()->GetProcess(), true,
+                         main_test_rfh()->GetRenderViewHost()->GetRoutingID());
+  VerifyPageFocusMessage(host1->GetProcess(), true, proxyB->GetRoutingID());
+  VerifyPageFocusMessage(host3->GetProcess(), true, proxyC->GetRoutingID());
 
   // Similarly, simulate focus loss on main page, and verify that the focus
   // message was sent to all processes.
@@ -2589,10 +2589,70 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   host1->GetProcess()->sink().ClearMessages();
   host3->GetProcess()->sink().ClearMessages();
   main_test_rfh()->GetRenderWidgetHost()->Blur();
-  verify_focus_message(main_test_rfh()->GetProcess(), false,
-                       main_test_rfh()->GetRenderViewHost()->GetRoutingID());
-  verify_focus_message(host1->GetProcess(), false, proxyB->GetRoutingID());
-  verify_focus_message(host3->GetProcess(), false, proxyC->GetRoutingID());
+  VerifyPageFocusMessage(main_test_rfh()->GetProcess(), false,
+                         main_test_rfh()->GetRenderViewHost()->GetRoutingID());
+  VerifyPageFocusMessage(host1->GetProcess(), false, proxyB->GetRoutingID());
+  VerifyPageFocusMessage(host3->GetProcess(), false, proxyC->GetRoutingID());
+}
+
+// Check that page-level focus state is preserved across subframe navigations.
+//
+// TODO(alexmos): Move this test to FrameTree unit tests once NavigateToEntry
+// is moved to a common place.  See https://crbug.com/547275.
+TEST_F(RenderFrameHostManagerTest,
+       PageFocusIsPreservedAcrossSubframeNavigations) {
+  // This test only makes sense when cross-site subframes use separate
+  // processes.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL kUrlA("http://a.com/");
+  const GURL kUrlB("http://b.com/");
+  const GURL kUrlC("http://c.com/");
+
+  // Set up a page at a.com with a b.com subframe.
+  contents()->NavigateAndCommit(kUrlA);
+  main_test_rfh()->OnCreateChildFrame(
+      main_test_rfh()->GetProcess()->GetNextRoutingID(),
+      blink::WebTreeScopeType::Document, "frame1",
+      blink::WebSandboxFlags::None);
+
+  FrameTreeNode* root = contents()->GetFrameTree()->root();
+  RenderFrameHostManager* child = root->child_at(0)->render_manager();
+
+  // Navigate subframe to B.
+  NavigationEntryImpl entryB(nullptr /* instance */, -1 /* page_id */, kUrlB,
+                             Referrer(kUrlA, blink::WebReferrerPolicyDefault),
+                             base::string16() /* title */,
+                             ui::PAGE_TRANSITION_LINK,
+                             false /* is_renderer_init */);
+  TestRenderFrameHost* hostB =
+      static_cast<TestRenderFrameHost*>(NavigateToEntry(child, entryB));
+  child->DidNavigateFrame(hostB, true);
+
+  // Ensure that the main page is focused.
+  main_test_rfh()->GetView()->Focus();
+  EXPECT_TRUE(main_test_rfh()->GetView()->HasFocus());
+
+  // Navigate the subframe to C.
+  NavigationEntryImpl entryC(nullptr /* instance */, -1 /* page_id */, kUrlC,
+                             Referrer(kUrlA, blink::WebReferrerPolicyDefault),
+                             base::string16() /* title */,
+                             ui::PAGE_TRANSITION_LINK,
+                             false /* is_renderer_init */);
+  TestRenderFrameHost* hostC =
+      static_cast<TestRenderFrameHost*>(NavigateToEntry(child, entryC));
+  child->DidNavigateFrame(hostC, true);
+
+  // The main frame should now have a proxy for C.
+  RenderFrameProxyHost* proxy =
+      root->render_manager()->GetRenderFrameProxyHost(hostC->GetSiteInstance());
+  EXPECT_TRUE(proxy);
+
+  // Since the B->C navigation happened while the current page was focused,
+  // page focus should propagate to the new subframe process.  Check that
+  // process C received the proper focus message.
+  VerifyPageFocusMessage(hostC->GetProcess(), true, proxy->GetRoutingID());
 }
 
 }  // namespace content

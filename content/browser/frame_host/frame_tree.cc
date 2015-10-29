@@ -429,12 +429,18 @@ void FrameTree::ReplicatePageFocus(bool is_focused) {
   // about proxies in SiteInstances for frames in a different FrameTree (e.g.,
   // for window.open), so we can't just iterate over its proxy_hosts_ in
   // RenderFrameHostManager.
-  for (const auto& instance : frame_tree_site_instances) {
-    if (instance == root_->current_frame_host()->GetSiteInstance())
-      continue;
+  for (const auto& instance : frame_tree_site_instances)
+    SetPageFocus(instance, is_focused);
+}
 
+void FrameTree::SetPageFocus(SiteInstance* instance, bool is_focused) {
+  RenderFrameHostManager* root_manager = root_->render_manager();
+
+  // This is only used to set page-level focus in cross-process subframes, and
+  // requests to set focus in main frame's SiteInstance are ignored.
+  if (instance != root_manager->current_frame_host()->GetSiteInstance()) {
     RenderFrameProxyHost* proxy =
-        root_->render_manager()->GetRenderFrameProxyHost(instance);
+        root_manager->GetRenderFrameProxyHost(instance);
     proxy->Send(new InputMsg_SetFocus(proxy->GetRoutingID(), is_focused));
   }
 }

@@ -152,6 +152,10 @@ class CONTENT_EXPORT FrameTree {
   // in those SiteInstances.
   void ReplicatePageFocus(bool is_focused);
 
+  // Updates page-level focus for this FrameTree in the subframe renderer
+  // identified by |instance|.
+  void SetPageFocus(SiteInstance* instance, bool is_focused);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
   typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;

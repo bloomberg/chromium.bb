@@ -2237,7 +2237,14 @@ void RenderFrameHostManager::CommitPending() {
   if (will_focus_location_bar) {
     delegate_->SetFocusToLocationBar(false);
   } else if (focus_render_view && render_frame_host_->GetView()) {
-    render_frame_host_->GetView()->Focus();
+    if (is_main_frame) {
+      render_frame_host_->GetView()->Focus();
+    } else {
+      // The main frame's view is already focused, but we need to set
+      // page-level focus in the subframe's renderer.
+      frame_tree_node_->frame_tree()->SetPageFocus(
+          render_frame_host_->GetSiteInstance(), true);
+    }
   }
 
   // Notify that we've swapped RenderFrameHosts. We do this before shutting down
