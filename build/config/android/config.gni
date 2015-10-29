@@ -5,6 +5,9 @@
 # This file contains common system config stuff for the Android build.
 
 if (is_android) {
+  assert(rebase_path("//", root_build_dir) == "../../",
+         "Android output directory must be nested 2 levels within src/ (" +
+             "e.g.: out-gn/Debug). http://crbug.com/412935")
   has_chrome_android_internal =
       exec_script("//build/dir_exists.py",
                   [ rebase_path("//clank", root_build_dir) ],
