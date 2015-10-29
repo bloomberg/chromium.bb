@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
 #include "base/single_thread_task_runner.h"
@@ -21,7 +22,7 @@
 #include "components/metrics/proto/profiler_event.pb.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 
 namespace {
 
@@ -117,9 +118,10 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents,
     Delegate* delegate)
     : content::WebContentsObserver(web_contents),
-      initial_entry_committed_(false),
       collected_paint_metric_(false),
       collected_load_metric_(false),
+      collected_main_navigation_start_metric_(false),
+      collected_main_navigation_finished_metric_(false),
       delegate_(delegate),
       responsiveness_histogram_(NULL),
       responsiveness_1sec_histogram_(NULL),
@@ -183,20 +185,57 @@ void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
     FinishedCollectingMetrics(FinishReason::DONE);
 }
 
-void FirstWebContentsProfiler::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  // Abandon profiling on any navigation to a different page as it:
-  //   (1) is no longer a fair timing; and
-  //   (2) can cause http://crbug.com/525209 where one of the timing heuristics
-  //       (e.g. first paint) didn't fire for the initial content but fires
-  //       after a lot of idle time when the user finally navigates to another
-  //       page that does trigger it.
-  if (load_details.is_navigation_to_different_page()) {
-    if (initial_entry_committed_)
-      FinishedCollectingMetrics(FinishReason::ABANDON_NAVIGATION);
-    else
-      initial_entry_committed_ = true;
+void FirstWebContentsProfiler::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (collected_main_navigation_start_metric_)
+    return;
+  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+    FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
+    return;
   }
+
+  // The first navigation has to be the main frame's.
+  DCHECK(navigation_handle->IsInMainFrame());
+
+  collected_main_navigation_start_metric_ = true;
+  startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
+      base::Time::Now());
+}
+
+void FirstWebContentsProfiler::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (collected_main_navigation_finished_metric_) {
+    // Abandon profiling on a top-level navigation to a different page as it:
+    //   (1) is no longer a fair timing; and
+    //   (2) can cause http://crbug.com/525209 where one of the timing
+    //       heuristics (e.g. first paint) didn't fire for the initial content
+    //       but fires after a lot of idle time when the user finally navigates
+    //       to another page that does trigger it.
+    if (navigation_handle->IsInMainFrame() &&
+        navigation_handle->HasCommitted() &&
+        !navigation_handle->IsSamePage()) {
+      FinishedCollectingMetrics(FinishReason::ABANDON_NEW_NAVIGATION);
+    }
+    return;
+  }
+
+  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+    FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
+    return;
+  }
+
+  // The first navigation has to be the main frame's.
+  DCHECK(navigation_handle->IsInMainFrame());
+
+  if (!navigation_handle->HasCommitted() ||
+      navigation_handle->IsErrorPage()) {
+    FinishedCollectingMetrics(FinishReason::ABANDON_NAVIGATION_ERROR);
+    return;
+  }
+
+  collected_main_navigation_finished_metric_ = true;
+  startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(
+      base::Time::Now());
 }
 
 void FirstWebContentsProfiler::WasHidden() {

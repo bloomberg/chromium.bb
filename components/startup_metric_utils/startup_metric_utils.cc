@@ -445,6 +445,34 @@ void RecordFirstWebContentsNonEmptyPaint(const base::Time& time) {
       g_process_creation_time.Get(), time);
 }
 
+void RecordFirstWebContentsMainNavigationStart(const base::Time& time) {
+  static bool is_first_call = true;
+  if (!is_first_call || time.is_null())
+    return;
+  is_first_call = false;
+  if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
+    return;
+
+  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_LONG_TIMES_100,
+      "Startup.FirstWebContents.MainNavigationStart",
+      g_process_creation_time.Get(), time);
+}
+
+void RecordFirstWebContentsMainNavigationFinished(const base::Time& time) {
+  static bool is_first_call = true;
+  if (!is_first_call || time.is_null())
+    return;
+  is_first_call = false;
+  if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
+    return;
+
+  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_LONG_TIMES_100,
+      "Startup.FirstWebContents.MainNavigationFinished",
+      g_process_creation_time.Get(), time);
+}
+
 base::Time MainEntryPointTime() {
   return g_main_entry_point_time.Get();
 }

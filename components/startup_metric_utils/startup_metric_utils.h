@@ -74,6 +74,14 @@ void RecordFirstWebContentsMainFrameLoad(const base::Time& time);
 // Call this with the time when the first web contents had a non-empty paint.
 void RecordFirstWebContentsNonEmptyPaint(const base::Time& time);
 
+// Call this with the time when the first web contents began navigating its main
+// frame.
+void RecordFirstWebContentsMainNavigationStart(const base::Time& time);
+
+// Call this with the time when the first web contents successfully committed
+// its navigation for the main frame.
+void RecordFirstWebContentsMainNavigationFinished(const base::Time& time);
+
 // Returns the time of main entry recorded from RecordMainEntryPointTime.
 // Returns a null Time if a value has not been recorded yet.
 // This method is expected to be called from the UI thread.

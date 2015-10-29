@@ -44462,9 +44462,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Startup.FirstCommitNavigationTime" units="milliseconds">
   <owner>pasko@chromium.org</owner>
   <summary>
-    The time from the earliest entry point in the browser process to the moment
-    the first navigation is committed, i.e. when renderer gets the first byte of
-    the document.
+    [Android only] The time from the earliest entry point in the browser process
+    to the moment the first navigation is committed, i.e. when renderer gets the
+    first byte of the document.
   </summary>
 </histogram>
 
@@ -44472,34 +44472,55 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="StartupProfilingFinishReason">
   <owner>gab@chromium.org</owner>
   <summary>
-    The reason for which startup profiling was deemed complete. Logged once per
-    session on startup.
+    [Desktop] The reason for which startup profiling was deemed complete. Logged
+    once per session on startup.
   </summary>
 </histogram>
 
 <histogram name="Startup.FirstWebContents.MainFrameLoad" units="milliseconds">
   <owner>erikchen@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
-    Measure the elapsed time from process launch to the first main frame load of
-    the first web contents.
+    [Desktop] Measure the elapsed time from process launch to the first main
+    frame load of the first web contents.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.MainNavigationFinished"
+    units="milliseconds">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    [Desktop] Measure the elapsed time from process launch to the moment when
+    the navigation is committed (first bytes received) in the first web
+    contents' main frame.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.MainNavigationStart"
+    units="milliseconds">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    [Desktop] Measure the elapsed time from process launch to the beginning of
+    navigation in the first web contents' main frame.
   </summary>
 </histogram>
 
 <histogram name="Startup.FirstWebContents.NonEmptyPaint" units="milliseconds">
   <owner>erikchen@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
-    Measure the elapsed time from process launch to the first non-empty paint of
-    the first web contents.
+    [Desktop] Measure the elapsed time from process launch to the first non-
+    empty paint of the first web contents.
   </summary>
 </histogram>
 
 <histogram name="Startup.FirstWebContents.UINotResponsive" units="milliseconds">
   <owner>gayane@chromium.org</owner>
   <summary>
-    Measures the execution time for a single task to execute on UI if it was not
-    possible to execute UI tasks under 1/60s within certain limits, after
-    WebContents was painted at least once. This is recorded at most once per
-    Chrome launch. Used as a measure of responsiveness on startup.
+    [Desktop] Measures the execution time for a single task to execute on UI if
+    it was not possible to execute UI tasks under 1/60s within certain limits,
+    after WebContents was painted at least once. This is recorded at most once
+    per Chrome launch. Used as a measure of responsiveness on startup.
   </summary>
 </histogram>
 
@@ -44507,10 +44528,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="milliseconds">
   <owner>gayane@chromium.org</owner>
   <summary>
-    Measures the elapsed time for a single task to execute on UI if it was not
-    possible to execute it under 1/60s within certain limits, 10 second after
-    first WebContents was painted at least once.  This is recorded at most once
-    per Chrome launch. Used as a measure of responsiveness on startup.
+    [Desktop] Measures the elapsed time for a single task to execute on UI if it
+    was not possible to execute it under 1/60s within certain limits, 10 second
+    after first WebContents was painted at least once.  This is recorded at most
+    once per Chrome launch. Used as a measure of responsiveness on startup.
   </summary>
 </histogram>
 
@@ -44518,19 +44539,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="milliseconds">
   <owner>gayane@chromium.org</owner>
   <summary>
-    Measures the elapsed time for a single task to execute on UI if it was not
-    possible to execute it under 1/60s within certain limits, 1 second after
-    first WebContents was painted at least once.  This is recorded at most once
-    per Chrome launch. Used as a measure of responsiveness on startup.
+    [Desktop] Measures the elapsed time for a single task to execute on UI if it
+    was not possible to execute it under 1/60s within certain limits, 1 second
+    after first WebContents was painted at least once.  This is recorded at most
+    once per Chrome launch. Used as a measure of responsiveness on startup.
   </summary>
 </histogram>
 
 <histogram name="Startup.FirstWebContents.UIResponsive" units="milliseconds">
   <owner>gayane@chromium.org</owner>
   <summary>
-    Measures the elapsed time it takes for a task to execute on UI under 1/60s
-    after first WebContents was painted at least once. This is recorded at most
-    once per Chrome launch. Used as a measure of responsiveness on startup.
+    [Desktop] Measures the elapsed time it takes for a task to execute on UI
+    under 1/60s after first WebContents was painted at least once. This is
+    recorded at most once per Chrome launch. Used as a measure of responsiveness
+    on startup.
   </summary>
 </histogram>
 
@@ -44538,9 +44560,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="milliseconds">
   <owner>gayane@chromium.org</owner>
   <summary>
-    Measures the elapsed time it takes for a task to execute on UI under 1/60s,
-    10 second after the first WebContents was painted.  This is recorded at most
-    once per Chrome launch. Used as a measure of responsiveness on startup.
+    [Desktop] Measures the elapsed time it takes for a task to execute on UI
+    under 1/60s, 10 second after the first WebContents was painted.  This is
+    recorded at most once per Chrome launch. Used as a measure of responsiveness
+    on startup.
   </summary>
 </histogram>
 
@@ -44548,9 +44571,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="milliseconds">
   <owner>gayane@chromium.org</owner>
   <summary>
-    Measures the elapsed time it takes for a task to execute on UI under 1/60s,
-    1 second after the first WebContents was painted. This is recorded at most
-    once per Chrome launch. Used as a measure of responsiveness on startup.
+    [Desktop] Measures the elapsed time it takes for a task to execute on UI
+    under 1/60s, 1 second after the first WebContents was painted. This is
+    recorded at most once per Chrome launch. Used as a measure of responsiveness
+    on startup.
   </summary>
 </histogram>
 
@@ -73539,6 +73563,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Abandoned because profiled content was destroyed"/>
   <int value="4"
       label="Abandoned because profiled content was navigated away from"/>
+  <int value="5"
+      label="Abandoned because profiled content failed to load its main
+             resource"/>
 </enum>
 
 <enum name="StartupTemperature" type="int">
@@ -80606,6 +80633,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Startup.BrowserOpenTabs"/>
   <affected-histogram name="Startup.BrowserWindowDisplay"/>
   <affected-histogram name="Startup.FirstWebContents.MainFrameLoad"/>
+  <affected-histogram name="Startup.FirstWebContents.MainNavigationFinished"/>
+  <affected-histogram name="Startup.FirstWebContents.MainNavigationStart"/>
   <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint"/>
   <affected-histogram name="Startup.LoadTime.ExeMainToDllMain"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain"/>

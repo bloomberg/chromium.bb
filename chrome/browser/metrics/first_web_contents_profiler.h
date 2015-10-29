@@ -46,7 +46,9 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
     // Abandon if the content is destroyed.
     ABANDON_CONTENT_DESTROYED = 3,
     // Abandon if the WebContents navigates away from its initial page.
-    ABANDON_NAVIGATION = 4,
+    ABANDON_NEW_NAVIGATION = 4,
+    // Abandon if the WebContents fails to load (e.g. network error, etc.).
+    ABANDON_NAVIGATION_ERROR = 5,
     ENUM_MAX
   };
 
@@ -56,12 +58,16 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // content::WebContentsObserver:
   void DidFirstVisuallyNonEmptyPaint() override;
   void DocumentOnLoadCompletedInMainFrame() override;
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void WasHidden() override;
   void WebContentsDestroyed() override;
 
-  // Whether this instance has finished collecting all of its metrics.
+  // Whether this instance has finished collecting first-paint and main-frame-
+  // load metrics (navigation metrics are recorded on a best effort but don't
+  // prevent the FirstWebContentsProfiler from calling it).
   bool IsFinishedCollectingMetrics();
 
   // Informs the delegate that this instance has finished collecting all of its
@@ -71,16 +77,17 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // Initialize histograms for unresponsiveness metrics.
   void InitHistograms();
 
-  // Becomes true on the first invocation of NavigationEntryCommitted() for the
-  // main frame. Any follow-up navigation to a different page will result in
-  // aborting first WebContents profiling.
-  bool initial_entry_committed_;
-
   // Whether an attempt was made to collect the "NonEmptyPaint" metric.
   bool collected_paint_metric_;
 
   // Whether an attempt was made to collect the "MainFrameLoad" metric.
   bool collected_load_metric_;
+
+  // Whether an attempt was made to collect the "MainNavigationStart" metric.
+  bool collected_main_navigation_start_metric_;
+
+  // Whether an attempt was made to collect the "MainNavigationFinished" metric.
+  bool collected_main_navigation_finished_metric_;
 
   // |delegate_| owns |this|.
   Delegate* delegate_;
