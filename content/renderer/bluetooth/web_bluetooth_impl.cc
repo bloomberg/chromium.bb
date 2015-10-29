@@ -27,17 +27,17 @@ void WebBluetoothImpl::requestDevice(
   GetDispatcher()->requestDevice(frame_routing_id_, options, callbacks);
 }
 
-void WebBluetoothImpl::connectGATT(const blink::WebString& device_instance_id,
+void WebBluetoothImpl::connectGATT(
+    const blink::WebString& device_id,
     blink::WebBluetoothConnectGATTCallbacks* callbacks) {
-  GetDispatcher()->connectGATT(device_instance_id, callbacks);
+  GetDispatcher()->connectGATT(device_id, callbacks);
 }
 
 void WebBluetoothImpl::getPrimaryService(
-    const blink::WebString& device_instance_id,
+    const blink::WebString& device_id,
     const blink::WebString& service_uuid,
     blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
-  GetDispatcher()->getPrimaryService(device_instance_id, service_uuid,
-                                     callbacks);
+  GetDispatcher()->getPrimaryService(device_id, service_uuid, callbacks);
 }
 
 void WebBluetoothImpl::getCharacteristic(

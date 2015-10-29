@@ -90,15 +90,15 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     device::BluetoothDevice::VendorIDSource::VENDOR_ID_MAX_VALUE)
 
 IPC_STRUCT_TRAITS_BEGIN(content::BluetoothDevice)
-IPC_STRUCT_TRAITS_MEMBER(instance_id)
-IPC_STRUCT_TRAITS_MEMBER(name)
-IPC_STRUCT_TRAITS_MEMBER(device_class)
-IPC_STRUCT_TRAITS_MEMBER(vendor_id_source)
-IPC_STRUCT_TRAITS_MEMBER(vendor_id)
-IPC_STRUCT_TRAITS_MEMBER(product_id)
-IPC_STRUCT_TRAITS_MEMBER(product_version)
-IPC_STRUCT_TRAITS_MEMBER(paired)
-IPC_STRUCT_TRAITS_MEMBER(uuids)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(name)
+  IPC_STRUCT_TRAITS_MEMBER(device_class)
+  IPC_STRUCT_TRAITS_MEMBER(vendor_id_source)
+  IPC_STRUCT_TRAITS_MEMBER(vendor_id)
+  IPC_STRUCT_TRAITS_MEMBER(product_id)
+  IPC_STRUCT_TRAITS_MEMBER(product_version)
+  IPC_STRUCT_TRAITS_MEMBER(paired)
+  IPC_STRUCT_TRAITS_MEMBER(uuids)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebBluetoothError,
@@ -126,7 +126,7 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceError,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
                      int /* thread_id */,
                      int /* request_id */,
-                     std::string /* device_instance_id */)
+                     std::string /* device_id */)
 
 // Informs the renderer that the connection request |request_id| failed.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTError,
@@ -223,13 +223,13 @@ IPC_MESSAGE_CONTROL5(BluetoothHostMsg_RequestDevice,
 IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ConnectGATT,
                      int /* thread_id */,
                      int /* request_id */,
-                     std::string /* device_instance_id */)
+                     std::string /* device_id */)
 
 // Gets primary service from bluetooth device.
 IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GetPrimaryService,
                      int /* thread_id */,
                      int /* request_id */,
-                     std::string /* device_instance_id */,
+                     std::string /* device_id */,
                      std::string /* service_uuid */)
 
 // Gets a GATT Characteristic within a GATT Service.

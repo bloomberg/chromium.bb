@@ -37,15 +37,15 @@ using NotificationsRequestType =
 
 struct BluetoothPrimaryServiceRequest {
   BluetoothPrimaryServiceRequest(
-      blink::WebString device_instance_id,
+      blink::WebString device_id,
       blink::WebString service_uuid,
       blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks)
-      : device_instance_id(device_instance_id),
+      : device_id(device_id),
         service_uuid(service_uuid),
         callbacks(callbacks) {}
   ~BluetoothPrimaryServiceRequest() {}
 
-  blink::WebString device_instance_id;
+  blink::WebString device_id;
   blink::WebString service_uuid;
   scoped_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks;
 };
@@ -212,23 +212,21 @@ void BluetoothDispatcher::requestDevice(
 }
 
 void BluetoothDispatcher::connectGATT(
-    const blink::WebString& device_instance_id,
+    const blink::WebString& device_id,
     blink::WebBluetoothConnectGATTCallbacks* callbacks) {
   int request_id = pending_connect_requests_.Add(callbacks);
   Send(new BluetoothHostMsg_ConnectGATT(CurrentWorkerId(), request_id,
-                                        device_instance_id.utf8()));
+                                        device_id.utf8()));
 }
 
 void BluetoothDispatcher::getPrimaryService(
-    const blink::WebString& device_instance_id,
+    const blink::WebString& device_id,
     const blink::WebString& service_uuid,
     blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
-  int request_id =
-      pending_primary_service_requests_.Add(new BluetoothPrimaryServiceRequest(
-          device_instance_id, service_uuid, callbacks));
-  Send(new BluetoothHostMsg_GetPrimaryService(CurrentWorkerId(), request_id,
-                                              device_instance_id.utf8(),
-                                              service_uuid.utf8()));
+  int request_id = pending_primary_service_requests_.Add(
+      new BluetoothPrimaryServiceRequest(device_id, service_uuid, callbacks));
+  Send(new BluetoothHostMsg_GetPrimaryService(
+      CurrentWorkerId(), request_id, device_id.utf8(), service_uuid.utf8()));
 }
 
 void BluetoothDispatcher::getCharacteristic(
@@ -550,7 +548,7 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
 
   pending_requests_.Lookup(request_id)
       ->onSuccess(blink::adoptWebPtr(new WebBluetoothDevice(
-          WebString::fromUTF8(device.instance_id), WebString(device.name),
+          WebString::fromUTF8(device.id), WebString(device.name),
           device.device_class, GetWebVendorIdSource(device.vendor_id_source),
           device.vendor_id, device.product_id, device.product_version,
           device.paired, uuids)));
@@ -565,14 +563,13 @@ void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
   pending_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnConnectGATTSuccess(
-    int thread_id,
-    int request_id,
-    const std::string& device_instance_id) {
+void BluetoothDispatcher::OnConnectGATTSuccess(int thread_id,
+                                               int request_id,
+                                               const std::string& device_id) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
   pending_connect_requests_.Lookup(request_id)
       ->onSuccess(blink::adoptWebPtr(new WebBluetoothGATTRemoteServer(
-          WebString::fromUTF8(device_instance_id), true /* connected */)));
+          WebString::fromUTF8(device_id), true /* connected */)));
   pending_connect_requests_.Remove(request_id);
 }
 
@@ -594,7 +591,7 @@ void BluetoothDispatcher::OnGetPrimaryServiceSuccess(
       pending_primary_service_requests_.Lookup(request_id);
   request->callbacks->onSuccess(blink::adoptWebPtr(new WebBluetoothGATTService(
       WebString::fromUTF8(service_instance_id), request->service_uuid,
-      true /* isPrimary */, request->device_instance_id)));
+      true /* isPrimary */, request->device_id)));
   pending_primary_service_requests_.Remove(request_id);
 }
 

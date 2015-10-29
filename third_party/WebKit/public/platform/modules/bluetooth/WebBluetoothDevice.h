@@ -18,7 +18,7 @@ struct WebBluetoothDevice {
         USB
     };
 
-    WebBluetoothDevice(const WebString& instanceID,
+    WebBluetoothDevice(const WebString& id,
         const WebString& name,
         int32_t deviceClass,
         VendorIDSource vendorIDSource,
@@ -27,7 +27,7 @@ struct WebBluetoothDevice {
         uint16_t productVersion,
         bool paired,
         const WebVector<WebString>& uuids)
-        : instanceID(instanceID)
+        : id(id)
         , name(name)
         , deviceClass(deviceClass)
         , vendorIDSource(vendorIDSource)
@@ -40,7 +40,7 @@ struct WebBluetoothDevice {
     }
 
     // Members corresponding to BluetoothDevice attributes as specified in IDL.
-    const WebString instanceID;
+    const WebString id;
     const WebString name;
     const int32_t deviceClass;
     const VendorIDSource vendorIDSource;

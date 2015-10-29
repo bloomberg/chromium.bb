@@ -9,7 +9,7 @@
 namespace content {
 
 BluetoothDevice::BluetoothDevice()
-    : instance_id(""),
+    : id(""),
       name(base::string16()),
       device_class(0),
       vendor_id_source(
@@ -18,11 +18,10 @@ BluetoothDevice::BluetoothDevice()
       product_id(0),
       product_version(0),
       paired(false),
-      uuids() {
-}
+      uuids() {}
 
 BluetoothDevice::BluetoothDevice(
-    const std::string& instance_id,
+    const std::string& id,
     const base::string16& name,
     uint32 device_class,
     device::BluetoothDevice::VendorIDSource vendor_id_source,
@@ -31,7 +30,7 @@ BluetoothDevice::BluetoothDevice(
     uint16 product_version,
     bool paired,
     const std::vector<std::string>& uuids)
-    : instance_id(instance_id),
+    : id(id),
       name(name),
       device_class(device_class),
       vendor_id_source(vendor_id_source),
@@ -39,8 +38,7 @@ BluetoothDevice::BluetoothDevice(
       product_id(product_id),
       product_version(product_version),
       paired(paired),
-      uuids(uuids) {
-}
+      uuids(uuids) {}
 
 BluetoothDevice::~BluetoothDevice() {
 }

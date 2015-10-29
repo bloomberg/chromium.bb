@@ -61,10 +61,10 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void requestDevice(int frame_routing_id,
                      const blink::WebRequestDeviceOptions& options,
                      blink::WebBluetoothRequestDeviceCallbacks* callbacks);
-  void connectGATT(const blink::WebString& device_instance_id,
+  void connectGATT(const blink::WebString& device_id,
                    blink::WebBluetoothConnectGATTCallbacks* callbacks);
   void getPrimaryService(
-      const blink::WebString& device_instance_id,
+      const blink::WebString& device_id,
       const blink::WebString& service_uuid,
       blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks);
 

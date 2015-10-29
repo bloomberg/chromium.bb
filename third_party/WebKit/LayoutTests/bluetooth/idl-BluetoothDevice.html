@@ -21,7 +21,7 @@ promise_test(() => {
 
       // Attempt (and fail) to overwrite all members, verifying they are
       // readonly.
-      device.instanceID = 'overwritten';
+      device.id = 'overwritten';
       device.name = 'overwritten';
       device.deviceClass = 'overwritten';
       device.vendorIDSource = 'overwritten';
@@ -30,7 +30,7 @@ promise_test(() => {
       device.productVersion = 'overwritten';
       device.paired = 'overwritten';
       device.uuids = 'overwritten';
-      assert_equals(device.instanceID, '00:00:00:00:00:03');
+      assert_equals(device.id, '00:00:00:00:00:03');
       assert_equals(device.name, 'Heart Rate Device');
       assert_equals(device.deviceClass, 0x1F00);
       assert_equals(device.vendorIDSource, 'bluetooth');

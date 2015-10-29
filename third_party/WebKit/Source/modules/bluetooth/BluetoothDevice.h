@@ -41,7 +41,7 @@ public:
     DEFINE_INLINE_TRACE() { }
 
     // IDL exposed interface:
-    String instanceID() { return m_webDevice->instanceID; }
+    String id() { return m_webDevice->id; }
     String name() { return m_webDevice->name; }
     unsigned deviceClass(bool& isNull);
     String vendorIDSource();

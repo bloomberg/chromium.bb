@@ -56,13 +56,13 @@ public:
     // BluetoothDevice methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothdevice
     // WebBluetoothConnectGATTCallbacks ownership transferred to the callee.
-    virtual void connectGATT(const WebString& /* deviceInstanceID */,
+    virtual void connectGATT(const WebString& deviceId,
         WebBluetoothConnectGATTCallbacks*) { }
 
     // BluetoothGATTRemoteServer methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
     virtual void disconnect() { }
-    virtual void getPrimaryService(const WebString& deviceInstanceID,
+    virtual void getPrimaryService(const WebString& deviceId,
         const WebString& serviceUUID,
         WebBluetoothGetPrimaryServiceCallbacks*) { }
     // virtual void getPrimaryServices() { }

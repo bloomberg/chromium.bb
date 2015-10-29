@@ -18,7 +18,7 @@ namespace content {
 // blink::WebBluetoothDevice.
 struct CONTENT_EXPORT BluetoothDevice {
   BluetoothDevice();
-  BluetoothDevice(const std::string& instance_id,
+  BluetoothDevice(const std::string& id,
                   const base::string16& name,
                   uint32 device_class,
                   device::BluetoothDevice::VendorIDSource vendor_id_source,
@@ -32,7 +32,7 @@ struct CONTENT_EXPORT BluetoothDevice {
   static std::vector<std::string> UUIDsFromBluetoothUUIDs(
       const device::BluetoothDevice::UUIDList& uuid_list);
 
-  std::string instance_id;
+  std::string id;
   base::string16 name;
   uint32 device_class;
   device::BluetoothDevice::VendorIDSource vendor_id_source;

@@ -19,7 +19,8 @@ enum VendorIDSource {
 // : ServiceEventHandlers 
 {
 // Implement BluetoothDevice interface: http://crbug.com/421668
-    readonly    attribute DOMString                  instanceID;
+    [DeprecateAs=BluetoothDeviceInstanceId, ImplementedAs=id] readonly attribute DOMString instanceID;
+    readonly    attribute DOMString id;
     readonly    attribute DOMString?                 name;
 //    readonly    attribute BluetoothAdvertisingData   adData;
     readonly    attribute unsigned long?             deviceClass;

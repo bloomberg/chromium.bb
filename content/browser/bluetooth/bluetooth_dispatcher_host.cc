@@ -529,10 +529,9 @@ void BluetoothDispatcherHost::OnRequestDevice(
   StartDeviceDiscovery(session, chooser_id);
 }
 
-void BluetoothDispatcherHost::OnConnectGATT(
-    int thread_id,
-    int request_id,
-    const std::string& device_instance_id) {
+void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
+                                            int request_id,
+                                            const std::string& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::CONNECT_GATT);
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -543,7 +542,7 @@ void BluetoothDispatcherHost::OnConnectGATT(
   // the device. https://crbug.com/484745
 
   CacheQueryResult query_result = CacheQueryResult();
-  QueryCacheForDevice(device_instance_id, query_result);
+  QueryCacheForDevice(device_id, query_result);
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
     RecordConnectGATTOutcome(query_result.outcome);
@@ -554,23 +553,23 @@ void BluetoothDispatcherHost::OnConnectGATT(
 
   query_result.device->CreateGattConnection(
       base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
-                 weak_ptr_on_ui_thread_, thread_id, request_id,
-                 device_instance_id, start_time),
+                 weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
+                 start_time),
       base::Bind(&BluetoothDispatcherHost::OnCreateGATTConnectionError,
-                 weak_ptr_on_ui_thread_, thread_id, request_id,
-                 device_instance_id, start_time));
+                 weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
+                 start_time));
 }
 
 void BluetoothDispatcherHost::OnGetPrimaryService(
     int thread_id,
     int request_id,
-    const std::string& device_instance_id,
+    const std::string& device_id,
     const std::string& service_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_PRIMARY_SERVICE);
   RecordGetPrimaryServiceService(BluetoothUUID(service_uuid));
 
-  // TODO(ortuno): Check if device_instance_id is in "allowed devices"
+  // TODO(ortuno): Check if device_id is in "allowed devices"
   // https://crbug.com/493459
   // TODO(ortuno): Check if service_uuid is in "allowed services"
   // https://crbug.com/493460
@@ -579,8 +578,8 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&BluetoothDispatcherHost::OnServicesDiscovered,
-                 weak_ptr_on_ui_thread_, thread_id, request_id,
-                 device_instance_id, service_uuid),
+                 weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
+                 service_uuid),
       base::TimeDelta::FromSeconds(current_delay_time_));
 }
 
@@ -902,7 +901,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     VLOG(1) << "\t" << uuid.canonical_value();
 
   content::BluetoothDevice device_ipc(
-      device->GetAddress(),         // instance_id
+      device->GetAddress(),         // id
       device->GetName(),            // name
       device->GetBluetoothClass(),  // device_class
       device->GetVendorIDSource(),  // vendor_id_source
@@ -921,21 +920,20 @@ void BluetoothDispatcherHost::FinishClosingChooser(
 void BluetoothDispatcherHost::OnGATTConnectionCreated(
     int thread_id,
     int request_id,
-    const std::string& device_instance_id,
+    const std::string& device_id,
     base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   connections_.push_back(connection.Pass());
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
-  Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,
-                                           device_instance_id));
+  Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id, device_id));
 }
 
 void BluetoothDispatcherHost::OnCreateGATTConnectionError(
     int thread_id,
     int request_id,
-    const std::string& device_instance_id,
+    const std::string& device_id,
     base::TimeTicks start_time,
     device::BluetoothDevice::ConnectErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -951,12 +949,12 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
 void BluetoothDispatcherHost::OnServicesDiscovered(
     int thread_id,
     int request_id,
-    const std::string& device_instance_id,
+    const std::string& device_id,
     const std::string& service_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   CacheQueryResult query_result = CacheQueryResult();
-  QueryCacheForDevice(device_instance_id, query_result);
+  QueryCacheForDevice(device_id, query_result);
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
     RecordGetPrimaryServiceOutcome(query_result.outcome);
@@ -972,12 +970,12 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
       // TODO(ortuno): Use generated instance ID instead.
       // https://crbug.com/495379
       const std::string& service_identifier = service->GetIdentifier();
-      auto insert_result = service_to_device_.insert(
-          make_pair(service_identifier, device_instance_id));
+      auto insert_result =
+          service_to_device_.insert(make_pair(service_identifier, device_id));
 
       // If a value is already in map, DCHECK it's valid.
       if (!insert_result.second)
-        DCHECK(insert_result.first->second == device_instance_id);
+        DCHECK(insert_result.first->second == device_id);
 
       RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::SUCCESS);
       Send(new BluetoothMsg_GetPrimaryServiceSuccess(thread_id, request_id,
@@ -1065,10 +1063,9 @@ void BluetoothDispatcherHost::OnStopNotifySession(
   Send(new BluetoothMsg_StopNotificationsSuccess(thread_id, request_id));
 }
 
-void BluetoothDispatcherHost::QueryCacheForDevice(
-    const std::string& device_instance_id,
-    CacheQueryResult& result) {
-  result.device = adapter_->GetDevice(device_instance_id);
+void BluetoothDispatcherHost::QueryCacheForDevice(const std::string& device_id,
+                                                  CacheQueryResult& result) {
+  result.device = adapter_->GetDevice(device_id);
   // When a device can't be found in the BluetoothAdapter, that generally
   // indicates that it's gone out of range. We reject with a NetworkError in
   // that case.

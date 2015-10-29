@@ -60896,6 +60896,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="980" label="HTMLMediaElementPreloadForcedNone"/>
   <int value="981" label="ExternalAddSearchProvider"/>
   <int value="982" label="ExternalIsSearchProviderInstalled"/>
+  <int value="983" label="V8Permissions_RequestAll_Method"/>
+  <int value="984" label="BluetoothDeviceInstanceId"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

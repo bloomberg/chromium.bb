@@ -302,6 +302,7 @@ interface BluetoothCharacteristicProperties
     method constructor
 interface BluetoothDevice
     getter deviceClass
+    getter id
     getter instanceID
     getter name
     getter paired

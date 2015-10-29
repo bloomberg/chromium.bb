@@ -96,11 +96,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int frame_routing_id,
       const std::vector<content::BluetoothScanFilter>& filters,
       const std::vector<device::BluetoothUUID>& optional_services);
-  void OnConnectGATT(int thread_id, int request_id,
-                     const std::string& device_instance_id);
+  void OnConnectGATT(int thread_id,
+                     int request_id,
+                     const std::string& device_id);
   void OnGetPrimaryService(int thread_id,
                            int request_id,
-                           const std::string& device_instance_id,
+                           const std::string& device_id,
                            const std::string& service_uuid);
   void OnGetCharacteristic(int thread_id,
                            int request_id,
@@ -148,13 +149,13 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnGATTConnectionCreated(
       int thread_id,
       int request_id,
-      const std::string& device_instance_id,
+      const std::string& device_id,
       base::TimeTicks start_time,
       scoped_ptr<device::BluetoothGattConnection> connection);
   void OnCreateGATTConnectionError(
       int thread_id,
       int request_id,
-      const std::string& device_instance_id,
+      const std::string& device_id,
       base::TimeTicks start_time,
       device::BluetoothDevice::ConnectErrorCode error_code);
 
@@ -163,7 +164,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // See: https://crbug.com/484504
   void OnServicesDiscovered(int thread_id,
                             int request_id,
-                            const std::string& device_instance_id,
+                            const std::string& device_id,
                             const std::string& service_uuid);
 
   // Callbacks for BluetoothGattCharacteristic::ReadRemoteCharacteristic.
@@ -204,9 +205,9 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // was already recorded and since there renderer crashed there is no need to
   // send a response.
 
-  // Queries the platform cache for a Device with |device_instance_id|. If
+  // Queries the platform cache for a Device with |device_id|. If
   // successful the device will be in result.device
-  void QueryCacheForDevice(const std::string& device_instance_id,
+  void QueryCacheForDevice(const std::string& device_id,
                            CacheQueryResult& result);
   // Queries the platform cache for a Service with |service_instance_id|.
   // If successfull the service will be in result.service.
@@ -233,7 +234,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   IDMap<RequestDeviceSession, IDMapOwnPointer> request_device_sessions_;
 
   // Maps to get the object's parent based on it's instanceID
-  // Map of service_instance_id to device_instance_id.
+  // Map of service_instance_id to device_id.
   std::map<std::string, std::string> service_to_device_;
   // Map of characteristic_instance_id to service_instance_id.
   std::map<std::string, std::string> characteristic_to_service_;
