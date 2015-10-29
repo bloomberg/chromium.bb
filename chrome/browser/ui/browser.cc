@@ -1395,6 +1395,14 @@ content::SecurityStyle Browser::GetSecurityStyle(
     }
   }
 
+  if (security_info.is_secure_protocol_and_ciphersuite) {
+    security_style_explanations->secure_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
+            l10n_util::GetStringUTF8(
+                IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION)));
+  }
+
   return security_style;
 }
 

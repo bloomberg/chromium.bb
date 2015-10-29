@@ -112,6 +112,9 @@ class SecurityStateModel
     // Information about the SSL connection, such as protocol and
     // ciphersuite. See ssl_connection_flags.h in net.
     int connection_status;
+    // True if the protocol version and ciphersuite for the connection
+    // are considered secure.
+    bool is_secure_protocol_and_ciphersuite;
   };
 
   // These security styles describe the treatment given to pages that

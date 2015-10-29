@@ -530,10 +530,7 @@ void WebsiteSettings::Init(
   } else {
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED;
 
-    if (net::SSLConnectionStatusToVersion(security_info.connection_status) >=
-            net::SSL_CONNECTION_VERSION_TLS1_2 &&
-        net::IsSecureTLSCipherSuite(net::SSLConnectionStatusToCipherSuite(
-            security_info.connection_status))) {
+    if (security_info.is_secure_protocol_and_ciphersuite) {
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
           subject_name));

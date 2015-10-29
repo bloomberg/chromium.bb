@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 
 #if defined(OS_CHROMEOS)
@@ -198,7 +199,8 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
       cert_status(0),
       cert_id(0),
       security_bits(-1),
-      connection_status(0) {}
+      connection_status(0),
+      is_secure_protocol_and_ciphersuite(false) {}
 
 SecurityStateModel::SecurityInfo::~SecurityInfo() {}
 
@@ -249,6 +251,11 @@ void SecurityStateModel::SecurityInfoForRequest(const GURL& url,
   security_info->connection_status = ssl.connection_status;
   security_info->cert_status = ssl.cert_status;
   security_info->scheme_is_cryptographic = url.SchemeIsCryptographic();
+  security_info->is_secure_protocol_and_ciphersuite =
+      (net::SSLConnectionStatusToVersion(ssl.connection_status) >=
+           net::SSL_CONNECTION_VERSION_TLS1_2 &&
+       net::IsSecureTLSCipherSuite(
+           net::SSLConnectionStatusToCipherSuite(ssl.connection_status)));
 
   security_info->sct_verify_statuses.clear();
   for (const auto& sct : ssl.signed_certificate_timestamp_ids) {

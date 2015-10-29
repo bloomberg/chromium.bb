@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -98,7 +99,11 @@
 #include "extensions/common/extension_set.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 
@@ -420,19 +425,28 @@ void CheckSecureExplanations(
     const std::vector<content::SecurityStyleExplanation>& secure_explanations,
     CertificateStatus cert_status,
     Browser* browser) {
-  if (cert_status != VALID_CERTIFICATE) {
-    EXPECT_EQ(0u, secure_explanations.size());
-    return;
+  ASSERT_EQ(cert_status == VALID_CERTIFICATE ? 2u : 1u,
+            secure_explanations.size());
+  if (cert_status == VALID_CERTIFICATE) {
+    EXPECT_EQ(l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
+              secure_explanations[0].summary);
+    EXPECT_EQ(
+        l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
+        secure_explanations[0].description);
+    int cert_id = browser->tab_strip_model()
+                      ->GetActiveWebContents()
+                      ->GetController()
+                      .GetActiveEntry()
+                      ->GetSSL()
+                      .cert_id;
+    EXPECT_EQ(cert_id, secure_explanations[0].cert_id);
   }
 
-  EXPECT_EQ(1u, secure_explanations.size());
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
-            secure_explanations[0].summary);
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
-            secure_explanations[0].description);
-  int cert_id = browser->tab_strip_model()->GetActiveWebContents()->
-      GetController().GetActiveEntry()->GetSSL().cert_id;
-  EXPECT_EQ(cert_id, secure_explanations[0].cert_id);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
+            secure_explanations.back().summary);
+  EXPECT_EQ(
+      l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION),
+      secure_explanations.back().description);
 }
 
 }  // namespace
@@ -3130,6 +3144,65 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserverGoBack) {
 }
 
 namespace {
+
+// A URLRequestMockHTTPJob that mocks an SSL connection with an
+// obsolete protocol version.
+class URLRequestNonsecureConnection : public net::URLRequestMockHTTPJob {
+ public:
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    info->ssl_info.connection_status = (net::SSL_CONNECTION_VERSION_TLS1_1
+                                        << net::SSL_CONNECTION_VERSION_SHIFT);
+    // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
+    // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
+    const uint16 ciphersuite = 0xc02f;
+    net::SSLConnectionStatusSetCipherSuite(ciphersuite,
+                                           &info->ssl_info.connection_status);
+  }
+
+ protected:
+  ~URLRequestNonsecureConnection() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLRequestNonsecureConnection);
+};
+
+class BrowserTestNonsecureURLRequest : public BrowserTest {
+ public:
+  BrowserTestNonsecureURLRequest() : BrowserTest() {}
+  void SetUpOnMainThread() override {
+    base::FilePath root_http;
+    PathService::Get(chrome::DIR_TEST_DATA, &root_http);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &URLRequestNonsecureConnection::AddUrlHandlers, root_http,
+            make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserTestNonsecureURLRequest);
+};
+
+}  // namespace
+
+// Tests that a nonsecure connection does not get a secure connection
+// explanation.
+IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
+                       SecurityStyleChangedObserverNonsecureConnection) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStyleTestObserver observer(web_contents);
+
+  ui_test_utils::NavigateToURL(
+      browser(), URLRequestNonsecureConnection::GetMockHttpsUrl(std::string()));
+  for (const auto& explanation :
+       observer.latest_explanations().secure_explanations) {
+    EXPECT_NE(l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
+              explanation.summary);
+  }
+}
+
+namespace {
 class JSBooleanResultGetter {
  public:
   JSBooleanResultGetter() = default;
@@ -3192,4 +3265,3 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
 
   CheckDisplayModeMQ(ASCIIToUTF16("fullscreen"), app_contents);
 }
-

@@ -15198,6 +15198,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION" desc="Description of a site that has a valid server certificate.">
         The connection to this site is using a valid, trusted server certificate.
       </message>
+      <message name="IDS_SECURE_PROTOCOL_AND_CIPHERSUITE" desc="Summary phrase for a site that uses a modern, secure TLS protocol version and ciphersuite.">
+        Secure TLS connection
+      </message>
+      <message name="IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION" desc="Description of a site that uses a modern, secure TLS protocol version and ciphersuite.">
+        The connection to this site is using a strong protocol version and cipher suite.
+      </message>
       <message name="IDS_SAVE_PASSWORD_TITLE" desc="The title of the save password bubble when a password can be saved.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for <ph name="ORIGIN">$2<ex>example.com</ex></ph>?
       </message>
