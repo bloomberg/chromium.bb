@@ -7,26 +7,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "net/cert/internal/test_helpers.h"
-#include "net/der/input.h"
-#include "net/der/parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace {
-
-der::Input SequenceValueFromString(const std::string* s) {
-  der::Parser parser(InputFromString(s));
-  der::Input data;
-  if (!parser.ReadTag(der::kSequence, &data)) {
-    ADD_FAILURE();
-    return der::Input();
-  }
-  if (parser.HasMore()) {
-    ADD_FAILURE();
-    return der::Input();
-  }
-  return data;
-}
 
 // Loads test data from file. The filename is constructed from the parameters:
 // |prefix| describes the type of data being tested, e.g. "ascii",
@@ -230,6 +214,58 @@ TEST_P(VerifyNameMatchDifferingTypesTest, NormalizableTypesAreEqual) {
     EXPECT_FALSE(VerifyNameMatch(SequenceValueFromString(&der_1),
                                  SequenceValueFromString(&der_2)));
   }
+}
+
+TEST_P(VerifyNameMatchDifferingTypesTest, NormalizableTypesInSubtrees) {
+  std::string der_1;
+  ASSERT_TRUE(LoadTestData("ascii", value_type_1(), "unmangled", &der_1));
+  std::string der_1_extra_rdn;
+  ASSERT_TRUE(LoadTestData("ascii", value_type_1(), "unmangled-extra_rdn",
+                           &der_1_extra_rdn));
+  std::string der_1_extra_attr;
+  ASSERT_TRUE(LoadTestData("ascii", value_type_1(), "unmangled-extra_attr",
+                           &der_1_extra_attr));
+  std::string der_2;
+  ASSERT_TRUE(LoadTestData("ascii", value_type_2(), "unmangled", &der_2));
+  std::string der_2_extra_rdn;
+  ASSERT_TRUE(LoadTestData("ascii", value_type_2(), "unmangled-extra_rdn",
+                           &der_2_extra_rdn));
+  std::string der_2_extra_attr;
+  ASSERT_TRUE(LoadTestData("ascii", value_type_2(), "unmangled-extra_attr",
+                           &der_2_extra_attr));
+
+  if (TypesAreComparable(value_type_1(), value_type_2())) {
+    EXPECT_TRUE(VerifyNameInSubtree(SequenceValueFromString(&der_1),
+                                    SequenceValueFromString(&der_2)));
+    EXPECT_TRUE(VerifyNameInSubtree(SequenceValueFromString(&der_2),
+                                    SequenceValueFromString(&der_1)));
+    EXPECT_TRUE(VerifyNameInSubtree(SequenceValueFromString(&der_1_extra_rdn),
+                                    SequenceValueFromString(&der_2)));
+    EXPECT_TRUE(VerifyNameInSubtree(SequenceValueFromString(&der_2_extra_rdn),
+                                    SequenceValueFromString(&der_1)));
+  } else {
+    EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_1),
+                                     SequenceValueFromString(&der_2)));
+    EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_2),
+                                     SequenceValueFromString(&der_1)));
+    EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_1_extra_rdn),
+                                     SequenceValueFromString(&der_2)));
+    EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_2_extra_rdn),
+                                     SequenceValueFromString(&der_1)));
+  }
+
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_1),
+                                   SequenceValueFromString(&der_2_extra_rdn)));
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_2),
+                                   SequenceValueFromString(&der_1_extra_rdn)));
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_1_extra_attr),
+                                   SequenceValueFromString(&der_2)));
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_2_extra_attr),
+                                   SequenceValueFromString(&der_1)));
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_1),
+                                   SequenceValueFromString(&der_2_extra_attr)));
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&der_2),
+                                   SequenceValueFromString(&der_1_extra_attr)));
 }
 
 // Runs VerifyNameMatchDifferingTypesTest for all combinations of value types in
@@ -457,6 +493,38 @@ TEST(VerifyNameMatchRDNSorting, DuplicateTypes) {
                               SequenceValueFromString(&b)));
   EXPECT_TRUE(VerifyNameMatch(SequenceValueFromString(&b),
                               SequenceValueFromString(&a)));
+}
+
+TEST(VerifyNameInSubtreeInvalidDataTest, FailOnEmptyRdn) {
+  std::string valid;
+  ASSERT_TRUE(LoadTestData("ascii", "PRINTABLESTRING", "unmangled", &valid));
+  std::string invalid;
+  ASSERT_TRUE(LoadTestData("invalid", "RDN", "empty", &invalid));
+  // For both |name| and |parent|, a RelativeDistinguishedName must have at
+  // least one AttributeTypeAndValue.
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&valid),
+                                   SequenceValueFromString(&invalid)));
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&invalid),
+                                   SequenceValueFromString(&valid)));
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&invalid),
+                                   SequenceValueFromString(&invalid)));
+}
+
+TEST(VerifyNameInSubtreeTest, EmptyNameMatching) {
+  std::string empty;
+  ASSERT_TRUE(LoadTestData("valid", "Name", "empty", &empty));
+  std::string non_empty;
+  ASSERT_TRUE(
+      LoadTestData("ascii", "PRINTABLESTRING", "unmangled", &non_empty));
+  // Empty name is in the subtree defined by empty name.
+  EXPECT_TRUE(VerifyNameInSubtree(SequenceValueFromString(&empty),
+                                  SequenceValueFromString(&empty)));
+  // Any non-empty name is in the subtree defined by empty name.
+  EXPECT_TRUE(VerifyNameInSubtree(SequenceValueFromString(&non_empty),
+                                  SequenceValueFromString(&empty)));
+  // Empty name is not in the subtree defined by non-empty name.
+  EXPECT_FALSE(VerifyNameInSubtree(SequenceValueFromString(&empty),
+                                   SequenceValueFromString(&non_empty)));
 }
 
 }  // namespace net

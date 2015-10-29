@@ -44,20 +44,24 @@ class NameGenerator:
   def __init__(self):
     self.rdns = []
 
+  def token(self):
+    return "NAME"
+
   def add_rdn(self):
     rdn = RDN()
     self.rdns.append(rdn)
     return rdn
 
   def __str__(self):
-    s = 'asn1 = SEQUENCE:rdnSequence\n\n[rdnSequence]\n'
+    s = 'asn1 = SEQUENCE:rdnSequence%i\n\n[rdnSequence%i]\n' % (
+        id(self), id(self))
     for n, rdn in enumerate(self.rdns):
-      s += 'rdn%i = SET:rdnSet%i\n' % (n, n)
+      s += 'rdn%i = SET:rdnSet%i_%i\n' % (n, id(self), n)
 
     s += '\n'
 
     for n, rdn in enumerate(self.rdns):
-      s += '[rdnSet%i]\n%s\n' % (n, rdn)
+      s += '[rdnSet%i_%i]\n%s\n' % (id(self), n, rdn)
 
     return s
 

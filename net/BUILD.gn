@@ -1559,6 +1559,7 @@ test("net_unittests") {
     #      'action_name': 'copy_test_data',
     #      'variables': {
     #        'test_data_files': [
+    #          'data/name_constraints_unittest/',
     #          'data/ssl/certificates/',
     #          'data/test.html',
     #          'data/url_request_unittest/',

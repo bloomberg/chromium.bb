@@ -22,6 +22,17 @@ namespace net {
 
 namespace {
 
+// RFC 5280 section A.1:
+//
+// pkcs-9 OBJECT IDENTIFIER ::=
+//   { iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) 9 }
+//
+// id-emailAddress      AttributeType ::= { pkcs-9 1 }
+//
+// In dotted form: 1.2.840.113549.1.9.1
+const uint8_t kOidEmailAddress[] = {0x2A, 0x86, 0x48, 0x86, 0xF7,
+                                    0x0D, 0x01, 0x09, 0x01};
+
 // Types of character set checking that NormalizeDirectoryString can perform.
 enum CharsetEnforcement {
   NO_ENFORCEMENT,
@@ -389,8 +400,16 @@ bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
   return true;
 }
 
-}  // namespace
+enum NameMatchType {
+  EXACT_MATCH,
+  SUBTREE_MATCH,
+};
 
+// Verify that |a| matches |b|. If |match_type| is EXACT_MATCH, returns true if
+// they are an exact match as defined by RFC 5280 7.1. If |match_type| is
+// SUBTREE_MATCH, returns true if |a| is within the subtree defined by |b| as
+// defined by RFC 5280 7.1.
+//
 // |a| and |b| are ASN.1 RDNSequence values (not including the Sequence tag),
 // defined in RFC 5280 section 4.1.2.4:
 //
@@ -401,7 +420,9 @@ bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
 //
 // RelativeDistinguishedName ::=
 //   SET SIZE (1..MAX) OF AttributeTypeAndValue
-bool VerifyNameMatch(const der::Input& a, const der::Input& b) {
+bool VerifyNameMatchInternal(const der::Input& a,
+                             const der::Input& b,
+                             NameMatchType match_type) {
   // Empty Names are allowed.  RFC 5280 section 4.1.2.4 requires "The issuer
   // field MUST contain a non-empty distinguished name (DN)", while section
   // 4.1.2.6 allows for the Subject to be empty in certain cases. The caller is
@@ -421,7 +442,12 @@ bool VerifyNameMatch(const der::Input& a, const der::Input& b) {
       return false;
     }
   }
-  if (a_rdn_sequence_counter.HasMore() || b_rdn_sequence_counter.HasMore())
+  // If doing exact match and either of the sequences has more elements than the
+  // other, not a match. If doing a subtree match, the first Name may have more
+  // RDNs than the second.
+  if (b_rdn_sequence_counter.HasMore())
+    return false;
+  if (match_type == EXACT_MATCH && a_rdn_sequence_counter.HasMore())
     return false;
 
   // Same number of RDNs, now check if they match.
@@ -437,6 +463,44 @@ bool VerifyNameMatch(const der::Input& a, const der::Input& b) {
       return false;
   }
 
+  return true;
+}
+
+}  // namespace
+
+bool VerifyNameMatch(const der::Input& a_rdn_sequence,
+                     const der::Input& b_rdn_sequence) {
+  return VerifyNameMatchInternal(a_rdn_sequence, b_rdn_sequence, EXACT_MATCH);
+}
+
+bool VerifyNameInSubtree(const der::Input& name_rdn_sequence,
+                         const der::Input& parent_rdn_sequence) {
+  return VerifyNameMatchInternal(name_rdn_sequence, parent_rdn_sequence,
+                                 SUBTREE_MATCH);
+}
+
+bool NameContainsEmailAddress(const der::Input& name_rdn_sequence,
+                              bool* contained_email_address) {
+  der::Parser rdn_sequence_parser(name_rdn_sequence);
+
+  while (rdn_sequence_parser.HasMore()) {
+    der::Parser rdn_parser;
+    if (!rdn_sequence_parser.ReadConstructed(der::kSet, &rdn_parser))
+      return false;
+
+    std::vector<AttributeTypeAndValue> type_and_values;
+    if (!ReadRdn(&rdn_parser, &type_and_values))
+      return false;
+
+    for (const auto& type_and_value : type_and_values) {
+      if (type_and_value.type.Equals(der::Input(kOidEmailAddress))) {
+        *contained_email_address = true;
+        return true;
+      }
+    }
+  }
+
+  *contained_email_address = false;
   return true;
 }
 

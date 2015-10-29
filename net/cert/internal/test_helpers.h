@@ -33,6 +33,14 @@ bool operator==(const Input& a, const Input& b);
 // from accidentally passing an r-value.
 der::Input InputFromString(const std::string* s);
 
+// Parses |s| as a DER SEQUENCE TLV and returns a der::Input corresponding to
+// the value portion. On error returns an empty der::Input and adds a gtest
+// failure.
+//
+// The returned der::Input() is only valid so long as the input string is alive
+// and is not mutated.
+der::Input SequenceValueFromString(const std::string* s);
+
 // Helper structure that maps a PEM block header (for instance "CERTIFICATE") to
 // the destination where the value for that block should be written.
 struct PemBlockMapping {

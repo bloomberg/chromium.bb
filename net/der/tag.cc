@@ -20,8 +20,16 @@ Tag ContextSpecificPrimitive(uint8_t base) {
   return (base & kTagNumberMask) | kTagPrimitive | kTagContextSpecific;
 }
 
+bool IsContextSpecific(Tag tag) {
+  return (tag & kTagClassMask) == kTagContextSpecific;
+}
+
 bool IsConstructed(Tag tag) {
   return (tag & kTagConstructionMask) == kTagConstructed;
+}
+
+uint8_t GetTagNumber(Tag tag) {
+  return tag & kTagNumberMask;
 }
 
 }  // namespace der
