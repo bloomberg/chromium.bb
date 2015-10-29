@@ -18,13 +18,13 @@ sync_pb::SyncEnums::DeviceType GetLocalDeviceType(bool is_tablet) {
   return sync_pb::SyncEnums_DeviceType_TYPE_CROS;
 #elif defined(OS_LINUX)
   return sync_pb::SyncEnums_DeviceType_TYPE_LINUX;
+#elif defined(OS_ANDROID) || defined(OS_IOS)
+  return is_tablet ? sync_pb::SyncEnums_DeviceType_TYPE_TABLET
+                   : sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
 #elif defined(OS_MACOSX)
   return sync_pb::SyncEnums_DeviceType_TYPE_MAC;
 #elif defined(OS_WIN)
   return sync_pb::SyncEnums_DeviceType_TYPE_WIN;
-#elif defined(OS_ANDROID)
-  return is_tablet ? sync_pb::SyncEnums_DeviceType_TYPE_TABLET
-                   : sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
 #else
   return sync_pb::SyncEnums_DeviceType_TYPE_OTHER;
 #endif
@@ -57,7 +57,13 @@ std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
   } else {
     return MakeUserAgentForSync("ANDROID-PHONE ", channel_);
   }
-#elif !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#elif defined(OS_IOS)
+  if (is_tablet_) {
+    return MakeUserAgentForSync("IOS-TABLET ", channel_);
+  } else {
+    return MakeUserAgentForSync("IOS-PHONE ", channel_);
+  }
+#else
   return MakeDesktopUserAgentForSync(channel_);
 #endif
 }
