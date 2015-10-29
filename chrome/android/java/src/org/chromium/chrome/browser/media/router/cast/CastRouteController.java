@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.router.cast;
 
+import android.content.Context;
+
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
@@ -11,10 +13,15 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.RouteController;
 import org.chromium.chrome.browser.media.router.RouteDelegate;
+import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
+import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
+import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,7 +35,7 @@ import java.util.Set;
 /**
  * A wrapper around the established Cast application session.
  */
-public class CastRouteController implements RouteController {
+public class CastRouteController implements RouteController, MediaNotificationListener {
     private static final String TAG = "cr_MediaRouter";
 
     private static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
@@ -85,6 +92,7 @@ public class CastRouteController implements RouteController {
     private int mSequenceNumber;
     private boolean mStoppingApplication;
     private boolean mDetached;
+    private MediaNotificationInfo.Builder mNotificationBuilder;
 
     /**
      * Initializes a new {@link CastRouteController} instance.
@@ -121,6 +129,22 @@ public class CastRouteController implements RouteController {
         mMessageChannel = new CastMessagingChannel(this);
         addNamespace(RECEIVER_NAMESPACE);
         addNamespace(MEDIA_NAMESPACE);
+
+        Context context = ApplicationStatus.getApplicationContext();
+        mNotificationBuilder = new MediaNotificationInfo.Builder()
+                .setTitle(context.getString(
+                        R.string.cast_casting_video, mCastDevice.getFriendlyName()))
+                .setPaused(false)
+                .setOrigin(origin)
+                .setTabId(tabId)
+                // TODO(avayvod): pass true here if initiated from the incognito mode.
+                // MediaRouter is disabled for Incognito mode for now, see https://crbug.com/525215
+                .setPrivate(false)
+                .setIcon(R.drawable.ic_notification_media_route)
+                .setActions(MediaNotificationInfo.ACTION_STOP)
+                .setId(R.id.presentation_notification)
+                .setListener(this);
+        MediaNotificationManager.show(context, mNotificationBuilder);
     }
 
     public CastRouteController createJoinedController(String mediaRouteId, String origin, int tabId,
@@ -136,6 +160,9 @@ public class CastRouteController implements RouteController {
     public String getSessionId() {
         return mSessionId;
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // RouteController implementation.
 
     @Override
     public void close() {
@@ -163,6 +190,13 @@ public class CastRouteController implements RouteController {
 
                             mRouteDelegate.onRouteClosed(CastRouteController.this);
                             mStoppingApplication = false;
+
+                            // The detached route will be closed only if another route joined
+                            // the same session so it will take over the notification.
+                            if (!mDetached) {
+                                MediaNotificationManager.hide(
+                                        mTabId, R.id.presentation_notification);
+                            }
                         }
                     });
         }
@@ -176,6 +210,7 @@ public class CastRouteController implements RouteController {
         mRouteDelegate.onMessageSentResult(false, callbackId);
     }
 
+    @Override
     public void sendBinaryMessage(byte[] data, int callbackId) {
         // TODO(crbug.com/524128): Implement this.
     }
@@ -214,6 +249,24 @@ public class CastRouteController implements RouteController {
     public boolean isDetached() {
         return mDetached;
     }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // MediaNotificationListener implementation.
+
+    @Override
+    public void onPlay(int actionSource) {
+    }
+
+    @Override
+    public void onPause(int actionSource) {
+    }
+
+    @Override
+    public void onStop(int actionSource) {
+        close();
+    }
+
 
     /**
      * Sends the internal Cast message to the Cast clients on the page via the media router.
