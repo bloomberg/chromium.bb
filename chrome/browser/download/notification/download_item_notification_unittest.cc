@@ -284,7 +284,17 @@ TEST_F(DownloadItemNotificationTest, DisablePopup) {
   EXPECT_EQ(message_center::DEFAULT_PRIORITY, notification()->priority());
 
   download_item_notification_->DisablePopup();
+  // Priority is low.
   EXPECT_EQ(message_center::LOW_PRIORITY, notification()->priority());
+
+  // Downloading is completed.
+  EXPECT_CALL(*download_item_, GetState())
+      .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
+  EXPECT_CALL(*download_item_, IsDone()).WillRepeatedly(Return(true));
+  download_item_->NotifyObserversDownloadUpdated();
+
+  // Priority is updated back to normal.
+  EXPECT_EQ(message_center::DEFAULT_PRIORITY, notification()->priority());
 }
 
 }  // namespace test
