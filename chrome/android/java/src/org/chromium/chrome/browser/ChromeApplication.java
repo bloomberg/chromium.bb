@@ -482,7 +482,7 @@ public class ChromeApplication extends ContentApplication {
         removeSessionCookies();
         ApplicationStatus.registerApplicationStateListener(createApplicationStateListener());
         AppBannerManager.setAppDetailsDelegate(createAppDetailsDelegate());
-        mChromeLifetimeController = new ChromeLifetimeController(this);
+        mChromeLifetimeController = new ChromeLifetimeController();
 
         PrefServiceBridge.getInstance().migratePreferences(this);
     }
