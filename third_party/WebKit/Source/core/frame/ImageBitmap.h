@@ -41,9 +41,6 @@ public:
     int height() const { return m_cropRect.height(); }
     IntSize size() const { return m_cropRect.size(); }
 
-    bool isNeutered() const { return !m_bitmap && !m_imageElement; }
-    PassRefPtrWillBeRawPtr<ImageBitmap> transfer();
-
     ~ImageBitmap() override;
 
     // CanvasImageSource implementation
@@ -78,6 +75,7 @@ private:
     // ImageBitmaps constructed from HTMLImageElements reference the entire ImageResource and may have a non-zero bitmap offset.
     // ImageBitmaps not constructed from HTMLImageElements always pre-crop and store the image at (0, 0).
     IntPoint m_bitmapOffset;
+
 };
 
 } // namespace blink

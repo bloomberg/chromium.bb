@@ -48,7 +48,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -197,7 +196,6 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     //   postMessage(message, {sequence of transferrables}, targetOrigin);
     OwnPtrWillBeRawPtr<MessagePortArray> portArray = adoptPtrWillBeNoop(new MessagePortArray);
     ArrayBufferArray arrayBufferArray;
-    ImageBitmapArray imageBitmapArray;
     int targetOriginArgIndex = 1;
     if (info.Length() > 2) {
         int transferablesArgIndex = 2;
@@ -206,14 +204,14 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
-        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *portArray, arrayBufferArray, imageBitmapArray, exceptionState)) {
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *portArray, arrayBufferArray, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
     }
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, targetOrigin, info[targetOriginArgIndex]);
 
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], portArray.get(), &arrayBufferArray, &imageBitmapArray, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], portArray.get(), &arrayBufferArray, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 

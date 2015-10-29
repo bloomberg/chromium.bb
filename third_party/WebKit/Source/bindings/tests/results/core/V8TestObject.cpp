@@ -61,7 +61,6 @@
 #include "core/dom/MessagePort.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
-#include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
@@ -1108,7 +1107,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "serializedScriptValueAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    RefPtr<SerializedScriptValue> cppValue = SerializedScriptValueFactory::instance().create(info.GetIsolate(), v8Value, nullptr, nullptr, nullptr, exceptionState);
+    RefPtr<SerializedScriptValue> cppValue = SerializedScriptValueFactory::instance().create(info.GetIsolate(), v8Value, 0, 0, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setSerializedScriptValueAttribute(WTF::getPtr(cppValue));
@@ -7923,7 +7922,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtr<SerializedScriptValue> serializedScriptValueArg;
     {
-        serializedScriptValueArg = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], nullptr, nullptr, nullptr, exceptionState);
+        serializedScriptValueArg = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], 0, 0, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -10911,15 +10910,14 @@ void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::
     }
     OwnPtrWillBeRawPtr<MessagePortArray> ports = adoptPtrWillBeNoop(new MessagePortArray);
     ArrayBufferArray arrayBuffers;
-    ImageBitmapArray imageBitmaps;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
-        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *ports, arrayBuffers, imageBitmaps, exceptionState)) {
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *ports, arrayBuffers, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports.get(), &arrayBuffers, &imageBitmaps, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports.get(), &arrayBuffers, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.
