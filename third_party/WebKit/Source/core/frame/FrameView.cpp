@@ -3378,6 +3378,9 @@ bool FrameView::shouldIgnoreOverflowHidden() const
 
 void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
 {
+    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls())
+        return;
+
     // Avoid drawing two sets of scrollbars when visual viewport is enabled.
     if (visualViewportSuppliesScrollbars()) {
         setHasHorizontalScrollbar(false);
