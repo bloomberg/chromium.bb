@@ -101,7 +101,7 @@ class CONTENT_EXPORT ContentClient {
   // Used as part of the user agent string.
   virtual std::string GetProduct() const;
 
-  // Returns the user agent.
+  // Returns the user agent.  Content may cache this value.
   virtual std::string GetUserAgent() const;
 
   // Returns a string resource given its id.

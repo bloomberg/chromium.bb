@@ -487,7 +487,12 @@ blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
 }
 
 WebString BlinkPlatformImpl::userAgent() {
-  return WebString::fromUTF8(GetContentClient()->GetUserAgent());
+  CR_DEFINE_STATIC_LOCAL(
+      blink::WebString, user_agent,
+      (blink::WebString::fromUTF8(GetContentClient()->GetUserAgent())));
+  DCHECK(user_agent ==
+         blink::WebString::fromUTF8(GetContentClient()->GetUserAgent()));
+  return user_agent;
 }
 
 WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
