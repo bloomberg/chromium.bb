@@ -191,7 +191,7 @@ scoped_refptr<ui::NativePixmap> VaapiDrmPicture::ScalePixmap(
   return scaled_pixmap_;
 }
 
-scoped_refptr<gfx::GLImage> VaapiDrmPicture::GetImageToBind() {
+scoped_refptr<gl::GLImage> VaapiDrmPicture::GetImageToBind() {
   return gl_image_;
 }
 

@@ -18,7 +18,7 @@ class Size;
 
 namespace content {
 
-class StreamTexture : public gfx::GLImage,
+class StreamTexture : public gl::GLImage,
                       public IPC::Listener,
                       public GpuCommandBufferStub::DestructionObserver {
  public:
@@ -32,7 +32,7 @@ class StreamTexture : public gfx::GLImage,
                 uint32 texture_id);
   ~StreamTexture() override;
 
-  // gfx::GLImage implementation:
+  // gl::GLImage implementation:
   void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;

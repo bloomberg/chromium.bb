@@ -22,7 +22,7 @@ class ProcessMemoryDump;
 }
 }
 
-namespace gfx {
+namespace gl {
 
 // Encapsulates an image that can be bound and/or copied to a texture, hiding
 // platform specific management.
@@ -34,7 +34,7 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   virtual void Destroy(bool have_context) = 0;
 
   // Get the size of the image.
-  virtual Size GetSize() = 0;
+  virtual gfx::Size GetSize() = 0;
 
   // Get the internal format of the image.
   virtual unsigned GetInternalFormat() = 0;
@@ -55,15 +55,15 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Returns true on success. It is valid for an implementation to always
   // return false.
   virtual bool CopyTexSubImage(unsigned target,
-                               const Point& offset,
-                               const Rect& rect) = 0;
+                               const gfx::Point& offset,
+                               const gfx::Rect& rect) = 0;
 
   // Schedule image as an overlay plane to be shown at swap time for |widget|.
-  virtual bool ScheduleOverlayPlane(AcceleratedWidget widget,
+  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                     int z_order,
-                                    OverlayTransform transform,
-                                    const Rect& bounds_rect,
-                                    const RectF& crop_rect) = 0;
+                                    gfx::OverlayTransform transform,
+                                    const gfx::Rect& bounds_rect,
+                                    const gfx::RectF& crop_rect) = 0;
 
   // Dumps information about the memory backing the GLImage to a dump named
   // |dump_name|.
@@ -80,6 +80,6 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   DISALLOW_COPY_AND_ASSIGN(GLImage);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_H_

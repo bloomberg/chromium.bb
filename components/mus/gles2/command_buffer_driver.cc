@@ -249,8 +249,8 @@ void CommandBufferDriver::CreateImage(int32_t id,
   handle = base::FileDescriptor(platform_handle, false);
 #endif
 
-  scoped_refptr<gfx::GLImageSharedMemory> image =
-      new gfx::GLImageSharedMemory(gfx_size, internal_format);
+  scoped_refptr<gl::GLImageSharedMemory> image =
+      new gl::GLImageSharedMemory(gfx_size, internal_format);
   // TODO(jam): also need a mojo enum for this enum
   if (!image->Initialize(handle, gfx::GpuMemoryBufferId(id), gpu_format, 0)) {
     NOTREACHED();

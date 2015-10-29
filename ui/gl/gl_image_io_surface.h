@@ -19,31 +19,31 @@
 typedef void* CALayer;
 #endif
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLImageIOSurface : public GLImage {
  public:
-  GLImageIOSurface(const Size& size, unsigned internalformat);
+  GLImageIOSurface(const gfx::Size& size, unsigned internalformat);
 
   bool Initialize(IOSurfaceRef io_surface,
-                  GenericSharedMemoryId io_surface_id,
-                  BufferFormat format);
+                  gfx::GenericSharedMemoryId io_surface_id,
+                  gfx::BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
-  Size GetSize() override;
+  gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
-                       const Point& offset,
-                       const Rect& rect) override;
-  bool ScheduleOverlayPlane(AcceleratedWidget widget,
+                       const gfx::Point& offset,
+                       const gfx::Rect& rect) override;
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
-                            OverlayTransform transform,
-                            const Rect& bounds_rect,
-                            const RectF& crop_rect) override;
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
@@ -51,22 +51,22 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
 
-  static void SetLayerForWidget(AcceleratedWidget widget, CALayer* layer);
+  static void SetLayerForWidget(gfx::AcceleratedWidget widget, CALayer* layer);
 
  protected:
   ~GLImageIOSurface() override;
 
  private:
-  const Size size_;
+  const gfx::Size size_;
   const unsigned internalformat_;
-  BufferFormat format_;
+  gfx::BufferFormat format_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  GenericSharedMemoryId io_surface_id_;
+  gfx::GenericSharedMemoryId io_surface_id_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_IO_SURFACE_H_

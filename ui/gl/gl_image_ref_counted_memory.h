@@ -14,7 +14,7 @@ class RefCountedMemory;
 
 namespace gfx {
 
-class GL_EXPORT GLImageRefCountedMemory : public GLImageMemory {
+class GL_EXPORT GLImageRefCountedMemory : public gl::GLImageMemory {
  public:
   GLImageRefCountedMemory(const Size& size, unsigned internalformat);
 

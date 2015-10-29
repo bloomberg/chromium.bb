@@ -218,7 +218,7 @@ gpu::ImageFactory* GpuMemoryBufferFactoryIOSurface::AsImageFactory() {
   return this;
 }
 
-scoped_refptr<gfx::GLImage>
+scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
@@ -231,12 +231,12 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
   IOSurfaceMapKey key(handle.id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
   if (it == io_surfaces_.end())
-    return scoped_refptr<gfx::GLImage>();
+    return scoped_refptr<gl::GLImage>();
 
-  scoped_refptr<gfx::GLImageIOSurface> image(
-      new gfx::GLImageIOSurface(size, internalformat));
+  scoped_refptr<gl::GLImageIOSurface> image(
+      new gl::GLImageIOSurface(size, internalformat));
   if (!image->Initialize(it->second.get(), handle.id, format))
-    return scoped_refptr<gfx::GLImage>();
+    return scoped_refptr<gl::GLImage>();
 
   return image;
 }

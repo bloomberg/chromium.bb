@@ -712,8 +712,8 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
-      scoped_refptr<gfx::GLImageSharedMemory> image(
-          new gfx::GLImageSharedMemory(size, internalformat));
+      scoped_refptr<gl::GLImageSharedMemory> image(
+          new gl::GLImageSharedMemory(size, internalformat));
       if (!image->Initialize(handle.handle, handle.id, format, handle.offset)) {
         LOG(ERROR) << "Failed to initialize image.";
         return;
@@ -731,7 +731,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
       // Note: this assumes that client ID is always 0.
       const int kClientId = 0;
 
-      scoped_refptr<gfx::GLImage> image =
+      scoped_refptr<gl::GLImage> image =
           image_factory_->CreateImageForGpuMemoryBuffer(
               handle, size, format, internalformat, kClientId);
       if (!image.get()) {

@@ -11,7 +11,7 @@
 
 namespace gfx {
 
-class GL_EXPORT GLImageOzoneNativePixmap : public GLImageEGL {
+class GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
  public:
   GLImageOzoneNativePixmap(const Size& size, unsigned internalformat);
 

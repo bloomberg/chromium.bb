@@ -7,9 +7,9 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/android/surface_texture.h"
 
-namespace gfx {
+namespace gl {
 
-GLImageSurfaceTexture::GLImageSurfaceTexture(const Size& size)
+GLImageSurfaceTexture::GLImageSurfaceTexture(const gfx::Size& size)
     : size_(size), texture_id_(0) {}
 
 GLImageSurfaceTexture::~GLImageSurfaceTexture() {
@@ -18,7 +18,7 @@ GLImageSurfaceTexture::~GLImageSurfaceTexture() {
   DCHECK_EQ(0, texture_id_);
 }
 
-bool GLImageSurfaceTexture::Initialize(SurfaceTexture* surface_texture) {
+bool GLImageSurfaceTexture::Initialize(gfx::SurfaceTexture* surface_texture) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!surface_texture_.get());
   surface_texture_ = surface_texture;
@@ -31,7 +31,7 @@ void GLImageSurfaceTexture::Destroy(bool have_context) {
   texture_id_ = 0;
 }
 
-Size GLImageSurfaceTexture::GetSize() {
+gfx::Size GLImageSurfaceTexture::GetSize() {
   return size_;
 }
 
@@ -84,16 +84,17 @@ bool GLImageSurfaceTexture::CopyTexImage(unsigned target) {
 }
 
 bool GLImageSurfaceTexture::CopyTexSubImage(unsigned target,
-                                            const Point& offset,
-                                            const Rect& rect) {
+                                            const gfx::Point& offset,
+                                            const gfx::Rect& rect) {
   return false;
 }
 
-bool GLImageSurfaceTexture::ScheduleOverlayPlane(AcceleratedWidget widget,
-                                                 int z_order,
-                                                 OverlayTransform transform,
-                                                 const Rect& bounds_rect,
-                                                 const RectF& crop_rect) {
+bool GLImageSurfaceTexture::ScheduleOverlayPlane(
+    gfx::AcceleratedWidget widget,
+    int z_order,
+    gfx::OverlayTransform transform,
+    const gfx::Rect& bounds_rect,
+    const gfx::RectF& crop_rect) {
   return false;
 }
 
@@ -104,4 +105,4 @@ void GLImageSurfaceTexture::OnMemoryDump(
   // TODO(ericrk): Add OnMemoryDump for GLImages. crbug.com/514914
 }
 
-}  // namespace gfx
+}  // namespace gl

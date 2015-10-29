@@ -15,8 +15,9 @@ namespace {
 template <BufferFormat format>
 class GLImageRefCountedMemoryTestDelegate {
  public:
-  scoped_refptr<GLImage> CreateSolidColorImage(const Size& size,
-                                               const uint8_t color[4]) const {
+  scoped_refptr<gl::GLImage> CreateSolidColorImage(
+      const Size& size,
+      const uint8_t color[4]) const {
     DCHECK_EQ(NumberOfPlanesForBufferFormat(format), 1u);
     std::vector<uint8_t> data(BufferSizeForBufferFormat(size, format));
     scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
@@ -25,7 +26,7 @@ class GLImageRefCountedMemoryTestDelegate {
         static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)),
         format, color, &bytes->data().front());
     scoped_refptr<GLImageRefCountedMemory> image(new GLImageRefCountedMemory(
-        size, GLImageMemory::GetInternalFormatForTesting(format)));
+        size, gl::GLImageMemory::GetInternalFormatForTesting(format)));
     bool rv = image->Initialize(bytes.get(), format);
     EXPECT_TRUE(rv);
     return image;

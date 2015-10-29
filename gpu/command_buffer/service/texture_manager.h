@@ -152,15 +152,15 @@ class GPU_EXPORT Texture {
   // Set the image for a particular level.
   void SetLevelImage(GLenum target,
                      GLint level,
-                     gfx::GLImage* image,
+                     gl::GLImage* image,
                      ImageState state);
 
   // Get the image associated with a particular level. Returns NULL if level
   // does not exist.
-  gfx::GLImage* GetLevelImage(GLint target,
-                              GLint level,
-                              ImageState* state) const;
-  gfx::GLImage* GetLevelImage(GLint target, GLint level) const;
+  gl::GLImage* GetLevelImage(GLint target,
+                             GLint level,
+                             ImageState* state) const;
+  gl::GLImage* GetLevelImage(GLint target, GLint level) const;
 
   bool HasImages() const {
     return has_images_;
@@ -263,7 +263,7 @@ class GPU_EXPORT Texture {
     GLint border;
     GLenum format;
     GLenum type;
-    scoped_refptr<gfx::GLImage> image;
+    scoped_refptr<gl::GLImage> image;
     ImageState image_state;
     uint32 estimated_size;
   };
@@ -809,7 +809,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   void SetLevelImage(TextureRef* ref,
                      GLenum target,
                      GLint level,
-                     gfx::GLImage* image,
+                     gl::GLImage* image,
                      Texture::ImageState state);
 
   size_t GetSignatureSize() const;

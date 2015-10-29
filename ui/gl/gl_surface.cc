@@ -182,7 +182,7 @@ VSyncProvider* GLSurface::GetVSyncProvider() {
 
 bool GLSurface::ScheduleOverlayPlane(int z_order,
                                      OverlayTransform transform,
-                                     GLImage* image,
+                                     gl::GLImage* image,
                                      const Rect& bounds_rect,
                                      const RectF& crop_rect) {
   NOTIMPLEMENTED();
@@ -320,7 +320,7 @@ VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
 
 bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
                                             OverlayTransform transform,
-                                            GLImage* image,
+                                            gl::GLImage* image,
                                             const Rect& bounds_rect,
                                             const RectF& crop_rect) {
   return surface_->ScheduleOverlayPlane(

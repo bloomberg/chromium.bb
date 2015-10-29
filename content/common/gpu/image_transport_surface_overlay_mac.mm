@@ -661,7 +661,7 @@ bool ImageTransportSurfaceOverlayMac::SetBackbufferAllocation(bool allocated) {
 bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     int z_order,
     gfx::OverlayTransform transform,
-    gfx::GLImage* image,
+    gl::GLImage* image,
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
@@ -669,8 +669,8 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     return false;
 
   linked_ptr<OverlayPlane> plane(new OverlayPlane(
-      z_order, static_cast<gfx::GLImageIOSurface*>(image)->io_surface_id().id,
-      static_cast<gfx::GLImageIOSurface*>(image)->io_surface(),
+      z_order, static_cast<gl::GLImageIOSurface*>(image)->io_surface_id().id,
+      static_cast<gl::GLImageIOSurface*>(image)->io_surface(),
       ConvertRectToDIPF(scale_factor_, bounds_rect), crop_rect));
   if (z_order == 0)
     pending_root_plane_ = plane;

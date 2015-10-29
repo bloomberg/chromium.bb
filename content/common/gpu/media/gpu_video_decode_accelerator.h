@@ -108,7 +108,7 @@ class GpuVideoDecodeAccelerator
   // Helper to bind |image| to the texture specified by |client_texture_id|.
   void BindImage(uint32 client_texture_id,
                  uint32 texture_target,
-                 scoped_refptr<gfx::GLImage> image);
+                 scoped_refptr<gl::GLImage> image);
 
   // Route ID to communicate with the host.
   const int32 host_route_id_;

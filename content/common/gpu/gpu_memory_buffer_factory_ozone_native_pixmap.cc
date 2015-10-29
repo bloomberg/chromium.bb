@@ -108,7 +108,7 @@ gpu::ImageFactory* GpuMemoryBufferFactoryOzoneNativePixmap::AsImageFactory() {
   return this;
 }
 
-scoped_refptr<gfx::GLImage>
+scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,

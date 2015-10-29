@@ -14,9 +14,9 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "ui/gfx/buffer_format_util.h"
 
-namespace gfx {
+namespace gl {
 
-GLImageSharedMemory::GLImageSharedMemory(const Size& size,
+GLImageSharedMemory::GLImageSharedMemory(const gfx::Size& size,
                                          unsigned internalformat)
     : GLImageMemory(size, internalformat) {}
 
@@ -24,10 +24,11 @@ GLImageSharedMemory::~GLImageSharedMemory() {
   DCHECK(!shared_memory_);
 }
 
-bool GLImageSharedMemory::Initialize(const base::SharedMemoryHandle& handle,
-                                     GenericSharedMemoryId shared_memory_id,
-                                     BufferFormat format,
-                                     size_t offset) {
+bool GLImageSharedMemory::Initialize(
+    const base::SharedMemoryHandle& handle,
+    gfx::GenericSharedMemoryId shared_memory_id,
+    gfx::BufferFormat format,
+    size_t offset) {
   size_t size_in_bytes;
   if (!BufferSizeForBufferFormatChecked(GetSize(), format, &size_in_bytes))
     return false;
@@ -104,4 +105,4 @@ void GLImageSharedMemory::OnMemoryDump(
   pmd->AddOwnershipEdge(dump->guid(), guid);
 }
 
-}  // namespace gfx
+}  // namespace gl

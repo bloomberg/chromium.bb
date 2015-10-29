@@ -52,7 +52,7 @@ bool VaapiTFPPicture::Initialize() {
     return false;
   }
 
-  glx_image_ = new gfx::GLImageGLX(size(), GL_RGB);
+  glx_image_ = new gl::GLImageGLX(size(), GL_RGB);
   if (!glx_image_->Initialize(x_pixmap_)) {
     // x_pixmap_ will be freed in the destructor.
     LOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
@@ -74,7 +74,7 @@ bool VaapiTFPPicture::DownloadFromSurface(
                                               va_surface->size());
 }
 
-scoped_refptr<gfx::GLImage> VaapiTFPPicture::GetImageToBind() {
+scoped_refptr<gl::GLImage> VaapiTFPPicture::GetImageToBind() {
   return nullptr;
 }
 

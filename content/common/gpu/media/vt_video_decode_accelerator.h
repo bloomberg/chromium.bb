@@ -36,7 +36,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
   explicit VTVideoDecodeAccelerator(
       const base::Callback<bool(void)>& make_context_current,
-      const base::Callback<void(uint32, uint32, scoped_refptr<gfx::GLImage>)>&
+      const base::Callback<void(uint32, uint32, scoped_refptr<gl::GLImage>)>&
           bind_image);
   ~VTVideoDecodeAccelerator() override;
 
@@ -127,7 +127,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
     // The GLImage representation of |cv_image|. This is kept around to ensure
     // that Destroy is called on it before it hits its destructor (there is a
     // DCHECK that requires this).
-    scoped_refptr<gfx::GLImageIOSurface> gl_image;
+    scoped_refptr<gl::GLImageIOSurface> gl_image;
 
     // Texture IDs for the image buffer.
     const uint32_t client_texture_id;
@@ -187,7 +187,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // GPU thread state.
   //
   base::Callback<bool(void)> make_context_current_;
-  base::Callback<void(uint32, uint32, scoped_refptr<gfx::GLImage>)> bind_image_;
+  base::Callback<void(uint32, uint32, scoped_refptr<gl::GLImage>)> bind_image_;
   media::VideoDecodeAccelerator::Client* client_;
   State state_;
 

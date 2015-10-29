@@ -18,10 +18,12 @@
 #include <OpenGL/CGLIOSurface.h>
 #include <Quartz/Quartz.h>
 
-namespace gfx {
+using gfx::BufferFormat;
+
+namespace gl {
 namespace {
 
-using WidgetToLayerMap = std::map<AcceleratedWidget, CALayer*>;
+using WidgetToLayerMap = std::map<gfx::AcceleratedWidget, CALayer*>;
 base::LazyInstance<WidgetToLayerMap> g_widget_to_layer_map;
 
 bool ValidInternalFormat(unsigned internalformat) {
@@ -145,7 +147,8 @@ GLenum DataType(BufferFormat format) {
 
 }  // namespace
 
-GLImageIOSurface::GLImageIOSurface(const Size& size, unsigned internalformat)
+GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
+                                   unsigned internalformat)
     : size_(size),
       internalformat_(internalformat),
       format_(BufferFormat::RGBA_8888) {}
@@ -156,7 +159,7 @@ GLImageIOSurface::~GLImageIOSurface() {
 }
 
 bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface,
-                                  GenericSharedMemoryId io_surface_id,
+                                  gfx::GenericSharedMemoryId io_surface_id,
                                   BufferFormat format) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!io_surface_);
@@ -182,7 +185,7 @@ void GLImageIOSurface::Destroy(bool have_context) {
   io_surface_.reset();
 }
 
-Size GLImageIOSurface::GetSize() {
+gfx::Size GLImageIOSurface::GetSize() {
   return size_;
 }
 
@@ -198,7 +201,7 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
   }
 
   CGLContextObj cgl_context =
-      static_cast<CGLContextObj>(GLContext::GetCurrent()->GetHandle());
+      static_cast<CGLContextObj>(gfx::GLContext::GetCurrent()->GetHandle());
 
   DCHECK(io_surface_);
   CGLError cgl_error =
@@ -218,16 +221,16 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
 }
 
 bool GLImageIOSurface::CopyTexSubImage(unsigned target,
-                                       const Point& offset,
-                                       const Rect& rect) {
+                                       const gfx::Point& offset,
+                                       const gfx::Rect& rect) {
   return false;
 }
 
-bool GLImageIOSurface::ScheduleOverlayPlane(AcceleratedWidget widget,
+bool GLImageIOSurface::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                             int z_order,
-                                            OverlayTransform transform,
-                                            const Rect& bounds_rect,
-                                            const RectF& crop_rect) {
+                                            gfx::OverlayTransform transform,
+                                            const gfx::Rect& bounds_rect,
+                                            const gfx::RectF& crop_rect) {
   NOTREACHED();
   return false;
 }
@@ -256,7 +259,7 @@ base::ScopedCFTypeRef<IOSurfaceRef> GLImageIOSurface::io_surface() {
 }
 
 // static
-void GLImageIOSurface::SetLayerForWidget(AcceleratedWidget widget,
+void GLImageIOSurface::SetLayerForWidget(gfx::AcceleratedWidget widget,
                                          CALayer* layer) {
   if (layer)
     g_widget_to_layer_map.Pointer()->insert(std::make_pair(widget, layer));

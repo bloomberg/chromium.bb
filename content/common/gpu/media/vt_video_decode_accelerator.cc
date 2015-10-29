@@ -300,7 +300,7 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
     const base::Callback<bool(void)>& make_context_current,
-    const base::Callback<void(uint32, uint32, scoped_refptr<gfx::GLImage>)>&
+    const base::Callback<void(uint32, uint32, scoped_refptr<gl::GLImage>)>&
         bind_image)
     : make_context_current_(make_context_current),
       bind_image_(bind_image),
@@ -1044,8 +1044,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   }
 
   bool allow_overlay = false;
-  scoped_refptr<gfx::GLImageIOSurface> gl_image(
-      new gfx::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
+  scoped_refptr<gl::GLImageIOSurface> gl_image(
+      new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
   if (gl_image->Initialize(surface, gfx::GenericSharedMemoryId(),
                            gfx::BufferFormat::BGRA_8888)) {
     allow_overlay = true;

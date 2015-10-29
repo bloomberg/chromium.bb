@@ -10,29 +10,29 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLImageGLX : public GLImage {
  public:
-  GLImageGLX(const Size& size, unsigned internalformat);
+  GLImageGLX(const gfx::Size& size, unsigned internalformat);
 
   bool Initialize(XID pixmap);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
-  Size GetSize() override;
+  gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
   bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
-                       const Point& offset,
-                       const Rect& rect) override;
-  bool ScheduleOverlayPlane(AcceleratedWidget widget,
+                       const gfx::Point& offset,
+                       const gfx::Rect& rect) override;
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
-                            OverlayTransform transform,
-                            const Rect& bounds_rect,
-                            const RectF& crop_rect) override;
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
@@ -42,12 +42,12 @@ class GL_EXPORT GLImageGLX : public GLImage {
 
  private:
   XID glx_pixmap_;
-  const Size size_;
+  const gfx::Size size_;
   unsigned internalformat_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageGLX);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_GLX_H_

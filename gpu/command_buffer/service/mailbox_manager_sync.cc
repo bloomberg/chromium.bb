@@ -273,7 +273,7 @@ void MailboxManagerSync::UpdateDefinitionLocked(
   if (SkipTextureWorkarounds(texture))
     return;
 
-  gfx::GLImage* image = texture->GetLevelImage(texture->target(), 0);
+  gl::GLImage* image = texture->GetLevelImage(texture->target(), 0);
   TextureGroup* group = group_ref->group.get();
   const TextureDefinition& definition = group->GetDefinition();
   scoped_refptr<NativeImageBuffer> image_buffer = definition.image();

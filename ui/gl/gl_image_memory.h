@@ -10,46 +10,46 @@
 #include "base/numerics/safe_math.h"
 #include "ui/gfx/buffer_types.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLImageMemory : public GLImage {
  public:
-  GLImageMemory(const Size& size, unsigned internalformat);
+  GLImageMemory(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(const unsigned char* memory, BufferFormat format);
+  bool Initialize(const unsigned char* memory, gfx::BufferFormat format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
-  Size GetSize() override;
+  gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
-                       const Point& offset,
-                       const Rect& rect) override;
-  bool ScheduleOverlayPlane(AcceleratedWidget widget,
+                       const gfx::Point& offset,
+                       const gfx::Rect& rect) override;
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
-                            OverlayTransform transform,
-                            const Rect& bounds_rect,
-                            const RectF& crop_rect) override;
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override;
 
-  static unsigned GetInternalFormatForTesting(BufferFormat format);
+  static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
 
  protected:
   ~GLImageMemory() override;
 
-  BufferFormat format() const { return format_; }
+  gfx::BufferFormat format() const { return format_; }
 
  private:
-  const Size size_;
+  const gfx::Size size_;
   const unsigned internalformat_;
   const unsigned char* memory_;
-  BufferFormat format_;
+  gfx::BufferFormat format_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageMemory);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_MEMORY_H_

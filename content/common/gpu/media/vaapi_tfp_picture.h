@@ -16,8 +16,11 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace gfx {
-class GLImageGLX;
 class GLContextGLX;
+}
+
+namespace gl {
+class GLImageGLX;
 }
 
 namespace content {
@@ -39,7 +42,7 @@ class VaapiTFPPicture : public VaapiPicture {
 
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
 
-  scoped_refptr<gfx::GLImage> GetImageToBind() override;
+  scoped_refptr<gl::GLImage> GetImageToBind() override;
 
  private:
   VaapiWrapper* vaapi_wrapper_;  // Not owned.
@@ -48,7 +51,7 @@ class VaapiTFPPicture : public VaapiPicture {
   Display* x_display_;
 
   Pixmap x_pixmap_;
-  scoped_refptr<gfx::GLImageGLX> glx_image_;
+  scoped_refptr<gl::GLImageGLX> glx_image_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiTFPPicture);
 };

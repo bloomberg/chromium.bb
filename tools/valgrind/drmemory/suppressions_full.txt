@@ -1847,7 +1847,7 @@ system call NtDuplicateObject
 KERNELBASE.dll!DuplicateHandle
 KERNEL32.dll!DuplicateHandle
 base.dll!base::SharedMemory::ShareToProcessCommon
-gl_wrapper.dll!gfx::GLImageSharedMemory::Initialize
+gl_wrapper.dll!gl::GLImageSharedMemory::Initialize
 content.dll!content::GpuChannel::CreateImageForGpuMemoryBuffer
 content.dll!content::GpuCommandBufferStub::OnCreateImage
 

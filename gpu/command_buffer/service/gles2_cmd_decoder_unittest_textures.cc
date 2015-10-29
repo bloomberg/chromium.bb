@@ -2611,7 +2611,7 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);
   EXPECT_FALSE(GetImageManager()->LookupImage(1) == NULL);
 
@@ -2647,7 +2647,7 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
 }
 
 TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);
   DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
 
@@ -2658,7 +2658,7 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
 }
 
 TEST_P(GLES2DecoderTest, OrphanGLImageWithTexImage2D) {
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 
@@ -2681,7 +2681,7 @@ TEST_P(GLES2DecoderTest, GLImageAttachedAfterSubTexImage2D) {
   ASSERT_FALSE(
       feature_info()->workarounds().texsubimage_faster_than_teximage);
 
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 
@@ -2726,7 +2726,7 @@ TEST_P(GLES2DecoderTest, GLImageAttachedAfterSubTexImage2D) {
 }
 
 TEST_P(GLES2DecoderTest, GLImageAttachedAfterClearLevel) {
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
 
@@ -2779,7 +2779,7 @@ TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);
   EXPECT_FALSE(GetImageManager()->LookupImage(1) == NULL);
 
@@ -2820,11 +2820,11 @@ TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 }
 
-class MockGLImage : public gfx::GLImage {
+class MockGLImage : public gl::GLImage {
  public:
   MockGLImage() {}
 
-  // Overridden from gfx::GLImage:
+  // Overridden from gl::GLImage:
   MOCK_METHOD0(GetSize, gfx::Size());
   MOCK_METHOD0(GetInternalFormat, unsigned());
   MOCK_METHOD1(Destroy, void(bool));

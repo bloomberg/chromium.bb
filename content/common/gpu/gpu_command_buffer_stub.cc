@@ -1142,7 +1142,7 @@ void GpuCommandBufferStub::OnCreateImage(int32 id,
     return;
   }
 
-  scoped_refptr<gfx::GLImage> image = channel()->CreateImageForGpuMemoryBuffer(
+  scoped_refptr<gl::GLImage> image = channel()->CreateImageForGpuMemoryBuffer(
       handle, size, format, internalformat);
   if (!image.get())
     return;

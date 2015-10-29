@@ -81,7 +81,7 @@ EGLint FourCC(BufferFormat format) {
 
 GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const Size& size,
                                                    unsigned internalformat)
-    : GLImageEGL(size), internalformat_(internalformat) {}
+    : gl::GLImageEGL(size), internalformat_(internalformat) {}
 
 GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
 }
@@ -91,8 +91,8 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
   DCHECK(!pixmap_);
   if (pixmap->GetEGLClientBuffer()) {
     EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
-    if (!GLImageEGL::Initialize(EGL_NATIVE_PIXMAP_KHR,
-                                pixmap->GetEGLClientBuffer(), attrs)) {
+    if (!gl::GLImageEGL::Initialize(EGL_NATIVE_PIXMAP_KHR,
+                                    pixmap->GetEGLClientBuffer(), attrs)) {
       return false;
     }
   } else if (pixmap->GetDmaBufFd() >= 0) {
@@ -121,8 +121,9 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
                       EGL_DMA_BUF_PLANE0_PITCH_EXT,
                       pixmap->GetDmaBufPitch(),
                       EGL_NONE};
-    if (!GLImageEGL::Initialize(EGL_LINUX_DMA_BUF_EXT,
-                                static_cast<EGLClientBuffer>(nullptr), attrs)) {
+    if (!gl::GLImageEGL::Initialize(EGL_LINUX_DMA_BUF_EXT,
+                                    static_cast<EGLClientBuffer>(nullptr),
+                                    attrs)) {
       return false;
     }
   }
@@ -136,7 +137,7 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormat() {
 }
 
 void GLImageOzoneNativePixmap::Destroy(bool have_context) {
-  GLImageEGL::Destroy(have_context);
+  gl::GLImageEGL::Destroy(have_context);
 }
 
 bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(AcceleratedWidget widget,

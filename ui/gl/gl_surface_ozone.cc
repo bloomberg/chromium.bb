@@ -27,6 +27,8 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
+using gl::GLImage;
+
 namespace gfx {
 
 namespace {

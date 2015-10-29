@@ -97,7 +97,7 @@ gpu::ImageFactory* GpuMemoryBufferFactorySurfaceTexture::AsImageFactory() {
   return this;
 }
 
-scoped_refptr<gfx::GLImage>
+scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactorySurfaceTexture::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
@@ -111,12 +111,12 @@ GpuMemoryBufferFactorySurfaceTexture::CreateImageForGpuMemoryBuffer(
   SurfaceTextureMapKey key(handle.id.id, client_id);
   SurfaceTextureMap::iterator it = surface_textures_.find(key);
   if (it == surface_textures_.end())
-    return scoped_refptr<gfx::GLImage>();
+    return scoped_refptr<gl::GLImage>();
 
-  scoped_refptr<gfx::GLImageSurfaceTexture> image(
-      new gfx::GLImageSurfaceTexture(size));
+  scoped_refptr<gl::GLImageSurfaceTexture> image(
+      new gl::GLImageSurfaceTexture(size));
   if (!image->Initialize(it->second.get()))
-    return scoped_refptr<gfx::GLImage>();
+    return scoped_refptr<gl::GLImage>();
 
   return image;
 }

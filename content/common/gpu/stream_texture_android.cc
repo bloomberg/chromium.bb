@@ -38,7 +38,7 @@ bool StreamTexture::Create(
 
     // TODO: Ideally a valid image id was returned to the client so that
     // it could then call glBindTexImage2D() for doing the following.
-    scoped_refptr<gfx::GLImage> gl_image(
+    scoped_refptr<gl::GLImage> gl_image(
         new StreamTexture(owner_stub, stream_id, texture->service_id()));
     gfx::Size size = gl_image->GetSize();
     texture_manager->SetTarget(texture, GL_TEXTURE_EXTERNAL_OES);

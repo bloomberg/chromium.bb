@@ -14,15 +14,15 @@ namespace base {
 class SharedMemory;
 }
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
  public:
-  GLImageSharedMemory(const Size& size, unsigned internalformat);
+  GLImageSharedMemory(const gfx::Size& size, unsigned internalformat);
 
   bool Initialize(const base::SharedMemoryHandle& handle,
-                  GenericSharedMemoryId shared_memory_id,
-                  BufferFormat format,
+                  gfx::GenericSharedMemoryId shared_memory_id,
+                  gfx::BufferFormat format,
                   size_t offset);
 
   // Overridden from GLImage:
@@ -36,11 +36,11 @@ class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
 
  private:
   scoped_ptr<base::SharedMemory> shared_memory_;
-  GenericSharedMemoryId shared_memory_id_;
+  gfx::GenericSharedMemoryId shared_memory_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageSharedMemory);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_SHARED_MEMORY_H_

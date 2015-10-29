@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 
-namespace gfx {
+namespace gl {
 class GLImage;
 }
 
@@ -59,7 +59,7 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
   // Return the AVDACodecImage for a given PictureBuffer's texture.
   AVDACodecImage* GetImageForPicture(const media::PictureBuffer&);
   void SetImageForPicture(const media::PictureBuffer& picture_buffer,
-                          const scoped_refptr<gfx::GLImage>& image);
+                          const scoped_refptr<gl::GLImage>& image);
 
   scoped_refptr<AVDASharedState> shared_state_;
 

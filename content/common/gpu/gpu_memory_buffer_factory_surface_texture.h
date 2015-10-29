@@ -17,8 +17,11 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gfx {
-class GLImage;
 class SurfaceTexture;
+}
+
+namespace gl {
+class GLImage;
 }
 
 namespace content {
@@ -52,7 +55,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactorySurfaceTexture
   gpu::ImageFactory* AsImageFactory() override;
 
   // Overridden from gpu::ImageFactory:
-  scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
+  scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,

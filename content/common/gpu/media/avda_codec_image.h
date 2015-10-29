@@ -12,7 +12,7 @@ namespace content {
 
 // GLImage that renders MediaCodec buffers to a SurfaceTexture as needed
 // in order to draw them.
-class AVDACodecImage : public gfx::GLImage {
+class AVDACodecImage : public gl::GLImage {
  public:
   AVDACodecImage(const scoped_refptr<AVDASharedState>&,
                  media::VideoCodecBridge* codec,
@@ -23,7 +23,7 @@ class AVDACodecImage : public gfx::GLImage {
   ~AVDACodecImage() override;
 
  public:
-  // gfx::GLImage implementation
+  // gl::GLImage implementation
   void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;

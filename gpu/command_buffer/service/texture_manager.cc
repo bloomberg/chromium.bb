@@ -1240,7 +1240,7 @@ bool Texture::ClearLevel(
 
 void Texture::SetLevelImage(GLenum target,
                             GLint level,
-                            gfx::GLImage* image,
+                            gl::GLImage* image,
                             ImageState state) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
@@ -1258,9 +1258,9 @@ void Texture::SetLevelImage(GLenum target,
   UpdateHasImages();
 }
 
-gfx::GLImage* Texture::GetLevelImage(GLint target,
-                                     GLint level,
-                                     ImageState* state) const {
+gl::GLImage* Texture::GetLevelImage(GLint target,
+                                    GLint level,
+                                    ImageState* state) const {
   if (target != GL_TEXTURE_2D && target != GL_TEXTURE_EXTERNAL_OES &&
       target != GL_TEXTURE_RECTANGLE_ARB) {
     return NULL;
@@ -1279,7 +1279,7 @@ gfx::GLImage* Texture::GetLevelImage(GLint target,
   return NULL;
 }
 
-gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
+gl::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
   return GetLevelImage(target, level, nullptr);
 }
 
@@ -1725,7 +1725,7 @@ GLsizei TextureManager::ComputeMipMapCount(GLenum target,
 void TextureManager::SetLevelImage(TextureRef* ref,
                                    GLenum target,
                                    GLint level,
-                                   gfx::GLImage* image,
+                                   gl::GLImage* image,
                                    Texture::ImageState state) {
   DCHECK(ref);
   ref->texture()->SetLevelImage(target, level, image, state);

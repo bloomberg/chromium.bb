@@ -12,7 +12,7 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/ozone/public/native_pixmap.h"
 
-namespace gfx {
+namespace gl {
 class GLImage;
 }
 
@@ -47,7 +47,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
   gpu::ImageFactory* AsImageFactory() override;
 
   // Overridden from gpu::ImageFactory:
-  scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
+  scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,

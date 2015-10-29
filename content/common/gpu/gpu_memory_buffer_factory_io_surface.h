@@ -20,7 +20,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace gfx {
+namespace gl {
 class GLImage;
 }
 
@@ -58,7 +58,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryIOSurface
   gpu::ImageFactory* AsImageFactory() override;
 
   // Overridden from gpu::ImageFactory:
-  scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
+  scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,

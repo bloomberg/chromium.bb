@@ -19,10 +19,13 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_implementation.h"
 
+namespace gl {
+class GLImage;
+}
+
 namespace gfx {
 
 class GLContext;
-class GLImage;
 class VSyncProvider;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
@@ -137,7 +140,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // |bounds_rect|.
   virtual bool ScheduleOverlayPlane(int z_order,
                                     OverlayTransform transform,
-                                    GLImage* image,
+                                    gl::GLImage* image,
                                     const Rect& bounds_rect,
                                     const RectF& crop_rect);
 
@@ -218,7 +221,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,
                             OverlayTransform transform,
-                            GLImage* image,
+                            gl::GLImage* image,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
   bool IsSurfaceless() const override;

@@ -336,7 +336,7 @@ GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
 
 void GpuVideoDecodeAccelerator::BindImage(uint32 client_texture_id,
                                           uint32 texture_target,
-                                          scoped_refptr<gfx::GLImage> image) {
+                                          scoped_refptr<gl::GLImage> image) {
   gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
   gpu::gles2::TextureManager* texture_manager =
       command_decoder->GetContextGroup()->texture_manager();

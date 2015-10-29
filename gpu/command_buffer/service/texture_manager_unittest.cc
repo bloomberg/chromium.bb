@@ -1390,7 +1390,7 @@ TEST_F(TextureTest, GetLevelImage) {
   Texture* texture = texture_ref_->texture();
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
   // Set image.
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 1, image.get(),
                           Texture::BOUND);
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
@@ -1737,7 +1737,7 @@ TEST_P(ProduceConsumeTextureTest, ProduceConsumeTextureWithImage) {
   manager_->SetTarget(texture_ref_.get(), target);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(target), texture->target());
-  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   manager_->SetLevelInfo(texture_ref_.get(), target, 0, GL_RGBA, 0, 0, 1, 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   manager_->SetLevelImage(texture_ref_.get(), target, 0, image.get(),
@@ -2060,14 +2060,14 @@ TEST_F(SharedTextureTest, Images) {
   EXPECT_FALSE(ref2->texture()->HasImages());
   EXPECT_FALSE(texture_manager1_->HaveImages());
   EXPECT_FALSE(texture_manager2_->HaveImages());
-  scoped_refptr<gfx::GLImage> image1(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image1(new gl::GLImageStub);
   texture_manager1_->SetLevelImage(ref1.get(), GL_TEXTURE_2D, 1, image1.get(),
                                    Texture::BOUND);
   EXPECT_TRUE(ref1->texture()->HasImages());
   EXPECT_TRUE(ref2->texture()->HasImages());
   EXPECT_TRUE(texture_manager1_->HaveImages());
   EXPECT_TRUE(texture_manager2_->HaveImages());
-  scoped_refptr<gfx::GLImage> image2(new gfx::GLImageStub);
+  scoped_refptr<gl::GLImage> image2(new gl::GLImageStub);
   texture_manager1_->SetLevelImage(ref1.get(), GL_TEXTURE_2D, 1, image2.get(),
                                    Texture::BOUND);
   EXPECT_TRUE(ref1->texture()->HasImages());

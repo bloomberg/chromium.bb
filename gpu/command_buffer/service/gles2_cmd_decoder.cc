@@ -1896,7 +1896,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Copies the image to the texture currently bound to |textarget|. The image
   // state of |texture| is updated to reflect the new state.
-  void DoCopyTexImage(Texture* texture, GLenum textarget, gfx::GLImage* image);
+  void DoCopyTexImage(Texture* texture, GLenum textarget, gl::GLImage* image);
 
   // This will call DoCopyTexImage if texture has an image but that image is
   // not bound or copied to the texture.
@@ -7532,7 +7532,7 @@ void GLES2DecoderImpl::PerformanceWarning(
 
 void GLES2DecoderImpl::DoCopyTexImage(Texture* texture,
                                       GLenum textarget,
-                                      gfx::GLImage* image) {
+                                      gl::GLImage* image) {
   // Note: We update the state to COPIED prior to calling CopyTexImage()
   // as that allows the GLImage implemenatation to set it back to UNBOUND
   // and ensure that CopyTexImage() is called each time the texture is
@@ -7547,7 +7547,7 @@ void GLES2DecoderImpl::DoCopyTexImageIfNeeded(Texture* texture,
   // Image is already in use if texture is attached to a framebuffer.
   if (texture && !texture->IsAttachedToFramebuffer()) {
     Texture::ImageState image_state;
-    gfx::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
+    gl::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
     if (image && image_state == Texture::UNBOUND) {
       ScopedGLErrorSuppressor suppressor(
           "GLES2DecoderImpl::DoCopyTexImageIfNeeded", GetErrorState());
@@ -7601,7 +7601,7 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
         if (textarget != GL_TEXTURE_CUBE_MAP) {
           Texture* texture = texture_ref->texture();
           Texture::ImageState image_state;
-          gfx::GLImage* image =
+          gl::GLImage* image =
               texture->GetLevelImage(textarget, 0, &image_state);
           if (image && image_state == Texture::UNBOUND &&
               !texture->IsAttachedToFramebuffer()) {
@@ -9366,7 +9366,7 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
     return error::kNoError;
   }
   Texture::ImageState image_state;
-  gfx::GLImage* image =
+  gl::GLImage* image =
       ref->texture()->GetLevelImage(ref->texture()->target(), 0, &image_state);
   if (!image || image_state != Texture::BOUND) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
@@ -12854,7 +12854,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   Texture* dest_texture = dest_texture_ref->texture();
   int source_width = 0;
   int source_height = 0;
-  gfx::GLImage* image =
+  gl::GLImage* image =
       source_texture->GetLevelImage(source_texture->target(), 0);
   if (image) {
     gfx::Size size = image->GetSize();
@@ -13012,7 +13012,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   Texture* dest_texture = dest_texture_ref->texture();
   int source_width = 0;
   int source_height = 0;
-  gfx::GLImage* image =
+  gl::GLImage* image =
       source_texture->GetLevelImage(source_texture->target(), 0);
   if (image) {
     gfx::Size size = image->GetSize();
@@ -13158,7 +13158,7 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLenum target,
   Texture* dest_texture = dest_texture_ref->texture();
   int source_width = 0;
   int source_height = 0;
-  gfx::GLImage* image =
+  gl::GLImage* image =
       source_texture->GetLevelImage(source_texture->target(), 0);
   if (image) {
     gfx::Size size = image->GetSize();
@@ -13334,7 +13334,7 @@ void GLES2DecoderImpl::DoCompressedCopySubTextureCHROMIUM(GLenum target,
   Texture* dest_texture = dest_texture_ref->texture();
   int source_width = 0;
   int source_height = 0;
-  gfx::GLImage* image =
+  gl::GLImage* image =
       source_texture->GetLevelImage(source_texture->target(), 0);
   if (image) {
     gfx::Size size = image->GetSize();
@@ -13939,7 +13939,7 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
     return;
   }
 
-  gfx::GLImage* image = image_manager()->LookupImage(image_id);
+  gl::GLImage* image = image_manager()->LookupImage(image_id);
   if (!image) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
@@ -13982,7 +13982,7 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
     return;
   }
 
-  gfx::GLImage* image = image_manager()->LookupImage(image_id);
+  gl::GLImage* image = image_manager()->LookupImage(image_id);
   if (!image) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,

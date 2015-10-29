@@ -58,13 +58,13 @@ TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
 
   // Create a small solid color green image of preferred format. This must
   // succeed in order for a GLImage to be conformant.
-  scoped_refptr<GLImage> small_image =
+  scoped_refptr<gl::GLImage> small_image =
       this->delegate_.CreateSolidColorImage(small_image_size, image_color);
   ASSERT_TRUE(small_image);
 
   // Create a large solid color green image of preferred format. This must
   // succeed in order for a GLImage to be conformant.
-  scoped_refptr<GLImage> large_image =
+  scoped_refptr<gl::GLImage> large_image =
       this->delegate_.CreateSolidColorImage(large_image_size, image_color);
   ASSERT_TRUE(large_image);
 
@@ -100,7 +100,7 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 
   // Create a solid color green image of preferred format. This must succeed
   // in order for a GLImage to be conformant.
-  scoped_refptr<GLImage> image =
+  scoped_refptr<gl::GLImage> image =
       this->delegate_.CreateSolidColorImage(image_size, image_color);
   ASSERT_TRUE(image);
 

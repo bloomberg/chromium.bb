@@ -148,7 +148,7 @@ class CONTENT_EXPORT GpuChannel
 
   uint64 GetMemoryUsage();
 
-  scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
+  scoped_refptr<gl::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,

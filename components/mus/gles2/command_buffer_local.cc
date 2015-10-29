@@ -137,7 +137,7 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
       MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
 
   gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->GetHandle();
-  scoped_refptr<gfx::GLImageSharedMemory> image(new gfx::GLImageSharedMemory(
+  scoped_refptr<gl::GLImageSharedMemory> image(new gl::GLImageSharedMemory(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       internalformat));
   if (!image->Initialize(base::SharedMemory::DuplicateHandle(handle.handle),

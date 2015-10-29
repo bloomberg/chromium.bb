@@ -15,7 +15,7 @@
 #include "content/common/gpu/media/vaapi_picture.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace gfx {
+namespace gl {
 class GLImage;
 }
 
@@ -42,7 +42,7 @@ class VaapiDrmPicture : public VaapiPicture {
 
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
 
-  scoped_refptr<gfx::GLImage> GetImageToBind() override;
+  scoped_refptr<gl::GLImage> GetImageToBind() override;
 
   bool AllowOverlay() const override;
 
@@ -69,7 +69,7 @@ class VaapiDrmPicture : public VaapiPicture {
   scoped_refptr<ui::NativePixmap> scaled_pixmap_;
 
   // EGLImage bound to the GL textures used by the VDA client.
-  scoped_refptr<gfx::GLImage> gl_image_;
+  scoped_refptr<gl::GLImage> gl_image_;
 
   // VASurface used to transfer from the decoder's pixel format.
   scoped_refptr<VASurface> va_surface_;

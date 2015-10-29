@@ -9,41 +9,41 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLImageEGL : public GLImage {
  public:
-  explicit GLImageEGL(const Size& size);
+  explicit GLImageEGL(const gfx::Size& size);
 
   bool Initialize(EGLenum target, EGLClientBuffer buffer, const EGLint* attrs);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
-  Size GetSize() override;
+  gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
-                       const Point& offset,
-                       const Rect& rect) override;
-  bool ScheduleOverlayPlane(AcceleratedWidget widget,
+                       const gfx::Point& offset,
+                       const gfx::Rect& rect) override;
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
-                            OverlayTransform transform,
-                            const Rect& bounds_rect,
-                            const RectF& crop_rect) override;
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override;
 
  protected:
   ~GLImageEGL() override;
 
   EGLImageKHR egl_image_;
-  const Size size_;
+  const gfx::Size size_;
   base::ThreadChecker thread_checker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLImageEGL);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_EGL_H_

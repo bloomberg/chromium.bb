@@ -14,10 +14,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class GLImage;
-}
-
 namespace gpu {
 class ImageFactory;
 }

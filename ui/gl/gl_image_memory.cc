@@ -11,7 +11,9 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+using gfx::BufferFormat;
+
+namespace gl {
 namespace {
 
 bool ValidInternalFormat(unsigned internalformat) {
@@ -164,7 +166,7 @@ GLenum DataType(BufferFormat format) {
 }
 
 template <typename F>
-scoped_ptr<uint8_t[]> GLES2RGBData(const Size& size,
+scoped_ptr<uint8_t[]> GLES2RGBData(const gfx::Size& size,
                                    BufferFormat format,
                                    const uint8_t* data,
                                    F const& data_to_rgb,
@@ -192,7 +194,7 @@ scoped_ptr<uint8_t[]> GLES2RGBData(const Size& size,
   return gles2_rgb_data.Pass();
 }
 
-scoped_ptr<uint8_t[]> GLES2Data(const Size& size,
+scoped_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
                                 BufferFormat format,
                                 const uint8_t* data,
                                 GLenum* data_format,
@@ -234,7 +236,7 @@ scoped_ptr<uint8_t[]> GLES2Data(const Size& size,
 
 }  // namespace
 
-GLImageMemory::GLImageMemory(const Size& size, unsigned internalformat)
+GLImageMemory::GLImageMemory(const gfx::Size& size, unsigned internalformat)
     : size_(size),
       internalformat_(internalformat),
       memory_(nullptr),
@@ -269,7 +271,7 @@ void GLImageMemory::Destroy(bool have_context) {
   memory_ = nullptr;
 }
 
-Size GLImageMemory::GetSize() {
+gfx::Size GLImageMemory::GetSize() {
   return size_;
 }
 
@@ -299,7 +301,7 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
     GLenum data_format = DataFormat(format_);
     GLenum data_type = DataType(format_);
 
-    if (GLContext::GetCurrent()->GetVersionInfo()->is_es)
+    if (gfx::GLContext::GetCurrent()->GetVersionInfo()->is_es)
       gles2_data = GLES2Data(size_, format_, memory_, &data_format, &data_type);
 
     glTexImage2D(target, 0, TextureFormat(format_), size_.width(),
@@ -311,8 +313,8 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
 }
 
 bool GLImageMemory::CopyTexSubImage(unsigned target,
-                                    const Point& offset,
-                                    const Rect& rect) {
+                                    const gfx::Point& offset,
+                                    const gfx::Rect& rect) {
   TRACE_EVENT2("gpu", "GLImageMemory::CopyTexSubImage", "width", rect.width(),
                "height", rect.height());
 
@@ -341,7 +343,7 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
     GLenum data_type = DataType(format_);
     scoped_ptr<uint8_t[]> gles2_data;
 
-    if (GLContext::GetCurrent()->GetVersionInfo()->is_es) {
+    if (gfx::GLContext::GetCurrent()->GetVersionInfo()->is_es) {
       gles2_data =
           GLES2Data(rect.size(), format_, data, &data_format, &data_type);
     }
@@ -354,11 +356,11 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
   return true;
 }
 
-bool GLImageMemory::ScheduleOverlayPlane(AcceleratedWidget widget,
+bool GLImageMemory::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                          int z_order,
-                                         OverlayTransform transform,
-                                         const Rect& bounds_rect,
-                                         const RectF& crop_rect) {
+                                         gfx::OverlayTransform transform,
+                                         const gfx::Rect& bounds_rect,
+                                         const gfx::RectF& crop_rect) {
   return false;
 }
 
@@ -368,4 +370,4 @@ unsigned GLImageMemory::GetInternalFormatForTesting(BufferFormat format) {
   return TextureFormat(format);
 }
 
-}  // namespace gfx
+}  // namespace gl

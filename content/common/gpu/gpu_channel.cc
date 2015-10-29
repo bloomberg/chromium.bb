@@ -1033,15 +1033,15 @@ uint64 GpuChannel::GetMemoryUsage() {
   return size;
 }
 
-scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
+scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
     uint32 internalformat) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
-      scoped_refptr<gfx::GLImageSharedMemory> image(
-          new gfx::GLImageSharedMemory(size, internalformat));
+      scoped_refptr<gl::GLImageSharedMemory> image(
+          new gl::GLImageSharedMemory(size, internalformat));
       if (!image->Initialize(handle.handle, handle.id, format, handle.offset))
         return nullptr;
 

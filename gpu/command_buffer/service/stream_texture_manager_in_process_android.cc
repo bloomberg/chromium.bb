@@ -17,14 +17,14 @@ namespace gpu {
 namespace {
 
 // Simply wraps a SurfaceTexture reference as a GLImage.
-class GLImageImpl : public gfx::GLImage {
+class GLImageImpl : public gl::GLImage {
  public:
   GLImageImpl(uint32 texture_id,
               gles2::TextureManager* texture_manager,
               const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
               const base::Closure& release_callback);
 
-  // implement gfx::GLImage
+  // implement gl::GLImage
   void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
@@ -168,7 +168,7 @@ GLuint StreamTextureManagerInProcess::CreateStreamTexture(
   base::Closure release_callback =
       base::Bind(&StreamTextureManagerInProcess::OnReleaseStreamTexture,
                  weak_factory_.GetWeakPtr(), stream_id);
-  scoped_refptr<gfx::GLImage> gl_image(
+  scoped_refptr<gl::GLImage> gl_image(
       new GLImageImpl(texture->service_id(), texture_manager, surface_texture,
                       release_callback));
 
