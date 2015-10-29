@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,6 +57,13 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             "QUEUE_REMOVE",
             "QUEUE_REORDER",
             "MEDIA_STATUS",
+    };
+
+    private static final String MEDIA_SUPPORTED_COMMANDS[] = {
+            "pause",
+            "seek",
+            "stream_volume",
+            "stream_mute",
     };
 
     // Map associating overloaded types with the types they represent.
@@ -217,7 +223,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        onMessage("remove_session", "\"" + mSessionId + "\"");
+                        onMessage("remove_session", mSessionId);
                         // TODO(avayvod): handle a failure to stop the application.
                         // https://crbug.com/535577
 
@@ -528,12 +534,53 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         return true;
     }
 
+    /**
+     * Modifies the received MediaStatus message to match the format expected by the client.
+     */
+    private void sanitizeMediaStatusMessage(JSONObject object) throws JSONException {
+        JSONArray mediaStatus = object.getJSONArray("status");
+        for (int i = 0; i < mediaStatus.length(); ++i) {
+            JSONObject status = mediaStatus.getJSONObject(i);
+            if (!status.has("supportedMediaCommands")) continue;
+
+            JSONArray commands = new JSONArray();
+            int bitfieldCommands = status.getInt("supportedMediaCommands");
+            for (int j = 0; j < 4; ++j) {
+                if ((bitfieldCommands & (1 << j)) != 0) {
+                    commands.put(MEDIA_SUPPORTED_COMMANDS[j]);
+                }
+            }
+
+            status.put("supportedMediaCommands", commands);  // Removes current entry.
+        }
+    }
+
     private String buildInternalMessage(
             String type, String message, String clientId, int sequenceNumber) {
-        return String.format(Locale.US,
-                "{ \"type\": \"%s\"," + "\"message\": %s," + "\"sequenceNumber\":%d,"
-                        + "\"timeoutMillis\":0," + "\"clientId\": \"%s\"}",
-                type, message, sequenceNumber, clientId);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", type);
+            json.put("sequenceNumber", sequenceNumber);
+            json.put("timeoutMillis", 0);
+            json.put("clientId", clientId);
+
+            // TODO(mlamouri): we should have a more reliable way to handle string and Object
+            // messages.
+            if ("remove_session".equals(type)) {
+                json.put("message", message);
+            } else {
+                JSONObject jsonMessage = new JSONObject(message);
+                if ("v2_message".equals(type)
+                        && "MEDIA_STATUS".equals(jsonMessage.getString("type"))) {
+                    sanitizeMediaStatusMessage(jsonMessage);
+                }
+                json.put("message", jsonMessage);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "Failed to build the reply: " + e);
+        }
+
+        return json.toString();
     }
 
     public void updateSessionStatus() {
