@@ -82,12 +82,12 @@ class PasswordsCounterTest : public InProcessBrowserTest,
     run_loop_->Run();
   }
 
-  uint32 GetResult() {
+  BrowsingDataCounter::ResultInt GetResult() {
     DCHECK(finished_);
     return result_;
   }
 
-  void Callback(bool finished, uint32 count) {
+  void Callback(bool finished, BrowsingDataCounter::ResultInt count) {
     finished_ = finished;
     result_ = count;
     if (run_loop_ && finished)
@@ -114,7 +114,7 @@ class PasswordsCounterTest : public InProcessBrowserTest,
   base::Time time_;
 
   bool finished_;
-  uint32 result_;
+  BrowsingDataCounter::ResultInt result_;
 };
 
 // Tests that the counter correctly counts each individual credential on

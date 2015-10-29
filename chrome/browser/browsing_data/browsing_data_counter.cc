@@ -58,7 +58,7 @@ void BrowsingDataCounter::Restart() {
   Count();
 }
 
-void BrowsingDataCounter::ReportResult(uint32 value) {
+void BrowsingDataCounter::ReportResult(ResultInt value) {
   DCHECK(initialized_);
   callback_.Run(true, value);
 }

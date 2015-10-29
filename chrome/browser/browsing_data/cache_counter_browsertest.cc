@@ -129,7 +129,7 @@ class CacheCounterTest : public InProcessBrowserTest {
   }
 
   // Callback from the counter.
-  void CountingCallback(bool finished, uint32 count) {
+  void CountingCallback(bool finished, BrowsingDataCounter::ResultInt count) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     finished_ = finished;
     result_ = count;
@@ -137,7 +137,7 @@ class CacheCounterTest : public InProcessBrowserTest {
       run_loop_->Quit();
   }
 
-  uint32 GetResult() {
+  BrowsingDataCounter::ResultInt GetResult() {
     DCHECK(finished_);
     return result_;
   }
@@ -157,7 +157,7 @@ class CacheCounterTest : public InProcessBrowserTest {
   scoped_ptr<base::RunLoop> run_loop_;
 
   bool finished_;
-  uint32 result_;
+  BrowsingDataCounter::ResultInt result_;
 };
 
 // Tests that for the empty cache, the result is zero.
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PeriodChanged) {
 
   SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
   WaitForIOThread();
-  uint32 result = GetResult();
+  BrowsingDataCounter::ResultInt result = GetResult();
 
   SetDeletionPeriodPref(BrowsingDataRemover::LAST_DAY);
   WaitForIOThread();

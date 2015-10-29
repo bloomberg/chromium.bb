@@ -320,10 +320,11 @@ void ClearBrowserDataHandler::AddCounter(
   counters_.push_back(counter.Pass());
 }
 
-void ClearBrowserDataHandler::UpdateCounterText(const std::string& pref_name,
-                                                int text_grd_id,
-                                                bool finished,
-                                                uint32 count) {
+void ClearBrowserDataHandler::UpdateCounterText(
+    const std::string& pref_name,
+    int text_grd_id,
+    bool finished,
+    BrowsingDataCounter::ResultInt count) {
   DCHECK(AreCountersEnabled());
   base::string16 text = finished
       ? l10n_util::GetPluralStringFUTF16(text_grd_id, count)

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/callback.h"
@@ -14,7 +15,8 @@
 
 class BrowsingDataCounter {
  public:
-  typedef base::Callback<void(bool, uint32)> Callback;
+  typedef uint64_t ResultInt;
+  typedef base::Callback<void(bool, ResultInt)> Callback;
 
   BrowsingDataCounter();
   virtual ~BrowsingDataCounter();
@@ -37,7 +39,7 @@ class BrowsingDataCounter {
  protected:
   // Should be called from |Count| by any overriding class to indicate that
   // counting is finished and report the |result|.
-  void ReportResult(uint32 result);
+  void ReportResult(ResultInt result);
 
   // Calculates the beginning of the counting period as |period_| before now.
   base::Time GetPeriodStart();

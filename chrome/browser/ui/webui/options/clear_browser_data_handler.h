@@ -58,7 +58,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   void UpdateCounterText(const std::string& pref_name,
                          int text_grd_id,
                          bool finished,
-                         uint32 count);
+                         BrowsingDataCounter::ResultInt count);
 
   // Implementation of SyncServiceObserver. Updates the support string at the
   // bottom of the dialog.
