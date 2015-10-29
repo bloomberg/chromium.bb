@@ -7,7 +7,9 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/synchronization/waitable_event.h"
 #include "mojo/runner/child_process.mojom.h"
 #include "mojo/runner/child_process_host.h"
 #include "third_party/mojo/src/mojo/edk/embedder/channel_info_forward.h"
@@ -41,14 +43,9 @@ class ChildProcessHost {
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  // After calling |Start()|, this object must not be destroyed until
-  // |DidStart()| has been called.
-  // TODO(vtl): Consider using weak pointers and removing this requirement.
   void Start();
 
   // Waits for the child process to terminate, and returns its exit code.
-  // Note: If |Start()| has been called, this must not be called until the
-  // callback has been called.
   int Join();
 
   // See |ChildController|:
@@ -58,10 +55,10 @@ class ChildProcessHost {
 
  protected:
   // virtual for testing.
-  virtual void DidStart(bool success);
+  virtual void DidStart();
 
  private:
-  bool DoLaunch();
+  void DoLaunch();
 
   void AppCompleted(int32_t result);
 
@@ -77,9 +74,15 @@ class ChildProcessHost {
   embedder::ChannelInfo* channel_info_;
   ChildController::StartAppCallback on_app_complete_;
 
+  // Since Start() calls a method on another thread, we use an event to block
+  // the main thread if it tries to destruct |this| while launching the process.
+  base::WaitableEvent start_child_process_event_;
+
   // Platform-specific "pipe" to the child process. Valid immediately after
   // creation.
   embedder::ScopedPlatformHandle platform_channel_;
+
+  base::WeakPtrFactory<ChildProcessHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessHost);
 };

@@ -25,9 +25,8 @@ class TestChildProcessHost : public ChildProcessHost {
       : ChildProcessHost(context, false, base::FilePath()) {}
   ~TestChildProcessHost() override {}
 
-  void DidStart(bool success) override {
-    EXPECT_TRUE(success);
-    ChildProcessHost::DidStart(success);
+  void DidStart() override {
+    ChildProcessHost::DidStart();
     base::MessageLoop::current()->QuitWhenIdle();
   }
 

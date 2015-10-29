@@ -20,12 +20,8 @@ OutOfProcessNativeRunner::OutOfProcessNativeRunner(Context* context)
 }
 
 OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
-  if (child_process_host_) {
-    // TODO(vtl): Race condition: If |ChildProcessHost::DidStart()| hasn't been
-    // called yet, we shouldn't call |Join()| here. (Until |DidStart()|, we may
-    // not have a child process to wait on.) Probably we should fix |Join()|.
+  if (child_process_host_)
     child_process_host_->Join();
-  }
 }
 
 void OutOfProcessNativeRunner::Start(
@@ -51,6 +47,8 @@ void OutOfProcessNativeRunner::Start(
 void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
   DVLOG(2) << "OutOfProcessNativeRunner::AppCompleted(" << result << ")";
 
+  if (child_process_host_)
+    child_process_host_->Join();
   child_process_host_.reset();
   // This object may be deleted by this callback.
   base::Closure app_completed_callback = app_completed_callback_;
