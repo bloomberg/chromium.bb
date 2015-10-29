@@ -36,6 +36,15 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   FakeLayerTreeHostImpl& host_impl() { return *host_impl_; }
 
   LayerImpl* root_layer() { return host_impl_->active_tree()->root_layer(); }
+  int HitTestSimpleTree(int root_id,
+                        int left_child_id,
+                        int right_child_id,
+                        int root_sorting_context,
+                        int left_child_sorting_context,
+                        int right_child_sorting_context,
+                        float root_depth,
+                        float left_child_depth,
+                        float right_child_depth);
 
   const LayerImplList& RenderSurfaceLayerList() const {
     return host_impl_->active_tree()->RenderSurfaceLayerList();
@@ -812,6 +821,104 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(4, result_layer->id());
+}
+
+int LayerTreeImplTest::HitTestSimpleTree(int root_id,
+                                         int left_child_id,
+                                         int right_child_id,
+                                         int root_sorting_context,
+                                         int left_child_sorting_context,
+                                         int right_child_sorting_context,
+                                         float root_depth,
+                                         float left_child_depth,
+                                         float right_child_depth) {
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl().active_tree(), root_id);
+  scoped_ptr<LayerImpl> left_child =
+      LayerImpl::Create(host_impl().active_tree(), left_child_id);
+  scoped_ptr<LayerImpl> right_child =
+      LayerImpl::Create(host_impl().active_tree(), right_child_id);
+
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  {
+    gfx::Transform translate_z;
+    translate_z.Translate3d(0, 0, root_depth);
+    SetLayerPropertiesForTesting(root.get(), translate_z, transform_origin,
+                                 position, bounds, false, false, true);
+    root->SetDrawsContent(true);
+    root->Set3dSortingContextId(root_sorting_context);
+  }
+  {
+    gfx::Transform translate_z;
+    translate_z.Translate3d(0, 0, left_child_depth);
+    SetLayerPropertiesForTesting(left_child.get(), translate_z,
+                                 transform_origin, position, bounds, false,
+                                 false, false);
+    left_child->SetDrawsContent(true);
+    left_child->Set3dSortingContextId(left_child_sorting_context);
+  }
+  {
+    gfx::Transform translate_z;
+    translate_z.Translate3d(0, 0, right_child_depth);
+    SetLayerPropertiesForTesting(right_child.get(), translate_z,
+                                 transform_origin, position, bounds, false,
+                                 false, false);
+    right_child->SetDrawsContent(true);
+    right_child->Set3dSortingContextId(right_child_sorting_context);
+  }
+
+  root->AddChild(left_child.Pass());
+  root->AddChild(right_child.Pass());
+
+  host_impl().SetViewportSize(root->bounds());
+  host_impl().active_tree()->SetRootLayer(root.Pass());
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+  CHECK_EQ(1u, RenderSurfaceLayerList().size());
+
+  gfx::PointF test_point = gfx::PointF(1.f, 1.f);
+  LayerImpl* result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
+
+  CHECK(result_layer);
+  return result_layer->id();
+}
+
+TEST_F(LayerTreeImplTest, HitTestingSameSortingContextTied) {
+  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
+                                       /* sorting_contexts */ 10, 10, 10,
+                                       /* depths */ 0, 0, 0);
+  // 3 is the last in tree order, and so should be on top.
+  EXPECT_EQ(3, hit_layer_id);
+}
+
+TEST_F(LayerTreeImplTest, HitTestingSameSortingContextChildWins) {
+  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
+                                       /* sorting_contexts */ 10, 10, 10,
+                                       /* depths */ 0, 1, 0);
+  EXPECT_EQ(2, hit_layer_id);
+}
+
+TEST_F(LayerTreeImplTest, HitTestingWithoutSortingContext) {
+  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
+                                       /* sorting_contexts */ 0, 0, 0,
+                                       /* depths */ 0, 1, 0);
+  EXPECT_EQ(3, hit_layer_id);
+}
+
+TEST_F(LayerTreeImplTest, HitTestingDistinctSortingContext) {
+  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
+                                       /* sorting_contexts */ 10, 11, 12,
+                                       /* depths */ 0, 1, 0);
+  EXPECT_EQ(3, hit_layer_id);
+}
+
+TEST_F(LayerTreeImplTest, HitTestingSameSortingContextParentWins) {
+  int hit_layer_id = HitTestSimpleTree(/* ids */ 1, 2, 3,
+                                       /* sorting_contexts */ 10, 10, 10,
+                                       /* depths */ 0, -1, -1);
+  EXPECT_EQ(1, hit_layer_id);
 }
 
 TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {

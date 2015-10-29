@@ -1481,12 +1481,29 @@ static void FindClosestMatchingLayer(
                              data_for_recursion);
   }
 
+  if (!func(layer))
+    return;
+
   float distance_to_intersection = 0.f;
-  if (func(layer) &&
-      PointHitsLayer(layer, screen_space_point, &distance_to_intersection,
-                     transform_tree, use_property_trees) &&
-      ((!data_for_recursion->closest_match ||
-        distance_to_intersection > data_for_recursion->closest_distance))) {
+  bool hit = false;
+  if (layer->Is3dSorted())
+    hit = PointHitsLayer(layer, screen_space_point, &distance_to_intersection,
+                         transform_tree, use_property_trees);
+  else
+    hit = PointHitsLayer(layer, screen_space_point, nullptr, transform_tree,
+                         use_property_trees);
+
+  if (!hit)
+    return;
+
+  bool in_front_of_previous_candidate =
+      data_for_recursion->closest_match &&
+      layer->sorting_context_id() ==
+          data_for_recursion->closest_match->sorting_context_id() &&
+      distance_to_intersection > data_for_recursion->closest_distance +
+                                     std::numeric_limits<float>::epsilon();
+
+  if (!data_for_recursion->closest_match || in_front_of_previous_candidate) {
     data_for_recursion->closest_distance = distance_to_intersection;
     data_for_recursion->closest_match = layer;
   }
