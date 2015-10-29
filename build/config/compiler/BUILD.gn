@@ -326,19 +326,35 @@ config("compiler") {
     cflags_cc += [ "-std=c++11" ]
   }
 
-  if (is_mac && is_component_build) {
-    # In component builds, link to the system libc++. This requires
-    # OS X 10.7, but we currently pass -mmacosx-version-min=10.6.
-    # Xcode's clang complains about this, but our open-source bundled
-    # chromium clang doesn't.  This has the effect of making
-    # everything depend on libc++, which means component-build
-    # binaries won't run on 10.6 (no libc++ there), but for a
-    # developer-only configuration that's ok.
-    # (We don't want to raise the deployment target yet so that
-    # official and dev builds have the same deployment target.  This
-    # affects things like which functions are considered deprecated.)
+  if (is_mac) {
+    # Tell the compiler to use libc++'s headers and the linker to link
+    # against libc++.  The latter part normally requires OS X 10.7,
+    # but we still support running on 10.6.  How does this work?  Two
+    # parts:
+    # 1. Chromium's clang doesn't error on -mmacosx-version-min=10.6
+    #    combined with -stdlib=libc++ (it normally silently produced a
+    #    binary that doesn't run on 10.6)
+    # 2. Further down, library_dirs is set to
+    #    third_party/libc++-static, which contains a static
+    #    libc++.a library.  The linker then links against that instead
+    #    of against /usr/lib/libc++.dylib when it sees the -lc++ flag
+    #    added by the driver.
+    #
+    # In component builds, just link to the system libc++.  This has
+    # the effect of making everything depend on libc++, which means
+    # component-build binaries won't run on 10.6 (no libc++ there),
+    # but for a developer-only configuration that's ok.  (We don't
+    # want to raise the deployment target yet so that official and
+    # dev builds have the same deployment target.  This affects
+    # things like which functions are considered deprecated.)
     cflags_cc += [ "-stdlib=libc++" ]
     ldflags += [ "-stdlib=libc++" ]
+    if (!is_component_build && !is_asan) {
+      ldflags += [
+        "-L",
+        rebase_path("//third_party/libc++-static", root_build_dir),
+      ]
+    }
   }
 
   # Pass the same C/C++ flags to the objective C/C++ compiler.
