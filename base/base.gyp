@@ -439,6 +439,7 @@
         'atomicops_unittest.cc',
         'barrier_closure_unittest.cc',
         'base64_unittest.cc',
+        'base64url_unittest.cc',
         'big_endian_unittest.cc',
         'bind_unittest.cc',
         'bind_unittest.nc',
