@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
+import android.app.Activity;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.HapticFeedbackConstants;
@@ -14,7 +15,9 @@ import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A helper class that handles generating context menus for {@link ContentViewCore}s.
@@ -85,6 +88,31 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
         }
     }
 
+    /**
+     * Trigger an image search for the current image that triggered the context menu.
+     */
+    public void searchForImage() {
+        if (mNativeContextMenuHelper == 0) return;
+        nativeSearchForImage(mNativeContextMenuHelper);
+    }
+
+    /**
+     * Share the image that triggered the current context menu.
+     */
+    public void shareImage() {
+        if (mNativeContextMenuHelper == 0) return;
+        nativeShareImage(mNativeContextMenuHelper);
+    }
+
+    @CalledByNative
+    private void onShareImageReceived(
+            WindowAndroid windowAndroid, byte[] jpegImageData) {
+        Activity activity = windowAndroid.getActivity().get();
+        if (activity == null) return;
+
+        ShareHelper.shareImage(activity, jpegImageData);
+    }
+
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         if (!shouldShowMenu(mCurrentContextMenuParams)) return;
@@ -116,4 +144,6 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
 
     private native void nativeOnStartDownload(
             long nativeContextMenuHelper, boolean isLink, String headers);
+    private native void nativeSearchForImage(long nativeContextMenuHelper);
+    private native void nativeShareImage(long nativeContextMenuHelper);
 }

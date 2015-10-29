@@ -246,7 +246,8 @@ void ChromeRenderFrameObserver::OnRequestReloadImageForContextNode() {
 
 void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
     int thumbnail_min_area_pixels,
-    const gfx::Size& thumbnail_max_size_pixels) {
+    const gfx::Size& thumbnail_max_size_pixels,
+    int callback_id) {
   WebNode context_node = render_frame()->GetContextMenuNode();
   SkBitmap thumbnail;
   gfx::Size original_size;
@@ -277,7 +278,7 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
   }
 
   Send(new ChromeViewHostMsg_RequestThumbnailForContextNode_ACK(
-      routing_id(), thumbnail_data, original_size));
+      routing_id(), thumbnail_data, original_size, callback_id));
 }
 
 void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {

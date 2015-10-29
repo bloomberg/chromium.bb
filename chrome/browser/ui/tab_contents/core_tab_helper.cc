@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -23,14 +24,24 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/context_menu_params.h"
 #include "net/base/load_states.h"
 #include "net/http/http_request_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
+
+namespace {
+
+const int kImageSearchThumbnailMinSize = 300 * 300;
+const int kImageSearchThumbnailMaxWidth = 600;
+const int kImageSearchThumbnailMaxHeight = 600;
+
+}  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(CoreTabHelper);
 
@@ -82,6 +93,33 @@ void CoreTabHelper::UpdateContentRestrictions(int content_restrictions) {
 
   browser->command_controller()->ContentRestrictionsChanged();
 #endif
+}
+
+void CoreTabHelper::SearchByImageInNewTab(const GURL& src_url) {
+  RequestThumbnailForContextNode(
+      kImageSearchThumbnailMinSize,
+      gfx::Size(kImageSearchThumbnailMaxWidth,
+                kImageSearchThumbnailMaxHeight),
+      base::Bind(&CoreTabHelper::DoSearchByImageInNewTab,
+                 base::Unretained(this),
+                 src_url));
+}
+
+void CoreTabHelper::RequestThumbnailForContextNode(
+    int minimum_size,
+    gfx::Size maximum_size,
+    const ContextNodeThumbnailCallback& callback) {
+  int callback_id = thumbnail_callbacks_.Add(
+      new ContextNodeThumbnailCallback(callback));
+
+  content::RenderFrameHost* render_frame_host =
+      web_contents()->GetMainFrame();
+  render_frame_host->Send(
+      new ChromeViewMsg_RequestThumbnailForContextNode(
+          render_frame_host->GetRoutingID(),
+          minimum_size,
+          maximum_size,
+          callback_id));
 }
 
 // static
@@ -262,11 +300,23 @@ bool CoreTabHelper::OnMessageReceived(
   return handled;
 }
 
-// Handles the image thumbnail for the context node, composes a image search
-// request based on the received thumbnail and opens the request in a new tab.
 void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
     const std::string& thumbnail_data,
-    const gfx::Size& original_size) {
+    const gfx::Size& original_size,
+    int callback_id) {
+  ContextNodeThumbnailCallback* callback =
+      thumbnail_callbacks_.Lookup(callback_id);
+  if (!callback)
+    return;
+  callback->Run(thumbnail_data, original_size);
+  thumbnail_callbacks_.Remove(callback_id);
+}
+
+// Handles the image thumbnail for the context node, composes a image search
+// request based on the received thumbnail and opens the request in a new tab.
+void CoreTabHelper::DoSearchByImageInNewTab(const GURL& src_url,
+                                            const std::string& thumbnail_data,
+                                            const gfx::Size& original_size) {
   if (thumbnail_data.empty())
     return;
 
@@ -285,9 +335,7 @@ void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
   TemplateURLRef::SearchTermsArgs search_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
   search_args.image_thumbnail_content = thumbnail_data;
-  // TODO(jnd): Add a method in WebContentsViewDelegate to get the image URL
-  // from the ContextMenuParams which creates current context menu.
-  search_args.image_url = GURL();
+  search_args.image_url = src_url;
   search_args.image_original_size = original_size;
   TemplateURLRef::PostContent post_content;
   GURL result(default_provider->image_url_ref().ReplaceSearchTerms(

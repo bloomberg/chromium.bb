@@ -5,21 +5,30 @@
 #include "chrome/browser/ui/android/context_menu_helper.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/common/context_menu_params.h"
 #include "jni/ContextMenuHelper_jni.h"
 #include "jni/ContextMenuParams_jni.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/geometry/point.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
-using base::android::ScopedJavaLocalRef;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ContextMenuHelper);
+
+namespace {
+
+const int kShareImageMaxWidth = 2048;
+const int kShareImageMaxHeight = 2048;
+
+}  // namespace
 
 ContextMenuHelper::ContextMenuHelper(content::WebContents* web_contents)
     : web_contents_(web_contents) {
@@ -103,6 +112,47 @@ void ContextMenuHelper::OnStartDownload(JNIEnv* env,
       web_contents_,
       jis_link,
       headers);
+}
+
+void ContextMenuHelper::SearchForImage(JNIEnv* env, jobject obj) {
+  CoreTabHelper::FromWebContents(web_contents_)->SearchByImageInNewTab(
+      context_menu_params_.src_url);
+}
+
+void ContextMenuHelper::ShareImage(JNIEnv* env, jobject obj) {
+  CoreTabHelper::FromWebContents(web_contents_)->
+      RequestThumbnailForContextNode(
+          0,
+          gfx::Size(kShareImageMaxWidth, kShareImageMaxHeight),
+          base::Bind(&ContextMenuHelper::OnShareImage,
+                     base::Unretained(this)));
+}
+
+void ContextMenuHelper::OnShareImage(const std::string& thumbnail_data,
+                                     const gfx::Size& original_size) {
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::FromWebContents(web_contents_);
+  if (!content_view_core)
+    return;
+
+  base::android::ScopedJavaLocalRef<jobject> jwindow_android(
+      content_view_core->GetWindowAndroid()->GetJavaObject());
+
+  if (jwindow_android.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jbyteArray> j_bytes =
+      base::android::ToJavaByteArray(
+          env,
+          reinterpret_cast<const uint8*>(thumbnail_data.data()),
+          thumbnail_data.length());
+
+  Java_ContextMenuHelper_onShareImageReceived(
+      env,
+      java_obj_.obj(),
+      jwindow_android.obj(),
+      j_bytes.obj());
 }
 
 bool RegisterContextMenuHelper(JNIEnv* env) {

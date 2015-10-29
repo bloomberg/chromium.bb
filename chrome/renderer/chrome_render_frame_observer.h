@@ -93,7 +93,8 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   void OnRequestReloadImageForContextNode();
   void OnRequestThumbnailForContextNode(
       int thumbnail_min_area_pixels,
-      const gfx::Size& thumbnail_max_size_pixels);
+      const gfx::Size& thumbnail_max_size_pixels,
+      int callback_id);
   void OnPrintNodeUnderContextMenu();
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
   void OnAppBannerPromptRequest(int request_id,

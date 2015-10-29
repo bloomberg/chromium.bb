@@ -79,11 +79,6 @@ public interface ContextMenuItemDelegate {
      */
     void onSaveToClipboard(String text, int clipboardType);
 
-    /**
-     * Called when a search by image should be performed in a new tab.
-     */
-    void onSearchByImageInNewTab();
-
    /**
     * @return page url.
     */

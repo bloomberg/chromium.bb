@@ -59,26 +59,29 @@ public class ShareHelper {
 
     private static final String TAG = "share";
 
+    private static final String JPEG_EXTENSION = ".jpg";
     private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
     private static final String CLASS_NAME_KEY = "last_shared_class_name";
     private static final String EXTRA_SHARE_SCREENSHOT_AS_STREAM = "share_screenshot_as_stream";
     private static final long COMPONENT_INFO_READ_TIMEOUT_IN_MS = 1000;
 
     /**
-     * Directory name for screenshots.
+     * Directory name for shared images.
+     *
+     * Named "screenshot" for historical reasons as we only initially shared screenshot images.
      */
-    private static final String SCREENSHOT_DIRECTORY_NAME = "screenshot";
+    private static final String SHARE_IMAGES_DIRECTORY_NAME = "screenshot";
 
     private ShareHelper() {}
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    private static void deleteScreenshotFiles(File file) {
+    private static void deleteShareImageFiles(File file) {
         if (!file.exists()) return;
         if (file.isDirectory()) {
-            for (File f : file.listFiles()) deleteScreenshotFiles(f);
+            for (File f : file.listFiles()) deleteShareImageFiles(f);
         }
         if (!file.delete()) {
-            Log.w(TAG, "Failed to delete screenshot file: %s", file.getAbsolutePath());
+            Log.w(TAG, "Failed to delete share image file: %s", file.getAbsolutePath());
         }
     }
 
@@ -143,15 +146,15 @@ public class ShareHelper {
     }
 
     /**
-     * Clears all shared screenshot files.
+     * Clears all shared image files.
      */
-    public static void clearSharedScreenshots(final Context context) {
+    public static void clearSharedImages(final Context context) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 try {
                     File imagePath = UiUtils.getDirectoryForImageCapture(context);
-                    deleteScreenshotFiles(new File(imagePath, SCREENSHOT_DIRECTORY_NAME));
+                    deleteShareImageFiles(new File(imagePath, SHARE_IMAGES_DIRECTORY_NAME));
                 } catch (IOException ie) {
                     // Ignore exception.
                 }
@@ -185,6 +188,65 @@ public class ShareHelper {
         } else {
             showShareDialog(activity, title, url, screenshot);
         }
+    }
+
+    /**
+     * Trigger the share action for the given image data.
+     * @param activity The activity used to trigger the share action.
+     * @param jpegImageData The image data to be shared in jpeg format.
+     */
+    public static void shareImage(final Activity activity, final byte[] jpegImageData) {
+        if (jpegImageData.length == 0) {
+            Log.w(TAG, "Share failed -- Received image contains no data.");
+            return;
+        }
+
+        new AsyncTask<Void, Void, File>() {
+            @Override
+            protected File doInBackground(Void... params) {
+                FileOutputStream fOut = null;
+                try {
+                    File path = new File(UiUtils.getDirectoryForImageCapture(activity),
+                            SHARE_IMAGES_DIRECTORY_NAME);
+                    if (path.exists() || path.mkdir()) {
+                        File saveFile = File.createTempFile(
+                                String.valueOf(System.currentTimeMillis()), JPEG_EXTENSION, path);
+                        fOut = new FileOutputStream(saveFile);
+                        fOut.write(jpegImageData);
+                        fOut.flush();
+                        fOut.close();
+
+                        return saveFile;
+                    } else {
+                        Log.w(TAG, "Share failed -- Unable to create share image directory.");
+                    }
+                } catch (IOException ie) {
+                    if (fOut != null) {
+                        try {
+                            fOut.close();
+                        } catch (IOException e) {
+                            // Ignore exception.
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(File saveFile) {
+                if (saveFile == null) return;
+
+                if (ApplicationStatus.getStateForApplication()
+                        != ApplicationState.HAS_DESTROYED_ACTIVITIES) {
+                    Uri imageUri = UiUtils.getUriForImageCaptureFile(activity, saveFile);
+
+                    Intent chooserIntent = Intent.createChooser(getShareImageIntent(imageUri),
+                            activity.getString(R.string.share_link_chooser_title));
+                    activity.startActivity(chooserIntent);
+                }
+            }
+        }.execute();
     }
 
     /**
@@ -261,10 +323,11 @@ public class ShareHelper {
                     FileOutputStream fOut = null;
                     try {
                         File path = new File(UiUtils.getDirectoryForImageCapture(activity),
-                                SCREENSHOT_DIRECTORY_NAME);
+                                SHARE_IMAGES_DIRECTORY_NAME);
                         if (path.exists() || path.mkdir()) {
                             File saveFile = File.createTempFile(
-                                    String.valueOf(System.currentTimeMillis()), ".jpg", path);
+                                    String.valueOf(System.currentTimeMillis()),
+                                    JPEG_EXTENSION, path);
                             fOut = new FileOutputStream(saveFile);
                             screenshot.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
                             fOut.flush();
@@ -386,6 +449,15 @@ public class ShareHelper {
             intent.setClipData(ClipData.newRawUri("", screenshotUri));
             intent.putExtra(EXTRA_SHARE_SCREENSHOT_AS_STREAM, screenshotUri);
         }
+        return intent;
+    }
+
+    private static Intent getShareImageIntent(Uri imageUri) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        intent.setType("image/jpeg");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.putExtra(Intent.EXTRA_STREAM, imageUri);
         return intent;
     }
 

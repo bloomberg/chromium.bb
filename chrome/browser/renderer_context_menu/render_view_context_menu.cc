@@ -166,10 +166,6 @@ enum UmaEnumIdLookupType {
   CONTEXT_SPECIFIC_ENUM_ID,
 };
 
-const int kImageSearchThumbnailMinSize = 300 * 300;
-const int kImageSearchThumbnailMaxWidth = 600;
-const int kImageSearchThumbnailMaxHeight = 600;
-
 // Maps UMA enumeration to IDC. IDC could be changed so we can't use
 // just them and |UMA_HISTOGRAM_CUSTOM_ENUMERATION|.
 // Never change mapping or reuse |enum_id|. Always push back new items.
@@ -2112,14 +2108,11 @@ void RenderViewContextMenu::LoadOriginalImage() {
 }
 
 void RenderViewContextMenu::GetImageThumbnailForSearch() {
-  RenderFrameHost* render_frame_host = GetRenderFrameHost();
-  if (!render_frame_host)
+  CoreTabHelper* core_tab_helper =
+      CoreTabHelper::FromWebContents(source_web_contents_);
+  if (!core_tab_helper)
     return;
-  render_frame_host->Send(new ChromeViewMsg_RequestThumbnailForContextNode(
-      render_frame_host->GetRoutingID(),
-      kImageSearchThumbnailMinSize,
-      gfx::Size(kImageSearchThumbnailMaxWidth,
-                kImageSearchThumbnailMaxHeight)));
+  core_tab_helper->SearchByImageInNewTab(params().src_url);
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {

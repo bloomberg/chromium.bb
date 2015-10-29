@@ -112,7 +112,7 @@ public class DeferredStartupHandler {
 
         application.initializeSharedClasses();
 
-        ShareHelper.clearSharedScreenshots(application);
+        ShareHelper.clearSharedImages(application);
 
         // Clear any media notifications that existed when Chrome was last killed.
         MediaCaptureNotificationService.clearMediaNotifications(application);

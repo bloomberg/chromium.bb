@@ -269,9 +269,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_RequestReloadImageForContextNode)
 // is greater than thumbnail_min_area it will be downscaled to
 // be within thumbnail_max_size. The possibly downsampled image will be
 // returned in a ChromeViewHostMsg_RequestThumbnailForContextNode_ACK message.
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_RequestThumbnailForContextNode,
+IPC_MESSAGE_ROUTED3(ChromeViewMsg_RequestThumbnailForContextNode,
                     int /* thumbnail_min_area_pixels */,
-                    gfx::Size /* thumbnail_max_size_pixels */)
+                    gfx::Size /* thumbnail_max_size_pixels */,
+                    int /* ID of the callback */)
 
 // Notifies the renderer whether hiding/showing the top controls is enabled,
 // what the current state should be, and whether or not to animate to the
@@ -288,9 +289,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
 
 // Responds to the request for a thumbnail.
 // Thumbnail data will be empty is a thumbnail could not be produced.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
                     std::string /* JPEG-encoded thumbnail data */,
-                    gfx::Size /* original size of the image */)
+                    gfx::Size /* original size of the image */,
+                    int /* ID of the callback */)
 
 // Requests application info for the page. The renderer responds back with
 // ChromeViewHostMsg_DidGetWebApplicationInfo.

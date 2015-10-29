@@ -5,9 +5,15 @@
 #ifndef CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_H_
 
+#include <string>
+
+#include "base/callback.h"
+#include "base/id_map.h"
 #include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 class CoreTabHelperDelegate;
 
@@ -15,6 +21,9 @@ class CoreTabHelperDelegate;
 class CoreTabHelper : public content::WebContentsObserver,
                       public content::WebContentsUserData<CoreTabHelper> {
  public:
+  using ContextNodeThumbnailCallback =
+      base::Callback<void(const std::string&, const gfx::Size&)>;
+
   ~CoreTabHelper() override;
 
   // Initial title assigned to NavigationEntries from Navigate.
@@ -40,6 +49,15 @@ class CoreTabHelper : public content::WebContentsObserver,
   void OnUnloadDetachedStarted();
 
   void UpdateContentRestrictions(int content_restrictions);
+
+  // Perform an image search for the image that triggered the context menu.  The
+  // |src_url| is passed to the search request and is not used directly to fetch
+  // the image resources.
+  void SearchByImageInNewTab(const GURL& src_url);
+  void RequestThumbnailForContextNode(
+      int minimum_size,
+      gfx::Size maximum_size,
+      const ContextNodeThumbnailCallback& callback);
 
   CoreTabHelperDelegate* delegate() const { return delegate_; }
   void set_delegate(CoreTabHelperDelegate* d) { delegate_ = d; }
@@ -68,7 +86,11 @@ class CoreTabHelper : public content::WebContentsObserver,
                          content::RenderFrameHost* render_frame_host) override;
 
   void OnRequestThumbnailForContextNodeACK(const std::string& thumbnail_data,
-                                           const gfx::Size& original_size);
+                                           const gfx::Size& original_size,
+                                           int callback_id);
+  void DoSearchByImageInNewTab(const GURL& src_url,
+                               const std::string& thumbnail_data,
+                               const gfx::Size& original_size);
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   CoreTabHelperDelegate* delegate_;
@@ -89,6 +111,8 @@ class CoreTabHelper : public content::WebContentsObserver,
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
+
+  IDMap<ContextNodeThumbnailCallback, IDMapOwnPointer> thumbnail_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreTabHelper);
 };

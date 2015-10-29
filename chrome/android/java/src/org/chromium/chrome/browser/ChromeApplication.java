@@ -333,7 +333,7 @@ public class ChromeApplication extends ContentApplication {
             mBackgroundProcessing.onDestroy();
             stopApplicationActivityTracker();
             PartnerBrowserCustomizations.destroy();
-            ShareHelper.clearSharedScreenshots(this);
+            ShareHelper.clearSharedImages(this);
             CombinedPolicyProvider.get().destroy();
         }
     }

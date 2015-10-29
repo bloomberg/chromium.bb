@@ -39,7 +39,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_LOAD_IMAGES = 12;
         static final int ACTION_LOAD_ORIGINAL_IMAGE = 13;
         static final int ACTION_SAVE_VIDEO = 14;
-        static final int NUM_ACTIONS = 15;
+        static final int ACTION_SHARE_IMAGE = 19;
+        static final int NUM_ACTIONS = 20;
 
         /**
          * Records a histogram entry when the user selects an item from a context menu.
@@ -136,6 +137,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             menu.findItem(R.id.contextmenu_save_image).setVisible(false);
             menu.findItem(R.id.contextmenu_open_image).setVisible(false);
             menu.findItem(R.id.contextmenu_search_by_image).setVisible(false);
+            menu.findItem(R.id.contextmenu_share_image).setVisible(false);
         } else if (params.isImage() && !params.imageWasFetchedLoFi()) {
             menu.findItem(R.id.contextmenu_load_original_image).setVisible(false);
 
@@ -220,7 +222,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
         } else if (itemId == R.id.contextmenu_search_by_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SEARCH_BY_IMAGE);
-            mDelegate.onSearchByImageInNewTab();
+            helper.searchForImage();
+        } else if (itemId == R.id.contextmenu_share_image) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_SHARE_IMAGE);
+            helper.shareImage();
         } else {
             assert false;
         }

@@ -31,6 +31,8 @@
         <!-- Title is set in Java. Suppress lint warning about missing title. -->
         <!--suppress MenuTitle -->
         <item android:id="@+id/contextmenu_search_by_image" />
+        <item android:id="@+id/contextmenu_share_image"
+            android:title="@string/contextmenu_share_image"/>
     </group>
     <group android:id="@+id/contextmenu_group_video">
         <item android:id="@+id/contextmenu_save_video"
