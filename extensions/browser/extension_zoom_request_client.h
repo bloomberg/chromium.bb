@@ -21,6 +21,7 @@ class ExtensionZoomRequestClient : public ui_zoom::ZoomRequestClient {
  public:
   explicit ExtensionZoomRequestClient(scoped_refptr<const Extension> extension);
 
+  bool ShouldSuppressBubble() const override;
   const Extension* extension() const { return extension_.get(); }
 
  private:

@@ -47,5 +47,12 @@
       "B11A93E7E5B541F8010245EBDE2C74647D6C14B9",  // http://crbug.com/505879
       "FA01E0B81978950F2BC5A50512FD769725F57510"   // http://crbug.com/505879
     ]
+  },
+  "zoom_without_bubble": {
+    "channel": "stable",
+    "extension_types": "all",
+    "whitelist": [
+      "CBCC42ABED43A4B58FE3810E62AFFA010EB0349F"   // https://crbug.com/538252
+    ]
   }
 }

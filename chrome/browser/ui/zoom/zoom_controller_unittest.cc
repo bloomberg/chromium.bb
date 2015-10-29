@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/ui/zoom/test/zoom_test_utils.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -19,44 +20,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ui_zoom::ZoomChangedWatcher;
 using ui_zoom::ZoomController;
-
-bool operator==(const ZoomController::ZoomChangedEventData& lhs,
-                const ZoomController::ZoomChangedEventData& rhs) {
-  return lhs.web_contents == rhs.web_contents &&
-         lhs.old_zoom_level == rhs.old_zoom_level &&
-         lhs.new_zoom_level == rhs.new_zoom_level &&
-         lhs.zoom_mode == rhs.zoom_mode &&
-         lhs.can_show_bubble == rhs.can_show_bubble;
-}
-
-class ZoomChangedWatcher : public ui_zoom::ZoomObserver {
- public:
-  ZoomChangedWatcher(
-      ZoomController* zoom_controller,
-      const ZoomController::ZoomChangedEventData& expected_event_data)
-      : zoom_controller_(zoom_controller),
-        expected_event_data_(expected_event_data),
-        message_loop_runner_(new content::MessageLoopRunner) {
-    zoom_controller_->AddObserver(this);
-  }
-  ~ZoomChangedWatcher() override { zoom_controller_->RemoveObserver(this); }
-
-  void Wait() { message_loop_runner_->Run(); }
-
-  void OnZoomChanged(
-      const ZoomController::ZoomChangedEventData& event_data) override {
-    if (event_data == expected_event_data_)
-      message_loop_runner_->Quit();
-  }
-
- private:
-  ZoomController* zoom_controller_;
-  ZoomController::ZoomChangedEventData expected_event_data_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ZoomChangedWatcher);
-};
 
 class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
  public:

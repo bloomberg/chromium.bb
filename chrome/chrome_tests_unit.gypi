@@ -2180,6 +2180,7 @@
         '../components/components.gyp:content_settings_core_test_support',
         '../components/components.gyp:password_manager_core_browser_test_support',
         '../components/components.gyp:syncable_prefs_test_support',
+        '../components/components.gyp:ui_zoom_test_support',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../content/content.gyp:content_app_both',
         '../crypto/crypto.gyp:crypto_test_support',

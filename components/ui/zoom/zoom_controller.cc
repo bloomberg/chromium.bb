@@ -121,9 +121,13 @@ bool ZoomController::SetZoomLevelByClient(
     ZoomEventManager::GetForBrowserContext(browser_context_)
         ->OnZoomLevelChanged(change);
 
+    bool can_show_bubble = can_show_bubble_;
+    if (client && client->ShouldSuppressBubble())
+      can_show_bubble = false;
+
     ZoomChangedEventData zoom_change_data(web_contents(), old_zoom_level,
                                           zoom_level_, zoom_mode_,
-                                          can_show_bubble_);
+                                          can_show_bubble);
     FOR_EACH_OBSERVER(ZoomObserver, observers_,
                       OnZoomChanged(zoom_change_data));
 

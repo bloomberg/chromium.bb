@@ -27,6 +27,19 @@ source_set("zoom") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/zoom_test_utils.cc",
+    "test/zoom_test_utils.h",
+  ]
+  deps = [
+    ":zoom",
+    "//base:base",
+    "//content/test:test_support",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

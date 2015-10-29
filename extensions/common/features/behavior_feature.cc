@@ -13,4 +13,6 @@ const char* const BehaviorFeature::kWhitelistedForIncognito =
 
 const char* const BehaviorFeature::kDoNotSync = "do_not_sync";
 
+const char* const BehaviorFeature::kZoomWithoutBubble = "zoom_without_bubble";
+
 }  // namespace extensions

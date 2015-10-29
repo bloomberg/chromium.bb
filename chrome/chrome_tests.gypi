@@ -2119,6 +2119,7 @@
         '../components/components.gyp:guest_view_test_support',
         '../components/components.gyp:ssl_config',
         '../components/components.gyp:translate_core_common',
+        '../components/components.gyp:ui_zoom_test_support',
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
         '../crypto/crypto.gyp:crypto_test_support',

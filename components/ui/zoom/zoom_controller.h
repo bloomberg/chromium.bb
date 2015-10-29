@@ -27,6 +27,7 @@ class ZoomObserver;
 class ZoomRequestClient : public base::RefCounted<ZoomRequestClient> {
  public:
   ZoomRequestClient() {}
+  virtual bool ShouldSuppressBubble() const = 0;
 
  protected:
   virtual ~ZoomRequestClient() {}

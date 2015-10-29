@@ -117,6 +117,7 @@ source_set("test_support") {
     "//components/sync_sessions:test_support",
     "//components/syncable_prefs:test_support",
     "//components/update_client:test_support",
+    "//components/ui/zoom:test_support",
     "//content/public/app:both",
     "//ui/gfx:test_support",
     "//net",

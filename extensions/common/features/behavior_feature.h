@@ -22,6 +22,7 @@ class BehaviorFeature : public SimpleFeature {
   static const char* const kServiceWorker;
   static const char* const kWhitelistedForIncognito;
   static const char* const kDoNotSync;
+  static const char* const kZoomWithoutBubble;
 };
 
 }  // namespace extensions
