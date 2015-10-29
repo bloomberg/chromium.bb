@@ -305,6 +305,7 @@ exec_script_whitelist = [
   "//extensions/shell/common/api/schemas.gni",
   "//google_apis/BUILD.gn",
   "//gpu/gles2_conform_support/BUILD.gn",
+  "//gpu/khronos_glcts_support/BUILD.gn",
   "//jingle/BUILD.gn",
   "//net/BUILD.gn",
   "//ppapi/ppapi_sources.gni",
