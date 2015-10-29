@@ -30,6 +30,7 @@ int32 BytesPerElement(gfx::BufferFormat format, int plane) {
       DCHECK_EQ(plane, 0);
       return 1;
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBA_8888:
       DCHECK_EQ(plane, 0);
       return 4;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -45,7 +46,6 @@ int32 BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
@@ -62,6 +62,7 @@ int32 PixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::R_8:
       return 'L008';
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBA_8888:
       return 'BGRA';
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return '420v';
@@ -73,7 +74,6 @@ int32 PixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
@@ -100,7 +100,8 @@ bool GpuMemoryBufferFactoryIOSurface::IsGpuMemoryBufferConfigurationSupported(
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
     case gfx::BufferUsage::GPU_READ_WRITE:
-      return format == gfx::BufferFormat::BGRA_8888;
+      return format == gfx::BufferFormat::BGRA_8888 ||
+             format == gfx::BufferFormat::RGBA_8888;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return format == gfx::BufferFormat::R_8 ||

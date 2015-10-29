@@ -32,6 +32,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_BGRA_EXT:
     case GL_RGB:
     case GL_RGB_YCBCR_422_CHROMIUM:
+    case GL_RGBA:
       return true;
     default:
       return false;
@@ -42,6 +43,7 @@ bool ValidFormat(BufferFormat format) {
   switch (format) {
     case BufferFormat::R_8:
     case BufferFormat::BGRA_8888:
+    case BufferFormat::RGBA_8888:
     case BufferFormat::UYVY_422:
     case BufferFormat::YUV_420_BIPLANAR:
       return true;
@@ -51,7 +53,6 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
-    case BufferFormat::RGBA_8888:
     case BufferFormat::RGBX_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
@@ -68,6 +69,7 @@ GLenum TextureFormat(BufferFormat format) {
     case BufferFormat::YUV_420_BIPLANAR:
       return GL_RED;
     case BufferFormat::BGRA_8888:
+    case BufferFormat::RGBA_8888:
       return GL_RGBA;
     case BufferFormat::UYVY_422:
       return GL_RGB;
@@ -77,7 +79,6 @@ GLenum TextureFormat(BufferFormat format) {
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
-    case BufferFormat::RGBA_8888:
     case BufferFormat::RGBX_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
@@ -95,6 +96,7 @@ GLenum DataFormat(BufferFormat format) {
     case BufferFormat::YUV_420_BIPLANAR:
       return GL_RED;
     case BufferFormat::BGRA_8888:
+    case BufferFormat::RGBA_8888:
       return GL_BGRA;
     case BufferFormat::UYVY_422:
       return GL_YCBCR_422_APPLE;
@@ -105,7 +107,6 @@ GLenum DataFormat(BufferFormat format) {
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
-    case BufferFormat::RGBA_8888:
     case BufferFormat::RGBX_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
@@ -123,6 +124,7 @@ GLenum DataType(BufferFormat format) {
     case BufferFormat::YUV_420_BIPLANAR:
       return GL_UNSIGNED_BYTE;
     case BufferFormat::BGRA_8888:
+    case BufferFormat::RGBA_8888:
       return GL_UNSIGNED_INT_8_8_8_8_REV;
     case BufferFormat::UYVY_422:
       return GL_UNSIGNED_SHORT_8_8_APPLE;
@@ -133,7 +135,6 @@ GLenum DataType(BufferFormat format) {
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
-    case BufferFormat::RGBA_8888:
     case BufferFormat::RGBX_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
