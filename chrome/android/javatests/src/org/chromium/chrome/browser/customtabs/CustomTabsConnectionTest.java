@@ -4,14 +4,21 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Process;
 import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Restriction;
+import org.chromium.content_public.browser.WebContents;
 
 /** Tests for CustomTabsConnection. */
 public class CustomTabsConnectionTest extends InstrumentationTestCase {
@@ -66,6 +73,85 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     public void testCanWarmup() {
         assertEquals(true, mCustomTabsConnection.warmup(0));
         assertEquals(true, mCustomTabsConnection.warmup(0));
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testCreateSpareRenderer() {
+        assertTrue(mCustomTabsConnection.warmup(0));
+        // On UI thread because:
+        // 1. takeSpareWebContents needs to be called from the UI thread.
+        // 2. warmup() is non-blocking and posts tasks to the UI thread, it ensures proper ordering.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertNotNull(mCustomTabsConnection.takeSpareWebContents());
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testCreateSpareRendererCanBeRecreated() {
+        assertTrue(mCustomTabsConnection.warmup(0));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertSpareWebContentsNotNullAndDestroy();
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
+            }
+        });
+        assertTrue(mCustomTabsConnection.warmup(0));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertSpareWebContentsNotNullAndDestroy();
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderDestroysSpareRenderer() {
+        final ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
+                String referrer =
+                        mCustomTabsConnection.getReferrerForSession(cb.asBinder()).getUrl();
+                WebContents webContents =
+                        mCustomTabsConnection.takePrerenderedUrl(cb.asBinder(), URL, referrer);
+                assertNotNull(webContents);
+                webContents.destroy();
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testMayLaunchUrlKeepsSpareRendererWithoutPrerendering() {
+        assertTrue(mCustomTabsConnection.warmup(0));
+        final ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        assertTrue(mCustomTabsConnection.newSession(cb));
+
+        Bundle extras = new Bundle();
+        extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
+        assertTrue(mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), extras, null));
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertSpareWebContentsNotNullAndDestroy();
+            }
+        });
+    }
+
+    private void assertSpareWebContentsNotNullAndDestroy() {
+        WebContents webContents = mCustomTabsConnection.takeSpareWebContents();
+        assertNotNull(webContents);
+        webContents.destroy();
     }
 
     /**

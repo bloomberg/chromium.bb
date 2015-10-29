@@ -27,6 +27,7 @@ import android.view.WindowManager;
 
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -128,37 +129,55 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         return mClientManager.newSession(callback, Binder.getCallingUid(), onDisconnect);
     }
 
+    /** Warmup activities that should only happen once. */
+    @SuppressFBWarnings("DM_EXIT")
+    private static void initializeBrowser(final ChromeApplication app) {
+        ThreadUtils.assertOnUiThread();
+        try {
+            app.startBrowserProcessesAndLoadLibrariesSync(true);
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "ProcessInitException while starting the browser process.");
+            // Cannot do anything without the native library, and cannot show a
+            // dialog to the user.
+            System.exit(-1);
+        }
+        final Context context = app.getApplicationContext();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                ChildProcessLauncher.warmUp(context);
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        ChromeBrowserInitializer.initNetworkChangeNotifier(context);
+        WarmupManager.getInstance().initializeViewHierarchy(
+                context, R.layout.custom_tabs_control_container);
+    }
+
     @Override
     public boolean warmup(long flags) {
+        return warmup(true);
+    }
+
+    /**
+     * Starts as much as possible in anticipation of a future navigation.
+     *
+     * @param mayCreatesparewebcontents true if warmup() can create a spare renderer.
+     * @return true for success.
+     */
+    private boolean warmup(final boolean mayCreateSpareWebContents) {
         // Here and in mayLaunchUrl(), don't do expensive work for background applications.
         if (!isCallerForegroundOrSelf()) return false;
         mClientManager.recordUidHasCalledWarmup(Binder.getCallingUid());
-        if (!mWarmupHasBeenCalled.compareAndSet(false, true)) return true;
+        final boolean initialized = !mWarmupHasBeenCalled.compareAndSet(false, true);
         // The call is non-blocking and this must execute on the UI thread, post a task.
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
-            @SuppressFBWarnings("DM_EXIT")
             public void run() {
-                ChromeApplication app = (ChromeApplication) mApplication;
-                try {
-                    app.startBrowserProcessesAndLoadLibrariesSync(true);
-                } catch (ProcessInitException e) {
-                    Log.e(TAG, "ProcessInitException while starting the browser process.");
-                    // Cannot do anything without the native library, and cannot show a
-                    // dialog to the user.
-                    System.exit(-1);
+                if (!initialized) initializeBrowser((ChromeApplication) mApplication);
+                if (mayCreateSpareWebContents && mPrerender == null && !SysUtils.isLowEndDevice()) {
+                    createSpareWebContents();
                 }
-                final Context context = app.getApplicationContext();
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... params) {
-                        ChildProcessLauncher.warmUp(context);
-                        return null;
-                    }
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                ChromeBrowserInitializer.initNetworkChangeNotifier(context);
-                WarmupManager.getInstance().initializeViewHierarchy(app.getApplicationContext(),
-                        R.layout.custom_tabs_control_container);
             }
         });
         return true;
@@ -190,7 +209,11 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         String scheme = url.normalizeScheme().getScheme();
         if (scheme != null && !scheme.equals("http") && !scheme.equals("https")) return false;
         // Things below need the browser process to be initialized.
-        if (!warmup(0)) return false; // Also does the foreground check.
+
+        // Forbids warmup() from creating a spare renderer, as prerendering wouldn't reuse
+        // it. Checking whether prerendering is enabled requires the native library to be loaded,
+        // which is not necessarily the case yet.
+        if (!warmup(false)) return false; // Also does the foreground check.
 
         final IBinder session = callback.asBinder();
         final String urlString = url.toString();
@@ -241,6 +264,12 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         WebContents result = mSpareWebContents;
         mSpareWebContents = null;
         return result;
+    }
+
+    private void destroySpareWebContents() {
+        ThreadUtils.assertOnUiThread();
+        WebContents webContents = takeSpareWebContents();
+        if (webContents != null) webContents.destroy();
     }
 
     @Override
@@ -481,6 +510,10 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         cancelPrerender(null);
         if (TextUtils.isEmpty(url)) return;
         if (!mClientManager.isPrerenderingAllowed(uid)) return;
+
+        // A prerender will be requested. Time to destroy the spare WebContents.
+        destroySpareWebContents();
+
         Intent extrasIntent = new Intent();
         if (extras != null) extrasIntent.putExtras(extras);
         if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
