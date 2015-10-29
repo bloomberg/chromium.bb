@@ -105,31 +105,27 @@ const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
 const unsigned maxGLActiveContexts = 16;
 
-} // namespace
-
-// FIXME: Oilpan: static vectors to heap allocated WebGLRenderingContextBase objects
-// are kept here. This relies on the WebGLRenderingContextBase finalization to
-// explicitly retire themselves from these vectors, but it'd be preferable if
-// the references were traced as per usual.
-Vector<WebGLRenderingContextBase*>& WebGLRenderingContextBase::activeContexts()
+using WebGLRenderingContextBaseSet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<WebGLRenderingContextBase>>;
+WebGLRenderingContextBaseSet& activeContexts()
 {
-    DEFINE_STATIC_LOCAL(Vector<WebGLRenderingContextBase*>, activeContexts, ());
+    DEFINE_STATIC_LOCAL(WebGLRenderingContextBaseSet, activeContexts, ());
     return activeContexts;
 }
 
-Vector<WebGLRenderingContextBase*>& WebGLRenderingContextBase::forciblyEvictedContexts()
+using WebGLRenderingContextBaseMap = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<WebGLRenderingContextBase>, int>;
+WebGLRenderingContextBaseMap& forciblyEvictedContexts()
 {
-    DEFINE_STATIC_LOCAL(Vector<WebGLRenderingContextBase*>, forciblyEvictedContexts, ());
+    DEFINE_STATIC_LOCAL(WebGLRenderingContextBaseMap, forciblyEvictedContexts, ());
     return forciblyEvictedContexts;
 }
 
+} // namespace
+
 void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
 {
-    size_t candidateID = oldestContextIndex();
-    if (candidateID >= activeContexts().size())
+    WebGLRenderingContextBase* candidate = oldestContext();
+    if (!candidate)
         return;
-
-    WebGLRenderingContextBase* candidate = activeContexts()[candidateID];
 
     // This context could belong to a dead page and the last JavaScript reference has already
     // been lost. Garbage collection might be triggered in the middle of this function, for
@@ -144,24 +140,38 @@ void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
     candidate->forceLostContext(WebGLRenderingContextBase::SyntheticLostContext, WebGLRenderingContextBase::WhenAvailable);
 }
 
-size_t WebGLRenderingContextBase::oldestContextIndex()
+WebGLRenderingContextBase* WebGLRenderingContextBase::oldestContext()
 {
-    if (!activeContexts().size())
-        return maxGLActiveContexts;
+    if (activeContexts().isEmpty())
+        return nullptr;
 
-    WebGLRenderingContextBase* candidate = activeContexts().first();
+    WebGLRenderingContextBase* candidate = *(activeContexts().begin());
     ASSERT(!candidate->isContextLost());
-    size_t candidateID = 0;
-    for (size_t ii = 1; ii < activeContexts().size(); ++ii) {
-        WebGLRenderingContextBase* context = activeContexts()[ii];
+    for (WebGLRenderingContextBase* context : activeContexts()) {
         ASSERT(!context->isContextLost());
         if (context->webContext()->lastFlushID() < candidate->webContext()->lastFlushID()) {
             candidate = context;
-            candidateID = ii;
         }
     }
 
-    return candidateID;
+    return candidate;
+}
+
+WebGLRenderingContextBase* WebGLRenderingContextBase::oldestEvictedContext()
+{
+    if (forciblyEvictedContexts().isEmpty())
+        return nullptr;
+
+    WebGLRenderingContextBase* candidate = nullptr;
+    int generation = -1;
+    for (WebGLRenderingContextBase* context : forciblyEvictedContexts().keys()) {
+        if (!candidate || forciblyEvictedContexts().get(context) < generation) {
+            candidate = context;
+            generation = forciblyEvictedContexts().get(context);
+        }
+    }
+
+    return candidate;
 }
 
 void WebGLRenderingContextBase::activateContext(WebGLRenderingContextBase* context)
@@ -173,28 +183,23 @@ void WebGLRenderingContextBase::activateContext(WebGLRenderingContextBase* conte
     }
 
     ASSERT(!context->isContextLost());
-    if (!activeContexts().contains(context))
-        activeContexts().append(context);
+    activeContexts().add(context);
 }
 
 void WebGLRenderingContextBase::deactivateContext(WebGLRenderingContextBase* context)
 {
-    size_t position = activeContexts().find(context);
-    if (position != WTF::kNotFound)
-        activeContexts().remove(position);
+    activeContexts().remove(context);
 }
 
 void WebGLRenderingContextBase::addToEvictedList(WebGLRenderingContextBase* context)
 {
-    if (!forciblyEvictedContexts().contains(context))
-        forciblyEvictedContexts().append(context);
+    static int generation = 0;
+    forciblyEvictedContexts().set(context, generation++);
 }
 
 void WebGLRenderingContextBase::removeFromEvictedList(WebGLRenderingContextBase* context)
 {
-    size_t position = forciblyEvictedContexts().find(context);
-    if (position != WTF::kNotFound)
-        forciblyEvictedContexts().remove(position);
+    forciblyEvictedContexts().remove(context);
 }
 
 void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* context)
@@ -204,9 +209,9 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
 
     // Try to re-enable the oldest inactive contexts.
     while (activeContexts().size() < maxGLActiveContexts && forciblyEvictedContexts().size()) {
-        WebGLRenderingContextBase* evictedContext = forciblyEvictedContexts().first();
+        WebGLRenderingContextBase* evictedContext = oldestEvictedContext();
         if (!evictedContext->m_restoreAllowed) {
-            forciblyEvictedContexts().remove(0);
+            forciblyEvictedContexts().remove(evictedContext);
             continue;
         }
 
@@ -214,7 +219,7 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
 
         // If there's room in the pixel budget for this context, restore it.
         if (!desiredSize.isEmpty()) {
-            forciblyEvictedContexts().remove(0);
+            forciblyEvictedContexts().remove(evictedContext);
             evictedContext->forceRestoreContext();
         }
         break;

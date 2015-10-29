@@ -1118,9 +1118,6 @@ protected:
     friend class WebGLStateRestorer;
     friend class WebGLRenderingContextEvictionManager;
 
-    static Vector<WebGLRenderingContextBase*>& activeContexts();
-    static Vector<WebGLRenderingContextBase*>& forciblyEvictedContexts();
-
     static void activateContext(WebGLRenderingContextBase*);
     static void deactivateContext(WebGLRenderingContextBase*);
     static void addToEvictedList(WebGLRenderingContextBase*);
@@ -1129,8 +1126,8 @@ protected:
     static void forciblyLoseOldestContext(const String& reason);
     // Return the least recently used context's position in the active context vector.
     // If the vector is empty, return the maximum allowed active context number.
-    static size_t oldestContextIndex();
-    static IntSize oldestContextSize();
+    static WebGLRenderingContextBase* oldestContext();
+    static WebGLRenderingContextBase* oldestEvictedContext();
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());
