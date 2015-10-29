@@ -161,7 +161,8 @@ bool RelaunchChromeHelper(const base::CommandLine& command_line,
   chrome_exe_command_line.SetProgram(
       chrome_exe.DirName().Append(installer::kChromeExe));
 
-  if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
+  if ((base::win::GetVersion() < base::win::VERSION_WIN8 ||
+       base::win::GetVersion() >= base::win::VERSION_WIN10) &&
       relaunch_mode != RELAUNCH_MODE_METRO &&
       relaunch_mode != RELAUNCH_MODE_DESKTOP) {
     return base::LaunchProcess(chrome_exe_command_line,
