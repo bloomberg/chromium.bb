@@ -113,8 +113,9 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value
             m_percentValueCache[intValue] = CSSPrimitiveValue::create(value, type);
         return m_percentValueCache[intValue];
     case CSSPrimitiveValue::UnitType::Number:
+    case CSSPrimitiveValue::UnitType::Integer:
         if (!m_numberValueCache[intValue])
-            m_numberValueCache[intValue] = CSSPrimitiveValue::create(value, type);
+            m_numberValueCache[intValue] = CSSPrimitiveValue::create(value, CSSPrimitiveValue::UnitType::Integer);
         return m_numberValueCache[intValue];
     default:
         return CSSPrimitiveValue::create(value, type);

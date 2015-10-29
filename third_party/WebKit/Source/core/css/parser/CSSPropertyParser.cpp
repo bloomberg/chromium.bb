@@ -186,7 +186,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRa
     if (token.type() == NumberToken) {
         if (token.numericValueType() == NumberValueType || token.numericValue() < minimumValue)
             return nullptr;
-        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Integer);
     }
     CalcParser calcParser(range);
     if (const CSSCalcValue* calculation = calcParser.value()) {
@@ -1050,7 +1050,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineClamp(CSSParserToken
     if (clampValue)
         return clampValue;
     // When specifying number of lines, don't allow 0 as a valid value.
-    return consumeInteger(range, 1);
+    return consumePositiveInteger(range);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeLocale(CSSParserTokenRange& range)
@@ -1142,6 +1142,13 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationIterationCount(CSSParser
     if (range.peek().id() == CSSValueInfinite)
         return consumeIdent(range);
     return consumeNumber(range, ValueRangeNonNegative);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeZIndex(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumeInteger(range);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationPlayState(CSSParserTokenRange& range)
@@ -1434,6 +1441,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeColor(m_range, m_context);
     case CSSPropertyColor:
         return consumeColor(m_range, m_context, inQuirksMode());
+    case CSSPropertyZIndex:
+        return consumeZIndex(m_range);
     default:
         return nullptr;
     }

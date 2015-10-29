@@ -786,6 +786,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case UnitType::Unknown:
         return false;
     case UnitType::Number:
+    case UnitType::Integer:
     case UnitType::Percentage:
     case UnitType::Ems:
     case UnitType::Exs:
@@ -817,7 +818,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return m_value.valueID == other.m_value.valueID;
     case UnitType::Calc:
         return m_value.calc && other.m_value.calc && m_value.calc->equals(*other.m_value.calc);
-    case UnitType::Integer:
     case UnitType::Chs:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:

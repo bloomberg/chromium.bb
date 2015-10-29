@@ -110,13 +110,13 @@ template<> inline float CSSPrimitiveValue::convertTo() const
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LineClampValue i)
     : CSSValue(PrimitiveClass)
 {
-    init(i.isPercentage() ? UnitType::Percentage : UnitType::Number);
+    init(i.isPercentage() ? UnitType::Percentage : UnitType::Integer);
     m_value.num = static_cast<double>(i.value());
 }
 
 template<> inline LineClampValue CSSPrimitiveValue::convertTo() const
 {
-    if (type() == UnitType::Number)
+    if (type() == UnitType::Integer)
         return LineClampValue(clampTo<int>(m_value.num), LineClampLineCount);
 
     if (type() == UnitType::Percentage)

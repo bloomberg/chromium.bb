@@ -659,15 +659,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FPercent | unitless);
         break;
 
-    case CSSPropertyZIndex: // auto | <integer> | inherit
-        if (id == CSSValueAuto) {
-            validPrimitive = true;
-        } else if (validUnit(value, FInteger)) {
-            addProperty(propId, cssValuePool().createValue(value->fValue, CSSPrimitiveValue::UnitType::Integer), important);
-            return true;
-        }
-        break;
-
     case CSSPropertyTextDecoration:
         // Fall through 'text-decoration-line' parsing if CSS 3 Text Decoration
         // is disabled to match CSS 2.1 rules for parsing 'text-decoration'.
@@ -1240,6 +1231,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyColor:
+    case CSSPropertyZIndex:
         validPrimitive = false;
         break;
 
