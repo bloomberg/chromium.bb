@@ -33,7 +33,7 @@ InspectorTest.setUpTestSuite = function(next)
 
 InspectorTest.recordEvent = function(eventName, event)
 {
-    if (!event.data || event.type === WebInspector.DOMModel.Events.MarkersChanged)
+    if (!event.data || event.type === WebInspector.DOMModel.Events.MarkersChanged || event.type === WebInspector.DOMModel.Events.DOMMutated)
         return;
     var node = event.data.node || event.data;
     var parent = event.data.parent;

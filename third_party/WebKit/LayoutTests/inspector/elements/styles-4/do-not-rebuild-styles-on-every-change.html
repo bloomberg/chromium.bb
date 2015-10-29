@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<div id="parent">
+    <div id=foo><div id="child"></div></div>
+    <div id="sibling"><div id="child-of-sibling"></div></div>
+</div>
+<script>
+
+function modify(id)
+{
+    document.getElementById(id).setAttribute("fake", "modified");
+}
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function setupTest(next)
+        {
+            InspectorTest.selectNodeAndWaitForStylesWithComputed("foo", didSelectElement);
+
+            function didSelectElement()
+            {
+                InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "update", InspectorTest.addResult.bind(InspectorTest, "Requested StyleSidebarPane update"), true);
+                next();
+            }
+        },
+
+        function testModifySibling(next)
+        {
+            InspectorTest.evaluateInPage("modify(\"sibling\")", next);
+        },
+
+        function testModifySiblingChild(next)
+        {
+            InspectorTest.evaluateInPage("modify(\"child-of-sibling\")", next);
+        },
+
+        function testModifyParent(next)
+        {
+            InspectorTest.evaluateInPage("modify(\"parent\")", next);
+        },
+
+        function testModifyChild(next)
+        {
+            InspectorTest.evaluateInPage("modify(\"child\")", next);
+        }
+    ]);
+};
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests show that ssp isn't rebuild on every dom mutation</p>
+
+</body>
+</html>
