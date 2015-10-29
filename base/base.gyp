@@ -1414,7 +1414,7 @@
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
         {
-          # TODO(GN)
+          # GN: //base:base_unittests_jni_headers
           'target_name': 'base_unittests_jni_headers',
           'type': 'none',
           'sources': [
@@ -1592,7 +1592,7 @@
           ],
         },
         {
-          # TODO(GN)
+          # GN: //base:base_perftests_apk
           'target_name': 'base_perftests_apk',
           'type': 'none',
           'dependencies': [
