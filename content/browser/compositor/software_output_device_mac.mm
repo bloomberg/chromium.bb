@@ -140,9 +140,9 @@ void SoftwareOutputDeviceMac::EndPaint() {
   }
 
   canvas_ = nullptr;
-  ui::AcceleratedWidgetMacGotIOSurfaceFrame(compositor_->widget(),
-                                            io_surfaces_[current_index_],
-                                            pixel_size_, scale_factor_, false);
+  ui::AcceleratedWidgetMacGotFrame(compositor_->widget(), 0,
+                                   io_surfaces_[current_index_], pixel_size_,
+                                   scale_factor_, nullptr, nullptr);
 
   current_index_ = !current_index_;
 }

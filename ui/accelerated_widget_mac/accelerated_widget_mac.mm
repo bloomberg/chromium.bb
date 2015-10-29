@@ -108,10 +108,6 @@ bool AcceleratedWidgetMac::HasFrameOfSize(
   return last_swap_size_dip_ == dip_size;
 }
 
-int AcceleratedWidgetMac::GetRendererID() const {
-  return 0;
-}
-
 void AcceleratedWidgetMac::GetVSyncParameters(
     base::TimeTicks* timebase, base::TimeDelta* interval) const {
   if (view_) {
@@ -122,55 +118,29 @@ void AcceleratedWidgetMac::GetVSyncParameters(
   }
 }
 
-bool AcceleratedWidgetMac::IsRendererThrottlingDisabled() const {
-  if (view_)
-    return view_->AcceleratedWidgetShouldIgnoreBackpressure();
-  return false;
-}
-
-void AcceleratedWidgetMac::BeginPumpingFrames() {
-}
-
-void AcceleratedWidgetMac::EndPumpingFrames() {
-}
-
-void AcceleratedWidgetMac::GotAcceleratedFrame(
+void AcceleratedWidgetMac::GotFrame(
     CAContextID ca_context_id,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const std::vector<ui::LatencyInfo>& latency_info,
     const gfx::Size& pixel_size,
-    float scale_factor,
-    const gfx::Rect& pixel_damage_rect,
-    const base::Closure& drawn_callback) {
-  // Record the surface and latency info to use when acknowledging this frame.
-  DCHECK(accelerated_frame_drawn_callback_.is_null());
-  accelerated_frame_drawn_callback_ = drawn_callback;
-  accelerated_latency_info_.insert(accelerated_latency_info_.end(),
-                                   latency_info.begin(), latency_info.end());
-
+    float scale_factor) {
   // If there is no view and therefore no superview to draw into, early-out.
-  if (!view_) {
-    AcknowledgeAcceleratedFrame();
+  if (!view_)
     return;
-  }
 
   // Disable the fade-in or fade-out effect if we create or remove layers.
   ScopedCAActionDisabler disabler;
 
-  if (ca_context_id)
-    GotAcceleratedCAContextFrame(ca_context_id, pixel_size, scale_factor);
-  else
-    GotAcceleratedIOSurfaceFrame(io_surface, pixel_size, scale_factor);
-
-  AcknowledgeAcceleratedFrame();
-}
-
-void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
-    CAContextID ca_context_id,
-    const gfx::Size& pixel_size,
-    float scale_factor) {
   last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 
+  if (ca_context_id)
+    GotCAContextFrame(ca_context_id, pixel_size, scale_factor);
+  else
+    GotIOSurfaceFrame(io_surface, pixel_size, scale_factor);
+}
+
+void AcceleratedWidgetMac::GotCAContextFrame(CAContextID ca_context_id,
+                                             const gfx::Size& pixel_size,
+                                             float scale_factor) {
   // In the layer is replaced, keep the old one around until after the new one
   // is installed to avoid flashes.
   base::scoped_nsobject<CALayerHost> old_ca_context_layer =
@@ -195,19 +165,13 @@ void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
   DestroyLocalLayer();
 }
 
-void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const gfx::Size& pixel_size,
-    float scale_factor) {
-  GotIOSurfaceFrame(io_surface, pixel_size, scale_factor, false);
-}
-
 void AcceleratedWidgetMac::EnsureLocalLayer() {
   if (!local_layer_) {
     local_layer_.reset([[CALayer alloc] init]);
     // Setting contents gravity is necessary to prevent the layer from being
     // scaled during dyanmic resizes (especially with devtools open).
     [local_layer_ setContentsGravity:kCAGravityTopLeft];
+    [local_layer_ setAnchorPoint:CGPointMake(0, 0)];
     [flipped_layer_ addSublayer:local_layer_];
   }
 }
@@ -215,13 +179,7 @@ void AcceleratedWidgetMac::EnsureLocalLayer() {
 void AcceleratedWidgetMac::GotIOSurfaceFrame(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
-    float scale_factor,
-    bool flip_y) {
-  last_swap_size_dip_ = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
-
-  // Disable the fade-in or fade-out effect if we create or remove layers.
-  ScopedCAActionDisabler disabler;
-
+    float scale_factor) {
   // If there is not a layer for local frames, create one.
   EnsureLocalLayer();
 
@@ -241,14 +199,6 @@ void AcceleratedWidgetMac::GotIOSurfaceFrame(
       [local_layer_ contentsScale] != scale_factor) {
     DCHECK(base::mac::IsOSLionOrLater());
     [local_layer_ setContentsScale:scale_factor];
-  }
-
-  if (flip_y) {
-    [local_layer_ setAnchorPoint:CGPointMake(0, 1)];
-    [local_layer_ setAffineTransform:CGAffineTransformMakeScale(1.0, -1.0)];
-  } else {
-    [local_layer_ setAnchorPoint:CGPointMake(0, 0)];
-    [local_layer_ setAffineTransform:CGAffineTransformMakeScale(1.0, 1.0)];
   }
 
   // Remove any different-type layers that this is replacing.
@@ -271,58 +221,29 @@ void AcceleratedWidgetMac::DestroyLocalLayer() {
   local_layer_.reset();
 }
 
-void AcceleratedWidgetMac::AcknowledgeAcceleratedFrame() {
-  if (accelerated_frame_drawn_callback_.is_null())
-    return;
-  accelerated_frame_drawn_callback_.Run();
-  accelerated_frame_drawn_callback_.Reset();
-  if (view_)
-    view_->AcceleratedWidgetSwapCompleted(accelerated_latency_info_);
-  accelerated_latency_info_.clear();
-}
-
-void AcceleratedWidgetMacGotAcceleratedFrame(
+void AcceleratedWidgetMacGotFrame(
     gfx::AcceleratedWidget widget,
     CAContextID ca_context_id,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const std::vector<ui::LatencyInfo>& latency_info,
     const gfx::Size& pixel_size,
     float scale_factor,
-    const gfx::Rect& pixel_damage_rect,
-    const base::Closure& drawn_callback,
-    bool* disable_throttling,
-    int* renderer_id,
     base::TimeTicks* vsync_timebase,
     base::TimeDelta* vsync_interval) {
-  AcceleratedWidgetMac* accelerated_widget_mac =
-      GetHelperFromAcceleratedWidget(widget);
-  if (accelerated_widget_mac) {
-    accelerated_widget_mac->GotAcceleratedFrame(
-        ca_context_id, io_surface, latency_info, pixel_size, scale_factor,
-        pixel_damage_rect, drawn_callback);
-    *disable_throttling =
-        accelerated_widget_mac->IsRendererThrottlingDisabled();
-    *renderer_id = accelerated_widget_mac->GetRendererID();
-    accelerated_widget_mac->GetVSyncParameters(vsync_timebase, vsync_interval);
-  } else {
-    *disable_throttling = false;
-    *renderer_id = 0;
+  if (vsync_timebase)
     *vsync_timebase = base::TimeTicks();
+  if (vsync_interval)
     *vsync_interval = base::TimeDelta();
-  }
-}
 
-void AcceleratedWidgetMacGotIOSurfaceFrame(
-    gfx::AcceleratedWidget widget,
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const gfx::Size& pixel_size,
-    float scale_factor,
-    bool flip_y) {
   AcceleratedWidgetMac* accelerated_widget_mac =
       GetHelperFromAcceleratedWidget(widget);
+
   if (accelerated_widget_mac) {
-    accelerated_widget_mac->GotIOSurfaceFrame(io_surface, pixel_size,
-                                              scale_factor, flip_y);
+    accelerated_widget_mac->GotFrame(ca_context_id, io_surface, pixel_size,
+                                     scale_factor);
+    if (vsync_timebase && vsync_interval) {
+      accelerated_widget_mac->GetVSyncParameters(vsync_timebase,
+                                                 vsync_interval);
+    }
   }
 }
 

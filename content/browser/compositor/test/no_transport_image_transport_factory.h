@@ -28,7 +28,10 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   void AddObserver(ImageTransportFactoryObserver* observer) override;
   void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
-  void OnSurfaceDisplayed(int surface_id) override {}
+  void OnGpuSwapBuffersCompleted(
+      int surface_id,
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result) override {}
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override {}
   bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(

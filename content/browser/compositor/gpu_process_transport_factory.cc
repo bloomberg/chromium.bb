@@ -505,11 +505,14 @@ void GpuProcessTransportFactory::RemoveObserver(
 }
 
 #if defined(OS_MACOSX)
-void GpuProcessTransportFactory::OnSurfaceDisplayed(int surface_id) {
+void GpuProcessTransportFactory::OnGpuSwapBuffersCompleted(
+    int surface_id,
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result) {
   BrowserCompositorOutputSurface* surface = output_surface_map_.Lookup(
       surface_id);
   if (surface)
-    surface->OnSurfaceDisplayed();
+    surface->OnGpuSwapBuffersCompleted(latency_info, result);
 }
 
 void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(

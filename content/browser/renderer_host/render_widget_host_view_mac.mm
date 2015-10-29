@@ -481,48 +481,6 @@ NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
   return cocoa_view_;
 }
 
-bool RenderWidgetHostViewMac::AcceleratedWidgetShouldIgnoreBackpressure()
-    const {
-  // If vsync is disabled, then always draw and ack frames immediately.
-  static bool is_vsync_disabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuVsync);
-  if (is_vsync_disabled)
-    return true;
-
-  // If the window is occluded, then this frame's display call may be severely
-  // throttled. This is a good thing, unless tab capture may be active, because
-  // the broadcast will be inappropriately throttled.
-  // http://crbug.com/350410
-
-  // If tab capture isn't active then only ack frames when we draw them.
-  if (delegated_frame_host_ && !delegated_frame_host_->HasFrameSubscriber())
-    return false;
-
-  NSWindow* window = [cocoa_view_ window];
-  // If the view isn't even in the heirarchy then frames will never be drawn,
-  // so ack them immediately.
-  if (!window)
-    return true;
-
-  // Check the window occlusion API.
-  if ([window respondsToSelector:@selector(occlusionState)]) {
-    if ([window occlusionState] & NSWindowOcclusionStateVisible) {
-      // If the window is visible then it is safe to wait until frames are
-      // drawn to ack them.
-      return false;
-    } else {
-      // If the window is occluded then frames may never be drawn, so ack them
-      // immediately.
-      return true;
-    }
-  }
-
-  // If the window occlusion API is not present then ack frames when we draw
-  // them.
-  return false;
-}
-
 void RenderWidgetHostViewMac::AcceleratedWidgetGetVSyncParameters(
     base::TimeTicks* timebase, base::TimeDelta* interval) const {
   if (display_link_ &&
@@ -532,28 +490,9 @@ void RenderWidgetHostViewMac::AcceleratedWidgetGetVSyncParameters(
   *interval = base::TimeDelta();
 }
 
-void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted(
-    const std::vector<ui::LatencyInfo>& all_latency_info) {
-  if (!render_widget_host_)
-    return;
-  base::TimeTicks swap_time = base::TimeTicks::Now();
-
-  for (auto latency_info : all_latency_info) {
-    latency_info.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
-    latency_info.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
-        swap_time, 1);
-    render_widget_host_->FrameSwapped(latency_info);
-  }
-
+void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted() {
   if (display_link_)
-    display_link_->NotifyCurrentTime(swap_time);
-}
-
-void RenderWidgetHostViewMac::AcceleratedWidgetHitError() {
-  // Request a new frame be drawn.
-  browser_compositor_->compositor()->ScheduleFullRedraw();
+    display_link_->NotifyCurrentTime(base::TimeTicks::Now());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1799,11 +1738,7 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
     return;
 
   // Wait for a frame of the right size to come in.
-  if (browser_compositor_)
-    browser_compositor_->accelerated_widget_mac()->BeginPumpingFrames();
   render_widget_host_->PauseForPendingResizeOrRepaints();
-  if (browser_compositor_)
-    browser_compositor_->accelerated_widget_mac()->EndPumpingFrames();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -94,8 +94,13 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
     }
   }
 
+  void OnGpuSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result) override {
+    NOTREACHED();
+  }
+
 #if defined(OS_MACOSX)
-  void OnSurfaceDisplayed() override {}
   void SetSurfaceSuspendedForRecycle(bool suspended) override {}
   bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override {
     return false;

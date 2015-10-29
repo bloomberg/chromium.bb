@@ -121,19 +121,11 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)
   IPC_STRUCT_MEMBER(gfx::Size, size)
-  IPC_STRUCT_MEMBER(gfx::Rect, damage_rect)
   IPC_STRUCT_MEMBER(float, scale_factor)
   IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
-  // If the browser needs framerate throttling based on GPU back-pressure to be
-  // disabled (e.g, because the NSView isn't visible but tab capture is active),
-  // then this is set to true.
-  IPC_STRUCT_MEMBER(bool, disable_throttling)
-  // If the browser is drawing to the screen, this is the CGL renderer ID of
-  // the GL context that the brower is using.
-  IPC_STRUCT_MEMBER(int32, renderer_id)
   // The vsync parameters, to synchronize presentation with the display.
   IPC_STRUCT_MEMBER(base::TimeTicks, vsync_timebase)
   IPC_STRUCT_MEMBER(base::TimeDelta, vsync_interval)

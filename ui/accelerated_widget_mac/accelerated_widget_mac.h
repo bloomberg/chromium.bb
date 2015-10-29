@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/time/time.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -38,12 +38,9 @@ class AcceleratedWidgetMac;
 class AcceleratedWidgetMacNSView {
  public:
   virtual NSView* AcceleratedWidgetGetNSView() const = 0;
-  virtual bool AcceleratedWidgetShouldIgnoreBackpressure() const = 0;
   virtual void AcceleratedWidgetGetVSyncParameters(
     base::TimeTicks* timebase, base::TimeDelta* interval) const = 0;
-  virtual void AcceleratedWidgetSwapCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info) = 0;
-  virtual void AcceleratedWidgetHitError() = 0;
+  virtual void AcceleratedWidgetSwapCompleted() = 0;
 };
 
 #if defined(__OBJC__)
@@ -65,45 +62,23 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
 
-  // Return the CGL renderer ID for the surface, if one is available.
-  int GetRendererID() const;
-
   // Populate the vsync parameters for the surface's display.
   void GetVSyncParameters(
       base::TimeTicks* timebase, base::TimeDelta* interval) const;
 
-  // Return true if the renderer should not be throttled by GPU back-pressure.
-  bool IsRendererThrottlingDisabled() const;
+  void GotFrame(CAContextID ca_context_id,
+                base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+                const gfx::Size& pixel_size,
+                float scale_factor);
 
-  // Mark a bracket in which new frames are being pumped in a restricted nested
-  // run loop.
-  void BeginPumpingFrames();
-  void EndPumpingFrames();
-
-  void GotAcceleratedFrame(CAContextID ca_context_id,
-                           base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                           const std::vector<ui::LatencyInfo>& latency_info,
-                           const gfx::Size& pixel_size,
-                           float scale_factor,
-                           const gfx::Rect& pixel_damage_rect,
-                           const base::Closure& drawn_callback);
+ private:
+  void GotCAContextFrame(CAContextID ca_context_id,
+                         const gfx::Size& pixel_size,
+                         float scale_factor);
 
   void GotIOSurfaceFrame(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                          const gfx::Size& pixel_size,
-                         float scale_factor,
-                         bool flip_y);
-
- private:
-  void GotAcceleratedCAContextFrame(CAContextID ca_context_id,
-                                    const gfx::Size& pixel_size,
-                                    float scale_factor);
-
-  void GotAcceleratedIOSurfaceFrame(
-      base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-      const gfx::Size& pixel_size,
-      float scale_factor);
-
-  void AcknowledgeAcceleratedFrame();
+                         float scale_factor);
 
   // Remove a layer from the heirarchy and destroy it. Because the accelerated
   // layer types may be replaced by a layer of the same type, the layer to
@@ -135,12 +110,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // The locally drawn layer, which has its contents set to an IOSurface.
   base::scoped_nsobject<CALayer> local_layer_;
 
-  // If an accelerated frame has come in which has not yet been drawn and acked
-  // then this is the latency info and the callback to make when the frame is
-  // drawn. If there is no such frame then the callback is null.
-  std::vector<ui::LatencyInfo> accelerated_latency_info_;
-  base::Closure accelerated_frame_drawn_callback_;
-
   // The size in DIP of the last swap received from |compositor_|.
   gfx::Size last_swap_size_dip_;
 
@@ -154,27 +123,14 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
 #endif  // __OBJC__
 
 ACCELERATED_WIDGET_MAC_EXPORT
-void AcceleratedWidgetMacGotAcceleratedFrame(
+void AcceleratedWidgetMacGotFrame(
     gfx::AcceleratedWidget widget,
     CAContextID ca_context_id,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const std::vector<ui::LatencyInfo>& latency_info,
     const gfx::Size& pixel_size,
     float scale_factor,
-    const gfx::Rect& pixel_damage_rect,
-    const base::Closure& drawn_callback,
-    bool* disable_throttling,
-    int* renderer_id,
     base::TimeTicks* vsync_timebase,
     base::TimeDelta* vsync_interval);
-
-ACCELERATED_WIDGET_MAC_EXPORT
-void AcceleratedWidgetMacGotIOSurfaceFrame(
-    gfx::AcceleratedWidget widget,
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const gfx::Size& pixel_size,
-    float scale_factor,
-    bool flip_y);
 
 }  // namespace ui
 

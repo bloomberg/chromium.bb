@@ -54,12 +54,13 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   client_->DidSwapBuffers();
 }
 
-#if defined(OS_MACOSX)
-void SoftwareBrowserCompositorOutputSurface::OnSurfaceDisplayed() {
-  // See GpuBrowserCompositorOutputSurface for when and how this is used.
-  NOTREACHED() << "Not expected for software surfaces.";
+void SoftwareBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result) {
+  NOTREACHED();
 }
 
+#if defined(OS_MACOSX)
 void SoftwareBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
     bool suspended) {
 }

@@ -382,6 +382,16 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
     swap->overlay_planes.clear();
   }
 
+  // Update the latency info to reflect the swap time.
+  base::TimeTicks swap_time = base::TimeTicks::Now();
+  for (auto latency_info : swap->latency_info) {
+    latency_info.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
+    latency_info.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
+        swap_time, 1);
+  }
+
   // Send acknowledgement to the browser.
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   if (use_remote_layer_api_) {

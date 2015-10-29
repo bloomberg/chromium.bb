@@ -37,11 +37,10 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
 
-  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
-                              gfx::SwapResult result) override;
-#if defined(OS_MACOSX)
-  void OnSurfaceDisplayed() override;
-#endif
+  // BrowserCompositorOutputSurface implementation.
+  void OnGpuSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result) override;
 
   unsigned int internalformat_;
   scoped_ptr<GLHelper> gl_helper_;

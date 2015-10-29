@@ -30,9 +30,11 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
  private:
   void SwapBuffers(cc::CompositorFrame* frame) override;
+  void OnGpuSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result) override;
 
 #if defined(OS_MACOSX)
-  void OnSurfaceDisplayed() override;
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
   bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override;
 #endif

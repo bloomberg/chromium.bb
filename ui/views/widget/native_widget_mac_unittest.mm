@@ -65,10 +65,9 @@ class BridgedNativeWidgetTestApi {
   // Simulate a frame swap from the compositor. Assumes scale factor of 1.0f.
   void SimulateFrameSwap(const gfx::Size& size) {
     const float kScaleFactor = 1.0f;
-    bridge_->compositor_widget_->GotIOSurfaceFrame(
-        base::ScopedCFTypeRef<IOSurfaceRef>(), size, kScaleFactor, false);
-    std::vector<ui::LatencyInfo> latency_info;
-    bridge_->AcceleratedWidgetSwapCompleted(latency_info);
+    bridge_->compositor_widget_->GotFrame(
+        0, base::ScopedCFTypeRef<IOSurfaceRef>(), size, kScaleFactor);
+    bridge_->AcceleratedWidgetSwapCompleted();
   }
 
  private:
