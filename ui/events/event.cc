@@ -759,7 +759,7 @@ void KeyEvent::ApplyLayout() const {
     // Catch old code that tries to do layout without a physical key, and try
     // to recover using the KeyboardCode. Once key events are fully defined
     // on construction (see TODO in event.h) this will go away.
-    LOG(WARNING) << "DomCode::NONE keycode=" << key_code_;
+    VLOG(2) << "DomCode::NONE keycode=" << key_code_;
     code = UsLayoutKeyboardCodeToDomCode(key_code_);
     if (code == DomCode::NONE) {
       key_ = DomKey::UNIDENTIFIED;
