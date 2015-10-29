@@ -113,9 +113,19 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
       const base::FilePath& output_file) override {
     CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
 
+    CHECK(temp_dir_.IsValid() || temp_dir_.CreateUniqueTempDir());
+    FilePath temp_file;
+    CHECK(CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
+    std::string long_flags(
+        std::string("--") + kGTestFilterFlag + "=" +
+        JoinString(test_names, ":"));
+    CHECK_EQ(static_cast<int>(long_flags.size()),
+             WriteFile(temp_file,
+                       long_flags.data(),
+                       static_cast<int>(long_flags.size())));
+
     new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
-    new_cmd_line.AppendSwitchASCII(kGTestFilterFlag,
-                                   JoinString(test_names, ":"));
+    new_cmd_line.AppendSwitchPath(kGTestFlagfileFlag, temp_file);
     new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
 
     return new_cmd_line;
@@ -136,6 +146,8 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
       RunUnitTestsBatch(test_launcher, this, batch, launch_flags);
     }
   }
+
+  ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultUnitTestPlatformDelegate);
 };

@@ -31,6 +31,7 @@ class TestLauncher;
 
 // Constants for GTest command-line flags.
 extern const char kGTestFilterFlag[];
+extern const char kGTestFlagfileFlag[];
 extern const char kGTestHelpFlag[];
 extern const char kGTestListTestsFlag[];
 extern const char kGTestRepeatFlag[];
