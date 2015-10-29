@@ -260,6 +260,10 @@ source_set("unit_tests") {
     ]
   }
 
+  if (is_android) {
+    sources -= [ "async_policy_provider_unittest.cc" ]
+  }
+
   if (is_android || is_ios) {
     sources -= [
       "cloud/component_cloud_policy_service_unittest.cc",

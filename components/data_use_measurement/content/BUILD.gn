@@ -14,7 +14,7 @@ source_set("content") {
     "//net",
   ]
 }
-source_set("data_use_measurement_unittests") {
+source_set("unit_tests") {
   sources = [
     "data_use_measurement_unittest.cc",
   ]

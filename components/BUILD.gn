@@ -307,9 +307,16 @@ test("components_unittests") {
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/browser:unit_tests",
+    "//components/bookmarks/managed:unit_tests",
+    "//components/compression:unit_tests",
     "//components/content_settings/core/common",
+    "//components/data_usage/core:unit_tests",
+    "//components/data_use_measurement/content:unit_tests",
     "//components/google/core/browser:unit_tests",
+    "//components/net_log:unit_tests",
     "//components/search:unit_tests",
+    "//components/sessions:unit_tests",
+    "//components/syncable_prefs:unit_tests",
     "//components/undo:unit_tests",
     "//net",
     "//ui/base",
@@ -323,15 +330,19 @@ test("components_unittests") {
 
   if (!is_ios) {
     deps += [
+      "//components/certificate_transparency:unit_tests",
       "//components/enhanced_bookmarks:unit_tests",
       "//components/error_page/renderer:unit_tests",
       "//components/guest_view/browser:unit_tests",
       "//components/navigation_interception:unit_tests",
       "//components/network_hints/renderer:unit_tests",
+      "//components/page_load_metrics/browser:unit_tests",
+      "//components/page_load_metrics/renderer:unit_tests",
       "//components/power:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/scheduler:unit_tests",
       "//components/test_runner:test_runner",
+      "//components/tracing:unit_tests",
       "//components/ui/zoom:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/web_cache/browser:unit_tests",
@@ -421,9 +432,7 @@ test("components_unittests") {
         "//components/copresence:unit_tests",
         "//components/feedback:unit_tests",
         "//components/proximity_auth:unit_tests",
-        "//components/sessions:unit_tests",
         "//components/storage_monitor:unit_tests",
-        "//components/tracing:unit_tests",
         "//components/webusb:unit_tests",
       ]
     }
@@ -440,14 +449,7 @@ test("components_unittests") {
       isolate_file = "components_unittests.isolate"
 
       deps += [ "//content/public/android:content_java" ]
-      deps -= [
-        "//components/gcm_driver:unit_tests",
-        "//components/gcm_driver/instance_id:unit_tests",
-        "//components/password_manager/content/browser:unit_tests",
-        "//components/password_manager/core/browser:unit_tests",
-        "//components/password_manager/core/common:unit_tests",
-        "//components/password_manager/sync/browser:unit_tests",
-      ]
+      deps -= [ "//components/gcm_driver/instance_id:unit_tests" ]
 
       apk_deps = [
         "//components/invalidation/impl:java",
