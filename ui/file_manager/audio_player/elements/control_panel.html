@@ -6,6 +6,8 @@
 
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="volume_controller.html">
+<link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_ripple.html">
+<link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toggle_ripple.html">
 
 <dom-module id="control-panel">
   <link rel="import" type="css" href="control_panel.css">
@@ -37,6 +39,7 @@
                    checked="{{shuffle::change}}">
             <span class="icon"></span>
           </label>
+          <files-toggle-ripple activated="[[shuffle]]"></files-toggle-ripple>
         </button>
 
         <!-- Repeat toggle button in the bottom line. -->
@@ -47,6 +50,7 @@
                    checked="{{repeat::change}}">
             <span class="icon"></span>
           </label>
+          <files-toggle-ripple activated="[[repeat]]"></files-toggle-ripple>
         </button>
 
         <!-- Prev button in the bottom line. -->
@@ -55,6 +59,7 @@
                on-click="previousClick">
           <div class="normal default"></div>
           <div class="disabled"></div>
+          <files-ripple></files-ripple>
         </button>
 
         <!-- Play button in the bottom line. -->
@@ -64,6 +69,7 @@
           <div class="normal playing"></div>
           <div class="normal ended"></div>
           <div class="disabled"></div>
+          <files-ripple></files-ripple>
         </button>
 
         <!-- Next button in the bottom line. -->
@@ -72,6 +78,7 @@
                 on-click="nextClick">
           <div class="normal default"></div>
           <div class="disabled"></div>
+          <files-ripple></files-ripple>
         </button>
 
         <div id="volumeContainer"
@@ -93,6 +100,7 @@
             <input type="checkbox" checked="{{volumeSliderShown::change}}">
             <span class="icon"></span>
           </label>
+          <files-toggle-ripple activated="[[volumeSliderShown]]"></files-toggle-ripple>
         </button>
 
         <!-- Playlist button in the bottom line. -->
@@ -103,6 +111,7 @@
             <input type="checkbox" checked="{{expanded::change}}">
             <span class="icon"></span>
           </label>
+          <files-toggle-ripple activated="[[expanded]]"></files-toggle-ripple>
         </button>
       </div>
     </div>

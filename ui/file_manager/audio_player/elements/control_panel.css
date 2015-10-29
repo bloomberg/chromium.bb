@@ -34,7 +34,7 @@
 /* Customized scrollbar for the playlist. */
 
 .media-button {
-  background-color: #fff;
+  background-color: transparent;
   border: 0;
   height: 32px;
   outline: none;  /* TODO(yoshiki): Show outline only on keyboard focus. */
@@ -43,14 +43,10 @@
   width: 32px;
 }
 
-.media-button:active {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_pressed.png) 1x,
-      url(../assets/200/player_button_pressed.png) 2x);
-}
-
 .media-button > div,
 .media-button.toggle > label > span {
+  background-position: center;
+  background-repeat: no-repeat;
   display: inline-block;
   height: 100%;
   pointer-events: none;
@@ -270,11 +266,6 @@
   visibility: hidden;
 }
 
-.media-button.shuffle-mode {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
 .media-button.shuffle-mode > label > .icon {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_shuffle.png) 1x,
@@ -282,14 +273,8 @@
   pointer-events: auto;
 }
 
-.media-button.shuffle-mode > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_shuffle_active.png) 1x,
-      url(../assets/200/player_button_shuffle_active.png) 2x);
-}
-
 .media-button.repeat {
-  margin-left: 5px;
+  margin-left: 8px;
   margin-right: 0;
 }
 
@@ -300,15 +285,9 @@
   pointer-events: auto;
 }
 
-.media-button.repeat > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_repeat_active.png) 1x,
-      url(../assets/200/player_button_repeat_active.png) 2x);
-}
-
 .media-button.play {
-  margin-left: 0;
-  margin-right: 0;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .media-button.play > .ended {
@@ -324,7 +303,7 @@
 }
 
 .media-button.previous {
-  margin-left: 5px;
+  margin-left: 8px;
   margin-right: 0;
 }
 
@@ -336,7 +315,7 @@
 
 .media-button.next {
   margin-left: 0;
-  margin-right: 5px;
+  margin-right: 8px;
 }
 
 .media-button.next > .normal {
@@ -346,8 +325,8 @@
 }
 
 .media-button.volume {
-  margin-left: 5px;
-  margin-right: 5px;
+  margin-left: 0;
+  margin-right: 8px;
 }
 
 .media-button.volume > .normal {
@@ -363,17 +342,6 @@
   pointer-events: auto;
 }
 
-.media-button.volume > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_volume_active.png) 1x,
-      url(../assets/200/player_button_volume_active.png) 2x);
-}
-
-.media-button.playlist {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
 .media-button.playlist > label > .icon {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_playlist.png) 1x,
@@ -381,12 +349,14 @@
   pointer-events: auto;
 }
 
-.media-button.playlist > label > input:checked + .icon {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_button_playlist_active.png) 1x,
-      url(../assets/200/player_button_playlist_active.png) 2x);
+.media-button files-toggle-ripple {
+  position: absolute;
+  height: 28px;
+  left: 2px;
+  top: 2px;
+  width: 28px;
+  pointer-events: none;
 }
-
 
 /* Invisible div used to compute the width required for the elapsed time. */
 .time-controls > .time > .duration,
