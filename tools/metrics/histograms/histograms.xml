@@ -77809,7 +77809,11 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="Net.QuicClientHelloRejectReasons.QuicIsSecureOrNot"
     separator=".">
   <owner>rtenneti@chromium.org</owner>
-  <suffix name="Insecure" label="for insecure QUIC."/>
+  <suffix name="Insecure" label="for insecure QUIC.">
+    <obsolete>
+      Deprecated and removed from code as of 10/2015.
+    </obsolete>
+  </suffix>
   <suffix name="Secure" label="for secure QUIC."/>
   <affected-histogram name="Net.QuicClientHelloRejectReasons"/>
 </histogram_suffixes>
