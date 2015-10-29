@@ -32,6 +32,9 @@ STACK = '[stack]'
 _DEFAULT_JOBS=8
 _CHUNK_SIZE = 1000
 
+_BASE_APK = 'base.apk'
+_LIBCHROME_SO = 'libchrome.so'
+
 _PROCESS_INFO_LINE = re.compile('(pid: [0-9]+, tid: [0-9]+.*)')
 _SIGNAL_LINE = re.compile('(signal [0-9]+ \(.*\).*)')
 _REGISTER_LINE = re.compile('(([ ]*[0-9a-z]{2} [0-9a-f]{8}){4})')
@@ -94,7 +97,8 @@ def PrintTraceLines(trace_lines):
   print '  RELADDR   ' + 'FUNCTION'.ljust(maxlen) + '  FILE:LINE'
   for tl in trace_lines:
     (addr, symbol_with_offset, location) = tl
-    print '  %8s  %s  %s' % (addr, symbol_with_offset.ljust(maxlen), location)
+    normalized = os.path.normpath(location)
+    print '  %8s  %s  %s' % (addr, symbol_with_offset.ljust(maxlen), normalized)
   return
 
 
@@ -126,13 +130,13 @@ def PrintDivider():
   print
   print '-----------------------------------------------------\n'
 
-def ConvertTrace(lines, more_info):
+def ConvertTrace(lines, load_vaddrs, more_info):
   """Convert strings containing native crash to a stack."""
   start = time.time()
 
   chunks = [lines[i: i+_CHUNK_SIZE] for i in xrange(0, len(lines), _CHUNK_SIZE)]
   pool = multiprocessing.Pool(processes=_DEFAULT_JOBS)
-  useful_log = itertools.chain(*pool.map(PreProcessLog, chunks))
+  useful_log = itertools.chain(*pool.map(PreProcessLog(load_vaddrs), chunks))
   pool.close()
   pool.join()
   end = time.time()
@@ -143,37 +147,76 @@ def ConvertTrace(lines, more_info):
   logging.debug('Finished resolving symbols. Elapsed time: %.4fs',
                 (end - start))
 
+class PreProcessLog:
+  """Closure wrapper, for multiprocessing.Pool.map."""
+  def __init__(self, load_vaddrs):
+    """Bind load_vaddrs to the PreProcessLog closure.
+    Args:
+      load_vaddrs: LOAD segment min_vaddrs keyed on mapped executable
+    """
+    self._load_vaddrs = load_vaddrs;
 
-def PreProcessLog(lines):
-  """Preprocess the strings, only keep the useful ones.
-  Args:
-    lines: a list of byte strings read from logcat
+  def _AdjustAddress(self, address, lib):
+    """Add the vaddr of the library's first LOAD segment to address.
+    Args:
+      address: symbol address as a hexadecimal string
+      lib: path to loaded library
 
-  Returns:
-    A list of unicode strings related to native crash
-  """
-  useful_log = []
-  for ln in lines:
-    line = unicode(ln, errors='ignore')
-    if (_PROCESS_INFO_LINE.search(line)
-        or _SIGNAL_LINE.search(line)
-        or _REGISTER_LINE.search(line)
-        or _THREAD_LINE.search(line)
-        or _DALVIK_JNI_THREAD_LINE.search(line)
-        or _DALVIK_NATIVE_THREAD_LINE.search(line)
-        or _LOG_FATAL_LINE.search(line)
-        or _TRACE_LINE.match(line)
-        or _DEBUG_TRACE_LINE.match(line)):
-      useful_log.append(line)
-      continue
+    Returns:
+      address+load_vaddrs[key] if lib ends with /key, otherwise address
+    """
+    for key, offset in self._load_vaddrs.iteritems():
+      if lib.endswith('/' + key):
+        # Add offset to address, and return the result as a hexadecimal string
+        # with the same number of digits as the original. This allows the
+        # caller to make a direct textual substitution.
+        return ('%%0%dx' % len(address)) % (int(address, 16) + offset)
+    return address
 
-    if code_line.match(line):
-      # Code lines should be ignored. If this were excluded the 'code around'
-      # sections would trigger value_line matches.
-      continue
-    if _VALUE_LINE.match(line):
-      useful_log.append(line)
-  return useful_log
+  def __call__(self, lines):
+    """Preprocess the strings, only keep the useful ones.
+    Args:
+      lines: a list of byte strings read from logcat
+
+    Returns:
+      A list of unicode strings related to native crash
+    """
+    useful_log = []
+    for ln in lines:
+      line = unicode(ln, errors='ignore')
+      if (_PROCESS_INFO_LINE.search(line)
+          or _SIGNAL_LINE.search(line)
+          or _REGISTER_LINE.search(line)
+          or _THREAD_LINE.search(line)
+          or _DALVIK_JNI_THREAD_LINE.search(line)
+          or _DALVIK_NATIVE_THREAD_LINE.search(line)
+          or _LOG_FATAL_LINE.search(line)
+          or _DEBUG_TRACE_LINE.match(line)):
+        useful_log.append(line)
+        continue
+
+      match = _TRACE_LINE.match(line)
+      if match:
+        # If the trace line suggests a direct load from APK, replace the
+        # APK name with libchrome.so. Current load from APK supports only
+        # single library load, so it must be libchrome.so that was loaded
+        # in this way.
+        line = line.replace('/' + _BASE_APK, '/' + _LIBCHROME_SO)
+        # For trace lines specifically, the address may need to be adjusted
+        # to account for relocation packing. This is because debuggerd on
+        # pre-M platforms does not understand non-zero vaddr LOAD segments.
+        address, lib = match.group('address', 'lib')
+        adjusted_address = self._AdjustAddress(address, lib)
+        useful_log.append(line.replace(address, adjusted_address, 1))
+        continue
+
+      if code_line.match(line):
+        # Code lines should be ignored. If this were excluded the 'code around'
+        # sections would trigger value_line matches.
+        continue
+      if _VALUE_LINE.match(line):
+        useful_log.append(line)
+    return useful_log
 
 def ResolveCrashSymbol(lines, more_info):
   """Convert unicode strings which contains native crash to a stack
@@ -304,5 +347,3 @@ def ResolveCrashSymbol(lines, more_info):
                             source_location))
 
   PrintOutput(trace_lines, value_lines, more_info)
-
-
