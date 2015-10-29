@@ -2303,9 +2303,8 @@ unsigned Node::lengthOfContents() const
     case Node::TEXT_NODE:
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:
-        return toCharacterData(this)->length();
     case Node::PROCESSING_INSTRUCTION_NODE:
-        return toProcessingInstruction(this)->data().length();
+        return toCharacterData(this)->length();
     case Node::ELEMENT_NODE:
     case Node::DOCUMENT_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:

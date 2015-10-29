@@ -613,6 +613,7 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
     case Node::TEXT_NODE:
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:
+    case Node::PROCESSING_INSTRUCTION_NODE:
         endOffset = std::min(endOffset, toCharacterData(container)->length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             RefPtrWillBeRawPtr<CharacterData> c = static_pointer_cast<CharacterData>(container->cloneNode(true));
@@ -626,25 +627,6 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
         }
         if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS)
             toCharacterData(container)->deleteData(startOffset, endOffset - startOffset, exceptionState);
-        break;
-    case Node::PROCESSING_INSTRUCTION_NODE:
-        endOffset = std::min(endOffset, toProcessingInstruction(container)->data().length());
-        if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
-            RefPtrWillBeRawPtr<ProcessingInstruction> c = static_pointer_cast<ProcessingInstruction>(container->cloneNode(true));
-            c->setData(c->data().substring(startOffset, endOffset - startOffset));
-            if (fragment) {
-                result = fragment;
-                result->appendChild(c.release(), exceptionState);
-            } else {
-                result = c.release();
-            }
-        }
-        if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS) {
-            ProcessingInstruction* pi = toProcessingInstruction(container);
-            String data(pi->data());
-            data.remove(startOffset, endOffset - startOffset);
-            pi->setData(data);
-        }
         break;
     case Node::ELEMENT_NODE:
     case Node::ATTRIBUTE_NODE:
