@@ -25,7 +25,7 @@ class MockToolbarActionViewDelegate : public ToolbarActionViewDelegate {
   MockToolbarActionViewDelegate() {}
   ~MockToolbarActionViewDelegate() {}
 
-  MOCK_CONST_METHOD0(GetCurrentWebContents, content::WebContents*());
+  MOCK_CONST_METHOD0(GetCurrentWebContents, WebContents*());
   MOCK_METHOD0(UpdateState, void());
   MOCK_CONST_METHOD0(IsMenuRunning, bool());
   MOCK_METHOD1(OnPopupShown, void(bool by_user));
@@ -36,8 +36,6 @@ class TestMediaRouterAction : public MediaRouterAction {
  public:
   explicit TestMediaRouterAction(Browser* browser)
       : MediaRouterAction(browser),
-        web_contents_(WebContents::Create(WebContents::CreateParams(
-            browser->profile()))),
         controller_(nullptr),
         platform_delegate_(nullptr) {}
   ~TestMediaRouterAction() override {}
@@ -58,7 +56,6 @@ class TestMediaRouterAction : public MediaRouterAction {
     return platform_delegate_;
   }
 
-  scoped_ptr<WebContents> web_contents_;
   MediaRouterDialogControllerImpl* controller_;
   MediaRouterActionPlatformDelegate* platform_delegate_;
 };
@@ -107,15 +104,15 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
 
   ~MediaRouterActionUnitTest() override {}
 
-  // BrowserWithTestWindowTest:
+  // MediaRouterTest:
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
+    MediaRouterTest::SetUp();
     action_.reset(new TestMediaRouterAction(browser()));
   }
 
   void TearDown() override {
     action_.reset();
-    BrowserWithTestWindowTest::TearDown();
+    MediaRouterTest::TearDown();
   }
 
   TestMediaRouterAction* action() { return action_.get(); }
@@ -287,21 +284,18 @@ TEST_F(MediaRouterActionUnitTest, IconPressedState) {
 
   EXPECT_CALL(*mock_delegate, GetCurrentWebContents()).WillOnce(
       testing::Return(initiator_));
-  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
+  EXPECT_CALL(*mock_delegate, OnPopupClosed()).Times(1);
   action()->SetDelegate(mock_delegate.get());
 
-  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).WillOnce(testing::Return());
+  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).Times(1);
   action()->ExecuteAction(true);
 
-  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
-  dialog_controller_->CloseMediaRouterDialog();
+  EXPECT_CALL(*mock_delegate, OnPopupClosed()).Times(1);
+  dialog_controller_->HideMediaRouterDialog();
 
-  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
-  dialog_controller_->Reset();
-
-  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).WillOnce(testing::Return());
+  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).Times(1);
   dialog_controller_->CreateMediaRouterDialog();
 
-  EXPECT_CALL(*mock_delegate, OnPopupClosed()).WillOnce(testing::Return());
-  dialog_controller_->CloseMediaRouterDialog();
+  EXPECT_CALL(*mock_delegate, OnPopupClosed()).Times(1);
+  dialog_controller_->HideMediaRouterDialog();
 }

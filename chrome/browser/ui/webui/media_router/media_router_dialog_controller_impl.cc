@@ -49,7 +49,8 @@ namespace {
 // will look like.
 class MediaRouterDialogDelegate : public WebDialogDelegate {
  public:
-  explicit MediaRouterDialogDelegate(base::WeakPtr<MediaRouterAction> action) {}
+  explicit MediaRouterDialogDelegate(base::WeakPtr<MediaRouterAction> action)
+      : action_(action) {}
   ~MediaRouterDialogDelegate() override {}
 
   // WebDialogDelegate implementation.
@@ -91,10 +92,6 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
 
   bool ShouldShowDialogTitle() const override {
     return false;
-  }
-
-  void SetAction(const base::WeakPtr<MediaRouterAction>& action) {
-    action_ = action;
   }
 
  private:
@@ -191,11 +188,6 @@ void MediaRouterDialogControllerImpl::CloseMediaRouterDialog() {
     if (media_router_ui)
       media_router_ui->Close();
   }
-
-  // If there was no dialog to be closed, the action icon should not have been
-  // pressed and this would be a no-op.
-  if (action_)
-    action_->OnPopupHidden();
 }
 
 void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
@@ -243,9 +235,6 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
 void MediaRouterDialogControllerImpl::Reset() {
   MediaRouterDialogController::Reset();
   dialog_observer_.reset();
-
-  if (action_)
-    action_->OnPopupHidden();
 }
 
 void MediaRouterDialogControllerImpl::OnDialogNavigated(

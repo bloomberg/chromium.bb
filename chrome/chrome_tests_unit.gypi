@@ -1443,6 +1443,7 @@
     'chrome_unit_tests_media_router_non_android_sources': [
       'browser/media/router/media_router_mojo_impl_unittest.cc',
       'browser/media/router/media_router_type_converters_unittest.cc',
+      'browser/ui/toolbar/media_router_action_unittest.cc',
       'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
       'browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc',
       'browser/ui/webui/media_router/media_router_test.cc',
@@ -1550,7 +1551,6 @@
       'browser/ui/tabs/test_tab_strip_model_delegate.h',
       'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
       'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
-      'browser/ui/toolbar/media_router_action_unittest.cc',
       'browser/ui/toolbar/mock_component_toolbar_actions_factory.cc',
       'browser/ui/toolbar/mock_component_toolbar_actions_factory.h',
       'browser/ui/toolbar/recent_tabs_builder_test_helper.cc',
