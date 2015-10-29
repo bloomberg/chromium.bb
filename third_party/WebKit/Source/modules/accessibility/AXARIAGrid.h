@@ -54,7 +54,7 @@ private:
     bool isMultiSelectable() const override { return true; }
     bool isTableExposableThroughAccessibility() const override { return true; }
 
-    bool addTableCellChild(AXObject*, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount);
+    bool addTableRowChild(AXObject*, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount);
 };
 
 } // namespace blink

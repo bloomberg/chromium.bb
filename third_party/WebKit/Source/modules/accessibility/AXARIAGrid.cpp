@@ -51,9 +51,9 @@ AXARIAGrid* AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl& ax
     return new AXARIAGrid(layoutObject, axObjectCache);
 }
 
-bool AXARIAGrid::addTableCellChild(AXObject* child, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount)
+bool AXARIAGrid::addTableRowChild(AXObject* child, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount)
 {
-    if (!child || !child->isTableRow() || child->ariaRoleAttribute() != RowRole)
+    if (!child || !child->isTableRow() || child->roleValue() != RowRole)
         return false;
 
     AXTableRow* row = toAXTableRow(child);
@@ -99,11 +99,11 @@ void AXARIAGrid::addChildren()
 
     AXObjectCacheImpl& axCache = axObjectCache();
 
-    // add only rows that are labeled as aria rows
+    // Only add children that are actually rows.
     HeapHashSet<Member<AXObject>> appendedRows;
     unsigned columnCount = 0;
     for (const auto& child : children) {
-        if (!addTableCellChild(child, appendedRows, columnCount)) {
+        if (!addTableRowChild(child, appendedRows, columnCount)) {
 
             // in case the layout tree doesn't match the expected ARIA hierarchy, look at the children
             if (!child->hasChildren())
@@ -112,7 +112,7 @@ void AXARIAGrid::addChildren()
             // The children of this non-row will contain all non-ignored elements (recursing to find them).
             // This allows the table to dive arbitrarily deep to find the rows.
             for (const auto& childObject : child->children())
-                addTableCellChild(childObject.get(), appendedRows, columnCount);
+                addTableRowChild(childObject.get(), appendedRows, columnCount);
         }
     }
 
