@@ -44,12 +44,13 @@ class SCHEDULER_EXPORT UserModel {
   // The time we should stay in a priority-escalated mode after an input event.
   static const int kGestureEstimationLimitMillis = 100;
 
-  // TODO(alexclarke): Get a real number on actual data.
-  static const int kMinimumTypicalScrollDurationMillis = 500;
+  // This is based on two weeks of Android usage data.
+  static const int kMinimumTypicalScrollDurationMillis = 300;
 
   // We consider further gesture start events to be likely if the user has
   // interacted with the device in the past two seconds.
-  // TODO(alexclarke): Get a real number based on actual data.
+  // Based on Android usage data, 2000ms between gestures is the 75th percentile
+  // with 700ms being the 50th.
   static const int kExpectSubsequentGestureMillis = 2000;
 
   // Clears input signals.
