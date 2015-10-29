@@ -959,3 +959,5 @@ __gCrWeb['findInPage'].frameDocuments = function() {
   }
   return documents;
 };
+
+window.addEventListener('pagehide', __gCrWeb['findInPage']['disable']);
