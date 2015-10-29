@@ -91,20 +91,6 @@ net::BackendType ChooseCacheBackendType() {
 #endif
 }
 
-bool ShouldUseSdchPersistence() {
-  const std::string group =
-      base::FieldTrialList::FindFullName("SdchPersistence");
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSdchPersistence)) {
-    return true;
-  }
-  if (command_line->HasSwitch(switches::kDisableSdchPersistence)) {
-    return false;
-  }
-  return group == "Enabled";
-}
-
 }  // namespace
 
 using content::BrowserThread;
@@ -585,9 +571,7 @@ void ProfileImplIOData::InitializeInternal(
   sdch_manager_.reset(new net::SdchManager);
   sdch_policy_.reset(new net::SdchOwner(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
-  if (ShouldUseSdchPersistence()) {
-    sdch_policy_->EnablePersistentStorage(network_json_store_.get());
-  }
+  sdch_policy_->EnablePersistentStorage(network_json_store_.get());
 
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.

@@ -329,9 +329,6 @@ const char kDisableQuic[]                   = "disable-quic";
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 
-// Prevents SDCH persistence from being used.
-const char kDisableSdchPersistence[] = "disable-sdch-persistence";
-
 // Disables using bubbles for session restore request.
 const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 
@@ -517,9 +514,6 @@ const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 
 // Enables support for HTTP alternative services.
 const char kEnableAlternativeServices[] = "enable-alternative-services";
-
-// Enables SDCH persistence.
-const char kEnableSdchPersistence[] = "enable-sdch-persistence";
 
 // Enables using bubbles for session restore request instead of infobars.
 const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
