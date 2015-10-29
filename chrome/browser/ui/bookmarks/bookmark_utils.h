@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -107,10 +108,12 @@ bool IsValidBookmarkDropLocation(Profile* profile,
                                  int index);
 
 #if defined(TOOLKIT_VIEWS)
+// |text_color| is the color of associated text and is used to derive the icon's
+// color.
 // TODO(estade): If Mac wants to use these, return gfx::Image instead.
-gfx::ImageSkia GetBookmarkFolderIcon();
-gfx::ImageSkia GetBookmarkSupervisedFolderIcon();
-gfx::ImageSkia GetBookmarkManagedFolderIcon();
+gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color);
+gfx::ImageSkia GetBookmarkSupervisedFolderIcon(SkColor text_color);
+gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color);
 #endif
 
 }  // namespace chrome

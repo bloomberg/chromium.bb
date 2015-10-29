@@ -366,8 +366,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
       const bookmarks::BookmarkNode* parent,
       int old_index);
 
-  // Updates the colors for all the child objects in the bookmarks bar.
-  void UpdateColors();
+  // Sets/updates the colors and icons for all the child objects in the
+  // bookmarks bar.
+  void UpdateAppearanceForTheme();
 
   // Updates the visibility of |other_bookmarks_button_|,
   // |managed_bookmarks_button_|, and |supervised_bookmarks_button_|. Also

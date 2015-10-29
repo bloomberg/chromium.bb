@@ -986,7 +986,7 @@ void BookmarkBarView::ViewHierarchyChanged(
     // We may get inserted into a hierarchy with a profile - this typically
     // occurs when the bar's contents get populated fast enough that the
     // buttons are created before the bar is attached to a frame.
-    UpdateColors();
+    UpdateAppearanceForTheme();
 
     if (height() > 0) {
       // We only layout while parented. When we become parented, if our bounds
@@ -1173,7 +1173,7 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
 }
 
 void BookmarkBarView::OnThemeChanged() {
-  UpdateColors();
+  UpdateAppearanceForTheme();
 }
 
 const char* BookmarkBarView::GetClassName() const {
@@ -1257,7 +1257,7 @@ void BookmarkBarView::BookmarkModelLoaded(BookmarkModel* model,
       managed_->supervised_node()->GetTitle());
   supervised_bookmarks_button_->SetText(
       managed_->supervised_node()->GetTitle());
-  UpdateColors();
+  UpdateAppearanceForTheme();
   UpdateOtherAndManagedButtonsVisibility();
   other_bookmarks_button_->SetEnabled(true);
   managed_bookmarks_button_->SetEnabled(true);
@@ -1359,17 +1359,19 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
     if (sender == GetBookmarkButton(i)) {
       const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
       gfx::ImageSkia icon;
+      views::Widget* widget = sender->GetWidget();
       if (node->is_url()) {
         const gfx::Image& image = model_->GetFavicon(node);
         icon = image.IsEmpty() ? *GetImageSkiaNamed(IDR_DEFAULT_FAVICON)
                                : image.AsImageSkia();
       } else {
-        icon = chrome::GetBookmarkFolderIcon();
+        icon = chrome::GetBookmarkFolderIcon(
+            widget->GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_LabelEnabledColor));
       }
 
       button_drag_utils::SetDragImage(node->url(), node->GetTitle(), icon,
-                                      &press_pt, data,
-                                      GetBookmarkButton(i)->GetWidget());
+                                      &press_pt, data, widget);
       WriteBookmarkDragData(node, data);
       return;
     }
@@ -1544,7 +1546,8 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
 void BookmarkBarView::Init() {
   // Note that at this point we're not in a hierarchy so GetThemeProvider() will
   // return NULL.  When we're inserted into a hierarchy, we'll call
-  // UpdateColors(), which will set the appropriate colors for all the objects
+  // UpdateAppearanceForTheme(), which will set the appropriate colors for all
+  // the objects
   // added in this function.
 
   // Child views are traversed in the order they are added. Make sure the order
@@ -1636,8 +1639,6 @@ MenuButton* BookmarkBarView::CreateOtherBookmarksButton() {
   MenuButton* button =
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
-  button->SetImage(views::Button::STATE_NORMAL,
-                   chrome::GetBookmarkFolderIcon());
   button->set_context_menu_controller(this);
   button->set_tag(kOtherFolderButtonTag);
   return button;
@@ -1648,8 +1649,6 @@ MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
   MenuButton* button =
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_MANAGED_BOOKMARKS);
-  button->SetImage(views::Button::STATE_NORMAL,
-                   chrome::GetBookmarkManagedFolderIcon());
   button->set_context_menu_controller(this);
   button->set_tag(kManagedFolderButtonTag);
   return button;
@@ -1660,8 +1659,6 @@ MenuButton* BookmarkBarView::CreateSupervisedBookmarksButton() {
   MenuButton* button =
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_SUPERVISED_BOOKMARKS);
-  button->SetImage(views::Button::STATE_NORMAL,
-                   chrome::GetBookmarkSupervisedFolderIcon());
   button->set_context_menu_controller(this);
   button->set_tag(kSupervisedFolderButtonTag);
   return button;
@@ -1696,8 +1693,6 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   }
   views::MenuButton* button =
       new BookmarkFolderButton(this, node->GetTitle(), this, false);
-  button->SetImage(views::Button::STATE_NORMAL,
-                   chrome::GetBookmarkFolderIcon());
   ConfigureButton(node, button);
   return button;
 }
@@ -1722,8 +1717,13 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {
-    button->SetEnabledTextColors(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+    SkColor color =
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+    button->SetEnabledTextColors(color);
+    if (node->is_folder()) {
+      button->SetImage(views::Button::STATE_NORMAL,
+                       chrome::GetBookmarkFolderIcon(color));
+    }
   }
 
   button->SetMinSize(gfx::Size());
@@ -2027,18 +2027,27 @@ views::CustomButton* BookmarkBarView::DetermineViewToThrobFromRemove(
   return other_bookmarks_button_;
 }
 
-void BookmarkBarView::UpdateColors() {
+void BookmarkBarView::UpdateAppearanceForTheme() {
   // We don't always have a theme provider (ui tests, for example).
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
     return;
   SkColor color =
       theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
-  for (int i = 0; i < GetBookmarkButtonCount(); ++i)
-    GetBookmarkButton(i)->SetEnabledTextColors(color);
+  for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
+    ConfigureButton(model_->bookmark_bar_node()->GetChild(i),
+                    GetBookmarkButton(i));
+  }
   other_bookmarks_button_->SetEnabledTextColors(color);
+  other_bookmarks_button_->SetImage(views::Button::STATE_NORMAL,
+                                    chrome::GetBookmarkFolderIcon(color));
   managed_bookmarks_button_->SetEnabledTextColors(color);
+  managed_bookmarks_button_->SetImage(
+      views::Button::STATE_NORMAL, chrome::GetBookmarkManagedFolderIcon(color));
   supervised_bookmarks_button_->SetEnabledTextColors(color);
+  supervised_bookmarks_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      chrome::GetBookmarkSupervisedFolderIcon(color));
   if (apps_page_shortcut_->visible())
     apps_page_shortcut_->SetEnabledTextColors(color);
 
