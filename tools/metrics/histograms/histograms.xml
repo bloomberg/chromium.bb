@@ -18928,6 +18928,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.IPCChannelReader.ReceivedMessageSize" units="bytes">
+  <obsolete>
+    Obsolete as of 11/2015
+  </obsolete>
   <owner>dskiba@chromium.org</owner>
   <summary>Size of messages received by IPC::ChannelReader.</summary>
 </histogram>

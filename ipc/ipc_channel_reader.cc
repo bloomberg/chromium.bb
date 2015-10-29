@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/metrics/histogram_macros.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
@@ -137,9 +136,6 @@ bool ChannelReader::TranslateInputData(const char* input_data,
 bool ChannelReader::HandleTranslatedMessage(
     Message* translated_message,
     const AttachmentIdVector& attachment_ids) {
-  UMA_HISTOGRAM_MEMORY_KB(
-      "Memory.IPCChannelReader.ReceivedMessageSize",
-      static_cast<base::HistogramBase::Sample>(translated_message->size()));
 
   // Immediately handle internal messages.
   if (IsInternalMessage(*translated_message)) {
