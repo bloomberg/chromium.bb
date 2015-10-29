@@ -43,10 +43,8 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
   DCHECK(CalledOnValidThread());
 
   base::AutoLock lock(lock_);
-  // TODO(henryhsu): enable on ARM platform after V4L2 JpegDecodeAccelerator is
-  // ready.
   bool is_platform_supported = false;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_CHROMEOS)
   // Non-ChromeOS platforms do not support HW JPEG decode now. Do not establish
   // gpu channel to avoid introducing overhead.
   is_platform_supported = true;
