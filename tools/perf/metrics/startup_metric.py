@@ -23,8 +23,8 @@ class StartupMetric(Metric):
         'Startup.BrowserMessageLoopStartTimeFromMainEntry',
     'window_display_time' : 'Startup.BrowserWindowDisplay',
     'open_tabs_time' : 'Startup.BrowserOpenTabs',
-    'first_non_empty_paint_time' : 'Startup.FirstWebContents.NonEmptyPaint',
-    'first_main_frame_load_time' : 'Startup.FirstWebContents.MainFrameLoad'}
+    'first_non_empty_paint_time' : 'Startup.FirstWebContents.NonEmptyPaint2',
+    'first_main_frame_load_time' : 'Startup.FirstWebContents.MainFrameLoad2'}
 
   def Start(self, page, tab):
     raise NotImplementedError()

@@ -68,11 +68,21 @@ void RecordBrowserWindowDisplay(const base::Time& time);
 // Call this with the time delta that the browser spent opening its tabs.
 void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta);
 
-// Call this with the time when the first web contents loaded its main frame.
+// Call this with the time when the first web contents loaded its main frame,
+// only if the first web contents was unimpended in its attempt to do so.
 void RecordFirstWebContentsMainFrameLoad(const base::Time& time);
 
-// Call this with the time when the first web contents had a non-empty paint.
+// Call this with the time when the first web contents loaded its main frame.
+// This records an old stat kept for comparison purposes until M49.
+void RecordDeprecatedFirstWebContentsMainFrameLoad(const base::Time& time);
+
+// Call this with the time when the first web contents had a non-empty paint,
+// only if the first web contents was unimpended in its attempt to do so.
 void RecordFirstWebContentsNonEmptyPaint(const base::Time& time);
+
+// Call this with the time when the first web contents had a non-empty paint.
+// This records an old stat kept for comparison purposes until M49.
+void RecordDeprecatedFirstWebContentsNonEmptyPaint(const base::Time& time);
 
 // Call this with the time when the first web contents began navigating its main
 // frame.

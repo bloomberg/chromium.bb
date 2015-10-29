@@ -11,7 +11,7 @@ class BlankPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     # Request a RAF and wait for it to be processed to ensure that the metric
-    # Startup.FirstWebContents.NonEmptyPaint is recorded.
+    # Startup.FirstWebContents.NonEmptyPaint2 is recorded.
     action_runner.ExecuteJavaScript(
         """
         this.hasRunRAF = 0;

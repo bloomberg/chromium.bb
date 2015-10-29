@@ -43,7 +43,7 @@ message ProfilerEventProto {
   // defined.
   enum ProfilerEvent {
     // The first non-empty paint of the first web contents happened.
-    // Corresponds to the Startup.FirstWebContents.NonEmptyPaint histogram.
+    // Corresponds to the Startup.FirstWebContents.NonEmptyPaint2 histogram.
     EVENT_FIRST_NONEMPTY_PAINT = 0;
   }
 

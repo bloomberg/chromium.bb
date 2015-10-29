@@ -428,8 +428,21 @@ void RecordFirstWebContentsMainFrameLoad(const base::Time& time) {
     return;
 
   UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.MainFrameLoad",
+      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.MainFrameLoad2",
       g_process_creation_time.Get(), time);
+}
+
+void RecordDeprecatedFirstWebContentsMainFrameLoad(const base::Time& time) {
+  static bool is_first_call = true;
+  if (!is_first_call || time.is_null())
+    return;
+  is_first_call = false;
+  if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
+    return;
+
+  UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.MainFrameLoad",
+      time - g_process_creation_time.Get());
 }
 
 void RecordFirstWebContentsNonEmptyPaint(const base::Time& time) {
@@ -441,8 +454,21 @@ void RecordFirstWebContentsNonEmptyPaint(const base::Time& time) {
     return;
 
   UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint",
+      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
       g_process_creation_time.Get(), time);
+}
+
+void RecordDeprecatedFirstWebContentsNonEmptyPaint(const base::Time& time) {
+  static bool is_first_call = true;
+  if (!is_first_call || time.is_null())
+    return;
+  is_first_call = false;
+  if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
+    return;
+
+  UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint",
+      time - g_process_creation_time.Get());
 }
 
 void RecordFirstWebContentsMainNavigationStart(const base::Time& time) {

@@ -44481,8 +44481,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>erikchen@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
+    [Desktop] DEPRECATED. Measure the elapsed time from process launch to the
+    first main frame load of the first web contents. Deprecated in favor of
+    Startup.FirstWebContents.MainFrameLoad2 which now avoids counting ill-cases
+    (ref. FirstWebContentsProfiler::FinishReason).
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.MainFrameLoad2" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
     [Desktop] Measure the elapsed time from process launch to the first main
-    frame load of the first web contents.
+    frame load of the first web contents. Only comprised of cases where the
+    initial foreground tab gets to complete its rendering task unimpeded (an
+    improvement over Startup.FirstWebContents.MainFrameLoad).
   </summary>
 </histogram>
 
@@ -44509,8 +44522,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>erikchen@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
+    [Desktop] DEPRECATED. Measure the elapsed time from process launch to the
+    first non- empty paint of the first web contents. Deprecated in favor of
+    Startup.FirstWebContents.NonEmptyPaint2 which now avoids counting ill-cases
+    (ref. FirstWebContentsProfiler::FinishReason).
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.NonEmptyPaint2" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
     [Desktop] Measure the elapsed time from process launch to the first non-
-    empty paint of the first web contents.
+    empty paint of the first web contents. Only comprised of cases where the
+    initial foreground tab gets to complete its rendering task unimpeded (an
+    improvement over Startup.FirstWebContents.NonEmptyPaint).
   </summary>
 </histogram>
 
@@ -80633,9 +80659,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Startup.BrowserOpenTabs"/>
   <affected-histogram name="Startup.BrowserWindowDisplay"/>
   <affected-histogram name="Startup.FirstWebContents.MainFrameLoad"/>
+  <affected-histogram name="Startup.FirstWebContents.MainFrameLoad2"/>
   <affected-histogram name="Startup.FirstWebContents.MainNavigationFinished"/>
   <affected-histogram name="Startup.FirstWebContents.MainNavigationStart"/>
   <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint"/>
+  <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint2"/>
   <affected-histogram name="Startup.LoadTime.ExeMainToDllMain"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToExeMain"/>

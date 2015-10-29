@@ -122,6 +122,7 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
       collected_load_metric_(false),
       collected_main_navigation_start_metric_(false),
       collected_main_navigation_finished_metric_(false),
+      finished_(false),
       delegate_(delegate),
       responsiveness_histogram_(NULL),
       responsiveness_1sec_histogram_(NULL),
@@ -141,7 +142,11 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   }
 
   collected_paint_metric_ = true;
-  startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(base::Time::Now());
+  const base::Time now = base::Time::Now();
+  // Record the old metric unconditionally.
+  startup_metric_utils::RecordDeprecatedFirstWebContentsNonEmptyPaint(now);
+  if (!finished_)
+    startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(now);
 
   metrics::TrackingSynchronizer::OnProfilingPhaseCompleted(
       metrics::ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT);
@@ -179,7 +184,11 @@ void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   }
 
   collected_load_metric_ = true;
-  startup_metric_utils::RecordFirstWebContentsMainFrameLoad(base::Time::Now());
+  const base::Time now = base::Time::Now();
+  // Record the old metric unconditionally.
+  startup_metric_utils::RecordDeprecatedFirstWebContentsMainFrameLoad(now);
+  if (!finished_)
+    startup_metric_utils::RecordFirstWebContentsMainFrameLoad(now);
 
   if (IsFinishedCollectingMetrics())
     FinishedCollectingMetrics(FinishReason::DONE);
@@ -254,17 +263,22 @@ bool FirstWebContentsProfiler::IsFinishedCollectingMetrics() {
 
 void FirstWebContentsProfiler::FinishedCollectingMetrics(
     FinishReason finish_reason) {
-  UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason",
-                            finish_reason, FinishReason::ENUM_MAX);
-  if (!collected_paint_metric_) {
-    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoPaint",
+  if (!finished_) {
+    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason",
                               finish_reason, FinishReason::ENUM_MAX);
+    if (!collected_paint_metric_) {
+      UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoPaint",
+                                finish_reason, FinishReason::ENUM_MAX);
+    }
+    if (!collected_load_metric_) {
+      UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoLoad",
+                                finish_reason, FinishReason::ENUM_MAX);
+    }
+    finished_ = true;
   }
-  if (!collected_load_metric_) {
-    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoLoad",
-                              finish_reason, FinishReason::ENUM_MAX);
-  }
-  delegate_->ProfilerFinishedCollectingMetrics();
+  // TODO(gab): Delete right away when getting rid of |finished_|.
+  if (IsFinishedCollectingMetrics())
+    delegate_->ProfilerFinishedCollectingMetrics();
 }
 
 void FirstWebContentsProfiler::InitHistograms() {
