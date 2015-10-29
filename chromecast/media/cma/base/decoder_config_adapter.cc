@@ -26,6 +26,10 @@ AudioCodec ToAudioCodec(const ::media::AudioCodec audio_codec) {
       return kCodecPCM_S16BE;
     case ::media::kCodecVorbis:
       return kCodecVorbis;
+    case ::media::kCodecOpus:
+      return kCodecOpus;
+    case ::media::kCodecFLAC:
+      return kCodecFLAC;
     default:
       LOG(ERROR) << "Unsupported audio codec " << audio_codec;
   }
@@ -158,6 +162,8 @@ VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
       return ::media::kCodecVorbis;
     case kCodecOpus:
       return ::media::kCodecOpus;
+    case kCodecFLAC:
+      return ::media::kCodecFLAC;
     default:
       return ::media::kUnknownAudioCodec;
   }

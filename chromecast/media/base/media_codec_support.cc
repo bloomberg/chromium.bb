@@ -15,6 +15,11 @@ namespace media {
 namespace {
 
 bool IsCodecSupported(const std::string& codec) {
+  // FLAC and Opus are supported via the default renderer if the CMA backend
+  // does not have explicit support.
+  if (codec == "opus" || codec == "flac")
+    return true;
+
   MediaCodecSupportShlib::CodecSupport platform_support =
       MediaCodecSupportShlib::IsSupported(codec);
   if (platform_support == MediaCodecSupportShlib::kSupported)

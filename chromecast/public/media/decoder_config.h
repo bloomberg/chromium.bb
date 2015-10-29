@@ -30,9 +30,10 @@ enum AudioCodec {
   kCodecEAC3,
   kCodecAC3,
   kCodecDTS,
+  kCodecFLAC,
 
   kAudioCodecMin = kAudioCodecUnknown,
-  kAudioCodecMax = kCodecDTS,
+  kAudioCodecMax = kCodecFLAC,
 };
 
 enum SampleFormat {

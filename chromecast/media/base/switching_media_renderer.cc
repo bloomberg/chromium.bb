@@ -5,6 +5,7 @@
 #include "chromecast/media/base/switching_media_renderer.h"
 
 #include "base/logging.h"
+#include "chromecast/public/media_codec_support_shlib.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/demuxer_stream_provider.h"
@@ -36,17 +37,30 @@ void SwitchingMediaRenderer::Initialize(
   // have enough information to decide which renderer to use.
   demuxer_stream_provider_ = demuxer_stream_provider;
   DCHECK(demuxer_stream_provider_);
+
   ::media::DemuxerStream* audio_stream =
       demuxer_stream_provider_->GetStream(::media::DemuxerStream::AUDIO);
   ::media::DemuxerStream* video_stream =
       demuxer_stream_provider_->GetStream(::media::DemuxerStream::VIDEO);
-  if (audio_stream && !video_stream &&
-      (audio_stream->audio_decoder_config().codec() == ::media::kCodecFLAC ||
-       audio_stream->audio_decoder_config().codec() == ::media::kCodecOpus)) {
-    // We'll use the default Chrome media renderer with software audio decoding
-    cma_renderer_.reset();
-  } else {
-    // We'll use the CMA-based rendering with hardware decoding
+  if (audio_stream && !video_stream) {
+    // If the CMA backend does not support the audio codec and there is no
+    // video stream, use the default renderer with software decoding.
+    // Currently this applies to FLAC and Opus only due to difficulties in
+    // correctly generating the codec string (eg for mp4a variants).
+    ::media::AudioCodec codec = audio_stream->audio_decoder_config().codec();
+    bool flac_supported = (MediaCodecSupportShlib::IsSupported("flac") !=
+                           MediaCodecSupportShlib::kNotSupported);
+    bool opus_supported = (MediaCodecSupportShlib::IsSupported("opus") !=
+                           MediaCodecSupportShlib::kNotSupported);
+    if ((codec == ::media::kCodecFLAC && !flac_supported) ||
+        (codec == ::media::kCodecOpus && !opus_supported)) {
+      cma_renderer_.reset();
+    }
+  }
+
+  if (cma_renderer_) {
+    // If the CMA renderer was not reset above, then we will use it; the
+    // default renderer is not needed.
     default_renderer_.reset();
   }
 
