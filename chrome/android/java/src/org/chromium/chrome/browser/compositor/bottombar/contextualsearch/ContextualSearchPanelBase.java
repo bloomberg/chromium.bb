@@ -1414,12 +1414,10 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     /**
      * Creates the Search Promo View.
      */
-    public void createPromoView() {
-        if (!isPromoVisible()) return;
+    protected void createPromoView() {
+        if (isPromoVisible() && mPromoView == null) {
+            assert mContainerView != null;
 
-        assert mContainerView != null;
-
-        if (mPromoView == null) {
             // TODO(pedrosimonetti): Refactor promo code to use ViewResourceInflater.
             LayoutInflater.from(mContext).inflate(
                     R.layout.contextual_search_opt_out_promo, mContainerView);
@@ -1450,8 +1448,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * Destroys the Search Promo View.
      */
     protected void destroyPromoView() {
-        if (!isPromoVisible()) return;
-
         if (mPromoView != null) {
             mContainerView.removeView(mPromoView);
             mPromoView = null;

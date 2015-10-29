@@ -679,6 +679,10 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private void setPromoVisibility(boolean isVisible) {
         mIsPromoVisible = isVisible;
+
+        if (mIsPromoVisible) {
+            createPromoView();
+        }
     }
 
     // ============================================================================================
