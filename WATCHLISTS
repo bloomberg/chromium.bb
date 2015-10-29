@@ -512,6 +512,11 @@
     'mouse_lock': {
       'filepath': 'mouse_lock',
     },
+    'mus': {
+      'filepath': 'components/mus/'\
+                  '|mojo/gles2/'\
+                  '|mojo/gpu/',
+    },
     'nacl': {
       'filepath': 'chrome/nacl/|chrome/test/nacl/|'\
         'chrome/browser/nacl_host/|chrome/common/nacl|'\
@@ -1358,7 +1363,8 @@
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
     'mandoline': ['yzshen+watch@chromium.org',
-                  'penghuang+watch-mandoline@chromium.org'],
+                  'penghuang+watch-mandoline@chromium.org',
+                  'rjkroege@chromium.org'],
     'manifest': ['mlamouri+watch-manifest@chromium.org'],
     'md_settings': ['dbeam+watch-settings@chromium.org',
                     'michaelpg+watch-md-settings@chromium.org',
@@ -1378,6 +1384,7 @@
              'viettrungluu+watch@chromium.org',
              'yzshen+watch@chromium.org'],
     'mouse_lock': ['scheib+watch@chromium.org'],
+    'mus': ['rjkroege@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['sbc@chromium.org', 'binji+watch@chromium.org'],
     'navigation': ['creis+watch@chromium.org', 'nasko+codewatch@chromium.org'],
