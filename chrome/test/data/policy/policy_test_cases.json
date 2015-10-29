@@ -2328,6 +2328,14 @@
     ]
   },
 
+  "AllowDinosaurEasterEgg": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "AllowDinosaurEasterEgg": true },
+    "pref_mappings": [
+      { "pref": "allow_dinosaur_easter_egg"}
+    ]
+  },
+
   "KeyPermissions": {
   },
 

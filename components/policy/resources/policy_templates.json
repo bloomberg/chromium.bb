@@ -134,7 +134,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 308
+#   For your editing convenience: highest ID currently used: 309
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -643,6 +643,24 @@
       If this setting is enabled or not set, browsing and download history can be deleted.
 
       If this setting is disabled, browsing and download history cannot be deleted.''',
+    },
+    {
+      'name': 'AllowDinosaurEasterEgg',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:48-', 'chrome.*:48-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 309,
+      'default_for_enterprise_users': False,
+      'caption': '''Allow Dinosaur Easter Egg Game''',
+      'tags': [],
+      'desc': '''Allow users to play dinosaur easter game when device is offline.
+
+      If this policy is set to False, users will not be able to play the dinosaur easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.''',
     },
     {
       'name': 'RemoteAccess',

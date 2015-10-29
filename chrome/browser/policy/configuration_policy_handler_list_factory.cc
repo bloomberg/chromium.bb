@@ -336,6 +336,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kHardwareAccelerationModeEnabled,
     prefs::kHardwareAccelerationModeEnabled,
     base::Value::TYPE_BOOLEAN },
+  { key::kAllowDinosaurEasterEgg,
+    prefs::kAllowDinosaurEasterEgg,
+    base::Value::TYPE_BOOLEAN },
 
 #if defined(ENABLE_SPELLCHECK)
   { key::kSpellCheckServiceEnabled,

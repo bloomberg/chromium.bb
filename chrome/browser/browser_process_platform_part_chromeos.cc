@@ -46,7 +46,6 @@ void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {
 }
 
 void BrowserProcessPlatformPart::InitializeChromeUserManager() {
-  DisableDinoEasterEggIfEnrolled();
   DCHECK(!chrome_user_manager_);
   chrome_user_manager_ =
       chromeos::ChromeUserManagerImpl::CreateChromeUserManager();
@@ -103,14 +102,6 @@ policy::BrowserPolicyConnectorChromeOS*
 BrowserProcessPlatformPart::browser_policy_connector_chromeos() {
   return static_cast<policy::BrowserPolicyConnectorChromeOS*>(
       g_browser_process->browser_policy_connector());
-}
-
-void BrowserProcessPlatformPart::DisableDinoEasterEggIfEnrolled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  const bool is_enterprise_managed = g_browser_process->platform_part()->
-             browser_policy_connector_chromeos()->IsEnterpriseManaged();
-  if (is_enterprise_managed)
-    command_line->AppendSwitch(switches::kDisableDinosaurEasterEgg);
 }
 
 chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {

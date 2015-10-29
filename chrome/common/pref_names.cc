@@ -2182,4 +2182,7 @@ const char kAnimationPolicy[] = "settings.a11y.animation_policy";
 
 const char kBackgroundTracingLastUpload[] = "background_tracing.last_upload";
 
+const char kAllowDinosaurEasterEgg[] =
+    "allow_dinosaur_easter_egg";
+
 }  // namespace prefs

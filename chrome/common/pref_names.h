@@ -791,6 +791,8 @@ extern const char kAnimationPolicy[];
 
 extern const char kBackgroundTracingLastUpload[];
 
+extern const char kAllowDinosaurEasterEgg[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
