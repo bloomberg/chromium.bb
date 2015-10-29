@@ -8,16 +8,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.app.BundleCompat;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -203,6 +202,20 @@ public class IntentUtils {
     }
 
     /**
+     * Just like {@link BundleCompat#getBinder()}, but doesn't throw exceptions.
+     */
+    public static IBinder safeGetBinder(Bundle bundle, String name) {
+        if (bundle == null) return null;
+        try {
+            return BundleCompat.getBinder(bundle, name);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "getBinder failed on bundle " + bundle);
+            return null;
+        }
+    }
+
+    /**
      * @return a Binder from an Intent, or null.
      *
      * Creates a temporary copy of the extra Bundle, which is required as
@@ -210,29 +223,14 @@ public class IntentUtils {
      */
     public static IBinder safeGetBinderExtra(Intent intent, String name) {
         if (!intent.hasExtra(name)) return null;
-        try {
-            Bundle extras = intent.getExtras();
-            // Bundle#getBinder() is public starting at API level 18, but exists
-            // in previous SDKs as a hidden method named "getIBinder" (which
-            // still exists as of L MR1 but is hidden and deprecated).
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                return extras.getBinder(name);
-            } else {
-                Method getBinderMethod = Bundle.class.getMethod("getIBinder", String.class);
-                return (IBinder) getBinderMethod.invoke(extras, name);
-            }
-        } catch (Throwable t) {
-            // Catches un-parceling exceptions.
-            Log.e(TAG, "getBinder failed on intent " + intent);
-            return null;
-        }
+        Bundle extras = intent.getExtras();
+        return safeGetBinder(extras, name);
     }
 
     /**
      * Inserts a {@link Binder} value into an Intent as an extra.
      *
-     * This is the same as {@link Bundle#putBinder()}, but works below API level
-     * 18.
+     * Uses {@link BundleCompat#putBinder()}, but doesn't throw exceptions.
      *
      * @param intent Intent to put the binder into.
      * @param name Key.
@@ -243,16 +241,7 @@ public class IntentUtils {
         if (intent == null) return;
         Bundle bundle = new Bundle();
         try {
-            // Bundle#putBinder() is public starting at API level 18, but exists
-            // in previous SDKs as a hidden method named "putIBinder" (which
-            // still exists as of L MR1 but is hidden and deprecated).
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                bundle.putBinder(name, binder);
-            } else {
-                Method putBinderMethod =
-                        Bundle.class.getMethod("putIBinder", String.class, IBinder.class);
-                putBinderMethod.invoke(bundle, name, binder);
-            }
+            BundleCompat.putBinder(bundle, name, binder);
         } catch (Throwable t) {
             // Catches parceling exceptions.
             Log.e(TAG, "putBinder failed on bundle " + bundle);
