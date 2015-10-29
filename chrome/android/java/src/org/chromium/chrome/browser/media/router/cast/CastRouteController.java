@@ -210,38 +210,35 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     public void close() {
         if (mStoppingApplication) return;
 
-        // close() have been called before from another code path.
-        if (mApiClient == null) return;
+        if (isApiClientInvalid()) return;
 
-        if (mApiClient.isConnected() || mApiClient.isConnecting()) {
-            mStoppingApplication = true;
-            Cast.CastApi.stopApplication(mApiClient, mSessionId)
-                    .setResultCallback(new ResultCallback<Status>() {
-                        @Override
-                        public void onResult(Status status) {
-                            onMessage("remove_session", "\"" + mSessionId + "\"");
-                            // TODO(avayvod): handle a failure to stop the application.
-                            // https://crbug.com/535577
+        mStoppingApplication = true;
+        Cast.CastApi.stopApplication(mApiClient, mSessionId)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        onMessage("remove_session", "\"" + mSessionId + "\"");
+                        // TODO(avayvod): handle a failure to stop the application.
+                        // https://crbug.com/535577
 
-                            for (String namespace : mNamespaces) unregisterNamespace(namespace);
-                            mNamespaces.clear();
+                        for (String namespace : mNamespaces) unregisterNamespace(namespace);
+                        mNamespaces.clear();
 
-                            mClients.clear();
-                            mSessionId = null;
-                            mApiClient = null;
+                        mClients.clear();
+                        mSessionId = null;
+                        mApiClient = null;
 
-                            mRouteDelegate.onRouteClosed(CastRouteController.this);
-                            mStoppingApplication = false;
+                        mRouteDelegate.onRouteClosed(CastRouteController.this);
+                        mStoppingApplication = false;
 
-                            // The detached route will be closed only if another route joined
-                            // the same session so it will take over the notification.
-                            if (!mDetached) {
-                                MediaNotificationManager.hide(
-                                        mTabId, R.id.presentation_notification);
-                            }
+                        // The detached route will be closed only if another route joined
+                        // the same session so it will take over the notification.
+                        if (!mDetached) {
+                            MediaNotificationManager.hide(
+                                    mTabId, R.id.presentation_notification);
                         }
-                    });
-        }
+                    }
+                });
     }
 
     @Override
@@ -342,11 +339,13 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     private void addNamespace(String namespace) {
         assert !mNamespaces.contains(namespace);
-        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return;
+
+        if (isApiClientInvalid()) return;
 
         // If application metadata is null, register the callback anyway.
-        if (mApplicationMetadata != null
-                && !mApplicationMetadata.isNamespaceSupported(namespace)) return;
+        if (mApplicationMetadata != null && !mApplicationMetadata.isNamespaceSupported(namespace)) {
+            return;
+        }
 
         try {
             Cast.CastApi.setMessageReceivedCallbacks(mApiClient, namespace, mMessageChannel);
@@ -359,7 +358,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private void unregisterNamespace(String namespace) {
         assert mNamespaces.contains(namespace);
 
-        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return;
+        if (isApiClientInvalid()) return;
 
         try {
             Cast.CastApi.removeMessageReceivedCallbacks(mApiClient, namespace);
@@ -456,6 +455,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private boolean handleVolumeMessage(JSONObject volume) throws JSONException {
         if (volume == null) return false;
 
+        if (isApiClientInvalid()) return false;
+
         try {
             if (!volume.isNull("muted")) {
                 Cast.CastApi.setMute(mApiClient, volume.getBoolean("muted"));
@@ -501,7 +502,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     }
 
     private boolean sendCastMessage(JSONObject message, String namespace) throws JSONException {
-        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return false;
+        if (isApiClientInvalid()) return false;
 
         removeNullFields(message);
 
@@ -536,7 +537,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     }
 
     public void updateSessionStatus() {
-        if (mApiClient == null || (!mApiClient.isConnected() && !mApiClient.isConnecting())) return;
+        if (isApiClientInvalid()) return;
 
         try {
             mApplicationStatus = Cast.CastApi.getApplicationStatus(mApiClient);
@@ -552,7 +553,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     }
 
     private String buildSessionMessage() {
-        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return "{}";
+        if (isApiClientInvalid()) return "{}";
 
         try {
             // "volume" is a part of "receiver" initialized below.
@@ -615,5 +616,9 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             jsonNamespaces.put(jsonNamespace);
         }
         return jsonNamespaces;
+    }
+
+    private boolean isApiClientInvalid() {
+        return mApiClient == null || (!mApiClient.isConnected() && !mApiClient.isConnecting());
     }
 }
