@@ -1551,12 +1551,3 @@ crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/548416 [ SnowLeopard ] virtual/syncpaint/compositing/repaint/background-attachment-fixed-scrolled.html [ Failure ]
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
-
-crbug.com/240827 [ XP ] svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ NeedsRebaseline ]
-crbug.com/240827 [ XP ] svg/custom/feComponentTransfer-Discrete.svg [ NeedsRebaseline ]
-crbug.com/240827 [ XP ] svg/custom/feComponentTransfer-Gamma.svg [ NeedsRebaseline ]
-crbug.com/240827 [ XP ] svg/custom/feComponentTransfer-Linear.svg [ NeedsRebaseline ]
-crbug.com/240827 [ XP ] svg/custom/feComponentTransfer-Table.svg [ NeedsRebaseline ]
-crbug.com/240827 [ XP ] svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ NeedsRebaseline ]
-crbug.com/240827 [ XP ] svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ NeedsRebaseline ]
-crbug.com/240827 [ XP ] virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
