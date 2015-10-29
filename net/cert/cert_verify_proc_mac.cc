@@ -8,9 +8,11 @@
 #include <CoreServices/CoreServices.h>
 #include <Security/Security.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -19,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "crypto/mac_security_services_lock.h"
 #include "crypto/sha2.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
@@ -27,7 +30,6 @@
 #include "net/cert/crl_set.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
-#include "net/cert/x509_certificate_known_roots_mac.h"
 #include "net/cert/x509_util_mac.h"
 
 // From 10.7.2 libsecurity_keychain-55035/lib/SecTrustPriv.h, for use with
@@ -353,20 +355,6 @@ bool CheckRevocationWithCRLSet(CFArrayRef chain, CRLSet* crl_set) {
   return true;
 }
 
-// IsIssuedByKnownRoot returns true if the given chain is rooted at a root CA
-// that we recognise as a standard root.
-// static
-bool IsIssuedByKnownRoot(CFArrayRef chain) {
-  int n = CFArrayGetCount(chain);
-  if (n < 1)
-    return false;
-  SecCertificateRef root_ref = reinterpret_cast<SecCertificateRef>(
-      const_cast<void*>(CFArrayGetValueAtIndex(chain, n - 1)));
-  SHA1HashValue hash = X509Certificate::CalculateFingerprint(root_ref);
-  return IsSHA1HashInSortedArray(
-      hash, &kKnownRootCertSHA1Hashes[0][0], sizeof(kKnownRootCertSHA1Hashes));
-}
-
 // Builds and evaluates a SecTrustRef for the certificate chain contained
 // in |cert_array|, using the verification policies in |trust_policies|. On
 // success, returns OK, and updates |trust_ref|, |trust_result|,
@@ -465,6 +453,59 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
 
   return OK;
 }
+
+// Helper class for managing the set of OS X Known Roots. This is only safe
+// to initialize while the crypto::GetMacSecurityServicesLock() is held, due
+// to calling into Security.framework functions; however, once initialized,
+// it can be called at any time.
+// In practice, due to lazy initialization, it's best to just always guard
+// accesses with the lock.
+class OSXKnownRootHelper {
+ public:
+  // IsIssuedByKnownRoot returns true if the given chain is rooted at a root CA
+  // that we recognise as a standard root.
+  bool IsIssuedByKnownRoot(CFArrayRef chain) {
+    // If there are no known roots, then an API failure occurred. For safety,
+    // assume that all certificates are issued by known roots.
+    if (known_roots_.empty())
+      return true;
+
+    CFIndex n = CFArrayGetCount(chain);
+    if (n < 1)
+      return false;
+    SecCertificateRef root_ref = reinterpret_cast<SecCertificateRef>(
+        const_cast<void*>(CFArrayGetValueAtIndex(chain, n - 1)));
+    SHA256HashValue hash = X509Certificate::CalculateFingerprint256(root_ref);
+    return known_roots_.find(hash) != known_roots_.end();
+  }
+
+ private:
+  friend struct base::DefaultLazyInstanceTraits<OSXKnownRootHelper>;
+
+  OSXKnownRootHelper() {
+    CFArrayRef cert_array = NULL;
+    OSStatus rv = SecTrustSettingsCopyCertificates(
+        kSecTrustSettingsDomainSystem, &cert_array);
+    if (rv != noErr) {
+      LOG(ERROR) << "Unable to determine trusted roots; assuming all roots are "
+                 << "trusted! Error " << rv;
+      return;
+    }
+    base::ScopedCFTypeRef<CFArrayRef> scoped_array(cert_array);
+    for (CFIndex i = 0, size = CFArrayGetCount(cert_array); i < size; ++i) {
+      SecCertificateRef cert = reinterpret_cast<SecCertificateRef>(
+          const_cast<void*>(CFArrayGetValueAtIndex(cert_array, i)));
+      known_roots_.insert(X509Certificate::CalculateFingerprint256(cert));
+    }
+  }
+
+  ~OSXKnownRootHelper() {}
+
+  std::set<SHA256HashValue, SHA256HashValueLessThan> known_roots_;
+};
+
+base::LazyInstance<OSXKnownRootHelper>::Leaky g_known_roots =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -743,7 +784,8 @@ int CertVerifyProcMac::VerifyInternal(
   verify_result->cert_status &= ~CERT_STATUS_NO_REVOCATION_MECHANISM;
 
   AppendPublicKeyHashes(completed_chain, &verify_result->public_key_hashes);
-  verify_result->is_issued_by_known_root = IsIssuedByKnownRoot(completed_chain);
+  verify_result->is_issued_by_known_root =
+      g_known_roots.Get().IsIssuedByKnownRoot(completed_chain);
 
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);
