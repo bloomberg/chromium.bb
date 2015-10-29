@@ -24,10 +24,10 @@ TEST(InputEventLibTest, MouseEventConversion) {
       new ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(1, 2),
                          gfx::Point(3, 4), EventTimeForNow(), 0, 0));
 
-  mojo::EventPtr mojo_event(Event::From(*mouseev));
+  mus::mojom::EventPtr mojo_event(mus::mojom::Event::From(*mouseev));
 
-  EXPECT_EQ(EVENT_TYPE_POINTER_DOWN, mojo_event->action);
-  EXPECT_EQ(POINTER_KIND_MOUSE, mojo_event->pointer_data->kind);
+  EXPECT_EQ(mus::mojom::EVENT_TYPE_POINTER_DOWN, mojo_event->action);
+  EXPECT_EQ(mus::mojom::POINTER_KIND_MOUSE, mojo_event->pointer_data->kind);
 
   scoped_ptr<blink::WebInputEvent> webevent =
       mojo_event.To<scoped_ptr<blink::WebInputEvent>>();
@@ -50,9 +50,9 @@ TEST(InputEventLibTest, MouseWheelEventConversionNonPrecise) {
                     -2.0 * ui::MouseWheelEvent::kWheelDelta),
       gfx::PointF(1.0, 2.0), gfx::PointF(3.0, 4.0), EventTimeForNow(), 0, 0));
 
-  mojo::EventPtr mojo_event(mojo::Event::From(*original_wheel));
+  mus::mojom::EventPtr mojo_event(mus::mojom::Event::From(*original_wheel));
 
-  EXPECT_EQ(EVENT_TYPE_WHEEL, mojo_event->action);
+  EXPECT_EQ(mus::mojom::EVENT_TYPE_WHEEL, mojo_event->action);
 
   // Exercise the blink converter.
   scoped_ptr<blink::WebInputEvent> webevent =
@@ -80,7 +80,8 @@ TEST(InputEventLibTest, MouseWheelEventConversionNonPrecise) {
   EXPECT_TRUE(web_wheel->canScroll);
 
   // Exercise the round-trip converter.
-  mojo::EventPtr mojo_other_event(mojo::Event::From(*original_wheel));
+  mus::mojom::EventPtr mojo_other_event(
+      mus::mojom::Event::From(*original_wheel));
   scoped_ptr<ui::Event> new_event =
       mojo_other_event.To<scoped_ptr<ui::Event>>();
   EXPECT_EQ(ui::ET_MOUSEWHEEL, new_event->type());

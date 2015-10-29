@@ -26,7 +26,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
         last_in_nonclient_area_(false) {}
   ~TestEventDispatcherDelegate() override {}
 
-  mojo::EventPtr GetAndClearLastDispatchedEvent() {
+  mojom::EventPtr GetAndClearLastDispatchedEvent() {
     return last_dispatched_event_.Pass();
   }
 
@@ -46,7 +46,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
 
  private:
   // EventDispatcherDelegate:
-  void OnAccelerator(uint32_t accelerator, mojo::EventPtr event) override {
+  void OnAccelerator(uint32_t accelerator, mojom::EventPtr event) override {
     EXPECT_EQ(0u, last_accelerator_);
     last_accelerator_ = accelerator;
   }
@@ -58,7 +58,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
-                                  mojo::EventPtr event) override {
+                                  mojom::EventPtr event) override {
     last_target_ = target;
     last_dispatched_event_ = event.Pass();
     last_in_nonclient_area_ = in_nonclient_area;
@@ -67,7 +67,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* root_;
   ServerWindow* focused_window_;
   ServerWindow* last_target_;
-  mojo::EventPtr last_dispatched_event_;
+  mojom::EventPtr last_dispatched_event_;
   uint32_t last_accelerator_;
   bool last_in_nonclient_area_;
 
@@ -88,12 +88,12 @@ void RunMouseEventTests(EventDispatcher* dispatcher,
   for (size_t i = 0; i < test_count; ++i) {
     const MouseEventTest& test = tests[i];
     dispatcher->OnEvent(
-        mojo::Event::From(static_cast<const ui::Event&>(test.input_event)));
+        mojom::Event::From(static_cast<const ui::Event&>(test.input_event)));
 
     ASSERT_EQ(test.expected_target_window, dispatcher_delegate->last_target())
         << "Test " << i << " failed.";
 
-    mojo::EventPtr dispatched_event_mojo =
+    mojom::EventPtr dispatched_event_mojo =
         dispatcher_delegate->GetAndClearLastDispatchedEvent();
     ASSERT_TRUE(dispatched_event_mojo.get()) << "Test " << i << " failed.";
     scoped_ptr<ui::Event> dispatched_event(
@@ -136,11 +136,11 @@ TEST(EventDispatcherTest, OnEvent) {
       ui::ET_MOUSE_PRESSED, gfx::PointF(20.f, 25.f), gfx::PointF(20.f, 25.f),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher.OnEvent(
-      mojo::Event::From(static_cast<const ui::Event&>(ui_event)));
+      mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
 
   ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
 
-  mojo::EventPtr dispatched_event_mojo =
+  mojom::EventPtr dispatched_event_mojo =
       event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
   ASSERT_TRUE(dispatched_event_mojo.get());
   scoped_ptr<ui::Event> dispatched_event(
@@ -160,31 +160,30 @@ TEST(EventDispatcherTest, EventMatching) {
   EventDispatcher dispatcher(&event_dispatcher_delegate);
   dispatcher.set_root(&root);
 
-  mojo::EventMatcherPtr matcher =
-      mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_W,
-                            mojo::EVENT_FLAGS_CONTROL_DOWN);
+  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+      mus::mojom::KEYBOARD_CODE_W, mus::mojom::EVENT_FLAGS_CONTROL_DOWN);
   uint32_t accelerator_1 = 1;
   dispatcher.AddAccelerator(accelerator_1, matcher.Pass());
 
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  dispatcher.OnEvent(mojo::Event::From(key));
+  dispatcher.OnEvent(mojom::Event::From(key));
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate.GetAndClearLastAccelerator());
 
   key = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_NONE);
-  dispatcher.OnEvent(mojo::Event::From(key));
+  dispatcher.OnEvent(mojom::Event::From(key));
   EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
 
   uint32_t accelerator_2 = 2;
-  matcher = mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_W,
-                                  mojo::EVENT_FLAGS_NONE);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_W,
+                                  mus::mojom::EVENT_FLAGS_NONE);
   dispatcher.AddAccelerator(accelerator_2, matcher.Pass());
-  dispatcher.OnEvent(mojo::Event::From(key));
+  dispatcher.OnEvent(mojom::Event::From(key));
   EXPECT_EQ(accelerator_2,
             event_dispatcher_delegate.GetAndClearLastAccelerator());
 
   dispatcher.RemoveAccelerator(accelerator_2);
-  dispatcher.OnEvent(mojo::Event::From(key));
+  dispatcher.OnEvent(mojom::Event::From(key));
   EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
 }
 
@@ -304,7 +303,7 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
       ui::ET_MOUSE_PRESSED, gfx::PointF(12.f, 12.f), gfx::PointF(12.f, 12.f),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher.OnEvent(
-      mojo::Event::From(static_cast<const ui::Event&>(press_event)));
+      mojom::Event::From(static_cast<const ui::Event&>(press_event)));
 
   // Events should target child and be in the non-client area.
   ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
@@ -315,7 +314,7 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
                                   gfx::PointF(17.f, 18.f), base::TimeDelta(),
                                   ui::EF_LEFT_MOUSE_BUTTON, 0);
   dispatcher.OnEvent(
-      mojo::Event::From(static_cast<const ui::Event&>(move_event)));
+      mojom::Event::From(static_cast<const ui::Event&>(move_event)));
 
   // Still same target.
   ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
@@ -326,7 +325,7 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
       ui::ET_MOUSE_RELEASED, gfx::PointF(17.f, 18.f), gfx::PointF(17.f, 18.f),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher.OnEvent(
-      mojo::Event::From(static_cast<const ui::Event&>(release_event)));
+      mojom::Event::From(static_cast<const ui::Event&>(release_event)));
 
   // The event should not have been dispatched to the delegate.
   ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
@@ -337,7 +336,7 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
       ui::ET_MOUSE_PRESSED, gfx::PointF(21.f, 22.f), gfx::PointF(21.f, 22.f),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   dispatcher.OnEvent(
-      mojo::Event::From(static_cast<const ui::Event&>(press_event2)));
+      mojom::Event::From(static_cast<const ui::Event&>(press_event2)));
   ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
   EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
 }

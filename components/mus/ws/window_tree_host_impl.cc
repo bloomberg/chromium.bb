@@ -111,7 +111,7 @@ void WindowTreeHostImpl::SetTitle(const mojo::String& title) {
 }
 
 void WindowTreeHostImpl::AddAccelerator(uint32_t id,
-                                        mojo::EventMatcherPtr event_matcher) {
+                                        mojom::EventMatcherPtr event_matcher) {
   event_dispatcher_.AddAccelerator(id, event_matcher.Pass());
 }
 
@@ -132,7 +132,7 @@ ServerWindow* WindowTreeHostImpl::GetRootWindow() {
   return root_.get();
 }
 
-void WindowTreeHostImpl::OnEvent(mojo::EventPtr event) {
+void WindowTreeHostImpl::OnEvent(mojom::EventPtr event) {
   event_dispatcher_.OnEvent(event.Pass());
 }
 
@@ -225,7 +225,7 @@ void WindowTreeHostImpl::OnFocusChanged(ServerWindow* old_focused_window,
 }
 
 void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
-                                       mojo::EventPtr event) {
+                                       mojom::EventPtr event) {
   client()->OnAccelerator(accelerator_id, event.Pass());
 }
 
@@ -240,7 +240,7 @@ ServerWindow* WindowTreeHostImpl::GetFocusedWindowForEventDispatcher() {
 
 void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
                                                     bool in_nonclient_area,
-                                                    mojo::EventPtr event) {
+                                                    mojom::EventPtr event) {
   // If the event is in the non-client area the event goes to the owner of
   // the window. Otherwise if the window is an embed root, forward to the
   // embedded window.

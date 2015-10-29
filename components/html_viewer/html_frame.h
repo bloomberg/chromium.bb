@@ -270,7 +270,7 @@ class HTMLFrame : public blink::WebFrameClient,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroyed(mus::Window* window) override;
   void OnWindowInputEvent(mus::Window* window,
-                          const mojo::EventPtr& event) override;
+                          const mus::mojom::EventPtr& event) override;
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override;
 

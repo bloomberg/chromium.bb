@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mus.mojom;
 
 import "components/mus/public/interfaces/input_event_constants.mojom";
 import "components/mus/public/interfaces/input_key_codes.mojom";
@@ -17,7 +17,7 @@ struct PointerKindMatcher {
 };
 
 struct PointerLocationMatcher {
-  RectF region;
+  mojo.RectF region;
 };
 
 struct EventTypeMatcher {

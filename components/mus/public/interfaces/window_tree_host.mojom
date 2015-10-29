@@ -25,13 +25,13 @@ interface WindowTreeHost {
   // WindowTreeHostClient receives the event via OnAccelerator() rather than the
   // target window. The id is defined by the client and can be used to more
   // easily identify the accelerator's action.
-  AddAccelerator(uint32 id, mojo.EventMatcher matcher);
+  AddAccelerator(uint32 id, EventMatcher matcher);
   RemoveAccelerator(uint32 id);
 };
 
 interface WindowTreeHostClient {
   // An accelerator registered via AddAccelerator() has been triggered.
-  OnAccelerator(uint32 id, mojo.Event event);
+  OnAccelerator(uint32 id, Event event);
 };
 
 interface WindowTreeHostFactory {

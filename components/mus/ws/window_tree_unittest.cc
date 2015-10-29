@@ -30,6 +30,10 @@ using mojo::Array;
 using mojo::InterfaceRequest;
 using mojo::String;
 using mus::mojom::ERROR_CODE_NONE;
+using mus::mojom::Event;
+using mus::mojom::EventPtr;
+using mus::mojom::LocationData;
+using mus::mojom::PointerData;
 using mus::mojom::WindowDataPtr;
 
 namespace mus {
@@ -108,7 +112,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
     tracker_.OnWindowSharedPropertyChanged(window, name, new_data.Pass());
   }
   void OnWindowInputEvent(uint32_t window,
-                          mojo::EventPtr event,
+                          EventPtr event,
                           const mojo::Callback<void()>& callback) override {
     tracker_.OnWindowInputEvent(window, event.Pass());
   }
@@ -248,23 +252,23 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerFactory);
 };
 
-mojo::EventPtr CreatePointerDownEvent(int x, int y) {
-  mojo::EventPtr event(mojo::Event::New());
-  event->action = mojo::EVENT_TYPE_POINTER_DOWN;
-  event->pointer_data = mojo::PointerData::New();
+EventPtr CreatePointerDownEvent(int x, int y) {
+  EventPtr event(Event::New());
+  event->action = mus::mojom::EVENT_TYPE_POINTER_DOWN;
+  event->pointer_data = PointerData::New();
   event->pointer_data->pointer_id = 1u;
-  event->pointer_data->location = mojo::LocationData::New();
+  event->pointer_data->location = LocationData::New();
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
   return event.Pass();
 }
 
-mojo::EventPtr CreatePointerUpEvent(int x, int y) {
-  mojo::EventPtr event(mojo::Event::New());
-  event->action = mojo::EVENT_TYPE_POINTER_UP;
-  event->pointer_data = mojo::PointerData::New();
+EventPtr CreatePointerUpEvent(int x, int y) {
+  EventPtr event(Event::New());
+  event->action = mus::mojom::EVENT_TYPE_POINTER_UP;
+  event->pointer_data = PointerData::New();
   event->pointer_data->pointer_id = 1u;
-  event->pointer_data->location = mojo::LocationData::New();
+  event->pointer_data->location = LocationData::New();
   event->pointer_data->location->x = x;
   event->pointer_data->location->y = y;
   return event.Pass();

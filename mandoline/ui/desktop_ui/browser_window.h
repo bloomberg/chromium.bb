@@ -61,7 +61,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // Overridden from WindowTreeHostClient:
-  void OnAccelerator(uint32_t id, mojo::EventPtr event) override;
+  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
 
   // Overridden from web_view::mojom::WebViewClient:
   void TopLevelNavigateRequest(mojo::URLRequestPtr request) override;

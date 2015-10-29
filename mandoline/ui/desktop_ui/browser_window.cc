@@ -183,24 +183,30 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
 
   web_view_.Init(app_, content_);
 
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::CLOSE),
-                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_W,
-                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::FOCUS_OMNIBOX),
-                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_L,
-                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
-                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_N,
-                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::SHOW_FIND),
-                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_F,
-                                              mojo::EVENT_FLAGS_CONTROL_DOWN));
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_BACK),
-                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_LEFT,
-                                              mojo::EVENT_FLAGS_ALT_DOWN));
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
-                        mus::CreateKeyMatcher(mojo::KEYBOARD_CODE_RIGHT,
-                                              mojo::EVENT_FLAGS_ALT_DOWN));
+  host_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::CLOSE),
+      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_W,
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+  host_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::FOCUS_OMNIBOX),
+      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_L,
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+  host_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
+      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+  host_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::SHOW_FIND),
+      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_F,
+                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN));
+  host_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::GO_BACK),
+      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_LEFT,
+                            mus::mojom::EVENT_FLAGS_ALT_DOWN));
+  host_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
+      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_RIGHT,
+                            mus::mojom::EVENT_FLAGS_ALT_DOWN));
   // Now that we're ready, load the default url.
   LoadURL(default_url_);
 
@@ -232,7 +238,7 @@ void BrowserWindow::OnConnectionLost(mus::WindowTreeConnection* connection) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, mus::ViewTreeHostClient implementation:
 
-void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
+void BrowserWindow::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
   switch (static_cast<BrowserCommand>(id)) {
     case BrowserCommand::CLOSE:
       Close();

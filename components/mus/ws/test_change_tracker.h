@@ -137,7 +137,7 @@ class TestChangeTracker {
   void OnWindowDeleted(Id window_id);
   void OnWindowVisibilityChanged(Id window_id, bool visible);
   void OnWindowDrawnStateChanged(Id window_id, bool drawn);
-  void OnWindowInputEvent(Id window_id, mojo::EventPtr event);
+  void OnWindowInputEvent(Id window_id, mojom::EventPtr event);
   void OnWindowSharedPropertyChanged(Id window_id,
                                      mojo::String name,
                                      mojo::Array<uint8_t> data);

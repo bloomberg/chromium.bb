@@ -398,16 +398,17 @@ class PDFView : public mus::WindowTreeDelegate,
   }
 
   void OnWindowInputEvent(mus::Window* view,
-                          const mojo::EventPtr& event) override {
-    if (event->key_data && (event->action != mojo::EVENT_TYPE_KEY_PRESSED ||
-                            event->key_data->is_char)) {
+                          const mus::mojom::EventPtr& event) override {
+    if (event->key_data &&
+        (event->action != mus::mojom::EVENT_TYPE_KEY_PRESSED ||
+         event->key_data->is_char)) {
       return;
     }
 
     // TODO(rjkroege): Make panning and scrolling more performant and
     // responsive to gesture events.
     if ((event->key_data &&
-         event->key_data->windows_key_code == mojo::KEYBOARD_CODE_DOWN) ||
+         event->key_data->windows_key_code == mus::mojom::KEYBOARD_CODE_DOWN) ||
         (event->pointer_data && event->pointer_data->wheel_data &&
          event->pointer_data->wheel_data->delta_y < 0)) {
       if (current_page_ < (page_count_ - 1)) {
@@ -415,7 +416,8 @@ class PDFView : public mus::WindowTreeDelegate,
         DrawBitmap();
       }
     } else if ((event->key_data &&
-                event->key_data->windows_key_code == mojo::KEYBOARD_CODE_UP) ||
+                event->key_data->windows_key_code ==
+                    mus::mojom::KEYBOARD_CODE_UP) ||
                (event->pointer_data && event->pointer_data->wheel_data &&
                 event->pointer_data->wheel_data->delta_y > 0)) {
       if (current_page_ > 0) {

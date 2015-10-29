@@ -21,19 +21,19 @@ namespace ws {
 namespace {
 
 bool IsMouseEventFlag(int32_t event_flags) {
-  return !!(event_flags & (mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
-                           mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
-                           mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
+  return !!(event_flags & (mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
+                           mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
+                           mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
 }
 
-bool IsOnlyOneMouseButtonDown(mojo::EventFlags flags) {
+bool IsOnlyOneMouseButtonDown(mojom::EventFlags flags) {
   const uint32_t mouse_only_flags =
-      flags & (mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
-               mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
-               mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON);
-  return mouse_only_flags == mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
-         mouse_only_flags == mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
-         mouse_only_flags == mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON;
+      flags & (mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
+               mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
+               mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON);
+  return mouse_only_flags == mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
+         mouse_only_flags == mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
+         mouse_only_flags == mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON;
 }
 
 bool IsLocationInNonclientArea(const ServerWindow* target,
@@ -42,7 +42,7 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
          !target->client_area().Contains(location);
 }
 
-gfx::Point EventLocationToPoint(const mojo::Event& event) {
+gfx::Point EventLocationToPoint(const mojom::Event& event) {
   return gfx::ToFlooredPoint(gfx::PointF(event.pointer_data->location->x,
                                          event.pointer_data->location->y));
 }
@@ -51,12 +51,12 @@ gfx::Point EventLocationToPoint(const mojo::Event& event) {
 
 class EventMatcher {
  public:
-  explicit EventMatcher(const mojo::EventMatcher& matcher)
+  explicit EventMatcher(const mojom::EventMatcher& matcher)
       : fields_to_match_(NONE),
-        event_type_(mojo::EVENT_TYPE_UNKNOWN),
-        event_flags_(mojo::EVENT_FLAGS_NONE),
-        keyboard_code_(mojo::KEYBOARD_CODE_UNKNOWN),
-        pointer_kind_(mojo::POINTER_KIND_MOUSE) {
+        event_type_(mojom::EVENT_TYPE_UNKNOWN),
+        event_flags_(mojom::EVENT_FLAGS_NONE),
+        keyboard_code_(mojom::KEYBOARD_CODE_UNKNOWN),
+        pointer_kind_(mojom::POINTER_KIND_MOUSE) {
     if (matcher.type_matcher) {
       fields_to_match_ |= TYPE;
       event_type_ = matcher.type_matcher->type;
@@ -82,7 +82,7 @@ class EventMatcher {
 
   ~EventMatcher() {}
 
-  bool MatchesEvent(const mojo::Event& event) const {
+  bool MatchesEvent(const mojom::Event& event) const {
     if ((fields_to_match_ & TYPE) && event.action != event_type_)
       return false;
     if ((fields_to_match_ & FLAGS) && event.flags != event_flags_)
@@ -131,10 +131,10 @@ class EventMatcher {
   };
 
   uint32_t fields_to_match_;
-  mojo::EventType event_type_;
-  mojo::EventFlags event_flags_;
-  mojo::KeyboardCode keyboard_code_;
-  mojo::PointerKind pointer_kind_;
+  mojom::EventType event_type_;
+  mojom::EventFlags event_flags_;
+  mojom::KeyboardCode keyboard_code_;
+  mojom::PointerKind pointer_kind_;
   gfx::RectF pointer_region_;
 };
 
@@ -149,7 +149,7 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
 EventDispatcher::~EventDispatcher() {}
 
 void EventDispatcher::AddAccelerator(uint32_t id,
-                                     mojo::EventMatcherPtr event_matcher) {
+                                     mojom::EventMatcherPtr event_matcher) {
   EventMatcher matcher(*event_matcher);
 #if !defined(NDEBUG)
   for (const auto& pair : accelerators_) {
@@ -166,11 +166,11 @@ void EventDispatcher::RemoveAccelerator(uint32_t id) {
   accelerators_.erase(it);
 }
 
-void EventDispatcher::OnEvent(mojo::EventPtr event) {
+void EventDispatcher::OnEvent(mojom::EventPtr event) {
   if (!root_)
     return;
 
-  if (event->action == mojo::EVENT_TYPE_KEY_PRESSED &&
+  if (event->action == mojom::EVENT_TYPE_KEY_PRESSED &&
       !event->key_data->is_char) {
     uint32_t accelerator = 0u;
     if (FindAccelerator(*event, &accelerator)) {
@@ -184,7 +184,7 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
 
   if (IsMouseEventFlag(event->flags)) {
     if (!capture_window_ && target &&
-        (event->action == mojo::EVENT_TYPE_POINTER_DOWN)) {
+        (event->action == mojom::EVENT_TYPE_POINTER_DOWN)) {
       // TODO(sky): |capture_window_| needs to be reset when window removed
       // from hierarchy.
       capture_window_ = target;
@@ -192,7 +192,7 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
       capture_in_nonclient_area_ =
           IsLocationInNonclientArea(target, EventLocationToPoint(*event));
       in_nonclient_area = capture_in_nonclient_area_;
-    } else if (event->action == mojo::EVENT_TYPE_POINTER_UP &&
+    } else if (event->action == mojom::EVENT_TYPE_POINTER_UP &&
                IsOnlyOneMouseButtonDown(event->flags)) {
       capture_window_ = nullptr;
     }
@@ -200,7 +200,7 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
   }
 
   if (target) {
-    if (event->action == mojo::EVENT_TYPE_POINTER_DOWN)
+    if (event->action == mojom::EVENT_TYPE_POINTER_DOWN)
       delegate_->SetFocusedWindowFromEventDispatcher(target);
 
     delegate_->DispatchInputEventToWindow(target, in_nonclient_area,
@@ -208,7 +208,7 @@ void EventDispatcher::OnEvent(mojo::EventPtr event) {
   }
 }
 
-bool EventDispatcher::FindAccelerator(const mojo::Event& event,
+bool EventDispatcher::FindAccelerator(const mojom::Event& event,
                                       uint32_t* accelerator_id) {
   DCHECK(event.key_data);
   for (const auto& pair : accelerators_) {
@@ -220,14 +220,14 @@ bool EventDispatcher::FindAccelerator(const mojo::Event& event,
   return false;
 }
 
-ServerWindow* EventDispatcher::FindEventTarget(mojo::Event* event) {
+ServerWindow* EventDispatcher::FindEventTarget(mojom::Event* event) {
   ServerWindow* focused_window =
       delegate_->GetFocusedWindowForEventDispatcher();
   if (event->key_data)
     return focused_window;
 
   DCHECK(event->pointer_data) << "Unknown event type: " << event->action;
-  mojo::LocationData* event_location = event->pointer_data->location.get();
+  mojom::LocationData* event_location = event->pointer_data->location.get();
   DCHECK(event_location);
   gfx::Point location(static_cast<int>(event_location->x),
                       static_cast<int>(event_location->y));

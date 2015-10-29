@@ -32,22 +32,22 @@ class EventDispatcher {
 
   void set_surface_id(cc::SurfaceId surface_id) { surface_id_ = surface_id; }
 
-  void AddAccelerator(uint32_t id, mojo::EventMatcherPtr event_matcher);
+  void AddAccelerator(uint32_t id, mojom::EventMatcherPtr event_matcher);
   void RemoveAccelerator(uint32_t id);
 
-  void OnEvent(mojo::EventPtr event);
+  void OnEvent(mojom::EventPtr event);
 
  private:
   // Looks to see if there is an accelerator bound to the specified code/flags.
   // If there is one, sets |accelerator_id| to the id of the accelerator invoked
   // and returns true. If there is none, returns false so normal key event
   // processing can continue.
-  bool FindAccelerator(const mojo::Event& event, uint32_t* accelerator_id);
+  bool FindAccelerator(const mojom::Event& event, uint32_t* accelerator_id);
 
   // Returns the ServerWindow that should receive |event|. If |event| is a
   // pointer-type event, then this function also updates the event location to
   // make sure it is in the returned target's coordinate space.
-  ServerWindow* FindEventTarget(mojo::Event* event);
+  ServerWindow* FindEventTarget(mojom::Event* event);
 
   EventDispatcherDelegate* delegate_;
   ServerWindow* root_;

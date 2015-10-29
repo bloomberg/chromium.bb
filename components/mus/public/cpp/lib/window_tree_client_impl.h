@@ -138,7 +138,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                                      const mojo::String& name,
                                      mojo::Array<uint8_t> new_data) override;
   void OnWindowInputEvent(Id window_id,
-                          mojo::EventPtr event,
+                          mojom::EventPtr event,
                           const mojo::Callback<void()>& callback) override;
   void OnWindowFocused(Id focused_window_id) override;
 

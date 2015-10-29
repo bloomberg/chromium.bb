@@ -268,7 +268,8 @@ void TestChangeTracker::OnWindowDrawnStateChanged(Id window_id, bool drawn) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnWindowInputEvent(Id window_id, mojo::EventPtr event) {
+void TestChangeTracker::OnWindowInputEvent(Id window_id,
+                                           mojom::EventPtr event) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.window_id = window_id;

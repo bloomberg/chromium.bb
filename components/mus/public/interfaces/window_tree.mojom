@@ -265,7 +265,7 @@ interface WindowTreeClient {
                                 array<uint8>? new_data);
 
   // Invoked when an event is targeted at the specified window.
-  OnWindowInputEvent(uint32 window, mojo.Event event) => ();
+  OnWindowInputEvent(uint32 window, Event event) => ();
 
   OnWindowFocused(uint32 focused_window_id);
 };

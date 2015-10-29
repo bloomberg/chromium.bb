@@ -18,11 +18,11 @@
 
 namespace {
 
-bool IsPointerEvent(const mojo::Event& event) {
-  return event.action == mojo::EVENT_TYPE_POINTER_CANCEL ||
-         event.action == mojo::EVENT_TYPE_POINTER_DOWN ||
-         event.action == mojo::EVENT_TYPE_POINTER_MOVE ||
-         event.action == mojo::EVENT_TYPE_POINTER_UP;
+bool IsPointerEvent(const mus::mojom::Event& event) {
+  return event.action == mus::mojom::EVENT_TYPE_POINTER_CANCEL ||
+         event.action == mus::mojom::EVENT_TYPE_POINTER_DOWN ||
+         event.action == mus::mojom::EVENT_TYPE_POINTER_MOVE ||
+         event.action == mus::mojom::EVENT_TYPE_POINTER_UP;
 }
 
 }  // namespace
@@ -125,13 +125,13 @@ void WindowManagerImpl::OnWindowDestroyed(mus::Window* window) {
 }
 
 void WindowManagerImpl::OnWindowInputEvent(mus::Window* window,
-                                           const mojo::EventPtr& event) {
+                                           const mus::mojom::EventPtr& event) {
   if (move_loop_ && IsPointerEvent(*event)) {
     if (move_loop_->Move(*event) == MoveLoop::DONE)
       move_loop_.reset();
     return;
   }
-  if (!move_loop_ && event->action == mojo::EVENT_TYPE_POINTER_DOWN)
+  if (!move_loop_ && event->action == mus::mojom::EVENT_TYPE_POINTER_DOWN)
     move_loop_ = MoveLoop::Create(window, *event);
 }
 

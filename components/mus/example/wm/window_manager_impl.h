@@ -44,7 +44,7 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;
   void OnWindowInputEvent(mus::Window* window,
-                          const mojo::EventPtr& event) override;
+                          const mus::mojom::EventPtr& event) override;
 
   mus::Window* GetContainerForChild(mus::Window* child);
 

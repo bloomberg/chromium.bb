@@ -29,16 +29,16 @@ class MoveLoop : public mus::WindowObserver {
   // and returns a new MoveLoop. All events should be funneled to the MoveLoop
   // until done (Move()).
   static scoped_ptr<MoveLoop> Create(mus::Window* target,
-                                     const mojo::Event& event);
+                                     const mus::mojom::Event& event);
 
   // Processes an event for a move/resize loop.
-  MoveResult Move(const mojo::Event& event);
+  MoveResult Move(const mus::mojom::Event& event);
 
  private:
-  MoveLoop(mus::Window* target, const mojo::Event& event);
+  MoveLoop(mus::Window* target, const mus::mojom::Event& event);
 
   // Does the actual move/resize.
-  void MoveImpl(const mojo::Event& event);
+  void MoveImpl(const mus::mojom::Event& event);
 
   // Cancels the loop. This sets |target_| to null and removes the observer.
   // After this the MoveLoop is still ongoing and won't stop until the

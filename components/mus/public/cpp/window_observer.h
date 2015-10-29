@@ -64,8 +64,8 @@ class WindowObserver {
 
   virtual void OnWindowFocusChanged(Window* gained_focus, Window* lost_focus) {}
 
-  virtual void OnWindowInputEvent(Window* window, const mojo::EventPtr& event) {
-  }
+  virtual void OnWindowInputEvent(Window* window,
+                                  const mojom::EventPtr& event) {}
 
   virtual void OnWindowVisibilityChanging(Window* window) {}
   virtual void OnWindowVisibilityChanged(Window* window) {}

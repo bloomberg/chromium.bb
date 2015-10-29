@@ -64,7 +64,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override;
   void OnWindowInputEvent(mus::Window* view,
-                          const mojo::EventPtr& event) override;
+                          const mus::mojom::EventPtr& event) override;
   void OnWindowSharedPropertyChanged(
       mus::Window* window,
       const std::string& name,

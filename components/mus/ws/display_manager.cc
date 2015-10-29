@@ -280,7 +280,7 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
-  mojo::EventPtr mojo_event(mojo::Event::From(*event));
+  mojom::EventPtr mojo_event(mojom::Event::From(*event));
   delegate_->OnEvent(mojo_event.Pass());
 
   switch (event->type()) {
@@ -323,7 +323,7 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
             key_press_event->GetLocatedWindowsKeyboardCode(),
             key_press_event->GetText(), key_press_event->GetUnmodifiedText())));
 
-    delegate_->OnEvent(mojo::Event::From(char_event));
+    delegate_->OnEvent(mojom::Event::From(char_event));
   }
 #endif
 }

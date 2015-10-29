@@ -11,8 +11,8 @@
 
 namespace mus {
 
-mojo::EventMatcherPtr CreateKeyMatcher(mojo::KeyboardCode code,
-                                       mojo::EventFlags flags);
+mojom::EventMatcherPtr CreateKeyMatcher(mojom::KeyboardCode code,
+                                        mojom::EventFlags flags);
 
 }  // namespace mus
 

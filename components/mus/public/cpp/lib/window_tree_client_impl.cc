@@ -455,7 +455,7 @@ void WindowTreeClientImpl::OnWindowSharedPropertyChanged(
 
 void WindowTreeClientImpl::OnWindowInputEvent(
     Id window_id,
-    mojo::EventPtr event,
+    mojom::EventPtr event,
     const mojo::Callback<void()>& ack_callback) {
   Window* window = GetWindowById(window_id);
   if (window) {

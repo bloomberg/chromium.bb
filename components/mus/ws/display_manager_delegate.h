@@ -30,7 +30,7 @@ class DisplayManagerDelegate {
   virtual void OnDisplayClosed() = 0;
 
   // Called when an event arrives.
-  virtual void OnEvent(mojo::EventPtr event) = 0;
+  virtual void OnEvent(mojom::EventPtr event) = 0;
 
   // Signals that the metrics of this display's viewport has changed.
   virtual void OnViewportMetricsChanged(

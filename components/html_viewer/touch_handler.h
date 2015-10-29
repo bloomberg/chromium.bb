@@ -6,14 +6,11 @@
 #define COMPONENTS_HTML_VIEWER_TOUCH_HANDLER_H_
 
 #include "base/basictypes.h"
+#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
 namespace blink {
 class WebWidget;
-}
-
-namespace mojo {
-class Event;
 }
 
 namespace ui {
@@ -23,28 +20,29 @@ class MotionEventGeneric;
 namespace html_viewer {
 
 // TouchHandler is responsible for converting touch events into gesture events.
-// It does this by converting mojo::Events into a MotionEventGeneric and using
+// It does this by converting mus::mojom::Events into a MotionEventGeneric and
+// using
 // FilteredGestureProvider.
 class TouchHandler : public ui::GestureProviderClient {
  public:
   explicit TouchHandler(blink::WebWidget* web_widget);
   ~TouchHandler() override;
 
-  void OnTouchEvent(const mojo::Event& event);
+  void OnTouchEvent(const mus::mojom::Event& event);
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
 
  private:
   // Updates |current_motion_event_| from |event|. Returns true on success.
-  bool UpdateMotionEvent(const mojo::Event& event);
+  bool UpdateMotionEvent(const mus::mojom::Event& event);
 
   // Sends |current_motion_event_| to the GestureProvider and WebView.
   void SendMotionEventToGestureProvider();
 
   // Does post processing after sending |current_motion_event_| to the
   // GestureProvider.
-  void PostProcessMotionEvent(const mojo::Event& event);
+  void PostProcessMotionEvent(const mus::mojom::Event& event);
 
   blink::WebWidget* web_widget_;
 

@@ -12,22 +12,22 @@
 
 namespace {
 
-gfx::Point EventLocationToPoint(const mojo::Event& event) {
+gfx::Point EventLocationToPoint(const mus::mojom::Event& event) {
   return gfx::ToFlooredPoint(gfx::PointF(event.pointer_data->location->x,
                                          event.pointer_data->location->y));
 }
 
-gfx::Point EventScreenLocationToPoint(const mojo::Event& event) {
+gfx::Point EventScreenLocationToPoint(const mus::mojom::Event& event) {
   return gfx::ToFlooredPoint(
       gfx::PointF(event.pointer_data->location->screen_x,
                   event.pointer_data->location->screen_y));
 }
 
-mojo::EventFlags MouseOnlyEventFlags(mojo::EventFlags flags) {
-  return static_cast<mojo::EventFlags>(flags &
-                                       (mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
-                                        mojo::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
-                                        mojo::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
+mus::mojom::EventFlags MouseOnlyEventFlags(mus::mojom::EventFlags flags) {
+  return static_cast<mus::mojom::EventFlags>(
+      flags & (mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
+               mus::mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
+               mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
 }
 
 }  // namespace
@@ -39,8 +39,8 @@ MoveLoop::~MoveLoop() {
 
 // static
 scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
-                                      const mojo::Event& event) {
-  DCHECK_EQ(event.action, mojo::EVENT_TYPE_POINTER_DOWN);
+                                      const mus::mojom::Event& event) {
+  DCHECK_EQ(event.action, mus::mojom::EVENT_TYPE_POINTER_DOWN);
   const gfx::Point location(EventLocationToPoint(event));
   if (!gfx::Rect(target->bounds().size()).Contains(location) ||
       target->client_area().Contains(location)) {
@@ -48,17 +48,18 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
   }
 
   // Start a move on left mouse, or any other type of pointer.
-  if (event.pointer_data->kind == mojo::POINTER_KIND_MOUSE &&
-      MouseOnlyEventFlags(event.flags) != mojo::EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
+  if (event.pointer_data->kind == mus::mojom::POINTER_KIND_MOUSE &&
+      MouseOnlyEventFlags(event.flags) !=
+          mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
     return nullptr;
   }
 
   return make_scoped_ptr(new MoveLoop(target, event));
 }
 
-MoveLoop::MoveResult MoveLoop::Move(const mojo::Event& event) {
+MoveLoop::MoveResult MoveLoop::Move(const mus::mojom::Event& event) {
   switch (event.action) {
-    case mojo::EVENT_TYPE_POINTER_CANCEL:
+    case mus::mojom::EVENT_TYPE_POINTER_CANCEL:
       if (event.pointer_data->pointer_id == pointer_id_) {
         if (target_)
           Revert();
@@ -66,12 +67,12 @@ MoveLoop::MoveResult MoveLoop::Move(const mojo::Event& event) {
       }
       return MoveResult::CONTINUE;
 
-    case mojo::EVENT_TYPE_POINTER_MOVE:
+    case mus::mojom::EVENT_TYPE_POINTER_MOVE:
       if (target_ && event.pointer_data->pointer_id == pointer_id_)
         MoveImpl(event);
       return MoveResult::CONTINUE;
 
-    case mojo::EVENT_TYPE_POINTER_UP:
+    case mus::mojom::EVENT_TYPE_POINTER_UP:
       if (event.pointer_data->pointer_id == pointer_id_) {
         // TODO(sky): need to support changed_flags.
         if (target_)
@@ -87,7 +88,7 @@ MoveLoop::MoveResult MoveLoop::Move(const mojo::Event& event) {
   return MoveResult::CONTINUE;
 }
 
-MoveLoop::MoveLoop(mus::Window* target, const mojo::Event& event)
+MoveLoop::MoveLoop(mus::Window* target, const mus::mojom::Event& event)
     : target_(target),
       pointer_id_(event.pointer_data->pointer_id),
       initial_event_screen_location_(EventScreenLocationToPoint(event)),
@@ -96,7 +97,7 @@ MoveLoop::MoveLoop(mus::Window* target, const mojo::Event& event)
   target->AddObserver(this);
 }
 
-void MoveLoop::MoveImpl(const mojo::Event& event) {
+void MoveLoop::MoveImpl(const mus::mojom::Event& event) {
   const gfx::Vector2d delta =
       EventScreenLocationToPoint(event) - initial_event_screen_location_;
   const gfx::Rect new_bounds(initial_window_bounds_.origin() + delta,

@@ -85,7 +85,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
   void AddAccelerator(uint32_t id,
-                      mojo::EventMatcherPtr event_matcher) override;
+                      mojom::EventMatcherPtr event_matcher) override;
   void RemoveAccelerator(uint32_t id) override;
 
  private:
@@ -93,7 +93,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   // DisplayManagerDelegate:
   ServerWindow* GetRootWindow() override;
-  void OnEvent(mojo::EventPtr event) override;
+  void OnEvent(mojom::EventPtr event) override;
   void OnDisplayClosed() override;
   void OnViewportMetricsChanged(
       const mojom::ViewportMetrics& old_metrics,
@@ -105,12 +105,12 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                       ServerWindow* new_focused_window) override;
 
   // EventDispatcherDelegate:
-  void OnAccelerator(uint32_t accelerator_id, mojo::EventPtr event) override;
+  void OnAccelerator(uint32_t accelerator_id, mojom::EventPtr event) override;
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
   ServerWindow* GetFocusedWindowForEventDispatcher() override;
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
-                                  mojo::EventPtr event) override;
+                                  mojom::EventPtr event) override;
 
   WindowTreeHostDelegate* delegate_;
   ConnectionManager* const connection_manager_;

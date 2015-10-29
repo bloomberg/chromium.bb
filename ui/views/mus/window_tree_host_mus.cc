@@ -135,7 +135,7 @@ void WindowTreeHostMojo::OnWindowFocusChanged(mus::Window* gained_focus,
 }
 
 void WindowTreeHostMojo::OnWindowInputEvent(mus::Window* view,
-                                            const mojo::EventPtr& event) {
+                                            const mus::mojom::EventPtr& event) {
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
   if (!ui_event)
     return;

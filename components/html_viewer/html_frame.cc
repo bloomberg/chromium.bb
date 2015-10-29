@@ -758,7 +758,7 @@ void HTMLFrame::OnWindowDestroyed(mus::Window* window) {
 }
 
 void HTMLFrame::OnWindowInputEvent(mus::Window* window,
-                                   const mojo::EventPtr& event) {
+                                   const mus::mojom::EventPtr& event) {
   if (event->pointer_data && event->pointer_data->location) {
     // Blink expects coordintes to be in DIPs.
     event->pointer_data->location->x /= global_state()->device_pixel_ratio();
@@ -774,12 +774,13 @@ void HTMLFrame::OnWindowInputEvent(mus::Window* window,
   if (!touch_handler_ && web_widget)
     touch_handler_.reset(new TouchHandler(web_widget));
 
-  if (touch_handler_ && (event->action == mojo::EVENT_TYPE_POINTER_DOWN ||
-                         event->action == mojo::EVENT_TYPE_POINTER_UP ||
-                         event->action == mojo::EVENT_TYPE_POINTER_CANCEL ||
-                         event->action == mojo::EVENT_TYPE_POINTER_MOVE) &&
+  if (touch_handler_ &&
+      (event->action == mus::mojom::EVENT_TYPE_POINTER_DOWN ||
+       event->action == mus::mojom::EVENT_TYPE_POINTER_UP ||
+       event->action == mus::mojom::EVENT_TYPE_POINTER_CANCEL ||
+       event->action == mus::mojom::EVENT_TYPE_POINTER_MOVE) &&
       event->pointer_data &&
-      event->pointer_data->kind == mojo::POINTER_KIND_TOUCH) {
+      event->pointer_data->kind == mus::mojom::POINTER_KIND_TOUCH) {
     touch_handler_->OnTouchEvent(*event);
     return;
   }
