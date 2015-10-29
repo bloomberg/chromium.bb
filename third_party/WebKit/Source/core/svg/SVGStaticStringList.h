@@ -52,6 +52,7 @@ public:
 
     // SVGAnimatedPropertyBase:
     SVGPropertyBase* currentValueBase() override;
+    const SVGPropertyBase& baseValueBase() const override;
     bool isAnimating() const override;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() override;
     void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;

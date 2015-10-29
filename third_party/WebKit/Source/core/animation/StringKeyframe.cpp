@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/StringKeyframe.h"
 
+#include "core/XLinkNames.h"
 #include "core/animation/AngleSVGInterpolation.h"
 #include "core/animation/CSSColorInterpolationType.h"
 #include "core/animation/CSSImageInterpolationType.h"
@@ -38,6 +39,7 @@
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
+#include "core/animation/SVGValueInterpolationType.h"
 #include "core/animation/TransformSVGInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -130,131 +132,176 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPro
 
 namespace {
 
-const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID property)
+// TODO(alancutter): Move this into its own file.
+const Vector<const InterpolationType*>* applicableTypesForProperty(PropertyHandle property)
 {
-    using ApplicableTypesMap = HashMap<CSSPropertyID, const Vector<const InterpolationType*>*>;
+    // TODO(alancutter): Initialise this entire HashMap once instead of initialising each property individually.
+    using ApplicableTypesMap = HashMap<PropertyHandle, const Vector<const InterpolationType*>*>;
     DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicableTypesMap, ());
     auto entry = applicableTypesMap.find(property);
     if (entry != applicableTypesMap.end())
         return entry->value;
 
+    bool fallbackToLegacy = false;
     auto applicableTypes = new Vector<const InterpolationType*>();
-    switch (property) {
-    case CSSPropertyBaselineShift:
-    case CSSPropertyBorderBottomWidth:
-    case CSSPropertyBorderLeftWidth:
-    case CSSPropertyBorderRightWidth:
-    case CSSPropertyBorderTopWidth:
-    case CSSPropertyBottom:
-    case CSSPropertyCx:
-    case CSSPropertyCy:
-    case CSSPropertyFlexBasis:
-    case CSSPropertyHeight:
-    case CSSPropertyLeft:
-    case CSSPropertyLetterSpacing:
-    case CSSPropertyMarginBottom:
-    case CSSPropertyMarginLeft:
-    case CSSPropertyMarginRight:
-    case CSSPropertyMarginTop:
-    case CSSPropertyMaxHeight:
-    case CSSPropertyMaxWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyMinWidth:
-    case CSSPropertyMotionOffset:
-    case CSSPropertyOutlineOffset:
-    case CSSPropertyOutlineWidth:
-    case CSSPropertyPaddingBottom:
-    case CSSPropertyPaddingLeft:
-    case CSSPropertyPaddingRight:
-    case CSSPropertyPaddingTop:
-    case CSSPropertyPerspective:
-    case CSSPropertyR:
-    case CSSPropertyRight:
-    case CSSPropertyRx:
-    case CSSPropertyRy:
-    case CSSPropertyShapeMargin:
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyStrokeWidth:
-    case CSSPropertyTop:
-    case CSSPropertyVerticalAlign:
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnRuleWidth:
-    case CSSPropertyWebkitColumnWidth:
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ:
-    case CSSPropertyWidth:
-    case CSSPropertyWordSpacing:
-    case CSSPropertyX:
-    case CSSPropertyY:
-        applicableTypes->append(new CSSLengthInterpolationType(property));
-        break;
-    case CSSPropertyFlexGrow:
-    case CSSPropertyFlexShrink:
-    case CSSPropertyFillOpacity:
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyFontSizeAdjust:
-    case CSSPropertyOpacity:
-    case CSSPropertyOrphans:
-    case CSSPropertyShapeImageThreshold:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyStrokeMiterlimit:
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyWebkitColumnCount:
-    case CSSPropertyWidows:
-    case CSSPropertyZIndex:
-        applicableTypes->append(new CSSNumberInterpolationType(property));
-        break;
-    case CSSPropertyLineHeight:
-        applicableTypes->append(new CSSLengthInterpolationType(property));
-        applicableTypes->append(new CSSNumberInterpolationType(property));
-        break;
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderTopColor:
-    case CSSPropertyColor:
-    case CSSPropertyFloodColor:
-    case CSSPropertyLightingColor:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyStopColor:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitTextStrokeColor:
-        applicableTypes->append(new CSSColorInterpolationType(property));
-        break;
-    case CSSPropertyFill:
-    case CSSPropertyStroke:
-        applicableTypes->append(new CSSPaintInterpolationType(property));
-        break;
-    case CSSPropertyBoxShadow:
-    case CSSPropertyTextShadow:
-        applicableTypes->append(new CSSShadowListInterpolationType(property));
-        break;
-    case CSSPropertyBorderImageSource:
-    case CSSPropertyListStyleImage:
-    case CSSPropertyWebkitMaskBoxImageSource:
-        applicableTypes->append(new CSSImageInterpolationType(property));
-        break;
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyWebkitMaskImage:
-        applicableTypes->append(new CSSImageListInterpolationType(property));
-        break;
-    default:
-        // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
-        if (CSSPropertyMetadata::isInterpolableProperty(property)) {
-            delete applicableTypes;
-            applicableTypesMap.add(property, nullptr);
-            return nullptr;
+
+    if (property.isCSSProperty()) {
+        CSSPropertyID cssProperty = property.cssProperty();
+        switch (cssProperty) {
+        case CSSPropertyBaselineShift:
+        case CSSPropertyBorderBottomWidth:
+        case CSSPropertyBorderLeftWidth:
+        case CSSPropertyBorderRightWidth:
+        case CSSPropertyBorderTopWidth:
+        case CSSPropertyBottom:
+        case CSSPropertyCx:
+        case CSSPropertyCy:
+        case CSSPropertyFlexBasis:
+        case CSSPropertyHeight:
+        case CSSPropertyLeft:
+        case CSSPropertyLetterSpacing:
+        case CSSPropertyMarginBottom:
+        case CSSPropertyMarginLeft:
+        case CSSPropertyMarginRight:
+        case CSSPropertyMarginTop:
+        case CSSPropertyMaxHeight:
+        case CSSPropertyMaxWidth:
+        case CSSPropertyMinHeight:
+        case CSSPropertyMinWidth:
+        case CSSPropertyMotionOffset:
+        case CSSPropertyOutlineOffset:
+        case CSSPropertyOutlineWidth:
+        case CSSPropertyPaddingBottom:
+        case CSSPropertyPaddingLeft:
+        case CSSPropertyPaddingRight:
+        case CSSPropertyPaddingTop:
+        case CSSPropertyPerspective:
+        case CSSPropertyR:
+        case CSSPropertyRight:
+        case CSSPropertyRx:
+        case CSSPropertyRy:
+        case CSSPropertyShapeMargin:
+        case CSSPropertyStrokeDashoffset:
+        case CSSPropertyStrokeWidth:
+        case CSSPropertyTop:
+        case CSSPropertyVerticalAlign:
+        case CSSPropertyWebkitBorderHorizontalSpacing:
+        case CSSPropertyWebkitBorderVerticalSpacing:
+        case CSSPropertyWebkitColumnGap:
+        case CSSPropertyWebkitColumnRuleWidth:
+        case CSSPropertyWebkitColumnWidth:
+        case CSSPropertyWebkitPerspectiveOriginX:
+        case CSSPropertyWebkitPerspectiveOriginY:
+        case CSSPropertyWebkitTransformOriginX:
+        case CSSPropertyWebkitTransformOriginY:
+        case CSSPropertyWebkitTransformOriginZ:
+        case CSSPropertyWidth:
+        case CSSPropertyWordSpacing:
+        case CSSPropertyX:
+        case CSSPropertyY:
+            applicableTypes->append(new CSSLengthInterpolationType(cssProperty));
+            break;
+        case CSSPropertyFlexGrow:
+        case CSSPropertyFlexShrink:
+        case CSSPropertyFillOpacity:
+        case CSSPropertyFloodOpacity:
+        case CSSPropertyFontSizeAdjust:
+        case CSSPropertyOpacity:
+        case CSSPropertyOrphans:
+        case CSSPropertyShapeImageThreshold:
+        case CSSPropertyStopOpacity:
+        case CSSPropertyStrokeMiterlimit:
+        case CSSPropertyStrokeOpacity:
+        case CSSPropertyWebkitColumnCount:
+        case CSSPropertyWidows:
+        case CSSPropertyZIndex:
+            applicableTypes->append(new CSSNumberInterpolationType(cssProperty));
+            break;
+        case CSSPropertyLineHeight:
+            applicableTypes->append(new CSSLengthInterpolationType(cssProperty));
+            applicableTypes->append(new CSSNumberInterpolationType(cssProperty));
+            break;
+        case CSSPropertyBackgroundColor:
+        case CSSPropertyBorderBottomColor:
+        case CSSPropertyBorderLeftColor:
+        case CSSPropertyBorderRightColor:
+        case CSSPropertyBorderTopColor:
+        case CSSPropertyColor:
+        case CSSPropertyFloodColor:
+        case CSSPropertyLightingColor:
+        case CSSPropertyOutlineColor:
+        case CSSPropertyStopColor:
+        case CSSPropertyTextDecorationColor:
+        case CSSPropertyWebkitColumnRuleColor:
+        case CSSPropertyWebkitTextStrokeColor:
+            applicableTypes->append(new CSSColorInterpolationType(cssProperty));
+            break;
+        case CSSPropertyFill:
+        case CSSPropertyStroke:
+            applicableTypes->append(new CSSPaintInterpolationType(cssProperty));
+            break;
+        case CSSPropertyBoxShadow:
+        case CSSPropertyTextShadow:
+            applicableTypes->append(new CSSShadowListInterpolationType(cssProperty));
+            break;
+        case CSSPropertyBorderImageSource:
+        case CSSPropertyListStyleImage:
+        case CSSPropertyWebkitMaskBoxImageSource:
+            applicableTypes->append(new CSSImageInterpolationType(cssProperty));
+            break;
+        case CSSPropertyBackgroundImage:
+        case CSSPropertyWebkitMaskImage:
+            applicableTypes->append(new CSSImageListInterpolationType(cssProperty));
+            break;
+        default:
+            // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
+            if (CSSPropertyMetadata::isInterpolableProperty(cssProperty))
+                fallbackToLegacy = true;
+            break;
         }
-        break;
+        applicableTypes->append(new CSSValueInterpolationType(cssProperty));
+    } else {
+        const QualifiedName& attribute = property.svgAttribute();
+        if (attribute == HTMLNames::classAttr
+            || attribute == SVGNames::clipPathUnitsAttr
+            || attribute == SVGNames::edgeModeAttr
+            || attribute == SVGNames::filterUnitsAttr
+            || attribute == SVGNames::gradientUnitsAttr
+            || attribute == SVGNames::inAttr
+            || attribute == SVGNames::in2Attr
+            || attribute == SVGNames::lengthAdjustAttr
+            || attribute == SVGNames::markerUnitsAttr
+            || attribute == SVGNames::maskContentUnitsAttr
+            || attribute == SVGNames::maskUnitsAttr
+            || attribute == SVGNames::methodAttr
+            || attribute == SVGNames::modeAttr
+            || attribute == SVGNames::operatorAttr
+            || attribute == SVGNames::patternContentUnitsAttr
+            || attribute == SVGNames::patternUnitsAttr
+            || attribute == SVGNames::preserveAlphaAttr
+            || attribute == SVGNames::preserveAspectRatioAttr
+            || attribute == SVGNames::primitiveUnitsAttr
+            || attribute == SVGNames::resultAttr
+            || attribute == SVGNames::spacingAttr
+            || attribute == SVGNames::spreadMethodAttr
+            || attribute == SVGNames::stitchTilesAttr
+            || attribute == SVGNames::targetAttr
+            || attribute == SVGNames::typeAttr
+            || attribute == SVGNames::xChannelSelectorAttr
+            || attribute == SVGNames::yChannelSelectorAttr
+            || attribute == XLinkNames::hrefAttr) {
+            applicableTypes->append(new SVGValueInterpolationType(attribute));
+        } else {
+            fallbackToLegacy = true;
+        }
     }
-    applicableTypes->append(new CSSValueInterpolationType(property));
+
+    if (fallbackToLegacy) {
+        delete applicableTypes;
+        applicableTypesMap.add(property, nullptr);
+        return nullptr;
+    }
+
     applicableTypesMap.add(property, applicableTypes);
     return applicableTypes;
 }
@@ -279,14 +326,14 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::createLeg
 
 PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
-    CSSPropertyID property = propertyHandle.cssProperty();
-    const Vector<const InterpolationType*>* applicableTypes = applicableTypesForProperty(property);
+    const Vector<const InterpolationType*>* applicableTypes = applicableTypesForProperty(propertyHandle);
     if (applicableTypes)
         return InvalidatableInterpolation::create(*applicableTypes, *this, end);
 
     // TODO(alancutter): Remove the remainder of this function.
 
     // FIXME: Refactor this into a generic piece that lives in InterpolationEffect, and a template parameter specific converter.
+    CSSPropertyID property = propertyHandle.cssProperty();
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toCSSPropertySpecificKeyframe(end).value();
     InterpolationRange range = RangeAll;
@@ -527,6 +574,10 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
 
 PassRefPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
+    const Vector<const InterpolationType*>* applicableTypes = applicableTypesForProperty(propertyHandle);
+    if (applicableTypes)
+        return InvalidatableInterpolation::create(*applicableTypes, *this, end);
+
     ASSERT(element);
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute = toSVGElement(element)->propertyFromAttribute(propertyHandle.svgAttribute());
     ASSERT(attribute);

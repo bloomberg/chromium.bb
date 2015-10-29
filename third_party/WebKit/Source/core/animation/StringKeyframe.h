@@ -76,6 +76,7 @@ public:
 
         const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return nullptr; }
 
+        bool isNeutral() const final { return m_value.isNull(); }
         PassOwnPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
         PassRefPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
 

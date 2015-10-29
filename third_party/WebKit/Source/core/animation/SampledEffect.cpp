@@ -5,8 +5,9 @@
 #include "config.h"
 #include "core/animation/SampledEffect.h"
 
+#include "core/animation/InterpolationEnvironment.h"
+#include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/SVGInterpolation.h"
-#include "core/animation/StyleInterpolation.h"
 #include "core/svg/SVGElement.h"
 
 namespace blink {
@@ -37,6 +38,15 @@ void SampledEffect::applySVGUpdate(SVGElement& targetElement)
     for (const auto& interpolation : m_interpolations) {
         if (interpolation->isSVGInterpolation()) {
             toSVGInterpolation(interpolation.get())->apply(targetElement);
+        } else if (interpolation->isInvalidatableInterpolation()) {
+            const InvalidatableInterpolation& invalidatableInterpolation = toInvalidatableInterpolation(*interpolation);
+            if (invalidatableInterpolation.property().isSVGAttribute()) {
+                const SVGPropertyBase& baseValue = targetElement.propertyFromAttribute(invalidatableInterpolation.property().svgAttribute())->baseValueBase();
+                InterpolationEnvironment environment(targetElement, baseValue);
+                ActiveInterpolations activeInterpolations(1);
+                activeInterpolations[0] = interpolation.get();
+                InvalidatableInterpolation::applyStack(activeInterpolations, environment);
+            }
         }
     }
 }

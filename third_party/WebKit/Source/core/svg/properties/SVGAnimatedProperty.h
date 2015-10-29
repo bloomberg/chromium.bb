@@ -53,6 +53,7 @@ public:
     virtual ~SVGAnimatedPropertyBase();
 
     virtual SVGPropertyBase* currentValueBase() = 0;
+    virtual const SVGPropertyBase& baseValueBase() const = 0;
     virtual bool isAnimating() const = 0;
 
     virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() = 0;
@@ -130,6 +131,11 @@ public:
     SVGPropertyBase* currentValueBase() override
     {
         return currentValue();
+    }
+
+    const SVGPropertyBase& baseValueBase() const override
+    {
+        return *m_baseValue;
     }
 
     bool isAnimating() const override
