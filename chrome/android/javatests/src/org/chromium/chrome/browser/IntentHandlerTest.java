@@ -299,4 +299,13 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
         assertTrue("Time should be increasing",
                 IntentHandler.getTimestampFromIntent(intent) <= after);
     }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGeneratedReferrer() {
+        Context context = getInstrumentation().getTargetContext();
+        String packageName = context.getPackageName();
+        String referrer = IntentHandler.constructValidReferrerForAuthority(packageName).getUrl();
+        assertEquals("android-app://" + packageName, referrer);
+    }
 }
