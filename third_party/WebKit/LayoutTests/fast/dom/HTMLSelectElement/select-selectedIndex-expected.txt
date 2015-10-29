@@ -1,5 +1,5 @@
-CONSOLE WARNING: Blocked to expand the option list to 4294967295 items.  The maximum list length is 10000.
-CONSOLE WARNING: Blocked to expand the option list to 10001 items.  The maximum list length is 10000.
+CONSOLE WARNING: Blocked to expand the option list to 4294967295 items.  The maximum list length is 2147483647.
+CONSOLE WARNING: Blocked to expand the option list to 2147483648 items.  The maximum list length is 2147483647.
 
 1) setting length to a negative length
 PASS mySelect.options.length is 2
@@ -74,7 +74,7 @@ PASS mySelect.selectedIndex is -1
 PASS mySelect.options.add({}) threw exception TypeError: Failed to execute 'add' on 'HTMLOptionsCollection': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
 PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
-24) setting length to a value greater than 10000
+24) setting length to a value greater than 2,147,483,647
 PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
 

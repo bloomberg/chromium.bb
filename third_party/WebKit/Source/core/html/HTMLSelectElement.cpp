@@ -74,8 +74,10 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// Upper limit agreed upon with representatives of Opera and Mozilla.
-static const unsigned maxSelectItems = 10000;
+// Upper limit of m_listItems. According to the HTML standard, options larger
+// than this limit doesn't work well because |selectedIndex| IDL attribute is
+// signed.
+static const unsigned maxListItems = std::numeric_limits<int>::max();
 
 HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(selectTag, document, form)
@@ -463,12 +465,13 @@ HTMLOptionElement* HTMLSelectElement::item(unsigned index)
 
 void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, ExceptionState& exceptionState)
 {
-    if (index >= length() && index >= maxSelectItems) {
+    int diff = index - length();
+    // We should check |index >= maxListItems| first to avoid integer overflow.
+    if (index >= maxListItems || listItems().size() + diff + 1 > maxListItems) {
         document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
-            String::format("Blocked to expand the option list and set an option at index=%u.  The maximum list length is %u.", index, maxSelectItems)));
+            String::format("Blocked to expand the option list and set an option at index=%u.  The maximum list length is %u.", index, maxListItems)));
         return;
     }
-    int diff = index - length();
     HTMLOptionElementOrHTMLOptGroupElement element;
     element.setHTMLOptionElement(option);
     HTMLElementOrLong before;
@@ -490,9 +493,10 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
 
 void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionState)
 {
-    if (newLen > length() && newLen > maxSelectItems) {
+    // We should check |newLen > maxListItems| first to avoid integer overflow.
+    if (newLen > maxListItems || listItems().size() + newLen - length() > maxListItems) {
         document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
-            String::format("Blocked to expand the option list to %u items.  The maximum list length is %u.", newLen, maxSelectItems)));
+            String::format("Blocked to expand the option list to %u items.  The maximum list length is %u.", newLen, maxListItems)));
         return;
     }
     int diff = length() - newLen;
@@ -799,7 +803,7 @@ void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
 
     HTMLOptionElement* foundSelected = 0;
     HTMLOptionElement* firstOption = 0;
-    for (Element* currentElement = ElementTraversal::firstWithin(*this); currentElement; ) {
+    for (Element* currentElement = ElementTraversal::firstWithin(*this); currentElement && m_listItems.size() < maxListItems; ) {
         if (!currentElement->isHTMLElement()) {
             currentElement = ElementTraversal::nextSkippingChildren(*currentElement, this);
             continue;
