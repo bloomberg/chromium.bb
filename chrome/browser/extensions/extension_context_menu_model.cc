@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -162,15 +163,23 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
   InitMenu(extension, button_visibility);
 }
 
-ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
-                                                     Browser* browser)
-    : ExtensionContextMenuModel(extension, browser, VISIBLE, nullptr) {
-}
-
 bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return false;
+
   if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST)
     return extension_items_->IsCommandIdChecked(command_id);
+
+  if (command_id == PAGE_ACCESS_RUN_ON_CLICK ||
+      command_id == PAGE_ACCESS_RUN_ON_SITE ||
+      command_id == PAGE_ACCESS_RUN_ON_ALL_SITES) {
+    content::WebContents* web_contents = GetActiveWebContents();
+    return web_contents &&
+           GetCurrentPageAccess(extension, web_contents) == command_id;
+  }
+
   return false;
 }
 
@@ -205,7 +214,10 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // The following, if they are present, are always enabled.
     case TOGGLE_VISIBILITY:
     case MANAGE:
-    case ALWAYS_RUN:
+    case PAGE_ACCESS_SUBMENU:
+    case PAGE_ACCESS_RUN_ON_CLICK:
+    case PAGE_ACCESS_RUN_ON_SITE:
+    case PAGE_ACCESS_RUN_ON_ALL_SITES:
       return true;
     default:
       NOTREACHED() << "Unknown command" << command_id;
@@ -240,16 +252,6 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       browser_->OpenURL(params);
       break;
     }
-    case ALWAYS_RUN: {
-      content::WebContents* web_contents = GetActiveWebContents();
-      if (web_contents) {
-        ScriptingPermissionsModifier(profile_, extension)
-            .GrantHostPermission(web_contents->GetLastCommittedURL());
-        ActiveScriptController::GetForWebContents(web_contents)
-            ->OnClicked(extension);
-      }
-      break;
-    }
     case CONFIGURE:
       DCHECK(OptionsPageInfo::HasOptionsPage(extension));
       ExtensionTabUtil::OpenOptionsPage(extension, browser_);
@@ -277,6 +279,11 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       delegate_->InspectPopup();
       break;
     }
+    case PAGE_ACCESS_RUN_ON_CLICK:
+    case PAGE_ACCESS_RUN_ON_SITE:
+    case PAGE_ACCESS_RUN_ON_ALL_SITES:
+      HandlePageAccessCommand(command_id, extension);
+      break;
     default:
      NOTREACHED() << "Unknown option";
      break;
@@ -308,16 +315,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
   AppendExtensionItems();
   AddSeparator(ui::NORMAL_SEPARATOR);
 
-  // Add the "Always Allow" item for adding persisted permissions for script
-  // injections if there is an active action for this extension. Note that this
-  // will add it to *all* extension action context menus, not just the one
-  // attached to the script injection request icon, but that's okay.
-  content::WebContents* web_contents = GetActiveWebContents();
-  if (web_contents &&
-      ActiveScriptController::GetForWebContents(web_contents)
-          ->WantsToRun(extension)) {
-    AddItemWithStringId(ALWAYS_RUN, IDS_EXTENSIONS_ALWAYS_RUN);
-  }
+  CreatePageAccessSubmenu(extension);
 
   if (!is_component_ || OptionsPageInfo::HasOptionsPage(extension))
     AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
@@ -372,6 +370,91 @@ void ExtensionContextMenuModel::AppendExtensionItems() {
   extension_items_->AppendExtensionItems(MenuItem::ExtensionKey(extension_id_),
                                          base::string16(), &index,
                                          true);  // is_action_menu
+}
+
+ExtensionContextMenuModel::MenuEntries
+ExtensionContextMenuModel::GetCurrentPageAccess(
+    const Extension* extension,
+    content::WebContents* web_contents) const {
+  ScriptingPermissionsModifier modifier(profile_, extension);
+  DCHECK(modifier.HasAffectedExtension());
+  if (util::AllowedScriptingOnAllUrls(extension->id(), profile_))
+    return PAGE_ACCESS_RUN_ON_ALL_SITES;
+  if (modifier.HasGrantedHostPermission(
+          GetActiveWebContents()->GetLastCommittedURL()))
+    return PAGE_ACCESS_RUN_ON_SITE;
+  return PAGE_ACCESS_RUN_ON_CLICK;
+}
+
+void ExtensionContextMenuModel::CreatePageAccessSubmenu(
+    const Extension* extension) {
+  content::WebContents* web_contents = GetActiveWebContents();
+  if (!web_contents ||
+      !ScriptingPermissionsModifier(profile_, extension)
+           .HasAffectedExtension()) {
+    return;
+  }
+  page_access_submenu_.reset(new ui::SimpleMenuModel(this));
+  const int kRadioGroup = 0;
+  page_access_submenu_->AddRadioItemWithStringId(
+      PAGE_ACCESS_RUN_ON_CLICK,
+      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
+  page_access_submenu_->AddRadioItem(
+      PAGE_ACCESS_RUN_ON_SITE,
+      l10n_util::GetStringFUTF16(
+          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE,
+          base::UTF8ToUTF16(
+              web_contents->GetLastCommittedURL().GetOrigin().spec())),
+      kRadioGroup);
+  page_access_submenu_->AddRadioItemWithStringId(
+      PAGE_ACCESS_RUN_ON_ALL_SITES,
+      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
+
+  AddSubMenuWithStringId(PAGE_ACCESS_SUBMENU,
+                         IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS,
+                         page_access_submenu_.get());
+}
+
+void ExtensionContextMenuModel::HandlePageAccessCommand(
+    int command_id,
+    const Extension* extension) const {
+  content::WebContents* web_contents = GetActiveWebContents();
+  if (!web_contents)
+    return;
+
+  MenuEntries current_access = GetCurrentPageAccess(extension, web_contents);
+  if (command_id == current_access)
+    return;
+
+  const GURL& url = web_contents->GetLastCommittedURL();
+  ScriptingPermissionsModifier modifier(profile_, extension);
+  switch (command_id) {
+    case PAGE_ACCESS_RUN_ON_CLICK:
+      if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
+        util::SetAllowedScriptingOnAllUrls(extension->id(), profile_, false);
+      if (modifier.HasGrantedHostPermission(url))
+        modifier.RemoveGrantedHostPermission(url);
+      break;
+    case PAGE_ACCESS_RUN_ON_SITE:
+      if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
+        util::SetAllowedScriptingOnAllUrls(extension->id(), profile_, false);
+      if (!modifier.HasGrantedHostPermission(url))
+        modifier.GrantHostPermission(url);
+      break;
+    case PAGE_ACCESS_RUN_ON_ALL_SITES:
+      util::SetAllowedScriptingOnAllUrls(extension->id(), profile_, true);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  if (command_id == PAGE_ACCESS_RUN_ON_SITE ||
+      command_id == PAGE_ACCESS_RUN_ON_ALL_SITES) {
+    ActiveScriptController* controller =
+        ActiveScriptController::GetForWebContents(web_contents);
+    if (controller && controller->WantsToRun(extension))
+      controller->OnClicked(extension);
+  }
 }
 
 content::WebContents* ExtensionContextMenuModel::GetActiveWebContents() const {

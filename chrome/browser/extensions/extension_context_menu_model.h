@@ -34,7 +34,10 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     UNINSTALL,
     MANAGE,
     INSPECT_POPUP,
-    ALWAYS_RUN
+    PAGE_ACCESS_SUBMENU,
+    PAGE_ACCESS_RUN_ON_CLICK,
+    PAGE_ACCESS_RUN_ON_SITE,
+    PAGE_ACCESS_RUN_ON_ALL_SITES,
   };
 
   // Type of action the extension icon represents.
@@ -73,10 +76,6 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
                             PopupDelegate* delegate);
   ~ExtensionContextMenuModel() override;
 
-  // Create a menu model for the given extension, without support
-  // for the "Inspect Popup" command.
-  ExtensionContextMenuModel(const Extension* extension, Browser* browser);
-
   // SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
@@ -84,8 +83,20 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
                                   ui::Accelerator* accelerator) override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
+  ui::SimpleMenuModel* page_access_submenu_for_testing() {
+    return page_access_submenu_.get();
+  }
+
  private:
   void InitMenu(const Extension* extension, ButtonVisibility button_visibility);
+
+  void CreatePageAccessSubmenu(const Extension* extension);
+
+  MenuEntries GetCurrentPageAccess(const Extension* extension,
+                                   content::WebContents* web_contents) const;
+
+  void HandlePageAccessCommand(int command_id,
+                               const Extension* extension) const;
 
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
@@ -122,6 +133,8 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
 
   // Menu matcher for context menu items specified by the extension.
   scoped_ptr<ContextMenuMatcher> extension_items_;
+
+  scoped_ptr<ui::SimpleMenuModel> page_access_submenu_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuModel);
 };
