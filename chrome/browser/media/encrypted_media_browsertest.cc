@@ -570,9 +570,6 @@ INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
                                 Values(MSE),
                                 Values(UNPREFIXED)));
 
-// Flaky on Mac 10.9, see http://crbug.com/544891.
-#if !defined(OS_MACOSX)
-
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
 
@@ -587,8 +584,6 @@ INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly,
                         Combine(Values(kExternalClearKeyDecryptOnlyKeySystem),
                                 Values(MSE),
                                 Values(UNPREFIXED)));
-#endif  // !defined(OS_MACOSX)
-
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
