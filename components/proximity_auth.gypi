@@ -118,6 +118,8 @@
         "proximity_auth/device_to_device_responder_operations.h",
         "proximity_auth/fake_connection.cc",
         "proximity_auth/fake_connection.h",
+        "proximity_auth/fake_secure_context.cc",
+        "proximity_auth/fake_secure_context.h",
         "proximity_auth/mock_proximity_auth_client.cc",
         "proximity_auth/mock_proximity_auth_client.h",
         "proximity_auth/proximity_auth_test_util.cc",

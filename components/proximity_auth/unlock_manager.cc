@@ -456,8 +456,8 @@ void UnlockManager::AcceptAuthAttempt(bool should_accept) {
   is_attempting_auth_ = false;
   if (screenlock_type_ == ProximityAuthSystem::SIGN_IN) {
     PA_LOG(INFO) << "Finalizing sign-in...";
-    proximity_auth_client_->FinalizeSignin(sign_in_secret_ ? *sign_in_secret_
-                                                           : std::string());
+    proximity_auth_client_->FinalizeSignin(
+        should_accept && sign_in_secret_ ? *sign_in_secret_ : std::string());
   } else {
     PA_LOG(INFO) << "Finalizing unlock...";
     proximity_auth_client_->FinalizeUnlock(should_accept);

@@ -9,18 +9,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/fake_connection.h"
+#include "components/proximity_auth/fake_secure_context.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_status_update.h"
-#include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::AllOf;
-using testing::EndsWith;
 using testing::Eq;
 using testing::Field;
 using testing::NiceMock;
@@ -32,38 +31,6 @@ namespace proximity_auth {
 namespace {
 
 const char kChallenge[] = "a most difficult challenge";
-const char kFakeEncodingSuffix[] = ", but encoded";
-
-class MockSecureContext : public SecureContext {
- public:
-  MockSecureContext() {
-    // By default, mock a secure context that uses the 3.1 protocol. Individual
-    // tests override this as needed.
-    ON_CALL(*this, GetProtocolVersion())
-        .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ONE));
-  }
-  ~MockSecureContext() override {}
-
-  MOCK_CONST_METHOD0(GetReceivedAuthMessage, std::string());
-  MOCK_CONST_METHOD0(GetProtocolVersion, ProtocolVersion());
-  MOCK_CONST_METHOD0(GetChannelBindingData, std::string());
-
-  void Encode(const std::string& message,
-              const MessageCallback& callback) override {
-    callback.Run(message + kFakeEncodingSuffix);
-  }
-
-  void Decode(const std::string& encoded_message,
-              const MessageCallback& callback) override {
-    EXPECT_THAT(encoded_message, EndsWith(kFakeEncodingSuffix));
-    std::string decoded_message = encoded_message;
-    decoded_message.erase(decoded_message.rfind(kFakeEncodingSuffix));
-    callback.Run(decoded_message);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSecureContext);
-};
 
 class MockMessengerObserver : public MessengerObserver {
  public:
@@ -96,15 +63,15 @@ class TestMessenger : public MessengerImpl {
   TestMessenger()
       : MessengerImpl(make_scoped_ptr(new FakeConnection(
                           CreateClassicRemoteDeviceForTest())),
-                      make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
+                      make_scoped_ptr(new FakeSecureContext())) {}
   ~TestMessenger() override {}
 
   // Simple getters for the mock objects owned by |this| messenger.
   FakeConnection* GetFakeConnection() {
     return static_cast<FakeConnection*>(connection());
   }
-  MockSecureContext* GetMockSecureContext() {
-    return static_cast<MockSecureContext*>(GetSecureContext());
+  FakeSecureContext* GetFakeSecureContext() {
+    return static_cast<FakeSecureContext*>(GetSecureContext());
   }
 
  private:
@@ -115,15 +82,15 @@ class TestMessenger : public MessengerImpl {
 
 TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeZero) {
   TestMessenger messenger;
-  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
-      .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ZERO));
+  messenger.GetFakeSecureContext()->set_protocol_version(
+      SecureContext::PROTOCOL_VERSION_THREE_ZERO);
   EXPECT_FALSE(messenger.SupportsSignIn());
 }
 
 TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
   TestMessenger messenger;
-  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
-      .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ONE));
+  messenger.GetFakeSecureContext()->set_protocol_version(
+      SecureContext::PROTOCOL_VERSION_THREE_ONE);
   EXPECT_TRUE(messenger.SupportsSignIn());
 }
 
@@ -172,8 +139,8 @@ TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendMessageSucceeds) {
 TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SignInUnsupported_DoesntSendMessage) {
   TestMessenger messenger;
-  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
-      .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ZERO));
+  messenger.GetFakeSecureContext()->set_protocol_version(
+      SecureContext::PROTOCOL_VERSION_THREE_ZERO);
   messenger.RequestDecryption(kChallenge);
   EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
 }
@@ -289,8 +256,8 @@ TEST(ProximityAuthMessengerImplTest,
 TEST(ProximityAuthMessengerImplTest,
      RequestUnlock_SignInUnsupported_DoesntSendMessage) {
   TestMessenger messenger;
-  ON_CALL(*messenger.GetMockSecureContext(), GetProtocolVersion())
-      .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ZERO));
+  messenger.GetFakeSecureContext()->set_protocol_version(
+      SecureContext::PROTOCOL_VERSION_THREE_ZERO);
   messenger.RequestUnlock();
   EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
 }
