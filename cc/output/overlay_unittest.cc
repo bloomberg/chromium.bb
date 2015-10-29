@@ -1408,6 +1408,44 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
 
   scoped_ptr<RenderPass> pass = CreateRenderPass();
 
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kOverlayBottomRightRect);
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  // Candidate pass was taken out and extra skipped pass added,
+  // so only draw 2 quads.
+  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(2);
+  EXPECT_CALL(scheduler_,
+              Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, _,
+                       gfx::Rect(kDisplaySize), gfx::RectF(0, 0, 1, 1)))
+      .Times(1);
+  EXPECT_CALL(scheduler_, Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _,
+                                   kOverlayBottomRightRect,
+                                   BoundingRect(kUVTopLeft, kUVBottomRight)))
+      .Times(1);
+  renderer_->DrawFrame(&pass_list, 1.f, viewport_rect, viewport_rect, false);
+
+  SwapBuffers();
+
+  Mock::VerifyAndClearExpectations(renderer_.get());
+  Mock::VerifyAndClearExpectations(&scheduler_);
+}
+
+TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawn) {
+  bool use_validator = true;
+  Init(use_validator);
+  renderer_->set_expect_overlays(true);
+  gfx::Rect viewport_rect(16, 16);
+
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+
   CreateFullscreenCandidateQuad(resource_provider_.get(),
                                 pass->shared_quad_state_list.back(),
                                 pass.get());
@@ -1420,9 +1458,8 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  // Candidate pass was taken out and extra skipped pass added,
-  // so only draw 2 quads.
-  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(2);
+  // Candidate covers all the quads, so we shouldn't have any draw quad calls.
+  EXPECT_CALL(*renderer_, DoDrawQuad(_, _, _)).Times(0);
   EXPECT_CALL(scheduler_,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, _,
                        gfx::Rect(kDisplaySize), gfx::RectF(0, 0, 1, 1)))
