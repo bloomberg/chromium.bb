@@ -8,11 +8,15 @@ cr.define('options.passwordManager', function() {
   /** @const */ var DeletableItem = options.DeletableItem;
   /** @const */ var List = cr.ui.List;
 
-  /** @const */ var URL_DATA_INDEX = 0;
-  /** @const */ var USERNAME_DATA_INDEX = 1;
-  /** @const */ var PASSWORD_DATA_INDEX = 2;
-  /** @const */ var FEDERATION_DATA_INDEX = 3;
-  /** @const */ var ORIGINAL_DATA_INDEX = 4;
+  // The following constants should be synchronized with the constants in
+  // chrome/browser/ui/webui/options/password_manager_handler.cc.
+  /** @const */ var ORIGIN_FIELD = 'origin';
+  /** @const */ var SHOWN_URL_FIELD = 'shownUrl';
+  /** @const */ var IS_SECURE_FIELD = 'isSecure';
+  /** @const */ var USERNAME_FIELD = 'username';
+  /** @const */ var PASSWORD_FIELD = 'password';
+  /** @const */ var FEDERATION_FIELD = 'federation';
+  /** @const */ var ORIGINAL_INDEX_FIELD = 'index';
 
   /**
    * Creates a new passwords list item.
@@ -37,6 +41,26 @@ cr.define('options.passwordManager', function() {
     return el;
   }
 
+  /**
+   * Returns title for password's origin (removes the scheme if the url is
+   * insecure and removes trailing punctuation symbols).
+   * @param {string} url The url.
+   * @param {boolean} isSecure True if the url is secure.
+   * @return {string} The title for password's origin.
+   */
+  function getTitleForPasswordOrigin(url, isSecure) {
+    if (!isSecure) {
+      var ind = url.indexOf('://');
+      if (ind >= 0) {
+        url = url.substring(ind + 3);
+      }
+    }
+    // Since the direction is switched to RTL, punctuation symbols appear on the
+    // left side, that is wrong. So, just remove trailing punctuation symbols.
+    url = url.replace(/[^A-Za-z0-9]+$/, '');
+    return url;
+  }
+
   PasswordListItem.prototype = {
     __proto__: DeletableItem.prototype,
 
@@ -45,28 +69,30 @@ cr.define('options.passwordManager', function() {
       DeletableItem.prototype.decorate.call(this);
 
       // The URL of the site.
-      var urlLabel = this.ownerDocument.createElement('div');
-      urlLabel.classList.add('favicon-cell');
-      urlLabel.classList.add('weakrtl');
-      urlLabel.classList.add('url');
-      urlLabel.setAttribute('title', this.url);
-      urlLabel.textContent = this.url;
-
-      // The favicon URL is prefixed with "origin/", which essentially removes
-      // the URL path past the top-level domain and ensures that a scheme (e.g.,
-      // http) is being used. This ensures that the favicon returned is the
-      // default favicon for the domain and that the URL has a scheme if none
-      // is present in the password manager.
-      urlLabel.style.backgroundImage = getFaviconImageSet(
+      var urlDiv = this.ownerDocument.createElement('div');
+      urlDiv.className = 'favicon-cell left-elided-url url';
+      urlDiv.setAttribute(
+          'title', getTitleForPasswordOrigin(this.url, this.isUrlSecure));
+      var urlLink = this.ownerDocument.createElement('a');
+      urlLink.href = this.url;
+      urlLink.textContent = this.shownUrl.split('').reverse().join('');
+      urlDiv.appendChild(urlLink);
+      urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
-      this.contentElement.appendChild(urlLabel);
+      this.contentElement.appendChild(urlDiv);
 
       // The stored username.
-      var usernameLabel = this.ownerDocument.createElement('div');
-      usernameLabel.className = 'name';
-      usernameLabel.textContent = this.username;
-      usernameLabel.title = this.username;
-      this.contentElement.appendChild(usernameLabel);
+      var usernameDiv = this.ownerDocument.createElement('div');
+      usernameDiv.className = 'name';
+      usernameDiv.title = this.username;
+      this.contentElement.appendChild(usernameDiv);
+      var usernameInput = this.ownerDocument.createElement('input');
+      usernameInput.type = 'text';
+      usernameInput.className = 'inactive-item';
+      usernameInput.readOnly = true;
+      usernameInput.value = this.username;
+      usernameDiv.appendChild(usernameInput);
+      this.usernameField = usernameInput;
 
       if (this.federation) {
         // The federation.
@@ -82,7 +108,7 @@ cr.define('options.passwordManager', function() {
         // The password input field.
         var passwordInput = this.ownerDocument.createElement('input');
         passwordInput.type = 'password';
-        passwordInput.className = 'inactive-password';
+        passwordInput.className = 'inactive-item';
         passwordInput.readOnly = true;
         passwordInput.value = this.showPasswords_ ? this.password : '********';
         passwordInputDiv.appendChild(passwordInput);
@@ -114,24 +140,26 @@ cr.define('options.passwordManager', function() {
         }
         this.contentElement.appendChild(passwordInputDiv);
       }
-
     },
 
     /** @override */
     selectionChanged: function() {
-      var input = this.passwordField;
+      var usernameInput = this.usernameField;
+      var passwordInput = this.passwordField;
       var button = this.passwordShowButton;
       // The button doesn't exist when passwords can't be shown.
       if (!button)
         return;
 
       if (this.selected) {
-        input.classList.remove('inactive-password');
+        usernameInput.classList.remove('inactive-item');
+        passwordInput.classList.remove('inactive-item');
         this.setFocusable_(true);
         button.hidden = false;
-        input.focus();
+        passwordInput.focus();
       } else {
-        input.classList.add('inactive-password');
+        usernameInput.classList.add('inactive-item');
+        passwordInput.classList.add('inactive-item');
         this.setFocusable_(false);
         button.hidden = true;
       }
@@ -176,7 +204,7 @@ cr.define('options.passwordManager', function() {
      * @private
      */
     getOriginalIndex_: function() {
-      var index = this.dataItem[ORIGINAL_DATA_INDEX];
+      var index = this.dataItem[ORIGINAL_INDEX_FIELD];
       return index ? index : this.dataModel.indexOf(this.dataItem);
     },
 
@@ -199,10 +227,32 @@ cr.define('options.passwordManager', function() {
      * @type {string}
      */
     get url() {
-      return this.dataItem[URL_DATA_INDEX];
+      return this.dataItem[ORIGIN_FIELD];
     },
     set url(url) {
-      this.dataItem[URL_DATA_INDEX] = url;
+      this.dataItem[ORIGIN_FIELD] = url;
+    },
+
+    /**
+     * Get and set the shown url for the entry.
+     * @type {string}
+     */
+    get shownUrl() {
+      return this.dataItem[SHOWN_URL_FIELD];
+    },
+    set shownUrl(shownUrl) {
+      this.dataItem[SHOWN_URL_FIELD] = shownUrl;
+    },
+
+    /**
+     * Get and set whether the origin uses secure scheme.
+     * @type {boolean}
+     */
+    get isUrlSecure() {
+      return this.dataItem[IS_SECURE_FIELD];
+    },
+    set isUrlSecure(isUrlSecure) {
+      this.dataItem[IS_SECURE_FIELD] = isUrlSecure;
     },
 
     /**
@@ -210,10 +260,10 @@ cr.define('options.passwordManager', function() {
      * @type {string}
      */
     get username() {
-      return this.dataItem[USERNAME_DATA_INDEX];
+      return this.dataItem[USERNAME_FIELD];
     },
     set username(username) {
-      this.dataItem[USERNAME_DATA_INDEX] = username;
+      this.dataItem[USERNAME_FIELD] = username;
     },
 
     /**
@@ -221,10 +271,10 @@ cr.define('options.passwordManager', function() {
      * @type {string}
      */
     get password() {
-      return this.dataItem[PASSWORD_DATA_INDEX];
+      return this.dataItem[PASSWORD_FIELD];
     },
     set password(password) {
-      this.dataItem[PASSWORD_DATA_INDEX] = password;
+      this.dataItem[PASSWORD_FIELD] = password;
     },
 
     /**
@@ -232,10 +282,10 @@ cr.define('options.passwordManager', function() {
      * @type {string}
      */
     get federation() {
-      return this.dataItem[FEDERATION_DATA_INDEX];
+      return this.dataItem[FEDERATION_FIELD];
     },
     set federation(federation) {
-      this.dataItem[FEDERATION_DATA_INDEX] = federation;
+      this.dataItem[FEDERATION_FIELD] = federation;
     },
   };
 
@@ -264,20 +314,19 @@ cr.define('options.passwordManager', function() {
       DeletableItem.prototype.decorate.call(this);
 
       // The URL of the site.
-      var urlLabel = this.ownerDocument.createElement('div');
-      urlLabel.className = 'url';
-      urlLabel.classList.add('favicon-cell');
-      urlLabel.classList.add('weakrtl');
-      urlLabel.textContent = this.url;
-
-      // The favicon URL is prefixed with "origin/", which essentially removes
-      // the URL path past the top-level domain and ensures that a scheme (e.g.,
-      // http) is being used. This ensures that the favicon returned is the
-      // default favicon for the domain and that the URL has a scheme if none
-      // is present in the password manager.
-      urlLabel.style.backgroundImage = getFaviconImageSet(
+      var urlDiv = this.ownerDocument.createElement('div');
+      urlDiv.className = 'url';
+      urlDiv.classList.add('favicon-cell');
+      urlDiv.classList.add('left-elided-url');
+      urlDiv.setAttribute(
+          'title', getTitleForPasswordOrigin(this.url, this.isUrlSecure));
+      var urlLink = this.ownerDocument.createElement('a');
+      urlLink.href = this.url;
+      urlLink.textContent = this.shownUrl.split('').reverse().join('');
+      urlDiv.appendChild(urlLink);
+      urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
-      this.contentElement.appendChild(urlLabel);
+      this.contentElement.appendChild(urlDiv);
     },
 
     /**
@@ -285,10 +334,32 @@ cr.define('options.passwordManager', function() {
      * @type {string}
      */
     get url() {
-      return this.dataItem;
+      return this.dataItem[ORIGIN_FIELD];
     },
     set url(url) {
-      this.dataItem = url;
+      this.dataItem[ORIGIN_FIELD] = url;
+    },
+
+    /**
+     * Get and set the shown url for the entry.
+     * @type {string}
+     */
+    get shownUrl() {
+      return this.dataItem[SHOWN_URL_FIELD];
+    },
+    set shownUrl(shownUrl) {
+      this.dataItem[SHOWN_URL_FIELD] = shownUrl;
+    },
+
+    /**
+     * Get and set whether the origin uses secure scheme.
+     * @type {boolean}
+     */
+    get isUrlSecure() {
+      return this.dataItem[IS_SECURE_FIELD];
+    },
+    set isUrlSecure(isUrlSecure) {
+      this.dataItem[IS_SECURE_FIELD] = isUrlSecure;
     },
   };
 
@@ -344,9 +415,9 @@ cr.define('options.passwordManager', function() {
     /** @override */
     deleteItemAtIndex: function(index) {
       var item = this.dataModel.item(index);
-      if (item && item[ORIGINAL_DATA_INDEX] != undefined) {
+      if (item && item[ORIGINAL_INDEX_FIELD] != undefined) {
         // The fifth element, if present, is the original index to delete.
-        index = item[ORIGINAL_DATA_INDEX];
+        index = item[ORIGINAL_INDEX_FIELD];
       }
       PasswordManager.removeSavedPassword(index);
     },
@@ -406,5 +477,12 @@ cr.define('options.passwordManager', function() {
     PasswordExceptionsListItem: PasswordExceptionsListItem,
     PasswordsList: PasswordsList,
     PasswordExceptionsList: PasswordExceptionsList,
+    ORIGIN_FIELD: ORIGIN_FIELD,
+    SHOWN_URL_FIELD: SHOWN_URL_FIELD,
+    IS_SECURE_FIELD: IS_SECURE_FIELD,
+    USERNAME_FIELD: USERNAME_FIELD,
+    PASSWORD_FIELD: PASSWORD_FIELD,
+    FEDERATION_FIELD: FEDERATION_FIELD,
+    ORIGINAL_INDEX_FIELD: ORIGINAL_INDEX_FIELD
   };
 });

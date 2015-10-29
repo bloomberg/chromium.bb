@@ -111,6 +111,8 @@
         'password_manager/core/browser/password_store_sync.h',
         'password_manager/core/browser/password_syncable_service.cc',
         'password_manager/core/browser/password_syncable_service.h',
+        'password_manager/core/browser/password_ui_utils.cc',
+        'password_manager/core/browser/password_ui_utils.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
         'password_manager/core/browser/statistics_table.cc',
