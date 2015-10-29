@@ -19,6 +19,8 @@
                 return "<b>the empty string</b>";
             else if (result === null)
                 return "<b>null</b>";
+            else if (result === "null")
+                return "<b>'null'</b>";
             else if (result === undefined)
                 return "<b>undefined</b>";
             return "the string '" + result + "'";
@@ -77,7 +79,7 @@
                     typeName: 'HTMLDocument',
                     docToUse: htmlDoc,
                     attributes: [
-                        {name: 'title', expectedNull: ''},
+                        {name: 'title', expectedNull: 'null'},
                         {name: 'cookie', expectedNull: ''},
                         {name: 'bgColor', expectedNull: ''},
                         {name: 'fgColor', expectedNull: ''},

@@ -96,8 +96,8 @@ interface Document : Node {
     readonly attribute DocumentReadyState readyState;
 
     // DOM tree accessors
-    // FIXME: title and dir should not have [TreatNullAs=NullString].
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString title;
+    [CustomElementCallbacks] attribute DOMString title;
+    // FIXME: dir should not have [TreatNullAs=NullString].
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString dir;
     [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings, TypeChecking=Interface] attribute HTMLElement? body;
     readonly attribute HTMLHeadElement? head;
