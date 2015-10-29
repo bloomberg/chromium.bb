@@ -1,11 +1,5 @@
 # Blink API OWNERS
-darin@chromium.org
-dglazkov@chromium.org
-jochen@chromium.org
-tkent@chromium.org
-chrishtr@chromium.org
-philipj@opera.com
-rbyers@chromium.org
+file://third_party/WebKit/API_OWNERS
 
 # For .gyp* / *.gn* changes only.
 dpranke@chromium.org
