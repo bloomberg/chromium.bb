@@ -65,19 +65,20 @@ void AutocompleteMatchToAssistedQuery(
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY: {
-      *subtype = 46;
+      *type = 46;
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_TAIL: {
-      *subtype = 33;
+      *type = 33;
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED: {
+      *type = 35;
       *subtype = 39;
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE: {
-      *subtype = 44;
+      *type = 44;
       return;
     }
     case AutocompleteMatchType::NAVSUGGEST: {
@@ -118,6 +119,7 @@ void AutocompleteMatchToAssistedQuery(
       return;
     }
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED: {
+      *type = 5;
       *subtype = 39;
       return;
     }
