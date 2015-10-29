@@ -28,8 +28,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -54,8 +56,15 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             "QUEUE_INSERT",
             "QUEUE_UPDATE",
             "QUEUE_REMOVE",
-            "QUEUE_REORDER"
+            "QUEUE_REORDER",
+            "MEDIA_STATUS",
     };
+
+    // Map associating overloaded types with the types they represent.
+    private static Map<String, String> sMediaOverloadedMessageTypes;
+
+    // Lock used to lazy initialize sMediaOverloadedMessageTypes.
+    private static final Object INIT_LOCK = new Object();
 
     private static class CastMessagingChannel implements Cast.MessageReceivedCallback {
         private final CastRouteController mSession;
@@ -70,6 +79,30 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 mSession.onMessage("v2_message", message);
             } else {
                 mSession.onAppMessage(namespace, message);
+            }
+        }
+    }
+
+    /**
+     * Remove 'null' fields from a JSONObject. This method calls itself recursively until all the
+     * fields have been looked at.
+     * TODO(mlamouri): move to some util class?
+     */
+    private static void removeNullFields(Object object) throws JSONException {
+        if (object instanceof JSONArray) {
+            JSONArray array = (JSONArray) object;
+            for (int i = 0; i < array.length(); ++i) removeNullFields(array.get(i));
+        } else if (object instanceof JSONObject) {
+            JSONObject json = (JSONObject) object;
+            JSONArray names = json.names();
+            if (names == null) return;
+            for (int i = 0; i < names.length(); ++i) {
+                String key = names.getString(i);
+                if (json.isNull(key)) {
+                    json.remove(key);
+                } else {
+                    removeNullFields(json.get(key));
+                }
             }
         }
     }
@@ -145,6 +178,15 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 .setId(R.id.presentation_notification)
                 .setListener(this);
         MediaNotificationManager.show(context, mNotificationBuilder);
+
+        synchronized (INIT_LOCK) {
+            if (sMediaOverloadedMessageTypes == null) {
+                sMediaOverloadedMessageTypes = new HashMap<String, String>();
+                sMediaOverloadedMessageTypes.put("STOP_MEDIA", "STOP");
+                sMediaOverloadedMessageTypes.put("MEDIA_SET_VOLUME", "SET_VOLUME");
+                sMediaOverloadedMessageTypes.put("MEDIA_GET_STATUS", "MEDIA_STATUS");
+            }
+        }
     }
 
     public CastRouteController createJoinedController(String mediaRouteId, String origin, int tabId,
@@ -383,6 +425,11 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         JSONObject jsonCastMessage = jsonMessage.getJSONObject("message");
         String messageType = jsonCastMessage.getString("type");
+
+        if (sMediaOverloadedMessageTypes.containsKey(messageType)) {
+            messageType = sMediaOverloadedMessageTypes.get(messageType);
+        }
+
         if ("STOP".equals(messageType)) {
             close();
             return true;
@@ -390,7 +437,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             if ("SET_VOLUME".equals(messageType)) {
                 return handleVolumeMessage(jsonCastMessage.getJSONObject("volume"));
             }
-            return sendCastMessage(jsonMessage.getString("message"), MEDIA_NAMESPACE);
+            return sendCastMessage(jsonMessage.getJSONObject("message"), MEDIA_NAMESPACE);
         }
 
         return true;
@@ -448,26 +495,23 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         if (namespaceName == null || namespaceName.isEmpty()) return false;
 
         if (!mNamespaces.contains(namespaceName)) addNamespace(namespaceName);
-        sendCastMessage(jsonAppMessageWrapper.getString("message"), namespaceName);
+        sendCastMessage(jsonAppMessageWrapper, namespaceName);
 
         return true;
     }
 
-    private boolean sendCastMessage(String message, String namespace) {
+    private boolean sendCastMessage(JSONObject message, String namespace) throws JSONException {
         if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return false;
 
-        if (!message.contains("\"requestId\"")) {
-            try {
-                JSONObject jsonMessage = new JSONObject(message);
-                jsonMessage.put("requestId", 0);
-                message = jsonMessage.toString();
-            } catch (JSONException e) {
-                Log.w(TAG, "Cast message is not a valid JSON");
-            }
-        }
+        removeNullFields(message);
+
+        // We must have a requestId so 0 is used unless there is one already.
+        // TODO(mlamouri): pass a random requestId if none is present,
+        // See: https://crbug.com/548822
+        if (!message.has("requestId")) message.put("requestId", 0);
 
         try {
-            Cast.CastApi.sendMessage(mApiClient, namespace, message)
+            Cast.CastApi.sendMessage(mApiClient, namespace, message.toString())
                     .setResultCallback(
                             new ResultCallback<Status>() {
                                 @Override
