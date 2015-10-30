@@ -65,21 +65,22 @@ class CRWCertVerificationControllerTest : public web::WebTest {
     return result;
   }
 
-  // Synchronously returns result of decidePolicyForCert:host:completionHandler:
-  // call.
-  void DecidePolicy(const scoped_refptr<net::X509Certificate>& cert,
+  // Synchronously returns result of
+  // decideLoadPolicyForTrust:host:completionHandler: call.
+  void DecidePolicy(const base::ScopedCFTypeRef<SecTrustRef>& trust,
                     NSString* host,
                     web::CertAcceptPolicy* policy,
                     net::CertStatus* status) {
     __block bool completion_handler_called = false;
-    [controller_ decidePolicyForCert:cert
-                                host:host
-                   completionHandler:^(web::CertAcceptPolicy callback_policy,
-                                       net::CertStatus callback_status) {
-                     *policy = callback_policy;
-                     *status = callback_status;
-                     completion_handler_called = true;
-                   }];
+    [controller_
+        decideLoadPolicyForTrust:trust
+                            host:host
+               completionHandler:^(web::CertAcceptPolicy callback_policy,
+                                   net::CertStatus callback_status) {
+                 *policy = callback_policy;
+                 *status = callback_status;
+                 completion_handler_called = true;
+               }];
     base::test::ios::WaitUntilCondition(^{
       return completion_handler_called;
     }, base::MessageLoop::current(), base::TimeDelta());
@@ -112,8 +113,8 @@ class CRWCertVerificationControllerTest : public web::WebTest {
   base::scoped_nsobject<CRWCertVerificationController> controller_;
 };
 
-// Tests cert policy with a valid cert.
-TEST_F(CRWCertVerificationControllerTest, PolicyForValidCert) {
+// Tests cert policy with a valid trust.
+TEST_F(CRWCertVerificationControllerTest, PolicyForValidTrust) {
   net::CertVerifyResult verify_result;
   verify_result.cert_status = net::CERT_STATUS_NO_REVOCATION_MECHANISM;
   verify_result.verified_cert = cert_;
@@ -121,33 +122,83 @@ TEST_F(CRWCertVerificationControllerTest, PolicyForValidCert) {
                                          verify_result, net::OK);
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
-  DecidePolicy(cert_, kHostName, &policy, &status);
+  DecidePolicy(valid_trust_, kHostName, &policy, &status);
   EXPECT_EQ(CERT_ACCEPT_POLICY_ALLOW, policy);
-  EXPECT_EQ(verify_result.cert_status, status);
+  EXPECT_FALSE(status);
 }
 
-// Tests cert policy with an invalid cert.
-TEST_F(CRWCertVerificationControllerTest, PolicyForInvalidCert) {
+// Tests cert policy with an invalid trust not accepted by user.
+TEST_F(CRWCertVerificationControllerTest, PolicyForInvalidTrust) {
+  net::CertVerifyResult result;
+  result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+  result.verified_cert = cert_;
+  cert_verifier_.AddResultForCertAndHost(cert_.get(), kHostName.UTF8String,
+                                         result,
+                                         net::ERR_CERT_COMMON_NAME_INVALID);
+
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
-  DecidePolicy(cert_, kHostName, &policy, &status);
-  EXPECT_EQ(CERT_ACCEPT_POLICY_RECOVERABLE_ERROR, policy);
+  DecidePolicy(invalid_trust_, kHostName, &policy, &status);
+  EXPECT_EQ(CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER, policy);
+  EXPECT_EQ(net::CERT_STATUS_COMMON_NAME_INVALID, status);
 }
 
-// Tests cert policy with null cert.
-TEST_F(CRWCertVerificationControllerTest, PolicyForNullCert) {
+// Tests cert policy with an invalid trust accepted by user.
+TEST_F(CRWCertVerificationControllerTest, PolicyForInvalidTrustAcceptedByUser) {
+  net::CertVerifyResult result;
+  result.cert_status = net::CERT_STATUS_DATE_INVALID;
+  result.verified_cert = cert_;
+  cert_verifier_.AddResultForCertAndHost(cert_.get(), kHostName.UTF8String,
+                                         result, net::ERR_CERT_DATE_INVALID);
+
+  [controller_ allowCert:cert_.get()
+                 forHost:kHostName
+                  status:net::CERT_STATUS_ALL_ERRORS];
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
-  DecidePolicy(nullptr, kHostName, &policy, &status);
+  DecidePolicy(invalid_trust_, kHostName, &policy, &status);
+  EXPECT_EQ(CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER, policy);
+  EXPECT_EQ(net::CERT_STATUS_DATE_INVALID, status);
+}
+
+// Tests that allowCert:forHost:status: strips all intermidiate certs.
+TEST_F(CRWCertVerificationControllerTest, AllowCertIgnoresIntermidiateCerts) {
+  scoped_refptr<net::X509Certificate> cert(
+      net::X509Certificate::CreateFromHandle(cert_->os_cert_handle(),
+                                             {cert_->os_cert_handle()}));
+  net::CertVerifyResult result;
+  result.cert_status = net::CERT_STATUS_DATE_INVALID;
+  result.verified_cert = cert_;
+  cert_verifier_.AddResultForCertAndHost(cert_.get(), kHostName.UTF8String,
+                                         result, net::ERR_CERT_DATE_INVALID);
+
+  [controller_ allowCert:cert.get()
+                 forHost:kHostName
+                  status:net::CERT_STATUS_ALL_ERRORS];
+  web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
+  net::CertStatus status;
+  DecidePolicy(invalid_trust_, kHostName, &policy, &status);
+  EXPECT_EQ(CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER, policy);
+  EXPECT_EQ(net::CERT_STATUS_DATE_INVALID, status);
+}
+
+// Tests cert policy with null trust.
+TEST_F(CRWCertVerificationControllerTest, PolicyForNullTrust) {
+  web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_ALLOW;
+  net::CertStatus status;
+  base::ScopedCFTypeRef<SecTrustRef> null_trust;
+  DecidePolicy(null_trust, kHostName, &policy, &status);
   EXPECT_EQ(CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR, policy);
+  EXPECT_FALSE(status);
 }
 
-// Tests cert policy with null cert and null host.
+// Tests cert policy with invalid trust and null host.
 TEST_F(CRWCertVerificationControllerTest, PolicyForNullHost) {
   web::CertAcceptPolicy policy = CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
   net::CertStatus status;
-  DecidePolicy(cert_, nil, &policy, &status);
-  EXPECT_EQ(CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR, policy);
+  DecidePolicy(invalid_trust_, nil, &policy, &status);
+  EXPECT_EQ(CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER, policy);
+  EXPECT_FALSE(status);
 }
 
 // Tests SSL status with valid trust.

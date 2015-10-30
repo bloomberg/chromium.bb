@@ -908,7 +908,7 @@ TEST_F(CRWWKWebViewWebControllerTest, SSLCertError) {
   EXPECT_EQ(web::SECURITY_STYLE_AUTHENTICATION_BROKEN,
             [mockDelegate_ SSLStatus].security_style);
   EXPECT_FALSE([mockDelegate_ recoverable]);
-  EXPECT_FALSE([mockDelegate_ shouldContinueCallback]);
+  EXPECT_TRUE([mockDelegate_ shouldContinueCallback]);
 }
 #endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 

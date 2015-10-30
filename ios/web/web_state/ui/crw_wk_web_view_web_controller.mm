@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/containers/mru_cache.h"
 #include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
@@ -20,6 +21,7 @@
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/web_load_params.h"
+#include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
 #include "ios/web/public/cert_store.h"
 #include "ios/web/public/navigation_item.h"
@@ -43,12 +45,33 @@
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #import "ios/web/webui/crw_web_ui_manager.h"
-#include "net/cert/x509_certificate.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
 #include "url/url_constants.h"
 
 namespace {
+
+// Represents cert verification error, which happened inside
+// |webView:didReceiveAuthenticationChallenge:completionHandler:| and should
+// be checked inside |webView:didFailProvisionalNavigation:withError:|.
+struct CertVerificationError {
+  CertVerificationError(BOOL is_recoverable, net::CertStatus status)
+      : is_recoverable(is_recoverable), status(status) {}
+
+  BOOL is_recoverable;
+  net::CertStatus status;
+};
+
+// Type of Cache object for storing cert verification errors.
+typedef base::MRUCache<web::CertHostPair, CertVerificationError>
+    CertVerificationErrorsCacheType;
+
+// Maximum number of errors to store in cert verification errors cache.
+// Cache holds errors only for pending navigations, so the actual number of
+// stored errors is not expected to be high.
+const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
+
 // Extracts Referer value from WKNavigationAction request header.
 NSString* GetRefererFromNavigationAction(WKNavigationAction* action) {
   return [action.request valueForHTTPHeaderField:@"Referer"];
@@ -144,6 +167,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Cancelled navigations should be simply discarded without handling any
   // specific error.
   BOOL _pendingNavigationCancelled;
+
+  // CertVerification errors which happened inside
+  // |webView:didReceiveAuthenticationChallenge:completionHandler:|.
+  // Key is leaf-cert/host pair. This storage is used to carry calculated
+  // cert status from |didReceiveAuthenticationChallenge:| to
+  // |didFailProvisionalNavigation:| delegate method.
+  scoped_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
 }
 
 // Response's MIME type of the last known navigation.
@@ -271,6 +301,14 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)updateSSLStatusForCurrentNavigationItem;
 #endif
 
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
+// with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler;
+
 // Registers load request with empty referrer and link or client redirect
 // transition based on user interaction state.
 - (void)registerLoadRequest:(const GURL&)url;
@@ -320,6 +358,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   if (self) {
     _certVerificationController.reset([[CRWCertVerificationController alloc]
         initWithBrowserState:browserState]);
+    _certVerificationErrors.reset(
+        new CertVerificationErrorsCacheType(kMaxCertErrorsCount));
   }
   return self;
 }
@@ -566,6 +606,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)abortWebLoad {
   [_wkWebView stopLoading];
+  _certVerificationErrors->Clear();
 }
 
 - (void)resetLoadState {
@@ -864,19 +905,54 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)handleSSLCertError:(NSError*)error {
   DCHECK(web::IsWKWebViewSSLCertError(error));
 
-  net::SSLInfo sslInfo;
-  web::GetSSLInfoFromWKWebViewSSLCertError(error, &sslInfo);
+  net::SSLInfo info;
+  web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
 
-  web::SSLStatus sslStatus;
-  sslStatus.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
-  sslStatus.cert_status = sslInfo.cert_status;
-  sslStatus.cert_id = web::CertStore::GetInstance()->StoreCert(
-      sslInfo.cert.get(), self.certGroupID);
+  web::SSLStatus status;
+  status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  status.cert_status = info.cert_status;
+  status.cert_id = web::CertStore::GetInstance()->StoreCert(
+      info.cert.get(), self.certGroupID);
 
-  [self.delegate presentSSLError:sslInfo
-                    forSSLStatus:sslStatus
-                     recoverable:NO
-                        callback:nullptr];
+  // Retrieve verification results from _certVerificationErrors cache to avoid
+  // unnecessary recalculations. Verification results are cached for the leaf
+  // cert, because the cert chain in |didReceiveAuthenticationChallenge:| is
+  // the OS constructed chain, while |chain| is the chain from the server.
+  NSArray* chain = error.userInfo[web::kNSErrorPeerCertificateChainKey];
+  NSString* host = [error.userInfo[web::kNSErrorFailingURLKey] host];
+  scoped_refptr<net::X509Certificate> leafCert;
+  BOOL recoverable = NO;
+  if (chain.count && host.length) {
+    // The complete cert chain may not be available, so the leaf cert is used
+    // as a key to retrieve _certVerificationErrors, as well as for storing the
+    // cert decision.
+    leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
+    if (leafCert) {
+      auto error = _certVerificationErrors->Get(
+          {leafCert, base::SysNSStringToUTF8(host)});
+      if (error != _certVerificationErrors->end()) {
+        status.cert_status = error->second.status;
+        recoverable = error->second.is_recoverable;
+      } else {
+        // TODO(eugenebut): Report UMA with cache size (crbug.com/541736).
+      }
+    }
+  }
+
+  // Present SSL interstitial.
+  [self.delegate presentSSLError:info
+                    forSSLStatus:status
+                     recoverable:recoverable
+                        callback:^(BOOL proceed) {
+                          if (proceed) {
+                            // The interstitial will be removed during reload.
+                            [_certVerificationController
+                                allowCert:leafCert
+                                  forHost:host
+                                   status:status.cert_status];
+                            [self loadCurrentURL];
+                          }
+                        }];
 }
 #endif  // #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
@@ -1018,6 +1094,44 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 #endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
+
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler {
+  SecTrustRef trust = challenge.protectionSpace.serverTrust;
+  if (policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER) {
+    // Cert is invalid, but user agreed to proceed, override default behavior.
+    completionHandler(NSURLSessionAuthChallengeUseCredential,
+                      [NSURLCredential credentialForTrust:trust]);
+    return;
+  }
+
+  if (policy != web::CERT_ACCEPT_POLICY_ALLOW &&
+      SecTrustGetCertificateCount(trust)) {
+    // The cert is invalid and the user has not agreed to proceed. Cache the
+    // cert verification result in |_certVerificationErrors|, so that it can
+    // later be reused inside |didFailProvisionalNavigation:|.
+    // The leaf cert is used as the key, because the chain provided by
+    // |didFailProvisionalNavigation:| will differ (it is the server-supplied
+    // chain), thus if intermediates were considered, the keys would mismatch.
+    scoped_refptr<net::X509Certificate> leafCert =
+        net::X509Certificate::CreateFromHandle(
+            SecTrustGetCertificateAtIndex(trust, 0),
+            net::X509Certificate::OSCertHandles());
+    if (leafCert) {
+      BOOL is_recoverable =
+          policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
+      std::string host =
+          base::SysNSStringToUTF8(challenge.protectionSpace.host);
+      _certVerificationErrors->Put(
+          web::CertHostPair(leafCert, host),
+          CertVerificationError(is_recoverable, certStatus));
+    }
+  }
+  completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+}
 
 - (void)registerLoadRequest:(const GURL&)url {
   // If load request is registered via WKWebViewWebController, assume transition
@@ -1431,11 +1545,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     [self handleLoadError:error inMainFrame:YES];
 
   [self discardPendingNavigationTypeForMainFrame];
+  _certVerificationErrors->Clear();
 }
 
 - (void)webView:(WKWebView *)webView
     didCommitNavigation:(WKNavigation *)navigation {
   DCHECK_EQ(_wkWebView, webView);
+  _certVerificationErrors->Clear();
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
   _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
@@ -1481,13 +1597,14 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
             withError:(NSError *)error {
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
             inMainFrame:YES];
+  _certVerificationErrors->Clear();
 }
 
-- (void)webView:(WKWebView *)webView
-    didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
+- (void)webView:(WKWebView*)webView
+    didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge
                     completionHandler:
-        (void (^)(NSURLSessionAuthChallengeDisposition disposition,
-                  NSURLCredential *credential))completionHandler {
+                        (void (^)(NSURLSessionAuthChallengeDisposition,
+                                  NSURLCredential*))completionHandler {
   if (![challenge.protectionSpace.authenticationMethod
           isEqual:NSURLAuthenticationMethodServerTrust]) {
     completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
@@ -1495,19 +1612,25 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   }
 
   SecTrustRef trust = challenge.protectionSpace.serverTrust;
-  scoped_refptr<net::X509Certificate> cert = web::CreateCertFromTrust(trust);
-  // TODO(eugenebut): pass SecTrustRef instead of cert.
+  base::ScopedCFTypeRef<SecTrustRef> scopedTrust(trust,
+                                                 base::scoped_policy::RETAIN);
+  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
   [_certVerificationController
-      decidePolicyForCert:cert
-                     host:challenge.protectionSpace.host
-        completionHandler:^(web::CertAcceptPolicy policy,
-                            net::CertStatus status) {
-          completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace,
-                            nil);
-        }];
+      decideLoadPolicyForTrust:scopedTrust
+                          host:challenge.protectionSpace.host
+             completionHandler:^(web::CertAcceptPolicy policy,
+                                 net::CertStatus status) {
+               base::scoped_nsobject<CRWWKWebViewWebController> strongSelf(
+                   [weakSelf retain]);
+               [strongSelf processAuthChallenge:challenge
+                            forCertAcceptPolicy:policy
+                                     certStatus:status
+                              completionHandler:completionHandler];
+             }];
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
+  _certVerificationErrors->Clear();
   [self webViewWebProcessDidCrash];
 }
 

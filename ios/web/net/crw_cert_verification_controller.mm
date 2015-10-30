@@ -12,6 +12,7 @@
 #include "base/threading/worker_pool.h"
 #include "ios/web/net/cert_verifier_block_adapter.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_result.h"
@@ -67,6 +68,9 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 
   // URLRequestContextGetter for obtaining net layer objects.
   net::URLRequestContextGetter* _contextGetter;
+
+  // Used to remember user exceptions to invalid certs.
+  scoped_refptr<web::CertificatePolicyCache> _certPolicyCache;
 }
 
 // Cert verification flags. Must be used on IO Thread.
@@ -78,10 +82,11 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 // Verifies the given |cert| for the given |host| using |net::CertVerifier| and
 // calls |completionHandler| on completion. This method can be called on any
 // thread. |completionHandler| cannot be null and will be called asynchronously
-// on IO thread.
+// on IO thread or synchronously on current thread if IO task can't start (in
+// this case |dispatched| argument will be NO).
 - (void)verifyCert:(const scoped_refptr<net::X509Certificate>&)cert
               forHost:(NSString*)host
-    completionHandler:(void (^)(net::CertVerifyResult, int))completionHandler;
+    completionHandler:(void (^)(net::CertVerifyResult, BOOL dispatched))handler;
 
 // Verifies the given |trust| using SecTrustRef API. |completionHandler| cannot
 // be null and will be either called asynchronously on Worker thread or
@@ -89,6 +94,14 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 // case |dispatched| argument will be NO).
 - (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
     completionHandler:(void (^)(SecTrustResultType, BOOL dispatched))handler;
+
+// Returns cert accept policy for the given SecTrust result. |trustResult| must
+// not be for a valid cert. Must be called on IO thread.
+- (web::CertAcceptPolicy)
+    loadPolicyForBadTrustResult:(SecTrustResultType)trustResult
+             certVerifierResult:(net::CertVerifyResult)certVerifierResult
+                    serverTrust:(SecTrustRef)trust
+                           host:(NSString*)host;
 
 @end
 
@@ -115,14 +128,17 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
   if (self) {
     _contextGetter = browserState->GetRequestContext();
     DCHECK(_contextGetter);
+    _certPolicyCache =
+        web::BrowserState::GetCertificatePolicyCache(browserState);
+
     [self createCertVerifier];
   }
   return self;
 }
 
-- (void)decidePolicyForCert:(const scoped_refptr<net::X509Certificate>&)cert
-                       host:(NSString*)host
-          completionHandler:(web::PolicyDecisionHandler)completionHandler {
+- (void)decideLoadPolicyForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                            host:(NSString*)host
+               completionHandler:(web::PolicyDecisionHandler)completionHandler {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   // completionHandler of |verifyCert:forHost:completionHandler:| is called on
   // IO thread and then bounces back to UI thread. As a result all objects
@@ -132,22 +148,55 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
   // released on background thread and |BlockHolder| ensures that.
   __block scoped_refptr<BlockHolder<web::PolicyDecisionHandler>> handlerHolder(
       new BlockHolder<web::PolicyDecisionHandler>(completionHandler));
-  [self verifyCert:cert
-                forHost:host
-      completionHandler:^(net::CertVerifyResult result, int error) {
-        web::CertAcceptPolicy policy =
-            web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
-        if (error == net::OK) {
-          policy = web::CERT_ACCEPT_POLICY_ALLOW;
-        } else if (net::IsCertStatusError(result.cert_status)) {
-          policy = net::IsCertStatusMinorError(result.cert_status)
-                       ? web::CERT_ACCEPT_POLICY_ALLOW
-                       : web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR;
+  [self verifyTrust:trust
+      completionHandler:^(SecTrustResultType trustResult, BOOL dispatched) {
+        if (!dispatched) {
+          // Cert verification task did not start.
+          dispatch_async(dispatch_get_main_queue(), ^{
+            handlerHolder->call(web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR,
+                                net::CertStatus());
+          });
+          return;
         }
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-          handlerHolder->call(policy, result.cert_status);
-        });
+        if (web::GetSecurityStyleFromTrustResult(trustResult) ==
+            web::SECURITY_STYLE_AUTHENTICATED) {
+          // SecTrust API considers this cert as valid.
+          dispatch_async(dispatch_get_main_queue(), ^{
+            handlerHolder->call(web::CERT_ACCEPT_POLICY_ALLOW,
+                                net::CertStatus());
+          });
+          return;
+        }
+
+        // SecTrust API considers this cert as invalid. Check the reason and
+        // whether or not user has decided to proceed with this bad cert.
+        scoped_refptr<net::X509Certificate> cert(
+            web::CreateCertFromTrust(trust));
+        [self verifyCert:cert
+                      forHost:host
+            completionHandler:^(net::CertVerifyResult certVerifierResult,
+                                BOOL dispatched) {
+              if (!dispatched) {
+                // Cert verification task did not start.
+                dispatch_async(dispatch_get_main_queue(), ^{
+                  handlerHolder->call(
+                      web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR,
+                      net::CertStatus());
+                });
+                return;
+              }
+
+              web::CertAcceptPolicy policy =
+                  [self loadPolicyForBadTrustResult:trustResult
+                                 certVerifierResult:certVerifierResult
+                                        serverTrust:trust.get()
+                                               host:host];
+
+              dispatch_async(dispatch_get_main_queue(), ^{
+                handlerHolder->call(policy, certVerifierResult.cert_status);
+              });
+            }];
       }];
 }
 
@@ -191,13 +240,34 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
             web::CreateCertFromTrust(trust));
         [self verifyCert:cert
                       forHost:host
-            completionHandler:^(net::CertVerifyResult certVerifierResult, int) {
+            completionHandler:^(net::CertVerifyResult certVerifierResult,
+                                BOOL) {
               dispatch_async(dispatch_get_main_queue(), ^{
                 handlerHolder->call(securityStyle,
                                     certVerifierResult.cert_status);
               });
             }];
       }];
+}
+
+- (void)allowCert:(scoped_refptr<net::X509Certificate>)cert
+          forHost:(NSString*)host
+           status:(net::CertStatus)status {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  // Store user decisions with the leaf cert, ignoring any intermediates.
+  // This is because WKWebView returns the verified certificate chain in
+  // |webView:didReceiveAuthenticationChallenge:completionHandler:|,
+  // but the server-supplied chain in
+  // |webView:didFailProvisionalNavigation:withError:|.
+  if (!cert->GetIntermediateCertificates().empty()) {
+    cert = net::X509Certificate::CreateFromHandle(
+        cert->os_cert_handle(), net::X509Certificate::OSCertHandles());
+  }
+  DCHECK(cert->GetIntermediateCertificates().empty());
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+    _certPolicyCache->AllowCertForHost(
+        cert.get(), base::SysNSStringToUTF8(host), status);
+  }));
 }
 
 - (void)shutDown {
@@ -235,10 +305,10 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
 
 - (void)verifyCert:(const scoped_refptr<net::X509Certificate>&)cert
               forHost:(NSString*)host
-    completionHandler:(void (^)(net::CertVerifyResult, int))completionHandler {
+    completionHandler:(void (^)(net::CertVerifyResult, BOOL))completionHandler {
   DCHECK(completionHandler);
   __block scoped_refptr<net::X509Certificate> blockCert = cert;
-  web::WebThread::PostTask(
+  bool dispatched = web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE, base::BindBlock(^{
         // WeakNSObject does not work across different threads, hence this block
         // retains self.
@@ -252,8 +322,14 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
         params.flags = self.certVerifyFlags;
         params.crl_set = net::SSLConfigService::GetCRLSet();
         // OCSP response is not provided by iOS API.
-        _certVerifier->Verify(params, completionHandler);
+        _certVerifier->Verify(params, ^(net::CertVerifyResult result, int) {
+          completionHandler(result, YES);
+        });
       }));
+
+  if (!dispatched) {
+    completionHandler(net::CertVerifyResult(), NO);
+  }
 }
 
 - (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
@@ -272,6 +348,36 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
   if (!dispatched) {
     completionHandler(kSecTrustResultInvalid, NO);
   }
+}
+
+- (web::CertAcceptPolicy)
+    loadPolicyForBadTrustResult:(SecTrustResultType)trustResult
+             certVerifierResult:(net::CertVerifyResult)certVerifierResult
+                    serverTrust:(SecTrustRef)trust
+                           host:(NSString*)host {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_NE(web::SECURITY_STYLE_AUTHENTICATED,
+            web::GetSecurityStyleFromTrustResult(trustResult));
+
+  if (trustResult != kSecTrustResultRecoverableTrustFailure ||
+      SecTrustGetCertificateCount(trust) == 0) {
+    // Trust result is not recoverable or leaf cert is missing.
+    return web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
+  }
+
+  // Check if user has decided to proceed with this bad cert.
+  scoped_refptr<net::X509Certificate> leafCert =
+      net::X509Certificate::CreateFromHandle(
+          SecTrustGetCertificateAtIndex(trust, 0),
+          net::X509Certificate::OSCertHandles());
+
+  web::CertPolicy::Judgment judgment = _certPolicyCache->QueryPolicy(
+      leafCert.get(), base::SysNSStringToUTF8(host),
+      certVerifierResult.cert_status);
+
+  return (judgment == web::CertPolicy::ALLOWED)
+             ? web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER
+             : web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
 }
 
 @end

@@ -11,10 +11,10 @@
 
 namespace web {
 
-// This key was determined by inspecting userInfo dict of an SSL error.
+// These keys were determined by inspecting userInfo dict of an SSL error.
 NSString* const kNSErrorPeerCertificateChainKey =
     @"NSErrorPeerCertificateChainKey";
-
+NSString* const kNSErrorFailingURLKey = @"NSErrorFailingURLKey";
 }
 
 namespace {

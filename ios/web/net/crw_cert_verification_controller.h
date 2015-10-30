@@ -22,17 +22,20 @@ class BrowserState;
 
 // Accept policy for valid or invalid SSL cert.
 typedef NS_ENUM(NSInteger, CertAcceptPolicy) {
-  // Cert status can't be determined due to an error. Caller should not proceed
-  // with the load, but show net error page instead.
+  // Cert status can't be determined due to an error. Caller should reject the
+  // load and show a net error page.
   CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR = 0,
-  // Cert is not valid. Caller may present SSL warning and ask user if they
-  // want to proceed with the load.
-  CERT_ACCEPT_POLICY_RECOVERABLE_ERROR,
-  // Cert is valid. Caller should proceed with the load.
+  // The cert is not valid. Caller may present an SSL warning and ask the user
+  // if they want to proceed or reject the load.
+  CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER,
+  // The cert is not valid. However, the caller should proceed with the load
+  // because the user has decided to proceed with this invalid cert.
+  CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER,
+  // The cert is valid. Caller should proceed with the load.
   CERT_ACCEPT_POLICY_ALLOW,
 };
 
-// Completion handler called by decidePolicyForCert:host:completionHandler:.
+// Completion handler called by decideLoadPolicyForTrust:host:completionHandler.
 typedef void (^PolicyDecisionHandler)(web::CertAcceptPolicy, net::CertStatus);
 // Completion handler called by querySSLStatusForTrust:host:completionHandler:.
 typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
@@ -51,27 +54,40 @@ typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
-// TODO(eugenebut): add API for:
-// - accepting bad SSL cert using CertPolicyCache
-
-// Decides the policy for the given |cert| for the given |host| and calls
-// |completionHandler| on completion. |host| should be in ASCII compatible form
-// (e.g. for "http://名がドメイン.com", it should be "xn--v8jxj3d1dzdz08w.com").
-// |completionHandler| cannot be null and will be called asynchronously on the
-// UI thread.
-- (void)decidePolicyForCert:(const scoped_refptr<net::X509Certificate>&)cert
-                       host:(NSString*)host
-          completionHandler:(web::PolicyDecisionHandler)completionHandler;
+// Decides the policy for the given |trust| and for the given |host| and calls
+// |completionHandler| on completion. |completionHandler| is guaranteed to be
+// called even if this object is deallocated. |host| should be in ASCII
+// compatible form (e.g. for "http://名がドメイン.com", it should be
+// "xn--v8jxj3d1dzdz08w.com"). |completionHandler| cannot be null and will be
+// called asynchronously on the UI thread.
+// Note: Certificate errors may be bypassed by calling
+// |allowCert:forHost:status:| with the host, certificate, and certificate
+// error to ignore.
+- (void)decideLoadPolicyForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
+                            host:(NSString*)host
+               completionHandler:(web::PolicyDecisionHandler)completionHandler;
 
 // Asynchronously provides web::SecurityStyle and net::CertStatus for the given
-// |serverTrust| and |host|. |host| should be in ASCII compatible form.
+// |trust| and |host|. |host| should be in ASCII compatible form.
+// |completionHandler| is guaranteed to be called even if this object is
+// deallocated.
 // Note: The web::SecurityStyle determines whether the certificate is trusted.
 // It is possible for an untrusted certificate to return a net::CertStatus with
 // no errors if the cause could not be determined. Callers must handle this case
 // gracefully.
-- (void)querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)serverTrust
+- (void)querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
                           host:(NSString*)host
              completionHandler:(web::StatusQueryHandler)completionHandler;
+
+// Records that |cert| is permitted to be used for |host| in future calls to
+// |decideLoadPolicyForTrust:host:completionHandler:|. |host| should be in an
+// ASCII-compatible form. Subsequent calls to
+// |decideLoadPolicyForTrust:host:completionHandler:| for the same
+// |cert|/|host| tuple and same |status| (or a subset of the given |status|)
+// will return CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER.
+- (void)allowCert:(scoped_refptr<net::X509Certificate>)cert
+          forHost:(NSString*)host
+           status:(net::CertStatus)status;
 
 // Cancels all pending verification requests. Completion handlers will not be
 // called after |shutDown| call. Must always be called before object's
