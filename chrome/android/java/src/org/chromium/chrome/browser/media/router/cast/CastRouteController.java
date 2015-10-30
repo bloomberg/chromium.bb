@@ -81,6 +81,9 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         @Override
         public void onMessageReceived(CastDevice castDevice, String namespace, String message) {
+            Log.d(TAG, "Received message from Cast device: namespace=\"" + namespace
+                       + "\" message=\"" + message + "\"");
+
             if (MEDIA_NAMESPACE.equals(namespace) || RECEIVER_NAMESPACE.equals(namespace)) {
                 mSession.onMessage("v2_message", message);
             } else {
@@ -339,7 +342,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             jsonMessage.put("message", message);
             onMessage("app_message", jsonMessage.toString());
         } catch (JSONException e) {
-            Log.d(TAG, "Failed to create the message wrapper", e);
+            Log.e(TAG, "Failed to create the message wrapper", e);
         }
     }
 
@@ -386,7 +389,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             } else if ("app_message".equals(messageType)) {
                 success = handleAppMessage(message, jsonMessage);
             } else {
-                Log.d(TAG, "Unsupported message: %s", message);
+                Log.e(TAG, "Unsupported message: %s", message);
                 return false;
             }
         } catch (JSONException e) {
@@ -424,6 +427,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private boolean handleCastV2Message(JSONObject jsonMessage)
             throws JSONException {
         assert "v2_message".equals(jsonMessage.getString("type"));
+
+        Log.d(TAG, "Received message from client: " + jsonMessage);
 
         String clientId = jsonMessage.getString("clientId");
         if (!mClients.contains(clientId)) return false;
@@ -517,6 +522,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         // See: https://crbug.com/548822
         if (!message.has("requestId")) message.put("requestId", 0);
 
+        Log.d(TAG, "Sending message to Cast device: " + message);
+
         try {
             Cast.CastApi.sendMessage(mApiClient, namespace, message.toString())
                     .setResultCallback(
@@ -583,6 +590,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             Log.e(TAG, "Failed to build the reply: " + e);
         }
 
+        Log.d(TAG, "Sending message to client: " + json);
+
         return json.toString();
     }
 
@@ -598,7 +607,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                         "update_session", buildSessionMessage(), clientId, -1));
             }
         } catch (IllegalStateException e) {
-            Log.d(TAG, "Can't get application status", e);
+            Log.e(TAG, "Can't get application status", e);
         }
     }
 
