@@ -2803,18 +2803,18 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="DocumentActivity_OptOutShownOnHome">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>User was presented with the opt out promo.</description>
 </action>
 
 <action name="DocumentActivity_UserOptIn">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>User opted in to document mode through settings.</description>
 </action>
 
 <action name="DocumentActivity_UserOptOut">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>User opted out of document mode through settings.</description>
 </action>
 
 <action name="DomDistiller_DistilledPageOpened">
@@ -11813,23 +11813,32 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Stars_SignInPromoActivity_Launched">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>kkimlabs@google.com</owner>
+  <description>
+    User launches Signin activity from the promo header shown in Android Stars
+    UI.
+  </description>
 </action>
 
 <action name="Stars_SignInPromoActivity_NewAccount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>kkimlabs@google.com</owner>
+  <description>
+    User attempts to create a new account on Android Stars signin activity.
+  </description>
 </action>
 
 <action name="Stars_SignInPromoActivity_SignedIn">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>kkimlabs@google.com</owner>
+  <description>
+    User confirms an account to sign in on Android Stars signin activity.
+  </description>
 </action>
 
 <action name="Stars_SignInPromoHeader_Dismissed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>kkimlabs@google.com</owner>
+  <description>
+    User dismisses the promo header shown in Android Stars UI
+  </description>
 </action>
 
 <action name="Stars_SignInPromoHeader_Displayed">
