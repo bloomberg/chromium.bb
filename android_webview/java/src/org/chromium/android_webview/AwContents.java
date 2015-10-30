@@ -1035,6 +1035,9 @@ public class AwContents implements SmartClipProvider,
         }
 
         setNewAwContents(popupNativeAwContents);
+        // We defer loading any URL on the popup until it has been properly intialized (through
+        // setNewAwContents). We resume the load here.
+        nativeResumeLoadingCreatedPopupWebContents(mNativeAwContents);
 
         // Finally refresh all view state for mContentViewCore and mNativeAwContents.
         if (!wasPaused) onResume();
@@ -3235,4 +3238,5 @@ public class AwContents implements SmartClipProvider,
     private native void nativeCreateMessageChannel(long nativeAwContents, AwMessagePort[] ports);
 
     private native void nativeGrantFileSchemeAccesstoChildProcess(long nativeAwContents);
+    private native void nativeResumeLoadingCreatedPopupWebContents(long nativeAwContents);
 }

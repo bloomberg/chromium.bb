@@ -218,6 +218,13 @@ void AwWebContentsDelegate::LoadingStateChanged(WebContents* source,
   }
 }
 
+bool AwWebContentsDelegate::ShouldResumeRequestsForCreatedWindow() {
+  // Always return false here since we need to defer loading the created window
+  // until after we have attached a new delegate to the new webcontents (which
+  // happens asynchronously).
+  return false;
+}
+
 void AwWebContentsDelegate::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,

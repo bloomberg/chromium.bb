@@ -244,6 +244,8 @@ class AwContents : public FindHelper::Listener,
 
   void GrantFileSchemeAccesstoChildProcess(JNIEnv* env, jobject obj);
 
+  void ResumeLoadingCreatedPopupWebContents(JNIEnv* env, jobject obj);
+
  private:
   void InitAutofillIfNecessary(bool enabled);
 
