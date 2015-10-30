@@ -184,8 +184,9 @@ void DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
 
 void DocumentLoader::didChangePerformanceTiming()
 {
-    if (frameLoader())
+    if (frame() && frame()->isMainFrame() && m_state >= Committed) {
         frameLoader()->client()->didChangePerformanceTiming();
+    }
 }
 
 void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource)
