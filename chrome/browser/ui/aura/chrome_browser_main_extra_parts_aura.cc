@@ -46,11 +46,12 @@ namespace {
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
   if (!window)
-    return NULL;
+    return nullptr;
 
-  Profile* profile = NULL;
+  Profile* profile = nullptr;
   if (window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-      window->type() == ui::wm::WINDOW_TYPE_POPUP) {
+      window->type() == ui::wm::WINDOW_TYPE_POPUP ||
+      window->type() == ui::wm::WINDOW_TYPE_CONTROL) {
     profile = reinterpret_cast<Profile*>(
         window->GetNativeWindowProperty(Profile::kProfileKey));
   }
@@ -58,7 +59,7 @@ ui::NativeTheme* GetNativeThemeForWindow(aura::Window* window) {
   if (profile && !profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme))
     return ui::NativeThemeAura::instance();
 
-  return NULL;
+  return nullptr;
 }
 #endif
 
@@ -123,9 +124,11 @@ void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 void ChromeBrowserMainExtraPartsAura::PreCreateThreads() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
-  if (!chrome::ShouldOpenAshOnStartup())
+  bool should_open_ash = chrome::ShouldOpenAshOnStartup();
+#else
+  bool should_open_ash = false;
 #endif
-  {
+  if (!should_open_ash) {
     gfx::Screen* screen = views::CreateDesktopScreen();
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
 #if defined(USE_X11)
