@@ -610,11 +610,13 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   Policy new_policy;
-  bool block_expensive_tasks = false;
+  bool block_expensive_loading_tasks = false;
+  bool block_expensive_timer_tasks = false;
   switch (use_case) {
     case UseCase::COMPOSITOR_GESTURE:
       if (touchstart_expected_soon) {
-        block_expensive_tasks = true;
+        block_expensive_loading_tasks = true;
+        block_expensive_timer_tasks = true;
       } else {
         // What we really want to do is priorize loading tasks, but that doesn't
         // seem to be safe. Instead we do that by proxy by deprioritizing
@@ -625,20 +627,29 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     case UseCase::MAIN_THREAD_GESTURE:
+      // In main thread gestures we don't have perfect knowledge about which
+      // things we should be prioritizing. The following is best guess
+      // heuristic which lets us produce frames quickly but does not prevent
+      // loading of additional content.
       new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
-      block_expensive_tasks = true;
+      block_expensive_loading_tasks = false;
+      block_expensive_timer_tasks = true;
       break;
 
     case UseCase::TOUCHSTART:
       new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
       new_policy.loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
       new_policy.timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
-      block_expensive_tasks = true;  // NOTE this is a nop due to the above.
+      // NOTE these are nops due to the above.
+      block_expensive_loading_tasks = true;
+      block_expensive_timer_tasks = true;
       break;
 
     case UseCase::NONE:
-      if (touchstart_expected_soon)
-        block_expensive_tasks = true;
+      if (touchstart_expected_soon) {
+        block_expensive_loading_tasks = true;
+        block_expensive_timer_tasks = true;
+      }
       break;
 
     case UseCase::LOADING:
@@ -651,17 +662,21 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   // Don't block expensive tasks unless we have actually seen something.
-  if (!MainThreadOnly().have_seen_a_begin_main_frame)
-    block_expensive_tasks = false;
+  if (!MainThreadOnly().have_seen_a_begin_main_frame) {
+    block_expensive_loading_tasks = false;
+    block_expensive_timer_tasks = false;
+  }
 
   // Don't block expensive tasks if we are expecting a navigation.
-  if (MainThreadOnly().navigation_task_expected_count > 0)
-    block_expensive_tasks = false;
+  if (MainThreadOnly().navigation_task_expected_count > 0) {
+    block_expensive_loading_tasks = false;
+    block_expensive_timer_tasks = false;
+  }
 
-  if (block_expensive_tasks && loading_tasks_seem_expensive)
+  if (block_expensive_loading_tasks && loading_tasks_seem_expensive)
     new_policy.loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
 
-  if ((block_expensive_tasks && timer_tasks_seem_expensive) ||
+  if ((block_expensive_timer_tasks && timer_tasks_seem_expensive) ||
       MainThreadOnly().timer_queue_suspend_count != 0 ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
     new_policy.timer_queue_priority = TaskQueue::DISABLED_PRIORITY;

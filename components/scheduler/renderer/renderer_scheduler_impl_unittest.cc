@@ -2150,6 +2150,27 @@ TEST_F(
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
 }
 
+TEST_F(RendererSchedulerImplTest,
+       ExpensiveLoadingTasksNotBlockedDuringMainThreadGestures) {
+  std::vector<std::string> run_order;
+
+  SimulateExpensiveTasks(loading_task_runner_);
+
+  // Loading tasks should not be disabled during main thread user user
+  // interactions.
+  PostTestTasks(&run_order, "C1 L1");
+
+  // Trigger main_thread_gesture UseCase
+  WillBeginMainThreadGestureFrame();
+  RunUntilIdle();
+  EXPECT_EQ(RendererScheduler::UseCase::MAIN_THREAD_GESTURE, CurrentUseCase());
+
+  EXPECT_TRUE(LoadingTasksSeemExpensive());
+  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("L1")));
+}
+
 TEST_F(RendererSchedulerImplTest, ModeratelyExpensiveTimer_NotBlocked) {
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   for (int i = 0; i < 20; i++) {
