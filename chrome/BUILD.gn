@@ -969,6 +969,7 @@ if (is_android) {
       "//chrome/browser",
       "//chrome/browser/ui",
       "//chrome/child",
+      "//chrome/common",
       "//chrome/plugin",
       "//chrome/renderer",
       "//chrome/utility",
