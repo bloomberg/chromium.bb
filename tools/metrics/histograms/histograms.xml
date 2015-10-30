@@ -53714,6 +53714,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="Trace finalization disallowed"/>
   <int value="7" label="Trace finalization started"/>
   <int value="8" label="Trace finalization complete"/>
+  <int value="9" label="Scenario activation failed due to lowres clock"/>
 </enum>
 
 <enum name="BackingStoreResults" type="int">

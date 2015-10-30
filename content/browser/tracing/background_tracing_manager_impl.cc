@@ -39,6 +39,7 @@ enum BackgroundTracingMetrics {
   FINALIZATION_DISALLOWED = 6,
   FINALIZATION_STARTED = 7,
   FINALIZATION_COMPLETE = 8,
+  SCENARIO_ACTION_FAILED_LOWRES_CLOCK = 9,
   NUMBER_OF_BACKGROUND_TRACING_METRICS,
 };
 
@@ -133,6 +134,13 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 
   if (is_tracing_)
     return false;
+
+  // If we don't have a high resolution timer available, traces will be
+  // too inaccurate to be useful.
+  if (!base::TimeTicks::IsHighResolution()) {
+    RecordBackgroundTracingMetric(SCENARIO_ACTION_FAILED_LOWRES_CLOCK);
+    return false;
+  }
 
   bool requires_anonymized_data = (data_filtering == ANONYMIZE_DATA);
 
