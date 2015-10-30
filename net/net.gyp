@@ -1523,15 +1523,15 @@
               'dependencies': [
                 '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
               ],
-              'copies': [
-                {
-                'destination': '<(asset_location)',
-                  'files': [
-                    '<(PRODUCT_DIR)/natives_blob.bin',
-                    '<(PRODUCT_DIR)/snapshot_blob.bin',
-                  ],
-                },
-              ],
+              'variables': {
+                'dest_path': '<(asset_location)',
+                'src_files': [
+                  '<(PRODUCT_DIR)/natives_blob.bin',
+                  '<(PRODUCT_DIR)/snapshot_blob.bin',
+                ],
+                'clear': 1,
+              },
+              'includes': ['../build/android/copy_ex.gypi'],
             }],
           ],
           'variables': {

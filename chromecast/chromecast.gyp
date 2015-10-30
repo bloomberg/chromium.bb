@@ -538,6 +538,9 @@
   # Targets for Android receiver.
   'conditions': [
     ['OS=="android"', {
+      'variables': {
+         'cast_shell_assets_path': '<(PRODUCT_DIR)/assets/cast_shell_apk',
+      },
       'targets': [
         {
           'target_name': 'cast_shell_icudata',
@@ -546,14 +549,17 @@
             '../third_party/icu/icu.gyp:icudata',
             '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
           ],
-          'copies': [{
-            'destination': '<(PRODUCT_DIR)/assets',
-            'files': [
+          'variables': {
+            'dest_path': '<(cast_shell_assets_path)',
+            'src_files': [
               '<(PRODUCT_DIR)/icudtl.dat',
+              '<(PRODUCT_DIR)/assets/cast_shell.pak',
               '<(PRODUCT_DIR)/natives_blob.bin',
               '<(PRODUCT_DIR)/snapshot_blob.bin',
             ],
-          }],
+            'clear': 1,
+          },
+          'includes': ['../build/android/copy_ex.gypi'],
         },
         {
           'target_name': 'libcast_shell_android',
@@ -655,8 +661,13 @@
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/cast_shell_manifest/AndroidManifest.xml',
             'package_name': 'org.chromium.chromecast.shell',
             'native_lib_target': 'libcast_shell_android',
-            'asset_location': '<(PRODUCT_DIR)/assets',
-            'additional_input_paths': ['<(PRODUCT_DIR)/assets/cast_shell.pak'],
+            'asset_location': '<(cast_shell_assets_path)',
+            'additional_input_paths': [
+               '<(asset_location)/cast_shell.pak',
+               '<(asset_location)/icudtl.dat',
+               '<(asset_location)/natives_blob.bin',
+               '<(asset_location)/snapshot_blob.bin',
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

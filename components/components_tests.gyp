@@ -1479,14 +1479,14 @@
           'dependencies': [
             'components_browsertests',
           ],
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets',
-              'files': [
-                '<@(components_browsertests_pak_input_resources)',
-              ],
-            }
-          ],
+          'variables': {
+            'dest_path': '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets',
+            'src_files': [
+              '<@(components_browsertests_pak_input_resources)',
+            ],
+            'clear': 1,
+          },
+          'includes': ['../build/android/copy_ex.gypi'],
         },
         {
           'target_name': 'components_browsertests_manifest',
@@ -1519,13 +1519,13 @@
             'conditions': [
               ['icu_use_data_file_flag==1', {
                 'additional_input_paths': [
-                  '<(PRODUCT_DIR)/icudtl.dat',
+                  '<(asset_location)/icudtl.dat',
                 ],
               }],
               ['v8_use_external_startup_data==1', {
                 'additional_input_paths': [
-                  '<(PRODUCT_DIR)/natives_blob.bin',
-                  '<(PRODUCT_DIR)/snapshot_blob.bin',
+                  '<(asset_location)/natives_blob.bin',
+                  '<(asset_location)/snapshot_blob.bin',
                 ],
               }],
             ],
