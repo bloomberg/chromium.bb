@@ -24,9 +24,13 @@ class ObjectPaintProperties {
     WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
     USING_FAST_MALLOC(ObjectPaintProperties);
 public:
-    static PassOwnPtr<ObjectPaintProperties> create()
+    static PassOwnPtr<ObjectPaintProperties> create(
+        PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
+        PassRefPtr<TransformPaintPropertyNode> transform,
+        PassRefPtr<TransformPaintPropertyNode> perspective,
+        PassRefPtr<TransformPaintPropertyNode> scrollTranslation)
     {
-        return adoptPtr(new ObjectPaintProperties());
+        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, perspective, scrollTranslation));
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -35,20 +39,21 @@ public:
     // +---[ transform ]                    The space created by CSS transform.
     //     +---[ perspective ]              The space created by CSS perspective.
     //         +---[ scrollTranslation ]    The space created by overflow clip.
-    void setPaintOffsetTranslation(PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation) { m_paintOffsetTranslation = paintOffsetTranslation; }
     const TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
-
-    void setTransform(PassRefPtr<TransformPaintPropertyNode> transform) { m_transform = transform; }
     const TransformPaintPropertyNode* transform() const { return m_transform.get(); }
-
-    void setPerspective(PassRefPtr<TransformPaintPropertyNode> perspective) { m_perspective = perspective; }
     const TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
-
-    void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> scrollTranslation) { m_scrollTranslation = scrollTranslation; }
     const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
 private:
-    ObjectPaintProperties() { }
+    ObjectPaintProperties(
+        PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
+        PassRefPtr<TransformPaintPropertyNode> transform,
+        PassRefPtr<TransformPaintPropertyNode> perspective,
+        PassRefPtr<TransformPaintPropertyNode> scrollTranslation)
+        : m_paintOffsetTranslation(paintOffsetTranslation)
+        , m_transform(transform)
+        , m_perspective(perspective)
+        , m_scrollTranslation(scrollTranslation) { }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;

@@ -383,7 +383,7 @@ public:
     // The property nodes are only updated during InUpdatePaintProperties phase
     // of the document lifecycle and shall remain immutable during other phases.
     ObjectPaintProperties* objectPaintProperties() const;
-    ObjectPaintProperties& ensureObjectPaintProperties();
+    void setObjectPaintProperties(PassOwnPtr<ObjectPaintProperties>);
     void clearObjectPaintProperties();
 
 private:

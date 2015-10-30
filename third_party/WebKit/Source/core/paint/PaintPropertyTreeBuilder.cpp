@@ -214,11 +214,12 @@ void PaintPropertyTreeBuilder::walk(LayoutBoxModelObject& object, const PaintPro
     updateOutOfFlowContext(object, localContext);
 
     if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newTransformNodeForPerspective || newTransformNodeForScrollTranslation) {
-        ObjectPaintProperties& properties = object.ensureObjectPaintProperties();
-        properties.setPaintOffsetTranslation(newTransformNodeForPaintOffsetTranslation.release());
-        properties.setTransform(newTransformNodeForTransform.release());
-        properties.setPerspective(newTransformNodeForPerspective.release());
-        properties.setScrollTranslation(newTransformNodeForScrollTranslation.release());
+        OwnPtr<ObjectPaintProperties> updatedPaintProperties = ObjectPaintProperties::create(
+            newTransformNodeForPaintOffsetTranslation.release(),
+            newTransformNodeForTransform.release(),
+            newTransformNodeForPerspective.release(),
+            newTransformNodeForScrollTranslation.release());
+        object.setObjectPaintProperties(updatedPaintProperties.release());
     } else {
         object.clearObjectPaintProperties();
     }
