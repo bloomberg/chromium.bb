@@ -123,4 +123,11 @@ std::vector<SkBitmap> ImageDataToSkBitmaps(NSData* image_data) {
   return frames;
 }
 
+UIColor* UIColorFromSkColor(SkColor color) {
+  return [UIColor colorWithRed:SkColorGetR(color) / 255.0f
+                         green:SkColorGetG(color) / 255.0f
+                          blue:SkColorGetB(color) / 255.0f
+                         alpha:SkColorGetA(color) / 255.0f];
+}
+
 }  // namespace gfx

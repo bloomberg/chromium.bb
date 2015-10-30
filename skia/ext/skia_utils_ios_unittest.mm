@@ -749,5 +749,16 @@ TEST_F(SkiaUtilsIosTest, Image88x88OrLarger) {
     EXPECT_EQ(1UL, bitmaps.size());
 }
 
+TEST_F(SkiaUtilsIosTest, UIColorFromSkColor) {
+  SkColor color = SkColorSetARGB(50, 100, 150, 200);
+  UIColor* ios_color = gfx::UIColorFromSkColor(color);
+  CGFloat red, green, blue, alpha;
+  [ios_color getRed:&red green:&green blue:&blue alpha:&alpha];
+  EXPECT_EQ(50, static_cast<int>(alpha * 255 + 0.5f));
+  EXPECT_EQ(100, static_cast<int>(red * 255 + 0.5f));
+  EXPECT_EQ(150, static_cast<int>(green * 255 + 0.5f));
+  EXPECT_EQ(200, static_cast<int>(blue * 255 + 0.5f));
+}
+
 }  // namespace
 

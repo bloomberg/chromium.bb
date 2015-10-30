@@ -9,11 +9,14 @@
 #include <vector>
 
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 #ifdef __OBJC__
+@class UIColor;
 @class UIImage;
 @class NSData;
 #else
+class UIColor;
 class UIImage;
 class NSData;
 #endif
@@ -34,6 +37,9 @@ SK_API UIImage* SkBitmapToUIImageWithColorSpace(const SkBitmap& skia_bitmap,
 // Returns a vector of all the successfully decoded representations or an empty
 // vector if none can be decoded.
 SK_API std::vector<SkBitmap> ImageDataToSkBitmaps(NSData* image_data);
+
+// Returns a UIColor for an SKColor. Used by iOS downstream.
+SK_API UIColor* UIColorFromSkColor(SkColor color);
 
 }  // namespace gfx
 
