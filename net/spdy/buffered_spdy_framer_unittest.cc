@@ -88,6 +88,16 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     LOG(FATAL) << "Unexpected OnStreamPadding call.";
   }
 
+  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+      SpdyStreamId stream_id) override {
+    LOG(FATAL) << "Unexpected OnHeaderFrameStart call.";
+    return nullptr;
+  }
+
+  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
+    LOG(FATAL) << "Unexpected OnHeaderFrameEnd call.";
+  }
+
   void OnSettings(bool clear_persisted) override {}
 
   void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {

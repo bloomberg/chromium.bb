@@ -99,6 +99,16 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
 
+    SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+        SpdyStreamId stream_id) override {
+      LOG(FATAL);
+      return nullptr;
+    }
+
+    void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
+      LOG(FATAL);
+    }
+
     bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                   const char* header_data,
                                   size_t len) override {
@@ -317,6 +327,16 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     EXPECT_EQ(header_stream_id_, stream_id);
     data_bytes_ += len;
     LOG(INFO) << "OnStreamPadding(" << stream_id << ", " << len << ")\n";
+  }
+
+  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+      SpdyStreamId stream_id) override {
+    LOG(FATAL);
+    return nullptr;
+  }
+
+  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
+    LOG(FATAL);
   }
 
   bool OnControlFrameHeaderData(SpdyStreamId stream_id,

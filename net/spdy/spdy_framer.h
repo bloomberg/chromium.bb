@@ -125,6 +125,20 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // |len| The number of padding octets.
   virtual void OnStreamPadding(SpdyStreamId stream_id, size_t len) = 0;
 
+  // Called just before processing the payload of a frame containing header
+  // data. Should return an implementation of SpdyHeadersHandlerInterface that
+  // will receive headers for stream |stream_id|. The caller will not take
+  // ownership of the headers handler. The same instance should be returned
+  // for all header frames comprising a logical header block (i.e. until
+  // OnHeaderFrameEnd() is called with end_headers == true).
+  virtual SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+      SpdyStreamId stream_id) = 0;
+
+  // Called after processing the payload of a frame containing header data.
+  // |end_headers| is true if there will not be any subsequent CONTINUATION
+  // frames.
+  virtual void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) = 0;
+
   // Called when a chunk of header data is available. This is called
   // after OnSynStream, OnSynReply, OnHeaders(), or OnPushPromise.
   // |stream_id| The stream receiving the header data.

@@ -77,6 +77,20 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   // |len| The number of padding octets.
   virtual void OnStreamPadding(SpdyStreamId stream_id, size_t len) = 0;
 
+  // Called just before processing the payload of a frame containing header
+  // data. Should return an implementation of SpdyHeadersHandlerInterface that
+  // will receive headers for stream |stream_id|. The caller will not take
+  // ownership of the headers handler. The same instance should be returned
+  // for all header frames comprising a logical header block (i.e. until
+  // OnHeaderFrameEnd() is called with end_headers == true).
+  virtual SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+      SpdyStreamId stream_id) = 0;
+
+  // Called after processing the payload of a frame containing header data.
+  // |end_headers| is true if there will not be any subsequent CONTINUATION
+  // frames.
+  virtual void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) = 0;
+
   // Called when a SETTINGS frame is received.
   // |clear_persisted| True if the respective flag is set on the SETTINGS frame.
   virtual void OnSettings(bool clear_persisted) = 0;
@@ -166,6 +180,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                          size_t len,
                          bool fin) override;
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
+  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+      SpdyStreamId stream_id) override;
+  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override;
   void OnSettings(bool clear_persisted) override;
   void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override;
   void OnSettingsAck() override;
