@@ -98,6 +98,19 @@ class Summer {
   DISALLOW_COPY_AND_ASSIGN(Summer);
 };
 
+class Counter {
+ public:
+  Counter() : value_(0) {}
+
+  void Increment() { value_++; }
+
+  int value() const { return value_; }
+
+ private:
+  int value_;
+  DISALLOW_COPY_AND_ASSIGN(Counter);
+};
+
 // Sanity check that we can instantiate a CallbackList for each arity.
 TEST(CallbackListTest, ArityTest) {
   Summer s;
@@ -285,6 +298,38 @@ TEST(CallbackListTest, EmptyList) {
   CallbackList<void(void)> cb_reg;
 
   cb_reg.Notify();
+}
+
+TEST(CallbackList, RemovalCallback) {
+  Counter remove_count;
+  CallbackList<void(void)> cb_reg;
+  cb_reg.set_removal_callback(
+      Bind(&Counter::Increment, Unretained(&remove_count)));
+
+  scoped_ptr<CallbackList<void(void)>::Subscription> subscription =
+      cb_reg.Add(Bind(&DoNothing));
+
+  // Removing a subscription outside of iteration signals the callback.
+  EXPECT_EQ(0, remove_count.value());
+  subscription.reset();
+  EXPECT_EQ(1, remove_count.value());
+
+  // Configure two subscriptions to remove themselves.
+  Remover remover_1, remover_2;
+  scoped_ptr<CallbackList<void(void)>::Subscription> remover_1_sub =
+      cb_reg.Add(Bind(&Remover::IncrementTotalAndRemove,
+          Unretained(&remover_1)));
+  scoped_ptr<CallbackList<void(void)>::Subscription> remover_2_sub =
+      cb_reg.Add(Bind(&Remover::IncrementTotalAndRemove,
+          Unretained(&remover_2)));
+  remover_1.SetSubscriptionToRemove(remover_1_sub.Pass());
+  remover_2.SetSubscriptionToRemove(remover_2_sub.Pass());
+
+  // The callback should be signaled exactly once.
+  EXPECT_EQ(1, remove_count.value());
+  cb_reg.Notify();
+  EXPECT_EQ(2, remove_count.value());
+  EXPECT_TRUE(cb_reg.empty());
 }
 
 }  // namespace

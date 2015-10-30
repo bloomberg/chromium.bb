@@ -185,10 +185,10 @@ class CallbackListBase {
       } else {
         ++it;
       }
-
-      if (updated && !removal_callback_.is_null())
-        removal_callback_.Run();
     }
+
+    if (updated && !removal_callback_.is_null())
+      removal_callback_.Run();
   }
 
  private:
