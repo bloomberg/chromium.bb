@@ -28,7 +28,12 @@ namespace {
 
 const int kTooltipTimeoutMs = 500;
 const int kDefaultTooltipShownTimeoutMs = 10000;
+#if defined(OS_WIN)
+// Drawing a long word in tooltip is very slow on Windows. crbug.com/513693
+const size_t kMaxTooltipLength = 1024;
+#else
 const size_t kMaxTooltipLength = 2048;
+#endif
 
 // Returns true if |target| is a valid window to get the tooltip from.
 // |event_target| is the original target from the event and |target| the window
