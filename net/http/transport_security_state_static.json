@@ -3855,7 +3855,6 @@
     { "name": "my.swedbank.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "internetbank.swedbank.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "demo.swedbank.se", "include_subdomains": true, "mode": "force-https" },
-    { "name": "internetbank.swedbank.se ", "include_subdomains": true, "mode": "force-https" },
     { "name": "lana.swedbank.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "online.swedbank.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "33-km.ru", "include_subdomains": true, "mode": "force-https" },
@@ -4060,7 +4059,10 @@
     { "name": "andreas-kluge.eu", "include_subdomains": true, "mode": "force-https" },
     { "name": "andreaskluge.eu", "include_subdomains": true, "mode": "force-https" },
     { "name": "fastaim.de", "include_subdomains": true, "mode": "force-https" },
-    { "name": "matrip.de", "include_subdomains": true, "mode": "force-https" }
+    { "name": "matrip.de", "include_subdomains": true, "mode": "force-https" },
+    { "name": "reporturi.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "reporturi.io", "include_subdomains": true, "mode": "force-https" },
+    { "name": "report-uri.com", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
