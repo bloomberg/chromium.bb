@@ -2672,19 +2672,10 @@ void PaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
 
 void PaintLayer::setNeedsRepaint()
 {
-    PaintLayer* layer = this;
-    while (layer && !layer->isSelfPaintingLayer() && !layer->hasSelfPaintingLayerDescendant())
-        layer = layer->parent();
-
-    // This layer is in an orphaned layer tree. Will mark ancestor for repaint when
-    // the orphaned tree is added into another tree.
-    if (!layer)
-        return;
-
-    layer->m_needsRepaint = true;
+    m_needsRepaint = true;
 
     // Do this unconditionally to ensure container chain is marked when compositing status of the layer changes.
-    layer->markAncestorChainForNeedsRepaint();
+    markAncestorChainForNeedsRepaint();
 }
 
 void PaintLayer::markAncestorChainForNeedsRepaint()
@@ -2708,11 +2699,9 @@ void PaintLayer::markAncestorChainForNeedsRepaint()
                 break;
             container = owner->enclosingLayer();
         }
-        if (container->isSelfPaintingLayer() || container->hasSelfPaintingLayerDescendant()) {
-            if (container->m_needsRepaint)
-                break;
-            container->m_needsRepaint = true;
-        }
+        if (container->m_needsRepaint)
+            break;
+        container->m_needsRepaint = true;
         layer = container;
     }
 }

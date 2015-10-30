@@ -72,10 +72,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext* co
 
     // Non self-painting layers without self-painting descendants don't need to be painted as their
     // layoutObject() should properly paint itself.
-    if (!m_paintLayer.isSelfPaintingLayer() && !m_paintLayer.hasSelfPaintingLayerDescendant()) {
-        ASSERT(!m_paintLayer.needsRepaint() || !RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    if (!m_paintLayer.isSelfPaintingLayer() && !m_paintLayer.hasSelfPaintingLayerDescendant())
         return FullyPainted;
-    }
 
     if (shouldSuppressPaintingLayer(&m_paintLayer))
         return FullyPainted;
@@ -479,9 +477,10 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childre
 
     Optional<SubsequenceRecorder> subsequenceRecorder;
     if (!paintingInfo.disableSubsequenceCache
+        && !context->printing()
+        && m_paintLayer.isSelfPaintingLayer()
         && !(paintingInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
-        && !(paintFlags & PaintLayerPaintingReflection)
-        && !(paintFlags & PaintLayerPaintingRootBackgroundOnly)) {
+        && !(paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars))) {
         if (!m_paintLayer.needsRepaint()
             && paintingInfo.scrollOffsetAccumulation == m_paintLayer.previousScrollOffsetAccumulationForPainting()
             && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer, subsequenceType))
