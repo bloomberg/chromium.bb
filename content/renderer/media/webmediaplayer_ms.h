@@ -134,7 +134,11 @@ class WebMediaPlayerMS
 
   bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
-      const CopyVideoTextureParams& params) override;
+      unsigned int texture,
+      unsigned int internal_format,
+      unsigned int type,
+      bool premultiply_alpha,
+      bool flip_y) override;
 
  private:
   // The callback for VideoFrameProvider to signal a new frame is available.

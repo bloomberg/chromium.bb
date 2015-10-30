@@ -122,9 +122,7 @@ public:
     // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
     // Extensions3D::canUseCopyTextureCHROMIUM().
     // Destroys the TEXTURE_2D binding for the active texture unit of the passed context
-    bool copyToPlatformTexture(WebGraphicsContext3D*, GLenum, Platform3DObject, GLenum, GLenum, GLint, bool, bool);
-    bool copySubToPlatformTexture(WebGraphicsContext3D*, GLenum, Platform3DObject, GLint, GLint xoffset,
-        GLint yoffset, GLsizei width, GLsizei height, bool, bool);
+    bool copyToPlatformTexture(WebGraphicsContext3D*, Platform3DObject, GLenum, GLenum, GLint, bool, bool);
 
     bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*, SourceDrawingBuffer);
 
@@ -150,10 +148,6 @@ private:
         DrawnToAfterSnapshot,
     };
     mutable SnapshotState m_snapshotState;
-
-    bool copyToPlatformTextureInternal(bool isFullCopy, WebGraphicsContext3D*, GLenum, Platform3DObject, GLenum, GLenum,
-        GLint, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, bool, bool);
-
     OwnPtr<ImageBufferSurface> m_surface;
     ImageBufferClient* m_client;
 };

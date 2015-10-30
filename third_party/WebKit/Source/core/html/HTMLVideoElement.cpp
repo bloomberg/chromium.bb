@@ -206,16 +206,13 @@ void HTMLVideoElement::paintCurrentFrame(SkCanvas* canvas, const IntRect& destRe
     webMediaPlayer()->paint(canvas, destRect, paint ? paint->getAlpha() : 0xFF, mode);
 }
 
-bool HTMLVideoElement::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, const WebMediaPlayer::CopyVideoTextureParams& params)
+bool HTMLVideoElement::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY)
 {
     if (!webMediaPlayer())
         return false;
 
-    ASSERT(Extensions3DUtil::canUseCopyTextureCHROMIUM(params.target,
-        params.copyType == WebMediaPlayer::CopyVideoTextureParams::SubCopy ? GL_RGBA : params.internalFormat,
-        params.copyType == WebMediaPlayer::CopyVideoTextureParams::SubCopy ? GL_UNSIGNED_BYTE : params.type,
-        params.level));
-    return webMediaPlayer()->copyVideoTextureToPlatformTexture(context, params);
+    ASSERT(Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, type, 0));
+    return webMediaPlayer()->copyVideoTextureToPlatformTexture(context, texture, internalFormat, type, premultiplyAlpha, flipY);
 }
 
 bool HTMLVideoElement::hasAvailableVideoFrame() const

@@ -178,25 +178,9 @@ WebLayer* ImageBuffer::platformLayer() const
     return m_surface->layer();
 }
 
-bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, GLenum target, Platform3DObject texture,
-    GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
-    return copyToPlatformTextureInternal(true, context, target, texture, internalFormat,
-        destType, level, 0, 0, 0, 0, premultiplyAlpha, flipY);
-}
-
-bool ImageBuffer::copySubToPlatformTexture(WebGraphicsContext3D* context, GLenum target, Platform3DObject texture,
-    GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, bool premultiplyAlpha, bool flipY)
-{
-    return copyToPlatformTextureInternal(false, context, target, texture, GL_FALSE, GL_FALSE, level,
-        xoffset, yoffset, width, height, premultiplyAlpha, flipY);
-}
-
-bool ImageBuffer::copyToPlatformTextureInternal(bool isFullCopy, WebGraphicsContext3D* context, GLenum target,
-    Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, GLint xoffset, GLint yoffset,
-    GLsizei width, GLsizei height, bool premultiplyAlpha, bool flipY)
-{
-    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalFormat, destType, level))
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
         return false;
 
     if (!isSurfaceValid())
@@ -235,16 +219,9 @@ bool ImageBuffer::copyToPlatformTextureInternal(bool isFullCopy, WebGraphicsCont
     context->waitSyncPoint(mailbox->syncPoint);
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
 
-    WGC3Dboolean glFlipY = flipY ? GL_FALSE : GL_TRUE;
-    WGC3Dboolean glPremultiplyAlpha = premultiplyAlpha ? GL_FALSE : GL_TRUE;
-
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
-    if (isFullCopy) {
-        context->copyTextureCHROMIUM(target, sourceTexture, texture, internalFormat, destType, glFlipY, GL_FALSE, glPremultiplyAlpha);
-    } else {
-        context->copySubTextureCHROMIUM(target, sourceTexture, texture, xoffset, yoffset, 0, 0, width, height, glFlipY, GL_FALSE, glPremultiplyAlpha);
-    }
+    context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, internalFormat, destType, flipY ? GL_FALSE : GL_TRUE, GL_FALSE, premultiplyAlpha ? GL_FALSE : GL_TRUE);
 
     context->deleteTexture(sourceTexture);
 

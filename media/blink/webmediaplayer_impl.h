@@ -138,7 +138,11 @@ class MEDIA_EXPORT WebMediaPlayerImpl
 
   bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
-      const CopyVideoTextureParams& params) override;
+      unsigned int texture,
+      unsigned int internal_format,
+      unsigned int type,
+      bool premultiply_alpha,
+      bool flip_y) override;
 
   blink::WebAudioSourceProvider* audioSourceProvider() override;
 
