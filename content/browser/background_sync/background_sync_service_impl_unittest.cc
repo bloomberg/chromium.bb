@@ -153,7 +153,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     BackgroundSyncNetworkObserver* network_observer =
         background_sync_context_->background_sync_manager()
             ->GetNetworkObserverForTesting();
-    network_observer->NotifyManagerIfNetworkChanged(
+    network_observer->NotifyManagerIfNetworkChangedForTesting(
         net::NetworkChangeNotifier::CONNECTION_NONE);
     base::RunLoop().RunUntilIdle();
   }

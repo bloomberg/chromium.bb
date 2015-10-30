@@ -320,7 +320,8 @@ class BackgroundSyncManagerTest : public testing::Test {
     if (test_background_sync_manager_) {
       BackgroundSyncNetworkObserver* network_observer =
           test_background_sync_manager_->GetNetworkObserverForTesting();
-      network_observer->NotifyManagerIfNetworkChanged(connection_type);
+      network_observer->NotifyManagerIfNetworkChangedForTesting(
+          connection_type);
       base::RunLoop().RunUntilIdle();
     }
   }

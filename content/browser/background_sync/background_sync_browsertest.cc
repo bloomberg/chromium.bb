@@ -109,10 +109,14 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
     shell_ = incognito ? CreateOffTheRecordBrowser() : shell();
   }
 
-  BackgroundSyncContext* GetSyncContextFromShell(Shell* shell) {
-    StoragePartition* storage = BrowserContext::GetDefaultStoragePartition(
-        shell_->web_contents()->GetBrowserContext());
-    return storage->GetBackgroundSyncContext();
+  StoragePartition* GetStorage() {
+    WebContents* web_contents = shell_->web_contents();
+    return BrowserContext::GetStoragePartition(
+        web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+  }
+
+  BackgroundSyncContext* GetSyncContext() {
+    return GetStorage()->GetBackgroundSyncContext();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -162,6 +166,8 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   // (assertion failure) if the tag isn't registered.
   bool OneShotPending(const std::string& tag);
 
+  void ClearStoragePartitionData();
+
   std::string PopConsoleString();
   bool PopConsole(const std::string& expected_msg);
   bool RegisterServiceWorker();
@@ -194,8 +200,8 @@ void BackgroundSyncBrowserTest::SetOnline(bool online) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BackgroundSyncBrowserTest::SetOnlineOnIOThread,
-                 base::Unretained(this),
-                 base::Unretained(GetSyncContextFromShell(shell_)), online));
+                 base::Unretained(this), base::Unretained(GetSyncContext()),
+                 online));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -206,10 +212,10 @@ void BackgroundSyncBrowserTest::SetOnlineOnIOThread(
   BackgroundSyncNetworkObserver* network_observer =
       sync_manager->GetNetworkObserverForTesting();
   if (online) {
-    network_observer->NotifyManagerIfNetworkChanged(
+    network_observer->NotifyManagerIfNetworkChangedForTesting(
         NetworkChangeNotifier::CONNECTION_WIFI);
   } else {
-    network_observer->NotifyManagerIfNetworkChanged(
+    network_observer->NotifyManagerIfNetworkChangedForTesting(
         NetworkChangeNotifier::CONNECTION_NONE);
   }
 }
@@ -218,8 +224,7 @@ bool BackgroundSyncBrowserTest::OneShotPending(const std::string& tag) {
   bool is_pending;
   base::RunLoop run_loop;
 
-  StoragePartition* storage = BrowserContext::GetDefaultStoragePartition(
-      shell_->web_contents()->GetBrowserContext());
+  StoragePartition* storage = GetStorage();
   BackgroundSyncContext* sync_context = storage->GetBackgroundSyncContext();
   ServiceWorkerContextWrapper* service_worker_context =
       static_cast<ServiceWorkerContextWrapper*>(
@@ -238,6 +243,27 @@ bool BackgroundSyncBrowserTest::OneShotPending(const std::string& tag) {
   run_loop.Run();
 
   return is_pending;
+}
+
+void BackgroundSyncBrowserTest::ClearStoragePartitionData() {
+  // Clear data from the storage partition.  Parameters are set to clear data
+  // for service workers, for all origins, for an unbounded time range.
+  StoragePartition* storage = GetStorage();
+
+  uint32 storage_partition_mask =
+      StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
+  uint32 quota_storage_mask = StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL;
+  const GURL& delete_origin = GURL();
+  const base::Time delete_begin = base::Time();
+  base::Time delete_end = base::Time::Max();
+
+  base::RunLoop run_loop;
+
+  storage->ClearData(storage_partition_mask, quota_storage_mask, delete_origin,
+                     StoragePartition::OriginMatcherFunction(), delete_begin,
+                     delete_end, run_loop.QuitClosure());
+
+  run_loop.Run();
 }
 
 std::string BackgroundSyncBrowserTest::PopConsoleString() {
@@ -597,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallFinishedBeforeSyncFails) {
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
-                       CallFinishedAfterSyncSuceeds) {
+                       CallFinishedAfterSyncSucceeds) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
@@ -636,6 +662,101 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, CallFinishedAfterSyncFails) {
   EXPECT_TRUE(RejectDelayedOneShot());
   EXPECT_TRUE(PopConsole("ok - delay rejected"));
   EXPECT_TRUE(NotifyWhenFinishedImmediateOneShot("ok - delay result: false"));
+}
+
+// Verify that a background sync registration is deleted when site data is
+// cleared.
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       SyncRegistrationDeletedWhenClearingSiteData) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  // Prevent firing by going offline.
+  SetOnline(false);
+  EXPECT_TRUE(RegisterOneShot("foo"));
+  EXPECT_TRUE(GetRegistrationOneShot("foo"));
+  EXPECT_TRUE(OneShotPending("foo"));
+
+  // Simulate a user clearing site data (including Service Workers, crucially),
+  // by clearing data from the storage partition.
+  ClearStoragePartitionData();
+
+  EXPECT_FALSE(GetRegistrationOneShot("foo"));
+}
+
+// Verify that a background sync registration, from a service worker, is deleted
+// when site data is cleared.
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       SyncRegistrationFromSWDeletedWhenClearingSiteData) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  std::vector<std::string> registered_tags;
+  EXPECT_TRUE(GetRegistrationsOneShot(registered_tags));
+
+  SetOnline(false);
+
+  EXPECT_TRUE(RegisterOneShotFromServiceWorker("foo_sw"));
+  EXPECT_TRUE(PopConsole("ok - foo_sw registered in SW"));
+  EXPECT_TRUE(GetRegistrationOneShotFromServiceWorker("foo_sw"));
+
+  // Simulate a user clearing site data (including Service Workers, crucially),
+  // by clearing data from the storage partition.
+  ClearStoragePartitionData();
+
+  EXPECT_FALSE(GetRegistrationOneShotFromServiceWorker("foo"));
+}
+
+// Verify that multiple background sync registrations are deleted when site
+// data is cleared.
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       SyncRegistrationsDeletedWhenClearingSiteData) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  std::vector<std::string> registered_tags;
+  EXPECT_TRUE(GetRegistrationsOneShot(registered_tags));
+
+  SetOnline(false);
+  registered_tags.push_back("foo");
+  registered_tags.push_back("bar");
+
+  for (const std::string& tag : registered_tags)
+    EXPECT_TRUE(RegisterOneShot(tag));
+
+  EXPECT_TRUE(GetRegistrationsOneShot(registered_tags));
+
+  for (const std::string& tag : registered_tags)
+    EXPECT_TRUE(OneShotPending(tag));
+
+  // Simulate a user clearing site data (including Service Workers, crucially),
+  // by clearing data from the storage partition.
+  ClearStoragePartitionData();
+
+  for (const std::string& tag : registered_tags)
+    EXPECT_FALSE(GetRegistrationOneShot(tag));
+}
+
+// Verify that a sync event that is currently firing is deleted when site
+// data is cleared.
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       FiringSyncEventDeletedWhenClearingSiteData) {
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
+
+  SetOnline(true);
+  EXPECT_TRUE(RegisterOneShot("delay"));
+
+  // Verify that it is firing.
+  EXPECT_TRUE(GetRegistrationOneShot("delay"));
+  EXPECT_FALSE(OneShotPending("delay"));
+
+  // Simulate a user clearing site data (including Service Workers, crucially),
+  // by clearing data from the storage partition.
+  ClearStoragePartitionData();
+
+  // Verify that it was deleted.
+  EXPECT_FALSE(GetRegistrationOneShot("delay"));
 }
 
 }  // namespace content

@@ -65,6 +65,11 @@ void BackgroundSyncNetworkObserver::OnNetworkChanged(
   NotifyManagerIfNetworkChanged(connection_type);
 }
 
+void BackgroundSyncNetworkObserver::NotifyManagerIfNetworkChangedForTesting(
+    net::NetworkChangeNotifier::ConnectionType connection_type) {
+  NotifyManagerIfNetworkChanged(connection_type);
+}
+
 void BackgroundSyncNetworkObserver::NotifyManagerIfNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
