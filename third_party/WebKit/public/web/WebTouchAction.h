@@ -35,19 +35,22 @@ namespace blink {
 
 // Flags for permitted touch actions, specified in http://w3c.github.io/pointerevents/#the-touch-action-css-property.
 enum WebTouchAction {
-    WebTouchActionAuto = 0x0,
-    WebTouchActionNone = 0x1,
-    WebTouchActionPanLeft = 0x2,
-    WebTouchActionPanRight = 0x4,
+    WebTouchActionNone = 0x0,
+    WebTouchActionPanLeft = 0x1,
+    WebTouchActionPanRight = 0x2,
     WebTouchActionPanX = WebTouchActionPanLeft | WebTouchActionPanRight,
-    WebTouchActionPanUp = 0x8,
-    WebTouchActionPanDown = 0x10,
+    WebTouchActionPanUp = 0x4,
+    WebTouchActionPanDown = 0x8,
     WebTouchActionPanY = WebTouchActionPanUp | WebTouchActionPanDown,
-    WebTouchActionPinchZoom = 0x20,
+    WebTouchActionPan = WebTouchActionPanX | WebTouchActionPanY,
+    WebTouchActionPinchZoom = 0x10,
+    WebTouchActionManipulation = WebTouchActionPan | WebTouchActionPinchZoom,
+    WebTouchActionDoubleTapZoom = 0x20,
+    WebTouchActionAuto = WebTouchActionManipulation | WebTouchActionDoubleTapZoom
 };
-inline WebTouchAction operator| (WebTouchAction a, WebTouchAction b) { return WebTouchAction(int(a) | int(b)); }
+inline WebTouchAction operator| (WebTouchAction a, WebTouchAction b) { return static_cast<WebTouchAction>(int(a) | int(b)); }
 inline WebTouchAction& operator|= (WebTouchAction& a, WebTouchAction b) { return a = a | b; }
-inline WebTouchAction operator& (WebTouchAction a, WebTouchAction b) { return WebTouchAction(int(a) & int(b)); }
+inline WebTouchAction operator& (WebTouchAction a, WebTouchAction b) { return static_cast<WebTouchAction>(int(a) & int(b)); }
 inline WebTouchAction& operator&= (WebTouchAction& a, WebTouchAction b) { return a = a & b; }
 
 

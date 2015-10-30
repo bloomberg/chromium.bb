@@ -2282,13 +2282,6 @@ void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
     static_assert(int(blink::WebTouchAction##a) == int(TOUCH_ACTION_##b), \
                   "mismatching enums: " #a)
 
-inline content::TouchAction& operator|=(content::TouchAction& a,
-                                        content::TouchAction b) {
-  a = static_cast<content::TouchAction>(static_cast<int>(a) |
-                                        static_cast<int>(b));
-  return a;
-}
-
 void RenderWidget::setTouchAction(
     blink::WebTouchAction web_touch_action) {
 
@@ -2298,7 +2291,6 @@ void RenderWidget::setTouchAction(
     return;
 
   // Verify the same values are used by the types so we can cast between them.
-   STATIC_ASSERT_WTI_ENUM_MATCH(Auto,      AUTO);
    STATIC_ASSERT_WTI_ENUM_MATCH(None,      NONE);
    STATIC_ASSERT_WTI_ENUM_MATCH(PanLeft,   PAN_LEFT);
    STATIC_ASSERT_WTI_ENUM_MATCH(PanRight,  PAN_RIGHT);
@@ -2306,7 +2298,11 @@ void RenderWidget::setTouchAction(
    STATIC_ASSERT_WTI_ENUM_MATCH(PanUp,     PAN_UP);
    STATIC_ASSERT_WTI_ENUM_MATCH(PanDown,   PAN_DOWN);
    STATIC_ASSERT_WTI_ENUM_MATCH(PanY,      PAN_Y);
+   STATIC_ASSERT_WTI_ENUM_MATCH(Pan,       PAN);
    STATIC_ASSERT_WTI_ENUM_MATCH(PinchZoom, PINCH_ZOOM);
+   STATIC_ASSERT_WTI_ENUM_MATCH(Manipulation, MANIPULATION);
+   STATIC_ASSERT_WTI_ENUM_MATCH(DoubleTapZoom, DOUBLE_TAP_ZOOM);
+   STATIC_ASSERT_WTI_ENUM_MATCH(Auto,      AUTO);
 
    content::TouchAction content_touch_action =
        static_cast<content::TouchAction>(web_touch_action);

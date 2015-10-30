@@ -28,19 +28,6 @@ static bool supportsTouchAction(const LayoutObject& object)
     return true;
 }
 
-static TouchAction intersectTouchAction(TouchAction action1, TouchAction action2)
-{
-    if (action1 == TouchActionNone || action2 == TouchActionNone)
-        return TouchActionNone;
-    if (action1 == TouchActionAuto)
-        return action2;
-    if (action2 == TouchActionAuto)
-        return action1;
-    if (!(action1 & action2))
-        return TouchActionNone;
-    return action1 & action2;
-}
-
 } // namespace
 
 TouchAction computeEffectiveTouchAction(const Node& node)
@@ -53,7 +40,7 @@ TouchAction computeEffectiveTouchAction(const Node& node)
         if (LayoutObject* layoutObject = curNode->layoutObject()) {
             if (supportsTouchAction(*layoutObject)) {
                 TouchAction action = layoutObject->style()->touchAction();
-                effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);
+                effectiveTouchAction &= action;
                 if (effectiveTouchAction == TouchActionNone)
                     break;
             }

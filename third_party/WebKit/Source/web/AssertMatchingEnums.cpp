@@ -672,14 +672,17 @@ STATIC_ASSERT_MATCHING_ENUM(WebCustomHandlersRegistered, NavigatorContentUtilsCl
 STATIC_ASSERT_MATCHING_ENUM(WebCustomHandlersDeclined, NavigatorContentUtilsClient::CustomHandlersDeclined);
 
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionNone, TouchActionNone);
-STATIC_ASSERT_MATCHING_ENUM(WebTouchActionAuto, TouchActionAuto);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanLeft, TouchActionPanLeft);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanRight, TouchActionPanRight);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanX, TouchActionPanX);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanUp, TouchActionPanUp);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanDown, TouchActionPanDown);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanY, TouchActionPanY);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPan, TouchActionPan);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPinchZoom, TouchActionPinchZoom);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionManipulation, TouchActionManipulation);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionDoubleTapZoom, TouchActionDoubleTapZoom);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionAuto, TouchActionAuto);
 
 STATIC_ASSERT_MATCHING_ENUM(WebSelection::NoSelection, NoSelection);
 STATIC_ASSERT_MATCHING_ENUM(WebSelection::CaretSelection, CaretSelection);

@@ -465,19 +465,22 @@ enum DraggableRegionMode { DraggableRegionNone, DraggableRegionDrag, DraggableRe
 
 static const size_t TouchActionBits = 6;
 enum TouchAction {
-    TouchActionAuto = 0x0,
-    TouchActionNone = 0x1,
-    TouchActionPanLeft = 0x2,
-    TouchActionPanRight = 0x4,
+    TouchActionNone = 0x0,
+    TouchActionPanLeft = 0x1,
+    TouchActionPanRight = 0x2,
     TouchActionPanX = TouchActionPanLeft | TouchActionPanRight,
-    TouchActionPanUp = 0x8,
-    TouchActionPanDown = 0x10,
+    TouchActionPanUp = 0x4,
+    TouchActionPanDown = 0x8,
     TouchActionPanY = TouchActionPanUp | TouchActionPanDown,
-    TouchActionPinchZoom = 0x20,
+    TouchActionPan = TouchActionPanX | TouchActionPanY,
+    TouchActionPinchZoom = 0x10,
+    TouchActionManipulation = TouchActionPan | TouchActionPinchZoom,
+    TouchActionDoubleTapZoom = 0x20,
+    TouchActionAuto = TouchActionManipulation | TouchActionDoubleTapZoom
 };
-inline TouchAction operator| (TouchAction a, TouchAction b) { return TouchAction(int(a) | int(b)); }
+inline TouchAction operator| (TouchAction a, TouchAction b) { return static_cast<TouchAction>(int(a) | int(b)); }
 inline TouchAction& operator|= (TouchAction& a, TouchAction b) { return a = a | b; }
-inline TouchAction operator& (TouchAction a, TouchAction b) { return TouchAction(int(a) & int(b)); }
+inline TouchAction operator& (TouchAction a, TouchAction b) { return static_cast<TouchAction>(int(a) & int(b)); }
 inline TouchAction& operator&= (TouchAction& a, TouchAction b) { return a = a & b; }
 
 enum EIsolation { IsolationAuto, IsolationIsolate };

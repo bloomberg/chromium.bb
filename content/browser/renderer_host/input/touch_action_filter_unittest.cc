@@ -299,7 +299,7 @@ TEST(TouchActionFilterTest, PanXY) {
   {
     // Scrolls hinted in the X axis are permitted and unmodified.
     filter.ResetTouchAction();
-    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN);
     WebGestureEvent scroll_begin =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(-7, 6);
     EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
@@ -321,7 +321,7 @@ TEST(TouchActionFilterTest, PanXY) {
   {
     // Scrolls hinted in the Y axis are permitted and unmodified.
     filter.ResetTouchAction();
-    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN);
     WebGestureEvent scroll_begin =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(-6, 7);
     EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
@@ -342,25 +342,17 @@ TEST(TouchActionFilterTest, PanXY) {
   filter.ResetTouchAction();
 }
 
-TEST(TouchActionFilterTest, Intersect) {
-  EXPECT_EQ(TOUCH_ACTION_NONE,
-      TouchActionFilter::Intersect(TOUCH_ACTION_NONE, TOUCH_ACTION_AUTO));
-  EXPECT_EQ(TOUCH_ACTION_NONE,
-      TouchActionFilter::Intersect(TOUCH_ACTION_AUTO, TOUCH_ACTION_NONE));
-  EXPECT_EQ(TOUCH_ACTION_PAN_X,
-      TouchActionFilter::Intersect(TOUCH_ACTION_AUTO, TOUCH_ACTION_PAN_X));
-  EXPECT_EQ(TOUCH_ACTION_PAN_Y,
-      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_Y, TOUCH_ACTION_AUTO));
+TEST(TouchActionFilterTest, BitMath) {
+  // Verify that the simple flag mixing properties we depend on are now
+  // trivially true.
+  EXPECT_EQ(TOUCH_ACTION_NONE, TOUCH_ACTION_NONE & TOUCH_ACTION_AUTO);
+  EXPECT_EQ(TOUCH_ACTION_NONE, TOUCH_ACTION_PAN_Y & TOUCH_ACTION_PAN_X);
+  EXPECT_EQ(TOUCH_ACTION_PAN, TOUCH_ACTION_AUTO & TOUCH_ACTION_PAN);
+  EXPECT_EQ(TOUCH_ACTION_MANIPULATION,
+            TOUCH_ACTION_AUTO & ~TOUCH_ACTION_DOUBLE_TAP_ZOOM);
+  EXPECT_EQ(TOUCH_ACTION_PAN_X, TOUCH_ACTION_PAN_LEFT | TOUCH_ACTION_PAN_RIGHT);
   EXPECT_EQ(TOUCH_ACTION_AUTO,
-      TouchActionFilter::Intersect(TOUCH_ACTION_AUTO, TOUCH_ACTION_AUTO));
-  EXPECT_EQ(TOUCH_ACTION_PAN_X,
-      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_X_Y, TOUCH_ACTION_PAN_X));
-  EXPECT_EQ(TOUCH_ACTION_PAN_Y,
-      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_Y, TOUCH_ACTION_PAN_X_Y));
-  EXPECT_EQ(TOUCH_ACTION_PAN_X_Y,
-      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_X_Y, TOUCH_ACTION_AUTO));
-  EXPECT_EQ(TOUCH_ACTION_NONE,
-      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_X, TOUCH_ACTION_PAN_Y));
+            TOUCH_ACTION_MANIPULATION | TOUCH_ACTION_DOUBLE_TAP_ZOOM);
 }
 
 TEST(TouchActionFilterTest, MultiTouch) {
@@ -391,7 +383,7 @@ TEST(TouchActionFilterTest, MultiTouch) {
   filter.ResetTouchAction();
   filter.OnSetTouchAction(TOUCH_ACTION_PAN_X);
   filter.OnSetTouchAction(TOUCH_ACTION_PAN_Y);
-  filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+  filter.OnSetTouchAction(TOUCH_ACTION_PAN);
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
@@ -433,7 +425,7 @@ TEST(TouchActionFilterTest, Pinch) {
 
   // Pinch is not allowed with touch-action: pan-x pan-y.
   filter.ResetTouchAction();
-  filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+  filter.OnSetTouchAction(TOUCH_ACTION_PAN);
   EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
   EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
   EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));

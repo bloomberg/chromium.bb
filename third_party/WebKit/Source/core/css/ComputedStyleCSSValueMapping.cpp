@@ -712,13 +712,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForTextDecorationStyle(TextDecorati
 static PassRefPtrWillBeRawPtr<CSSValue> touchActionFlagsToCSSValue(TouchAction touchAction)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    if (touchAction == TouchActionAuto)
+    if (touchAction == TouchActionAuto) {
         list->append(cssValuePool().createIdentifierValue(CSSValueAuto));
-    if (touchAction & TouchActionNone) {
-        ASSERT(touchAction == TouchActionNone);
+    } else if (touchAction == TouchActionNone) {
         list->append(cssValuePool().createIdentifierValue(CSSValueNone));
-    }
-    if (touchAction == (TouchActionPanX | TouchActionPanY | TouchActionPinchZoom)) {
+    } else if (touchAction == TouchActionManipulation) {
         list->append(cssValuePool().createIdentifierValue(CSSValueManipulation));
     } else {
         if ((touchAction & TouchActionPanX) == TouchActionPanX)

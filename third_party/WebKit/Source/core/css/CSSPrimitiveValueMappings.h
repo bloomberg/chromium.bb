@@ -4254,7 +4254,7 @@ template<> inline TouchAction CSSPrimitiveValue::convertTo() const
     case CSSValuePanY:
         return TouchActionPanY;
     case CSSValueManipulation:
-        return TouchActionPanX | TouchActionPanY | TouchActionPinchZoom;
+        return TouchActionManipulation;
     default:
         break;
     }

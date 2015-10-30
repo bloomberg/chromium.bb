@@ -87,8 +87,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
 
     case WebInputEvent::GesturePinchBegin:
       DCHECK(!drop_pinch_gesture_events_);
-      if (allowed_touch_action_ == TOUCH_ACTION_AUTO ||
-          allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) {
+      if (allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) {
         // Pinch events are always bracketed by scroll events, and the W3C
         // standard touch-action provides no way to disable scrolling without
         // also disabling pinching (validated by the IPC ENUM traits).
@@ -124,7 +123,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
     case WebInputEvent::GestureTapUnconfirmed:
       DCHECK_EQ(1, gesture_event->data.tap.tapCount);
       allow_current_double_tap_event_ =
-          allowed_touch_action_ == TOUCH_ACTION_AUTO;
+          (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
       if (!allow_current_double_tap_event_) {
         gesture_event->type = WebInputEvent::GestureTap;
         drop_current_tap_ending_event_ = true;
@@ -133,7 +132,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
 
     case WebInputEvent::GestureTap:
       allow_current_double_tap_event_ =
-          allowed_touch_action_ == TOUCH_ACTION_AUTO;
+          (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
       // Fall through.
     case WebInputEvent::GestureTapCancel:
       if (drop_current_tap_ending_event_) {
@@ -176,7 +175,7 @@ void TouchActionFilter::OnSetTouchAction(TouchAction touch_action) {
   //    down "at once" will be deterministic.
   // 2. Only subtractive - eg. can't trigger scrolling on a element that
   //    otherwise has scrolling disabling by the addition of a finger.
-  allowed_touch_action_ = Intersect(allowed_touch_action_, touch_action);
+  allowed_touch_action_ &= touch_action;
 }
 
 void TouchActionFilter::ResetTouchAction() {
@@ -188,9 +187,11 @@ void TouchActionFilter::ResetTouchAction() {
 bool TouchActionFilter::ShouldSuppressScroll(
     const blink::WebGestureEvent& gesture_event) {
   DCHECK_EQ(gesture_event.type, WebInputEvent::GestureScrollBegin);
-  if (allowed_touch_action_ == TOUCH_ACTION_AUTO)
+  if ((allowed_touch_action_ & TOUCH_ACTION_PAN) == TOUCH_ACTION_PAN)
+    // All possible panning is enabled.
     return false;
-  if (allowed_touch_action_ == TOUCH_ACTION_NONE)
+  if (!(allowed_touch_action_ & TOUCH_ACTION_PAN))
+    // No panning is enabled.
     return true;
 
   // If there's no hint or it's perfectly diagonal, then allow the scroll.
@@ -222,20 +223,6 @@ bool TouchActionFilter::ShouldSuppressScroll(
       return true;
     }
   }
-}
-
-TouchAction TouchActionFilter::Intersect(TouchAction ta1, TouchAction ta2) {
-  if (ta1 == TOUCH_ACTION_NONE || ta2 == TOUCH_ACTION_NONE)
-    return TOUCH_ACTION_NONE;
-  if (ta1 == TOUCH_ACTION_AUTO)
-    return ta2;
-  if (ta2 == TOUCH_ACTION_AUTO)
-    return ta1;
-
-  // Only the true flags are left - take their intersection.
-  if (!(ta1 & ta2))
-    return TOUCH_ACTION_NONE;
-  return static_cast<TouchAction>(ta1 & ta2);
 }
 
 }  // namespace content

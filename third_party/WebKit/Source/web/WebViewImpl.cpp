@@ -2845,7 +2845,7 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
         // zoom in if the user won't be able to zoom out. e.g if the textbox is within a
         // touch-action: none container the user can't zoom back out.
         TouchAction action = TouchActionUtil::computeEffectiveTouchAction(*element);
-        if (action != TouchActionAuto && !(action & TouchActionPinchZoom))
+        if (!(action & TouchActionPinchZoom))
             zoomInToLegibleScale = false;
     }
 
