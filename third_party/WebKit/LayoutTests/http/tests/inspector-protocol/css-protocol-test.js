@@ -145,6 +145,26 @@ InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback, omitL
     }
 }
 
+InspectorTest.loadAndDumpCSSAnimationsForNode = function(nodeId, callback)
+{
+    InspectorTest.sendCommandOrDie("CSS.getCSSAnimationsForNode", { "nodeId": nodeId }, cssAnimationsLoaded);
+
+    function cssAnimationsLoaded(result)
+    {
+        InspectorTest.log("Dumping CSS keyframed animations: ");
+        for (var keyframesRule of result.cssKeyframesRules) {
+            InspectorTest.log("@keyframes " + keyframesRule.animationName + " {");
+            for (var keyframe of keyframesRule.keyframes) {
+                indentLog(4, keyframe.keyText + " {");
+                InspectorTest.dumpStyle(keyframe.style, 4);
+                indentLog(4, "}");
+            }
+            InspectorTest.log("}");
+        }
+        callback();
+    }
+}
+
 InspectorTest.loadAndDumpMatchingRules = function(documentNodeId, selector, callback, omitLog)
 {
     InspectorTest.requestNodeId(documentNodeId, selector, nodeIdLoaded);

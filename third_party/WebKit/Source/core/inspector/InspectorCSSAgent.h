@@ -43,6 +43,7 @@
 
 namespace blink {
 
+class CSSKeyframeRule;
 class CSSRule;
 class CSSRuleList;
 class CSSStyleRule;
@@ -131,6 +132,7 @@ public:
     void getPlatformFontsForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>>&) override;
     void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributes) override;
     void getMatchedStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoElementMatches>>&, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries) override;
+    void getCSSAnimationsForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>>& cssKeyframesRules) override;
     void getStyleSheetText(ErrorString*, const String& styleSheetId, String* result) override;
     void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text) override;
     void setRuleSelector(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::SelectorList>& result) override;
@@ -190,6 +192,7 @@ private:
 
     PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > buildArrayForMatchedRuleList(CSSRuleList*, Element*, PseudoId);
+    PassRefPtr<TypeBuilder::CSS::CSSKeyframeRule> buildObjectForKeyframeRule(CSSKeyframeRule*);
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForAttributesStyle(Element*);
 
     // InspectorDOMAgent::DOMListener implementation

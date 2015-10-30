@@ -33,6 +33,7 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
@@ -787,6 +788,53 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     inheritedEntries = entries.release();
 }
 
+void InspectorCSSAgent::getCSSAnimationsForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>>& cssKeyframesRules)
+{
+    Element* element = elementForId(errorString, nodeId);
+    if (!element) {
+        *errorString = "Node not found";
+        return;
+    }
+
+    PseudoId elementPseudoId = element->pseudoId();
+    if (elementPseudoId) {
+        element = element->parentOrShadowHostElement();
+        if (!element) {
+            *errorString = "Pseudo element has no parent";
+            return;
+        }
+    }
+
+    Document* ownerDocument = element->ownerDocument();
+    // A non-active document has no styles.
+    if (!ownerDocument->isActive())
+        return;
+
+    cssKeyframesRules = TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>::create();
+    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
+    RefPtr<ComputedStyle> style = styleResolver.styleForElement(element);
+    if (!style)
+        return;
+    const CSSAnimationData* animationData = style->animations();
+    for (size_t i = 0; animationData && i < animationData->nameList().size(); ++i) {
+        AtomicString animationName(animationData->nameList()[i]);
+        if (animationName == CSSAnimationData::initialName())
+            continue;
+        StyleRuleKeyframes* keyframesRule = styleResolver.findKeyframesRule(element, animationName);
+        if (!keyframesRule)
+            continue;
+        RefPtrWillBeRawPtr<CSSKeyframesRule> cssKeyframesRule = CSSKeyframesRule::create(keyframesRule, nullptr);
+
+        RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframeRule>> keyframes = TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframeRule>::create();
+        for (unsigned j = 0; j < cssKeyframesRule->length(); ++j)
+            keyframes->addItem(buildObjectForKeyframeRule(cssKeyframesRule->item(j)));
+        RefPtr<TypeBuilder::CSS::CSSKeyframesRule> keyframesRuleObject = TypeBuilder::CSS::CSSKeyframesRule::create()
+            .setAnimationName(cssKeyframesRule->name())
+            .setKeyframes(keyframes);
+        cssKeyframesRules->addItem(keyframesRuleObject);
+    }
+}
+
 void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle)
 {
     Element* element = elementForId(errorString, nodeId);
@@ -1487,6 +1535,15 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
     }
 
     return result;
+}
+
+PassRefPtr<TypeBuilder::CSS::CSSKeyframeRule> InspectorCSSAgent::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
+{
+    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(keyframeRule->style(), nullptr, nullptr);
+    RefPtr<TypeBuilder::CSS::CSSKeyframeRule> object = TypeBuilder::CSS::CSSKeyframeRule::create()
+        .setKeyText(keyframeRule->keyText())
+        .setStyle(inspectorStyle->buildObjectForStyle());
+    return object;
 }
 
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttributesStyle(Element* element)
