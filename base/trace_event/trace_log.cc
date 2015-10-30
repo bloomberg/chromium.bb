@@ -1410,6 +1410,10 @@ void TraceLog::UpdateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,
     TraceEventHandle handle) {
+  char category_group_enabled_local = *category_group_enabled;
+  if (!category_group_enabled_local)
+    return;
+
   // Avoid re-entrance of AddTraceEvent. This may happen in GPU process when
   // ECHO_TO_CONSOLE is enabled: AddTraceEvent -> LOG(ERROR) ->
   // GpuProcessLogMessageHandler -> PostPendingTask -> TRACE_EVENT ...
@@ -1421,8 +1425,14 @@ void TraceLog::UpdateTraceEventDuration(
   ThreadTicks thread_now = ThreadNow();
   TraceTicks now = OffsetNow();
 
+#if defined(OS_WIN)
+  // Generate an ETW event that marks the end of a complete event.
+  if (category_group_enabled_local & ENABLED_FOR_ETW_EXPORT)
+    TraceEventETWExport::AddCompleteEndEvent(name);
+#endif  // OS_WIN
+
   std::string console_message;
-  if (*category_group_enabled & ENABLED_FOR_RECORDING) {
+  if (category_group_enabled_local & ENABLED_FOR_RECORDING) {
     OptionalAutoLock lock(&lock_);
 
     TraceEvent* trace_event = GetEventByHandleInternal(handle, &lock);
@@ -1448,7 +1458,7 @@ void TraceLog::UpdateTraceEventDuration(
   if (console_message.size())
     LOG(ERROR) << console_message;
 
-  if (*category_group_enabled & ENABLED_FOR_EVENT_CALLBACK) {
+  if (category_group_enabled_local & ENABLED_FOR_EVENT_CALLBACK) {
     EventCallback event_callback = reinterpret_cast<EventCallback>(
         subtle::NoBarrier_Load(&event_callback_));
     if (event_callback) {
