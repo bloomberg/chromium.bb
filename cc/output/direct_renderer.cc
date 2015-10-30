@@ -242,25 +242,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     overlay_processor_->ProcessForOverlays(
         resource_provider_, render_passes_in_draw_order, &frame.overlay_list,
         &frame.root_damage_rect);
-
-    // No need to render in case the damage rect is completely composited using
-    // overlays and dont have any copy requests.
-    if (frame.root_damage_rect.IsEmpty()) {
-      bool handle_copy_requests = false;
-      for (auto* pass : *render_passes_in_draw_order) {
-        if (!pass->copy_requests.empty()) {
-          handle_copy_requests = true;
-          break;
-        }
-      }
-
-      if (!handle_copy_requests) {
-        BindFramebufferToOutputSurface(&frame);
-        FinishDrawingFrame(&frame);
-        render_passes_in_draw_order->clear();
-        return;
-      }
-    }
   }
 
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
