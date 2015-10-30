@@ -86,6 +86,7 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'shell/android/shell_descriptors.h',
         'shell/android/shell_jni_registrar.cc',
         'shell/android/shell_jni_registrar.h',
         'shell/android/shell_manager.cc',

@@ -24,6 +24,7 @@ declare_args() {
 static_library("content_shell_lib") {
   testonly = true
   sources = [
+    "android/shell_descriptors.h",
     "android/shell_jni_registrar.cc",
     "android/shell_jni_registrar.h",
     "android/shell_manager.cc",
