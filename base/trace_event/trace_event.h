@@ -765,6 +765,21 @@ static inline void AddMetadataEvent(
       convertable_values, TRACE_EVENT_FLAG_NONE);
 }
 
+template <class ARG1_TYPE>
+static void AddMetadataEvent(const char* event_name,
+                             const char* arg_name,
+                             const ARG1_TYPE& arg_val) {
+  const int num_args = 1;
+  const char* arg_names[1] = {arg_name};
+  unsigned char arg_types[1];
+  unsigned long long arg_values[1];
+  SetTraceValue(arg_val, &arg_types[0], &arg_values[0]);
+
+  base::trace_event::TraceLog::GetInstance()->AddMetadataEvent(
+      event_name, num_args, arg_names, arg_types, arg_values, nullptr,
+      TRACE_EVENT_FLAG_NONE);
+}
+
 // Used by TRACE_EVENTx macros. Do not use directly.
 class TRACE_EVENT_API_CLASS_EXPORT ScopedTracer {
  public:

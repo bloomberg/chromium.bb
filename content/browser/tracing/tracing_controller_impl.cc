@@ -167,6 +167,9 @@ void TracingControllerImpl::OnEnableRecordingDone(
     const EnableRecordingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  TRACE_EVENT_API_ADD_METADATA_EVENT("IsTimeTicksHighResolution", "value",
+                                     base::TimeTicks::IsHighResolution());
+
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
