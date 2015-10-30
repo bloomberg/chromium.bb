@@ -5,12 +5,12 @@
 #ifndef BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_CONTEXT_H_
 #define BASE_TRACE_EVENT_MEMORY_PROFILER_ALLOCATION_CONTEXT_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
-#include "base/containers/small_map.h"
 #include "base/trace_event/trace_event_impl.h"
 
 namespace base {
@@ -141,18 +141,13 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
 // must have static lifetime.
 struct BASE_EXPORT AllocationContext {
   Backtrace backtrace;
-
-  // There is room for two arbitrary context fields, which can be set by the
-  // |TRACE_ALLOCATION_CONTEXT| macro. A nullptr key indicates that the field is
-  // unused.
-  std::pair<const char*, const char*> fields[2];
 };
 
 // The allocation context tracker keeps track of thread-local context for heap
-// profiling. It includes a pseudo stack of trace events, and it might contain
-// arbitrary (key, value) context. On every allocation the tracker provides a
-// snapshot of its context in the form of an |AllocationContext| that is to be
-// stored together with the allocation details.
+// profiling. It includes a pseudo stack of trace events. On every allocation
+// the tracker provides a snapshot of its context in the form of an
+// |AllocationContext| that is to be stored together with the allocation
+// details.
 class BASE_EXPORT AllocationContextTracker {
  public:
   // Globally enables capturing allocation context.
@@ -181,13 +176,6 @@ class BASE_EXPORT AllocationContextTracker {
   // Pops a frame from the thread-local pseudo stack.
   static void PopPseudoStackFrame(StackFrame frame);
 
-  // Sets a thread-local (key, value) pair.
-  static void SetContextField(const char* key, const char* value);
-
-  // Removes the (key, value) pair with the specified key from the thread-local
-  // context.
-  static void UnsetContextField(const char* key);
-
   // Returns a snapshot of the current thread-local context.
   static AllocationContext GetContextSnapshot();
 
@@ -202,9 +190,6 @@ class BASE_EXPORT AllocationContextTracker {
 
   // The pseudo stack where frames are |TRACE_EVENT| names.
   AllocationStack pseudo_stack_;
-
-  // A dictionary of arbitrary context.
-  SmallMap<std::map<const char*, const char*>> context_;
 
   DISALLOW_COPY_AND_ASSIGN(AllocationContextTracker);
 };

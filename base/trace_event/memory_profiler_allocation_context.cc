@@ -153,19 +153,6 @@ void AllocationContextTracker::PopPseudoStackFrame(StackFrame frame) {
   tracker->pseudo_stack_.pop(frame);
 }
 
-// static
-void AllocationContextTracker::SetContextField(const char* key,
-                                               const char* value) {
-  auto tracker = AllocationContextTracker::GetThreadLocalTracker();
-  tracker->context_[key] = value;
-}
-
-// static
-void AllocationContextTracker::UnsetContextField(const char* key) {
-  auto tracker = AllocationContextTracker::GetThreadLocalTracker();
-  tracker->context_.erase(key);
-}
-
 // Returns a pointer past the end of the fixed-size array |array| of |T| of
 // length |N|, identical to C++11 |std::end|.
 template <typename T, int N>
@@ -192,22 +179,6 @@ AllocationContext AllocationContextTracker::GetContextSnapshot() {
 
     // If there is room for more, fill the remaining slots with empty frames.
     std::fill(dst, dst_end, nullptr);
-  }
-
-  // Fill the context fields.
-  {
-    auto src = tracker->context_.begin();
-    auto dst = ctx.fields;
-    auto src_end = tracker->context_.end();
-    auto dst_end = End(ctx.fields);
-
-    // Copy as much (key, value) pairs as possible.
-    for (; src != src_end && dst != dst_end; src++, dst++)
-      *dst = *src;
-
-    // If there is room for more, fill the remaining slots with nullptr keys.
-    for (; dst != dst_end; dst++)
-      dst->first = nullptr;
   }
 
   return ctx;

@@ -50,7 +50,7 @@ size_t SumAllSizes(const AllocationRegister& reg) {
 
 TEST_F(AllocationRegisterTest, InsertRemove) {
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = {};
 
   EXPECT_EQ(0u, OrAllAddresses(reg));
 
@@ -81,7 +81,7 @@ TEST_F(AllocationRegisterTest, InsertRemove) {
 
 TEST_F(AllocationRegisterTest, DoubleFreeIsAllowed) {
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = {};
 
   reg.Insert(reinterpret_cast<void*>(1), 0, ctx);
   reg.Insert(reinterpret_cast<void*>(2), 0, ctx);
@@ -96,7 +96,7 @@ TEST_F(AllocationRegisterTest, DoubleInsertOverwrites) {
   // TODO(ruuda): Although double insert happens in practice, it should not.
   // Find out the cause and ban double insert if possible.
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = {};
   StackFrame frame1 = "Foo";
   StackFrame frame2 = "Bar";
 
@@ -124,7 +124,7 @@ TEST_F(AllocationRegisterTest, DoubleInsertOverwrites) {
 TEST_F(AllocationRegisterTest, InsertRemoveCollisions) {
   size_t expected_sum = 0;
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = {};
 
   // By inserting 100 more entries than the number of buckets, there will be at
   // least 100 collisions.
@@ -161,7 +161,7 @@ TEST_F(AllocationRegisterTest, InsertRemoveCollisions) {
 TEST_F(AllocationRegisterTest, InsertRemoveRandomOrder) {
   size_t expected_sum = 0;
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = {};
 
   uintptr_t generator = 3;
   uintptr_t prime = 1013;
@@ -203,7 +203,7 @@ TEST_F(AllocationRegisterTest, InsertRemoveRandomOrder) {
 #if GTEST_HAS_DEATH_TEST
 TEST_F(AllocationRegisterTest, OverflowDeathTest) {
   AllocationRegister reg;
-  AllocationContext ctx;
+  AllocationContext ctx = {};
   uintptr_t i;
 
   // Fill up all of the memory allocated for the register. |kNumCells| minus 1
