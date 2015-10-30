@@ -1960,6 +1960,56 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
             encoded_xml);
 }
 
+// Test that the form name is sent in the upload request.
+TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
+  scoped_ptr<FormStructure> form_structure;
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  FormData form;
+  // Setting the form name which we expect to see in the upload.
+  form.name = base::ASCIIToUTF16("myform");
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_FIRST);
+
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_LAST);
+
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(EMAIL_ADDRESS);
+
+  form_structure.reset(new FormStructure(form));
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+
+  ServerFieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(EMAIL_ADDRESS);
+
+  std::string encoded_xml;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
+                                                  std::string(), &encoded_xml));
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?><autofillupload"
+            " clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"2345951786066580868\" autofillused=\"true\""
+            " datapresent=\"1440\" actionsignature=\"15724779818122431245\""
+            " formname=\"myform\"><field signature=\"1318412689\" type=\"text\""
+            " autofilltype=\"3\"/><field signature=\"1318412689\" type=\"text\""
+            " autofilltype=\"5\"/><field signature=\"1318412689\" type=\"text\""
+            " autofilltype=\"9\"/></autofillupload>",
+            encoded_xml);
+}
+
 TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   scoped_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
