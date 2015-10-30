@@ -1020,6 +1020,9 @@ cr.define('options', function() {
       else
         this.layoutDisplays_();
 
+      $('display-options-select-mirroring').value =
+          mirroring ? 'mirroring' : 'extended';
+
       $('display-options-unified-desktop').hidden =
           !this.showUnifiedDesktopOption_;
 
