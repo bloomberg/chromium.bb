@@ -36,6 +36,7 @@ class _Smoothness(perf_benchmark.PerfBenchmark):
     return True
 
 
+@benchmark.Disabled('reference') # crbug.com/547833
 class SmoothnessTop25(_Smoothness):
   """Measures rendering statistics while scrolling down the top 25 web pages.
 
@@ -155,6 +156,7 @@ class SmoothnessKeySilkCases(_Smoothness):
 
 
 @benchmark.Enabled('android', 'mac')
+@benchmark.Disabled('reference') # crbug.com/547833
 class SmoothnessGpuRasterizationTop25(_Smoothness):
   """Measures rendering statistics for the top 25 with GPU rasterization.
   """

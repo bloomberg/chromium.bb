@@ -98,6 +98,7 @@ class PowerGpuRasterizationTop10(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('mac')
+@benchmark.Disabled('reference') # crbug.com/547833
 class PowerTop25(perf_benchmark.PerfBenchmark):
   """Top 25 quiescent power test."""
   test = power.QuiescentPower
