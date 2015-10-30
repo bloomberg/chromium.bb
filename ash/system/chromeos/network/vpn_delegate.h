@@ -91,7 +91,7 @@ class ASH_EXPORT VPNDelegate {
   void NotifyObservers();
 
  private:
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VPNDelegate);
 };

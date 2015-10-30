@@ -239,10 +239,14 @@ VPNListView::VPNListView(ui::NetworkListDelegate* delegate)
 }
 
 VPNListView::~VPNListView() {
-  Shell::GetInstance()
-      ->system_tray_delegate()
-      ->GetVPNDelegate()
-      ->RemoveObserver(this);
+  // We need the check as on shell destruction, the delegate is destroyed first.
+  SystemTrayDelegate* const system_tray_delegate =
+      Shell::GetInstance()->system_tray_delegate();
+  if (system_tray_delegate) {
+    VPNDelegate* const vpn_delegate = system_tray_delegate->GetVPNDelegate();
+    if (vpn_delegate)
+      vpn_delegate->RemoveObserver(this);
+  }
 }
 
 void VPNListView::Update() {
