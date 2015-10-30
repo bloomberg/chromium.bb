@@ -245,9 +245,7 @@ void JavaArrayOfIntArrayToIntVector(
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jintArray> int_array(
         env, static_cast<jintArray>(env->GetObjectArrayElement(array, i)));
-    jint* ints = env->GetIntArrayElements(int_array.obj(), nullptr);
     JavaIntArrayToIntVector(env, int_array.obj(), &((*out)[i]));
-    env->ReleaseIntArrayElements(int_array.obj(), ints, JNI_ABORT);
   }
 }
 
