@@ -8,15 +8,15 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 356161
-  "build_rev": "aafb4eeb026dc365e841ec97dbc036ea4edc9668", # from cr commit position 356146
-  "build_overrides_rev": "a623ab9abd74a70d93ddb8b015fc6656f9e7d0f2", # from cr commit position 355877
+  # chrome_rev: 357129
+  "build_rev": "e9847c616c8bfcce336c6679c01d8ea1f420602b", # from cr commit position 357098
+  "build_overrides_rev": "dad7f351731a2925f5d02fef239a101a7332d1f0", # from cr commit position 356707
   "binutils_rev": "c485984110688e490052a3ef60218a26b71e207a", # from cr commit position 354325
   "valgrind_rev": "3a97aa8142b6e63f16789b22daafb42d202f91dc",
-  "tools_valgrind_rev": "18e0ed94552aa5605fbadf66f3a5404217d2efd0", # from cr commit position 354950
+  "tools_valgrind_rev": "f3917bc040756ff23cde309a2011700fe2dbc29d", # from cr commit position 356825
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "a56c9063d582660d29b32f967ce20875c589fc3e", # from cr commit position 353437
+  "clang_rev": "66f5328417331216569e8beb244fd887f62e8997", # from cr commit position 355905
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -30,7 +30,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'ef7f1f539cff0441c4401d8c052e54cfd01bff07',
+  'buildtools_revision': 'acafdaa4e81adae617177d57e3c1261cc3565469',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
