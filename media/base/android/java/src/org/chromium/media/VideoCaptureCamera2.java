@@ -107,6 +107,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     return;
                 }
 
+                if (reader.getWidth() != image.getWidth()
+                        || reader.getHeight() != image.getHeight()) {
+                    throw new IllegalStateException("ImageReader size " + reader.getWidth() + "x"
+                            + reader.getHeight() + " did not match Image size " + image.getWidth()
+                            + "x" + image.getHeight());
+                }
                 readImageIntoBuffer(image, mCapturedData);
                 nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
                                        mCapturedData,
@@ -352,8 +358,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             }
         }
 
-        ArrayList<VideoCaptureFormat> formatList =
-                new ArrayList<VideoCaptureFormat>();
+        ArrayList<VideoCaptureFormat> formatList = new ArrayList<VideoCaptureFormat>();
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         final int[] formats = streamMap.getOutputFormats();
@@ -363,19 +368,17 @@ public class VideoCaptureCamera2 extends VideoCapture {
             for (Size size : sizes) {
                 double minFrameRate = 0.0f;
                 if (minFrameDurationAvailable) {
-                    final long minFrameDuration =
-                            streamMap.getOutputMinFrameDuration(format, size);
-                    minFrameRate = (minFrameDuration == 0) ? 0.0f :
-                            (1.0 / kNanoSecondsToFps * minFrameDuration);
+                    final long minFrameDuration = streamMap.getOutputMinFrameDuration(format, size);
+                    minFrameRate = (minFrameDuration == 0)
+                            ? 0.0f
+                            : (1.0 / kNanoSecondsToFps * minFrameDuration);
                 } else {
                     // TODO(mcasas): find out where to get the info from in this case.
                     // Hint: perhaps using SCALER_AVAILABLE_PROCESSED_MIN_DURATIONS.
                     minFrameRate = 0.0;
                 }
-                formatList.add(new VideoCaptureFormat(size.getWidth(),
-                                                              size.getHeight(),
-                                                              (int) minFrameRate,
-                                                              0));
+                formatList.add(new VideoCaptureFormat(
+                        size.getWidth(), size.getHeight(), (int) minFrameRate, 0));
             }
         }
         return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
@@ -396,13 +399,36 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 return false;
             }
         }
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        final StreamConfigurationMap streamMap =
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
+        // Find closest supported size.
+        final Size[] supportedSizes = streamMap.getOutputSizes(ImageFormat.YUV_420_888);
+        if (supportedSizes == null) return false;
+        Size closestSupportedSize = null;
+        int minDiff = Integer.MAX_VALUE;
+        for (Size size : supportedSizes) {
+            final int diff =
+                    Math.abs(size.getWidth() - width) + Math.abs(size.getHeight() - height);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestSupportedSize = size;
+            }
+        }
+        if (minDiff == Integer.MAX_VALUE) {
+            Log.e(TAG, "No supported resolutions.");
+            return false;
+        }
+        Log.d(TAG, "allocate: matched (%d x %d)", closestSupportedSize.getWidth(),
+                closestSupportedSize.getHeight());
+
         // |mCaptureFormat| is also used to configure the ImageReader.
-        mCaptureFormat = new VideoCaptureFormat(width, height, frameRate, ImageFormat.YUV_420_888);
+        mCaptureFormat = new VideoCaptureFormat(closestSupportedSize.getWidth(),
+                closestSupportedSize.getHeight(), frameRate, ImageFormat.YUV_420_888);
         int expectedFrameSize = mCaptureFormat.mWidth * mCaptureFormat.mHeight
                 * ImageFormat.getBitsPerPixel(mCaptureFormat.mPixelFormat) / 8;
         mCapturedData = new byte[expectedFrameSize];
-        final CameraCharacteristics cameraCharacteristics =
-                getCameraCharacteristics(mContext, mId);
         mCameraNativeOrientation =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
         // TODO(mcasas): The following line is correct for N5 with prerelease Build,
