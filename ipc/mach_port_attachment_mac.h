@@ -67,7 +67,7 @@ class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
 
  private:
   ~MachPortAttachmentMac() override;
-  mach_port_t mach_port_;
+  const mach_port_t mach_port_;
 
   // In the sender process, the attachment owns the Mach port of a newly created
   // message. The attachment broker will eventually take ownership, and set
