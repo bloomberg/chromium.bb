@@ -71,6 +71,11 @@ def _GetResourceListFromString(resources_content):
   resources = [Resource(_HashName(name), name, index) for name, index in
                _GetNameIndexPairsIter(resources_content)]
 
+  # Deduplicate resources. Some name-index pairs appear in both chromium_ and
+  # google_chrome_ header files. Unless deduplicated here, collisions will be
+  # raised in _CheckForHashCollisions.
+  resources = list(set(resources))
+
   # The default |Resource| order makes |resources| sorted by the hash, then
   # name, then index.
   resources.sort()
@@ -160,7 +165,7 @@ def _GenerateSourceFileContent(resources_content, namespace, header_filename):
   collisions = _CheckForHashCollisions(hashed_tuples)
   if collisions:
     error_message = "\n".join(
-        ["hash: %i, name: %s" % (i[0], i[1]) for i in sorted(collisions)])
+        ["hash: %i, name: %s" % (i.hash, i.name) for i in sorted(collisions)])
     error_message = ("\nThe following names had hash collisions "
                      "(sorted by the hash value):\n%s\n" %(error_message))
     raise HashCollisionError(error_message)
