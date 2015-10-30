@@ -403,6 +403,12 @@ UpdateCheckDriver::~UpdateCheckDriver() {
                                   installer_exit_code_);
     }
   }
+
+  // Clear the driver before calling the delegates because they might call
+  // BeginUpdateCheck() and they must not add themselves to the current
+  // instance of UpdateCheckDriver, which is currently being destroyed.
+  driver_ = nullptr;
+
   for (const auto& delegate : delegates_) {
     if (delegate) {
       if (status_ == UPGRADE_ERROR)
@@ -413,8 +419,6 @@ UpdateCheckDriver::~UpdateCheckDriver() {
         delegate->OnUpdateCheckComplete(new_version_);
     }
   }
-
-  driver_ = nullptr;
 }
 
 void UpdateCheckDriver::BeginUpdateCheck() {
