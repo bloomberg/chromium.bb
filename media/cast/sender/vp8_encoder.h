@@ -114,6 +114,11 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // This is bound to the thread where Initialize() is called.
   base::ThreadChecker thread_checker_;
 
+  // Set to true once a frame with zero-length encoded data has been
+  // encountered.
+  // TODO(miu): Remove after discovering cause.  http://crbug.com/519022
+  bool has_seen_zero_length_encoded_frame_;
+
   DISALLOW_COPY_AND_ASSIGN(Vp8Encoder);
 };
 

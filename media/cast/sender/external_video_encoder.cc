@@ -7,11 +7,15 @@
 #include <cmath>
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/stringprintf.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
@@ -97,7 +101,8 @@ class ExternalVideoEncoder::VEAClientImpl
         key_frame_encountered_(false),
         codec_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
         key_frame_quantizer_parsable_(false),
-        requested_bit_rate_(-1) {}
+        requested_bit_rate_(-1),
+        has_seen_zero_length_encoded_frame_(false) {}
 
   base::SingleThreadTaskRunner* task_runner() const {
     return task_runner_.get();
@@ -306,6 +311,25 @@ class ExternalVideoEncoder::VEAClientImpl
         quantizer_estimator_.Reset();
       }
 
+      // TODO(miu): Determine when/why encoding can produce zero-length data,
+      // which causes crypto crashes.  http://crbug.com/519022
+      if (!has_seen_zero_length_encoded_frame_ && encoded_frame->data.empty()) {
+        has_seen_zero_length_encoded_frame_ = true;
+
+        const char kZeroEncodeDetails[] = "zero-encode-details";
+        const std::string details = base::StringPrintf(
+            "%c/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,q=%zu,act=%c,ref=%d",
+            codec_profile_ == media::VP8PROFILE_ANY ? 'V' : 'H',
+            key_frame ? 'K' : 'D', encoded_frame->frame_id,
+            encoded_frame->rtp_timestamp, request.target_bit_rate / 1000,
+            in_progress_frame_encodes_.size(), encoder_active_ ? 'Y' : 'N',
+            static_cast<int>(encoded_frame->referenced_frame_id % 1000));
+        base::debug::SetCrashKeyValue(kZeroEncodeDetails, details);
+        // Please forward crash reports to http://crbug.com/519022:
+        base::debug::DumpWithoutCrashing();
+        base::debug::ClearCrashKey(kZeroEncodeDetails);
+      }
+
       cast_environment_->PostTask(
           CastEnvironment::MAIN,
           FROM_HERE,
@@ -456,6 +480,11 @@ class ExternalVideoEncoder::VEAClientImpl
 
   // Used to compute utilization metrics for each frame.
   QuantizerEstimator quantizer_estimator_;
+
+  // Set to true once a frame with zero-length encoded data has been
+  // encountered.
+  // TODO(miu): Remove after discovering cause.  http://crbug.com/519022
+  bool has_seen_zero_length_encoded_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VEAClientImpl);
 };

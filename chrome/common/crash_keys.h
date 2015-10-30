@@ -126,6 +126,10 @@ extern const char kKaskoEquivalentGuid[];
 // Numbers of active views.
 extern const char kViewCount[];
 
+// TEMPORARY: The encoder/frame details at the time a zero-length encoded frame
+// was encountered.  http://crbug.com/519022
+extern const char kZeroEncodeDetails[];
+
 }  // namespace crash_keys
 
 #endif  // CHROME_COMMON_CRASH_KEYS_H_
