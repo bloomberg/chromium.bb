@@ -32,7 +32,8 @@ CrtcController::~CrtcController() {
 
     SetCursor(nullptr);
     drm_->DisableCrtc(crtc_);
-    SignalPageFlipRequest();
+    if (page_flip_request_)
+      SignalPageFlipRequest();
   }
 }
 
@@ -168,15 +169,9 @@ bool CrtcController::ResetCursor() {
 }
 
 void CrtcController::SignalPageFlipRequest() {
-  if (page_flip_request_.get()) {
-    // If another frame is queued up and available immediately, calling Signal()
-    // may result in a call to SchedulePageFlip(), which will override
-    // page_flip_request_ and possibly release the ref. Stash previous request
-    // locally to  avoid deleting the object we are making a call on.
-    scoped_refptr<PageFlipRequest> last_request;
-    last_request.swap(page_flip_request_);
-    last_request->Signal(gfx::SwapResult::SWAP_ACK);
-  }
+  scoped_refptr<PageFlipRequest> request;
+  request.swap(page_flip_request_);
+  request->Signal(gfx::SwapResult::SWAP_ACK);
 }
 
 }  // namespace ui
