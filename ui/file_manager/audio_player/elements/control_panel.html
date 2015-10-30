@@ -7,7 +7,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/font-roboto/roboto.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
-<link rel="import" href="volume_controller.html">
 <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_ripple.html">
 <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toggle_ripple.html">
 
@@ -15,7 +14,10 @@
   <link rel="import" type="css" href="control_panel.css">
   <template>
     <div class="controls">
-      <div class="upper-controls audio-controls">
+      <div class="control-row volume-controls" hidden="[[!volumeSliderShown]]">
+        <paper-slider id="volumeSlider" value="{{volume::change}}"></paper-slider>
+      </div>
+      <div class="control-row audio-controls">
         <!-- Shuffle toggle button in the bottom line. -->
         <button class="shuffle-mode media-button toggle" state="default">
           <label>
@@ -66,16 +68,6 @@
           <files-ripple></files-ripple>
         </button>
 
-        <div id="volumeContainer"
-             class="default-hidden"
-             anchor-point="bottom center">
-          <volume-controller id="volumeSlider" value="{{volume}}"
-                             width="32" height="85" value="50">
-          </volume-controller>
-
-          <polymer-anchor-point id="anchorHelper"></polymer-anchor-point>
-        </div>
-
         <!-- Volume button in the bottom line. -->
         <button id="volumeButton"
                 class="volume media-button toggle"
@@ -99,7 +91,7 @@
           <files-toggle-ripple activated="[[expanded]]"></files-toggle-ripple>
         </button>
       </div>
-      <div class="lower-controls time-controls">
+      <div class="control-row time-controls">
         <div class="time-container">
           <div class="time-spacer">[[computeTimeString_(duration, duration)]]</div>
           <div class="time">[[computeTimeString_(time, duration)]]</div>

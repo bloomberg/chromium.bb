@@ -57,6 +57,14 @@ Polymer({
     },
 
     /**
+     * Whether the volume slider is shown.
+     */
+    volumeSliderShown: {
+      type: Boolean,
+      observer: 'volumeSliderShownChanged'
+    },
+
+    /**
      * Track index of the current track.
      */
     currentTrackIndex: {
@@ -132,6 +140,14 @@ Polymer({
   expandedChanged: function(expanded) {
     if (this.model)
       this.model.expanded = expanded;
+  },
+
+  /**
+   * Handles change event for volumeSliderShown state.
+   */
+  volumeSliderShownChanged: function(volumeSliderShown) {
+    if (this.model)
+      this.model.volumeSliderShown = volumeSliderShown;
   },
 
   /**
@@ -222,6 +238,7 @@ Polymer({
       this.repeat = newModel.repeat;
       this.volume = newModel.volume;
       this.expanded = newModel.expanded;
+      this.volumeSliderShown = newModel.volumeSliderShown;
     }
   },
 

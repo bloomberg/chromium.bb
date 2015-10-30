@@ -5,26 +5,6 @@
 (function() {
   'use strict';
 
-  /**
-   * Moves |target| element above |anchor| element, in order to match the
-   * bottom lines.
-   * @param {HTMLElement} target Target element.
-   * @param {HTMLElement} anchor Anchor element.
-   */
-  function matchBottomLine(target, anchor) {
-    var targetRect = target.getBoundingClientRect();
-    var anchorRect = anchor.getBoundingClientRect();
-
-    var pos = {
-      left: anchorRect.left + anchorRect.width / 2 - targetRect.width / 2,
-      bottom: window.innerHeight - anchorRect.bottom,
-    };
-
-    target.style.position = 'fixed';
-    target.style.left = pos.left + 'px';
-    target.style.bottom = pos.bottom + 'px';
-  }
-
   Polymer({
     is: 'control-panel',
 
@@ -97,8 +77,8 @@
       volumeSliderShown: {
         type: Boolean,
         value: false,
-        observer: 'volumeSliderShownChanged',
-        notify: true
+        notify: true,
+        reflectToAttribute: true
       },
 
       /**
@@ -116,11 +96,6 @@
      * element is ready.
      */
     ready: function() {
-      var onFocusoutBound = this.onVolumeControllerFocusout_.bind(this);
-
-      this.$.volumeSlider.addEventListener('focusout', onFocusoutBound);
-      this.$.volumeButton.addEventListener('focusout', onFocusoutBound);
-
       this.$.timeSlider.addEventListener('value-change', function() {
         if (this.dragging)
           this.dragging = false;
@@ -150,44 +125,6 @@
      */
     previousClick: function() {
       this.fire('previous-clicked');
-    },
-
-    /**
-     * Invoked when the property 'volumeSliderShown' changes.
-     * @param {boolean} shown
-     */
-    volumeSliderShownChanged: function(shown) {
-      this.showVolumeController_(shown);
-    },
-
-    /**
-     * Invoked when the focus goes out of the volume elements.
-     * @param {!UIEvent} event The focusout event.
-     * @private
-     */
-    onVolumeControllerFocusout_: function(event) {
-      if (this.volumeSliderShown) {
-        // If the focus goes out of the volume, hide the volume control.
-        if (!event.relatedTarget ||
-            (!this.$.volumeButton.contains(event.relatedTarget) &&
-             !this.$.volumeSlider.contains(event.relatedTarget))) {
-          this.volumeSliderShown = false;
-        }
-      }
-    },
-
-    /**
-     * Shows/hides the volume controller.
-     * @param {boolean} show True to show the controller, false to hide.
-     * @private
-     */
-    showVolumeController_: function(show) {
-      if (show) {
-        matchBottomLine(this.$.volumeContainer, this.$.volumeButton);
-        this.$.volumeContainer.style.visibility = 'visible';
-      } else {
-        this.$.volumeContainer.style.visibility = 'hidden';
-      }
     },
 
     /**

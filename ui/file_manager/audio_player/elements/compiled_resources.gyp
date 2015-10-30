@@ -4,16 +4,6 @@
 {
   'targets': [
     {
-      'target_name': 'volume_controller',
-      'variables': {
-        'depends': [],
-        'externs': []
-      },
-      'includes': [
-        '../../compile_js.gypi'
-      ]
-    },
-    {
       'target_name': 'track_list',
       'variables': {
         'depends': [],

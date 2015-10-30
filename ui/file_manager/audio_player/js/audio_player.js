@@ -24,9 +24,13 @@ function AudioPlayer(container) {
   Object.observe(this.model_, function(changes) {
     for (var i = 0; i < changes.length; i++) {
       var change = changes[i];
-      if (change.name == 'expanded' &&
-          (change.type == 'add' || change.type == 'update')) {
+      if (change.name === 'expanded' &&
+          (change.type === 'add' || change.type === 'update')) {
         this.onModelExpandedChanged(change.oldValue, change.object.expanded);
+        break;
+      } else if (change.name === 'volumeSliderShown' &&
+          (change.type === 'add' || change.type === 'update')) {
+        this.onModelVolumeSliderShownChanged();
         break;
       }
     }
@@ -284,11 +288,11 @@ AudioPlayer.prototype.onError_ = function() {
  */
 AudioPlayer.prototype.onResize_ = function(event) {
   if (!this.isExpanded_ &&
-      window.innerHeight >= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+      window.innerHeight >= this.getExpandedModeMinHeight_()) {
     this.isExpanded_ = true;
     this.player_.expanded = true;
   } else if (this.isExpanded_ &&
-             window.innerHeight < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+      window.innerHeight < this.getExpandedModeMinHeight_()) {
     this.isExpanded_ = false;
     this.player_.expanded = false;
   }
@@ -335,11 +339,25 @@ AudioPlayer.HEADER_HEIGHT = 33;  // 32px + border 1px
 AudioPlayer.TRACK_HEIGHT = 48;
 
 /**
- * Controls bar height in pixels.
+ * Volume slider's height in pixels.
  * @type {number}
  * @const
  */
-AudioPlayer.CONTROLS_HEIGHT = 96;
+AudioPlayer.VOLUME_SLIDER_HEIGHT = 48;
+
+/**
+ * Height of the control which has buttons such as play, next, shffule, etc...
+ * @type {number}
+ * @const
+ */
+AudioPlayer.BUTTONS_CONTROL_HEIGHT = 48;
+
+/**
+ * Height of the control which has progress slider, time, and duration.
+ * @type {number}
+ * @const
+ */
+AudioPlayer.TIME_CONTROL_HEIGHT = 48;
 
 /**
  * Default number of items in the expanded mode.
@@ -347,14 +365,6 @@ AudioPlayer.CONTROLS_HEIGHT = 96;
  * @const
  */
 AudioPlayer.DEFAULT_EXPANDED_ITEMS = 5;
-
-/**
- * Minimum size of the window in the expanded mode in pixels.
- * @type {number}
- * @const
- */
-AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.CONTROLS_HEIGHT +
-                                       AudioPlayer.TRACK_HEIGHT * 2;
 
 /**
  * Invoked when the 'expanded' property in the model is changed.
@@ -380,6 +390,13 @@ AudioPlayer.prototype.onModelExpandedChanged = function(oldValue, newValue) {
 };
 
 /**
+ * Invoked when the 'volumeSliderShown' property in the model is changed.
+ */
+AudioPlayer.prototype.onModelVolumeSliderShownChanged = function() {
+  this.syncHeight_();
+};
+
+/**
  * @private
  */
 AudioPlayer.prototype.syncHeight_ = function() {
@@ -388,21 +405,46 @@ AudioPlayer.prototype.syncHeight_ = function() {
   if (this.player_.expanded) {
     // Expanded.
     if (!this.lastExpandedHeight_ ||
-        this.lastExpandedHeight_ < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+        this.lastExpandedHeight_ < this.getExpandedModeMinHeight_()) {
       var expandedListHeight =
           Math.min(this.entries_.length, AudioPlayer.DEFAULT_EXPANDED_ITEMS) *
               AudioPlayer.TRACK_HEIGHT;
-      targetHeight = AudioPlayer.CONTROLS_HEIGHT + expandedListHeight;
+      targetHeight = this.getControlsHeight_() + expandedListHeight;
       this.lastExpandedHeight_ = targetHeight;
     } else {
       targetHeight = this.lastExpandedHeight_;
     }
   } else {
     // Not expanded.
-    targetHeight = AudioPlayer.CONTROLS_HEIGHT + AudioPlayer.TRACK_HEIGHT;
+    targetHeight = this.getControlsHeight_() + AudioPlayer.TRACK_HEIGHT;
   }
 
   window.resizeTo(window.innerWidth, targetHeight + AudioPlayer.HEADER_HEIGHT);
+};
+
+/**
+ * Calculates the height of control panel.
+ * @return {number} Current height of control panel in pixels.
+ * @private
+ */
+AudioPlayer.prototype.getControlsHeight_ = function() {
+  var height = AudioPlayer.BUTTONS_CONTROL_HEIGHT +
+               AudioPlayer.TIME_CONTROL_HEIGHT;
+  if (this.player_.volumeSliderShown)
+    height += AudioPlayer.VOLUME_SLIDER_HEIGHT;
+
+  return height;
+};
+
+/**
+ * Calculates the minium height of the app to show the playlist in expanded
+ * mode.
+ * @return {number} The minimum height of audio app window in which we can show
+ *     the playlist in expanded mode.
+ * @private
+ */
+AudioPlayer.prototype.getExpandedModeMinHeight_ = function() {
+  return this.getControlsHeight_() + AudioPlayer.TRACK_HEIGHT * 2;
 };
 
 /**

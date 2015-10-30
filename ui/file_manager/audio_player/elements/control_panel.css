@@ -13,8 +13,11 @@
   padding: 0;
 }
 
-.controls .upper-controls,
-.controls .lower-controls {
+:host([volume-slider-shown]) .controls {
+  height: 144px;
+}
+
+.controls .control-row {
   box-sizing: border-box;
   height: 48px;
   padding: 8px;
@@ -103,7 +106,7 @@
   opacity: 0; /* This class is intended to be used as invisible spacer. */
 }
 
-.time-controls > paper-slider {
+paper-slider {
   --paper-slider-active-color: rgb(66, 133, 244);
   --paper-slider-knob-color: rgb(64, 138, 241);
   flex: auto;
@@ -238,17 +241,13 @@ paper-slider.disabled {
   top: -1px;
 }
 
-/* Volume controls: sound button and volume slider */
-
-#volumeContainer {
-  border: 1px solid #ddd;
-  border-radius: 2px;
-  box-shadow: 0 2px 4px #777;
-  height: 110px;
-  position: fixed;
-  width: 32px;
+.volume-controls {
+  align-items: center;
+  background-color: rgb(235, 235, 235);
+  display: flex;
+  flex-direction: row;
 }
 
-#volumeContainer.default-hidden {
-  visibility: hidden;
+.volume-controls paper-slider {
+  width: 100%;
 }
