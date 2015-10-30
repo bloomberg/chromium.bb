@@ -41,7 +41,13 @@ camera.models.Gallery = function() {
    * @type {number}
    * @private
    */
-  this.lastFileId_ = 0;
+  this.lastDateSecond_ = 0;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.sameSecondCount_ = 0;
 
   /**
    * @type {Array.<camera.models.Gallery.Observer>}
@@ -451,6 +457,39 @@ camera.models.Gallery.prototype.createThumbnail_ = function(
 };
 
 /**
+ * Generates a file name base for the picture.
+ *
+ * @return {string} File name base.
+ * @private
+ */
+camera.models.Gallery.prototype.generateFileNameBase_ = function() {
+  function pad(n) {
+    if (n < 10)
+      n = '0' + n;
+    return n;
+  }
+
+  // File name base will be formatted as IMG_yyyyMMdd_HHmmss.
+  var now = new Date();
+  var result = 'IMG_' + now.getFullYear() + pad(now.getMonth() + 1) +
+      pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
+      pad(now.getSeconds());
+
+  // If the last name was generated for the same second,
+  // _1, _2, etc will be appended to the name.
+  var dateSecond = Math.floor(now.getTime() / 1000);
+  if (dateSecond == this.lastDateSecond_) {
+      this.sameSecondCount_++;
+      result += "_" + this.sameSecondCount_;
+  } else {
+      this.lastDateSecond_ = dateSecond;
+      this.sameSecondCount_ = 0;
+  }
+
+  return result;
+};
+
+/**
  * Adds a picture to the gallery and saves it in the internal storage.
  *
  * @param {string} dataURL Data of the picture to be added.
@@ -461,8 +500,7 @@ camera.models.Gallery.prototype.addPicture = function(
     dataURL, onSuccess, onFailure) {
   this.createThumbnail_(dataURL, function(thumbnailDataURL) {
     // Save the thumbnail as well as the full screen resolution picture.
-    this.lastFileId_++;
-    var fileNameBase = new Date().getTime() + '.' + this.lastFileId_;
+    var fileNameBase = this.generateFileNameBase_();
 
     this.savePictureToFile_(
         'thumb-' + fileNameBase + '.jpg',
