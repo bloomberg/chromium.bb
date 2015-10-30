@@ -82,6 +82,9 @@ AudioPlayerElement.prototype.tracks;
 /** @type {Object} */
 AudioPlayerElement.prototype.model;
 
+/** @type {boolean} */
+AudioPlayerElement.prototype.volumeSliderShown;
+
 AudioPlayerElement.prototype.onPageUnload = function() {};
 
 AudioPlayerElement.prototype.onAudioError = function() {};
