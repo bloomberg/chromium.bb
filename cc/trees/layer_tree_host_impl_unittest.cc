@@ -8658,6 +8658,11 @@ TEST_F(LayerTreeHostImplCountingLostSurfaces, TwiceLostSurface) {
   EXPECT_LE(1, num_lost_surfaces_);
 }
 
+size_t CountRenderPassesWithId(const RenderPassList& list, RenderPassId id) {
+  return std::count_if(list.begin(), list.end(),
+                       [id](const RenderPass* p) { return p->id == id; });
+}
+
 TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   LayerTreeHostImpl::FrameData frame;
   frame.render_passes.push_back(RenderPass::Create());
@@ -8670,10 +8675,6 @@ TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   pass1->SetNew(RenderPassId(1, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass2->SetNew(RenderPassId(2, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass3->SetNew(RenderPassId(3, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
-
-  frame.render_passes_by_id[pass1->id] = pass1;
-  frame.render_passes_by_id[pass2->id] = pass2;
-  frame.render_passes_by_id[pass3->id] = pass3;
 
   // Add a quad to each pass so they aren't empty.
   SolidColorDrawQuad* color_quad;
@@ -8692,11 +8693,13 @@ TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
 
   // But pass2 is not referenced by pass1. So pass2 and pass3 should be culled.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
-  EXPECT_EQ(1u, frame.render_passes_by_id.size());
-  EXPECT_TRUE(frame.render_passes_by_id[RenderPassId(1, 0)]);
-  EXPECT_FALSE(frame.render_passes_by_id[RenderPassId(2, 0)]);
-  EXPECT_FALSE(frame.render_passes_by_id[RenderPassId(3, 0)]);
   EXPECT_EQ(1u, frame.render_passes.size());
+  EXPECT_EQ(1u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(1, 0)));
+  EXPECT_EQ(0u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(2, 0)));
+  EXPECT_EQ(0u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(3, 0)));
   EXPECT_EQ(RenderPassId(1, 0), frame.render_passes[0]->id);
 }
 
@@ -8712,10 +8715,6 @@ TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
   pass1->SetNew(RenderPassId(1, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass2->SetNew(RenderPassId(2, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass3->SetNew(RenderPassId(3, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
-
-  frame.render_passes_by_id[pass1->id] = pass1;
-  frame.render_passes_by_id[pass2->id] = pass2;
-  frame.render_passes_by_id[pass3->id] = pass3;
 
   // pass1 is not empty, but pass2 and pass3 are.
   SolidColorDrawQuad* color_quad;
@@ -8736,11 +8735,13 @@ TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
   // Since pass3 is empty it should be removed. Then pass2 is empty too, and
   // should be removed.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
-  EXPECT_EQ(1u, frame.render_passes_by_id.size());
-  EXPECT_TRUE(frame.render_passes_by_id[RenderPassId(1, 0)]);
-  EXPECT_FALSE(frame.render_passes_by_id[RenderPassId(2, 0)]);
-  EXPECT_FALSE(frame.render_passes_by_id[RenderPassId(3, 0)]);
   EXPECT_EQ(1u, frame.render_passes.size());
+  EXPECT_EQ(1u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(1, 0)));
+  EXPECT_EQ(0u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(2, 0)));
+  EXPECT_EQ(0u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(3, 0)));
   EXPECT_EQ(RenderPassId(1, 0), frame.render_passes[0]->id);
   // The RenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(1u, pass1->quad_list.size());
@@ -8760,10 +8761,6 @@ TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   pass2->SetNew(RenderPassId(2, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass3->SetNew(RenderPassId(3, 0), gfx::Rect(), gfx::Rect(), gfx::Transform());
 
-  frame.render_passes_by_id[pass1->id] = pass1;
-  frame.render_passes_by_id[pass2->id] = pass2;
-  frame.render_passes_by_id[pass3->id] = pass3;
-
   // pass3 is referenced by pass2.
   RenderPassDrawQuad* rpdq =
       pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
@@ -8779,11 +8776,13 @@ TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   // should be removed. Then pass1 is empty too, but it's the root so it should
   // not be removed.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
-  EXPECT_EQ(1u, frame.render_passes_by_id.size());
-  EXPECT_TRUE(frame.render_passes_by_id[RenderPassId(1, 0)]);
-  EXPECT_FALSE(frame.render_passes_by_id[RenderPassId(2, 0)]);
-  EXPECT_FALSE(frame.render_passes_by_id[RenderPassId(3, 0)]);
   EXPECT_EQ(1u, frame.render_passes.size());
+  EXPECT_EQ(1u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(1, 0)));
+  EXPECT_EQ(0u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(2, 0)));
+  EXPECT_EQ(0u,
+            CountRenderPassesWithId(frame.render_passes, RenderPassId(3, 0)));
   EXPECT_EQ(RenderPassId(1, 0), frame.render_passes[0]->id);
   // The RenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(0u, pass1->quad_list.size());

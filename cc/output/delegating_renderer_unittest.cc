@@ -87,7 +87,6 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
                                    LayerTreeHostImpl::FrameData* frame,
                                    DrawResult draw_result) override {
     frame->render_passes.clear();
-    frame->render_passes_by_id.clear();
 
     RenderPass* child_pass =
         AddRenderPass(&frame->render_passes, RenderPassId(2, 1),

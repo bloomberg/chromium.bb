@@ -217,7 +217,6 @@ class CC_EXPORT LayerTreeHostImpl
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
     std::vector<FrameTimingTracker::FrameAndRectIds> composite_events;
     RenderPassList render_passes;
-    RenderPassIdHashMap render_passes_by_id;
     const LayerImplList* render_surface_layer_list;
     LayerImplList will_draw_layers;
     bool has_no_damage;

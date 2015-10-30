@@ -659,7 +659,6 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
 
 void LayerTreeHostImpl::FrameData::AppendRenderPass(
     scoped_ptr<RenderPass> render_pass) {
-  render_passes_by_id[render_pass->id] = render_pass.get();
   render_passes.push_back(render_pass.Pass());
 }
 
@@ -757,6 +756,13 @@ static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,
                  screen_background_color,
                  false);
   }
+}
+
+static RenderPass* FindRenderPassById(const RenderPassList& list,
+                                      RenderPassId id) {
+  auto it = std::find_if(list.begin(), list.end(),
+                         [id](const RenderPass* p) { return p->id == id; });
+  return it == list.end() ? nullptr : *it;
 }
 
 DrawResult LayerTreeHostImpl::CalculateRenderPasses(
@@ -868,7 +874,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     RenderPassId target_render_pass_id =
         it.target_render_surface_layer()->render_surface()->GetRenderPassId();
     RenderPass* target_render_pass =
-        frame->render_passes_by_id[target_render_pass_id];
+        FindRenderPassById(frame->render_passes, target_render_pass_id);
 
     AppendQuadsData append_quads_data;
 
@@ -883,7 +889,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       RenderPassId contributing_render_pass_id =
           it->render_surface()->GetRenderPassId();
       RenderPass* contributing_render_pass =
-          frame->render_passes_by_id[contributing_render_pass_id];
+          FindRenderPassById(frame->render_passes, contributing_render_pass_id);
       AppendQuadsForRenderSurfaceLayer(target_render_pass,
                                        *it,
                                        contributing_render_pass,
@@ -900,13 +906,12 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         if (it->HasContributingDelegatedRenderPasses()) {
           RenderPassId contributing_render_pass_id =
               it->FirstContributingRenderPassId();
-          while (frame->render_passes_by_id.find(contributing_render_pass_id) !=
-                 frame->render_passes_by_id.end()) {
-            RenderPass* render_pass =
-                frame->render_passes_by_id[contributing_render_pass_id];
-
-            it->AppendQuads(render_pass, &append_quads_data);
-
+          while (true) {
+            RenderPass* pass = FindRenderPassById(frame->render_passes,
+                                                  contributing_render_pass_id);
+            if (!pass)
+              break;
+            it->AppendQuads(pass, &append_quads_data);
             contributing_render_pass_id =
                 it->NextContributingRenderPassId(contributing_render_pass_id);
           }
@@ -977,11 +982,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   for (const auto& render_pass : frame->render_passes) {
     for (const auto& quad : render_pass->quad_list)
       DCHECK(quad->shared_quad_state);
-    DCHECK(frame->render_passes_by_id.find(render_pass->id) !=
-           frame->render_passes_by_id.end());
   }
-#endif
   DCHECK(frame->render_passes.back()->output_rect.origin().IsOrigin());
+#endif
 
   if (!active_tree_->has_transparent_background()) {
     frame->render_passes.back()->has_transparent_background = false;
@@ -1097,7 +1100,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
   frame->render_passes.clear();
-  frame->render_passes_by_id.clear();
   frame->will_draw_layers.clear();
   frame->has_no_damage = false;
 
@@ -1161,7 +1163,6 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
     if (pass->quad_list.empty() && pass->copy_requests.empty()) {
       // Remove the pass and decrement |i| to counter the for loop's increment,
       // so we don't skip the next pass in the loop.
-      frame->render_passes_by_id.erase(pass->id);
       frame->render_passes.erase(frame->render_passes.begin() + i);
       --i;
       continue;
@@ -1190,7 +1191,6 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
       pass_references[quad->render_pass_id]--;
     }
 
-    frame->render_passes_by_id.erase(pass->id);
     frame->render_passes.erase(frame->render_passes.end() - 2 - i);
     --i;
   }
@@ -1651,7 +1651,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   }
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
-  frame->render_passes_by_id.clear();
 
   // The next frame should start by assuming nothing has changed, and changes
   // are noted as they occur.

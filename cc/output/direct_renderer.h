@@ -139,6 +139,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) = 0;
 
+  // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
   base::ScopedPtrHashMap<RenderPassId, scoped_ptr<ScopedResource>>
       render_pass_textures_;
   OutputSurface* output_surface_;
