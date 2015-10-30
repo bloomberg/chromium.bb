@@ -274,6 +274,24 @@ void ParamTraits<bool>::Log(const param_type& p, std::string* l) {
   l->append(p ? "true" : "false");
 }
 
+void ParamTraits<signed char>::Write(Message* m, const param_type& p) {
+  m->WriteBytes(&p, sizeof(param_type));
+}
+
+bool ParamTraits<signed char>::Read(const Message* m,
+                             base::PickleIterator* iter,
+                             param_type* r) {
+  const char* data;
+  if (!iter->ReadBytes(&data, sizeof(param_type)))
+    return false;
+  memcpy(r, data, sizeof(param_type));
+  return true;
+}
+
+void ParamTraits<signed char>::Log(const param_type& p, std::string* l) {
+  l->append(base::IntToString(p));
+}
+
 void ParamTraits<unsigned char>::Write(Message* m, const param_type& p) {
   m->WriteBytes(&p, sizeof(param_type));
 }
