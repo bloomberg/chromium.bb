@@ -53,19 +53,6 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Creates a config from a JSON string, which was serialized using
-         * {@link #toString}.
-         *
-         * @param context Android {@link Context} for engine to use.
-         * @param json JSON string of configuration parameters, which was
-         *         serialized using {@link #toString}.
-         */
-        public Builder(Context context, String json) throws JSONException {
-            mConfig = new JSONObject(json);
-            mContext = context;
-        }
-
-        /**
          * Constructs a User-Agent string including Cronet version, and
          * application name and version.
          *
@@ -334,10 +321,9 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Get JSON string representation of the builder.
+         * Gets a JSON string representation of the builder.
          */
-        @Override
-        public String toString() {
+        String toJSONString() {
             return mConfig.toString();
         }
 

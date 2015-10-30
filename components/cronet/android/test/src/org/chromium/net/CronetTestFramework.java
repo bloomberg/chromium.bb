@@ -10,7 +10,6 @@ import android.os.Environment;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
@@ -33,7 +32,6 @@ public class CronetTestFramework {
 
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
     public static final String POST_DATA_KEY = "postData";
-    public static final String CONFIG_KEY = "config";
     public static final String CACHE_KEY = "cache";
     public static final String SDCH_KEY = "sdch";
 
@@ -104,7 +102,8 @@ public class CronetTestFramework {
 
     // TODO(crbug.com/547160): Fix this findbugs error and remove the suppression.
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public CronetTestFramework(String appUrl, String[] commandLine, Context context) {
+    public CronetTestFramework(
+            String appUrl, String[] commandLine, Context context, CronetEngine.Builder builder) {
         mCommandLine = commandLine;
         mContext = context;
         prepareTestStorage();
@@ -119,8 +118,7 @@ public class CronetTestFramework {
         }
 
         // Initializes CronetEngine.Builder from commandLine args.
-        mCronetEngineBuilder = initializeCronetEngineBuilder();
-        Log.i(TAG, "Using Config: " + mCronetEngineBuilder.toString());
+        mCronetEngineBuilder = initializeCronetEngineBuilderWithPresuppliedBuilder(builder);
 
         String initString = getCommandLineArg(LIBRARY_INIT_KEY);
         if (LIBRARY_INIT_SKIP.equals(initString)) {
@@ -149,15 +147,15 @@ public class CronetTestFramework {
      * Prepares the path for the test storage (http cache, QUIC server info).
      */
     private void prepareTestStorage() {
-        File storage = new File(getTestStorage());
+        File storage = new File(getTestStorage(mContext));
         if (storage.exists()) {
             assertTrue(recursiveDelete(storage));
         }
         assertTrue(storage.mkdir());
     }
 
-    String getTestStorage() {
-        return PathUtils.getDataDirectory(mContext) + "/test_storage";
+    static String getTestStorage(Context context) {
+        return PathUtils.getDataDirectory(context) + "/test_storage";
     }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
@@ -176,31 +174,28 @@ public class CronetTestFramework {
         return mCronetEngineBuilder;
     }
 
-    private CronetEngine.Builder initializeCronetEngineBuilder() {
-        return createCronetEngineBuilder(mContext);
+    private CronetEngine.Builder initializeCronetEngineBuilderWithPresuppliedBuilder(
+            CronetEngine.Builder builder) {
+        return createCronetEngineBuilderWithPresuppliedBuilder(mContext, builder);
     }
 
     CronetEngine.Builder createCronetEngineBuilder(Context context) {
-        CronetEngine.Builder cronetEngineBuilder = new CronetEngine.Builder(context);
-        cronetEngineBuilder.enableHTTP2(true).enableQUIC(true);
+        return createCronetEngineBuilderWithPresuppliedBuilder(context, null);
+    }
 
-        // Override config if it is passed from the launcher.
-        String configString = getCommandLineArg(CONFIG_KEY);
-        if (configString != null) {
-            try {
-                cronetEngineBuilder = new CronetEngine.Builder(mContext, configString);
-            } catch (org.json.JSONException e) {
-                fail("Invalid Config." + e);
-                return null;
-            }
+    private CronetEngine.Builder createCronetEngineBuilderWithPresuppliedBuilder(
+            Context context, CronetEngine.Builder cronetEngineBuilder) {
+        if (cronetEngineBuilder == null) {
+            cronetEngineBuilder = new CronetEngine.Builder(context);
+            cronetEngineBuilder.enableHTTP2(true).enableQUIC(true);
         }
 
         String cacheString = getCommandLineArg(CACHE_KEY);
         if (CACHE_DISK.equals(cacheString)) {
-            cronetEngineBuilder.setStoragePath(getTestStorage());
+            cronetEngineBuilder.setStoragePath(getTestStorage(context));
             cronetEngineBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
         } else if (CACHE_DISK_NO_HTTP.equals(cacheString)) {
-            cronetEngineBuilder.setStoragePath(getTestStorage());
+            cronetEngineBuilder.setStoragePath(getTestStorage(context));
             cronetEngineBuilder.enableHttpCache(
                     CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
         } else if (CACHE_IN_MEMORY.equals(cacheString)) {

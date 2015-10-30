@@ -38,10 +38,10 @@ public class QuicTest extends CronetTestBase {
                 QuicTestServer.getServerPort());
         builder.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
         builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
+        builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
+        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
 
-        String[] commandLineArgs = {CronetTestFramework.CONFIG_KEY, builder.toString(),
-                CronetTestFramework.CACHE_KEY, CronetTestFramework.CACHE_DISK_NO_HTTP};
-        mTestFramework = startCronetTestFrameworkWithUrlAndCommandLineArgs(null, commandLineArgs);
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class QuicTest extends CronetTestBase {
 
         // Make another request using a new context but with no QUIC hints.
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
-        builder.setStoragePath(mTestFramework.getTestStorage());
+        builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
         builder.enableQUIC(true);
         builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
@@ -148,7 +148,7 @@ public class QuicTest extends CronetTestBase {
     // Returns whether a file contains a particular string.
     @SuppressFBWarnings("OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE")
     private boolean fileContainsString(String filename, String content) throws IOException {
-        File file = new File(mTestFramework.getTestStorage() + "/" + filename);
+        File file = new File(CronetTestFramework.getTestStorage(getContext()) + "/" + filename);
         FileInputStream fileInputStream = new FileInputStream(file);
         byte[] data = new byte[(int) file.length()];
         fileInputStream.read(data);

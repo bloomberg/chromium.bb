@@ -4,8 +4,6 @@
 
 package org.chromium.net;
 
-import org.json.JSONException;
-
 /**
  * A config for CronetEngine, which allows runtime configuration of
  * CronetEngine.
@@ -16,11 +14,5 @@ public class UrlRequestContextConfig extends CronetEngine.Builder {
         // Context will be passed in later when the ChromiumUrlRequestFactory
         // or ChromiumUrlRequestContext is created.
         super(null);
-    }
-
-    public UrlRequestContextConfig(String json) throws JSONException {
-        // Context will be passed in later when the ChromiumUrlRequestFactory
-        // or ChromiumUrlRequestContext is created.
-        super(null, json);
     }
 }

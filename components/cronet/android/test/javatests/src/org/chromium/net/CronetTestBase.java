@@ -6,6 +6,8 @@ package org.chromium.net;
 
 import android.test.AndroidTestCase;
 
+import org.chromium.base.PathUtils;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,13 +19,21 @@ import java.net.URL;
  * Base test class for all CronetTest based tests.
  */
 public class CronetTestBase extends AndroidTestCase {
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_test";
+
     private CronetTestFramework mCronetTestFramework;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, getContext());
+    }
 
     /**
      * Starts the CronetTest framework.
      */
     protected CronetTestFramework startCronetTestFramework() {
-        return startCronetTestFrameworkWithUrlAndCommandLineArgs(null, null);
+        return startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, null);
     }
 
     /**
@@ -31,7 +41,17 @@ public class CronetTestBase extends AndroidTestCase {
      * null.
      */
     protected CronetTestFramework startCronetTestFrameworkWithUrl(String url) {
-        return startCronetTestFrameworkWithUrlAndCommandLineArgs(url, null);
+        return startCronetTestFrameworkWithUrlAndCronetEngineBuilder(url, null);
+    }
+
+    /**
+     * Starts the CronetTest framework using the provided CronetEngine.Builder
+     * and loads the given URL. The URL can be null.
+     */
+    protected CronetTestFramework startCronetTestFrameworkWithUrlAndCronetEngineBuilder(
+            String url, CronetEngine.Builder builder) {
+        mCronetTestFramework = new CronetTestFramework(url, null, getContext(), builder);
+        return mCronetTestFramework;
     }
 
     /**
@@ -40,7 +60,7 @@ public class CronetTestBase extends AndroidTestCase {
      */
     protected CronetTestFramework startCronetTestFrameworkWithUrlAndCommandLineArgs(
             String url, String[] commandLineArgs) {
-        mCronetTestFramework = new CronetTestFramework(url, commandLineArgs, getContext());
+        mCronetTestFramework = new CronetTestFramework(url, commandLineArgs, getContext(), null);
         return mCronetTestFramework;
     }
 

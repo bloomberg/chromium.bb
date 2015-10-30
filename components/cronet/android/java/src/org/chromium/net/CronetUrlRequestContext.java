@@ -73,7 +73,7 @@ class CronetUrlRequestContext extends CronetEngine {
     public CronetUrlRequestContext(CronetEngine.Builder builder) {
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
         nativeSetMinLogLevel(getLoggingLevel());
-        mUrlRequestContextAdapter = nativeCreateRequestContextAdapter(builder.toString());
+        mUrlRequestContextAdapter = nativeCreateRequestContextAdapter(builder.toJSONString());
         if (mUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed.");
         }

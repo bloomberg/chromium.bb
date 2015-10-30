@@ -133,14 +133,12 @@ public class CronetUrlTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testLegacyLoadUrl() throws Exception {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableLegacyMode(true);
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        builder.enableLegacyMode(true);
         // TODO(mef) fix tests so that library isn't loaded for legacy stack
-        config.setLibraryName("cronet_tests");
 
-        String[] commandLineArgs = {CronetTestFramework.CONFIG_KEY, config.toString()};
         CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCommandLineArgs(URL, commandLineArgs);
+                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(URL, builder);
 
         // Make sure that the URL is set as expected.
         assertEquals(URL, testFramework.getUrl());

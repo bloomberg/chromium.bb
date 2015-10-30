@@ -128,9 +128,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         CronetEngine.Builder cronetEngineBuilder = new CronetEngine.Builder(getContext());
         cronetEngineBuilder.setUserAgent(userAgentValue);
         cronetEngineBuilder.setLibraryName("cronet_tests");
-        String[] commandLineArgs = {CronetTestFramework.CONFIG_KEY, cronetEngineBuilder.toString()};
-        mTestFramework =
-                startCronetTestFrameworkWithUrlAndCommandLineArgs(TEST_URL, commandLineArgs);
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(
+                TEST_URL, cronetEngineBuilder);
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder urlRequestBuilder =

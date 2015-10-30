@@ -36,8 +36,8 @@ public class ChromiumUrlRequestContext {
     protected ChromiumUrlRequestContext(
             final Context context, String userAgent, CronetEngine.Builder config) {
         CronetLibraryLoader.ensureInitialized(context, config);
-        mChromiumUrlRequestContextAdapter =
-                nativeCreateRequestContextAdapter(userAgent, getLoggingLevel(), config.toString());
+        mChromiumUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
+                userAgent, getLoggingLevel(), config.toJSONString());
         if (mChromiumUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed");
         }

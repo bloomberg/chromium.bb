@@ -4,8 +4,6 @@
 
 package org.chromium.net;
 
-import org.json.JSONException;
-
 /**
  * A config for HttpUrlRequestFactory, which allows runtime configuration of
  * HttpUrlRequestFactory.
@@ -19,12 +17,5 @@ public class HttpUrlRequestFactoryConfig extends UrlRequestContextConfig {
      */
     public HttpUrlRequestFactoryConfig() {
         super();
-    }
-
-    /**
-     * Create config from json serialized using @toString.
-     */
-    public HttpUrlRequestFactoryConfig(String json) throws JSONException {
-        super(json);
     }
 }

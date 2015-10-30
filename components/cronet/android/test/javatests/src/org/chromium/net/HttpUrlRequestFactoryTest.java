@@ -24,14 +24,13 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testCreateFactory() throws Throwable {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableQUIC(true);
-        config.addQuicHint("www.google.com", 443, 443);
-        config.addQuicHint("www.youtube.com", 443, 443);
-        config.setLibraryName("cronet_tests");
-        String[] commandLineArgs = {CronetTestFramework.CONFIG_KEY, config.toString()};
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        builder.enableQUIC(true);
+        builder.addQuicHint("www.google.com", 443, 443);
+        builder.addQuicHint("www.youtube.com", 443, 443);
+        builder.setLibraryName("cronet_tests");
         CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCommandLineArgs(URL, commandLineArgs);
+                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(URL, builder);
         HttpUrlRequestFactory factory = testFramework.mRequestFactory;
         assertNotNull("Factory should be created", factory);
         assertTrue("Factory should be Chromium/n.n.n.n@r but is "
