@@ -8,14 +8,23 @@
 namespace content {
 class RenderWidget;
 
-// Simple RAII object for handling IME events. Calls StartHandlingImeEvent on
-// construction and FinishHandlingImeEvent on destruction.
+// Simple RAII object for guarding IME updates. Calls OnImeGuardStart on
+// construction and OnImeGuardFinish on destruction.
 class ImeEventGuard {
  public:
   explicit ImeEventGuard(RenderWidget* widget);
+  ImeEventGuard(RenderWidget* widget, bool show_ime, bool from_ime);
   ~ImeEventGuard();
+
+  bool show_ime() const { return show_ime_; }
+  bool from_ime() const { return from_ime_; }
+  void set_show_ime(bool show_ime) { show_ime_ = show_ime; }
+  void set_from_ime(bool from_ime) { from_ime_ = from_ime; }
+
  private:
   RenderWidget* widget_;
+  bool show_ime_;
+  bool from_ime_;
 };
 }
 

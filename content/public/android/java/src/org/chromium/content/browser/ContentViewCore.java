@@ -2497,8 +2497,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             boolean focusedNodeIsPassword = (textInputType == TextInputType.PASSWORD);
             if (!focusedNodeEditable) hidePastePopup();
 
+            mImeAdapter.attach(nativeImeAdapterAndroid);
             mImeAdapter.updateKeyboardVisibility(
-                    nativeImeAdapterAndroid, textInputType, textInputFlags, showImeIfNeeded);
+                    textInputType, textInputFlags, showImeIfNeeded);
 
             if (mInputConnection != null) {
                 mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
@@ -2688,7 +2689,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     private boolean canPaste() {
-        if (!mFocusedNodeEditable) return false;
         return ((ClipboardManager) mContext.getSystemService(
                 Context.CLIPBOARD_SERVICE)).hasPrimaryClip();
     }

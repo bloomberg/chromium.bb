@@ -64,11 +64,14 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
 
     private final ContentViewCore mContentViewCore;
     private InputConnection mInputConnection;
-    private int mShowSoftInputCounter = 0;
-    private int mUpdateSelectionCounter = 0;
+    private int mRestartInputCounter;
+    private int mShowSoftInputCounter;
+    private int mHideSoftInputCounter;
+    private int mUpdateSelectionCounter;
     private EditorInfo mEditorInfo;
     private final Range mSelection = new Range(0, 0);
     private final Range mComposition = new Range(-1, -1);
+    private boolean mIsShowWithoutHideOutstanding;
 
     public TestInputMethodManagerWrapper(ContentViewCore contentViewCore) {
         super(null);
@@ -77,12 +80,14 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
 
     @Override
     public void restartInput(View view) {
+        mRestartInputCounter++;
         mEditorInfo = new EditorInfo();
         mInputConnection = mContentViewCore.onCreateInputConnection(mEditorInfo);
     }
 
     @Override
     public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
+        mIsShowWithoutHideOutstanding = true;
         mShowSoftInputCounter++;
         if (mInputConnection != null) return;
         mEditorInfo = new EditorInfo();
@@ -98,6 +103,8 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     @Override
     public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
             ResultReceiver resultReceiver) {
+        mIsShowWithoutHideOutstanding = false;
+        mHideSoftInputCounter++;
         boolean retVal = mInputConnection == null;
         mInputConnection = null;
         return retVal;
@@ -111,12 +118,27 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         mComposition.set(candidatesStart, candidatesEnd);
     }
 
+    public int getRestartInputCounter() {
+        return mRestartInputCounter;
+    }
+
     public int getShowSoftInputCounter() {
         return mShowSoftInputCounter;
     }
 
+    public int getHideSoftInputCounter() {
+        return mHideSoftInputCounter;
+    }
+
     public int getUpdateSelectionCounter() {
         return mUpdateSelectionCounter;
+    }
+
+    public void resetCounters() {
+        mRestartInputCounter = 0;
+        mShowSoftInputCounter = 0;
+        mHideSoftInputCounter = 0;
+        mUpdateSelectionCounter = 0;
     }
 
     public EditorInfo getEditorInfo() {
@@ -129,5 +151,9 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
 
     public Range getComposition() {
         return mComposition;
+    }
+
+    public boolean isShowWithoutHideOutstanding() {
+        return mIsShowWithoutHideOutstanding;
     }
 }

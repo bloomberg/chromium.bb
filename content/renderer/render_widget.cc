@@ -499,7 +499,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       display_mode_(blink::WebDisplayModeUndefined),
       handling_input_event_(false),
       handling_event_overscroll_(nullptr),
-      handling_ime_event_(false),
+      ime_event_guard_(nullptr),
       handling_event_type_(WebInputEvent::Undefined),
       ignore_ack_for_mouse_move_from_debugger_(false),
       closing_(false),
@@ -1084,25 +1084,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
                                          &event_overscroll);
 
 #if defined(OS_ANDROID)
-  // On Android, when a key is pressed or sent from the Keyboard using IME,
-  // |AdapterInputConnection| generates input key events to make sure all JS
-  // listeners that monitor KeyUp and KeyDown events receive the proper key
-  // code. Since this input key event comes from IME, we need to set the
-  // IME event guard here to make sure it does not interfere with other IME
-  // events.
-  scoped_ptr<ImeEventGuard> ime_event_guard_maybe;
-  if (WebInputEvent::isKeyboardEventType(input_event->type)) {
-    const WebKeyboardEvent& key_event =
-        *static_cast<const WebKeyboardEvent*>(input_event);
-    // Some keys are special and it's essential that no events get blocked.
-    if (key_event.nativeKeyCode != AKEYCODE_TAB &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_CENTER &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_LEFT &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_RIGHT &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_UP &&
-        key_event.nativeKeyCode != AKEYCODE_DPAD_DOWN)
-      ime_event_guard_maybe.reset(new ImeEventGuard(this));
-  }
+  const bool is_keyboard_event =
+      WebInputEvent::isKeyboardEventType(input_event->type);
+
+  // For non-keyboard events, we want the change source to be FROM_NON_IME.
+  ImeEventGuard guard(this, false, is_keyboard_event);
 #endif
 
   base::TimeTicks start_time;
@@ -1891,29 +1877,49 @@ static bool IsDateTimeInput(ui::TextInputType type) {
       type == ui::TEXT_INPUT_TYPE_WEEK;
 }
 
-
-void RenderWidget::StartHandlingImeEvent() {
-  DCHECK(!handling_ime_event_);
-  handling_ime_event_ = true;
+void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
+  if (!ime_event_guard_)
+    ime_event_guard_ = guard;
 }
 
-void RenderWidget::FinishHandlingImeEvent() {
-  DCHECK(handling_ime_event_);
-  handling_ime_event_ = false;
+void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
+  if (ime_event_guard_ != guard) {
+#if defined(OS_ANDROID)
+    // In case a from-IME event (e.g. touch) ends up in not-from-IME event
+    // (e.g. long press gesture), we want to treat it as not-from-IME event
+    // so that AdapterInputConnection can make changes to its Editable model.
+    // Therefore, we want to mark this text state update as 'from IME' only
+    // when all the nested events are all originating from IME.
+    ime_event_guard_->set_from_ime(
+        ime_event_guard_->from_ime() && guard->from_ime());
+#endif
+    return;
+  }
+  ime_event_guard_ = nullptr;
+
   // While handling an ime event, text input state and selection bounds updates
   // are ignored. These must explicitly be updated once finished handling the
   // ime event.
   UpdateSelectionBounds();
 #if defined(OS_ANDROID)
-  UpdateTextInputState(NO_SHOW_IME, FROM_IME);
+  UpdateTextInputState(
+      guard->show_ime() ? SHOW_IME_IF_NEEDED : NO_SHOW_IME,
+      guard->from_ime() ? FROM_IME : FROM_NON_IME);
 #endif
 }
 
 void RenderWidget::UpdateTextInputState(ShowIme show_ime,
                                         ChangeSource change_source) {
   TRACE_EVENT0("renderer", "RenderWidget::UpdateTextInputState");
-  if (handling_ime_event_)
+  if (ime_event_guard_) {
+    // show_ime should still be effective even if it was set inside the IME
+    // event guard.
+    if (show_ime == SHOW_IME_IF_NEEDED) {
+      ime_event_guard_->set_show_ime(true);
+    }
     return;
+  }
+
   ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
     return;  // Not considered as a text input field in WebKit/Chromium.
@@ -1979,7 +1985,7 @@ void RenderWidget::UpdateSelectionBounds() {
   TRACE_EVENT0("renderer", "RenderWidget::UpdateSelectionBounds");
   if (!webwidget_)
     return;
-  if (handling_ime_event_)
+  if (ime_event_guard_)
     return;
 
 #if defined(USE_AURA)

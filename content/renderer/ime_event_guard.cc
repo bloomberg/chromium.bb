@@ -8,12 +8,19 @@
 
 namespace content {
 
-ImeEventGuard::ImeEventGuard(RenderWidget* widget) : widget_(widget) {
-  widget_->StartHandlingImeEvent();
+ImeEventGuard::ImeEventGuard(RenderWidget* widget)
+  : ImeEventGuard(widget, false, true) {
+}
+
+ImeEventGuard::ImeEventGuard(RenderWidget* widget, bool show_ime, bool from_ime)
+  : widget_(widget),
+    show_ime_(show_ime),
+    from_ime_(from_ime) {
+  widget_->OnImeEventGuardStart(this);
 }
 
 ImeEventGuard::~ImeEventGuard() {
-  widget_->FinishHandlingImeEvent();
+  widget_->OnImeEventGuardFinish(this);
 }
 
 } //  namespace content

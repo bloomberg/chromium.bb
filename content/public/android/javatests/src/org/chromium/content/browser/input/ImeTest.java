@@ -29,8 +29,10 @@ import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper.Range;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.ui.base.ime.TextInputType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -38,16 +40,17 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for text input using cases based on fixed regressions.
  */
 public class ImeTest extends ContentShellTestBase {
-
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\""
             + "content=\"width=device-width, initial-scale=2.0, maximum-scale=2.0\" /></head>"
             + "<body><form action=\"about:blank\">"
-            + "<input id=\"input_text\" type=\"text\" /><br/>"
+            + "<input id=\"input_text\" type=\"text\" /><br/></form><form>"
             + "<input id=\"input_radio\" type=\"radio\" style=\"width:50px;height:50px\" />"
             + "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>"
             + "<br/><textarea id=\"textarea2\" rows=\"4\" cols=\"20\" autocomplete=\"off\">"
             + "</textarea>"
+            + "<br/><input id=\"input_number1\" type=\"number\" /><br/>"
+            + "<br/><input id=\"input_number2\" type=\"number\" /><br/>"
             + "<br/><p><span id=\"plain_text\">This is Plain Text One</span></p>"
             + "</form></body></html>");
 
@@ -86,20 +89,17 @@ public class ImeTest extends ContentShellTestBase {
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         mImeAdapter = getImeAdapter();
 
-        // Two state updates from focus change and GestureTap.
         waitAndVerifyStatesAndCalls(0, "", 0, 0, -1, -1);
-        waitAndVerifyStatesAndCalls(1, "", 0, 0, -1, -1);
-
-        assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
+        waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});
         assertEquals(0, mInputMethodManagerWrapper.getEditorInfo().initialSelStart);
         assertEquals(0, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
 
-        resetUpdateStateList();
+        resetAllStates();
     }
 
     private void assertNoFurtherStateUpdate(final int index) throws InterruptedException {
         final List<TestImeState> states = mConnectionFactory.getImeStateList();
-        assertFalse(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertFalse(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return states.size() > index;
@@ -111,6 +111,7 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput", "Main"})
     public void testSetUpGeneratesNoFurtherStateUpdate() throws Throwable {
         assertNoFurtherStateUpdate(0);
+        waitForKeyboardStates(0, 0, 0, new Integer[] {});
     }
 
     @MediumTest
@@ -127,28 +128,22 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
-    @RerunWithUpdatedContainerView
-    public void testGetTextUpdatesAfterEnteringText() throws Throwable {
+    public void testCommitWhileComposingText() throws Throwable {
         setComposingText("h", 1);
         waitAndVerifyStates(0, "h", 1, 1, 0, 1);
-        assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
 
         setComposingText("he", 1);
         waitAndVerifyStates(1, "he", 2, 2, 0, 2);
-        assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
 
         setComposingText("hel", 1);
         waitAndVerifyStates(2, "hel", 3, 3, 0, 3);
-        assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
 
         commitText("hel", 1);
         waitAndVerifyStates(3, "hel", 3, 3, -1, -1);
-        assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
     }
 
     @SmallTest
     @Feature({"TextInput"})
-    @RerunWithUpdatedContainerView
     public void testImeCopy() throws Exception {
         commitText("hello", 1);
         waitAndVerifyStates(0, "hello", 5, 5, -1, -1);
@@ -168,11 +163,80 @@ public class ImeTest extends ContentShellTestBase {
 
         DOMUtils.clickNode(this, mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
+        waitAndVerifyStatesAndCalls(1, "", 0, 0, -1, -1);
 
         DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
-        assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelStart);
-        assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
+
+        // The initial values will not be correct here because we call showSoftInput()
+        // before updating selection range.
+        assertEquals(0, mInputMethodManagerWrapper.getEditorInfo().initialSelStart);
+        assertEquals(0, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
+
+        // The values will immediately be updated.
+        waitAndVerifyStatesAndCalls(2, "hello", 5, 5, -1, -1);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testShowAndHideSoftInput() throws Exception {
+        focusElement("input_radio", false);
+        waitAndVerifyStatesAndCalls(0, "", 0, 0, -1, -1);
+
+        // hideSoftKeyboard().
+        waitForKeyboardStates(0, 1, 0, new Integer[] {});
+
+        // showSoftInput(), restartInput()
+        focusElement("input_number1");
+        waitForKeyboardStates(1, 1, 1, new Integer[] {TextInputType.NUMBER});
+
+        focusElement("input_number2");
+        // Hide should never be called here. Otherwise we will see a flicker. Restarted to
+        // reset internal states to handle the new input form.
+        waitForKeyboardStates(2, 1, 2, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER});
+
+        focusElement("input_text");
+        // showSoftInput() on input_text. restartInput() on input_number1 due to focus change,
+        // and restartInput() on input_text later.
+        // TODO(changwan): reduce unnecessary restart input.
+        waitForKeyboardStates(3, 1, 4, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
+                TextInputType.NUMBER, TextInputType.TEXT});
+
+        focusElement("input_radio", false);
+        // hideSoftInput().
+        waitForKeyboardStates(3, 2, 4, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
+                TextInputType.NUMBER, TextInputType.TEXT});
+    }
+
+    private void waitForKeyboardStates(int show, int hide, int restart, Integer[] history)
+            throws InterruptedException {
+        final String expected = stringifyKeyboardStates(show, hide, restart, history);
+        assertTrue("Expected: {" + expected + "}, Actual: {" + getKeyboardStates() + "}",
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return expected.equals(getKeyboardStates());
+                    }
+                }));
+    }
+
+    private void resetAllStates() {
+        mInputMethodManagerWrapper.resetCounters();
+        mConnectionFactory.clearTextInputTypeHistory();
+        resetUpdateStateList();
+    }
+
+    private String getKeyboardStates() {
+        int showCount = mInputMethodManagerWrapper.getShowSoftInputCounter();
+        int hideCount = mInputMethodManagerWrapper.getHideSoftInputCounter();
+        int restartCount = mInputMethodManagerWrapper.getRestartInputCounter();
+        Integer[] history = mConnectionFactory.getTextInputTypeHistory();
+        return stringifyKeyboardStates(showCount, hideCount, restartCount, history);
+    }
+
+    private String stringifyKeyboardStates(int show, int hide, int restart, Integer[] history) {
+        return "show count: " + show + ", hide count: " + hide + ", restart count: " + restart
+                + ", input type history: " + Arrays.deepToString(history);
     }
 
     @SmallTest
@@ -236,13 +300,12 @@ public class ImeTest extends ContentShellTestBase {
         // Long press will first change selection region, and then trigger IME app to show up.
         // See RenderFrameImpl::didChangeSelection() and RenderWidget::didHandleGestureEvent().
         waitAndVerifyStatesAndCalls(1, "Sample Text", 7, 11, 0, 11);
-        waitAndVerifyStatesAndCalls(2, "Sample Text", 7, 11, 0, 11);
 
         // Now IME app wants to finish composing text because an external selection
         // change has been detected. At least Google Latin IME and Samsung IME
         // behave this way.
         finishComposingText();
-        waitAndVerifyStatesAndCalls(3, "Sample Text", 7, 11, -1, -1);
+        waitAndVerifyStatesAndCalls(2, "Sample Text", 7, 11, -1, -1);
     }
 
     @SmallTest
@@ -839,7 +902,7 @@ public class ImeTest extends ContentShellTestBase {
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return show == getImeAdapter().mIsShowWithoutHideOutstanding
+                return show == mInputMethodManagerWrapper.isShowWithoutHideOutstanding()
                         && (!show || getAdapterInputConnection() != null);
             }
         }));
@@ -859,7 +922,7 @@ public class ImeTest extends ContentShellTestBase {
             final int selectionEnd, final int compositionStart, final int compositionEnd)
             throws InterruptedException {
         final List<TestImeState> states = mConnectionFactory.getImeStateList();
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return states.size() > index;
@@ -1059,8 +1122,13 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private void focusElement(final String id) throws InterruptedException, TimeoutException {
+        focusElement(id, true);
+    }
+
+    private void focusElement(final String id, boolean shouldShowKeyboard)
+            throws InterruptedException, TimeoutException {
         DOMUtils.focusNode(mWebContents, id);
-        assertWaitForKeyboardStatus(true);
+        assertWaitForKeyboardStatus(shouldShowKeyboard);
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -1078,16 +1146,28 @@ public class ImeTest extends ContentShellTestBase {
     private static class TestAdapterInputConnectionFactory extends
             ImeAdapter.AdapterInputConnectionFactory {
         private final List<TestImeState> mImeStateList = new ArrayList<>();
+        private final List<Integer> mTextInputTypeList = new ArrayList<>();
 
         @Override
         public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
                 Editable editable, EditorInfo outAttrs) {
+            mTextInputTypeList.add(imeAdapter.getTextInputType());
             return new TestAdapterInputConnection(
                     mImeStateList, view, imeAdapter, editable, outAttrs);
         }
 
         public List<TestImeState> getImeStateList() {
             return mImeStateList;
+        }
+
+        public Integer[] getTextInputTypeHistory() {
+            Integer[] result = new Integer[mTextInputTypeList.size()];
+            mTextInputTypeList.toArray(result);
+            return result;
+        }
+
+        public void clearTextInputTypeHistory() {
+            mTextInputTypeList.clear();
         }
     }
 

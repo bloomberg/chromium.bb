@@ -83,6 +83,7 @@ namespace content {
 class CompositorDependencies;
 class ExternalPopupMenu;
 class FrameSwapMessageQueue;
+class ImeEventGuard;
 class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
@@ -246,9 +247,9 @@ class CONTENT_EXPORT RenderWidget
   // |policy| see the comment on MessageDeliveryPolicy.
   void QueueMessage(IPC::Message* msg, MessageDeliveryPolicy policy);
 
-  // Handle common setup/teardown for handling IME events.
-  void StartHandlingImeEvent();
-  void FinishHandlingImeEvent();
+  // Handle start and finish of IME event guard.
+  void OnImeEventGuardStart(ImeEventGuard* guard);
+  void OnImeEventGuardFinish(ImeEventGuard* guard);
 
   // Returns whether we currently should handle an IME event.
   bool ShouldHandleImeEvent();
@@ -663,8 +664,9 @@ class CONTENT_EXPORT RenderWidget
   // supporting overscroll IPC notifications due to fling animation updates.
   scoped_ptr<DidOverscrollParams>* handling_event_overscroll_;
 
-  // Are we currently handling an ime event?
-  bool handling_ime_event_;
+  // It is possible that one ImeEventGuard is nested inside another
+  // ImeEventGuard. We keep track of the outermost one, and update it as needed.
+  ImeEventGuard* ime_event_guard_;
 
   // Type of the input event we are currently handling.
   blink::WebInputEvent::Type handling_event_type_;

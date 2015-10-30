@@ -5,7 +5,6 @@
 package org.chromium.content.browser.input;
 
 import android.content.res.Configuration;
-import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -25,7 +24,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
-import org.chromium.blink_public.web.WebTextInputFlags;
 import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.picker.InputDialogContainer;
 
@@ -86,19 +84,6 @@ public class ImeAdapter {
         ResultReceiver getNewShowKeyboardReceiver();
     }
 
-    // Delay introduced to avoid hiding the keyboard if new show requests are received.
-    // The time required by the unfocus-focus events triggered by tab has been measured in soju:
-    // Mean: 18.633 ms, Standard deviation: 7.9837 ms.
-    // The value here should be higher enough to cover these cases, but not too high to avoid
-    // letting the user perceiving important delays.
-    private static final int INPUT_DISMISS_DELAY = 150;
-    private final Runnable mDismissInputRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hideSoftKeyboard();
-        }
-    };
-
     static char[] sSingleCharArray = new char[1];
     static KeyCharacterMap sKeyCharacterMap;
 
@@ -106,8 +91,7 @@ public class ImeAdapter {
     private InputMethodManagerWrapper mInputMethodManagerWrapper;
     private AdapterInputConnection mInputConnection;
     private final ImeAdapterDelegate mViewEmbedder;
-    private final Handler mHandler;
-    private int mTextInputType;
+    private int mTextInputType = TextInputType.NONE;
     private int mTextInputFlags;
 
     @VisibleForTesting
@@ -121,7 +105,6 @@ public class ImeAdapter {
     public ImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
         mInputMethodManagerWrapper = wrapper;
         mViewEmbedder = embedder;
-        mHandler = new Handler();
     }
 
     /**
@@ -199,62 +182,35 @@ public class ImeAdapter {
 
     /**
      * Shows or hides the keyboard based on passed parameters.
-     * @param nativeImeAdapter Pointer to the ImeAdapterAndroid object that is sending the update.
      * @param textInputType Text input type for the currently focused field in renderer.
+     * @param textInputFlags Text input flags.
      * @param showIfNeeded Whether the keyboard should be shown if it is currently hidden.
      */
-    public void updateKeyboardVisibility(long nativeImeAdapter, int textInputType,
+    public void updateKeyboardVisibility(int textInputType,
             int textInputFlags, boolean showIfNeeded) {
-        Log.d(TAG, "updateKeyboardVisibility: type [%d], flags [%d], show [%b]", textInputType,
-                textInputFlags, showIfNeeded);
+        Log.d(TAG, "updateKeyboardVisibility: type [%d->%d], flags [%d], show [%b], ",
+                mTextInputType, textInputType, textInputFlags, showIfNeeded);
         // If current input type is none and showIfNeeded is false, IME should not be shown
         // and input type should remain as none.
         if (mTextInputType == TextInputType.NONE && !showIfNeeded) {
             return;
         }
 
-        if (mNativeImeAdapterAndroid != nativeImeAdapter || mTextInputType != textInputType) {
-            // We have to attach immediately, even if we're going to delay the dismissing of
-            // currently visible keyboard because otherwise we have a race condition: If the
-            // native IME adapter gets destructed before the delayed-dismiss fires, we'll access
-            // an object that has been already released.  http://crbug.com/447287
-            attach(nativeImeAdapter, textInputType, textInputFlags, true);
-
-            if (mTextInputType != TextInputType.NONE) {
-                mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
-                if (showIfNeeded) {
-                    showSoftKeyboard();
-                }
-            }
-        } else if (hasInputType() && showIfNeeded) {
-            showSoftKeyboard();
-        }
-    }
-
-    private void attach(long nativeImeAdapter, int textInputType, int textInputFlags,
-            boolean delayDismissInput) {
-        Log.d(TAG, "attach");
-        if (mNativeImeAdapterAndroid != 0) {
-            nativeResetImeAdapter(mNativeImeAdapterAndroid);
-        }
-        if (nativeImeAdapter != 0) {
-            nativeAttachImeAdapter(nativeImeAdapter);
-        }
-        mNativeImeAdapterAndroid = nativeImeAdapter;
         mTextInputFlags = textInputFlags;
-        if (textInputType == mTextInputType) return;
-        mTextInputType = textInputType;
-        mHandler.removeCallbacks(mDismissInputRunnable);  // okay if not found
-        if (mTextInputType == TextInputType.NONE) {
-            if (delayDismissInput) {
-                // Set a delayed task to do unfocus. This avoids hiding the keyboard when tabbing
-                // through text inputs or when JS rapidly changes focus to another text element.
-                mHandler.postDelayed(mDismissInputRunnable, INPUT_DISMISS_DELAY);
-                mIsShowWithoutHideOutstanding = false;
-            } else {
-                // Some things (including tests) expect the keyboard to be dismissed immediately.
-                hideSoftKeyboard();
+        if (mTextInputType != textInputType) {
+            mTextInputType = textInputType;
+            // No need to restart if we are going to hide anyways.
+            if (textInputType != TextInputType.NONE) {
+                mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
             }
+        }
+
+        // There is no API for us to get notified of user's dismissal of keyboard.
+        // Therefore, we should try to show keyboard even when text input type hasn't changed.
+        if (textInputType != TextInputType.NONE) {
+            if (showIfNeeded) showSoftKeyboard();
+        } else {
+            hideSoftKeyboard();
         }
     }
 
@@ -264,7 +220,14 @@ public class ImeAdapter {
      * @param nativeImeAdapter The pointer to the native ImeAdapter object.
      */
     public void attach(long nativeImeAdapter) {
-        attach(nativeImeAdapter, TextInputType.NONE, WebTextInputFlags.None, false);
+        if (mNativeImeAdapterAndroid == nativeImeAdapter) return;
+        if (mNativeImeAdapterAndroid != 0) {
+            nativeResetImeAdapter(mNativeImeAdapterAndroid);
+        }
+        if (nativeImeAdapter != 0) {
+            nativeAttachImeAdapter(nativeImeAdapter);
+        }
+        mNativeImeAdapterAndroid = nativeImeAdapter;
     }
 
     /**
@@ -289,10 +252,6 @@ public class ImeAdapter {
             mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0,
                     mViewEmbedder.getNewShowKeyboardReceiver());
         }
-    }
-
-    private boolean hasInputType() {
-        return mTextInputType != TextInputType.NONE;
     }
 
     private static boolean isTextInputType(int type) {
@@ -442,7 +401,9 @@ public class ImeAdapter {
     @CalledByNative
     private void focusedNodeChanged(boolean isEditable) {
         Log.d(TAG, "focusedNodeChanged");
-        if (mInputConnection != null && isEditable) mInputConnection.restartInput();
+        if (mTextInputType != TextInputType.NONE && mInputConnection != null && isEditable) {
+            mInputConnection.restartInput();
+        }
     }
 
     @CalledByNative
@@ -474,9 +435,7 @@ public class ImeAdapter {
     @CalledByNative
     void detach() {
         Log.d(TAG, "detach");
-        mHandler.removeCallbacks(mDismissInputRunnable);
         mNativeImeAdapterAndroid = 0;
-        mTextInputType = 0;
     }
 
     private native boolean nativeSendSyntheticKeyEvent(long nativeImeAdapterAndroid,
