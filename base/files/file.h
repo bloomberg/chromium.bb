@@ -85,6 +85,7 @@ class BASE_EXPORT File {
     FLAG_TERMINAL_DEVICE = 1 << 16,   // Serial port flags.
     FLAG_BACKUP_SEMANTICS = 1 << 17,  // Used on Windows only.
     FLAG_EXECUTE = 1 << 18,           // Used on Windows only.
+    FLAG_SEQUENTIAL_SCAN = 1 << 19,   // Used on Windows only.
   };
 
   // This enum has been recorded in multiple histograms. If the order of the
