@@ -104,37 +104,6 @@ void LayoutGeometryMap::mapToContainer(TransformState& transformState, const Lay
     transformState.flatten();
 }
 
-FloatPoint LayoutGeometryMap::mapToContainer(const FloatPoint& p, const LayoutBoxModelObject* container) const
-{
-    FloatPoint result;
-
-    if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_layoutObject))) {
-        result = p + m_accumulatedOffset;
-    } else {
-        TransformState transformState(TransformState::ApplyTransformDirection, p);
-        mapToContainer(transformState, container);
-        result = transformState.lastPlanarPoint();
-    }
-
-#if ENABLE(ASSERT)
-    if (m_mapping.size() > 0) {
-        const LayoutObject* lastLayoutObject = m_mapping.last().m_layoutObject;
-        const PaintLayer* layer = lastLayoutObject->enclosingLayer();
-
-        // Bounds for invisible layers are intentionally not calculated, and are
-        // therefore not necessarily expected to be correct here. This is ok,
-        // because they will be recomputed if the layer becomes visible.
-        if (!layer || !layer->subtreeIsInvisible()) {
-            FloatPoint layoutObjectMappedResult = lastLayoutObject->localToContainerPoint(p, container, m_mapCoordinatesFlags);
-
-            ASSERT(roundedIntPoint(layoutObjectMappedResult) == roundedIntPoint(result));
-        }
-    }
-#endif
-
-    return result;
-}
-
 #ifndef NDEBUG
 // Handy function to call from gdb while debugging mismatched point/rect errors.
 void LayoutGeometryMap::dumpSteps() const
