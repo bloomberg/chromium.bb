@@ -92,41 +92,7 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
 }
 
-#if defined(OS_CHROMEOS)
-
-// A custom BPF tester delegate to run IsRunningOnChromeOS() before
-// the sandbox is enabled because we cannot run it with non-SFI BPF
-// sandbox enabled.
-class ClockSystemTesterDelegate : public sandbox::BPFTesterDelegate {
- public:
-  ClockSystemTesterDelegate()
-      : is_running_on_chromeos_(base::SysInfo::IsRunningOnChromeOS()) {}
-  ~ClockSystemTesterDelegate() override {}
-
-  scoped_ptr<sandbox::bpf_dsl::Policy> GetSandboxBPFPolicy() override {
-    return scoped_ptr<sandbox::bpf_dsl::Policy>(new RestrictClockIdPolicy());
-  }
-  void RunTestFunction() override {
-    if (is_running_on_chromeos_) {
-      CheckClock(base::TraceTicks::kClockSystemTrace);
-    } else {
-      struct timespec ts;
-      // kClockSystemTrace is 11, which is CLOCK_THREAD_CPUTIME_ID of
-      // the init process (pid=1). If kernel supports this feature,
-      // this may succeed even if this is not running on Chrome OS. We
-      // just check this clock_gettime call does not crash.
-      clock_gettime(base::TraceTicks::kClockSystemTrace, &ts);
-    }
-  }
-
- private:
-  const bool is_running_on_chromeos_;
-  DISALLOW_COPY_AND_ASSIGN(ClockSystemTesterDelegate);
-};
-
-BPF_TEST_D(BPFTest, BPFTestWithDelegateClass, ClockSystemTesterDelegate);
-
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 
 BPF_DEATH_TEST_C(ParameterRestrictions,
                  clock_gettime_crash_system_trace,
@@ -136,7 +102,7 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
   clock_gettime(base::TraceTicks::kClockSystemTrace, &ts);
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
 
 #if !defined(OS_ANDROID)
 BPF_DEATH_TEST_C(ParameterRestrictions,
