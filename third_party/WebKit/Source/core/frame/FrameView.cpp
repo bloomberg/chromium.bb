@@ -225,13 +225,18 @@ void FrameView::reset()
 }
 
 template <typename Function>
-void FrameView::forAllFrameViews(Function function)
+void FrameView::forAllNonThrottledFrameViews(Function function)
 {
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
-        if (!frame->isLocalFrame())
+    if (shouldThrottleRendering())
+        return;
+
+    function(*this);
+
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
             continue;
-        if (FrameView* view = toLocalFrame(frame)->view())
-            function(*view);
+        if (FrameView* childView = toLocalFrame(child)->view())
+            childView->forAllNonThrottledFrameViews(function);
     }
 }
 
@@ -1292,9 +1297,7 @@ bool FrameView::shouldSetCursor() const
 
 void FrameView::scrollContentsIfNeededRecursive()
 {
-    forAllFrameViews([](FrameView& frameView) {
-        if (frameView.shouldThrottleRendering())
-            return;
+    forAllNonThrottledFrameViews([](FrameView& frameView) {
         frameView.scrollContentsIfNeeded();
     });
 }
@@ -1824,7 +1827,7 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 
 void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)
 {
-    forAllFrameViews([backgroundColor, transparent](FrameView& frameView) {
+    forAllNonThrottledFrameViews([backgroundColor, transparent](FrameView& frameView) {
         frameView.setTransparent(transparent);
         frameView.setBaseBackgroundColor(backgroundColor);
     });
@@ -2457,7 +2460,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 updatePaintProperties();
 
-            if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+            if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && !m_frame->document()->printing()) {
                 synchronizedPaint();
                 if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                     compositeForSlimmingPaintV2();
@@ -2480,9 +2483,9 @@ void FrameView::updatePaintProperties()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties); });
+    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties); });
     PaintPropertyTreeBuilder().buildPropertyTrees(*this);
-    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean); });
+    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean); });
 }
 
 void FrameView::synchronizedPaint()
@@ -2492,16 +2495,26 @@ void FrameView::synchronizedPaint()
 
     LayoutView* view = layoutView();
     ASSERT(view);
-    // TODO(chrishtr): figure out if there can be any GraphicsLayer above this one that draws content.
-    GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking();
-    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPaint); });
+    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPaint); });
 
     // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree.
-    if (rootGraphicsLayer) {
-        synchronizedPaintRecursively(rootGraphicsLayer);
+    if (GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking()) {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            // TODO(wangxianzhu,chrishtr): What about the extra graphics layers for overflow control, virtual viewport, etc?
+            GraphicsContext context(*rootGraphicsLayer->paintController());
+            rootGraphicsLayer->paint(context, nullptr);
+        } else {
+            // Find the real root GraphicsLayer because we also need to paint layers not under the root graphics layer of
+            // the LayoutView, e.g. scrollbar layers created by PaintLayerCompositor and VisualViewport.
+            // We could ask PaintLayerCompositor and VisualViewport for the real root GraphicsLayer, but the following loop
+            // has the least dependency to those things which might change for slimming paint v2.
+            while (GraphicsLayer* parent = rootGraphicsLayer->parent())
+                rootGraphicsLayer = parent;
+            synchronizedPaintRecursively(rootGraphicsLayer);
+        }
     }
 
-    forAllFrameViews([](FrameView& frameView) {
+    forAllNonThrottledFrameViews([](FrameView& frameView) {
         frameView.lifecycle().advanceTo(DocumentLifecycle::PaintClean);
         frameView.layoutView()->layer()->clearNeedsRepaintRecursively();
     });
@@ -2509,13 +2522,20 @@ void FrameView::synchronizedPaint()
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 {
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     ASSERT(graphicsLayer->paintController());
     GraphicsContext context(*graphicsLayer->paintController());
 
-    graphicsLayer->paint(context, nullptr);
+    if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
+        synchronizedPaintRecursively(maskLayer);
+    if (GraphicsLayer* contentsClippingMaskLayer = graphicsLayer->contentsClippingMaskLayer())
+        synchronizedPaintRecursively(contentsClippingMaskLayer);
+    if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
+        synchronizedPaintRecursively(replicaLayer);
 
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        graphicsLayer->paintController()->commitNewDisplayItems();
+    // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
+    graphicsLayer->paint(context, nullptr);
+    graphicsLayer->paintController()->commitNewDisplayItems();
 
     for (auto& child : graphicsLayer->children())
         synchronizedPaintRecursively(child);
@@ -2526,13 +2546,12 @@ void FrameView::compositeForSlimmingPaintV2()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
 
-    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2); });
+    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2); });
 
-    // Detached frames can have no root graphics layer.
     if (GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking())
         rootGraphicsLayer->paintController()->commitNewDisplayItems();
 
-    forAllFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean); });
+    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean); });
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()
@@ -2616,7 +2635,8 @@ void FrameView::invalidateTreeIfNeededRecursive()
     Vector<LayoutObject*> pendingDelayedPaintInvalidations;
     PaintInvalidationState rootPaintInvalidationState(*layoutView(), pendingDelayedPaintInvalidations);
 
-    invalidateTreeIfNeeded(rootPaintInvalidationState);
+    if (lifecycle().state() < DocumentLifecycle::PaintInvalidationClean)
+        invalidateTreeIfNeeded(rootPaintInvalidationState);
 
     // Some frames may be not reached during the above invalidateTreeIfNeeded because
     // - the frame is a detached frame; or
@@ -2624,11 +2644,8 @@ void FrameView::invalidateTreeIfNeededRecursive()
     // We need to call invalidateTreeIfNeededRecursive() for such frames to finish required
     // paint invalidation and advance their life cycle state.
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (!child->isLocalFrame())
-            continue;
-        FrameView* childFrameView = toLocalFrame(child)->view();
-        if (childFrameView->lifecycle().state() < DocumentLifecycle::PaintInvalidationClean)
-            childFrameView->invalidateTreeIfNeededRecursive();
+        if (child->isLocalFrame())
+            toLocalFrame(child)->view()->invalidateTreeIfNeededRecursive();
     }
 
     // Process objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.

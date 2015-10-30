@@ -15,7 +15,9 @@
 
 namespace blink {
 
-TEST_F(PaintControllerPaintTest, FullDocumentPaintingWithCaret)
+INSTANTIATE_TEST_CASE_P(All, PaintControllerPaintTestForSlimmingPaintV1AndV2, ::testing::Bool());
+
+TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWithCaret)
 {
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
@@ -25,96 +27,47 @@ TEST_F(PaintControllerPaintTest, FullDocumentPaintingWithCaret)
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
-    GraphicsContext context(rootPaintController());
-    PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
-    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootPaintController().commitNewDisplayItems();
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(textInlineBox, foregroundType),
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    } else {
+        GraphicsContext context(rootPaintController());
+        PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
+        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(textInlineBox, foregroundType));
-
-    div.focus();
-    document().view()->updateAllLifecyclePhases();
-    EXPECT_TRUE(rootPaintController().clientCacheIsValid(layoutView().displayItemClient()));
-    EXPECT_FALSE(rootPaintController().clientCacheIsValid(divLayoutObject.displayItemClient()));
-    EXPECT_TRUE(rootPaintController().clientCacheIsValid(textInlineBox.displayItemClient()));
-    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootPaintController().commitNewDisplayItems();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
-}
-
-TEST_F(PaintControllerPaintTest, InlineRelayout)
-{
-    setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
-    PaintLayer& rootLayer = *layoutView().layer();
-    Element& div = *toElement(document().body()->firstChild());
-    LayoutBlock& divBlock = *toLayoutBlock(document().body()->firstChild()->layoutObject());
-    LayoutText& text = *toLayoutText(divBlock.firstChild());
-    InlineTextBox& firstTextBox = *text.firstTextBox();
-    DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox.displayItemClient();
-
-    GraphicsContext context(rootPaintController());
-    PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
-    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootPaintController().commitNewDisplayItems();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(firstTextBox, foregroundType));
-
-    div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
-    document().view()->updateAllLifecyclePhases();
-    EXPECT_TRUE(rootPaintController().clientCacheIsValid(layoutView().displayItemClient()));
-    EXPECT_FALSE(rootPaintController().clientCacheIsValid(divBlock.displayItemClient()));
-    EXPECT_FALSE(rootPaintController().clientCacheIsValid(firstTextBoxDisplayItemClient));
-    PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootPaintController().commitNewDisplayItems();
-
-    LayoutText& newText = *toLayoutText(divBlock.firstChild());
-    InlineTextBox& newFirstTextBox = *newText.firstTextBox();
-    InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(newFirstTextBox, foregroundType),
-        TestDisplayItem(secondTextBox, foregroundType));
-}
-
-TEST_F(PaintControllerPaintTestForSlimmingPaintV2, FullDocumentPaintingWithCaret)
-{
-    setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
-    document().page()->focusController().setActive(true);
-    document().page()->focusController().setFocused(true);
-    PaintLayer& rootLayer = *layoutView().layer();
-    Element& div = *toElement(document().body()->firstChild());
-    LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
-    InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
-
-    document().view()->updateAllLifecyclePhases();
-
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(textInlineBox, foregroundType));
+    }
 
     div.focus();
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(divLayoutObject, DisplayItem::Caret), // New!
-        TestDisplayItem(rootLayer, endSubsequenceType));
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(textInlineBox, foregroundType),
+            TestDisplayItem(divLayoutObject, DisplayItem::Caret), // New!
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    } else {
+        GraphicsContext context(rootPaintController());
+        PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
+        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        rootPaintController().commitNewDisplayItems();
+
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(textInlineBox, foregroundType),
+            TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
+    }
 }
 
-TEST_F(PaintControllerPaintTestForSlimmingPaintV2, InlineRelayout)
+TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
 {
     setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
     PaintLayer& rootLayer = *layoutView().layer();
@@ -123,13 +76,22 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, InlineRelayout)
     LayoutText& text = *toLayoutText(divBlock.firstChild());
     InlineTextBox& firstTextBox = *text.firstTextBox();
 
-    document().view()->updateAllLifecyclePhases();
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(firstTextBox, foregroundType),
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    } else {
+        GraphicsContext context(rootPaintController());
+        PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
+        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(firstTextBox, foregroundType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(firstTextBox, foregroundType));
+    }
 
     div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
     document().view()->updateAllLifecyclePhases();
@@ -138,12 +100,24 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
-        TestDisplayItem(layoutView(), backgroundType),
-        TestDisplayItem(rootLayer, subsequenceType),
-        TestDisplayItem(newFirstTextBox, foregroundType),
-        TestDisplayItem(secondTextBox, foregroundType),
-        TestDisplayItem(rootLayer, endSubsequenceType));
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(rootLayer, subsequenceType),
+            TestDisplayItem(newFirstTextBox, foregroundType),
+            TestDisplayItem(secondTextBox, foregroundType),
+            TestDisplayItem(rootLayer, endSubsequenceType));
+    } else {
+        GraphicsContext context(rootPaintController());
+        PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
+        PaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+        rootPaintController().commitNewDisplayItems();
+
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
+            TestDisplayItem(layoutView(), backgroundType),
+            TestDisplayItem(newFirstTextBox, foregroundType),
+            TestDisplayItem(secondTextBox, foregroundType));
+    }
 }
 
 } // namespace blink

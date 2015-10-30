@@ -18,7 +18,6 @@
 namespace blink {
 
 using LayoutObjectDrawingRecorderTest = PaintControllerPaintTest;
-using LayoutObjectDrawingRecorderTestForSlimmingPaintV2 = PaintControllerPaintTestForSlimmingPaintV2;
 
 namespace {
 
@@ -41,10 +40,9 @@ void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase
 
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
+    rootPaintController().invalidateAll();
     GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
-    EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
-
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
     rootPaintController().commitNewDisplayItems();
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 1,
@@ -54,6 +52,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 {
+    rootPaintController().invalidateAll();
     GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
@@ -64,6 +63,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 {
+    rootPaintController().invalidateAll();
     GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);

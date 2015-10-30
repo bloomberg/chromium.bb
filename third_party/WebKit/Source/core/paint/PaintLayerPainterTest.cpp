@@ -18,8 +18,6 @@ public:
     FrameSettingOverrideFunction settingOverrider() const override { return GetParam(); }
 };
 
-using PaintLayerPainterTestForSlimmingPaintV2 = PaintControllerPaintTestForSlimmingPaintV2;
-
 INSTANTIATE_TEST_CASE_P(All, PaintLayerPainterTest, ::testing::Values(
     nullptr,
     RootLayerScrollsFrameSettingOverride));

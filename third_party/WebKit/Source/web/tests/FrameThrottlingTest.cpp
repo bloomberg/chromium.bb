@@ -152,7 +152,10 @@ TEST_F(FrameThrottlingTest, ThrottledLifecycleUpdate)
     frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
     compositeFrame();
     EXPECT_TRUE(frameDocument->view()->canThrottleRendering());
-    EXPECT_EQ(DocumentLifecycle::PaintInvalidationClean, frameDocument->lifecycle().state());
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
+    else
+        EXPECT_EQ(DocumentLifecycle::PaintInvalidationClean, frameDocument->lifecycle().state());
 
     // Mutating the throttled frame followed by a beginFrame will not result in
     // a complete lifecycle update.

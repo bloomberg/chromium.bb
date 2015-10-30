@@ -124,7 +124,9 @@ void PaintController::invalidate(const DisplayItemClientWrapper& client, PaintIn
 void PaintController::invalidateClient(const DisplayItemClientWrapper& client)
 {
 #if ENABLE(ASSERT)
-    m_invalidations.append(client.debugName());
+    // Slimming paint v1 CompositedLayerMapping may invalidate client on extra layers.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() || clientCacheIsValid(client.displayItemClient()))
+        m_invalidations.append(client.debugName());
 #endif
 
     invalidateUntracked(client.displayItemClient());

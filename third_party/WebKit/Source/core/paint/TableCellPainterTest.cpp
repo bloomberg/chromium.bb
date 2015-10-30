@@ -11,7 +11,6 @@ namespace blink {
 
 using TableCellPainterTest = PaintControllerPaintTest;
 
-// TODO(wangxianzhu): Create a version for slimming paint v2 when it supports interest rect
 TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
 {
     RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
