@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_MOJO_IMPL_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_MOJO_IMPL_H_
 
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -98,7 +99,6 @@ class MediaRouterMojoImpl : public MediaRouter,
   friend class MediaRouterFactory;
   friend class MediaRouterMojoExtensionTest;
   friend class MediaRouterMojoTest;
-
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            RegisterAndUnregisterMediaSinksObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
@@ -111,6 +111,22 @@ class MediaRouterMojoImpl : public MediaRouter,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
                            DeferredBindingAndSuspension);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
+                           DrainPendingRequestQueue);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
+                           DropOldestPendingRequest);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
+                           AttemptedWakeupTooManyTimes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
+                           WakeupFailedDrainsQueue);
+
+  // The max number of pending requests allowed. When number of pending requests
+  // exceeds this number, the oldest request will be dropped.
+  static const int kMaxPendingRequests = 30;
+
+  // Max consecutive attempts to wake up the component extension before
+  // giving up and draining the pending request queue.
+  static const int kMaxWakeupAttemptCount = 3;
 
   class MediaRouterMediaRoutesObserver :
       public media_router::MediaRoutesObserver {
@@ -163,6 +179,10 @@ class MediaRouterMojoImpl : public MediaRouter,
 
   // Dispatches the Mojo requests queued in |pending_requests_|.
   void ExecutePendingRequests();
+
+  // Drops all pending requests. Called when we have a connection error to
+  // component extension and further reattempts are unlikely to help.
+  void DrainPendingRequests();
 
   // MediaRouter implementation.
   bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
@@ -240,9 +260,25 @@ class MediaRouterMojoImpl : public MediaRouter,
 
   void UpdateHasLocalRoute(bool has_local_route);
 
+  // Callback invoked by |event_page_tracker_| after an attempt to wake the
+  // component extension. If |success| is false, the pending request queue is
+  // drained.
+  void EventPageWakeComplete(bool success);
+
+  // Removes all requests from the pending requests queue. Called when there is
+  // a permanent error connecting to component extension.
+  void DrainRequestQueue();
+
+  // Calls to |event_page_tracker_| to wake the component extension.
+  // |media_route_provider_extension_id_| must not be empty and the extension
+  // should be currently suspended.
+  // If there have already been too many wakeup attempts, give up and drain
+  // the pending request queue.
+  void AttemptWakeEventPage();
+
   // Pending requests queued to be executed once component extension
   // becomes ready.
-  std::vector<base::Closure> pending_requests_;
+  std::deque<base::Closure> pending_requests_;
 
   base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaSinksQuery>>
       sinks_queries_;
@@ -298,7 +334,11 @@ class MediaRouterMojoImpl : public MediaRouter,
   // The last reported sink availability from the media route provider manager.
   interfaces::MediaRouter::SinkAvailability availability_;
 
+  int wakeup_attempt_count_;
+
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoImpl);
 };

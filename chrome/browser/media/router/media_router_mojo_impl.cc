@@ -31,13 +31,6 @@ using SinkAvailability = interfaces::MediaRouter::SinkAvailability;
 
 namespace {
 
-// TODO(imcheng): We should handle failure in this case. One way is to invoke
-// all pending requests with failure. (crbug.com/490787)
-void EventPageWakeComplete(bool success) {
-  if (!success)
-    LOG(ERROR) << "An error encountered while waking the event page.";
-}
-
 scoped_ptr<content::PresentationSessionMessage>
 ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
   DCHECK(!input.is_null());
@@ -104,7 +97,9 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
       has_local_route_(false),
-      availability_(interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE) {
+      availability_(interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE),
+      wakeup_attempt_count_(0),
+      weak_factory_(this) {
   DCHECK(event_page_tracker_);
 }
 
@@ -141,13 +136,21 @@ void MediaRouterMojoImpl::BindToMojoRequest(
   media_route_provider_extension_id_ = extension_id;
 }
 
-// TODO(imcheng): If this occurs while there are pending requests, we should
-// probably invoke them with failure. (crbug.com/490787)
 void MediaRouterMojoImpl::OnConnectionError() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   media_route_provider_.reset();
   binding_.reset();
+
+  // If |OnConnectionError| is invoked while there are pending requests, then
+  // it means we tried to wake the extension, but weren't able to complete the
+  // connection to media route provider. Since we do not know whether the error
+  // is transient, reattempt the wakeup.
+  if (!pending_requests_.empty()) {
+    DLOG_WITH_INSTANCE(ERROR) << "A connection error while there are pending "
+                                 "requests.";
+    AttemptWakeEventPage();
+  }
 }
 
 void MediaRouterMojoImpl::RegisterMediaRouteProvider(
@@ -156,11 +159,21 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
         callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (event_page_tracker_->IsEventPageSuspended(
+          media_route_provider_extension_id_)) {
+    DVLOG_WITH_INSTANCE(1)
+        << "ExecutePendingRequests was called while extension is suspended.";
+    media_route_provider_.reset();
+    AttemptWakeEventPage();
+    return;
+  }
+
   media_route_provider_ = media_route_provider_ptr.Pass();
   media_route_provider_.set_connection_error_handler(base::Bind(
       &MediaRouterMojoImpl::OnConnectionError, base::Unretained(this)));
   callback.Run(instance_id_);
   ExecutePendingRequests();
+  wakeup_attempt_count_ = 0;
 }
 
 void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
@@ -685,6 +698,11 @@ void MediaRouterMojoImpl::DoStopObservingMediaRoutes() {
 
 void MediaRouterMojoImpl::EnqueueTask(const base::Closure& closure) {
   pending_requests_.push_back(closure);
+  if (pending_requests_.size() > kMaxPendingRequests) {
+    DLOG_WITH_INSTANCE(ERROR) << "Reached max queue size. Dropping oldest "
+                              << "request.";
+    pending_requests_.pop_front();
+  }
   DVLOG_WITH_INSTANCE(2) << "EnqueueTask (queue-length="
                          << pending_requests_.size() << ")";
 }
@@ -699,11 +717,7 @@ void MediaRouterMojoImpl::RunOrDefer(const base::Closure& request) {
                  media_route_provider_extension_id_)) {
     DVLOG_WITH_INSTANCE(1) << "Waking event page.";
     EnqueueTask(request);
-    if (!event_page_tracker_->WakeEventPage(
-            media_route_provider_extension_id_,
-            base::Bind(&EventPageWakeComplete))) {
-      LOG(ERROR) << "An error encountered while waking the event page.";
-    }
+    AttemptWakeEventPage();
     media_route_provider_.reset();
   } else if (!media_route_provider_) {
     DVLOG_WITH_INSTANCE(1) << "Extension is awake, awaiting ProvideMediaRouter "
@@ -714,22 +728,56 @@ void MediaRouterMojoImpl::RunOrDefer(const base::Closure& request) {
   }
 }
 
+void MediaRouterMojoImpl::AttemptWakeEventPage() {
+  ++wakeup_attempt_count_;
+  if (wakeup_attempt_count_ > kMaxWakeupAttemptCount) {
+    DLOG_WITH_INSTANCE(ERROR) << "Attempted too many times to wake up event "
+                              << "page.";
+    DrainPendingRequests();
+    wakeup_attempt_count_ = 0;
+    return;
+  }
+
+  DVLOG_WITH_INSTANCE(1) << "Attempting to wake up event page: attempt "
+                         << wakeup_attempt_count_;
+
+  // This return false if the extension is already awake.
+  // Callback is bound using WeakPtr because |event_page_tracker_| outlives
+  // |this|.
+  if (!event_page_tracker_->WakeEventPage(
+          media_route_provider_extension_id_,
+          base::Bind(&MediaRouterMojoImpl::EventPageWakeComplete,
+                     weak_factory_.GetWeakPtr()))) {
+    DLOG_WITH_INSTANCE(ERROR) << "Failed to schedule a wakeup for event page.";
+  }
+}
+
 void MediaRouterMojoImpl::ExecutePendingRequests() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(media_route_provider_);
   DCHECK(event_page_tracker_);
   DCHECK(!media_route_provider_extension_id_.empty());
 
-  if (event_page_tracker_->IsEventPageSuspended(
-          media_route_provider_extension_id_)) {
-    DVLOG_WITH_INSTANCE(1)
-        << "ExecutePendingRequests was called while extension is suspended.";
-    return;
-  }
-
   for (const auto& next_request : pending_requests_)
     next_request.Run();
 
+  pending_requests_.clear();
+}
+
+void MediaRouterMojoImpl::EventPageWakeComplete(bool success) {
+  if (success)
+    return;
+
+  // This is likely an non-retriable error. Drop the pending requests.
+  DLOG_WITH_INSTANCE(ERROR)
+      << "An error encountered while waking the event page.";
+  DrainPendingRequests();
+}
+
+void MediaRouterMojoImpl::DrainPendingRequests() {
+  DLOG_WITH_INSTANCE(ERROR)
+      << "Draining request queue. (queue-length=" << pending_requests_.size()
+      << ")";
   pending_requests_.clear();
 }
 

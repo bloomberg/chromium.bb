@@ -775,6 +775,7 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
   }
 
   void TearDown() override {
+    media_router_.reset();
     profile_.reset();
     // Explicitly delete the TestingBrowserProcess before |message_loop_|.
     // This allows it to do cleanup before |message_loop_| goes away.
@@ -859,6 +860,94 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
       .WillOnce(Return(false));
   EXPECT_CALL(mock_media_route_provider_, CloseRoute(mojo::String(kRouteId2)));
   BindMediaRouteProvider();
+  RegisterMediaRouteProvider();
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoExtensionTest, AttemptedWakeupTooManyTimes) {
+  BindMediaRouteProvider();
+
+  // CloseRoute is called while extension is suspended. It should be queued.
+  // Schedule a component extension wakeup.
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
+      .WillOnce(testing::DoAll(media::RunCallback<1>(true), Return(true)));
+  media_router_->CloseRoute(kRouteId);
+  EXPECT_EQ(1u, media_router_->pending_requests_.size());
+
+  // Media route provider fails to connect to media router before extension is
+  // suspended again, and |OnConnectionError| is invoked. Retry the wakeup.
+  EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
+      .Times(MediaRouterMojoImpl::kMaxWakeupAttemptCount - 1)
+      .WillRepeatedly(
+          testing::DoAll(media::RunCallback<1>(true), Return(true)));
+  for (int i = 0; i < MediaRouterMojoImpl::kMaxWakeupAttemptCount - 1; ++i)
+    media_router_->OnConnectionError();
+
+  // We have already tried |kMaxWakeupAttemptCount| times. If we get an error
+  // again, we will give up and the pending request queue will be drained.
+  media_router_->OnConnectionError();
+  EXPECT_TRUE(media_router_->pending_requests_.empty());
+
+  // Requests that comes in after queue is drained should be queued.
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
+      .WillOnce(testing::DoAll(media::RunCallback<1>(true), Return(true)));
+  media_router_->CloseRoute(kRouteId);
+  EXPECT_EQ(1u, media_router_->pending_requests_.size());
+}
+
+TEST_F(MediaRouterMojoExtensionTest, WakeupFailedDrainsQueue) {
+  BindMediaRouteProvider();
+
+  // CloseRoute is called while extension is suspended. It should be queued.
+  // Schedule a component extension wakeup.
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
+      .WillOnce(Return(true));
+  base::Callback<void(bool)> extension_wakeup_callback;
+  EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
+      .WillOnce(
+          testing::DoAll(SaveArg<1>(&extension_wakeup_callback), Return(true)));
+  media_router_->CloseRoute(kRouteId);
+  EXPECT_EQ(1u, media_router_->pending_requests_.size());
+
+  // Extension wakeup callback returning false is an non-retryable error.
+  // Queue should be drained.
+  extension_wakeup_callback.Run(false);
+  EXPECT_TRUE(media_router_->pending_requests_.empty());
+
+  // Requests that comes in after queue is drained should be queued.
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*process_manager_, WakeEventPage(kExtensionId, _))
+      .WillOnce(testing::DoAll(media::RunCallback<1>(true), Return(true)));
+  media_router_->CloseRoute(kRouteId);
+  EXPECT_EQ(1u, media_router_->pending_requests_.size());
+}
+
+TEST_F(MediaRouterMojoExtensionTest, DropOldestPendingRequest) {
+  const size_t kMaxPendingRequests = MediaRouterMojoImpl::kMaxPendingRequests;
+
+  // Request is queued.
+  media_router_->CloseRoute(kRouteId);
+  EXPECT_EQ(1u, media_router_->pending_requests_.size());
+
+  for (size_t i = 0; i < kMaxPendingRequests; ++i)
+    media_router_->CloseRoute(kRouteId2);
+
+  // The request queue size should not exceed |kMaxPendingRequests|.
+  EXPECT_EQ(kMaxPendingRequests, media_router_->pending_requests_.size());
+
+  // The oldest request should have been dropped, so we don't expect to see
+  // CloseRoute(kRouteId) here.
+  BindMediaRouteProvider();
+  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")));
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(kExtensionId))
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_media_route_provider_, CloseRoute(mojo::String(kRouteId2)))
+      .Times(kMaxPendingRequests);
   RegisterMediaRouteProvider();
   ProcessEventLoop();
 }
