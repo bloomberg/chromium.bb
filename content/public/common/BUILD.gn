@@ -27,6 +27,15 @@ source_set("result_codes") {
   ]
 }
 
+# This target allows other targets to depend on content_descriptors.h which is
+# a header-only dependency, without bringing in all of content.
+source_set("content_descriptors") {
+  sources = [
+    "content_descriptors.h",
+  ]
+  public_configs = [ "//v8:external_startup_data" ]
+}
+
 # Forces static linking for targets using the static_switches constants, even
 # in the component build. This config makes it impossible to use the static
 # switches target and use the rest of content at the same time, because the

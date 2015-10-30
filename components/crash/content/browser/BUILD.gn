@@ -14,6 +14,7 @@ source_set("browser") {
 
   deps = [
     "//base",
+    "//breakpad:client",
     "//components/crash/content/app",
     "//content/public/browser",
     "//content/public/common",
@@ -27,7 +28,10 @@ source_set("browser") {
       "crash_handler_host_linux.cc",
       "crash_handler_host_linux.h",
     ]
-    deps += [ "//breakpad:client" ]
+    deps += [
+      "//breakpad:client",
+      "//components/crash/content/app:app_non_mac",
+    ]
   }
 
   # This is not in the GYP build but this target includes breakpad client

@@ -9,6 +9,7 @@ source_set("browser") {
   ]
   deps = [
     "//base",
+    "//base:i18n",
     "//components/strings",
     "//components/upload_list",
   ]

@@ -15,12 +15,16 @@ source_set("lib") {
   ]
 
   include_dirs = [ "../../../../breakpad/src" ]
+
+  deps = [
+    "//base",
+  ]
+
+  if (is_win) {
+    deps += [ "//breakpad:breakpad_handler" ]
+  }
 }
 
-# Note: if you depend on this target, you need to either link in
-# content.gyp:content_common, or add content/public/common/content_switches.cc
-# to your sources.
-#
 # GYP version: components/crash.gypi:crash_component
 source_set("app") {
   sources = [
@@ -38,7 +42,10 @@ source_set("app") {
   ]
 
   if (is_mac) {
-    deps += [ "//third_party/crashpad/crashpad/client" ]
+    deps += [
+      ":lib",
+      "//third_party/crashpad/crashpad/client",
+    ]
   }
 }
 
@@ -65,7 +72,10 @@ source_set("app") {
 # all platforms, or preferably, depend on crash_component to get Breakpad
 # everywhere except for Mac, where you will get Crashpad.
 source_set("app_non_mac") {
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//components/crash/content/browser",
+  ]
 
   sources = [
     "breakpad_linux_impl.h",
@@ -94,6 +104,9 @@ source_set("app_non_mac") {
     ":lib",
     "//base",
     "//base:base_static",
+    "//components/crash/core/common",
+    "//content/public/common:content_descriptors",
+    "//content/public/common:result_codes",
   ]
 
   if (is_android) {
@@ -133,10 +146,12 @@ source_set("app_breakpad_mac_to_be_deleted") {
     defines = [ "CRASH_IMPLEMENTATION" ]
 
     deps += [
+      ":lib",
       "//base",
       "//base:base_static",
       "//breakpad",
       "//breakpad:client",
+      "//components/crash/core/common",
     ]
   }
 }
