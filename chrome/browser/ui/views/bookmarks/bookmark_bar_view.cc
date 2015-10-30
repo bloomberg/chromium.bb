@@ -83,6 +83,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -478,10 +479,11 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 
   void OnPaint(gfx::Canvas* canvas) override {
     if (ui::MaterialDesignController::IsModeMaterial()) {
+      gfx::ScopedCanvas scoped_canvas(canvas);
       // 1px wide at all scale factors. If there is an uneven amount of padding
       // left over, place the extra pixel on the outside, i.e. away from the
       // "Other bookmarks" folder.
-      const float scale = canvas->SaveAndUnscale();
+      const float scale = canvas->UndoDeviceScaleFactor();
       const gfx::RectF scaled_bounds =
           gfx::ScaleRect(gfx::RectF(bounds()), scale);
 
@@ -497,7 +499,6 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
           SkColorSetA(GetThemeProvider()->GetColor(
                           ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
                       0x4D));
-      canvas->Restore();
     } else {
       PaintVerticalDivider(
           canvas, kSeparatorStartX, height(), 1, kEdgeDividerColor,

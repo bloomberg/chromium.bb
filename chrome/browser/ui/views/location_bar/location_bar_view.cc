@@ -1329,7 +1329,8 @@ void LocationBarView::PaintChildren(const ui::PaintContext& context) {
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     gfx::Canvas* canvas = recorder.canvas();
-    const float scale = canvas->SaveAndUnscale();
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float scale = canvas->UndoDeviceScaleFactor();
 
     SkPaint paint;
     paint.setStyle(SkPaint::Style::kStroke_Style);
@@ -1346,7 +1347,6 @@ void LocationBarView::PaintChildren(const ui::PaintContext& context) {
     const SkScalar kCornerRadius = SkDoubleToScalar(2.5f * scale);
     canvas->sk_canvas()->drawRoundRect(gfx::RectFToSkRect(border_rect_f),
                                        kCornerRadius, kCornerRadius, paint);
-    recorder.canvas()->Restore();
   } else {
     views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
                                    border_rect);

@@ -18,6 +18,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -262,13 +263,13 @@ void DefaultHeaderPainter::PaintTitleBar(gfx::Canvas* canvas) {
 }
 
 void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
-  const float scale = canvas->SaveAndUnscale();
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF rect(0, painted_height_ * scale - 1, view_->width() * scale, 1);
   SkPaint paint;
   paint.setColor((mode_ == MODE_ACTIVE) ?
       kHeaderContentSeparatorColor : kHeaderContentSeparatorInactiveColor);
   canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), paint);
-  canvas->Restore();
 }
 
 void DefaultHeaderPainter::LayoutLeftHeaderView() {

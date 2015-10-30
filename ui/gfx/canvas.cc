@@ -175,15 +175,14 @@ void Canvas::DrawDashedRect(const Rect& rect, SkColor color) {
            paint);
 }
 
-void Canvas::Save() {
-  canvas_->save();
-}
-
-float Canvas::SaveAndUnscale() {
-  Save();
+float Canvas::UndoDeviceScaleFactor() {
   SkScalar scale_factor = 1.0f / image_scale_;
   canvas_->scale(scale_factor, scale_factor);
   return image_scale_;
+}
+
+void Canvas::Save() {
+  canvas_->save();
 }
 
 void Canvas::SaveLayerAlpha(uint8 alpha) {

@@ -134,6 +134,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -551,13 +552,13 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
 void BrowserView::Paint1pxHorizontalLine(gfx::Canvas* canvas,
                                          SkColor color,
                                          const gfx::Rect& bounds) {
-  const float scale = canvas->SaveAndUnscale();
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF rect(gfx::ScaleRect(gfx::RectF(bounds), scale));
   rect.Inset(0, rect.height() - 1, 0, 0);
   SkPaint paint;
   paint.setColor(color);
   canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), paint);
-  canvas->Restore();
 }
 
 void BrowserView::InitStatusBubble() {

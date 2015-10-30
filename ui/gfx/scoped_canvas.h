@@ -20,12 +20,6 @@ class ScopedCanvas {
     if (canvas_)
       canvas_->Restore();
   }
-  void SetCanvas(gfx::Canvas* canvas) {
-    if (canvas_)
-      canvas_->Restore();
-    canvas_ = canvas;
-    canvas_->Save();
-  }
 
  private:
   gfx::Canvas* canvas_;

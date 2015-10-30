@@ -165,14 +165,14 @@ class GFX_EXPORT Canvas {
   // Draws a dashed rectangle of the specified color.
   void DrawDashedRect(const Rect& rect, SkColor color);
 
+  // Unscales by the image scale factor (aka device scale factor), and returns
+  // that factor.  This is useful when callers want to draw directly in the
+  // native scale.
+  float UndoDeviceScaleFactor();
+
   // Saves a copy of the drawing state onto a stack, operating on this copy
   // until a balanced call to Restore() is made.
   void Save();
-
-  // Saves the drawing state, unscales by the image scale factor, and returns
-  // that factor.  This is useful when callers want to draw directly in the
-  // native scale.
-  float SaveAndUnscale();
 
   // As with Save(), except draws to a layer that is blended with the canvas
   // at the specified alpha once Restore() is called.

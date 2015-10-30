@@ -88,8 +88,11 @@ void NineImagePainter::Paint(Canvas* canvas,
   if (IsEmpty())
     return;
 
-  // Painting at physical device pixels (undo device scale factor).
-  float scale = canvas->SaveAndUnscale();
+  ScopedCanvas scoped_canvas(canvas);
+
+  // Painting and doing layout at physical device pixels to avoid cracks or
+  // overlap.
+  const float scale = canvas->UndoDeviceScaleFactor();
 
   // Since the drawing from the following Fill() calls assumes the mapped origin
   // is at (0,0), we need to translate the canvas to the mapped origin.
@@ -163,8 +166,6 @@ void NineImagePainter::Paint(Canvas* canvas,
     Fill(canvas, image_reps[8], width_in_pixels - i8w, height_in_pixels - i8h,
          i8w, i8h, paint);
   }
-
-  canvas->Restore();
 }
 
 // static
