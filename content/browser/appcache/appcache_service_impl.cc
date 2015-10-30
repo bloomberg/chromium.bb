@@ -83,54 +83,6 @@ void AppCacheServiceImpl::AsyncHelper::Cancel() {
   service_ = NULL;
 }
 
-// CanHandleOfflineHelper -------
-
-class AppCacheServiceImpl::CanHandleOfflineHelper : AsyncHelper {
- public:
-  CanHandleOfflineHelper(
-      AppCacheServiceImpl* service, const GURL& url,
-      const GURL& first_party, const net::CompletionCallback& callback)
-      : AsyncHelper(service, callback),
-        url_(url),
-        first_party_(first_party) {
-  }
-
-  void Start() override {
-    AppCachePolicy* policy = service_->appcache_policy();
-    if (policy && !policy->CanLoadAppCache(url_, first_party_)) {
-      CallCallback(net::ERR_FAILED);
-      delete this;
-      return;
-    }
-
-    service_->storage()->FindResponseForMainRequest(url_, GURL(), this);
-  }
-
- private:
-  // AppCacheStorage::Delegate implementation.
-  void OnMainResponseFound(const GURL& url,
-                           const AppCacheEntry& entry,
-                           const GURL& fallback_url,
-                           const AppCacheEntry& fallback_entry,
-                           int64 cache_id,
-                           int64 group_id,
-                           const GURL& mainfest_url) override;
-
-  GURL url_;
-  GURL first_party_;
-
-  DISALLOW_COPY_AND_ASSIGN(CanHandleOfflineHelper);
-};
-
-void AppCacheServiceImpl::CanHandleOfflineHelper::OnMainResponseFound(
-      const GURL& url, const AppCacheEntry& entry,
-      const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, int64 group_id, const GURL& manifest_url) {
-  bool can = (entry.has_response_id() || fallback_entry.has_response_id());
-  CallCallback(can ? net::OK : net::ERR_FAILED);
-  delete this;
-}
-
 // DeleteHelper -------
 
 class AppCacheServiceImpl::DeleteHelper : public AsyncHelper {
@@ -522,15 +474,6 @@ void AppCacheServiceImpl::Reinitialize() {
                     OnServiceReinitialized(old_storage_ref.get()));
 
   Initialize(cache_directory_, db_thread_, cache_thread_);
-}
-
-void AppCacheServiceImpl::CanHandleMainResourceOffline(
-    const GURL& url,
-    const GURL& first_party,
-    const net::CompletionCallback& callback) {
-  CanHandleOfflineHelper* helper =
-      new CanHandleOfflineHelper(this, url, first_party, callback);
-  helper->Start();
 }
 
 void AppCacheServiceImpl::GetAllAppCacheInfo(

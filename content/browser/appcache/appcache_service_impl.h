@@ -99,10 +99,6 @@ class CONTENT_EXPORT AppCacheServiceImpl
   void ScheduleReinitialize();
 
   // AppCacheService implementation:
-  void CanHandleMainResourceOffline(
-      const GURL& url,
-      const GURL& first_party,
-      const net::CompletionCallback& callback) override;
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
                           const net::CompletionCallback& callback) override;
   void DeleteAppCacheGroup(const GURL& manifest_url,
@@ -187,7 +183,6 @@ class CONTENT_EXPORT AppCacheServiceImpl
       ScheduleReinitialize);
 
   class AsyncHelper;
-  class CanHandleOfflineHelper;
   class DeleteHelper;
   class DeleteOriginHelper;
   class GetInfoHelper;

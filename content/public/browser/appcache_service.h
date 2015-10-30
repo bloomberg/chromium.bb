@@ -34,13 +34,6 @@ struct CONTENT_EXPORT AppCacheInfoCollection
 // Call these methods only on the IO thread.
 class CONTENT_EXPORT AppCacheService {
  public:
-  // Determines if a request for 'url' can be satisfied while offline.
-  // This method always completes asynchronously.
-  virtual void CanHandleMainResourceOffline(const GURL& url,
-                                            const GURL& first_party,
-                                            const net::CompletionCallback&
-                                            callback) = 0;
-
   // Populates 'collection' with info about all of the appcaches stored
   // within the service, 'callback' is invoked upon completion. The service
   // acquires a reference to the 'collection' until completion.
