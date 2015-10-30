@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<style>
+  /* restrict to just the play button, so the slider doesn't mismatch */
+  audio {
+    width: 40px;
+    height: 40px;
+  }
+</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src=media-file.js></script>
+
+<audio controls></audio>
+<audio controls></audio>
+<p>Test that network state transitions paint audio controls properly.</p>
+
+<script>
+
+testRunner.waitUntilDone();
+
+var audios = document.querySelectorAll("audio");
+var src = findMediaFile("audio", "content/empty");
+
+runAfterLayoutAndPaint(function() {
+    window.internals.setMediaElementNetworkState(audios[0], 0);
+    window.internals.setMediaElementNetworkState(audios[1], 0);
+
+    // These will cause the play buttons to become enabled, and should
+    // also cause a repaint.
+    window.internals.setMediaElementNetworkState(audios[1], 2);
+
+    testRunner.notifyDone();
+});
+</script>
+

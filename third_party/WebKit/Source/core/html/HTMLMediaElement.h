@@ -442,6 +442,8 @@ private:
     void removeUserGestureRequirement();
     void setInitialPlayWithoutUserGestures(bool);
 
+    void setNetworkState(NetworkState);
+
     void audioTracksTimerFired(Timer<HTMLMediaElement>*);
 
     Timer<HTMLMediaElement> m_loadTimer;

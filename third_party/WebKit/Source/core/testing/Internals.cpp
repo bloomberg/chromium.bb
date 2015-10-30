@@ -2561,4 +2561,12 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(double platformTime, Exce
     return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(platformTime);
 }
 
+void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement, int32_t state)
+{
+    ASSERT(mediaElement);
+    ASSERT(state >= HTMLMediaElement::NetworkState::NETWORK_EMPTY);
+    ASSERT(state <= HTMLMediaElement::NetworkState::NETWORK_NO_SOURCE);
+    mediaElement->setNetworkState(static_cast<WebMediaPlayer::NetworkState>(state));
+}
+
 } // namespace blink

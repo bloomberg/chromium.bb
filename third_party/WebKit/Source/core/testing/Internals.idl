@@ -357,4 +357,6 @@
 
     void forceRestrictIFramePermissions();
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
+
+    [TypeChecking=Interface] void setMediaElementNetworkState(HTMLMediaElement element, long state);
 };

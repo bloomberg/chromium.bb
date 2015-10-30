@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<style>
+  /* restrict to just the play button, so the slider doesn't mismatch */
+  audio {
+    width: 40px;
+    height: 40px;
+  }
+</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src=media-file.js></script>
+<script>
+
+testRunner.waitUntilDone();
+
+function test() {
+    var src = findMediaFile("audio", "content/empty");
+    document.getElementById("audio1").src = src;
+
+    runAfterLayoutAndPaint(function() {
+        testRunner.notifyDone();
+    });
+}
+</script>
+
+<body onload="test()">
+  <audio controls></audio>
+  <audio id="audio1" controls></audio>
+  <p>Test that network state transitions paint audio controls properly.</p>
+</body>
+

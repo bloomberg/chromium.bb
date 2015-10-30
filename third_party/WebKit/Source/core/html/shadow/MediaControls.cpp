@@ -414,8 +414,7 @@ void MediaControls::updateVolume()
 {
     m_muteButton->updateDisplayType();
     // Invalidate the mute button because it paints differently according to volume.
-    if (LayoutObject* layoutObject = m_muteButton->layoutObject())
-        layoutObject->setShouldDoFullPaintInvalidation();
+    invalidate(m_muteButton);
 
     if (mediaElement().muted())
         m_volumeSlider->setVolume(0);
@@ -441,8 +440,7 @@ void MediaControls::updateVolume()
     }
 
     // Invalidate the volume slider because it paints differently according to volume.
-    if (LayoutObject* layoutObject = m_volumeSlider->layoutObject())
-        layoutObject->setShouldDoFullPaintInvalidation();
+    invalidate(m_volumeSlider);
 }
 
 void MediaControls::changedClosedCaptionsVisibility()
@@ -706,6 +704,25 @@ void MediaControls::setAllowHiddenVolumeControls(bool allow)
     m_allowHiddenVolumeControls = allow;
     // Update the controls visibility.
     updateVolume();
+}
+
+void MediaControls::invalidate(Element* element)
+{
+    if (!element)
+        return;
+
+    if (LayoutObject* layoutObject = element->layoutObject())
+        layoutObject->setShouldDoFullPaintInvalidation();
+}
+
+void MediaControls::networkStateChanged()
+{
+    invalidate(m_playButton);
+    invalidate(m_overlayPlayButton);
+    invalidate(m_muteButton);
+    invalidate(m_fullScreenButton);
+    invalidate(m_timeline);
+    invalidate(m_volumeSlider);
 }
 
 DEFINE_TRACE(MediaControls)

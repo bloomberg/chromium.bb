@@ -395,6 +395,9 @@ public:
     // Translate given platform monotonic time in seconds to high resolution
     // document time in seconds
     double monotonicTimeToZeroBasedDocumentTime(double, ExceptionState&);
+
+    void setMediaElementNetworkState(HTMLMediaElement*, int32_t state);
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

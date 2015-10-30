@@ -754,7 +754,7 @@ void HTMLMediaElement::prepareForLoad()
         scheduleEvent(EventTypeNames::emptied);
 
         // 4.2 - If a fetching process is in progress for the media element, the user agent should stop it.
-        m_networkState = NETWORK_EMPTY;
+        setNetworkState(NETWORK_EMPTY);
 
         // 4.3 - Forget the media element's media-resource-specific tracks.
         forgetResourceSpecificTracks();
@@ -797,7 +797,7 @@ void HTMLMediaElement::prepareForLoad()
 
     // The resource selection algorithm
     // 1 - Set the networkState to NETWORK_NO_SOURCE
-    m_networkState = NETWORK_NO_SOURCE;
+    setNetworkState(NETWORK_NO_SOURCE);
 
     // 2 - Asynchronously await a stable state.
 
@@ -854,7 +854,7 @@ void HTMLMediaElement::selectMediaResource()
             // synchronous section ends.
             m_loadState = WaitingForSource;
             setShouldDelayLoadEvent(false);
-            m_networkState = NETWORK_EMPTY;
+            setNetworkState(NETWORK_EMPTY);
             updateDisplayState();
 
             WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), nothing to load", this);
@@ -865,7 +865,7 @@ void HTMLMediaElement::selectMediaResource()
     // 4 - Set the media element's delaying-the-load-event flag to true (this delays the load event),
     // and set its networkState to NETWORK_LOADING.
     setShouldDelayLoadEvent(true);
-    m_networkState = NETWORK_LOADING;
+    setNetworkState(NETWORK_LOADING);
 
     // 5 - Queue a task to fire a simple event named loadstart at the media element.
     scheduleEvent(EventTypeNames::loadstart);
@@ -931,7 +931,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     }
 
     // The resource fetch algorithm
-    m_networkState = NETWORK_LOADING;
+    setNetworkState(NETWORK_LOADING);
 
     // Set m_currentSrc *before* changing to the cache url, the fact that we are loading from the app
     // cache is an internal detail not exposed through the media element API.
@@ -1103,7 +1103,7 @@ void HTMLMediaElement::executeDeferredLoad()
     // delays the load event again, in case it hasn't been fired yet).
     setShouldDelayLoadEvent(true);
     // 7. Set the networkState to NETWORK_LOADING.
-    m_networkState = NETWORK_LOADING;
+    setNetworkState(NETWORK_LOADING);
 
     startProgressEventTimer();
 
@@ -1238,7 +1238,7 @@ void HTMLMediaElement::waitForSourceChange()
     m_loadState = WaitingForSource;
 
     // 6.17 - Waiting: Set the element's networkState attribute to the NETWORK_NO_SOURCE value
-    m_networkState = NETWORK_NO_SOURCE;
+    setNetworkState(NETWORK_NO_SOURCE);
 
     // 6.18 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -1269,7 +1269,7 @@ void HTMLMediaElement::noneSupported()
     forgetResourceSpecificTracks();
 
     // 6.3 - Set the element's networkState attribute to the NETWORK_NO_SOURCE value.
-    m_networkState = NETWORK_NO_SOURCE;
+    setNetworkState(NETWORK_NO_SOURCE);
 
     // 7 - Queue a task to fire a simple event named error at the media element.
     scheduleEvent(EventTypeNames::error);
@@ -1305,7 +1305,7 @@ void HTMLMediaElement::mediaEngineError(MediaError* err)
     scheduleEvent(EventTypeNames::error);
 
     // 4 - Set the element's networkState attribute to the NETWORK_IDLE value.
-    m_networkState = NETWORK_IDLE;
+    setNetworkState(NETWORK_IDLE);
 
     // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
@@ -1379,7 +1379,7 @@ void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
 
     if (state == WebMediaPlayer::NetworkStateEmpty) {
         // Just update the cached state and leave, we can't do anything.
-        m_networkState = NETWORK_EMPTY;
+        setNetworkState(NETWORK_EMPTY);
         return;
     }
 
@@ -1395,14 +1395,14 @@ void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
             changeNetworkStateFromLoadingToIdle();
             setShouldDelayLoadEvent(false);
         } else {
-            m_networkState = NETWORK_IDLE;
+            setNetworkState(NETWORK_IDLE);
         }
     }
 
     if (state == WebMediaPlayer::NetworkStateLoading) {
         if (m_networkState < NETWORK_LOADING || m_networkState == NETWORK_NO_SOURCE)
             startProgressEventTimer();
-        m_networkState = NETWORK_LOADING;
+        setNetworkState(NETWORK_LOADING);
         m_completelyLoaded = false;
     }
 
@@ -1422,7 +1422,7 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
     if (webMediaPlayer() && webMediaPlayer()->didLoadingProgress())
         scheduleEvent(EventTypeNames::progress);
     scheduleEvent(EventTypeNames::suspend);
-    m_networkState = NETWORK_IDLE;
+    setNetworkState(NETWORK_IDLE);
 }
 
 void HTMLMediaElement::readyStateChanged()
@@ -2659,7 +2659,7 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     setShouldDelayLoadEvent(true);
 
     // 24. Set the networkState back to NETWORK_LOADING.
-    m_networkState = NETWORK_LOADING;
+    setNetworkState(NETWORK_LOADING);
 
     // 25. Jump back to the find next candidate step above.
     m_nextChildNodeToConsider = source;
@@ -3003,10 +3003,10 @@ void HTMLMediaElement::userCancelledLoad()
     // simple event named emptied at the element. Otherwise, set the element's networkState
     // attribute to the NETWORK_IDLE value.
     if (readyState == HAVE_NOTHING) {
-        m_networkState = NETWORK_EMPTY;
+        setNetworkState(NETWORK_EMPTY);
         scheduleEvent(EventTypeNames::emptied);
     } else {
-        m_networkState = NETWORK_IDLE;
+        setNetworkState(NETWORK_IDLE);
     }
 
     // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
@@ -3582,6 +3582,15 @@ void HTMLMediaElement::removeUserGestureRequirement()
 void HTMLMediaElement::setInitialPlayWithoutUserGestures(bool value)
 {
     m_initialPlayWithoutUserGesture = value;
+}
+
+void HTMLMediaElement::setNetworkState(NetworkState state)
+{
+    if (m_networkState != state) {
+        m_networkState = state;
+        if (MediaControls* controls = mediaControls())
+            controls->networkStateChanged();
+    }
 }
 
 #if ENABLE(WEB_AUDIO)
