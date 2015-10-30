@@ -97,6 +97,18 @@ void NavigateNamedFrame(const ToRenderFrameHost& caller_frame,
   EXPECT_TRUE(success);
 }
 
+// Helper function to generate a click on the given RenderWidgetHost.  The
+// mouse event is forwarded directly to the RenderWidgetHost without any
+// hit-testing.
+void SimulateMouseClick(RenderWidgetHost* rwh, int x, int y) {
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebPointerProperties::ButtonLeft;
+  mouse_event.x = x;
+  mouse_event.y = y;
+  rwh->ForwardMouseEvent(mouse_event);
+}
+
 class RedirectNotificationObserver : public NotificationObserver {
  public:
   // Register to listen for notifications of the given type from either a
@@ -3488,14 +3500,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   DOMMessageQueue msg_queue;
 
   // Click on the cross-process subframe.
-  blink::WebMouseEvent mouse_event;
-  mouse_event.type = blink::WebInputEvent::MouseDown;
-  mouse_event.button = blink::WebPointerProperties::ButtonLeft;
-  mouse_event.x = 1;
-  mouse_event.y = 1;
-  RenderWidgetHost* rwh_child =
-      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
-  rwh_child->ForwardMouseEvent(mouse_event);
+  SimulateMouseClick(
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), 1, 1);
 
   // Check that the main frame lost focus and fired blur event on the input
   // text field.
@@ -3509,8 +3515,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(root->child_at(0), root->frame_tree()->GetFocusedFrame());
 
   // Click on the root frame.
-  shell()->web_contents()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  SimulateMouseClick(
+      shell()->web_contents()->GetRenderViewHost()->GetWidget(), 1, 1);
 
   // Check that the subframe lost focus and fired blur event on its
   // document's body.
@@ -3624,6 +3630,49 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenerSetLocation) {
   EXPECT_TRUE(ExecuteScript(popup->web_contents(), script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), cross_url);
+}
+
+// Ensure that a cross-process subframe can receive keyboard events when in
+// focus.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeKeyboardEventRouting) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_one_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  GURL frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_input_field.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  EXPECT_TRUE(WaitForRenderFrameReady(root->child_at(0)->current_frame_host()));
+
+  // Click on the subframe to focus it.
+  SimulateMouseClick(
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), 1, 1);
+
+  // Focus the input field in the subframe.  The return value "input-focus"
+  // will be sent once the input field's focus event fires.
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0)->current_frame_host(), "focusInputField()", &result));
+  EXPECT_EQ(result, "input-focus");
+
+  // The subframe should now be focused.
+  EXPECT_EQ(root->child_at(0), root->frame_tree()->GetFocusedFrame());
+
+  // Generate a few keyboard events and route them to currently focused frame.
+  SimulateKeyPress(web_contents, ui::VKEY_F, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::VKEY_O, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::VKEY_O, false, false, false, false);
+
+  // Verify that the input field in the subframe received the keystrokes.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(getInputFieldText());", &result));
+  EXPECT_EQ("FOO", result);
 }
 
 }  // namespace content

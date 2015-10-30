@@ -592,6 +592,7 @@ class CONTENT_EXPORT WebContentsImpl
       override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
   void ReplicatePageFocus(bool is_focused) override;
+  RenderWidgetHostImpl* GetFocusedRenderWidgetHost() override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
