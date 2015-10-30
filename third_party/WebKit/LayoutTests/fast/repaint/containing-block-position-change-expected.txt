@@ -10,6 +10,7 @@
         [100, 70, 50, 50]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV",
         "LayoutBlockFlow (relative positioned) DIV id='t'",
         "LayoutBlockFlow (positioned) DIV"
       ]

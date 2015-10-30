@@ -178,7 +178,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
         cache->childrenChanged(owner);
 }
 
-void LayoutObjectChildList::invalidatePaintOnRemoval(const LayoutObject& oldChild)
+void LayoutObjectChildList::invalidatePaintOnRemoval(LayoutObject& oldChild)
 {
     if (!oldChild.isRooted())
         return;

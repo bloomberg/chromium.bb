@@ -10,6 +10,7 @@
         [8, 2195, 653, 109],
         [8, 2045, 777, 109],
         [8, 2045, 774, 109],
+        [8, 2000, 777, 350],
         [8, 2000, 777, 350]
       ],
       "paintInvalidationClients": [
@@ -23,7 +24,8 @@
         "LayoutText #text",
         "InlineTextBox 'This text should be visible in the'",
         "InlineTextBox 'output.'",
-        "LayoutBlockFlow DIV id='container'"
+        "LayoutBlockFlow DIV id='container'",
+        "LayoutBlockFlow (positioned) DIV id='absolute'"
       ]
     }
   ]

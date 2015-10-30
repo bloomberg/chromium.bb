@@ -5,10 +5,6 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [1, 1, 100, 100],
-        [1, 1, 100, 100]
-      ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV id='target'",
         "LayoutBlockFlow DIV id='child'"

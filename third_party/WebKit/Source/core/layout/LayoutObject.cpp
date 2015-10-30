@@ -887,7 +887,6 @@ LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject*
 {
     ASSERT(!paintInvalidationContainerSkipped || !*paintInvalidationContainerSkipped);
     ASSERT(!isText());
-    ASSERT(style()->position() == FixedPosition);
 
     LayoutObject* ancestor = parent();
     for (; ancestor && !ancestor->canContainFixedPositionObjects(); ancestor = ancestor->parent()) {
@@ -3391,7 +3390,7 @@ void LayoutObject::invalidateDisplayItemClientForNonCompositingDescendantsOf(con
     traverseNonCompositingDescendants(const_cast<LayoutObject&>(object), Functor(paintInvalidationContainer));
 }
 
-void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason reason) const
+void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason reason)
 {
     // These disablers are valid because we want to use the current compositing/invalidation status.
     DisablePaintInvalidationStateAsserts invalidationDisabler;
@@ -3404,6 +3403,12 @@ void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBo
     // The PaintController may have changed. Pass the previous paint invalidation rect to the new PaintController.
     // The rect will be updated if it changes during the next paint invalidation.
     invalidateDisplayItemClients(paintInvalidationContainer, PaintInvalidationLayer, &invalidationRect);
+
+    // This method may be used to invalidate paint of an object changing paint invalidation container.
+    // Clear previous paint invalidation rect on the original paint invalidation container to avoid
+    // under-invalidation if the new paint invalidation rect on the new paint invalidation container
+    // happens to be the same as the old one.
+    setPreviousPaintInvalidationRect(LayoutRect());
 }
 
 void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()

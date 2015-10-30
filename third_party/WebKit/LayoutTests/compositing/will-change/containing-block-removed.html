@@ -3,7 +3,7 @@
 <head>
   <style>
     #container {
-      will-change: -webkit-transform;
+      will-change: transform;
       position: absolute;
       left: 200px;
       top: 100px;
@@ -21,26 +21,16 @@
       background-color: green
     }
   </style>
-  <script type="text/javascript">
-    if (window.testRunner) {
-      testRunner.waitUntilDone();
-    }
-
-    function doTest()
+  <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+  <script>
+    function repaintTest()
     {
-      if (window.internals) {
-        window.internals.forceCompositingUpdate(document);
-      }
-      // Removing "will-change: -webkit-transform" to the container div should
-      // make this div no longer be the containing block for its fixed position
-      // descendant.
+      // Removing "will-change: transform" to the container div should make this
+      // div no longer be the containing block for its fixed position descendant.
+      console.log('debug');
       document.getElementById("container").style.willChange = "top";
-      if (window.testRunner) {
-        testRunner.notifyDone();
-      }
     }
-
-    window.addEventListener('load', doTest, false);
+    onload = runRepaintAndPixelTest;
   </script>
 </head>
 

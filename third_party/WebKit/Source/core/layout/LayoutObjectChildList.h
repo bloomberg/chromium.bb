@@ -60,7 +60,7 @@ public:
     }
 
 private:
-    void invalidatePaintOnRemoval(const LayoutObject& oldChild);
+    void invalidatePaintOnRemoval(LayoutObject& oldChild);
 
     LayoutObject* m_firstChild;
     LayoutObject* m_lastChild;

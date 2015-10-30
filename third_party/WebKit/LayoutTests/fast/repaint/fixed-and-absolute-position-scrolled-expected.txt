@@ -14,6 +14,7 @@
         [0, 0, 800, 2016]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
         "LayoutView #document",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow DIV id='container' class='relative'",

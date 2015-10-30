@@ -235,13 +235,19 @@ void LayoutBlock::styleWillChange(StyleDifference diff, const ComputedStyle& new
         bool oldStyleIsContainer = oldStyle->position() != StaticPosition || oldHasTransformRelatedProperty;
 
         if (oldStyleIsContainer && (newStyle.position() == StaticPosition || (oldHasTransformRelatedProperty && !newHasTransformRelatedProperty))) {
-            // Clear our positioned objects list. Our absolutely positioned descendants will be
+            // Clear our positioned objects list. Our absolute and fixed positioned descendants will be
             // inserted into our containing block's positioned objects list during layout.
-            removePositionedObjects(0, NewContainingBlock);
+            removePositionedObjects(nullptr, NewContainingBlock);
         } else if (!oldStyleIsContainer && (newStyle.position() != StaticPosition || newHasTransformRelatedProperty)) {
             // Remove our absolutely positioned descendants from their current containing block.
             // They will be inserted into our positioned objects list during layout.
             if (LayoutBlock* cb = containingBlockForAbsolutePosition())
+                cb->removePositionedObjects(this, NewContainingBlock);
+        }
+        if (!oldHasTransformRelatedProperty && newHasTransformRelatedProperty) {
+            // Remove our fixed positioned descendants from their current containing block.
+            // They will be inserted into our positioned objects list during layout.
+            if (LayoutBlock* cb = containerForFixedPosition())
                 cb->removePositionedObjects(this, NewContainingBlock);
         }
     }
@@ -281,7 +287,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 
     if (oldStyle && parent()) {
         if (oldStyle->position() != newStyle.position() && newStyle.position() != StaticPosition) {
-            // Remove our absolutely positioned descendants from their new containing block,
+            // Remove our absolute and fixed positioned descendants from their new containing block,
             // in case containingBlock() changes by the change to the position property.
             // See styleWillChange() for other cases.
             if (LayoutBlock* cb = containingBlock())
@@ -1466,11 +1472,20 @@ void LayoutBlock::removePositionedObjects(LayoutBlock* o, ContainingBlockState c
 
     Vector<LayoutBox*, 16> deadObjects;
     for (auto* positionedObject : *positionedDescendants) {
-        if (!o || positionedObject->isDescendantOf(o)) {
+        if (!o || (positionedObject->isDescendantOf(o) && o != positionedObject)) {
             if (containingBlockState == NewContainingBlock) {
                 positionedObject->setChildNeedsLayout(MarkOnlyThis);
                 if (positionedObject->needsPreferredWidthsRecalculation())
                     positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+
+                // The positioned object changing containing block may change paint invalidation container.
+                // Invalidate it (including non-compositing descendants) on its original paint invalidation container.
+                if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+                    // This valid because we need to invalidate based on the current status.
+                    DisableCompositingQueryAsserts compositingDisabler;
+                    if (!positionedObject->isPaintInvalidationContainer())
+                        positionedObject->invalidatePaintIncludingNonCompositingDescendants();
+                }
             }
 
             // It is parent blocks job to add positioned child to positioned objects list of its containing block

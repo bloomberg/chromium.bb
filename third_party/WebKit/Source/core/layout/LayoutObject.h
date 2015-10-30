@@ -770,7 +770,9 @@ public:
     // the layoutObject returned is an ancestor of |paintInvalidationContainer|.
     LayoutObject* container(const LayoutBoxModelObject* paintInvalidationContainer = nullptr, bool* paintInvalidationContainerSkipped = nullptr) const;
     LayoutObject* containerCrossingFrameBoundaries() const;
+    // Finds the container as if this object is fixed-position.
     LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer = nullptr, bool* paintInvalidationContainerSkipped = nullptr) const;
+    // Finds the containing block as if this object is absolute-position.
     LayoutBlock* containingBlockForAbsolutePosition() const;
 
     virtual LayoutObject* hoverAncestor() const { return parent(); }
@@ -1504,7 +1506,7 @@ private:
 
     inline void invalidateContainerPreferredLogicalWidths();
 
-    void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const;
+    void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason);
 
     LayoutRect previousSelectionRectForPaintInvalidation() const;
     void setPreviousSelectionRectForPaintInvalidation(const LayoutRect&);
