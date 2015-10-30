@@ -712,8 +712,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kuscher@google.com</owner>
   <owner>varkha@chromium.org</owner>
   <summary>
-    Source (mouse, touch or unknown) of the user-initiated action for docked
-    windows.
+    Source (mouse, touch, keyboard or unknown) of the user-initiated action for
+    docked windows.
   </summary>
 </histogram>
 
@@ -56270,6 +56270,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Unknown"/>
   <int value="1" label="Mouse"/>
   <int value="2" label="Touch"/>
+  <int value="3" label="Keyboard"/>
 </enum>
 
 <enum name="DomainBoundCerts.GetCertResult" type="int">
