@@ -6,7 +6,7 @@ import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
 group("media") {
-  deps = [
+  public_deps = [
     "//chromecast/media/audio",
     "//chromecast/media/base",
     "//chromecast/media/cdm",
@@ -40,7 +40,7 @@ test("cast_media_unittests") {
 
   deps = [
     ":media",
-    "//chromecast/media/audio:test_support",
+    "//chromecast/media/audio",
     "//chromecast/media/base:message_loop",
     "//chromecast/media/cma/backend",
     "//chromecast/media/cma/base",

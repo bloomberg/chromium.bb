@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Targets may depend on this to bring in every CMA component.
 group("cma") {
-  deps = [
+  public_deps = [
     "//chromecast/media/cma/backend",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/ipc",

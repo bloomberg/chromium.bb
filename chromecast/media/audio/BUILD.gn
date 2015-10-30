@@ -14,25 +14,13 @@ source_set("audio") {
 
   configs += [ "//chromecast:config" ]
 
-  public_deps = [
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/media/base",
+    "//chromecast/media/cma/base",
     "//chromecast/public/media",
-  ]
-
-  deps = [
     "//media",
-  ]
-}
-
-source_set("test_support") {
-  testonly = true
-
-  configs += [ "//chromecast:config" ]
-
-  public_deps = [
-    ":audio",
-  ]
-
-  deps = [
-    "//testing/gtest",
+    "//media:shared_memory_support",
   ]
 }

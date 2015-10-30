@@ -33,8 +33,11 @@ source_set("media") {
     "//chromecast/common/media",
     "//chromecast/media",
     "//content/public/renderer",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
     "//ipc",
     "//media",
+    "//ui/gfx/geometry",
   ]
 }
 

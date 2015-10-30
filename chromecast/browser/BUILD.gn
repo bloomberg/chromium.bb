@@ -91,6 +91,7 @@ source_set("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//content/public/utility",
+    "//gpu",
     "//media",
     "//ipc",
     "//net",

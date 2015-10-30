@@ -5,7 +5,9 @@
 #ifndef CHROMECAST_BASE_CAST_SYS_INFO_DUMMY_H_
 #define CHROMECAST_BASE_CAST_SYS_INFO_DUMMY_H_
 
-#include "base/macros.h"
+// Note(slan): This file is needed by internal targets which cannot depend on
+// "//base". Amend this include with a comment so gn check ignores it.
+#include "base/macros.h"  // nogncheck
 #include "chromecast/public/cast_sys_info.h"
 
 namespace chromecast {
