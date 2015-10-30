@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_TEST_BASE_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_TEST_BASE_H_
 
+#include <string>
+
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -89,6 +92,20 @@ class ExtensionServiceTestBase : public testing::Test {
   // Resets the browser thread bundle to one with |options|.
   void ResetThreadBundle(int options);
 
+  // Helpers to check the existence and values of extension prefs.
+  size_t GetPrefKeyCount();
+  void ValidatePrefKeyCount(size_t count);
+  testing::AssertionResult ValidateBooleanPref(
+      const std::string& extension_id,
+      const std::string& pref_path,
+      bool expected_val);
+  void ValidateIntegerPref(const std::string& extension_id,
+                           const std::string& pref_path,
+                           int expected_val);
+  void ValidateStringPref(const std::string& extension_id,
+                          const std::string& pref_path,
+                          const std::string& expected_val);
+
   // TODO(rdevlin.cronin): Pull out more methods from ExtensionServiceTest that
   // are commonly used and/or reimplemented. For instance, methods to install
   // extensions from various locations, etc.
@@ -148,6 +165,8 @@ class ExtensionServiceTestBase : public testing::Test {
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionServiceTestBase);
 };
 
 }  // namespace extensions
