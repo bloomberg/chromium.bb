@@ -285,6 +285,18 @@ bool IsAsyncSetAsDefaultEnabled() {
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
+bool RegisterBrowser() {
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    return false;
+  }
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+
+  return ShellUtil::RegisterChromeBrowser(dist, chrome_exe, base::string16(),
+                                          true);
+}
+
 }  // namespace
 
 // static
@@ -655,7 +667,7 @@ bool ShellIntegration::DefaultBrowserWorker::InitializeSetAsDefault() {
   // default browser. This is the workaround:
   // 1. Unregister the default browser.
   // 2. Open "How to make Chrome my default browser" link with openwith.exe.
-  // 3. Windows will prompt the user with "How would you link to open this?".
+  // 3. Windows will prompt the user with "How would you like to open this?".
   // 4. If Chrome is selected, we intercept the attempt to open the URL and
   //    instead call OnSetAsDefaultAttemptComplete(), passing true to indicate
   //    success.
@@ -704,6 +716,11 @@ void ShellIntegration::DefaultBrowserWorker::FinalizeSetAsDefault() {
 // static
 bool ShellIntegration::DefaultBrowserWorker::SetAsDefaultBrowserAsynchronous() {
   DCHECK(IsSetAsDefaultAsynchronous());
+
+  // Registers chrome.exe as a browser on Windows to make sure it will be shown
+  // in the "How would you like to open this?" prompt.
+  if (!RegisterBrowser())
+    return false;
 
   ResetDefaultBrowser();
 
