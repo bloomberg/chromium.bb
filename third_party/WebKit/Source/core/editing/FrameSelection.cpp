@@ -1335,7 +1335,7 @@ void FrameSelection::scheduleVisualUpdate() const
     if (!m_frame)
         return;
     if (Page* page = m_frame->page())
-        page->animator().scheduleVisualUpdate();
+        page->animator().scheduleVisualUpdate(m_frame->localFrameRoot());
 }
 
 bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position)
