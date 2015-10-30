@@ -28,8 +28,10 @@ const char kRedirectPostPath[] = "/redirect";
 
 // ThreadSanitizer is too slow to perform the full upload, so tests
 // using that build get an easier test which might not show two distinct
-// progress events. See crbug.com/526985.
-#if defined(THREAD_SANITIZER)
+// progress events. See crbug.com/526985. In addition, OSX buildbots have
+// experienced slowdowns on this test (crbug.com/548819), give them the easier
+// test too.
+#if defined(THREAD_SANITIZER) || defined(OS_MACOSX)
 const size_t kPayloadSize = 1062882;  // 2*3^12
 #else
 const size_t kPayloadSize = 28697814;  // 2*3^15
