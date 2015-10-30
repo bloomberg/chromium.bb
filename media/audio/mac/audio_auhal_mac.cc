@@ -149,8 +149,6 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     return;
   }
 
-  ReportAndResetStats();
-
   stopped_ = false;
   audio_fifo_.reset();
   {
@@ -178,6 +176,8 @@ void AUHALStream::Stop() {
       << "AudioOutputUnitStop() failed.";
   if (result != noErr)
     source_->OnError(this);
+
+  ReportAndResetStats();
 
   base::AutoLock auto_lock(source_lock_);
   source_ = NULL;
@@ -371,12 +371,16 @@ void AUHALStream::UpdatePlayoutTimestamp(const AudioTimeStamp* timestamp) {
 }
 
 void AUHALStream::ReportAndResetStats() {
+  if (!last_sample_time_)
+    return;  // No stats gathered to report.
+
   // A value of 0 indicates that we got the buffer size we asked for.
   UMA_HISTOGRAM_COUNTS("Media.Audio.Render.FramesRequested",
                        number_of_frames_requested_);
   // Even if there aren't any glitches, we want to record it to get a feel for
   // how often we get no glitches vs the alternative.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.Render.Glitches", glitches_detected_);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Audio.Render.Glitches", glitches_detected_,
+                              0, 999999, 100);
 
   if (glitches_detected_ != 0) {
     auto lost_frames_ms = (total_lost_frames_ * 1000) / params_.sample_rate();
