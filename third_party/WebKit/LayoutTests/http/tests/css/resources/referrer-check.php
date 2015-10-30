@@ -18,7 +18,7 @@ function putImage() {
 }
 
 function putFont() {
-    $font = "../../../../resources/Ahem.ttf";
+    $font = "../../resources/Ahem.ttf";
     header("Content-Type: font/truetype");
     header("Content-Length: " . filesize($font));
     header("Access-Control-Allow-Origin: *");

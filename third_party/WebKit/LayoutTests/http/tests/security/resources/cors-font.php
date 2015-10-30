@@ -1,6 +1,6 @@
 <?php
 
-$font = "../../../../resources/Ahem.ttf";
+$font = "../../resources/Ahem.ttf";
 
 header("Cache-Control: public, max-age=86400");
 header('Last-Modified: ' . gmdate("D, d M Y H:i:s", filemtime($font)) . " GMT");
