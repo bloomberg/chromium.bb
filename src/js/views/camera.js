@@ -1544,7 +1544,7 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
       // Use a watchdog since the stream.onended event is unreliable in the
       // recent version of Chrome.
       this.watchdog_ = setInterval(function() {
-        if (stream.ended) {
+        if (!stream.active) {
           this.capturing_ = false;
           onDisconnected();
           clearInterval(this.watchdog_);
