@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//media/media_options.gni")
 import("//testing/test.gni")
 
 source_set("browser") {
@@ -110,6 +111,14 @@ source_set("browser") {
     ]
 
     deps += [ "//components/metrics:serialization" ]
+  }
+
+  if (enable_mojo_media != "none") {
+    configs += [ "//media/mojo/services:enable_mojo_media_config" ]
+  }
+
+  if (enable_mojo_media == "utility") {
+    deps += [ "//media/mojo/services:application" ]
   }
 }
 

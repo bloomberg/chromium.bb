@@ -2593,6 +2593,14 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
   registry->AddService(base::Bind(&CreateUsbDeviceManager, render_frame_host));
 }
 
+void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(
+      OutOfProcessMojoApplicationMap* apps) {
+#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
+  apps->insert(std::make_pair(GURL("mojo:media"),
+                              base::ASCIIToUTF16("Media App")));
+#endif
+}
+
 void ChromeContentBrowserClient::OpenURL(
     content::BrowserContext* browser_context,
     const content::OpenURLParams& params,

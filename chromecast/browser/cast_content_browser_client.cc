@@ -359,7 +359,7 @@ void CastContentBrowserClient::RegisterUnsandboxedOutOfProcessMojoApplications(
     std::map<GURL, base::string16>* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
   apps->insert(std::make_pair(GURL("mojo:media"),
-                              base::UTF8ToUTF16("Media Renderer")));
+                              base::ASCIIToUTF16("Media App")));
 #endif
 }
 

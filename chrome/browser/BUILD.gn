@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
@@ -885,6 +886,14 @@ source_set("browser") {
   }
   if (enable_media_router) {
     deps += [ "//chrome/browser/media/router" ]
+  }
+
+  if (enable_mojo_media != "none") {
+    configs += [ "//media/mojo/services:enable_mojo_media_config" ]
+  }
+
+  if (enable_mojo_media == "utility") {
+    deps += [ "//media/mojo/services:application" ]
   }
 }
 
