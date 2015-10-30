@@ -20,6 +20,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -157,7 +158,8 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         // Validate the contents of the notification.
         assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals("Hello", notification.extras.getString(Notification.EXTRA_TEXT));
-        assertEquals(getOrigin(), notification.extras.getString(Notification.EXTRA_SUB_TEXT));
+        assertEquals(UrlUtilities.formatUrlForSecurityDisplay(getOrigin(), false /* showScheme */),
+                notification.extras.getString(Notification.EXTRA_SUB_TEXT));
 
         // Verify that the ticker text contains the notification's title and body.
         String tickerText = notification.tickerText.toString();

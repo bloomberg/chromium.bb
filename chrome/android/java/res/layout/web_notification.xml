@@ -65,8 +65,9 @@
         android:layout_toEndOf="@id/icon_frame"
         android:layout_alignParentEnd="true"
         android:layout_below="@id/body"
+        android:layout_marginEnd="8dp"
         android:singleLine="true"
-        android:ellipsize="end"
+        android:ellipsize="start"
         style="@style/WebNotificationOrigin"/>
 
 </RelativeLayout>

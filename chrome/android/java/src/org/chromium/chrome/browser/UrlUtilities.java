@@ -140,7 +140,7 @@ public class UrlUtilities {
     }
 
     /**
-     * Builds a String that strips down the URL to the its scheme, host, and port.
+     * Builds a String that strips down the URL to its scheme, host, and port.
      * @param uri URI to break down.
      * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
      *                   is ignored.
@@ -148,13 +148,24 @@ public class UrlUtilities {
      *         it fails to parse it.
      */
     public static String formatUrlForSecurityDisplay(URI uri, boolean showScheme) {
-        if (showScheme) {
-            return nativeFormatUrlForSecurityDisplay(uri.toString());
-        } else {
-            return nativeFormatUrlForSecurityDisplayOmitScheme(uri.toString());
-        }
+        return formatUrlForSecurityDisplay(uri.toString(), showScheme);
     }
 
+    /**
+     * Builds a String that strips down |url| to its scheme, host, and port.
+     * @param uri The URI to break down.
+     * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
+     *                   is ignored.
+     * @return Stripped-down String containing the essential bits of the URL, or the original URL if
+     *         it fails to parse it.
+     */
+    public static String formatUrlForSecurityDisplay(String uri, boolean showScheme) {
+        if (showScheme) {
+            return nativeFormatUrlForSecurityDisplay(uri);
+        } else {
+            return nativeFormatUrlForSecurityDisplayOmitScheme(uri);
+        }
+    }
     /**
      * Determines whether or not the given URLs belong to the same broad domain or host.
      * "Broad domain" is defined as the TLD + 1 or the host.

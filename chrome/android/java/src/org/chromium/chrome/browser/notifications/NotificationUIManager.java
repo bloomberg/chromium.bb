@@ -26,6 +26,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
@@ -437,7 +438,8 @@ public class NotificationUIManager {
                         NotificationConstants.ACTION_CLOSE_NOTIFICATION,
                         persistentNotificationId, origin, tag, -1 /* actionIndex */))
                 .setTicker(createTickerText(title, body))
-                .setOrigin(origin);
+                .setOrigin(UrlUtilities.formatUrlForSecurityDisplay(
+                        origin, false /* showScheme */));
 
         for (int actionIndex = 0; actionIndex < actionTitles.length; actionIndex++) {
             notificationBuilder.addAction(
