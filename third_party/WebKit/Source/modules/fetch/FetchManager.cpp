@@ -204,6 +204,18 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
 {
     ASSERT(handle);
 
+    if (response.url().protocolIs("blob") && response.httpStatusCode() == 404) {
+        // "If |blob| is null, return a network error."
+        // https://fetch.spec.whatwg.org/#concept-basic-fetch
+        performNetworkError("Blob not found.");
+        return;
+    }
+
+    if (response.url().protocolIs("blob") && response.httpStatusCode() == 405) {
+        performNetworkError("Only 'GET' method is allowed for blob URLs.");
+        return;
+    }
+
     m_responseHttpStatusCode = response.httpStatusCode();
 
     if (response.url().protocolIsData()) {
@@ -481,6 +493,8 @@ void FetchManager::Loader::performBasicFetch()
         performHTTPFetch(false, false);
     } else if (m_request->url().protocolIsData()) {
         performDataFetch();
+    } else if (m_request->url().protocolIs("blob")) {
+        performHTTPFetch(false, false);
     } else {
         // FIXME: implement other protocols.
         performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme \"" + m_request->url().protocol() + "\" is not supported.");
@@ -494,7 +508,7 @@ void FetchManager::Loader::performNetworkError(const String& message)
 
 void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFlag)
 {
-    ASSERT(SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(m_request->url().protocol()));
+    ASSERT(SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(m_request->url().protocol()) || (m_request->url().protocolIs("blob") && !corsFlag && !corsPreflightFlag));
     // CORS preflight fetch procedure is implemented inside DocumentThreadableLoader.
 
     // "1. Let |HTTPRequest| be a copy of |request|, except that |HTTPRequest|'s
