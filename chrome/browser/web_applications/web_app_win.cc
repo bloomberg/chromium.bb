@@ -573,8 +573,8 @@ std::vector<base::FilePath> GetShortcutPaths(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT
     }, {
       creation_locations.applications_menu_location ==
-          APP_MENU_LOCATION_SUBDIR_CHROME_DEPRECATED,
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED
+          APP_MENU_LOCATION_SUBDIR_CHROME,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR
     }, {
       creation_locations.applications_menu_location ==
           APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
