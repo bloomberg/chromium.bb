@@ -71,6 +71,7 @@ protected:
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
     RefPtrWillBePersistent<Document> m_document;
+    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 void ImeOnFocusTest::sendGestureTap(WebView* webView, IntPoint clientPoint)

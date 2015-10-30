@@ -108,6 +108,7 @@ private:
     }
 
     FrameTestHelpers::WebViewHelper m_helper;
+    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault)

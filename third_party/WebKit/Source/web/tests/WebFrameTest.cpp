@@ -131,7 +131,6 @@
 #include <v8.h>
 
 using blink::URLTestHelpers::toKURL;
-using blink::FrameTestHelpers::UseMockScrollbarSettings;
 using blink::testing::runPendingTasks;
 using testing::ElementsAre;
 using testing::Mock;
@@ -273,6 +272,7 @@ protected:
     std::string m_baseURL;
     std::string m_notBaseURL;
     std::string m_chromeURL;
+    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 enum ParameterizedWebFrameTestConfig {
@@ -911,7 +911,6 @@ bool checkTextAutosizingMultiplier(Document* document, float multiplier)
 
 TEST_P(ParameterizedWebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -940,7 +939,6 @@ TEST_P(ParameterizedWebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipl
 
 TEST_P(ParameterizedWebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewport)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "fixed_layout.html";
     registerMockedHttpURLLoad(htmlFile);
 
@@ -961,7 +959,6 @@ TEST_P(ParameterizedWebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewpo
 
 TEST_P(ParameterizedWebFrameTest, VisualViewportSetSizeInvalidatesTextAutosizingMultipliers)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("iframe_reload.html");
     registerMockedHttpURLLoad("visible_iframe.html");
 
@@ -1004,8 +1001,6 @@ TEST_P(ParameterizedWebFrameTest, VisualViewportSetSizeInvalidatesTextAutosizing
 
 TEST_P(ParameterizedWebFrameTest, ZeroHeightPositiveWidthNotIgnored)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
     int viewportWidth = 1280;
@@ -1021,7 +1016,6 @@ TEST_P(ParameterizedWebFrameTest, ZeroHeightPositiveWidthNotIgnored)
 
 TEST_P(ParameterizedWebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("no_viewport_tag.html");
 
     int viewportWidth = 640;
@@ -1050,8 +1044,6 @@ TEST_P(ParameterizedWebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag
 
 TEST_P(ParameterizedWebFrameTest, FixedLayoutInitializeAtMinimumScale)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1089,8 +1081,6 @@ TEST_P(ParameterizedWebFrameTest, FixedLayoutInitializeAtMinimumScale)
 
 TEST_P(ParameterizedWebFrameTest, WideDocumentInitializeAtMinimumScale)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     registerMockedHttpURLLoad("wide_document.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1128,7 +1118,6 @@ TEST_P(ParameterizedWebFrameTest, WideDocumentInitializeAtMinimumScale)
 
 TEST_P(ParameterizedWebFrameTest, DelayedViewportInitialScale)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1152,7 +1141,6 @@ TEST_P(ParameterizedWebFrameTest, DelayedViewportInitialScale)
 
 TEST_P(ParameterizedWebFrameTest, setLoadWithOverviewModeToFalse)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1172,7 +1160,6 @@ TEST_P(ParameterizedWebFrameTest, setLoadWithOverviewModeToFalse)
 
 TEST_P(ParameterizedWebFrameTest, SetLoadWithOverviewModeToFalseAndNoWideViewport)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("large-div.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1193,7 +1180,6 @@ TEST_P(ParameterizedWebFrameTest, SetLoadWithOverviewModeToFalseAndNoWideViewpor
 
 TEST_P(ParameterizedWebFrameTest, NoWideViewportIgnoresPageViewportWidth)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1214,7 +1200,6 @@ TEST_P(ParameterizedWebFrameTest, NoWideViewportIgnoresPageViewportWidth)
 
 TEST_P(ParameterizedWebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1236,7 +1221,6 @@ TEST_P(ParameterizedWebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccou
 
 TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithoutViewportTag)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("no_viewport_tag.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1257,7 +1241,6 @@ TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithoutViewportTag)
 
 TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithXhtmlMp)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1279,7 +1262,6 @@ TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithXhtmlMp)
 
 TEST_P(ParameterizedWebFrameTest, NoWideViewportAndHeightInMeta)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-height-1000.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1298,7 +1280,6 @@ TEST_P(ParameterizedWebFrameTest, NoWideViewportAndHeightInMeta)
 
 TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithAutoWidth)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-2x-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1319,7 +1300,6 @@ TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithAutoWidth)
 
 TEST_P(ParameterizedWebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1338,8 +1318,6 @@ TEST_P(ParameterizedWebFrameTest, PageViewportInitialScaleOverridesLoadWithOverv
 
 TEST_P(ParameterizedWebFrameTest, setInitialPageScaleFactorPermanently)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1370,7 +1348,6 @@ TEST_P(ParameterizedWebFrameTest, setInitialPageScaleFactorPermanently)
 
 TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorOverridesLoadWithOverviewMode)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1390,7 +1367,6 @@ TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorOverridesLoadWi
 
 TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitialScale)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1409,7 +1385,6 @@ TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorOverridesPageVi
 
 TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     const char* pages[] = {
         // These pages trigger the clobbering condition. There must be a matching item in "pageScaleFactors" array.
         "viewport-device-0.5x-initial-scale.html",
@@ -1445,8 +1420,6 @@ TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbere
 
 TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
     int viewportWidth = 640;
@@ -1467,7 +1440,6 @@ TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWi
 
 TEST_P(ParameterizedWebFrameTest, DocumentElementClientHeightWorksWithWrapContentMode)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("0-by-0.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1489,7 +1461,6 @@ TEST_P(ParameterizedWebFrameTest, DocumentElementClientHeightWorksWithWrapConten
 
 TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("0-by-0.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1532,7 +1503,6 @@ TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMo
 
 TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeight)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("200-by-300.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1572,7 +1542,6 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged
     // as more content is added)
     // 3. fail to register touch events aimed at the loaded content
     // because the layout is only updated if either width or height is changed
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("button.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1609,7 +1578,6 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged
 
 TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("200-by-300.html");
     registerMockedHttpURLLoad("large-div.html");
 
@@ -1633,7 +1601,6 @@ TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations
 
 TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("200-by-300.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1655,7 +1622,6 @@ TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk)
 
 TEST_P(ParameterizedWebFrameTest, WideViewportAndWideContentWithInitialScale)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("wide_document_width_viewport.html");
     registerMockedHttpURLLoad("white-1x1.png");
 
@@ -1682,7 +1648,6 @@ TEST_P(ParameterizedWebFrameTest, WideViewportAndWideContentWithInitialScale)
 
 TEST_P(ParameterizedWebFrameTest, WideViewportQuirkClobbersHeight)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-height-1000.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1706,7 +1671,6 @@ TEST_P(ParameterizedWebFrameTest, WideViewportQuirkClobbersHeight)
 
 TEST_P(ParameterizedWebFrameTest, LayoutSize320Quirk)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport/viewport-30.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1758,7 +1722,6 @@ TEST_P(ParameterizedWebFrameTest, LayoutSize320Quirk)
 
 TEST_P(ParameterizedWebFrameTest, ZeroValuesQuirk)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-zero-values.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1846,7 +1809,6 @@ TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk)
 
 TEST_P(ParameterizedWebFrameTest, NonZeroValuesNoQuirk)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-nonzero-values.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1873,7 +1835,6 @@ TEST_P(ParameterizedWebFrameTest, NonZeroValuesNoQuirk)
 
 TEST_P(ParameterizedWebFrameTest, setPageScaleFactorDoesNotLayout)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1895,8 +1856,6 @@ TEST_P(ParameterizedWebFrameTest, setPageScaleFactorDoesNotLayout)
 
 TEST_P(ParameterizedWebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1918,7 +1877,6 @@ TEST_P(ParameterizedWebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNot
 
 TEST_P(ParameterizedWebFrameTest, pageScaleFactorWrittenToHistoryItem)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1937,7 +1895,6 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorWrittenToHistoryItem)
 
 TEST_P(ParameterizedWebFrameTest, initialScaleWrittenToHistoryItem)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1959,7 +1916,6 @@ TEST_P(ParameterizedWebFrameTest, initialScaleWrittenToHistoryItem)
 
 TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("large-div.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2000,7 +1956,6 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView)
 
 TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2021,7 +1976,6 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 
 TEST_P(ParameterizedWebFrameTest, targetDensityDpiHigh)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-high.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2053,7 +2007,6 @@ TEST_P(ParameterizedWebFrameTest, targetDensityDpiHigh)
 
 TEST_P(ParameterizedWebFrameTest, targetDensityDpiDevice)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-device.html");
 
     float deviceScaleFactors[] = { 1.0f, 4.0f / 3.0f, 2.0f };
@@ -2079,7 +2032,6 @@ TEST_P(ParameterizedWebFrameTest, targetDensityDpiDevice)
 
 TEST_P(ParameterizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-device-and-fixed-width.html");
 
     float deviceScaleFactors[] = { 1.0f, 4.0f / 3.0f, 2.0f };
@@ -2106,7 +2058,6 @@ TEST_P(ParameterizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
 
 TEST_P(ParameterizedWebFrameTest, NoWideViewportAndScaleLessThanOne)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-less-than-1.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2129,7 +2080,6 @@ TEST_P(ParameterizedWebFrameTest, NoWideViewportAndScaleLessThanOne)
 
 TEST_P(ParameterizedWebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-less-than-1-device-width.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2153,7 +2103,6 @@ TEST_P(ParameterizedWebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWid
 
 TEST_P(ParameterizedWebFrameTest, NoWideViewportAndNoViewportWithInitialPageScaleOverride)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("large-div.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2177,7 +2126,6 @@ TEST_P(ParameterizedWebFrameTest, NoWideViewportAndNoViewportWithInitialPageScal
 
 TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScale)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-and-user-scalable-no.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2197,7 +2145,6 @@ TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScale)
 
 TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForNonWideViewport)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-and-user-scalable-no.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2221,7 +2168,6 @@ TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForNonW
 
 TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWideViewport)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-2x-initial-scale-non-user-scalable.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2242,7 +2188,6 @@ TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWide
 
 TEST_P(ParameterizedWebFrameTest, DesktopPageCanBeZoomedInWhenWideViewportIsTurnedOff)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("no_viewport_tag.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2276,7 +2221,6 @@ protected:
                                                const WebSize scrollOffset,
                                                const WebSize viewportSize,
                                                const bool shouldScaleRelativeToViewportWidth) {
-        UseMockScrollbarSettings mockScrollbarSettings;
         registerMockedHttpURLLoad(url);
 
         const float aspectRatio = static_cast<float>(viewportSize.width) / viewportSize.height;
@@ -2376,7 +2320,6 @@ TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
 
 TEST_P(ParameterizedWebFrameTest, pageScaleFactorUpdatesScrollbars)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2401,8 +2344,6 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorUpdatesScrollbars)
 
 TEST_P(ParameterizedWebFrameTest, CanOverrideScaleLimits)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     registerMockedHttpURLLoad("no_scale_for_you.html");
 
     FixedLayoutTestWebViewClient client;
@@ -2438,8 +2379,6 @@ TEST_F(WebFrameTest, DISABLED_updateOverlayScrollbarLayers)
 TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
 #endif
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
-
     registerMockedHttpURLLoad("large-div.html");
 
     int viewWidth = 500;
@@ -4846,7 +4785,6 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupNoContainer)
 
 TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "disambiguation_popup_mobile_site.html";
     registerMockedHttpURLLoad(htmlFile);
 
@@ -4882,7 +4820,6 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite)
 
 TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "disambiguation_popup_viewport_site.html";
     registerMockedHttpURLLoad(htmlFile);
 
@@ -4918,7 +4855,6 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite)
 
 TEST_F(WebFrameTest, DisambiguationPopupVisualViewport)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "disambiguation_popup_200_by_800.html";
     registerMockedHttpURLLoad(htmlFile);
 
@@ -6347,7 +6283,6 @@ TEST_P(ParameterizedWebFrameTest, CreateChildFrameFailure)
 
 TEST_P(ParameterizedWebFrameTest, fixedPositionInFixedViewport)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed-position-in-fixed-viewport.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "fixed-position-in-fixed-viewport.html", true, 0, 0, enableViewportSettings);
@@ -6389,7 +6324,6 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("long_scroll.html");
-    UseMockScrollbarSettings mockScrollbarSettings;
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, &client, configureAndroid);
 
@@ -6452,7 +6386,6 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
 
 TEST_F(WebFrameTest, MaximumScrollPositionCanBeNegative)
 {
-    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("rtl-overview-mode.html");
 
     FixedLayoutTestWebViewClient client;

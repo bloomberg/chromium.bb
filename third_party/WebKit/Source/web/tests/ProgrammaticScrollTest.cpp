@@ -45,6 +45,7 @@ protected:
 
     std::string m_baseURL;
     MockWebFrameClient m_mockWebFrameClient;
+    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)

@@ -243,6 +243,7 @@ protected:
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
+    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 TEST_F(WebViewTest, SaveImageAt)

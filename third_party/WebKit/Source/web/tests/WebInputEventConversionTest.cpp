@@ -66,6 +66,8 @@ int getModifiersForKeyLocationCode(KeyboardEvent::KeyLocationCode location)
 
 TEST(WebInputEventConversionTest, WebKeyboardEventBuilder)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     // Test key location conversion.
     int modifiers = getModifiersForKeyLocationCode(KeyboardEvent::DOM_KEY_LOCATION_STANDARD);
     EXPECT_FALSE(modifiers & WebInputEvent::IsKeyPad || modifiers & WebInputEvent::IsLeft || modifiers & WebInputEvent::IsRight);
@@ -85,6 +87,8 @@ TEST(WebInputEventConversionTest, WebKeyboardEventBuilder)
 
 TEST(WebInputEventConversionTest, WebMouseEventBuilder)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     RefPtrWillBeRawPtr<TouchEvent> event = TouchEvent::create();
     WebMouseEventBuilder mouse(0, 0, *event);
     EXPECT_EQ(WebInputEvent::Undefined, mouse.type);
@@ -92,6 +96,8 @@ TEST(WebInputEventConversionTest, WebMouseEventBuilder)
 
 TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test0.com/");
     const std::string fileName("fixed_layout.html");
 
@@ -230,6 +236,8 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 
 TEST(WebInputEventConversionTest, InputEventsScaling)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test1.com/");
     const std::string fileName("fixed_layout.html");
 
@@ -484,6 +492,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
 TEST(WebInputEventConversionTest, InputEventsTransform)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test2.com/");
     const std::string fileName("fixed_layout.html");
 
@@ -686,6 +696,8 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
 
 TEST(WebInputEventConversionTest, VisualViewportOffset)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test4.com/");
     const std::string fileName("fixed_layout.html");
 
@@ -779,6 +791,8 @@ TEST(WebInputEventConversionTest, VisualViewportOffset)
 
 TEST(WebInputEventConversionTest, ElasticOverscroll)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test5.com/");
     const std::string fileName("fixed_layout.html");
 
@@ -841,6 +855,8 @@ TEST(WebInputEventConversionTest, ElasticOverscroll)
 // Page reload/navigation should not reset elastic overscroll.
 TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test6.com/");
     const std::string fileName("fixed_layout.html");
 
@@ -878,6 +894,8 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload)
 
 TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test7.com/");
     const std::string fileName("fixed_layout.html");
 
@@ -910,6 +928,8 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 
 TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
 {
+    FrameTestHelpers::UseMockScrollbarSettings mockScrollbarSettings;
+
     const std::string baseURL("http://www.test8.com/");
     const std::string fileName("fixed_layout.html");
 

@@ -126,6 +126,7 @@ protected:
 
     const std::string m_baseURL;
     MockWebFrameClient m_mockWebViewClient;
+    FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
 };
 
 TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest)
