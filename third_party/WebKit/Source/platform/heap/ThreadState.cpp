@@ -1114,11 +1114,12 @@ void ThreadState::completeSweep()
             m_heaps[i]->completeSweep();
 
         double timeForCompleteSweep = WTF::currentTimeMS() - startTime;
-        Platform::current()->histogramCustomCounts("BlinkGC.CompleteSweep", timeForCompleteSweep, 0, 10 * 1000, 50);
         accumulateSweepingTime(timeForCompleteSweep);
 
-        if (isMainThread())
+        if (isMainThread()) {
             ScriptForbiddenScope::exit();
+            Platform::current()->histogramCustomCounts("BlinkGC.CompleteSweep", timeForCompleteSweep, 1, 10 * 1000, 50);
+        }
     }
 
     postSweep();
