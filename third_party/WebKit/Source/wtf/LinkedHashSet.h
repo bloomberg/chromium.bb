@@ -23,9 +23,9 @@
 #define WTF_LinkedHashSet_h
 
 #include "wtf/AddressSanitizer.h"
-#include "wtf/DefaultAllocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/PartitionAllocator.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WTF {
@@ -138,7 +138,7 @@ template<
     typename ValueArg,
     typename HashFunctions = typename DefaultHash<ValueArg>::Hash,
     typename TraitsArg = HashTraits<ValueArg>,
-    typename Allocator = DefaultAllocator>
+    typename Allocator = PartitionAllocator>
 class LinkedHashSet {
     WTF_USE_ALLOCATOR(LinkedHashSet, Allocator);
 private:

@@ -23,8 +23,8 @@
 #include "wtf/Alignment.h"
 #include "wtf/Assertions.h"
 #include "wtf/ConditionalDestructor.h"
-#include "wtf/DefaultAllocator.h"
 #include "wtf/HashTraits.h"
+#include "wtf/PartitionAllocator.h"
 
 #define DUMP_HASHTABLE_STATS 0
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0
@@ -1162,7 +1162,7 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
 
     // The Allocator::isGarbageCollected check is not needed.  The check is just
     // a static hint for a compiler to indicate that Base::expandBuffer returns
-    // false if Allocator is a DefaultAllocator.
+    // false if Allocator is a PartitionAllocator.
     if (Allocator::isGarbageCollected && newTableSize > oldTableSize) {
         bool success;
         Value* newEntry = expandBuffer(newTableSize, entry, success);

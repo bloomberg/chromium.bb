@@ -21,8 +21,8 @@
 #ifndef WTF_HashMap_h
 #define WTF_HashMap_h
 
-#include "wtf/DefaultAllocator.h"
 #include "wtf/HashTable.h"
+#include "wtf/PartitionAllocator.h"
 
 namespace WTF {
 
@@ -49,7 +49,7 @@ template <
     typename HashArg = typename DefaultHash<KeyArg>::Hash,
     typename KeyTraitsArg = HashTraits<KeyArg>,
     typename MappedTraitsArg = HashTraits<MappedArg>,
-    typename Allocator = DefaultAllocator>
+    typename Allocator = PartitionAllocator>
 class HashMap {
     WTF_USE_ALLOCATOR(HashMap, Allocator);
 private:

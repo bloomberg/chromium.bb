@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_DefaultAllocator_h
-#define WTF_DefaultAllocator_h
+#ifndef WTF_PartitionAllocator_h
+#define WTF_PartitionAllocator_h
 
 // This is the allocator that is used for allocations that are not on the
 // traced, garbage collected heap. It uses FastMalloc for collections,
@@ -44,11 +44,11 @@
 
 namespace WTF {
 
-class DefaultAllocatorDummyVisitor;
+class PartitionAllocatorDummyVisitor;
 
-class WTF_EXPORT DefaultAllocator {
+class WTF_EXPORT PartitionAllocator {
 public:
-    typedef DefaultAllocatorDummyVisitor Visitor;
+    typedef PartitionAllocatorDummyVisitor Visitor;
     static const bool isGarbageCollected = false;
 
     template<typename T>
@@ -185,7 +185,7 @@ private:
 
 // The Windows compiler seems to be very eager to instantiate things it won't
 // need, so unless we have this class we get compile errors.
-class DefaultAllocatorDummyVisitor {
+class PartitionAllocatorDummyVisitor {
 public:
     template<typename T> inline bool isHeapObjectAlive(T obj)
     {
@@ -213,6 +213,6 @@ public: \
 private: \
 typedef int __thisIsHereToForceASemicolonAfterThisMacro
 
-using WTF::DefaultAllocator;
+using WTF::PartitionAllocator;
 
-#endif // WTF_DefaultAllocator_h
+#endif // WTF_PartitionAllocator_h

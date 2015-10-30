@@ -21,8 +21,8 @@
 #ifndef WTF_HashSet_h
 #define WTF_HashSet_h
 
-#include "wtf/DefaultAllocator.h"
 #include "wtf/HashTable.h"
+#include "wtf/PartitionAllocator.h"
 
 namespace WTF {
 
@@ -35,7 +35,7 @@ template <
     typename ValueArg,
     typename HashArg = typename DefaultHash<ValueArg>::Hash,
     typename TraitsArg = HashTraits<ValueArg>,
-    typename Allocator = DefaultAllocator>
+    typename Allocator = PartitionAllocator>
 class HashSet {
     WTF_USE_ALLOCATOR(HashSet, Allocator);
 private:

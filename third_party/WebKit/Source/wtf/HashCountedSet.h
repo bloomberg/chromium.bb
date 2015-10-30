@@ -34,7 +34,7 @@ template <
     typename Value,
     typename HashFunctions = typename DefaultHash<Value>::Hash,
     typename Traits = HashTraits<Value>,
-    typename Allocator = DefaultAllocator>
+    typename Allocator = PartitionAllocator>
 class HashCountedSet {
     WTF_USE_ALLOCATOR(HashCountedSet, Allocator);
 private:

@@ -29,24 +29,24 @@
  */
 
 #include "config.h"
-#include "wtf/DefaultAllocator.h"
+#include "wtf/PartitionAllocator.h"
 
 #include "wtf/PartitionAlloc.h"
 #include "wtf/Partitions.h"
 
 namespace WTF {
 
-void* DefaultAllocator::allocateBacking(size_t size)
+void* PartitionAllocator::allocateBacking(size_t size)
 {
     return Partitions::bufferMalloc(size);
 }
 
-void DefaultAllocator::freeVectorBacking(void* address)
+void PartitionAllocator::freeVectorBacking(void* address)
 {
     Partitions::bufferFree(address);
 }
 
-void DefaultAllocator::freeHashTableBacking(void* address)
+void PartitionAllocator::freeHashTableBacking(void* address)
 {
     Partitions::bufferFree(address);
 }

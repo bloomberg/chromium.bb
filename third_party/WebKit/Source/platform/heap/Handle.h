@@ -512,10 +512,10 @@ public:
 
 template<typename Collection>
 class PersistentHeapCollectionBase : public Collection {
-    // We overload the various new and delete operators with using the WTF DefaultAllocator to ensure persistent
+    // We overload the various new and delete operators with using the WTF PartitionAllocator to ensure persistent
     // heap collections are always allocated off-heap. This allows persistent collections to be used in
     // DEFINE_STATIC_LOCAL et. al.
-    WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::DefaultAllocator);
+    WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::PartitionAllocator);
 public:
     PersistentHeapCollectionBase()
     {

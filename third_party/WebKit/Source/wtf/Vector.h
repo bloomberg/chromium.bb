@@ -24,9 +24,9 @@
 #include "wtf/Alignment.h"
 #include "wtf/ConditionalDestructor.h"
 #include "wtf/ContainerAnnotations.h"
-#include "wtf/DefaultAllocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/NotFound.h"
+#include "wtf/PartitionAllocator.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/VectorTraits.h"
 #include <algorithm>
@@ -366,7 +366,7 @@ protected:
     unsigned m_size;
 };
 
-template <typename T, size_t inlineCapacity, typename Allocator = DefaultAllocator>
+template <typename T, size_t inlineCapacity, typename Allocator = PartitionAllocator>
 class VectorBuffer;
 
 template <typename T, typename Allocator>
@@ -614,7 +614,7 @@ private:
     friend class Deque;
 };
 
-template <typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator> // Heap-allocated vectors with no inlineCapacity never need a destructor.
+template <typename T, size_t inlineCapacity = 0, typename Allocator = PartitionAllocator> // Heap-allocated vectors with no inlineCapacity never need a destructor.
 class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>, public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY == 0) && Allocator::isGarbageCollected> {
     WTF_USE_ALLOCATOR(Vector, Allocator);
     typedef VectorBuffer<T, INLINE_CAPACITY, Allocator> Base;
@@ -1046,7 +1046,7 @@ void Vector<T, inlineCapacity, Allocator>::reserveCapacity(size_t newCapacity)
 #endif
     // The Allocator::isGarbageCollected check is not needed.  The check is just
     // a static hint for a compiler to indicate that Base::expandBuffer returns
-    // false if Allocator is a DefaultAllocator.
+    // false if Allocator is a PartitionAllocator.
     if (Allocator::isGarbageCollected && Base::expandBuffer(newCapacity)) {
         ANNOTATE_CHANGE_CAPACITY(begin(), oldCapacity, m_size, capacity());
         return;

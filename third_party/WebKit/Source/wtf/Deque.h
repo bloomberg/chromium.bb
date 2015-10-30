@@ -43,7 +43,7 @@ template <typename T, size_t inlineCapacity, typename Allocator> class DequeIter
 template <typename T, size_t inlineCapacity, typename Allocator> class DequeIterator;
 template <typename T, size_t inlineCapacity, typename Allocator> class DequeConstIterator;
 
-template <typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
+template <typename T, size_t inlineCapacity = 0, typename Allocator = PartitionAllocator>
 class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY == 0) && Allocator::isGarbageCollected> {
     WTF_USE_ALLOCATOR(Deque, Allocator);
 public:
@@ -158,7 +158,7 @@ private:
     friend class Deque<T, inlineCapacity, Allocator>;
 };
 
-template <typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
+template <typename T, size_t inlineCapacity = 0, typename Allocator = PartitionAllocator>
 class DequeIterator : public DequeIteratorBase<T, inlineCapacity, Allocator> {
 private:
     typedef DequeIteratorBase<T, inlineCapacity, Allocator> Base;
@@ -188,7 +188,7 @@ public:
     // postfix -- intentionally omitted
 };
 
-template <typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
+template <typename T, size_t inlineCapacity = 0, typename Allocator = PartitionAllocator>
 class DequeConstIterator : public DequeIteratorBase<T, inlineCapacity, Allocator> {
 private:
     typedef DequeIteratorBase<T, inlineCapacity, Allocator> Base;
