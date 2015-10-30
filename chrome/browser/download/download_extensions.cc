@@ -67,6 +67,9 @@ const struct FileType {
     // installation.
     {"crx", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
+    // Included for parity with kSafeBrowsingFileTypes.
+    {"bin", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
+
     // Windows, all file categories. The list is in alphabetical order of
     // extensions. Exceptions are made for logical groupings of file types.
     //
@@ -172,8 +175,19 @@ const struct FileType {
     // Microsoft IIS Internet Communication Settings.
     {"ins", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
+    // InstallShield Compiled Script.
+    {"inx", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    // InstallShield Uninstaller Script.
+    {"isu", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
     // Microsoft IIS Internet Service Provider Settings.
     {"isp", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Windows Task Scheduler Job file. No handler is registered by default, so
+    // this is probably normally not dangerous unless saved into the task
+    // scheduler directory.
+    {"job", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // JavaScript file. May open using Windows Script Host with user level
     // privileges.
@@ -228,6 +242,17 @@ const struct FileType {
     // Microsoft Office Profile Settings File.
     {"ops", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
+    // Portable Application Installer File.
+    {"paf", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    // Extensions that will open in IE even when chrome is set as default
+    // browser.
+    {"partial", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"xrm-ms", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"svg", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
+    {"xml", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"xsl", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
     // Microsoft Visual Test.
     {"pcd", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
@@ -262,6 +287,9 @@ const struct FileType {
     // DISALLOW_AUTO_OPEN restriction.
     {"reg", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
+    // Registry Script Windows.
+    {"rgs", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
     // Microsoft Windows Explorer Command.
     // See https://support.microsoft.com/kb/190355 for an example.
     {"scf", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
@@ -285,6 +313,9 @@ const struct FileType {
     // types of files.
     {"sys", DANGEROUS, DISALLOW_AUTO_OPEN},
 
+    // U3 Smart Application.
+    {"u3p", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
     // Internet Shortcut (new since IE9). Both .url and .website are .ini files
     // that describe a shortcut that points to a URL. They can point at
     // anything. Dropping a download of this type and opening it automatically
@@ -297,6 +328,8 @@ const struct FileType {
     {"vb", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"vbe", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"vbs", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    // Some sites claim .vbscript is a valid extension for vbs files.
+    {"vbscript", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     {"vsd", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
@@ -351,7 +384,13 @@ const struct FileType {
     {"tcsh", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 #endif
 #if defined(OS_MACOSX)
+    // Automator Action.
+    {"action", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
     {"command", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    // Automator Workflow.
+    {"workflow", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 #endif
 
   // Package management formats. OS_WIN package formats are handled above.
@@ -361,6 +400,12 @@ const struct FileType {
 #if defined(OS_LINUX)
     {"deb", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"rpm", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    // "common" executable file extensions for linux. There's not really much
+    // reason to block since they require execute bit to actually run. Included
+    // for histograms and to match kSafeBrowsingFileTypes.
+    {"out", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"run", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 #endif
 #if defined(OS_ANDROID)
     {"dex", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},

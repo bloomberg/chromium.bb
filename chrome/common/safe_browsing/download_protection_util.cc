@@ -174,6 +174,24 @@ enum SBClientDownloadExtensions {
   EXTENSION_TAZ,
   EXTENSION_TBZ,
   EXTENSION_TBZ2,
+  EXTENSION_PARTIAL,
+  EXTENSION_SVG,
+  EXTENSION_XML,
+  EXTENSION_XRM_MS,
+  EXTENSION_XSL,
+  EXTENSION_ACTION,
+  EXTENSION_BIN,
+  EXTENSION_INX,
+  EXTENSION_IPA,
+  EXTENSION_ISU,
+  EXTENSION_JOB,
+  EXTENSION_OUT,
+  EXTENSION_PAD,
+  EXTENSION_PAF,
+  EXTENSION_RGS,
+  EXTENSION_U3P,
+  EXTENSION_VBSCRIPT,
+  EXTENSION_WORKFLOW,
 
   // New values go above this one.
   EXTENSION_MAX
@@ -189,6 +207,7 @@ struct SafeBrowsingFiletype {
 const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     // KEEP THIS LIST SORTED!
     {FILE_PATH_LITERAL(".7z"), EXTENSION_7Z, true, true},
+    {FILE_PATH_LITERAL(".action"), EXTENSION_ACTION, false, false},  // UMA.
     {FILE_PATH_LITERAL(".ade"), EXTENSION_ADE, true, false},
     {FILE_PATH_LITERAL(".adp"), EXTENSION_ADP, true, false},
     {FILE_PATH_LITERAL(".apk"), EXTENSION_APK, true, false},
@@ -201,6 +220,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".bas"), EXTENSION_BAS, true, false},
     {FILE_PATH_LITERAL(".bash"), EXTENSION_BASH, true, false},
     {FILE_PATH_LITERAL(".bat"), EXTENSION_BAT, true, false},
+    {FILE_PATH_LITERAL(".bin"), EXTENSION_BIN, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".bz2"), EXTENSION_BZ2, true, true},
     {FILE_PATH_LITERAL(".bzip2"), EXTENSION_BZIP2, true, true},
     {FILE_PATH_LITERAL(".cab"), EXTENSION_CAB, true, true},
@@ -235,9 +255,13 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".inf"), EXTENSION_INF, true, false},
     {FILE_PATH_LITERAL(".ini"), EXTENSION_INI, true, false},
     {FILE_PATH_LITERAL(".ins"), EXTENSION_INS, true, false},
+    {FILE_PATH_LITERAL(".inx"), EXTENSION_INX, false, false},  // UMA only.
+    {FILE_PATH_LITERAL(".ipa"), EXTENSION_IPA, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".isp"), EXTENSION_ISP, true, false},
+    {FILE_PATH_LITERAL(".isu"), EXTENSION_ISU, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".jar"), EXTENSION_JAR, true, false},
     {FILE_PATH_LITERAL(".jnlp"), EXTENSION_JNLP, true, false},
+    {FILE_PATH_LITERAL(".job"), EXTENSION_JOB, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".js"), EXTENSION_JS, true, false},
     {FILE_PATH_LITERAL(".jse"), EXTENSION_JSE, true, false},
     {FILE_PATH_LITERAL(".ksh"), EXTENSION_KSH, true, false},
@@ -281,6 +305,10 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".ocx"), EXTENSION_OCX, true, false},
     {FILE_PATH_LITERAL(".ops"), EXTENSION_OPS, true, false},
     {FILE_PATH_LITERAL(".osx"), EXTENSION_OSX, true, false},
+    {FILE_PATH_LITERAL(".out"), EXTENSION_OUT, false, false},  // UMA only.
+    {FILE_PATH_LITERAL(".pad"), EXTENSION_PAD, false, false},  // UMA only.
+    {FILE_PATH_LITERAL(".paf"), EXTENSION_PAF, false, false},  // UMA only.
+    {FILE_PATH_LITERAL(".partial"), EXTENSION_PARTIAL, true, false},
     {FILE_PATH_LITERAL(".pcd"), EXTENSION_PCD, true, false},
     {FILE_PATH_LITERAL(".pif"), EXTENSION_PIF, true, false},
     {FILE_PATH_LITERAL(".pkg"), EXTENSION_PKG, true, false},
@@ -301,6 +329,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".rar"), EXTENSION_RAR, true, true},
     {FILE_PATH_LITERAL(".rb"), EXTENSION_RB, true, false},
     {FILE_PATH_LITERAL(".reg"), EXTENSION_REG, true, false},
+    {FILE_PATH_LITERAL(".rgs"), EXTENSION_RGS, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".rpm"), EXTENSION_RPM, true, false},
     {FILE_PATH_LITERAL(".scf"), EXTENSION_SCF, true, false},
     {FILE_PATH_LITERAL(".scr"), EXTENSION_SCR, true, false},
@@ -310,6 +339,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".shb"), EXTENSION_SHB, true, false},
     {FILE_PATH_LITERAL(".shs"), EXTENSION_SHS, true, false},
     {FILE_PATH_LITERAL(".spl"), EXTENSION_SPL, true, false},
+    {FILE_PATH_LITERAL(".svg"), EXTENSION_SVG, true, false},
     {FILE_PATH_LITERAL(".swf"), EXTENSION_SWF, true, false},
     {FILE_PATH_LITERAL(".sys"), EXTENSION_SYS, true, false},
     {FILE_PATH_LITERAL(".tar"), EXTENSION_TAR, true, true},
@@ -319,10 +349,12 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".tcsh"), EXTENSION_TCSH, true, false},
     {FILE_PATH_LITERAL(".tgz"), EXTENSION_TGZ, true, true},
     {FILE_PATH_LITERAL(".torrent"), EXTENSION_TORRENT, true, false},
+    {FILE_PATH_LITERAL(".u3p"), EXTENSION_U3P, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".url"), EXTENSION_URL, true, false},
     {FILE_PATH_LITERAL(".vb"), EXTENSION_VB, true, false},
     {FILE_PATH_LITERAL(".vbe"), EXTENSION_VBE, true, false},
     {FILE_PATH_LITERAL(".vbs"), EXTENSION_VBS, true, false},
+    {FILE_PATH_LITERAL(".vbscript"), EXTENSION_VBSCRIPT, false, false},  // UMA.
     {FILE_PATH_LITERAL(".vsd"), EXTENSION_VSD, true, false},
     {FILE_PATH_LITERAL(".vsmacros"), EXTENSION_VSMACROS, true, false},
     {FILE_PATH_LITERAL(".vss"), EXTENSION_VSS, true, false},
@@ -330,12 +362,16 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".vsw"), EXTENSION_VSW, true, false},
     {FILE_PATH_LITERAL(".website"), EXTENSION_WEBSITE, true, false},
     {FILE_PATH_LITERAL(".wim"), EXTENSION_WIM, true, true},
+    {FILE_PATH_LITERAL(".workflow"), EXTENSION_WORKFLOW, false, false},  // UMA.
     {FILE_PATH_LITERAL(".ws"), EXTENSION_WS, true, false},
     {FILE_PATH_LITERAL(".wsc"), EXTENSION_WSC, true, false},
     {FILE_PATH_LITERAL(".wsf"), EXTENSION_WSF, true, false},
     {FILE_PATH_LITERAL(".wsh"), EXTENSION_WSH, true, false},
     {FILE_PATH_LITERAL(".xbap"), EXTENSION_XBAP, true, false},
+    {FILE_PATH_LITERAL(".xml"), EXTENSION_XML, true, false},
     {FILE_PATH_LITERAL(".xnk"), EXTENSION_XNK, true, false},
+    {FILE_PATH_LITERAL(".xrm-ms"), EXTENSION_XRM_MS, true, false},
+    {FILE_PATH_LITERAL(".xsl"), EXTENSION_XSL, true, false},
     {FILE_PATH_LITERAL(".xz"), EXTENSION_XZ, true, true},
     {FILE_PATH_LITERAL(".z"), EXTENSION_Z, true, true},
     {FILE_PATH_LITERAL(".zip"), EXTENSION_ZIP, true, true},

@@ -56485,6 +56485,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="138" label="gadget"/>
   <int value="139" label="efi"/>
   <int value="140" label="fon"/>
+  <int value="141" label="partial"/>
+  <int value="142" label="svg"/>
+  <int value="143" label="xml"/>
+  <int value="144" label="xrm_ms"/>
+  <int value="145" label="xsl"/>
+  <int value="146" label="action"/>
+  <int value="147" label="bin"/>
+  <int value="148" label="inx"/>
+  <int value="149" label="ipa"/>
+  <int value="150" label="isu"/>
+  <int value="151" label="job"/>
+  <int value="152" label="out"/>
+  <int value="153" label="pad"/>
+  <int value="154" label="paf"/>
+  <int value="155" label="rgs"/>
+  <int value="156" label="u3p"/>
+  <int value="157" label="vbscript"/>
+  <int value="158" label="workflow"/>
 </enum>
 
 <enum name="DownloadItem.DangerType" type="int">
@@ -71611,6 +71629,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="150" label="TAZ"/>
   <int value="151" label="TBZ"/>
   <int value="152" label="TBZ2"/>
+  <int value="153" label="PARTIAL"/>
+  <int value="154" label="SVG"/>
+  <int value="155" label="XML"/>
+  <int value="156" label="XRM_MS"/>
+  <int value="157" label="XSL"/>
+  <int value="158" label="ACTION"/>
+  <int value="159" label="BIN"/>
+  <int value="160" label="INX"/>
+  <int value="161" label="IPA"/>
+  <int value="162" label="ISU"/>
+  <int value="163" label="JOB"/>
+  <int value="164" label="OUT"/>
+  <int value="165" label="PAD"/>
+  <int value="166" label="PAF"/>
+  <int value="167" label="RGS"/>
+  <int value="168" label="U3P"/>
+  <int value="169" label="VBSCRIPT"/>
+  <int value="170" label="WORKFLOW"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">
