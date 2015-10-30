@@ -36,7 +36,6 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
     RefPtrWillBeRawPtr<PageAnimator> protector(this);
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
-    clock().updateTime(monotonicAnimationStartTime);
 
     WillBeHeapVector<RefPtrWillBeMember<Document>> documents;
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
@@ -45,7 +44,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     }
 
     for (auto& document : documents) {
-        DocumentAnimations::updateAnimationTimingForAnimationFrame(*document);
+        DocumentAnimations::updateAnimationTimingForAnimationFrame(*document, monotonicAnimationStartTime);
         if (document->view()) {
             if (document->view()->shouldThrottleRendering())
                 continue;
