@@ -105,11 +105,13 @@ class TextureAttachment
     : public Framebuffer::Attachment {
  public:
   TextureAttachment(
-      TextureRef* texture_ref, GLenum target, GLint level, GLsizei samples)
+      TextureRef* texture_ref, GLenum target, GLint level,
+      GLsizei samples, GLint layer)
       : texture_ref_(texture_ref),
         target_(target),
         level_(level),
-        samples_(samples) {
+        samples_(samples),
+        layer_(layer) {
   }
 
   GLsizei width() const override {
@@ -145,6 +147,8 @@ class TextureAttachment
   }
 
   GLsizei samples() const override { return samples_; }
+
+  GLint layer() const { return layer_; }
 
   GLuint object_name() const override { return texture_ref_->client_id(); }
 
@@ -223,6 +227,7 @@ class TextureAttachment
   GLenum target_;
   GLint level_;
   GLsizei samples_;
+  GLint layer_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureAttachment);
 };
@@ -674,7 +679,23 @@ void Framebuffer::AttachTexture(
     a->DetachFromFramebuffer(this);
   if (texture_ref) {
     attachments_[attachment] = scoped_refptr<Attachment>(
-        new TextureAttachment(texture_ref, target, level, samples));
+        new TextureAttachment(texture_ref, target, level, samples, 0));
+    texture_ref->texture()->AttachToFramebuffer();
+  } else {
+    attachments_.erase(attachment);
+  }
+  framebuffer_complete_state_count_id_ = 0;
+}
+
+void Framebuffer::AttachTextureLayer(
+    GLenum attachment, TextureRef* texture_ref, GLenum target,
+    GLint level, GLint layer) {
+  const Attachment* a = GetAttachment(attachment);
+  if (a)
+    a->DetachFromFramebuffer(this);
+  if (texture_ref) {
+    attachments_[attachment] = scoped_refptr<Attachment>(
+        new TextureAttachment(texture_ref, target, level, 0, layer));
     texture_ref->texture()->AttachToFramebuffer();
   } else {
     attachments_.erase(attachment);

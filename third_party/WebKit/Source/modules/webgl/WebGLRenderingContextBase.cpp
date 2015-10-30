@@ -2466,7 +2466,7 @@ void WebGLRenderingContextBase::framebufferTexture2D(ScriptState* scriptState, G
     default:
         webContext()->framebufferTexture2D(target, attachment, textarget, textureObject, level);
     }
-    framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level);
+    framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level, 0);
     applyStencilTest();
     preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, texture);
 }

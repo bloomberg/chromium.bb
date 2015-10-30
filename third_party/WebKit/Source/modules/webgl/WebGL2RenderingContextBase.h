@@ -32,8 +32,9 @@ public:
     void getBufferSubData(GLenum target, long long offset, DOMArrayBuffer* returnedData);
 
     /* Framebuffer objects */
+    bool validateTexFuncLayer(const char*, GLenum texTarget, GLint layer);
     void blitFramebuffer(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum);
-    void framebufferTextureLayer(GLenum, GLenum, const WebGLTexture*, GLint, GLint);
+    void framebufferTextureLayer(ScriptState*, GLenum, GLenum, WebGLTexture*, GLint, GLint);
     ScriptValue getInternalformatParameter(ScriptState*, GLenum, GLenum, GLenum);
     void invalidateFramebuffer(GLenum, Vector<GLenum>&);
     void invalidateSubFramebuffer(GLenum, Vector<GLenum>&, GLint, GLint, GLsizei, GLsizei);
@@ -235,6 +236,7 @@ protected:
     PersistentWillBeMember<WebGLTransformFeedback> m_transformFeedbackBinding;
     GLint m_max3DTextureSize;
     GLint m_max3DTextureLevel;
+    GLint m_maxArrayTextureLayers;
 
     std::set<GLenum> m_supportedInternalFormatsStorage;
 

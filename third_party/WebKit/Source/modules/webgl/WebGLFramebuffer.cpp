@@ -146,12 +146,12 @@ GLenum WebGLRenderbufferAttachment::type() const
 
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
 public:
-    static WebGLFramebuffer::WebGLAttachment* create(WebGLTexture*, GLenum target, GLint level);
+    static WebGLFramebuffer::WebGLAttachment* create(WebGLTexture*, GLenum target, GLint level, GLint layer);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    WebGLTextureAttachment(WebGLTexture*, GLenum target, GLint level);
+    WebGLTextureAttachment(WebGLTexture*, GLenum target, GLint level, GLint layer);
     WebGLTextureAttachment() { }
 
     GLsizei width() const override;
@@ -168,11 +168,12 @@ private:
     Member<WebGLTexture> m_texture;
     GLenum m_target;
     GLint m_level;
+    GLint m_layer;
 };
 
-WebGLFramebuffer::WebGLAttachment* WebGLTextureAttachment::create(WebGLTexture* texture, GLenum target, GLint level)
+WebGLFramebuffer::WebGLAttachment* WebGLTextureAttachment::create(WebGLTexture* texture, GLenum target, GLint level, GLint layer)
 {
-    return new WebGLTextureAttachment(texture, target, level);
+    return new WebGLTextureAttachment(texture, target, level, layer);
 }
 
 DEFINE_TRACE(WebGLTextureAttachment)
@@ -181,10 +182,11 @@ DEFINE_TRACE(WebGLTextureAttachment)
     WebGLFramebuffer::WebGLAttachment::trace(visitor);
 }
 
-WebGLTextureAttachment::WebGLTextureAttachment(WebGLTexture* texture, GLenum target, GLint level)
+WebGLTextureAttachment::WebGLTextureAttachment(WebGLTexture* texture, GLenum target, GLint level, GLint layer)
     : m_texture(texture)
     , m_target(target)
     , m_level(level)
+    , m_layer(layer)
 {
 }
 
@@ -226,16 +228,25 @@ void WebGLTextureAttachment::onDetached(WebGraphicsContext3D* context)
 void WebGLTextureAttachment::attach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
 {
     Platform3DObject object = objectOrZero(m_texture.get());
-    context->framebufferTexture2D(target, attachment, m_target, object, m_level);
+    if (m_target == GL_TEXTURE_3D || m_target == GL_TEXTURE_2D_ARRAY) {
+        context->framebufferTextureLayer(target, attachment, object, m_level, m_layer);
+    } else {
+        context->framebufferTexture2D(target, attachment, m_target, object, m_level);
+    }
 }
 
 void WebGLTextureAttachment::unattach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
 {
-    if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-        context->framebufferTexture2D(target, GL_DEPTH_ATTACHMENT, m_target, 0, m_level);
-        context->framebufferTexture2D(target, GL_STENCIL_ATTACHMENT, m_target, 0, m_level);
+    // GL_DEPTH_STENCIL_ATTACHMENT attachment is valid in ES3.
+    if (m_target == GL_TEXTURE_3D || m_target == GL_TEXTURE_2D_ARRAY) {
+        context->framebufferTextureLayer(target, attachment, 0, m_level, m_layer);
     } else {
-        context->framebufferTexture2D(target, attachment, m_target, 0, m_level);
+        if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+            context->framebufferTexture2D(target, GL_DEPTH_ATTACHMENT, m_target, 0, m_level);
+            context->framebufferTexture2D(target, GL_STENCIL_ATTACHMENT, m_target, 0, m_level);
+        } else {
+            context->framebufferTexture2D(target, attachment, m_target, 0, m_level);
+        }
     }
 }
 
@@ -350,14 +361,14 @@ WebGLFramebuffer::~WebGLFramebuffer()
     detachAndDeleteObject();
 }
 
-void WebGLFramebuffer::setAttachmentForBoundFramebuffer(GLenum target, GLenum attachment, GLenum texTarget, WebGLTexture* texture, GLint level)
+void WebGLFramebuffer::setAttachmentForBoundFramebuffer(GLenum target, GLenum attachment, GLenum texTarget, WebGLTexture* texture, GLint level, GLint layer)
 {
     ASSERT(isBound(target));
     removeAttachmentFromBoundFramebuffer(target, attachment);
     if (!m_object)
         return;
     if (texture && texture->object()) {
-        m_attachments.add(attachment, WebGLTextureAttachment::create(texture, texTarget, level));
+        m_attachments.add(attachment, WebGLTextureAttachment::create(texture, texTarget, level, 0));
         drawBuffersIfNecessary(false);
         texture->onAttached();
     }

@@ -6356,9 +6356,16 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
 void GLES2DecoderImpl::DoFramebufferTextureLayer(
     GLenum target, GLenum attachment, GLuint client_texture_id,
     GLint level, GLint layer) {
-  // TODO(zmo): Unsafe ES3 API, missing states update.
+  // TODO(zmo): Add full validation.
   GLuint service_id = 0;
   TextureRef* texture_ref = NULL;
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  if (!framebuffer) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glFramebufferTextureLayer", "no framebuffer bound.");
+    return;
+  }
   if (client_texture_id) {
     texture_ref = GetTexture(client_texture_id);
     if (!texture_ref) {
@@ -6369,7 +6376,14 @@ void GLES2DecoderImpl::DoFramebufferTextureLayer(
     }
     service_id = texture_ref->service_id();
   }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glFramebufferTextureLayer");
   glFramebufferTextureLayer(target, attachment, service_id, level, layer);
+  GLenum error = LOCAL_PEEK_GL_ERROR("glFramebufferTextureLayer");
+  if (error == GL_NO_ERROR) {
+    framebuffer->AttachTextureLayer(attachment, texture_ref,
+        texture_ref ? texture_ref->texture()->target() : 0,
+        level, layer);
+  }
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
