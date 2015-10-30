@@ -66,8 +66,6 @@ class CC_EXPORT OverlayCandidate {
   // Stacking order of the overlay plane relative to the main surface,
   // which is 0. Signed to allow for "underlays".
   int plane_z_order;
-  // If the overlay needs blending support.
-  bool needs_blending;
 
   // To be modified by the implementer if this candidate can go into
   // an overlay.
