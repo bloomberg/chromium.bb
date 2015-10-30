@@ -44,6 +44,7 @@ bool ParseFile(const base::FilePath& path,
       qcms_profile_get_vcgt_channel_length(display_profile);
   if (!vcgt_channel_length) {
     LOG(WARNING) << "No vcgt table in ICC file: " << path.value();
+    qcms_profile_release(display_profile);
     return false;
   }
 
