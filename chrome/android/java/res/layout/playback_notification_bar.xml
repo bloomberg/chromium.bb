@@ -4,13 +4,28 @@
      found in the LICENSE file. -->
 
 <!--
-  Notification layout for media controls.
+  Notification layout for media controls. Could have one or two buttons
+  depending on the corresponding media.
+  Local playback notification has one play/pause button on L+ but two buttons,
+  play/pause and stop button, on earlier Android versions as the notification
+  can't be dismissed by the swiping gesture.
+  Cast notification always has the stop button that stops casting but only has
+  the play/pause button if the Cast application controlled by the notification
+  supports play/pause.
+  The notification button ids are numbered from the right, so "R.id.button1" is
+  always present and "R.id.button2" may have the visibility GONE. 
    _______________________________________________________
    |        |                                      |     |
-   |        |  Playing [media title]               |     |
-   |  ICON  |  =====0============================= | ||  |
+   |        |  [media title]                       |     |
+   |  ICON  |======================================| ||  |
    |        |  [www.example.com]                   |     |
    |________|______________________________________|_____|
+   _______________________________________________________
+   |        |                                |     |     |
+   |        |  [Cast device name]            |     |     |
+   |  ICON  |================================| ||  |  X  |
+   |        |  [www.example.com]             |     |     |
+   |________|________________________________|_____|_____|
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -64,28 +79,28 @@
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/playpause"
+        android:id="@+id/button2"
         android:src="@drawable/ic_vidcontrol_play"
-        android:layout_width="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        android:gravity="center"
+        android:padding="8dp"
+        android:scaleType="center"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@null"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/button1"
+        android:src="@drawable/ic_vidcontrol_stop"
+        android:layout_width="40dp"
         android:layout_height="match_parent"
         android:layout_marginEnd="8dp"
         android:gravity="center"
-        android:padding="12dp"
+        android:padding="8dp"
         android:scaleType="center"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@null"/>
-
-    <ImageButton
-        android:id="@+id/stop"
-        android:src="@drawable/ic_vidcontrol_stop"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginEnd="8dp"
-        android:gravity="center"
-        android:padding="12dp"
-        android:scaleType="center"
-        android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="@string/accessibility_stop"
-        android:visibility="gone"/>
 
 </LinearLayout>

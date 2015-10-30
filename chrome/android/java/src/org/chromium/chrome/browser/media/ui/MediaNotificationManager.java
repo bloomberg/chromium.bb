@@ -254,8 +254,8 @@ public class MediaNotificationManager {
     private ListenerService mService;
 
     private final String mPlayDescription;
-
     private final String mPauseDescription;
+    private final String mStopDescription;
 
     private NotificationCompat.Builder mNotificationBuilder;
 
@@ -292,6 +292,7 @@ public class MediaNotificationManager {
         mContext = context;
         mPlayDescription = context.getResources().getString(R.string.accessibility_play);
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
+        mStopDescription = context.getResources().getString(R.string.accessibility_stop);
 
         // The MediaSession icon is a plain color.
         int size = context.getResources().getDimensionPixelSize(R.dimen.media_session_icon_size);
@@ -388,14 +389,19 @@ public class MediaNotificationManager {
         RemoteViews contentView =
                 new RemoteViews(mContext.getPackageName(), R.layout.playback_notification_bar);
 
+        // By default, play/pause button is the only one.
+        int playPauseButtonId = R.id.button1;
         // On Android pre-L, dismissing the notification when the service is no longer in foreground
         // doesn't work. Instead, a STOP button is shown.
         if (mMediaNotificationInfo.supportsSwipeAway()
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
                 || mMediaNotificationInfo.supportsStop()) {
-            contentView.setViewVisibility(R.id.stop, View.VISIBLE);
-            contentView.setOnClickPendingIntent(R.id.stop,
+            contentView.setOnClickPendingIntent(R.id.button1,
                     mService.getPendingIntent(ListenerService.ACTION_STOP));
+            contentView.setContentDescription(R.id.button1, mStopDescription);
+
+            // If the play/pause needs to be shown, it moves over to the second button from the end.
+            playPauseButtonId = R.id.button2;
         }
 
         contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
@@ -408,23 +414,21 @@ public class MediaNotificationManager {
 
         if (mMediaNotificationInfo.supportsPlayPause()) {
             if (mMediaNotificationInfo.isPaused) {
-                contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
-                contentView.setContentDescription(R.id.playpause, mPlayDescription);
-                contentView.setOnClickPendingIntent(R.id.playpause,
+                contentView.setImageViewResource(playPauseButtonId, R.drawable.ic_vidcontrol_play);
+                contentView.setContentDescription(playPauseButtonId, mPlayDescription);
+                contentView.setOnClickPendingIntent(playPauseButtonId,
                         mService.getPendingIntent(ListenerService.ACTION_PLAY));
             } else {
                 // If we're here, the notification supports play/pause button and is playing.
-                contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_pause);
-                contentView.setContentDescription(R.id.playpause, mPauseDescription);
-                contentView.setOnClickPendingIntent(R.id.playpause,
+                contentView.setImageViewResource(playPauseButtonId, R.drawable.ic_vidcontrol_pause);
+                contentView.setContentDescription(playPauseButtonId, mPauseDescription);
+                contentView.setOnClickPendingIntent(playPauseButtonId,
                         mService.getPendingIntent(ListenerService.ACTION_PAUSE));
             }
 
-            // Even though we create the new view everytime, Android seems to remember the last
-            // visibility state rather than use the default one. So set it explicitly.
-            contentView.setViewVisibility(R.id.playpause, View.VISIBLE);
+            contentView.setViewVisibility(playPauseButtonId, View.VISIBLE);
         } else {
-            contentView.setViewVisibility(R.id.playpause, View.GONE);
+            contentView.setViewVisibility(playPauseButtonId, View.GONE);
         }
 
         return contentView;
