@@ -223,6 +223,7 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
 
   TabStripDummyDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
+  tabstrip.AddObserver(&tab_manager);
 
   // Fill it with some tabs.
   WebContents* contents1 = CreateWebContents();
@@ -238,10 +239,8 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   // Discard one of the tabs.
   WebContents* null_contents1 = tab_manager.DiscardWebContentsAt(0, &tabstrip);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_TRUE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
   ASSERT_EQ(null_contents1, tabstrip.GetWebContentsAt(0));
   ASSERT_EQ(contents2, tabstrip.GetWebContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.NbEvents());
@@ -250,14 +249,12 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   tabstrip_observer.Reset();
 
   // Discard the same tab again, after resetting its discard state.
-  TabManager::WebContentsData::SetDiscardState(tabstrip.GetWebContentsAt(0),
-                                               false);
+  tab_manager.GetWebContentsData(tabstrip.GetWebContentsAt(0))
+      ->SetDiscardState(false);
   WebContents* null_contents2 = tab_manager.DiscardWebContentsAt(0, &tabstrip);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_TRUE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
   ASSERT_EQ(null_contents2, tabstrip.GetWebContentsAt(0));
   ASSERT_EQ(contents2, tabstrip.GetWebContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.NbEvents());
@@ -267,18 +264,14 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
   // Activating the tab should clear its discard state.
   tabstrip.ActivateTabAt(0, true /* user_gesture */);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
 
   // Don't discard active tab.
   tab_manager.DiscardWebContentsAt(0, &tabstrip);
   ASSERT_EQ(2, tabstrip.count());
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(0)));
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -287,6 +280,10 @@ TEST_F(TabManagerTest, DiscardWebContentsAt) {
 // Makes sure that reloading a discarded tab without activating it unmarks the
 // tab as discarded so it won't reload on activation.
 TEST_F(TabManagerTest, ReloadDiscardedTabContextMenu) {
+  // Note that we do not add |tab_manager| as an observer to |tabstrip| here as
+  // the event we are trying to test for is not related to the tab strip, but
+  // the web content instead and therefore should be handled by WebContentsData
+  // (which observes the web content).
   TabManager tab_manager;
   TabStripDummyDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
@@ -301,17 +298,13 @@ TEST_F(TabManagerTest, ReloadDiscardedTabContextMenu) {
   // so the reload can happen.
   WebContentsTester::For(test_contents)
       ->NavigateAndCommit(GURL("chrome://newtab"));
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tab_manager.DiscardWebContentsAt(1, &tabstrip);
-  EXPECT_TRUE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
+  EXPECT_TRUE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
 
   tabstrip.GetWebContentsAt(1)->GetController().Reload(false);
-  EXPECT_FALSE(
-      TabManager::WebContentsData::IsDiscarded(tabstrip.GetWebContentsAt(1)));
-
+  EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 }
@@ -322,6 +315,7 @@ TEST_F(TabManagerTest, DiscardedTabKeepsLastActiveTime) {
   TabManager tab_manager;
   TabStripDummyDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
+  tabstrip.AddObserver(&tab_manager);
 
   tabstrip.AppendWebContents(CreateWebContents(), true);
   WebContents* test_contents = CreateWebContents();

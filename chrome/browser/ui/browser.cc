@@ -1053,7 +1053,7 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   // Discarded tabs always get reloaded.
   // TODO(georgesak): Validate the usefulness of this. And if needed then move
   // to TabManager.
-  if (memory::TabManager::WebContentsData::IsDiscarded(new_contents))
+  if (g_browser_process->GetTabManager()->IsTabDiscarded(new_contents))
     chrome::Reload(this, CURRENT_TAB);
 
   // If we have any update pending, do it now.

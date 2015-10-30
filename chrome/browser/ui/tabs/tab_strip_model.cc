@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
@@ -161,10 +160,6 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   // is properly removed from the tab strip.
   void WebContentsDestroyed() override;
 
-  // Marks the tab as no longer discarded if it has been reloaded from another
-  // source (ie: context menu).
-  void DidStartLoading() override;
-
   // The WebContents being tracked by this WebContentsData. The
   // WebContentsObserver does keep a reference, but when the WebContents is
   // deleted, the WebContentsObserver reference is NULLed and thus inaccessible.
@@ -229,11 +224,6 @@ void TabStripModel::WebContentsData::WebContentsDestroyed() {
   int index = tab_strip_model_->GetIndexOfWebContents(web_contents());
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_strip_model_->DetachWebContentsAt(index);
-}
-
-void TabStripModel::WebContentsData::DidStartLoading() {
-  // TODO(georgesak): move this into tab_manager.cc.
-  memory::TabManager::WebContentsData::SetDiscardState(contents_, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1267,8 +1257,6 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
                          active_index(),
                          reason));
     in_notify_ = false;
-    // TODO(georgesak): move this into tab_manager.cc.
-    memory::TabManager::WebContentsData::SetDiscardState(new_contents, false);
   }
 }
 

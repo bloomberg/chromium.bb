@@ -50,8 +50,7 @@ class TabManagerDelegate;
 // support for new platforms is added.
 class TabManager : public TabStripModelObserver {
  public:
-  // TODO(georgesak): Make this private once all external dependencies are
-  // removed.
+  // Needs to be public for DEFINE_WEB_CONTENTS_USER_DATA_KEY.
   class WebContentsData;
 
   TabManager();
@@ -71,6 +70,9 @@ class TabManager : public TabStripModelObserver {
   // Returns the list of the stats for all renderers. Must be called on the UI
   // thread.
   TabStatsList GetTabStats();
+
+  // Returns true if |contents| is currently discarded.
+  bool IsTabDiscarded(content::WebContents* contents) const;
 
   // Discards a tab to free the memory occupied by its renderer. The tab still
   // exists in the tab-strip; clicking on it will reload it. Returns true if it
@@ -147,10 +149,18 @@ class TabManager : public TabStripModelObserver {
   void TabChangedAt(content::WebContents* contents,
                     int index,
                     TabChangeType change_type) override;
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
 
   // Returns true if the tab is currently playing audio or has played audio
   // recently.
   bool IsAudioTab(content::WebContents* contents) const;
+
+  // Returns the WebContentsData associated with |contents|. Also takes care of
+  // creating one if needed.
+  WebContentsData* GetWebContentsData(content::WebContents* contents) const;
 
   // Returns true if |first| is considered less desirable to be killed than
   // |second|.

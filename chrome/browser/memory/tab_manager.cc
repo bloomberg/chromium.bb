@@ -180,6 +180,10 @@ TabStatsList TabManager::GetTabStats() {
   return stats_list;
 }
 
+bool TabManager::IsTabDiscarded(content::WebContents* contents) const {
+  return GetWebContentsData(contents)->IsDiscarded();
+}
+
 // TODO(jamescook): This should consider tabs with references to other tabs,
 // such as tabs created with JavaScript window.open(). Potentially consider
 // discarding the entire set together, or use that in the priority computation.
@@ -227,13 +231,20 @@ void TabManager::TabChangedAt(content::WebContents* contents,
                               TabChangeType change_type) {
   if (change_type != TabChangeType::ALL)
     return;
-
-  bool old_state = WebContentsData::IsRecentlyAudible(contents);
+  auto data = GetWebContentsData(contents);
+  bool old_state = data->IsRecentlyAudible();
   bool current_state = contents->WasRecentlyAudible();
   if (old_state != current_state) {
-    WebContentsData::SetRecentlyAudible(contents, current_state);
-    WebContentsData::SetLastAudioChangeTime(contents, TimeTicks::Now());
+    data->SetRecentlyAudible(current_state);
+    data->SetLastAudioChangeTime(TimeTicks::Now());
   }
+}
+
+void TabManager::ActiveTabChanged(content::WebContents* old_contents,
+                                  content::WebContents* new_contents,
+                                  int index,
+                                  int reason) {
+  GetWebContentsData(new_contents)->SetDiscardState(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -368,10 +379,10 @@ void TabManager::AddTabStats(BrowserList* browser_list,
         stats.is_playing_audio = IsAudioTab(contents);
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
-        stats.is_discarded = WebContentsData::IsDiscarded(contents);
+        stats.is_discarded = GetWebContentsData(contents)->IsDiscarded();
         stats.has_form_entry =
             contents->GetPageImportanceSignals().had_form_interaction;
-        stats.discard_count = WebContentsData::DiscardCount(contents);
+        stats.discard_count = GetWebContentsData(contents)->DiscardCount();
         stats.last_active = contents->GetLastActiveTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
@@ -441,7 +452,7 @@ bool TabManager::CanDiscardTab(int64 target_web_contents_id) const {
     return false;
 
   // Do not discard a previously discarded tab if that's the desired behavior.
-  if (discard_once_ && WebContentsData::DiscardCount(web_contents) > 0)
+  if (discard_once_ && GetWebContentsData(web_contents)->DiscardCount() > 0)
     return false;
 
   return true;
@@ -455,7 +466,7 @@ WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
   WebContents* old_contents = model->GetWebContentsAt(index);
 
   // Can't discard tabs that are already discarded.
-  if (WebContentsData::IsDiscarded(old_contents))
+  if (GetWebContentsData(old_contents)->IsDiscarded())
     return nullptr;
 
   // Record statistics before discarding to capture the memory state that leads
@@ -476,8 +487,8 @@ WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
   // Replace the discarded tab with the null version.
   model->ReplaceWebContentsAt(index, null_contents);
   // Mark the tab so it will reload when clicked on.
-  WebContentsData::SetDiscardState(null_contents, true);
-  WebContentsData::IncrementDiscardCount(null_contents);
+  GetWebContentsData(null_contents)->SetDiscardState(true);
+  GetWebContentsData(null_contents)->IncrementDiscardCount();
 
   // Discard the old tab's renderer.
   // TODO(jamescook): This breaks script connections with other tabs.
@@ -508,8 +519,14 @@ bool TabManager::IsAudioTab(WebContents* contents) const {
   if (contents->WasRecentlyAudible())
     return true;
   auto delta =
-      TimeTicks::Now() - WebContentsData::LastAudioChangeTime(contents);
+      TimeTicks::Now() - GetWebContentsData(contents)->LastAudioChangeTime();
   return delta < TimeDelta::FromSeconds(kAudioProtectionTimeSeconds);
+}
+
+TabManager::WebContentsData* TabManager::GetWebContentsData(
+    content::WebContents* contents) const {
+  WebContentsData::CreateForWebContents(contents);
+  return WebContentsData::FromWebContents(contents);
 }
 
 // static
