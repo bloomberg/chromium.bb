@@ -345,8 +345,8 @@ class CrxInstaller
   bool fail_install_if_unexpected_version_;
 
   // Whether manual extension installation is enabled. We can't just check this
-  // before trying to install because themes are special-cased to always be
-  // allowed.
+  // before trying to install because themes and bookmark apps are special-cased
+  // to always be allowed.
   bool extensions_enabled_;
 
   // Whether we're supposed to delete the source file on destruction. Defaults

@@ -309,12 +309,15 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
           l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID));
   }
 
-  // The checks below are skipped for themes and external installs.
+  // The checks below are skipped for themes, external installs, and bookmark
+  // apps.
   // TODO(pamg): After ManagementPolicy refactoring is complete, remove this
   // and other uses of install_source_ that are no longer needed now that the
   // SandboxedUnpacker sets extension->location.
-  if (extension->is_theme() || Manifest::IsExternalLocation(install_source_))
+  if (extension->is_theme() || extension->from_bookmark() ||
+      Manifest::IsExternalLocation(install_source_)) {
     return CrxInstallError();
+  }
 
   if (!extensions_enabled_) {
     return CrxInstallError(
@@ -509,11 +512,16 @@ void CrxInstaller::CheckInstall() {
     }
   }
 
-  // Run the policy, requirements and blacklist checks in parallel.
-  install_checker_.Start(
-      ExtensionInstallChecker::CHECK_ALL,
-      false /* fail fast */,
-      base::Bind(&CrxInstaller::OnInstallChecksComplete, this));
+  // Run the policy, requirements and blacklist checks in parallel. Skip the
+  // checks if the extension is a bookmark app.
+  if (extension()->from_bookmark()) {
+    CrxInstaller::OnInstallChecksComplete(0);
+  } else {
+    install_checker_.Start(
+        ExtensionInstallChecker::CHECK_ALL,
+        false /* fail fast */,
+        base::Bind(&CrxInstaller::OnInstallChecksComplete, this));
+  }
 }
 
 void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
