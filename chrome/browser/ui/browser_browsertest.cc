@@ -1604,54 +1604,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
 }
 
-// Tests that the CLD (Compact Language Detection) works properly.
-IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
-  scoped_ptr<test::CldDataHarness> cld_data_harness =
-      test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
-  ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
-  ASSERT_TRUE(test_server()->Start());
-
-  translate::LanguageDetectionDetails details;
-
-  // Open a new tab with a page in English.
-  AddTabAtIndex(0, GURL(test_server()->GetURL("files/english_page.html")),
-                ui::PAGE_TRANSITION_TYPED);
-
-  WebContents* current_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ChromeTranslateClient* chrome_translate_client =
-      ChromeTranslateClient::FromWebContents(current_web_contents);
-  content::Source<WebContents> source(current_web_contents);
-
-  ui_test_utils::WindowedNotificationObserverWithDetails<
-      translate::LanguageDetectionDetails>
-      en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                                  source);
-  EXPECT_EQ("",
-            chrome_translate_client->GetLanguageState().original_language());
-  en_language_detected_signal.Wait();
-  EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
-        source.map_key(), &details));
-  EXPECT_EQ("en", details.adopted_language);
-  EXPECT_EQ("en",
-            chrome_translate_client->GetLanguageState().original_language());
-
-  // Now navigate to a page in French.
-  ui_test_utils::WindowedNotificationObserverWithDetails<
-      translate::LanguageDetectionDetails>
-      fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                                  source);
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(test_server()->GetURL("files/french_page.html")));
-  fr_language_detected_signal.Wait();
-  details.adopted_language.clear();
-  EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
-        source.map_key(), &details));
-  EXPECT_EQ("fr", details.adopted_language);
-  EXPECT_EQ("fr",
-            chrome_translate_client->GetLanguageState().original_language());
-}
-
 // Chromeos defaults to restoring the last session, so this test isn't
 // applicable.
 #if !defined(OS_CHROMEOS)
