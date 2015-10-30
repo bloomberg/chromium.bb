@@ -8,6 +8,7 @@ executable("battor_agent") {
   ]
   deps = [
     ":battor_agent_lib",
+    "//base",
   ]
 }
 

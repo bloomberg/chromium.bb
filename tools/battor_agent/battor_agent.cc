@@ -6,30 +6,38 @@
 
 #include <iostream>
 
+#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+
 namespace battor {
 
 BattOrAgent::BattOrAgent(const std::string& path) : path_(path) {
-  // TODO: Open up a serial connection with the BattOr.
+  // TODO(charliea): Open up a serial connection with the BattOr.
 }
 
 BattOrAgent::~BattOrAgent() {
-  // TODO: Close the serial connection with the BattOr.
+  // TODO(charliea): Close the serial connection with the BattOr.
 }
 
 void BattOrAgent::StartTracing() {
-  // TODO: Tell the BattOr to start tracing.
+  // TODO(charliea): Tell the BattOr to start tracing.
 }
 
-void BattOrAgent::StopTracing(std::string* out_trace) {
-  // TODO: Tell the BattOr to stop tracing.
+void BattOrAgent::StopTracing(std::string* trace_output,
+                              const base::Closure& callback) {
+  // TODO(charliea): Tell the BattOr to stop tracing.
+  *trace_output = "battor trace output";
+  callback.Run();
 }
 
-void BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
-  // TODO: Tell the BattOr to record the specified clock sync marker.
+void BattOrAgent::RecordClockSyncMarker(const std::string& marker,
+                                        const base::Closure& callback) {
+  // TODO(charliea): Tell the BattOr to record the specified clock sync marker.
+  callback.Run();
 }
 
 void BattOrAgent::IssueClockSyncMarker() {
-  // TODO: Tell atrace to issue a clock sync marker.
+  // TODO(charliea): Tell atrace to issue a clock sync marker.
 }
 
 }  // namespace battor
