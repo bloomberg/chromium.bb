@@ -29,20 +29,10 @@ namespace content {
 struct SavableResourcesResult {
   // vector which contains all savable links of sub resource.
   std::vector<GURL>* resources_list;
-  // vector which contains corresponding all referral links of sub resource,
-  // it matched with links one by one.
-  std::vector<GURL>* referrer_urls_list;
-  // and the corresponding referrer policies.
-  std::vector<blink::WebReferrerPolicy>* referrer_policies_list;
 
   // Constructor.
-  SavableResourcesResult(
-      std::vector<GURL>* resources_list,
-      std::vector<GURL>* referrer_urls_list,
-      std::vector<blink::WebReferrerPolicy>* referrer_policies_list)
-      : resources_list(resources_list),
-        referrer_urls_list(referrer_urls_list),
-        referrer_policies_list(referrer_policies_list) {}
+  SavableResourcesResult(std::vector<GURL>* resources_list)
+      : resources_list(resources_list) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SavableResourcesResult);

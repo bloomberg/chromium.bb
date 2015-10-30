@@ -4533,10 +4533,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
 void RenderFrameImpl::OnGetSavableResourceLinks() {
   std::vector<GURL> resources_list;
-  std::vector<GURL> referrer_urls_list;
-  std::vector<blink::WebReferrerPolicy> referrer_policies_list;
-  SavableResourcesResult result(&resources_list, &referrer_urls_list,
-                                &referrer_policies_list);
+  SavableResourcesResult result(&resources_list);
 
   if (!GetSavableResourceLinksForFrame(
           frame_, &result, const_cast<const char**>(GetSavableSchemes()))) {
@@ -4544,15 +4541,11 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
     return;
   }
 
-  std::vector<Referrer> referrers_list;
-  CHECK_EQ(referrer_urls_list.size(), referrer_policies_list.size());
-  for (unsigned i = 0; i < referrer_urls_list.size(); ++i) {
-    referrers_list.push_back(
-        Referrer(referrer_urls_list[i], referrer_policies_list[i]));
-  }
+  Referrer referrer =
+      Referrer(frame_->document().url(), frame_->document().referrerPolicy());
 
   Send(new FrameHostMsg_SavableResourceLinksResponse(
-      routing_id_, frame_->document().url(), resources_list, referrers_list));
+      routing_id_, frame_->document().url(), resources_list, referrer));
 }
 
 void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(

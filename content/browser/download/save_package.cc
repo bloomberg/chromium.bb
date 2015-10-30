@@ -1182,16 +1182,12 @@ void SavePackage::OnSavableResourceLinksResponse(
     RenderFrameHost* sender,
     const GURL& frame_url,
     const std::vector<GURL>& resources_list,
-    const std::vector<Referrer>& referrers_list) {
+    const Referrer& referrer) {
   if (wait_state_ != RESOURCES_LIST)
     return;
 
-  if (resources_list.size() != referrers_list.size())
-    return;
-
   // Add all sub-resources to wait list.
-  for (int i = 0; i < static_cast<int>(resources_list.size()); ++i) {
-    const GURL& u = resources_list[i];
+  for (const GURL& u : resources_list) {
     if (!u.is_valid())
       continue;
     if (unique_urls_to_save_.count(u))
@@ -1201,7 +1197,7 @@ void SavePackage::OnSavableResourceLinksResponse(
     SaveFileCreateInfo::SaveFileSource save_source =
         u.SchemeIsFile() ? SaveFileCreateInfo::SAVE_FILE_FROM_FILE
                          : SaveFileCreateInfo::SAVE_FILE_FROM_NET;
-    SaveItem* save_item = new SaveItem(u, referrers_list[i], this, save_source);
+    SaveItem* save_item = new SaveItem(u, referrer, this, save_source);
     waiting_item_queue_.push(save_item);
   }
 

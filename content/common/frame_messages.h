@@ -1178,7 +1178,7 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
 IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
                     GURL /* frame URL */,
                     std::vector<GURL> /* savable resource links */,
-                    std::vector<content::Referrer> /* referrers */)
+                    content::Referrer /* referrer for all the links above */)
 
 // Response to FrameMsg_GetSavableResourceLinks in case the frame contains
 // non-savable content (i.e. from a non-savable scheme) or if there were

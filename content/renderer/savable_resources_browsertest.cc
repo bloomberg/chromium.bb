@@ -55,10 +55,7 @@ class SavableResourcesTest : public ContentBrowserTest {
                       int render_frame_routing_id) {
     // Get all savable resource links for the page.
     std::vector<GURL> resources_list;
-    std::vector<GURL> referrer_urls_list;
-    std::vector<blink::WebReferrerPolicy> referrer_policies_list;
-    SavableResourcesResult result(&resources_list, &referrer_urls_list,
-                                  &referrer_policies_list);
+    SavableResourcesResult result(&resources_list);
 
     const char* savable_schemes[] = {
       "http",
@@ -74,8 +71,6 @@ class SavableResourcesTest : public ContentBrowserTest {
         render_frame->GetWebFrame(),
         &result, savable_schemes));
 
-    EXPECT_EQ(resources_list.size(), referrer_urls_list.size());
-    EXPECT_EQ(resources_list.size(), referrer_policies_list.size());
     EXPECT_THAT(resources_list, expected_resources_matcher);
   }
 };

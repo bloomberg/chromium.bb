@@ -180,11 +180,10 @@ class CONTENT_EXPORT SavePackage
   // including main frame and sub-frames.
   void GetSavableResourceLinks();
   void GetSavableResourceLinksForFrame(RenderFrameHost* target);
-  void OnSavableResourceLinksResponse(
-      RenderFrameHost* sender,
-      const GURL& frame_url,
-      const std::vector<GURL>& resources_list,
-      const std::vector<Referrer>& referrers_list);
+  void OnSavableResourceLinksResponse(RenderFrameHost* sender,
+                                      const GURL& frame_url,
+                                      const std::vector<GURL>& resources_list,
+                                      const Referrer& referrer);
   void OnSavableResourceLinksError(RenderFrameHost* sender);
   void CompleteSavableResourceLinksResponse();
 

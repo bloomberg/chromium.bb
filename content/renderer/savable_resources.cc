@@ -60,11 +60,8 @@ void GetSavableResourceLinkForElement(
   // sub-resources if they use FTP protocol.
   if (!u.SchemeIsHTTPOrHTTPS() && !u.SchemeIs(url::kFileScheme))
     return;
-  // Ignore duplicated resource link.
+
   result->resources_list->push_back(u);
-  // Insert referrer for above new resource link.
-  result->referrer_urls_list->push_back(GURL());
-  result->referrer_policies_list->push_back(blink::WebReferrerPolicyDefault);
 }
 
 }  // namespace
