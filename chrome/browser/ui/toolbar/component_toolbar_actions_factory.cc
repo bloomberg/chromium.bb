@@ -6,12 +6,15 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "extensions/common/feature_switch.h"
+
+#if defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/ui/toolbar/media_router_action.h"
+#endif
 
 namespace {
 
@@ -43,7 +46,7 @@ std::set<std::string> ComponentToolbarActionsFactory::GetComponentIds(
   if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
     return component_ids;
 
-  if (switches::MediaRouterEnabled() && !profile->IsOffTheRecord())
+  if (media_router::MediaRouterEnabled() && !profile->IsOffTheRecord())
     component_ids.insert(kMediaRouterActionId);
 
   return component_ids;
@@ -64,9 +67,11 @@ ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
   // (since each will have an action in the toolbar or overflow menu), this
   // should be okay. If this changes, we should rethink this design to have,
   // e.g., RegisterChromeAction().
+#if defined(ENABLE_MEDIA_ROUTER)
   if (id == kMediaRouterActionId)
     return scoped_ptr<ToolbarActionViewController>(
         new MediaRouterAction(browser));
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 
   NOTREACHED();
   return scoped_ptr<ToolbarActionViewController>();

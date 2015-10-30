@@ -1340,21 +1340,6 @@ bool MdPolicyPageEnabled() {
       ::switches::kEnableMaterialDesignPolicyPage);
 }
 
-bool MediaRouterEnabled() {
-#if defined(ENABLE_MEDIA_ROUTER)
-
-#if defined(OS_ANDROID)
-  return true;
-#else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableMediaRouter);
-#endif  // defined(OS_ANDROID).
-
-#else
-  return false;
-#endif  // defined(ENABLE_MEDIA_ROUTER)
-}
-
 bool PdfMaterialUIEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnablePdfMaterialUI))
     return true;

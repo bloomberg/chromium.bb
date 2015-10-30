@@ -402,7 +402,6 @@ extern const char kDisableNewTaskManager[];
 bool AboutInSettingsEnabled();
 bool MdExtensionsEnabled();
 bool MdPolicyPageEnabled();
-bool MediaRouterEnabled();
 bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();
 

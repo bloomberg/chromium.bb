@@ -4,20 +4,12 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_test.h"
 
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/dialog_test_browser_window.h"
 
-MediaRouterTest::MediaRouterTest() {
-}
+MediaRouterTest::MediaRouterTest()
+    : feature_override_(extensions::FeatureSwitch::media_router(), true) {}
 
 MediaRouterTest::~MediaRouterTest() {
-}
-
-void MediaRouterTest::SetUp() {
-  BrowserWithTestWindowTest::SetUp();
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableMediaRouter);
 }
 
 BrowserWindow* MediaRouterTest::CreateBrowserWindow() {

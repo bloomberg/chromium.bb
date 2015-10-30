@@ -646,6 +646,8 @@
       'browser/media/native_desktop_media_list.h',
       'browser/media/permission_bubble_media_access_handler.cc',
       'browser/media/permission_bubble_media_access_handler.h',
+      'browser/media/router/media_router_feature.cc',
+      'browser/media/router/media_router_feature.h',
       # TODO(brettw) should this go with the webrtc sources?
       'browser/media/webrtc_log_list.cc',
       'browser/media/webrtc_log_list.h',

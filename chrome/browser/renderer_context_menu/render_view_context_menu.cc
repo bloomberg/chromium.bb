@@ -30,8 +30,7 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/media/router/media_router_dialog_controller.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -133,6 +132,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
+
+#if defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1067,9 +1071,11 @@ void RenderViewContextMenu::AppendPrintItem() {
 }
 
 void RenderViewContextMenu::AppendMediaRouterItem() {
-  if (switches::MediaRouterEnabled() && !browser_context_->IsOffTheRecord())
+  if (media_router::MediaRouterEnabled() &&
+      !browser_context_->IsOffTheRecord()) {
     menu_model_.AddItemWithStringId(IDC_ROUTE_MEDIA,
                                     IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
+  }
 }
 
 void RenderViewContextMenu::AppendRotationItems() {
@@ -1534,7 +1540,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 
     case IDC_ROUTE_MEDIA: {
-      DCHECK(switches::MediaRouterEnabled());
+      DCHECK(media_router::MediaRouterEnabled());
 
       // Disable the command if there is an active modal dialog.
       Browser* browser =
@@ -1852,8 +1858,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_ROUTE_MEDIA: {
-      DCHECK(switches::MediaRouterEnabled());
-
+      DCHECK(media_router::MediaRouterEnabled());
+#if defined(ENABLE_MEDIA_ROUTER)
       Browser* browser =
           chrome::FindBrowserWithWebContents(source_web_contents_);
       DCHECK(browser && !browser->profile()->IsOffTheRecord());
@@ -1861,15 +1867,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       media_router::MediaRouterDialogController* dialog_controller =
           media_router::MediaRouterDialogController::GetOrCreateForWebContents(
               source_web_contents_);
-
       if (!dialog_controller)
         return;
 
       dialog_controller->ShowMediaRouterDialog();
-
       media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
           media_router::CONTEXTUAL_MENU);
-
+#endif  // defined(ENABLE_MEDIA_ROUTER)
       break;
     }
 

@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/common/feature_switch.h"
 
 using content::WebContents;
 using content::TestNavigationObserver;
@@ -25,10 +23,8 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
   MediaRouterDialogControllerBrowserTest()
       : dialog_controller_(nullptr),
         initiator_(nullptr),
-        media_router_dialog_(nullptr) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableMediaRouter);
-  }
+        media_router_dialog_(nullptr),
+        feature_override_(extensions::FeatureSwitch::media_router(), true) {}
   ~MediaRouterDialogControllerBrowserTest() override {}
 
  protected:
@@ -55,6 +51,7 @@ class MediaRouterDialogControllerBrowserTest : public InProcessBrowserTest {
   WebContents* media_router_dialog_;
 
  private:
+  extensions::FeatureSwitch::ScopedOverride feature_override_;
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerBrowserTest);
 };
 

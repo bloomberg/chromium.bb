@@ -93,6 +93,7 @@
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #endif
 
@@ -583,7 +584,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUIMediaRouterHost &&
-      switches::MediaRouterEnabled()) {
+      media_router::MediaRouterEnabled()) {
     return &NewWebUI<media_router::MediaRouterUI>;
   }
 #endif

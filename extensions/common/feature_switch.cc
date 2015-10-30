@@ -14,6 +14,7 @@ namespace extensions {
 
 namespace {
 
+const char kEnableMediaRouterExperiment[] = "EnableMediaRouter";
 const char kExtensionActionRedesignExperiment[] = "ExtensionActionRedesign";
 
 class CommonSwitches {
@@ -46,7 +47,12 @@ class CommonSwitches {
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
                                    FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
-                         FeatureSwitch::DEFAULT_ENABLED) {
+                         FeatureSwitch::DEFAULT_ENABLED),
+        // The switch enable-media-router is defined in
+        // chrome/common/chrome_switches.cc, but we can't depend on chrome here.
+        media_router("media-router",
+                     kEnableMediaRouterExperiment,
+                     FeatureSwitch::DEFAULT_DISABLED) {
   }
 
   // Enables extensions to be easily installed from sites other than the web
@@ -66,6 +72,7 @@ class CommonSwitches {
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
+  FeatureSwitch media_router;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -89,16 +96,13 @@ FeatureSwitch* FeatureSwitch::enable_override_bookmarks_ui() {
   return &g_common_switches.Get().enable_override_bookmarks_ui;
 }
 FeatureSwitch* FeatureSwitch::extension_action_redesign() {
-#if defined(ENABLE_MEDIA_ROUTER)
   // Force-enable the redesigned extension action toolbar when the Media Router
   // is enabled. Should be removed when the toolbar redesign is used by default.
   // See crbug.com/514694
   // TODO(kmarshall): Remove this override.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "enable-media-router")) {
+  if (media_router()->IsEnabled())
     return &g_common_switches.Get().extension_action_redesign_override;
-  }
-#endif  // defined(ENABLE_MEDIA_ROUTER)
+
   return &g_common_switches.Get().extension_action_redesign;
 }
 FeatureSwitch* FeatureSwitch::scripts_require_action() {
@@ -109,6 +113,9 @@ FeatureSwitch* FeatureSwitch::embedded_extension_options() {
 }
 FeatureSwitch* FeatureSwitch::trace_app_source() {
   return &g_common_switches.Get().trace_app_source;
+}
+FeatureSwitch* FeatureSwitch::media_router() {
+  return &g_common_switches.Get().media_router;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

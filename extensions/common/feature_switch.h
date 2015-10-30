@@ -40,6 +40,7 @@ class FeatureSwitch {
   static FeatureSwitch* scripts_require_action();
   static FeatureSwitch* embedded_extension_options();
   static FeatureSwitch* trace_app_source();
+  static FeatureSwitch* media_router();
 
   enum DefaultValue {
     DEFAULT_ENABLED,

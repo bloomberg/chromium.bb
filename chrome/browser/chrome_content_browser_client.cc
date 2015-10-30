@@ -269,6 +269,7 @@
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #endif
 
@@ -2620,7 +2621,7 @@ content::PresentationServiceDelegate*
 ChromeContentBrowserClient::GetPresentationServiceDelegate(
       content::WebContents* web_contents) {
 #if defined(ENABLE_MEDIA_ROUTER)
-  if (switches::MediaRouterEnabled() &&
+  if (media_router::MediaRouterEnabled() &&
       !web_contents->GetBrowserContext()->IsOffTheRecord()) {
     return media_router::PresentationServiceDelegateImpl::
         GetOrCreateForWebContents(web_contents);
