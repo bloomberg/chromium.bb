@@ -48,9 +48,8 @@
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ImageDecodingStore.h"
+#include "platform/heap/GCTaskRunner.h"
 #include "platform/heap/Heap.h"
-#include "platform/heap/MessageLoopInterruptor.h"
-#include "platform/heap/PendingGCRunner.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebThread.h"
@@ -100,8 +99,8 @@ private:
 
 } // namespace
 
-static WebThread::TaskObserver* s_endOfTaskRunner = 0;
-static WebThread::TaskObserver* s_pendingGCRunner = 0;
+static WebThread::TaskObserver* s_endOfTaskRunner = nullptr;
+static GCTaskRunner* s_gcTaskRunner = nullptr;
 
 // Make sure we are not re-initialized in the same address space.
 // Doing so may cause hard to reproduce crashes.
@@ -184,12 +183,8 @@ void initializeWithoutV8(Platform* platform)
     ThreadState::attachMainThread();
     // currentThread() is null if we are running on a thread without a message loop.
     if (WebThread* currentThread = platform->currentThread()) {
-        ASSERT(!s_pendingGCRunner);
-        s_pendingGCRunner = new PendingGCRunner;
-        currentThread->addTaskObserver(s_pendingGCRunner);
-
-        OwnPtr<MessageLoopInterruptor> interruptor = adoptPtr(new MessageLoopInterruptor(currentThread->taskRunner()));
-        ThreadState::current()->addInterruptor(interruptor.release());
+        ASSERT(!s_gcTaskRunner);
+        s_gcTaskRunner = new GCTaskRunner(currentThread);
     }
 
     DEFINE_STATIC_LOCAL(ModulesInitializer, initializer, ());
@@ -208,11 +203,11 @@ void shutdown()
         // message loop, because the message loop is already destructed before
         // the shutdown() is called.
         delete s_endOfTaskRunner;
-        s_endOfTaskRunner = 0;
+        s_endOfTaskRunner = nullptr;
 
-        ASSERT(s_pendingGCRunner);
-        delete s_pendingGCRunner;
-        s_pendingGCRunner = 0;
+        ASSERT(s_gcTaskRunner);
+        delete s_gcTaskRunner;
+        s_gcTaskRunner = nullptr;
     }
 
     // Shutdown V8-related background threads before V8 is ramped down. Note

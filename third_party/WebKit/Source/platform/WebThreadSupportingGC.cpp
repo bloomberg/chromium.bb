@@ -48,17 +48,14 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
 
 void WebThreadSupportingGC::initialize()
 {
-    m_pendingGCRunner = adoptPtr(new PendingGCRunner);
-    m_thread->addTaskObserver(m_pendingGCRunner.get());
     ThreadState::attach();
-    OwnPtr<MessageLoopInterruptor> interruptor = adoptPtr(new MessageLoopInterruptor(m_thread->taskRunner()));
-    ThreadState::current()->addInterruptor(interruptor.release());
+    m_gcTaskRunner = adoptPtr(new GCTaskRunner(m_thread));
 }
 
 void WebThreadSupportingGC::shutdown()
 {
     // Ensure no posted tasks will run from this point on.
-    m_thread->removeTaskObserver(m_pendingGCRunner.get());
+    m_gcTaskRunner.clear();
 
     // Shutdown the thread (via its scheduler) only when the thread is created
     // and is owned by this instance.
@@ -66,7 +63,6 @@ void WebThreadSupportingGC::shutdown()
         m_owningThread->scheduler()->shutdown();
 
     ThreadState::detach();
-    m_pendingGCRunner = nullptr;
 }
 
 } // namespace blink

@@ -5,8 +5,7 @@
 #ifndef WebThreadSupportingGC_h
 #define WebThreadSupportingGC_h
 
-#include "platform/heap/MessageLoopInterruptor.h"
-#include "platform/heap/PendingGCRunner.h"
+#include "platform/heap/GCTaskRunner.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
@@ -69,7 +68,7 @@ public:
 private:
     WebThreadSupportingGC(const char* name, WebThread*);
 
-    OwnPtr<PendingGCRunner> m_pendingGCRunner;
+    OwnPtr<GCTaskRunner> m_gcTaskRunner;
 
     // m_thread is guaranteed to be non-null after this instance is constructed.
     // m_owningThread is non-null unless this instance is constructed for an

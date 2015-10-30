@@ -28,16 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MessageLoopInterruptor_h
-#define MessageLoopInterruptor_h
+#ifndef GCTaskRunner_h
+#define GCTaskRunner_h
 
-#include "platform/heap/BlinkGCInterruptor.h"
+#include "platform/heap/ThreadState.h"
 #include "public/platform/WebTaskRunner.h"
+#include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
-class MessageLoopInterruptor : public BlinkGCInterruptor {
+class MessageLoopInterruptor final : public BlinkGCInterruptor {
 public:
     explicit MessageLoopInterruptor(WebTaskRunner* taskRunner) : m_taskRunner(taskRunner) { }
 
@@ -45,7 +46,7 @@ public:
     {
         // GCTask has an empty run() method. Its only purpose is to guarantee
         // that MessageLoop will have a task to process which will result
-        // in PendingGCRunner::didProcessTask being executed.
+        // in GCTaskRunner::didProcessTask being executed.
         m_taskRunner->postTask(BLINK_FROM_HERE, new GCTask);
     }
 
@@ -57,7 +58,7 @@ private:
         void run() override
         {
             // Don't do anything here because we don't know if this is
-            // a nested event loop or not. PendingGCRunner::didProcessTask
+            // a nested event loop or not. GCTaskRunner::didProcessTask
             // will enter correct safepoint for us.
             // We are not calling onInterrupted() because that always
             // conservatively enters safepoint with pointers on stack.
@@ -65,6 +66,57 @@ private:
     };
 
     WebTaskRunner* m_taskRunner;
+};
+
+class GCTaskObserver final : public WebThread::TaskObserver {
+public:
+    GCTaskObserver() : m_nesting(0) { }
+
+    ~GCTaskObserver()
+    {
+        // m_nesting can be 1 if this was unregistered in a task and
+        // didProcessTask was not called.
+        ASSERT(!m_nesting || m_nesting == 1);
+    }
+
+    virtual void willProcessTask()
+    {
+        m_nesting++;
+    }
+
+    virtual void didProcessTask()
+    {
+        // In the production code WebKit::initialize is called from inside the
+        // message loop so we can get didProcessTask() without corresponding
+        // willProcessTask once. This is benign.
+        if (m_nesting)
+            m_nesting--;
+
+        ThreadState::current()->safePoint(m_nesting ? BlinkGC::HeapPointersOnStack : BlinkGC::NoHeapPointersOnStack);
+    }
+
+private:
+    int m_nesting;
+};
+
+class GCTaskRunner final {
+public:
+    explicit GCTaskRunner(WebThread* thread)
+        : m_gcTaskObserver(adoptPtr(new GCTaskObserver))
+        , m_thread(thread)
+    {
+        m_thread->addTaskObserver(m_gcTaskObserver.get());
+        ThreadState::current()->addInterruptor(adoptPtr(new MessageLoopInterruptor(thread->taskRunner())));
+    }
+
+    ~GCTaskRunner()
+    {
+        m_thread->removeTaskObserver(m_gcTaskObserver.get());
+    }
+
+private:
+    OwnPtr<GCTaskObserver> m_gcTaskObserver;
+    WebThread* m_thread;
 };
 
 } // namespace blink
