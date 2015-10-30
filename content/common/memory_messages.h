@@ -31,3 +31,9 @@ IPC_MESSAGE_CONTROL1(MemoryMsg_SetPressureNotificationsSuppressed,
 IPC_MESSAGE_CONTROL1(
     MemoryMsg_SimulatePressureNotification,
     base::MemoryPressureListener::MemoryPressureLevel /* level */)
+
+// Sent by the browser to all child processes to indicate an actual memory
+// pressure notification.
+IPC_MESSAGE_CONTROL1(
+    MemoryMsg_PressureNotification,
+    base::MemoryPressureListener::MemoryPressureLevel /* level */)

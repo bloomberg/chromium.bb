@@ -26,6 +26,8 @@ class ChildMemoryMessageFilter : public IPC::MessageFilter {
   void OnSetPressureNotificationsSuppressed(bool suppressed);
   void OnSimulatePressureNotification(
       base::MemoryPressureListener::MemoryPressureLevel level);
+  void OnPressureNotification(
+      base::MemoryPressureListener::MemoryPressureLevel level);
 
   DISALLOW_COPY_AND_ASSIGN(ChildMemoryMessageFilter);
 };

@@ -25,6 +25,8 @@ class CONTENT_EXPORT MemoryMessageFilter : public BrowserMessageFilter {
   void SendSetPressureNotificationsSuppressed(bool suppressed);
   void SendSimulatePressureNotification(
       base::MemoryPressureListener::MemoryPressureLevel level);
+  void SendPressureNotification(
+      base::MemoryPressureListener::MemoryPressureLevel level);
 
  protected:
   ~MemoryMessageFilter() override;
