@@ -83,9 +83,24 @@ bool Extensions3DUtil::isExtensionEnabled(const String& name)
 
 bool Extensions3DUtil::canUseCopyTextureCHROMIUM(GLenum destTarget, GLenum destFormat, GLenum destType, GLint level)
 {
-    // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
+    switch (destTarget) {
+    case GL_TEXTURE_2D:
+        break;
+    // TODO(dshwang): support cube map. crbug.com/517548
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+        return false;
+    default:
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+    // TODO(dshwang): restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
     // WebGraphicsContext3D::copyTextureCHROMIUM(...) are fully functional.
-    if (destTarget == GL_TEXTURE_2D && (destFormat == GL_RGB || destFormat == GL_RGBA)
+    if ((destFormat == GL_RGB || destFormat == GL_RGBA)
         && destType == GL_UNSIGNED_BYTE
         && !level)
         return true;

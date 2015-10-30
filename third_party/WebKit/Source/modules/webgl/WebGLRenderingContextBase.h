@@ -840,6 +840,9 @@ protected:
         GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
     bool canUseTexImageCanvasByGPU(GLenum internalformat, GLenum type);
 
+    bool texImage2DVideoByGPU(TexImageFunctionType, WebGLTexture*, GLenum target, GLint level,
+        GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, HTMLVideoElement*);
+
     void handleTextureCompleteness(const char*, bool);
     void createFallbackBlackTextures1x1();
 

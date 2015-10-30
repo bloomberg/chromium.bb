@@ -65,14 +65,33 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // Copy the contents of texture of |video_frame| to texture |texture|.
   // |level|, |internal_format|, |type| specify target texture |texture|.
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
+  struct MEDIA_EXPORT CopyFrameSingleTextureParams {
+    enum CopyType { FullCopy, SubCopy };
+    CopyFrameSingleTextureParams(CopyType copy_type,
+                                 unsigned target,
+                                 unsigned texture,
+                                 unsigned internal_format,
+                                 unsigned type,
+                                 int level,
+                                 int xoffset,
+                                 int yoffset,
+                                 bool premultiply_alpha,
+                                 bool flip_y);
+    CopyType copy_type;
+    unsigned int target;
+    unsigned int texture;
+    unsigned int internal_format;
+    unsigned int type;
+    int level;
+    int xoffset;
+    int yoffset;
+    bool premultiply_alpha;
+    bool flip_y;
+  };
   static void CopyVideoFrameSingleTextureToGLTexture(
       gpu::gles2::GLES2Interface* gl,
       VideoFrame* video_frame,
-      unsigned int texture,
-      unsigned int internal_format,
-      unsigned int type,
-      bool premultiply_alpha,
-      bool flip_y);
+      const CopyFrameSingleTextureParams& params);
 
  private:
   void ResetCache();
