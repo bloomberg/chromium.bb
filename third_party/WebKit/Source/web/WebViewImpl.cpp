@@ -113,9 +113,11 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
@@ -134,7 +136,6 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebGraphicsContext.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
 #include "public/web/WebMeaningfulLayout.h"
@@ -309,15 +310,13 @@ public:
     }
 
 private:
-    void paintPageOverlay(WebGraphicsContext* context, const WebSize& size) const override
+    void paintPageOverlay(const PageOverlay& pageOverlay, GraphicsContext& graphicsContext, const WebSize& size) const override
     {
-        WebFloatRect rect(0, 0, size.width, size.height);
-        WebCanvas* canvas = context->beginDrawing(rect);
-        SkPaint paint;
-        paint.setColor(m_color);
-        paint.setStyle(SkPaint::kFill_Style);
-        canvas->drawRectCoords(0, 0, size.width, size.height, paint);
-        context->endDrawing();
+        if (DrawingRecorder::useCachedDrawingIfPossible(graphicsContext, pageOverlay, DisplayItem::PageOverlay))
+            return;
+        FloatRect rect(0, 0, size.width, size.height);
+        DrawingRecorder drawingRecorder(graphicsContext, pageOverlay, DisplayItem::PageOverlay, rect);
+        graphicsContext.fillRect(rect, m_color);
     }
 
     WebColor m_color;

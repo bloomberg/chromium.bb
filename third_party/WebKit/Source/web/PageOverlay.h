@@ -41,7 +41,6 @@ namespace blink {
 class GraphicsContext;
 class WebPageOverlay;
 class WebViewImpl;
-class WebGraphicsContext;
 
 // Manages a layer that is overlaid on a WebView's content.
 // Clients can paint by implementing WebPageOverlay.
@@ -55,7 +54,7 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 
         // Paints page overlay contents.
-        virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) const = 0;
+        virtual void paintPageOverlay(const PageOverlay&, GraphicsContext&, const WebSize& webViewSize) const = 0;
         virtual ~Delegate() { }
     };
 

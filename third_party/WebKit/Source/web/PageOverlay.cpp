@@ -38,7 +38,6 @@
 #include "public/platform/WebLayer.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebDevToolsAgentImpl.h"
-#include "web/WebGraphicsContextImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
@@ -100,8 +99,7 @@ void PageOverlay::update()
 void PageOverlay::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& gc, GraphicsLayerPaintingPhase phase, const IntRect* inClip) const
 {
     ASSERT(m_layer);
-    WebGraphicsContextImpl contextWrapper(gc, *this, DisplayItem::PageOverlay);
-    m_delegate->paintPageOverlay(&contextWrapper, expandedIntSize(m_layer->size()));
+    m_delegate->paintPageOverlay(*this, gc, expandedIntSize(m_layer->size()));
 }
 
 String PageOverlay::debugName(const GraphicsLayer*)

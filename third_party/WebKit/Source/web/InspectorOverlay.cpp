@@ -51,10 +51,10 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "web/PageOverlay.h"
-#include "web/WebGraphicsContextImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -109,12 +109,13 @@ public:
         PageOverlay::Delegate::trace(visitor);
     }
 
-    void paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize) const override
+    void paintPageOverlay(const PageOverlay&, GraphicsContext& graphicsContext, const WebSize& webViewSize) const override
     {
         if (m_overlay->isEmpty())
             return;
 
-        GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
+        // Skip cache because the following paint may conflict with the view's real painting.
+        DisplayItemCacheSkipper cacheSkipper(graphicsContext);
         FrameView* view = m_overlay->overlayMainFrame()->view();
         ASSERT(!view->needsLayout());
         view->paint(&graphicsContext, CullRect(IntRect(0, 0, view->width(), view->height())));
