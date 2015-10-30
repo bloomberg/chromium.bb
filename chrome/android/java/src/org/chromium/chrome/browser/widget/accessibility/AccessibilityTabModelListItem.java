@@ -41,7 +41,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private static final int CLOSE_ANIMATION_DURATION_MS = 100;
     private static final int DEFAULT_ANIMATION_DURATION_MS = 300;
     private static final int VELOCITY_SCALING_FACTOR = 150;
-    private static final int CLOSE_TIMEOUT_MS = 2000;
+    private static final int CLOSE_TIMEOUT_MS = 4000;
 
     private int mCloseAnimationDurationMs;
     private int mDefaultAnimationDurationMs;
