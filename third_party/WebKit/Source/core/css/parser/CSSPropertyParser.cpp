@@ -12,6 +12,7 @@
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
+#include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSURIValue.h"
@@ -1144,13 +1145,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationIterationCount(CSSParser
     return consumeNumber(range, ValueRangeNonNegative);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeZIndex(CSSParserTokenRange& range)
-{
-    if (range.peek().id() == CSSValueAuto)
-        return consumeIdent(range);
-    return consumeInteger(range);
-}
-
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationPlayState(CSSParserTokenRange& range)
 {
     CSSValueID id = range.peek().id();
@@ -1256,7 +1250,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCubicBezier(CSSParserTokenRange& 
 
     return nullptr;
 }
-
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationTimingFunction(CSSParserTokenRange& range)
 {
@@ -1385,6 +1378,73 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeWidowsOrOrphans(CSSParserTokenRan
     return consumePositiveInteger(range);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeZIndex(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumeInteger(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSShadowValue> parseSingleShadow(CSSParserTokenRange& range, const CSSParserContext& context, bool allowInset, bool allowSpread)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> style = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> color = nullptr;
+
+    if (range.atEnd())
+        return nullptr;
+    if (range.peek().id() == CSSValueInset) {
+        if (!allowInset)
+            return nullptr;
+        style = consumeIdent(range);
+    }
+    color = consumeColor(range, context);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalOffset = consumeLength(range, context.mode(), ValueRangeAll);
+    if (!horizontalOffset)
+        return nullptr;
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalOffset = consumeLength(range, context.mode(), ValueRangeAll);
+    if (!verticalOffset)
+        return nullptr;
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> blurRadius = consumeLength(range, context.mode(), ValueRangeAll);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> spreadDistance = nullptr;
+    if (blurRadius) {
+        // Blur radius must be non-negative.
+        if (blurRadius->getDoubleValue() < 0)
+            return nullptr;
+        if (allowSpread)
+            spreadDistance = consumeLength(range, context.mode(), ValueRangeAll);
+    }
+
+    if (!range.atEnd()) {
+        if (!color)
+            color = consumeColor(range, context);
+        if (range.peek().id() == CSSValueInset) {
+            if (!allowInset || style)
+                return nullptr;
+            style = consumeIdent(range);
+        }
+    }
+    return CSSShadowValue::create(horizontalOffset.release(), verticalOffset.release(), blurRadius.release(),
+        spreadDistance.release(), style.release(), color.release());
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeShadow(CSSParserTokenRange& range, const CSSParserContext& context, bool isBoxShadowProperty)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSValueList> shadowValueList = CSSValueList::createCommaSeparated();
+    do {
+        if (RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = parseSingleShadow(range, context, isBoxShadowProperty, isBoxShadowProperty))
+            shadowValueList->append(shadowValue.release());
+        else
+            return nullptr;
+    } while (consumeCommaIncludingWhitespace(range));
+    return shadowValueList;
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1489,6 +1549,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeColor(m_range, m_context, inQuirksMode());
     case CSSPropertyZIndex:
         return consumeZIndex(m_range);
+    case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
+    case CSSPropertyBoxShadow:
+        return consumeShadow(m_range, m_context, property == CSSPropertyBoxShadow);
     default:
         return nullptr;
     }

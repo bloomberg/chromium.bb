@@ -26,5 +26,7 @@ function testInvalidFilterRule(description, rule)
 testInvalidFilterRule("Negative blur radius value", "10px 10px -1px rgb(255, 0, 0)");
 testInvalidFilterRule("Negative blur radius value, with a spread defined", "10px 10px -1px 10px rgb(255, 0, 0)");
 testInvalidFilterRule("Negative blur radius value, with a negative spread defined", "10px 10px -1px -1px rgb(255, 0, 0)");
+testInvalidFilterRule("Extraneous commas at beginning", ",,,,,10px 10px rgb(255, 0, 0)");
+testInvalidFilterRule("Extraneous commas at end", "10px 10px rgb(255, 0, 0),,,,,");
 
 successfullyParsed = true;

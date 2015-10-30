@@ -201,7 +201,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parsePaintOrder() const;
 
     // CSS3 Parsing Routines (for properties specific to CSS3)
-    PassRefPtrWillBeRawPtr<CSSValueList> parseShadow(CSSParserValueList*, CSSPropertyID);
     PassRefPtrWillBeRawPtr<CSSShadowValue> parseSingleShadow(CSSParserValueList*, bool allowInset, bool allowSpread);
     bool parseBorderImageShorthand(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseBorderImage(CSSPropertyID);

@@ -761,13 +761,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyOutlineOffset:
         validPrimitive = validUnit(value, FLength);
         break;
-    case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
-    case CSSPropertyBoxShadow:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseShadow(m_valueList, propId);
-        break;
     case CSSPropertyWebkitBoxReflect:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -1230,6 +1223,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyColor:
     case CSSPropertyZIndex:
+    case CSSPropertyTextShadow:
+    case CSSPropertyBoxShadow:
         validPrimitive = false;
         break;
 
@@ -3870,22 +3865,6 @@ bool CSSPropertyParser::parseColorFromValue(const CSSParserValue* value, RGBA32&
     }
 
     return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserValueList* valueList, CSSPropertyID propID)
-{
-    RefPtrWillBeRawPtr<CSSValueList> shadowValueList = CSSValueList::createCommaSeparated();
-    const bool isBoxShadowProperty = propID == CSSPropertyBoxShadow;
-    while (RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = parseSingleShadow(valueList, isBoxShadowProperty, isBoxShadowProperty)) {
-        shadowValueList->append(shadowValue);
-        if (!valueList->current())
-            break;
-        if (!consumeComma(valueList))
-            return nullptr;
-    }
-    if (shadowValueList->length() == 0)
-        return nullptr;
-    return shadowValueList;
 }
 
 PassRefPtrWillBeRawPtr<CSSShadowValue> CSSPropertyParser::parseSingleShadow(CSSParserValueList* valueList, bool allowInset, bool allowSpread)

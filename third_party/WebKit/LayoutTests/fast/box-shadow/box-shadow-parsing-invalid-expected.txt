@@ -18,6 +18,16 @@ Negative blur radius value, with a negative spread defined : 10px 10px -1px -1px
 PASS cssRule.type is 1
 PASS declaration.length is 0
 PASS declaration.getPropertyValue('box-shadow') is ""
+
+Extraneous commas at beginning : ,,,,,10px 10px rgb(255, 0, 0)
+PASS cssRule.type is 1
+PASS declaration.length is 0
+PASS declaration.getPropertyValue('box-shadow') is ""
+
+Extraneous commas at end : 10px 10px rgb(255, 0, 0),,,,,
+PASS cssRule.type is 1
+PASS declaration.length is 0
+PASS declaration.getPropertyValue('box-shadow') is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE
