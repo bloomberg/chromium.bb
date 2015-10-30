@@ -29,6 +29,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
     BENCHMARK_GPU,
     BENCHMARK_IPC,
     BENCHMARK_STARTUP,
+    BLINK_STYLE
   };
 
   CategoryPreset category_preset() const { return category_preset_; }
