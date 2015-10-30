@@ -121,7 +121,7 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
 
   // Opaque identifier that defines sequencing of tasks posted to the worker
   // pool.
-  class SequenceToken {
+  class BASE_EXPORT SequenceToken {
    public:
     SequenceToken() : id_(0) {}
     ~SequenceToken() {}
@@ -134,6 +134,10 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
     bool IsValid() const {
       return id_ != 0;
     }
+
+    // Returns a string representation of this token. This method should only be
+    // used for debugging.
+    std::string ToString() const;
 
    private:
     friend class SequencedWorkerPool;
@@ -157,17 +161,21 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   // an unsequenced task, returns an invalid SequenceToken.
   static SequenceToken GetSequenceTokenForCurrentThread();
 
+  // Returns the SequencedWorkerPool that owns this thread, or null if the
+  // current thread is not a SequencedWorkerPool worker thread.
+  static scoped_refptr<SequencedWorkerPool> GetWorkerPoolForCurrentThread();
+
   // When constructing a SequencedWorkerPool, there must be a
-  // MessageLoop on the current thread unless you plan to deliberately
-  // leak it.
+  // ThreadTaskRunnerHandle on the current thread unless you plan to
+  // deliberately leak it.
 
   // Pass the maximum number of threads (they will be lazily created as needed)
   // and a prefix for the thread name to aid in debugging.
   SequencedWorkerPool(size_t max_threads,
                       const std::string& thread_name_prefix);
 
-  // Like above, but with |observer| for testing.  Does not take
-  // ownership of |observer|.
+  // Like above, but with |observer| for testing.  Does not take ownership of
+  // |observer|.
   SequencedWorkerPool(size_t max_threads,
                       const std::string& thread_name_prefix,
                       TestingObserver* observer);

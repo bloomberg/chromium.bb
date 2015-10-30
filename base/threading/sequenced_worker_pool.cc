@@ -219,10 +219,6 @@ uint64 GetTaskTraceID(const SequencedTask& task,
          static_cast<uint64>(reinterpret_cast<intptr_t>(pool));
 }
 
-base::LazyInstance<base::ThreadLocalPointer<
-    SequencedWorkerPool::SequenceToken> >::Leaky g_lazy_tls_ptr =
-        LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 // Worker ---------------------------------------------------------------------
@@ -238,6 +234,9 @@ class SequencedWorkerPool::Worker : public SimpleThread {
 
   // SimpleThread implementation. This actually runs the background thread.
   void Run() override;
+
+  // Gets the worker for the current thread out of thread-local storage.
+  static Worker* GetForCurrentThread();
 
   // Indicates that a task is about to be run. The parameters provide
   // additional metainformation about the task being run.
@@ -264,7 +263,14 @@ class SequencedWorkerPool::Worker : public SimpleThread {
     return task_shutdown_behavior_;
   }
 
+  scoped_refptr<SequencedWorkerPool> worker_pool() const {
+    return worker_pool_;
+  }
+
  private:
+  static LazyInstance<ThreadLocalPointer<SequencedWorkerPool::Worker>>::Leaky
+      lazy_tls_ptr_;
+
   scoped_refptr<SequencedWorkerPool> worker_pool_;
   // The sequence token of the task being processed. Only valid when
   // is_processing_task_ is true.
@@ -508,9 +514,10 @@ void SequencedWorkerPool::Worker::Run() {
   win::ScopedCOMInitializer com_initializer;
 #endif
 
-  // Store a pointer to the running sequence in thread local storage for
-  // static function access.
-  g_lazy_tls_ptr.Get().Set(&task_sequence_token_);
+  // Store a pointer to this worker in thread local storage for static function
+  // access.
+  DCHECK(!lazy_tls_ptr_.Get().Get());
+  lazy_tls_ptr_.Get().Set(this);
 
   // Just jump back to the Inner object to run the thread, since it has all the
   // tracking information and queues. It might be more natural to implement
@@ -519,8 +526,22 @@ void SequencedWorkerPool::Worker::Run() {
   // send thread-specific information easily to the thread loop.
   worker_pool_->inner_->ThreadLoop(this);
   // Release our cyclic reference once we're done.
-  worker_pool_ = NULL;
+  worker_pool_ = nullptr;
 }
+
+// static
+SequencedWorkerPool::Worker*
+SequencedWorkerPool::Worker::GetForCurrentThread() {
+  // Don't construct lazy instance on check.
+  if (lazy_tls_ptr_ == nullptr)
+    return nullptr;
+
+  return lazy_tls_ptr_.Get().Get();
+}
+
+// static
+LazyInstance<ThreadLocalPointer<SequencedWorkerPool::Worker>>::Leaky
+    SequencedWorkerPool::Worker::lazy_tls_ptr_ = LAZY_INSTANCE_INITIALIZER;
 
 // Inner definitions ---------------------------------------------------------
 
@@ -1145,17 +1166,28 @@ SequencedWorkerPool::Inner::g_last_sequence_number_;
 
 // SequencedWorkerPool --------------------------------------------------------
 
+std::string SequencedWorkerPool::SequenceToken::ToString() const {
+  return base::StringPrintf("[%d]", id_);
+}
+
 // static
 SequencedWorkerPool::SequenceToken
 SequencedWorkerPool::GetSequenceTokenForCurrentThread() {
-  // Don't construct lazy instance on check.
-  if (g_lazy_tls_ptr == NULL)
+  Worker* worker = Worker::GetForCurrentThread();
+  if (!worker)
     return SequenceToken();
 
-  SequencedWorkerPool::SequenceToken* token = g_lazy_tls_ptr.Get().Get();
-  if (!token)
-    return SequenceToken();
-  return *token;
+  return worker->task_sequence_token();
+}
+
+// static
+scoped_refptr<SequencedWorkerPool>
+SequencedWorkerPool::GetWorkerPoolForCurrentThread() {
+  Worker* worker = Worker::GetForCurrentThread();
+  if (!worker)
+    return nullptr;
+
+  return worker->worker_pool();
 }
 
 SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,

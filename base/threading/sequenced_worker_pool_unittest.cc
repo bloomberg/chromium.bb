@@ -904,6 +904,49 @@ TEST_F(SequencedWorkerPoolTest, FlushForTesting) {
   pool()->FlushForTesting();
 }
 
+namespace {
+
+void CheckWorkerPoolAndSequenceToken(
+    const scoped_refptr<SequencedWorkerPool>& expected_pool,
+    SequencedWorkerPool::SequenceToken expected_token) {
+  SequencedWorkerPool::SequenceToken token =
+      SequencedWorkerPool::GetSequenceTokenForCurrentThread();
+  EXPECT_EQ(expected_token.ToString(), token.ToString());
+
+  scoped_refptr<SequencedWorkerPool> pool =
+      SequencedWorkerPool::GetWorkerPoolForCurrentThread();
+  EXPECT_EQ(expected_pool, pool);
+}
+
+}  // namespace
+
+TEST_F(SequencedWorkerPoolTest, GetWorkerPoolAndSequenceTokenForCurrentThread) {
+  EnsureAllWorkersCreated();
+
+  // The current thread should have neither a worker pool nor a sequence token.
+  SequencedWorkerPool::SequenceToken local_token =
+      SequencedWorkerPool::GetSequenceTokenForCurrentThread();
+  scoped_refptr<SequencedWorkerPool> local_pool =
+      SequencedWorkerPool::GetWorkerPoolForCurrentThread();
+  EXPECT_FALSE(local_token.IsValid()) << local_token.ToString();
+  EXPECT_FALSE(local_pool);
+
+  SequencedWorkerPool::SequenceToken token1 = pool()->GetSequenceToken();
+  SequencedWorkerPool::SequenceToken token2 = pool()->GetSequenceToken();
+  pool()->PostSequencedWorkerTask(
+      token1, FROM_HERE,
+      base::Bind(&CheckWorkerPoolAndSequenceToken, pool(), token1));
+  pool()->PostSequencedWorkerTask(
+      token2, FROM_HERE,
+      base::Bind(&CheckWorkerPoolAndSequenceToken, pool(), token2));
+
+  pool()->PostWorkerTask(FROM_HERE,
+                         base::Bind(&CheckWorkerPoolAndSequenceToken, pool(),
+                                    SequencedWorkerPool::SequenceToken()));
+
+  pool()->FlushForTesting();
+}
+
 TEST(SequencedWorkerPoolRefPtrTest, ShutsDownCleanWithContinueOnShutdown) {
   MessageLoop loop;
   scoped_refptr<SequencedWorkerPool> pool(new SequencedWorkerPool(3, "Pool"));
