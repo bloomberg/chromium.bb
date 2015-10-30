@@ -521,6 +521,7 @@ mojom("mojo_bindings") {
     "service_port_service.mojom",
     "service_worker/embedded_worker_setup.mojom",
     "vr_service.mojom",
+    "wake_lock_service.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

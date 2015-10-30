@@ -108,6 +108,7 @@
 #include "content/renderer/shared_worker_repository.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
+#include "content/renderer/wake_lock/wake_lock_dispatcher.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "gin/modules/module_registry.h"
@@ -760,6 +761,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
       has_played_media_(false),
       devtools_agent_(nullptr),
+      wakelock_dispatcher_(nullptr),
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
@@ -3677,6 +3679,12 @@ void RenderFrameImpl::requestStorageQuota(
 void RenderFrameImpl::willOpenWebSocket(blink::WebSocketHandle* handle) {
   WebSocketBridge* impl = static_cast<WebSocketBridge*>(handle);
   impl->set_render_frame_id(routing_id_);
+}
+
+blink::WebWakeLockClient* RenderFrameImpl::wakeLockClient() {
+  if (!wakelock_dispatcher_)
+    wakelock_dispatcher_ = new WakeLockDispatcher(this);
+  return wakelock_dispatcher_;
 }
 
 blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {

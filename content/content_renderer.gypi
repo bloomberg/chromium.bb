@@ -440,6 +440,8 @@
       'renderer/usb/web_usb_client_impl.h',
       'renderer/usb/web_usb_device_impl.cc',
       'renderer/usb/web_usb_device_impl.h',
+      'renderer/wake_lock/wake_lock_dispatcher.cc',
+      'renderer/wake_lock/wake_lock_dispatcher.h',
       'renderer/web_ui_extension.cc',
       'renderer/web_ui_extension.h',
       'renderer/web_ui_extension_data.cc',
