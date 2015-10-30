@@ -103,7 +103,11 @@ class MediaThrottler implements MediaPlayer.OnErrorListener {
         protected Void doInBackground(Void... voids) {
             synchronized (mLock) {
                 if (mPlayer != null || mRequestCount == 0) return null;
-                mPlayer = MediaPlayer.create(mContext, R.raw.empty);
+                try {
+                    mPlayer = MediaPlayer.create(mContext, R.raw.empty);
+                } catch (IllegalStateException e) {
+                    Log.e(TAG, "Exception happens while creating the watch dog player.", e);
+                }
                 if (mPlayer == null) {
                     Log.e(TAG, "Unable to create watch dog player, treat it as server crash.");
                     onMediaServerCrash();
@@ -131,7 +135,7 @@ class MediaThrottler implements MediaPlayer.OnErrorListener {
                 return false;
             }
             mRequestCount++;
-            if (mRequestCount == 1) {
+            if (mRequestCount == 1 || mPlayer == null) {
                 mHandler.removeCallbacks(mDelayedReleaseRunnable);
                 mHandler.post(new Runnable() {
                     @Override
