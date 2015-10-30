@@ -9,6 +9,8 @@ import android.content.Context;
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
+import com.google.android.gms.cast.MediaStatus;
+import com.google.android.gms.cast.RemoteMediaPlayer;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -85,7 +87,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                        + "\" message=\"" + message + "\"");
 
             if (MEDIA_NAMESPACE.equals(namespace) || RECEIVER_NAMESPACE.equals(namespace)) {
-                mSession.onMessage("v2_message", message);
+                mSession.onMessage("v2_message", message, namespace);
             } else {
                 mSession.onAppMessage(namespace, message);
             }
@@ -135,6 +137,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private boolean mStoppingApplication;
     private boolean mDetached;
     private MediaNotificationInfo.Builder mNotificationBuilder;
+    private RemoteMediaPlayer mMediaPlayer;
 
     /**
      * Initializes a new {@link CastRouteController} instance.
@@ -172,10 +175,34 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         addNamespace(RECEIVER_NAMESPACE);
         addNamespace(MEDIA_NAMESPACE);
 
-        Context context = ApplicationStatus.getApplicationContext();
+        final Context context = ApplicationStatus.getApplicationContext();
+
+        if (mNamespaces.contains(MEDIA_NAMESPACE)) {
+            mMediaPlayer = new RemoteMediaPlayer();
+            mMediaPlayer.setOnStatusUpdatedListener(
+                    new RemoteMediaPlayer.OnStatusUpdatedListener() {
+                        @Override
+                        public void onStatusUpdated() {
+                            MediaStatus mediaStatus = mMediaPlayer.getMediaStatus();
+                            if (mediaStatus == null) return;
+
+                            int playerState = mediaStatus.getPlayerState();
+                            if (playerState == MediaStatus.PLAYER_STATE_PAUSED
+                                    || playerState == MediaStatus.PLAYER_STATE_PLAYING) {
+                                mNotificationBuilder.setPaused(
+                                        playerState != MediaStatus.PLAYER_STATE_PLAYING);
+                                mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP
+                                        | MediaNotificationInfo.ACTION_PLAY_PAUSE);
+                            } else {
+                                mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP);
+                            }
+                            MediaNotificationManager.show(context, mNotificationBuilder);
+                        }
+                    });
+        }
+
         mNotificationBuilder = new MediaNotificationInfo.Builder()
-                .setTitle(context.getString(
-                        R.string.cast_casting_video, mCastDevice.getFriendlyName()))
+                .setTitle(mCastDevice.getFriendlyName())
                 .setPaused(false)
                 .setOrigin(origin)
                 .setTabId(tabId)
@@ -226,7 +253,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        onMessage("remove_session", mSessionId);
+                        onMessage("remove_session", mSessionId, null);
                         // TODO(avayvod): handle a failure to stop the application.
                         // https://crbug.com/535577
 
@@ -304,10 +331,16 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     @Override
     public void onPlay(int actionSource) {
+        if (mMediaPlayer == null || isApiClientInvalid()) return;
+
+        mMediaPlayer.play(mApiClient);
     }
 
     @Override
     public void onPause(int actionSource) {
+        if (mMediaPlayer == null || isApiClientInvalid()) return;
+
+        mMediaPlayer.pause(mApiClient);
     }
 
     @Override
@@ -320,8 +353,13 @@ public class CastRouteController implements RouteController, MediaNotificationLi
      * Sends the internal Cast message to the Cast clients on the page via the media router.
      * @param type The type of the message (e.g. "new_session" or "v2_message")
      * @param message The message itself (encoded JSON).
+     * @param namespace The namespace for the message.
      */
-    public void onMessage(String type, String message) {
+    public void onMessage(String type, String message, String namespace) {
+        if (MEDIA_NAMESPACE.equals(namespace) && mMediaPlayer != null) {
+            mMediaPlayer.onMessageReceived(mCastDevice, namespace, message);
+        }
+
         for (String client : mClients) {
             mRouteDelegate.onMessage(mMediaRouteId,
                     buildInternalMessage(type, message, client, mSequenceNumber));
@@ -340,7 +378,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             jsonMessage.put("sessionId", mSessionId);
             jsonMessage.put("namespaceName", namespace);
             jsonMessage.put("message", message);
-            onMessage("app_message", jsonMessage.toString());
+            onMessage("app_message", jsonMessage.toString(), null);
         } catch (JSONException e) {
             Log.e(TAG, "Failed to create the message wrapper", e);
         }
@@ -410,6 +448,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         mRouteDelegate.onMessage(mMediaRouteId,
                 buildInternalMessage("new_session", buildSessionMessage(), clientId, -1));
+
         return true;
     }
 
