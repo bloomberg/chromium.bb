@@ -31,28 +31,30 @@ namespace user_manager {
 
 FakeUserManager::FakeUserManager()
     : UserManagerBase(new FakeTaskRunner(), new FakeTaskRunner()),
-      primary_user_(NULL),
-      owner_email_(std::string()) {
-}
+      primary_user_(nullptr) {}
 
 FakeUserManager::~FakeUserManager() {
 }
 
-const user_manager::User* FakeUserManager::AddUser(const std::string& email) {
-  return AddUserWithAffiliation(email, false);
+const user_manager::User* FakeUserManager::AddUser(
+    const AccountId& account_id) {
+  return AddUserWithAffiliation(account_id, false);
 }
 
 const user_manager::User* FakeUserManager::AddUserWithAffiliation(
-    const std::string& email, bool is_affiliated) {
-  user_manager::User* user = user_manager::User::CreateRegularUser(email);
+    const AccountId& account_id,
+    bool is_affiliated) {
+  user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
   user->set_affiliation(is_affiliated);
   users_.push_back(user);
   return user;
 }
 
-void FakeUserManager::RemoveUserFromList(const std::string& email) {
+void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
   user_manager::UserList::iterator it = users_.begin();
-  while (it != users_.end() && (*it)->email() != email)
+  // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId is
+  // passed. crbug.com/546876
+  while (it != users_.end() && (*it)->GetEmail() != account_id.GetUserEmail())
     ++it;
   if (it != users_.end()) {
     delete *it;
@@ -79,7 +81,7 @@ const user_manager::UserList& FakeUserManager::GetLoggedInUsers() const {
   return logged_in_users_;
 }
 
-void FakeUserManager::UserLoggedIn(const std::string& email,
+void FakeUserManager::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
                                    bool browser_restart) {
   for (user_manager::UserList::const_iterator it = users_.begin();
@@ -97,17 +99,20 @@ void FakeUserManager::UserLoggedIn(const std::string& email,
 }
 
 user_manager::User* FakeUserManager::GetActiveUserInternal() const {
-  if (users_.size()) {
-    if (!active_user_id_.empty()) {
+  if (!users_.empty()) {
+    if (active_account_id_.is_valid()) {
       for (user_manager::UserList::const_iterator it = users_.begin();
            it != users_.end(); ++it) {
-        if ((*it)->email() == active_user_id_)
+        // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId
+        // is
+        // passed. crbug.com/546876
+        if ((*it)->GetEmail() == active_account_id_.GetUserEmail())
           return *it;
       }
     }
     return users_[0];
   }
-  return NULL;
+  return nullptr;
 }
 
 const user_manager::User* FakeUserManager::GetActiveUser() const {
@@ -118,14 +123,15 @@ user_manager::User* FakeUserManager::GetActiveUser() {
   return GetActiveUserInternal();
 }
 
-void FakeUserManager::SwitchActiveUser(const std::string& email) {
-}
+void FakeUserManager::SwitchActiveUser(const AccountId& account_id) {}
 
-void FakeUserManager::SaveUserDisplayName(const std::string& username,
+void FakeUserManager::SaveUserDisplayName(const AccountId& account_id,
                                           const base::string16& display_name) {
   for (user_manager::UserList::iterator it = users_.begin(); it != users_.end();
        ++it) {
-    if ((*it)->email() == username) {
+    // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId is
+    // passed. crbug.com/546876
+    if ((*it)->GetEmail() == account_id.GetUserEmail()) {
       (*it)->set_display_name(display_name);
       return;
     }
@@ -140,36 +146,38 @@ user_manager::UserList FakeUserManager::GetUnlockUsers() const {
   return users_;
 }
 
-const std::string& FakeUserManager::GetOwnerEmail() const {
-  return owner_email_;
+const AccountId& FakeUserManager::GetOwnerAccountId() const {
+  return owner_account_id_;
 }
 
-bool FakeUserManager::IsKnownUser(const std::string& email) const {
+bool FakeUserManager::IsKnownUser(const AccountId& account_id) const {
   return true;
 }
 
 const user_manager::User* FakeUserManager::FindUser(
-    const std::string& email) const {
+    const AccountId& account_id) const {
   const user_manager::UserList& users = GetUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end(); ++it) {
-    if ((*it)->email() == email)
+    // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId is
+    // passed. crbug.com/546876
+    if ((*it)->GetEmail() == account_id.GetUserEmail())
       return *it;
   }
-  return NULL;
+  return nullptr;
 }
 
 user_manager::User* FakeUserManager::FindUserAndModify(
-    const std::string& email) {
-  return NULL;
+    const AccountId& account_id) {
+  return nullptr;
 }
 
 const user_manager::User* FakeUserManager::GetLoggedInUser() const {
-  return NULL;
+  return nullptr;
 }
 
 user_manager::User* FakeUserManager::GetLoggedInUser() {
-  return NULL;
+  return nullptr;
 }
 
 const user_manager::User* FakeUserManager::GetPrimaryUser() const {
@@ -177,12 +185,12 @@ const user_manager::User* FakeUserManager::GetPrimaryUser() const {
 }
 
 base::string16 FakeUserManager::GetUserDisplayName(
-    const std::string& username) const {
+    const AccountId& account_id) const {
   return base::string16();
 }
 
 std::string FakeUserManager::GetUserDisplayEmail(
-    const std::string& username) const {
+    const AccountId& account_id) const {
   return std::string();
 }
 
@@ -238,7 +246,7 @@ bool FakeUserManager::IsSessionStarted() const {
 }
 
 bool FakeUserManager::IsUserNonCryptohomeDataEphemeral(
-    const std::string& email) const {
+    const AccountId& account_id) const {
   return false;
 }
 
@@ -256,23 +264,23 @@ const std::string& FakeUserManager::GetApplicationLocale() const {
 }
 
 PrefService* FakeUserManager::GetLocalState() const {
-  return NULL;
+  return nullptr;
 }
 
 bool FakeUserManager::IsEnterpriseManaged() const {
   return false;
 }
 
-bool FakeUserManager::IsDemoApp(const std::string& user_id) const {
+bool FakeUserManager::IsDemoApp(const AccountId& account_id) const {
   return false;
 }
 
-bool FakeUserManager::IsKioskApp(const std::string& user_id) const {
+bool FakeUserManager::IsKioskApp(const AccountId& account_id) const {
   return false;
 }
 
 bool FakeUserManager::IsPublicAccountMarkedForRemoval(
-    const std::string& user_id) const {
+    const AccountId& account_id) const {
   return false;
 }
 

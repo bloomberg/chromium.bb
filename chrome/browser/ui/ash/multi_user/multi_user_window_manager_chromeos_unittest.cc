@@ -55,9 +55,9 @@ class TestShellContentState : public ash::ShellContentState {
     const user_manager::UserManager* user_manager =
         user_manager::UserManager::Get();
     const user_manager::User* active_user = user_manager->GetActiveUser();
-    return active_user
-               ? multi_user_util::GetProfileFromUserID(active_user->GetUserID())
-               : NULL;
+    return active_user ? multi_user_util::GetProfileFromUserID(
+                             active_user->GetAccountId().GetUserEmail())
+                       : NULL;
   }
 
   content::BrowserContext* GetBrowserContextByIndex(
@@ -158,8 +158,9 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
   const user_manager::User* AddTestUser(const std::string& user_email) {
-    const user_manager::User* user = fake_user_manager_->AddUser(user_email);
-    fake_user_manager_->LoginUser(user_email);
+    const user_manager::User* user =
+        fake_user_manager_->AddUser(AccountId::FromUserEmail(user_email));
+    fake_user_manager_->LoginUser(AccountId::FromUserEmail(user_email));
     session_state_delegate_->AddUser(user_email);
     TestingProfile* profile =
         profile_manager()->CreateTestingProfile(user_email);
@@ -198,12 +199,13 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // The test session state observer does not automatically call the window
   // manager. This function gets the current user from it and also sets it to
   // the multi user window manager.
-  std::string GetAndValidateCurrentUserFromSessionStateObserver() {
-    const std::string& user =
-        session_state_delegate()->GetActiveUserInfo()->GetUserID();
-    if (user != multi_user_window_manager_->GetCurrentUserForTest())
-      multi_user_window_manager()->ActiveUserChanged(user);
-    return user;
+  AccountId GetAndValidateCurrentUserFromSessionStateObserver() {
+    const AccountId account_id =
+        session_state_delegate()->GetActiveUserInfo()->GetAccountId();
+    if (account_id.GetUserEmail() !=
+        multi_user_window_manager_->GetCurrentUserForTest())
+      multi_user_window_manager()->ActiveUserChanged(account_id.GetUserEmail());
+    return account_id;
   }
 
   // Initiate a user transition.
@@ -796,11 +798,17 @@ TEST_F(MultiUserWindowManagerChromeOSTest, SwitchUsersUponModalityChange) {
 
   // Making the window system modal should not change anything.
   MakeWindowSystemModal(window(0));
-  EXPECT_EQ("a", session_state_delegate()->GetActiveUserInfo()->GetUserID());
+  EXPECT_EQ("a", session_state_delegate()
+                     ->GetActiveUserInfo()
+                     ->GetAccountId()
+                     .GetUserEmail());
 
   // Making the window owned by user B should switch users.
   multi_user_window_manager()->SetWindowOwner(window(0), "b");
-  EXPECT_EQ("b", session_state_delegate()->GetActiveUserInfo()->GetUserID());
+  EXPECT_EQ("b", session_state_delegate()
+                     ->GetActiveUserInfo()
+                     ->GetAccountId()
+                     .GetUserEmail());
 }
 
 // Test that a system modal dialog will not switch desktop if active user has
@@ -811,11 +819,17 @@ TEST_F(MultiUserWindowManagerChromeOSTest, DontSwitchUsersUponModalityChange) {
 
   // Making the window system modal should not change anything.
   MakeWindowSystemModal(window(0));
-  EXPECT_EQ("a", session_state_delegate()->GetActiveUserInfo()->GetUserID());
+  EXPECT_EQ("a", session_state_delegate()
+                     ->GetActiveUserInfo()
+                     ->GetAccountId()
+                     .GetUserEmail());
 
   // Making the window owned by user a should not switch users.
   multi_user_window_manager()->SetWindowOwner(window(0), "a");
-  EXPECT_EQ("a", session_state_delegate()->GetActiveUserInfo()->GetUserID());
+  EXPECT_EQ("a", session_state_delegate()
+                     ->GetActiveUserInfo()
+                     ->GetAccountId()
+                     .GetUserEmail());
 }
 
 // Test that a system modal dialog will not switch if shown on correct desktop
@@ -831,7 +845,10 @@ TEST_F(MultiUserWindowManagerChromeOSTest,
   MakeWindowSystemModal(window(0));
   // Showing the window should trigger no user switch.
   window(0)->Show();
-  EXPECT_EQ("a", session_state_delegate()->GetActiveUserInfo()->GetUserID());
+  EXPECT_EQ("a", session_state_delegate()
+                     ->GetActiveUserInfo()
+                     ->GetAccountId()
+                     .GetUserEmail());
 }
 
 // Test that a system modal dialog will switch if shown on incorrect desktop but
@@ -847,7 +864,10 @@ TEST_F(MultiUserWindowManagerChromeOSTest,
   MakeWindowSystemModal(window(0));
   // Showing the window should trigger a user switch.
   window(0)->Show();
-  EXPECT_EQ("b", session_state_delegate()->GetActiveUserInfo()->GetUserID());
+  EXPECT_EQ("b", session_state_delegate()
+                     ->GetActiveUserInfo()
+                     ->GetAccountId()
+                     .GetUserEmail());
 }
 
 // Test that using the full user switch animations are working as expected.
@@ -1129,26 +1149,31 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ShowForUserSwitchesDesktop) {
   EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
 
   // SetWindowOwner should not have changed the active user.
-  EXPECT_EQ("a", GetAndValidateCurrentUserFromSessionStateObserver());
+  EXPECT_EQ("a",
+            GetAndValidateCurrentUserFromSessionStateObserver().GetUserEmail());
 
   // Check that teleporting the window of the currently active user will
   // teleport to the new desktop.
   multi_user_window_manager()->ShowWindowForUser(window(0), "b");
-  EXPECT_EQ("b", GetAndValidateCurrentUserFromSessionStateObserver());
+  EXPECT_EQ("b",
+            GetAndValidateCurrentUserFromSessionStateObserver().GetUserEmail());
   EXPECT_EQ("S[a,b], S[b], H[c]", GetStatus());
 
   // Check that teleporting a window from a currently inactive user will not
   // trigger a switch.
   multi_user_window_manager()->ShowWindowForUser(window(2), "a");
-  EXPECT_EQ("b", GetAndValidateCurrentUserFromSessionStateObserver());
+  EXPECT_EQ("b",
+            GetAndValidateCurrentUserFromSessionStateObserver().GetUserEmail());
   EXPECT_EQ("S[a,b], S[b], H[c,a]", GetStatus());
   multi_user_window_manager()->ShowWindowForUser(window(2), "b");
-  EXPECT_EQ("b", GetAndValidateCurrentUserFromSessionStateObserver());
+  EXPECT_EQ("b",
+            GetAndValidateCurrentUserFromSessionStateObserver().GetUserEmail());
   EXPECT_EQ("S[a,b], S[b], S[c,b]", GetStatus());
 
   // Check that teleporting back will also change the desktop.
   multi_user_window_manager()->ShowWindowForUser(window(2), "c");
-  EXPECT_EQ("c", GetAndValidateCurrentUserFromSessionStateObserver());
+  EXPECT_EQ("c",
+            GetAndValidateCurrentUserFromSessionStateObserver().GetUserEmail());
   EXPECT_EQ("H[a,b], H[b], S[c]", GetStatus());
 }
 
@@ -1304,7 +1329,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, MinimizedWindowActivatableTests) {
   wm::GetWindowState(window(2))->Minimize();
 
   // Windows belonging to user2 (window #2 and #3) can't be activated by user1.
-  user_manager()->SwitchActiveUser(user1);
+  user_manager()->SwitchActiveUser(AccountId::FromUserEmail(user1));
   multi_user_window_manager()->ActiveUserChanged(user1);
   EXPECT_TRUE(::wm::CanActivateWindow(window(0)));
   EXPECT_TRUE(::wm::CanActivateWindow(window(1)));
@@ -1312,7 +1337,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, MinimizedWindowActivatableTests) {
   EXPECT_FALSE(::wm::CanActivateWindow(window(3)));
 
   // Windows belonging to user1 (window #0 and #1) can't be activated by user2.
-  user_manager()->SwitchActiveUser(user2);
+  user_manager()->SwitchActiveUser(AccountId::FromUserEmail(user2));
   multi_user_window_manager()->ActiveUserChanged(user2);
   EXPECT_FALSE(::wm::CanActivateWindow(window(0)));
   EXPECT_FALSE(::wm::CanActivateWindow(window(1)));
@@ -1333,7 +1358,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TeleportedWindowActivatableTests) {
   multi_user_window_manager()->SetWindowOwner(window(0), user1);
   multi_user_window_manager()->SetWindowOwner(window(1), user2);
 
-  user_manager()->SwitchActiveUser(user1);
+  user_manager()->SwitchActiveUser(AccountId::FromUserEmail(user1));
   multi_user_window_manager()->ActiveUserChanged(user1);
   EXPECT_TRUE(::wm::CanActivateWindow(window(0)));
   EXPECT_FALSE(::wm::CanActivateWindow(window(1)));
@@ -1344,7 +1369,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TeleportedWindowActivatableTests) {
   EXPECT_FALSE(::wm::CanActivateWindow(window(0)));
 
   // Test that window #0 can be activated by user2.
-  user_manager()->SwitchActiveUser(user2);
+  user_manager()->SwitchActiveUser(AccountId::FromUserEmail(user2));
   multi_user_window_manager()->ActiveUserChanged(user2);
   EXPECT_TRUE(::wm::CanActivateWindow(window(0)));
   EXPECT_TRUE(::wm::CanActivateWindow(window(1)));

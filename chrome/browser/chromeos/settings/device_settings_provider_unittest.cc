@@ -262,7 +262,8 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(device_policy_.policy_data().username(), true);
+  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
+            true);
   FlushDeviceSettings();
 
   base::FundamentalValue value(true);
@@ -290,7 +291,8 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(device_policy_.policy_data().username(), true);
+  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
+            true);
   FlushDeviceSettings();
 
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
@@ -410,7 +412,8 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
 
 TEST_F(DeviceSettingsProviderTest, OwnerIsStillSetWhenDeviceIsConsumerManaged) {
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(device_policy_.policy_data().username(), true);
+  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
+            true);
   device_policy_.policy_data().set_management_mode(
       em::PolicyData::CONSUMER_MANAGED);
   device_policy_.policy_data().set_request_token("test request token");

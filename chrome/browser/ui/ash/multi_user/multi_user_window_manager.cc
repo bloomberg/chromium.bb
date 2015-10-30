@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #endif
 
@@ -46,7 +47,8 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
         new MultiUserWindowManagerChromeOS(ash::Shell::GetInstance()
                                                ->session_state_delegate()
                                                ->GetUserInfo(0)
-                                               ->GetUserID());
+                                               ->GetAccountId()
+                                               .GetUserEmail());
     g_instance = manager;
     manager->Init();
     multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;

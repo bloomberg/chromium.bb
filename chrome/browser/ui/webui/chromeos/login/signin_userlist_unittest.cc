@@ -49,12 +49,13 @@ class SigninPrepareUserListTest
     fake_user_manager_->set_multi_profile_user_controller(controller_.get());
 
     for (size_t i = 0; i < arraysize(kUsersPublic); ++i)
-      fake_user_manager_->AddPublicAccountUser(kUsersPublic[i]);
+      fake_user_manager_->AddPublicAccountUser(
+          AccountId::FromUserEmail(kUsersPublic[i]));
 
     for (size_t i = 0; i < arraysize(kUsers); ++i)
-      fake_user_manager_->AddUser(kUsers[i]);
+      fake_user_manager_->AddUser(AccountId::FromUserEmail(kUsers[i]));
 
-    fake_user_manager_->set_owner_email(kOwner);
+    fake_user_manager_->set_owner_id(AccountId::FromUserEmail(kOwner));
   }
 
   void TearDown() override {
@@ -84,8 +85,10 @@ TEST_F(SigninPrepareUserListTest, AlwaysKeepOwnerInList) {
   EXPECT_EQ(kMaxUsers, users_to_send.size());
   EXPECT_EQ(kOwner, users_to_send.back()->email());
 
-  fake_user_manager_->RemoveUserFromList("a16@gmail.com");
-  fake_user_manager_->RemoveUserFromList("a17@gmail.com");
+  fake_user_manager_->RemoveUserFromList(
+      AccountId::FromUserEmail("a16@gmail.com"));
+  fake_user_manager_->RemoveUserFromList(
+      AccountId::FromUserEmail("a17@gmail.com"));
   users_to_send = UserSelectionScreen::PrepareUserListForSending(
       fake_user_manager_->GetUsers(),
       kOwner,

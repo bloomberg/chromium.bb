@@ -7,14 +7,10 @@
 
 namespace chromeos {
 
-UserContext::UserContext()
-    : is_using_oauth_(true),
-      auth_flow_(AUTH_FLOW_OFFLINE),
-      user_type_(user_manager::USER_TYPE_REGULAR) {
-}
+UserContext::UserContext() : account_id_(EmptyAccountId()) {}
 
 UserContext::UserContext(const UserContext& other)
-    : user_id_(other.user_id_),
+    : account_id_(other.account_id_),
       gaia_id_(other.gaia_id_),
       key_(other.key_),
       auth_code_(other.auth_code_),
@@ -27,32 +23,28 @@ UserContext::UserContext(const UserContext& other)
       public_session_locale_(other.public_session_locale_),
       public_session_input_method_(other.public_session_input_method_),
       device_id_(other.device_id_),
-      gaps_cookie_(other.gaps_cookie_) {
-}
+      gaps_cookie_(other.gaps_cookie_) {}
 
-UserContext::UserContext(const std::string& user_id)
-    : user_id_(login::CanonicalizeUserID(user_id)),
-      is_using_oauth_(true),
-      auth_flow_(AUTH_FLOW_OFFLINE),
-      user_type_(user_manager::USER_TYPE_REGULAR) {
+UserContext::UserContext(const AccountId& account_id)
+    : account_id_(account_id) {
+  account_id_.SetUserEmail(
+      login::CanonicalizeUserID(account_id.GetUserEmail()));
 }
 
 UserContext::UserContext(user_manager::UserType user_type,
                          const std::string& user_id)
-    : is_using_oauth_(true),
-      auth_flow_(AUTH_FLOW_OFFLINE),
-      user_type_(user_type) {
+    : account_id_(EmptyAccountId()), user_type_(user_type) {
   if (user_type_ == user_manager::USER_TYPE_REGULAR)
-    user_id_ = login::CanonicalizeUserID(user_id);
+    account_id_ = AccountId::FromUserEmail(login::CanonicalizeUserID(user_id));
   else
-    user_id_ = user_id;
+    account_id_ = AccountId::FromUserEmail(user_id);
 }
 
 UserContext::~UserContext() {
 }
 
 bool UserContext::operator==(const UserContext& context) const {
-  return context.user_id_ == user_id_ && context.gaia_id_ == gaia_id_ &&
+  return context.account_id_ == account_id_ && context.gaia_id_ == gaia_id_ &&
          context.key_ == key_ && context.auth_code_ == auth_code_ &&
          context.refresh_token_ == refresh_token_ &&
          context.access_token_ == access_token_ &&
@@ -67,8 +59,8 @@ bool UserContext::operator!=(const UserContext& context) const {
   return !(*this == context);
 }
 
-const std::string& UserContext::GetUserID() const {
-  return user_id_;
+const AccountId& UserContext::GetAccountId() const {
+  return account_id_;
 }
 
 const std::string& UserContext::GetGaiaID() const {
@@ -128,12 +120,12 @@ const std::string& UserContext::GetGAPSCookie() const {
 }
 
 bool UserContext::HasCredentials() const {
-  return (!user_id_.empty() && !key_.GetSecret().empty()) ||
+  return (account_id_.is_valid() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
 }
 
 void UserContext::SetUserID(const std::string& user_id) {
-  user_id_ = login::CanonicalizeUserID(user_id);
+  account_id_ = AccountId::FromUserEmail(login::CanonicalizeUserID(user_id));
 }
 
 void UserContext::SetGaiaID(const std::string& gaia_id) {

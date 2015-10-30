@@ -366,8 +366,10 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
                                .SetBoolean("kiosk_enabled", true)
                                .SetBoolean("kiosk_only", true))
             .Build());
-    user_manager_->AddKioskAppUser(auto_launch_kiosk_app->id());
-    user_manager_->LoginUser(auto_launch_kiosk_app->id());
+    user_manager_->AddKioskAppUser(
+        AccountId::FromUserEmail(auto_launch_kiosk_app->id()));
+    user_manager_->LoginUser(
+        AccountId::FromUserEmail(auto_launch_kiosk_app->id()));
 
     TestingConsentProviderDelegate delegate;
     delegate.SetIsAutoLaunched(true);
@@ -393,7 +395,8 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
                              .SetBoolean("kiosk_enabled", true)
                              .SetBoolean("kiosk_only", true))
           .Build());
-  user_manager_->KioskAppLoggedIn(manual_launch_kiosk_app->id());
+  user_manager_->KioskAppLoggedIn(
+      AccountId::FromUserEmail(manual_launch_kiosk_app->id()));
   {
     TestingConsentProviderDelegate delegate;
     delegate.SetDialogButton(ui::DIALOG_BUTTON_OK);

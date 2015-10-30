@@ -123,7 +123,7 @@ class CloudExternalDataPolicyObserverTest
 
   void RefreshDeviceLocalAccountPolicy(DeviceLocalAccountPolicyBroker* broker);
 
-  void LogInAsDeviceLocalAccount(const std::string& user_id);
+  void LogInAsDeviceLocalAccount(const AccountId& account_id);
 
   void SetRegularUserAvatarPolicy(const std::string& value);
 
@@ -320,13 +320,12 @@ void CloudExternalDataPolicyObserverTest::RefreshDeviceLocalAccountPolicy(
 }
 
 void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
-    const std::string& user_id) {
-  user_manager_->AddUser(user_id);
+    const AccountId& account_id) {
+  user_manager_->AddUser(account_id);
 
   device_local_account_policy_provider_.reset(
       new DeviceLocalAccountPolicyProvider(
-          user_id,
-          device_local_account_policy_service_.get(),
+          account_id.GetUserEmail(), device_local_account_policy_service_.get(),
           scoped_ptr<PolicyMap>()));
 
   PolicyServiceImpl::Providers providers;
@@ -335,10 +334,11 @@ void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
   builder.SetPolicyService(
       scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)));
   builder.SetPath(chromeos::ProfileHelper::Get()->GetProfilePathByUserIdHash(
-      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(user_id)));
+      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+          account_id.GetUserEmail())));
 
   profile_ = builder.Build();
-  profile_->set_profile_name(user_id);
+  profile_->set_profile_name(account_id.GetUserEmail());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
@@ -363,7 +363,7 @@ void CloudExternalDataPolicyObserverTest::SetRegularUserAvatarPolicy(
 }
 
 void CloudExternalDataPolicyObserverTest::LogInAsRegularUser() {
-  user_manager_->AddUser(kRegularUserID);
+  user_manager_->AddUser(AccountId::FromUserEmail(kRegularUserID));
 
   PolicyServiceImpl::Providers providers;
   providers.push_back(&user_policy_provider_);
@@ -661,7 +661,7 @@ TEST_F(CloudExternalDataPolicyObserverTest,
 
   CreateObserver();
 
-  LogInAsDeviceLocalAccount(kDeviceLocalAccount);
+  LogInAsDeviceLocalAccount(AccountId::FromUserEmail(kDeviceLocalAccount));
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());

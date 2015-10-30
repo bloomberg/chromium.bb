@@ -49,6 +49,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -109,8 +110,9 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
 #if defined(OS_CHROMEOS)
     std::string profile_name = base::StringPrintf("NewProfile%d", profile_num);
     user_manager::UserManager::Get()->UserLoggedIn(
-        base::StringPrintf("user%d@test.com", profile_num), profile_name,
-        false);
+        AccountId::FromUserEmail(
+            base::StringPrintf("user%d@test.com", profile_num)),
+        profile_name, false);
     profile_path = profile_path.Append(
         chromeos::ProfileHelper::GetUserProfileDir(profile_name).BaseName());
 #else

@@ -26,6 +26,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
@@ -269,7 +270,8 @@ void SessionStateDelegateChromeos::NotifySessionStateChanged() {
 }
 
 void DoSwitchUser(const std::string& user_id) {
-  user_manager::UserManager::Get()->SwitchActiveUser(user_id);
+  user_manager::UserManager::Get()->SwitchActiveUser(
+      AccountId::FromUserEmail(user_id));
 }
 
 void SessionStateDelegateChromeos::TryToSwitchUser(

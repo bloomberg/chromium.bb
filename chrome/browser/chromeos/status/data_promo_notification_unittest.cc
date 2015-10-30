@@ -86,8 +86,9 @@ class DataPromoNotificationTest : public testing::Test {
  protected:
   void SetupUser() {
     scoped_ptr<FakeChromeUserManager> user_manager(new FakeChromeUserManager());
-    user_manager->AddUser(kTestUserName);
-    user_manager->LoginUser(kTestUserName);
+    const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
+    user_manager->AddUser(test_account_id);
+    user_manager->LoginUser(test_account_id);
     user_manager_enabler_.reset(
         new ScopedUserManagerEnabler(user_manager.release()));
 

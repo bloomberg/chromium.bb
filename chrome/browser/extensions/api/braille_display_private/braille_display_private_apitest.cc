@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   scoped_ptr<ScreenLockerTester> tester(ScreenLocker::GetTester());
   // Log in.
   user_manager::UserManager::Get()->UserLoggedIn(
-      kTestUserName, kTestUserName, true);
+      AccountId::FromUserEmail(kTestUserName), kTestUserName, true);
   user_manager::UserManager::Get()->SessionStarted();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(

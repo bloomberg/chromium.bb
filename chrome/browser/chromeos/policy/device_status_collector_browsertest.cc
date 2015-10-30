@@ -378,7 +378,8 @@ class DeviceStatusCollectorTest : public testing::Test {
     std::vector<DeviceLocalAccount> accounts;
     accounts.push_back(account);
     SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
-    user_manager_->CreateKioskAppUser(account.user_id);
+    user_manager_->CreateKioskAppUser(
+        AccountId::FromUserEmail(account.user_id));
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp()).WillRepeatedly(
         Return(true));
   }
@@ -772,13 +773,22 @@ TEST_F(DeviceStatusCollectorTest, Location) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportUsers) {
-  user_manager_->CreatePublicAccountUser("public@localhost");
-  user_manager_->AddUserWithAffiliation("user0@managed.com", true);
-  user_manager_->AddUserWithAffiliation("user1@managed.com", true);
-  user_manager_->AddUserWithAffiliation("user2@managed.com", true);
-  user_manager_->AddUserWithAffiliation("user3@unmanaged.com", false);
-  user_manager_->AddUserWithAffiliation("user4@managed.com", true);
-  user_manager_->AddUserWithAffiliation("user5@managed.com", true);
+  const AccountId public_account_id(
+      AccountId::FromUserEmail("public@localhost"));
+  const AccountId account_id0(AccountId::FromUserEmail("user0@managed.com"));
+  const AccountId account_id1(AccountId::FromUserEmail("user1@managed.com"));
+  const AccountId account_id2(AccountId::FromUserEmail("user2@managed.com"));
+  const AccountId account_id3(AccountId::FromUserEmail("user3@unmanaged.com"));
+  const AccountId account_id4(AccountId::FromUserEmail("user4@managed.com"));
+  const AccountId account_id5(AccountId::FromUserEmail("user5@managed.com"));
+
+  user_manager_->CreatePublicAccountUser(public_account_id);
+  user_manager_->AddUserWithAffiliation(account_id0, true);
+  user_manager_->AddUserWithAffiliation(account_id1, true);
+  user_manager_->AddUserWithAffiliation(account_id2, true);
+  user_manager_->AddUserWithAffiliation(account_id3, false);
+  user_manager_->AddUserWithAffiliation(account_id4, true);
+  user_manager_->AddUserWithAffiliation(account_id5, true);
 
   // Verify that users are reported by default.
   GetStatus();
@@ -789,17 +799,17 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   GetStatus();
   EXPECT_EQ(6, status_.user_size());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(0).type());
-  EXPECT_EQ("user0@managed.com", status_.user(0).email());
+  EXPECT_EQ(account_id0.GetUserEmail(), status_.user(0).email());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(1).type());
-  EXPECT_EQ("user1@managed.com", status_.user(1).email());
+  EXPECT_EQ(account_id1.GetUserEmail(), status_.user(1).email());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(2).type());
-  EXPECT_EQ("user2@managed.com", status_.user(2).email());
+  EXPECT_EQ(account_id2.GetUserEmail(), status_.user(2).email());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_UNMANAGED, status_.user(3).type());
   EXPECT_FALSE(status_.user(3).has_email());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(4).type());
-  EXPECT_EQ("user4@managed.com", status_.user(4).email());
+  EXPECT_EQ(account_id4.GetUserEmail(), status_.user(4).email());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(5).type());
-  EXPECT_EQ("user5@managed.com", status_.user(5).email());
+  EXPECT_EQ(account_id5.GetUserEmail(), status_.user(5).email());
 
   // Verify that users are no longer reported if setting is disabled.
   settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, false);
@@ -1293,7 +1303,8 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, ReportIfPublicSession) {
   // Report netowork state for public accounts.
-  user_manager_->CreatePublicAccountUser(kPublicAccountId);
+  user_manager_->CreatePublicAccountUser(
+      AccountId::FromUserEmail(kPublicAccountId));
   EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
       .WillRepeatedly(Return(true));
 

@@ -47,6 +47,9 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
 };
 
 class UserManagerTest : public testing::Test {
+ public:
+  UserManagerTest() {}
+
  protected:
   void SetUp() override {
     base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
@@ -99,12 +102,12 @@ class UserManagerTest : public testing::Test {
     GetChromeUserManager()->SetEphemeralUsersEnabled(ephemeral_users_enabled);
   }
 
-  const std::string& GetUserManagerOwnerEmail() const {
-    return GetChromeUserManager()->GetOwnerEmail();
+  AccountId GetUserManagerOwnerId() const {
+    return GetChromeUserManager()->GetOwnerAccountId();
   }
 
-  void SetUserManagerOwnerEmail(const std::string& owner_email) {
-    GetChromeUserManager()->SetOwnerEmail(owner_email);
+  void SetUserManagerOwnerId(const AccountId& owner_account_id) {
+    GetChromeUserManager()->SetOwnerId(owner_account_id);
   }
 
   void ResetUserManager() {
@@ -133,6 +136,13 @@ class UserManagerTest : public testing::Test {
     GetChromeUserManager()->RetrieveTrustedDevicePolicies();
   }
 
+  const AccountId owner_account_id_at_invalid_domain_ =
+      AccountId::FromUserEmail("owner@invalid.domain");
+  const AccountId account_id0_at_invalid_domain_ =
+      AccountId::FromUserEmail("user0@invalid.domain");
+  const AccountId account_id1_at_invalid_domain_ =
+      AccountId::FromUserEmail("user1@invalid.domain");
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -145,56 +155,64 @@ class UserManagerTest : public testing::Test {
 
 TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {
   SetUserManagerEphemeralUsersEnabled(true);
-  SetUserManagerOwnerEmail("");
+  SetUserManagerOwnerId(EmptyAccountId());
 
-  SetDeviceSettings(false, "owner@invalid.domain", false);
+  SetDeviceSettings(false, owner_account_id_at_invalid_domain_.GetUserEmail(),
+                    false);
   RetrieveTrustedDevicePolicies();
 
   EXPECT_FALSE(GetUserManagerEphemeralUsersEnabled());
-  EXPECT_EQ(GetUserManagerOwnerEmail(), "owner@invalid.domain");
+  EXPECT_EQ(GetUserManagerOwnerId(), owner_account_id_at_invalid_domain_);
 }
 
 TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   user_manager::UserManager::Get()->UserLoggedIn(
-      "owner@invalid.domain", "owner@invalid.domain", false);
+      owner_account_id_at_invalid_domain_,
+      owner_account_id_at_invalid_domain_.GetUserEmail(), false);
   ResetUserManager();
   user_manager::UserManager::Get()->UserLoggedIn(
-      "user0@invalid.domain", "owner@invalid.domain", false);
+      account_id0_at_invalid_domain_,
+      owner_account_id_at_invalid_domain_.GetUserEmail(), false);
   ResetUserManager();
   user_manager::UserManager::Get()->UserLoggedIn(
-      "user1@invalid.domain", "owner@invalid.domain", false);
+      account_id1_at_invalid_domain_,
+      owner_account_id_at_invalid_domain_.GetUserEmail(), false);
   ResetUserManager();
 
   const user_manager::UserList* users =
       &user_manager::UserManager::Get()->GetUsers();
   ASSERT_EQ(3U, users->size());
-  EXPECT_EQ((*users)[0]->email(), "user1@invalid.domain");
-  EXPECT_EQ((*users)[1]->email(), "user0@invalid.domain");
-  EXPECT_EQ((*users)[2]->email(), "owner@invalid.domain");
+  EXPECT_EQ((*users)[0]->GetAccountId(), account_id1_at_invalid_domain_);
+  EXPECT_EQ((*users)[1]->GetAccountId(), account_id0_at_invalid_domain_);
+  EXPECT_EQ((*users)[2]->GetAccountId(), owner_account_id_at_invalid_domain_);
 
-  SetDeviceSettings(true, "owner@invalid.domain", false);
+  SetDeviceSettings(true, owner_account_id_at_invalid_domain_.GetUserEmail(),
+                    false);
   RetrieveTrustedDevicePolicies();
 
   users = &user_manager::UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
-  EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
+  EXPECT_EQ((*users)[0]->GetAccountId(), owner_account_id_at_invalid_domain_);
 }
 
 TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {
-  SetDeviceSettings(true, "owner@invalid.domain", false);
+  SetDeviceSettings(true, owner_account_id_at_invalid_domain_.GetUserEmail(),
+                    false);
   RetrieveTrustedDevicePolicies();
 
   user_manager::UserManager::Get()->UserLoggedIn(
-      "owner@invalid.domain", "user0@invalid.domain", false);
+      owner_account_id_at_invalid_domain_,
+      account_id0_at_invalid_domain_.GetUserEmail(), false);
   ResetUserManager();
   user_manager::UserManager::Get()->UserLoggedIn(
-      "user0@invalid.domain", "user0@invalid.domain", false);
+      account_id0_at_invalid_domain_,
+      account_id0_at_invalid_domain_.GetUserEmail(), false);
   ResetUserManager();
 
   const user_manager::UserList* users =
       &user_manager::UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
-  EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
+  EXPECT_EQ((*users)[0]->GetAccountId(), owner_account_id_at_invalid_domain_);
 }
 
 }  // namespace chromeos

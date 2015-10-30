@@ -44,7 +44,8 @@ class ConsumerUnenrollmentHandlerTest
 
     // Set up the ownership, so that we can modify device settings.
     owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-    InitOwner(device_policy_.policy_data().username(), true);
+    InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
+              true);
     FlushDeviceSettings();
 
 

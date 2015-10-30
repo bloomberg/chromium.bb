@@ -7,6 +7,8 @@
 
 #include <string>
 
+class AccountId;
+
 namespace chromeos {
 
 // Track all the ways a user may be sent through the re-auth flow.
@@ -51,8 +53,8 @@ enum ReauthReason {
   NUM_REAUTH_FLOW_REASONS,
 };
 
-void RecordReauthReason(const std::string& user_id, ReauthReason reason);
-void SendReauthReason(const std::string& user_id);
+void RecordReauthReason(const AccountId& account_id, ReauthReason reason);
+void SendReauthReason(const AccountId& account_id);
 
 }  // namespace chromeos
 

@@ -63,6 +63,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
@@ -808,22 +809,23 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   // Creates a profile for a given |user_name|. Note that this class will keep
   // the ownership of the created object.
   TestingProfile* CreateMultiUserProfile(const std::string& user_name) {
-    std::string email_string = user_name + "@example.com";
+    const std::string email_string = user_name + "@example.com";
+    const AccountId account_id(AccountId::FromUserEmail(email_string));
     static_cast<ash::test::TestSessionStateDelegate*>(
         ash::Shell::GetInstance()->session_state_delegate())
-        ->AddUser(email_string);
+        ->AddUser(account_id.GetUserEmail());
     // Add a user to the fake user manager.
-    session_delegate()->AddUser(email_string);
-    GetFakeUserManager()->AddUser(email_string);
+    session_delegate()->AddUser(account_id.GetUserEmail());
+    GetFakeUserManager()->AddUser(account_id);
 
-    GetFakeUserManager()->LoginUser(email_string);
+    GetFakeUserManager()->LoginUser(account_id);
 
     TestingProfile* profile =
-        profile_manager()->CreateTestingProfile(email_string);
+        profile_manager()->CreateTestingProfile(account_id.GetUserEmail());
     EXPECT_TRUE(profile);
 
     // Remember the profile name so that we can destroy it upon destruction.
-    created_profiles_[profile] = email_string;
+    created_profiles_[profile] = account_id.GetUserEmail();
     if (chrome::MultiUserWindowManager::GetInstance())
       chrome::MultiUserWindowManager::GetInstance()->AddUser(profile);
     if (launcher_controller_)
@@ -833,18 +835,19 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
   // Switch to another user.
   void SwitchActiveUser(const std::string& name) {
-    session_delegate()->SwitchActiveUser(name);
-    GetFakeUserManager()->SwitchActiveUser(name);
+    const AccountId account_id(AccountId::FromUserEmail(name));
+    session_delegate()->SwitchActiveUser(account_id.GetUserEmail());
+    GetFakeUserManager()->SwitchActiveUser(account_id);
     chrome::MultiUserWindowManagerChromeOS* manager =
         static_cast<chrome::MultiUserWindowManagerChromeOS*>(
             chrome::MultiUserWindowManager::GetInstance());
     manager->SetAnimationSpeedForTest(
         chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
-    manager->ActiveUserChanged(name);
-    launcher_controller_->browser_status_monitor_for_test()->
-        ActiveUserChanged(name);
-    launcher_controller_->app_window_controller_for_test()->
-        ActiveUserChanged(name);
+    manager->ActiveUserChanged(account_id.GetUserEmail());
+    launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
+        account_id.GetUserEmail());
+    launcher_controller_->app_window_controller_for_test()->ActiveUserChanged(
+        account_id.GetUserEmail());
   }
 
   // Creates a browser with a |profile| and load a tab with a |title| and |url|.

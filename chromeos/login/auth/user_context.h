@@ -9,12 +9,16 @@
 
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/key.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
+
+class AccountId;
 
 namespace chromeos {
 
 // Information that is passed around while authentication is in progress. The
-// credentials may consist of a |user_id_|, |key_| pair or a GAIA |auth_code_|.
+// credentials may consist of a |account_id_|, |key_| pair or a GAIA
+// |auth_code_|.
 // The |user_id_hash_| is used to locate the user's home directory
 // mount point for the user. It is set when the mount has been completed.
 class CHROMEOS_EXPORT UserContext {
@@ -35,14 +39,14 @@ class CHROMEOS_EXPORT UserContext {
 
   UserContext();
   UserContext(const UserContext& other);
-  explicit UserContext(const std::string& user_id);
+  explicit UserContext(const AccountId& account_id);
   UserContext(user_manager::UserType user_type, const std::string& user_id);
   ~UserContext();
 
   bool operator==(const UserContext& context) const;
   bool operator!=(const UserContext& context) const;
 
-  const std::string& GetUserID() const;
+  const AccountId& GetAccountId() const;
   const std::string& GetGaiaID() const;
   const Key* GetKey() const;
   Key* GetKey();
@@ -78,16 +82,16 @@ class CHROMEOS_EXPORT UserContext {
   void ClearSecrets();
 
  private:
-  std::string user_id_;
+  AccountId account_id_;
   std::string gaia_id_;
   Key key_;
   std::string auth_code_;
   std::string refresh_token_;
   std::string access_token_;  // OAuthLogin scoped access token.
   std::string user_id_hash_;
-  bool is_using_oauth_;
-  AuthFlow auth_flow_;
-  user_manager::UserType user_type_;
+  bool is_using_oauth_ = true;
+  AuthFlow auth_flow_ = AUTH_FLOW_OFFLINE;
+  user_manager::UserType user_type_ = user_manager::USER_TYPE_REGULAR;
   std::string public_session_locale_;
   std::string public_session_input_method_;
   std::string device_id_;

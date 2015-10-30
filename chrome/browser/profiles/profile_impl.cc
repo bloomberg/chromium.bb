@@ -1132,8 +1132,8 @@ void ProfileImpl::ChangeAppLocale(
   if (via != APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN)
     local_state->SetString(prefs::kApplicationLocale, new_locale);
 
-  if (user_manager::UserManager::Get()->GetOwnerEmail() ==
-      chromeos::ProfileHelper::Get()->GetUserByProfile(this)->email())
+  if (user_manager::UserManager::Get()->GetOwnerAccountId() ==
+      chromeos::ProfileHelper::Get()->GetUserByProfile(this)->GetAccountId())
     local_state->SetString(prefs::kOwnerLocale, new_locale);
 }
 

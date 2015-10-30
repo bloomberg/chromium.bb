@@ -161,7 +161,7 @@ class ProfileManagerTest : public testing::Test {
     const std::string user_id_hash =
         profile_helper->GetUserIdHashByUserIdForTesting(user_id);
     user_manager::UserManager::Get()->UserLoggedIn(
-        user_id, user_id_hash, false);
+        AccountId::FromUserEmail(user_id), user_id_hash, false);
     g_browser_process->profile_manager()->GetProfile(
         profile_helper->GetProfilePathByUserIdHash(user_id_hash));
   }
@@ -227,13 +227,15 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
             profile_manager->GetInitialProfileDir().value());
 
   const char kTestUserName[] = "test-user@example.com";
+  const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
   chromeos::FakeChromeUserManager* user_manager =
       new chromeos::FakeChromeUserManager();
   chromeos::ScopedUserManagerEnabler enabler(user_manager);
 
-  const user_manager::User* active_user = user_manager->AddUser(kTestUserName);
-  user_manager->LoginUser(kTestUserName);
-  user_manager->SwitchActiveUser(kTestUserName);
+  const user_manager::User* active_user =
+      user_manager->AddUser(test_account_id);
+  user_manager->LoginUser(test_account_id);
+  user_manager->SwitchActiveUser(test_account_id);
 
   profile_manager->Observe(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,

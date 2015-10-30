@@ -567,7 +567,8 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     user_manager::UserManager::Get()->UserLoggedIn(
-        kSecondProfileAccount, kSecondProfileHash, false);
+        AccountId::FromUserEmail(kSecondProfileAccount), kSecondProfileHash,
+        false);
     // Set up the secondary profile.
     base::FilePath profile_dir =
         user_data_directory.Append(

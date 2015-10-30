@@ -609,9 +609,10 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   void AddUser(const TestAccountInfo& info, bool log_in) {
     user_manager::UserManager* const user_manager =
         user_manager::UserManager::Get();
+    const AccountId account_id(AccountId::FromUserEmail(info.email));
     if (log_in)
-      user_manager->UserLoggedIn(info.email, info.hash, false);
-    user_manager->SaveUserDisplayName(info.email,
+      user_manager->UserLoggedIn(account_id, info.hash, false);
+    user_manager->SaveUserDisplayName(account_id,
                                       base::UTF8ToUTF16(info.display_name));
     SigninManagerFactory::GetForProfile(
         chromeos::ProfileHelper::GetProfileByUserIdHash(info.hash))

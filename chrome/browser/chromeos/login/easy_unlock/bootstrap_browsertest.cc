@@ -156,7 +156,8 @@ IN_PROC_BROWSER_TEST_F(BootstrapTest, PRE_CleanUpFailedUser) {
 }
 
 IN_PROC_BROWSER_TEST_F(BootstrapTest, CleanUpFailedUser) {
-  EXPECT_FALSE(user_manager::UserManager::Get()->IsKnownUser(kFakeUser));
+  EXPECT_FALSE(user_manager::UserManager::Get()->IsKnownUser(
+      AccountId::FromUserEmail(kFakeUser)));
 }
 
 }  // namespace chromeos

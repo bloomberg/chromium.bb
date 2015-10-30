@@ -82,7 +82,8 @@ class MultiUserNotificationBlockerChromeOSTest
     return ash::Shell::GetInstance()
         ->session_state_delegate()
         ->GetUserInfo(0)
-        ->GetUserID();
+        ->GetAccountId()
+        .GetUserEmail();
   }
 
   const message_center::NotificationBlocker* blocker() {

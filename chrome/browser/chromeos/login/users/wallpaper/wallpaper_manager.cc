@@ -478,12 +478,12 @@ void WallpaperManager::SetCustomWallpaper(
     return;
   }
 
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_id);
+  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
+      AccountId::FromUserEmail(user_id));
   CHECK(user);
-  bool is_persistent =
+  const bool is_persistent =
       !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          user_id) ||
+          AccountId::FromUserEmail(user_id)) ||
       (type == user_manager::User::POLICY &&
        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
@@ -556,8 +556,8 @@ void WallpaperManager::DoSetDefaultWallpaper(
 
   const base::FilePath* file = NULL;
 
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_id);
+  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
+      AccountId::FromUserEmail(user_id));
 
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
     file =
@@ -624,8 +624,9 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
     return;
   }
 
+  const AccountId account_id = AccountId::FromUserEmail(user_id);
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_id);
+      user_manager::UserManager::Get()->FindUser(account_id);
 
   // User is unknown or there is no visible background in kiosk mode.
   if (!user || user->GetType() == user_manager::USER_TYPE_KIOSK_APP)
@@ -633,7 +634,7 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
 
   // Guest user or regular user in ephemeral mode.
   if ((user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-           user_id) &&
+           account_id) &&
        user->HasGaiaAccount()) ||
       user->GetType() == user_manager::USER_TYPE_GUEST) {
     InitInitialUserWallpaper(user_id, false);
@@ -810,7 +811,7 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& user_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          user_id)) {
+          AccountId::FromUserEmail(user_id))) {
     // Default to the values cached in memory.
     *info = current_user_wallpaper_info_;
 

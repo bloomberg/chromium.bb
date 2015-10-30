@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -33,6 +34,9 @@ class WallpaperPrivateApiUnittest : public ash::test::AshTestBase {
 
  protected:
   FakeChromeUserManager* fake_user_manager() { return fake_user_manager_; }
+
+  const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestAccount1);
+  const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestAccount2);
 
  private:
   FakeChromeUserManager* fake_user_manager_;
@@ -69,7 +73,7 @@ class TestRestoreFunction
 }  // namespace
 
 TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
-  fake_user_manager()->AddUser(kTestAccount1);
+  fake_user_manager()->AddUser(test_account_id1_);
   scoped_ptr<aura::Window> window4(CreateTestWindowInShellWithId(4));
   scoped_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
   scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
@@ -132,7 +136,7 @@ TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
 // 2. If some windows are manually unminimized, the following call will minimize
 // all the unminimized windows.
 TEST_F(WallpaperPrivateApiUnittest, HideAndManualUnminimizeWindows) {
-  fake_user_manager()->AddUser(kTestAccount1);
+  fake_user_manager()->AddUser(test_account_id1_);
   scoped_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   scoped_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
 
@@ -196,10 +200,10 @@ class WallpaperPrivateApiMultiUserUnittest
 
  protected:
   void SetUpMultiUserWindowManager(
-      const std::string& active_user_id,
+      const AccountId& active_account_id,
       chrome::MultiUserWindowManager::MultiProfileMode mode);
 
-  void SwitchActiveUser(const std::string& active_user_id);
+  void SwitchActiveUser(const AccountId& active_account_id);
 
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager() {
     return multi_user_window_manager_;
@@ -218,8 +222,8 @@ void WallpaperPrivateApiMultiUserUnittest::SetUp() {
   session_state_delegate_ =
       static_cast<ash::test::TestSessionStateDelegate*> (
           ash::Shell::GetInstance()->session_state_delegate());
-  fake_user_manager()->AddUser(kTestAccount1);
-  fake_user_manager()->AddUser(kTestAccount2);
+  fake_user_manager()->AddUser(test_account_id1_);
+  fake_user_manager()->AddUser(test_account_id2_);
 }
 
 void WallpaperPrivateApiMultiUserUnittest::TearDown() {
@@ -229,10 +233,10 @@ void WallpaperPrivateApiMultiUserUnittest::TearDown() {
 }
 
 void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(
-    const std::string& active_user_id,
+    const AccountId& active_account_id,
     chrome::MultiUserWindowManager::MultiProfileMode mode) {
-  multi_user_window_manager_ =
-      new chrome::MultiUserWindowManagerChromeOS(active_user_id);
+  multi_user_window_manager_ = new chrome::MultiUserWindowManagerChromeOS(
+      active_account_id.GetUserEmail());
   multi_user_window_manager_->Init();
   chrome::MultiUserWindowManager::SetInstanceForTest(
       multi_user_window_manager_, mode);
@@ -243,16 +247,18 @@ void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(
 }
 
 void WallpaperPrivateApiMultiUserUnittest::SwitchActiveUser(
-    const std::string& active_user_id) {
-  fake_user_manager()->SwitchActiveUser(active_user_id);
-  multi_user_window_manager_->ActiveUserChanged(active_user_id);
+    const AccountId& active_account_id) {
+  fake_user_manager()->SwitchActiveUser(active_account_id);
+  multi_user_window_manager_->ActiveUserChanged(
+      active_account_id.GetUserEmail());
 }
 
 // In multi profile mode, user may open wallpaper picker in one profile and
 // then switch to a different profile and open another wallpaper picker
 // without closing the first one.
 TEST_F(WallpaperPrivateApiMultiUserUnittest, HideAndRestoreWindowsTwoUsers) {
-  SetUpMultiUserWindowManager(kTestAccount1,
+  SetUpMultiUserWindowManager(
+      test_account_id1_,
       chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
 
   scoped_ptr<aura::Window> window4(CreateTestWindowInShellWithId(4));
@@ -267,13 +273,18 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideAndRestoreWindowsTwoUsers) {
   ash::wm::WindowState* window3_state = ash::wm::GetWindowState(window3.get());
   ash::wm::WindowState* window4_state = ash::wm::GetWindowState(window4.get());
 
-  multi_user_window_manager()->SetWindowOwner(window0.get(), kTestAccount1);
-  multi_user_window_manager()->SetWindowOwner(window1.get(), kTestAccount1);
+  multi_user_window_manager()->SetWindowOwner(window0.get(),
+                                              test_account_id1_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window1.get(),
+                                              test_account_id1_.GetUserEmail());
 
   // Set some windows to an inactive owner.
-  multi_user_window_manager()->SetWindowOwner(window2.get(), kTestAccount2);
-  multi_user_window_manager()->SetWindowOwner(window3.get(), kTestAccount2);
-  multi_user_window_manager()->SetWindowOwner(window4.get(), kTestAccount2);
+  multi_user_window_manager()->SetWindowOwner(window2.get(),
+                                              test_account_id2_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window3.get(),
+                                              test_account_id2_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window4.get(),
+                                              test_account_id2_.GetUserEmail());
 
   EXPECT_FALSE(window0_state->IsMinimized());
   EXPECT_FALSE(window1_state->IsMinimized());
@@ -299,7 +310,7 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideAndRestoreWindowsTwoUsers) {
   EXPECT_FALSE(window4_state->IsMinimized());
 
   // Activate kTestAccount2. kTestAccount1 becomes inactive user.
-  SwitchActiveUser(kTestAccount2);
+  SwitchActiveUser(test_account_id2_);
 
   window2_state->Activate();
   EXPECT_TRUE(window2_state->IsActive());
@@ -337,7 +348,7 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideAndRestoreWindowsTwoUsers) {
   EXPECT_FALSE(window0_state->IsMinimized());
   EXPECT_TRUE(window1_state->IsMinimized());
 
-  SwitchActiveUser(kTestAccount1);
+  SwitchActiveUser(test_account_id1_);
 
   // Then we destroy window 0 and call the restore function.
   window0.reset();
@@ -352,7 +363,8 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideAndRestoreWindowsTwoUsers) {
 // In multi profile mode, user may teleport windows. Teleported window should
 // also be minimized when open wallpaper picker.
 TEST_F(WallpaperPrivateApiMultiUserUnittest, HideTeleportedWindow) {
-  SetUpMultiUserWindowManager(kTestAccount1,
+  SetUpMultiUserWindowManager(
+      AccountId::FromUserEmail(kTestAccount1),
       chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_MIXED);
 
   scoped_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
@@ -365,15 +377,20 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideTeleportedWindow) {
   ash::wm::WindowState* window2_state = ash::wm::GetWindowState(window2.get());
   ash::wm::WindowState* window3_state = ash::wm::GetWindowState(window3.get());
 
-  multi_user_window_manager()->SetWindowOwner(window0.get(), kTestAccount1);
-  multi_user_window_manager()->SetWindowOwner(window1.get(), kTestAccount1);
+  multi_user_window_manager()->SetWindowOwner(window0.get(),
+                                              test_account_id1_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window1.get(),
+                                              test_account_id1_.GetUserEmail());
 
   // Set some windows to an inactive owner.
-  multi_user_window_manager()->SetWindowOwner(window2.get(), kTestAccount2);
-  multi_user_window_manager()->SetWindowOwner(window3.get(), kTestAccount2);
+  multi_user_window_manager()->SetWindowOwner(window2.get(),
+                                              test_account_id2_.GetUserEmail());
+  multi_user_window_manager()->SetWindowOwner(window3.get(),
+                                              test_account_id2_.GetUserEmail());
 
   // Teleport window2 to kTestAccount1.
-  multi_user_window_manager()->ShowWindowForUser(window2.get(), kTestAccount1);
+  multi_user_window_manager()->ShowWindowForUser(
+      window2.get(), test_account_id1_.GetUserEmail());
 
   // Initial window state. All windows shouldn't be minimized.
   EXPECT_FALSE(window0_state->IsMinimized());

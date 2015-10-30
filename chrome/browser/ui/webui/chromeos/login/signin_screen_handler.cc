@@ -992,7 +992,8 @@ void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
                                                  const std::string& password) {
   if (!delegate_)
     return;
-  UserContext user_context(gaia::SanitizeEmail(username));
+  UserContext user_context(
+      AccountId::FromUserEmail(gaia::SanitizeEmail(username)));
   user_context.SetKey(Key(password));
   delegate_->Login(user_context, SigninSpecifics());
 }
@@ -1072,7 +1073,7 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
     args->GetString(0, &email);
   gaia_screen_handler_->set_populated_email(email);
   if (!email.empty())
-    SendReauthReason(email);
+    SendReauthReason(AccountId::FromUserEmail(email));
   OnShowAddUser();
 }
 
@@ -1175,7 +1176,8 @@ void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
 void SigninScreenHandler::HandleCancelPasswordChangedFlow(
     const std::string& user_id) {
   if (!user_id.empty())
-    RecordReauthReason(user_id, ReauthReason::PASSWORD_UPDATE_SKIPPED);
+    RecordReauthReason(AccountId::FromUserEmail(user_id),
+                       ReauthReason::PASSWORD_UPDATE_SKIPPED);
   gaia_screen_handler_->StartClearingCookies(
       base::Bind(&SigninScreenHandler::CancelPasswordChangedFlowInternal,
                  weak_factory_.GetWeakPtr()));
@@ -1248,7 +1250,8 @@ void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
 
   bool use_24hour_clock = false;
   if (user_manager::UserManager::Get()->GetKnownUserBooleanPref(
-          user_id, prefs::kUse24HourClock, &use_24hour_clock)) {
+          AccountId::FromUserEmail(user_id), prefs::kUse24HourClock,
+          &use_24hour_clock)) {
     g_browser_process->platform_part()
         ->GetSystemClock()
         ->SetLastFocusedPodHourClockType(use_24hour_clock ? base::k24HourClock
@@ -1320,7 +1323,8 @@ void SigninScreenHandler::HandleFirstIncorrectPasswordAttempt(
 
 void SigninScreenHandler::HandleMaxIncorrectPasswordAttempts(
     const std::string& email) {
-  RecordReauthReason(email, ReauthReason::INCORRECT_PASSWORD_ENTERED);
+  RecordReauthReason(AccountId::FromUserEmail(email),
+                     ReauthReason::INCORRECT_PASSWORD_ENTERED);
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {
@@ -1341,7 +1345,8 @@ bool SigninScreenHandler::AllWhitelistedUsersPresent() {
     std::string whitelisted_user;
     // NB: Wildcards in the whitelist are also detected as not present here.
     if (!whitelist->GetString(i, &whitelisted_user) ||
-        !user_manager->IsKnownUser(whitelisted_user)) {
+        !user_manager->IsKnownUser(
+            AccountId::FromUserEmail(whitelisted_user))) {
       return false;
     }
   }

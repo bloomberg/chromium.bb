@@ -6,7 +6,6 @@ component("user_manager") {
   sources = [
     "empty_user_info.cc",
     "empty_user_info.h",
-    "user_id.h",
     "user_info.cc",
     "user_info.h",
     "user_info_impl.cc",
@@ -16,6 +15,7 @@ component("user_manager") {
 
   deps = [
     "//base",
+    "//components/signin/core/account_id",
     "//skia",
     "//ui/gfx",
   ]
@@ -60,6 +60,7 @@ source_set("test_support") {
     deps = [
       ":user_manager",
       "//base",
+      "//components/signin/core/account_id",
       "//skia",
       "//ui/base",
     ]

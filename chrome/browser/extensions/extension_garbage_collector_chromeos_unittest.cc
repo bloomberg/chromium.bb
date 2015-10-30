@@ -69,8 +69,8 @@ class ExtensionGarbageCollectorChromeOSUnitTest
     user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
         new chromeos::FakeChromeUserManager));
 
-    GetFakeUserManager()->AddUser(chromeos::login::kStubUser);
-    GetFakeUserManager()->LoginUser(chromeos::login::kStubUser);
+    GetFakeUserManager()->AddUser(chromeos::login::StubAccountId());
+    GetFakeUserManager()->LoginUser(chromeos::login::StubAccountId());
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         GetFakeUserManager()->GetActiveUser(), profile_.get());
   }

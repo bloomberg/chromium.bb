@@ -71,7 +71,9 @@ base::DictionaryValue* CreateUserInfo(const std::string& username,
   user_dict->SetString("name", display_email);
   user_dict->SetString("email", display_name);
 
-  bool is_owner = user_manager::UserManager::Get()->GetOwnerEmail() == username;
+  const bool is_owner =
+      user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail() ==
+      username;
   user_dict->SetBoolean("owner", is_owner);
   return user_dict;
 }
@@ -89,7 +91,8 @@ base::Value* CreateUsersWhitelist(const base::Value *pref_value) {
     std::string email;
     if ((*i)->GetAsString(&email)) {
       // Translate email to the display email.
-      std::string display_email = user_manager->GetUserDisplayEmail(email);
+      const std::string display_email =
+          user_manager->GetUserDisplayEmail(AccountId::FromUserEmail(email));
       // TODO(ivankr): fetch display name for existing users.
       user_list->Append(CreateUserInfo(email, display_email, std::string()));
     }
@@ -361,10 +364,12 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
     // Managed machines have no "owner".
     localized_strings->SetString("controlledSettingOwner", base::string16());
   } else {
-    localized_strings->SetString("controlledSettingOwner",
+    localized_strings->SetString(
+        "controlledSettingOwner",
         l10n_util::GetStringFUTF16(
             IDS_OPTIONS_CONTROLLED_SETTING_OWNER,
-            base::ASCIIToUTF16(user_manager->GetOwnerEmail())));
+            base::ASCIIToUTF16(
+                user_manager->GetOwnerAccountId().GetUserEmail())));
   }
 }
 

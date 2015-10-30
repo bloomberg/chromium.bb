@@ -305,7 +305,7 @@ void ChangePictureOptionsHandler::SendProfileImage(const gfx::ImageSkia& image,
 
 void ChangePictureOptionsHandler::UpdateProfileImage() {
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(GetUser()->email());
+      ChromeUserManager::Get()->GetUserImageManager(GetUser()->GetAccountId());
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
   if (previous_image_index_ != user_manager::User::USER_IMAGE_PROFILE &&
@@ -336,7 +336,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(
   DCHECK(!image_type.empty());
 
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(GetUser()->email());
+      ChromeUserManager::Get()->GetUserImageManager(GetUser()->GetAccountId());
   int image_index = user_manager::User::USER_IMAGE_INVALID;
   bool waiting_for_camera_photo = false;
 
@@ -396,7 +396,7 @@ void ChangePictureOptionsHandler::FileSelected(const base::FilePath& path,
                                                int index,
                                                void* params) {
   ChromeUserManager::Get()
-      ->GetUserImageManager(GetUser()->email())
+      ->GetUserImageManager(GetUser()->GetAccountId())
       ->SaveUserImageFromFile(path);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             user_manager::kHistogramImageFromFile,
@@ -407,7 +407,7 @@ void ChangePictureOptionsHandler::FileSelected(const base::FilePath& path,
 void ChangePictureOptionsHandler::SetImageFromCamera(
     const gfx::ImageSkia& photo) {
   ChromeUserManager::Get()
-      ->GetUserImageManager(GetUser()->email())
+      ->GetUserImageManager(GetUser()->GetAccountId())
       ->SaveUserImage(user_manager::UserImage::CreateAndEncode(photo));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             user_manager::kHistogramImageFromCamera,

@@ -59,7 +59,8 @@ void SignInScreenController::OnSigninScreenReady() {
 }
 
 void SignInScreenController::RemoveUser(const std::string& user_id) {
-  user_manager::UserManager::Get()->RemoveUser(user_id, this);
+  user_manager::UserManager::Get()->RemoveUser(
+      AccountId::FromUserEmail(user_id), this);
 }
 
 void SignInScreenController::OnBeforeUserRemoved(const std::string& username) {

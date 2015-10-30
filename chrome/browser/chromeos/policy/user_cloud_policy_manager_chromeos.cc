@@ -69,7 +69,8 @@ void OnWildcardCheckCompleted(const std::string& username,
     // logged-in session is not possible. Fix this either by delaying the
     // cryptohome deletion operation or by getting rid of the in-session
     // wildcard check.
-    user_manager::UserManager::Get()->RemoveUserFromList(username);
+    user_manager::UserManager::Get()->RemoveUserFromList(
+        AccountId::FromUserEmail(username));
     chrome::AttemptUserExit();
   }
 }

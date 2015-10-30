@@ -19,6 +19,7 @@
 #include "ash/system/user/config.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_card_view.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -77,7 +78,8 @@ void SwitchUser(ash::UserIndex user_index) {
       ash::Shell::GetInstance()->session_state_delegate();
   ash::MultiProfileUMA::RecordSwitchActiveUser(
       ash::MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
-  delegate->SwitchActiveUser(delegate->GetUserInfo(user_index)->GetUserID());
+  delegate->SwitchActiveUser(
+      delegate->GetUserInfo(user_index)->GetAccountId().GetUserEmail());
 }
 
 class LogoutButton : public TrayPopupLabelButton {

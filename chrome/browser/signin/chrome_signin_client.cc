@@ -64,19 +64,19 @@ ChromeSigninClient::ChromeSigninClient(
   if (!user)
     return;
   auto* user_manager = user_manager::UserManager::Get();
-  const std::string& user_id = user->GetUserID();
-  if (user_manager->GetKnownUserDeviceId(user_id).empty()) {
+  const AccountId account_id = user->GetAccountId();
+  if (user_manager->GetKnownUserDeviceId(account_id).empty()) {
     const std::string legacy_device_id =
         GetPrefs()->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
     if (!legacy_device_id.empty()) {
       // Need to move device ID from the old location to the new one, if it has
       // not been done yet.
-      user_manager->SetKnownUserDeviceId(user_id, legacy_device_id);
+      user_manager->SetKnownUserDeviceId(account_id, legacy_device_id);
     } else {
       user_manager->SetKnownUserDeviceId(
-          user_id,
+          account_id,
           GenerateSigninScopedDeviceID(
-              user_manager->IsUserNonCryptohomeDataEphemeral(user_id)));
+              user_manager->IsUserNonCryptohomeDataEphemeral(account_id)));
     }
   }
   GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
@@ -154,7 +154,8 @@ std::string ChromeSigninClient::GetSigninScopedDeviceId() {
     return std::string();
 
   const std::string signin_scoped_device_id =
-      user_manager::UserManager::Get()->GetKnownUserDeviceId(user->GetUserID());
+      user_manager::UserManager::Get()->GetKnownUserDeviceId(
+          user->GetAccountId());
   LOG_IF(ERROR, signin_scoped_device_id.empty())
       << "Device ID is not set for user.";
   return signin_scoped_device_id;

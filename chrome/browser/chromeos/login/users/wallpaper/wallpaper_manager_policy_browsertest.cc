@@ -244,8 +244,8 @@ class WallpaperManagerPolicyTest
     }
     builder->Build();
     fake_session_manager_client_->set_user_policy(user_id, builder->GetBlob());
-    const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(user_id);
+    const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
+        AccountId::FromUserEmail(user_id));
     ASSERT_TRUE(user);
     policy::CloudPolicyStore* store = GetStoreForUser(user);
     ASSERT_TRUE(store);

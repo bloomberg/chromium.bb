@@ -23,7 +23,8 @@ void AddAccountUITweaksLocalizedValues(
   CrosSettings::Get()->GetString(kDeviceOwner, &owner_email);
   // Translate owner's email to the display email.
   std::string display_email =
-      user_manager::UserManager::Get()->GetUserDisplayEmail(owner_email);
+      user_manager::UserManager::Get()->GetUserDisplayEmail(
+          AccountId::FromUserEmail(owner_email));
   localized_strings->SetString("ownerUserId", display_email);
 
   localized_strings->SetBoolean("currentUserIsOwner",

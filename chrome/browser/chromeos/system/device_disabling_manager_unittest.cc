@@ -112,7 +112,7 @@ void DeviceDisablingManagerTestBase::UpdateInstallAttributes(
 }
 
 void DeviceDisablingManagerTestBase::LogIn() {
-  fake_user_manager_.AddUser(kTestUser);
+  fake_user_manager_.AddUser(AccountId::FromUserEmail(kTestUser));
 }
 
 // Base class for tests that verify device disabling behavior during OOBE, when

@@ -155,9 +155,10 @@ class PreferencesTest : public testing::Test {
         new chromeos::ScopedUserManagerEnabler(user_manager));
 
     const char test_user_email[] = "test_user@example.com";
-    test_user_ = user_manager->AddUser(test_user_email);
-    user_manager->LoginUser(test_user_email);
-    user_manager->SwitchActiveUser(test_user_email);
+    const AccountId test_account_id(AccountId::FromUserEmail(test_user_email));
+    test_user_ = user_manager->AddUser(test_account_id);
+    user_manager->LoginUser(test_account_id);
+    user_manager->SwitchActiveUser(test_account_id);
 
     test_profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile);

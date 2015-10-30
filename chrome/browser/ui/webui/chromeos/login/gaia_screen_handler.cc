@@ -436,27 +436,35 @@ void GaiaScreenHandler::HandleWebviewLoadAborted(
   UpdateState(error_reason);
 }
 
-std::string GaiaScreenHandler::GetCanonicalEmail(
+AccountId GaiaScreenHandler::GetAccountId(
     const std::string& authenticated_email,
     const std::string& gaia_id) const {
-  const std::string sanitized_email = gaia::SanitizeEmail(authenticated_email);
-
   const std::string canonicalized_email =
-      gaia::CanonicalizeEmail(sanitized_email);
+      gaia::CanonicalizeEmail(gaia::SanitizeEmail(authenticated_email));
+  const AccountId authenticated_account_id(
+      AccountId::FromUserEmailGaiaId(canonicalized_email, gaia_id));
+
+  // If we don't have UserManager instance (i.e. we are in unit test),
+  // or a known user has authenticated, just log in.
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (user_manager && !user_manager->IsKnownUser(canonicalized_email)) {
-    std::string old_canonical_email;
-    if (user_manager->GetKnownUserCanonicalEmail(gaia_id,
-                                                 &old_canonical_email)) {
-      if (old_canonical_email != canonicalized_email) {
-        LOG(WARNING) << "Existing user '" << old_canonical_email
-                     << "' authenticated by alias '" << sanitized_email << "'.";
-        return old_canonical_email;
-      }
-    }
+  if (!user_manager || user_manager->IsKnownUser(authenticated_account_id))
+    return authenticated_account_id;
+
+  // If [part of] user id has changed, update stored data and connect user
+  // to existing home directory.
+  AccountId old_account_id(EmptyAccountId());
+  if (!user_manager->GetKnownUserAccountId(authenticated_account_id,
+                                           &old_account_id)) {
+    return authenticated_account_id;
   }
-  // For compatibility reasons, sanitized email is used.
-  return sanitized_email;
+
+  if (old_account_id.GetUserEmail() != canonicalized_email) {
+    LOG(WARNING) << "Existing user '" << old_account_id.GetUserEmail()
+                 << "' authenticated by alias '" << canonicalized_email << "'.";
+    return old_account_id;
+  }
+
+  return authenticated_account_id;
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(
@@ -474,8 +482,7 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   const std::string sanitized_email = gaia::SanitizeEmail(email);
   Delegate()->SetDisplayEmail(sanitized_email);
 
-  const std::string canonical_email = GetCanonicalEmail(email, gaia_id);
-  UserContext user_context(canonical_email);
+  UserContext user_context(GetAccountId(email, gaia_id));
   user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);
@@ -508,7 +515,7 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
 
   // Consumer management enrollment is in progress.
   const std::string owner_email =
-      user_manager::UserManager::Get()->GetOwnerEmail();
+      user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail();
   if (typed_email != owner_email) {
     // Show Gaia sign-in screen again, since we only allow the owner to sign
     // in.
@@ -595,8 +602,7 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
   DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   Delegate()->SetDisplayEmail(sanitized_email);
-  const std::string canonical_email = GetCanonicalEmail(typed_email, gaia_id);
-  UserContext user_context(canonical_email);
+  UserContext user_context(GetAccountId(typed_email, gaia_id));
   user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthFlow(using_saml
@@ -755,7 +761,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     std::vector<std::string> input_methods =
         imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
     const std::string owner_im = SigninScreenHandler::GetUserLRUInputMethod(
-        user_manager::UserManager::Get()->GetOwnerEmail());
+        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
     const std::string system_im = g_browser_process->local_state()->GetString(
         language_prefs::kPreferredKeyboardLayout);
 
@@ -839,7 +845,8 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   context.is_enrolling_consumer_management = is_enrolling_consumer_management_;
 
   std::string gaia_id;
-  if (user_manager::UserManager::Get()->FindGaiaID(context.email, &gaia_id))
+  if (user_manager::UserManager::Get()->FindGaiaID(
+          AccountId::FromUserEmail(context.email), &gaia_id))
     context.gaia_id = gaia_id;
 
   if (Delegate()) {
@@ -849,7 +856,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   if (!context.email.empty()) {
     context.gaps_cookie =
         user_manager::UserManager::Get()->GetKnownUserGAPSCookie(
-            gaia::CanonicalizeEmail(context.email));
+            AccountId::FromUserEmail(gaia::CanonicalizeEmail(context.email)));
   }
 
   populated_email_.clear();

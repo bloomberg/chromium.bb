@@ -90,13 +90,13 @@ class MessageCenterSettingsControllerChromeOSTest
     TestingProfile* profile =
         MessageCenterSettingsControllerBaseTest::CreateProfile(name);
 
-    GetFakeUserManager()->AddUser(name);
-    GetFakeUserManager()->LoginUser(name);
+    GetFakeUserManager()->AddUser(AccountId::FromUserEmail(name));
+    GetFakeUserManager()->LoginUser(AccountId::FromUserEmail(name));
     return profile;
   }
 
   void SwitchActiveUser(const std::string& name) {
-    GetFakeUserManager()->SwitchActiveUser(name);
+    GetFakeUserManager()->SwitchActiveUser(AccountId::FromUserEmail(name));
     controller()->ActiveUserChanged(GetFakeUserManager()->GetActiveUser());
   }
 
