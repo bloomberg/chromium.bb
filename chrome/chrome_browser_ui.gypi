@@ -1953,6 +1953,8 @@
       'browser/ui/webui/settings/settings_default_browser_handler.h',
       'browser/ui/webui/settings/settings_startup_pages_handler.cc',
       'browser/ui/webui/settings/settings_startup_pages_handler.h',
+      'browser/ui/webui/settings/sync_handler.cc',
+      'browser/ui/webui/settings/sync_handler.h',
       'browser/ui/webui/signin/inline_login_handler.cc',
       'browser/ui/webui/signin/inline_login_handler.h',
       'browser/ui/webui/signin/inline_login_ui.cc',
