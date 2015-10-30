@@ -5,6 +5,7 @@
 package org.chromium.printing;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.print.PrintAttributes;
@@ -27,8 +28,8 @@ public class PrintManagerDelegateImpl implements PrintManagerDelegate {
     private static final String TAG = "cr.printing";
     private final PrintManager mPrintManager;
 
-    public PrintManagerDelegateImpl(Context context) {
-        mPrintManager = (PrintManager) context.getSystemService(Context.PRINT_SERVICE);
+    public PrintManagerDelegateImpl(Activity activity) {
+        mPrintManager = (PrintManager) activity.getSystemService(Context.PRINT_SERVICE);
     }
 
     @Override

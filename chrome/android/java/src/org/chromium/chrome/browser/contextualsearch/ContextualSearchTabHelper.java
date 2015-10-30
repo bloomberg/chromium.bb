@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.app.Activity;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
@@ -43,6 +45,8 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
 
     private long mNativeHelper = 0;
 
+    private final Tab mTab;
+
     /**
      * Creates a contextual search tab helper for the given tab.
      * @param tab The tab whose contextual search actions will be handled by this helper.
@@ -52,6 +56,7 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     }
 
     private ContextualSearchTabHelper(Tab tab) {
+        mTab = tab;
         tab.addObserver(this);
     }
 
@@ -161,7 +166,7 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     /**
      * @return whether Contextual Search is enabled and active in this tab.
      */
-    private static boolean isContextualSearchActive(ContentViewCore cvc) {
+    private boolean isContextualSearchActive(ContentViewCore cvc) {
         return !cvc.getWebContents().isIncognito() && getContextualSearchManager(cvc) != null
             && !PrefServiceBridge.getInstance().isContextualSearchDisabled()
             && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
@@ -175,10 +180,10 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     /**
      * @return the Contextual Search manager.
      */
-    private static ContextualSearchManager getContextualSearchManager(ContentViewCore cvc) {
-        // TODO(yfriedman): Decouple this from the activity.
-        if (cvc.getContext() instanceof ChromeActivity) {
-            return ((ChromeActivity) cvc.getContext()).getContextualSearchManager();
+    private ContextualSearchManager getContextualSearchManager(ContentViewCore cvc) {
+        Activity activity = mTab.getWindowAndroid().getActivity().get();
+        if (activity instanceof ChromeActivity) {
+            return ((ChromeActivity) activity).getContextualSearchManager();
         }
         return null;
     }

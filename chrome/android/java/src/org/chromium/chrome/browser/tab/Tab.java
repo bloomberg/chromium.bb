@@ -15,6 +15,7 @@ import android.os.Message;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -135,7 +136,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /**
      * The {@link Activity} used to create {@link View}s and other Android components.  Unlike
-     * {@link #mApplicationContext}, this is not publicly exposed to help prevent leaking the
+     * {@link #mThemedApplicationContext}, this is not publicly exposed to help prevent leaking the
      * {@link Activity}.
      */
     protected final ChromeActivity mActivity;
@@ -152,7 +153,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * An Application {@link Context}.  Unlike {@link #mActivity}, this is the only one that is
      * publicly exposed to help prevent leaking the {@link Activity}.
      */
-    private final Context mApplicationContext;
+    private final Context mThemedApplicationContext;
 
     /** Gives {@link Tab} a way to interact with the Android window. */
     private final WindowAndroid mWindowAndroid;
@@ -543,11 +544,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mParentId = parentId;
         mIncognito = incognito;
         mActivity = activity;
-        mApplicationContext = activity != null ? activity.getApplicationContext() : null;
+        mThemedApplicationContext = activity != null ? new ContextThemeWrapper(
+                activity.getApplicationContext(), ChromeActivity.getThemeId()) : null;
         mWindowAndroid = window;
         mLaunchType = type;
-        if (mActivity != null) {
-            Resources resources = mActivity.getResources();
+        if (mThemedApplicationContext != null) {
+            Resources resources = mThemedApplicationContext.getResources();
             mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
             mDefaultThemeColor = mIncognito
                     ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
@@ -805,7 +807,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The application {@link Context} associated with this tab.
      */
     protected Context getApplicationContext() {
-        return mApplicationContext;
+        return mThemedApplicationContext.getApplicationContext();
     }
 
     /**
@@ -1480,9 +1482,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                    {@link ContentViewCore}.
      */
     protected void initContentViewCore(WebContents webContents) {
-        ContentViewCore cvc = new ContentViewCore(mActivity);
-        ContentView cv = ContentView.createContentView(mActivity, cvc);
-        cv.setContentDescription(mActivity.getResources().getString(
+        ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext);
+        ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
+        cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());
         setContentViewCore(cvc);
@@ -1518,7 +1520,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 assert false;
                 mContentViewParent.removeAllViews();
             }
-            mContentViewParent = new FrameLayout(mActivity);
+            mContentViewParent = new FrameLayout(mThemedApplicationContext);
             mContentViewParent.addView(cvc.getContainerView(),
                     new FrameLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -1542,14 +1544,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             if (mInfoBarContainer == null) {
                 // The InfoBarContainer needs to be created after the ContentView has been natively
                 // initialized.
-                mInfoBarContainer =
-                        new InfoBarContainer(mActivity, getId(), mContentViewParent, this);
+                mInfoBarContainer =  new InfoBarContainer(
+                        mThemedApplicationContext, getId(), mContentViewParent, this);
             } else {
                 mInfoBarContainer.onParentViewChanged(getId(), mContentViewParent);
             }
             mInfoBarContainer.setContentViewCore(mContentViewCore);
 
-            mSwipeRefreshHandler = new SwipeRefreshHandler(mActivity);
+            mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext);
             mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
 
             for (TabObserver observer : mObservers) observer.onContentChanged(this);
@@ -1559,7 +1561,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // web views.
             mContentViewCore.setShouldSetAccessibilityFocusOnPageLoad(true);
 
-            mDownloadDelegate = new ChromeDownloadDelegate(mActivity,
+            mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext,
                     mActivity.getTabModelSelector(), this);
             cvc.setDownloadDelegate(mDownloadDelegate);
 
@@ -1641,7 +1643,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // Make sure we are not adding the "Aw, snap" view over an existing one.
             assert mSadTabView == null;
             mSadTabView = SadTabViewFactory.createSadTabView(
-                    mActivity, suggestionAction, reloadButtonAction);
+                    mThemedApplicationContext, suggestionAction, reloadButtonAction);
 
             // Show the sad tab inside ContentView.
             getContentViewCore().getContainerView().addView(
@@ -2138,9 +2140,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     @CalledByNative
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        ContentViewCore cvc = new ContentViewCore(mActivity);
-        ContentView cv = ContentView.createContentView(mActivity, cvc);
-        cv.setContentDescription(mActivity.getResources().getString(
+        ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext);
+        ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
+        cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());
         swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
