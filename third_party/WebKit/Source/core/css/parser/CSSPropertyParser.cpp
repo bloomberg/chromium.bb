@@ -90,6 +90,19 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRang
     return cssValuePool().createIdentifierValue(range.consumeIncludingWhitespace().id());
 }
 
+template<typename... emptyBaseCase> inline bool identMatches(CSSValueID id) { return false; }
+template<CSSValueID head, CSSValueID... tail> inline bool identMatches(CSSValueID id)
+{
+    return id == head || identMatches<tail...>(id);
+}
+
+template<CSSValueID... names> PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRange& range)
+{
+    if (range.peek().type() != IdentToken || !identMatches<names...>(range.peek().id()))
+        return nullptr;
+    return cssValuePool().createIdentifierValue(range.consumeIncludingWhitespace().id());
+}
+
 static PassRefPtrWillBeRawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken)
@@ -665,9 +678,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariantLigatures(CSSParserTok
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeFontVariant(CSSParserTokenRange& range)
 {
-    if (range.peek().id() == CSSValueNormal || range.peek().id() == CSSValueSmallCaps)
-        return consumeIdent(range);
-    return nullptr;
+    return consumeIdent<CSSValueNormal, CSSValueSmallCaps>(range);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeFontVariantList(CSSParserTokenRange& range)
@@ -739,9 +750,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFamilyName(CSSParserTokenRange& r
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeGenericFamily(CSSParserTokenRange& range)
 {
-    if (range.peek().id() >= CSSValueSerif && range.peek().id() <= CSSValueWebkitBody)
-        return consumeIdent(range);
-    return nullptr;
+    return consumeIdent<CSSValueSerif, CSSValueSansSerif, CSSValueCursive, CSSValueFantasy, CSSValueMonospace, CSSValueWebkitBody>(range);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFamily(CSSParserTokenRange& range)
@@ -840,19 +849,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCounter(CSSParserTokenRange& rang
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumePageSize(CSSParserTokenRange& range)
 {
-    switch (range.peek().id()) {
-    case CSSValueA3:
-    case CSSValueA4:
-    case CSSValueA5:
-    case CSSValueB4:
-    case CSSValueB5:
-    case CSSValueLedger:
-    case CSSValueLegal:
-    case CSSValueLetter:
-        return consumeIdent(range);
-    default:
-        return nullptr;
-    }
+    return consumeIdent<CSSValueA3, CSSValueA4, CSSValueA5, CSSValueB4, CSSValueB5, CSSValueLedger, CSSValueLegal, CSSValueLetter>(range);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValueList> consumeSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
@@ -873,9 +870,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeSize(CSSParserTokenRange& ran
     }
 
     RefPtrWillBeRawPtr<CSSValue> pageSize = consumePageSize(range);
-    RefPtrWillBeRawPtr<CSSValue> orientation = nullptr;
-    if (range.peek().id() == CSSValuePortrait || range.peek().id() == CSSValueLandscape)
-        orientation = consumeIdent(range);
+    RefPtrWillBeRawPtr<CSSValue> orientation = consumeIdent<CSSValuePortrait, CSSValueLandscape>(range);
     if (!pageSize)
         pageSize = consumePageSize(range);
 
@@ -1105,37 +1100,20 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeColumnSpan(CSSParserTokenRange& r
 static PassRefPtrWillBeRawPtr<CSSValue> consumeZoom(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     const CSSParserToken& token = range.peek();
-    CSSValueID id = token.id();
     RefPtrWillBeRawPtr<CSSPrimitiveValue> zoom;
-    if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument) {
-        zoom = consumeIdent(range);
+    if (token.type() == IdentToken) {
+        zoom = consumeIdent<CSSValueNormal, CSSValueReset, CSSValueDocument>(range);
     } else {
         zoom = consumePercent(range, ValueRangeNonNegative);
         if (!zoom)
             zoom = consumeNumber(range, ValueRangeNonNegative);
     }
     if (zoom && context.useCounter()
-        && !(id == CSSValueNormal
+        && !(token.id() == CSSValueNormal
             || (token.type() == NumberToken && zoom->getDoubleValue() == 1)
             || (token.type() == PercentageToken && zoom->getDoubleValue() == 100)))
         context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
     return zoom.release();
-}
-
-static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationDirection(CSSParserTokenRange& range)
-{
-    CSSValueID id = range.peek().id();
-    if (id == CSSValueNormal || id == CSSValueAlternate || id == CSSValueReverse || id == CSSValueAlternateReverse)
-        return consumeIdent(range);
-    return nullptr;
-}
-
-static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationFillMode(CSSParserTokenRange& range)
-{
-    CSSValueID id = range.peek().id();
-    if (id == CSSValueNone || id == CSSValueForwards || id == CSSValueBackwards || id == CSSValueBoth)
-        return consumeIdent(range);
-    return nullptr;
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationIterationCount(CSSParserTokenRange& range)
@@ -1143,14 +1121,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationIterationCount(CSSParser
     if (range.peek().id() == CSSValueInfinite)
         return consumeIdent(range);
     return consumeNumber(range, ValueRangeNonNegative);
-}
-
-static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationPlayState(CSSParserTokenRange& range)
-{
-    CSSValueID id = range.peek().id();
-    if (id == CSSValueRunning || id == CSSValuePaused)
-        return consumeIdent(range);
-    return nullptr;
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationName(CSSParserTokenRange& range, const CSSParserContext& context, bool allowQuotedName)
@@ -1274,18 +1244,18 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeAnimationValue(CSSPropertyID prop
     case CSSPropertyTransitionDelay:
         return consumeTime(range, ValueRangeAll);
     case CSSPropertyAnimationDirection:
-        return consumeAnimationDirection(range);
+        return consumeIdent<CSSValueNormal, CSSValueAlternate, CSSValueReverse, CSSValueAlternateReverse>(range);
     case CSSPropertyAnimationDuration:
     case CSSPropertyTransitionDuration:
         return consumeTime(range, ValueRangeNonNegative);
     case CSSPropertyAnimationFillMode:
-        return consumeAnimationFillMode(range);
+        return consumeIdent<CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>(range);
     case CSSPropertyAnimationIterationCount:
         return consumeAnimationIterationCount(range);
     case CSSPropertyAnimationName:
         return consumeAnimationName(range, context, useLegacyParsing);
     case CSSPropertyAnimationPlayState:
-        return consumeAnimationPlayState(range);
+        return consumeIdent<CSSValueRunning, CSSValuePaused>(range);
     case CSSPropertyTransitionProperty:
         return consumeTransitionProperty(range);
     case CSSPropertyAnimationTimingFunction:
@@ -1818,18 +1788,15 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeSingleViewportDescriptor(CSSParse
         return consumePercent(range, ValueRangeNonNegative);
     }
     case CSSPropertyUserZoom:
-        if (id == CSSValueZoom || id == CSSValueFixed)
-            return consumeIdent(range);
-        break;
+        return consumeIdent<CSSValueZoom, CSSValueFixed>(range);
     case CSSPropertyOrientation:
-        if (id == CSSValueAuto || id == CSSValuePortrait || id == CSSValueLandscape)
-            return consumeIdent(range);
-        break;
+        return consumeIdent<CSSValueAuto, CSSValuePortrait, CSSValueLandscape>(range);
     default:
         ASSERT_NOT_REACHED();
         break;
     }
 
+    ASSERT_NOT_REACHED();
     return nullptr;
 }
 
