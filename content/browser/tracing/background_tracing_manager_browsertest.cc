@@ -668,6 +668,110 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
+// This tests that no preemptive trace is triggered with 0 chance set.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       PreemptiveNotTriggerWithZeroChance) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        (base::Closure()));
+
+    base::DictionaryValue dict;
+
+    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+    dict.SetString("category", "BENCHMARK");
+
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+      rules_dict->SetString("trigger_name", "preemptive_test");
+      rules_dict->SetDouble("trigger_chance", 0.0);
+      rules_list->Append(rules_dict.Pass());
+    }
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+
+    EXPECT_TRUE(config);
+
+    content::BackgroundTracingManager::TriggerHandle handle =
+        content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+            "preemptive_test");
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle,
+        base::Bind(&StartedFinalizingCallback, run_loop.QuitClosure(), false));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 0);
+  }
+}
+
+// This tests that no reactive trace is triggered with 0 chance set.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReactiveNotTriggerWithZeroChance) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        (base::Closure()));
+
+    base::DictionaryValue dict;
+
+    dict.SetString("mode", "REACTIVE_TRACING_MODE");
+
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString("rule",
+                            "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
+      rules_dict->SetString("trigger_name", "reactive_test1");
+      rules_dict->SetString("category", "BENCHMARK");
+      rules_dict->SetDouble("trigger_chance", 0.0);
+
+      rules_list->Append(rules_dict.Pass());
+    }
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+
+    EXPECT_TRUE(config);
+
+    content::BackgroundTracingManager::TriggerHandle handle =
+        content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+            "preemptive_test");
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle,
+        base::Bind(&StartedFinalizingCallback, run_loop.QuitClosure(), false));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 0);
+  }
+}
+
 // This tests that histogram triggers for preemptive mode configs.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        ReceiveTraceSucceedsOnHigherHistogramSample) {

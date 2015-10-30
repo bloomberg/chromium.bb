@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "content/browser/tracing/background_tracing_rule.h"
@@ -321,6 +322,13 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
     const BackgroundTracingRule* triggered_rule,
     StartedFinalizingCallback callback) {
   CHECK(config_);
+
+  double trigger_chance = triggered_rule->trigger_chance();
+  if (trigger_chance < 1.0 && base::RandDouble() > trigger_chance) {
+    if (!callback.is_null())
+      callback.Run(false);
+    return;
+  }
 
   int trace_timeout = triggered_rule->GetTraceTimeout();
 

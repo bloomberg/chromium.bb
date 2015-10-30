@@ -295,6 +295,20 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
             "{\"category\":\"BENCHMARK_DEEP\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
             "\"trigger_name\":\"foo\"}");
+
+  config = ReadFromJSONString(
+      "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
+      "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\", "
+      "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": \"foo\", "
+      "\"trigger_chance\": 0.5}]}");
+  EXPECT_TRUE(config);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"category\":\"BENCHMARK_DEEP\","
+            "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
+            "\"trigger_chance\":0.5,\"trigger_name\":\"foo\"}");
+
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\", "
@@ -354,6 +368,24 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
               "{\"category\":\"BENCHMARK_DEEP\",\"configs\":[{\"rule\":"
               "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\",\"trigger_name\":"
               "\"foo\"}],\"mode\":\"PREEMPTIVE_TRACING_MODE\"}");
+  }
+
+  {
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
+    config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
+
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    dict->SetString("trigger_name", "foo");
+    dict->SetDouble("trigger_chance", 0.5);
+    config->AddPreemptiveRule(dict.get());
+
+    EXPECT_EQ(
+        ConfigToString(config.get()),
+        "{\"category\":\"BENCHMARK_DEEP\",\"configs\":[{\"rule\":"
+        "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\",\"trigger_chance\":0.5,"
+        "\"trigger_name\":\"foo\"}],\"mode\":\"PREEMPTIVE_TRACING_MODE\"}");
   }
 
   {

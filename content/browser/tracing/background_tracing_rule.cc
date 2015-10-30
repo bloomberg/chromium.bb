@@ -22,6 +22,7 @@ const char kConfigRuleKey[] = "rule";
 const char kConfigCategoryKey[] = "category";
 const char kConfigRuleTriggerNameKey[] = "trigger_name";
 const char kConfigRuleTriggerDelay[] = "trigger_delay";
+const char kConfigRuleTriggerChance[] = "trigger_chance";
 
 const char kConfigRuleHistogramNameKey[] = "histogram_name";
 const char kConfigRuleHistogramValueOldKey[] = "histogram_value";
@@ -55,7 +56,7 @@ const int kReactiveTraceRandomStartTimeMax = 120;
 
 namespace content {
 
-BackgroundTracingRule::BackgroundTracingRule() {}
+BackgroundTracingRule::BackgroundTracingRule() : trigger_chance_(1.0) {}
 
 BackgroundTracingRule::~BackgroundTracingRule() {}
 
@@ -71,6 +72,16 @@ BackgroundTracingRule::GetCategoryPreset() const {
 
 int BackgroundTracingRule::GetTraceTimeout() const {
   return -1;
+}
+
+void BackgroundTracingRule::IntoDict(base::DictionaryValue* dict) const {
+  DCHECK(dict);
+  if (trigger_chance_ < 1.0)
+    dict->SetDouble(kConfigRuleTriggerChance, trigger_chance_);
+}
+
+void BackgroundTracingRule::Setup(const base::DictionaryValue* dict) {
+  dict->GetDouble(kConfigRuleTriggerChance, &trigger_chance_);
 }
 
 namespace {
@@ -93,6 +104,7 @@ class NamedTriggerRule : public BackgroundTracingRule {
 
   void IntoDict(base::DictionaryValue* dict) const override {
     DCHECK(dict);
+    BackgroundTracingRule::IntoDict(dict);
     dict->SetString(kConfigRuleKey, kPreemptiveConfigRuleMonitorNamed);
     dict->SetString(kConfigRuleTriggerNameKey, named_event_.c_str());
   }
@@ -173,6 +185,7 @@ class HistogramRule : public BackgroundTracingRule,
 
   void IntoDict(base::DictionaryValue* dict) const override {
     DCHECK(dict);
+    BackgroundTracingRule::IntoDict(dict);
     dict->SetString(kConfigRuleKey, kPreemptiveConfigRuleMonitorHistogram);
     dict->SetString(kConfigRuleHistogramNameKey, histogram_name_.c_str());
     dict->SetInteger(kConfigRuleHistogramValue1Key, histogram_lower_value_);
@@ -265,6 +278,7 @@ class ReactiveTraceForNSOrTriggerOrFullRule : public BackgroundTracingRule {
   // BackgroundTracingRule implementation
   void IntoDict(base::DictionaryValue* dict) const override {
     DCHECK(dict);
+    BackgroundTracingRule::IntoDict(dict);
     dict->SetString(
         kConfigCategoryKey,
         BackgroundTracingConfigImpl::CategoryPresetToString(category_preset_));
@@ -326,6 +340,7 @@ class ReactiveTraceAtRandomIntervalsRule : public BackgroundTracingRule {
 
   void IntoDict(base::DictionaryValue* dict) const override {
     DCHECK(dict);
+    BackgroundTracingRule::IntoDict(dict);
     dict->SetString(
         kConfigCategoryKey,
         BackgroundTracingConfigImpl::CategoryPresetToString(category_preset_));
@@ -404,13 +419,16 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::PreemptiveRuleFromDict(
   if (!dict->GetString(kConfigRuleKey, &type))
     return nullptr;
 
+  scoped_ptr<BackgroundTracingRule> tracing_rule;
   if (type == kPreemptiveConfigRuleMonitorNamed)
-    return NamedTriggerRule::Create(dict);
+    tracing_rule = NamedTriggerRule::Create(dict);
+  else if (type == kPreemptiveConfigRuleMonitorHistogram)
+    tracing_rule = HistogramRule::Create(dict);
 
-  if (type == kPreemptiveConfigRuleMonitorHistogram)
-    return HistogramRule::Create(dict);
+  if (tracing_rule)
+    tracing_rule->Setup(dict);
 
-  return nullptr;
+  return tracing_rule;
 }
 
 scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::ReactiveRuleFromDict(
@@ -422,13 +440,20 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::ReactiveRuleFromDict(
   if (!dict->GetString(kConfigRuleKey, &type))
     return nullptr;
 
-  if (type == kReactiveConfigRuleTraceOnNavigationUntilTriggerOrFull)
-    return ReactiveTraceForNSOrTriggerOrFullRule::Create(dict, category_preset);
+  scoped_ptr<BackgroundTracingRule> tracing_rule;
 
-  if (type == kReactiveConfigRuleTraceAtRandomIntervals)
-    return ReactiveTraceAtRandomIntervalsRule::Create(dict, category_preset);
+  if (type == kReactiveConfigRuleTraceOnNavigationUntilTriggerOrFull) {
+    tracing_rule =
+        ReactiveTraceForNSOrTriggerOrFullRule::Create(dict, category_preset);
+  } else if (type == kReactiveConfigRuleTraceAtRandomIntervals) {
+    tracing_rule =
+        ReactiveTraceAtRandomIntervalsRule::Create(dict, category_preset);
+  }
 
-  return nullptr;
+  if (tracing_rule)
+    tracing_rule->Setup(dict);
+
+  return tracing_rule;
 }
 
 }  // namespace content
