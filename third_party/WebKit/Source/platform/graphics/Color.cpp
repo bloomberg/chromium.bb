@@ -35,7 +35,8 @@
 
 namespace blink {
 
-#if !COMPILER(MSVC)
+// VS 2015 and above allow these definitions and in this case require them
+#if !COMPILER(MSVC) || _MSC_VER >= 1900
 // FIXME: Use C++11 strong enums to avoid static data member with initializer definition problems.
 const RGBA32 Color::black;
 const RGBA32 Color::white;
