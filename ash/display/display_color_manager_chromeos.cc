@@ -18,7 +18,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chromeos/chromeos_paths.h"
-#include "chromeos/chromeos_switches.h"
 #include "third_party/qcms/src/qcms.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
@@ -67,17 +66,6 @@ bool ParseFile(const base::FilePath& path,
 }
 
 base::FilePath PathForDisplaySnapshot(const ui::DisplaySnapshot* snapshot) {
-  if (gfx::Display::IsInternalDisplayId(snapshot->display_id())) {
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(
-            chromeos::switches::kInternalDisplayColorProfileFile)) {
-      const base::FilePath& path = command_line->GetSwitchValuePath(
-          chromeos::switches::kInternalDisplayColorProfileFile);
-      return base::FilePath(path);
-    }
-  }
-
   base::FilePath path;
   CHECK(
       PathService::Get(chromeos::DIR_DEVICE_COLOR_CALIBRATION_PROFILES, &path));

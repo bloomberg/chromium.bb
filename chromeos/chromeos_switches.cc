@@ -201,10 +201,6 @@ const char kHostPairingOobe[] = "host-pairing-oobe";
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
 
-// File to load internal display ICC file from.
-const char kInternalDisplayColorProfileFile[] =
-    "internal-display-color-profile-file";
-
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
 
