@@ -36,14 +36,14 @@ protocol::Session* ConnectionToClient::session() {
   return session_.get();
 }
 
-void ConnectionToClient::Disconnect() {
+void ConnectionToClient::Disconnect(ErrorCode error) {
   DCHECK(CalledOnValidThread());
 
   CloseChannels();
 
   // This should trigger OnConnectionClosed() event and this object
   // may be destroyed as the result.
-  session_->Close();
+  session_->Close(error);
 }
 
 void ConnectionToClient::OnInputEventReceived(int64_t timestamp) {

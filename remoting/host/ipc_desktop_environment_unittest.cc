@@ -275,9 +275,9 @@ void IpcDesktopEnvironmentTest::SetUp() {
   EXPECT_CALL(client_session_control_, client_jid())
       .Times(AnyNumber())
       .WillRepeatedly(ReturnRef(client_jid_));
-  EXPECT_CALL(client_session_control_, DisconnectSession())
+  EXPECT_CALL(client_session_control_, DisconnectSession(_))
       .Times(AnyNumber())
-      .WillRepeatedly(Invoke(
+      .WillRepeatedly(InvokeWithoutArgs(
           this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
   EXPECT_CALL(client_session_control_, OnLocalMouseMoved(_))
       .Times(0);

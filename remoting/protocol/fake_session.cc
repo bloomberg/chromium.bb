@@ -69,8 +69,9 @@ FakeStreamChannelFactory* FakeSession::GetQuicChannelFactory() {
   return transport_session_.GetStreamChannelFactory();
 }
 
-void FakeSession::Close() {
+void FakeSession::Close(ErrorCode error) {
   closed_ = true;
+  error_ = error;
 }
 
 }  // namespace protocol

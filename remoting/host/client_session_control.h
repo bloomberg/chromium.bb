@@ -6,6 +6,7 @@
 #define REMOTING_HOST_CLIENT_SESSION_CONTROL_H_
 
 #include "base/basictypes.h"
+#include "remoting/protocol/errors.h"
 
 namespace webrtc {
 class DesktopVector;
@@ -25,7 +26,7 @@ class ClientSessionControl {
 
   // Disconnects the client session, tears down transport resources and stops
   // scheduler components.
-  virtual void DisconnectSession() = 0;
+  virtual void DisconnectSession(protocol::ErrorCode error) = 0;
 
   // Called when local mouse movement is detected.
   virtual void OnLocalMouseMoved(const webrtc::DesktopVector& position) = 0;

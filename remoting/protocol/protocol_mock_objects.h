@@ -39,7 +39,7 @@ class MockConnectionToClient : public ConnectionToClient {
   MOCK_METHOD0(video_stub, VideoStub*());
   MOCK_METHOD0(client_stub, ClientStub*());
   MOCK_METHOD0(session, Session*());
-  MOCK_METHOD0(Disconnect, void());
+  MOCK_METHOD1(Disconnect, void(ErrorCode error));
 
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override {
     clipboard_stub_ = clipboard_stub;
@@ -213,7 +213,7 @@ class MockSession : public Session {
   MOCK_METHOD1(set_receiver_token, void(const std::string& receiver_token));
   MOCK_METHOD1(set_shared_secret, void(const std::string& secret));
   MOCK_METHOD0(shared_secret, const std::string&());
-  MOCK_METHOD0(Close, void());
+  MOCK_METHOD1(Close, void(ErrorCode error));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSession);

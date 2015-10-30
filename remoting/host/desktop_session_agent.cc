@@ -24,6 +24,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -222,8 +223,8 @@ const std::string& DesktopSessionAgent::client_jid() const {
   return client_jid_;
 }
 
-void DesktopSessionAgent::DisconnectSession() {
-  SendToNetwork(new ChromotingDesktopNetworkMsg_DisconnectSession());
+void DesktopSessionAgent::DisconnectSession(protocol::ErrorCode error) {
+  SendToNetwork(new ChromotingDesktopNetworkMsg_DisconnectSession(error));
 }
 
 void DesktopSessionAgent::OnLocalMouseMoved(

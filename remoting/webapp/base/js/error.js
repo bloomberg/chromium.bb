@@ -62,6 +62,10 @@ remoting.Error.prototype.toConnectionError = function() {
       return ConnectionError.NETWORK_FAILURE;
     case Tag.HOST_OVERLOAD:
       return ConnectionError.HOST_OVERLOAD;
+    case Tag.MAX_SESSION_LENGTH:
+      return ConnectionError.MAX_SESSION_LENGTH;
+    case Tag.HOST_CONFIGURATION_ERROR:
+      return ConnectionError.HOST_CONFIGURATION_ERROR;
     case Tag.P2P_FAILURE:
       return ConnectionError.P2P_FAILURE;
     case Tag.NACL_DISABLED:
@@ -170,6 +174,8 @@ remoting.Error.Tag = {
   BAD_VERSION: /*i18n-content*/ 'ERROR_BAD_PLUGIN_VERSION',
   NETWORK_FAILURE: /*i18n-content*/ 'ERROR_NETWORK_FAILURE',
   HOST_OVERLOAD: /*i18n-content*/ 'ERROR_HOST_OVERLOAD',
+  MAX_SESSION_LENGTH: /*i18n-content*/ 'ERROR_MAX_SESSION_LENGTH',
+  HOST_CONFIGURATION_ERROR: /*i18n-content*/ 'ERROR_HOST_CONFIGURATION_ERROR',
   UNEXPECTED: /*i18n-content*/ 'ERROR_UNEXPECTED',
   SERVICE_UNAVAILABLE: /*i18n-content*/ 'ERROR_SERVICE_UNAVAILABLE',
   NOT_AUTHENTICATED: /*i18n-content*/ 'ERROR_NOT_AUTHENTICATED',

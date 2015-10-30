@@ -133,7 +133,7 @@ void LocalInputMonitorWin::Core::StartOnUiThread() {
     // the session. Disconnect the session now to prevent this.
     caller_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
-                              client_session_control_));
+                              client_session_control_, protocol::OK));
   }
 }
 

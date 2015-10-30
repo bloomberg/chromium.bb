@@ -81,7 +81,7 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
   EXPECT_FALSE(channel->written_data().empty());
 
   // And then close the connection to ConnectionToClient.
-  viewer_->Disconnect();
+  viewer_->Disconnect(protocol::OK);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -91,7 +91,7 @@ TEST_F(ConnectionToClientTest, NoWriteAfterDisconnect) {
   viewer_->video_stub()->ProcessVideoPacket(packet.Pass(), base::Closure());
 
   // And then close the connection to ConnectionToClient.
-  viewer_->Disconnect();
+  viewer_->Disconnect(protocol::OK);
 
   // The test will crash if data writer tries to write data to the
   // channel socket.

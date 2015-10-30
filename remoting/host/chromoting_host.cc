@@ -94,7 +94,7 @@ ChromotingHost::~ChromotingHost() {
 
   // Disconnect all of the clients.
   while (!clients_.empty()) {
-    clients_.front()->DisconnectSession();
+    clients_.front()->DisconnectSession(protocol::OK);
   }
 
   // Destroy the session manager to make sure that |signal_strategy_| does not
@@ -177,7 +177,7 @@ void ChromotingHost::OnSessionAuthenticating(ClientSession* client) {
   if (login_backoff_.ShouldRejectRequest()) {
     LOG(WARNING) << "Disconnecting client " << client->client_jid() << " due to"
                     " an overload of failed login attempts.";
-    client->DisconnectSession();
+    client->DisconnectSession(protocol::HOST_OVERLOAD);
     return;
   }
   login_backoff_.InformOfRequest(false);
@@ -195,7 +195,7 @@ bool ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   while (it != clients_.end()) {
     ClientSession* other_client = *it++;
     if (other_client != client)
-      other_client->DisconnectSession();
+      other_client->DisconnectSession(protocol::OK);
   }
 
   // Disconnects above must have destroyed all other clients.
@@ -307,7 +307,7 @@ void ChromotingHost::DisconnectAllClients() {
 
   while (!clients_.empty()) {
     size_t size = clients_.size();
-    clients_.front()->DisconnectSession();
+    clients_.front()->DisconnectSession(protocol::OK);
     CHECK_EQ(clients_.size(), size - 1);
   }
 }
