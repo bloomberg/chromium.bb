@@ -9,7 +9,9 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/time/time.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_bus.h"
 #include "media/base/data_buffer.h"
@@ -22,6 +24,12 @@ const int kNumberOfBlocksBufferInFifo = 2;
 // Max length of sequence of TooManyFramesToProcessError errors.
 // The stream will be stopped as soon as this time limit is passed.
 const int kMaxErrorTimeoutInSeconds = 1;
+
+// A one-shot timer is created and started in Start() and it triggers
+// CheckInputStartupSuccess() after this amount of time. UMA stats marked
+// Media.Audio.InputStartupSuccessMac is then updated where true is added
+// if input callbacks have started, and false otherwise.
+const int kInputCallbackStartTimeoutInSeconds = 5;
 
 static std::ostream& operator<<(std::ostream& os,
                                 const AudioStreamBasicDescription& format) {
@@ -53,7 +61,8 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       number_of_channels_in_frame_(0),
       fifo_(input_params.channels(),
             number_of_frames_,
-            kNumberOfBlocksBufferInFifo) {
+            kNumberOfBlocksBufferInFifo),
+      input_callback_is_active_(false) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -91,6 +100,7 @@ AUAudioInputStream::~AUAudioInputStream() {}
 
 // Obtain and open the AUHAL AudioOutputUnit for recording.
 bool AUAudioInputStream::Open() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Verify that we are not already opened.
   if (audio_unit_)
     return false;
@@ -225,6 +235,7 @@ bool AUAudioInputStream::Open() {
 }
 
 void AUAudioInputStream::Start(AudioInputCallback* callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
   DLOG_IF(ERROR, !audio_unit_) << "Open() has not been called successfully";
   if (started_ || !audio_unit_)
@@ -250,26 +261,39 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   OSStatus result = AudioOutputUnitStart(audio_unit_);
   if (result == noErr) {
     started_ = true;
+    // For UMA stat purposes, start a one-shot timer which detects when input
+    // callbacks starts indicating if input audio recording works as intended.
+    // CheckInputStartupSuccess() will check if |input_callback_is_active_| is
+    // true when the timer expires. This timer delay is currently set to
+    // 5 seconds to avoid false alarms.
+    input_callback_timer_.reset(new base::OneShotTimer());
+    input_callback_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kInputCallbackStartTimeoutInSeconds), this,
+        &AUAudioInputStream::CheckInputStartupSuccess);
   }
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "Failed to start acquiring data";
 }
 
 void AUAudioInputStream::Stop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!started_)
     return;
   StopAgc();
+  input_callback_timer_.reset();
   OSStatus result = AudioOutputUnitStop(audio_unit_);
   DCHECK_EQ(result, noErr);
+  SetInputCallbackIsActive(false);
   started_ = false;
   sink_ = NULL;
   fifo_.Clear();
-
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "Failed to stop acquiring data";
 }
 
 void AUAudioInputStream::Close() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // It is valid to call Close() before calling open or Start().
   // It is also valid to call Close() after Start() has been called.
   if (started_) {
@@ -372,7 +396,7 @@ void AUAudioInputStream::SetVolume(double volume) {
 
 double AUAudioInputStream::GetVolume() {
   // Verify that we have a valid device.
-  if (input_device_id_ == kAudioObjectUnknown){
+  if (input_device_id_ == kAudioObjectUnknown) {
     NOTREACHED() << "Device ID is unknown";
     return 0.0;
   }
@@ -465,6 +489,14 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   DCHECK(audio_input);
   if (!audio_input)
     return kAudioUnitErr_InvalidElement;
+
+  // Indicate that input callbacks have started on the internal AUHAL IO
+  // thread. The |input_callback_is_active_| member is read from the creating
+  // thread when a timer fires once and set to false in Stop() on the same
+  // thread. It means that this thread is the only writer of
+  // |input_callback_is_active_| once the tread starts and it should therefore
+  // be safe to modify.
+  audio_input->SetInputCallbackIsActive(true);
 
   // Update the |mDataByteSize| value in the audio_buffer_list() since
   // |number_of_frames| can be changed on the fly.
@@ -715,6 +747,32 @@ bool AUAudioInputStream::IsVolumeSettableOnChannel(int channel) {
                                                   &property_address,
                                                   &is_settable);
   return (result == noErr) ? is_settable : false;
+}
+
+void AUAudioInputStream::SetInputCallbackIsActive(bool enabled) {
+  base::subtle::Release_Store(&input_callback_is_active_, enabled);
+}
+
+bool AUAudioInputStream::GetInputCallbackIsActive() {
+  return (base::subtle::Acquire_Load(&input_callback_is_active_) != false);
+}
+
+void AUAudioInputStream::CheckInputStartupSuccess() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (started_) {
+    // Check if we have called Start() and input callbacks have actually
+    // started in time as they should. If that is not the case, we have a
+    // problem and the stream is considered dead.
+    const bool input_callback_is_active = GetInputCallbackIsActive();
+    UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputStartupSuccessMac",
+                          input_callback_is_active);
+    DVLOG(1) << "input_callback_is_active: " << input_callback_is_active;
+
+    if (!input_callback_is_active) {
+      // TODO(henrika): perhaps we should close the stream here and trigger
+      // HandleError with as suitable error code.
+    }
+  }
 }
 
 }  // namespace media

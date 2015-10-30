@@ -17416,6 +17416,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.InputStartupSuccessMac" enum="BooleanSuccess">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Indicates if audio capturing did start after stream startup was requested.
+    Sampled once 5 seconds after a stream has been asked to start.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Render.FramesRequested" units="frames">
   <owner>tommi@chromium.org</owner>
   <summary>

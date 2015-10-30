@@ -39,10 +39,13 @@
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/CoreAudio.h>
 
+#include "base/atomicops.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
@@ -114,8 +117,21 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // channel.
   bool IsVolumeSettableOnChannel(int channel);
 
+  // Helper methods to set and get atomic |input_callback_is_active_|.
+  void SetInputCallbackIsActive(bool active);
+  bool GetInputCallbackIsActive();
+
+  // Checks if a stream was started successfully and the audio unit also starts
+  // to call InputProc() as it should. This method is called once when a timer
+  // expires 5 seconds after calling Start().
+  void CheckInputStartupSuccess();
+
+  // Verifies that Open(), Start(), Stop() and Close() are all called on the
+  // creating thread which is the main browser thread (CrBrowserMain) on Mac.
+  base::ThreadChecker thread_checker_;
+
   // Our creator, the audio manager needs to be notified when we close.
-  AudioManagerMac* manager_;
+  AudioManagerMac* const manager_;
 
   // Contains the desired number of audio frames in each callback.
   const size_t number_of_frames_;
@@ -133,7 +149,7 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   AudioUnit audio_unit_;
 
   // The UID refers to the current input audio device.
-  AudioDeviceID input_device_id_;
+  const AudioDeviceID input_device_id_;
 
   // Provides a mechanism for encapsulating one or more buffers of audio data.
   AudioBufferList audio_buffer_list_;
@@ -163,6 +179,15 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // audio buffer. Used to detect long error sequences and to take actions
   // if length of error sequence is above a certain limit.
   base::TimeTicks last_success_time_;
+
+  // Is set to true on the internal AUHAL IO thread in the first input callback
+  // after Start() has bee called.
+  base::subtle::Atomic32 input_callback_is_active_;
+
+  // Timer which triggers CheckInputStartupSuccess() to verify that input
+  // callbacks have started as intended after a successful call to Start().
+  // This timer lives on the main browser thread.
+  scoped_ptr<base::OneShotTimer> input_callback_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };
