@@ -37,8 +37,6 @@ public:
 
     DECLARE_TRACE();
 
-    void applySVGUpdate(SVGElement&);
-
 private:
     SampledEffect(KeyframeEffect*);
 

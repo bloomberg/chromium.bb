@@ -35,6 +35,7 @@ class Document;
 class LayoutSVGResourceContainer;
 class SubtreeLayoutScope;
 class SVGSVGElement;
+class SVGElement;
 class Element;
 
 class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
@@ -46,6 +47,9 @@ public:
 
     void addTimeContainer(SVGSVGElement*);
     void removeTimeContainer(SVGSVGElement*);
+
+    // Records the SVG element as having a Web Animation on an SVG attribute that needs applying.
+    void addWebAnimationsPendingSVGElement(SVGElement&);
 
     void addResource(const AtomicString& id, LayoutSVGResourceContainer*);
     void removeResource(const AtomicString& id);
@@ -80,6 +84,8 @@ public:
 private:
     RawPtrWillBeMember<Document> m_document;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement>> m_timeContainers; // For SVG 1.2 support this will need to be made more general.
+    using SVGElementSet = WillBeHeapHashSet<RefPtrWillBeMember<SVGElement>>;
+    SVGElementSet m_webAnimationsPendingSVGElements;
     HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
     WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResources; // Resources that are pending.
     WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.

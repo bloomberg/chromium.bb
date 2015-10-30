@@ -22,6 +22,11 @@
 #include "config.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
+#include "core/animation/AnimationStack.h"
+#include "core/animation/ElementAnimations.h"
+#include "core/animation/InterpolationEnvironment.h"
+#include "core/animation/InvalidatableInterpolation.h"
+#include "core/animation/SVGInterpolation.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -54,6 +59,12 @@ void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element)
     m_timeContainers.remove(element);
 }
 
+void SVGDocumentExtensions::addWebAnimationsPendingSVGElement(SVGElement& element)
+{
+    ASSERT(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
+    m_webAnimationsPendingSVGElements.add(&element);
+}
+
 void SVGDocumentExtensions::addResource(const AtomicString& id, LayoutSVGResourceContainer* resource)
 {
     ASSERT(resource);
@@ -83,17 +94,43 @@ LayoutSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicStri
 
 void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
-    if (!document.svgExtensions() || !RuntimeEnabledFeatures::smilEnabled())
+    if (!document.svgExtensions())
         return;
     document.accessSVGExtensions().serviceAnimations(monotonicAnimationStartTime);
 }
 
 void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime)
 {
-    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement>> timeContainers;
-    copyToVector(m_timeContainers, timeContainers);
-    for (const auto& container : timeContainers)
-        container->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
+    if (RuntimeEnabledFeatures::smilEnabled()) {
+        WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement>> timeContainers;
+        copyToVector(m_timeContainers, timeContainers);
+        for (const auto& container : timeContainers)
+            container->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
+    }
+
+    SVGElementSet webAnimationsPendingSVGElements;
+    webAnimationsPendingSVGElements.swap(m_webAnimationsPendingSVGElements);
+
+    // TODO(alancutter): Make SVG animation effect application a separate document lifecycle phase from servicing animations to be responsive to Javascript manipulation of exposed animation objects.
+    for (auto& svgElement : webAnimationsPendingSVGElements) {
+        ActiveInterpolationsMap activeInterpolationsMap = AnimationStack::activeInterpolations(
+            &svgElement->elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority);
+        for (auto& entry : activeInterpolationsMap) {
+            if (!entry.key.isSVGAttribute())
+                continue;
+            const QualifiedName& attribute = entry.key.svgAttribute();
+            const Interpolation& interpolation = *entry.value.first();
+            if (interpolation.isInvalidatableInterpolation()) {
+                InterpolationEnvironment environment(*svgElement, svgElement->propertyFromAttribute(attribute)->baseValueBase());
+                InvalidatableInterpolation::applyStack(entry.value, environment);
+            } else {
+                // TODO(alancutter): Remove this old code path once animations have completely migrated to InterpolationTypes.
+                toSVGInterpolation(interpolation).apply(*svgElement);
+            }
+        }
+    }
+
+    ASSERT(m_webAnimationsPendingSVGElements.isEmpty());
 }
 
 void SVGDocumentExtensions::startAnimations()
@@ -356,6 +393,7 @@ DEFINE_TRACE(SVGDocumentExtensions)
 #if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_timeContainers);
+    visitor->trace(m_webAnimationsPendingSVGElements);
     visitor->trace(m_relativeLengthSVGRoots);
     visitor->trace(m_pendingResources);
     visitor->trace(m_pendingResourcesForRemoval);

@@ -235,6 +235,11 @@ void SVGElement::setInstanceUpdatesBlocked(bool value)
         svgRareData()->setInstanceUpdatesBlocked(value);
 }
 
+void SVGElement::setWebAnimationsPending()
+{
+    document().accessSVGExtensions().addWebAnimationsPendingSVGElement(*this);
+}
+
 AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const
 {
     // To be overriden by SVGGraphicsElement (or as special case SVGTextElement and SVGPatternElement)

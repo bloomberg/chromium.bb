@@ -80,6 +80,9 @@ public:
     bool instanceUpdatesBlocked() const;
     void setInstanceUpdatesBlocked(bool);
 
+    // Records the SVG element as having a Web Animation on an SVG attribute that needs applying.
+    void setWebAnimationsPending();
+
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;
 

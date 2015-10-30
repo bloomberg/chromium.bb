@@ -33,22 +33,4 @@ DEFINE_TRACE(SampledEffect)
     visitor->trace(m_animation);
 }
 
-void SampledEffect::applySVGUpdate(SVGElement& targetElement)
-{
-    for (const auto& interpolation : m_interpolations) {
-        if (interpolation->isSVGInterpolation()) {
-            toSVGInterpolation(interpolation.get())->apply(targetElement);
-        } else if (interpolation->isInvalidatableInterpolation()) {
-            const InvalidatableInterpolation& invalidatableInterpolation = toInvalidatableInterpolation(*interpolation);
-            if (invalidatableInterpolation.property().isSVGAttribute()) {
-                const SVGPropertyBase& baseValue = targetElement.propertyFromAttribute(invalidatableInterpolation.property().svgAttribute())->baseValueBase();
-                InterpolationEnvironment environment(targetElement, baseValue);
-                ActiveInterpolations activeInterpolations(1);
-                activeInterpolations[0] = interpolation.get();
-                InvalidatableInterpolation::applyStack(activeInterpolations, environment);
-            }
-        }
-    }
-}
-
 } // namespace blink

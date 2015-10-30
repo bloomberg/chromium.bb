@@ -193,11 +193,11 @@ void KeyframeEffect::applyEffects()
         }
     }
 
-    if (changed)
+    if (changed) {
         m_target->setNeedsAnimationStyleRecalc();
-
-    if (m_target->isSVGElement())
-        m_sampledEffect->applySVGUpdate(toSVGElement(*m_target));
+        if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() && m_target->isSVGElement())
+            toSVGElement(*m_target).setWebAnimationsPending();
+    }
 }
 
 void KeyframeEffect::clearEffects()
