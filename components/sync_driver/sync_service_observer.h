@@ -30,6 +30,9 @@ class SyncServiceObserver {
   // process.
   virtual void OnSyncConfigurationCompleted() {}
 
+  // Called when a foreign session has been updated.
+  virtual void OnForeignSessionUpdated() {}
+
  protected:
   virtual ~SyncServiceObserver() {}
 };

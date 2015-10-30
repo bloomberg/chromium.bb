@@ -12,8 +12,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "components/sync_driver/sync_service_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -33,7 +31,6 @@ class PrefRegistrySyncable;
 namespace browser_sync {
 
 class ForeignSessionHandler : public content::WebUIMessageHandler,
-                              public content::NotificationObserver,
                               public sync_driver::SyncServiceObserver {
  public:
   // Invalid value, used to note that we don't have a tab or window number.
@@ -62,14 +59,10 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
       content::WebUI* web_ui);
 
  private:
-  // Determines how ForeignSessionHandler will interact with the new tab page.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // sync_driver::SyncServiceObserver:
   void OnStateChanged() override {}
   void OnSyncConfigurationCompleted() override;
+  void OnForeignSessionUpdated() override;
 
   // Returns true if tab sync is enabled for this profile, otherwise false.
   bool IsTabSyncEnabled();
@@ -94,9 +87,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   void HandleDeleteForeignSession(const base::ListValue* args);
 
   void HandleSetForeignSessionCollapsed(const base::ListValue* args);
-
-  // The Registrar used to register ForeignSessionHandler for notifications.
-  content::NotificationRegistrar registrar_;
 
   // ScopedObserver used to observe the ProfileSyncService.
   ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>

@@ -158,9 +158,6 @@ ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
   // NOTE: The ProfileSyncService can be null in tests.
   if (service)
     scoped_observer_.Add(service);
-
-  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-                 content::Source<Profile>(profile));
 }
 
 ForeignSessionHelper::~ForeignSessionHelper() {
@@ -200,19 +197,11 @@ void ForeignSessionHelper::FireForeignSessionCallback() {
   Java_ForeignSessionCallback_onUpdated(env, callback_.obj());
 }
 
-void ForeignSessionHelper::Observe(
-    int type, const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
-      FireForeignSessionCallback();
-      break;
-    default:
-      NOTREACHED();
-  }
+void ForeignSessionHelper::OnSyncConfigurationCompleted() {
+  FireForeignSessionCallback();
 }
 
-void ForeignSessionHelper::OnSyncConfigurationCompleted() {
+void ForeignSessionHelper::OnForeignSessionUpdated() {
   FireForeignSessionCallback();
 }
 

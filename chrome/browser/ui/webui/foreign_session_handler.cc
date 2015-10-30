@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -29,8 +28,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -215,9 +212,6 @@ void ForeignSessionHandler::RegisterMessages() {
   if (service)
     scoped_observer_.Add(service);
 
-  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-                 content::Source<Profile>(profile));
-
   web_ui()->RegisterMessageCallback("deleteForeignSession",
       base::Bind(&ForeignSessionHandler::HandleDeleteForeignSession,
                  base::Unretained(this)));
@@ -232,20 +226,11 @@ void ForeignSessionHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ForeignSessionHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
-      HandleGetForeignSessions(nullptr);
-      break;
-    default:
-      NOTREACHED();
-  }
+void ForeignSessionHandler::OnSyncConfigurationCompleted() {
+  HandleGetForeignSessions(nullptr);
 }
 
-void ForeignSessionHandler::OnSyncConfigurationCompleted() {
+void ForeignSessionHandler::OnForeignSessionUpdated() {
   HandleGetForeignSessions(nullptr);
 }
 

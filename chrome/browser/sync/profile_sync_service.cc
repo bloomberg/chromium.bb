@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,6 +70,9 @@
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/sync_error.h"
@@ -263,6 +267,9 @@ ProfileSyncService::ProfileSyncService(
               local_device_->GetSyncUserAgent(),
               profile_->GetRequestContext(),
               browser_sync::SyncStoppedReporter::ResultCallback()));
+
+  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
+                 content::Source<Profile>(profile));
   sessions_sync_manager_.reset(
       new SessionsSyncManager(sync_client_->GetSyncSessionsClient(), profile,
                               local_device_.get(), router.Pass()));
@@ -908,6 +915,14 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
 
   // Mark this as a clean shutdown(without crash).
   sync_prefs_.SetCleanShutdown(true);
+}
+
+void ProfileSyncService::Observe(
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED, type);
+  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
+                    OnForeignSessionUpdated());
 }
 
 void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
