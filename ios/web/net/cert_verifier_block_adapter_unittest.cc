@@ -148,4 +148,25 @@ TEST_F(CertVerifierBlockAdapterTest, DefaultParamsAndSyncError) {
   EXPECT_EQ(kExpectedError, actual_error);
 }
 
+// Tests that the completion handler passed to |Verify()| is called, even if the
+// adapter is destroyed.
+TEST_F(CertVerifierBlockAdapterTest, CompletionHandlerIsAlwaysCalled) {
+  scoped_ptr<net::CertVerifier> verifier(net::CertVerifier::CreateDefault());
+  scoped_ptr<CertVerifierBlockAdapter> test_adapter(
+      new CertVerifierBlockAdapter(verifier.get(), &net_log_));
+
+  // Call |Verify| and destroy the adapter.
+  CertVerifierBlockAdapter::Params params(cert_.get(), kHostName);
+  __block bool verification_completed = false;
+  test_adapter->Verify(params, ^(net::CertVerifyResult, int) {
+    verification_completed = true;
+  });
+  test_adapter.reset();
+
+  // Make sure that the completion handler is called.
+  base::test::ios::WaitUntilCondition(^{
+    return verification_completed;
+  }, base::MessageLoop::current(), base::TimeDelta());
+}
+
 }  // namespace web

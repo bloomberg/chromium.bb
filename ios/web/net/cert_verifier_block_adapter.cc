@@ -14,9 +14,10 @@ namespace web {
 
 namespace {
 
-// Resource manager which keeps CertVerifyResult, X509Certificate and
-// BoundNetLog alive until verification is completed. Also holds unowned pointer
-// to |net::CertVerifier::Request|.
+// Resource manager which keeps CertVerifyResult, X509Certificate,
+// CertVerifier::Request and BoundNetLog alive until verification is completed.
+// This class is refcounted so it can be captured by a block, keeping its
+// members alive.
 struct VerificationContext
     : public base::RefCountedThreadSafe<VerificationContext> {
   VerificationContext(scoped_refptr<net::X509Certificate> cert,
@@ -26,8 +27,13 @@ struct VerificationContext
         net_log(net::BoundNetLog::Make(
             net_log,
             net::NetLog::SOURCE_IOS_WEB_VIEW_CERT_VERIFIER)) {}
-  // Unowned verification request.
-  net::CertVerifier::Request* request;
+
+  // Stores the current verification request. The request must outlive the
+  // VerificationContext and the CertVerifierBlockAdapter, so that the
+  // verification request is not cancelled. CertVerifierBlockAdapter::Verify
+  // guarantees its completion handler to be called, which will not happen if
+  // verification request is cancelled.
+  scoped_ptr<net::CertVerifier::Request> request;
   // The result of certificate verification.
   net::CertVerifyResult result;
   // Certificate being verified.
@@ -74,12 +80,6 @@ void CertVerifierBlockAdapter::Verify(
   scoped_refptr<VerificationContext> context(
       new VerificationContext(params.cert, net_log_));
   net::CompletionCallback callback = base::BindBlock(^(int error) {
-    // Remove pending request.
-    auto request_iterator = std::find(
-        pending_requests_.begin(), pending_requests_.end(), context->request);
-    DCHECK(pending_requests_.end() != request_iterator);
-    pending_requests_.erase(request_iterator);
-
     completion_handler(context->result, error);
   });
   scoped_ptr<net::CertVerifier::Request> request;
@@ -88,10 +88,13 @@ void CertVerifierBlockAdapter::Verify(
                                      params.crl_set.get(), &(context->result),
                                      callback, &request, context->net_log);
   if (error == net::ERR_IO_PENDING) {
-    // Make sure that |net::CertVerifier::Request| is alive until either
-    // verification is completed or CertVerifierBlockAdapter is destroyed.
-    pending_requests_.push_back(request.Pass());
-    context->request = pending_requests_.back();
+    // Keep the |net::CertVerifier::Request| alive until verification completes.
+    // Because |context| is kept alive by |callback| (through base::BindBlock),
+    // this means that the cert verification request cannot be cancelled.
+    // However, it guarantees that |callback| - and thus |completion_handler| -
+    // will always be called, which is a necessary part of the API contract of
+    // |CertVerifierBlockAdapter::Verify()|.
+    context->request = request.Pass();
     // Completion handler will be called from |callback| when verification
     // request is completed.
     return;

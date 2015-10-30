@@ -30,8 +30,8 @@ class CertVerifierBlockAdapter {
   CertVerifierBlockAdapter(net::CertVerifier* cert_verifier,
                            net::NetLog* net_log);
 
-  // When the verifier is destroyed, all certificate verification requests are
-  // canceled, and their completion handlers will not be called.
+  // When the verifier is destroyed, certificate verification requests are not
+  // canceled, and their completion handlers are guaranteed to be called.
   ~CertVerifierBlockAdapter();
 
   // Encapsulates verification params. |cert| and |hostname| are mandatory, the
@@ -69,12 +69,11 @@ class CertVerifierBlockAdapter {
   // Verifies certificate with given |params|. |completion_handler| must not be
   // null and can be called either synchronously (in the same runloop) or
   // asynchronously.
+  // Note: |completion_handler| is guaranteed to be called, even if the instance
+  // |Verify()| was called on is destroyed.
   void Verify(const Params& params, CompletionHandler completion_handler);
 
  private:
-  // Pending verification requests. Request must be alive until verification is
-  // completed, otherwise verification operation will be cancelled.
-  ScopedVector<net::CertVerifier::Request> pending_requests_;
   // Underlying unowned CertVerifier.
   net::CertVerifier* cert_verifier_;
   // Unowned NetLog required by CertVerifier.
