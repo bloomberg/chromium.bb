@@ -176,13 +176,15 @@ Background.prototype = {
   /**
    * Handles ChromeVox Next commands.
    * @param {string} command
+   * @param {boolean=} opt_bypassModeCheck Always tries to execute the command
+   *    regardless of mode.
    * @return {boolean} True if the command should propagate.
    */
-  onGotCommand: function(command) {
+  onGotCommand: function(command, opt_bypassModeCheck) {
     if (!this.currentRange_)
       return true;
 
-    if (this.mode_ == ChromeVoxMode.CLASSIC)
+    if (this.mode_ == ChromeVoxMode.CLASSIC && !opt_bypassModeCheck)
       return true;
 
     var current = this.currentRange_;
@@ -382,7 +384,6 @@ Background.prototype = {
         var isClassic =
             newMode == ChromeVoxMode.CLASSIC || newMode == ChromeVoxMode.COMPAT;
 
-
         // Leaving unlocalized as 'next' isn't an official name.
         cvox.ChromeVox.tts.speak(isClassic ?
             'classic' : 'next', cvox.QueueMode.FLUSH, {doNotInterrupt: true});
@@ -533,7 +534,6 @@ Background.prototype = {
     this.editableTextHandler_ = null;
 
     var node = evt.target;
-
 
     // Discard focus events on embeddedObject nodes.
     if (node.role == RoleType.embeddedObject)

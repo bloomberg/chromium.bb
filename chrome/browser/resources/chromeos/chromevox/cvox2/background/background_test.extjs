@@ -442,3 +442,24 @@ TEST_F('BackgroundTest', 'EarconsForControls', function() {
       mockFeedback.replay();
     }.bind(this));
 });
+
+TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
+    var gotCmd = global.backgroundObj.onGotCommand;
+
+    // The command came from the background keyboard handler.
+    var togglerFromBackground = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion');
+
+    // The command came from a content script.
+    var togglerFromContent = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion', true);
+
+    mockFeedback.call(togglerFromBackground)
+        .expectSpeech('classic')   
+        .call(togglerFromContent)
+        .expectSpeech('next')
+        .call(togglerFromBackground)
+        .expectSpeech('classic');
+    mockFeedback.replay();
+  });
+});

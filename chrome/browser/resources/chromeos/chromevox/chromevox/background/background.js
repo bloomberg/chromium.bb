@@ -403,7 +403,7 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
       break;
     case 'toggleChromeVoxVersion':
       if (global.backgroundObj) {
-        global.backgroundObj.onGotCommand('toggleChromeVoxVersion');
+        global.backgroundObj.onGotCommand('toggleChromeVoxVersion', true);
       }
       break;
     }
