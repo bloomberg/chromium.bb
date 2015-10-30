@@ -84,6 +84,14 @@ void RecordInternalError(InternalErrorLoadEvent event) {
       "PageLoad.Events.InternalError", event, ERR_LAST_ENTRY);
 }
 
+base::TimeDelta GetFirstContentfulPaint(const PageLoadTiming& timing) {
+  if (timing.first_text_paint.is_zero())
+    return timing.first_image_paint;
+  if (timing.first_image_paint.is_zero())
+    return timing.first_text_paint;
+  return std::min(timing.first_text_paint, timing.first_image_paint);
+}
+
 }  // namespace
 
 PageLoadTracker::PageLoadTracker(
@@ -241,6 +249,18 @@ void PageLoadTracker::RecordTimingHistograms() {
           timing_.first_image_paint);
     }
   }
+  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing_);
+  if (!first_contentful_paint.is_zero()) {
+    if (first_contentful_paint < background_delta) {
+      PAGE_LOAD_HISTOGRAM("PageLoad.Timing2.NavigationToFirstContentfulPaint",
+                          first_contentful_paint);
+    } else {
+      PAGE_LOAD_HISTOGRAM(
+          "PageLoad.Timing2.NavigationToFirstContentfulPaint.Background",
+          first_contentful_paint);
+    }
+  }
+
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
   if (!background_time_.is_null()) {

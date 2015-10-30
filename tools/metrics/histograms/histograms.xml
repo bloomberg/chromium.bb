@@ -30476,6 +30476,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"
+    units="milliseconds">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    The time from navigation start to first &quot;contentful&quot; paint. For
+    now, this is the minimum of PageLoad.Timing2.NavigationToFirstTextPaint and
+    PageLoad.Timing2.NavigationToFirstImagePaint.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing2.NavigationToFirstForeground"
     units="milliseconds">
   <owner>bmcquade@chromium.org</owner>
@@ -79304,6 +79314,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Events.Provisional"/>
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstImagePaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstLayout"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstPaint"/>
