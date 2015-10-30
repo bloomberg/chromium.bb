@@ -91,7 +91,7 @@ void DataFetcherSharedMemoryBase::PollingThread::RemoveConsumer(
   if (!fetcher_->Stop(consumer_type))
     return;
 
-  consumers_bitmask_ ^= consumer_type;
+  consumers_bitmask_ &= ~consumer_type;
 
   if (!consumers_bitmask_)
     timer_.reset();  // will also stop the timer.
