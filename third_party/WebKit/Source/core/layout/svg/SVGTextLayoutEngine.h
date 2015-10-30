@@ -20,6 +20,7 @@
 #ifndef SVGTextLayoutEngine_h
 #define SVGTextLayoutEngine_h
 
+#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextFragment.h"
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
@@ -66,7 +67,7 @@ private:
     void endTextPathLayout();
 
     void layoutInlineTextBox(SVGInlineTextBox*);
-    void layoutTextOnLineOrPath(SVGInlineTextBox*, const LayoutSVGInlineText&, const ComputedStyle&);
+    void layoutTextOnLineOrPath(SVGInlineTextBox*, LineLayoutSVGInlineText, const ComputedStyle&);
 
     bool currentLogicalCharacterAttributes(SVGTextLayoutAttributes*&);
     bool currentLogicalCharacterMetrics(SVGTextLayoutAttributes*&, SVGTextMetrics&);

@@ -67,6 +67,11 @@ public:
         return toText()->uncheckedCharacterAt(offset);
     }
 
+    UChar32 codepointAt(unsigned offset) const
+    {
+        return toText()->codepointAt(offset);
+    }
+
     bool is8Bit() const
     {
         return toText()->is8Bit();

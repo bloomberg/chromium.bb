@@ -20,6 +20,7 @@
 #ifndef SVGTextLayoutEngineBaseline_h
 #define SVGTextLayoutEngineBaseline_h
 
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/style/SVGComputedStyleDefs.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -41,10 +42,10 @@ public:
     SVGTextLayoutEngineBaseline(const Font&, float effectiveZoom);
 
     float calculateBaselineShift(const ComputedStyle&) const;
-    float calculateAlignmentBaselineShift(bool isVerticalText, const LayoutObject* textLayoutObject) const;
+    float calculateAlignmentBaselineShift(bool isVerticalText, LineLayoutItem) const;
 
 private:
-    EAlignmentBaseline dominantBaselineToAlignmentBaseline(bool isVerticalText, const LayoutObject* textLayoutObject) const;
+    EAlignmentBaseline dominantBaselineToAlignmentBaseline(bool isVerticalText, LineLayoutItem) const;
 
     const Font& m_font;
 

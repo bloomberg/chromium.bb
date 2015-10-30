@@ -207,16 +207,16 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
 {
     ASSERT(textBox);
 
-    LayoutSVGInlineText& text = toLayoutSVGInlineText(textBox->layoutObject());
-    ASSERT(text.parent());
-    ASSERT(text.parent()->node());
-    ASSERT(text.parent()->node()->isSVGElement());
+    LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
+    ASSERT(textLineLayout.parent());
+    ASSERT(textLineLayout.parent().node());
+    ASSERT(textLineLayout.parent().node()->isSVGElement());
 
-    const ComputedStyle& style = text.styleRef();
+    const ComputedStyle& style = textLineLayout.styleRef();
 
     textBox->clearTextFragments();
     m_isVerticalText = !style.isHorizontalWritingMode();
-    layoutTextOnLineOrPath(textBox, text, style);
+    layoutTextOnLineOrPath(textBox, textLineLayout, style);
 
     if (m_inPathLayout)
         return;
@@ -329,13 +329,13 @@ void SVGTextLayoutEngine::advanceToNextLogicalCharacter(const SVGTextMetrics& lo
     m_logicalCharacterOffset += logicalMetrics.length();
 }
 
-void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, const LayoutSVGInlineText& text, const ComputedStyle& style)
+void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, LineLayoutSVGInlineText textLineLayout, const ComputedStyle& style)
 {
     if (m_inPathLayout && !m_textPathCalculator)
         return;
 
     // Find the start of the current text box in the metrics list.
-    m_visualMetricsIterator.advanceToTextStart(&text, textBox->start());
+    m_visualMetricsIterator.advanceToTextStart(&textLineLayout, textBox->start());
 
     const Font& font = style.font();
 
@@ -347,7 +347,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
 
     float lastAngle = 0;
     float baselineShift = baselineLayout.calculateBaselineShift(style);
-    baselineShift -= baselineLayout.calculateAlignmentBaselineShift(m_isVerticalText, &text);
+    baselineShift -= baselineLayout.calculateAlignmentBaselineShift(m_isVerticalText, textLineLayout);
 
     // Main layout algorithm.
     const unsigned boxEndOffset = textBox->start() + textBox->len();
@@ -386,7 +386,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
         // Calculate glyph orientation angle.
         // Font::width() calculates the resolved FontOrientation for each character,
         // but is not exposed today to avoid the API complexity.
-        UChar32 currentCharacter = text.codepointAt(m_visualMetricsIterator.characterOffset());
+        UChar32 currentCharacter = textLineLayout.codepointAt(m_visualMetricsIterator.characterOffset());
         FontOrientation fontOrientation = font.fontDescription().orientation();
         fontOrientation = adjustOrientationForCharacterInMixedVertical(fontOrientation, currentCharacter);
 

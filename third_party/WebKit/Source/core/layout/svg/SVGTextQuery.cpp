@@ -105,9 +105,9 @@ typedef bool ProcessTextFragmentCallback(QueryData*, const SVGTextFragment&);
 static bool queryTextBox(QueryData* queryData, const SVGInlineTextBox* textBox, ProcessTextFragmentCallback fragmentCallback)
 {
     queryData->textBox = textBox;
-    queryData->textLineLayout = LineLayoutSVGInlineText(&toLayoutSVGInlineText(textBox->layoutObject()));
+    queryData->textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
 
-    queryData->isVerticalText = !textBox->layoutObject().style()->isHorizontalWritingMode();
+    queryData->isVerticalText = !queryData->textLineLayout.style()->isHorizontalWritingMode();
 
     // Loop over all text fragments in this text box, firing a callback for each.
     for (const SVGTextFragment& fragment : textBox->textFragments()) {
