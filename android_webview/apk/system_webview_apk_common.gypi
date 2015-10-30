@@ -46,7 +46,8 @@
     {
       'destination': '<(asset_location)',
       'files': [
-        '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
+        '<(webview_licenses_path)',
+        '<(webview_chromium_pak_path)',
         '<@(snapshot_copy_files)',
       ],
       'conditions': [
@@ -58,27 +59,8 @@
       ],
     },
   ],
-  'actions': [
-    {
-      'action_name': 'generate_webview_license_notice',
-      'inputs': [
-        '<!@(python <(DEPTH)/android_webview/tools/webview_licenses.py notice_deps)',
-        '<(DEPTH)/android_webview/tools/licenses_notice.tmpl',
-        '<(DEPTH)/android_webview/tools/webview_licenses.py',
-      ],
-      'outputs': [
-        '<(asset_location)/webview_licenses.notice',
-      ],
-      'action': [
-        'python',
-        '<(DEPTH)/android_webview/tools/webview_licenses.py',
-        'notice',
-        '<(asset_location)/webview_licenses.notice',
-      ],
-      'message': 'Generating WebView license notice',
-    },
-  ],
   'includes': [
+    'system_webview_paks.gypi',
     '../../build/java_apk.gypi',
     '../../build/android/jinja_template.gypi',
   ],

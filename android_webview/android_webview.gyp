@@ -126,6 +126,24 @@
             '<@(_outputs)',
           ],
         },
+        {
+          'action_name': 'generate_webview_license_notice',
+          'inputs': [
+            '<!@(python <(DEPTH)/android_webview/tools/webview_licenses.py notice_deps)',
+            '<(DEPTH)/android_webview/tools/licenses_notice.tmpl',
+            '<(DEPTH)/android_webview/tools/webview_licenses.py',
+          ],
+          'outputs': [
+             '<(webview_licenses_path)',
+          ],
+          'action': [
+            'python',
+              '<(DEPTH)/android_webview/tools/webview_licenses.py',
+              'notice',
+              '<(webview_licenses_path)',
+          ],
+          'message': 'Generating WebView license notice',
+        },
       ],
     },
     # GN version:  //android_webview/locale_paks 

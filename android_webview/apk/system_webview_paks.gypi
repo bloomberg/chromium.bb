@@ -9,6 +9,7 @@
 # once Chrome includes all the locales that the WebView needs.
 {
   'variables': {
+    'webview_licenses_path': '<(PRODUCT_DIR)/android_webview_assets/webview_licenses.notice',
     'webview_chromium_pak_path': '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
     'webview_locales_input_paks_folder': '<(PRODUCT_DIR)/android_webview_assets/locales/',
     # The list of locale are only supported by WebView.
