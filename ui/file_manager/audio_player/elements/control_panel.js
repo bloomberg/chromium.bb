@@ -99,6 +99,15 @@
         value: false,
         observer: 'volumeSliderShownChanged',
         notify: true
+      },
+
+      /**
+       * Whether the knob of time slider is being dragged.
+       */
+      dragging: {
+        type: Boolean,
+        value: false,
+        notify: true
       }
     },
 
@@ -112,17 +121,14 @@
       this.$.volumeSlider.addEventListener('focusout', onFocusoutBound);
       this.$.volumeButton.addEventListener('focusout', onFocusoutBound);
 
-      // Prevent the time slider from being moved by arrow keys.
-      this.$.timeInput.addEventListener('keydown', function(event) {
-        switch (event.keyCode) {
-          case 37:  // Left arrow
-          case 38:  // Up arrow
-          case 39:  // Right arrow
-          case 40:  // Down arrow
-            event.preventDefault();
-            break;
-        };
-      });
+      this.$.timeSlider.addEventListener('value-change', function() {
+        if (this.dragging)
+          this.dragging = false;
+      }.bind(this));
+      this.$.timeSlider.addEventListener('immediate-value-change', function() {
+        if (!this.dragging)
+          this.dragging = true;
+      }.bind(this));
     },
 
     /**
@@ -191,6 +197,16 @@
      */
     time2string_: function(time) {
       return ~~(time / 60000) + ':' + ('0' + ~~(time / 1000 % 60)).slice(-2);
+    },
+
+    /**
+     * Converts the time and duration into human friendly string.
+     * @param {number} time Time to be converted.
+     * @param {number} duration Duration to be converted.
+     * @return {string} String representation of the given time
+     */
+    computeTimeString_: function(time, duration) {
+      return this.time2string_(time) + ' / ' + this.time2string_(duration);
     },
 
     /**

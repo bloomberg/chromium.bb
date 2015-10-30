@@ -43,6 +43,7 @@
 .track .icon {
   background-position: center;
   background-repeat: no-repeat;
+  flex: none;
   height: 32px;
   margin: 8px;
   width: 32px;
