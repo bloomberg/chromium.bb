@@ -52,7 +52,8 @@ class InProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
   explicit InProcessNativeRunnerFactory(Context* context) : context_(context) {}
   ~InProcessNativeRunnerFactory() override {}
 
-  scoped_ptr<shell::NativeRunner> Create() override;
+  scoped_ptr<shell::NativeRunner> Create(
+      const base::FilePath& app_path) override;
 
  private:
   Context* const context_;

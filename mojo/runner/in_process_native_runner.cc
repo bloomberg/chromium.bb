@@ -10,6 +10,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/runner/native_application_support.h"
+#include "mojo/runner/out_of_process_native_runner.h"
 
 namespace mojo {
 namespace runner {
@@ -61,7 +62,11 @@ void InProcessNativeRunner::Run() {
   app_completed_callback_runner_.Reset();
 }
 
-scoped_ptr<shell::NativeRunner> InProcessNativeRunnerFactory::Create() {
+scoped_ptr<shell::NativeRunner> InProcessNativeRunnerFactory::Create(
+    const base::FilePath& app_path) {
+  // Non-Mojo apps are always run in a new process.
+  if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".mojo")))
+    return make_scoped_ptr(new OutOfProcessNativeRunner(context_));
   return make_scoped_ptr(new InProcessNativeRunner(context_));
 }
 

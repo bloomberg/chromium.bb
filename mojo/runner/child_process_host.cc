@@ -103,9 +103,18 @@ void ChildProcessHost::DidStart() {
 void ChildProcessHost::DoLaunch() {
   const base::CommandLine* parent_command_line =
       base::CommandLine::ForCurrentProcess();
-  base::CommandLine child_command_line(parent_command_line->GetProgram());
+  base::FilePath target_path = parent_command_line->GetProgram();
+  // |app_path_| can be empty in tests.
+  if (!app_path_.MatchesExtension(FILE_PATH_LITERAL(".mojo")) &&
+      !app_path_.empty()) {
+    target_path = app_path_;
+  }
+
+  base::CommandLine child_command_line(target_path);
   child_command_line.AppendArguments(*parent_command_line, false);
-  child_command_line.AppendSwitchPath(switches::kChildProcess, app_path_);
+
+  if (target_path != app_path_)
+    child_command_line.AppendSwitchPath(switches::kChildProcess, app_path_);
 
   if (start_sandboxed_)
     child_command_line.AppendSwitch(switches::kEnableSandbox);

@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "mojo/runner/child_process.mojom.h"
 #include "mojo/runner/child_process_host.h"
 #include "mojo/runner/in_process_native_runner.h"
 
@@ -56,7 +55,8 @@ void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
   app_completed_callback.Run();
 }
 
-scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create() {
+scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create(
+    const base::FilePath& app_path) {
   return make_scoped_ptr(new OutOfProcessNativeRunner(context_));
 }
 

@@ -220,7 +220,7 @@ void ApplicationManager::RunNativeApplication(
 
   TRACE_EVENT1("mojo_shell", "ApplicationManager::RunNativeApplication", "path",
                path.AsUTF8Unsafe());
-  NativeRunner* runner = native_runner_factory_->Create().release();
+  NativeRunner* runner = native_runner_factory_->Create(path).release();
   native_runners_.push_back(runner);
   runner->Start(path, start_sandboxed, application_request.Pass(),
                 base::Bind(&ApplicationManager::CleanupRunner,

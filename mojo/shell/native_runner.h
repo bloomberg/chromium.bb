@@ -43,7 +43,7 @@ class NativeRunner {
 class NativeRunnerFactory {
  public:
   virtual ~NativeRunnerFactory() {}
-  virtual scoped_ptr<NativeRunner> Create() = 0;
+  virtual scoped_ptr<NativeRunner> Create(const base::FilePath& app_path) = 0;
 };
 
 }  // namespace shell

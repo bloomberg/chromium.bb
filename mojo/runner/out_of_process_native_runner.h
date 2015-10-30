@@ -50,7 +50,8 @@ class OutOfProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
       : context_(context) {}
   ~OutOfProcessNativeRunnerFactory() override {}
 
-  scoped_ptr<shell::NativeRunner> Create() override;
+  scoped_ptr<shell::NativeRunner> Create(
+      const base::FilePath& app_path) override;
 
  private:
   Context* const context_;

@@ -50,7 +50,7 @@ class TestNativeRunnerFactory : public shell::NativeRunnerFactory {
  public:
   explicit TestNativeRunnerFactory(TestState* state) : state_(state) {}
   ~TestNativeRunnerFactory() override {}
-  scoped_ptr<shell::NativeRunner> Create() override {
+  scoped_ptr<shell::NativeRunner> Create(const base::FilePath& path) override {
     return scoped_ptr<shell::NativeRunner>(new TestNativeRunner(state_));
   }
 

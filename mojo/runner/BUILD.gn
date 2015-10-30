@@ -16,6 +16,7 @@ group("runner") {
 
   deps = [
     ":mojo_runner",
+    "//mojo/runner/child",
   ]
 }
 
@@ -94,18 +95,14 @@ executable("mojo_runner") {
   }
 }
 
-source_set("in_process_native_runner") {
+source_set("init") {
   sources = [
-    "in_process_native_runner.cc",
-    "in_process_native_runner.h",
-  ]
-
-  public_deps = [
-    ":native_application_support",
-    "//mojo/shell",
+    "init.cc",
+    "init.h",
   ]
 
   deps = [
+    ":switches",
     "//base",
   ]
 }
@@ -118,8 +115,8 @@ source_set("lib") {
     "child_process_host.h",
     "context.cc",
     "context.h",
-    "init.cc",
-    "init.h",
+    "in_process_native_runner.cc",
+    "in_process_native_runner.h",
     "out_of_process_native_runner.cc",
     "out_of_process_native_runner.h",
     "scoped_user_data_dir.cc",
@@ -131,8 +128,7 @@ source_set("lib") {
   ]
 
   deps = [
-    ":child_process_bindings",
-    ":in_process_native_runner",
+    ":init",
     ":native_application_support",
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -142,6 +138,7 @@ source_set("lib") {
     "//mojo/application/public/cpp",
     "//mojo/message_pump",
     "//mojo/package_manager",
+    "//mojo/runner/child:interfaces",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
@@ -165,6 +162,7 @@ source_set("lib") {
   }
 
   public_deps = [
+    ":init",
     ":switches",
   ]
 
@@ -419,18 +417,6 @@ if (is_android) {
   }
 }
 
-mojom("child_process_bindings") {
-  sources = [
-    "child_process.mojom",
-  ]
-
-  deps = [
-    "//mojo/application/public/interfaces",
-  ]
-
-  import_dirs = [ "//mojo/services" ]
-}
-
 test("mojo_runner_unittests") {
   sources = [
     "../fetcher/about_fetcher_unittest.cc",
@@ -451,7 +437,6 @@ test("mojo_runner_unittests") {
   ]
 
   deps = [
-    ":in_process_native_runner",
     ":lib",
     "//base",
     "//base:i18n",

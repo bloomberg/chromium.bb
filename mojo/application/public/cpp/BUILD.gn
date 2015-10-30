@@ -102,7 +102,4 @@ source_set("test_support") {
   if (is_android) {
     data_deps += [ "//mojo/android" ]
   }
-  if (!is_component_build) {
-    data_deps += [ "//mojo/runner" ]
-  }
 }

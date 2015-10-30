@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/runner/child_process.mojom.h"
+#include "mojo/runner/child/child_controller.mojom.h"
 #include "mojo/runner/child_process_host.h"
 #include "third_party/mojo/src/mojo/edk/embedder/channel_info_forward.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
