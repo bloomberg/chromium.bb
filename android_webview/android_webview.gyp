@@ -36,6 +36,7 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        # GN version: //android_webview:repack_pack
         {
           'action_name': 'repack_android_webview_pack',
           'variables': {
@@ -72,6 +73,7 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        # GN Version: //android_webview:repack_locales
         {
           'action_name': 'android_webview_repack_locales',
           'variables': {
@@ -92,6 +94,7 @@
             '<@(locales)',
           ],
         },
+        # GN version:  //android_webview/rename_snapshot_blob 
         {
           'action_name': 'rename_snapshot_blob',
           'inputs': [
@@ -107,6 +110,7 @@
             '<@(_outputs)',
           ],
         },
+        # GN version:  //android_webview/rename_natives_blob 
         {
           'action_name': 'rename_natives_blob',
           'inputs': [
@@ -124,6 +128,7 @@
         },
       ],
     },
+    # GN version:  //android_webview/locale_paks 
     {
       'target_name': 'android_webview_locale_paks',
       'type': 'none',

@@ -4,8 +4,17 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 import("//build_overrides/v8.gni")
+import("//third_party/icu/config.gni")
 import("//tools/grit/repack.gni")
+import("webview_repack_locales.gni")
+
+if (current_cpu == "arm" || current_cpu == "x86" || current_cpu == "mipsel") {
+  arch_suffix = 32
+} else {
+  arch_suffix = 64
+}
 
 # This is dummy target for adding WebView gn piece by piece, so we don't need
 # to modify the src/BUILD.gn everytime new targets added.
@@ -13,6 +22,154 @@ group("system_webview_apk") {
   deps = [
     ":android_webview_java",
     ":common",
+    ":assets",
+  ]
+}
+
+webview_repack_locales("repack_locales") {
+  input_locales = locales
+  output_locales = locales
+}
+
+locale_pak_resources("locale_paks") {
+  sources = [
+    "$root_out_dir/android_webview/locales/am.pak",
+    "$root_out_dir/android_webview/locales/ar.pak",
+    "$root_out_dir/android_webview/locales/bg.pak",
+    "$root_out_dir/android_webview/locales/bn.pak",
+    "$root_out_dir/android_webview/locales/ca.pak",
+    "$root_out_dir/android_webview/locales/cs.pak",
+    "$root_out_dir/android_webview/locales/da.pak",
+    "$root_out_dir/android_webview/locales/de.pak",
+    "$root_out_dir/android_webview/locales/el.pak",
+    "$root_out_dir/android_webview/locales/en-GB.pak",
+    "$root_out_dir/android_webview/locales/en-US.pak",
+    "$root_out_dir/android_webview/locales/es-419.pak",
+    "$root_out_dir/android_webview/locales/es.pak",
+    "$root_out_dir/android_webview/locales/et.pak",
+    "$root_out_dir/android_webview/locales/fa.pak",
+    "$root_out_dir/android_webview/locales/fi.pak",
+    "$root_out_dir/android_webview/locales/fil.pak",
+    "$root_out_dir/android_webview/locales/fr.pak",
+    "$root_out_dir/android_webview/locales/gu.pak",
+    "$root_out_dir/android_webview/locales/he.pak",
+    "$root_out_dir/android_webview/locales/hi.pak",
+    "$root_out_dir/android_webview/locales/hr.pak",
+    "$root_out_dir/android_webview/locales/hu.pak",
+    "$root_out_dir/android_webview/locales/id.pak",
+    "$root_out_dir/android_webview/locales/it.pak",
+    "$root_out_dir/android_webview/locales/ja.pak",
+    "$root_out_dir/android_webview/locales/kn.pak",
+    "$root_out_dir/android_webview/locales/ko.pak",
+    "$root_out_dir/android_webview/locales/lt.pak",
+    "$root_out_dir/android_webview/locales/lv.pak",
+    "$root_out_dir/android_webview/locales/ml.pak",
+    "$root_out_dir/android_webview/locales/mr.pak",
+    "$root_out_dir/android_webview/locales/ms.pak",
+    "$root_out_dir/android_webview/locales/nb.pak",
+    "$root_out_dir/android_webview/locales/nl.pak",
+    "$root_out_dir/android_webview/locales/pl.pak",
+    "$root_out_dir/android_webview/locales/pt-BR.pak",
+    "$root_out_dir/android_webview/locales/pt-PT.pak",
+    "$root_out_dir/android_webview/locales/ro.pak",
+    "$root_out_dir/android_webview/locales/ru.pak",
+    "$root_out_dir/android_webview/locales/sk.pak",
+    "$root_out_dir/android_webview/locales/sl.pak",
+    "$root_out_dir/android_webview/locales/sr.pak",
+    "$root_out_dir/android_webview/locales/sv.pak",
+    "$root_out_dir/android_webview/locales/sw.pak",
+    "$root_out_dir/android_webview/locales/ta.pak",
+    "$root_out_dir/android_webview/locales/te.pak",
+    "$root_out_dir/android_webview/locales/th.pak",
+    "$root_out_dir/android_webview/locales/tr.pak",
+    "$root_out_dir/android_webview/locales/uk.pak",
+    "$root_out_dir/android_webview/locales/vi.pak",
+    "$root_out_dir/android_webview/locales/zh-CN.pak",
+    "$root_out_dir/android_webview/locales/zh-TW.pak",
+  ]
+  deps = [
+    ":repack_locales",
+  ]
+}
+
+repack("repack_pack") {
+  sources = [
+    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
+    "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/net/net_resources.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$target_gen_dir/aw_resources.pak",
+  ]
+  deps = [
+    ":generate_aw_resources",
+    "//third_party/WebKit/public:image_resources",
+    "//third_party/WebKit/public:resources",
+    "//content/app/resources",
+    "//content:resources",
+    "//net:net_resources",
+    "//ui/resources",
+  ]
+  output = "$target_gen_dir/webviewchromium.pak"
+}
+
+copy("rename_natives_blob") {
+  sources = [
+    "$root_out_dir/natives_blob.bin",
+  ]
+  outputs = [
+    "$target_gen_dir/natives_blob_$arch_suffix.bin",
+  ]
+  deps = [
+    "//v8",
+  ]
+}
+
+copy("rename_snapshot_blob") {
+  sources = [
+    "$root_out_dir/snapshot_blob.bin",
+  ]
+  outputs = [
+    "$target_gen_dir/snapshot_blob_$arch_suffix.bin",
+  ]
+  deps = [
+    "//v8",
+  ]
+}
+
+android_webview_assets_dir = "$root_build_dir/android_webview_assets"
+
+copy_ex("assets") {
+  clear_dir = true
+  dest = android_webview_assets_dir
+  sources = [
+    "$target_gen_dir/webviewchromium.pak",
+  ]
+  deps = [
+    ":repack_pack",
+  ]
+  if (icu_use_data_file) {
+    sources += [ "$root_build_dir/icudtl.dat" ]
+    deps += [ "//third_party/icu:icudata" ]
+  }
+  if (v8_use_external_startup_data) {
+    sources += [
+      "$target_gen_dir/natives_blob_$arch_suffix.bin",
+      "$target_gen_dir/snapshot_blob_$arch_suffix.bin",
+    ]
+    deps += [
+      ":rename_natives_blob",
+      ":rename_snapshot_blob",
+    ]
+  }
+}
+
+android_resources("resources") {
+  resource_dirs = [ "java/res" ]
+  custom_package = "org.chromium.android_webview"
+  deps = [
+    ":locale_paks",
     ":strings_grd",
   ]
 }
@@ -362,6 +519,7 @@ source_set("common") {
 
 android_library("android_webview_java") {
   deps = [
+    ":resources",
     ":strings_grd",
     "//base:base_java",
     "//components/external_video_surface:java",
