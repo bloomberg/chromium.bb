@@ -136,14 +136,6 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   return device;
 }
 
-BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
-                                                           int height,
-                                                           bool is_opaque) {
-  // The Linux port always constructs initialized bitmaps, so there is no extra
-  // work to perform here.
-  return Create(width, height, is_opaque);
-}
-
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque,
                                                    uint8_t* data) {

@@ -72,12 +72,6 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // completely opaque and allows some optimizations.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
 
-  // Performs the same construction as Create.
-  // Other ports require a separate construction routine because Create does not
-  // initialize the bitmap to 0.
-  static BitmapPlatformDevice* CreateAndClear(int width, int height,
-                                              bool is_opaque);
-
   // This doesn't take ownership of |data|. If |data| is NULL, the contents
   // of the device are initialized to 0.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
