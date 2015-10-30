@@ -114,6 +114,8 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
 #if ENABLE(OILPAN)
     unregisterAsRenderlessIfNeeded();
     registerAsRenderless(widget);
+    if (m_persistedPluginWidget)
+        m_persistedPluginWidget->dispose();
 #endif
     m_persistedPluginWidget = widget;
 }
@@ -122,10 +124,6 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
 bool HTMLPlugInElement::unregisterAsRenderlessIfNeeded()
 {
     if (!m_persistedPluginWidget || !m_persistedPluginWidget->isPluginView())
-        return false;
-
-    // If we are in a renderer-less state, keep the registration.
-    if (!layoutEmbeddedObject())
         return false;
 
     LocalFrame* frame = toPluginView(m_persistedPluginWidget.get())->pluginFrame();
@@ -148,7 +146,9 @@ void HTMLPlugInElement::registerAsRenderless(Widget* widget)
 PassRefPtrWillBeRawPtr<Widget> HTMLPlugInElement::releasePersistedPluginWidget()
 {
 #if ENABLE(OILPAN)
-    unregisterAsRenderlessIfNeeded();
+    // If we are in a renderer-less state, keep the registration.
+    if (layoutEmbeddedObject())
+        unregisterAsRenderlessIfNeeded();
 #endif
     return m_persistedPluginWidget.release();
 }
