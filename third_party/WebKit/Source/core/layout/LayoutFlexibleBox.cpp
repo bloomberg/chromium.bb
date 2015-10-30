@@ -449,7 +449,7 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& chi
     // computeLogicalWidth always re-computes the intrinsic widths. However, when our logical width is auto,
     // we can just use our cached value. So let's do that here. (Compare code in LayoutBlock::computePreferredLogicalWidths)
     LayoutUnit borderAndPadding = child.borderAndPaddingLogicalWidth();
-    if (styleRef().logicalWidth().isAuto()) {
+    if (child.styleRef().logicalWidth().isAuto()) {
         if (size.type() == MinContent)
             return child.minPreferredLogicalWidth() - borderAndPadding;
         if (size.type() == MaxContent)
