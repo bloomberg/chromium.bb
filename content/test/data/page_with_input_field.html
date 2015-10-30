@@ -8,11 +8,6 @@ function focusInputField() {
   inputField.focus();
 }
 
-function getInputFieldText() {
-  var inputField = document.getElementById("text-field");
-  return inputField.value;
-}
-
 function onInputFocus() {
   domAutomationController.setAutomationId(0);
   domAutomationController.send("input-focus");

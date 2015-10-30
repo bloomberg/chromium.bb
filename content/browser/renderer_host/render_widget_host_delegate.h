@@ -105,12 +105,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // current FrameTree, not including the main frame's SiteInstance.
   virtual void ReplicatePageFocus(bool is_focused) {}
 
-  // Get the RenderWidgetHost of the currently focused frame.  With
-  // out-of-process iframes, multiple RenderWidgetHosts may be involved in
-  // rendering a page, and this function determines which RenderWidgetHost
-  // should consume a keyboard input event.
-  virtual RenderWidgetHostImpl* GetFocusedRenderWidgetHost();
-
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif

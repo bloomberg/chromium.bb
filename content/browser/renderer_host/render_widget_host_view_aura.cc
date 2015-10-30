@@ -2738,17 +2738,6 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
 
 void RenderWidgetHostViewAura::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  RenderWidgetHostImpl* target_host = host_;
-
-  // If there are multiple widgets on the page (such as when there are
-  // out-of-process iframes), pick the one that should process this event.
-  if (host_->delegate()) {
-    RenderWidgetHostImpl* focused_host =
-        host_->delegate()->GetFocusedRenderWidgetHost();
-    if (focused_host)
-      target_host = focused_host;
-  }
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   ui::TextEditKeyBindingsDelegateAuraLinux* keybinding_delegate =
       ui::GetTextEditKeyBindingsDelegate();
@@ -2764,19 +2753,16 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
       edit_commands.push_back(EditCommand(it->GetCommandString(),
                                           it->argument()));
     }
-    // TODO(alexmos): This needs to be refactored to work with subframe
-    // RenderWidgetHosts for OOPIF.  See https://crbug.com/549334.
-    target_host->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
-        target_host->GetRoutingID(), edit_commands));
-
+    host_->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
+        host_->GetRoutingID(), edit_commands));
     NativeWebKeyboardEvent copy_event(event);
     copy_event.match_edit_command = true;
-    target_host->ForwardKeyboardEvent(event);
+    host_->ForwardKeyboardEvent(copy_event);
     return;
   }
 #endif
 
-  target_host->ForwardKeyboardEvent(event);
+  host_->ForwardKeyboardEvent(event);
 }
 
 void RenderWidgetHostViewAura::SelectionUpdated(bool is_editable,
