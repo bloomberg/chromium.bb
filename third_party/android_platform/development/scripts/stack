@@ -23,11 +23,15 @@ import os
 import sys
 
 import stack_core
+import stack_libs
 import subprocess
 import symbol
 import sys
 
 DEFAULT_SYMROOT='/tmp/symbols'
+DEFAULT_APK_DIR='chrome_apk'
+# From: https://source.android.com/source/build-numbers.html
+_ANDROID_M_MAJOR_VERSION=6
 
 def PrintUsage():
   """Print usage and exit with error."""
@@ -43,6 +47,20 @@ def PrintUsage():
   print "       to src), such as =out/Debug/lib"
   print "       If not specified, will look for the newest lib in out/Debug or"
   print "       out/Release"
+  print
+  print "  --packed-relocation-adjustments"
+  print "  --no-packed-relocation-adjustments"
+  print "       turn packed relocation adjustment on and off (default is off)"
+  print "       If running on pre-M Android and the stack trace appears to"
+  print "       make no sense, try turning this feature on."
+  print
+  print "  --chrome-apk-dir=path"
+  print "       the path to the APK staging dir (can be absolute or relative"
+  print "       to src), such as =out/Debug/chrome_apk"
+  print "       If not specified, uses =|chrome-symbols-dir|/../chrome_apk"
+  print "       Parses libraries here to find data for adjusting debuggerd"
+  print "       tombstones where relocations are packed."
+  print "       Enable/disable with --[no-]packed-relocation-adjustments."
   print
   print "  --symbols-zip=path"
   print "       the path to a symbols zip file, such as =dream-symbols-12345.zip"
@@ -115,9 +133,12 @@ def UnzipSymbols(symbolfile, symdir=None):
 def main(argv):
   try:
     options, arguments = getopt.getopt(argv, "",
-                                       ["more-info",
+                                       ["packed-relocation-adjustments",
+                                        "no-packed-relocation-adjustments",
+                                        "more-info",
                                         "less-info",
                                         "chrome-symbols-dir=",
+                                        "chrome-apk-dir=",
                                         "symbols-dir=",
                                         "symbols-zip=",
                                         "arch=",
@@ -128,6 +149,8 @@ def main(argv):
 
   zip_arg = None
   more_info = False
+  chrome_apk_dir = None
+  packed_relocation_adjustments = "unknown"
   for option, value in options:
     if option == "--help":
       PrintUsage()
@@ -139,12 +162,22 @@ def main(argv):
       symbol.ARCH = value
     elif option == "--chrome-symbols-dir":
       symbol.CHROME_SYMBOLS_DIR = os.path.join(symbol.CHROME_SRC, value)
+    elif option == "--chrome-apk-dir":
+      chrome_apk_dir = os.path.join(symbol.CHROME_SRC, value)
+    elif option == "--packed-relocation-adjustments":
+      packed_relocation_adjustments = True
+    elif option == "--no-packed-relocation-adjustments":
+      packed_relocation_adjustments = False
     elif option == "--more-info":
       more_info = True
     elif option == "--less-info":
       more_info = False
     elif option == "--verbose":
       logging.basicConfig(level=logging.DEBUG)
+
+  if symbol.CHROME_SYMBOLS_DIR and not chrome_apk_dir:
+    chrome_apk_dir = os.path.join(symbol.CHROME_SYMBOLS_DIR,
+                                  '..', DEFAULT_APK_DIR)
 
   if len(arguments) > 1:
     PrintUsage()
@@ -153,7 +186,7 @@ def main(argv):
     print "Reading native crash info from stdin"
     f = sys.stdin
   else:
-    print "Searching for native crashes in %s" % arguments[0]
+    print "Searching for native crashes in: " + os.path.realpath(arguments[0])
     f = open(arguments[0], "r")
 
   lines = f.readlines()
@@ -163,10 +196,40 @@ def main(argv):
   if zip_arg:
     rootdir, symbol.SYMBOLS_DIR = UnzipSymbols(zip_arg)
 
-  print "Reading Android symbols from", symbol.SYMBOLS_DIR
+  if packed_relocation_adjustments == "unknown":
+    if chrome_apk_dir:
+      version = stack_libs.GetTargetAndroidVersionNumber(lines)
+      if version == None:
+        packed_relocation_adjustments = False
+        print ("Unknown Android release, "
+               + "consider --[no-]packed-relocation-adjustments options")
+      elif version >= _ANDROID_M_MAJOR_VERSION:
+        packed_relocation_adjustments = False
+      else:
+        packed_relocation_adjustments = True
+        print ("Pre-M Android release detected, "
+               + "added --packed-relocation-adjustments option")
+    else:
+      packed_relocation_adjustments = False
+
+  if packed_relocation_adjustments and not chrome_apk_dir:
+    packed_relocation_adjustments = False
+    print ("No APK directory given or defaulted, "
+           + "--packed-relocation-adjustments option ignored")
+
+  if packed_relocation_adjustments:
+    print ("Reading Chrome APK library data from: "
+           + os.path.normpath(chrome_apk_dir))
+    load_vaddrs = stack_libs.GetLoadVaddrs(chrome_apk_dir)
+  else:
+    load_vaddrs = {}
+
+  print ("Reading Android symbols from: "
+         + os.path.normpath(symbol.SYMBOLS_DIR))
   chrome_search_path = symbol.GetLibrarySearchPaths()
-  print "Searching for Chrome symbols from within", ':'.join(chrome_search_path)
-  stack_core.ConvertTrace(lines, more_info)
+  print ("Searching for Chrome symbols from within: "
+         + ':'.join((os.path.normpath(d) for d in chrome_search_path)))
+  stack_core.ConvertTrace(lines, load_vaddrs, more_info)
 
   if rootdir:
     # be a good citizen and clean up...os.rmdir and os.removedirs() don't work
