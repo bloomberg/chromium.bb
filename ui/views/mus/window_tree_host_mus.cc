@@ -27,9 +27,9 @@ void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, public:
+// WindowTreeHostMus, public:
 
-WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window)
+WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell, mus::Window* window)
     : mus_window_(window) {
   mus_window_->AddObserver(this);
 
@@ -49,93 +49,93 @@ WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window)
   SetSharedInputMethod(input_method_.get());
 }
 
-WindowTreeHostMojo::~WindowTreeHostMojo() {
+WindowTreeHostMus::~WindowTreeHostMus() {
   mus_window_->RemoveObserver(this);
   DestroyCompositor();
   DestroyDispatcher();
 }
 
-void WindowTreeHostMojo::SetShowState(mus::mojom::ShowState show_state) {
+void WindowTreeHostMus::SetShowState(mus::mojom::ShowState show_state) {
   show_state_ = show_state;
   WindowManagerConnection::Get()->window_manager()->SetShowState(
       mus_window_->id(), show_state_, base::Bind(&WindowManagerCallback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, aura::WindowTreeHost implementation:
+// WindowTreeHostMus, aura::WindowTreeHost implementation:
 
-ui::EventSource* WindowTreeHostMojo::GetEventSource() {
+ui::EventSource* WindowTreeHostMus::GetEventSource() {
   return this;
 }
 
-gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
+gfx::AcceleratedWidget WindowTreeHostMus::GetAcceleratedWidget() {
   return gfx::kNullAcceleratedWidget;
 }
 
-void WindowTreeHostMojo::ShowImpl() {
+void WindowTreeHostMus::ShowImpl() {
   mus_window_->SetVisible(true);
   window()->Show();
 }
 
-void WindowTreeHostMojo::HideImpl() {
+void WindowTreeHostMus::HideImpl() {
   mus_window_->SetVisible(false);
   window()->Hide();
 }
 
-gfx::Rect WindowTreeHostMojo::GetBounds() const {
+gfx::Rect WindowTreeHostMus::GetBounds() const {
   return mus_window_->bounds();
 }
 
-void WindowTreeHostMojo::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostMus::SetBounds(const gfx::Rect& bounds) {
   window()->SetBounds(gfx::Rect(bounds.size()));
 }
 
-gfx::Point WindowTreeHostMojo::GetLocationOnNativeScreen() const {
+gfx::Point WindowTreeHostMus::GetLocationOnNativeScreen() const {
   return gfx::Point(0, 0);
 }
 
-void WindowTreeHostMojo::SetCapture() {
+void WindowTreeHostMus::SetCapture() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::ReleaseCapture() {
+void WindowTreeHostMus::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::SetCursorNative(gfx::NativeCursor cursor) {
+void WindowTreeHostMus::SetCursorNative(gfx::NativeCursor cursor) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::MoveCursorToNative(const gfx::Point& location) {
+void WindowTreeHostMus::MoveCursorToNative(const gfx::Point& location) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
+void WindowTreeHostMus::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, WindowObserver implementation:
+// WindowTreeHostMus, WindowObserver implementation:
 
-void WindowTreeHostMojo::OnWindowBoundsChanged(mus::Window* window,
-                                               const gfx::Rect& old_bounds,
-                                               const gfx::Rect& new_bounds) {
+void WindowTreeHostMus::OnWindowBoundsChanged(mus::Window* window,
+                                              const gfx::Rect& old_bounds,
+                                              const gfx::Rect& new_bounds) {
   if (old_bounds.origin() != new_bounds.origin())
     OnHostMoved(new_bounds.origin());
   if (old_bounds.size() != new_bounds.size())
     OnHostResized(new_bounds.size());
 }
 
-void WindowTreeHostMojo::OnWindowFocusChanged(mus::Window* gained_focus,
-                                              mus::Window* lost_focus) {
+void WindowTreeHostMus::OnWindowFocusChanged(mus::Window* gained_focus,
+                                             mus::Window* lost_focus) {
   if (gained_focus == mus_window_)
     GetInputMethod()->OnFocus();
   else if (lost_focus == mus_window_)
     GetInputMethod()->OnBlur();
 }
 
-void WindowTreeHostMojo::OnWindowInputEvent(mus::Window* view,
-                                            const mus::mojom::EventPtr& event) {
+void WindowTreeHostMus::OnWindowInputEvent(mus::Window* view,
+                                           const mus::mojom::EventPtr& event) {
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
   if (!ui_event)
     return;
@@ -148,7 +148,7 @@ void WindowTreeHostMojo::OnWindowInputEvent(mus::Window* view,
   }
 }
 
-void WindowTreeHostMojo::OnWindowSharedPropertyChanged(
+void WindowTreeHostMus::OnWindowSharedPropertyChanged(
     mus::Window* window,
     const std::string& name,
     const std::vector<uint8_t>* old_data,

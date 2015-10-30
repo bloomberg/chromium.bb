@@ -53,7 +53,7 @@ class NativeWidgetWindowObserver : public mus::WindowObserver {
     DCHECK_EQ(view, view_manager_->window_);
     view->RemoveObserver(this);
     view_manager_->window_ = nullptr;
-    // TODO(sky): WindowTreeHostMojo assumes the View outlives it.
+    // TODO(sky): WindowTreeHostMus assumes the View outlives it.
     // NativeWidgetWindowObserver needs to deal, likely by deleting this.
   }
 
@@ -94,7 +94,7 @@ NativeWidgetViewManager::NativeWidgetViewManager(
     mojo::Shell* shell,
     mus::Window* window)
     : NativeWidgetAura(delegate), window_(window), window_manager_(nullptr) {
-  window_tree_host_.reset(new WindowTreeHostMojo(shell, window_));
+  window_tree_host_.reset(new WindowTreeHostMus(shell, window_));
   window_tree_host_->InitHost();
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));

@@ -30,7 +30,7 @@ class FocusController;
 }
 
 namespace views {
-class WindowTreeHostMojo;
+class WindowTreeHostMus;
 
 // An implementation of NativeWidget that binds to a mus::Window. Because Aura
 // is used extensively within Views code, this code uses aura and binds to the
@@ -170,7 +170,7 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   mus::mojom::ShowState show_state_before_fullscreen_;
 
   // Aura configuration.
-  scoped_ptr<WindowTreeHostMojo> window_tree_host_;
+  scoped_ptr<WindowTreeHostMus> window_tree_host_;
   aura::Window* content_;
   scoped_ptr<wm::FocusController> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;

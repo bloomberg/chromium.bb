@@ -92,7 +92,7 @@ void NativeWidgetMus::UpdateClientAreaInWindowManager() {
 // NativeWidgetMus, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
-  window_tree_host_.reset(new WindowTreeHostMojo(shell_, window_));
+  window_tree_host_.reset(new WindowTreeHostMus(shell_, window_));
   window_tree_host_->InitHost();
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));

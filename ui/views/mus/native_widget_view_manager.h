@@ -40,7 +40,7 @@ namespace {
 class NativeWidgetWindowObserver;
 }
 
-class WindowTreeHostMojo;
+class WindowTreeHostMus;
 
 class NativeWidgetViewManager : public views::NativeWidgetAura {
  public:
@@ -64,7 +64,7 @@ class NativeWidgetViewManager : public views::NativeWidgetAura {
   void SetBounds(const gfx::Rect& bounds) override;
   void SetSize(const gfx::Size& size) override;
 
-  scoped_ptr<WindowTreeHostMojo> window_tree_host_;
+  scoped_ptr<WindowTreeHostMus> window_tree_host_;
   scoped_ptr<NativeWidgetWindowObserver> window_observer_;
 
   scoped_ptr<wm::FocusController> focus_client_;

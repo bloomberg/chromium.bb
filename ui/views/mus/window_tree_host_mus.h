@@ -27,11 +27,11 @@ namespace views {
 class InputMethodMUS;
 class SurfaceContextFactory;
 
-class WindowTreeHostMojo : public aura::WindowTreeHost,
-                           public mus::WindowObserver {
+class WindowTreeHostMus : public aura::WindowTreeHost,
+                          public mus::WindowObserver {
  public:
-  WindowTreeHostMojo(mojo::Shell* shell, mus::Window* window);
-  ~WindowTreeHostMojo() override;
+  WindowTreeHostMus(mojo::Shell* shell, mus::Window* window);
+  ~WindowTreeHostMus() override;
 
   mus::Window* mus_window() { return mus_window_; }
 
@@ -79,7 +79,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 
   scoped_ptr<SurfaceContextFactory> context_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMojo);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };
 
 }  // namespace views
