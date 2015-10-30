@@ -81,6 +81,12 @@ UpdateClientImpl::UpdateClientImpl(
 
 UpdateClientImpl::~UpdateClientImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  while (!task_queue_.empty()) {
+    delete task_queue_.front();
+    task_queue_.pop();
+  }
+
   config_ = nullptr;
 }
 
@@ -105,8 +111,7 @@ void UpdateClientImpl::Install(const std::string& id,
                                              crx_data_callback, callback));
 
   // Install tasks are run concurrently and never queued up.
-  auto it = tasks_.insert(task.release()).first;
-  RunTask(*it);
+  RunTask(task.Pass());
 }
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
@@ -122,17 +127,17 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
   // If no other tasks are running at the moment, run this update task.
   // Otherwise, queue the task up.
   if (tasks_.empty()) {
-    auto it = tasks_.insert(task.release()).first;
-    RunTask(*it);
+    RunTask(task.Pass());
   } else {
     task_queue_.push(task.release());
   }
 }
 
-void UpdateClientImpl::RunTask(Task* task) {
+void UpdateClientImpl::RunTask(scoped_ptr<Task> task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&Task::Run, base::Unretained(task)));
+      FROM_HERE, base::Bind(&Task::Run, base::Unretained(task.get())));
+  tasks_.insert(task.release());
 }
 
 void UpdateClientImpl::OnTaskComplete(
@@ -151,7 +156,7 @@ void UpdateClientImpl::OnTaskComplete(
   // Pick up a task from the queue if the queue has pending tasks and no other
   // task is running.
   if (tasks_.empty() && !task_queue_.empty()) {
-    RunTask(task_queue_.front());
+    RunTask(scoped_ptr<Task>(task_queue_.front()).Pass());
     task_queue_.pop();
   }
 }

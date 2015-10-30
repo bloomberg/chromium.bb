@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/update_client/crx_downloader.h"
@@ -54,7 +56,7 @@ class UpdateClientImpl : public UpdateClient {
  private:
   ~UpdateClientImpl() override;
 
-  void RunTask(Task* task);
+  void RunTask(scoped_ptr<Task> task);
   void OnTaskComplete(const CompletionCallback& completion_callback,
                       Task* task,
                       int error);
