@@ -13,6 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/port_util.h"
 #include "net/http/http_network_session.h"
+#include "net/quic/quic_protocol.h"
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "url/gurl.h"
 
@@ -53,6 +54,24 @@ void HttpStreamFactory::ProcessAlternativeService(
         !session.IsProtocolEnabled(protocol) ||
         !IsPortValid(alternative_service_entry.port)) {
       continue;
+    }
+    // Check if QUIC version is supported.
+    if (protocol == QUIC && !alternative_service_entry.version.empty()) {
+      bool match_found = false;
+      for (QuicVersion supported : session.params().quic_supported_versions) {
+        for (uint16 advertised : alternative_service_entry.version) {
+          if (supported == advertised) {
+            match_found = true;
+            break;
+          }
+        }
+        if (match_found) {
+          break;
+        }
+      }
+      if (!match_found) {
+        continue;
+      }
     }
     AlternativeService alternative_service(protocol,
                                            alternative_service_entry.host,
