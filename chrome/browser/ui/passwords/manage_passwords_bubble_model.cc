@@ -25,24 +25,10 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace metrics_util = password_manager::metrics_util;
 
 namespace {
-
-enum FieldType { USERNAME_FIELD, PASSWORD_FIELD };
-
-const int kUsernameFieldSize = 30;
-const int kPasswordFieldSize = 22;
-
-// Returns the width of |type| field.
-int GetFieldWidth(FieldType type) {
-  return ui::ResourceBundle::GetSharedInstance()
-      .GetFontList(ui::ResourceBundle::SmallFont)
-      .GetExpectedTextWidth(type == USERNAME_FIELD ? kUsernameFieldSize
-                                                   : kPasswordFieldSize);
-}
 
 Profile* GetProfileFromWebContents(content::WebContents* web_contents) {
   if (!web_contents)
@@ -374,16 +360,6 @@ bool ManagePasswordsBubbleModel::ShouldShowAutoSigninWarmWelcome() const {
   Profile* profile = GetProfile();
   return password_bubble_experiment::
       ShouldShowAutoSignInPromptFirstRunExperience(profile->GetPrefs());
-}
-
-// static
-int ManagePasswordsBubbleModel::UsernameFieldWidth() {
-  return GetFieldWidth(USERNAME_FIELD);
-}
-
-// static
-int ManagePasswordsBubbleModel::PasswordFieldWidth() {
-  return GetFieldWidth(PASSWORD_FIELD);
 }
 
 void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {

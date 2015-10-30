@@ -11,17 +11,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 
 class ManagePasswordsBubbleModel;
-
-// Shows a list of passwords saved for the current site..
-@interface PasswordItemListView : NSView {
-  base::scoped_nsobject<NSArray> itemViews_;
-}
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model;
-@end
-
-@interface PasswordItemListView (Testing)
-@property(readonly) NSArray* itemViews;
-@end
+@class PasswordsListViewController;
 
 // Informs the user that no passwords are stored for the current site.
 @interface NoPasswordsView : NSTextField
@@ -35,7 +25,8 @@ class ManagePasswordsBubbleModel;
   ManagePasswordsBubbleModel* model_;  // weak
   base::scoped_nsobject<NSButton> doneButton_;
   base::scoped_nsobject<NSButton> manageButton_;
-  base::scoped_nsobject<NSView> contentView_;
+  base::scoped_nsobject<NoPasswordsView> noPasswordsView_;
+  base::scoped_nsobject<PasswordsListViewController> passwordsListController_;
 }
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
            delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
@@ -44,7 +35,8 @@ class ManagePasswordsBubbleModel;
 @interface ManagePasswordsBubbleManageViewController (Testing)
 @property(readonly) NSButton* doneButton;
 @property(readonly) NSButton* manageButton;
-@property(readonly) NSView* contentView;
+@property(readonly) NoPasswordsView* noPasswordsView;
+@property(readonly) PasswordsListViewController* passwordsListController;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MANAGE_VIEW_CONTROLLER_H_

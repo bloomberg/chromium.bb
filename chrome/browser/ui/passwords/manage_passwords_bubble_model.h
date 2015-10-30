@@ -151,10 +151,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void set_state(password_manager::ui::State state) { state_ = state; }
 #endif
 
-  // Upper limits on the size of the username and password fields.
-  static int UsernameFieldWidth();
-  static int PasswordFieldWidth();
-
  private:
   enum UserBehaviorOnUpdateBubble {
     UPDATE_CLICKED,

@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
+#import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +61,8 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
 TEST_F(ManagePasswordsBubbleManageViewControllerTest,
        ShouldShowNoPasswordsWhenNoPasswordsExistForSite) {
   EXPECT_TRUE(model()->local_credentials().empty());
-  EXPECT_EQ([NoPasswordsView class], [controller().contentView class]);
+  EXPECT_TRUE([controller() noPasswordsView]);
+  EXPECT_FALSE([controller() passwordsListController]);
 }
 
 TEST_F(ManagePasswordsBubbleManageViewControllerTest,
@@ -83,16 +85,15 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
 
   // Check the view state.
   EXPECT_FALSE(model()->local_credentials().empty());
-  EXPECT_EQ([PasswordItemListView class], [controller().contentView class]);
-  NSArray* items = base::mac::ObjCCastStrict<PasswordItemListView>(
-      controller().contentView).itemViews;
+  ASSERT_TRUE([controller() passwordsListController]);
+  EXPECT_FALSE([controller() noPasswordsView]);
+  NSArray* items = [[controller() passwordsListController] itemViews];
   EXPECT_EQ(2U, [items count]);
 
   // Check the entry items.
   for (ManagePasswordItemViewController* item in items) {
-    ManagePasswordItemManageView* itemContent =
-        base::mac::ObjCCastStrict<ManagePasswordItemManageView>(
-            item.contentView);
+    ManagePasswordItemView* itemContent =
+        base::mac::ObjCCastStrict<ManagePasswordItemView>(item.contentView);
     NSString* username = [itemContent.usernameField stringValue];
     if ([username isEqualToString:@"username1"]) {
       EXPECT_NSEQ(@"password1", [itemContent.passwordField stringValue]);

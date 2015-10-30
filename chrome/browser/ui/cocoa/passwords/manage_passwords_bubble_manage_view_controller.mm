@@ -18,49 +18,6 @@
 
 using namespace password_manager::mac::ui;
 
-@implementation PasswordItemListView
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model {
-  if ((self = [super initWithFrame:NSZeroRect])) {
-    base::scoped_nsobject<NSMutableArray> items([[NSMutableArray alloc] init]);
-
-    // Create and lay out the items.
-    const CGFloat curX = 0;
-    CGFloat maxX = 0;
-    CGFloat curY = 0;
-    for (auto i = model->local_credentials().rbegin();
-         i != model->local_credentials().rend();
-         ++i) {
-      const autofill::PasswordForm& form = **i;
-      password_manager::ui::PasswordItemPosition position =
-          (&(*i) == &(*model->local_credentials().begin()))
-              ? password_manager::ui::FIRST_ITEM
-              : password_manager::ui::SUBSEQUENT_ITEM;
-      base::scoped_nsobject<ManagePasswordItemViewController> item(
-          [[ManagePasswordItemViewController alloc] initWithModel:model
-                                                     passwordForm:form
-                                                         position:position]);
-      [items addObject:item.get()];
-      NSView* itemView = [item view];
-      [self addSubview:itemView];
-
-      // The items stack up on each other.
-      [itemView setFrameOrigin:NSMakePoint(curX, curY)];
-      maxX = NSMaxX([itemView frame]);
-      curY = NSMaxY([itemView frame]);
-    }
-    [self setFrameSize:NSMakeSize(maxX, curY)];
-    itemViews_.reset(items.release());
-  }
-  return self;
-}
-@end
-
-@implementation PasswordItemListView (Testing)
-- (NSArray*)itemViews {
-  return itemViews_.get();
-}
-@end
-
 @implementation NoPasswordsView
 - (id)initWithWidth:(CGFloat)width {
   if ((self = [super initWithFrame:NSZeroRect])) {
@@ -103,13 +60,11 @@ using namespace password_manager::mac::ui;
 
   // -----------------------------------
   // |  Title                          |
-  // |  -----------------------------  | (1 px border)
+  // |                                 |
   // |    username   password      x   |
-  // |  -----------------------------  | (1 px border)
   // |    username   password      x   |
-  // |  -----------------------------  | (1 px border)
   // |    username   password      x   |
-  // |  -----------------------------  | (1 px border)
+  // |                                 |
   // |  Manage                 [Done]  |
   // -----------------------------------
 
@@ -125,20 +80,24 @@ using namespace password_manager::mac::ui;
   // Content. If we have a list of passwords to store for the current site, we
   // display them to the user for management. Otherwise, we show a "No passwords
   // for this site" message.
+  NSView* contentView = nil;
   if (model_->local_credentials().empty()) {
     const CGFloat noPasswordsWidth = std::max(
         kDesiredBubbleWidth - 2 * kFramePadding, NSWidth([titleLabel frame]));
-    contentView_.reset(
+    noPasswordsView_.reset(
         [[NoPasswordsView alloc] initWithWidth:noPasswordsWidth]);
+    contentView = noPasswordsView_.get();
   } else {
-    contentView_.reset(
-        [[PasswordItemListView alloc] initWithModel:model_]);
+    passwordsListController_.reset([[PasswordsListViewController alloc]
+        initWithModel:model_
+                forms:model_->local_credentials().get()]);
+    contentView = [passwordsListController_ view];
   }
-  [view addSubview:contentView_];
+  [view addSubview:contentView];
 
   // Wrap the title if necessary to match the width of the content view.
-  if (NSWidth([titleLabel frame]) > NSWidth([contentView_ frame])) {
-    [titleLabel setFrameSize:NSMakeSize(NSWidth([contentView_ frame]), 0)];
+  if (NSWidth([titleLabel frame]) > NSWidth([contentView frame])) {
+    [titleLabel setFrameSize:NSMakeSize(NSWidth([contentView frame]), 0)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleLabel];
   }
 
@@ -166,7 +125,7 @@ using namespace password_manager::mac::ui;
   // Layout the elements, starting at the bottom and moving up.
 
   // The Done button goes in the bottom-right corner.
-  const CGFloat width = 2 * kFramePadding + NSWidth([contentView_ frame]);
+  const CGFloat width = 2 * kFramePadding + NSWidth([contentView frame]);
   CGFloat curX = width - kFramePadding - NSWidth([doneButton_ frame]);
   CGFloat curY = kFramePadding;
   [doneButton_ setFrameOrigin:NSMakePoint(curX, curY)];
@@ -181,13 +140,13 @@ using namespace password_manager::mac::ui;
   // The content goes above the button row.
   curX = kFramePadding;
   curY = NSMaxY([doneButton_ frame]) + kUnrelatedControlVerticalPadding;
-  [contentView_ setFrameOrigin:NSMakePoint(curX, curY)];
+  [contentView setFrameOrigin:NSMakePoint(curX, curY)];
 
   // The title goes above the content.
-  curY = NSMaxY([contentView_ frame]) + kUnrelatedControlVerticalPadding;
+  curY = NSMaxY([contentView frame]) + kUnrelatedControlVerticalPadding;
   [titleLabel setFrameOrigin:NSMakePoint(curX, curY)];
 
-  curX = NSMaxX([contentView_ frame]) + kFramePadding;
+  curX = NSMaxX([contentView frame]) + kFramePadding;
   curY = NSMaxY([titleLabel frame]) + kFramePadding;
   DCHECK_EQ(width, curX);
   [view setFrameSize:NSMakeSize(curX, curY)];
@@ -217,8 +176,12 @@ using namespace password_manager::mac::ui;
   return manageButton_.get();
 }
 
-- (NSView*)contentView {
-  return contentView_.get();
+- (NoPasswordsView*)noPasswordsView {
+  return noPasswordsView_.get();
+}
+
+- (PasswordsListViewController*)passwordsListController {
+  return passwordsListController_.get();
 }
 
 @end

@@ -1141,6 +1141,7 @@
       'browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.mm',
+      'browser/ui/cocoa/passwords/password_item_views.h',
       'browser/ui/cocoa/presentation_mode_controller.h',
       'browser/ui/cocoa/presentation_mode_controller.mm',
       'browser/ui/cocoa/profiles/avatar_base_controller.h',

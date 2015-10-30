@@ -137,10 +137,11 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
   // Password item.
   // It should be at least as wide as the box without the padding.
-  passwordItem_.reset([[ManagePasswordItemViewController alloc]
+  std::vector<const autofill::PasswordForm*> password_forms;
+  password_forms.push_back(&model_->pending_password());
+  passwordItem_.reset([[PasswordsListViewController alloc]
       initWithModel:model_
-       passwordForm:model_->pending_password()
-           position:password_manager::ui::FIRST_ITEM]);
+              forms:password_forms]);
   NSView* password = [passwordItem_ view];
   [view addSubview:password];
 

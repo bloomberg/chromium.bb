@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
+#import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -25,17 +26,12 @@ using namespace testing;
 namespace {
 NSString* const kItemTestUsername = @"foo";
 NSString* const kItemTestPassword = @"bar";
+NSString* const kFederation = @"https://google.com/idp";
 }  // namespace
 
-MATCHER_P(PasswordFormEq, form, "") {
-  return form.username_value == arg.username_value &&
-         form.password_value == arg.password_value;
-}
-
-class ManagePasswordItemViewControllerTest
-    : public ManagePasswordsControllerTest {
+class PasswordsListViewControllerTest : public ManagePasswordsControllerTest {
  public:
-  ManagePasswordItemViewControllerTest() {}
+  PasswordsListViewControllerTest() {}
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
@@ -43,107 +39,144 @@ class ManagePasswordItemViewControllerTest
         profile(),
         password_manager::BuildPasswordStoreService<
             content::BrowserContext, password_manager::MockPasswordStore>);
-    ui_controller()->SetPendingPassword(credentials());
   }
 
-  ManagePasswordItemViewController* controller() {
-    if (!controller_) {
-      controller_.reset([[ManagePasswordItemViewController alloc]
-          initWithModel:model()
-           passwordForm:ui_controller()->PendingPassword()
-               position:password_manager::ui::FIRST_ITEM]);
-    }
-    return controller_.get();
+  void SetUpManageState(
+      const std::vector<const autofill::PasswordForm*>& forms) {
+    model()->set_state(password_manager::ui::MANAGE_STATE);
+    controller_.reset([[PasswordsListViewController alloc]
+        initWithModel:model()
+                forms:forms]);
   }
 
-  autofill::PasswordForm credentials() {
+  void SetUpManageState(const autofill::PasswordForm* form) {
+    model()->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
+    controller_.reset([[PasswordsListViewController alloc]
+        initWithModel:model()
+                forms:std::vector<const autofill::PasswordForm*>(1, form)]);
+  }
+
+  ManagePasswordItemViewController* GetControllerAt(unsigned i) {
+    return base::mac::ObjCCast<ManagePasswordItemViewController>(
+        [[controller_ itemViews] objectAtIndex:i]);
+  }
+
+  autofill::PasswordForm local_credential() {
     autofill::PasswordForm form;
     form.username_value = base::SysNSStringToUTF16(kItemTestUsername);
     form.password_value = base::SysNSStringToUTF16(kItemTestPassword);
     return form;
   }
 
+  autofill::PasswordForm federated_credential() {
+    autofill::PasswordForm form;
+    form.username_value = base::SysNSStringToUTF16(kItemTestUsername);
+    form.federation_url = GURL(base::SysNSStringToUTF16(kFederation));
+    return form;
+  }
+
   password_manager::MockPasswordStore* mockStore() {
     password_manager::PasswordStore* store =
-        PasswordStoreFactory::GetForProfile(
-            profile(), ServiceAccessType::EXPLICIT_ACCESS).get();
-    password_manager::MockPasswordStore* mockStore =
-        static_cast<password_manager::MockPasswordStore*>(store);
-    return mockStore;
+        PasswordStoreFactory::GetForProfile(profile(),
+                                            ServiceAccessType::EXPLICIT_ACCESS)
+            .get();
+    return static_cast<password_manager::MockPasswordStore*>(store);
   }
 
  private:
-  base::scoped_nsobject<ManagePasswordItemViewController> controller_;
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordItemViewControllerTest);
+  base::scoped_nsobject<PasswordsListViewController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordsListViewControllerTest);
 };
 
-TEST_F(ManagePasswordItemViewControllerTest, ManageStateShouldHaveManageView) {
-  model()->set_state(password_manager::ui::MANAGE_STATE);
-  EXPECT_EQ(MANAGE_PASSWORD_ITEM_STATE_MANAGE, [controller() state]);
-  EXPECT_NSEQ([ManagePasswordItemManageView class],
-              [[controller() contentView] class]);
+TEST_F(PasswordsListViewControllerTest, ManageStateShouldHaveManageView) {
+  ScopedVector<const autofill::PasswordForm> forms;
+  forms.push_back(new autofill::PasswordForm(local_credential()));
+  forms.push_back(new autofill::PasswordForm(federated_credential()));
+  SetUpManageState(forms.get());
+
+  EXPECT_EQ(MANAGE_PASSWORD_ITEM_STATE_MANAGE, [GetControllerAt(0) state]);
+  EXPECT_EQ(MANAGE_PASSWORD_ITEM_STATE_MANAGE, [GetControllerAt(1) state]);
+  EXPECT_NSEQ([ManagePasswordItemView class],
+              [[GetControllerAt(0) contentView] class]);
+  EXPECT_NSEQ([ManagePasswordItemView class],
+              [[GetControllerAt(1) contentView] class]);
 }
 
-TEST_F(ManagePasswordItemViewControllerTest,
+TEST_F(PasswordsListViewControllerTest,
        ClickingDeleteShouldShowUndoViewAndDeletePassword) {
-  EXPECT_CALL(*mockStore(), RemoveLogin(PasswordFormEq(credentials())));
-  model()->set_state(password_manager::ui::MANAGE_STATE);
+  ScopedVector<const autofill::PasswordForm> forms;
+  forms.push_back(new autofill::PasswordForm(local_credential()));
+  SetUpManageState(forms.get());
 
-  ManagePasswordItemManageView* manageView =
-      base::mac::ObjCCast<ManagePasswordItemManageView>(
-          controller().contentView);
+  ManagePasswordItemView* manageView =
+      base::mac::ObjCCast<ManagePasswordItemView>(
+          [GetControllerAt(0) contentView]);
+  EXPECT_CALL(*mockStore(), RemoveLogin(local_credential()));
   [manageView.deleteButton performClick:nil];
 
-  EXPECT_NSEQ([ManagePasswordItemUndoView class],
-              [controller().contentView class]);
+  EXPECT_NSEQ([UndoPasswordItemView class],
+              [[GetControllerAt(0) contentView] class]);
 }
 
-TEST_F(ManagePasswordItemViewControllerTest,
+TEST_F(PasswordsListViewControllerTest,
        ClickingUndoShouldShowManageViewAndAddPassword) {
-  EXPECT_CALL(*mockStore(), RemoveLogin(PasswordFormEq(credentials())));
-  model()->set_state(password_manager::ui::MANAGE_STATE);
+  ScopedVector<const autofill::PasswordForm> forms;
+  forms.push_back(new autofill::PasswordForm(local_credential()));
+  SetUpManageState(forms.get());
 
-  ManagePasswordItemManageView* manageView =
-      base::mac::ObjCCast<ManagePasswordItemManageView>(
-          controller().contentView);
+  ManagePasswordItemView* manageView =
+      base::mac::ObjCCast<ManagePasswordItemView>(
+          [GetControllerAt(0) contentView]);
+  EXPECT_CALL(*mockStore(), RemoveLogin(local_credential()));
   [manageView.deleteButton performClick:nil];
 
-  EXPECT_CALL(*mockStore(), AddLogin(PasswordFormEq(credentials())));
-  ManagePasswordItemUndoView* undoView =
-      base::mac::ObjCCast<ManagePasswordItemUndoView>(controller().contentView);
+  UndoPasswordItemView* undoView = base::mac::ObjCCast<UndoPasswordItemView>(
+      [GetControllerAt(0) contentView]);
+  EXPECT_CALL(*mockStore(), AddLogin(local_credential()));
   [undoView.undoButton performClick:nil];
 
-  EXPECT_NSEQ([ManagePasswordItemManageView class],
-              [controller().contentView class]);
+  EXPECT_NSEQ([ManagePasswordItemView class],
+              [[GetControllerAt(0) contentView] class]);
 }
 
-TEST_F(ManagePasswordItemViewControllerTest,
+TEST_F(PasswordsListViewControllerTest,
        ManageViewShouldHaveCorrectUsernameAndObscuredPassword) {
-  model()->set_state(password_manager::ui::MANAGE_STATE);
-  ManagePasswordItemManageView* manageView =
-      base::mac::ObjCCast<ManagePasswordItemManageView>(
-          [controller() contentView]);
+  ScopedVector<const autofill::PasswordForm> forms;
+  forms.push_back(new autofill::PasswordForm(local_credential()));
+  forms.push_back(new autofill::PasswordForm(federated_credential()));
+  SetUpManageState(forms.get());
+  ManagePasswordItemView* manageView =
+      base::mac::ObjCCast<ManagePasswordItemView>(
+          [GetControllerAt(0) contentView]);
 
   // Ensure the fields are populated properly and the password is obscured.
   EXPECT_NSEQ(kItemTestUsername, manageView.usernameField.stringValue);
   EXPECT_NSEQ(kItemTestPassword, manageView.passwordField.stringValue);
   EXPECT_TRUE([[manageView.passwordField cell] echosBullets]);
+
+  manageView = base::mac::ObjCCast<ManagePasswordItemView>(
+      [GetControllerAt(1) contentView]);
+  EXPECT_NSEQ(kItemTestUsername, manageView.usernameField.stringValue);
+  EXPECT_THAT(base::SysNSStringToUTF8(manageView.passwordField.stringValue),
+              HasSubstr(federated_credential().federation_url.host()));
 }
 
-TEST_F(ManagePasswordItemViewControllerTest,
-       PendingStateShouldHavePendingView) {
-  model()->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
-  EXPECT_EQ(MANAGE_PASSWORD_ITEM_STATE_PENDING, [controller() state]);
-  EXPECT_NSEQ([ManagePasswordItemPendingView class],
-              [[controller() contentView] class]);
+TEST_F(PasswordsListViewControllerTest, PendingStateShouldHavePendingView) {
+  autofill::PasswordForm form = local_credential();
+  SetUpManageState(&form);
+  EXPECT_EQ(MANAGE_PASSWORD_ITEM_STATE_PENDING, [GetControllerAt(0) state]);
+  EXPECT_NSEQ([PendingPasswordItemView class],
+              [[GetControllerAt(0) contentView] class]);
 }
 
-TEST_F(ManagePasswordItemViewControllerTest,
+TEST_F(PasswordsListViewControllerTest,
        PendingViewShouldHaveCorrectUsernameAndObscuredPassword) {
-  model()->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
-  ManagePasswordItemPendingView* pendingView =
-      base::mac::ObjCCast<ManagePasswordItemPendingView>(
-          [controller() contentView]);
+  autofill::PasswordForm form = local_credential();
+  SetUpManageState(&form);
+  PendingPasswordItemView* pendingView =
+      base::mac::ObjCCast<PendingPasswordItemView>(
+          [GetControllerAt(0) contentView]);
 
   // Ensure the fields are populated properly and the password is obscured.
   EXPECT_NSEQ(kItemTestUsername, pendingView.usernameField.stringValue);
@@ -151,20 +184,16 @@ TEST_F(ManagePasswordItemViewControllerTest,
   EXPECT_TRUE([[pendingView.passwordField cell] echosBullets]);
 }
 
-TEST_F(ManagePasswordItemViewControllerTest,
+TEST_F(PasswordsListViewControllerTest,
        PendingViewShouldHaveCorrectUsernameAndFederation) {
-  model()->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
-  autofill::PasswordForm form = credentials();
-  GURL federation("https://google.com/idp");
-  form.federation_url = federation;
-  ui_controller()->SetPendingPassword(form);
-  ManagePasswordItemPendingView* pendingView =
-      base::mac::ObjCCast<ManagePasswordItemPendingView>(
-          [controller() contentView]);
+  autofill::PasswordForm form = federated_credential();
+  SetUpManageState(&form);
+  PendingPasswordItemView* pendingView =
+      base::mac::ObjCCast<PendingPasswordItemView>(
+          [GetControllerAt(0) contentView]);
 
   // Ensure the fields are populated properly and the password is obscured.
   EXPECT_NSEQ(kItemTestUsername, pendingView.usernameField.stringValue);
-  EXPECT_FALSE(pendingView.passwordField);
-  EXPECT_THAT(base::SysNSStringToUTF8(pendingView.federationField.stringValue),
-              HasSubstr(federation.host()));
+  EXPECT_THAT(base::SysNSStringToUTF8(pendingView.passwordField.stringValue),
+              HasSubstr(federated_credential().federation_url.host()));
 }

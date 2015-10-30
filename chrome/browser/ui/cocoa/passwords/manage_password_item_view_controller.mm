@@ -4,12 +4,16 @@
 
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "grit/components_strings.h"
 #include "grit/generated_resources.h"
@@ -24,15 +28,10 @@ using namespace password_manager::mac::ui;
 
 namespace {
 
-const SkColor kHoverColor = SkColorSetARGBInline(0xFF, 0xEB, 0xEB, 0xEB);
-
 // Constants shared with toolkit-views layout_constants.h.
 const CGFloat kItemLabelSpacing = 10;
 const CGFloat kRelatedControlVerticalSpacing = 8;
-
-NSColor* HoverColor() {
-  return gfx::SkColorToCalibratedNSColor(kHoverColor);
-}
+const CGFloat kDesiredRowWidth = kDesiredBubbleWidth - 2 * kFramePadding;
 
 NSFont* LabelFont() {
   return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
@@ -43,32 +42,29 @@ NSSize LabelSize(int resourceID) {
       sizeWithAttributes:@{NSFontAttributeName : LabelFont()}];
 }
 
-CGFloat FirstFieldWidth() {
+std::pair<CGFloat, CGFloat> GetResizedColumns(
+    CGFloat maxWidth, std::pair<CGFloat, CGFloat> columnsWidth) {
+  // Free space can be negative.
+  CGFloat freeSpace =
+      maxWidth - (columnsWidth.first + columnsWidth.second + kItemLabelSpacing);
+  if (freeSpace >= 0) {
+    return std::make_pair(columnsWidth.first + freeSpace / 2,
+                          columnsWidth.second + freeSpace / 2);
+  }
+  // Make sure that the sizes are nonnegative.
+  CGFloat firstColumnPercent =
+      columnsWidth.first / (columnsWidth.first + columnsWidth.second);
+  return std::make_pair(
+      columnsWidth.first + freeSpace * firstColumnPercent,
+      columnsWidth.second + freeSpace * (1 - firstColumnPercent));
+}
+
+CGFloat ManagePasswordItemWidth() {
   const CGFloat undoExplanationWidth =
       LabelSize(IDS_MANAGE_PASSWORDS_DELETED).width;
-  const CGFloat kUsernameWidth =
-      ManagePasswordsBubbleModel::UsernameFieldWidth();
-  const CGFloat width = std::max(kUsernameWidth, undoExplanationWidth);
-  return width;
-}
-
-CGFloat SecondFieldWidth() {
-  const CGFloat undoLinkWidth =
-      LabelSize(IDS_MANAGE_PASSWORDS_UNDO).width;
-  const CGFloat kPasswordWidth =
-      ManagePasswordsBubbleModel::PasswordFieldWidth();
-  const CGFloat width = std::max(kPasswordWidth, undoLinkWidth);
-  return width;
-}
-
-CGFloat ItemWidth() {
-  const CGFloat width =
-      FirstFieldWidth() +
-      kItemLabelSpacing +
-      SecondFieldWidth() +
-      kItemLabelSpacing +
-      chrome_style::GetCloseButtonSize();
-  return width;
+  const CGFloat undoLinkWidth = LabelSize(IDS_MANAGE_PASSWORDS_UNDO).width;
+  return std::max(kDesiredRowWidth,
+                  undoExplanationWidth + kItemLabelSpacing + undoLinkWidth);
 }
 
 void InitLabel(NSTextField* textField, const base::string16& text) {
@@ -78,6 +74,7 @@ void InitLabel(NSTextField* textField, const base::string16& text) {
   [textField setDrawsBackground:NO];
   [textField setBezeled:NO];
   [textField setFont:LabelFont()];
+  [[textField cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   [textField sizeToFit];
 }
 
@@ -89,37 +86,29 @@ NSTextField* Label(const base::string16& text) {
 }
 
 NSTextField* UsernameLabel(const base::string16& text) {
-  NSTextField* textField = Label(text);
-  [textField
-      setFrameSize:NSMakeSize(FirstFieldWidth(), NSHeight([textField frame]))];
-  return textField;
+  return Label(text);
 }
 
 NSSecureTextField* PasswordLabel(const base::string16& text) {
   base::scoped_nsobject<NSSecureTextField> textField(
       [[NSSecureTextField alloc] initWithFrame:NSZeroRect]);
   InitLabel(textField, text);
-  [textField
-      setFrameSize:NSMakeSize(SecondFieldWidth(), NSHeight([textField frame]))];
   return textField.autorelease();
 }
 
 NSTextField* FederationLabel(const base::string16& text) {
-  NSTextField* textField = Label(text);
-  [textField
-      setFrameSize:NSMakeSize(SecondFieldWidth(), NSHeight([textField frame]))];
-  return textField;
+  return Label(text);
 }
 
 base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
-  return form.username_value.empty() ?
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN) :
-      form.username_value;
+  return form.username_value.empty()
+             ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
+             : form.username_value;
 }
 
 }  // namespace
 
-@implementation ManagePasswordItemUndoView
+@implementation UndoPasswordItemView
 - (id)initWithTarget:(id)target action:(SEL)action {
   if ((self = [super init])) {
     // The button should look like a link.
@@ -130,46 +119,58 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
     [cell setShouldUnderline:NO];
     [cell setUnderlineOnHover:NO];
     [cell setTextColor:gfx::SkColorToCalibratedNSColor(
-        chrome_style::GetLinkColor())];
+                           chrome_style::GetLinkColor())];
     [undoButton_ setCell:cell.get()];
     [undoButton_ sizeToFit];
     [undoButton_ setTarget:target];
     [undoButton_ setAction:action];
-
-    const CGFloat width = ItemWidth();
-    CGFloat curX = 0;
-    CGFloat curY = kRelatedControlVerticalSpacing;
+    [self addSubview:undoButton_];
 
     // Add the explanation text.
-    NSTextField* label =
-        Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED));
-    [label setFrameOrigin:NSMakePoint(curX, curY)];
-    [self addSubview:label];
-
-    // The undo button should be right-aligned.
-    curX = width - NSWidth([undoButton_ frame]);
-    [undoButton_ setFrameOrigin:NSMakePoint(curX, curY)];
-    [self addSubview:undoButton_ ];
-
-    // Move to the top-right of the delete button.
-    curX = NSMaxX([undoButton_ frame]);
-    curY = NSMaxY([undoButton_ frame]) + kRelatedControlVerticalSpacing;
-
-    // Update the frame.
-    DCHECK_EQ(width, curX);
-    [self setFrameSize:NSMakeSize(curX, curY)];
+    label_.reset([Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED))
+        retain]);
+    [self addSubview:label_];
   }
   return self;
 }
+
+#pragma mark PasswordItemTwoColumnView
+
+- (void)layoutWithFirstColumn:(CGFloat)firstWidth
+                 secondColumn:(CGFloat)secondWidth {
+  const CGFloat width = ManagePasswordItemWidth();
+  CGFloat curX = 0;
+  CGFloat curY = kRelatedControlVerticalSpacing;
+  [label_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // The undo button should be right-aligned.
+  curX = width - NSWidth([undoButton_ frame]);
+  [undoButton_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // Move to the top-right of the delete button.
+  curX = NSMaxX([undoButton_ frame]);
+  curY = NSMaxY([undoButton_ frame]) + kRelatedControlVerticalSpacing;
+
+  // Update the frame.
+  [self setFrameSize:NSMakeSize(curX, curY)];
+}
+
+- (CGFloat)firstColumnWidth {
+  // This view doesn't have columns aligned with username/password.
+  return 0;
+}
+
+- (CGFloat)secondColumnWidth {
+  // This view doesn't have columns aligned with username/password.
+  return 0;
+}
 @end
 
-@implementation ManagePasswordItemUndoView (Testing)
+@implementation UndoPasswordItemView (Testing)
 - (NSButton*)undoButton {
   return undoButton_.get();
 }
 @end
 
-@implementation ManagePasswordItemManageView
+@implementation ManagePasswordItemView
 - (id)initWithForm:(const autofill::PasswordForm&)form
             target:(id)target
             action:(SEL)action {
@@ -188,44 +189,68 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
         setPressedImage:bundle.GetImageNamed(IDR_CLOSE_2_P).ToNSImage()];
     [deleteButton_ setTarget:target];
     [deleteButton_ setAction:action];
-
-    const CGFloat width = ItemWidth();
-    CGFloat curX = 0;
-    CGFloat curY = kRelatedControlVerticalSpacing;
+    [self addSubview:deleteButton_];
 
     // Add the username.
     usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
-    [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
     [self addSubview:usernameField_];
 
-    // Move to the right of the username and add the password.
-    curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
-    passwordField_.reset([PasswordLabel(form.password_value) retain]);
-    [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
+    if (form.federation_url.is_empty()) {
+      passwordField_.reset([PasswordLabel(form.password_value) retain]);
+    } else {
+      base::string16 text = l10n_util::GetStringFUTF16(
+          IDS_PASSWORDS_VIA_FEDERATION,
+          base::UTF8ToUTF16(form.federation_url.host()));
+      passwordField_.reset([FederationLabel(text) retain]);
+    }
     [self addSubview:passwordField_];
-
-    // The delete button should be right-aligned.
-    curX = width - NSWidth([deleteButton_ frame]);
-    [deleteButton_ setFrameOrigin:NSMakePoint(curX, curY)];
-    [self addSubview:deleteButton_];
-
-    // Move to the top-right of the delete button.
-    curX = NSMaxX([deleteButton_ frame]);
-    curY = NSMaxY([deleteButton_ frame]) + kRelatedControlVerticalSpacing;
-
-    // Update the frame.
-    DCHECK_EQ(width, curX);
-    [self setFrameSize:NSMakeSize(curX, curY)];
   }
   return self;
 }
+
+#pragma mark PasswordItemTwoColumnView
+
+- (void)layoutWithFirstColumn:(CGFloat)firstWidth
+                 secondColumn:(CGFloat)secondWidth {
+  const CGFloat width = ManagePasswordItemWidth();
+  std::pair<CGFloat, CGFloat> sizes = GetResizedColumns(
+      width - NSWidth([deleteButton_ frame]) - kRelatedControlVerticalSpacing,
+      std::make_pair(firstWidth, secondWidth));
+  [usernameField_
+      setFrameSize:NSMakeSize(sizes.first, NSHeight([usernameField_ frame]))];
+  [passwordField_
+      setFrameSize:NSMakeSize(sizes.second, NSHeight([passwordField_ frame]))];
+  CGFloat curX = 0;
+  CGFloat curY = kRelatedControlVerticalSpacing;
+  [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // Move to the right of the username and add the password.
+  curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
+  [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // The delete button should be right-aligned.
+  curX = width - NSWidth([deleteButton_ frame]);
+  [deleteButton_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // Move to the top-right of the delete button.
+  curX = NSMaxX([deleteButton_ frame]);
+  curY = NSMaxY([deleteButton_ frame]) + kRelatedControlVerticalSpacing;
+
+  // Update the frame.
+  [self setFrameSize:NSMakeSize(curX, curY)];
+}
+
+- (CGFloat)firstColumnWidth {
+  return NSWidth([usernameField_ frame]);
+}
+
+- (CGFloat)secondColumnWidth {
+  return NSWidth([passwordField_ frame]);
+}
 @end
 
-@implementation ManagePasswordItemManageView (Testing)
+@implementation ManagePasswordItemView (Testing)
 - (NSTextField*)usernameField {
   return usernameField_.get();
 }
-- (NSSecureTextField*)passwordField {
+- (NSTextField*)passwordField {
   return passwordField_.get();
 }
 - (NSButton*)deleteButton {
@@ -233,57 +258,69 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 }
 @end
 
-@implementation ManagePasswordItemPendingView
+@implementation PendingPasswordItemView
 
 - (id)initWithForm:(const autofill::PasswordForm&)form {
   if ((self = [super initWithFrame:NSZeroRect])) {
-    CGFloat curX = 0;
-    CGFloat curY = kRelatedControlVerticalSpacing;
-
     // Add the username.
     usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
-    [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
     [self addSubview:usernameField_];
 
-    // Move to the right of the username and add the password.
-    curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
     if (form.federation_url.is_empty()) {
       passwordField_.reset([PasswordLabel(form.password_value) retain]);
     } else {
       base::string16 text = l10n_util::GetStringFUTF16(
           IDS_PASSWORDS_VIA_FEDERATION,
           base::UTF8ToUTF16(form.federation_url.host()));
-      federationField_.reset([FederationLabel(text) retain]);
+      passwordField_.reset([FederationLabel(text) retain]);
     }
-
-    NSTextField* secondField =
-        passwordField_ ? passwordField_.get() : federationField_.get();
-    [secondField setFrameOrigin:NSMakePoint(curX, curY)];
-    [self addSubview:secondField];
-
-    // Move to the top-right of the password.
-    curY = NSMaxY([secondField frame]) + kRelatedControlVerticalSpacing;
-
-    // Update the frame.
-    [self setFrameSize:NSMakeSize(ItemWidth(), curY)];
+    [self addSubview:passwordField_];
   }
   return self;
 }
 
+#pragma mark PasswordItemTwoColumnView
+
+- (void)layoutWithFirstColumn:(CGFloat)firstWidth
+                 secondColumn:(CGFloat)secondWidth {
+  std::pair<CGFloat, CGFloat> sizes = GetResizedColumns(
+      kDesiredRowWidth,
+      std::make_pair(firstWidth, secondWidth));
+  [usernameField_
+      setFrameSize:NSMakeSize(sizes.first, NSHeight([usernameField_ frame]))];
+  [passwordField_
+      setFrameSize:NSMakeSize(sizes.second, NSHeight([passwordField_ frame]))];
+  CGFloat curX = 0;
+  CGFloat curY = kRelatedControlVerticalSpacing;
+  [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // Move to the right of the username and add the password.
+  curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
+  [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // Move to the top-right of the password.
+  curX = NSMaxX([passwordField_ frame]);
+  curY = NSMaxY([passwordField_ frame]) + kRelatedControlVerticalSpacing;
+
+  // Update the frame.
+  [self setFrameSize:NSMakeSize(curX, curY)];
+}
+
+- (CGFloat)firstColumnWidth {
+  return NSWidth([usernameField_ frame]);
+}
+
+- (CGFloat)secondColumnWidth {
+  return NSWidth([passwordField_ frame]);
+}
 @end
 
-@implementation ManagePasswordItemPendingView (Testing)
+@implementation PendingPasswordItemView (Testing)
 
 - (NSTextField*)usernameField {
   return usernameField_.get();
 }
 
-- (NSSecureTextField*)passwordField {
+- (NSTextField*)passwordField {
   return passwordField_.get();
-}
-
-- (NSTextField*)federationField {
-  return federationField_.get();
 }
 
 @end
@@ -297,23 +334,20 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 
 // Find the next content view.
 - (void)updateContent;
-
-// Repaint the content.
-- (void)layoutContent;
 @end
 
 @implementation ManagePasswordItemViewController
 
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-       passwordForm:(const autofill::PasswordForm&)passwordForm
-           position:(password_manager::ui::PasswordItemPosition)position {
+- (id)initWithDelegate:(id<PasswordItemDelegate>)delegate
+          passwordForm:(const autofill::PasswordForm*)passwordForm {
   if ((self = [super initWithNibName:nil bundle:nil])) {
-    model_ = model;
-    position_ = position;
+    delegate_ = delegate;
     passwordForm_ = passwordForm;
-    state_ = model_->state() == password_manager::ui::PENDING_PASSWORD_STATE
-        ? MANAGE_PASSWORD_ITEM_STATE_PENDING
-        : MANAGE_PASSWORD_ITEM_STATE_MANAGE;
+    if ([delegate_ model]->state() ==
+        password_manager::ui::PENDING_PASSWORD_STATE)
+      state_ = MANAGE_PASSWORD_ITEM_STATE_PENDING;
+    else
+      state_ = MANAGE_PASSWORD_ITEM_STATE_MANAGE;
     [self updateContent];
   }
   return self;
@@ -323,46 +357,53 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
   DCHECK_EQ(MANAGE_PASSWORD_ITEM_STATE_MANAGE, state_);
   state_ = MANAGE_PASSWORD_ITEM_STATE_DELETED;
   [self refresh];
-  model_->OnPasswordAction(passwordForm_,
-                           ManagePasswordsBubbleModel::REMOVE_PASSWORD);
+  [delegate_ model]->OnPasswordAction(
+      *passwordForm_, ManagePasswordsBubbleModel::REMOVE_PASSWORD);
 }
 
 - (void)onUndoClicked:(id)sender {
   DCHECK_EQ(MANAGE_PASSWORD_ITEM_STATE_DELETED, state_);
   state_ = MANAGE_PASSWORD_ITEM_STATE_MANAGE;
   [self refresh];
-  model_->OnPasswordAction(passwordForm_,
-                           ManagePasswordsBubbleModel::ADD_PASSWORD);
+  [delegate_ model]->OnPasswordAction(*passwordForm_,
+                                      ManagePasswordsBubbleModel::ADD_PASSWORD);
 }
 
 - (void)refresh {
   [self updateContent];
-  [self layoutContent];
+  [self layoutWithFirstColumn:[delegate_ firstColumnMaxWidth]
+                 secondColumn:[delegate_ secondColumnMaxWidth]];
 }
 
 - (void)updateContent {
   switch (state_) {
-    default:
-      NOTREACHED();
     case MANAGE_PASSWORD_ITEM_STATE_PENDING:
       contentView_.reset(
-          [[ManagePasswordItemPendingView alloc] initWithForm:passwordForm_]);
+          [[PendingPasswordItemView alloc] initWithForm:*passwordForm_]);
       return;
     case MANAGE_PASSWORD_ITEM_STATE_MANAGE:
-      contentView_.reset([[ManagePasswordItemManageView alloc]
-          initWithForm:passwordForm_
+      contentView_.reset([[ManagePasswordItemView alloc]
+          initWithForm:*passwordForm_
                 target:self
                 action:@selector(onDeleteClicked:)]);
       return;
     case MANAGE_PASSWORD_ITEM_STATE_DELETED:
-      contentView_.reset([[ManagePasswordItemUndoView alloc]
+      contentView_.reset([[UndoPasswordItemView alloc]
           initWithTarget:self
                   action:@selector(onUndoClicked:)]);
       return;
   };
 }
 
-- (void)layoutContent {
+- (void)loadView {
+  self.view = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
+}
+
+#pragma mark PasswordItemTwoColumnView
+
+- (void)layoutWithFirstColumn:(CGFloat)firstWidth
+                 secondColumn:(CGFloat)secondWidth {
+  [contentView_ layoutWithFirstColumn:firstWidth secondColumn:secondWidth];
   // Update the view size according to the content view size.
   const NSSize contentSize = [contentView_ frame].size;
   [self.view setFrameSize:contentSize];
@@ -371,9 +412,12 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
   [self.view setSubviews:@[ contentView_ ]];
 }
 
-- (void)loadView {
-  self.view = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
-  [self layoutContent];
+- (CGFloat)firstColumnWidth {
+  return [contentView_ firstColumnWidth];
+}
+
+- (CGFloat)secondColumnWidth {
+  return [contentView_ secondColumnWidth];
 }
 
 @end
@@ -388,43 +432,73 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
   return contentView_.get();
 }
 
-- (autofill::PasswordForm)passwordForm {
-  return passwordForm_;
+@end
+
+@implementation PasswordsListViewController
+
+@synthesize firstColumnMaxWidth = firstColumnMaxWidth_;
+@synthesize secondColumnMaxWidth = secondColumnMaxWidth_;
+
+- (id)initWithModel:(ManagePasswordsBubbleModel*)model
+              forms:(const PasswordFormsVector&)password_forms {
+  if ((self = [super initWithNibName:nil bundle:nil])) {
+    base::scoped_nsobject<NSMutableArray> items(
+        [[NSMutableArray arrayWithCapacity:password_forms.size()] retain]);
+    model_ = model;
+    // Create the controllers.
+    for (const autofill::PasswordForm* form : password_forms) {
+      base::scoped_nsobject<ManagePasswordItemViewController> item(
+          [[ManagePasswordItemViewController alloc] initWithDelegate:self
+                                                        passwordForm:form]);
+      [items addObject:item.get()];
+    }
+    itemViews_.reset(items.release());
+  }
+  return self;
+}
+
+- (void)loadView {
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+
+  // Create the subviews.
+  for (id object in itemViews_.get()) {
+    ManagePasswordItemViewController* passwordController =
+        base::mac::ObjCCast<ManagePasswordItemViewController>(object);
+    NSView* itemView = [passwordController view];
+    [view addSubview:itemView];
+    firstColumnMaxWidth_ =
+        std::max(firstColumnMaxWidth_, [passwordController firstColumnWidth]);
+    secondColumnMaxWidth_ =
+        std::max(secondColumnMaxWidth_, [passwordController secondColumnWidth]);
+  }
+  // Lay out the items.
+  NSPoint curPos = {};
+  CGFloat maxX = 0;
+  for (id object in [itemViews_ reverseObjectEnumerator]) {
+    ManagePasswordItemViewController* passwordController =
+        base::mac::ObjCCast<ManagePasswordItemViewController>(object);
+    [passwordController layoutWithFirstColumn:firstColumnMaxWidth_
+                                 secondColumn:secondColumnMaxWidth_];
+    NSView* itemView = [passwordController view];
+    // The items stack up on each other.
+    [itemView setFrameOrigin:curPos];
+    maxX = NSMaxX([itemView frame]);
+    curPos.y = NSMaxY([itemView frame]);
+  }
+  [view setFrameSize:NSMakeSize(maxX, curPos.y)];
+  [self setView:view];
+}
+
+- (ManagePasswordsBubbleModel*)model {
+  return model_;
 }
 
 @end
 
-@implementation ManagePasswordItemClickableView
+@implementation PasswordsListViewController (Testing)
 
-- (void)drawRect:(NSRect)dirtyRect {
-  [super drawRect:dirtyRect];
-  if (hovering_) {
-    [HoverColor() setFill];
-    NSRectFill(dirtyRect);
-  }
-}
-
-- (void)mouseEntered:(NSEvent*)event {
-  hovering_ = YES;
-  [self setNeedsDisplay:YES];
-}
-
-- (void)mouseExited:(NSEvent*)event {
-  hovering_ = NO;
-  [self setNeedsDisplay:YES];
-}
-
-- (void)updateTrackingAreas {
-  [super updateTrackingAreas];
-  if (trackingArea_.get())
-    [self removeTrackingArea:trackingArea_.get()];
-  NSTrackingAreaOptions options =
-      NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow;
-  trackingArea_.reset([[CrTrackingArea alloc] initWithRect:[self bounds]
-                                                   options:options
-                                                     owner:self
-                                                  userInfo:nil]);
-  [self addTrackingArea:trackingArea_.get()];
+- (NSArray*)itemViews {
+  return itemViews_.get();
 }
 
 @end

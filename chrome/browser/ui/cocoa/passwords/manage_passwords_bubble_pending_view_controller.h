@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 
 class ManagePasswordsBubbleModel;
-@class ManagePasswordItemViewController;
+@class PasswordsListViewController;
 
 // Manages the view that offers to save the user's password.
 @interface ManagePasswordsBubblePendingViewController
@@ -21,7 +21,7 @@ class ManagePasswordsBubbleModel;
   base::scoped_nsobject<NSButton> saveButton_;
   base::scoped_nsobject<NSButton> neverButton_;
   base::scoped_nsobject<NSButton> closeButton_;
-  base::scoped_nsobject<ManagePasswordItemViewController> passwordItem_;
+  base::scoped_nsobject<PasswordsListViewController> passwordItem_;
 }
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
            delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;

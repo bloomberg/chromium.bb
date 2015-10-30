@@ -39,15 +39,6 @@ enum State {
   PENDING_PASSWORD_UPDATE_STATE,
 };
 
-// The position of a password item in a list of credentials.
-enum PasswordItemPosition {
-  // The password item is the first in the list.
-  FIRST_ITEM,
-
-  // The password item is not the first item in the list.
-  SUBSEQUENT_ITEM,
-};
-
 }  // namespace ui
 
 }  // namespace password_manager
