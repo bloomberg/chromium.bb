@@ -76,7 +76,20 @@ public final class UrlResponseInfo {
         }
     }
 
-    UrlResponseInfo(List<String> urlChain, int httpStatusCode, String httpStatusText,
+    /**
+     * Creates a {@link UrlResponseInfo} object.  Provided to facilitate testing.
+     *
+     * @param urlChain the URL chain. The first entry is the originally requested URL;
+     *         the following entries are redirects followed.
+     * @param httpStatusCode the HTTP status code.
+     * @param httpStatusText the HTTP status text of the status line.
+     * @param allHeadersList list of response header field and value pairs.
+     * @param wasCached {@code true} if the response came from the cache, {@code false}
+     *         otherwise.
+     * @param negotiatedProtocol the protocol negotiated with the server.
+     * @param proxyServer the proxy server that was used for the request.
+     */
+    public UrlResponseInfo(List<String> urlChain, int httpStatusCode, String httpStatusText,
             List<Map.Entry<String, String>> allHeadersList, boolean wasCached,
             String negotiatedProtocol, String proxyServer) {
         mResponseInfoUrlChain = Collections.unmodifiableList(urlChain);
@@ -99,7 +112,7 @@ public final class UrlResponseInfo {
     }
 
     /**
-     * Returns the URL chain. The first entry is the origianlly requested URL;
+     * Returns the URL chain. The first entry is the originally requested URL;
      * the following entries are redirects followed.
      * @return the URL chain.
      */
