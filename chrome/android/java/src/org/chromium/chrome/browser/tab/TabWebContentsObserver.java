@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.concurrent.TimeUnit;
 
@@ -227,7 +229,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
         }
         if (mTab.isShowingInterstitialPage()) color = mTab.getDefaultThemeColor();
         if (!FeatureUtilities.isDocumentMode(mTab.getApplicationContext())
-                && !isThemeColorEnabledInTabbedMode()) {
+                && !isThemeColorEnabledInTabbedMode(mTab.getApplicationContext())) {
             color = mTab.getDefaultThemeColor();
         }
         if (color == Color.TRANSPARENT) color = mTab.getDefaultThemeColor();
@@ -300,9 +302,12 @@ public class TabWebContentsObserver extends WebContentsObserver {
         return mThemeColor;
     }
 
-    private static boolean isThemeColorEnabledInTabbedMode() {
+    private static boolean isThemeColorEnabledInTabbedMode(Context context) {
+        if (DeviceFormFactor.isTablet(context)) return false;
         CommandLine commandLine = CommandLine.getInstance();
         return ChromeVersionInfo.isLocalBuild()
+                || ChromeVersionInfo.isCanaryBuild()
+                || ChromeVersionInfo.isDevBuild()
                 || commandLine.hasSwitch(ChromeSwitches.ENABLE_THEME_COLOR_IN_TABBED_MODE);
     }
 }
