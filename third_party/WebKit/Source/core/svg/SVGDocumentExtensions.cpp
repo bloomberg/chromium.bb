@@ -99,6 +99,11 @@ void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document, double m
     document.accessSVGExtensions().serviceAnimations(monotonicAnimationStartTime);
 }
 
+static bool isSVGAttributeHandle(const PropertyHandle& propertyHandle)
+{
+    return propertyHandle.isSVGAttribute();
+}
+
 void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime)
 {
     if (RuntimeEnabledFeatures::smilEnabled()) {
@@ -114,10 +119,8 @@ void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime
     // TODO(alancutter): Make SVG animation effect application a separate document lifecycle phase from servicing animations to be responsive to Javascript manipulation of exposed animation objects.
     for (auto& svgElement : webAnimationsPendingSVGElements) {
         ActiveInterpolationsMap activeInterpolationsMap = AnimationStack::activeInterpolations(
-            &svgElement->elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority);
+            &svgElement->elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority, isSVGAttributeHandle);
         for (auto& entry : activeInterpolationsMap) {
-            if (!entry.key.isSVGAttribute())
-                continue;
             const QualifiedName& attribute = entry.key.svgAttribute();
             const Interpolation& interpolation = *entry.value.first();
             if (interpolation.isInvalidatableInterpolation()) {

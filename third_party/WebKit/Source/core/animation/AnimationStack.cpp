@@ -43,9 +43,11 @@ namespace blink {
 
 namespace {
 
-void copyToActiveInterpolationsMap(const Vector<RefPtr<Interpolation>>& source, ActiveInterpolationsMap& target)
+void copyToActiveInterpolationsMap(const Vector<RefPtr<Interpolation>>& source, AnimationStack::PropertyHandleFilter propertyHandleFilter, ActiveInterpolationsMap& target)
 {
     for (const auto& interpolation : source) {
+        if (propertyHandleFilter && !propertyHandleFilter(interpolation->property()))
+            continue;
         ActiveInterpolationsMap::AddResult entry = target.add(interpolation->property(), ActiveInterpolations(1));
         ActiveInterpolations& activeInterpolations = entry.storedValue->value;
         if (!entry.isNewEntry
@@ -65,13 +67,13 @@ bool compareEffects(const Member<SampledEffect>& effect1, const Member<SampledEf
     return effect1->sequenceNumber() < effect2->sequenceNumber();
 }
 
-void copyNewAnimationsToActiveInterpolationsMap(const HeapVector<Member<InertEffect>>& newAnimations, ActiveInterpolationsMap& result)
+void copyNewAnimationsToActiveInterpolationsMap(const HeapVector<Member<InertEffect>>& newAnimations, AnimationStack::PropertyHandleFilter propertyHandleFilter, ActiveInterpolationsMap& result)
 {
     for (const auto& newAnimation : newAnimations) {
         Vector<RefPtr<Interpolation>> sample;
         newAnimation->sample(sample);
         if (!sample.isEmpty())
-            copyToActiveInterpolationsMap(sample, result);
+            copyToActiveInterpolationsMap(sample, propertyHandleFilter, result);
     }
 }
 
@@ -91,7 +93,7 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-ActiveInterpolationsMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority priority)
+ActiveInterpolationsMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority priority, PropertyHandleFilter propertyHandleFilter)
 {
     ActiveInterpolationsMap result;
 
@@ -103,12 +105,12 @@ ActiveInterpolationsMap AnimationStack::activeInterpolations(AnimationStack* ani
         for (const auto& effect : effects) {
             if (effect->priority() != priority || (suppressedAnimations && effect->effect() && suppressedAnimations->contains(effect->effect()->animation())))
                 continue;
-            copyToActiveInterpolationsMap(effect->interpolations(), result);
+            copyToActiveInterpolationsMap(effect->interpolations(), propertyHandleFilter, result);
         }
     }
 
     if (newAnimations)
-        copyNewAnimationsToActiveInterpolationsMap(*newAnimations, result);
+        copyNewAnimationsToActiveInterpolationsMap(*newAnimations, propertyHandleFilter, result);
 
     return result;
 }

@@ -960,16 +960,14 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, con
 template <CSSPropertyPriority priority>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const ActiveInterpolationsMap& activeInterpolationsMap)
 {
-    for (const auto& interpolationsVectorEntry : activeInterpolationsMap) {
-        if (!interpolationsVectorEntry.key.isCSSProperty())
-            continue;
-        CSSPropertyID property = interpolationsVectorEntry.key.cssProperty();
+    for (const auto& entry : activeInterpolationsMap) {
+        CSSPropertyID property = entry.key.cssProperty();
         if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
-        const Interpolation& interpolation = *interpolationsVectorEntry.value.first();
+        const Interpolation& interpolation = *entry.value.first();
         if (interpolation.isInvalidatableInterpolation()) {
             InterpolationEnvironment environment(state);
-            InvalidatableInterpolation::applyStack(interpolationsVectorEntry.value, environment);
+            InvalidatableInterpolation::applyStack(entry.value, environment);
         } else {
             // TODO(alancutter): Remove this old code path once animations have completely migrated to InterpolationTypes.
             toStyleInterpolation(interpolation).apply(state);
