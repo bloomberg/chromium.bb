@@ -597,7 +597,6 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
-        'smaug-paladin',
         'lakitu_next-paladin',
         'panther_moblab-paladin',
         'stumpy_moblab-paladin',
@@ -1629,6 +1628,7 @@ def GetConfig():
       'rambi',
       'rush_ryu',
       'samus',
+      'smaug',
       'storm',
       'stout',
       'strago',
