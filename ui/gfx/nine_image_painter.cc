@@ -133,39 +133,42 @@ void NineImagePainter::Paint(Canvas* canvas,
   int i7h = ImageRepHeightInPixels(image_reps[7]);
   int i8h = ImageRepHeightInPixels(image_reps[8]);
 
-  bool has_room_for_border =
-      i0w + i2w <= width_in_pixels && i3w + i5w <= width_in_pixels &&
-      i6w + i8w <= width_in_pixels && i0h + i6h <= height_in_pixels &&
-      i1h + i7h <= height_in_pixels && i2h + i8h <= height_in_pixels;
+  i0w = std::min(i0w, width_in_pixels);
+  i2w = std::min(i2w, width_in_pixels - i0w);
+  i3w = std::min(i3w, width_in_pixels);
+  i5w = std::min(i5w, width_in_pixels - i3w);
+  i6w = std::min(i6w, width_in_pixels);
+  i8w = std::min(i8w, width_in_pixels - i6w);
 
-  int i4x = has_room_for_border ? std::min(std::min(i0w, i3w), i6w) : 0;
-  int i4w = width_in_pixels -
-            (has_room_for_border ? i4x + std::min(std::min(i2w, i5w), i8w) : 0);
+  i0h = std::min(i0h, height_in_pixels);
+  i1h = std::min(i1h, height_in_pixels);
+  i2h = std::min(i2h, height_in_pixels);
+  i6h = std::min(i6h, height_in_pixels - i0h);
+  i7h = std::min(i7h, height_in_pixels - i1h);
+  i8h = std::min(i8h, height_in_pixels - i2h);
 
-  int i4y = has_room_for_border ? std::min(std::min(i0h, i1h), i2h) : 0;
-  int i4h = height_in_pixels -
-            (has_room_for_border ? i4y + std::min(std::min(i6h, i7h), i8h) : 0);
+  int i4x = std::min(std::min(i0w, i3w), i6w);
+  int i4y = std::min(std::min(i0h, i1h), i2h);
+  int i4w =
+      std::max(width_in_pixels - i4x - std::min(std::min(i2w, i5w), i8w), 0);
+  int i4h =
+      std::max(height_in_pixels - i4y - std::min(std::min(i6h, i7h), i8h), 0);
 
   SkPaint paint;
   paint.setAlpha(alpha);
 
   Fill(canvas, image_reps[4], i4x, i4y, i4w, i4h, paint);
-
-  if (has_room_for_border) {
-    Fill(canvas, image_reps[0], 0, 0, i0w, i0h, paint);
-    Fill(canvas, image_reps[1], i0w, 0, width_in_pixels - i0w - i2w, i1h,
-         paint);
-    Fill(canvas, image_reps[2], width_in_pixels - i2w, 0, i2w, i2h, paint);
-    Fill(canvas, image_reps[3], 0, i0h, i3w, height_in_pixels - i0h - i6h,
-         paint);
-    Fill(canvas, image_reps[5], width_in_pixels - i5w, i2h, i5w,
-         height_in_pixels - i2h - i8h, paint);
-    Fill(canvas, image_reps[6], 0, height_in_pixels - i6h, i6w, i6h, paint);
-    Fill(canvas, image_reps[7], i6w, height_in_pixels - i7h,
-         width_in_pixels - i6w - i8w, i7h, paint);
-    Fill(canvas, image_reps[8], width_in_pixels - i8w, height_in_pixels - i8h,
-         i8w, i8h, paint);
-  }
+  Fill(canvas, image_reps[0], 0, 0, i0w, i0h, paint);
+  Fill(canvas, image_reps[1], i0w, 0, width_in_pixels - i0w - i2w, i1h, paint);
+  Fill(canvas, image_reps[2], width_in_pixels - i2w, 0, i2w, i2h, paint);
+  Fill(canvas, image_reps[3], 0, i0h, i3w, height_in_pixels - i0h - i6h, paint);
+  Fill(canvas, image_reps[5], width_in_pixels - i5w, i2h, i5w,
+       height_in_pixels - i2h - i8h, paint);
+  Fill(canvas, image_reps[6], 0, height_in_pixels - i6h, i6w, i6h, paint);
+  Fill(canvas, image_reps[7], i6w, height_in_pixels - i7h,
+       width_in_pixels - i6w - i8w, i7h, paint);
+  Fill(canvas, image_reps[8], width_in_pixels - i8w, height_in_pixels - i8h,
+       i8w, i8h, paint);
 }
 
 // static

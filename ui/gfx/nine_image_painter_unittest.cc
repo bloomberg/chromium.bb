@@ -100,10 +100,12 @@ TEST(NineImagePainterTest, PaintHighDPI) {
 TEST(NineImagePainterTest, PaintStaysInBounds) {
   // In this test the bounds rect is 1x1 but each image is 2x2.
   // The NineImagePainter should not paint outside the bounds.
+  // The border images should be cropped, but still painted.
 
   SkBitmap src;
   src.allocN32Pixels(6, 6);
-  src.eraseColor(SK_ColorRED);
+  src.eraseColor(SK_ColorGREEN);
+  src.erase(SK_ColorRED, SkIRect::MakeXYWH(2, 2, 2, 2));
 
   gfx::ImageSkia image(gfx::ImageSkiaRep(src, 0.0f));
   gfx::Insets insets(2, 2, 2, 2);
@@ -122,7 +124,7 @@ TEST(NineImagePainterTest, PaintStaysInBounds) {
   result.allocN32Pixels(size.width(), size.height());
   canvas.sk_canvas()->readPixels(&result, 0, 0);
 
-  EXPECT_EQ(SK_ColorRED, result.getColor(1, 1));
+  EXPECT_EQ(SK_ColorGREEN, result.getColor(1, 1));
 
   EXPECT_EQ(SK_ColorBLACK, result.getColor(0, 0));
   EXPECT_EQ(SK_ColorBLACK, result.getColor(0, 1));
