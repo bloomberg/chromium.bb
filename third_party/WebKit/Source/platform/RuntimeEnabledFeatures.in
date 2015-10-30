@@ -119,6 +119,7 @@ OrientationEvent
 ForceOverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
+PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable
 PerformanceObserver status=experimental
 Permissions status=stable
