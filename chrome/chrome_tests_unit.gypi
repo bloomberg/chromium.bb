@@ -2273,6 +2273,31 @@
           'includes': ['chrome_ios_bundle_resources.gypi'],
           'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
         }],
+        ['OS=="android"', {
+          'sources': [ '<@(chrome_unit_tests_offline_pages_sources)' ],
+          'dependencies!': [
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+          ],
+          'sources!': [
+            'common/spellcheck_common_unittest.cc',
+            'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
+            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
+            'renderer/spellchecker/spellcheck_unittest.cc',
+          ],
+          'ldflags': [
+            # Some android targets still depend on --gc-sections to link.
+            # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
+            '-Wl,--gc-sections',
+          ],
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }, {  # Not Android.
+          'sources': [ '<@(chrome_unit_tests_non_android_sources)' ],
+          'sources!': [
+            'browser/download/download_request_infobar_delegate_unittest.cc',
+          ],
+        }],
         ['OS!="android" and OS!="ios"', {
           'sources': [ '<@(chrome_unit_tests_non_mobile_sources)' ],
         }],
@@ -2654,31 +2679,6 @@
         }],
         ['OS != "android" and chromeos == 0', {
           'sources': [ '<@(chrome_unit_tests_non_android_or_chromeos_sources)' ],
-        }],
-        ['OS=="android"', {
-          'sources': [ '<@(chrome_unit_tests_offline_pages_sources)' ],
-          'dependencies!': [
-            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
-          ],
-          'sources!': [
-            'common/spellcheck_common_unittest.cc',
-            'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
-            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
-            'renderer/spellchecker/spellcheck_unittest.cc',
-          ],
-          'ldflags': [
-            # Some android targets still depend on --gc-sections to link.
-            # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-            '-Wl,--gc-sections',
-          ],
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }, {  # Not Android.
-          'sources': [ '<@(chrome_unit_tests_non_android_sources)' ],
-          'sources!': [
-            'browser/download/download_request_infobar_delegate_unittest.cc',
-          ],
         }],
         ['enable_themes == 1', {
           'sources': [ '<@(chrome_unit_tests_themes_sources)' ],

@@ -1622,6 +1622,13 @@ if (!is_android) {
       sources -= [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
     }
 
+    if (!is_android && !is_ios) {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_non_mobile_sources,
+              ".",
+              "//chrome")
+    }
+
     if (is_ios || is_chromeos) {
       sources -= [ "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc" ]
     }
@@ -1668,29 +1675,6 @@ if (!is_android) {
       if (!is_chromeos) {
         sources += rebase_path(
                 chrome_tests_unit_gypi_values.chrome_unit_tests_extensions_non_chromeos_sources,
-                ".",
-                "//chrome")
-      }
-    }
-    if (toolkit_views) {
-      deps += [
-        "//components/web_modal:test_support",
-        "//ui/views",
-        "//ui/views:test_support",
-      ]
-      sources += rebase_path(
-              chrome_tests_unit_gypi_values.chrome_unit_tests_views_sources,
-              ".",
-              "//chrome")
-      if (!is_chromeos && (!is_mac || mac_views_browser)) {
-        sources += rebase_path(
-                chrome_tests_unit_gypi_values.chrome_unit_tests_views_non_chromeos_sources,
-                ".",
-                "//chrome")
-      }
-      if (!is_mac) {
-        sources += rebase_path(
-                chrome_tests_unit_gypi_values.chrome_unit_tests_views_non_mac_sources,
                 ".",
                 "//chrome")
       }
@@ -1823,18 +1807,6 @@ if (!is_android) {
               ".",
               "//chrome")
     }
-    if (enable_captive_portal_detection) {
-      sources += rebase_path(
-              chrome_tests_unit_gypi_values.chrome_unit_tests_captive_portal_sources,
-              ".",
-              "//chrome")
-    }
-    if (enable_session_service) {
-      sources += rebase_path(
-              chrome_tests_unit_gypi_values.chrome_unit_tests_session_service_sources,
-              ".",
-              "//chrome")
-    }
     if (enable_media_router) {
       sources += rebase_path(
               chrome_tests_unit_gypi_values.chrome_unit_tests_media_router_sources,
@@ -1847,6 +1819,18 @@ if (!is_android) {
                 ".",
                 "//chrome")
       }
+    }
+    if (enable_captive_portal_detection) {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_captive_portal_sources,
+              ".",
+              "//chrome")
+    }
+    if (enable_session_service) {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_session_service_sources,
+              ".",
+              "//chrome")
     }
     if (enable_webrtc) {
       sources += rebase_path(
@@ -1934,12 +1918,6 @@ if (!is_android) {
               ".",
               "//chrome")
     }
-    if (!is_android && !is_ios) {
-      sources += rebase_path(
-              chrome_tests_unit_gypi_values.chrome_unit_tests_non_mobile_sources,
-              ".",
-              "//chrome")
-    }
     if (!is_mac && !is_ios) {
       deps += [
         "//chrome/tools/convert_dict:lib",
@@ -2019,6 +1997,29 @@ if (!is_android) {
               chrome_tests_unit_gypi_values.chrome_unit_tests_themes_sources,
               ".",
               "//chrome")
+    }
+    if (toolkit_views) {
+      deps += [
+        "//components/web_modal:test_support",
+        "//ui/views",
+        "//ui/views:test_support",
+      ]
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_views_sources,
+              ".",
+              "//chrome")
+      if (!is_chromeos && (!is_mac || mac_views_browser)) {
+        sources += rebase_path(
+                chrome_tests_unit_gypi_values.chrome_unit_tests_views_non_chromeos_sources,
+                ".",
+                "//chrome")
+      }
+      if (!is_mac) {
+        sources += rebase_path(
+                chrome_tests_unit_gypi_values.chrome_unit_tests_views_non_mac_sources,
+                ".",
+                "//chrome")
+      }
     }
     if (!is_android && (use_nss_certs || use_openssl_certs)) {
       sources += [ "../common/net/x509_certificate_model_unittest.cc" ]
