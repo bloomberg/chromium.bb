@@ -5,6 +5,7 @@
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -26,6 +27,23 @@ void TabManager::WebContentsData::DidStartLoading() {
   SetDiscardState(false);
 }
 
+void TabManager::WebContentsData::WebContentsDestroyed() {
+  // If Chrome is shutting down, ignore this event.
+  if (g_browser_process->IsShuttingDown())
+    return;
+
+  // If the tab has been previously discarded but is not currently discarded
+  // (ie. it has been reloaded), we want to record the time it took between the
+  // reload event and the closing of the tab.
+  if (tab_data_.discard_count_ > 0 && !tab_data_.is_discarded_) {
+    auto delta = base::TimeTicks::Now() - tab_data_.last_reload_time_;
+    // Capped to one day for now, will adjust if necessary.
+    UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.ReloadToCloseTime", delta,
+                               base::TimeDelta::FromSeconds(1),
+                               base::TimeDelta::FromDays(1), 100);
+  }
+}
+
 bool TabManager::WebContentsData::IsDiscarded() {
   return tab_data_.is_discarded_;
 }
@@ -40,6 +58,7 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
     UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.DiscardToReloadTime",
                                delta, base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
+    tab_data_.last_reload_time_ = base::TimeTicks::Now();
   } else if (!tab_data_.is_discarded_ && state) {
     static int discard_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
@@ -90,6 +109,8 @@ TabManager::WebContentsData::Data::Data()
     : is_discarded_(false),
       discard_count_(0),
       is_recently_audible_(false),
-      last_audio_change_time_(TimeTicks::UnixEpoch()) {}
+      last_audio_change_time_(TimeTicks::UnixEpoch()),
+      last_discard_time_(TimeTicks::UnixEpoch()),
+      last_reload_time_(TimeTicks::UnixEpoch()) {}
 
 }  // namespace memory

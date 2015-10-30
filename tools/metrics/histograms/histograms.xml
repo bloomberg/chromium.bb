@@ -47235,6 +47235,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Discarding.ReloadToCloseTime" units="ms">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Elapsed time between the last time a discarded tab was reloaded and the time
+    it gets closed.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.CountAtResume" units="tabs">
   <owner>lliabraa@chromium.org</owner>
   <summary>

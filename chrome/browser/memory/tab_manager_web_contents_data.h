@@ -28,6 +28,7 @@ class TabManager::WebContentsData
 
   // WebContentsObserver implementation:
   void DidStartLoading() override;
+  void WebContentsDestroyed() override;
 
   // Returns true if |web_contents| has been discarded to save memory.
   bool IsDiscarded();
@@ -73,6 +74,8 @@ class TabManager::WebContentsData
     base::TimeTicks last_audio_change_time_;
     // The last time the tab was discarded.
     base::TimeTicks last_discard_time_;
+    // The last time the tab was reloaded after being discarded.
+    base::TimeTicks last_reload_time_;
   };
 
   Data tab_data_;
