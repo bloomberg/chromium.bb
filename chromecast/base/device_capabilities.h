@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -28,14 +30,22 @@ namespace chromecast {
 // system beforehand and are introduced by external parties. These capabilites
 // are stored and then forwarded to app servers that use them to determine how
 // to interact with the device.
+//
+// Thread Safety:
+// Observers can be added from any thread. Each Observer is guaranteed to be
+// notified on same thread that it was added on and must be removed on the same
+// thread that it was added on.
+//
+// Validators can be registered from any thread. Each Validator's Validate()
+// method is guaranteed to be called on same thread that the Validator was
+// registered on. The Validator must be unregistered on the same thread
+// that it was registered on.
+//
+// All other methods can be called safely from any thread.
 
 // TODO(esum):
-// 1) A pure virtual interface with implementation files is no longer needed
-//    now that this file resides in chromecast/base. Change it such that there
-//    is just device_capabilities.h/cc.
-// 2) Make class thread-safe with locking.
-// 3) Add WifiSupported, HotspotSupported, and MultizoneSupported capabilities.
-// 4) It's not ideal to have the accessors (BluetoothSupported(), etc.) not
+// 1) Add WifiSupported, HotspotSupported, and MultizoneSupported capabilities.
+// 2) It's not ideal to have the accessors (BluetoothSupported(), etc.) not
 //    be valid initially until the capability gets registered. We might want
 //    to use some kind of builder class to solve this.
 class DeviceCapabilities {
@@ -86,10 +96,44 @@ class DeviceCapabilities {
     DISALLOW_COPY_AND_ASSIGN(Validator);
   };
 
+  // Class used to store/own capabilities-related data. It is immutable and
+  // RefCountedThreadSafe, so client code can freely query it throughout its
+  // lifetime without worrying about the data getting invalidated in any way.
+  class Data : public base::RefCountedThreadSafe<Data> {
+   public:
+    // Accessor for complete capabilities in dictionary format.
+    const base::DictionaryValue& dictionary() const {
+      return *dictionary_.get();
+    }
+
+    // Accessor for complete capabilities string in JSON format.
+    const std::string& json_string() const { return *json_string_.get(); }
+
+   private:
+    friend class base::RefCountedThreadSafe<Data>;
+    // DeviceCapabilities should be the only one responsible for Data
+    // construction. See CreateData() methods.
+    friend class DeviceCapabilities;
+
+    // Constructs empty dictionary with no capabilities.
+    Data();
+    // Uses |dictionary| as capabilities dictionary.
+    explicit Data(scoped_ptr<const base::DictionaryValue> dictionary);
+    ~Data();
+
+    const scoped_ptr<const base::DictionaryValue> dictionary_;
+    const scoped_ptr<const std::string> json_string_;
+
+    DISALLOW_COPY_AND_ASSIGN(Data);
+  };
+
   // Default Capability keys
   static const char kKeyBluetoothSupported[];
   static const char kKeyDisplaySupported[];
 
+  // This class should get destroyed after all Validators have been
+  // unregistered, all Observers have been removed, and the class is no longer
+  // being accessed.
   virtual ~DeviceCapabilities() {}
 
   // Create empty instance with no capabilities. Although the class is not
@@ -109,16 +153,17 @@ class DeviceCapabilities {
   // farther down. For example, "foo" is a valid value for |key|, but "foo.bar"
   // is not. Note that if "foo.bar" is updated in SetCapability(), the
   // Validate() method for "foo"'s Validator will be called, with a |path| of
-  // "foo.bar". Both Register() and Unregister() must be called on cast
-  // receiver main thread; the Validator provided will also be called on cast
-  // receiver main thread. Note that this method does not add or modify
-  // the capability. To do this, SetCapability() should be called, or
-  // Validators can call SetValidatedValue().
+  // "foo.bar". Note that this method does not add or modify the capability.
+  // To do this, SetCapability() should be called, or Validators can call
+  // SetValidatedValue(). This method is synchronous to ensure Validators know
+  // exactly when they may start receiving validation requests.
   virtual void Register(const std::string& key,
                         Validator* validator) = 0;
   // Unregisters Validator for |key|. |validator| argument must match
   // |validator| argument that was passed in to Register() for |key|. Note that
-  // the capability and its value remain untouched.
+  // the capability and its value remain untouched. This method is synchronous
+  // to ensure Validators know exactly when they will stop receiving validation
+  // requests.
   virtual void Unregister(const std::string& key,
                           const Validator* validator) = 0;
   // Gets the Validator currently registered for |key|. Returns nullptr if
@@ -131,18 +176,17 @@ class DeviceCapabilities {
   virtual bool BluetoothSupported() const = 0;
   virtual bool DisplaySupported() const = 0;
 
-  // Gets the value of |path|. If capability at |path| does not exist,
-  // |out_value| remains untouched. Returns true if the capability has been
-  // successfully retrieved. Note that this does NOT perform a deep copy, and
-  // DeviceCapabilities still owns the memory returned through |out_value|.
-  virtual bool GetCapability(const std::string& path,
-                             const base::Value** out_value) const = 0;
+  // Returns a deep copy of the value at |path|. If the capability at |path|
+  // does not exist, a null scoped_ptr is returned.
+  virtual scoped_ptr<base::Value> GetCapability(
+      const std::string& path) const = 0;
 
-  // Returns the complete capability string (JSON format).
-  virtual const std::string& GetCapabilitiesString() const = 0;
-
-  // Returns the capabilities dictionary.
-  virtual const base::DictionaryValue* GetCapabilities() const = 0;
+  // Use this method to access dictionary and JSON string. No deep copying is
+  // performed, so this method is inexpensive. Note that any capability updates
+  // that occur after GetData() has been called will not be reflected in the
+  // returned scoped_refptr. You can think of this method as taking a snapshot
+  // of the capabilities when it gets called.
+  virtual scoped_refptr<Data> GetData() const = 0;
 
   // Updates the value at |path| to |proposed_value| if |path| already exists
   // and adds new capability if |path| doesn't. Note that if a key has been
@@ -151,11 +195,11 @@ class DeviceCapabilities {
   // Ex: If "foo" has a Validator registered, a |path| of "foo.bar"
   // will cause |proposed_value| to go through the Validator's Validate()
   // method. Client code may use the Observer interface to determine the
-  // ultimate value used.
+  // ultimate value used. This method is asynchronous.
   virtual void SetCapability(const std::string& path,
                              scoped_ptr<base::Value> proposed_value) = 0;
   // Iterates through entries in |dict_value| and calls SetCapability() for
-  // each one.
+  // each one. This method is asynchronous.
   virtual void MergeDictionary(const base::DictionaryValue& dict_value) = 0;
 
   // Adds/removes an observer. It doesn't take the ownership of |observer|.
@@ -165,10 +209,18 @@ class DeviceCapabilities {
  protected:
   DeviceCapabilities() {}
 
+  // For derived implementation classes to create Data instances since they do
+  // not have access to Data constructors.
+  // Creates empty dictionary with no capabilities.
+  static scoped_refptr<Data> CreateData();
+  // Uses |dictionary| as capabilities dictionary.
+  static scoped_refptr<Data> CreateData(
+      scoped_ptr<const base::DictionaryValue> dictionary);
+
  private:
   // Does actual internal update of |path| to |new_value|.
-  virtual void SetValidatedValueInternal(const std::string& path,
-                                         scoped_ptr<base::Value> new_value) = 0;
+  virtual void SetValidatedValue(const std::string& path,
+                                 scoped_ptr<base::Value> new_value) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCapabilities);
 };

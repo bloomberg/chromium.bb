@@ -5,6 +5,8 @@
 #include "chromecast/base/device_capabilities_impl.h"
 
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
 
@@ -59,6 +61,16 @@ scoped_ptr<DeviceCapabilities> DeviceCapabilities::CreateForTesting() {
   return make_scoped_ptr(capabilities);
 }
 
+scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData() {
+  return make_scoped_refptr(new Data);
+}
+
+scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData(
+    scoped_ptr<const base::DictionaryValue> dictionary) {
+  DCHECK(dictionary.get());
+  return make_scoped_refptr(new Data(dictionary.Pass()));
+}
+
 DeviceCapabilities::Validator::Validator(DeviceCapabilities* capabilities)
     : capabilities_(capabilities) {
   DCHECK(capabilities);
@@ -67,108 +79,168 @@ DeviceCapabilities::Validator::Validator(DeviceCapabilities* capabilities)
 void DeviceCapabilities::Validator::SetValidatedValue(
     const std::string& path,
     scoped_ptr<base::Value> new_value) const {
-  capabilities_->SetValidatedValueInternal(path, new_value.Pass());
+  capabilities_->SetValidatedValue(path, new_value.Pass());
+}
+
+DeviceCapabilities::Data::Data()
+    : dictionary_(new base::DictionaryValue),
+      json_string_(SerializeToJson(*dictionary_)) {
+  DCHECK(json_string_.get());
+}
+
+DeviceCapabilities::Data::Data(
+    scoped_ptr<const base::DictionaryValue> dictionary)
+    : dictionary_(dictionary.Pass()),
+      json_string_(SerializeToJson(*dictionary_)) {
+  DCHECK(dictionary_.get());
+  DCHECK(json_string_.get());
+}
+
+DeviceCapabilitiesImpl::Data::~Data() {}
+
+DeviceCapabilitiesImpl::ValidatorInfo::ValidatorInfo(Validator* validator)
+    : validator_(validator), task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  DCHECK(validator_);
+  DCHECK(task_runner_.get());
+}
+
+DeviceCapabilitiesImpl::ValidatorInfo::~ValidatorInfo() {
+  // Check that ValidatorInfo is being destroyed on the same thread that it was
+  // constructed on.
+  DCHECK(task_runner_->BelongsToCurrentThread());
+}
+
+void DeviceCapabilitiesImpl::ValidatorInfo::Validate(
+    const std::string& path,
+    scoped_ptr<base::Value> proposed_value) const {
+  // Check that we are running Validate on the same thread that ValidatorInfo
+  // was constructed on.
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  validator_->Validate(path, proposed_value.Pass());
 }
 
 DeviceCapabilitiesImpl::DeviceCapabilitiesImpl()
-    : capabilities_(new base::DictionaryValue),
-      capabilities_str_(SerializeToJson(*capabilities_)) {
-  DCHECK(capabilities_str_.get());
+    : data_(CreateData()),
+      task_runner_for_writes_(base::ThreadTaskRunnerHandle::Get()),
+      observer_list_(new base::ObserverListThreadSafe<Observer>) {
+  DCHECK(task_runner_for_writes_.get());
 }
 
 DeviceCapabilitiesImpl::~DeviceCapabilitiesImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   // Make sure that any registered Validators have unregistered at this point
   DCHECK(validator_map_.empty());
+  // Make sure that all observers have been removed at this point
+  observer_list_->AssertEmpty();
 }
 
 void DeviceCapabilitiesImpl::Register(const std::string& key,
                                       Validator* validator) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidRegisterKey(key));
   DCHECK(validator);
 
-  bool added = validator_map_.insert(std::make_pair(key, validator)).second;
+  base::AutoLock auto_lock(validation_lock_);
+  bool added =
+      validator_map_.add(key, make_scoped_ptr(new ValidatorInfo(validator)))
+          .second;
   // Check that a validator has not already been registered for this key
   DCHECK(added);
 }
 
 void DeviceCapabilitiesImpl::Unregister(const std::string& key,
                                         const Validator* validator) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(validation_lock_);
+  auto validator_it = validator_map_.find(key);
+  DCHECK(validator_it != validator_map_.end());
   // Check that validator being unregistered matches the original for |key|.
   // This prevents managers from accidentally unregistering incorrect
   // validators.
-  DCHECK_EQ(validator, GetValidator(key));
-  bool erased = validator_map_.erase(key);
-  DCHECK(erased);
+  DCHECK_EQ(validator, validator_it->second->validator());
+  // Check that validator is unregistering on same thread that it was
+  // registered on
+  DCHECK(validator_it->second->task_runner()->BelongsToCurrentThread());
+  validator_map_.erase(validator_it);
 }
 
 DeviceCapabilities::Validator* DeviceCapabilitiesImpl::GetValidator(
     const std::string& key) const {
+  base::AutoLock auto_lock(validation_lock_);
   auto validator_it = validator_map_.find(key);
-  return validator_it == validator_map_.end() ? nullptr : validator_it->second;
+  return validator_it == validator_map_.end()
+             ? nullptr
+             : validator_it->second->validator();
 }
 
 bool DeviceCapabilitiesImpl::BluetoothSupported() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  scoped_refptr<Data> data_ref = GetData();
   bool bluetooth_supported = false;
-  bool found_key =
-      capabilities_->GetBoolean(kKeyBluetoothSupported, &bluetooth_supported);
+  bool found_key = data_ref->dictionary().GetBoolean(kKeyBluetoothSupported,
+                                                     &bluetooth_supported);
   DCHECK(found_key);
   return bluetooth_supported;
 }
 
 bool DeviceCapabilitiesImpl::DisplaySupported() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  scoped_refptr<Data> data_ref = GetData();
   bool display_supported = false;
-  bool found_key =
-      capabilities_->GetBoolean(kKeyDisplaySupported, &display_supported);
+  bool found_key = data_ref->dictionary().GetBoolean(kKeyDisplaySupported,
+                                                     &display_supported);
   DCHECK(found_key);
   return display_supported;
 }
 
-bool DeviceCapabilitiesImpl::GetCapability(
-    const std::string& path,
-    const base::Value** out_value) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return capabilities_ && capabilities_->Get(path, out_value);
+scoped_ptr<base::Value> DeviceCapabilitiesImpl::GetCapability(
+    const std::string& path) const {
+  scoped_refptr<Data> data_ref = GetData();
+  const base::Value* value = nullptr;
+  bool found_path = data_ref->dictionary().Get(path, &value);
+  return found_path ? value->CreateDeepCopy() : scoped_ptr<base::Value>();
 }
 
-const std::string& DeviceCapabilitiesImpl::GetCapabilitiesString() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return *capabilities_str_;
-}
-
-const base::DictionaryValue* DeviceCapabilitiesImpl::GetCapabilities() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return capabilities_.get();
+scoped_refptr<DeviceCapabilities::Data>
+DeviceCapabilitiesImpl::GetData() const {
+  // Need to acquire lock here when copy constructing data_ otherwise we could
+  // be concurrently be writing to scoped_refptr in SetValidatedValue(), which
+  // could cause a bad scoped_refptr read.
+  base::AutoLock auto_lock(data_lock_);
+  return data_;
 }
 
 void DeviceCapabilitiesImpl::SetCapability(
     const std::string& path,
     scoped_ptr<base::Value> proposed_value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(proposed_value.get());
   if (!IsValidPath(path)) {
     LOG(DFATAL) << "Invalid capability path encountered for SetCapability()";
     return;
   }
 
-  // Check for Validator registered under first key per the Register()
-  // interface.
-  auto validator_it = validator_map_.find(GetFirstKey(path));
-  if (validator_it == validator_map_.end()) {
-    SetValidatedValueInternal(path, proposed_value.Pass());
-    return;
+  {
+    base::AutoLock auto_lock(validation_lock_);
+    // Check for Validator registered under first key per the Register()
+    // interface.
+    auto validator_it = validator_map_.find(GetFirstKey(path));
+    if (validator_it != validator_map_.end()) {
+      // We do not want to post a task directly for the Validator's Validate()
+      // method here because if another thread is in the middle of unregistering
+      // that Validator, there will be an outstanding call to Validate() that
+      // occurs after it has unregistered. Since ValidatorInfo gets destroyed
+      // in Unregister() on same thread that validation should run on, we can
+      // post a task to the Validator's thread with weak_ptr. This way, if the
+      // Validator gets unregistered, the call to Validate will get skipped.
+      validator_it->second->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&ValidatorInfo::Validate,
+                                validator_it->second->AsWeakPtr(), path,
+                                base::Passed(&proposed_value)));
+      return;
+    }
   }
-
-  validator_it->second->Validate(path, proposed_value.Pass());
+  // Since we are done checking for a registered Validator at this point, we
+  // can release the lock. All further member access will be for capabilities.
+  SetValidatedValue(path, proposed_value.Pass());
 }
 
 void DeviceCapabilitiesImpl::MergeDictionary(
     const base::DictionaryValue& dict_value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   for (base::DictionaryValue::Iterator it(dict_value); !it.IsAtEnd();
        it.Advance()) {
     SetCapability(it.key(), it.value().CreateDeepCopy());
@@ -177,42 +249,62 @@ void DeviceCapabilitiesImpl::MergeDictionary(
 
 void DeviceCapabilitiesImpl::AddCapabilitiesObserver(Observer* observer) {
   DCHECK(observer);
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observer_list_.AddObserver(observer);
+  observer_list_->AddObserver(observer);
 }
 
 void DeviceCapabilitiesImpl::RemoveCapabilitiesObserver(Observer* observer) {
   DCHECK(observer);
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observer_list_.RemoveObserver(observer);
+  observer_list_->RemoveObserver(observer);
 }
 
-void DeviceCapabilitiesImpl::SetValidatedValueInternal(
+void DeviceCapabilitiesImpl::SetValidatedValue(
     const std::string& path,
     scoped_ptr<base::Value> new_value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // All internal writes/modifications of capabilities must occur on same
+  // thread to avoid race conditions.
+  if (!task_runner_for_writes_->BelongsToCurrentThread()) {
+    task_runner_for_writes_->PostTask(
+        FROM_HERE,
+        base::Bind(&DeviceCapabilitiesImpl::SetValidatedValue,
+                   base::Unretained(this), path, base::Passed(&new_value)));
+    return;
+  }
+
   DCHECK(IsValidPath(path));
   DCHECK(new_value.get());
 
+  // We don't need to acquire lock here when reading data_ because we know that
+  // all writes to data_ must occur serially on thread that we're on.
   const base::Value* cur_value = nullptr;
-  bool capability_unchaged =
-      GetCapability(path, &cur_value) && cur_value->Equals(new_value.get());
-  if (capability_unchaged) {
+  bool capability_unchanged = data_->dictionary().Get(path, &cur_value) &&
+                              cur_value->Equals(new_value.get());
+  if (capability_unchanged) {
     VLOG(1) << "Ignoring unchanged capability: " << path;
     return;
   }
 
-  capabilities_->Set(path, new_value.Pass());
-  UpdateStrAndNotifyChanged(path);
-}
+  // In this sequence, we create a deep copy, modify the deep copy, and then
+  // do a pointer swap. We do this to have minimal time spent in the
+  // data_lock_. If we were to lock and modify the capabilities
+  // dictionary directly, there may be expensive writes that block other
+  // threads.
+  scoped_ptr<base::DictionaryValue> dictionary_deep_copy(
+      data_->dictionary().CreateDeepCopy());
+  dictionary_deep_copy->Set(path, new_value.Pass());
+  scoped_refptr<Data> new_data(CreateData(dictionary_deep_copy.Pass()));
 
-void DeviceCapabilitiesImpl::UpdateStrAndNotifyChanged(
-    const std::string& path) {
-  // Update capabilities string here since all updates to capabilities must
-  // ultimately call this method no matter where the update originated from.
-  capabilities_str_ = SerializeToJson(*capabilities_);
-  DCHECK(capabilities_str_.get());
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnCapabilitiesChanged(path));
+  {
+    base::AutoLock auto_lock(data_lock_);
+    // Using swap instead of assignment operator here because it's a little
+    // faster. Avoids an extra call to AddRef()/Release().
+    data_.swap(new_data);
+  }
+
+  // Even though ObseverListThreadSafe notifications are always asynchronous
+  // (posts task even if to same thread), no locks should be held at this point
+  // in the code. This is just to be safe that no deadlocks occur if Observers
+  // call DeviceCapabilities methods in OnCapabilitiesChanged().
+  observer_list_->Notify(FROM_HERE, &Observer::OnCapabilitiesChanged, path);
 }
 
 }  // namespace chromecast
