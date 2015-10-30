@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/cpp/tests/test_window.h"
 #include "components/mus/public/cpp/util.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
@@ -18,17 +19,7 @@ namespace mus {
 
 // Window ---------------------------------------------------------------------
 
-typedef testing::Test WindowTest;
-
-// Subclass with public ctor/dtor.
-class TestWindow : public Window {
- public:
-  TestWindow() { WindowPrivate(this).set_id(1); }
-  ~TestWindow() {}
-
- private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestWindow);
-};
+using WindowTest = testing::Test;
 
 TEST_F(WindowTest, AddChild) {
   TestWindow w1;

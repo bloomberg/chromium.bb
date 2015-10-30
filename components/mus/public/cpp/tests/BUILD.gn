@@ -5,6 +5,16 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+source_set("unittest_support") {
+  sources = [
+    "test_window.h",
+  ]
+
+  deps = [
+    "//components/mus/public/cpp",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
 
@@ -32,6 +42,7 @@ test("mojo_view_manager_lib_unittests") {
   ]
 
   deps = [
+    ":unittest_support",
     "//base",
     "//base/test:test_support",
     "//components/mus/public/cpp",

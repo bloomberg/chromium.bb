@@ -55,7 +55,12 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
     return nullptr;
   }
 
-  return make_scoped_ptr(new MoveLoop(target, event));
+  Type type;
+  HorizontalLocation h_loc;
+  VerticalLocation v_loc;
+  DetermineType(target, location, &type, &h_loc, &v_loc);
+
+  return make_scoped_ptr(new MoveLoop(target, event, type, h_loc, v_loc));
 }
 
 MoveLoop::MoveResult MoveLoop::Move(const mus::mojom::Event& event) {
@@ -89,8 +94,15 @@ MoveLoop::MoveResult MoveLoop::Move(const mus::mojom::Event& event) {
   return MoveResult::CONTINUE;
 }
 
-MoveLoop::MoveLoop(mus::Window* target, const mus::mojom::Event& event)
+MoveLoop::MoveLoop(mus::Window* target,
+                   const mus::mojom::Event& event,
+                   Type type,
+                   HorizontalLocation h_loc,
+                   VerticalLocation v_loc)
     : target_(target),
+      type_(type),
+      h_loc_(h_loc),
+      v_loc_(v_loc),
       pointer_id_(event.pointer_data->pointer_id),
       initial_event_screen_location_(EventScreenLocationToPoint(event)),
       initial_window_bounds_(target->bounds()),
@@ -99,11 +111,46 @@ MoveLoop::MoveLoop(mus::Window* target, const mus::mojom::Event& event)
   target->AddObserver(this);
 }
 
+// static
+void MoveLoop::DetermineType(mus::Window* target,
+                             const gfx::Point& location,
+                             Type* type,
+                             HorizontalLocation* h_loc,
+                             VerticalLocation* v_loc) {
+  *h_loc = HorizontalLocation::OTHER;
+  *v_loc = VerticalLocation::OTHER;
+  const int resize_size = static_cast<int>(
+      kResizeSize *
+      std::max(1.f, target->viewport_metrics().device_pixel_ratio));
+
+  if (location.x() < target->client_area().x())
+    *h_loc = HorizontalLocation::LEFT;
+  else if (location.x() >= target->client_area().right())
+    *h_loc = HorizontalLocation::RIGHT;
+  else
+    *h_loc = HorizontalLocation::OTHER;
+
+  if (location.y() < resize_size)
+    *v_loc = VerticalLocation::TOP;
+  else if (location.y() >= target->client_area().bottom())
+    *v_loc = VerticalLocation::BOTTOM;
+  else
+    *v_loc = VerticalLocation::OTHER;
+
+  if (*v_loc == VerticalLocation::OTHER && location.y() >= resize_size &&
+      *h_loc == HorizontalLocation::OTHER) {
+    *type = Type::MOVE;
+    return;
+  }
+  *type = Type::RESIZE;
+  DCHECK(*h_loc != HorizontalLocation::OTHER ||
+         *v_loc != VerticalLocation::OTHER);
+}
+
 void MoveLoop::MoveImpl(const mus::mojom::Event& event) {
   const gfx::Vector2d delta =
       EventScreenLocationToPoint(event) - initial_event_screen_location_;
-  const gfx::Rect new_bounds(initial_window_bounds_.origin() + delta,
-                             initial_window_bounds_.size());
+  const gfx::Rect new_bounds(DetermineBoundsFromDelta(delta));
   base::AutoReset<bool> resetter(&changing_bounds_, true);
   target_->SetBounds(new_bounds);
   SetWindowUserSetBounds(target_, new_bounds);
@@ -118,6 +165,36 @@ void MoveLoop::Revert() {
   base::AutoReset<bool> resetter(&changing_bounds_, true);
   target_->SetBounds(initial_window_bounds_);
   SetWindowUserSetBounds(target_, initial_user_set_bounds_);
+}
+
+gfx::Rect MoveLoop::DetermineBoundsFromDelta(const gfx::Vector2d& delta) {
+  if (type_ == Type::MOVE) {
+    return gfx::Rect(initial_window_bounds_.origin() + delta,
+                     initial_window_bounds_.size());
+  }
+
+  // TODO(sky): support better min sizes, make sure doesn't get bigger than
+  // screen and max. Also make sure keep some portion on screen.
+  gfx::Rect bounds(initial_window_bounds_);
+  if (h_loc_ == HorizontalLocation::LEFT) {
+    const int x = std::min(bounds.right() - 1, bounds.x() + delta.x());
+    const int width = bounds.right() - x;
+    bounds.set_x(x);
+    bounds.set_width(width);
+  } else if (h_loc_ == HorizontalLocation::RIGHT) {
+    bounds.set_width(std::max(1, bounds.width() + delta.x()));
+  }
+
+  if (v_loc_ == VerticalLocation::TOP) {
+    const int y = std::min(bounds.bottom() - 1, bounds.y() + delta.y());
+    const int height = bounds.bottom() - y;
+    bounds.set_y(y);
+    bounds.set_height(height);
+  } else if (v_loc_ == VerticalLocation::BOTTOM) {
+    bounds.set_height(std::max(1, bounds.height() + delta.y()));
+  }
+
+  return bounds;
 }
 
 void MoveLoop::OnTreeChanged(const TreeChangeParams& params) {

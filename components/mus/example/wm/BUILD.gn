@@ -14,13 +14,12 @@ group("wm") {
   ]
 }
 
-mojo_native_application("example_wm") {
+source_set("example_wm_lib") {
   sources = [
     "background_layout.cc",
     "background_layout.h",
     "layout_manager.cc",
     "layout_manager.h",
-    "main.cc",
     "move_loop.cc",
     "move_loop.h",
     "property_util.cc",
@@ -43,6 +42,17 @@ mojo_native_application("example_wm") {
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
+  ]
+}
+
+mojo_native_application("example_wm") {
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":example_wm_lib",
+    "//mojo/application/public/cpp",
   ]
 
   data_deps = [
@@ -74,5 +84,31 @@ mojo_native_application("apptests") {
 
   data_deps = [
     ":example_wm",
+  ]
+}
+
+source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "move_loop_unittest.cc",
+  ]
+
+  deps = [
+    ":example_wm_lib",
+    "//base",
+    "//base/test:test_config",
+    "//components/mus/public/cpp",
+    "//components/mus/public/cpp/tests:unittest_support",
+    "//mojo/converters/geometry",
+    "//mojo/converters/input_events",
+    "//testing/gtest",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//ui/events",
+    "//ui/gfx/geometry",
+    "//ui/gfx:test_support",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/mojo/geometry:util",
   ]
 }

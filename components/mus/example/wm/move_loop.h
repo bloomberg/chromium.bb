@@ -23,6 +23,21 @@ class MoveLoop : public mus::WindowObserver {
     DONE,
   };
 
+  enum class HorizontalLocation {
+    LEFT,
+    RIGHT,
+    OTHER,
+  };
+
+  enum class VerticalLocation {
+    TOP,
+    BOTTOM,
+    OTHER,
+  };
+
+  // Number of pixels in which a resize is triggered.
+  static const int kResizeSize = 8;
+
   ~MoveLoop() override;
 
   // If a move/resize loop should occur for the specified parameters creates
@@ -35,7 +50,22 @@ class MoveLoop : public mus::WindowObserver {
   MoveResult Move(const mus::mojom::Event& event);
 
  private:
-  MoveLoop(mus::Window* target, const mus::mojom::Event& event);
+  enum class Type {
+    MOVE,
+    RESIZE,
+  };
+
+  MoveLoop(mus::Window* target,
+           const mus::mojom::Event& event,
+           Type type,
+           HorizontalLocation h_loc,
+           VerticalLocation v_loc);
+
+  static void DetermineType(mus::Window* target,
+                            const gfx::Point& location,
+                            Type* type,
+                            HorizontalLocation* h_loc,
+                            VerticalLocation* v_loc);
 
   // Does the actual move/resize.
   void MoveImpl(const mus::mojom::Event& event);
@@ -47,6 +77,8 @@ class MoveLoop : public mus::WindowObserver {
 
   void Revert();
 
+  gfx::Rect DetermineBoundsFromDelta(const gfx::Vector2d& delta);
+
   // mus::WindowObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
   void OnWindowBoundsChanged(mus::Window* window,
@@ -57,6 +89,10 @@ class MoveLoop : public mus::WindowObserver {
   // The window this MoveLoop is acting on. |target_| is set to null if the
   // window unexpectedly changes while the move is in progress.
   mus::Window* target_;
+
+  const Type type_;
+  const HorizontalLocation h_loc_;
+  const VerticalLocation v_loc_;
 
   // The id of the pointer that triggered the move.
   const int32_t pointer_id_;

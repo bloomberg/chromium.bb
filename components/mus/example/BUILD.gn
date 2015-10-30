@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 group("example") {
   testonly = true
 
@@ -11,5 +13,15 @@ group("example") {
     "//components/mus/example/views_examples",
     "//components/mus/example/window_type_launcher",
     "//components/mus/example/wm",
+  ]
+}
+
+test("mustash_unittests") {
+  deps = [
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_config",
+    "//base/test:test_support",
+    "//components/mus/example/wm:unittests",
   ]
 }
