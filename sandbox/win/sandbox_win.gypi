@@ -114,8 +114,6 @@
             'src/security_level.h',
             'src/service_resolver.cc',
             'src/service_resolver.h',
-            'src/shared_handles.cc',
-            'src/shared_handles.h',
             'src/sharedmem_ipc_client.cc',
             'src/sharedmem_ipc_client.h',
             'src/sharedmem_ipc_server.cc',
