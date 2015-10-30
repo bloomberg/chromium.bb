@@ -189,6 +189,14 @@ static bool saveResultToString(xmlDocPtr resultDoc, xsltStylesheetPtr sheet, Str
     return true;
 }
 
+static char* allocateParameterArray(const char* data)
+{
+    size_t length = strlen(data) + 1;
+    char* parameterArray = static_cast<char*>(WTF::Partitions::fastMalloc(length));
+    memcpy(parameterArray, data, length);
+    return parameterArray;
+}
+
 static const char** xsltParamArrayFromParameterMap(XSLTProcessor::ParameterMap& parameters)
 {
     if (parameters.isEmpty())
@@ -198,8 +206,8 @@ static const char** xsltParamArrayFromParameterMap(XSLTProcessor::ParameterMap& 
 
     unsigned index = 0;
     for (auto& parameter : parameters) {
-        parameterArray[index++] = WTF::Partitions::fastStrDup(parameter.key.utf8().data());
-        parameterArray[index++] = WTF::Partitions::fastStrDup(parameter.value.utf8().data());
+        parameterArray[index++] = allocateParameterArray(parameter.key.utf8().data());
+        parameterArray[index++] = allocateParameterArray(parameter.value.utf8().data());
     }
     parameterArray[index] = 0;
 

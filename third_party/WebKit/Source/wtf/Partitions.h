@@ -117,13 +117,6 @@ public:
     {
         return partitionReallocGeneric(Partitions::fastMallocPartition(), p, n);
     }
-    static char* fastStrDup(const char* src)
-    {
-        size_t len = strlen(src) + 1;
-        char* dup = static_cast<char*>(fastMalloc(len));
-        memcpy(dup, src, len);
-        return dup;
-    }
     static void fastFree(void* p)
     {
         partitionFreeGeneric(Partitions::fastMallocPartition(), p);
