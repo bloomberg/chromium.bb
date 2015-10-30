@@ -29,6 +29,7 @@
 #include "net/socket/tcp_server_socket.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_connection.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -255,7 +256,7 @@ void EmbeddedTestServer::ServeFilesFromSourceDirectory(
 }
 
 void EmbeddedTestServer::AddDefaultHandlers(const base::FilePath& directory) {
-  // TODO(svaldez): Add additional default handlers.
+  RegisterDefaultHandlers(this);
   ServeFilesFromSourceDirectory(directory);
 }
 
