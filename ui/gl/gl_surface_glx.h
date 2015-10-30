@@ -59,7 +59,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
   // Implement GLSurfaceGLX.
   bool Initialize() override;
   void Destroy() override;
-  bool Resize(const gfx::Size& size) override;
+  bool Resize(const gfx::Size& size, float scale_factor) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;

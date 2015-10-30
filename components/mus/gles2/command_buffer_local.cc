@@ -90,8 +90,6 @@ bool CommandBufferLocal::Initialize() {
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), decoder_.get(),
                                          decoder_.get()));
   decoder_->set_engine(scheduler_.get());
-  decoder_->SetResizeCallback(
-      base::Bind(&CommandBufferLocal::OnResize, base::Unretained(this)));
   decoder_->SetWaitSyncPointCallback(
       base::Bind(&CommandBufferLocal::OnWaitSyncPoint, base::Unretained(this)));
   decoder_->SetFenceSyncReleaseCallback(base::Bind(
@@ -261,10 +259,6 @@ void CommandBufferLocal::PumpCommands() {
     return;
   }
   scheduler_->PutChanged();
-}
-
-void CommandBufferLocal::OnResize(gfx::Size size, float scale_factor) {
-  surface_->Resize(size);
 }
 
 void CommandBufferLocal::OnUpdateVSyncParameters(

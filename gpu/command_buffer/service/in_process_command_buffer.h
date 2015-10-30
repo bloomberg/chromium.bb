@@ -236,7 +236,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
   // Callbacks:
   void OnContextLost();
-  void OnResizeView(gfx::Size size, float scale_factor);
   bool GetBufferChanged(int32 transfer_buffer_id);
   void PumpCommands();
   void PerformDelayedWork();

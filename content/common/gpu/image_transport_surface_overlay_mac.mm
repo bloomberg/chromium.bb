@@ -708,12 +708,13 @@ void ImageTransportSurfaceOverlayMac::OnBufferPresented(
   }
 }
 
-void ImageTransportSurfaceOverlayMac::OnResize(gfx::Size pixel_size,
-                                               float scale_factor) {
+bool ImageTransportSurfaceOverlayMac::Resize(const gfx::Size& pixel_size,
+                                             float scale_factor) {
   // Flush through any pending frames.
   DisplayAndClearAllPendingSwaps();
   pixel_size_ = pixel_size;
   scale_factor_ = scale_factor;
+  return true;
 }
 
 void ImageTransportSurfaceOverlayMac::SetLatencyInfo(

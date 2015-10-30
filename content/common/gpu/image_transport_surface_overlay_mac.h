@@ -32,6 +32,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // GLSurface implementation
   bool Initialize() override;
   void Destroy() override;
+  bool Resize(const gfx::Size& size, float scale_factor) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
@@ -50,7 +51,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // ImageTransportSurface implementation
   void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
-  void OnResize(gfx::Size pixel_size, float scale_factor) override;
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) override;
 
   // ui::GpuSwitchingObserver implementation.

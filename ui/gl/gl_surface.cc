@@ -99,7 +99,7 @@ bool GLSurface::Initialize() {
   return true;
 }
 
-bool GLSurface::Resize(const gfx::Size& size) {
+bool GLSurface::Resize(const gfx::Size& size, float scale_factor) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -232,8 +232,8 @@ void GLSurfaceAdapter::Destroy() {
   surface_->Destroy();
 }
 
-bool GLSurfaceAdapter::Resize(const gfx::Size& size) {
-  return surface_->Resize(size);
+bool GLSurfaceAdapter::Resize(const gfx::Size& size, float scale_factor) {
+  return surface_->Resize(size, scale_factor);
 }
 
 bool GLSurfaceAdapter::Recreate() {

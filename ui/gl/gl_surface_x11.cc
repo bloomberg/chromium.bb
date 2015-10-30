@@ -30,7 +30,7 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   // Implement a subset of GLSurface.
   bool Initialize() override;
   void Destroy() override;
-  bool Resize(const gfx::Size& new_size) override;
+  bool Resize(const gfx::Size& new_size, float scale_factor) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
   bool SupportsPostSubBuffer() override;
@@ -136,8 +136,9 @@ void NativeViewGLSurfaceOSMesa::Destroy() {
   XSync(xdisplay_, False);
 }
 
-bool NativeViewGLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
-  if (!GLSurfaceOSMesa::Resize(new_size))
+bool NativeViewGLSurfaceOSMesa::Resize(const gfx::Size& new_size,
+                                       float scale_factor) {
+  if (!GLSurfaceOSMesa::Resize(new_size, scale_factor))
     return false;
 
   XWindowAttributes attributes;

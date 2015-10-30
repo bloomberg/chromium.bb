@@ -203,11 +203,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Perform any idle work that needs to be made.
   virtual void PerformIdleWork() = 0;
 
-  // Sets a callback which is called when a glResizeCHROMIUM command
-  // is processed.
-  virtual void SetResizeCallback(
-      const base::Callback<void(gfx::Size, float)>& callback) = 0;
-
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.
   virtual bool GetServiceTextureId(uint32 client_texture_id,

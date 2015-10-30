@@ -46,7 +46,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
 
   // GLSurface:
   bool Initialize() override;
-  bool Resize(const gfx::Size& size) override;
+  bool Resize(const gfx::Size& size, float scale_factor) override;
   gfx::SwapResult SwapBuffers() override;
   bool ScheduleOverlayPlane(int z_order,
                             OverlayTransform transform,
@@ -79,14 +79,14 @@ bool GLSurfaceOzoneEGL::Initialize() {
   return Initialize(ozone_surface_->CreateVSyncProvider());
 }
 
-bool GLSurfaceOzoneEGL::Resize(const gfx::Size& size) {
+bool GLSurfaceOzoneEGL::Resize(const gfx::Size& size, float scale_factor) {
   if (!ozone_surface_->ResizeNativeWindow(size)) {
     if (!ReinitializeNativeSurface() ||
         !ozone_surface_->ResizeNativeWindow(size))
       return false;
   }
 
-  return NativeViewGLSurfaceEGL::Resize(size);
+  return NativeViewGLSurfaceEGL::Resize(size, scale_factor);
 }
 
 gfx::SwapResult GLSurfaceOzoneEGL::SwapBuffers() {
@@ -144,7 +144,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
 
   // GLSurface:
   bool Initialize() override;
-  bool Resize(const gfx::Size& size) override;
+  bool Resize(const gfx::Size& size, float scale_factor) override;
   gfx::SwapResult SwapBuffers() override;
   bool ScheduleOverlayPlane(int z_order,
                             OverlayTransform transform,
@@ -263,11 +263,12 @@ bool GLSurfaceOzoneSurfaceless::Initialize() {
   return true;
 }
 
-bool GLSurfaceOzoneSurfaceless::Resize(const gfx::Size& size) {
+bool GLSurfaceOzoneSurfaceless::Resize(const gfx::Size& size,
+                                       float scale_factor) {
   if (!ozone_surface_->ResizeNativeWindow(size))
     return false;
 
-  return SurfacelessEGL::Resize(size);
+  return SurfacelessEGL::Resize(size, scale_factor);
 }
 
 gfx::SwapResult GLSurfaceOzoneSurfaceless::SwapBuffers() {
@@ -428,7 +429,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
   // GLSurface:
   unsigned int GetBackingFrameBufferObject() override;
   bool OnMakeCurrent(GLContext* context) override;
-  bool Resize(const gfx::Size& size) override;
+  bool Resize(const gfx::Size& size, float scale_factor) override;
   bool SupportsPostSubBuffer() override;
   gfx::SwapResult SwapBuffers() override;
   bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
@@ -481,10 +482,12 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::OnMakeCurrent(GLContext* context) {
   return SurfacelessEGL::OnMakeCurrent(context);
 }
 
-bool GLSurfaceOzoneSurfacelessSurfaceImpl::Resize(const gfx::Size& size) {
+bool GLSurfaceOzoneSurfacelessSurfaceImpl::Resize(const gfx::Size& size,
+                                                  float scale_factor) {
   if (size == GetSize())
     return true;
-  return GLSurfaceOzoneSurfaceless::Resize(size) && CreatePixmaps();
+  return GLSurfaceOzoneSurfaceless::Resize(size, scale_factor) &&
+         CreatePixmaps();
 }
 
 bool GLSurfaceOzoneSurfacelessSurfaceImpl::SupportsPostSubBuffer() {

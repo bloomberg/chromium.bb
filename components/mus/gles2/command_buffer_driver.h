@@ -74,7 +74,6 @@ class CommandBufferDriver {
   bool MakeCurrent();
   bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state,
                     mojo::Array<int32_t> attribs);
-  void OnResize(gfx::Size size, float scale_factor);
   bool OnWaitSyncPoint(uint32_t sync_point);
   void OnFenceSyncRelease(uint64_t release);
   bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,

@@ -84,7 +84,6 @@ class CommandBufferLocal : public gpu::GpuControl {
  private:
   void PumpCommands();
 
-  void OnResize(gfx::Size size, float scale_factor);
   void OnUpdateVSyncParameters(const base::TimeTicks timebase,
                                const base::TimeDelta interval);
   bool OnWaitSyncPoint(uint32_t sync_point);

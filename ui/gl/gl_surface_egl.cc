@@ -672,7 +672,7 @@ gfx::Size NativeViewGLSurfaceEGL::GetSize() {
   return gfx::Size(width, height);
 }
 
-bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
+bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size, float scale_factor) {
   if (size == GetSize())
     return true;
 
@@ -815,7 +815,7 @@ gfx::Size PbufferGLSurfaceEGL::GetSize() {
   return size_;
 }
 
-bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size) {
+bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size, float scale_factor) {
   if (size == size_)
     return true;
 
@@ -901,7 +901,7 @@ gfx::Size SurfacelessEGL::GetSize() {
   return size_;
 }
 
-bool SurfacelessEGL::Resize(const gfx::Size& size) {
+bool SurfacelessEGL::Resize(const gfx::Size& size, float scale_factor) {
   size_ = size;
   return true;
 }

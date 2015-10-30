@@ -198,12 +198,6 @@ InProcessCommandBuffer::~InProcessCommandBuffer() {
   Destroy();
 }
 
-void InProcessCommandBuffer::OnResizeView(gfx::Size size, float scale_factor) {
-  CheckSequencedThread();
-  DCHECK(!surface_->IsOffscreen());
-  surface_->Resize(size);
-}
-
 bool InProcessCommandBuffer::MakeCurrent() {
   CheckSequencedThread();
   command_buffer_lock_.AssertAcquired();
@@ -411,10 +405,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   }
   *params.capabilities = decoder_->GetCapabilities();
 
-  if (!params.is_offscreen) {
-    decoder_->SetResizeCallback(base::Bind(
-        &InProcessCommandBuffer::OnResizeView, gpu_thread_weak_ptr_));
-  }
   decoder_->SetWaitSyncPointCallback(
       base::Bind(&InProcessCommandBuffer::WaitSyncPointOnGpuThread,
                  base::Unretained(this)));

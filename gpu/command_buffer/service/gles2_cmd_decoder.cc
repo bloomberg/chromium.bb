@@ -877,9 +877,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void WaitForReadPixels(base::Closure callback) override;
 
-  void SetResizeCallback(
-      const base::Callback<void(gfx::Size, float)>& callback) override;
-
   Logger* GetLogger() override;
 
   void BeginDecoding() override;
@@ -2193,8 +2190,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   scoped_ptr<VertexArrayManager> vertex_array_manager_;
 
   scoped_ptr<ImageManager> image_manager_;
-
-  base::Callback<void(gfx::Size, float)> resize_callback_;
 
   WaitSyncPointCallback wait_sync_point_callback_;
   FenceSyncReleaseCallback fence_sync_release_callback_;
@@ -4135,11 +4130,6 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
   glBindTexture(target, texture_ref ? texture_ref->service_id() : 0);
 }
 
-void GLES2DecoderImpl::SetResizeCallback(
-    const base::Callback<void(gfx::Size, float)>& callback) {
-  resize_callback_ = callback;
-}
-
 Logger* GLES2DecoderImpl::GetLogger() {
   return &logger_;
 }
@@ -4536,10 +4526,11 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(uint32 immediate_data_size,
                  << "ResizeOffscreenFrameBuffer failed.";
       return error::kLostContext;
     }
-  }
-
-  if (!resize_callback_.is_null()) {
-    resize_callback_.Run(gfx::Size(width, height), scale_factor);
+  } else {
+    if (!surface_->Resize(gfx::Size(width, height), scale_factor)) {
+      LOG(ERROR) << "GLES2DecoderImpl: Context lost because resize failed.";
+      return error::kLostContext;
+    }
     DCHECK(context_->IsCurrent(surface_.get()));
     if (!context_->IsCurrent(surface_.get())) {
       LOG(ERROR) << "GLES2DecoderImpl: Context lost because context no longer "

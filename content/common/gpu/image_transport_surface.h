@@ -63,7 +63,6 @@ class ImageTransportSurface {
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) = 0;
 #endif
-  virtual void OnResize(gfx::Size size, float scale_factor) = 0;
   virtual void SetLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info) = 0;
 
@@ -177,7 +176,6 @@ class PassThroughImageTransportSurface
   void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
 #endif
-  void OnResize(gfx::Size size, float scale_factor) override;
   gfx::Size GetSize() override;
   void SetLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info) override;

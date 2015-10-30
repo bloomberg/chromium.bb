@@ -30,14 +30,14 @@ GLSurfaceOSMesa::GLSurfaceOSMesa(OSMesaSurfaceFormat format,
 }
 
 bool GLSurfaceOSMesa::Initialize() {
-  return Resize(size_);
+  return Resize(size_, 1.f);
 }
 
 void GLSurfaceOSMesa::Destroy() {
   buffer_.reset();
 }
 
-bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
+bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size, float scale_factor) {
   scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   GLContext* current_context = GLContext::GetCurrent();
   bool was_current =

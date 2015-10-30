@@ -66,9 +66,6 @@ bool ImageTransportHelper::Initialize() {
   if (!decoder)
     return false;
 
-  decoder->SetResizeCallback(
-       base::Bind(&ImageTransportHelper::Resize, base::Unretained(this)));
-
   stub_->SetLatencyInfoCallback(
       base::Bind(&ImageTransportHelper::SetLatencyInfo,
                  base::Unretained(this)));
@@ -134,15 +131,6 @@ void ImageTransportHelper::OnBufferPresented(
   surface_->OnBufferPresented(params);
 }
 #endif
-
-void ImageTransportHelper::Resize(gfx::Size size, float scale_factor) {
-  surface_->OnResize(size, scale_factor);
-
-#if defined(OS_ANDROID)
-  manager_->gpu_memory_manager()->ScheduleManage(
-      GpuMemoryManager::kScheduleManageNow);
-#endif
-}
 
 void ImageTransportHelper::SetLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
@@ -257,11 +245,6 @@ void PassThroughImageTransportSurface::OnBufferPresented(
   NOTREACHED();
 }
 #endif
-
-void PassThroughImageTransportSurface::OnResize(gfx::Size size,
-                                                float scale_factor) {
-  Resize(size);
-}
 
 gfx::Size PassThroughImageTransportSurface::GetSize() {
   return GLSurfaceAdapter::GetSize();

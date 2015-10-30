@@ -113,8 +113,6 @@ bool CommandBufferDriver::DoInitialize(
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), decoder_.get(),
                                          decoder_.get()));
   decoder_->set_engine(scheduler_.get());
-  decoder_->SetResizeCallback(
-      base::Bind(&CommandBufferDriver::OnResize, base::Unretained(this)));
   decoder_->SetWaitSyncPointCallback(base::Bind(
       &CommandBufferDriver::OnWaitSyncPoint, base::Unretained(this)));
   decoder_->SetFenceSyncReleaseCallback(base::Bind(
@@ -274,10 +272,6 @@ void CommandBufferDriver::DestroyImage(int32_t id) {
 void CommandBufferDriver::OnParseError() {
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   OnContextLost(state.context_lost_reason);
-}
-
-void CommandBufferDriver::OnResize(gfx::Size size, float scale_factor) {
-  surface_->Resize(size);
 }
 
 bool CommandBufferDriver::OnWaitSyncPoint(uint32_t sync_point) {

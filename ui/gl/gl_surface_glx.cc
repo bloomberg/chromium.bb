@@ -526,7 +526,7 @@ uint32_t NativeViewGLSurfaceGLX::DispatchEvent(const ui::PlatformEvent& event) {
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
-bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size) {
+bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size, float scale_factor) {
   size_ = size;
   glXWaitGL();
   XResizeWindow(g_display, window_, size.width(), size.height());
