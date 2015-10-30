@@ -40,23 +40,13 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   if (get_property_function) {
     // If the function is not null then tcmalloc is used. See
     // MallocExtension::getNumericProperty.
-    size_t pageheap_unmapped_bytes = 0;
     bool res = get_property_function("generic.heap_size", &total_virtual_size);
     DCHECK(res);
-    res = get_property_function("tcmalloc.pageheap_unmapped_bytes",
-                                &pageheap_unmapped_bytes);
+    res = get_property_function("generic.total_physical_bytes", &resident_size);
     DCHECK(res);
     res = get_property_function("generic.current_allocated_bytes",
                                 &allocated_objects_size);
     DCHECK(res);
-
-    // Please see TCMallocImplementation::GetStats implementation for
-    // explanation
-    // about this math.
-    // TODO(ssid): Usage of metadata is not included in page heap bytes
-    // (crbug.com/546491). MallocExtension::GetNumericProperty will be extended
-    // to get this value.
-    resident_size = total_virtual_size - pageheap_unmapped_bytes;
   } else {
     struct mallinfo info = mallinfo();
     DCHECK_GE(info.arena + info.hblkhd, info.uordblks);

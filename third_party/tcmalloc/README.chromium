@@ -99,3 +99,4 @@ Modifications:
 - Changed DEFINE_string to define const char*s instead of strings
 - Disabled HEAPPROFILE envvar unless ENABLE_PROFILING is defined
 - Add "ARMv8-a" to the supporting list of ARM architecture
+- Add generic.total_physical_bytes property to MallocExtension
