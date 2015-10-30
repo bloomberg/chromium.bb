@@ -301,6 +301,13 @@ Polymer({
   },
 
   /**
+   * Invoked when receivig a request to start playing the current music.
+   */
+  onPlayCurrentTrack: function() {
+    this.$.audio.play();
+  },
+
+  /**
    * Invoked when receiving a request to replay the current music from the track
    * list element.
    */

@@ -46,6 +46,7 @@
   flex: none;
   height: 32px;
   margin: 8px;
+  pointer-events: none;
   width: 32px;
 }
 
@@ -53,6 +54,7 @@
   background-image: -webkit-image-set(
       url(../assets/100/playlist_play.png) 1x,
       url(../assets/200/playlist_play.png) 2x);
+  pointer-events: auto;
 }
 
 .track[active] .icon {
