@@ -2502,8 +2502,8 @@ TEST_F(SSLClientSocketTest, FallbackShardSessionCache) {
             SSLConnectionStatusToVersion(ssl_info.connection_status));
 }
 
-// Test that RC4 is only enabled if enable_deprecated_cipher_suites is set.
-TEST_F(SSLClientSocketTest, DeprecatedRC4) {
+// Test that RC4 is only enabled if rc4_enabled is set.
+TEST_F(SSLClientSocketTest, RC4Enabled) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_RC4;
   ASSERT_TRUE(StartTestServer(ssl_options));
@@ -2514,8 +2514,8 @@ TEST_F(SSLClientSocketTest, DeprecatedRC4) {
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
 
-  // Enabling deprecated ciphers works fine.
-  ssl_config.enable_deprecated_cipher_suites = true;
+  // Enabling RC4 works fine.
+  ssl_config.rc4_enabled = true;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   EXPECT_EQ(OK, rv);
 }
@@ -2527,7 +2527,7 @@ TEST_F(SSLClientSocketTest, DeprecatedShardSessionCache) {
   // Prepare a normal and deprecated SSL config.
   SSLConfig ssl_config;
   SSLConfig deprecated_ssl_config;
-  deprecated_ssl_config.enable_deprecated_cipher_suites = true;
+  deprecated_ssl_config.deprecated_cipher_suites_enabled = true;
 
   // Connect with deprecated ciphers enabled to warm the session cache cache.
   int rv;

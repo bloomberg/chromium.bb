@@ -2780,7 +2780,7 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     SSL_CipherPrefSet(nss_fd_, *it, PR_FALSE);
   }
 
-  if (!ssl_config_.enable_deprecated_cipher_suites) {
+  if (!ssl_config_.rc4_enabled) {
     const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
     const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
     for (int i = 0; i < num_ciphers; i++) {
@@ -2906,7 +2906,7 @@ int SSLClientSocketNSS::InitializeSSLPeerName() {
       NOTREACHED();
   }
   peer_id += "/";
-  if (ssl_config_.enable_deprecated_cipher_suites)
+  if (ssl_config_.deprecated_cipher_suites_enabled)
     peer_id += "deprecated";
 
   peer_id += "/";

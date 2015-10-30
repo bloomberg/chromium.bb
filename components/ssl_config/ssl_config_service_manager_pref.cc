@@ -15,6 +15,8 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
+#include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/ssl_config/ssl_config_prefs.h"
@@ -76,6 +78,12 @@ uint16 SSLProtocolVersionFromString(const std::string& version_str) {
     version = net::SSL_PROTOCOL_VERSION_TLS1_2;
   }
   return version;
+}
+
+bool IsRC4EnabledByDefault() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("RC4Ciphers");
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -164,6 +172,7 @@ class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
   StringPrefMember ssl_version_fallback_min_;
+  BooleanPrefMember rc4_enabled_;
 
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16> disabled_cipher_suites_;
@@ -182,6 +191,10 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       io_task_runner_(io_task_runner) {
   DCHECK(local_state);
 
+  local_state->SetDefaultPrefValue(
+      ssl_config::prefs::kRC4Enabled,
+      new base::FundamentalValue(IsRC4EnabledByDefault()));
+
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
       base::Bind(&SSLConfigServiceManagerPref::OnPreferenceChanged,
                  base::Unretained(this), local_state);
@@ -197,6 +210,8 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                         local_state_callback);
   ssl_version_fallback_min_.Init(ssl_config::prefs::kSSLVersionFallbackMin,
                                  local_state, local_state_callback);
+  rc4_enabled_.Init(ssl_config::prefs::kRC4Enabled, local_state,
+                    local_state_callback);
 
   local_state_change_registrar_.Init(local_state);
   local_state_change_registrar_.Add(ssl_config::prefs::kCipherSuiteBlacklist,
@@ -225,6 +240,8 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionFallbackMin,
                                std::string());
   registry->RegisterListPref(ssl_config::prefs::kCipherSuiteBlacklist);
+  registry->RegisterBooleanPref(ssl_config::prefs::kRC4Enabled,
+                                default_config.rc4_enabled);
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -279,6 +296,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->version_fallback_min = version_fallback_min;
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;
+  config->rc4_enabled = rc4_enabled_.GetValue();
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(

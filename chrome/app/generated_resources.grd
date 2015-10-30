@@ -9290,10 +9290,10 @@ I don't think this site should be blocked!
         This webpage is not available
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_SSL_VERSION_OR_CIPHER_MISMATCH" desc="Summary in the error page for SSL cipher and version errors.">
-        A secure connection cannot be established because this site uses an unsupported protocol.
+        A secure connection cannot be established because this site uses an unsupported protocol or cipher suite. This is usually caused when the server needs RC4 support, which has been removed.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_SSL_VERSION_OR_CIPHER_MISMATCH" desc="The error message displayed for SSL cipher and version errors.">
-        The client and server don't support a common SSL protocol version or cipher suite. This is usually caused when the server needs SSLv3 support, which has been removed.
+        The client and server don't support a common SSL protocol version or cipher suite. This is usually caused when the server needs RC4 support, which has been removed.
       </message>
 
       <message name="IDS_ERRORPAGES_HEADING_PINNING_FAILURE" desc="Title of the error page for a certificate which doesn't match the built-in pins for that name">

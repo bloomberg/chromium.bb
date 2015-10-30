@@ -1800,6 +1800,16 @@
     "pref_mappings": []
   },
 
+  "RC4Enabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "RC4Enabled": true },
+    "pref_mappings": [
+      { "pref": "ssl.rc4_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "WelcomePageOnOSUpgradeEnabled": {
     "os": ["win"],
     "test_policy": { "WelcomePageOnOSUpgradeEnabled": false },

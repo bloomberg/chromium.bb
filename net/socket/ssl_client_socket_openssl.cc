@@ -888,9 +888,10 @@ int SSLClientSocketOpenSSL::Init() {
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA:!kDHE");
 
-  if (!ssl_config_.enable_deprecated_cipher_suites) {
+  if (!ssl_config_.rc4_enabled)
     command.append(":!RC4");
-  } else {
+
+  if (ssl_config_.deprecated_cipher_suites_enabled) {
     // Add TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 under a fallback. This is
     // believed to work around a bug in some out-of-date Microsoft IIS servers
     // which cause them to require the version downgrade
@@ -2053,7 +2054,7 @@ std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
   }
 
   result.append("/");
-  if (ssl_config_.enable_deprecated_cipher_suites)
+  if (ssl_config_.deprecated_cipher_suites_enabled)
     result.append("deprecated");
 
   result.append("/");

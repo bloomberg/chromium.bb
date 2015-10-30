@@ -146,7 +146,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     }
     // Place sockets with and without deprecated ciphers into separate
     // connection groups.
-    if (ssl_config_for_origin.enable_deprecated_cipher_suites)
+    if (ssl_config_for_origin.deprecated_cipher_suites_enabled)
       prefix += "deprecatedciphers/";
     connection_group = prefix + connection_group;
   }

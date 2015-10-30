@@ -14,6 +14,7 @@ extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionFallbackMin[];
 extern const char kCipherSuiteBlacklist[];
+extern const char kRC4Enabled[];
 
 }  // namespace prefs
 }  // namespace ssl_config
