@@ -394,8 +394,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
     /**
      * Constructs a NetworkChangeNotifierAutoDetect. Should only be called on UI thread.
-     * @param alwaysWatchForChanges If true, always watch for network changes.
-     *    Otherwise, only watch if app is in foreground.
+     * @param policy The RegistrationPolicy which determines when this class should watch
+     *     for network changes (e.g. see (@link RegistrationPolicyAlwaysRegister} and
+     *     {@link RegistrationPolicyApplicationStatus}).
      */
     @SuppressLint("NewApi")
     public NetworkChangeNotifierAutoDetect(
