@@ -24,9 +24,9 @@ if (window.testRunner) {
     setTimeout(function () {
         // Test succeeded, now remove traps and return to a state that won't confuse our test runner.
         document.body.onload = function() {};
+        document.getElementById("ifrm").contentDocument.close();
         if (window.stop)
             stop();
-        document.getElementById("ifrm").contentDocument.close();
         if (window.testRunner)
             testRunner.notifyDone();
       }, 500);

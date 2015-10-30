@@ -603,8 +603,8 @@ void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token)
     RefPtrWillBeRawPtr<HTMLElement> body = createHTMLElement(token);
     attachLater(currentNode(), body);
     m_openElements.pushHTMLBodyElement(HTMLStackItem::create(body.release(), token));
-    if (LocalFrame* frame = m_document->frame())
-        frame->loader().client()->dispatchWillInsertBody();
+    if (m_document && m_document->frame())
+        m_document->frame()->loader().client()->dispatchWillInsertBody();
 }
 
 void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token, bool isDemoted)

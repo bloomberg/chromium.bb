@@ -290,7 +290,6 @@ void FrameLoader::clear()
         return;
 
     m_frame->editor().clear();
-    m_frame->document()->cancelParsing();
     m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
     m_frame->selection().prepareForDestruction();
     m_frame->eventHandler().clear();
@@ -976,17 +975,11 @@ void FrameLoader::stopAllLoaders()
     }
 
     m_frame->document()->suppressLoadEvent();
-    // FIXME: This is an odd set of steps to shut down parsing and it's unclear why it works.
-    // It's also unclear why other steps don't work.
-    if (m_frame->document()->parsing()) {
-        finishedParsing();
-        m_frame->document()->setParsingState(Document::FinishedParsing);
-    }
-    m_frame->document()->setReadyState(Document::Complete);
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->stopLoading();
     if (m_documentLoader)
         m_documentLoader->stopLoading();
+    m_frame->document()->cancelParsing();
 
     detachDocumentLoader(m_provisionalDocumentLoader);
 
@@ -1355,13 +1348,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     if (!shouldClose(navigationType == NavigationTypeReload))
         return;
 
-    // FIXME: This is an odd set of steps to shut down parsing and it's unclear why it works.
-    // It's also unclear why other steps don't work.
-    if (m_frame->document()->parsing()) {
-        finishedParsing();
-        m_frame->document()->setParsingState(Document::FinishedParsing);
-    }
-    m_frame->document()->setReadyState(Document::Complete);
+    m_frame->document()->cancelParsing();
 
     // In certain circumstances on pages with multiple frames, stopAllLoaders() or firing readystatechanged
     // might detach the current FrameLoader, in which case we should bail on this newly defunct load.

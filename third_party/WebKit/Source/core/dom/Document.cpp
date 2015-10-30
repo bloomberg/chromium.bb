@@ -2424,20 +2424,14 @@ void Document::detachParser()
 
 void Document::cancelParsing()
 {
-    if (!m_parser)
-        return;
-
-    // We have to clear the parser to avoid possibly triggering
-    // the onload handler when closing as a side effect of a cancel-style
-    // change, such as opening a new document or closing the window while
-    // still parsing.
     detachParser();
-    explicitClose();
+    setParsingState(FinishedParsing);
+    setReadyState(Complete);
 }
 
 PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen(ParserSynchronizationPolicy parserSyncPolicy)
 {
-    cancelParsing();
+    detachParser();
 
     removeChildren();
     ASSERT(!m_focusedElement);
@@ -2563,11 +2557,6 @@ void Document::close()
     if (!scriptableDocumentParser() || !scriptableDocumentParser()->wasCreatedByScript() || !scriptableDocumentParser()->isParsing())
         return;
 
-    explicitClose();
-}
-
-void Document::explicitClose()
-{
     if (RefPtrWillBeRawPtr<DocumentParser> parser = m_parser)
         parser->finish();
 

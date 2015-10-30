@@ -479,10 +479,6 @@ public:
     void close(ExceptionState&);
     // This is used internally and does not handle exceptions.
     void close();
-    // In some situations (see the code), we ignore document.close().
-    // explicitClose() bypass these checks and actually tries to close the
-    // input stream.
-    void explicitClose();
     // implicitClose() actually does the work of closing the input stream.
     void implicitClose();
 

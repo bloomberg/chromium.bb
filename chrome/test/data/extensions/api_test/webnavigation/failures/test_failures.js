@@ -173,13 +173,6 @@ onload = function() {
                        transitionQualifiers: [],
                        transitionType: "link",
                        url: getURL('e.html') }},
-          { label: "onDOMContentLoaded",
-            event: "onDOMContentLoaded",
-            details: { frameId: 0,
-                       processId: 0,
-                       tabId: 0,
-                       timeStamp: 0,
-                       url: getURL('e.html') }},
           { label: "onErrorOccurred",
             event: "onErrorOccurred",
             details: { error: "net::ERR_ABORTED",
@@ -188,7 +181,7 @@ onload = function() {
                        tabId: 0,
                        timeStamp: 0,
                        url: getURL('e.html') }}],
-          [["onBeforeNavigate", "onCommitted", "onDOMContentLoaded",
+          [["onBeforeNavigate", "onCommitted",
             "onErrorOccurred"]]);
         chrome.tabs.update(tabId, { url: getURL('e.html') });
       },

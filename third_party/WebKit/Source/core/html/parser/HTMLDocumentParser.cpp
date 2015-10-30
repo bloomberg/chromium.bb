@@ -489,6 +489,9 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
         if (isStopped())
             break;
     }
+    // XSSAuditorDelegate can detach the parser if it decides to block the entire current document.
+    if (isDetached())
+        return elementTokenCount;
 
     for (Vector<CompactHTMLToken>::const_iterator it = tokens->begin(); it != tokens->end(); ++it) {
         ASSERT(!isWaitingForScripts());
