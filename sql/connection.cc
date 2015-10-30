@@ -355,7 +355,7 @@ Connection::Connection()
       query_time_histogram_(NULL),
       clock_(new TimeSource()) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this);
+      this, "sql::Connection", nullptr);
 }
 
 Connection::~Connection() {

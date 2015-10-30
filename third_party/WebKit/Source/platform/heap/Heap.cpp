@@ -169,7 +169,7 @@ void Heap::init()
     GCInfoTable::init();
 
     if (Platform::current() && Platform::current()->currentThread())
-        Platform::current()->registerMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
+        Platform::current()->registerMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance(), "BlinkGC");
 }
 
 void Heap::shutdown()

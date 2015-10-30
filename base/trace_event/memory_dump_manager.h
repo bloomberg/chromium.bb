@@ -71,13 +71,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
       const scoped_refptr<SingleThreadTaskRunner>& task_runner);
   void UnregisterDumpProvider(MemoryDumpProvider* mdp);
 
-  // TODO(primiano): Remove these two after all the existing dump provider have
-  // been converted.
-  void RegisterDumpProvider(
-      MemoryDumpProvider* mdp,
-      const scoped_refptr<SingleThreadTaskRunner>& task_runner);
-  void RegisterDumpProvider(MemoryDumpProvider* mdp);
-
   // Requests a memory dump. The dump might happen or not depending on the
   // filters and categories specified when enabling tracing.
   // The optional |callback| is executed asynchronously, on an arbitrary thread,

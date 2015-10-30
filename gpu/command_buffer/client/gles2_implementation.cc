@@ -225,7 +225,7 @@ bool GLES2Implementation::Initialize(
   // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, base::ThreadTaskRunnerHandle::Get());
+        this, "GLES2Implementation", base::ThreadTaskRunnerHandle::Get());
   }
 
   return true;

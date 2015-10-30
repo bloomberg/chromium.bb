@@ -667,11 +667,11 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   // Enable memory-infra dump providers.
   InitSkiaEventTracer();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      HostSharedBitmapManager::current());
+      HostSharedBitmapManager::current(), "HostSharedBitmapManager", nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      skia::SkiaMemoryDumpProvider::GetInstance());
+      skia::SkiaMemoryDumpProvider::GetInstance(), "Skia", nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      sql::SqlMemoryDumpProvider::GetInstance());
+      sql::SqlMemoryDumpProvider::GetInstance(), "Sql", nullptr);
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
   trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
@@ -1195,10 +1195,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // unregistration happens on the IO thread (See
   // BrowserProcessSubThread::IOThreadPreCleanUp).
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      BrowserGpuMemoryBufferManager::current(), io_thread_->task_runner());
+      BrowserGpuMemoryBufferManager::current(), "BrowserGpuMemoryBufferManager",
+      io_thread_->task_runner());
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      tracing::GraphicsMemoryDumpProvider::GetInstance());
+      tracing::GraphicsMemoryDumpProvider::GetInstance(), "AndroidGraphics",
+      nullptr);
 #endif
 
   {

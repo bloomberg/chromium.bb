@@ -123,7 +123,7 @@ void initialize(Platform* platform)
         currentThread->addTaskObserver(s_endOfTaskRunner);
 
         // Register web cache dump provider for tracing.
-        platform->registerMemoryDumpProvider(WebCacheMemoryDumpProvider::instance());
+        platform->registerMemoryDumpProvider(WebCacheMemoryDumpProvider::instance(), "MemoryCache");
     }
 }
 

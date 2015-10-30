@@ -144,7 +144,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
   void updateTraceEventDuration(const unsigned char* category_group_enabled,
                                 const char* name,
                                 TraceEventHandle) override;
-  void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp) override;
+  void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp,
+                                  const char* name) override;
   void unregisterMemoryDumpProvider(
       blink::WebMemoryDumpProvider* wmdp) override;
   blink::WebProcessMemoryDump* createProcessMemoryDump() override;

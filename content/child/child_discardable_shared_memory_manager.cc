@@ -87,7 +87,8 @@ ChildDiscardableSharedMemoryManager::ChildDiscardableSharedMemoryManager(
     ThreadSafeSender* sender)
     : heap_(base::GetPageSize()), sender_(sender) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, base::ThreadTaskRunnerHandle::Get());
+      this, "ChildDiscardableSharedMemoryManager",
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {

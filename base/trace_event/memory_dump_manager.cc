@@ -150,20 +150,23 @@ void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
 
 // Enable the core dump providers.
 #if !defined(OS_NACL)
-  RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance());
+  RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance(),
+                       "ProcessMemoryTotals", nullptr);
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
-  RegisterDumpProvider(MallocDumpProvider::GetInstance());
+  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance(),
+                       "ProcessMemoryMaps", nullptr);
+  RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr);
 #endif
 
 #if defined(OS_ANDROID)
-  RegisterDumpProvider(JavaHeapDumpProvider::GetInstance());
+  RegisterDumpProvider(JavaHeapDumpProvider::GetInstance(), "JavaHeap",
+                       nullptr);
 #endif
 
 #if defined(OS_WIN)
-  RegisterDumpProvider(WinHeapDumpProvider::GetInstance());
+  RegisterDumpProvider(WinHeapDumpProvider::GetInstance(), "WinHeap", nullptr);
 #endif
 
   // If tracing was enabled before initializing MemoryDumpManager, we missed the
@@ -197,16 +200,6 @@ void MemoryDumpManager::RegisterDumpProvider(
 
   if (heap_profiling_enabled_)
     mdp->OnHeapProfilingEnabled(true);
-}
-
-void MemoryDumpManager::RegisterDumpProvider(
-    MemoryDumpProvider* mdp,
-    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
-  RegisterDumpProvider(mdp, "unknown", task_runner);
-}
-
-void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {
-  RegisterDumpProvider(mdp, nullptr);
 }
 
 void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {

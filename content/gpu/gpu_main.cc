@@ -392,7 +392,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      tracing::GraphicsMemoryDumpProvider::GetInstance());
+      tracing::GraphicsMemoryDumpProvider::GetInstance(), "AndroidGraphics",
+      nullptr);
 #endif
 
   {

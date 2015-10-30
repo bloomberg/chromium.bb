@@ -135,7 +135,7 @@ HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
       base::Bind(&HostDiscardableSharedMemoryManager::EnforceMemoryPolicy,
                  weak_ptr_factory_.GetWeakPtr());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this);
+      this, "HostDiscardableSharedMemoryManager", nullptr);
 }
 
 HostDiscardableSharedMemoryManager::~HostDiscardableSharedMemoryManager() {

@@ -261,7 +261,7 @@ TraceLog::ThreadLocalEventBuffer::ThreadLocalEventBuffer(TraceLog* trace_log)
 
   // This is to report the local memory usage when memory-infra is enabled.
   MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, ThreadTaskRunnerHandle::Get());
+      this, "ThreadLocalEventBuffer", ThreadTaskRunnerHandle::Get());
 
   AutoLock lock(trace_log->lock_);
   trace_log->thread_message_loops_.insert(message_loop);
@@ -396,7 +396,8 @@ TraceLog::TraceLog()
 
   logged_events_.reset(CreateTraceBuffer());
 
-  MemoryDumpManager::GetInstance()->RegisterDumpProvider(this);
+  MemoryDumpManager::GetInstance()->RegisterDumpProvider(this, "TraceLog",
+                                                         nullptr);
 }
 
 TraceLog::~TraceLog() {}

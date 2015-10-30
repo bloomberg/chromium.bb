@@ -216,7 +216,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
       weak_ptr_factory_(this),
       task_set_finished_weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, base::ThreadTaskRunnerHandle::Get());
+      this, "OneCopyTileTaskWorkerPool", base::ThreadTaskRunnerHandle::Get());
   reduce_memory_usage_callback_ =
       base::Bind(&OneCopyTileTaskWorkerPool::ReduceMemoryUsage,
                  weak_ptr_factory_.GetWeakPtr());

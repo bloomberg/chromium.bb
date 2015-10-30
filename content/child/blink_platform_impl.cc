@@ -710,7 +710,7 @@ void BlinkPlatformImpl::updateTraceEventDuration(
 }
 
 void BlinkPlatformImpl::registerMemoryDumpProvider(
-    blink::WebMemoryDumpProvider* wmdp) {
+    blink::WebMemoryDumpProvider* wmdp, const char* name) {
   WebMemoryDumpProviderAdapter* wmdp_adapter =
       new WebMemoryDumpProviderAdapter(wmdp);
   bool did_insert =
@@ -719,7 +719,7 @@ void BlinkPlatformImpl::registerMemoryDumpProvider(
     return;
   wmdp_adapter->set_is_registered(true);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      wmdp_adapter, base::ThreadTaskRunnerHandle::Get());
+      wmdp_adapter, name, base::ThreadTaskRunnerHandle::Get());
 }
 
 void BlinkPlatformImpl::unregisterMemoryDumpProvider(

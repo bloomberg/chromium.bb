@@ -43,7 +43,7 @@ void RegisterDumpProvider(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   MemoryDumpManager* mdm = MemoryDumpManager::GetInstance();
   mdm->set_dumper_registrations_ignored_for_testing(false);
-  mdm->RegisterDumpProvider(mdp, task_runner);
+  mdm->RegisterDumpProvider(mdp, "TestDumpProvider", task_runner);
   mdm->set_dumper_registrations_ignored_for_testing(true);
 }
 

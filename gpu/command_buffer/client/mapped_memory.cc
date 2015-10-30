@@ -47,7 +47,7 @@ MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
   // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, base::ThreadTaskRunnerHandle::Get());
+        this, "gpu::MappedMemoryManager", base::ThreadTaskRunnerHandle::Get());
   }
 }
 

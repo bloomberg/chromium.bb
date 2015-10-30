@@ -49,7 +49,7 @@ void Platform::initialize(Platform* platform)
 
     // TODO(ssid): remove this check after fixing crbug.com/486782.
     if (s_platform && s_platform->m_mainThread)
-        s_platform->registerMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance());
+        s_platform->registerMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc");
 }
 
 void Platform::shutdown()

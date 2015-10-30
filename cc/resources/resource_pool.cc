@@ -69,7 +69,7 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
           base::TimeDelta::FromMilliseconds(kResourceExpirationDelayMs)),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, task_runner_.get());
+      this, "cc::ResourcePool", task_runner_.get());
 }
 
 ResourcePool::~ResourcePool() {

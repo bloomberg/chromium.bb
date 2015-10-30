@@ -342,7 +342,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (config.codec() == kCodecVP9) {
     memory_pool_ = new MemoryPool();
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        memory_pool_.get(), task_runner_);
+        memory_pool_.get(), "VpxVideoDecoder", task_runner_);
     if (vpx_codec_set_frame_buffer_functions(vpx_codec_,
                                              &MemoryPool::GetVP9FrameBuffer,
                                              &MemoryPool::ReleaseVP9FrameBuffer,

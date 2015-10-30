@@ -721,7 +721,7 @@ GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool(
     : pool_impl_(
           new PoolImpl(media_task_runner, worker_task_runner, gpu_factories)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      pool_impl_.get(), media_task_runner);
+      pool_impl_.get(), "GpuMemoryBufferVideoFramePool", media_task_runner);
 }
 
 GpuMemoryBufferVideoFramePool::~GpuMemoryBufferVideoFramePool() {

@@ -230,7 +230,7 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
     // thread's task runner. This will overwrite any previous dump provider
     // registered.
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, base::ThreadTaskRunnerHandle::Get());
+        this, "OutputSurface", base::ThreadTaskRunnerHandle::Get());
   }
 
   return success;

@@ -48,7 +48,8 @@ bool TransferBufferManager::Initialize() {
   // so don't register a dump provider.
   if (memory_tracker_) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, base::ThreadTaskRunnerHandle::Get());
+        this, "gpu::TransferBufferManager",
+        base::ThreadTaskRunnerHandle::Get());
   }
   return true;
 }
@@ -129,4 +130,3 @@ bool TransferBufferManager::OnMemoryDump(
 }
 
 }  // namespace gpu
-

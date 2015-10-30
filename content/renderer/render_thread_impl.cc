@@ -688,7 +688,7 @@ void RenderThreadImpl::Init() {
 
   InitSkiaEventTracer();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      skia::SkiaMemoryDumpProvider::GetInstance());
+      skia::SkiaMemoryDumpProvider::GetInstance(), "Skia", nullptr);
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
