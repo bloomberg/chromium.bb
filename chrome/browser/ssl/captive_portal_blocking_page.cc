@@ -182,6 +182,8 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
 
   if (cert_report_helper_)
     cert_report_helper_->PopulateExtendedReportingOption(load_time_data);
+  else
+    load_time_data->SetBoolean(interstitials::kDisplayCheckBox, false);
 }
 
 void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
