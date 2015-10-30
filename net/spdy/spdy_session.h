@@ -831,9 +831,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                          size_t len,
                          bool fin) override;
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
-  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
-      SpdyStreamId stream_id) override;
-  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override;
   void OnSettings(bool clear_persisted) override;
   void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override;
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override;

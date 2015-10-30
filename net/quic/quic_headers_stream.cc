@@ -73,16 +73,6 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY frame padding received.");
   }
 
-  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
-      SpdyStreamId stream_id) override {
-    LOG(FATAL);
-    return nullptr;
-  }
-
-  void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
-    LOG(FATAL);
-  }
-
   void OnError(SpdyFramer* framer) override {
     CloseConnection(base::StringPrintf(
         "SPDY framing error: %s",

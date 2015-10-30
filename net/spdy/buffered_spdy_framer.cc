@@ -202,16 +202,6 @@ void BufferedSpdyFramer::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
   visitor_->OnStreamPadding(stream_id, len);
 }
 
-SpdyHeadersHandlerInterface* BufferedSpdyFramer::OnHeaderFrameStart(
-    SpdyStreamId stream_id) {
-  return visitor_->OnHeaderFrameStart(stream_id);
-}
-
-void BufferedSpdyFramer::OnHeaderFrameEnd(SpdyStreamId stream_id,
-                                          bool end_headers) {
-  visitor_->OnHeaderFrameEnd(stream_id, end_headers);
-}
-
 void BufferedSpdyFramer::OnSettings(bool clear_persisted) {
   visitor_->OnSettings(clear_persisted);
 }
