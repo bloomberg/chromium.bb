@@ -14,6 +14,10 @@
 #include "media/capture/content/video_capture_oracle.h"
 #include "media/capture/video/video_capture_device.h"
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace media {
 
 struct VideoCaptureParams;
@@ -63,7 +67,8 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
   void Stop();
 
   // Signal an error to the client.
-  void ReportError(const std::string& reason);
+  void ReportError(const tracked_objects::Location& from_here,
+                   const std::string& reason);
 
  private:
   friend class base::RefCountedThreadSafe<ThreadSafeCaptureOracle>;

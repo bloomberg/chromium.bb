@@ -54,7 +54,9 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
 
 class MockClient : public VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD1(OnError, void(const std::string& reason));
+  MOCK_METHOD2(OnError,
+               void(const tracked_objects::Location& from_here,
+                    const std::string& reason));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
       : frame_cb_(frame_cb) {}
@@ -141,7 +143,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
     device_enumeration_listener_ = new DeviceEnumerationListener();
   }
 
-  void SetUp() override { EXPECT_CALL(*client_, OnError(_)).Times(0); }
+  void SetUp() override { EXPECT_CALL(*client_, OnError(_, _)).Times(0); }
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;

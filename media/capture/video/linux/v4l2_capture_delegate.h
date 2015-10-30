@@ -15,6 +15,10 @@
 #include "base/memory/ref_counted.h"
 #include "media/capture/video/video_capture_device.h"
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace media {
 
 // Class doing the actual Linux capture using V4L2 API. V4L2 SPLANE/MPLANE
@@ -137,7 +141,8 @@ class V4L2CaptureDelegate
   // for filling in the planar-dependent parts.
   void FillV4L2Buffer(v4l2_buffer* buffer, int i) const;
   void DoCapture();
-  void SetErrorState(const std::string& reason);
+  void SetErrorState(const tracked_objects::Location& from_here,
+                     const std::string& reason);
 
   const v4l2_buf_type capture_type_;
   const scoped_refptr<base::SingleThreadTaskRunner> v4l2_task_runner_;

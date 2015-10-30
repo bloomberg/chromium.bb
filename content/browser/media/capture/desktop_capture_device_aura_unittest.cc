@@ -4,6 +4,7 @@
 
 #include "content/browser/media/capture/desktop_capture_device_aura.h"
 
+#include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -54,7 +55,9 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
-  MOCK_METHOD1(OnError, void(const std::string& reason));
+  MOCK_METHOD2(OnError,
+               void(const tracked_objects::Location& from_here,
+                    const std::string& reason));
 
   // Trampoline methods to workaround GMOCK problems with scoped_ptr<>.
   scoped_ptr<Buffer> ReserveOutputBuffer(
@@ -142,7 +145,7 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
   ASSERT_TRUE(capture_device.get());
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
-  EXPECT_CALL(*client, OnError(_)).Times(0);
+  EXPECT_CALL(*client, OnError(_, _)).Times(0);
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);

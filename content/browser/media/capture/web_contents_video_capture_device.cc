@@ -762,7 +762,8 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
     if (IsStarted()) {
       // Tracking of WebContents and/or its main frame has failed before Stop()
       // was called, so report this as an error:
-      oracle_proxy_->ReportError("WebContents and/or main frame are gone.");
+      oracle_proxy_->ReportError(FROM_HERE,
+                                 "WebContents and/or main frame are gone.");
     }
     return;
   }

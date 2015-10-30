@@ -101,7 +101,7 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
   capture_impl_ = V4L2CaptureDelegate::CreateV4L2CaptureDelegate(
       device_name_, v4l2_thread_.task_runner(), line_frequency);
   if (!capture_impl_) {
-    client->OnError("Failed to create VideoCaptureDelegate");
+    client->OnError(FROM_HERE, "Failed to create VideoCaptureDelegate");
     return;
   }
   v4l2_thread_.message_loop()->PostTask(

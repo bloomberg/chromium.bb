@@ -7,6 +7,7 @@
 #include <mfapi.h>
 #include <mferror.h>
 
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -260,7 +261,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
     }
   }
 
-  OnError(hr);
+  OnError(FROM_HERE, hr);
 }
 
 void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
@@ -311,14 +312,17 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
       // It's not clear to me why this is, but it is possible that it has
       // something to do with this bug:
       // http://support.microsoft.com/kb/979567
-      OnError(hr);
+      OnError(FROM_HERE, hr);
     }
   }
 }
 
-void VideoCaptureDeviceMFWin::OnError(HRESULT hr) {
+void VideoCaptureDeviceMFWin::OnError(
+    const tracked_objects::Location& from_here,
+    HRESULT hr) {
   if (client_.get()) {
     client_->OnError(
+        from_here,
         base::StringPrintf("VideoCaptureDeviceMFWin: %s",
                            logging::SystemErrorCodeToString(hr).c_str()));
   }

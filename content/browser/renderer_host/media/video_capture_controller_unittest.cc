@@ -594,7 +594,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   // Start with one client.
   controller_->AddClient(
       route_id, client_a_.get(), base::kNullProcessHandle, 100, session_100);
-  device_->OnError("Test Error");
+  device_->OnError(FROM_HERE,  "Test Error");
   EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
@@ -651,7 +651,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
 
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(dims, static_cast<uint8*>(buffer->data()));
-  device_->OnError("Test Error");
+  device_->OnError(FROM_HERE, "Test Error");
   device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
                                         base::TimeTicks());
 

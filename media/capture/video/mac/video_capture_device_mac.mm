@@ -381,7 +381,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   [capture_device_ setFrameReceiver:this];
 
   if (![capture_device_ setCaptureDevice:deviceId]) {
-    SetErrorState("Could not open capture device.");
+    SetErrorState(FROM_HERE, "Could not open capture device.");
     return;
   }
 
@@ -422,7 +422,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   }
 
   if (![capture_device_ startCapture]) {
-    SetErrorState("Could not start capture device.");
+    SetErrorState(FROM_HERE, "Could not start capture device.");
     return;
   }
 
@@ -530,8 +530,9 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8* video_frame,
   if (!AVFoundationGlue::IsAVFoundationSupported()) {
     capture_format_.frame_size = frame_format.frame_size;
   } else if (capture_format_.frame_size != frame_format.frame_size) {
-    ReceiveError("Captured resolution " + frame_format.frame_size.ToString() +
-                 ", and expected " + capture_format_.frame_size.ToString());
+    ReceiveError(FROM_HERE,
+                 "Captured resolution " + frame_format.frame_size.ToString() +
+                     ", and expected " + capture_format_.frame_size.ToString());
     return;
   }
 
@@ -539,16 +540,20 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8* video_frame,
                                   0, base::TimeTicks::Now());
 }
 
-void VideoCaptureDeviceMac::ReceiveError(const std::string& reason) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&VideoCaptureDeviceMac::SetErrorState,
-                                    weak_factory_.GetWeakPtr(), reason));
+void VideoCaptureDeviceMac::ReceiveError(
+    const tracked_objects::Location& from_here,
+    const std::string& reason) {
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureDeviceMac::SetErrorState,
+                            weak_factory_.GetWeakPtr(), from_here, reason));
 }
 
-void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
+void VideoCaptureDeviceMac::SetErrorState(
+    const tracked_objects::Location& from_here,
+    const std::string& reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kError;
-  client_->OnError(reason);
+  client_->OnError(from_here, reason);
 }
 
 void VideoCaptureDeviceMac::LogMessage(const std::string& message) {
@@ -561,7 +566,7 @@ bool VideoCaptureDeviceMac::UpdateCaptureResolution() {
   if (![capture_device_ setCaptureHeight:capture_format_.frame_size.height()
                                    width:capture_format_.frame_size.width()
                                frameRate:capture_format_.frame_rate]) {
-    ReceiveError("Could not configure capture device.");
+    ReceiveError(FROM_HERE, "Could not configure capture device.");
     return false;
   }
   return true;

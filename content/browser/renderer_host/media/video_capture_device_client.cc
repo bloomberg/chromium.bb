@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -393,12 +394,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
 }
 
 void VideoCaptureDeviceClient::OnError(
+    const tracked_objects::Location& from_here,
     const std::string& reason) {
   const std::string log_message = base::StringPrintf(
-      "Error on video capture: %s, OS message: %s",
-      reason.c_str(),
-      logging::SystemErrorCodeToString(
-          logging::GetLastSystemErrorCode()).c_str());
+      "Error on %s:%d: %s, OS message: %s", from_here.file_name(),
+      from_here.line_number(), reason.c_str(),
+      logging::SystemErrorCodeToString(logging::GetLastSystemErrorCode())
+          .c_str());
   DLOG(ERROR) << log_message;
   OnLog(log_message);
   BrowserThread::PostTask(BrowserThread::IO,

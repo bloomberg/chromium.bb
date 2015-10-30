@@ -78,7 +78,9 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
-  MOCK_METHOD1(OnError, void(const std::string& reason));
+  MOCK_METHOD2(OnError,
+               void(const tracked_objects::Location& from_here,
+                    const std::string& reason));
   MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
@@ -280,7 +282,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
   } else {
     // The presence of the actual device is only checked on AllocateAndStart()
     // and not on creation for QTKit API in Mac OS X platform.
-    EXPECT_CALL(*client_, OnError(_)).Times(1);
+    EXPECT_CALL(*client_, OnError(_, _)).Times(1);
 
     VideoCaptureParams capture_params;
     capture_params.requested_format.frame_size.SetSize(640, 480);
@@ -310,7 +312,7 @@ TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   ASSERT_TRUE(device);
   DVLOG(1) << names_->front().id();
 
-  EXPECT_CALL(*client_, OnError(_)).Times(0);
+  EXPECT_CALL(*client_, OnError(_, _)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(width, height);
@@ -343,7 +345,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
       video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
-  EXPECT_CALL(*client_, OnError(_)).Times(0);
+  EXPECT_CALL(*client_, OnError(_, _)).Times(0);
 
   const gfx::Size input_size(640, 480);
   VideoCaptureParams capture_params;
@@ -415,7 +417,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
       video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
-  EXPECT_CALL(*client_, OnError(_)).Times(0);
+  EXPECT_CALL(*client_, OnError(_, _)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
@@ -442,7 +444,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
       video_capture_device_factory_->Create(*name));
   ASSERT_TRUE(device);
 
-  EXPECT_CALL(*client_, OnError(_)).Times(0);
+  EXPECT_CALL(*client_, OnError(_, _)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(1280, 720);

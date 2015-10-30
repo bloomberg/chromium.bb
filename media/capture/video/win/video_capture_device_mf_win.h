@@ -22,6 +22,10 @@
 
 interface IMFSourceReader;
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace media {
 
 class MFReaderCallback;
@@ -52,7 +56,7 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
                               const base::TimeTicks& time_stamp);
 
  private:
-  void OnError(HRESULT hr);
+  void OnError(const tracked_objects::Location& from_here, HRESULT hr);
 
   Name name_;
   base::win::ScopedComPtr<IMFActivate> device_;

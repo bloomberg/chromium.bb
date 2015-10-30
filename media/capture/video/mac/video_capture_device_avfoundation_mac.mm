@@ -6,6 +6,7 @@
 
 #import <CoreVideo/CoreVideo.h>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "media/base/video_capture_types.h"
@@ -351,7 +352,7 @@ didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
   DLOG(ERROR) << [error UTF8String];
   base::AutoLock lock(lock_);
   if (frameReceiver_)
-    frameReceiver_->ReceiveError([error UTF8String]);
+    frameReceiver_->ReceiveError(FROM_HERE, [error UTF8String]);
 }
 
 @end

@@ -7,6 +7,7 @@
 #import <QTKit/QTKit.h>
 
 #include "base/debug/crash_logging.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
@@ -345,7 +346,7 @@
   DLOG(ERROR) << [error UTF8String];
   [lock_ lock];
   if (frameReceiver_)
-    frameReceiver_->ReceiveError([error UTF8String]);
+    frameReceiver_->ReceiveError(FROM_HERE, [error UTF8String]);
   [lock_ unlock];
 }
 

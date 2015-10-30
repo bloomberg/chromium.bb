@@ -485,7 +485,7 @@ void AuraWindowCaptureMachine::OnWindowDestroying(aura::Window* window) {
 
   InternalStop(base::Bind(&base::DoNothing));
 
-  oracle_proxy_->ReportError("OnWindowDestroying()");
+  oracle_proxy_->ReportError(FROM_HERE, "OnWindowDestroying()");
 }
 
 void AuraWindowCaptureMachine::OnWindowAddedToRootWindow(

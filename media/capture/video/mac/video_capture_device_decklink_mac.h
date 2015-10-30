@@ -19,6 +19,10 @@ namespace {
 class DeckLinkCaptureDelegate;
 }  // namespace
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace media {
 
 // Extension of VideoCaptureDevice to create and manipulate Blackmagic devices.
@@ -52,7 +56,8 @@ class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
                               base::TimeTicks timestamp);
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
-  void SendErrorString(const std::string& reason);
+  void SendErrorString(const tracked_objects::Location& from_here,
+                       const std::string& reason);
 
   // Forwarder to VideoCaptureDevice::Client::OnLog().
   void SendLogString(const std::string& message);

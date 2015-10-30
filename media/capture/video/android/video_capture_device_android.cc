@@ -68,7 +68,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
       params.requested_format.frame_size.height(),
       params.requested_format.frame_rate);
   if (!ret) {
-    SetErrorState("failed to allocate");
+    SetErrorState(FROM_HERE, "failed to allocate");
     return;
   }
 
@@ -96,7 +96,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
 
   ret = Java_VideoCapture_startCapture(env, j_capture_.obj());
   if (!ret) {
-    SetErrorState("failed to start capture");
+    SetErrorState(FROM_HERE, "failed to start capture");
     return;
   }
 
@@ -118,7 +118,7 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
 
   jboolean ret = Java_VideoCapture_stopCapture(env, j_capture_.obj());
   if (!ret) {
-    SetErrorState("failed to stop capture");
+    SetErrorState(FROM_HERE, "failed to stop capture");
     return;
   }
 
@@ -171,7 +171,8 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(JNIEnv* env,
 void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,
                                         jobject obj,
                                         jstring message) {
-  SetErrorState(base::android::ConvertJavaStringToUTF8(env, message));
+  SetErrorState(FROM_HERE,
+                base::android::ConvertJavaStringToUTF8(env, message));
 }
 
 VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
@@ -191,12 +192,14 @@ VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
   }
 }
 
-void VideoCaptureDeviceAndroid::SetErrorState(const std::string& reason) {
+void VideoCaptureDeviceAndroid::SetErrorState(
+    const tracked_objects::Location& from_here,
+    const std::string& reason) {
   {
     base::AutoLock lock(lock_);
     state_ = kError;
   }
-  client_->OnError(reason);
+  client_->OnError(from_here, reason);
 }
 
 }  // namespace media

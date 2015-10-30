@@ -15,6 +15,10 @@
 #include "media/base/media_export.h"
 #include "media/capture/video/video_capture_device.h"
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_
+
 namespace media {
 
 // VideoCaptureDevice on Android. The VideoCaptureDevice API's are called
@@ -70,7 +74,8 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   };
 
   VideoPixelFormat GetColorspace();
-  void SetErrorState(const std::string& reason);
+  void SetErrorState(const tracked_objects::Location& from_here,
+                     const std::string& reason);
 
   // Prevent racing on accessing |state_| and |client_| since both could be
   // accessed from different threads.

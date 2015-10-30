@@ -23,6 +23,10 @@
 #include "media/capture/video/win/sink_filter_win.h"
 #include "media/capture/video/win/sink_input_pin_win.h"
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 namespace media {
 
 // All the methods in the class can only be run on a COM initialized thread.
@@ -82,7 +86,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
 
   bool CreateCapabilityMap();
   void SetAntiFlickerInCaptureFilter(const VideoCaptureParams& params);
-  void SetErrorState(const std::string& reason);
+  void SetErrorState(const tracked_objects::Location& from_here,
+                     const std::string& reason);
 
   const Name device_name_;
   InternalState state_;

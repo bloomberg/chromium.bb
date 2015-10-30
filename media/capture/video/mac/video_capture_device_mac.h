@@ -27,6 +27,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
+
 // Small class to bundle device name and connection type into a dictionary.
 MEDIA_EXPORT
 @interface DeviceNameAndTransportType : NSObject {
@@ -73,13 +77,15 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
                     int aspect_denominator);
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
-  void ReceiveError(const std::string& reason);
+  void ReceiveError(const tracked_objects::Location& from_here,
+                    const std::string& reason);
 
   // Forwarder to VideoCaptureDevice::Client::OnLog().
   void LogMessage(const std::string& message);
 
  private:
-  void SetErrorState(const std::string& reason);
+  void SetErrorState(const tracked_objects::Location& from_here,
+                     const std::string& reason);
   bool UpdateCaptureResolution();
 
   // Flag indicating the internal state.

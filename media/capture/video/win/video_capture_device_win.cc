@@ -348,14 +348,14 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   ScopedComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
   if (FAILED(hr)) {
-    SetErrorState("Can't get the Capture format settings");
+    SetErrorState(FROM_HERE, "Can't get the Capture format settings");
     return;
   }
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
   if (FAILED(hr)) {
-    SetErrorState("Failed to GetNumberOfCapabilities");
+    SetErrorState(FROM_HERE, "Failed to GetNumberOfCapabilities");
     return;
   }
 
@@ -368,7 +368,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   hr = stream_config->GetStreamCaps(found_capability.stream_index,
                                     media_type.Receive(), caps.get());
   if (hr != S_OK) {
-    SetErrorState("Failed to get capture device capabilities");
+    SetErrorState(FROM_HERE, "Failed to get capture device capabilities");
     return;
   }
   if (media_type->formattype == FORMAT_VideoInfo) {
@@ -385,7 +385,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   hr = stream_config->SetFormat(media_type.get());
   if (FAILED(hr)) {
     // TODO(grunell): Log the error. http://crbug.com/405016.
-    SetErrorState("Failed to set capture device output format");
+    SetErrorState(FROM_HERE, "Failed to set capture device output format");
     return;
   }
 
@@ -402,13 +402,14 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   }
 
   if (FAILED(hr)) {
-    SetErrorState("Failed to connect the Capture graph.");
+    SetErrorState(FROM_HERE, "Failed to connect the Capture graph.");
     return;
   }
 
   hr = media_control_->Pause();
   if (FAILED(hr)) {
     SetErrorState(
+        FROM_HERE,
         "Failed to pause the Capture device, is it already occupied?");
     return;
   }
@@ -420,7 +421,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
   // Start capturing.
   hr = media_control_->Run();
   if (FAILED(hr)) {
-    SetErrorState("Failed to start the Capture device.");
+    SetErrorState(FROM_HERE, "Failed to start the Capture device.");
     return;
   }
 
@@ -434,7 +435,7 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
 
   HRESULT hr = media_control_->Stop();
   if (FAILED(hr)) {
-    SetErrorState("Failed to stop the capture graph.");
+    SetErrorState(FROM_HERE, "Failed to stop the capture graph.");
     return;
   }
 
@@ -572,9 +573,11 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
   }
 }
 
-void VideoCaptureDeviceWin::SetErrorState(const std::string& reason) {
+void VideoCaptureDeviceWin::SetErrorState(
+    const tracked_objects::Location& from_here,
+    const std::string& reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   state_ = kError;
-  client_->OnError(reason);
+  client_->OnError(from_here, reason);
 }
 }  // namespace media

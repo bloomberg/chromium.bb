@@ -407,7 +407,10 @@ class StubClient : public media::VideoCaptureDevice::Client {
         frame->visible_rect().size());
   }
 
-  void OnError(const std::string& reason) override { error_callback_.Run(); }
+  void OnError(const tracked_objects::Location& from_here,
+               const std::string& reason) override {
+    error_callback_.Run();
+  }
 
   double GetBufferPoolUtilization() const override { return 0.0; }
 
