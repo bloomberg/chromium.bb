@@ -2277,12 +2277,6 @@
           'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
-          'sources!': [
-            'common/spellcheck_common_unittest.cc',
-            'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
-            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
-            'renderer/spellchecker/spellcheck_unittest.cc',
-          ],
           'ldflags': [
             # Some android targets still depend on --gc-sections to link.
             # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
@@ -2314,6 +2308,14 @@
             ['OS!="mac" and OS!="ios"', {
               'dependencies': [ '../third_party/hunspell/hunspell.gyp:hunspell' ],
             }],
+            ['OS=="android"', {
+              'sources!': [
+                'common/spellcheck_common_unittest.cc',
+                'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
+                'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
+                'renderer/spellchecker/spellcheck_unittest.cc',
+              ],
+            }]
           ],
         }],
         ['enable_one_click_signin==1', {

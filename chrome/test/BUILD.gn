@@ -1579,7 +1579,6 @@ if (!is_android) {
     if (!is_ios) {
       deps += [
         ":unit_tests_js",
-        "//components/audio_modem:test_support",
         "//components/autofill/content/browser/wallet:test_support",
         "//components/autofill/content/renderer:test_support",
         "//components/data_reduction_proxy/core/browser:test_support",
@@ -1646,6 +1645,15 @@ if (!is_android) {
       if (is_mac && !is_ios) {
         deps += [ "//third_party/hunspell" ]
       }
+
+      if (is_android) {
+        sources -= [
+          "../common/spellcheck_common_unittest.cc",
+          "../renderer/spellchecker/spellcheck_multilingual_unittest.cc",
+          "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
+          "../renderer/spellchecker/spellcheck_unittest.cc",
+        ]
+      }
     }
 
     if (enable_one_click_signin) {
@@ -1662,6 +1670,7 @@ if (!is_android) {
               "//chrome")
       deps += [
         "//chrome/common/extensions/api",
+        "//components/audio_modem:test_support",
         "//device/usb:mocks",
         "//extensions:extensions_resources",
         "//extensions/strings",
