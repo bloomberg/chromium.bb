@@ -33,8 +33,7 @@ class WebContents;
 }
 
 // Base implementation of DevTools bindings around front-end.
-class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
-                           public DevToolsEmbedderMessageDispatcher::Delegate,
+class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener,
                            public content::DevToolsAgentHostClient,
                            public net::URLFetcherDelegate,
@@ -83,10 +82,7 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
  private:
   friend class WebSocketAPIChannel;
 
-  // content::DevToolsFrontendHost::Delegate implementation.
-  void HandleMessageFromDevToolsFrontend(const std::string& message) override;
-  void HandleMessageFromDevToolsFrontendToBackend(
-      const std::string& message) override;
+  void HandleMessageFromDevToolsFrontend(const std::string& message);
 
   // content::DevToolsAgentHostClient implementation.
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
@@ -134,7 +130,8 @@ class DevToolsUIBindings :public content::DevToolsFrontendHost::Delegate,
   void SetDevicesUpdatesEnabled(bool enabled) override;
   void PerformActionOnRemotePage(const std::string& page_id,
                                  const std::string& action) override;
-  void SendMessageToBrowser(const std::string& message) override;
+  void DispatchProtocolMessageFromDevToolsFrontend(
+      const std::string& message) override;
   void RecordEnumeratedHistogram(const std::string& name,
                                  int sample,
                                  int boundary_value) override;

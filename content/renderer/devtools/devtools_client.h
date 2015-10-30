@@ -38,7 +38,6 @@ class CONTENT_EXPORT DevToolsClient
   void DidClearWindowObject() override;
 
   // WebDevToolsFrontendClient implementation.
-  void sendMessageToBackend(const blink::WebString&) override;
   void sendMessageToEmbedder(const blink::WebString&) override;
 
   bool isUnderTest() override;

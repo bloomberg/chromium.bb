@@ -77,7 +77,8 @@ class DevToolsEmbedderMessageDispatcher {
                                const std::string& value) = 0;
     virtual void RemovePreference(const std::string& name) = 0;
     virtual void ClearPreferences() = 0;
-    virtual void SendMessageToBrowser(const std::string& message) = 0;
+    virtual void DispatchProtocolMessageFromDevToolsFrontend(
+        const std::string& message) = 0;
     virtual void RecordEnumeratedHistogram(const std::string& name,
                                            int sample,
                                            int boundary_value) = 0;

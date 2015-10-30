@@ -21,8 +21,9 @@ const char kCompatibilityScript[] = "devtools.js";
 // static
 DevToolsFrontendHost* DevToolsFrontendHost::Create(
     RenderFrameHost* frontend_main_frame,
-    DevToolsFrontendHost::Delegate* delegate) {
-  return new DevToolsFrontendHostImpl(frontend_main_frame, delegate);
+    const HandleMessageCallback& handle_message_callback) {
+  return new DevToolsFrontendHostImpl(frontend_main_frame,
+                                      handle_message_callback);
 }
 
 // static
@@ -39,10 +40,10 @@ base::StringPiece DevToolsFrontendHost::GetFrontendResource(
 
 DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
     RenderFrameHost* frontend_main_frame,
-    DevToolsFrontendHost::Delegate* delegate)
+    const HandleMessageCallback& handle_message_callback)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(frontend_main_frame)),
-      delegate_(delegate) {
+      handle_message_callback_(handle_message_callback) {
   frontend_main_frame->Send(new DevToolsMsg_SetupDevToolsClient(
       frontend_main_frame->GetRoutingID(),
       DevToolsFrontendHost::GetFrontendResource(
@@ -64,8 +65,6 @@ bool DevToolsFrontendHostImpl::OnMessageReceived(
     return false;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DevToolsFrontendHostImpl, message)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
-                        OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_DispatchOnEmbedder,
                         OnDispatchOnEmbedder)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -73,14 +72,9 @@ bool DevToolsFrontendHostImpl::OnMessageReceived(
   return handled;
 }
 
-void DevToolsFrontendHostImpl::OnDispatchOnInspectorBackend(
-    const std::string& message) {
-  delegate_->HandleMessageFromDevToolsFrontendToBackend(message);
-}
-
 void DevToolsFrontendHostImpl::OnDispatchOnEmbedder(
     const std::string& message) {
-  delegate_->HandleMessageFromDevToolsFrontend(message);
+  handle_message_callback_.Run(message);
 }
 
 }  // namespace content

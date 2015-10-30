@@ -104,12 +104,6 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame)
     frame->frame()->script().executeScriptInMainWorld(scriptWithId.toString());
 }
 
-void WebDevToolsFrontendImpl::sendMessageToBackend(const String& message)
-{
-    if (m_client)
-        m_client->sendMessageToBackend(message);
-}
-
 void WebDevToolsFrontendImpl::sendMessageToEmbedder(const String& message)
 {
     if (m_client)

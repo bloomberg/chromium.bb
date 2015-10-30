@@ -39,8 +39,6 @@ class WebDevToolsFrontendClient {
 public:
     WebDevToolsFrontendClient() { }
 
-    virtual void sendMessageToBackend(const WebString&) { }
-
     virtual void sendMessageToEmbedder(const WebString&) { }
 
     virtual bool isUnderTest() { return false; }

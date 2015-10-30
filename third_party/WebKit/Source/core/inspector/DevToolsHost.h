@@ -64,7 +64,6 @@ public:
     // Called from [Custom] implementations.
     void showContextMenu(Event*, const Vector<ContextMenuItem>& items);
     void showContextMenu(LocalFrame* targetFrame, float x, float y, const Vector<ContextMenuItem>& items);
-    void sendMessageToBackend(const String& message);
     void sendMessageToEmbedder(const String& message);
 
     String getSelectionBackgroundColor();

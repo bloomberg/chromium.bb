@@ -330,8 +330,10 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
         const GURL& url,
         content::NavigationController::ReloadType reload_type) {
   devtools_bindings_->frontend_host_.reset(
-      content::DevToolsFrontendHost::Create(web_contents()->GetMainFrame(),
-                                            devtools_bindings_));
+      content::DevToolsFrontendHost::Create(
+          web_contents()->GetMainFrame(),
+          base::Bind(&DevToolsUIBindings::HandleMessageFromDevToolsFrontend,
+                     base::Unretained(devtools_bindings_))));
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
@@ -496,7 +498,9 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(this));
 
   frontend_host_.reset(content::DevToolsFrontendHost::Create(
-      web_contents_->GetMainFrame(), this));
+      web_contents_->GetMainFrame(),
+      base::Bind(&DevToolsUIBindings::HandleMessageFromDevToolsFrontend,
+                 base::Unretained(this))));
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {
@@ -549,12 +553,6 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
                  id),
       method,
       params);
-}
-
-void DevToolsUIBindings::HandleMessageFromDevToolsFrontendToBackend(
-    const std::string& message) {
-  if (agent_host_.get())
-    agent_host_->DispatchProtocolMessage(message);
 }
 
 // content::DevToolsAgentHostClient implementation --------------------------
@@ -874,7 +872,8 @@ void DevToolsUIBindings::ClearPreferences() {
   update.Get()->Clear();
 }
 
-void DevToolsUIBindings::SendMessageToBrowser(const std::string& message) {
+void DevToolsUIBindings::DispatchProtocolMessageFromDevToolsFrontend(
+    const std::string& message) {
   if (agent_host_.get())
     agent_host_->DispatchProtocolMessage(message);
 }

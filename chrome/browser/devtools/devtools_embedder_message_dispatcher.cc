@@ -192,8 +192,9 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
   d->RegisterHandler("performActionOnRemotePage",
                      &Delegate::PerformActionOnRemotePage, delegate);
-  d->RegisterHandler("sendMessageToBrowser",
-                     &Delegate::SendMessageToBrowser, delegate);
+  d->RegisterHandler("dispatchProtocolMessage",
+                     &Delegate::DispatchProtocolMessageFromDevToolsFrontend,
+                     delegate);
   d->RegisterHandler("recordEnumeratedHistogram",
                      &Delegate::RecordEnumeratedHistogram, delegate);
   d->RegisterHandlerWithCallback("sendJsonRequest",

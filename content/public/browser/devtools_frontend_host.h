@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
@@ -20,27 +21,13 @@ class RenderFrameHost;
 // the content public API.
 class DevToolsFrontendHost {
  public:
-  // Delegate actually handles messages from frontend.
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Message is coming from frontend to the embedder.
-    virtual void HandleMessageFromDevToolsFrontend(
-        const std::string& message) = 0;
-
-    // Message is coming from frontend to the backend.
-    // TODO(dgozman): remove this by making one of the possible messages
-    // passed via the method above.
-    virtual void HandleMessageFromDevToolsFrontendToBackend(
-        const std::string& message) = 0;
-  };
+  using HandleMessageCallback = base::Callback<void(const std::string&)>;
 
   // Creates a new DevToolsFrontendHost for RenderFrameHost where DevTools
   // frontend is loaded.
   CONTENT_EXPORT static DevToolsFrontendHost* Create(
       RenderFrameHost* frontend_main_frame,
-      Delegate* delegate);
+      const HandleMessageCallback& handle_message_callback);
 
   CONTENT_EXPORT virtual ~DevToolsFrontendHost() {}
 

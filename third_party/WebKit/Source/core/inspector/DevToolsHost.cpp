@@ -195,12 +195,6 @@ static String escapeUnicodeNonCharacters(const String& str)
     return dst.toString();
 }
 
-void DevToolsHost::sendMessageToBackend(const String& message)
-{
-    if (m_client)
-        m_client->sendMessageToBackend(escapeUnicodeNonCharacters(message));
-}
-
 void DevToolsHost::sendMessageToEmbedder(const String& message)
 {
     if (m_client)

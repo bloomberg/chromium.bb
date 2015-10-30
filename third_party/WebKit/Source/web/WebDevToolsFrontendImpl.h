@@ -51,8 +51,6 @@ public:
 
     void didClearWindowObject(WebLocalFrameImpl*);
 
-    void sendMessageToBackend(const WTF::String&) override;
-
     void sendMessageToEmbedder(const WTF::String&) override;
 
     bool isUnderTest() override;

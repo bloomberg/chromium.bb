@@ -32,6 +32,7 @@ InspectorTest = {};
 InspectorTest._dispatchTable = [];
 InspectorTest._requestId = -1;
 InspectorTest._dumpInspectorProtocolMessages = false;
+InspectorTest._embedderRequestId = -1;
 InspectorTest.eventHandler = {};
 
 InspectorTest.startDumpingProtocolMessages = function()
@@ -54,8 +55,8 @@ InspectorTest.sendCommand = function(method, params, handler)
 
     if (InspectorTest._dumpInspectorProtocolMessages)
         testRunner.logToStderr("frontend: " + JSON.stringify(messageObject));
-    DevToolsHost.sendMessageToBackend(JSON.stringify(messageObject));
-
+    var embedderMessage = { "id": ++this._embedderRequestId, "method": "dispatchProtocolMessage", "params": [JSON.stringify(messageObject)] };
+    DevToolsHost.sendMessageToEmbedder(JSON.stringify(embedderMessage));
     return this._requestId;
 }
 
@@ -131,7 +132,8 @@ InspectorTest.wrapCallback = function(callback)
 InspectorTest.sendRawCommand = function(command, handler)
 {
     this._dispatchTable[++this._requestId] = handler;
-    DevToolsHost.sendMessageToBackend(command);
+    var embedderMessage = { "id": ++this._embedderRequestId, "method": "dispatchProtocolMessage", "params": [command] };
+    DevToolsHost.sendMessageToEmbedder(JSON.stringify(embedderMessage));
     return this._requestId;
 }
 

@@ -43,8 +43,6 @@ class InspectorFrontendClient {
 public:
     virtual ~InspectorFrontendClient() { }
 
-    virtual void sendMessageToBackend(const String&) = 0;
-
     virtual void sendMessageToEmbedder(const String&) = 0;
 
     virtual bool isUnderTest() = 0;
