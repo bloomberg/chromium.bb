@@ -81,16 +81,6 @@ bool RunNativeApplication(base::NativeLibrary app_library,
   // Unlike system thunks, we don't warn on a lack of GLES2 thunks because
   // not everything is a visual app.
 
-  // Go shared library support requires us to initialize the runtime before we
-  // start running any go code. This is a temporary patch.
-  typedef void (*InitGoRuntimeFn)();
-  InitGoRuntimeFn init_go_runtime = reinterpret_cast<InitGoRuntimeFn>(
-      base::GetFunctionPointerFromNativeLibrary(app_library, "InitGoRuntime"));
-  if (init_go_runtime) {
-    DVLOG(2) << "InitGoRuntime: Initializing Go Runtime found in app";
-    init_go_runtime();
-  }
-
 #if !defined(OS_WIN)
   // On Windows, initializing base::CommandLine with null parameters gets the
   // process's command line from the OS. Other platforms need it to be passed
