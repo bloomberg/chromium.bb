@@ -1,0 +1,35 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#resetDialog {
+  max-width: 500px;
+  min-width: 300px;
+}
+
+#reset {
+  -webkit-margin-start: 10px;
+  -webkit-padding-end: 15px;
+  -webkit-padding-start: 15px;
+  background-color: rgb(120, 120, 120);
+  color: white;
+}
+
+#learnMore,
+#cancel {
+  color: rgb(94, 94, 94);
+}
+
+#explanation {
+  margin: 10px 0;
+}
+
+#buttonContainer {
+  margin: 15px 0;
+}
+
+#sendSettings {
+  background-color: rgb(236, 236, 236);
+  margin: 0;
+  padding: 20px;
+}

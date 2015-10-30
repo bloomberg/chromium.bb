@@ -38,6 +38,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("advancedPageTitle", IDS_SETTINGS_ADVANCED);
   html_source->AddLocalizedString("addLabel", IDS_ADD);
   html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
+  html_source->AddLocalizedString("cancel", IDS_CANCEL);
 }
 
 #if defined(OS_CHROMEOS)
@@ -222,6 +223,22 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
       "changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION);
   html_source->AddLocalizedString(
       "promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD);
+}
+
+void AddResetStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "resetPageTitle", IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE);
+  html_source->AddLocalizedString(
+      "resetPageDescription", IDS_RESET_PROFILE_SETTINGS_DESCRIPTION);
+  html_source->AddLocalizedString(
+      "resetPageExplanation", IDS_RESET_PROFILE_SETTINGS_EXPLANATION);
+  html_source->AddLocalizedString(
+      "resetPageCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON);
+  html_source->AddLocalizedString(
+      "resetPageFeedback", IDS_RESET_PROFILE_SETTINGS_FEEDBACK);
+  html_source->AddString(
+      "resetPageLearnMoreUrl",
+      chrome::kResetProfileSettingsLearnMoreURL);
 }
 
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {
@@ -528,6 +545,8 @@ void AddSyncStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LEARN_MORE_LINK);
   html_source->AddLocalizedString("useDefaultSettingsButton",
                                   IDS_SETTINGS_USE_DEFAULT_SETTINGS_BUTTON);
+  // TODO(dpapad): Remove this string and use IDS_CANCEL (see AddCommonStrings
+  // at the top of this file).
   html_source->AddLocalizedString("cancelButton",
                                   IDS_SETTINGS_CANCEL_BUTTON);
   html_source->AddLocalizedString("okButton",
@@ -628,6 +647,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #endif
   AddOnStartupStrings(html_source);
   AddPrivacyStrings(html_source);
+  AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
   AddSearchStrings(html_source);
 #if !defined(OS_CHROMEOS)

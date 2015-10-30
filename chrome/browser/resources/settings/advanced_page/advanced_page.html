@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://md-settings/languages_page/languages_page.html">
 <link rel="import" href="chrome://md-settings/location_page/location_page.html">
 <link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
+<link rel="import" href="chrome://md-settings/reset_page/reset_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 
 <if expr="chromeos">
@@ -44,6 +45,11 @@
         current-route="[[currentRoute]]" section="downloads">
       <settings-downloads-page prefs="{{prefs}}">
       </settings-downloads-page>
+    </settings-section>
+
+    <settings-section i18n-values="page-title:resetPageTitle"
+        current-route="[[currentRoute]]" section="reset">
+      <settings-reset-page></settings-reset-page>
     </settings-section>
 
 <if expr="chromeos">

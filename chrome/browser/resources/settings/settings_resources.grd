@@ -210,6 +210,15 @@
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_JS"
                  file="downloads_page/downloads_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_RESET_PAGE_CSS"
+                 file="reset_page/reset_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_RESET_PAGE_HTML"
+                 file="reset_page/reset_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_RESET_PAGE_JS"
+                 file="reset_page/reset_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_LANGUAGES_HTML"
                  file="languages_page/languages.html"
                  type="chrome_html" />
