@@ -137,16 +137,14 @@ void BlinkOTSContext::Message(int level, const char *format, ...)
 
 ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
 {
-#define TABLE_TAG(c1, c2, c3, c4) ((uint32_t)((((uint8_t)(c1)) << 24) | (((uint8_t)(c2)) << 16) | (((uint8_t)(c3)) << 8) | ((uint8_t)(c4))))
-
-    const uint32_t cbdtTag = TABLE_TAG('C', 'B', 'D', 'T');
-    const uint32_t cblcTag = TABLE_TAG('C', 'B', 'L', 'C');
-    const uint32_t colrTag = TABLE_TAG('C', 'O', 'L', 'R');
-    const uint32_t cpalTag = TABLE_TAG('C', 'P', 'A', 'L');
+    const uint32_t cbdtTag = OTS_TAG('C', 'B', 'D', 'T');
+    const uint32_t cblcTag = OTS_TAG('C', 'B', 'L', 'C');
+    const uint32_t colrTag = OTS_TAG('C', 'O', 'L', 'R');
+    const uint32_t cpalTag = OTS_TAG('C', 'P', 'A', 'L');
 #if HB_VERSION_ATLEAST(1, 0, 0)
-    const uint32_t gdefTag = TABLE_TAG('G', 'D', 'E', 'F');
-    const uint32_t gposTag = TABLE_TAG('G', 'P', 'O', 'S');
-    const uint32_t gsubTag = TABLE_TAG('G', 'S', 'U', 'B');
+    const uint32_t gdefTag = OTS_TAG('G', 'D', 'E', 'F');
+    const uint32_t gposTag = OTS_TAG('G', 'P', 'O', 'S');
+    const uint32_t gsubTag = OTS_TAG('G', 'S', 'U', 'B');
 #endif
 
     switch (tag) {
@@ -166,7 +164,6 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
     default:
         return ots::TABLE_ACTION_DEFAULT;
     }
-#undef TABLE_TAG
 }
 
 } // namespace blink
