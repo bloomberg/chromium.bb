@@ -114,9 +114,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   base::scoped_nsobject<CRWWKWebViewCrashDetector> _crashDetector;
 
   // The actual URL of the document object (i.e., the last committed URL).
-  // TODO(stuartmorgan): Remove this in favor of just updating the session
-  // controller and treating that as authoritative. For now, this allows sharing
-  // the flow that's currently in the superclass.
+  // TODO(crbug.com/549616): Remove this in favor of just updating the
+  // navigation manager and treating that as authoritative. For now, this allows
+  // sharing the flow that's currently in the superclass.
   GURL _documentURL;
 
   // A set of script managers whose scripts have been injected into the current
@@ -174,6 +174,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // cert status from |didReceiveAuthenticationChallenge:| to
   // |didFailProvisionalNavigation:| delegate method.
   scoped_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
+
+  // YES if the user has touched the content area since the last URL change.
+  BOOL _touchedSinceLastURLChange;
 }
 
 // Response's MIME type of the last known navigation.
@@ -213,6 +216,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 // Returns whether the given navigation is triggered by a user link click.
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType;
+
+// Sets _documentURL to newURL, and updates any relevant state information.
+- (void)setDocumentURL:(const GURL&)newURL;
 
 // Sets value of the pendingReferrerString property.
 - (void)setPendingReferrerString:(NSString*)referrer;
@@ -406,6 +412,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)close {
   [_certVerificationController shutDown];
   [super close];
+}
+
+- (void)touched:(BOOL)touched {
+  [super touched:touched];
+  if (touched)
+    _touchedSinceLastURLChange = YES;
 }
 
 #pragma mark -
@@ -753,7 +765,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   }
   _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
   _crashDetector.reset([self newCrashDetectorWithWebView:_wkWebView]);
-  _documentURL = [self defaultURL];
+  [self setDocumentURL:[self defaultURL]];
 }
 
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType {
@@ -764,6 +776,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
       return [self userClickedRecently];
     default:
       return NO;
+  }
+}
+
+- (void)setDocumentURL:(const GURL&)newURL {
+  if (newURL != _documentURL) {
+    _documentURL = newURL;
+    _touchedSinceLastURLChange = NO;
   }
 }
 
@@ -1134,14 +1153,36 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)registerLoadRequest:(const GURL&)url {
-  // If load request is registered via WKWebViewWebController, assume transition
-  // is link or client redirect as other transitions will already be registered
-  // by web controller or delegates.
-  // TODO(stuartmorgan): Remove guesswork and replace with information from
-  // decidePolicyForNavigationAction:.
-  ui::PageTransition transition = self.userInteractionRegistered
-                                      ? ui::PAGE_TRANSITION_LINK
-                                      : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  // Get the navigation type from the last main frame load request, and try to
+  // map that to a PageTransition.
+  WKNavigationType navigationType = _pendingNavigationTypeForMainFrame
+                                        ? *_pendingNavigationTypeForMainFrame
+                                        : WKNavigationTypeOther;
+  ui::PageTransition transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  switch (navigationType) {
+    case WKNavigationTypeLinkActivated:
+      transition = ui::PAGE_TRANSITION_LINK;
+      break;
+    case WKNavigationTypeFormSubmitted:
+    case WKNavigationTypeFormResubmitted:
+      transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
+      break;
+    case WKNavigationTypeBackForward:
+      transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+      break;
+    case WKNavigationTypeReload:
+      transition = ui::PAGE_TRANSITION_RELOAD;
+      break;
+    case WKNavigationTypeOther:
+      // The "Other" type covers a variety of very different cases, which may
+      // or may not be the result of user actions. For now, guess based on
+      // whether there's been a touch since the last URL change.
+      // TODO(crbug.com/549301): See if this heuristic can be improved.
+      transition = _touchedSinceLastURLChange
+                       ? ui::PAGE_TRANSITION_LINK
+                       : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+      break;
+  }
   // The referrer is not known yet, and will be updated later.
   const web::Referrer emptyReferrer;
   [self registerLoadRequest:url referrer:emptyReferrer transition:transition];
@@ -1150,7 +1191,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
   DCHECK(newURL == net::GURLWithNSURL([_wkWebView URL]));
   DCHECK_EQ(_documentURL.host(), newURL.host());
-  _documentURL = newURL;
+  [self setDocumentURL:newURL];
   // If called during window.history.pushState or window.history.replaceState
   // JavaScript evaluation, only update the document URL. This callback does not
   // have any information about the state object and cannot create (or edit) the
@@ -1561,7 +1602,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   [self commitPendingReferrerString];
 
   // This is the point where the document's URL has actually changed.
-  _documentURL = net::GURLWithNSURL([_wkWebView URL]);
+  [self setDocumentURL:net::GURLWithNSURL([_wkWebView URL])];
   DCHECK(_documentURL == self.lastRegisteredRequestURL);
   [self webPageChanged];
 
