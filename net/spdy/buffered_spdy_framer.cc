@@ -343,9 +343,7 @@ SpdyFrame* BufferedSpdyFramer::CreateSynReply(
 SpdyFrame* BufferedSpdyFramer::CreateRstStream(
     SpdyStreamId stream_id,
     SpdyRstStreamStatus status) const {
-  // RST_STREAM payloads are not part of any SPDY spec.
-  // SpdyFramer will accept them, but don't create them.
-  SpdyRstStreamIR rst_ir(stream_id, status, "");
+  SpdyRstStreamIR rst_ir(stream_id, status);
   return spdy_framer_.SerializeRstStream(rst_ir);
 }
 

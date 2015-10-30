@@ -2433,12 +2433,10 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x01,
     };
     const unsigned char kH2FrameData[] = {
-      0x00, 0x00, 0x07, 0x03,
-      0x00, 0x00, 0x00, 0x00,
-      0x01, 0x00, 0x00, 0x00,
-      0x01, 0x52, 0x53, 0x54
+        0x00, 0x00, 0x04, 0x03, 0x00, 0x00, 0x00,
+        0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
     };
-    SpdyRstStreamIR rst_stream(1, RST_STREAM_PROTOCOL_ERROR, "RST");
+    SpdyRstStreamIR rst_stream(1, RST_STREAM_PROTOCOL_ERROR);
     scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
     if (IsHttp2()) {
       CompareFrame(kDescription, *frame, kH2FrameData, arraysize(kH2FrameData));
@@ -2461,9 +2459,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0xff, 0x00, 0x00, 0x00,
       0x01,
     };
-    SpdyRstStreamIR rst_stream(0x7FFFFFFF,
-                               RST_STREAM_PROTOCOL_ERROR,
-                               "");
+    SpdyRstStreamIR rst_stream(0x7FFFFFFF, RST_STREAM_PROTOCOL_ERROR);
     scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
     if (IsHttp2()) {
       CompareFrame(kDescription, *frame, kH2FrameData, arraysize(kH2FrameData));
@@ -2486,9 +2482,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0xff, 0x00, 0x00, 0x00,
       0x02,
     };
-    SpdyRstStreamIR rst_stream(0x7FFFFFFF,
-                               RST_STREAM_INTERNAL_ERROR,
-                               "");
+    SpdyRstStreamIR rst_stream(0x7FFFFFFF, RST_STREAM_INTERNAL_ERROR);
     scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
     if (IsHttp2()) {
       CompareFrame(kDescription, *frame, kH2FrameData, arraysize(kH2FrameData));
@@ -5142,7 +5136,7 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    SpdyRstStreamIR rst_stream(13, RST_STREAM_CANCEL, "");
+    SpdyRstStreamIR rst_stream(13, RST_STREAM_CANCEL);
     scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 

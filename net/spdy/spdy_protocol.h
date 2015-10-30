@@ -723,8 +723,7 @@ class NET_EXPORT_PRIVATE SpdySynReplyIR : public SpdyFrameWithHeaderBlockIR {
 
 class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
  public:
-  SpdyRstStreamIR(SpdyStreamId stream_id, SpdyRstStreamStatus status,
-                  base::StringPiece description);
+  SpdyRstStreamIR(SpdyStreamId stream_id, SpdyRstStreamStatus status);
 
   ~SpdyRstStreamIR() override;
 
@@ -735,13 +734,10 @@ class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
     status_ = status;
   }
 
-  base::StringPiece description() const { return description_; }
-
   void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   SpdyRstStreamStatus status_;
-  base::StringPiece description_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyRstStreamIR);
 };

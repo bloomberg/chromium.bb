@@ -776,10 +776,8 @@ void SpdySynReplyIR::Visit(SpdyFrameVisitor* visitor) const {
 }
 
 SpdyRstStreamIR::SpdyRstStreamIR(SpdyStreamId stream_id,
-                                 SpdyRstStreamStatus status,
-                                 base::StringPiece description)
-    : SpdyFrameWithStreamIdIR(stream_id),
-      description_(description) {
+                                 SpdyRstStreamStatus status)
+    : SpdyFrameWithStreamIdIR(stream_id) {
   set_status(status);
 }
 

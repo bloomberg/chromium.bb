@@ -953,9 +953,8 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       }
       break;
     case RST_STREAM:
-      // For SPDY versions < 4, the header has a fixed length.
-      // For SPDY version 4 and up, the RST_STREAM frame may include optional
-      // opaque data, so we only have a lower limit on the frame size.
+      // TODO(bnc): Enforce the length of the header, and change error to
+      // FRAME_SIZE_ERROR.
       if ((current_frame_length_ != GetRstStreamMinimumSize() &&
            protocol_version() <= SPDY3) ||
           (current_frame_length_ < GetRstStreamMinimumSize() &&
@@ -2442,9 +2441,6 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   // commented but left in place to simplify future patching.
   // Compute the output buffer size, taking opaque data into account.
   size_t expected_length = GetRstStreamMinimumSize();
-  if (protocol_version() > SPDY3) {
-    expected_length += rst_stream.description().size();
-  }
   SpdyFrameBuilder builder(expected_length, protocol_version());
 
   // Serialize the RST_STREAM frame.
@@ -2457,12 +2453,6 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
 
   builder.WriteUInt32(SpdyConstants::SerializeRstStreamStatus(
       protocol_version(), rst_stream.status()));
-
-  // In HTTP2 and up, RST_STREAM frames may also specify opaque data.
-  if (protocol_version() > SPDY3 && rst_stream.description().size() > 0) {
-    builder.WriteBytes(rst_stream.description().data(),
-                       rst_stream.description().size());
-  }
 
   DCHECK_EQ(expected_length, builder.length());
   return builder.take();
