@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {
 
@@ -38,8 +37,7 @@ void FakeExtendedAuthenticator::AuthenticateToMount(
     const ResultCallback& success_callback) {
   if (expected_user_context_ == context) {
     UserContext reported_user_context(context);
-    const std::string mount_hash =
-        reported_user_context.GetAccountId().GetUserEmail() + "-hash";
+    const std::string mount_hash = reported_user_context.GetUserID() + "-hash";
     reported_user_context.SetUserIDHash(mount_hash);
     if (!success_callback.is_null())
       success_callback.Run(mount_hash);

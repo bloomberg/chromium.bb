@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_id.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager_export.h"
@@ -83,8 +83,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   virtual UserType GetType() const = 0;
 
   // The email the user used to log in.
-  // TODO(alemate): rename this to GetUserEmail() (see crbug.com/548923)
-  const std::string& email() const;
+  const std::string& email() const { return email_; }
 
   // The displayed user name.
   base::string16 display_name() const { return display_name_; }
@@ -97,7 +96,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   base::string16 GetDisplayName() const override;
   base::string16 GetGivenName() const override;
   const gfx::ImageSkia& GetImage() const override;
-  AccountId GetAccountId() const override;
+  UserID GetUserID() const override;
 
   // Allows managing child status of the user. Used for RegularUser.
   virtual void SetIsChild(bool is_child);
@@ -183,13 +182,13 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   friend class chromeos::UserAddingScreenTest;
 
   // Do not allow anyone else to create new User instances.
-  static User* CreateRegularUser(const AccountId& account_id);
+  static User* CreateRegularUser(const UserID& email);
   static User* CreateGuestUser();
-  static User* CreateKioskAppUser(const AccountId& kiosk_app_account_id);
-  static User* CreateSupervisedUser(const AccountId& account_id);
-  static User* CreatePublicAccountUser(const AccountId& account_id);
+  static User* CreateKioskAppUser(const UserID& kiosk_app_username);
+  static User* CreateSupervisedUser(const UserID& username);
+  static User* CreatePublicAccountUser(const UserID& email);
 
-  explicit User(const AccountId& account_id);
+  explicit User(const std::string& email);
   ~User() override;
 
   const std::string* GetAccountLocale() const { return account_locale_.get(); }
@@ -252,15 +251,15 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   }
 
  private:
-  AccountId account_id_;
+  std::string email_;
   base::string16 display_name_;
   base::string16 given_name_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
-  bool using_saml_ = false;
+  bool using_saml_;
   UserImage user_image_;
-  OAuthTokenStatus oauth_token_status_ = OAUTH_TOKEN_STATUS_UNKNOWN;
-  bool force_online_signin_ = false;
+  OAuthTokenStatus oauth_token_status_;
+  bool force_online_signin_;
 
   // This is set to chromeos locale if account data has been downloaded.
   // (Or failed to download, but at least one download attempt finished).
@@ -273,34 +272,34 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // Either index of a default image for the user, |USER_IMAGE_EXTERNAL| or
   // |USER_IMAGE_PROFILE|.
-  int image_index_ = USER_IMAGE_INVALID;
+  int image_index_;
 
   // True if current user image is a stub set by a |SetStubImage| call.
-  bool image_is_stub_ = false;
+  bool image_is_stub_;
 
   // True if current user image is being loaded from file.
-  bool image_is_loading_ = false;
+  bool image_is_loading_;
 
   // True if user is able to lock screen.
-  bool can_lock_ = false;
+  bool can_lock_;
 
   // True if user is currently logged in in current session.
-  bool is_logged_in_ = false;
+  bool is_logged_in_;
 
   // True if user is currently logged in and active in current session.
-  bool is_active_ = false;
+  bool is_active_;
 
   // True if user Profile is created
-  bool profile_is_created_ = false;
+  bool profile_is_created_;
 
   // True if the user is affiliated to the device.
-  bool is_affiliated_ = false;
+  bool is_affiliated_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };
 
 // List of known users.
-using UserList = std::vector<User*>;
+typedef std::vector<User*> UserList;
 
 }  // namespace user_manager
 

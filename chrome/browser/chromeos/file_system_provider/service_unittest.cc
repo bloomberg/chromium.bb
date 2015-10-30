@@ -191,8 +191,7 @@ class FileSystemProviderServiceTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-user@example.com");
     user_manager_ = new FakeChromeUserManager();
-    user_manager_->AddUser(
-        AccountId::FromUserEmail(profile_->GetProfileUserName()));
+    user_manager_->AddUser(profile_->GetProfileUserName());
     user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
     extension_registry_.reset(new extensions::ExtensionRegistry(profile_));
 

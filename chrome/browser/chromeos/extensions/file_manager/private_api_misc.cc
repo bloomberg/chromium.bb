@@ -153,7 +153,7 @@ bool FileManagerPrivateLogoutUserForReauthenticationFunction::RunSync() {
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (user) {
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        user->GetAccountId(), user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
+        user->email(), user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
   }
 
   chrome::AttemptUserExit();

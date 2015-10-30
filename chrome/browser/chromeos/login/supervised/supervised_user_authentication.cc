@@ -104,15 +104,14 @@ SupervisedUserAuthentication::GetStableSchema() {
 UserContext SupervisedUserAuthentication::TransformKey(
     const UserContext& context) {
   UserContext result = context;
-  int user_schema = GetPasswordSchema(context.GetAccountId().GetUserEmail());
+  int user_schema = GetPasswordSchema(context.GetUserID());
   if (user_schema == SCHEMA_PLAIN)
     return result;
 
   if (user_schema == SCHEMA_SALT_HASHED) {
     base::DictionaryValue holder;
     std::string salt;
-    owner_->GetPasswordInformation(context.GetAccountId().GetUserEmail(),
-                                   &holder);
+    owner_->GetPasswordInformation(context.GetUserID(), &holder);
     holder.GetStringWithoutPathExpansion(kSalt, &salt);
     DCHECK(!salt.empty());
     Key* const key = result.GetKey();
@@ -121,8 +120,7 @@ UserContext SupervisedUserAuthentication::TransformKey(
     result.SetIsUsingOAuth(false);
     return result;
   }
-  NOTREACHED() << "Unknown password schema for "
-               << context.GetAccountId().GetUserEmail();
+  NOTREACHED() << "Unknown password schema for " << context.GetUserID();
   return context;
 }
 
@@ -225,8 +223,8 @@ bool SupervisedUserAuthentication::NeedPasswordChange(
 void SupervisedUserAuthentication::ScheduleSupervisedPasswordChange(
     const std::string& supervised_user_id,
     const base::DictionaryValue* password_data) {
-  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      AccountId::FromUserEmail(supervised_user_id));
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(supervised_user_id);
   base::FilePath profile_path = ProfileHelper::GetProfilePathByUserIdHash(
       user->username_hash());
   JSONFileValueSerializer serializer(profile_path.Append(kPasswordUpdateFile));
@@ -283,8 +281,8 @@ void SupervisedUserAuthentication::LoadPasswordUpdateData(
     const std::string& user_id,
     const PasswordDataCallback& success_callback,
     const base::Closure& failure_callback) {
-  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      AccountId::FromUserEmail(user_id));
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_id);
   base::FilePath profile_path =
       ProfileHelper::GetProfilePathByUserIdHash(user->username_hash());
   PostTaskAndReplyWithResult(

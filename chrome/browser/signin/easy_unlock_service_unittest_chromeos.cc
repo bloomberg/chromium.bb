@@ -21,7 +21,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -219,7 +218,7 @@ class EasyUnlockServiceTest : public testing::Test {
     ON_CALL(*mock_user_manager_, IsCurrentUserNonCryptohomeDataEphemeral())
         .WillByDefault(Return(false));
 
-    SetUpProfile(&profile_, AccountId::FromUserEmail(kTestUserPrimary));
+    SetUpProfile(&profile_, kTestUserPrimary);
   }
 
   void TearDown() override {
@@ -263,14 +262,13 @@ class EasyUnlockServiceTest : public testing::Test {
   }
 
   void SetUpSecondaryProfile() {
-    SetUpProfile(&secondary_profile_,
-                 AccountId::FromUserEmail(kTestUserSecondary));
+    SetUpProfile(&secondary_profile_, kTestUserSecondary);
   }
 
  private:
   // Sets up a test profile with a user id.
   void SetUpProfile(scoped_ptr<TestingProfile>* profile,
-                    const AccountId& account_id) {
+                    const std::string& user_id) {
     ASSERT_TRUE(profile);
     ASSERT_FALSE(profile->get());
 
@@ -279,13 +277,12 @@ class EasyUnlockServiceTest : public testing::Test {
                               &CreateEasyUnlockServiceForTest);
     *profile = builder.Build();
 
-    mock_user_manager_->AddUser(account_id);
-    profile->get()->set_profile_name(account_id.GetUserEmail());
+    mock_user_manager_->AddUser(user_id);
+    profile->get()->set_profile_name(user_id);
 
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile->get());
-    signin_manager->SetAuthenticatedAccountInfo(account_id.GetUserEmail(),
-                                                account_id.GetUserEmail());
+    signin_manager->SetAuthenticatedAccountInfo(user_id, user_id);
   }
 
  protected:

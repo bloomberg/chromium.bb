@@ -241,11 +241,10 @@ TEST_F(PowerPrefsTest, UserSession) {
 
   // Set up user profile.
   const char test_user1[] = "test-user1@example.com";
-  const AccountId test_account_id1(AccountId::FromUserEmail(test_user1));
-  user_manager->AddUser(test_account_id1);
-  user_manager->LoginUser(test_account_id1);
+  user_manager->AddUser(test_user1);
+  user_manager->LoginUser(test_user1);
   TestingProfile* user_profile =
-      profile_manager_.CreateTestingProfile(test_account_id1.GetUserEmail());
+      profile_manager_.CreateTestingProfile(test_user1);
 
   profile_manager_.SetLoggedIn(true);
 
@@ -261,11 +260,10 @@ TEST_F(PowerPrefsTest, UserSession) {
             GetCurrentAllowScreenWakeLocks());
 
   const char test_user2[] = "test-user2@example.com";
-  const AccountId test_account_id2(AccountId::FromUserEmail(test_user2));
-  user_manager->AddUser(test_account_id2);
-  user_manager->LoginUser(test_account_id2);
+  user_manager->AddUser(test_user2);
+  user_manager->LoginUser(test_user2);
   TestingProfile* other_profile =
-      profile_manager_.CreateTestingProfile(test_account_id2.GetUserEmail());
+      profile_manager_.CreateTestingProfile(test_user2);
 
   // Inform power_prefs_ that an unrelated profile has been destroyed.
   power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,

@@ -469,13 +469,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
   if (immediate_login) {
-    const std::string user_email = login::CanonicalizeUserID(
+    const std::string user_id = login::CanonicalizeUserID(
         parsed_command_line().GetSwitchValueASCII(switches::kLoginUser));
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
-    const AccountId account_id(AccountId::FromUserEmail(user_email));
-    if (policy::IsDeviceLocalAccountUser(account_id.GetUserEmail(), NULL) &&
-        !user_manager->IsKnownUser(account_id)) {
+    if (policy::IsDeviceLocalAccountUser(user_id, NULL) &&
+        !user_manager->IsKnownUser(user_id)) {
       // When a device-local account is removed, its policy is deleted from disk
       // immediately. If a session using this account happens to be in progress,
       // the session is allowed to continue with policy served from an in-memory
@@ -489,8 +488,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // In case of multi-profiles --login-profile will contain user_id_hash.
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
-    user_manager->UserLoggedIn(account_id, user_id_hash, true);
-    VLOG(1) << "Relaunching browser for user: " << user_email
+    user_manager->UserLoggedIn(user_id, user_id_hash, true);
+    VLOG(1) << "Relaunching browser for user: " << user_id
             << " with hash: " << user_id_hash;
   }
 }

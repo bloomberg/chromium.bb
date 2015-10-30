@@ -197,7 +197,7 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
 void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
-    if (user_context.GetAccountId().is_valid())
+    if (!user_context.GetUserID().empty())
       LOG(ERROR) << "Start time is not set at authentication success";
   } else {
     base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
@@ -206,12 +206,12 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   }
 
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
+      user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
   if (user) {
     if (!user->is_active()) {
       saved_ime_state_ = NULL;
       user_manager::UserManager::Get()->SwitchActiveUser(
-          user_context.GetAccountId());
+          user_context.GetUserID());
     }
     UserSessionManager::GetInstance()->UpdateEasyUnlockKeys(user_context);
   } else {
@@ -250,7 +250,7 @@ void ScreenLocker::UnlockOnLoginSuccess() {
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context) {
-  LOG_ASSERT(IsUserLoggedIn(user_context.GetAccountId().GetUserEmail()))
+  LOG_ASSERT(IsUserLoggedIn(user_context.GetUserID()))
       << "Invalid user trying to unlock.";
 
   authentication_start_time_ = base::Time::Now();
@@ -259,7 +259,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
 
   // Special case: supervised users. Use special authenticator.
   if (const user_manager::User* user =
-          FindUnlockUser(user_context.GetAccountId().GetUserEmail())) {
+          FindUnlockUser(user_context.GetUserID())) {
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
       UserContext updated_context = ChromeUserManager::Get()
                                         ->GetSupervisedUserManager()

@@ -16,7 +16,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -109,8 +108,7 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
     // cause user to go through Gaia in next login to obtain a new refresh
     // token.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        AccountId::FromUserEmail(primary_account_id),
-        user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
+        primary_account_id, user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
 
     token_service->LoadCredentials(primary_account_id);
   }
@@ -131,14 +129,14 @@ bool OAuth2LoginManager::ShouldBlockTabLoading() const {
 }
 
 void OAuth2LoginManager::OnRefreshTokenAvailable(
-    const std::string& user_email) {
+    const std::string& account_id) {
   VLOG(1) << "OnRefreshTokenAvailable";
 
   if (state_ == SESSION_RESTORE_NOT_STARTED)
     return;
 
   // TODO(fgorski): Once ProfileOAuth2TokenService supports multi-login, make
-  // sure to restore session cookies in the context of the correct user_email.
+  // sure to restore session cookies in the context of the correct account_id.
 
   // Do not validate tokens for supervised users, as they don't actually have
   // oauth2 token.
@@ -147,11 +145,10 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
     return;
   }
   // Only restore session cookies for the primary account in the profile.
-  if (GetPrimaryAccountId() == user_email) {
+  if (GetPrimaryAccountId() == account_id) {
     // Token is loaded. Undo the flagging before token loading.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        AccountId::FromUserEmail(user_email),
-        user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+        account_id, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
     VerifySessionCookies();
   }
 }

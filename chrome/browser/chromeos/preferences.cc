@@ -400,8 +400,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                                    const std::string& pref_name) {
   DCHECK(reason != REASON_PREF_CHANGED || !pref_name.empty());
   const bool user_is_owner =
-      user_manager::UserManager::Get()->GetOwnerAccountId() ==
-      user_->GetAccountId();
+      user_manager::UserManager::Get()->GetOwnerEmail() == user_->email();
   const bool user_is_active = user_->is_active();
 
   system::TouchpadSettings touchpad_settings;
@@ -626,7 +625,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       reason != REASON_ACTIVE_USER_CHANGED) {
     const bool value = prefs_->GetBoolean(prefs::kUse24HourClock);
     user_manager::UserManager::Get()->SetKnownUserBooleanPref(
-        user_->GetAccountId(), prefs::kUse24HourClock, value);
+        user_->GetUserID(), prefs::kUse24HourClock, value);
   }
 }
 

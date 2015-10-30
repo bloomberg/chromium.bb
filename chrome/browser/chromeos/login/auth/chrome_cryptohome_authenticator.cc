@@ -26,7 +26,7 @@ ChromeCryptohomeAuthenticator::~ChromeCryptohomeAuthenticator() {
 }
 
 bool ChromeCryptohomeAuthenticator::IsKnownUser(const UserContext& context) {
-  return user_manager::UserManager::Get()->IsKnownUser(context.GetAccountId());
+  return user_manager::UserManager::Get()->IsKnownUser(context.GetUserID());
 }
 
 bool ChromeCryptohomeAuthenticator::IsSafeMode() {

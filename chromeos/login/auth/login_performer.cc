@@ -18,7 +18,6 @@
 #include "chromeos/login/user_names.h"
 #include "chromeos/login_event_recorder.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -108,8 +107,7 @@ void LoginPerformer::OnPasswordChangeDetected() {
 
 void LoginPerformer::NotifyWhitelistCheckFailure() {
   if (delegate_)
-    delegate_->WhiteListCheckFailed(
-        user_context_.GetAccountId().GetUserEmail());
+    delegate_->WhiteListCheckFailed(user_context_.GetUserID());
   else
     NOTREACHED();
 }
@@ -130,8 +128,7 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
 
 void LoginPerformer::DoPerformLogin(const UserContext& user_context,
                                     AuthorizationMode auth_mode) {
-  const std::string email =
-      gaia::CanonicalizeEmail(user_context.GetAccountId().GetUserEmail());
+  std::string email = gaia::CanonicalizeEmail(user_context.GetUserID());
   bool wildcard_match = false;
 
   if (!IsUserWhitelisted(email, &wildcard_match)) {
@@ -140,7 +137,7 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
   }
 
   if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_EASY_UNLOCK)
-    SetupEasyUnlockUserFlow(user_context.GetAccountId().GetUserEmail());
+    SetupEasyUnlockUserFlow(user_context.GetUserID());
 
   switch (auth_mode_) {
     case AUTH_MODE_EXTENSION: {
@@ -159,9 +156,8 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
 }
 
 void LoginPerformer::LoginAsSupervisedUser(const UserContext& user_context) {
-  DCHECK_EQ(
-      chromeos::login::kSupervisedUserDomain,
-      gaia::ExtractDomainName(user_context.GetAccountId().GetUserEmail()));
+  DCHECK_EQ(chromeos::login::kSupervisedUserDomain,
+            gaia::ExtractDomainName(user_context.GetUserID()));
 
   user_context_ = user_context;
   user_context_.SetUserType(user_manager::USER_TYPE_SUPERVISED);
@@ -178,11 +174,11 @@ void LoginPerformer::TrustedLoginAsSupervisedUser(
     const UserContext& user_context) {
   if (!AreSupervisedUsersAllowed()) {
     LOG(ERROR) << "Login attempt of supervised user detected.";
-    delegate_->WhiteListCheckFailed(user_context.GetAccountId().GetUserEmail());
+    delegate_->WhiteListCheckFailed(user_context.GetUserID());
     return;
   }
 
-  SetupSupervisedUserFlow(user_context.GetAccountId().GetUserEmail());
+  SetupSupervisedUserFlow(user_context.GetUserID());
   UserContext user_context_copy = TransformSupervisedKey(user_context);
 
   if (UseExtendedAuthenticatorForSupervisedUser(user_context)) {
@@ -206,7 +202,7 @@ void LoginPerformer::TrustedLoginAsSupervisedUser(
 }
 
 void LoginPerformer::LoginAsPublicSession(const UserContext& user_context) {
-  if (!CheckPolicyForUser(user_context.GetAccountId().GetUserEmail())) {
+  if (!CheckPolicyForUser(user_context.GetUserID())) {
     DCHECK(delegate_);
     if (delegate_)
       delegate_->PolicyLoadFailed();

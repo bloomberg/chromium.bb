@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/login/user_names.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -35,14 +34,10 @@ bool User::TypeHasGaiaAccount(UserType user_type) {
          user_type == USER_TYPE_CHILD;
 }
 
-const std::string& User::email() const {
-  return account_id_.GetUserEmail();
-}
-
 // Also used for regular supervised users.
 class RegularUser : public User {
  public:
-  explicit RegularUser(const AccountId& account_id);
+  explicit RegularUser(const std::string& email);
   ~RegularUser() override;
 
   // Overridden from User:
@@ -51,7 +46,7 @@ class RegularUser : public User {
   void SetIsChild(bool is_child) override;
 
  private:
-  bool is_child_ = false;
+  bool is_child_;
 
   DISALLOW_COPY_AND_ASSIGN(RegularUser);
 };
@@ -70,7 +65,7 @@ class GuestUser : public User {
 
 class KioskAppUser : public User {
  public:
-  explicit KioskAppUser(const AccountId& kiosk_app_account_id);
+  explicit KioskAppUser(const std::string& app_id);
   ~KioskAppUser() override;
 
   // Overridden from User:
@@ -82,7 +77,7 @@ class KioskAppUser : public User {
 
 class SupervisedUser : public User {
  public:
-  explicit SupervisedUser(const AccountId& account_id);
+  explicit SupervisedUser(const std::string& username);
   ~SupervisedUser() override;
 
   // Overridden from User:
@@ -95,7 +90,7 @@ class SupervisedUser : public User {
 
 class PublicAccountUser : public User {
  public:
-  explicit PublicAccountUser(const AccountId& account_id);
+  explicit PublicAccountUser(const std::string& email);
   ~PublicAccountUser() override;
 
   // Overridden from User:
@@ -123,9 +118,8 @@ const gfx::ImageSkia& User::GetImage() const {
   return user_image_.image();
 }
 
-AccountId User::GetAccountId() const {
-  return AccountId::FromUserEmail(
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(email())));
+UserID User::GetUserID() const {
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email()));
 }
 
 void User::SetIsChild(bool is_child) {
@@ -150,7 +144,7 @@ std::string User::GetAccountName(bool use_display_email) const {
   if (use_display_email && !display_email_.empty())
     return GetUserName(display_email_);
   else
-    return GetUserName(account_id_.GetUserEmail());
+    return GetUserName(email_);
 }
 
 bool User::HasDefaultImage() const {
@@ -181,27 +175,39 @@ bool User::is_active() const {
   return is_active_;
 }
 
-User* User::CreateRegularUser(const AccountId& account_id) {
-  return new RegularUser(account_id);
+User* User::CreateRegularUser(const std::string& email) {
+  return new RegularUser(email);
 }
 
 User* User::CreateGuestUser() {
   return new GuestUser;
 }
 
-User* User::CreateKioskAppUser(const AccountId& kiosk_app_account_id) {
-  return new KioskAppUser(kiosk_app_account_id);
+User* User::CreateKioskAppUser(const std::string& kiosk_app_username) {
+  return new KioskAppUser(kiosk_app_username);
 }
 
-User* User::CreateSupervisedUser(const AccountId& account_id) {
-  return new SupervisedUser(account_id);
+User* User::CreateSupervisedUser(const std::string& username) {
+  return new SupervisedUser(username);
 }
 
-User* User::CreatePublicAccountUser(const AccountId& account_id) {
-  return new PublicAccountUser(account_id);
+User* User::CreatePublicAccountUser(const std::string& email) {
+  return new PublicAccountUser(email);
 }
 
-User::User(const AccountId& account_id) : account_id_(account_id) {}
+User::User(const std::string& email)
+    : email_(email),
+      oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
+      force_online_signin_(false),
+      image_index_(USER_IMAGE_INVALID),
+      image_is_stub_(false),
+      image_is_loading_(false),
+      can_lock_(false),
+      is_logged_in_(false),
+      is_active_(false),
+      profile_is_created_(false),
+      is_affiliated_(false){
+}
 
 User::~User() {
 }
@@ -231,9 +237,10 @@ void User::SetStubImage(const UserImage& stub_user_image,
   image_is_loading_ = is_loading;
 }
 
-RegularUser::RegularUser(const AccountId& account_id) : User(account_id) {
+RegularUser::RegularUser(const std::string& email)
+    : User(email), is_child_(false) {
   set_can_lock(true);
-  set_display_email(account_id.GetUserEmail());
+  set_display_email(email);
 }
 
 RegularUser::~RegularUser() {
@@ -253,7 +260,7 @@ void RegularUser::SetIsChild(bool is_child) {
   is_child_ = is_child;
 }
 
-GuestUser::GuestUser() : User(chromeos::login::GuestAccountId()) {
+GuestUser::GuestUser() : User(chromeos::login::kGuestUserName) {
   set_display_email(std::string());
 }
 
@@ -264,9 +271,9 @@ UserType GuestUser::GetType() const {
   return user_manager::USER_TYPE_GUEST;
 }
 
-KioskAppUser::KioskAppUser(const AccountId& kiosk_app_account_id)
-    : User(kiosk_app_account_id) {
-  set_display_email(kiosk_app_account_id.GetUserEmail());
+KioskAppUser::KioskAppUser(const std::string& kiosk_app_username)
+    : User(kiosk_app_username) {
+  set_display_email(kiosk_app_username);
 }
 
 KioskAppUser::~KioskAppUser() {
@@ -276,7 +283,7 @@ UserType KioskAppUser::GetType() const {
   return user_manager::USER_TYPE_KIOSK_APP;
 }
 
-SupervisedUser::SupervisedUser(const AccountId& account_id) : User(account_id) {
+SupervisedUser::SupervisedUser(const std::string& username) : User(username) {
   set_can_lock(true);
 }
 
@@ -291,8 +298,8 @@ std::string SupervisedUser::display_email() const {
   return base::UTF16ToUTF8(display_name());
 }
 
-PublicAccountUser::PublicAccountUser(const AccountId& account_id)
-    : User(account_id) {}
+PublicAccountUser::PublicAccountUser(const std::string& email) : User(email) {
+}
 
 PublicAccountUser::~PublicAccountUser() {
 }

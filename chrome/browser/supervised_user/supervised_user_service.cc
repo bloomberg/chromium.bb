@@ -851,7 +851,7 @@ std::string SupervisedUserService::GetSupervisedUserName() const {
   // The active user can be NULL in unit tests.
   if (user_manager::UserManager::Get()->GetActiveUser()) {
     return UTF16ToUTF8(user_manager::UserManager::Get()->GetUserDisplayName(
-        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()));
+        user_manager::UserManager::Get()->GetActiveUser()->GetUserID()));
   }
   return std::string();
 #else

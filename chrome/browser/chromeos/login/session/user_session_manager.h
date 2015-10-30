@@ -24,7 +24,6 @@
 #include "net/base/network_change_notifier.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-class AccountId;
 class GURL;
 class PrefRegistrySimple;
 class PrefService;
@@ -301,7 +300,7 @@ class UserSessionManager
   // Profile is created, extensions and promo resources are initialized.
   void UserProfileInitialized(Profile* profile,
                               bool is_incognito_profile,
-                              const AccountId& account_id);
+                              const std::string& user_id);
 
   // Callback to resume profile creation after transferring auth data from
   // the authentication profile.
@@ -369,7 +368,7 @@ class UserSessionManager
       const locale_util::LanguageSwitchResult& result);
 
   // Callback invoked when |token_handle_util_| has finished.
-  void OnTokenHandleObtained(const AccountId& account_id, bool success);
+  void OnTokenHandleObtained(const user_manager::UserID& id, bool success);
 
   // Returns |true| if token handles should be used on this device.
   bool TokenHandlesEnabled();

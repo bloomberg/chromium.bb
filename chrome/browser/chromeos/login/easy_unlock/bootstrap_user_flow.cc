@@ -14,20 +14,19 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "components/proximity_auth/screenlock_bridge.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {
 
 BootstrapUserFlow::BootstrapUserFlow(const UserContext& user_context,
                                      bool is_new_account)
-    : ExtendedUserFlow(user_context.GetAccountId().GetUserEmail()),
+    : ExtendedUserFlow(user_context.GetUserID()),
       user_context_(user_context),
       is_new_account_(is_new_account),
       finished_(false),
       user_profile_(nullptr),
       weak_ptr_factory_(this) {
   ChromeUserManager::Get()->GetBootstrapManager()->AddPendingBootstrap(
-      user_context_.GetAccountId().GetUserEmail());
+      user_context_.GetUserID());
 }
 
 BootstrapUserFlow::~BootstrapUserFlow() {
@@ -111,7 +110,7 @@ void BootstrapUserFlow::Finish() {
   finished_ = true;
 
   ChromeUserManager::Get()->GetBootstrapManager()->FinishPendingBootstrap(
-      user_context_.GetAccountId().GetUserEmail());
+      user_context_.GetUserID());
   UserSessionManager::GetInstance()->DoBrowserLaunch(user_profile_, host());
 
   user_profile_ = nullptr;

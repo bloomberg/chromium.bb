@@ -43,14 +43,13 @@ class InputMethodPersistenceTest : public testing::Test {
     ASSERT_TRUE(mock_profile_manager_.SetUp());
 
     // Add a user.
-    const AccountId test_account_id(
-        AccountId::FromUserEmail("test-user@example.com"));
-    fake_user_manager_->AddUser(test_account_id);
-    fake_user_manager_->LoginUser(test_account_id);
+    const char kTestUserName[] = "test-user@example.com";
+    fake_user_manager_->AddUser(kTestUserName);
+    fake_user_manager_->LoginUser(kTestUserName);
 
     // Create a valid profile for the user.
-    TestingProfile* mock_profile = mock_profile_manager_.CreateTestingProfile(
-        test_account_id.GetUserEmail());
+    TestingProfile* mock_profile =
+        mock_profile_manager_.CreateTestingProfile(kTestUserName);
     mock_profile_manager_.SetLoggedIn(true);
     EXPECT_TRUE(ProfileManager::GetActiveUserProfile() == mock_profile);
 

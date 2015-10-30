@@ -410,7 +410,8 @@ void UserImageManagerImpl::Job::OnLoadImageDone(
 }
 
 void UserImageManagerImpl::Job::UpdateUser() {
-  user_manager::User* user = parent_->GetUserAndModify();
+  user_manager::User* user =
+      parent_->user_manager_->FindUserAndModify(user_id());
   if (!user)
     return;
 
@@ -450,8 +451,7 @@ void UserImageManagerImpl::Job::OnSaveImageDone(bool success) {
 void UserImageManagerImpl::Job::UpdateLocalState() {
   // Ignore if data stored or cached outside the user's cryptohome is to be
   // treated as ephemeral.
-  if (parent_->user_manager_->IsUserNonCryptohomeDataEphemeral(
-          AccountId::FromUserEmail(user_id())))
+  if (parent_->user_manager_->IsUserNonCryptohomeDataEphemeral(user_id()))
     return;
 
   scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
@@ -769,9 +769,10 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
   DCHECK_EQ(downloader, profile_downloader.get());
 
   user_manager_->UpdateUserAccountData(
-      AccountId::FromUserEmail(user_id()),
+      user_id(),
       user_manager::UserManager::UserAccountData(
-          downloader->GetProfileFullName(), downloader->GetProfileGivenName(),
+          downloader->GetProfileFullName(),
+          downloader->GetProfileGivenName(),
           downloader->GetProfileLocale()));
   if (!downloading_profile_image_)
     return;
@@ -1016,11 +1017,11 @@ void UserImageManagerImpl::TryToCreateImageSyncObserver() {
 }
 
 const user_manager::User* UserImageManagerImpl::GetUser() const {
-  return user_manager_->FindUser(AccountId::FromUserEmail(user_id()));
+  return user_manager_->FindUser(user_id());
 }
 
 user_manager::User* UserImageManagerImpl::GetUserAndModify() const {
-  return user_manager_->FindUserAndModify(AccountId::FromUserEmail(user_id()));
+  return user_manager_->FindUserAndModify(user_id());
 }
 
 bool UserImageManagerImpl::IsUserLoggedInAndHasGaiaAccount() const {

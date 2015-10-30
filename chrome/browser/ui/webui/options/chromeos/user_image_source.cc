@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/url_constants.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_manager.h"
 #include "grit/theme_resources.h"
@@ -38,10 +37,10 @@ namespace options {
 
 // Static.
 base::RefCountedMemory* UserImageSource::GetUserImage(
-    const AccountId& account_id,
+    const std::string& email,
     ui::ScaleFactor scale_factor) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
+      user_manager::UserManager::Get()->FindUser(email);
   if (user) {
     if (user->has_raw_image()) {
       return new base::RefCountedBytes(user->raw_image());
@@ -79,8 +78,7 @@ void UserImageSource::StartDataRequest(
   std::string email;
   GURL url(chrome::kChromeUIUserImageURL + path);
   ParseRequest(url, &email);
-  const AccountId account_id(AccountId::FromUserEmail(email));
-  callback.Run(GetUserImage(account_id, ui::SCALE_FACTOR_100P));
+  callback.Run(GetUserImage(email, ui::SCALE_FACTOR_100P));
 }
 
 std::string UserImageSource::GetMimeType(const std::string& path) const {

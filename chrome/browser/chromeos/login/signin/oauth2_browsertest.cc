@@ -29,7 +29,6 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/user_manager/user.h"
@@ -198,9 +197,7 @@ class OAuth2Test : public OobeBaseTest {
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
     // Try login.  Primary profile has changed.
-    EXPECT_TRUE(
-        TryToLogin(AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId),
-                   kTestAccountPassword));
+    EXPECT_TRUE(TryToLogin(kTestGaiaId, kTestEmail, kTestAccountPassword));
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
 
     // Wait for the session merge to finish.
@@ -215,13 +212,15 @@ class OAuth2Test : public OobeBaseTest {
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   }
 
-  bool TryToLogin(const AccountId& account_id, const std::string& password) {
-    if (!AddUserToSession(account_id, password))
+  bool TryToLogin(const std::string& gaia_id,
+                  const std::string& username,
+                  const std::string& password) {
+    if (!AddUserToSession(gaia_id, username, password))
       return false;
 
     if (const user_manager::User* active_user =
             user_manager::UserManager::Get()->GetActiveUser()) {
-      return active_user->GetAccountId() == account_id;
+      return active_user->email() == username;
     }
 
     return false;
@@ -252,7 +251,8 @@ class OAuth2Test : public OobeBaseTest {
     return OobeBaseTest::profile();
   }
 
-  bool AddUserToSession(const AccountId& account_id,
+  bool AddUserToSession(const std::string& gaia_id,
+                        const std::string& username,
                         const std::string& password) {
     ExistingUserController* controller =
         ExistingUserController::current_controller();
@@ -261,8 +261,8 @@ class OAuth2Test : public OobeBaseTest {
       return false;
     }
 
-    UserContext user_context(account_id);
-    user_context.SetGaiaID(account_id.GetGaiaId());
+    UserContext user_context(username);
+    user_context.SetGaiaID(gaia_id);
     user_context.SetKey(Key(password));
     controller->Login(user_context, SigninSpecifics());
     content::WindowedNotificationObserver(
@@ -273,7 +273,7 @@ class OAuth2Test : public OobeBaseTest {
     for (user_manager::UserList::const_iterator it = logged_users.begin();
          it != logged_users.end();
          ++it) {
-      if ((*it)->GetAccountId() == account_id)
+      if ((*it)->email() == username)
         return true;
     }
     return false;
@@ -494,9 +494,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_MergeSession) {
   EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
             user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
-  EXPECT_TRUE(
-      TryToLogin(AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId),
-                 kTestAccountPassword));
+  EXPECT_TRUE(TryToLogin(kTestGaiaId, kTestEmail, kTestAccountPassword));
 
   // Wait for the session merge to finish.
   WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_FAILED);

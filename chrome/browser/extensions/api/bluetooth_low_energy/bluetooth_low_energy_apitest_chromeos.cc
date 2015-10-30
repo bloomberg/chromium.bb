@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,10 +55,9 @@ class BluetoothLowEnergyApiTestChromeOs : public PlatformAppBrowserTest {
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(fake_user_manager_));
 
-    const AccountId kiosk_account_id(
-        AccountId::FromUserEmail("kiosk@foobar.com"));
-    fake_user_manager_->AddKioskAppUser(kiosk_account_id);
-    fake_user_manager_->LoginUser(kiosk_account_id);
+    const std::string kKiosLogin = "kiosk@foobar.com";
+    fake_user_manager_->AddKioskAppUser(kKiosLogin);
+    fake_user_manager_->LoginUser(kKiosLogin);
   }
 
   void SetAutoLaunchApp() {

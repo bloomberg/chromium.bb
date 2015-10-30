@@ -100,8 +100,7 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     provider_.reset(new DeviceSettingsProvider(base::Bind(&OnPrefChanged),
                                                &device_settings_service_));
     owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-    InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
-              true);
+    InitOwner(device_policy_.policy_data().username(), true);
     FlushDeviceSettings();
 
     service_ = OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
@@ -343,8 +342,7 @@ TEST_F(OwnerSettingsServiceChromeOSNoOwnerTest, TakeOwnershipForceWhitelist) {
   EXPECT_FALSE(FindInListValue(device_policy_.policy_data().username(),
                                provider_->Get(kAccountsPrefUsers)));
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
-            true);
+  InitOwner(device_policy_.policy_data().username(), true);
   ReloadDeviceSettings();
   ASSERT_TRUE(service_->IsOwner());
 

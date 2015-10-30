@@ -103,9 +103,8 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
 class UserImageManagerTest : public LoginManagerTest,
                              public user_manager::UserManager::Observer {
  protected:
-  UserImageManagerTest()
-      : LoginManagerTest(true),
-        enterprise_account_id_(AccountId::FromUserEmail(kEnterpriseUser1)) {}
+  UserImageManagerTest() : LoginManagerTest(true) {
+  }
 
   // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
@@ -132,35 +131,32 @@ class UserImageManagerTest : public LoginManagerTest,
       run_loop_->Quit();
   }
 
-  // Logs in |account_id|.
-  void LogIn(const AccountId& account_id) {
-    user_manager::UserManager::Get()->UserLoggedIn(
-        account_id, account_id.GetUserEmail(), false);
+  // Logs in |username|.
+  void LogIn(const std::string& username) {
+    user_manager::UserManager::Get()->UserLoggedIn(username, username, false);
   }
 
   // Stores old (pre-migration) user image info.
-  void SetOldUserImageInfo(const AccountId& account_id,
+  void SetOldUserImageInfo(const std::string& username,
                            int image_index,
                            const base::FilePath& image_path) {
-    RegisterUser(account_id.GetUserEmail());
+    RegisterUser(username);
     DictionaryPrefUpdate images_pref(local_state_, "UserImages");
     base::DictionaryValue* image_properties = new base::DictionaryValue();
     image_properties->Set("index", new base::FundamentalValue(image_index));
     image_properties->Set(
         "path" , new base::StringValue(image_path.value()));
-    images_pref->SetWithoutPathExpansion(account_id.GetUserEmail(),
-                                         image_properties);
+    images_pref->SetWithoutPathExpansion(username, image_properties);
   }
 
   // Verifies user image info in |images_pref| dictionary.
   void ExpectUserImageInfo(const base::DictionaryValue* images_pref,
-                           const AccountId& account_id,
+                           const std::string& username,
                            int image_index,
                            const base::FilePath& image_path) {
     ASSERT_TRUE(images_pref);
     const base::DictionaryValue* image_properties = NULL;
-    images_pref->GetDictionaryWithoutPathExpansion(account_id.GetUserEmail(),
-                                                   &image_properties);
+    images_pref->GetDictionaryWithoutPathExpansion(username, &image_properties);
     ASSERT_TRUE(image_properties);
     int actual_image_index;
     std::string actual_image_path;
@@ -170,42 +166,42 @@ class UserImageManagerTest : public LoginManagerTest,
     EXPECT_EQ(image_path.value(), actual_image_path);
   }
 
-  // Verifies that there is no image info for |account_id| in dictionary
+  // Verifies that there is no image info for |username| in dictionary
   // |images_pref|.
   void ExpectNoUserImageInfo(const base::DictionaryValue* images_pref,
-                             const AccountId& account_id) {
+                             const std::string& username) {
     ASSERT_TRUE(images_pref);
     const base::DictionaryValue* image_properties = NULL;
-    images_pref->GetDictionaryWithoutPathExpansion(account_id.GetUserEmail(),
-                                                   &image_properties);
+    images_pref->GetDictionaryWithoutPathExpansion(username, &image_properties);
     ASSERT_FALSE(image_properties);
   }
 
   // Verifies that old user image info matches |image_index| and |image_path|
   // and that new user image info does not exist.
-  void ExpectOldUserImageInfo(const AccountId& account_id,
+  void ExpectOldUserImageInfo(const std::string& username,
                               int image_index,
                               const base::FilePath& image_path) {
-    ExpectUserImageInfo(local_state_->GetDictionary("UserImages"), account_id,
-                        image_index, image_path);
+    ExpectUserImageInfo(local_state_->GetDictionary("UserImages"),
+                        username, image_index, image_path);
     ExpectNoUserImageInfo(local_state_->GetDictionary("user_image_info"),
-                          account_id);
+                          username);
   }
 
   // Verifies that new user image info matches |image_index| and |image_path|
   // and that old user image info does not exist.
-  void ExpectNewUserImageInfo(const AccountId& account_id,
+  void ExpectNewUserImageInfo(const std::string& username,
                               int image_index,
                               const base::FilePath& image_path) {
     ExpectUserImageInfo(local_state_->GetDictionary("user_image_info"),
-                        account_id, image_index, image_path);
+                        username, image_index, image_path);
     ExpectNoUserImageInfo(local_state_->GetDictionary("UserImages"),
-                          account_id);
+                          username);
   }
 
-  // Sets bitmap |resource_id| as image for |account_id| and saves it to disk.
-  void SaveUserImagePNG(const AccountId& account_id, int resource_id) {
-    base::FilePath image_path = GetUserImagePath(account_id, "png");
+  // Sets bitmap |resource_id| as image for |username| and saves it to disk.
+  void SaveUserImagePNG(const std::string& username,
+                        int resource_id) {
+    base::FilePath image_path = GetUserImagePath(username, "png");
     scoped_refptr<base::RefCountedStaticMemory> image_data(
         ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
             resource_id, ui::SCALE_FACTOR_100P));
@@ -214,29 +210,28 @@ class UserImageManagerTest : public LoginManagerTest,
         reinterpret_cast<const char*>(image_data->front()),
         image_data->size());
     EXPECT_EQ(static_cast<int>(image_data->size()), written);
-    SetOldUserImageInfo(account_id, user_manager::User::USER_IMAGE_EXTERNAL,
-                        image_path);
+    SetOldUserImageInfo(
+        username, user_manager::User::USER_IMAGE_EXTERNAL, image_path);
   }
 
-  // Returns the image path for user |account_id| with specified |extension|.
-  base::FilePath GetUserImagePath(const AccountId& account_id,
+  // Returns the image path for user |username| with specified |extension|.
+  base::FilePath GetUserImagePath(const std::string& username,
                                   const std::string& extension) {
-    return user_data_dir_.Append(account_id.GetUserEmail())
-        .AddExtension(extension);
+    return user_data_dir_.Append(username).AddExtension(extension);
   }
 
   // Seeds the AccountTrackerService with test data so the ProfileDownloader can
   // retrieve the picture URL and fetch the image.
-  void SeedAccountTrackerService(const AccountId& account_id,
+  void SeedAccountTrackerService(const std::string& username,
                                  Profile* profile) {
     AccountInfo info;
     info.account_id = std::string();
-    info.gaia = account_id.GetUserEmail();
-    info.email = account_id.GetUserEmail();
-    info.full_name = account_id.GetUserEmail();
-    info.given_name = account_id.GetUserEmail();
+    info.gaia = username;
+    info.email = username;
+    info.full_name = username;
+    info.given_name = username;
     info.hosted_domain = std::string();
-    info.locale = account_id.GetUserEmail();
+    info.locale = username;
     info.picture_url = "http://localhost/avatar.jpg";
     info.is_child_account = false;
 
@@ -244,16 +239,16 @@ class UserImageManagerTest : public LoginManagerTest,
   }
 
   // Completes the download of all non-image profile data for the user
-  // |account_id|.  This method must only be called after a profile data
+  // |username|.  This method must only be called after a profile data
   // download has been started.  |url_fetcher_factory| will capture
   // the net::TestURLFetcher created by the ProfileDownloader to
   // download the profile image.
   void CompleteProfileMetadataDownload(
-      const AccountId& account_id,
+      const std::string& username,
       net::TestURLFetcherFactory* url_fetcher_factory) {
     ProfileDownloader* profile_downloader =
         reinterpret_cast<UserImageManagerImpl*>(
-            ChromeUserManager::Get()->GetUserImageManager(account_id))
+            ChromeUserManager::Get()->GetUserImageManager(username))
             ->profile_downloader_.get();
     ASSERT_TRUE(profile_downloader);
 
@@ -295,7 +290,7 @@ class UserImageManagerTest : public LoginManagerTest,
         user_manager::UserManager::Get()->GetLoggedInUser();
     ASSERT_TRUE(user);
     UserImageManagerImpl* uim = reinterpret_cast<UserImageManagerImpl*>(
-        ChromeUserManager::Get()->GetUserImageManager(user->GetAccountId()));
+        ChromeUserManager::Get()->GetUserImageManager(user->email()));
     if (uim->job_.get()) {
       run_loop_.reset(new base::RunLoop);
       run_loop_->Run();
@@ -311,10 +306,6 @@ class UserImageManagerTest : public LoginManagerTest,
 
   scoped_ptr<base::RunLoop> run_loop_;
 
-  const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
-  const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
-  const AccountId enterprise_account_id_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerTest);
 };
@@ -322,56 +313,49 @@ class UserImageManagerTest : public LoginManagerTest,
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_DefaultUserImagePreserved) {
   // Setup an old default (stock) user image.
   ScopedUserManagerEnabler(new MockUserManager);
-  SetOldUserImageInfo(test_account_id1_, user_manager::kFirstDefaultImageIndex,
-                      base::FilePath());
+  SetOldUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, DefaultUserImagePreserved) {
   user_manager::UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
-  ExpectOldUserImageInfo(test_account_id1_,
-                         user_manager::kFirstDefaultImageIndex,
-                         base::FilePath());
-  LogIn(test_account_id1_);
+  ExpectOldUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
+  LogIn(kTestUser1);
   // Image info is migrated now.
-  ExpectNewUserImageInfo(test_account_id1_,
-                         user_manager::kFirstDefaultImageIndex,
-                         base::FilePath());
+  ExpectNewUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_OtherUsersUnaffected) {
   // Setup two users with stock images.
   ScopedUserManagerEnabler(new MockUserManager);
-  SetOldUserImageInfo(test_account_id1_, user_manager::kFirstDefaultImageIndex,
-                      base::FilePath());
-  SetOldUserImageInfo(test_account_id2_,
-                      user_manager::kFirstDefaultImageIndex + 1,
-                      base::FilePath());
+  SetOldUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
+  SetOldUserImageInfo(
+      kTestUser2, user_manager::kFirstDefaultImageIndex + 1, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, OtherUsersUnaffected) {
   user_manager::UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
-  ExpectOldUserImageInfo(test_account_id1_,
-                         user_manager::kFirstDefaultImageIndex,
-                         base::FilePath());
-  ExpectOldUserImageInfo(test_account_id2_,
-                         user_manager::kFirstDefaultImageIndex + 1,
-                         base::FilePath());
-  LogIn(test_account_id1_);
+  ExpectOldUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
+  ExpectOldUserImageInfo(
+      kTestUser2, user_manager::kFirstDefaultImageIndex + 1, base::FilePath());
+  LogIn(kTestUser1);
   // Image info is migrated for the first user and unaffected for the rest.
-  ExpectNewUserImageInfo(test_account_id1_,
-                         user_manager::kFirstDefaultImageIndex,
-                         base::FilePath());
-  ExpectOldUserImageInfo(test_account_id2_,
-                         user_manager::kFirstDefaultImageIndex + 1,
-                         base::FilePath());
+  ExpectNewUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
+  ExpectOldUserImageInfo(
+      kTestUser2, user_manager::kFirstDefaultImageIndex + 1, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_PRE_NonJPEGImageFromFile) {
   // Setup a user with non-JPEG image.
   ScopedUserManagerEnabler(new MockUserManager);
-  SaveUserImagePNG(test_account_id1_,
+  SaveUserImagePNG(kTestUser1,
                    user_manager::kDefaultImageResourceIDs
                        [user_manager::kFirstDefaultImageIndex]);
 }
@@ -379,26 +363,26 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_PRE_NonJPEGImageFromFile) {
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
   user_manager::UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
-  ExpectOldUserImageInfo(test_account_id1_,
+  ExpectOldUserImageInfo(kTestUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(test_account_id1_, "png"));
+                         GetUserImagePath(kTestUser1, "png"));
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   EXPECT_TRUE(user->image_is_stub());
 
   base::RunLoop run_loop;
   PrefChangeRegistrar pref_change_registrar_;
   pref_change_registrar_.Init(local_state_);
   pref_change_registrar_.Add("UserImages", run_loop.QuitClosure());
-  LogIn(test_account_id1_);
+  LogIn(kTestUser1);
 
   // Wait for migration.
   run_loop.Run();
 
   // Image info is migrated and the image is converted to JPG.
-  ExpectNewUserImageInfo(test_account_id1_,
+  ExpectNewUserImageInfo(kTestUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(test_account_id1_, "jpg"));
+                         GetUserImagePath(kTestUser1, "jpg"));
   user = user_manager::UserManager::Get()->GetLoggedInUser();
   ASSERT_TRUE(user);
   EXPECT_FALSE(user->image_is_safe_format());
@@ -412,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, NonJPEGImageFromFile) {
   user_manager::UserManager::Get()->GetUsers();  // Load users.
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
   // Wait for image load.
   if (user->image_index() == user_manager::User::USER_IMAGE_INVALID) {
@@ -430,41 +414,40 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, NonJPEGImageFromFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserDefaultImageIndex) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(kTestUser1);
 }
 
 // Verifies that SaveUserDefaultImageIndex() correctly sets and persists the
 // chosen user image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserDefaultImageIndex) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   const gfx::ImageSkia& default_image =
       user_manager::GetDefaultImage(user_manager::kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::kFirstDefaultImageIndex, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectNewUserImageInfo(test_account_id1_,
-                         user_manager::kFirstDefaultImageIndex,
-                         base::FilePath());
+  ExpectNewUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserImage) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(kTestUser1);
 }
 
 // Verifies that SaveUserImage() correctly sets and persists the chosen user
 // image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   SkBitmap custom_image_bitmap;
@@ -476,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImage(
       user_manager::UserImage::CreateAndEncode(custom_image));
   run_loop_->Run();
@@ -484,12 +467,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(custom_image, user->GetImage()));
-  ExpectNewUserImageInfo(test_account_id1_,
+  ExpectNewUserImageInfo(kTestUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(test_account_id1_, "jpg"));
+                         GetUserImagePath(kTestUser1, "jpg"));
 
   const scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -498,14 +481,14 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserImageFromFile) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(kTestUser1);
 }
 
 // Verifies that SaveUserImageFromFile() correctly sets and persists the chosen
 // user image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   const base::FilePath custom_image_path =
@@ -516,19 +499,19 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImageFromFile(custom_image_path);
   run_loop_->Run();
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*custom_image, user->GetImage()));
-  ExpectNewUserImageInfo(test_account_id1_,
+  ExpectNewUserImageInfo(kTestUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(test_account_id1_, "jpg"));
+                         GetUserImagePath(kTestUser1, "jpg"));
 
   const scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -538,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
                        PRE_SaveUserImageFromProfileImage) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(kTestUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -546,22 +529,22 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 // persists the chosen user image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   UserImageManagerImpl::IgnoreProfileDataDownloadDelayForTesting();
-  LoginUser(test_account_id1_.GetUserEmail());
+  LoginUser(kTestUser1);
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-  SeedAccountTrackerService(test_account_id1_, profile);
+  SeedAccountTrackerService(kTestUser1, profile);
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
   net::TestURLFetcherFactory url_fetcher_factory;
-  CompleteProfileMetadataDownload(test_account_id1_, &url_fetcher_factory);
+  CompleteProfileMetadataDownload(kTestUser1, &url_fetcher_factory);
   CompleteProfileImageDownload(&url_fetcher_factory);
 
   const gfx::ImageSkia& profile_image =
@@ -570,12 +553,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_PROFILE, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(profile_image, user->GetImage()));
-  ExpectNewUserImageInfo(test_account_id1_,
+  ExpectNewUserImageInfo(kTestUser1,
                          user_manager::User::USER_IMAGE_PROFILE,
-                         GetUserImagePath(test_account_id1_, "jpg"));
+                         GetUserImagePath(kTestUser1, "jpg"));
 
   const scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(test_account_id1_, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kTestUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -585,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
                        PRE_ProfileImageDownloadDoesNotClobber) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(kTestUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -596,25 +579,25 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
                        ProfileImageDownloadDoesNotClobber) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
+      user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
 
   const gfx::ImageSkia& default_image =
       user_manager::GetDefaultImage(user_manager::kFirstDefaultImageIndex);
 
   UserImageManagerImpl::IgnoreProfileDataDownloadDelayForTesting();
-  LoginUser(test_account_id1_.GetUserEmail());
+  LoginUser(kTestUser1);
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-  SeedAccountTrackerService(test_account_id1_, profile);
+  SeedAccountTrackerService(kTestUser1, profile);
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
+      ChromeUserManager::Get()->GetUserImageManager(kTestUser1);
   user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
   net::TestURLFetcherFactory url_fetcher_factory;
-  CompleteProfileMetadataDownload(test_account_id1_, &url_fetcher_factory);
+  CompleteProfileMetadataDownload(kTestUser1, &url_fetcher_factory);
 
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
@@ -624,9 +607,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::kFirstDefaultImageIndex, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectNewUserImageInfo(test_account_id1_,
-                         user_manager::kFirstDefaultImageIndex,
-                         base::FilePath());
+  ExpectNewUserImageInfo(
+      kTestUser1, user_manager::kFirstDefaultImageIndex, base::FilePath());
 }
 
 class UserImageManagerPolicyTest : public UserImageManagerTest,
@@ -650,8 +632,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
                                  &user_keys_dir));
     const std::string sanitized_username =
-        chromeos::CryptohomeClient::GetStubSanitizedUsername(
-            enterprise_account_id_.GetUserEmail());
+        chromeos::CryptohomeClient::GetStubSanitizedUsername(kEnterpriseUser1);
     const base::FilePath user_key_file =
         user_keys_dir.AppendASCII(sanitized_username)
                      .AppendASCII("policy.pub");
@@ -663,8 +644,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
                   reinterpret_cast<const char*>(user_key_bits.data()),
                   user_key_bits.size()),
               static_cast<int>(user_key_bits.size()));
-    user_policy_.policy_data().set_username(
-        enterprise_account_id_.GetUserEmail());
+    user_policy_.policy_data().set_username(kEnterpriseUser1);
 
     policy_image_ = test::ImageLoader(test_data_dir_.Append(
         test::kUserAvatarImage2RelativePath)).Load();
@@ -708,7 +688,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
 };
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_SetAndClear) {
-  RegisterUser(enterprise_account_id_.GetUserEmail());
+  RegisterUser(kEnterpriseUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -718,10 +698,10 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_SetAndClear) {
 // http://crbug.com/396352
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(enterprise_account_id_);
+      user_manager::UserManager::Get()->FindUser(kEnterpriseUser1);
   ASSERT_TRUE(user);
 
-  LoginUser(enterprise_account_id_.GetUserEmail());
+  LoginUser(kEnterpriseUser1);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -732,8 +712,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -741,12 +721,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(enterprise_account_id_,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(enterprise_account_id_, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
   scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -757,8 +737,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   // image.
   user_policy_.payload().Clear();
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->AddObserver(this);
   store->Load();
@@ -775,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   const gfx::ImageSkia& default_image =
       user_manager::GetDefaultImage(default_image_index);
   EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectNewUserImageInfo(enterprise_account_id_, default_image_index,
+  ExpectNewUserImageInfo(kEnterpriseUser1, default_image_index,
                          base::FilePath());
 
   // Choose a different user image. Verify that the chosen user image is set and
@@ -788,18 +768,17 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
       user_manager::GetDefaultImage(user_image_index);
 
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(enterprise_account_id_);
+      ChromeUserManager::Get()->GetUserImageManager(kEnterpriseUser1);
   user_image_manager->SaveUserDefaultImageIndex(user_image_index);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(user_image_index, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(user_image, user->GetImage()));
-  ExpectNewUserImageInfo(enterprise_account_id_, user_image_index,
-                         base::FilePath());
+  ExpectNewUserImageInfo(kEnterpriseUser1, user_image_index, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_PolicyOverridesUser) {
-  RegisterUser(enterprise_account_id_.GetUserEmail());
+  RegisterUser(kEnterpriseUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -808,10 +787,10 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_PolicyOverridesUser) {
 // previously chosen image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(enterprise_account_id_);
+      user_manager::UserManager::Get()->FindUser(kEnterpriseUser1);
   ASSERT_TRUE(user);
 
-  LoginUser(enterprise_account_id_.GetUserEmail());
+  LoginUser(kEnterpriseUser1);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -823,14 +802,14 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
       user_manager::GetDefaultImage(user_manager::kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(enterprise_account_id_);
+      ChromeUserManager::Get()->GetUserImageManager(kEnterpriseUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::kFirstDefaultImageIndex, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectNewUserImageInfo(enterprise_account_id_,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::kFirstDefaultImageIndex,
                          base::FilePath());
 
@@ -839,8 +818,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -848,12 +827,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(enterprise_account_id_,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(enterprise_account_id_, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
   scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -863,7 +842,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest,
                        PRE_UserDoesNotOverridePolicy) {
-  RegisterUser(enterprise_account_id_.GetUserEmail());
+  RegisterUser(kEnterpriseUser1);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -872,10 +851,10 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest,
 // from overriding the previously chosen image.
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(enterprise_account_id_);
+      user_manager::UserManager::Get()->FindUser(kEnterpriseUser1);
   ASSERT_TRUE(user);
 
-  LoginUser(enterprise_account_id_.GetUserEmail());
+  LoginUser(kEnterpriseUser1);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -886,8 +865,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(kEnterpriseUser1,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -895,12 +874,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(enterprise_account_id_,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(enterprise_account_id_, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
   scoped_ptr<gfx::ImageSkia> saved_image =
-      test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.
@@ -910,19 +889,19 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   // Choose a different user image. Verify that the user image does not change
   // as policy takes precedence.
   UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(enterprise_account_id_);
+      ChromeUserManager::Get()->GetUserImageManager(kEnterpriseUser1);
   user_image_manager->SaveUserDefaultImageIndex(
       user_manager::kFirstDefaultImageIndex);
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
   EXPECT_TRUE(test::AreImagesEqual(*policy_image_, user->GetImage()));
-  ExpectNewUserImageInfo(enterprise_account_id_,
+  ExpectNewUserImageInfo(kEnterpriseUser1,
                          user_manager::User::USER_IMAGE_EXTERNAL,
-                         GetUserImagePath(enterprise_account_id_, "jpg"));
+                         GetUserImagePath(kEnterpriseUser1, "jpg"));
 
   saved_image =
-      test::ImageLoader(GetUserImagePath(enterprise_account_id_, "jpg")).Load();
+      test::ImageLoader(GetUserImagePath(kEnterpriseUser1, "jpg")).Load();
   ASSERT_TRUE(saved_image);
 
   // Check image dimensions. Images can't be compared since JPEG is lossy.

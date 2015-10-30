@@ -20,23 +20,24 @@ class FakeSupervisedUserManager;
 FakeChromeUserManager::FakeChromeUserManager()
     : supervised_user_manager_(new FakeSupervisedUserManager),
       bootstrap_manager_(NULL),
-      multi_profile_user_controller_(NULL) {}
+      multi_profile_user_controller_(NULL) {
+}
 
 FakeChromeUserManager::~FakeChromeUserManager() {
 }
 
 const user_manager::User* FakeChromeUserManager::AddUser(
-    const AccountId& account_id) {
-  return AddUserWithAffiliation(account_id, false);
+    const std::string& email) {
+  return AddUserWithAffiliation(email, false);
 }
 
 const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
-    const AccountId& account_id,
+    const std::string& email,
     bool is_affiliated) {
-  user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
+  user_manager::User* user = user_manager::User::CreateRegularUser(email);
   user->set_affiliation(is_affiliated);
-  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
-      account_id.GetUserEmail()));
+  user->set_username_hash(
+      ProfileHelper::GetUserIdHashByUserIdForTesting(email));
   user->SetStubImage(user_manager::UserImage(
                          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                              IDR_PROFILE_PICTURE_LOADING)),
@@ -46,11 +47,10 @@ const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
 }
 
 const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
-    const AccountId& account_id) {
-  user_manager::User* user =
-      user_manager::User::CreatePublicAccountUser(account_id);
-  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
-      account_id.GetUserEmail()));
+    const std::string& email) {
+  user_manager::User* user = user_manager::User::CreatePublicAccountUser(email);
+  user->set_username_hash(
+      ProfileHelper::GetUserIdHashByUserIdForTesting(email));
   user->SetStubImage(user_manager::UserImage(
                          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                              IDR_PROFILE_PICTURE_LOADING)),
@@ -60,17 +60,16 @@ const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
 }
 
 void FakeChromeUserManager::AddKioskAppUser(
-    const AccountId& kiosk_app_account_id) {
+    const std::string& kiosk_app_username) {
   user_manager::User* user =
-      user_manager::User::CreateKioskAppUser(kiosk_app_account_id);
-  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
-      kiosk_app_account_id.GetUserEmail()));
+      user_manager::User::CreateKioskAppUser(kiosk_app_username);
+  user->set_username_hash(
+      ProfileHelper::GetUserIdHashByUserIdForTesting(kiosk_app_username));
   users_.push_back(user);
 }
 
-void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
-  UserLoggedIn(account_id, ProfileHelper::GetUserIdHashByUserIdForTesting(
-                               account_id.GetUserEmail()),
+void FakeChromeUserManager::LoginUser(const std::string& email) {
+  UserLoggedIn(email, ProfileHelper::GetUserIdHashByUserIdForTesting(email),
                false /* browser_restart */);
 }
 
@@ -88,59 +87,58 @@ SupervisedUserManager* FakeChromeUserManager::GetSupervisedUserManager() {
 }
 
 UserImageManager* FakeChromeUserManager::GetUserImageManager(
-    const AccountId& /* account_id */) {
+    const std::string& /* user_id */) {
   return nullptr;
 }
 
-void FakeChromeUserManager::SetUserFlow(const AccountId& account_id,
+void FakeChromeUserManager::SetUserFlow(const std::string& email,
                                         UserFlow* flow) {
-  ResetUserFlow(account_id);
-  specific_flows_[account_id] = flow;
+  ResetUserFlow(email);
+  specific_flows_[email] = flow;
 }
 
 UserFlow* FakeChromeUserManager::GetCurrentUserFlow() const {
   if (!IsUserLoggedIn())
     return GetDefaultUserFlow();
-  return GetUserFlow(GetLoggedInUser()->GetAccountId());
+  return GetUserFlow(GetLoggedInUser()->email());
 }
 
-UserFlow* FakeChromeUserManager::GetUserFlow(
-    const AccountId& account_id) const {
-  FlowMap::const_iterator it = specific_flows_.find(account_id);
+UserFlow* FakeChromeUserManager::GetUserFlow(const std::string& email) const {
+  FlowMap::const_iterator it = specific_flows_.find(email);
   if (it != specific_flows_.end())
     return it->second;
   return GetDefaultUserFlow();
 }
 
-void FakeChromeUserManager::ResetUserFlow(const AccountId& account_id) {
-  FlowMap::iterator it = specific_flows_.find(account_id);
+void FakeChromeUserManager::ResetUserFlow(const std::string& email) {
+  FlowMap::iterator it = specific_flows_.find(email);
   if (it != specific_flows_.end()) {
     delete it->second;
     specific_flows_.erase(it);
   }
 }
 
-void FakeChromeUserManager::SwitchActiveUser(const AccountId& account_id) {
-  active_account_id_ = account_id;
+void FakeChromeUserManager::SwitchActiveUser(const std::string& email) {
+  active_user_id_ = email;
   ProfileHelper::Get()->ActiveUserHashChanged(
-      ProfileHelper::GetUserIdHashByUserIdForTesting(
-          account_id.GetUserEmail()));
-  if (!users_.empty() && active_account_id_.is_valid()) {
+      ProfileHelper::GetUserIdHashByUserIdForTesting(email));
+  if (!users_.empty() && !active_user_id_.empty()) {
     for (user_manager::User* user : users_)
-      user->set_is_active(user->GetAccountId() == active_account_id_);
+      user->set_is_active(user->email() == active_user_id_);
   }
 }
 
-const AccountId& FakeChromeUserManager::GetOwnerAccountId() const {
-  return owner_account_id_;
+const std::string& FakeChromeUserManager::GetOwnerEmail() const {
+  return owner_email_;
 }
 
 void FakeChromeUserManager::SessionStarted() {
 }
 
 void FakeChromeUserManager::RemoveUser(
-    const AccountId& account_id,
-    user_manager::RemoveUserDelegate* delegate) {}
+    const std::string& email,
+    user_manager::RemoveUserDelegate* delegate) {
+}
 
 user_manager::UserList
 FakeChromeUserManager::GetUsersAllowedForSupervisedUsersCreation() const {
@@ -183,14 +181,15 @@ UserFlow* FakeChromeUserManager::GetDefaultUserFlow() const {
 }
 
 bool FakeChromeUserManager::FindKnownUserPrefs(
-    const AccountId& account_id,
+    const user_manager::UserID& user_id,
     const base::DictionaryValue** out_value) {
   return false;
 }
 
 void FakeChromeUserManager::UpdateKnownUserPrefs(
-    const AccountId& account_id,
+    const user_manager::UserID& user_id,
     const base::DictionaryValue& values,
-    bool clear) {}
+    bool clear) {
+}
 
 }  // namespace chromeos

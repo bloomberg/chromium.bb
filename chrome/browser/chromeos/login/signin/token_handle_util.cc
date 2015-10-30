@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/user_manager/user_id.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
@@ -34,20 +35,20 @@ TokenHandleUtil::~TokenHandleUtil() {
   gaia_client_.reset();
 }
 
-bool TokenHandleUtil::HasToken(const AccountId& account_id) {
+bool TokenHandleUtil::HasToken(const user_manager::UserID& user_id) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict))
+  if (!user_manager_->FindKnownUserPrefs(user_id, &dict))
     return false;
   if (!dict->GetString(kTokenHandlePref, &token))
     return false;
   return !token.empty();
 }
 
-bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
+bool TokenHandleUtil::ShouldObtainHandle(const user_manager::UserID& user_id) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict))
+  if (!user_manager_->FindKnownUserPrefs(user_id, &dict))
     return true;
   if (!dict->GetString(kTokenHandlePref, &token))
     return true;
@@ -58,32 +59,32 @@ bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
   return kHandleStatusInvalid == status;
 }
 
-void TokenHandleUtil::DeleteHandle(const AccountId& account_id) {
+void TokenHandleUtil::DeleteHandle(const user_manager::UserID& user_id) {
   const base::DictionaryValue* dict = nullptr;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict))
+  if (!user_manager_->FindKnownUserPrefs(user_id, &dict))
     return;
   scoped_ptr<base::DictionaryValue> dict_copy(dict->DeepCopy());
   dict_copy->Remove(kTokenHandlePref, nullptr);
   dict_copy->Remove(kTokenHandleStatusPref, nullptr);
-  user_manager_->UpdateKnownUserPrefs(account_id, *dict_copy.get(),
+  user_manager_->UpdateKnownUserPrefs(user_id, *dict_copy.get(),
                                       /* replace values */ true);
 }
 
-void TokenHandleUtil::MarkHandleInvalid(const AccountId& account_id) {
-  user_manager_->SetKnownUserStringPref(account_id, kTokenHandleStatusPref,
+void TokenHandleUtil::MarkHandleInvalid(const user_manager::UserID& user_id) {
+  user_manager_->SetKnownUserStringPref(user_id, kTokenHandleStatusPref,
                                         kHandleStatusInvalid);
 }
 
-void TokenHandleUtil::CheckToken(const AccountId& account_id,
+void TokenHandleUtil::CheckToken(const user_manager::UserID& user_id,
                                  const TokenValidationCallback& callback) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
-  if (!user_manager_->FindKnownUserPrefs(account_id, &dict)) {
-    callback.Run(account_id, UNKNOWN);
+  if (!user_manager_->FindKnownUserPrefs(user_id, &dict)) {
+    callback.Run(user_id, UNKNOWN);
     return;
   }
   if (!dict->GetString(kTokenHandlePref, &token)) {
-    callback.Run(account_id, UNKNOWN);
+    callback.Run(user_id, UNKNOWN);
     return;
   }
 
@@ -95,15 +96,15 @@ void TokenHandleUtil::CheckToken(const AccountId& account_id,
 
   validation_delegates_.set(
       token, scoped_ptr<TokenDelegate>(new TokenDelegate(
-                 weak_factory_.GetWeakPtr(), account_id, token, callback)));
+                 weak_factory_.GetWeakPtr(), user_id, token, callback)));
   gaia_client_->GetTokenHandleInfo(token, kMaxRetries,
                                    validation_delegates_.get(token));
 }
 
-void TokenHandleUtil::StoreTokenHandle(const AccountId& account_id,
+void TokenHandleUtil::StoreTokenHandle(const user_manager::UserID& user_id,
                                        const std::string& handle) {
-  user_manager_->SetKnownUserStringPref(account_id, kTokenHandlePref, handle);
-  user_manager_->SetKnownUserStringPref(account_id, kTokenHandleStatusPref,
+  user_manager_->SetKnownUserStringPref(user_id, kTokenHandlePref, handle);
+  user_manager_->SetKnownUserStringPref(user_id, kTokenHandleStatusPref,
                                         kHandleStatusValid);
 }
 
@@ -111,26 +112,28 @@ void TokenHandleUtil::OnValidationComplete(const std::string& token) {
   validation_delegates_.erase(token);
 }
 
-void TokenHandleUtil::OnObtainTokenComplete(const AccountId& account_id) {
-  obtain_delegates_.erase(account_id);
+void TokenHandleUtil::OnObtainTokenComplete(
+    const user_manager::UserID& user_id) {
+  obtain_delegates_.erase(user_id);
 }
 
 TokenHandleUtil::TokenDelegate::TokenDelegate(
     const base::WeakPtr<TokenHandleUtil>& owner,
-    const AccountId& account_id,
+    const user_manager::UserID& user_id,
     const std::string& token,
     const TokenValidationCallback& callback)
     : owner_(owner),
-      account_id_(account_id),
+      user_id_(user_id),
       token_(token),
       tokeninfo_response_start_time_(base::TimeTicks::Now()),
-      callback_(callback) {}
+      callback_(callback) {
+}
 
 TokenHandleUtil::TokenDelegate::~TokenDelegate() {
 }
 
 void TokenHandleUtil::TokenDelegate::OnOAuthError() {
-  callback_.Run(account_id_, INVALID);
+  callback_.Run(user_id_, INVALID);
   NotifyDone();
 }
 
@@ -141,7 +144,7 @@ void TokenHandleUtil::TokenDelegate::NotifyDone() {
 }
 
 void TokenHandleUtil::TokenDelegate::OnNetworkError(int response_code) {
-  callback_.Run(account_id_, UNKNOWN);
+  callback_.Run(user_id_, UNKNOWN);
   NotifyDone();
 }
 
@@ -157,6 +160,6 @@ void TokenHandleUtil::TokenDelegate::OnGetTokenInfoResponse(
   const base::TimeDelta duration =
       base::TimeTicks::Now() - tokeninfo_response_start_time_;
   UMA_HISTOGRAM_TIMES("Login.TokenCheckResponseTime", duration);
-  callback_.Run(account_id_, outcome);
+  callback_.Run(user_id_, outcome);
   NotifyDone();
 }

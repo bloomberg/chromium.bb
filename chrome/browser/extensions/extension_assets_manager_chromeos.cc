@@ -287,8 +287,7 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
     return;
   }
 
-  if (user_manager->IsUserNonCryptohomeDataEphemeral(
-          AccountId::FromUserEmail(user_id)) ||
+  if (user_manager->IsUserNonCryptohomeDataEphemeral(user_id) ||
       !user_manager->IsLoggedInAsUserWithGaiaAccount()) {
     // Don't cache anything in shared location for ephemeral user or special
     // user types.
@@ -531,8 +530,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
         NOTREACHED();
         return false;
       }
-      const user_manager::User* user =
-          user_manager->FindUser(AccountId::FromUserEmail(user_id));
+      const user_manager::User* user = user_manager->FindUser(user_id);
       bool not_used = false;
       if (!user) {
         not_used = true;

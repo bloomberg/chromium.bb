@@ -37,9 +37,6 @@ class AccountsOptionsTest : public LoginManagerTest {
     : LoginManagerTest(false),
       device_settings_provider_(NULL) {
     stub_settings_provider_.Set(kDeviceOwner, base::StringValue(kTestUsers[0]));
-    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
-      test_users_.push_back(AccountId::FromUserEmail(kTestUsers[i]));
-    }
   }
 
   ~AccountsOptionsTest() override {}
@@ -120,29 +117,28 @@ class AccountsOptionsTest : public LoginManagerTest {
 
   StubCrosSettingsProvider stub_settings_provider_;
   CrosSettingsProvider* device_settings_provider_;
-  std::vector<AccountId> test_users_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsOptionsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AccountsOptionsTest, PRE_MultiProfilesAccountsOptions) {
-  RegisterUser(test_users_[0].GetUserEmail());
-  RegisterUser(test_users_[1].GetUserEmail());
+  RegisterUser(kTestUsers[0]);
+  RegisterUser(kTestUsers[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(AccountsOptionsTest, MultiProfilesAccountsOptions) {
-  LoginUser(test_users_[0].GetUserEmail());
+  LoginUser(kTestUsers[0]);
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(test_users_[1].GetUserEmail());
+  AddUser(kTestUsers[1]);
 
   user_manager::UserManager* manager = user_manager::UserManager::Get();
   ASSERT_EQ(2u, manager->GetLoggedInUsers().size());
 
-  CheckAccountsUI(manager->FindUser(test_users_[0]), true /* is_owner */);
-  CheckAccountsUI(manager->FindUser(test_users_[1]), false /* is_owner */);
+  CheckAccountsUI(manager->FindUser(kTestUsers[0]), true /* is_owner */);
+  CheckAccountsUI(manager->FindUser(kTestUsers[1]), false /* is_owner */);
 }
 
 }  // namespace chromeos

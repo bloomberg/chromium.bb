@@ -88,7 +88,7 @@ void LoadDataForUser(
   DCHECK(key_manager);
 
   key_manager->GetDeviceDataList(
-      chromeos::UserContext(AccountId::FromUserEmail(user_id)),
+      chromeos::UserContext(user_id),
       base::Bind(&RetryDataLoadOnError, user_id, backoff_ms, callback));
 }
 

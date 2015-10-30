@@ -265,10 +265,9 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
     user_manager_enabler_.reset(
         new chromeos::ScopedUserManagerEnabler(fake_user_manager_));
 
-    const AccountId kiosk_app_account_id =
-        AccountId::FromUserEmail("kiosk@foobar.com");
-    fake_user_manager_->AddKioskAppUser(kiosk_app_account_id);
-    fake_user_manager_->LoginUser(kiosk_app_account_id);
+    const std::string kKioskLogin = "kiosk@foobar.com";
+    fake_user_manager_->AddKioskAppUser(kKioskLogin);
+    fake_user_manager_->LoginUser(kKioskLogin);
   }
 };
 

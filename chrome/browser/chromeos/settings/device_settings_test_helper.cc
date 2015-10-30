@@ -246,12 +246,12 @@ void DeviceSettingsTestBase::ReloadDeviceSettings() {
   FlushDeviceSettings();
 }
 
-void DeviceSettingsTestBase::InitOwner(const AccountId& account_id,
+void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
                                        bool tpm_is_ready) {
-  const user_manager::User* user = user_manager_->FindUser(account_id);
+  const user_manager::User* user = user_manager_->FindUser(user_id);
   if (!user) {
-    user = user_manager_->AddUser(account_id);
-    profile_->set_profile_name(account_id.GetUserEmail());
+    user = user_manager_->AddUser(user_id);
+    profile_->set_profile_name(user_id);
 
     ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                             profile_.get());

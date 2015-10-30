@@ -27,7 +27,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -288,8 +287,7 @@ void SupervisedUserCreationControllerNew::OnMountSuccess(
           std::string(),  // The salt is stored elsewhere.
           creation_context_->salted_master_key);
   key.SetLabel(kCryptohomeMasterKeyLabel);
-  UserContext context(
-      AccountId::FromUserEmail(creation_context_->local_user_id));
+  UserContext context(creation_context_->local_user_id);
   context.SetKey(key);
   context.SetIsUsingOAuth(false);
 
@@ -383,7 +381,7 @@ void SupervisedUserCreationControllerNew::OnSupervisedUserFilesStored(
   // Assume that new token is valid. It will be automatically invalidated if
   // sync service fails to use it.
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      AccountId::FromUserEmail(creation_context_->local_user_id),
+      creation_context_->local_user_id,
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
   stage_ = TOKEN_WRITTEN;

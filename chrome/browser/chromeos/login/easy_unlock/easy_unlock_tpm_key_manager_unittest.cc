@@ -202,8 +202,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
-    const user_manager::User* user =
-        user_manager_->AddUser(AccountId::FromUserEmail(kTestUserId));
+    const user_manager::User* user = user_manager_->AddUser(kTestUserId);
     username_hash_ = user->username_hash();
 
     signin_profile_ = profile_manager_.CreateTestingProfile(

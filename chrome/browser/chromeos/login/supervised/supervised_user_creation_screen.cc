@@ -223,15 +223,14 @@ void SupervisedUserCreationScreen::AuthenticateManager(
   manager_signin_in_progress_ = true;
 
   UserFlow* flow = new SupervisedUserCreationFlow(manager_id);
-  ChromeUserManager::Get()->SetUserFlow(AccountId::FromUserEmail(manager_id),
-                                        flow);
+  ChromeUserManager::Get()->SetUserFlow(manager_id, flow);
 
   // Make sure no two controllers exist at the same time.
   controller_.reset();
 
   controller_.reset(new SupervisedUserCreationControllerNew(this, manager_id));
 
-  UserContext user_context(AccountId::FromUserEmail(manager_id));
+  UserContext user_context(manager_id);
   user_context.SetKey(Key(manager_password));
   ExistingUserController::current_controller()->Login(user_context,
                                                       SigninSpecifics());
@@ -485,8 +484,7 @@ bool SupervisedUserCreationScreen::FindUserByDisplayName(
 void SupervisedUserCreationScreen::ApplyPicture() {
   std::string user_id = controller_->GetSupervisedUserId();
   UserImageManager* image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(
-          AccountId::FromUserEmail(user_id));
+      ChromeUserManager::Get()->GetUserImageManager(user_id);
   switch (selected_image_) {
     case user_manager::User::USER_IMAGE_EXTERNAL:
       // Photo decoding may not have been finished yet.

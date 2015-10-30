@@ -170,7 +170,7 @@ class DeviceSettingsTestBase : public testing::Test {
   // |device_settings_service_| and flushes the resulting load operation.
   void ReloadDeviceSettings();
 
-  void InitOwner(const AccountId& account_id, bool tpm_is_ready);
+  void InitOwner(const std::string& user_id, bool tpm_is_ready);
 
   content::TestBrowserThreadBundle thread_bundle_;
 

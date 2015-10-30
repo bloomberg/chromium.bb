@@ -272,8 +272,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, LoginStatus) {
   EXPECT_EQ(ash::user::LOGGED_IN_NONE, GetLoginStatus());
 
   user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+      "owner@invalid.domain", "owner@invalid.domain", true);
   user_manager::UserManager::Get()->SessionStarted();
 
   EXPECT_EQ(ash::user::LOGGED_IN_USER, GetLoginStatus());
@@ -286,8 +285,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   EXPECT_FALSE(IsTrayIconVisible());
 
   user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+      "owner@invalid.domain", "owner@invalid.domain", true);
   user_manager::UserManager::Get()->SessionStarted();
 
   // Confirms that the icon is invisible just after login.
@@ -352,8 +350,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   // Login
   user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+      "owner@invalid.domain", "owner@invalid.domain", true);
   user_manager::UserManager::Get()->SessionStarted();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(false);
@@ -421,8 +418,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   // Login
   user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
-      true);
+      "owner@invalid.domain", "owner@invalid.domain", true);
   user_manager::UserManager::Get()->SessionStarted();
 
   SetShowAccessibilityOptionsInSystemTrayMenu(true);

@@ -222,7 +222,7 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
 
 Profile* AffiliatedInvalidationServiceProviderImplTest::LogInAndReturnProfile(
     const std::string& user_id) {
-  fake_user_manager_->AddUser(AccountId::FromUserEmail(user_id));
+  fake_user_manager_->AddUser(user_id);
   Profile* profile = profile_manager_.CreateTestingProfile(user_id);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,

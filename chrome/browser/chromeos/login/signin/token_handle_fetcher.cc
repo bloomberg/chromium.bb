@@ -42,10 +42,15 @@ class ShutdownNotifierFactory
 }  // namespace
 
 TokenHandleFetcher::TokenHandleFetcher(TokenHandleUtil* util,
-                                       const AccountId& account_id)
+                                       const user_manager::UserID& user_id)
     : OAuth2TokenService::Consumer("user_session_manager"),
       token_handle_util_(util),
-      account_id_(account_id) {}
+      user_id_(user_id),
+      token_service_(nullptr),
+      waiting_for_refresh_token_(false),
+      profile_(nullptr),
+      tokeninfo_response_start_time_(base::TimeTicks()) {
+}
 
 TokenHandleFetcher::~TokenHandleFetcher() {
   if (waiting_for_refresh_token_)
@@ -60,9 +65,9 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-  const std::string user_email = signin_manager->GetAuthenticatedAccountId();
-  if (!token_service_->RefreshTokenIsAvailable(user_email)) {
-    account_without_token_ = user_email;
+  std::string account_id = signin_manager->GetAuthenticatedAccountId();
+  if (!token_service_->RefreshTokenIsAvailable(account_id)) {
+    account_without_token_ = account_id;
     profile_shutdown_notification_ =
         ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
             base::Bind(&TokenHandleFetcher::OnProfileDestroyed,
@@ -72,23 +77,23 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
     waiting_for_refresh_token_ = true;
     return;
   }
-  RequestAccessToken(user_email);
+  RequestAccessToken(account_id);
 }
 
 void TokenHandleFetcher::OnRefreshTokenAvailable(
-    const std::string& user_email) {
-  if (account_without_token_ != user_email)
+    const std::string& account_id) {
+  if (account_without_token_ != account_id)
     return;
   waiting_for_refresh_token_ = false;
   token_service_->RemoveObserver(this);
-  RequestAccessToken(user_email);
+  RequestAccessToken(account_id);
 }
 
-void TokenHandleFetcher::RequestAccessToken(const std::string& user_email) {
+void TokenHandleFetcher::RequestAccessToken(const std::string& account_id) {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
   oauth2_access_token_request_ =
-      token_service_->StartRequest(user_email, scopes, this);
+      token_service_->StartRequest(account_id, scopes, this);
 }
 
 void TokenHandleFetcher::OnGetTokenSuccess(
@@ -105,7 +110,7 @@ void TokenHandleFetcher::OnGetTokenFailure(
   oauth2_access_token_request_.reset();
   LOG(ERROR) << "Could not get access token to backfill token handler"
              << error.ToString();
-  callback_.Run(account_id_, false);
+  callback_.Run(user_id_, false);
 }
 
 void TokenHandleFetcher::FillForNewUser(const std::string& access_token,
@@ -124,11 +129,11 @@ void TokenHandleFetcher::FillForAccessToken(const std::string& access_token) {
 }
 
 void TokenHandleFetcher::OnOAuthError() {
-  callback_.Run(account_id_, false);
+  callback_.Run(user_id_, false);
 }
 
 void TokenHandleFetcher::OnNetworkError(int response_code) {
-  callback_.Run(account_id_, false);
+  callback_.Run(user_id_, false);
 }
 
 void TokenHandleFetcher::OnGetTokenInfoResponse(
@@ -138,15 +143,15 @@ void TokenHandleFetcher::OnGetTokenInfoResponse(
     std::string handle;
     if (token_info->GetString("token_handle", &handle)) {
       success = true;
-      token_handle_util_->StoreTokenHandle(account_id_, handle);
+      token_handle_util_->StoreTokenHandle(user_id_, handle);
     }
   }
   const base::TimeDelta duration =
       base::TimeTicks::Now() - tokeninfo_response_start_time_;
   UMA_HISTOGRAM_TIMES("Login.TokenObtainResponseTime", duration);
-  callback_.Run(account_id_, success);
+  callback_.Run(user_id_, success);
 }
 
 void TokenHandleFetcher::OnProfileDestroyed() {
-  callback_.Run(account_id_, false);
+  callback_.Run(user_id_, false);
 }

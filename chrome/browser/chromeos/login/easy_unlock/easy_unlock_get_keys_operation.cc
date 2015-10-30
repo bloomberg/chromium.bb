@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -33,8 +32,8 @@ void EasyUnlockGetKeysOperation::Start() {
 }
 
 void EasyUnlockGetKeysOperation::GetKeyData() {
-  const std::string canonicalized =
-      gaia::CanonicalizeEmail(user_context_.GetAccountId().GetUserEmail());
+  std::string canonicalized =
+      gaia::CanonicalizeEmail(user_context_.GetUserID());
   cryptohome::Identification id(canonicalized);
   cryptohome::HomedirMethods::GetInstance()->GetKeyDataEx(
       id,

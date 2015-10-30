@@ -129,8 +129,7 @@ void AccountsOptionsHandler::HandleUnwhitelistUser(
           OwnerSettingsServiceChromeOS::FromWebUI(web_ui())) {
     service->RemoveFromList(kAccountsPrefUsers, canonical_email);
   }
-  user_manager::UserManager::Get()->RemoveUser(AccountId::FromUserEmail(email),
-                                               nullptr);
+  user_manager::UserManager::Get()->RemoveUser(email, NULL);
 }
 
 void AccountsOptionsHandler::HandleUpdateWhitelist(

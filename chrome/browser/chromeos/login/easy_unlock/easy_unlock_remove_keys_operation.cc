@@ -47,8 +47,8 @@ void EasyUnlockRemoveKeysOperation::OnGetSystemSalt(
 }
 
 void EasyUnlockRemoveKeysOperation::RemoveKey() {
-  const std::string canonicalized =
-      gaia::CanonicalizeEmail(user_context_.GetAccountId().GetUserEmail());
+  std::string canonicalized =
+      gaia::CanonicalizeEmail(user_context_.GetUserID());
   cryptohome::Identification id(canonicalized);
   const Key* const auth_key = user_context_.GetKey();
   cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());

@@ -149,7 +149,7 @@ std::string SupervisedUserManagerImpl::GenerateUserId() {
     id = base::StringPrintf(
         "%d@%s", counter, chromeos::login::kSupervisedUserDomain);
     counter++;
-    user_exists = (nullptr != owner_->FindUser(AccountId::FromUserEmail(id)));
+    user_exists = (NULL != owner_->FindUser(id));
     DCHECK(!user_exists);
     if (user_exists) {
       LOG(ERROR) << "Supervised user with id " << id << " already exists.";
@@ -186,14 +186,13 @@ const user_manager::User* SupervisedUserManagerImpl::CreateUserRecord(
   DCHECK(!user);
   if (user)
     return user;
-  const user_manager::User* manager =
-      owner_->FindUser(AccountId::FromUserEmail(manager_id));
+  const user_manager::User* manager = owner_->FindUser(manager_id);
   CHECK(manager);
 
   PrefService* local_state = g_browser_process->local_state();
 
-  user_manager::User* new_user = user_manager::User::CreateSupervisedUser(
-      AccountId::FromUserEmail(local_user_id));
+  user_manager::User* new_user =
+      user_manager::User::CreateSupervisedUser(local_user_id);
 
   owner_->AddUserRecord(new_user);
 
@@ -218,8 +217,7 @@ const user_manager::User* SupervisedUserManagerImpl::CreateUserRecord(
   manager_email_update->SetWithoutPathExpansion(local_user_id,
       new base::StringValue(manager->display_email()));
 
-  owner_->SaveUserDisplayName(AccountId::FromUserEmail(local_user_id),
-                              display_name);
+  owner_->SaveUserDisplayName(local_user_id, display_name);
 
   g_browser_process->local_state()->CommitPendingWrite();
   return new_user;
@@ -444,8 +442,7 @@ void SupervisedUserManagerImpl::RollbackUserCreationTransaction() {
     prefs->CommitPendingWrite();
     return;
   }
-  owner_->RemoveNonOwnerUserInternal(AccountId::FromUserEmail(user_id),
-                                     nullptr);
+  owner_->RemoveNonOwnerUserInternal(user_id, NULL);
 
   prefs->ClearPref(kSupervisedUserCreationTransactionDisplayName);
   prefs->ClearPref(kSupervisedUserCreationTransactionUserId);

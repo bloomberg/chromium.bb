@@ -346,8 +346,8 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
       kEasyUnlockKeyMetaNameWrappedSecret, device->wrapped_secret));
 
   // Add cryptohome key.
-  const std::string canonicalized =
-      gaia::CanonicalizeEmail(user_context_.GetAccountId().GetUserEmail());
+  std::string canonicalized =
+      gaia::CanonicalizeEmail(user_context_.GetUserID());
   cryptohome::Identification id(canonicalized);
 
   scoped_ptr<Key> auth_key(new Key(*user_context_.GetKey()));

@@ -103,8 +103,7 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   }
 
   void AddTestUser() {
-    const user_manager::User* user =
-        user_manager_->AddUser(AccountId::FromUserEmail(kTestUserId));
+    const user_manager::User* user = user_manager_->AddUser(kTestUserId);
     profile_->set_profile_name(kTestUserId);
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, profile_.get());

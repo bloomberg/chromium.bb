@@ -25,7 +25,6 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/policy_types.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -54,7 +53,7 @@ const char kFakeUsernameHash[] = "fake hash";
 
 class FakeUser : public user_manager::User {
  public:
-  FakeUser() : User(AccountId::FromUserEmail(kFakeUserEmail)) {
+  FakeUser() : User(kFakeUserEmail) {
     set_display_email(kFakeUserEmail);
     set_username_hash(kFakeUsernameHash);
   }

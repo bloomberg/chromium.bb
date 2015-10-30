@@ -17,8 +17,6 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "net/base/net_errors.h"
 
-class AccountId;
-
 namespace policy {
 class ConsumerManagementService;
 }
@@ -217,8 +215,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // Returns user canonical e-mail. Finds already used account alias, if
   // user has already signed in.
-  AccountId GetAccountId(const std::string& authenticated_email,
-                         const std::string& gaia_id) const;
+  std::string GetCanonicalEmail(const std::string& authenticated_email,
+                                const std::string& gaia_id) const;
 
   // Returns current visible screen.
   // TODO(jdufault): This definition exists in multiple locations. Refactor it

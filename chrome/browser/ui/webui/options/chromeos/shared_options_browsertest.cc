@@ -86,10 +86,8 @@ const PrefTest kPrefTests[] = {
 class SharedOptionsTest : public LoginManagerTest {
  public:
   SharedOptionsTest()
-      : LoginManagerTest(false),
-        device_settings_provider_(NULL),
-        test_owner_account_id_(AccountId::FromUserEmail(kTestOwner)),
-        test_non_owner_account_id_(AccountId::FromUserEmail(kTestNonOwner)) {
+    : LoginManagerTest(false),
+      device_settings_provider_(NULL) {
     stub_settings_provider_.Set(kDeviceOwner, base::StringValue(kTestOwner));
   }
 
@@ -268,43 +266,40 @@ class SharedOptionsTest : public LoginManagerTest {
   StubAccountSettingsProvider stub_settings_provider_;
   CrosSettingsProvider* device_settings_provider_;
 
-  const AccountId test_owner_account_id_;
-  const AccountId test_non_owner_account_id_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedOptionsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_SharedOptions) {
-  RegisterUser(test_owner_account_id_.GetUserEmail());
-  RegisterUser(test_non_owner_account_id_.GetUserEmail());
+  RegisterUser(kTestOwner);
+  RegisterUser(kTestNonOwner);
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(SharedOptionsTest, SharedOptions) {
   // Log in the owner first, then add a secondary user.
-  LoginUser(test_owner_account_id_.GetUserEmail());
+  LoginUser(kTestOwner);
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(test_non_owner_account_id_.GetUserEmail());
+  AddUser(kTestNonOwner);
 
   user_manager::UserManager* manager = user_manager::UserManager::Get();
   ASSERT_EQ(2u, manager->GetLoggedInUsers().size());
   {
     SCOPED_TRACE("Checking settings for owner, primary user.");
-    CheckOptionsUI(manager->FindUser(manager->GetOwnerAccountId()), true, true);
+    CheckOptionsUI(manager->FindUser(manager->GetOwnerEmail()), true, true);
   }
   {
     SCOPED_TRACE("Checking settings for non-owner, secondary user.");
-    CheckOptionsUI(manager->FindUser(test_non_owner_account_id_), false, false);
+    CheckOptionsUI(manager->FindUser(kTestNonOwner), false, false);
   }
   // TODO(michaelpg): Add tests for non-primary owner and primary non-owner
   // when the owner-only multiprofile restriction is removed, probably M38.
 }
 
 IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreferencePrimary) {
-  RegisterUser(test_owner_account_id_.GetUserEmail());
-  RegisterUser(test_non_owner_account_id_.GetUserEmail());
+  RegisterUser(kTestOwner);
+  RegisterUser(kTestNonOwner);
   StartupUtils::MarkOobeCompleted();
 }
 
@@ -314,15 +309,14 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreferencePrimary) {
 // other signed-in user has enabled this preference, the shared setting
 // indicator explains this.)
 IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
-  LoginUser(test_owner_account_id_.GetUserEmail());
+  LoginUser(kTestOwner);
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(test_non_owner_account_id_.GetUserEmail());
+  AddUser(kTestNonOwner);
 
   user_manager::UserManager* manager = user_manager::UserManager::Get();
-  const user_manager::User* user1 = manager->FindUser(test_owner_account_id_);
-  const user_manager::User* user2 =
-      manager->FindUser(test_non_owner_account_id_);
+  const user_manager::User* user1 = manager->FindUser(kTestOwner);
+  const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
@@ -375,8 +369,8 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
 }
 
 IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreferenceSecondary) {
-  RegisterUser(test_owner_account_id_.GetUserEmail());
-  RegisterUser(test_non_owner_account_id_.GetUserEmail());
+  RegisterUser(kTestOwner);
+  RegisterUser(kTestNonOwner);
   StartupUtils::MarkOobeCompleted();
 }
 
@@ -386,15 +380,14 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreferenceSecondary) {
 // other signed-in user has enabled this preference, the shared setting
 // indicator explains this.)
 IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferenceSecondary) {
-  LoginUser(test_owner_account_id_.GetUserEmail());
+  LoginUser(kTestOwner);
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(test_non_owner_account_id_.GetUserEmail());
+  AddUser(kTestNonOwner);
 
   user_manager::UserManager* manager = user_manager::UserManager::Get();
-  const user_manager::User* user1 = manager->FindUser(test_owner_account_id_);
-  const user_manager::User* user2 =
-      manager->FindUser(test_non_owner_account_id_);
+  const user_manager::User* user1 = manager->FindUser(kTestOwner);
+  const user_manager::User* user2 = manager->FindUser(kTestNonOwner);
 
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();

@@ -111,7 +111,7 @@ void UserImageScreen::OnCameraPresenceCheckDone(bool is_camera_present) {
 void UserImageScreen::HideCurtain() {
   // Skip user image selection for ephemeral users.
   if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          GetUser()->GetAccountId())) {
+          GetUser()->GetUserID())) {
     ExitScreen();
   }
   if (view_)
@@ -227,8 +227,7 @@ const user_manager::User* UserImageScreen::GetUser() {
 }
 
 UserImageManager* UserImageScreen::GetUserImageManager() {
-  return ChromeUserManager::Get()->GetUserImageManager(
-      GetUser()->GetAccountId());
+  return ChromeUserManager::Get()->GetUserImageManager(GetUser()->email());
 }
 
 UserImageSyncObserver* UserImageScreen::GetSyncObserver() {

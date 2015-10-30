@@ -38,7 +38,7 @@ void StubAuthenticator::AuthenticateToLogin(content::BrowserContext* context,
   authentication_context_ = context;
   // Don't compare the entire |expected_user_context_| to |user_context| because
   // during non-online re-auth |user_context| does not have a gaia id.
-  if (expected_user_context_.GetAccountId() == user_context.GetAccountId() &&
+  if (expected_user_context_.GetUserID() == user_context.GetUserID() &&
       *expected_user_context_.GetKey() == *user_context.GetKey()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&StubAuthenticator::OnAuthSuccess, this));
@@ -57,8 +57,7 @@ void StubAuthenticator::AuthenticateToUnlock(const UserContext& user_context) {
 
 void StubAuthenticator::LoginAsSupervisedUser(const UserContext& user_context) {
   UserContext new_user_context = user_context;
-  new_user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail() +
-                                 kUserIdHashSuffix);
+  new_user_context.SetUserIDHash(user_context.GetUserID() + kUserIdHashSuffix);
   consumer_->OnAuthSuccess(new_user_context);
 }
 
@@ -69,18 +68,17 @@ void StubAuthenticator::LoginOffTheRecord() {
 void StubAuthenticator::LoginAsPublicSession(const UserContext& user_context) {
   UserContext logged_in_user_context = user_context;
   logged_in_user_context.SetIsUsingOAuth(false);
-  logged_in_user_context.SetUserIDHash(
-      logged_in_user_context.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  logged_in_user_context.SetUserIDHash(logged_in_user_context.GetUserID() +
+                                       kUserIdHashSuffix);
   consumer_->OnAuthSuccess(logged_in_user_context);
 }
 
-void StubAuthenticator::LoginAsKioskAccount(
-    const std::string& /* app_user_id */,
-    bool use_guest_mount) {
-  UserContext user_context(expected_user_context_.GetAccountId());
+void StubAuthenticator::LoginAsKioskAccount(const std::string& app_user_id,
+                                            bool use_guest_mount) {
+  UserContext user_context(expected_user_context_.GetUserID());
   user_context.SetIsUsingOAuth(false);
-  user_context.SetUserIDHash(
-      expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  user_context.SetUserIDHash(expected_user_context_.GetUserID() +
+                             kUserIdHashSuffix);
   consumer_->OnAuthSuccess(user_context);
 }
 
@@ -88,8 +86,8 @@ void StubAuthenticator::OnAuthSuccess() {
   // If we want to be more like the real thing, we could save the user ID
   // in AuthenticateToLogin, but there's not much of a point.
   UserContext user_context(expected_user_context_);
-  user_context.SetUserIDHash(
-      expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  user_context.SetUserIDHash(expected_user_context_.GetUserID() +
+                             kUserIdHashSuffix);
   consumer_->OnAuthSuccess(user_context);
 }
 

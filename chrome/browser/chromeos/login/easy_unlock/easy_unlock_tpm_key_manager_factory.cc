@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 
 namespace {
@@ -37,8 +36,8 @@ EasyUnlockTpmKeyManager* EasyUnlockTpmKeyManagerFactory::Get(
 
 EasyUnlockTpmKeyManager* EasyUnlockTpmKeyManagerFactory::GetForUser(
     const std::string& user_id) {
-  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      AccountId::FromUserEmail(user_id));
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_id);
   if (!user)
     return NULL;
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);

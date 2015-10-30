@@ -158,7 +158,7 @@ void KioskProfileLoader::OnAuthSuccess(const UserContext& user_context) {
   // we switch this back to the demo user name to correctly identify this
   // user as a demo user.
   UserContext context = user_context;
-  if (context.GetAccountId() == login::GuestAccountId())
+  if (context.GetUserID() == chromeos::login::kGuestUserName)
     context.SetUserID(login::DemoAccountId().GetUserEmail());
   UserSessionManager::GetInstance()->StartSession(
       context, UserSessionManager::PRIMARY_USER_SESSION,

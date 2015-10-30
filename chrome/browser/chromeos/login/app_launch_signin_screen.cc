@@ -42,8 +42,7 @@ void AppLaunchSigninScreen::Show() {
 
 void AppLaunchSigninScreen::InitOwnerUserList() {
   user_manager::UserManager* user_manager = GetUserManager();
-  const std::string& owner_email =
-      user_manager->GetOwnerAccountId().GetUserEmail();
+  const std::string& owner_email = user_manager->GetOwnerEmail();
   const user_manager::UserList& all_users = user_manager->GetUsers();
 
   owner_user_list_.clear();

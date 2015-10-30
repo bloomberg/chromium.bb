@@ -45,14 +45,14 @@ void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
     NOTREACHED();
     return;
   }
-  const AccountId account_id = user->GetAccountId();
+  const std::string& user_id = user->email();
 
   if (auth_flow == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML) {
     // The user went through online authentication and GAIA did not redirect to
     // a SAML IdP. No limit applies in this case. Clear the time of last login
     // with SAML and the flag enforcing online login, then return.
     prefs->ClearPref(prefs::kSAMLLastGAIASignInTime);
-    user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, false);
+    user_manager::UserManager::Get()->SaveForceOnlineSignin(user_id, false);
     return;
   }
 
@@ -62,7 +62,7 @@ void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
     // enforcing online login. The flag will be set again when the limit
     // expires. If the limit already expired (e.g. because it was set to zero),
     // the flag will be set again immediately.
-    user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, false);
+    user_manager::UserManager::Get()->SaveForceOnlineSignin(user_id, false);
     prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
                     clock_->Now().ToInternalValue());
   }
@@ -143,9 +143,8 @@ void SAMLOfflineSigninLimiter::ForceOnlineLogin() {
     return;
   }
 
-  user_manager::UserManager::Get()->SaveForceOnlineSignin(user->GetAccountId(),
-                                                          true);
-  RecordReauthReason(user->GetAccountId(), ReauthReason::SAML_REAUTH_POLICY);
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(user->email(), true);
+  RecordReauthReason(user->email(), ReauthReason::SAML_REAUTH_POLICY);
   offline_signin_limit_timer_.reset();
 }
 

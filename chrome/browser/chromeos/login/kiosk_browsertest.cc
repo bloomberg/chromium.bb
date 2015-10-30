@@ -451,6 +451,7 @@ class KioskTest : public OobeBaseTest {
  public:
   KioskTest()
       : settings_helper_(false),
+        use_consumer_kiosk_mode_(true),
         fake_cws_(new FakeCWS) {
     set_exit_when_last_browser_closes(false);
   }
@@ -703,7 +704,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   void RunAppLaunchNetworkDownTest() {
-    mock_user_manager()->SetActiveUser(test_owner_account_id_);
+    mock_user_manager()->SetActiveUser(kTestOwnerEmail);
     AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager());
 
     // Mock network could be configured with owner's password.
@@ -787,11 +788,8 @@ class KioskTest : public OobeBaseTest {
   ScopedCrosSettingsTestHelper settings_helper_;
   scoped_ptr<FakeOwnerSettingsService> owner_settings_service_;
 
-  const AccountId test_owner_account_id_ =
-      AccountId::FromUserEmail(kTestOwnerEmail);
-
  private:
-  bool use_consumer_kiosk_mode_ = true;
+  bool use_consumer_kiosk_mode_;
   std::string test_app_id_;
   std::string test_app_version_;
   std::string test_crx_file_;
@@ -2019,7 +2017,7 @@ class KioskEnterpriseTest : public KioskTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     policy::DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
-        test_owner_account_id_.GetUserEmail());
+        kTestOwnerEmail);
     settings_helper_.SetCurrentUserIsOwner(false);
 
     KioskTest::SetUpInProcessBrowserTestFixture();
@@ -2230,7 +2228,7 @@ class KioskHiddenWebUITest : public KioskTest,
 IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
   // Add a device owner.
   FakeChromeUserManager* user_manager = new FakeChromeUserManager();
-  user_manager->AddUser(test_owner_account_id_);
+  user_manager->AddUser(kTestOwnerEmail);
   ScopedUserManagerEnabler enabler(user_manager);
 
   // Set kiosk app to autolaunch.

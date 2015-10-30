@@ -148,9 +148,9 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   }
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
-      cryptohome::Identification(
-          attempt->user_context.GetAccountId().GetUserEmail()),
-      cryptohome::Authorization(auth_key), mount,
+      cryptohome::Identification(attempt->user_context.GetUserID()),
+      cryptohome::Authorization(auth_key),
+      mount,
       base::Bind(&OnMount, attempt, resolver));
 }
 
@@ -266,10 +266,13 @@ void StartMount(const base::WeakPtr<AuthAttemptState>& attempt,
   }
 
   cryptohome::HomedirMethods::GetInstance()->GetKeyDataEx(
-      cryptohome::Identification(
-          attempt->user_context.GetAccountId().GetUserEmail()),
-      kCryptohomeGAIAKeyLabel, base::Bind(&OnGetKeyDataEx, attempt, resolver,
-                                          ephemeral, create_if_nonexistent));
+      cryptohome::Identification(attempt->user_context.GetUserID()),
+      kCryptohomeGAIAKeyLabel,
+      base::Bind(&OnGetKeyDataEx,
+                 attempt,
+                 resolver,
+                 ephemeral,
+                 create_if_nonexistent));
 }
 
 // Calls cryptohome's mount method for guest and also get the user hash from
@@ -283,7 +286,7 @@ void MountGuestAndGetHash(const base::WeakPtr<AuthAttemptState>& attempt,
                  attempt,
                  resolver));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.GetAccountId().GetUserEmail(),
+      attempt->user_context.GetUserID(),
       base::Bind(&TriggerResolveHash, attempt, resolver));
 }
 
@@ -292,11 +295,14 @@ void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
                  scoped_refptr<CryptohomeAuthenticator> resolver,
                  int flags) {
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
-      attempt->user_context.GetAccountId().GetUserEmail(), flags,
+      attempt->user_context.GetUserID(),
+      flags,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
-                 "CryptohomeMountPublic-End", attempt, resolver));
+                 "CryptohomeMountPublic-End",
+                 attempt,
+                 resolver));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.GetAccountId().GetUserEmail(),
+      attempt->user_context.GetUserID(),
       base::Bind(&TriggerResolveHash, attempt, resolver));
 }
 
@@ -318,17 +324,21 @@ void Migrate(const base::WeakPtr<AuthAttemptState>& attempt,
   scoped_ptr<Key> new_key =
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
   if (passing_old_hash) {
-    caller->AsyncMigrateKey(
-        attempt->user_context.GetAccountId().GetUserEmail(),
-        old_key->GetSecret(), new_key->GetSecret(),
-        base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeMount-End",
-                   attempt, resolver));
+    caller->AsyncMigrateKey(attempt->user_context.GetUserID(),
+                            old_key->GetSecret(),
+                            new_key->GetSecret(),
+                            base::Bind(&TriggerResolveWithLoginTimeMarker,
+                                       "CryptohomeMount-End",
+                                       attempt,
+                                       resolver));
   } else {
-    caller->AsyncMigrateKey(
-        attempt->user_context.GetAccountId().GetUserEmail(),
-        new_key->GetSecret(), old_key->GetSecret(),
-        base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeMount-End",
-                   attempt, resolver));
+    caller->AsyncMigrateKey(attempt->user_context.GetUserID(),
+                            new_key->GetSecret(),
+                            old_key->GetSecret(),
+                            base::Bind(&TriggerResolveWithLoginTimeMarker,
+                                       "CryptohomeMount-End",
+                                       attempt,
+                                       resolver));
   }
 }
 
@@ -338,9 +348,11 @@ void Remove(const base::WeakPtr<AuthAttemptState>& attempt,
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeRemove-Start", false);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      attempt->user_context.GetAccountId().GetUserEmail(),
-      base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeRemove-End",
-                 attempt, resolver));
+      attempt->user_context.GetUserID(),
+      base::Bind(&TriggerResolveWithLoginTimeMarker,
+                 "CryptohomeRemove-End",
+                 attempt,
+                 resolver));
 }
 
 // Calls cryptohome's key check method.
@@ -350,7 +362,8 @@ void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
   scoped_ptr<Key> key =
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncCheckKey(
-      attempt->user_context.GetAccountId().GetUserEmail(), key->GetSecret(),
+      attempt->user_context.GetUserID(),
+      key->GetSecret(),
       base::Bind(&TriggerResolve, attempt, resolver));
 }
 

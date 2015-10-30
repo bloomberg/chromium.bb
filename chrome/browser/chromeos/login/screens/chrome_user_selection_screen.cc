@@ -21,7 +21,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -51,7 +50,7 @@ void ChromeUserSelectionScreen::Init(const user_manager::UserList& users,
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end(); ++it) {
     if ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-      OnPolicyUpdated((*it)->GetAccountId().GetUserEmail());
+      OnPolicyUpdated((*it)->GetUserID());
   }
 }
 
@@ -144,8 +143,8 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
 
 void ChromeUserSelectionScreen::SetPublicSessionDisplayName(
     const std::string& user_id) {
-  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      AccountId::FromUserEmail(user_id));
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_id);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return;
 

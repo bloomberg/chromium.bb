@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace user_manager {
 
@@ -31,9 +30,9 @@ std::string EmptyUserInfo::GetEmail() const {
   return std::string();
 }
 
-AccountId EmptyUserInfo::GetAccountId() const {
+std::string EmptyUserInfo::GetUserID() const {
   NOTIMPLEMENTED();
-  return EmptyAccountId();
+  return std::string();
 }
 
 const gfx::ImageSkia& EmptyUserInfo::GetImage() const {

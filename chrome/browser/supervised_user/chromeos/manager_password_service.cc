@@ -131,7 +131,7 @@ void ManagerPasswordService::GetSupervisedUsersCallback(
     return;
   }
 
-  UserContext manager_key(AccountId::FromUserEmail(user_id));
+  UserContext manager_key(user_id);
   manager_key.SetKey(Key(master_key));
   manager_key.SetIsUsingOAuth(false);
 
@@ -240,8 +240,7 @@ void ManagerPasswordService::OnKeyTransformedIfNeeded(
 
 void ManagerPasswordService::OnNewManagerKeySuccess(
     const UserContext& master_key_context) {
-  VLOG(1) << "Added new master key for "
-          << master_key_context.GetAccountId().GetUserEmail();
+  VLOG(1) << "Added new master key for " << master_key_context.GetUserID();
   authenticator_->RemoveKey(
       master_key_context,
       kLegacyCryptohomeSupervisedUserKeyLabel,
@@ -253,7 +252,7 @@ void ManagerPasswordService::OnNewManagerKeySuccess(
 void ManagerPasswordService::OnOldSupervisedUserKeyDeleted(
     const UserContext& master_key_context) {
   VLOG(1) << "Removed old supervised user key for "
-          << master_key_context.GetAccountId().GetUserEmail();
+          << master_key_context.GetUserID();
   authenticator_->RemoveKey(
       master_key_context,
       kLegacyCryptohomeMasterKeyLabel,
@@ -264,8 +263,7 @@ void ManagerPasswordService::OnOldSupervisedUserKeyDeleted(
 
 void ManagerPasswordService::OnOldManagerKeyDeleted(
     const UserContext& master_key_context) {
-  VLOG(1) << "Removed old master key for "
-          << master_key_context.GetAccountId().GetUserEmail();
+  VLOG(1) << "Removed old master key for " << master_key_context.GetUserID();
 }
 
 void ManagerPasswordService::Shutdown() {

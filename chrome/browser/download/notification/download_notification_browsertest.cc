@@ -1134,9 +1134,8 @@ class MultiProfileDownloadNotificationTest
     user_manager::UserManager* const user_manager =
         user_manager::UserManager::Get();
     if (log_in)
-      user_manager->UserLoggedIn(AccountId::FromUserEmail(info.email),
-                                 info.hash, false);
-    user_manager->SaveUserDisplayName(AccountId::FromUserEmail(info.email),
+      user_manager->UserLoggedIn(info.email, info.hash, false);
+    user_manager->SaveUserDisplayName(info.email,
                                       base::UTF8ToUTF16(info.display_name));
     SigninManagerFactory::GetForProfile(
         chromeos::ProfileHelper::GetProfileByUserIdHash(info.hash))

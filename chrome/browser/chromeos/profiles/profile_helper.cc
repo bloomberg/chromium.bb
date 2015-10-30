@@ -170,8 +170,7 @@ bool ProfileHelper::IsOwnerProfile(Profile* profile) {
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
-  return user->GetAccountId() ==
-         user_manager::UserManager::Get()->GetOwnerAccountId();
+  return user->email() == user_manager::UserManager::Get()->GetOwnerEmail();
 }
 
 // static

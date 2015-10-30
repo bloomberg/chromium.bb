@@ -170,8 +170,7 @@ UsersPrivateRemoveWhitelistedUserFunction::Run() {
   PrefsUtil* prefs_util = delegate->GetPrefsUtil();
   bool removed = prefs_util->RemoveFromListCrosSetting(
       chromeos::kAccountsPrefUsers, canonical_email);
-  user_manager::UserManager::Get()->RemoveUser(
-      AccountId::FromUserEmail(parameters->email), NULL);
+  user_manager::UserManager::Get()->RemoveUser(parameters->email, NULL);
   return RespondNow(OneArgument(new base::FundamentalValue(removed)));
 }
 

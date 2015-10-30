@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(NSSContextChromeOSBrowserTest, TwoUsers) {
   // Log in first user and get their DB.
   LoginUser(kTestUser1);
   Profile* profile1 = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
-      user_manager->FindUser(AccountId::FromUserEmail(kTestUser1)));
+      user_manager->FindUser(kTestUser1));
   ASSERT_TRUE(profile1);
 
   DBTester tester1(profile1);
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(NSSContextChromeOSBrowserTest, TwoUsers) {
   AddUser(kTestUser2);
 
   Profile* profile2 = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
-      user_manager->FindUser(AccountId::FromUserEmail(kTestUser2)));
+      user_manager->FindUser(kTestUser2));
   ASSERT_TRUE(profile2);
 
   DBTester tester2(profile2);

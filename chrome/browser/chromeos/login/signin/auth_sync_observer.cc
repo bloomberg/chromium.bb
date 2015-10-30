@@ -62,14 +62,14 @@ void AuthSyncObserver::OnStateChanged() {
     // TODO(nkostylev): Remove after crosbug.com/25978 is implemented.
     LOG(WARNING) << "Invalidate OAuth token because of a sync error: "
                  << sync_service->GetAuthError().ToString();
-    const AccountId& account_id = user->GetAccountId();
-    DCHECK(account_id.is_valid());
+    std::string email = user->email();
+    DCHECK(!email.empty());
     // TODO(nkostyelv): Change observer after active user has changed.
     user_manager::User::OAuthTokenStatus old_status =
         user->oauth_token_status();
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        account_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
-    RecordReauthReason(account_id, ReauthReason::SYNC_FAILED);
+        email, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
+    RecordReauthReason(email, ReauthReason::SYNC_FAILED);
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
         old_status != user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
        // Attempt to restore token from file.
@@ -89,7 +89,7 @@ void AuthSyncObserver::OnStateChanged() {
       LOG(ERROR) <<
           "Got an incorrectly invalidated token case, restoring token status.";
       user_manager::UserManager::Get()->SaveUserOAuthStatus(
-          user->GetAccountId(), user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+          user->email(), user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
        content::RecordAction(
            base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Recovered"));
     }

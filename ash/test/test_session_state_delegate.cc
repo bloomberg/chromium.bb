@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,20 +20,18 @@ namespace test {
 
 namespace {
 
-// The the "canonicalized" Account ID from a given |email| address.
-AccountId GetAccountIdFromEmail(const std::string& email) {
+// The the "canonicalized" user ID from a given |email| address.
+std::string GetUserIDFromEmail(const std::string& email) {
   std::string user_id = email;
   std::transform(user_id.begin(), user_id.end(), user_id.begin(), ::tolower);
-  return AccountId::FromUserEmail(user_id);
+  return user_id;
 }
 
 }  // namespace
 
 class MockUserInfo : public user_manager::UserInfo {
  public:
-  explicit MockUserInfo(const std::string& display_email)
-      : display_email_(display_email),
-        account_id_(GetAccountIdFromEmail(display_email)) {}
+  explicit MockUserInfo(const std::string& id) : email_(id) {}
   ~MockUserInfo() override {}
 
   void SetUserImage(const gfx::ImageSkia& user_image) {
@@ -49,17 +46,18 @@ class MockUserInfo : public user_manager::UserInfo {
     return base::UTF8ToUTF16("Über Über Über Über");
   }
 
-  std::string GetEmail() const override { return display_email_; }
+  std::string GetEmail() const override { return email_; }
 
-  AccountId GetAccountId() const override { return account_id_; }
+  std::string GetUserID() const override {
+    return GetUserIDFromEmail(GetEmail());
+  }
 
   const gfx::ImageSkia& GetImage() const override { return user_image_; }
 
   // A test user image.
   gfx::ImageSkia user_image_;
 
-  std::string display_email_;
-  const AccountId account_id_;
+  std::string email_;
 
   DISALLOW_COPY_AND_ASSIGN(MockUserInfo);
 };
@@ -217,19 +215,18 @@ gfx::ImageSkia TestSessionStateDelegate::GetAvatarImageForWindow(
 }
 
 void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
-  const AccountId account_id(GetAccountIdFromEmail(user_id));
   // Make sure this is a user id and not an email address.
-  EXPECT_EQ(user_id, account_id.GetUserEmail());
+  EXPECT_EQ(user_id, GetUserIDFromEmail(user_id));
   active_user_index_ = 0;
   for (std::vector<MockUserInfo*>::iterator iter = user_list_.begin();
        iter != user_list_.end();
        ++iter) {
-    if ((*iter)->GetAccountId() == account_id) {
+    if ((*iter)->GetUserID() == user_id) {
       active_user_index_ = iter - user_list_.begin();
       return;
     }
   }
-  NOTREACHED() << "Unknown user:" << account_id.GetUserEmail();
+  NOTREACHED() << "Unknown user:" << user_id;
 }
 
 void TestSessionStateDelegate::CycleActiveUser(CycleUser cycle_user) {

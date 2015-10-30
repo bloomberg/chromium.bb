@@ -56,9 +56,8 @@ user_manager::UserList MockUserManager::GetUnlockUsers() const {
   return user_list_;
 }
 
-const AccountId& MockUserManager::GetOwnerAccountId() const {
-  temporary_owner_account_id_ = GetLoggedInUser()->GetAccountId();
-  return temporary_owner_account_id_;
+const std::string& MockUserManager::GetOwnerEmail() const {
+  return GetLoggedInUser()->email();
 }
 
 const user_manager::User* MockUserManager::GetActiveUser() const {
@@ -82,7 +81,7 @@ MultiProfileUserController* MockUserManager::GetMultiProfileUserController() {
 }
 
 UserImageManager* MockUserManager::GetUserImageManager(
-    const AccountId& account_id) {
+    const std::string& user_id) {
   return NULL;
 }
 
@@ -91,44 +90,43 @@ SupervisedUserManager* MockUserManager::GetSupervisedUserManager() {
 }
 
 // Creates a new User instance.
-void MockUserManager::SetActiveUser(const AccountId& account_id) {
+void MockUserManager::SetActiveUser(const std::string& email) {
   ClearUserList();
-  AddUser(account_id);
+  AddUser(email);
 }
 
 UserFlow* MockUserManager::GetCurrentUserFlow() const {
   return user_flow_.get();
 }
 
-UserFlow* MockUserManager::GetUserFlow(const AccountId&) const {
+UserFlow* MockUserManager::GetUserFlow(const std::string&) const {
   return user_flow_.get();
 }
 
 user_manager::User* MockUserManager::CreatePublicAccountUser(
-    const AccountId& account_id) {
+    const std::string& email) {
   ClearUserList();
-  user_manager::User* user =
-      user_manager::User::CreatePublicAccountUser(account_id);
+  user_manager::User* user = user_manager::User::CreatePublicAccountUser(email);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
   return user_list_.back();
 }
 
 user_manager::User* MockUserManager::CreateKioskAppUser(
-    const AccountId& account_id) {
+    const std::string& email) {
   ClearUserList();
-  user_list_.push_back(user_manager::User::CreateKioskAppUser(account_id));
+  user_list_.push_back(user_manager::User::CreateKioskAppUser(email));
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user_list_.back());
   return user_list_.back();
 }
 
-void MockUserManager::AddUser(const AccountId& account_id) {
-  AddUserWithAffiliation(account_id, false);
+void MockUserManager::AddUser(const std::string& email) {
+  AddUserWithAffiliation(email, false);
 }
 
-void MockUserManager::AddUserWithAffiliation(const AccountId& account_id,
+void MockUserManager::AddUserWithAffiliation(const std::string& email,
                                              bool is_affiliated) {
-  user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
+  user_manager::User* user = user_manager::User::CreateRegularUser(email);
   user->set_affiliation(is_affiliated);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
@@ -136,16 +134,17 @@ void MockUserManager::AddUserWithAffiliation(const AccountId& account_id,
 
 void MockUserManager::ClearUserList() {
   // Can't use STLDeleteElements because of the protected destructor of User.
-  for (user_manager::UserList::iterator user = user_list_.begin();
-       user != user_list_.end(); ++user)
+  user_manager::UserList::iterator user;
+  for (user = user_list_.begin(); user != user_list_.end(); ++user)
     delete *user;
   user_list_.clear();
 }
 
 bool MockUserManager::ShouldReportUser(const std::string& user_id) const {
   for (const auto& user : user_list_) {
-    if (user->email() == user_id)
+    if (user->GetUserID() == user_id) {
       return user->is_affiliated();
+    }
   }
   NOTREACHED();
   return false;

@@ -19,7 +19,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/x509_certificate.h"
@@ -82,9 +81,9 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   }
 
   // Add and log in a user to the session.
-  void UserAddedToSession(std::string user) {
-    user_manager()->AddUser(AccountId::FromUserEmail(user));
-    user_manager()->LoginUser(AccountId::FromUserEmail(user));
+  void UserAddedToSession(const std::string& user) {
+    user_manager()->AddUser(user);
+    user_manager()->LoginUser(user);
   }
 
   // Get the active user.
@@ -102,13 +101,12 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
 
-    const AccountId account_id(AccountId::FromUserEmail(kUser));
-    const user_manager::User* user = user_manager()->AddUser(account_id);
+    const std::string user_email(kUser);
+    const user_manager::User* user = user_manager()->AddUser(user_email);
 
     // Note that user profiles are created after user login in reality.
-    user_profile_ =
-        profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
-    user_profile_->set_profile_name(account_id.GetUserEmail());
+    user_profile_ = profile_manager_->CreateTestingProfile(user_email);
+    user_profile_->set_profile_name(user_email);
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, user_profile_);
   }
@@ -174,8 +172,8 @@ TEST_F(SessionStateDelegateChromeOSTest, MultiProfileDisallowedByUserPolicy) {
   InitForMultiProfile();
   EXPECT_TRUE(
       session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
-  user_manager()->LoginUser(account_id);
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
   EXPECT_TRUE(
       session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
 
@@ -190,12 +188,11 @@ TEST_F(SessionStateDelegateChromeOSTest, MultiProfileDisallowedByUserPolicy) {
 TEST_F(SessionStateDelegateChromeOSTest,
        MultiProfileDisallowedByPolicyCertificates) {
   InitForMultiProfile();
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
-  user_manager()->LoginUser(account_id);
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
   EXPECT_TRUE(
       session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
-  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(
-      account_id.GetUserEmail());
+  policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(user_email);
   EXPECT_FALSE(
       session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
 
@@ -207,8 +204,8 @@ TEST_F(SessionStateDelegateChromeOSTest,
 TEST_F(SessionStateDelegateChromeOSTest,
        MultiProfileDisallowedByPrimaryUserCertificatesInMemory) {
   InitForMultiProfile();
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
-  user_manager()->LoginUser(account_id);
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
   EXPECT_TRUE(
       session_state_delegate()->IsMultiProfileAllowedByPrimaryUserPolicy());
   cert_verifier_.reset(new policy::PolicyCertVerifier(base::Closure()));
@@ -242,8 +239,8 @@ TEST_F(SessionStateDelegateChromeOSTest,
 
   EXPECT_TRUE(
       session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
-  user_manager()->LoginUser(account_id);
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
   while (session_state_delegate()->NumberOfLoggedInUsers() <
          session_state_delegate()->GetMaximumNumberOfLoggedInUsers()) {
     UserAddedToSession("bb@b.b");
@@ -263,8 +260,8 @@ TEST_F(SessionStateDelegateChromeOSTest,
 
   EXPECT_TRUE(
       session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
-  user_manager()->LoginUser(account_id);
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
   UserAddedToSession("bb@b.b");
   EXPECT_FALSE(
       session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
@@ -280,12 +277,12 @@ TEST_F(SessionStateDelegateChromeOSTest,
 
   EXPECT_TRUE(
       session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
-  user_manager()->LoginUser(account_id);
+  const std::string user_email(kUser);
+  user_manager()->LoginUser(user_email);
   user_profile_->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
       chromeos::MultiProfileUserController::kBehaviorNotAllowed);
-  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+  user_manager()->AddUser("bb@b.b");
   EXPECT_FALSE(
       session_state_delegate()->CanAddUserToMultiProfile(&add_user_error));
   EXPECT_EQ(ash::SessionStateDelegate::ADD_USER_ERROR_NOT_ALLOWED_PRIMARY_USER,

@@ -419,9 +419,13 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                                public extensions::AppWindowRegistry::Observer {
  protected:
   DeviceLocalAccountTest()
-      : public_session_input_method_id_(
-            base::StringPrintf(kPublicSessionInputMethodIDTemplate,
-                               chromeos::extension_ime_util::kXkbExtensionId)),
+      : user_id_1_(GenerateDeviceLocalAccountUserId(
+            kAccountId1, DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
+        user_id_2_(GenerateDeviceLocalAccountUserId(
+            kAccountId2, DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
+        public_session_input_method_id_(base::StringPrintf(
+            kPublicSessionInputMethodIDTemplate,
+            chromeos::extension_ime_util::kXkbExtensionId)),
         contents_(NULL) {
     set_exit_when_last_browser_closes(false);
   }
@@ -630,11 +634,11 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                                           proto.SerializeAsString()));
   }
 
-  void CheckPublicSessionPresent(const AccountId& account_id) {
+  void CheckPublicSessionPresent(const std::string& id) {
     const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(account_id);
+        user_manager::UserManager::Get()->FindUser(id);
     ASSERT_TRUE(user);
-    EXPECT_EQ(account_id, user->GetAccountId());
+    EXPECT_EQ(id, user->email());
     EXPECT_EQ(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
   }
 
@@ -680,7 +684,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     // Wait for the display name becoming available as that indicates
     // device-local account policy is fully loaded, which is a prerequisite for
     // successful login.
-    WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName1);
+    WaitForDisplayName(user_id_1_, kDisplayName1);
   }
 
   void ExpandPublicSessionPod(bool expect_advanced) {
@@ -693,7 +697,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
             "    document.getElementById('pod-row').getPodWithUsername_('%s');"
             "pod.click();"
             "domAutomationController.send(pod.classList.contains('advanced'));",
-            account_id_1_.GetUserEmail().c_str()),
+            user_id_1_.c_str()),
         &advanced));
     // Verify that the pod expanded to its basic/advanced form, as expected.
     EXPECT_EQ(expect_advanced, advanced);
@@ -737,7 +741,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     ASSERT_TRUE(controller);
 
     chromeos::UserContext user_context(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
-                                       account_id_1_.GetUserEmail());
+                                       user_id_1_);
     user_context.SetPublicSessionLocale(locale);
     user_context.SetPublicSessionInputMethod(input_method);
     controller->Login(user_context, chromeos::SigninSpecifics());
@@ -783,14 +787,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     VerifyKeyboardLayoutMatchesLocale();
   }
 
-  const AccountId account_id_1_ =
-      AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-          kAccountId1,
-          DeviceLocalAccount::TYPE_PUBLIC_SESSION));
-  const AccountId account_id_2_ =
-      AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
-          kAccountId2,
-          DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+  const std::string user_id_1_;
+  const std::string user_id_2_;
   const std::string public_session_input_method_id_;
 
   std::string initial_locale_;
@@ -807,7 +805,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountTest);
 };
 
-static bool IsKnownUser(const AccountId& account_id) {
+static bool IsKnownUser(const std::string& account_id) {
   return user_manager::UserManager::Get()->IsKnownUser(account_id);
 }
 
@@ -816,12 +814,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
   AddPublicSessionToDevicePolicy(kAccountId2);
 
   content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, account_id_1_))
+                                        base::Bind(&IsKnownUser, user_id_1_))
       .Wait();
-  EXPECT_TRUE(IsKnownUser(account_id_2_));
+  EXPECT_TRUE(IsKnownUser(user_id_2_));
 
-  CheckPublicSessionPresent(account_id_1_);
-  CheckPublicSessionPresent(account_id_2_);
+  CheckPublicSessionPresent(user_id_1_);
+  CheckPublicSessionPresent(user_id_2_);
 }
 
 // Flaky: http://crbug.com/512670.
@@ -835,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
   const std::string get_compact_pod_display_name = base::StringPrintf(
       "domAutomationController.send(document.getElementById('pod-row')"
       "    .getPodWithUsername_('%s').nameElement.textContent);",
-      account_id_1_.GetUserEmail().c_str());
+      user_id_1_.c_str());
   std::string display_name;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       contents_,
@@ -846,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       "domAutomationController.send(document.getElementById('pod-row')"
       "    .getPodWithUsername_('%s').querySelector('.expanded-pane-name')"
       "        .textContent);",
-      account_id_1_.GetUserEmail().c_str());
+      user_id_1_.c_str());
   display_name.clear();
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       contents_,
@@ -860,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .click();",
-          account_id_1_.GetUserEmail().c_str())));
+      user_id_1_.c_str())));
 
   // Change the display name.
   device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
@@ -870,10 +868,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DeviceLocalAccountPolicyBroker* broker =
       connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
-          account_id_1_.GetUserEmail());
+          user_id_1_);
   ASSERT_TRUE(broker);
   broker->core()->store()->Load();
-  WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName2);
+  WaitForDisplayName(user_id_1_, kDisplayName2);
 
   // Verify that the new display name is shown in the UI.
   display_name.clear();
@@ -897,7 +895,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       base::StringPrintf(
           "domAutomationController.send(document.getElementById('pod-row')"
           "    .getPodWithUsername_('%s').expanded);",
-          account_id_1_.GetUserEmail().c_str()),
+          user_id_1_.c_str()),
       &expanded));
   EXPECT_TRUE(expanded);
 }
@@ -913,7 +911,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
       kAccountId1).empty());
 }
 
-static bool IsNotKnownUser(const AccountId& account_id) {
+static bool IsNotKnownUser(const std::string& account_id) {
   return !IsKnownUser(account_id);
 }
 
@@ -922,9 +920,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   AddPublicSessionToDevicePolicy(kAccountId2);
 
   content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, account_id_1_))
+                                        base::Bind(&IsKnownUser, user_id_1_))
       .Wait();
-  EXPECT_TRUE(IsKnownUser(account_id_2_));
+  EXPECT_TRUE(IsKnownUser(user_id_2_));
 
   // Update policy to remove kAccountId2.
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
@@ -944,9 +942,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   g_browser_process->policy_service()->RefreshPolicies(base::Closure());
 
   // Make sure the second device-local account disappears.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&IsNotKnownUser, account_id_2_))
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
+                                        base::Bind(&IsNotKnownUser, user_id_2_))
       .Wait();
 }
 
@@ -1081,10 +1078,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Verify that the extension was removed from the account's extension cache
   // after the installation failure.
   DeviceLocalAccountPolicyBroker* broker =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetDeviceLocalAccountPolicyService()
-          ->GetBrokerForUser(account_id_1_.GetUserEmail());
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
   ASSERT_TRUE(broker);
   chromeos::ExternalCache* cache =
       broker->extension_loader()->GetExternalCacheForTesting();
@@ -1156,10 +1151,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
 
   // Verify that the extension was removed from the account's extension cache.
   DeviceLocalAccountPolicyBroker* broker =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetDeviceLocalAccountPolicyService()
-          ->GetBrokerForUser(account_id_1_.GetUserEmail());
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
   ASSERT_TRUE(broker);
   chromeos::ExternalCache* cache =
       broker->extension_loader()->GetExternalCacheForTesting();
@@ -1318,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DeviceLocalAccountPolicyBroker* broker =
       connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
-          account_id_1_.GetUserEmail());
+          user_id_1_);
   ASSERT_TRUE(broker);
   broker->core()->store()->Load();
 
@@ -1408,7 +1401,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DeviceLocalAccountPolicyBroker* broker =
       connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
-          account_id_1_.GetUserEmail());
+          user_id_1_);
   ASSERT_TRUE(broker);
 
   run_loop_.reset(new base::RunLoop);
@@ -1422,13 +1415,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   ASSERT_TRUE(policy_image);
 
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id_1_);
+      user_manager::UserManager::Get()->FindUser(user_id_1_);
   ASSERT_TRUE(user);
 
   base::FilePath user_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
   const base::FilePath saved_image_path =
-      user_data_dir.Append(account_id_1_.GetUserEmail()).AddExtension("jpg");
+      user_data_dir.Append(user_id_1_).AddExtension("jpg");
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(user_manager::User::USER_IMAGE_EXTERNAL, user->image_index());
@@ -1438,7 +1431,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   ASSERT_TRUE(images_pref);
   const base::DictionaryValue* image_properties;
   ASSERT_TRUE(images_pref->GetDictionaryWithoutPathExpansion(
-      account_id_1_.GetUserEmail(), &image_properties));
+      user_id_1_,
+      &image_properties));
   int image_index;
   std::string image_path;
   ASSERT_TRUE(image_properties->GetInteger("index", &image_index));
@@ -1624,7 +1618,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleNoSwitch) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          user_id_1_.c_str())));
 
   WaitForSessionStart();
 
@@ -1653,7 +1647,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.querySelector('.language-and-input').click();"
           "domAutomationController.send(pod.classList.contains('advanced'));",
-          account_id_1_.GetUserEmail().c_str()),
+          user_id_1_.c_str()),
       &advanced));
   EXPECT_FALSE(advanced);
 
@@ -1667,7 +1661,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
           "var event = document.createEvent('HTMLEvents');"
           "event.initEvent('change', false, true);"
           "languageSelect.dispatchEvent(event);",
-          account_id_1_.GetUserEmail().c_str(), kPublicSessionLocale)));
+          user_id_1_.c_str(),
+          kPublicSessionLocale)));
 
   // The UI will have requested an updated list of keyboard layouts at this
   // point. Wait for the constructions of this list to finish.
@@ -1682,7 +1677,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.querySelector('.keyboard-select').value = '%s';"
           "pod.querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str(),
+          user_id_1_.c_str(),
           public_session_input_method_id_.c_str())));
 
   WaitForSessionStart();
@@ -1715,7 +1710,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, OneRecommendedLocale) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          user_id_1_.c_str())));
 
   WaitForSessionStart();
 
@@ -1748,7 +1743,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       "for (var i = 0; i < languageSelect.length; ++i)"
       "  locales.push(languageSelect.options[i].value);"
       "domAutomationController.send(JSON.stringify(locales));",
-      account_id_1_.GetUserEmail().c_str());
+      user_id_1_.c_str());
   std::string json;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
                                                      get_locale_list,
@@ -1779,11 +1774,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
   }
 
   // Verify that the first recommended locale is selected.
-  const std::string get_selected_locale = base::StringPrintf(
-      "domAutomationController.send(document.getElementById('pod-row')"
-      "    .getPodWithUsername_('%s').querySelector('.language-select')"
-      "        .value);",
-      account_id_1_.GetUserEmail().c_str());
+  const std::string get_selected_locale =
+      base::StringPrintf(
+          "domAutomationController.send(document.getElementById('pod-row')"
+          "    .getPodWithUsername_('%s').querySelector('.language-select')"
+          "        .value);",
+          user_id_1_.c_str());
   std::string selected_locale;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
                                                      get_selected_locale,
@@ -1802,10 +1798,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DeviceLocalAccountPolicyBroker* broker =
       connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
-          account_id_1_.GetUserEmail());
+          user_id_1_);
   ASSERT_TRUE(broker);
   broker->core()->store()->Load();
-  WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName2);
+  WaitForDisplayName(user_id_1_, kDisplayName2);
 
   // Verify that the new list of locales is shown in the UI.
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
@@ -1838,7 +1834,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
           "var event = document.createEvent('HTMLEvents');"
           "event.initEvent('change', false, true);"
           "languageSelect.dispatchEvent(event);",
-          account_id_1_.GetUserEmail().c_str(), kPublicSessionLocale)));
+          user_id_1_.c_str(),
+          kPublicSessionLocale)));
 
   // Change the list of recommended locales.
   SetRecommendedLocales(kRecommendedLocales2, arraysize(kRecommendedLocales2));
@@ -1846,7 +1843,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       kDisplayName1);
   UploadAndInstallDeviceLocalAccountPolicy();
   broker->core()->store()->Load();
-  WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName1);
+  WaitForDisplayName(user_id_1_, kDisplayName1);
 
   // Verify that the manually selected locale is still selected.
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
@@ -1864,7 +1861,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.keyboard-select').value = '%s';",
-          account_id_1_.GetUserEmail().c_str(),
+          user_id_1_.c_str(),
           public_session_input_method_id_.c_str())));
 
   // Click on a different pod, causing focus to shift away and the pod to
@@ -1874,7 +1871,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .click();",
-          account_id_2_.GetUserEmail().c_str())));
+          user_id_2_.c_str())));
 
   // Click on the pod again, causing it to expand again. Verify that the pod has
   // kept all its state (the advanced form is being shown, the manually selected
@@ -1891,7 +1888,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
           "state.keyboardLayout = pod.querySelector('.keyboard-select').value;"
           "console.log(JSON.stringify(state));"
           "domAutomationController.send(JSON.stringify(state));",
-          account_id_1_.GetUserEmail().c_str()),
+          user_id_1_.c_str()),
       &json));
   LOG(ERROR) << json;
   value_ptr = base::JSONReader::Read(json);
@@ -1913,7 +1910,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          user_id_1_.c_str())));
 
   WaitForSessionStart();
 
@@ -1947,7 +1944,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.click();"
           "domAutomationController.send(pod.classList.contains('advanced'));",
-          account_id_1_.GetUserEmail().c_str()),
+          user_id_1_.c_str()),
       &advanced));
   EXPECT_FALSE(advanced);
   EXPECT_EQ(l10n_util::GetLanguage(initial_locale_),
@@ -1959,7 +1956,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
       base::StringPrintf(
           "document.getElementById('pod-row').getPodWithUsername_('%s')"
           "    .querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str())));
+          user_id_1_.c_str())));
 
   WaitForSessionStart();
 
@@ -2052,7 +2049,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
           "var event = document.createEvent('HTMLEvents');"
           "event.initEvent('change', false, true);"
           "languageSelect.dispatchEvent(event);",
-          account_id_1_.GetUserEmail().c_str(), kPublicSessionLocale)));
+          user_id_1_.c_str(),
+          kPublicSessionLocale)));
 
   // The UI will have requested an updated list of keyboard layouts at this
   // point. Wait for the constructions of this list to finish.
@@ -2078,7 +2076,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
           "    document.getElementById('pod-row').getPodWithUsername_('%s');"
           "pod.querySelector('.keyboard-select').value = '%s';"
           "pod.querySelector('.enter-button').click();",
-          account_id_1_.GetUserEmail().c_str(),
+          user_id_1_.c_str(),
           public_session_input_method_id_.c_str())));
 
   // Spin the loop until the login observer fires. Then, unregister the

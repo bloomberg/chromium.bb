@@ -38,7 +38,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/ownership/owner_key_util.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_urls.h"
@@ -641,9 +640,9 @@ void KioskAppManager::UpdateAppData() {
   const user_manager::User* active_user =
       user_manager::UserManager::Get()->GetActiveUser();
   if (active_user) {
-    const AccountId active_account_id = active_user->GetAccountId();
+    std::string active_user_id = active_user->GetUserID();
     for (const auto& it : old_apps) {
-      if (it.second->user_id() == active_account_id.GetUserEmail()) {
+      if (it.second->user_id() == active_user_id) {
         VLOG(1) << "Currently running kiosk app removed from policy, exiting";
         cryptohomes_barrier_closure = BarrierClosure(
             old_apps.size(), base::Bind(&chrome::AttemptUserExit));
