@@ -728,7 +728,14 @@ TEST_F(ScriptRunIteratorTest, OddLatinString)
     CHECK_RUNS({ { "ç̈", USCRIPT_LATIN } });
 }
 
+TEST_F(ScriptRunIteratorTest, CommonMalayalam)
+{
+    CHECK_RUNS({ { "100-ാം", USCRIPT_MALAYALAM } });
+}
+
+
 class ScriptRunIteratorICUDataTest : public testing::Test {
+
 public:
     ScriptRunIteratorICUDataTest()
         : m_maxExtensions(0)
