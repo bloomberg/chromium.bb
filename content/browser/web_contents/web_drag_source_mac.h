@@ -22,9 +22,13 @@ CONTENT_EXPORT
 @interface WebDragSource : NSObject {
  @private
   // Our contents. Weak reference (owns or co-owns us).
+  // An instance of this class may outlive |contents_|. The destructor of
+  // |contents_| must set this ivar to |nullptr|.
   content::WebContentsImpl* contents_;
 
   // The view from which the drag was initiated. Weak reference.
+  // An instance of this class may outlive |contentsView_|. The destructor of
+  // |contentsView_| must set this ivar to |nullptr|.
   NSView* contentsView_;
 
   // Our drop data. Should only be initialized once.

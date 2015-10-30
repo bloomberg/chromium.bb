@@ -67,6 +67,7 @@ STATIC_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)clearWebContentsView;
 - (void)closeTabAfterEvent;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
+- (content::WebContentsImpl*)webContents;
 @end
 
 namespace content {
@@ -455,8 +456,8 @@ void WebContentsViewMac::CloseTab() {
 }
 
 - (WebContentsImpl*)webContents {
-  if (webContentsView_ == NULL)
-    return NULL;
+  if (!webContentsView_)
+    return nullptr;
   return webContentsView_->web_contents();
 }
 
@@ -488,8 +489,11 @@ void WebContentsViewMac::CloseTab() {
 }
 
 - (void)setOpaque:(BOOL)opaque {
+  WebContentsImpl* webContents = [self webContents];
+  if (!webContents)
+    return;
   RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
-      webContentsView_->web_contents()->GetRenderWidgetHostView());
+      webContents->GetRenderWidgetHostView());
   DCHECK(view);
   [view->cocoa_view() setOpaque:opaque];
 }
@@ -503,6 +507,8 @@ void WebContentsViewMac::CloseTab() {
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset {
+  if (![self webContents])
+    return;
   dragSource_.reset([[WebDragSource alloc]
       initWithContents:[self webContents]
                   view:self
@@ -580,15 +586,19 @@ void WebContentsViewMac::CloseTab() {
 }
 
 - (void)clearWebContentsView {
-  webContentsView_ = NULL;
+  webContentsView_ = nullptr;
   [dragSource_ clearWebContentsView];
 }
 
 - (void)closeTabAfterEvent {
-  webContentsView_->CloseTab();
+  if (webContentsView_)
+    webContentsView_->CloseTab();
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {
+  if (![self webContents])
+    return;
+
   NSView* view = [notification object];
   if (![[self subviews] containsObject:view])
     return;

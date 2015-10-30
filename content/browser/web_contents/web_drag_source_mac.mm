@@ -225,6 +225,9 @@ void PromiseWriterHelper(const DropData& drop_data,
 }
 
 - (void)startDrag {
+  if (!contentsView_)
+    return;
+
   NSEvent* currentEvent = [NSApp currentEvent];
 
   // Synthesize an event for dragging, since we can't be sure that
@@ -260,7 +263,7 @@ void PromiseWriterHelper(const DropData& drop_data,
 
 - (void)endDragAt:(NSPoint)screenPoint
         operation:(NSDragOperation)operation {
-  if (!contents_)
+  if (!contents_ || !contentsView_)
     return;
   contents_->SystemDragEnded();
 
@@ -309,7 +312,7 @@ void PromiseWriterHelper(const DropData& drop_data,
   if (!file.IsValid())
     return nil;
 
-  if (downloadURL_.is_valid()) {
+  if (downloadURL_.is_valid() && contents_) {
     scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
         filePath,
         file.Pass(),
@@ -342,6 +345,9 @@ void PromiseWriterHelper(const DropData& drop_data,
 @implementation WebDragSource (Private)
 
 - (void)fillPasteboard {
+  if (!contentsView_)
+    return;
+
   DCHECK(pasteboard_.get());
 
   [pasteboard_ declareTypes:@[ ui::kChromeDragDummyPboardType ]
