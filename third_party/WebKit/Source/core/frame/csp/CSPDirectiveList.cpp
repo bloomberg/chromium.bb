@@ -26,8 +26,8 @@ namespace {
 String getSha256String(const String& content)
 {
     DigestValue digest;
-    StringUTF8Adaptor normalizedContent = normalizeSource(content);
-    bool digestSuccess = computeDigest(HashAlgorithmSha256, normalizedContent.data(), normalizedContent.length(), digest);
+    StringUTF8Adaptor utf8Content(content);
+    bool digestSuccess = computeDigest(HashAlgorithmSha256, utf8Content.data(), utf8Content.length(), digest);
     if (!digestSuccess) {
         return "sha256-...";
     }

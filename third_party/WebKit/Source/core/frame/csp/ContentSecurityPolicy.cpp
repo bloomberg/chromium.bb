@@ -430,12 +430,12 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
     if (hashAlgorithmsUsed == ContentSecurityPolicyHashAlgorithmNone)
         return false;
 
-    StringUTF8Adaptor normalizedSource = normalizeSource(source);
+    StringUTF8Adaptor utf8Source(source);
 
     for (const auto& algorithmMap : kAlgorithmMap) {
         DigestValue digest;
         if (algorithmMap.cspHashAlgorithm & hashAlgorithmsUsed) {
-            bool digestSuccess = computeDigest(algorithmMap.algorithm, normalizedSource.data(), normalizedSource.length(), digest);
+            bool digestSuccess = computeDigest(algorithmMap.algorithm, utf8Source.data(), utf8Source.length(), digest);
             if (digestSuccess && isAllowedByAllWithHash<allowed>(policies, CSPHashValue(algorithmMap.cspHashAlgorithm, digest)))
                 return true;
         }
