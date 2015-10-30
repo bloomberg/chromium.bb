@@ -2434,6 +2434,7 @@ void CalculateRenderSurfaceLayerListInternal(
     bool subtree_visible_from_ancestor,
     const bool can_render_to_separate_surface,
     const int current_render_surface_layer_list_id,
+    const int max_texture_size,
     const bool verify_property_trees) {
   // This calculates top level Render Surface Layer List, and Layer List for all
   // Render Surfaces.
@@ -2529,7 +2530,7 @@ void CalculateRenderSurfaceLayerListInternal(
         child_layer, property_trees, render_surface_layer_list, descendants,
         nearest_occlusion_immune_ancestor, layer_is_drawn,
         can_render_to_separate_surface, current_render_surface_layer_list_id,
-        verify_property_trees);
+        max_texture_size, verify_property_trees);
 
     // If the child is its own render target, then it has a render surface.
     if (child_layer->render_target() == child_layer &&
@@ -2583,6 +2584,12 @@ void CalculateRenderSurfaceLayerListInternal(
             surface_content_rect.Intersect(surface_clip_rect);
           }
         }
+        // The RenderSurfaceImpl backing texture cannot exceed the maximum
+        // supported texture size.
+        surface_content_rect.set_width(
+            std::min(surface_content_rect.width(), max_texture_size));
+        surface_content_rect.set_height(
+            std::min(surface_content_rect.height(), max_texture_size));
         layer->render_surface()->SetContentRectFromPropertyTrees(
             surface_content_rect);
       }
@@ -2645,7 +2652,7 @@ void CalculateRenderSurfaceLayerList(
       inputs->root_layer, inputs->property_trees,
       inputs->render_surface_layer_list, nullptr, nullptr,
       subtree_visible_from_ancestor, inputs->can_render_to_separate_surface,
-      inputs->current_render_surface_layer_list_id,
+      inputs->current_render_surface_layer_list_id, inputs->max_texture_size,
       inputs->verify_property_trees);
 }
 

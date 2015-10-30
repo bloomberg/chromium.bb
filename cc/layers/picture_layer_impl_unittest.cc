@@ -80,6 +80,7 @@ class PictureLayerImplTestSettings : public GpuRasterizationEnabledSettings {
  public:
   PictureLayerImplTestSettings() {
     layer_transforms_should_scale_layer_contents = true;
+    verify_property_trees = true;
   }
 };
 
@@ -148,7 +149,13 @@ class PictureLayerImplTest : public testing::Test {
                                invalidation);
   }
 
+  void RebuildPropertyTreesOnPendingTree() {
+    host_impl_.pending_tree()->property_trees()->needs_rebuild = true;
+    host_impl_.pending_tree()->BuildPropertyTreesForTesting();
+  }
+
   void ActivateTree() {
+    RebuildPropertyTreesOnPendingTree();
     host_impl_.ActivateSyncTree();
     CHECK(!host_impl_.pending_tree());
     CHECK(host_impl_.recycle_tree());
@@ -258,6 +265,7 @@ class PictureLayerImplTest : public testing::Test {
 
     // Add tilings/tiles for the layer.
     bool update_lcd_text = false;
+    RebuildPropertyTreesOnPendingTree();
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
@@ -1357,7 +1365,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
   pending_layer_->SetHasRenderSurface(true);
 
-  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -1486,7 +1494,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
   pending_layer_->SetHasRenderSurface(true);
 
-  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -3972,6 +3980,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   layer1->SetContentsOpaque(true);
   layer1->SetPosition(occluding_layer_position);
 
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
   bool update_lcd_text = false;
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -3996,6 +4005,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   // Full occlusion.
   layer1->SetPosition(gfx::PointF());
 
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
@@ -4064,6 +4074,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   layer1->SetContentsOpaque(true);
   layer1->SetPosition(occluding_layer_position);
 
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
   bool update_lcd_text = false;
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -4101,6 +4112,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   // Full occlusion.
   layer1->SetPosition(gfx::PointF());
 
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
@@ -4166,6 +4178,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   pending_layer_->AddTiling(1.0f)->set_resolution(HIGH_RESOLUTION);
   pending_layer_->AddTiling(2.0f)->set_resolution(HIGH_RESOLUTION);
 
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   // UpdateDrawProperties with the occluding layer.
   bool update_lcd_text = false;
@@ -4343,6 +4356,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   EXPECT_EQ(1u, pending_layer_->num_tilings());
   EXPECT_EQ(2u, active_layer_->num_tilings());
 
+  RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   // UpdateDrawProperties with the occluding layer.
   bool update_lcd_text = false;
