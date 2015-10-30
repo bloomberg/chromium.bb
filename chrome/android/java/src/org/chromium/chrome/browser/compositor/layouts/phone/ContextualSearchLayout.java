@@ -99,12 +99,13 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
         // if the SearchContentView's vertical scroll position is zero. Otherwise the
         // ContentView will appear to jump in the screen. Coordinate with @dtrainor to solve
         // this problem.
-        mSearchPanel.getManagementDelegate().updateTopControlsState(TopControlsState.BOTH, false);
+        mSearchPanel.updateTopControlsState(TopControlsState.BOTH, false);
         return true;
     }
 
     @Override
     public void show(long time, boolean animate) {
+        mTabListSceneLayer.setContentTree(super.getSceneLayer());
         super.show(time, animate);
 
         resetLayout();

@@ -12,8 +12,6 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.resources.ResourceManager;
 
-import javax.annotation.Nullable;
-
 /**
  * A SceneLayer to render layers for ContextualSearchLayout.
  */
@@ -24,28 +22,24 @@ public class ContextualSearchSceneLayer extends SceneLayer {
     private long mNativePtr;
 
     private final float mDpToPx;
-    private final ContextualSearchPanel mSearchPanel;
 
-    public ContextualSearchSceneLayer(float dpToPx, ContextualSearchPanel searchPanel) {
+    public ContextualSearchSceneLayer(float dpToPx) {
         mDpToPx = dpToPx;
-        mSearchPanel = searchPanel;
     }
 
     /**
-     * Update contextual search's layer tree using the parameters.
-     *
-     * @param contentViewCore The CVC, may be null if only updating the bar.
-     * @param resourceManager
+     * This class is used for SceneLayers that are frequently updated.
      */
-    public void update(@Nullable ContentViewCore contentViewCore, ResourceManager resourceManager) {
-        int searchContextViewId = mSearchPanel.getSearchContextViewId();
-        int searchTermViewId = mSearchPanel.getSearchTermViewId();
+    public void update(ResourceManager resourceManager,
+            ContextualSearchPanel panel) {
+        int searchContextViewId = panel.getSearchContextViewId();
+        int searchTermViewId = panel.getSearchTermViewId();
 
-        boolean searchPromoVisible = mSearchPanel.getPromoVisible();
-        float searchPromoHeightPx = mSearchPanel.getPromoHeightPx();
-        float searchPromoOpacity = mSearchPanel.getPromoOpacity();
+        boolean searchPromoVisible = panel.getPromoVisible();
+        float searchPromoHeightPx = panel.getPromoHeightPx();
+        float searchPromoOpacity = panel.getPromoOpacity();
 
-        ContextualSearchPeekPromoControl peekPromoControl = mSearchPanel.getPeekPromoControl();
+        ContextualSearchPeekPromoControl peekPromoControl = panel.getPeekPromoControl();
         int searchPeekPromoTextViewId = peekPromoControl.getViewId();
         boolean searchPeekPromoVisible = peekPromoControl.isVisible();
         float searchPeekPromoHeightPx = peekPromoControl.getHeightPx();
@@ -54,38 +48,37 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float searchPeekPromoRippleOpacity = peekPromoControl.getRippleOpacity();
         float searchPeekPromoTextOpacity = peekPromoControl.getTextOpacity();
 
-        float searchPanelX = mSearchPanel.getOffsetX();
-        float searchPanelY = mSearchPanel.getOffsetY();
-        float searchPanelWidth = mSearchPanel.getWidth();
-        float searchPanelHeight = mSearchPanel.getHeight();
+        float searchPanelX = panel.getOffsetX();
+        float searchPanelY = panel.getOffsetY();
+        float searchPanelWidth = panel.getWidth();
+        float searchPanelHeight = panel.getHeight();
 
-        float searchBarMarginSide = mSearchPanel.getSearchBarMarginSide();
-        float searchBarHeight = mSearchPanel.getSearchBarHeight();
-        float searchContextOpacity = mSearchPanel.getSearchBarContextOpacity();
-        float searchTermOpacity = mSearchPanel.getSearchBarTermOpacity();
+        float searchBarMarginSide = panel.getSearchBarMarginSide();
+        float searchBarHeight = panel.getSearchBarHeight();
+        float searchContextOpacity = panel.getSearchBarContextOpacity();
+        float searchTermOpacity = panel.getSearchBarTermOpacity();
 
-        boolean searchBarBorderVisible = mSearchPanel.isSearchBarBorderVisible();
-        float searchBarBorderHeight = mSearchPanel.getSearchBarBorderHeight();
+        boolean searchBarBorderVisible = panel.isSearchBarBorderVisible();
+        float searchBarBorderHeight = panel.getSearchBarBorderHeight();
 
-        boolean searchBarShadowVisible = mSearchPanel.getSearchBarShadowVisible();
-        float searchBarShadowOpacity = mSearchPanel.getSearchBarShadowOpacity();
+        boolean searchBarShadowVisible = panel.getSearchBarShadowVisible();
+        float searchBarShadowOpacity = panel.getSearchBarShadowOpacity();
 
-        ContextualSearchIconSpriteControl spriteControl =
-                mSearchPanel.getIconSpriteControl();
+        ContextualSearchIconSpriteControl spriteControl = panel.getIconSpriteControl();
         boolean searchProviderIconSpriteVisible = spriteControl.isVisible();
         float searchProviderIconCompletionPercentage = spriteControl.getCompletionPercentage();
         float searchProviderIconSpriteSize = spriteControl.getSizePx();
 
-        float arrowIconOpacity = mSearchPanel.getArrowIconOpacity();
-        float arrowIconRotation = mSearchPanel.getArrowIconRotation();
+        float arrowIconOpacity = panel.getArrowIconOpacity();
+        float arrowIconRotation = panel.getArrowIconRotation();
 
-        float closeIconOpacity = mSearchPanel.getCloseIconOpacity();
+        float closeIconOpacity = panel.getCloseIconOpacity();
 
-        boolean isProgressBarVisible = mSearchPanel.isProgressBarVisible();
+        boolean isProgressBarVisible = panel.isProgressBarVisible();
 
-        float progressBarHeight = mSearchPanel.getProgressBarHeight();
-        float progressBarOpacity = mSearchPanel.getProgressBarOpacity();
-        int progressBarCompletion = mSearchPanel.getProgressBarCompletion();
+        float progressBarHeight = panel.getProgressBarHeight();
+        float progressBarOpacity = panel.getProgressBarOpacity();
+        int progressBarCompletion = panel.getProgressBarCompletion();
 
         nativeUpdateContextualSearchLayer(mNativePtr,
                 R.drawable.contextual_search_bar_background,
@@ -102,7 +95,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchPeekPromoTextViewId,
                 R.drawable.google_icon_sprite,
                 R.raw.google_icon_sprite,
-                contentViewCore,
+                panel.getContentViewCore(),
                 searchPromoVisible,
                 searchPromoHeightPx,
                 searchPromoOpacity,

@@ -10,7 +10,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelAnimation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.ui.resources.ResourceManager;
 
 /**
  * Controls the Overlay Panel.
@@ -79,6 +82,11 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     private OverlayPanelContent mContent;
 
+    /**
+     * The {@link OverlayPanelHost} used to communicate with the supported layout.
+     */
+    private OverlayPanelHost mOverlayPanelHost;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -120,6 +128,18 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
      */
     public boolean isExpanded() {
         return doesPanelHeightMatchState(PanelState.EXPANDED);
+    }
+
+    @Override
+    public void closePanel(StateChangeReason reason, boolean animate) {
+        super.closePanel(reason, animate);
+
+        // If the close action is animated, the Layout will be hidden when
+        // the animation is finished, so we should only hide the Layout
+        // here when not animating.
+        if (!animate && mOverlayPanelHost != null) {
+            mOverlayPanelHost.hideLayout(true);
+        }
     }
 
     /**
@@ -194,6 +214,22 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
     }
 
     /**
+     * Updates the top controls state for the base tab.  As these values are set at the renderer
+     * level, there is potential for this impacting other tabs that might share the same
+     * process. See {@link Tab#updateTopControlsState(int current, boolean animate)}
+     * @param current The desired current state for the controls.  Pass
+     *                {@link TopControlsState#BOTH} to preserve the current position.
+     * @param animate Whether the controls should animate to the specified ending condition or
+     *                should jump immediately.
+     */
+    public void updateTopControlsState(int current, boolean animate) {
+        Tab currentTab = mActivity.getActivityTab();
+        if (currentTab != null) {
+            currentTab.updateTopControlsState(current, animate);
+        }
+    }
+
+    /**
      * Sets the top control state based on the internals of the panel.
      */
     public void updateTopControlsState() {
@@ -232,6 +268,32 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
     }
 
     // ============================================================================================
+    // Animation Handling
+    // ============================================================================================
+
+    @Override
+    protected void onAnimationFinished() {
+        super.onAnimationFinished();
+
+        if (shouldHideOverlayPanelLayout()) {
+            if (mOverlayPanelHost != null) {
+                mOverlayPanelHost.hideLayout(false);
+            }
+        }
+    }
+
+    /**
+     * Whether the Overlay Panel Layout should be hidden.
+     *
+     * @return Whether the Overlay Panel Layout should be hidden.
+     */
+    private boolean shouldHideOverlayPanelLayout() {
+        final PanelState state = getPanelState();
+        return (state == PanelState.PEEKED || state == PanelState.CLOSED)
+                && getHeight() == getPanelHeightFromState(state);
+    }
+
+    // ============================================================================================
     // ContextualSearchPanelBase methods.
     // ============================================================================================
 
@@ -240,6 +302,32 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
         // TODO(mdjones): Investigate passing this in to the constructor instead.
         assert mActivity != null;
         return mActivity.getControlContainerHeightResource();
+    }
+
+    // ============================================================================================
+    // Layout Integration
+    // ============================================================================================
+
+    /**
+     * Sets the {@OverlayPanelHost} used to communicate with the supported layout.
+     * @param host The {@OverlayPanelHost}.
+     */
+    public void setHost(OverlayPanelHost host) {
+        mOverlayPanelHost = host;
+    }
+
+    /**
+     * @return The scene layer used to draw this panel.
+     */
+    public SceneLayer getSceneLayer() {
+        return null;
+    }
+
+    /**
+     * Update this panel's scene layer. This should be implemented by each panel type.
+     * @param resourceManager Used to access static resources.
+     */
+    public void updateSceneLayer(ResourceManager resourceManager) {
     }
 
     // ============================================================================================

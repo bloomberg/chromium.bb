@@ -13,9 +13,12 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressOb
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
+import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content.browser.ContentViewClient;
+import org.chromium.ui.resources.ResourceManager;
 
 /**
  * Controls the Contextual Search Panel.
@@ -38,11 +41,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     private boolean mShouldPromoteToTabAfterMaximizing;
 
     /**
-     * The {@link ContextualSearchPanelHost} used to communicate with the supported layout.
-     */
-    private ContextualSearchPanelHost mSearchPanelHost;
-
-    /**
      * Used for logging state changes.
      */
     private final ContextualSearchPanelMetrics mPanelMetrics;
@@ -57,6 +55,11 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private boolean mHasContentBeenTouched;
 
+    /**
+     * The compositor layer used for drawing the panel.
+     */
+    private ContextualSearchSceneLayer mSceneLayer;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -67,6 +70,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
         super(context, updateHost);
+        mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
     }
 
@@ -142,6 +146,29 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     // ============================================================================================
+    // Scene layer
+    // ============================================================================================
+
+    @Override
+    public SceneLayer getSceneLayer() {
+        return mSceneLayer;
+    }
+
+    @Override
+    public void updateSceneLayer(ResourceManager resourceManager) {
+        if (mSceneLayer == null) return;
+
+        mSceneLayer.update(resourceManager, this);
+    }
+
+    /**
+     * Create a new scene layer for this panel. This should be overridden by tests as necessary.
+     */
+    protected ContextualSearchSceneLayer createNewContextualSearchSceneLayer() {
+        return new ContextualSearchSceneLayer(mContext.getResources().getDisplayMetrics().density);
+    }
+
+    // ============================================================================================
     // Contextual Search Manager Integration
     // ============================================================================================
 
@@ -211,18 +238,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     public void onPromoButtonClick(boolean accepted) {
         super.onPromoButtonClick(accepted);
-    }
-
-    // ============================================================================================
-    // Layout Integration
-    // ============================================================================================
-
-    /**
-     * Sets the {@ContextualSearchPanelHost} used to communicate with the supported layout.
-     * @param host The {@ContextualSearchPanelHost}.
-     */
-    public void setHost(ContextualSearchPanelHost host) {
-        mSearchPanelHost = host;
     }
 
     // ============================================================================================
@@ -301,28 +316,10 @@ public class ContextualSearchPanel extends OverlayPanel {
     protected void onAnimationFinished() {
         super.onAnimationFinished();
 
-        if (shouldHideContextualSearchLayout()) {
-            if (mSearchPanelHost != null) {
-                mSearchPanelHost.hideLayout(false);
-            }
-        }
-
         if (mShouldPromoteToTabAfterMaximizing && getPanelState() == PanelState.MAXIMIZED) {
             mShouldPromoteToTabAfterMaximizing = false;
             mManagementDelegate.promoteToTab();
         }
-    }
-
-    /**
-    * Whether the Contextual Search Layout should be hidden.
-    *
-    * @return Whether the Contextual Search Layout should be hidden.
-    */
-    private boolean shouldHideContextualSearchLayout() {
-        final PanelState state = getPanelState();
-
-        return (state == PanelState.PEEKED || state == PanelState.CLOSED)
-                && getHeight() == getPanelHeightFromState(state);
     }
 
     @Override
@@ -407,14 +404,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     public void closePanel(StateChangeReason reason, boolean animate) {
         super.closePanel(reason, animate);
-
-        // If the close action is animated, the Layout will be hidden when
-        // the animation is finished, so we should only hide the Layout
-        // here when not animating.
-        if (!animate && mSearchPanelHost != null) {
-            mSearchPanelHost.hideLayout(true);
-        }
-
         mHasContentBeenTouched = false;
     }
 

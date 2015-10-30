@@ -554,14 +554,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         }
     }
 
-    @Override
-    public void updateTopControlsState(int current, boolean animate) {
-        Tab currentTab = mActivity.getActivityTab();
-        if (currentTab != null) {
-            currentTab.updateTopControlsState(current, animate);
-        }
-    }
-
     /**
      * Accessor for the {@code InfoBarContainer} currently attached to the {@code Tab}.
      */
@@ -1092,7 +1084,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @Override
     public void onSelectionChanged(String selection) {
         mSelectionController.handleSelectionChanged(selection);
-        updateTopControlsState(TopControlsState.BOTH, true);
+        mSearchPanel.updateTopControlsState(TopControlsState.BOTH, true);
     }
 
     @Override

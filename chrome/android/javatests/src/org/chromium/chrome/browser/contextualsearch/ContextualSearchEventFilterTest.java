@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ContextualSearchEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
+import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 
 /**
  * Class responsible for testing the ContextualSearchEventFilter.
@@ -137,6 +138,11 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
         @Override
         public OverlayPanelContent createNewOverlayPanelContent() {
             return new MockOverlayPanelContent();
+        }
+
+        @Override
+        protected ContextualSearchSceneLayer createNewContextualSearchSceneLayer() {
+            return null;
         }
 
         /**

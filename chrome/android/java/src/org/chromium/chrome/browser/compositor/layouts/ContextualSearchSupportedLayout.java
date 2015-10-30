@@ -10,11 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelHost;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelHost;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.content.browser.ContentViewCore;
@@ -25,23 +24,19 @@ import java.util.List;
 /**
  * A {@link Layout} that can show a Contextual Search overlay that shows at the
  * bottom and can be swiped upwards.
+ * TODO(mdjones): Rename this class to OverlayPanelSupportedLayout.
  */
 public abstract class ContextualSearchSupportedLayout extends Layout {
     /**
-     * The {@link ContextualSearchPanelHost} that allows the {@link ContextualSearchPanel} to
+     * The {@link OverlayPanelHost} that allows the {@link OverlayPanel} to
      * communicate back to the Layout.
      */
-    protected final ContextualSearchPanelHost mContextualSearchPanelHost;
+    protected final OverlayPanelHost mOverlayPanelHost;
 
     /**
-     * The {@link ContextualSearchPanel} that represents the Contextual Search UI.
+     * The {@link OverlayPanel} that represents the Contextual Search UI.
      */
-    protected final ContextualSearchPanel mSearchPanel;
-
-    /**
-     * The {@link SceneLayer} that renders contextual search UI.
-     */
-    private final ContextualSearchSceneLayer mContextualSearchSceneLayer;
+    protected final OverlayPanel mSearchPanel;
 
     /**
      * Size of half pixel in dps.
@@ -53,13 +48,13 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
      * @param updateHost The {@link LayoutUpdateHost} view for this layout.
      * @param renderHost The {@link LayoutRenderHost} view for this layout.
      * @param eventFilter The {@link EventFilter} that is needed for this view.
-     * @param panel The {@link ContextualSearchPanel} that represents the Contextual Search UI.
+     * @param panel The {@link OverlayPanel} that represents the Contextual Search UI.
      */
     public ContextualSearchSupportedLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, EventFilter eventFilter, ContextualSearchPanel panel) {
+            LayoutRenderHost renderHost, EventFilter eventFilter, OverlayPanel panel) {
         super(context, updateHost, renderHost, eventFilter);
 
-        mContextualSearchPanelHost = new ContextualSearchPanelHost() {
+        mOverlayPanelHost = new OverlayPanelHost() {
             @Override
             public void hideLayout(boolean immediately) {
                 ContextualSearchSupportedLayout.this.hideContextualSearch(immediately);
@@ -69,7 +64,6 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
         mSearchPanel = panel;
         float dpToPx = context.getResources().getDisplayMetrics().density;
         mHalfPixelDp = 0.5f / dpToPx;
-        mContextualSearchSceneLayer = new ContextualSearchSceneLayer(dpToPx, panel);
     }
 
     @Override
@@ -81,7 +75,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
     public void getAllViews(List<View> views) {
         // TODO(dtrainor): If we move ContextualSearch to an overlay, pull the views from there
         // instead in Layout.java.
-        if (mSearchPanel != null && mSearchPanel.getManagementDelegate() != null) {
+        if (mSearchPanel != null) {
             ContentViewCore content = mSearchPanel.getContentViewCore();
             if (content != null) views.add(content.getContainerView());
         }
@@ -92,7 +86,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
     public void getAllContentViewCores(List<ContentViewCore> contents) {
         // TODO(dtrainor): If we move ContextualSearch to an overlay, pull the content from there
         // instead in Layout.java.
-        if (mSearchPanel != null && mSearchPanel.getManagementDelegate() != null) {
+        if (mSearchPanel != null) {
             ContentViewCore content =
                     mSearchPanel.getContentViewCore();
             if (content != null) contents.add(content);
@@ -102,7 +96,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
 
     @Override
     public void show(long time, boolean animate) {
-        mSearchPanel.setHost(mContextualSearchPanelHost);
+        mSearchPanel.setHost(mOverlayPanelHost);
         super.show(time, animate);
     }
 
@@ -135,7 +129,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
 
     @Override
     protected SceneLayer getSceneLayer() {
-        return mContextualSearchSceneLayer;
+        return mSearchPanel.getSceneLayer();
     }
 
     @Override
@@ -146,12 +140,6 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
                 resourceManager, fullscreenManager);
         if (!mSearchPanel.isShowing()) return;
 
-        if (mContextualSearchSceneLayer == null || mSearchPanel.getManagementDelegate() == null) {
-            return;
-        }
-
-        ContentViewCore contentViewCore =
-                mSearchPanel.getContentViewCore();
-        mContextualSearchSceneLayer.update(contentViewCore, resourceManager);
+        mSearchPanel.updateSceneLayer(resourceManager);
     }
 }

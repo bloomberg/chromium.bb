@@ -8,8 +8,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.common.TopControlsState;
 
 /**
  * The delegate that provides global management functionality for Contextual Search.
@@ -35,17 +33,6 @@ public interface ContextualSearchManagementDelegate {
      * Called when the promo Panel gets closed, to log the outcome.
      */
     void logPromoOutcome();
-
-    /**
-     * Updates the top controls state for the base tab.  As these values are set at the renderer
-     * level, there is potential for this impacting other tabs that might share the same
-     * process. See {@link Tab#updateTopControlsState(int current, boolean animate)}
-     * @param current The desired current state for the controls.  Pass
-     *                {@link TopControlsState#BOTH} to preserve the current position.
-     * @param animate Whether the controls should animate to the specified ending condition or
-     *                should jump immediately.
-     */
-    void updateTopControlsState(int current, boolean animate);
 
     /**
      * Promotes the current Content View Core in the Contextual Search Panel to its own Tab.
