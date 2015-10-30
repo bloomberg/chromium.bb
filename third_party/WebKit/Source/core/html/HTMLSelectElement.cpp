@@ -77,7 +77,7 @@ using namespace HTMLNames;
 // Upper limit of m_listItems. According to the HTML standard, options larger
 // than this limit doesn't work well because |selectedIndex| IDL attribute is
 // signed.
-static const unsigned maxListItems = std::numeric_limits<int>::max();
+static const unsigned maxListItems = INT_MAX;
 
 HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(selectTag, document, form)
