@@ -22,8 +22,7 @@ class BrowserStateInfoCacheObserver {
   virtual void OnBrowserStateAdded(const base::FilePath& path) = 0;
 
   // Called when a BrowserState has been removed.
-  virtual void OnBrowserStateWasRemoved(const base::FilePath& path,
-                                        const base::string16& name) = 0;
+  virtual void OnBrowserStateWasRemoved(const base::FilePath& path) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserStateInfoCacheObserver);

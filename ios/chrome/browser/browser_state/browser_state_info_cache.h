@@ -30,7 +30,6 @@ class BrowserStateInfoCache {
   virtual ~BrowserStateInfoCache();
 
   void AddBrowserState(const base::FilePath& browser_state_path,
-                       const base::string16& name,
                        const std::string& gaia_id,
                        const base::string16& user_name);
   void RemoveBrowserState(const base::FilePath& browser_state_path);
@@ -45,7 +44,6 @@ class BrowserStateInfoCache {
   // Gets and sets information related to browser states.
   size_t GetIndexOfBrowserStateWithPath(
       const base::FilePath& browser_state_path) const;
-  base::string16 GetNameOfBrowserStateAtIndex(size_t index) const;
   base::string16 GetUserNameOfBrowserStateAtIndex(size_t index) const;
   base::FilePath GetPathOfBrowserStateAtIndex(size_t index) const;
   std::string GetGAIAIdOfBrowserStateAtIndex(size_t index) const;
@@ -69,9 +67,7 @@ class BrowserStateInfoCache {
 
   std::string CacheKeyFromBrowserStatePath(
       const base::FilePath& browser_state_path) const;
-  std::vector<std::string>::iterator FindPositionForBrowserState(
-      const std::string& search_key,
-      const base::string16& search_name);
+  void AddBrowserStateCacheKey(const std::string& key);
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;

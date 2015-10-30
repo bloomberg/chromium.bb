@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 
+#include <algorithm>
+
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,7 +18,6 @@
 namespace {
 const char kGAIAIdKey[] = "gaia_id";
 const char kIsAuthErrorKey[] = "is_auth_error";
-const char kNameKey[] = "name";
 const char kUserNameKey[] = "user_name";
 }
 
@@ -31,9 +32,7 @@ BrowserStateInfoCache::BrowserStateInfoCache(
        it.Advance()) {
     base::DictionaryValue* info = nullptr;
     cache->GetDictionaryWithoutPathExpansion(it.key(), &info);
-    base::string16 name;
-    info->GetString(kNameKey, &name);
-    sorted_keys_.insert(FindPositionForBrowserState(it.key(), name), it.key());
+    AddBrowserStateCacheKey(it.key());
   }
 }
 
@@ -41,7 +40,6 @@ BrowserStateInfoCache::~BrowserStateInfoCache() {}
 
 void BrowserStateInfoCache::AddBrowserState(
     const base::FilePath& browser_state_path,
-    const base::string16& name,
     const std::string& gaia_id,
     const base::string16& user_name) {
   std::string key = CacheKeyFromBrowserStatePath(browser_state_path);
@@ -49,12 +47,10 @@ void BrowserStateInfoCache::AddBrowserState(
   base::DictionaryValue* cache = update.Get();
 
   scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue);
-  info->SetString(kNameKey, name);
   info->SetString(kGAIAIdKey, gaia_id);
   info->SetString(kUserNameKey, user_name);
   cache->SetWithoutPathExpansion(key, info.release());
-
-  sorted_keys_.insert(FindPositionForBrowserState(key, name), key);
+  AddBrowserStateCacheKey(key);
 
   FOR_EACH_OBSERVER(BrowserStateInfoCacheObserver, observer_list_,
                     OnBrowserStateAdded(browser_state_path));
@@ -78,8 +74,6 @@ void BrowserStateInfoCache::RemoveBrowserState(
     NOTREACHED();
     return;
   }
-  base::string16 name = GetNameOfBrowserStateAtIndex(browser_state_index);
-
   DictionaryPrefUpdate update(prefs_, ios::prefs::kBrowserStateInfoCache);
   base::DictionaryValue* cache = update.Get();
   std::string key = CacheKeyFromBrowserStatePath(browser_state_path);
@@ -87,7 +81,7 @@ void BrowserStateInfoCache::RemoveBrowserState(
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
 
   FOR_EACH_OBSERVER(BrowserStateInfoCacheObserver, observer_list_,
-                    OnBrowserStateWasRemoved(browser_state_path, name));
+                    OnBrowserStateWasRemoved(browser_state_path));
 }
 
 size_t BrowserStateInfoCache::GetNumberOfBrowserStates() const {
@@ -104,13 +98,6 @@ size_t BrowserStateInfoCache::GetIndexOfBrowserStateWithPath(
       return i;
   }
   return std::string::npos;
-}
-
-base::string16 BrowserStateInfoCache::GetNameOfBrowserStateAtIndex(
-    size_t index) const {
-  base::string16 name;
-  GetInfoForBrowserStateAtIndex(index)->GetString(kNameKey, &name);
-  return name;
 }
 
 base::string16 BrowserStateInfoCache::GetUserNameOfBrowserStateAtIndex(
@@ -214,22 +201,7 @@ std::string BrowserStateInfoCache::CacheKeyFromBrowserStatePath(
   return base_name.MaybeAsASCII();
 }
 
-std::vector<std::string>::iterator
-BrowserStateInfoCache::FindPositionForBrowserState(
-    const std::string& search_key,
-    const base::string16& search_name) {
-  base::string16 search_name_l = base::i18n::ToLower(search_name);
-  for (size_t i = 0; i < GetNumberOfBrowserStates(); ++i) {
-    base::string16 name_l =
-        base::i18n::ToLower(GetNameOfBrowserStateAtIndex(i));
-    int name_compare = search_name_l.compare(name_l);
-    if (name_compare < 0)
-      return sorted_keys_.begin() + i;
-    if (name_compare == 0) {
-      int key_compare = search_key.compare(sorted_keys_[i]);
-      if (key_compare < 0)
-        return sorted_keys_.begin() + i;
-    }
-  }
-  return sorted_keys_.end();
+void BrowserStateInfoCache::AddBrowserStateCacheKey(const std::string& key) {
+  sorted_keys_.insert(
+      std::upper_bound(sorted_keys_.begin(), sorted_keys_.end(), key), key);
 }
