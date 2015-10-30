@@ -50,22 +50,6 @@ DEFINE_TRACE(SVGGraphicsElement)
     SVGTests::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& exceptionState)
-{
-    AffineTransform ctm = getCTM(AllowStyleUpdate);
-
-    if (target && target->isSVGGraphicsElement()) {
-        AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(AllowStyleUpdate);
-        if (!targetCTM.isInvertible()) {
-            exceptionState.throwDOMException(InvalidStateError, "The target transformation is not invertable.");
-            return nullptr;
-        }
-        ctm = targetCTM.inverse() * ctm;
-    }
-
-    return SVGMatrixTearOff::create(ctm);
-}
-
 static bool isViewportElement(const Element& element)
 {
     return (isSVGSVGElement(element)

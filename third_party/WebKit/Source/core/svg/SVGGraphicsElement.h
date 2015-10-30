@@ -48,8 +48,6 @@ public:
     PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getCTMFromJavascript();
     PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getScreenCTMFromJavascript();
 
-    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getTransformToElement(SVGElement*, ExceptionState&);
-
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
 

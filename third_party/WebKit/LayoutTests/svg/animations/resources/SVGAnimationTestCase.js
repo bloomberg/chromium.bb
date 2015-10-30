@@ -43,6 +43,10 @@ function expectTranslationMatrix(actualMatrix, expectedE, expectedF, tolerance) 
     shouldBeCloseEnough(actualMatrix + ".f", expectedF, tolerance);
 }
 
+function getTransformToElement(rootElement, element) {
+    return element.getCTM().inverse().multiply(rootElement.getCTM());
+}
+
 function expectColor(element, red, green, blue, property) {
     if (typeof property != "string")
         color = getComputedStyle(element).getPropertyValue("color");

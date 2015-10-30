@@ -347,6 +347,10 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 crbug.com/548904 [ Linux Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Pass ]
 
+crbug.com/524432 svg/W3C-SVG-1.1-SE/types-dom-01-b.svg [ NeedsRebaseline ]
+crbug.com/524432 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ NeedsRebaseline ]
+crbug.com/524432 svg/dom/css-transforms.xhtml [ NeedsRebaseline ]
+
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/530044 transforms/2d/transform-borderbox.html [ NeedsManualRebaseline ]

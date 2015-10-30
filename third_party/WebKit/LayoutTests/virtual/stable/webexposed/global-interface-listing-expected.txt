@@ -3984,7 +3984,6 @@ interface SVGGraphicsElement : SVGElement
     method getBBox
     method getCTM
     method getScreenCTM
-    method getTransformToElement
 interface SVGImageElement : SVGGraphicsElement
     getter height
     getter href
