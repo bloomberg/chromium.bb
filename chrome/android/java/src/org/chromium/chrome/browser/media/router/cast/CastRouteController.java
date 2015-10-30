@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import android.content.Context;
+import android.util.SparseIntArray;
 
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
@@ -48,17 +49,15 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             "LOAD",
             "PAUSE",
             "SEEK",
-            "GET_STATUS",
             "STOP_MEDIA",
-            "SET_VOLUME",
-            "GET_STATUS",
+            "MEDIA_SET_VOLUME",
+            "MEDIA_GET_STATUS",
             "EDIT_TRACKS_INFO",
             "QUEUE_LOAD",
             "QUEUE_INSERT",
             "QUEUE_UPDATE",
             "QUEUE_REMOVE",
             "QUEUE_REORDER",
-            "MEDIA_STATUS",
     };
 
     private static final String MEDIA_SUPPORTED_COMMANDS[] = {
@@ -68,7 +67,16 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             "stream_mute",
     };
 
-    // Map associating overloaded types with the types they represent.
+    // Sequence number used when no sequence number is required or was initially passed.
+    private static final int INVALID_SEQUENCE_NUMBER = -1;
+    // Sequence number use instead of no sequence number when a sequence number was expected from
+    // the client.
+    private static final int OPTIONAL_SEQUENCE_NUMBER = 0;
+
+    // Map associating types that have a different names outside of the media namespace and inside.
+    // In other words, some types are sent as MEDIA_FOO or FOO_MEDIA by the client by the Cast
+    // expect them to be named FOO. The reason being that FOO might exist in multiple namespaces
+    // but the client isn't aware of namespacing.
     private static Map<String, String> sMediaOverloadedMessageTypes;
 
     // Lock used to lazy initialize sMediaOverloadedMessageTypes.
@@ -87,7 +95,18 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                        + "\" message=\"" + message + "\"");
 
             if (MEDIA_NAMESPACE.equals(namespace) || RECEIVER_NAMESPACE.equals(namespace)) {
-                mSession.onMessage("v2_message", message, namespace);
+                int sequenceNumber = INVALID_SEQUENCE_NUMBER;
+                try {
+                    JSONObject jsonMessage = new JSONObject(message);
+                    int requestId = jsonMessage.getInt("requestId");
+                    if (mSession.mRequests.indexOfKey(requestId) >= 0) {
+                        sequenceNumber = mSession.mRequests.get(requestId);
+                        mSession.mRequests.delete(requestId);
+                    }
+                } catch (JSONException e) {
+                } finally {
+                    mSession.onMessage("v2_message", message, namespace, sequenceNumber);
+                }
             } else {
                 mSession.onAppMessage(namespace, message);
             }
@@ -133,11 +152,12 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private String mSessionId;
     private String mApplicationStatus;
     private ApplicationMetadata mApplicationMetadata;
-    private int mSequenceNumber;
     private boolean mStoppingApplication;
     private boolean mDetached;
     private MediaNotificationInfo.Builder mNotificationBuilder;
     private RemoteMediaPlayer mMediaPlayer;
+
+    private SparseIntArray mRequests;
 
     /**
      * Initializes a new {@link CastRouteController} instance.
@@ -170,6 +190,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         mApplicationMetadata = metadata;
         mApplicationStatus = applicationStatus;
         mCastDevice = castDevice;
+        mRequests = new SparseIntArray();
 
         mMessageChannel = new CastMessagingChannel(this);
         addNamespace(RECEIVER_NAMESPACE);
@@ -220,7 +241,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 sMediaOverloadedMessageTypes = new HashMap<String, String>();
                 sMediaOverloadedMessageTypes.put("STOP_MEDIA", "STOP");
                 sMediaOverloadedMessageTypes.put("MEDIA_SET_VOLUME", "SET_VOLUME");
-                sMediaOverloadedMessageTypes.put("MEDIA_GET_STATUS", "MEDIA_STATUS");
+                sMediaOverloadedMessageTypes.put("MEDIA_GET_STATUS", "GET_STATUS");
             }
         }
     }
@@ -244,37 +265,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     @Override
     public void close() {
-        if (mStoppingApplication) return;
-
-        if (isApiClientInvalid()) return;
-
-        mStoppingApplication = true;
-        Cast.CastApi.stopApplication(mApiClient, mSessionId)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        onMessage("remove_session", mSessionId, null);
-                        // TODO(avayvod): handle a failure to stop the application.
-                        // https://crbug.com/535577
-
-                        for (String namespace : mNamespaces) unregisterNamespace(namespace);
-                        mNamespaces.clear();
-
-                        mClients.clear();
-                        mSessionId = null;
-                        mApiClient = null;
-
-                        mRouteDelegate.onRouteClosed(CastRouteController.this);
-                        mStoppingApplication = false;
-
-                        // The detached route will be closed only if another route joined
-                        // the same session so it will take over the notification.
-                        if (!mDetached) {
-                            MediaNotificationManager.hide(
-                                    mTabId, R.id.presentation_notification);
-                        }
-                    }
-                });
+        stopApplication(INVALID_SEQUENCE_NUMBER);
     }
 
     @Override
@@ -345,7 +336,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     @Override
     public void onStop(int actionSource) {
-        close();
+        stopApplication(INVALID_SEQUENCE_NUMBER);
     }
 
 
@@ -355,16 +346,15 @@ public class CastRouteController implements RouteController, MediaNotificationLi
      * @param message The message itself (encoded JSON).
      * @param namespace The namespace for the message.
      */
-    public void onMessage(String type, String message, String namespace) {
+    public void onMessage(String type, String message, String namespace, int sequenceNumber) {
         if (MEDIA_NAMESPACE.equals(namespace) && mMediaPlayer != null) {
             mMediaPlayer.onMessageReceived(mCastDevice, namespace, message);
         }
 
         for (String client : mClients) {
             mRouteDelegate.onMessage(mMediaRouteId,
-                    buildInternalMessage(type, message, client, mSequenceNumber));
+                    buildInternalMessage(type, message, client, sequenceNumber));
         }
-        mSequenceNumber++;
     }
 
     /**
@@ -378,10 +368,45 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             jsonMessage.put("sessionId", mSessionId);
             jsonMessage.put("namespaceName", namespace);
             jsonMessage.put("message", message);
-            onMessage("app_message", jsonMessage.toString(), null);
+            onMessage("app_message", jsonMessage.toString(), null, INVALID_SEQUENCE_NUMBER);
         } catch (JSONException e) {
             Log.e(TAG, "Failed to create the message wrapper", e);
         }
+    }
+
+    private void stopApplication(final int sequenceNumber) {
+        if (mStoppingApplication) return;
+
+        if (isApiClientInvalid()) return;
+
+        mStoppingApplication = true;
+        Cast.CastApi.stopApplication(mApiClient, mSessionId)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        onMessage("remove_session", mSessionId, null, sequenceNumber);
+
+                        // TODO(avayvod): handle a failure to stop the application.
+                        // https://crbug.com/535577
+
+                        for (String namespace : mNamespaces) unregisterNamespace(namespace);
+                        mNamespaces.clear();
+
+                        mClients.clear();
+                        mSessionId = null;
+                        mApiClient = null;
+
+                        mRouteDelegate.onRouteClosed(CastRouteController.this);
+                        mStoppingApplication = false;
+
+                        // The detached route will be closed only if another route joined
+                        // the same session so it will take over the notification.
+                        if (!mDetached) {
+                            MediaNotificationManager.hide(
+                                    mTabId, R.id.presentation_notification);
+                        }
+                    }
+                });
     }
 
     private void addNamespace(String namespace) {
@@ -431,6 +456,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 return false;
             }
         } catch (JSONException e) {
+            Log.e(TAG, "JSONException while handling internal message: " + e);
             return false;
         }
 
@@ -446,9 +472,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         mClients.add(clientId);
 
-        mRouteDelegate.onMessage(mMediaRouteId,
-                buildInternalMessage("new_session", buildSessionMessage(), clientId, -1));
-
+        mRouteDelegate.onMessage(mMediaRouteId, buildInternalMessage(
+                "new_session", buildSessionMessage(), clientId, INVALID_SEQUENCE_NUMBER));
         return true;
     }
 
@@ -474,19 +499,24 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
         JSONObject jsonCastMessage = jsonMessage.getJSONObject("message");
         String messageType = jsonCastMessage.getString("type");
-
-        if (sMediaOverloadedMessageTypes.containsKey(messageType)) {
-            messageType = sMediaOverloadedMessageTypes.get(messageType);
-        }
+        int sequenceNumber = jsonMessage.has("sequenceNumber")
+                ? jsonMessage.getInt("sequenceNumber") : OPTIONAL_SEQUENCE_NUMBER;
 
         if ("STOP".equals(messageType)) {
-            close();
+            stopApplication(sequenceNumber);
             return true;
-        } else if (Arrays.asList(MEDIA_MESSAGE_TYPES).contains(messageType)) {
-            if ("SET_VOLUME".equals(messageType)) {
-                return handleVolumeMessage(jsonCastMessage.getJSONObject("volume"));
+        }
+
+        if ("SET_VOLUME".equals(messageType)) {
+            return handleVolumeMessage(jsonCastMessage.getJSONObject("volume"));
+        }
+
+        if (Arrays.asList(MEDIA_MESSAGE_TYPES).contains(messageType)) {
+            if (sMediaOverloadedMessageTypes.containsKey(messageType)) {
+                messageType = sMediaOverloadedMessageTypes.get(messageType);
+                jsonCastMessage.put("type", messageType);
             }
-            return sendCastMessage(jsonMessage.getJSONObject("message"), MEDIA_NAMESPACE);
+            return sendCastMessage(jsonCastMessage, MEDIA_NAMESPACE, sequenceNumber);
         }
 
         return true;
@@ -546,20 +576,25 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         if (namespaceName == null || namespaceName.isEmpty()) return false;
 
         if (!mNamespaces.contains(namespaceName)) addNamespace(namespaceName);
-        sendCastMessage(jsonAppMessageWrapper, namespaceName);
+        sendCastMessage(jsonAppMessageWrapper, namespaceName, INVALID_SEQUENCE_NUMBER);
 
         return true;
     }
 
-    private boolean sendCastMessage(JSONObject message, String namespace) throws JSONException {
+    private boolean sendCastMessage(JSONObject message, String namespace, int sequenceNumber)
+            throws JSONException {
         if (isApiClientInvalid()) return false;
 
         removeNullFields(message);
 
-        // We must have a requestId so 0 is used unless there is one already.
-        // TODO(mlamouri): pass a random requestId if none is present,
-        // See: https://crbug.com/548822
-        if (!message.has("requestId")) message.put("requestId", 0);
+        // If for some reason, there is already a requestId different than 0, it
+        // is kept. Otherwise, one is generated and associated with the sequenceNumber
+        // passed by the client.
+        if (!message.has("requestId") || (message.getInt("requestId") == 0)) {
+            int requestId = CastRequestIdGenerator.getNextRequestId();
+            mRequests.append(requestId, sequenceNumber);
+            message.put("requestId", requestId);
+        }
 
         Log.d(TAG, "Sending message to Cast device: " + message);
 
@@ -643,7 +678,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
             for (String clientId : mClients) {
                 mRouteDelegate.onMessage(mMediaRouteId, buildInternalMessage(
-                        "update_session", buildSessionMessage(), clientId, -1));
+                        "update_session", buildSessionMessage(), clientId,
+                        INVALID_SEQUENCE_NUMBER));
             }
         } catch (IllegalStateException e) {
             Log.e(TAG, "Can't get application status", e);
