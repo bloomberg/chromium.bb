@@ -53,9 +53,6 @@ class UpdateEngine {
                const NotifyObserversCallback& notify_observers_callback);
   ~UpdateEngine();
 
-  // Returns true is the CRX identified by the given |id| is being updated.
-  bool IsUpdating(const std::string& id) const;
-
   bool GetUpdateState(const std::string& id, CrxUpdateItem* update_state);
 
   void Update(bool is_foreground,

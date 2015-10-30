@@ -65,10 +65,17 @@ class UpdateClientImpl : public UpdateClient {
 
   scoped_refptr<Configurator> config_;
 
-  // Contains the tasks that are queued up.
+  // Contains the tasks that are pending. In the current implementation,
+  // only update tasks (background tasks) are queued up. These tasks are
+  // pending while they are in this queue. They are not being handled for
+  // the moment.
   std::queue<Task*> task_queue_;
 
-  // Contains all tasks in progress.
+  // Contains all tasks in progress. These are the tasks that the update engine
+  // is executing at one moment. Install tasks are run concurrently, update
+  // tasks are always serialized, and update tasks are queued up if install
+  // tasks are running. In addition, concurrent install tasks for the same id
+  // are not allowed.
   std::set<Task*> tasks_;
 
   // TODO(sorin): try to make the ping manager an observer of the service.

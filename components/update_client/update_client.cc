@@ -89,7 +89,7 @@ void UpdateClientImpl::Install(const std::string& id,
                                const CompletionCallback& completion_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (update_engine_->IsUpdating(id)) {
+  if (IsUpdating(id)) {
     completion_callback.Run(Error::ERROR_UPDATE_IN_PROGRESS);
     return;
   }
@@ -104,6 +104,7 @@ void UpdateClientImpl::Install(const std::string& id,
   scoped_ptr<TaskUpdate> task(new TaskUpdate(update_engine_.get(), true, ids,
                                              crx_data_callback, callback));
 
+  // Install tasks are run concurrently and never queued up.
   auto it = tasks_.insert(task.release()).first;
   RunTask(*it);
 }
@@ -118,6 +119,8 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
   scoped_ptr<TaskUpdate> task(new TaskUpdate(update_engine_.get(), false, ids,
                                              crx_data_callback, callback));
 
+  // If no other tasks are running at the moment, run this update task.
+  // Otherwise, queue the task up.
   if (tasks_.empty()) {
     auto it = tasks_.insert(task.release()).first;
     RunTask(*it);
@@ -145,7 +148,9 @@ void UpdateClientImpl::OnTaskComplete(
   tasks_.erase(task);
   delete task;
 
-  if (!task_queue_.empty()) {
+  // Pick up a task from the queue if the queue has pending tasks and no other
+  // task is running.
+  if (tasks_.empty() && !task_queue_.empty()) {
     RunTask(task_queue_.front());
     task_queue_.pop();
   }
@@ -173,7 +178,16 @@ bool UpdateClientImpl::GetCrxUpdateState(const std::string& id,
 }
 
 bool UpdateClientImpl::IsUpdating(const std::string& id) const {
-  return update_engine_->IsUpdating(id);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  for (const auto& task : tasks_) {
+    const auto ids(task->GetIds());
+    if (std::find(std::begin(ids), std::end(ids), id) != std::end(ids)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 scoped_refptr<UpdateClient> UpdateClientFactory(

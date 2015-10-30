@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_TASK_H_
 #define COMPONENTS_UPDATE_CLIENT_TASK_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/update_client/update_client.h"
@@ -22,6 +25,9 @@ class Task {
   virtual ~Task() {}
 
   virtual void Run() = 0;
+
+  // Returns the ids corresponding to the CRXs associated with this update task.
+  virtual std::vector<std::string> GetIds() const = 0;
 };
 
 }  // namespace update_client

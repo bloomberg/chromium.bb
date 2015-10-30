@@ -60,20 +60,6 @@ UpdateEngine::~UpdateEngine() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool UpdateEngine::IsUpdating(const std::string& id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (const auto& context : update_contexts_) {
-    const auto& ids = context->ids;
-    const auto it = std::find_if(
-        ids.begin(), ids.end(),
-        [id](const std::string& this_id) { return id == this_id; });
-    if (it != ids.end()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 bool UpdateEngine::GetUpdateState(const std::string& id,
                                   CrxUpdateItem* update_item) {
   DCHECK(thread_checker_.CalledOnValidThread());

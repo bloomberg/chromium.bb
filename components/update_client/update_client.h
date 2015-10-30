@@ -262,18 +262,27 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // the observers are being notified.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Installs the specified CRX. Calls back after the install has been handled.
-  // Calls back on |completion_callback| after the update has been handled. The
-  // |error| parameter of the |completion_callback| contains an error code in
-  // the case of a run-time error, or 0 if the Install has been handled
-  // successfully.
+  // Installs the specified CRX. Calls back on |completion_callback| after the
+  // update has been handled. The |error| parameter of the |completion_callback|
+  // contains an error code in the case of a run-time error, or 0 if the
+  // install has been handled successfully. Overlapping calls of this function
+  // are executed concurrently, as long as the id parameter is different,
+  // meaning that installs of different components are parallelized.
+  // The |Install| function is intended to be used for foreground installs of
+  // one CRX. These cases are usually associated with on-demand install
+  // scenarios, which are triggered by user actions. Installs are never
+  // queued up.
   virtual void Install(const std::string& id,
                        const CrxDataCallback& crx_data_callback,
                        const CompletionCallback& completion_callback) = 0;
 
   // Updates the specified CRXs. Calls back on |crx_data_callback| before the
   // update is attempted to give the caller the opportunity to provide the
-  // instances of CrxComponent to be used for this update.
+  // instances of CrxComponent to be used for this update. The |Update| function
+  // is intended to be used for background updates of several CRXs. Overlapping
+  // calls to this function result in a queuing behavior, and the execution
+  // of each call is serialized. In addition, updates are always queued up when
+  // installs are running.
   virtual void Update(const std::vector<std::string>& ids,
                       const CrxDataCallback& crx_data_callback,
                       const CompletionCallback& completion_callback) = 0;
@@ -284,6 +293,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   virtual bool GetCrxUpdateState(const std::string& id,
                                  CrxUpdateItem* update_item) const = 0;
 
+  // Returns true if the |id| is found in any running task.
   virtual bool IsUpdating(const std::string& id) const = 0;
 
  protected:

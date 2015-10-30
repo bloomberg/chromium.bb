@@ -1974,6 +1974,120 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
   StopWorkerPool();
 }
 
+// Tests that overlapping installs of the same CRX result in an error.
+TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
+  class DataCallbackFake {
+   public:
+    static void Callback(const std::vector<std::string>& ids,
+                         std::vector<CrxComponent>* components) {
+      CrxComponent crx;
+      crx.name = "test_jebg";
+      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx.version = Version("0.0");
+      crx.installer = new TestInstaller;
+
+      components->push_back(crx);
+    }
+  };
+
+  class CompletionCallbackFake {
+   public:
+    static void Callback(const base::Closure& quit_closure, int error) {
+      static int num_call = 0;
+      ++num_call;
+
+      EXPECT_LE(num_call, 2);
+
+      if (num_call == 1) {
+        EXPECT_EQ(Error::ERROR_UPDATE_IN_PROGRESS, error);
+        return;
+      }
+      if (num_call == 2) {
+        EXPECT_EQ(0, error);
+        quit_closure.Run();
+      }
+    }
+  };
+
+  class FakeUpdateChecker : public UpdateChecker {
+   public:
+    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+    }
+
+    bool CheckForUpdates(
+        const std::vector<CrxUpdateItem*>& items_to_check,
+        const std::string& additional_attributes,
+        const UpdateCheckCallback& update_check_callback) override {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "",
+                                UpdateResponse::Results()));
+      return true;
+    }
+  };
+
+  class FakeCrxDownloader : public CrxDownloader {
+   public:
+    static scoped_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        net::URLRequestContextGetter* context_getter,
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
+      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+    }
+
+   private:
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    ~FakeCrxDownloader() override {}
+
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class FakePingManager : public FakePingManagerImpl {
+   public:
+    explicit FakePingManager(const Configurator& config)
+        : FakePingManagerImpl(config) {}
+    ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
+  };
+
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
+  scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
+      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      &FakeCrxDownloader::Create));
+
+  // Verify that calling Install sets ondemand.
+  OnDemandTester ondemand_tester(update_client, true);
+
+  MockObserver observer;
+  ON_CALL(observer, OnEvent(_, _))
+      .WillByDefault(Invoke(&ondemand_tester, &OnDemandTester::CheckOnDemand));
+
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+
+  update_client->AddObserver(&observer);
+
+  update_client->Install(
+      std::string("jebgalgnebhfojomionfpkfelancnnkf"),
+      base::Bind(&DataCallbackFake::Callback),
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+
+  update_client->Install(
+      std::string("jebgalgnebhfojomionfpkfelancnnkf"),
+      base::Bind(&DataCallbackFake::Callback),
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+
+  RunThreads();
+
+  update_client->RemoveObserver(&observer);
+
+  StopWorkerPool();
+}
+
 // Make sure that we don't get any crashes when trying to update an empty list
 // of ids.
 TEST_F(UpdateClientTest, EmptyIdList) {

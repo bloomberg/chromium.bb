@@ -40,6 +40,8 @@ class TaskUpdate : public Task {
 
   void Run() override;
 
+  std::vector<std::string> GetIds() const override;
+
  private:
   // Called when the Run function associated with this task has completed.
   void RunComplete(int error);

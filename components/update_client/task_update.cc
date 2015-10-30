@@ -41,6 +41,10 @@ void TaskUpdate::Run() {
       base::Bind(&TaskUpdate::RunComplete, base::Unretained(this)));
 }
 
+std::vector<std::string> TaskUpdate::GetIds() const {
+  return ids_;
+}
+
 void TaskUpdate::RunComplete(int error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
