@@ -26,7 +26,7 @@
 namespace blink {
 
 struct GradientAttributes {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     GradientAttributes()
         : m_spreadMethod(SVGSpreadMethodPad)
         , m_gradientUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
@@ -87,7 +87,7 @@ private:
 };
 
 struct SameSizeAsGradientAttributes {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     AffineTransform a;
     Vector<Gradient::ColorStop> b;
     unsigned c : 8;

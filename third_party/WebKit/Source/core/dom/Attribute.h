@@ -34,7 +34,7 @@ namespace blink {
 // value. It is distinct from the web-exposed Attr, which also knows of the
 // element to which it attached, if any.
 class Attribute {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     Attribute(const QualifiedName& name, const AtomicString& value)
         : m_name(name)

@@ -52,7 +52,7 @@ extern const int SQLResultInterrupt;
 extern const int SQLResultConstraint;
 
 class SQLiteDatabase {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(SQLiteDatabase);
     friend class SQLiteTransaction;
 public:

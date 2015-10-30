@@ -584,7 +584,7 @@ private:
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider.
     // provideInput() calls into Chromium to get a rendered audio stream.
     class AudioSourceProviderImpl final : public AudioSourceProvider {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         AudioSourceProviderImpl()
             : m_webAudioSourceProvider(nullptr)

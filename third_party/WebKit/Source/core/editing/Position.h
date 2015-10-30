@@ -56,7 +56,7 @@ enum class PositionAnchorType : unsigned {
 // Instances of |PositionTemplate<Strategy>| are immutable.
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
 
     PositionTemplate()

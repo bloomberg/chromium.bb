@@ -27,7 +27,7 @@
 namespace blink {
 
 struct LinearGradientAttributes : GradientAttributes {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     LinearGradientAttributes()
         : m_x1(SVGLength::create(SVGLengthMode::Width))

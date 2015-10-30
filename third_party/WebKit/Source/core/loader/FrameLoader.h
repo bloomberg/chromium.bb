@@ -64,7 +64,7 @@ CORE_EXPORT bool isBackForwardLoadType(FrameLoadType);
 
 class CORE_EXPORT FrameLoader final {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*, ResourceRequestCachePolicy);
 

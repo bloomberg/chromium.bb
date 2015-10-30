@@ -116,7 +116,7 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
 // MemoryCacheLRUList an inner struct of MemoryCache because we can't define
 // VectorTraits for inner structs.
 struct MemoryCacheLRUList final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     Member<MemoryCacheEntry> m_head;
     Member<MemoryCacheEntry> m_tail;

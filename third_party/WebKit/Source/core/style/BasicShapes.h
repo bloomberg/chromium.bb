@@ -78,7 +78,7 @@ protected:
     DEFINE_TYPE_CASTS(thisType, BasicShape, value, value->type() == BasicShape::thisType##Type, value.type() == BasicShape::thisType##Type)
 
 class BasicShapeCenterCoordinate {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     enum Direction {
         TopLeft,
@@ -117,7 +117,7 @@ private:
 };
 
 class BasicShapeRadius {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     enum Type {
         Value,

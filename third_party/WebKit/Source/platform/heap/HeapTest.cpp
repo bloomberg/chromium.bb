@@ -127,7 +127,7 @@ struct ThreadMarkerHash {
 typedef std::pair<Member<IntWrapper>, WeakMember<IntWrapper>> StrongWeakPair;
 
 struct PairWithWeakHandling : public StrongWeakPair {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
 public:
     // Regular constructor.
@@ -1546,7 +1546,7 @@ private:
 int UseMixin::s_traceCount = 0;
 
 class VectorObject {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     VectorObject()
     {
@@ -1565,7 +1565,7 @@ private:
 class VectorObjectInheritedTrace : public VectorObject { };
 
 class VectorObjectNoTrace {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     VectorObjectNoTrace()
     {
@@ -1577,7 +1577,7 @@ private:
 };
 
 class TerminatedArrayItem {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TerminatedArrayItem(IntWrapper* payload) : m_payload(payload), m_isLast(false) { }
 
@@ -2858,7 +2858,7 @@ TEST(HeapTest, HeapCollectionTypes)
 }
 
 class NonTrivialObject final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     NonTrivialObject()
     {
@@ -4123,7 +4123,7 @@ TEST(HeapTest, EmbeddedInDeque)
 }
 
 class InlinedVectorObject {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     InlinedVectorObject()
     {
@@ -4142,7 +4142,7 @@ public:
 int InlinedVectorObject::s_destructorCalls = 0;
 
 class InlinedVectorObjectWithVtable {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     InlinedVectorObjectWithVtable()
     {
@@ -5734,7 +5734,7 @@ private:
 };
 
 class PartObject {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     PartObject() : m_obj(SimpleObject::create()) { }
     DEFINE_INLINE_TRACE() { visitor->trace(m_obj); }
@@ -6084,7 +6084,7 @@ private:
 };
 
 class PartObjectWithRef {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     PartObjectWithRef(int i)
         : m_value(SimpleRefValue::create(i))

@@ -419,7 +419,7 @@ public:
     int externallyAllocatedBytesPerPixel() override;
 
     class TextureUnitState {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         Member<WebGLTexture> m_texture2DBinding;
         Member<WebGLTexture> m_textureCubeMapBinding;

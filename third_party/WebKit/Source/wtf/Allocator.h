@@ -23,24 +23,24 @@ namespace WTF {
 // in to raw pointers, but for now Members indicate that we have thought
 // about them and explicitly taken care of them.)
 //
-// DISALLOW_ALLOCATION(): Cannot be allocated with new operators but can be a
+// DISALLOW_NEW(): Cannot be allocated with new operators but can be a
 // part of object.  If it has Members you need a trace method and the containing
 // object needs to call that trace method.
 //
-// ALLOW_ONLY_INLINE_ALLOCATION(): Allows only placement new operator.  This
+// DISALLOW_NEW_EXCEPT_PLACEMENT_NEW(): Allows only placement new operator.  This
 // disallows general allocation of this object but allows to put the object as a
 // value object in collections.  If these have Members you need to have a trace
 // method. That trace method will be called automatically by the on-heap
 // collections.
 //
-#define DISALLOW_ALLOCATION()                                   \
+#define DISALLOW_NEW()                                   \
     private:                                                    \
         void* operator new(size_t) = delete;                    \
         void* operator new(size_t, NotNullTag, void*) = delete; \
         void* operator new(size_t, void*) = delete;             \
     public:
 
-#define ALLOW_ONLY_INLINE_ALLOCATION()                                              \
+#define DISALLOW_NEW_EXCEPT_PLACEMENT_NEW()                                              \
     public:                                                                         \
         using IsAllowOnlyInlineAllocation = int;                                    \
         void* operator new(size_t, NotNullTag, void* location) { return location; } \
@@ -68,7 +68,7 @@ namespace WTF {
         void* operator new(size_t, void*) = delete;             \
     public:
 #else
-#define STACK_ALLOCATED() DISALLOW_ALLOCATION()
+#define STACK_ALLOCATED() DISALLOW_NEW()
 #endif
 
 // Provides customizable overrides of fastMalloc/fastFree and operator new/delete

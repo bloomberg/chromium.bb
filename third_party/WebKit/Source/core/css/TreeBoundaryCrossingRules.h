@@ -36,7 +36,7 @@ class Element;
 class ElementRuleCollector;
 
 class TreeBoundaryCrossingRules final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     void addScope(ContainerNode&);
     void removeScope(const ContainerNode&);

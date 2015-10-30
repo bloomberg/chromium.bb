@@ -140,7 +140,7 @@ public:
 
 // Encode AtomicString (in FetchInitiatorInfo) as String to cross threads.
 struct CrossThreadResourceLoaderOptionsData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     explicit CrossThreadResourceLoaderOptionsData(const ResourceLoaderOptions& options)
         : dataBufferingPolicy(options.dataBufferingPolicy)
         , allowCredentials(options.allowCredentials)

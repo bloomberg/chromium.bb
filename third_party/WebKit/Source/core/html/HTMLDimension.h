@@ -41,7 +41,7 @@ namespace blink {
 // This class corresponds to a dimension as described in HTML5 by the
 // "rules for parsing a list of dimensions" (section 2.4.4.6).
 class HTMLDimension {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum HTMLDimensionType {
         Relative, Percentage, Absolute

@@ -138,7 +138,7 @@ private:
     };
 
     class FontLoadHistogram {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         enum Status { NoWebFonts, HadBlankText, DidNotHaveBlankText, Reported };
         FontLoadHistogram() : m_status(NoWebFonts), m_count(0), m_recorded(false) { }

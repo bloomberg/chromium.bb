@@ -45,7 +45,7 @@ namespace blink {
 // to 'REPLACEMENT CHARACTER' (U+FFFD) and does not return the linebreaks as
 // part of the result.
 class CORE_EXPORT BufferedLineReader {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(BufferedLineReader);
 public:
     BufferedLineReader()

@@ -29,7 +29,7 @@
 namespace blink {
 
 class HitTestRequest {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     enum RequestType {
         ReadOnly = 1 << 1,

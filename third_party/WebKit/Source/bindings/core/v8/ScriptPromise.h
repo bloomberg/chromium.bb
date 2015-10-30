@@ -50,7 +50,7 @@ class DOMException;
 // memory leaks since it has a reference from C++ to V8.
 //
 class CORE_EXPORT ScriptPromise final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     // Constructs an empty promise.
     ScriptPromise();
@@ -142,7 +142,7 @@ public:
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.
     class CORE_EXPORT InternalResolver final {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         explicit InternalResolver(ScriptState*);
         v8::Local<v8::Promise> v8Promise() const;

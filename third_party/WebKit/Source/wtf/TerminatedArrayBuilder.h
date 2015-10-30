@@ -10,7 +10,7 @@ namespace WTF {
 
 template<typename T, template <typename> class ArrayType = TerminatedArray>
 class TerminatedArrayBuilder {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(TerminatedArrayBuilder);
 public:
     explicit TerminatedArrayBuilder(typename ArrayType<T>::Allocator::PassPtr array)

@@ -30,7 +30,7 @@
 namespace blink {
 
 class RegisteredEventListener {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     RegisteredEventListener(PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
         : listener(listener)

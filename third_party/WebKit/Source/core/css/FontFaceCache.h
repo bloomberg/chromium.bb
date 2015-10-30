@@ -42,7 +42,7 @@ class FontDescription;
 class StyleRuleFontFace;
 
 class FontFaceCache final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     FontFaceCache();
 

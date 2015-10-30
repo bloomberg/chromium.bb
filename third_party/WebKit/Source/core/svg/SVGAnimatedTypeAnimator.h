@@ -39,7 +39,7 @@ class SVGAnimationElement;
 using SVGElementInstances = WillBeHeapVector<RawPtrWillBeMember<SVGElement>, 1u>;
 
 class SVGAnimatedTypeAnimator final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     SVGAnimatedTypeAnimator(SVGAnimationElement*);
 

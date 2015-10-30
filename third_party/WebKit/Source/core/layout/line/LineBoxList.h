@@ -49,7 +49,7 @@ class LineLayoutItem;
 struct PaintInfo;
 
 class LineBoxList {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     LineBoxList()
         : m_firstLineBox(nullptr)

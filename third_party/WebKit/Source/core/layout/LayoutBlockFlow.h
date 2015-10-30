@@ -392,7 +392,7 @@ private:
 
 public:
     struct FloatWithRect {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         FloatWithRect(LayoutBox* f)
             : object(f)
             , rect(f->frameRect())
@@ -407,7 +407,7 @@ public:
     };
 
     class MarginValues {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         MarginValues(LayoutUnit beforePos, LayoutUnit beforeNeg, LayoutUnit afterPos, LayoutUnit afterNeg)
             : m_positiveMarginBefore(beforePos)

@@ -42,14 +42,14 @@ namespace blink {
 class AXObject;
 
 struct DateTimeSuggestion {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     double value;
     String localizedValue;
     String label;
 };
 
 struct DateTimeChooserParameters {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     AtomicString type;
     IntRect anchorRectInRootFrame;
     IntRect anchorRectInScreen;

@@ -39,7 +39,7 @@ namespace blink {
 class LocalFrame;
 
 struct CORE_EXPORT ViewportDescription {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 
     enum Type {
         // These are ordered in increasing importance.

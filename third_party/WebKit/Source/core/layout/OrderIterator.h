@@ -41,7 +41,7 @@ namespace blink {
 class LayoutBox;
 
 class OrderIterator {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(OrderIterator);
 public:
     friend class OrderIteratorPopulator;

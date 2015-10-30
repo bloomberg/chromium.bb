@@ -39,7 +39,7 @@ class Node;
 class TouchEventContext;
 
 class CORE_EXPORT NodeEventContext {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NodeEventContext);
 public:
     // FIXME: Use ContainerNode instead of Node.

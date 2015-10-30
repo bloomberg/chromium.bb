@@ -104,7 +104,7 @@ class CORE_EXPORT PaintLayerScrollableArea final : public NoBaseWillBeGarbageCol
 
 private:
     class ScrollbarManager {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
 
         // Helper class to manage the life cycle of Scrollbar objects.  Some layout containers
         // (e.g., flexbox, table) run multi-pass layout on their children, applying different

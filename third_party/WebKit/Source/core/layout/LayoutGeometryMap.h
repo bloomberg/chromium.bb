@@ -45,7 +45,7 @@ class TransformState;
 
 // Can be used while walking the layout tree to cache data about offsets and transforms.
 class CORE_EXPORT LayoutGeometryMap {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
 public:
     LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);

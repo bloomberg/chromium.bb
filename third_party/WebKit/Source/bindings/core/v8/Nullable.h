@@ -12,7 +12,7 @@ namespace blink {
 
 template <typename T>
 class Nullable {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     Nullable()
         : m_value()

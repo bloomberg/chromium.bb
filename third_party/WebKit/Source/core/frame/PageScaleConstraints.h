@@ -38,7 +38,7 @@
 namespace blink {
 
 struct CORE_EXPORT PageScaleConstraints {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     FloatSize layoutSize;
 
     float initialScale;

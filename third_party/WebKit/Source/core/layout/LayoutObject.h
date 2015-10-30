@@ -101,7 +101,7 @@ typedef unsigned MapCoordinatesFlags;
 const LayoutUnit& caretWidth();
 
 struct AnnotatedRegionValue {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     bool operator==(const AnnotatedRegionValue& o) const
     {
         return draggable == o.draggable && bounds == o.bounds;

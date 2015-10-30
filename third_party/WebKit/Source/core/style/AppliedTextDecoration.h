@@ -12,7 +12,7 @@
 namespace blink {
 
 class AppliedTextDecoration {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     AppliedTextDecoration(TextDecoration, TextDecorationStyle, StyleColor);
     explicit AppliedTextDecoration(TextDecoration);

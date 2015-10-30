@@ -25,11 +25,11 @@ class Animation;
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
 class CSSAnimationUpdate final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(CSSAnimationUpdate);
 public:
     class NewAnimation {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         NewAnimation()
             : styleRuleVersion(0)
@@ -61,7 +61,7 @@ public:
     };
 
     class UpdatedAnimation {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         UpdatedAnimation()
             : styleRuleVersion(0)
@@ -182,7 +182,7 @@ public:
     const HeapVector<Member<Animation>>& updatedCompositorKeyframes() const { return m_updatedCompositorKeyframes; }
 
     struct NewTransition {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         DEFINE_INLINE_TRACE()
         {

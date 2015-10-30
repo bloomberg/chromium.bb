@@ -15,7 +15,7 @@ namespace blink {
 
 template <class K>
 class AsyncOperationMap final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     using MapType = WillBeHeapHashMap<K, int>;
     explicit AsyncOperationMap(V8DebuggerAgent* debuggerAgent)

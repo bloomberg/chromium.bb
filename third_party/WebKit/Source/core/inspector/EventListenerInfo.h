@@ -18,7 +18,7 @@ class ExecutionContext;
 class InjectedScriptManager;
 
 class EventListenerInfo {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     EventListenerInfo(EventTarget* eventTarget, const AtomicString& eventType, const EventListenerVector& eventListenerVector)
         : eventTarget(eventTarget)

@@ -11,7 +11,7 @@
 namespace blink {
 
 class StyleContentAlignmentData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     // Style data for Content-Distribution properties: align-content, justify-content.
     // <content-distribution> || [ <overflow-position>? && <content-position> ]

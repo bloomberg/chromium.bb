@@ -13,7 +13,7 @@ namespace blink {
 
 template<typename T>
 class HeapTerminatedArray : public TerminatedArray<T> {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     using TerminatedArray<T>::begin;
     using TerminatedArray<T>::end;

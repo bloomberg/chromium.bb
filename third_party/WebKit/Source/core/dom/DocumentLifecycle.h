@@ -39,7 +39,7 @@
 namespace blink {
 
 class CORE_EXPORT DocumentLifecycle {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(DocumentLifecycle);
 public:
     enum State {
@@ -100,7 +100,7 @@ public:
     };
 
     class DeprecatedTransition {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         WTF_MAKE_NONCOPYABLE(DeprecatedTransition);
     public:
         DeprecatedTransition(State from, State to);

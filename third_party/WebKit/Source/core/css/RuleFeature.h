@@ -39,7 +39,7 @@ class SpaceSplitString;
 class StyleRule;
 
 struct RuleFeature {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     RuleFeature(StyleRule*, unsigned selectorIndex, bool hasDocumentSecurityOrigin);
 
@@ -51,7 +51,7 @@ public:
 };
 
 class CORE_EXPORT RuleFeatureSet {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     RuleFeatureSet();
     ~RuleFeatureSet();
@@ -105,7 +105,7 @@ private:
     using PseudoTypeInvalidationSetMap = HashMap<CSSSelector::PseudoType, RefPtr<InvalidationData>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
 
     struct FeatureMetadata {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         FeatureMetadata()
             : usesFirstLineRules(false)
             , usesWindowInactiveSelector(false)
@@ -137,7 +137,7 @@ private:
     void updateInvalidationSetsForContentAttribute(const RuleData&);
 
     struct InvalidationSetFeatures {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         InvalidationSetFeatures()
             : maxDirectAdjacentSelectors(UINT_MAX)
             , customPseudoElement(false)

@@ -17,7 +17,7 @@ namespace blink {
 class AffineTransform;
 
 class ClipList {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     ClipList() { }
     ClipList(const ClipList&);

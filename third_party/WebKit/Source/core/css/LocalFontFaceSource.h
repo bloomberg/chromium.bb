@@ -21,7 +21,7 @@ private:
     PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
 
     class LocalFontHistograms {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         LocalFontHistograms() : m_reported(false) { }
         void record(bool loadSuccess);

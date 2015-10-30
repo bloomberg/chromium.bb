@@ -131,7 +131,7 @@ public:
     // CellStruct represents the cells that occupy an (N, M) position in the
     // table grid.
     struct CellStruct {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         // All the cells that fills this grid "slot".
         // Due to colspan / rowpsan, it is possible to have overlapping cells
@@ -172,7 +172,7 @@ public:
     typedef Vector<CellStruct> Row;
 
     struct RowStruct {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         RowStruct()
             : rowLayoutObject(nullptr)

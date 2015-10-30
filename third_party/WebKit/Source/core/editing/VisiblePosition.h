@@ -69,7 +69,7 @@ class Range;
 // otherwise it will be converted to DOWNSTREAM.
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     VisiblePositionTemplate();
 

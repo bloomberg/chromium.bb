@@ -70,7 +70,7 @@ public:
 
 template<class ValueType>
 class V8PersistentValueVector : public v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits> {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit V8PersistentValueVector(v8::Isolate* isolate) : v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits>(isolate) { }
 };

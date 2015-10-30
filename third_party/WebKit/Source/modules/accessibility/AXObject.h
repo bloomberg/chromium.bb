@@ -364,7 +364,7 @@ enum AXIgnoredReason {
 };
 
 class IgnoredReason {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     AXIgnoredReason reason;
     Member<const AXObject> relatedObject;
@@ -404,7 +404,7 @@ public:
 
 typedef HeapVector<Member<NameSourceRelatedObject>> AXRelatedObjectVector;
 class NameSource {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     String text;
     bool superseded = false;
@@ -438,7 +438,7 @@ public:
     typedef HeapVector<Member<AXObject>> AXObjectVector;
 
     struct AXRange {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         // The deepest descendant in which the range starts.
         // (nullptr means the current object.)
         Persistent<AXObject> anchorObject;

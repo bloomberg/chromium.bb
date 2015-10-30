@@ -34,7 +34,7 @@ enum SVGMarkerType {
 };
 
 struct MarkerPosition {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     MarkerPosition(SVGMarkerType useType, const FloatPoint& useOrigin, float useAngle)
         : type(useType)
         , origin(useOrigin)

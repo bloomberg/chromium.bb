@@ -40,7 +40,7 @@
 namespace blink {
 
 class CORE_EXPORT LinkRelAttribute {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit LinkRelAttribute(const String& = "");
 

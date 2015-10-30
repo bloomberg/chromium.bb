@@ -33,7 +33,7 @@
 namespace blink {
 
 class RangeBoundaryPoint {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit RangeBoundaryPoint(PassRefPtrWillBeRawPtr<Node> container);
 

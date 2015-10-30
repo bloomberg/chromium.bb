@@ -14,7 +14,7 @@ namespace blink {
 class ResourceFetcher;
 
 class CORE_EXPORT ClientHintsPreferences {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     ClientHintsPreferences();
 

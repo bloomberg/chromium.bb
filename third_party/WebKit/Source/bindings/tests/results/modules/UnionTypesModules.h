@@ -18,7 +18,7 @@ namespace blink {
 
 
 class MODULES_EXPORT BooleanOrString final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     BooleanOrString();
     bool isNull() const { return m_type == SpecificTypeNone; }

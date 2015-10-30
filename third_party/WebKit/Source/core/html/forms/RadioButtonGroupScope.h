@@ -33,7 +33,7 @@ class HTMLInputElement;
 class RadioButtonGroup;
 
 class RadioButtonGroupScope {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     RadioButtonGroupScope();
     ~RadioButtonGroupScope();

@@ -13,7 +13,7 @@
 namespace blink {
 
 class StyleMotionData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     StyleMotionData(StyleMotionPath* path, const Length& offset, float rotation, MotionRotationType rotationType)
         : m_path(path)

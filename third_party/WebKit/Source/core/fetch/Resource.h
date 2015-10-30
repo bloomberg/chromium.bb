@@ -332,7 +332,7 @@ protected:
     bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client) || m_finishedClients.contains(client); }
 
     struct RedirectPair {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         explicit RedirectPair(const ResourceRequest& request, const ResourceResponse& redirectResponse)
             : m_request(request)

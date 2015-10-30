@@ -37,7 +37,7 @@ class AudioBus;
 
 class RealtimeAnalyser final {
     WTF_MAKE_NONCOPYABLE(RealtimeAnalyser);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     RealtimeAnalyser();
 

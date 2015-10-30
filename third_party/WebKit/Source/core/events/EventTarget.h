@@ -52,7 +52,7 @@ class MessagePort;
 class Node;
 
 struct FiringEventIterator {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     FiringEventIterator(const AtomicString& eventType, size_t& iterator, size_t& end)
         : eventType(eventType)
         , iterator(iterator)

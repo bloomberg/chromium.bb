@@ -51,7 +51,7 @@ class LayoutObject;
 class PaintInvalidationState;
 
 struct CORE_EXPORT PaintInfo {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     PaintInfo(GraphicsContext* newContext, const IntRect& cullRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
         LayoutObject* newPaintingRoot = nullptr, const LayoutBoxModelObject* newPaintContainer = nullptr)
         : context(newContext)

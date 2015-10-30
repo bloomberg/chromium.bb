@@ -38,7 +38,7 @@
 namespace blink {
 
 class VTTTokenizer {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(VTTTokenizer);
 public:
     explicit VTTTokenizer(const String& input);

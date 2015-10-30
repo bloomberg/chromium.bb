@@ -38,10 +38,10 @@ namespace blink {
 class CSSSelector;
 
 class SelectorFilter {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     class ParentStackFrame {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         ParentStackFrame() : element(nullptr) { }
         explicit ParentStackFrame(Element& element) : element(&element) { }

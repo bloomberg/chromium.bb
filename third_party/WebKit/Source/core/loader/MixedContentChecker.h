@@ -46,7 +46,7 @@ class SecurityOrigin;
 
 class CORE_EXPORT MixedContentChecker final {
     WTF_MAKE_NONCOPYABLE(MixedContentChecker);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     enum ContextType {
         ContextTypeNotMixedContent,

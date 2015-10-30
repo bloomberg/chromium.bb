@@ -61,7 +61,7 @@ public:
 
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelectionTemplate);
 public:
     VisibleSelectionTemplate();

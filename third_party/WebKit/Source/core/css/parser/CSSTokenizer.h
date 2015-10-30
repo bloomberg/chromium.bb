@@ -25,7 +25,7 @@ class CORE_EXPORT CSSTokenizer {
     USING_FAST_MALLOC(CSSTokenizer);
 public:
     class CORE_EXPORT Scope {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         Scope(const String&);
         Scope(const String&, CSSParserObserverWrapper&); // For the inspector

@@ -65,7 +65,7 @@ private:
     NodeIterator(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
 
     class NodePointer {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         NodePointer();
         NodePointer(PassRefPtrWillBeRawPtr<Node>, bool);

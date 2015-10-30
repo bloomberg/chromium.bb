@@ -31,7 +31,7 @@ class TreeScope;
 
 class CORE_EXPORT FrameTree final {
     WTF_MAKE_NONCOPYABLE(FrameTree);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit FrameTree(Frame* thisFrame);
     ~FrameTree();

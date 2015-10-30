@@ -71,7 +71,7 @@ private:
 };
 
 class ImageCandidate {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum OriginAttribute {
         SrcsetOrigin,

@@ -31,7 +31,7 @@
 namespace blink {
 
 class CollapsedBorderValue {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     CollapsedBorderValue()
         : m_color(0)

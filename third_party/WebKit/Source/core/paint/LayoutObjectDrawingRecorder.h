@@ -20,7 +20,7 @@ class GraphicsContext;
 
 // Convenience wrapper of DrawingRecorder for LayoutObject painters.
 class LayoutObjectDrawingRecorder final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutPoint& paintOffset)
     {

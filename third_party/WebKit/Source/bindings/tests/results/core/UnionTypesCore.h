@@ -28,7 +28,7 @@ class TestInterfaceImplementation;
 class TestInterfaceWillBeGarbageCollected;
 
 class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     ArrayBufferOrArrayBufferViewOrDictionary();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -88,7 +88,7 @@ struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
 };
 
 class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     BooleanOrStringOrUnrestrictedDouble();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -148,7 +148,7 @@ struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> {
 };
 
 class CORE_EXPORT DoubleOrString final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     DoubleOrString();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -201,7 +201,7 @@ struct NativeValueTraits<DoubleOrString> {
 };
 
 class CORE_EXPORT LongOrTestDictionary final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     LongOrTestDictionary();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -254,7 +254,7 @@ struct NativeValueTraits<LongOrTestDictionary> {
 };
 
 class CORE_EXPORT NodeOrNodeList final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     NodeOrNodeList();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -307,7 +307,7 @@ struct NativeValueTraits<NodeOrNodeList> {
 };
 
 class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     StringOrArrayBufferOrArrayBufferView();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -367,7 +367,7 @@ struct NativeValueTraits<StringOrArrayBufferOrArrayBufferView> {
 };
 
 class CORE_EXPORT StringOrDouble final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     StringOrDouble();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -420,7 +420,7 @@ struct NativeValueTraits<StringOrDouble> {
 };
 
 class CORE_EXPORT StringOrStringSequence final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     StringOrStringSequence();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -473,7 +473,7 @@ struct NativeValueTraits<StringOrStringSequence> {
 };
 
 class CORE_EXPORT TestEnumOrDouble final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestEnumOrDouble();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -526,7 +526,7 @@ struct NativeValueTraits<TestEnumOrDouble> {
 };
 
 class CORE_EXPORT TestInterface2OrUint8Array final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestInterface2OrUint8Array();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -579,7 +579,7 @@ struct NativeValueTraits<TestInterface2OrUint8Array> {
 };
 
 class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestInterfaceGarbageCollectedOrString();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -632,7 +632,7 @@ struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> {
 };
 
 class CORE_EXPORT TestInterfaceOrLong final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestInterfaceOrLong();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -685,7 +685,7 @@ struct NativeValueTraits<TestInterfaceOrLong> {
 };
 
 class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestInterfaceOrTestInterfaceEmpty();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -738,7 +738,7 @@ struct NativeValueTraits<TestInterfaceOrTestInterfaceEmpty> {
 };
 
 class CORE_EXPORT TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestInterfaceWillBeGarbageCollectedOrTestDictionary();
     bool isNull() const { return m_type == SpecificTypeNone; }
@@ -791,7 +791,7 @@ struct NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary> {
 };
 
 class CORE_EXPORT UnrestrictedDoubleOrString final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     UnrestrictedDoubleOrString();
     bool isNull() const { return m_type == SpecificTypeNone; }

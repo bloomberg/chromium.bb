@@ -27,7 +27,7 @@ namespace blink {
 // need more columns than what a group has room for, we'll create another group and put them there
 // (and make them appear in the next outer fragmentainer).
 class MultiColumnFragmentainerGroup {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     MultiColumnFragmentainerGroup(LayoutMultiColumnSet&);
 
@@ -122,7 +122,7 @@ private:
 // group. Deleting the one group is not allowed (or possible). There will be more than one group if
 // the owning column set lives in multiple outer fragmentainers (e.g. multicol inside paged media).
 class CORE_EXPORT MultiColumnFragmentainerGroupList {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     MultiColumnFragmentainerGroupList(LayoutMultiColumnSet&);
     ~MultiColumnFragmentainerGroupList();

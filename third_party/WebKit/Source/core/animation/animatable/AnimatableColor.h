@@ -39,7 +39,7 @@
 namespace blink {
 
 class CORE_EXPORT AnimatableColorImpl {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     AnimatableColorImpl(float red, float green, float blue, float alpha);
     AnimatableColorImpl(Color);

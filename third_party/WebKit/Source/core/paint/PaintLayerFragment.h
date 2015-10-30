@@ -44,7 +44,7 @@ namespace blink {
 // The fragments are collected by calling PaintLayer::collectFragments
 // on every box once per paint/hit-testing operation.
 struct PaintLayerFragment {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground)
     {

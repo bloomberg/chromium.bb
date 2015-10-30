@@ -17,7 +17,7 @@ class InvalidationSet;
 
 
 class StyleInvalidator {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(StyleInvalidator);
 public:
     StyleInvalidator();
@@ -69,7 +69,7 @@ private:
 
     private:
         struct Entry {
-            ALLOW_ONLY_INLINE_ALLOCATION();
+            DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
             Entry(const SiblingInvalidationSet* invalidationSet, unsigned invalidationLimit)
                 : m_invalidationSet(invalidationSet)
                 , m_invalidationLimit(invalidationLimit)

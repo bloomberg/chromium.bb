@@ -80,7 +80,7 @@ public:
     HTMLFrameSetElement* frameSet() const;
 
     class GridAxis {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         WTF_MAKE_NONCOPYABLE(GridAxis);
     public:
         GridAxis();

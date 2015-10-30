@@ -55,7 +55,7 @@ class WorkerClients;
 // See WebServiceWorkerContextClient for documentation for the methods in this class.
 class MODULES_EXPORT ServiceWorkerGlobalScopeClient : public WillBeHeapSupplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
 

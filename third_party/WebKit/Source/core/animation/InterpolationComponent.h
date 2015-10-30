@@ -12,7 +12,7 @@
 namespace blink {
 
 struct InterpolationComponent {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
     explicit InterpolationComponent(PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : interpolableValue(interpolableValue)
@@ -33,7 +33,7 @@ struct InterpolationComponent {
 };
 
 struct PairwiseInterpolationComponent {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
     PairwiseInterpolationComponent(PassOwnPtr<InterpolableValue> startInterpolableValue, PassOwnPtr<InterpolableValue> endInterpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : startInterpolableValue(startInterpolableValue)

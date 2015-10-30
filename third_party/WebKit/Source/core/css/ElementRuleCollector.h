@@ -44,7 +44,7 @@ using CascadeOrder = unsigned;
 const CascadeOrder ignoreCascadeOrder = 0;
 
 class MatchedRule {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
         : m_ruleData(ruleData)

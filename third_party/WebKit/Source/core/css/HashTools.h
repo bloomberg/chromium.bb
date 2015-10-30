@@ -25,13 +25,13 @@
 namespace blink {
 
 struct Property {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     int nameOffset;
     int id;
 };
 
 struct Value {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     int nameOffset;
     int id;
 };

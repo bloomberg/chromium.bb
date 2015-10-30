@@ -46,7 +46,7 @@ template <class R> class ResourcePtr;
 class ScriptResource;
 
 class CORE_EXPORT ScriptSourceCode final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     ScriptSourceCode();
     // We lose the encoding information from ScriptResource.

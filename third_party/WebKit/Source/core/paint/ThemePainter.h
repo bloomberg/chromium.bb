@@ -34,7 +34,7 @@ class LayoutObject;
 struct PaintInfo;
 
 class ThemePainter {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates

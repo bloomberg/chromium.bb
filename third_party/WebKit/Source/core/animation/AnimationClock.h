@@ -41,7 +41,7 @@
 namespace blink {
 
 class CORE_EXPORT AnimationClock {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(AnimationClock);
 public:
     explicit AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)

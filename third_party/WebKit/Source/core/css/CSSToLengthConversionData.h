@@ -45,11 +45,11 @@ class LayoutView;
 class Font;
 
 class CORE_EXPORT CSSToLengthConversionData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
 
     class FontSizes {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         FontSizes() : m_em(0), m_rem(0), m_font(nullptr) { }
         FontSizes(float em, float rem, const Font*);
@@ -66,7 +66,7 @@ public:
     };
 
     class ViewportSize {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         ViewportSize() : m_width(0), m_height(0) { }
         ViewportSize(double width, double height) : m_width(width), m_height(height) { }

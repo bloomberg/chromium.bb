@@ -31,7 +31,7 @@ namespace blink {
 class ComputedStyle;
 
 class PseudoStyleRequest {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
 
     enum RequestType { ForRenderer, ForComputedStyle };

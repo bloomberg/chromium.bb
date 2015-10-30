@@ -47,7 +47,7 @@ const float zeroTolerance = 1e-6f;
 
 // Class for remembering absolute quads of a target node and what node they represent.
 class SubtargetGeometry {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     SubtargetGeometry(Node* node, const FloatQuad& quad)
         : m_node(node)

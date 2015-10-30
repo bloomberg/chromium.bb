@@ -44,7 +44,7 @@ enum GridPositionType {
 };
 
 class GridPosition {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     GridPosition()
         : m_type(AutoPosition)

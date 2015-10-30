@@ -14,7 +14,7 @@ class {{decl}};
 
 {% for container in containers %}
 class {{exported}}{{container.cpp_class}} final {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     {{container.cpp_class}}();
     bool isNull() const { return m_type == SpecificTypeNone; }

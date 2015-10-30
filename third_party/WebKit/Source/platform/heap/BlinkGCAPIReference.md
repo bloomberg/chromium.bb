@@ -124,7 +124,7 @@ Especially, avoid defining a pre-finalizer in a class that can be allocated a lo
 
 ### USING_GARBAGE_COLLECTED_MIXIN
 
-### ALLOW_ONLY_INLINE_ALLOCATION
+### DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
 
 ### STACK_ALLOCATED
 

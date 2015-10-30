@@ -56,7 +56,7 @@ class InternalSettings final : public InternalSettingsGenerated {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class Backup {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         explicit Backup(Settings*);
         void restoreTo(Settings*);

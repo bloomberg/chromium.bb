@@ -53,7 +53,7 @@ public:
     String customCSSText() const;
 
     struct ImageWithScale {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         String imageURL;
         Referrer referrer;
         float scaleFactor;

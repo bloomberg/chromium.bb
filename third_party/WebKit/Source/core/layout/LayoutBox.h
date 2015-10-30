@@ -527,7 +527,7 @@ public:
     LayoutUnit adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
 
     struct ComputedMarginValues {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         ComputedMarginValues() { }
 
         LayoutUnit m_before;

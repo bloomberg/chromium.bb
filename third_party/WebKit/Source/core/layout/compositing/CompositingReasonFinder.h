@@ -18,7 +18,7 @@ class ComputedStyle;
 class LayoutView;
 
 class CompositingReasonFinder {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(CompositingReasonFinder);
 public:
     explicit CompositingReasonFinder(LayoutView&);

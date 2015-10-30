@@ -40,7 +40,7 @@ namespace blink {
 // or <flex>. This class avoids spreading the knowledge of <flex> throughout the layout directory by adding
 // an new unit to Length.h.
 class GridLength {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     GridLength(const Length& length)
         : m_length(length)

@@ -32,7 +32,7 @@ namespace blink {
 class LayoutSVGInlineText;
 
 struct SVGCharacterData {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     SVGCharacterData();
 
     float x;
@@ -45,7 +45,7 @@ struct SVGCharacterData {
 typedef HashMap<unsigned, SVGCharacterData> SVGCharacterDataMap;
 
 class SVGTextLayoutAttributes {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributes);
 public:
     SVGTextLayoutAttributes(LayoutSVGInlineText*);

@@ -38,7 +38,7 @@ class Node;
 class Element;
 
 class UserActionElementSet final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     bool isFocused(const Node* node) { return hasFlags(node, IsFocusedFlag); }
     bool isActive(const Node* node) { return hasFlags(node, IsActiveFlag); }

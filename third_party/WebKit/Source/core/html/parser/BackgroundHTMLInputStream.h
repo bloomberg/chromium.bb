@@ -36,7 +36,7 @@ namespace blink {
 typedef size_t HTMLInputCheckpoint;
 
 class BackgroundHTMLInputStream {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(BackgroundHTMLInputStream);
 public:
     BackgroundHTMLInputStream();

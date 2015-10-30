@@ -143,7 +143,7 @@ private:
 };
 
 class UnzoomedLength {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit UnzoomedLength(const Length& length) : m_length(length) { }
 

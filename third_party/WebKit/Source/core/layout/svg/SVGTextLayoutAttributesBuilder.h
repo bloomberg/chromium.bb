@@ -42,7 +42,7 @@ class SVGTextPositioningElement;
 // The second layout phase is carried out by SVGTextLayoutEngine.
 
 class SVGTextLayoutAttributesBuilder {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributesBuilder);
 public:
     SVGTextLayoutAttributesBuilder();
@@ -56,7 +56,7 @@ public:
     unsigned numberOfTextPositioningElements() const { return m_textPositions.size(); }
 
     struct TextPosition {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         TextPosition(SVGTextPositioningElement* newElement = nullptr, unsigned newStart = 0, unsigned newLength = 0)
             : element(newElement)

@@ -77,7 +77,7 @@ protected:
 };
 
 class AttributeArray {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     using ValueType = const Attribute;
 

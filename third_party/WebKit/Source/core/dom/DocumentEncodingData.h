@@ -39,7 +39,7 @@ namespace blink {
 class TextResourceDecoder;
 
 class DocumentEncodingData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     DocumentEncodingData();
     explicit DocumentEncodingData(const TextResourceDecoder&);

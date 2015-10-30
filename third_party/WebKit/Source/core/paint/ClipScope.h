@@ -11,7 +11,7 @@
 namespace blink {
 
 class ClipScope {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(ClipScope);
 public:
     ClipScope(GraphicsContext* context)

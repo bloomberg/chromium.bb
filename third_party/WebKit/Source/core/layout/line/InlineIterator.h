@@ -37,7 +37,7 @@ namespace blink {
 // text children. InlineIterator will use bidiNext to find the next LayoutText
 // optionally notifying a BidiResolver every time it steps into/out of a LayoutInline.
 class InlineIterator {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum IncrementRule {
         FastIncrementInIsolatedLayout,

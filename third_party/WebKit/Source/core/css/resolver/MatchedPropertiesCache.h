@@ -90,7 +90,7 @@ struct CachedMatchedPropertiesHashTraits : HashTraits<Member<CachedMatchedProper
 #endif
 
 class MatchedPropertiesCache {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
 public:
     MatchedPropertiesCache();

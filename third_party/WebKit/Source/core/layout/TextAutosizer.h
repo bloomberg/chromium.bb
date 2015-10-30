@@ -220,7 +220,7 @@ private:
     // Fingerprints are computed during style recalc, for (some subset of)
     // blocks that will become cluster roots.
     class FingerprintMapper {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         void add(const LayoutObject*, Fingerprint);
         void addTentativeClusterRoot(const LayoutBlock*, Fingerprint);
@@ -241,7 +241,7 @@ private:
     };
 
     struct PageInfo {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         PageInfo()
             : m_frameWidth(0)
             , m_layoutWidth(0)

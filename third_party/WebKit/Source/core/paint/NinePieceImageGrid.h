@@ -82,7 +82,7 @@ public:
     NinePieceDrawInfo getNinePieceDrawInfo(NinePiece) const;
 
     struct Edge {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         bool isDrawable() const { return slice > 0 && width > 0; }
         float scale() const { return isDrawable() ? (float)width / slice : 1; }
         int slice;

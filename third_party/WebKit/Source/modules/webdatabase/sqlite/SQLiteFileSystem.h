@@ -42,7 +42,7 @@ namespace blink {
 // A class that abstracts the file system related operations required
 // by the WebKit database code.
 class SQLiteFileSystem {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     // Registers a user-defined SQLite VFS.
     static void registerSQLiteVFS();

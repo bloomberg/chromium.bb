@@ -35,7 +35,7 @@ namespace blink {
 class HTMLTokenizer;
 
 class HTMLSourceTracker {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(HTMLSourceTracker);
 public:
     HTMLSourceTracker();

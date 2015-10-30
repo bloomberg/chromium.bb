@@ -153,7 +153,7 @@ private:
 // clip #fixed. This is the reason why we compute the painting clip rects during
 // a layout tree walk and cache them for painting.
 class PaintLayerClipper {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(PaintLayerClipper);
 public:
     explicit PaintLayerClipper(const LayoutBoxModelObject&);

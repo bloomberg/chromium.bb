@@ -15,7 +15,7 @@ class LengthSVGInterpolation : public SVGInterpolation {
 public:
     typedef SVGLengthList ListType;
     struct NonInterpolableType {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         SVGLengthMode unitMode;
         SVGLengthNegativeValuesMode negativeValuesMode;
     };

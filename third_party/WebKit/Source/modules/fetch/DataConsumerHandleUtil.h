@@ -34,7 +34,7 @@ MODULES_EXPORT PassOwnPtr<FetchDataConsumerHandle> createFetchDataConsumerHandle
 // NotifyOnReaderCreationHelper must be owned by a reader and
 // |client| must be the client of the reader.
 class NotifyOnReaderCreationHelper final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     NotifyOnReaderCreationHelper(WebDataConsumerHandle::Client* /* client */);
 

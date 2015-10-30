@@ -37,7 +37,7 @@ namespace blink {
 class FloatRoundedRect;
 
 class CORE_EXPORT HitTestLocation {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
 
     // Note that all points are in contents (aka "page") coordinate space for the

@@ -52,7 +52,7 @@ class StyleResolver;
 
 class CSSAnimations final {
     WTF_MAKE_NONCOPYABLE(CSSAnimations);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     CSSAnimations();
 
@@ -114,7 +114,7 @@ private:
     };
 
     struct RunningTransition {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         DEFINE_INLINE_TRACE()
         {

@@ -206,7 +206,7 @@ private:
 
     // Used in hit rate histograms.
     class DeadResourceStatsRecorder {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         DeadResourceStatsRecorder();
         ~DeadResourceStatsRecorder();

@@ -33,7 +33,7 @@
 namespace blink {
 
 class CORE_EXPORT ResourcePtrBase {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     Resource* get() const { return m_resource; }
     bool operator!() const { return !m_resource; }

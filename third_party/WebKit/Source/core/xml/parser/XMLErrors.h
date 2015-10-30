@@ -38,7 +38,7 @@ namespace blink {
 class Document;
 
 class XMLErrors {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit XMLErrors(Document*);
     DECLARE_TRACE();

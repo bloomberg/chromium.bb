@@ -18,7 +18,7 @@ class LayoutSVGModelObject;
 class LayoutView;
 
 class PaintInvalidationState {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
     PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer);

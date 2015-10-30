@@ -41,7 +41,7 @@
 namespace blink {
 
 struct SourceRange {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     SourceRange();
     SourceRange(unsigned start, unsigned end);
@@ -54,7 +54,7 @@ public:
 };
 
 struct CSSPropertySourceData {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     CSSPropertySourceData(const String& name, const String& value, bool important, bool disabled, bool parsedOk, const SourceRange& range);
     CSSPropertySourceData(const CSSPropertySourceData& other);
@@ -86,7 +86,7 @@ struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSour
 };
 
 struct CSSMediaQueryExpSourceData {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     CSSMediaQueryExpSourceData(const SourceRange& valueRange)
         : valueRange(valueRange) { }

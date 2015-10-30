@@ -203,7 +203,7 @@ public:
     SelectionController& selectionController() const { return *m_selectionController; }
 
     class TouchInfo {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         DEFINE_INLINE_TRACE()
         {

@@ -32,7 +32,7 @@
 namespace blink {
 
 struct CompositionUnderline {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     CompositionUnderline()
         : startOffset(0)
         , endOffset(0)

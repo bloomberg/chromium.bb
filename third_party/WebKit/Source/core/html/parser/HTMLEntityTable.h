@@ -33,7 +33,7 @@ namespace blink {
 
 // Member order to optimize packing. There will be thousands of these objects.
 struct HTMLEntityTableEntry {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     LChar lastCharacter() const;
 
     UChar32 firstValue;

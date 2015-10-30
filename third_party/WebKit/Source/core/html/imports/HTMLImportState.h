@@ -37,7 +37,7 @@
 namespace blink {
 
 class HTMLImportState {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     enum Value {
         BlockingScriptExecution = 0,

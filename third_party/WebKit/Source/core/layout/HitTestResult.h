@@ -50,7 +50,7 @@ class LayoutObject;
 class Scrollbar;
 
 class CORE_EXPORT HitTestResult {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
 public:
     typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node>> NodeSet;

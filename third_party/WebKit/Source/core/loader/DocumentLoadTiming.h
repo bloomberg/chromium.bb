@@ -36,7 +36,7 @@ class DocumentLoader;
 class KURL;
 
 class CORE_EXPORT DocumentLoadTiming final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit DocumentLoadTiming(DocumentLoader&);
 

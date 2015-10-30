@@ -18,7 +18,7 @@
 namespace blink {
 
 class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestDictionaryDerivedImplementedAs();
 

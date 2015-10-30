@@ -11,7 +11,7 @@
 namespace blink {
 
 class StyleSelfAlignmentData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     // Style data for Self-Aligment and Default-Alignment properties: align-{self, items}, justify-{self, items}.
     // [ <self-position> && <overflow-position>? ] | [ legacy && [ left | right | center ] ]

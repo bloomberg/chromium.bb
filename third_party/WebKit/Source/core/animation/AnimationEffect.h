@@ -150,7 +150,7 @@ protected:
     Member<EventDelegate> m_eventDelegate;
 
     mutable struct CalculatedTiming {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         Phase phase;
         double currentIteration;
         double timeFraction;

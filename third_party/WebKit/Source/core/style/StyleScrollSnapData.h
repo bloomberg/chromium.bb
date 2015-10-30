@@ -34,7 +34,7 @@
 namespace blink {
 
 struct ScrollSnapPoints {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     Length repeatOffset;
     bool hasRepeat;
     bool usesElements;

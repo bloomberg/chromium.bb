@@ -348,7 +348,7 @@ struct NeedsTracing<std::pair<T, U>> {
     static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
 };
 
-// This is used to check that ALLOW_ONLY_INLINE_ALLOCATION objects are not
+// This is used to check that DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects are not
 // stored in off-heap Vectors, HashTables etc.
 template <typename T>
 struct IsAllowOnlyInlineAllocation {

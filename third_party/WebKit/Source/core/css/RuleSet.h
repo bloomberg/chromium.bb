@@ -53,7 +53,7 @@ class MediaQueryEvaluator;
 class StyleSheetContents;
 
 class MinimalRuleData {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     MinimalRuleData(StyleRule* rule, unsigned selectorIndex, AddRuleFlags flags)
     : m_rule(rule)
@@ -70,7 +70,7 @@ public:
 };
 
 class CORE_EXPORT RuleData {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     RuleData(StyleRule*, unsigned selectorIndex, unsigned position, AddRuleFlags);
 
@@ -110,7 +110,7 @@ private:
 };
 
 struct SameSizeAsRuleData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     void* a;
     unsigned b;
     unsigned c;

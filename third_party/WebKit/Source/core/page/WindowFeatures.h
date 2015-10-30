@@ -38,7 +38,7 @@ namespace blink {
 class IntRect;
 
 struct WindowFeatures {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WindowFeatures()
         : x(0)
         , xSet(false)

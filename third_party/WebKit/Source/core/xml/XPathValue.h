@@ -58,7 +58,7 @@ private:
 
 // Copying Value objects makes their data partially shared, so care has to be taken when dealing with copies.
 class Value {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     enum Type { NodeSetValue, BooleanValue, NumberValue, StringValue };
 

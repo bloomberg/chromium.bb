@@ -50,7 +50,7 @@ class PrerenderHandle;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
 class CORE_EXPORT LinkLoader final : public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit LinkLoader(LinkLoaderClient*);
     ~LinkLoader() override;

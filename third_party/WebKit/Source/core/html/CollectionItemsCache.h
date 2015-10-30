@@ -40,7 +40,7 @@ namespace blink {
 
 template <typename Collection, typename NodeType>
 class CollectionItemsCache : public CollectionIndexCache<Collection, NodeType> {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 
     typedef CollectionIndexCache<Collection, NodeType> Base;
 

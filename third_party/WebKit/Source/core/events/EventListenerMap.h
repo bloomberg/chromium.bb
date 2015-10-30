@@ -48,7 +48,7 @@ using EventListenerVector = WillBeHeapVector<RegisteredEventListener, 1>;
 
 class CORE_EXPORT EventListenerMap {
     WTF_MAKE_NONCOPYABLE(EventListenerMap);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     EventListenerMap();
 

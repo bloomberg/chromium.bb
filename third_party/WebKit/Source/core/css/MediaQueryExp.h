@@ -43,7 +43,7 @@ namespace blink {
 class CSSParserToken;
 
 struct MediaQueryExpValue {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     CSSValueID id;
     double value;
     CSSPrimitiveValue::UnitType unit;

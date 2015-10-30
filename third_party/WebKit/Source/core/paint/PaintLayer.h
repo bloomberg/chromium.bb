@@ -475,7 +475,7 @@ public:
     bool hasStyleDeterminedDirectCompositingReasons() const { return m_potentialCompositingReasonsFromStyle & CompositingReasonComboAllDirectStyleDeterminedReasons; }
 
     class AncestorDependentCompositingInputs {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         AncestorDependentCompositingInputs()
             : opacityAncestor(0)
@@ -516,7 +516,7 @@ public:
     };
 
     class DescendantDependentCompositingInputs {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         DescendantDependentCompositingInputs()
             : hasDescendantWithClipPath(false)

@@ -48,7 +48,7 @@ public:
     enum Method { GetMethod, PostMethod, DialogMethod };
 
     class Attributes {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         WTF_MAKE_NONCOPYABLE(Attributes);
     public:
         Attributes()

@@ -23,7 +23,7 @@ public:
     void sampleGamepads(WebGamepads&);
 
     struct ConnectionChange {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         WebGamepad pad;
         unsigned index;
     };

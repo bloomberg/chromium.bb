@@ -64,7 +64,7 @@ enum ContentSecurityPolicyEnforcement {
 };
 
 struct ThreadableLoaderOptions {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     ThreadableLoaderOptions()
         : preflightPolicy(ConsiderPreflight)
         , crossOriginRequestPolicy(DenyCrossOriginRequests)

@@ -84,7 +84,7 @@ private:
         , m_crossfadeSubimageObserver(this) { }
 
     class CrossfadeSubimageObserverProxy final : public ImageResourceClient {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         explicit CrossfadeSubimageObserverProxy(CSSCrossfadeValue* ownerValue)
             : m_ownerValue(ownerValue)

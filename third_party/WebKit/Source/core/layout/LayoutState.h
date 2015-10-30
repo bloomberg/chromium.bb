@@ -63,7 +63,7 @@ class LayoutState {
     // LayoutState is always allocated on the stack.
     // The reason is that it is scoped to layout, thus we can avoid expensive
     // mallocs.
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(LayoutState);
 public:
     // Constructor for root LayoutState created by LayoutView

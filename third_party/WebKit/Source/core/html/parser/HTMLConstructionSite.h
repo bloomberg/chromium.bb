@@ -40,7 +40,7 @@
 namespace blink {
 
 struct HTMLConstructionSiteTask {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum Operation {
         Insert,
@@ -107,7 +107,7 @@ class HTMLFormElement;
 
 class HTMLConstructionSite final {
     WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     HTMLConstructionSite(Document*, ParserContentPolicy);
     HTMLConstructionSite(DocumentFragment*, ParserContentPolicy);
@@ -258,7 +258,7 @@ private:
     TaskQueue m_taskQueue;
 
     class PendingText final {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         PendingText()
             : whitespaceMode(WhitespaceUnknown)

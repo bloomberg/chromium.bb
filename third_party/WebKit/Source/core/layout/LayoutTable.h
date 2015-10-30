@@ -189,7 +189,7 @@ public:
     void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
 
     struct ColumnStruct {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         explicit ColumnStruct(unsigned initialSpan = 1)
             : span(initialSpan)
         {

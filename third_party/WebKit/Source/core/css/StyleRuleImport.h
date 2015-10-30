@@ -59,7 +59,7 @@ private:
     // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting from it
     // to avoid adding a vptr to StyleRuleImport.
     class ImportedStyleSheetClient final : public StyleSheetResourceClient {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         ImportedStyleSheetClient(StyleRuleImport* ownerRule) : m_ownerRule(ownerRule) { }
         ~ImportedStyleSheetClient() override { }

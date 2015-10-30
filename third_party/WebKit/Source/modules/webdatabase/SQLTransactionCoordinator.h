@@ -54,7 +54,7 @@ public:
 private:
     typedef HeapDeque<Member<SQLTransactionBackend>> TransactionsQueue;
     struct CoordinationInfo {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         TransactionsQueue pendingTransactions;
         HeapHashSet<Member<SQLTransactionBackend>> activeReadTransactions;

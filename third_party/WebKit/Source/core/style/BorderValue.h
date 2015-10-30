@@ -33,7 +33,7 @@
 namespace blink {
 
 class BorderValue {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 friend class ComputedStyle;
 public:
     BorderValue()

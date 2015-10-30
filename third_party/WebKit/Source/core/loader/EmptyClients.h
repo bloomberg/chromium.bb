@@ -264,7 +264,7 @@ protected:
 };
 
 class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     ~EmptyTextCheckerClient() { }
 

@@ -34,7 +34,7 @@ namespace blink {
 class LayoutObject;
 
 class LayoutObjectChildList {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     LayoutObjectChildList()
         : m_firstChild(nullptr)

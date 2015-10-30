@@ -41,7 +41,7 @@ class StylePendingImage;
 // it expects Document to never change.
 class StyleResourceLoader final {
     WTF_MAKE_NONCOPYABLE(StyleResourceLoader);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit StyleResourceLoader(Document*);
 

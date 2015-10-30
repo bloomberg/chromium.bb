@@ -31,7 +31,7 @@ namespace blink {
 enum AnyStepHandling { RejectAny, AnyIsDefaultStep };
 
 class CORE_EXPORT StepRange {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     enum StepValueShouldBe {
         StepValueShouldBeReal,

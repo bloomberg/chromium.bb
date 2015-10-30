@@ -41,7 +41,7 @@ namespace blink {
 class TracedValue;
 
 class ScriptCallFrame  {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     ScriptCallFrame();
     ScriptCallFrame(const String& functionName, const String& scriptId, const String& scriptName, unsigned lineNumber, unsigned column = 0);

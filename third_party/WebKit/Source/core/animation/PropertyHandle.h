@@ -13,7 +13,7 @@
 namespace blink {
 
 class CORE_EXPORT PropertyHandle {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     explicit PropertyHandle(CSSPropertyID property)
         : handleType(HandleCSSProperty)

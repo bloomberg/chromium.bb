@@ -60,7 +60,7 @@ private:
 };
 
 class CORE_EXPORT NinePieceImage {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     NinePieceImage();
     NinePieceImage(PassRefPtrWillBeRawPtr<StyleImage>, LengthBox imageSlices, bool fill, const BorderImageLengthBox& borderSlices,

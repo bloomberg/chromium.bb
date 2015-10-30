@@ -28,7 +28,7 @@ class LayoutObject;
 // TODO(leviw): This should really be something akin to a LayoutController
 // that FrameView delegates layout work to.
 class LayoutSubtreeRootList {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     LayoutSubtreeRootList()
     { }

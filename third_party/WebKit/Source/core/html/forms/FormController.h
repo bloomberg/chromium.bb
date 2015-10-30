@@ -38,7 +38,7 @@ class HTMLFormElement;
 class SavedFormState;
 
 class FormControlState {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     FormControlState() : m_type(TypeSkip) { }
     explicit FormControlState(const String& value) : m_type(TypeRestore) { m_values.append(value); }

@@ -90,7 +90,7 @@ namespace blink {
         };
 
         struct ResourceInfo {
-            ALLOW_ONLY_INLINE_ALLOCATION();
+            DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
             ResourceInfo(const KURL& resource, bool isMaster, bool isManifest, bool isFallback, bool isForeign, bool isExplicit, long long size)
                 : m_resource(resource)
                 , m_isMaster(isMaster)

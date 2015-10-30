@@ -37,10 +37,10 @@ namespace blink {
 class QualifiedName;
 
 class CORE_EXPORT CompactHTMLToken {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     struct Attribute {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         Attribute(const String& name, const String& value)
             : name(name)
             , value(value)

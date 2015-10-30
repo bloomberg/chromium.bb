@@ -37,7 +37,7 @@ namespace blink {
 class CSSValue;
 
 class TextLinkColors {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(TextLinkColors);
 public:
     TextLinkColors();

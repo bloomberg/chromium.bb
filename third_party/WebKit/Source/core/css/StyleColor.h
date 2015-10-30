@@ -38,7 +38,7 @@
 namespace blink {
 
 class StyleColor {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     StyleColor() : m_currentColor(true) { }
     StyleColor(Color color) : m_color(color), m_currentColor(false) { }

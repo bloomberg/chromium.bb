@@ -47,14 +47,14 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
 
 public:
     struct Step {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         Step(int step = 1, int stepBase = 0) : step(step), stepBase(stepBase) { }
         int step;
         int stepBase;
     };
 
     struct Range {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         Range(int minimum, int maximum) : minimum(minimum), maximum(maximum) { }
         int clampValue(int) const;
         bool isInRange(int) const;

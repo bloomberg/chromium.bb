@@ -42,7 +42,7 @@ enum GridTrackSizeType {
 };
 
 class GridTrackSize {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     GridTrackSize(const GridLength& length)
         : m_type(LengthTrackSizing)

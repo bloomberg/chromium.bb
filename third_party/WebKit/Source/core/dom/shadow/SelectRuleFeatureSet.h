@@ -39,7 +39,7 @@ namespace blink {
 class SpaceSplitString;
 
 class SelectRuleFeatureSet : public RuleFeatureSet {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     void collectFeaturesFromSelectorList(const CSSSelectorList&);
     bool checkSelectorsForClassChange(const SpaceSplitString& changedClasses) const;

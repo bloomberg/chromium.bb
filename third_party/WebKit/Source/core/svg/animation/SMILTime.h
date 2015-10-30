@@ -34,7 +34,7 @@
 namespace blink {
 
 class SMILTime {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     SMILTime() : m_time(0) { }
     SMILTime(double time) : m_time(time) { }
@@ -53,7 +53,7 @@ private:
 };
 
 class SMILTimeWithOrigin {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum Origin {
         ParserOrigin,
@@ -80,7 +80,7 @@ private:
 };
 
 struct SMILInterval {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     SMILInterval() { }
     SMILInterval(const SMILTime& begin, const SMILTime& end) : begin(begin), end(end) { }
 

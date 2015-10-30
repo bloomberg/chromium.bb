@@ -38,7 +38,7 @@ class Element;
 // This may end up merged into HTMLElementStack.
 class HTMLFormattingElementList {
     WTF_MAKE_NONCOPYABLE(HTMLFormattingElementList);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     HTMLFormattingElementList();
     ~HTMLFormattingElementList();
@@ -47,7 +47,7 @@ public:
     // between the HTMLFormattingElementList and HTMLElementStack and needs
     // access to Entry::isMarker() and Entry::replaceElement() to do so.
     class Entry {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         // Inline because they're hot and Vector<T> uses them.
         explicit Entry(PassRefPtrWillBeRawPtr<HTMLStackItem> item)

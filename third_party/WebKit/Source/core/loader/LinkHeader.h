@@ -13,7 +13,7 @@
 namespace blink {
 
 class LinkHeader {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     template <typename CharType>
     LinkHeader(CharType*& position, CharType* end);

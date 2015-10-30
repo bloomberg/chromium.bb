@@ -45,7 +45,7 @@ namespace blink {
 // with compositor animations when both classes of CSS Animations are triggered
 // by the same recalc
 class CORE_EXPORT CompositorPendingAnimations final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
 
     CompositorPendingAnimations()

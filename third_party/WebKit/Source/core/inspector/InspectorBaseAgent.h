@@ -76,7 +76,7 @@ private:
 };
 
 class CORE_EXPORT InspectorAgentRegistry final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(InspectorAgentRegistry);
 public:
     InspectorAgentRegistry(InstrumentingAgents*, InspectorCompositeState*);

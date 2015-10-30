@@ -50,7 +50,7 @@ namespace blink {
 // The network adds data at the end of the InputStream, which appends
 // them to the "last" string.
 class HTMLInputStream {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(HTMLInputStream);
 public:
     HTMLInputStream()

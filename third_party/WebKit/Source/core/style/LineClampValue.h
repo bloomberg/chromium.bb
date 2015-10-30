@@ -31,7 +31,7 @@
 namespace blink {
 
 class LineClampValue {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     LineClampValue()
         : m_type(LineClampLineCount)

@@ -38,7 +38,7 @@ typedef IntRectOutsets FilterOutsets;
 
 class PLATFORM_EXPORT FilterOperations {
 #if ENABLE(OILPAN)
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 #else
     USING_FAST_MALLOC(FilterOperations);
 #endif

@@ -21,7 +21,7 @@ enum RoundedInnerRectClipperBehavior {
 };
 
 class RoundedInnerRectClipper {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     RoundedInnerRectClipper(const LayoutObject&, const PaintInfo&, const LayoutRect&, const FloatRoundedRect& clipRect, RoundedInnerRectClipperBehavior);
     ~RoundedInnerRectClipper();

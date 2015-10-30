@@ -40,7 +40,7 @@
 namespace blink {
 
 class ScriptString final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     ScriptString();
     ScriptString(v8::Isolate*, v8::Local<v8::String>);

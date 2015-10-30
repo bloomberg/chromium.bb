@@ -43,7 +43,7 @@ enum IDBKeyPathParseError {
 MODULES_EXPORT void IDBParseKeyPath(const String&, Vector<String>&, IDBKeyPathParseError&);
 
 class MODULES_EXPORT IDBKeyPath {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     IDBKeyPath() : m_type(NullType) { }
     explicit IDBKeyPath(const String&);

@@ -40,7 +40,7 @@ enum SubstituteDataLoadPolicy {
 };
 
 class SubstituteData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     SubstituteData()
         : m_substituteDataLoadPolicy(LoadNormally)

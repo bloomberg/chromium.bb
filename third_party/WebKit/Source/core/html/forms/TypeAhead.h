@@ -45,7 +45,7 @@ public:
 };
 
 class TypeAhead {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     TypeAhead(TypeAheadDataSource*);
 

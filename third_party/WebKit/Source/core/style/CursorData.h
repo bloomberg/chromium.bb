@@ -31,7 +31,7 @@
 namespace blink {
 
 class CursorData {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     CursorData(PassRefPtrWillBeRawPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
         : m_image(image)

@@ -95,7 +95,7 @@ public:
  */
 template <class KeyType, class ValueType, v8::PersistentContainerCallbackType type>
 class V8GlobalValueMap : public v8::GlobalValueMap<KeyType, ValueType, V8GlobalValueMapTraits<KeyType, ValueType, type>> {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     typedef V8GlobalValueMapTraits<KeyType, ValueType, type> Traits;
     explicit V8GlobalValueMap(v8::Isolate* isolate)

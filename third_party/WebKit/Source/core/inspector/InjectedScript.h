@@ -50,7 +50,7 @@ PassRefPtr<JSONValue> toJSONValue(const ScriptValue&);
 
 
 class InjectedScript final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     InjectedScript();
     ~InjectedScript();

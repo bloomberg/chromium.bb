@@ -25,7 +25,7 @@
 
 namespace blink {
 struct RadialGradientAttributes final : GradientAttributes {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     RadialGradientAttributes()
         : m_cx(SVGLength::create(SVGLengthMode::Width))

@@ -56,7 +56,7 @@ class StyleSheetContents;
 // http://www.google.com/chrome/intl/en/privacy.html
 
 class CORE_EXPORT UseCounter {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(UseCounter);
 public:
     UseCounter();
@@ -916,7 +916,7 @@ public:
     static void unmuteForInspector();
 
     class CountBits {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         CountBits() : m_bits(NumberOfFeatures) { }
 

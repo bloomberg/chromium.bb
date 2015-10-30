@@ -40,7 +40,7 @@ class DOMArrayBuffer;
 // Upon successful decoding, a completion callback will be invoked with the decoded PCM data in an AudioBuffer.
 
 class AsyncAudioDecoder {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(AsyncAudioDecoder);
 public:
     AsyncAudioDecoder();

@@ -33,7 +33,7 @@ namespace blink {
 class Document;
 
 class DocumentTiming final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit DocumentTiming(Document&);
 

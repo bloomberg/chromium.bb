@@ -37,7 +37,7 @@ class DataConsumerHandleTestUtil {
     STATIC_ONLY(DataConsumerHandleTestUtil);
 public:
     class NoopClient final : public WebDataConsumerHandle::Client {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         void didGetReadable() override { }
     };
@@ -157,7 +157,7 @@ public:
 
         // The reading/updating threads are alive while ThreadHolder is alive.
         class ThreadHolder {
-            DISALLOW_ALLOCATION();
+            DISALLOW_NEW();
         public:
             ThreadHolder(ThreadingTestBase* test)
                 : m_context(test->m_context)
@@ -362,7 +362,7 @@ public:
     };
 
     class Command final {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         enum Name {
             Data,

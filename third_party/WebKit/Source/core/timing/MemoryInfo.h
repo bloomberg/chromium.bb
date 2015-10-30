@@ -39,7 +39,7 @@
 namespace blink {
 
 struct HeapInfo {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     HeapInfo()
         : usedJSHeapSize(0)
         , totalJSHeapSize(0)

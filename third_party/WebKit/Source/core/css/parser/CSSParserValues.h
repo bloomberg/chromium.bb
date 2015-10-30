@@ -37,7 +37,7 @@ struct CSSParserCalcFunction;
 class CSSParserValueList;
 
 struct CSSParserValue {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     CSSValueID id;
     bool isInt;
     union {

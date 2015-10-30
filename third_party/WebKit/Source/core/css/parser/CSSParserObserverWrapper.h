@@ -43,7 +43,7 @@ private:
     CSSParserToken* m_firstParserToken;
 
     struct CommentPosition {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         unsigned startOffset;
         unsigned endOffset;
         unsigned tokensBefore;

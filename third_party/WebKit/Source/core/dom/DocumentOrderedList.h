@@ -37,7 +37,7 @@ class Node;
 
 class DocumentOrderedList final {
     WTF_MAKE_NONCOPYABLE(DocumentOrderedList);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     DocumentOrderedList() { }
 

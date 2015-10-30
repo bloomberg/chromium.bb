@@ -33,7 +33,7 @@
 namespace blink {
 
 struct FetchInitiatorInfo {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     FetchInitiatorInfo()
         : name()
         , position(TextPosition::belowRangePosition())
@@ -50,7 +50,7 @@ struct FetchInitiatorInfo {
 
 // Encode AtomicString as String to cross threads.
 struct CrossThreadFetchInitiatorInfoData {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
         : name(info.name.string().isolatedCopy())
         , position(info.position)

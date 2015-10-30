@@ -75,7 +75,7 @@ public:
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 
     struct UnicodeRange {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         UnicodeRange(UChar32 from, UChar32 to)
             : m_from(from)
             , m_to(to)
@@ -95,7 +95,7 @@ public:
     };
 
     class CORE_EXPORT UnicodeRangeSet {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
         bool contains(UChar32) const;

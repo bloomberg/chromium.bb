@@ -41,7 +41,7 @@ namespace blink {
 class Settings;
 
 class CORE_EXPORT SettingsDelegate {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit SettingsDelegate(PassOwnPtr<Settings>);
     virtual ~SettingsDelegate();

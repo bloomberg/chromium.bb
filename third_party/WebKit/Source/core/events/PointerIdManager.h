@@ -15,7 +15,7 @@ namespace blink {
   Helper class for tracking the primary pointer id for each type of PointerEvents.
 */
 class PointerIdManager {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     PointerIdManager();
     ~PointerIdManager();

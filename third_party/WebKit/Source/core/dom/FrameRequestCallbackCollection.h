@@ -14,7 +14,7 @@ class ExecutionContext;
 class FrameRequestCallback;
 
 class CORE_EXPORT FrameRequestCallbackCollection final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     explicit FrameRequestCallbackCollection(ExecutionContext*);
 

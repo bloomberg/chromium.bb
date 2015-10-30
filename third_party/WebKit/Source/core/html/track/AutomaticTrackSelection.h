@@ -18,7 +18,7 @@ class AutomaticTrackSelection {
     STACK_ALLOCATED();
 public:
     struct Configuration {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         Configuration()
             : disableCurrentlyEnabledTracks(false)
             , forceEnableSubtitleOrCaptionTrack(false)

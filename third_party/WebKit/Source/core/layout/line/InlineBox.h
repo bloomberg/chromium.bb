@@ -309,7 +309,7 @@ public:
     void set##Name(bool name) { m_##name = name; }\
 
     class InlineBoxBitfields {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         InlineBoxBitfields(bool firstLine = false, bool constructed = false, bool dirty = false, bool extracted = false, bool isHorizontal = true)
             : m_firstLine(firstLine)

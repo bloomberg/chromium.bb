@@ -1003,7 +1003,7 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     static_assert(Allocator::isGarbageCollected
         || ((!IsAllowOnlyInlineAllocation<KeyType>::value || !NeedsTracing<KeyType>::value)
         && (!IsAllowOnlyInlineAllocation<ValueType>::value || !NeedsTracing<ValueType>::value))
-        , "Cannot put ALLOW_ONLY_INLINE_ALLOCATION objects that have trace methods into an off-heap HashTable");
+        , "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap HashTable");
 #endif
     if (Traits::emptyValueIsZero) {
         result = Allocator::template allocateZeroedHashTableBacking<ValueType, HashTable>(allocSize);

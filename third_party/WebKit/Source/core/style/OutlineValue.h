@@ -31,7 +31,7 @@
 namespace blink {
 
 class OutlineValue final : public BorderValue {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 friend class ComputedStyle;
 public:
     OutlineValue()

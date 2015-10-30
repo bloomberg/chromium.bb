@@ -48,7 +48,7 @@ using ActiveInterpolationsMap = HashMap<PropertyHandle, ActiveInterpolations>;
 class InertEffect;
 
 class CORE_EXPORT AnimationStack {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(AnimationStack);
 public:
     AnimationStack();

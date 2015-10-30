@@ -30,7 +30,7 @@ namespace blink {
 class SVGPatternElement;
 
 class PatternAttributes final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     PatternAttributes()
         : m_x(SVGLength::create(SVGLengthMode::Width))

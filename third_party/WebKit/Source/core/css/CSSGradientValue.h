@@ -52,7 +52,7 @@ enum CSSGradientRepeat { NonRepeating, Repeating };
 // objects its members are visited via the containing object's
 // (CSSGradientValue) traceAfterDispatch method.
 struct CSSGradientColorStop {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     CSSGradientColorStop() : m_colorIsDerivedFromElement(false) { }
     RefPtrWillBeMember<CSSPrimitiveValue> m_position; // percentage or length

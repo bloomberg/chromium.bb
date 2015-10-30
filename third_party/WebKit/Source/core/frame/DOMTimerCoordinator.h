@@ -22,7 +22,7 @@ class WebTaskRunner;
 // also tracks recursive creation or iterative scheduling of timers,
 // which is used as a signal for throttling repetitive timers.
 class DOMTimerCoordinator {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(DOMTimerCoordinator);
 public:
     explicit DOMTimerCoordinator(PassOwnPtr<WebTaskRunner>);

@@ -34,7 +34,7 @@ namespace blink {
 class Document;
 
 class CORE_EXPORT HTMLParserOptions {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     bool scriptEnabled;
     bool pluginsEnabled;

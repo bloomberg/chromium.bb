@@ -46,7 +46,7 @@ public:
     enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin, NoOriginRestriction };
 
     struct ResourceWidth {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         float width;
         bool isSet;
 

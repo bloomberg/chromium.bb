@@ -44,7 +44,7 @@ class QualifiedName;
 // more standard (grows upwards) stack terminology here.
 class HTMLElementStack {
     WTF_MAKE_NONCOPYABLE(HTMLElementStack);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     HTMLElementStack();
     ~HTMLElementStack();

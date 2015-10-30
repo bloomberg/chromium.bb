@@ -47,7 +47,7 @@ class CORE_EXPORT CompositorAnimationsImpl {
     STATIC_ONLY(CompositorAnimationsImpl);
 private:
     struct CompositorTiming {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         void assertValid() const
         {
             ASSERT(scaledDuration > 0);

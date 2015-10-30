@@ -43,7 +43,7 @@ protected:
 
 private:
     class FontLoadHistograms {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0) { }
         void loadStarted();

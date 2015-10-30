@@ -742,7 +742,7 @@ static bool containsNonEditableRegion(Node& node)
 }
 
 class InlineRunToApplyStyle {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     InlineRunToApplyStyle(Node* start, Node* end, Node* pastEndNode)
         : start(start)

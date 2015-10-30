@@ -44,7 +44,7 @@ enum CompileResult { CompileSuccess, CompileError };
 class CORE_EXPORT V8DebuggerListener {
 public:
     class Script {
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         Script();
 
@@ -99,7 +99,7 @@ public:
     };
 
     struct ParsedScript {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         String scriptId;
         Script script;
         CompileResult compileResult;

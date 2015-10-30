@@ -39,7 +39,7 @@ const LChar kEndOfFileMarker = 0;
 // http://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
 template <typename Tokenizer>
 class InputStreamPreprocessor {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(InputStreamPreprocessor);
 public:
     InputStreamPreprocessor(Tokenizer* tokenizer)

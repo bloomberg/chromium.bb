@@ -42,7 +42,7 @@ class Document;
 class TextResourceDecoder;
 
 class TextResourceDecoderBuilder {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     TextResourceDecoderBuilder(const AtomicString& mimeType, const AtomicString& encoding);
     ~TextResourceDecoderBuilder();

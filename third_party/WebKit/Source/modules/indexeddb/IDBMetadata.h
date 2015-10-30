@@ -39,7 +39,7 @@
 namespace blink {
 
 struct IDBIndexMetadata {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     IDBIndexMetadata() { }
     IDBIndexMetadata(const String& name, int64_t id, const IDBKeyPath& keyPath, bool unique, bool multiEntry)
         : name(name)
@@ -57,7 +57,7 @@ struct IDBIndexMetadata {
 };
 
 struct IDBObjectStoreMetadata {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     IDBObjectStoreMetadata() { }
     IDBObjectStoreMetadata(const String& name, int64_t id, const IDBKeyPath& keyPath, bool autoIncrement, int64_t maxIndexId)
         : name(name)
@@ -80,7 +80,7 @@ struct IDBObjectStoreMetadata {
 };
 
 struct IDBDatabaseMetadata {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     // FIXME: These can probably be collapsed into 0.
     enum {
         NoIntVersion = -1,

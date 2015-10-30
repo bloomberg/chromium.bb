@@ -38,7 +38,7 @@
 namespace blink {
 
 class DistributedNodes final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     DistributedNodes() { }
 

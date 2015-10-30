@@ -190,7 +190,7 @@ private:
 
     class FragmentParsingContext {
         WTF_MAKE_NONCOPYABLE(FragmentParsingContext);
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
     public:
         FragmentParsingContext();
         FragmentParsingContext(DocumentFragment*, Element* contextElement);

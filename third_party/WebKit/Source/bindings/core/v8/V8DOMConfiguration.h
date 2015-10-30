@@ -37,7 +37,7 @@
 namespace blink {
 
 class CORE_EXPORT V8DOMConfiguration final {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(V8DOMConfiguration);
 public:
     // The following Configuration structs and install methods are used for
@@ -67,7 +67,7 @@ public:
     // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
     struct AttributeConfiguration {
         AttributeConfiguration& operator=(const AttributeConfiguration&) = delete;
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         const char* const name;
         v8::AccessorNameGetterCallback getter;
         v8::AccessorNameSetterCallback setter;
@@ -89,7 +89,7 @@ public:
     // on prototype ObjectTemplate.
     struct AccessorConfiguration {
         AccessorConfiguration& operator=(const AccessorConfiguration&) = delete;
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         const char* const name;
         v8::FunctionCallback getter;
         v8::FunctionCallback setter;
@@ -123,7 +123,7 @@ public:
     // the ObjectTemplate. PropertyAttributes is always ReadOnly.
     struct ConstantConfiguration {
         ConstantConfiguration& operator=(const ConstantConfiguration&) = delete;
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         const char* const name;
         int ivalue;
         double dvalue;
@@ -149,7 +149,7 @@ public:
     // the ObjectTemplate.
     struct MethodConfiguration {
         MethodConfiguration& operator=(const MethodConfiguration&) = delete;
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return v8AtomicString(isolate, name); }
         v8::FunctionCallback callbackForWorld(const DOMWrapperWorld& world) const
         {
@@ -167,7 +167,7 @@ public:
 
     struct SymbolKeyedMethodConfiguration {
         SymbolKeyedMethodConfiguration& operator=(const SymbolKeyedMethodConfiguration&) = delete;
-        DISALLOW_ALLOCATION();
+        DISALLOW_NEW();
         v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return getSymbol(isolate); }
         v8::FunctionCallback callbackForWorld(const DOMWrapperWorld&) const
         {

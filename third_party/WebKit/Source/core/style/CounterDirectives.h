@@ -35,7 +35,7 @@
 namespace blink {
 
 class CounterDirectives {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     CounterDirectives()
         : m_isResetSet(false)

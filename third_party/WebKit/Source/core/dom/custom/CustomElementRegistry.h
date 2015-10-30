@@ -48,7 +48,7 @@ class ExceptionState;
 
 class CustomElementRegistry final {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     DECLARE_TRACE();
     void documentWasDetached() { m_documentWasDetached = true; }

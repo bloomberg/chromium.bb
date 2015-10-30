@@ -49,7 +49,7 @@ namespace blink {
 
 template <typename ResultType, typename CallbackArg>
 struct HelperResultType {
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     typedef ResultType* ReturnType;
     typedef Member<ResultType> StorageType;

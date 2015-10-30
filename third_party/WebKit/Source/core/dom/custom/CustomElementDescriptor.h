@@ -42,7 +42,7 @@ struct CustomElementDescriptorHash;
 // A Custom Element descriptor is everything necessary to match a
 // Custom Element instance to a definition.
 class CustomElementDescriptor {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     CustomElementDescriptor(const AtomicString& type, const AtomicString& namespaceURI, const AtomicString& localName)
         : m_type(type)

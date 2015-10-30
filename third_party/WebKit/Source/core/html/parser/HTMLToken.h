@@ -75,10 +75,10 @@ public:
     };
 
     class Attribute {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         class Range {
-            DISALLOW_ALLOCATION();
+            DISALLOW_NEW();
         public:
             int start;
             int end;

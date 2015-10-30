@@ -48,7 +48,7 @@ class SharedWorker;
 
 class SharedWorkerRepositoryClient {
     WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClient);
-    DISALLOW_ALLOCATION();
+    DISALLOW_NEW();
 public:
     SharedWorkerRepositoryClient() { }
     virtual ~SharedWorkerRepositoryClient() { }
