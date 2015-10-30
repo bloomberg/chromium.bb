@@ -594,6 +594,14 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     default:
       NOTREACHED();
   }
+
+  base::TimeTicks render_time;
+  if (video_frame->metadata()->GetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
+                                            &render_time)) {
+    frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
+                                    render_time);
+  }
+
   frame_ready_cb.Run(frame);
 }
 
