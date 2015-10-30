@@ -63,7 +63,7 @@ public:
     SVGCursorElement* cursorElement() const { return m_cursorElement; }
     void setCursorElement(SVGCursorElement* cursorElement) { m_cursorElement = cursorElement; }
 
-    SVGElement* correspondingElement() { return m_correspondingElement.get(); }
+    SVGElement* correspondingElement() const { return m_correspondingElement.get(); }
     void setCorrespondingElement(SVGElement* correspondingElement) { m_correspondingElement = correspondingElement; }
 
     CSSCursorImageValue* cursorImageValue() const { return m_cursorImageValue; }

@@ -72,9 +72,11 @@ DEFINE_NODE_FACTORY(SVGPathElement)
 
 Path SVGPathElement::asPath() const
 {
-    Path path;
-    buildPathFromByteStream(pathByteStream(), path);
-    return path;
+    // If this is a <use> instance, return the referenced path to maximize geometry sharing.
+    if (const SVGElement* element = correspondingElement())
+        return toSVGPathElement(element)->asPath();
+
+    return m_path->currentValue()->path();
 }
 
 float SVGPathElement::getTotalLength()

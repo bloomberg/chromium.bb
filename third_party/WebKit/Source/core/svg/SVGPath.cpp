@@ -32,6 +32,7 @@
 #include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathParser.h"
 #include "core/svg/SVGPathUtilities.h"
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -50,6 +51,16 @@ SVGPath::~SVGPath()
 {
 }
 
+const Path& SVGPath::path() const
+{
+    if (!m_cachedPath) {
+        m_cachedPath = adoptPtr(new Path);
+        buildPathFromByteStream(byteStream(), *m_cachedPath);
+    }
+
+    return *m_cachedPath;
+}
+
 PassRefPtrWillBeRawPtr<SVGPath> SVGPath::clone() const
 {
     return adoptRefWillBeNoop(new SVGPath(byteStream().copy()));
@@ -62,16 +73,28 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPath::cloneForAnimation(const String&
     return svgPath;
 }
 
+SVGPathByteStream& SVGPath::ensureByteStream()
+{
+    if (!m_byteStream)
+        m_byteStream = SVGPathByteStream::create();
+
+    return *m_byteStream.get();
+}
+
+void SVGPath::byteStreamWillChange()
+{
+    m_cachedPath.clear();
+}
+
 const SVGPathByteStream& SVGPath::byteStream() const
 {
-    return const_cast<SVGPath*>(this)->mutableByteStream();
+    return const_cast<SVGPath*>(this)->ensureByteStream();
 }
 
 SVGPathByteStream& SVGPath::mutableByteStream()
 {
-    if (!m_byteStream)
-        m_byteStream = SVGPathByteStream::create();
-    return *m_byteStream.get();
+    byteStreamWillChange();
+    return ensureByteStream();
 }
 
 String SVGPath::valueAsString() const
@@ -117,6 +140,8 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
         copy = byteStream().copy();
         fromStream = copy.get();
     }
+
+    byteStreamWillChange();
 
     // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
     if (fromStream->size() != toStream.size() && fromStream->size()) {

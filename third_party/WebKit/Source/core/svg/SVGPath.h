@@ -36,6 +36,7 @@
 namespace blink {
 
 class ExceptionState;
+class Path;
 class SVGPathByteStream;
 
 class SVGPath : public SVGPropertyBase {
@@ -48,6 +49,8 @@ public:
     }
 
     ~SVGPath() override;
+
+    const Path& path() const;
 
     const SVGPathByteStream& byteStream() const;
     SVGPathByteStream& mutableByteStream();
@@ -68,7 +71,11 @@ private:
     SVGPath();
     explicit SVGPath(PassOwnPtr<SVGPathByteStream>);
 
+    SVGPathByteStream& ensureByteStream();
+    void byteStreamWillChange();
+
     OwnPtr<SVGPathByteStream> m_byteStream;
+    mutable OwnPtr<Path> m_cachedPath;
 };
 
 inline PassRefPtrWillBeRawPtr<SVGPath> toSVGPath(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)

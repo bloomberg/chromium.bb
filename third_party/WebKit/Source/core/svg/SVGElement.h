@@ -124,7 +124,7 @@ public:
     void cursorImageValueRemoved();
 #endif
 
-    SVGElement* correspondingElement();
+    SVGElement* correspondingElement() const;
     void setCorrespondingElement(SVGElement*);
     SVGUseElement* correspondingUseElement() const;
 

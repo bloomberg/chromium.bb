@@ -542,7 +542,7 @@ void SVGElement::cursorImageValueRemoved()
 }
 #endif
 
-SVGElement* SVGElement::correspondingElement()
+SVGElement* SVGElement::correspondingElement() const
 {
     ASSERT(!hasSVGRareData() || !svgRareData()->correspondingElement() || containingShadowRoot());
     return hasSVGRareData() ? svgRareData()->correspondingElement() : 0;
