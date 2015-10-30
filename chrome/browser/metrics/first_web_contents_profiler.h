@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_METRICS_FIRST_WEB_CONTENTS_PROFILER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -74,9 +73,6 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // metrics. Logs |finish_reason| to UMA.
   void FinishedCollectingMetrics(FinishReason finish_reason);
 
-  // Initialize histograms for unresponsiveness metrics.
-  void InitHistograms();
-
   // Whether an attempt was made to collect the "NonEmptyPaint" metric.
   bool collected_paint_metric_;
 
@@ -96,24 +92,6 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
 
   // |delegate_| owns |this|.
   Delegate* delegate_;
-
-  // Histogram that keeps track of response times for the watched thread.
-  base::HistogramBase* responsiveness_histogram_;
-
-  // Histogram that keeps track of response times for the watched thread.
-  base::HistogramBase* responsiveness_1sec_histogram_;
-
-  // Histogram that keeps track of response times for the watched thread.
-  base::HistogramBase* responsiveness_10sec_histogram_;
-
-  // Histogram that keeps track of response times for the watched thread.
-  base::HistogramBase* unresponsiveness_histogram_;
-
-  // Histogram that keeps track of response times for the watched thread.
-  base::HistogramBase* unresponsiveness_1sec_histogram_;
-
-  // Histogram that keeps track of response times for the watched thread.
-  base::HistogramBase* unresponsiveness_10sec_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstWebContentsProfiler);
 };

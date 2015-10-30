@@ -44579,6 +44579,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstWebContents.UINotResponsive" units="milliseconds">
+  <obsolete>
+    Deprecated 10/2015.
+  </obsolete>
   <owner>gayane@chromium.org</owner>
   <summary>
     [Desktop] Measures the execution time for a single task to execute on UI if
@@ -44590,6 +44593,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.FirstWebContents.UINotResponsive_10sec"
     units="milliseconds">
+  <obsolete>
+    Deprecated 10/2015.
+  </obsolete>
   <owner>gayane@chromium.org</owner>
   <summary>
     [Desktop] Measures the elapsed time for a single task to execute on UI if it
@@ -44601,6 +44607,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.FirstWebContents.UINotResponsive_1sec"
     units="milliseconds">
+  <obsolete>
+    Deprecated 10/2015.
+  </obsolete>
   <owner>gayane@chromium.org</owner>
   <summary>
     [Desktop] Measures the elapsed time for a single task to execute on UI if it
@@ -44611,6 +44620,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstWebContents.UIResponsive" units="milliseconds">
+  <obsolete>
+    Deprecated 10/2015.
+  </obsolete>
   <owner>gayane@chromium.org</owner>
   <summary>
     [Desktop] Measures the elapsed time it takes for a task to execute on UI
@@ -44622,6 +44634,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.FirstWebContents.UIResponsive_10sec"
     units="milliseconds">
+  <obsolete>
+    Deprecated 10/2015.
+  </obsolete>
   <owner>gayane@chromium.org</owner>
   <summary>
     [Desktop] Measures the elapsed time it takes for a task to execute on UI
@@ -44633,6 +44648,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.FirstWebContents.UIResponsive_1sec"
     units="milliseconds">
+  <obsolete>
+    Deprecated 10/2015.
+  </obsolete>
   <owner>gayane@chromium.org</owner>
   <summary>
     [Desktop] Measures the elapsed time it takes for a task to execute on UI
