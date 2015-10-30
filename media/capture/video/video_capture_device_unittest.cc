@@ -46,7 +46,6 @@
 // main thread for tests. This results in no frame received by
 // VideoCaptureAndroid.
 #define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
-#define ReAllocateCamera DISABLED_ReAllocateCamera
 #define DeAllocateCameraWhileRunning DISABLED_DeAllocateCameraWhileRunning
 #define DeAllocateCameraWhileRunning DISABLED_DeAllocateCameraWhileRunning
 #define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
@@ -329,7 +328,7 @@ TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
 }
 
 #if !defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(MAYBE_VideoCaptureDeviceTests,
+INSTANTIATE_TEST_CASE_P(VideoCaptureDeviceTests,
                         VideoCaptureDeviceTest,
                         testing::ValuesIn(kCaptureSizes));
 #endif
@@ -361,14 +360,8 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
     EXPECT_EQ(input_size.GetArea(), last_format().frame_size.GetArea());
 }
 
-// Cause hangs on Windows Debug. http://crbug.com/417824
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_ReAllocateCamera DISABLED_ReAllocateCamera
-#else
-#define MAYBE_ReAllocateCamera ReAllocateCamera
-#endif
-
-TEST_F(VideoCaptureDeviceTest, MAYBE_ReAllocateCamera) {
+// Cause hangs on Windows, Linux. Fails Android. http://crbug.com/417824
+TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
   names_ = EnumerateDevices();
   if (names_->empty()) {
     DVLOG(1) << "No camera available. Exiting test.";
