@@ -51,10 +51,10 @@ public:
         const WebURL& firstPartyForCookies,
         WebCallbacks<WebRTCCertificate*, void>* observer) = 0;
 
-    // Determines if the parameters should be considered valid for certificate generation.
+    // Determines if the parameters are supported by generateCertificate.
     // For example, if the number of bits of some parameter is too small or too large we
     // may want to reject it for security or performance reasons.
-    virtual bool isValidKeyParams(const WebRTCKeyParams&) = 0;
+    virtual bool isSupportedKeyParams(const WebRTCKeyParams&) = 0;
 };
 
 } // namespace blink

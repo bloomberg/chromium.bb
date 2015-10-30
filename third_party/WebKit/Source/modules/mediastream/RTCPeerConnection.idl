@@ -131,8 +131,7 @@ enum RTCIceConnectionState {
     attribute EventHandler onaddstream;
     attribute EventHandler onremovestream;
 
-    // Certificate Management
+    // Certificate management
     // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
-    // TODO(hbos): Use AlgorithmIdentifier and the WebCryptoAPI normalization process. crbug.com/544917
-    [RuntimeEnabled=RTCCertificate, RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(Dictionary keygenAlgorithm);
+    [RuntimeEnabled=RTCCertificate, RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(AlgorithmIdentifier keygenAlgorithm);
 };

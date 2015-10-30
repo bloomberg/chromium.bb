@@ -136,7 +136,7 @@ void RTCCertificateGenerator::generateCertificate(
     const blink::WebURL& url,
     const blink::WebURL& first_party_for_cookies,
     blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer) {
-  DCHECK(isValidKeyParams(key_params));
+  DCHECK(isSupportedKeyParams(key_params));
 
 #if defined(ENABLE_WEBRTC)
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread =
@@ -159,7 +159,7 @@ void RTCCertificateGenerator::generateCertificate(
 #endif
 }
 
-bool RTCCertificateGenerator::isValidKeyParams(
+bool RTCCertificateGenerator::isSupportedKeyParams(
     const blink::WebRTCKeyParams& key_params) {
   return WebRTCKeyParamsToKeyParams(key_params).IsValid();
 }

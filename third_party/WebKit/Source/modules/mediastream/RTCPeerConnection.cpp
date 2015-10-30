@@ -44,6 +44,7 @@
 #include "core/html/VoidCallback.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "modules/crypto/CryptoResultImpl.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStreamEvent.h"
 #include "modules/mediastream/RTCDTMFSender.h"
@@ -60,6 +61,8 @@
 #include "platform/mediastream/RTCConfiguration.h"
 #include "platform/mediastream/RTCOfferOptions.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCryptoAlgorithmParams.h"
+#include "public/platform/WebCryptoUtil.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "public/platform/WebRTCCertificateGenerator.h"
@@ -461,48 +464,57 @@ void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration, const Dict
         exceptionState.throwDOMException(SyntaxError, "Could not update the ICE Agent with the given configuration.");
 }
 
-ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, const Dictionary& keygenAlgorithm, ExceptionState& exceptionState)
+ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, const AlgorithmIdentifier& keygenAlgorithm, ExceptionState& exceptionState)
 {
-    // Validate and interpret input |keygenAlgorithm|.
-    // TODO(hbos): Use WebCrypto normalization process to validate and interpret |keygenAlgorithm|.
-    // This may create a dependency between the Blink and WebCrypto modules? crbug.com/544917
+    // Normalize |keygenAlgorithm| with WebCrypto, making sure it is a recognized AlgorithmIdentifier.
+    WebCryptoAlgorithm cryptoAlgorithm;
+    AlgorithmError error;
+    if (!normalizeAlgorithm(keygenAlgorithm, WebCryptoOperationGenerateKey, cryptoAlgorithm, &error)) {
+        // Reject generateCertificate with the same error as was produced by WebCrypto.
+        // |result| is garbage collected, no need to delete.
+        CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
+        ScriptPromise promise = result->promise();
+        result->completeWithError(error.errorType, error.errorDetails);
+        return promise;
+    }
+
+    // Convert from WebCrypto representation to recognized WebRTCKeyParams. WebRTC supports a small subset of what are valid AlgorithmIdentifiers.
+    const char* unsupportedParamsString = "The 1st argument provided is an AlgorithmIdentifier with a supported algorithm name, but the parameters are not supported.";
     Nullable<WebRTCKeyParams> keyParams;
-    String name;
-    if (DictionaryHelper::get(keygenAlgorithm, "name", name)) {
-        if (name == "RSASSA-PKCS1-v1_5") {
-            // RSA - Supported |keygenAlgorithm|:
-            // { name: "RSASSA-PKCS1-v1_5", modulusLength: <int>, publicExponent: 65537 }
-            int modulusLength = -1;
-            int publicExponent = -1;
-            if (DictionaryHelper::get(keygenAlgorithm, "modulusLength", modulusLength)
-                && modulusLength >= 0
-                && DictionaryHelper::get(keygenAlgorithm, "publicExponent", publicExponent)
-                && publicExponent >= 0) {
-                keyParams.set(blink::WebRTCKeyParams::createRSA(modulusLength, publicExponent));
-            }
-        } else if (name == "ECDSA") {
-            // ECDSA - Supported |keygenAlgorithm|:
-            // { name: "ECDSA", namedCurve: "P-256" }
-            String namedCurve;
-            DictionaryHelper::get(keygenAlgorithm, "namedCurve", namedCurve);
-            if (namedCurve == "P-256") {
-                keyParams.set(blink::WebRTCKeyParams::createECDSA(WebRTCECCurveNistP256));
-            }
+    switch (cryptoAlgorithm.id()) {
+    case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+        // name: "RSASSA-PKCS1-v1_5"
+        unsigned publicExponent;
+        // "publicExponent" must fit in an unsigned int. The only recognized "hash" is "SHA-256".
+        if (bigIntegerToUint(cryptoAlgorithm.rsaHashedKeyGenParams()->publicExponent(), publicExponent)
+            && cryptoAlgorithm.rsaHashedKeyGenParams()->hash().id() == WebCryptoAlgorithmIdSha256) {
+            unsigned modulusLength = cryptoAlgorithm.rsaHashedKeyGenParams()->modulusLengthBits();
+            keyParams.set(blink::WebRTCKeyParams::createRSA(modulusLength, publicExponent));
+        } else {
+            return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, unsupportedParamsString));
         }
+        break;
+    case WebCryptoAlgorithmIdEcdsa:
+        // name: "ECDSA"
+        // The only recognized "namedCurve" is "P-256".
+        if (cryptoAlgorithm.ecKeyGenParams()->namedCurve() == WebCryptoNamedCurveP256) {
+            keyParams.set(blink::WebRTCKeyParams::createECDSA(blink::WebRTCECCurveNistP256));
+        } else {
+            return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, unsupportedParamsString));
+        }
+        break;
+    default:
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "The 1st argument provided is an AlgorithmIdentifier, but the algorithm is not supported."));
+        break;
     }
-    if (keyParams.isNull()) {
-        // Invalid argument.
-        return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "AlgorithmIdentifier")));
-    }
+    ASSERT(!keyParams.isNull());
 
     OwnPtr<WebRTCCertificateGenerator> certificateGenerator = adoptPtr(
         Platform::current()->createRTCCertificateGenerator());
 
-    // Check validity of |keyParams|.
-    if (!certificateGenerator->isValidKeyParams(keyParams.get())) {
-        return ScriptPromise::rejectWithDOMException(
-            scriptState, DOMException::create(NotSupportedError, "The 1st argument provided is an AlgorithmIdentifier, but it has unsupported parameter values."));
+    // |keyParams| was successfully constructed, but does the certificate generator support these parameters?
+    if (!certificateGenerator->isSupportedKeyParams(keyParams.get())) {
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, unsupportedParamsString));
     }
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

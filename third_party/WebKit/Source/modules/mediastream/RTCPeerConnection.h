@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
+#include "modules/crypto/NormalizeAlgorithm.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/RTCIceCandidate.h"
 #include "platform/AsyncMethodRunner.h"
@@ -81,7 +82,9 @@ public:
 
     void updateIce(const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
 
-    static ScriptPromise generateCertificate(ScriptState*, const Dictionary& keygenAlgorithm, ExceptionState&);
+    // Certificate management
+    // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
+    static ScriptPromise generateCertificate(ScriptState*, const AlgorithmIdentifier& keygenAlgorithm, ExceptionState&);
 
     // DEPRECATED
     void addIceCandidate(RTCIceCandidate*, ExceptionState&);

@@ -275,6 +275,7 @@
       'exported/WebCryptoKey.cpp',
       'exported/WebCryptoKeyAlgorithm.cpp',
       'exported/WebCryptoResult.cpp',
+      'exported/WebCryptoUtil.cpp',
       'exported/WebCursorInfo.cpp',
       'exported/WebData.cpp',
       'exported/WebDataConsumerHandle.cpp',

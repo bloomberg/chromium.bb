@@ -19,6 +19,7 @@
 #include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#include "third_party/WebKit/public/platform/WebCryptoUtil.h"
 
 namespace webcrypto {
 
@@ -102,26 +103,6 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
     return status;
 
   return Status::Success();
-}
-
-// Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
-// to unsigned int.
-bool BigIntegerToUint(const uint8_t* data,
-                      size_t data_size,
-                      unsigned int* result) {
-  if (data_size == 0)
-    return false;
-
-  *result = 0;
-  for (size_t i = 0; i < data_size; ++i) {
-    size_t reverse_i = data_size - i - 1;
-
-    if (reverse_i >= sizeof(*result) && data[i])
-      return false;  // Too large for a uint.
-
-    *result |= data[i] << 8 * reverse_i;
-  }
-  return true;
 }
 
 // Creates a blink::WebCryptoAlgorithm having the modulus length and public
@@ -298,10 +279,8 @@ Status RsaHashedAlgorithm::GenerateKey(
   }
 
   unsigned int public_exponent = 0;
-  if (!BigIntegerToUint(params->publicExponent().data(),
-                        params->publicExponent().size(), &public_exponent)) {
+  if (!blink::bigIntegerToUint(params->publicExponent(), public_exponent))
     return Status::ErrorGenerateKeyPublicExponent();
-  }
 
   // OpenSSL hangs when given bad public exponents. Use a whitelist.
   if (public_exponent != 3 && public_exponent != 65537)
