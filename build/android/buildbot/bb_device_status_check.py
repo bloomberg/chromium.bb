@@ -182,7 +182,7 @@ def DeviceStatus(devices, blacklist):
             blacklist.Extend([serial], reason='status_check_timeout')
 
     elif blacklist:
-      blacklist.Extend([serial], reason='offline')
+      blacklist.Extend([serial], reason=adb_status)
 
     device_status['blacklisted'] = _IsBlacklisted(serial, blacklist)
 
