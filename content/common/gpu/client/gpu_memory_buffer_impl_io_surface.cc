@@ -17,7 +17,7 @@ uint32_t LockFlags(gfx::BufferUsage usage) {
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       return kIOSurfaceLockAvoidSync;
     case gfx::BufferUsage::GPU_READ:
-    case gfx::BufferUsage::GPU_READ_WRITE:
+    case gfx::BufferUsage::SCANOUT:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return 0;
   }

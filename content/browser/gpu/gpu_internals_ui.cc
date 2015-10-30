@@ -272,8 +272,8 @@ const char* BufferUsageToString(gfx::BufferUsage usage) {
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
       return "GPU_READ";
-    case gfx::BufferUsage::GPU_READ_WRITE:
-      return "GPU_READ_WRITE";
+    case gfx::BufferUsage::SCANOUT:
+      return "SCANOUT";
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       return "GPU_READ_CPU_READ_WRITE";
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:

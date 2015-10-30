@@ -570,7 +570,7 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
             ->GetSurfaceFactoryOzone()
             ->CreateNativePixmap(widget_, GetSize(),
                                  gfx::BufferFormat::BGRA_8888,
-                                 gfx::BufferUsage::GPU_READ_WRITE);
+                                 gfx::BufferUsage::SCANOUT);
     if (!pixmap)
       return false;
     scoped_refptr<GLImageOzoneNativePixmap> image =

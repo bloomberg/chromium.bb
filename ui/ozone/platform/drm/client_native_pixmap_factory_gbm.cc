@@ -48,7 +48,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
                                 gfx::BufferUsage usage) const override {
     switch (usage) {
       case gfx::BufferUsage::GPU_READ:
-      case gfx::BufferUsage::GPU_READ_WRITE:
+      case gfx::BufferUsage::SCANOUT:
         return format == gfx::BufferFormat::RGBA_8888 ||
                format == gfx::BufferFormat::BGRA_8888 ||
                format == gfx::BufferFormat::BGRX_8888;
@@ -83,7 +83,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
         NOTREACHED();
         return nullptr;
       case gfx::BufferUsage::GPU_READ:
-      case gfx::BufferUsage::GPU_READ_WRITE:
+      case gfx::BufferUsage::SCANOUT:
         return make_scoped_ptr<ClientNativePixmapGbm>(
             new ClientNativePixmapGbm);
     }

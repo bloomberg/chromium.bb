@@ -32,10 +32,12 @@ enum class BufferFormat {
 // *_CPU_READ_WRITE_* can be mapped into the client's address space and accessed
 // by the CPU. *_CPU_READ_WRITE_PERSISTENT adds the additional condition that
 // successive Map() calls (with Unmap() calls between) will return a pointer to
-// the same memory contents.
+// the same memory contents. SCANOUT implies GPU_READ_WRITE.
+// TODO(reveman): Add GPU_READ_WRITE for use-cases where SCANOUT is not
+// required.
 enum class BufferUsage {
   GPU_READ,
-  GPU_READ_WRITE,
+  SCANOUT,
   GPU_READ_CPU_READ_WRITE,
   // TODO(reveman): Merge this with GPU_READ_CPU_READ_WRITE when SurfaceTexture
   // backed buffers are single buffered and support it.

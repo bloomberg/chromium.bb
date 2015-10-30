@@ -25,10 +25,7 @@ namespace ui {
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
                      gfx::BufferUsage usage)
-    : GbmBufferBase(gbm,
-                    bo,
-                    usage == gfx::BufferUsage::GPU_READ ||
-                        usage == gfx::BufferUsage::GPU_READ_WRITE),
+    : GbmBufferBase(gbm, bo, usage == gfx::BufferUsage::SCANOUT),
       usage_(usage) {}
 
 GbmBuffer::~GbmBuffer() {
@@ -44,12 +41,10 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     gfx::BufferUsage usage) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBuffer", "device",
                gbm->device_path().value(), "size", size.ToString());
-  bool with_cpu_access =
-      usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE ||
-      usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT;
+  bool use_scanout = (usage == gfx::BufferUsage::SCANOUT);
   unsigned flags = 0;
   // GBM_BO_USE_SCANOUT is the hint of x-tiling.
-  if (!with_cpu_access)
+  if (use_scanout)
     flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
   gbm_bo* bo = gbm_bo_create(gbm->device(), size.width(), size.height(),
                              GetFourCCFormatFromBufferFormat(format), flags);
@@ -57,7 +52,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     return nullptr;
 
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, usage));
-  if (!with_cpu_access && !buffer->GetFramebufferId())
+  if (use_scanout && !buffer->GetFramebufferId())
     return nullptr;
 
   return buffer;
@@ -145,8 +140,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
     return false;
   }
 
-  DCHECK(buffer_->GetUsage() == gfx::BufferUsage::GPU_READ ||
-         buffer_->GetUsage() == gfx::BufferUsage::GPU_READ_WRITE);
+  DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
   surface_manager_->GetSurface(widget)->QueueOverlayPlane(OverlayPlane(
       buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
   return true;

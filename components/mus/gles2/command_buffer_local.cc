@@ -166,7 +166,7 @@ int32_t CommandBufferLocal::CreateGpuMemoryBufferImage(size_t width,
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(MojoGpuMemoryBufferImpl::Create(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
-      gfx::BufferUsage::GPU_READ_WRITE));
+      gfx::BufferUsage::SCANOUT));
   if (!buffer)
     return -1;
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);

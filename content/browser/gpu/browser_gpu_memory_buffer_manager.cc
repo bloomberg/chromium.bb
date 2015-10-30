@@ -130,7 +130,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888,
         gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
     const gfx::BufferUsage kNativeUsages[] = {
-        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::GPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto& format : kNativeFormats) {
@@ -148,9 +148,9 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
     for (auto& format : kGPUReadWriteFormats) {
       if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(
-              format, gfx::BufferUsage::GPU_READ_WRITE)) {
+              format, gfx::BufferUsage::SCANOUT)) {
         configurations.insert(
-            std::make_pair(format, gfx::BufferUsage::GPU_READ_WRITE));
+            std::make_pair(format, gfx::BufferUsage::SCANOUT));
       }
     }
   }
@@ -291,7 +291,7 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForScanout(
     int32 surface_id) {
   DCHECK_GT(surface_id, 0);
   return AllocateGpuMemoryBufferForSurface(
-      size, format, gfx::BufferUsage::GPU_READ_WRITE, surface_id);
+      size, format, gfx::BufferUsage::SCANOUT, surface_id);
 }
 
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(

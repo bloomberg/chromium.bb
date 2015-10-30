@@ -99,7 +99,7 @@ bool GpuMemoryBufferFactoryIOSurface::IsGpuMemoryBufferConfigurationSupported(
     gfx::BufferUsage usage) {
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
-    case gfx::BufferUsage::GPU_READ_WRITE:
+    case gfx::BufferUsage::SCANOUT:
       return format == gfx::BufferFormat::BGRA_8888 ||
              format == gfx::BufferFormat::RGBA_8888;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
