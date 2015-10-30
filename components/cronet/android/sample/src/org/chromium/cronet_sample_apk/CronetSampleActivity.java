@@ -39,8 +39,6 @@ public class CronetSampleActivity extends Activity {
     private CronetEngine mCronetEngine;
 
     private String mUrl;
-    private boolean mLoading = false;
-    private int mHttpStatusCode = 0;
     private TextView mResultText;
     private TextView mReceiveDataText;
 
@@ -79,16 +77,14 @@ public class CronetSampleActivity extends Activity {
 
         @Override
         public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
-            mHttpStatusCode = info.getHttpStatusCode();
-            Log.i(TAG, "****** Request Completed, status code is " + mHttpStatusCode
+            Log.i(TAG, "****** Request Completed, status code is " + info.getHttpStatusCode()
                             + ", total received bytes is " + info.getReceivedBytesCount());
 
             final String receivedData = mBytesReceived.toString();
             final String url = info.getUrl();
-            final String text = "Completed " + url + " (" + mHttpStatusCode + ")";
+            final String text = "Completed " + url + " (" + info.getHttpStatusCode() + ")";
             CronetSampleActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
-                    mLoading = false;
                     mResultText.setText(text);
                     mReceiveDataText.setText(receivedData);
                     promptForURL(url);
@@ -104,7 +100,6 @@ public class CronetSampleActivity extends Activity {
             final String text = "Failed " + mUrl + " (" + error.getMessage() + ")";
             CronetSampleActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
-                    mLoading = false;
                     mResultText.setText(text);
                     promptForURL(url);
                 }
@@ -208,34 +203,12 @@ public class CronetSampleActivity extends Activity {
     private void startWithURL(String url, String postData) {
         Log.i(TAG, "Cronet started: " + url);
         mUrl = url;
-        mLoading = false;
 
         Executor executor = Executors.newSingleThreadExecutor();
         UrlRequest.Callback callback = new SimpleUrlRequestCallback();
         UrlRequest.Builder builder = new UrlRequest.Builder(url, callback, executor, mCronetEngine);
         applyPostDataToUrlRequestBuilder(builder, executor, postData);
         builder.build().start();
-    }
-
-    /**
-     * This method is used in testing.
-     */
-    public String getUrl() {
-        return mUrl;
-    }
-
-    /**
-     * This method is used in testing.
-     */
-    public boolean isLoading() {
-        return mLoading;
-    }
-
-    /**
-     * This method is used in testing.
-     */
-    public int getHttpStatusCode() {
-        return mHttpStatusCode;
     }
 
     private void startNetLog() {

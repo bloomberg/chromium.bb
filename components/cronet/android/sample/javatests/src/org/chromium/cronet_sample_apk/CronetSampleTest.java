@@ -7,30 +7,20 @@ package org.chromium.cronet_sample_apk;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.ConditionVariable;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.text.TextUtils;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.TextView;
 
 import org.chromium.base.test.util.Feature;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base test class for all CronetSample based tests.
  */
 public class CronetSampleTest extends
         ActivityInstrumentationTestCase2<CronetSampleActivity> {
-
-    /**
-     * The maximum time the waitForActiveShellToBeDoneLoading method will wait.
-     */
-    private static final long
-            WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = scaleTimeout(10000);
-
-    protected static final long
-            WAIT_PAGE_LOADING_TIMEOUT_SECONDS = scaleTimeout(15);
 
     // URL used for base tests.
     private static final String URL = "http://127.0.0.1:8000";
@@ -46,9 +36,28 @@ public class CronetSampleTest extends
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
-        // Make sure that the URL is set as expected.
-        assertEquals(URL, activity.getUrl());
-        assertEquals(200, activity.getHttpStatusCode());
+
+        // Verify successful fetch.
+        final TextView textView = (TextView) activity.findViewById(R.id.resultView);
+        final ConditionVariable done = new ConditionVariable();
+        final TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.equals("Completed " + URL + " (200)")) {
+                    done.open();
+                }
+            }
+        };
+        textView.addTextChangedListener(textWatcher);
+        // Check current text in case it changed before |textWatcher| was added.
+        textWatcher.onTextChanged(textView.getText(), 0, 0, 0);
+        done.block();
     }
 
     /**
@@ -63,59 +72,6 @@ public class CronetSampleTest extends
                 getInstrumentation().getTargetContext(),
                 CronetSampleActivity.class));
         setActivityIntent(intent);
-        try {
-            waitForActiveShellToBeDoneLoading();
-        } catch (Throwable e) {
-            fail("Active shell has failed to load.");
-        }
         return getActivity();
-    }
-
-    /**
-     * Waits for the Active shell to finish loading. This times out after
-     * WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT milliseconds and it shouldn't be
-     * used for long loading pages. Instead it should be used more for test
-     * initialization. The proper way to wait is to use a
-     * TestCallbackHelperContainer after the initial load is completed.
-     *
-     * @return Whether or not the Shell was actually finished loading.
-     * @throws InterruptedException
-     */
-    protected boolean waitForActiveShellToBeDoneLoading()
-            throws InterruptedException {
-        final CronetSampleActivity activity = getActivity();
-
-        // Wait for the Content Shell to be initialized.
-        return CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-            public boolean isSatisfied() {
-                try {
-                    final AtomicBoolean isLoaded = new AtomicBoolean(false);
-                    runTestOnUiThread(new Runnable() {
-                            @Override
-                        public void run() {
-                            if (activity != null) {
-                                // There are two cases here that need to be
-                                // accounted for.
-                                // The first is that we've just created a Shell
-                                // and it isn't
-                                // loading because it has no URL set yet. The
-                                // second is that
-                                // we've set a URL and it actually is loading.
-                                isLoaded.set(!activity.isLoading() && !TextUtils
-                                        .isEmpty(activity.getUrl()));
-                            } else {
-                                isLoaded.set(false);
-                            }
-                        }
-                    });
-
-                    return isLoaded.get();
-                } catch (Throwable e) {
-                    return false;
-                }
-            }
-        }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

@@ -72,7 +72,6 @@ public class CronetTestFramework {
     private final Context mContext;
 
     private String mUrl;
-    private boolean mLoading = false;
     private int mHttpStatusCode = 0;
 
     // CronetEngine.Builder used for this activity.
@@ -91,7 +90,6 @@ public class CronetTestFramework {
 
         @Override
         public void onRequestComplete(HttpUrlRequest request) {
-            mLoading = false;
             mComplete.open();
         }
 
@@ -250,7 +248,6 @@ public class CronetTestFramework {
     public void startWithURL(String url) {
         Log.i(TAG, "Cronet started: " + url);
         mUrl = url;
-        mLoading = true;
 
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
@@ -263,10 +260,6 @@ public class CronetTestFramework {
 
     public String getUrl() {
         return mUrl;
-    }
-
-    public boolean isLoading() {
-        return mLoading;
     }
 
     public int getHttpStatusCode() {

@@ -10,8 +10,4 @@ import android.app.Application;
  * Application for managing the Cronet Sample.
  */
 public class CronetSampleApplication extends Application {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-    }
 }
