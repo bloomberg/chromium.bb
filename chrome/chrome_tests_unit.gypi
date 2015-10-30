@@ -582,7 +582,6 @@
       'browser/apps/app_shim/app_shim_host_mac_unittest.cc',
       'browser/apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
       'browser/apps/drive/drive_app_mapping_unittest.cc',
-      'browser/apps/ephemeral_app_service_unittest.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl_unittest.cc',
       'browser/extensions/active_script_controller_unittest.cc',
       'browser/extensions/active_tab_unittest.cc',

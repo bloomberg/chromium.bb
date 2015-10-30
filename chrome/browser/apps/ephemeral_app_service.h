@@ -10,7 +10,6 @@
 #include "apps/app_lifetime_monitor.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -21,7 +20,8 @@ class Extension;
 class ExtensionRegistry;
 }  // namespace extensions
 
-// Performs the background garbage collection of ephemeral apps.
+// Delete cached ephemeral apps at startup.
+// TODO(benwells): Remove this system.  https://crbug.com/517735.
 class EphemeralAppService : public KeyedService,
                             public extensions::ExtensionRegistryObserver,
                             public apps::AppLifetimeMonitor::Observer {
@@ -36,54 +36,27 @@ class EphemeralAppService : public KeyedService,
   // Clears the ephemeral app cache. Removes all idle ephemeral apps.
   void ClearCachedApps();
 
-  int ephemeral_app_count() const { return ephemeral_app_count_; }
-
   void set_disable_delay_for_test(int delay) {
     disable_idle_app_delay_ = delay;
   }
 
-  // Constants exposed for testing purposes:
-
-  // The number of days of inactivity before an ephemeral app will be removed.
-  static const int kAppInactiveThreshold;
-  // If the ephemeral app has been launched within this number of days, it will
-  // definitely not be garbage collected.
-  static const int kAppKeepThreshold;
-  // The maximum number of ephemeral apps to keep cached. Excess may be removed.
-  static const int kMaxEphemeralAppsCount;
-
  private:
-  // A map used to order the ephemeral apps by their last launch time.
-  typedef std::multimap<base::Time, std::string> LaunchTimeAppMap;
-
   // extensions::ExtensionRegistryObserver.
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const extensions::Extension* extension,
                                   bool is_update,
                                   bool from_ephemeral,
                                   const std::string& old_name) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
 
   // apps::AppLifetimeMonitor::Observer implementation.
   void OnAppStop(Profile* profile, const std::string& app_id) override;
   void OnChromeTerminating() override;
 
   void Init();
-  void InitEphemeralAppCount();
 
   void DisableEphemeralApp(const std::string& app_id);
-  void DisableEphemeralAppsOnStartup();
 
   void HandleEphemeralAppPromoted(const extensions::Extension* app);
-
-  // Garbage collect ephemeral apps.
-  void TriggerGarbageCollect(const base::TimeDelta& delay);
-  void GarbageCollectApps();
-  static void GetAppsToRemove(int app_count,
-                              const LaunchTimeAppMap& app_launch_times,
-                              std::set<std::string>* remove_app_ids);
 
   Profile* profile_;
 
@@ -93,18 +66,12 @@ class EphemeralAppService : public KeyedService,
   ScopedObserver<apps::AppLifetimeMonitor, apps::AppLifetimeMonitor::Observer>
       app_lifetime_monitor_observer_;
 
-  base::OneShotTimer garbage_collect_apps_timer_;
-
-  // The count of cached ephemeral apps.
-  int ephemeral_app_count_;
-
   // Number of seconds before disabling idle ephemeral apps.
   // Overridden in tests.
   int disable_idle_app_delay_;
 
   base::WeakPtrFactory<EphemeralAppService> weak_ptr_factory_;
 
-  friend class EphemeralAppServiceTest;
   friend class EphemeralAppServiceBrowserTest;
 
   DISALLOW_COPY_AND_ASSIGN(EphemeralAppService);
