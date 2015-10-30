@@ -327,9 +327,6 @@ class WebContents : public PageNavigator,
   virtual uint64 GetUploadSize() const = 0;
   virtual uint64 GetUploadPosition() const = 0;
 
-  // Returns a set of the site URLs currently committed in this tab.
-  virtual std::set<GURL> GetSitesInTab() const = 0;
-
   // Returns the character encoding of the page.
   virtual const std::string& GetEncoding() const = 0;
 

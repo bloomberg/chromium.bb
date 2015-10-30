@@ -168,22 +168,6 @@ void NotifyCacheOnIO(
     cache->OnExternalCacheHit(url, http_method);
 }
 
-// Helper function for retrieving all the sites in a frame tree.
-bool CollectSites(BrowserContext* context,
-                  std::set<GURL>* sites,
-                  FrameTreeNode* node) {
-  // Record about:blank as a real (process-having) site only if the SiteInstance
-  // is unassigned. Do not otherwise depend on the siteinstance's site URL,
-  // since its value reflects the current process model, and this function
-  // should behave identically across all process models.
-  if (node->current_url() == GURL(url::kAboutBlankURL) &&
-      node->current_frame_host()->GetSiteInstance()->HasSite()) {
-    return true;
-  }
-  sites->insert(SiteInstance::GetSiteForURL(context, node->current_url()));
-  return true;
-}
-
 bool FindMatchingProcess(int render_process_id,
                          bool* did_match_process,
                          FrameTreeNode* node) {
@@ -1036,14 +1020,6 @@ uint64 WebContentsImpl::GetUploadSize() const {
 
 uint64 WebContentsImpl::GetUploadPosition() const {
   return upload_position_;
-}
-
-std::set<GURL> WebContentsImpl::GetSitesInTab() const {
-  std::set<GURL> sites;
-  frame_tree_.ForEach(base::Bind(&CollectSites,
-                                 base::Unretained(GetBrowserContext()),
-                                 base::Unretained(&sites)));
-  return sites;
 }
 
 const std::string& WebContentsImpl::GetEncoding() const {

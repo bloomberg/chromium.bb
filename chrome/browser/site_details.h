@@ -16,6 +16,7 @@ typedef base::hash_map<int32, std::set<GURL>> BrowsingInstanceSiteMap;
 // This enum represents various alternative process model policies that we want
 // to evaluate. We'll estimate the process cost of each scenario.
 enum IsolationScenarioType {
+  ISOLATE_NOTHING,
   ISOLATE_ALL_SITES,
   ISOLATE_HTTPS_SITES,
   ISOLATE_EXTENSIONS,
@@ -27,11 +28,6 @@ enum IsolationScenarioType {
 struct IsolationScenario {
   IsolationScenario();
   ~IsolationScenario();
-
-  void CollectSiteInfoForScenario(content::SiteInstance* primary,
-                                  const GURL& site);
-  void GetProcessCountEstimate();
-  void GetProcessCountLowerBound();
 
   IsolationScenarioType policy;
   std::set<GURL> sites;

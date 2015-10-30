@@ -216,83 +216,102 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 #endif
 
   ProcessData* const chrome_browser = ChromeBrowser();
+
+  // First pass, collate the widgets by process ID.
+  std::map<base::ProcessId, std::vector<RenderWidgetHost*>> widgets_by_pid;
+  scoped_ptr<content::RenderWidgetHostIterator> widget_it(
+      RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widget_it->GetNextHost()) {
+    // Ignore processes that don't have a connection, such as crashed tabs.
+    if (!widget->GetProcess()->HasConnection())
+      continue;
+    base::ProcessId pid = base::GetProcId(widget->GetProcess()->GetHandle());
+    widgets_by_pid[pid].push_back(widget);
+  }
+
   // Get more information about the process.
-  for (size_t index = 0; index < chrome_browser->processes.size();
-      index++) {
-    // Check if it's a renderer, if so get the list of page titles in it and
-    // check if it's a diagnostics-related process.  We skip about:memory pages.
-    // Iterate the RenderProcessHosts to find the tab contents.
-    ProcessMemoryInformation& process =
-        chrome_browser->processes[index];
-
-    scoped_ptr<content::RenderWidgetHostIterator> widgets(
-        RenderWidgetHost::GetRenderWidgetHosts());
-    while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
-      content::RenderProcessHost* render_process_host =
-          widget->GetProcess();
-      DCHECK(render_process_host);
-      // Ignore processes that don't have a connection, such as crashed tabs.
-      if (!render_process_host->HasConnection() ||
-          process.pid != base::GetProcId(render_process_host->GetHandle())) {
-        continue;
-      }
-
-      // The RenderProcessHost may host multiple WebContentses.  Any
-      // of them which contain diagnostics information make the whole
-      // process be considered a diagnostics process.
-      RenderViewHost* host = RenderViewHost::From(widget);
-      if (!host)
-        continue;
-
+  for (ProcessMemoryInformation& process : chrome_browser->processes) {
+    // If there's at least one widget in the process, it is some kind of
+    // renderer process belonging to this browser. All these widgets will share
+    // a RenderProcessHost.
+    content::RenderProcessHost* render_process_host = nullptr;
+    if (!widgets_by_pid[process.pid].empty()) {
+      // Mark it as a normal renderer process, if we don't refine it to some
+      // other |renderer_type| later.
       process.process_type = content::PROCESS_TYPE_RENDERER;
-      bool is_extension = false;
+      process.renderer_type = ProcessMemoryInformation::RENDERER_NORMAL;
+      render_process_host = widgets_by_pid[process.pid].front()->GetProcess();
+    }
+
 #if defined(ENABLE_EXTENSIONS)
+    // Determine if this is an extension process.
+    bool process_is_for_extensions = false;
+    if (render_process_host) {
       content::BrowserContext* context =
           render_process_host->GetBrowserContext();
       extensions::ExtensionRegistry* extension_registry =
           extensions::ExtensionRegistry::Get(context);
-      extensions::ProcessMap* extension_process_map =
+      extensions::ProcessMap* process_map =
           extensions::ProcessMap::Get(context);
-      is_extension = extension_process_map->Contains(
-          host->GetProcess()->GetID());
+      int rph_id = render_process_host->GetID();
+      process_is_for_extensions = process_map->Contains(rph_id);
+
+      // For our purposes, don't count processes containing only hosted apps
+      // as extension processes. See also: crbug.com/102533.
+      for (auto& extension_id : process_map->GetExtensionsInProcess(rph_id)) {
+        const Extension* extension =
+            extension_registry->enabled_extensions().GetByID(extension_id);
+        if (extension && !extension->is_hosted_app()) {
+          process.renderer_type = ProcessMemoryInformation::RENDERER_EXTENSION;
+          break;
+        }
+      }
+    }
 #endif
 
-      WebContents* contents = WebContents::FromRenderViewHost(host);
-      GURL url;
-      if (contents) {
-        url = contents->GetURL();
-        SiteData* site_data =
-            &chrome_browser->site_data[contents->GetBrowserContext()];
-        SiteDetails::CollectSiteInfo(contents, site_data);
+    // Use the list of widgets to iterate over the WebContents instances whose
+    // main RenderFrameHosts are in |process|. Refine our determination of the
+    // |process.renderer_type|, and record the page titles.
+    for (content::RenderWidgetHost* widget : widgets_by_pid[process.pid]) {
+      DCHECK_EQ(render_process_host, widget->GetProcess());
+
+      RenderViewHost* rvh = RenderViewHost::From(widget);
+      if (!rvh)
+        continue;
+
+      WebContents* contents = WebContents::FromRenderViewHost(rvh);
+
+      // Assume that an RVH without a web contents is an interstitial.
+      if (!contents) {
+        process.renderer_type = ProcessMemoryInformation::RENDERER_INTERSTITIAL;
+        continue;
       }
-#if defined(ENABLE_EXTENSIONS)
-      extensions::ViewType type = extensions::GetViewType(contents);
-#endif
-      if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
+
+      // If this is a RVH for a subframe; skip it to avoid double-counting the
+      // WebContents.
+      if (rvh != contents->GetRenderViewHost())
+        continue;
+
+      // The rest of this block will happen only once per WebContents.
+      GURL page_url = contents->GetLastCommittedURL();
+      SiteData& site_data =
+          chrome_browser->site_data[contents->GetBrowserContext()];
+      SiteDetails::CollectSiteInfo(contents, &site_data);
+
+      bool is_webui =
+          rvh->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI;
+
+      if (is_webui) {
         process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
-      } else if (is_extension) {
-#if defined(ENABLE_EXTENSIONS)
-        // For our purposes, don't count processes containing only hosted apps
-        // as extension processes. See also: crbug.com/102533.
-        std::set<std::string> extension_ids =
-            extension_process_map->GetExtensionsInProcess(
-            host->GetProcess()->GetID());
-        for (std::set<std::string>::iterator iter = extension_ids.begin();
-             iter != extension_ids.end(); ++iter) {
-          const Extension* extension =
-              extension_registry->enabled_extensions().GetByID(*iter);
-          if (extension && !extension->is_hosted_app()) {
-            process.renderer_type =
-                ProcessMemoryInformation::RENDERER_EXTENSION;
-            break;
-          }
-        }
-#endif
       }
+
 #if defined(ENABLE_EXTENSIONS)
-      if (is_extension) {
+      if (!is_webui && process_is_for_extensions) {
         const Extension* extension =
-            extension_registry->enabled_extensions().GetByID(url.host());
+            extensions::ExtensionRegistry::Get(
+                render_process_host->GetBrowserContext())
+                ->enabled_extensions()
+                .GetByID(page_url.host());
         if (extension) {
           base::string16 title = base::UTF8ToUTF16(extension->name());
           process.titles.push_back(title);
@@ -301,33 +320,24 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           continue;
         }
       }
-#endif
 
-      if (!contents) {
-        process.renderer_type =
-            ProcessMemoryInformation::RENDERER_INTERSTITIAL;
-        continue;
-      }
-
-#if defined(ENABLE_EXTENSIONS)
+      extensions::ViewType type = extensions::GetViewType(contents);
       if (type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
-        process.titles.push_back(base::UTF8ToUTF16(url.spec()));
+        process.titles.push_back(base::UTF8ToUTF16(page_url.spec()));
         process.renderer_type =
             ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
         continue;
       }
 #endif
 
-      // Since we have a WebContents and and the renderer type hasn't been
-      // set yet, it must be a normal tabbed renderer.
-      if (process.renderer_type == ProcessMemoryInformation::RENDERER_UNKNOWN)
-        process.renderer_type = ProcessMemoryInformation::RENDERER_NORMAL;
-
       base::string16 title = contents->GetTitle();
       if (!title.length())
         title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
       process.titles.push_back(title);
 
+      // The presence of a single WebContents with a diagnostics page will make
+      // the whole process be considered a diagnostics process.
+      //
       // We need to check the pending entry as well as the virtual_url to
       // see if it's a chrome://memory URL (we don't want to count these in
       // the total memory usage of the browser).
@@ -363,15 +373,12 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   }
 
   // Get rid of other Chrome processes that are from a different profile.
-  for (size_t index = 0; index < chrome_browser->processes.size();
-      index++) {
-    if (chrome_browser->processes[index].process_type ==
-        content::PROCESS_TYPE_UNKNOWN) {
-      chrome_browser->processes.erase(
-          chrome_browser->processes.begin() + index);
-      index--;
-    }
-  }
+  auto is_unknown = [](ProcessMemoryInformation& process) {
+    return process.process_type == content::PROCESS_TYPE_UNKNOWN;
+  };
+  auto& vector = chrome_browser->processes;
+  vector.erase(std::remove_if(vector.begin(), vector.end(), is_unknown),
+               vector.end());
 
   OnDetailsAvailable();
 }

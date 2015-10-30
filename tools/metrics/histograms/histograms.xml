@@ -43369,6 +43369,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.IsolateNothingProcessCountEstimate">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The upper bound of the estimated renderer process count if we isolated no
+    sites, subject to the process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateNothingProcessCountLowerBound">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The lower bound of the predicted renderer process count if we isolated no
+    sites, subject to the process limit.  Happens to be the number of isolated
+    sites.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateNothingProcessCountNoLimit">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The predicted renderer process count if we isolated no sites and if there
+    were no process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateNothingTotalProcessCountEstimate">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The predicted total process count if we isolated no sites, subject to the
+    process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.XSD.DataLength" units="byte">
   <owner>creis@chromium.org</owner>
   <summary>

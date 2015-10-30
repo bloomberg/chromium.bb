@@ -56,6 +56,16 @@ class TestMemoryDetails : public MetricsMemoryDetails {
   // StartFetchAndWait().
   base::HistogramTester* uma() { return uma_.get(); }
 
+  size_t CountPageTitles() {
+    size_t count = 0;
+    for (const ProcessMemoryInformation& process : ChromeBrowser()->processes) {
+      if (process.process_type == content::PROCESS_TYPE_RENDERER) {
+        count += process.titles.size();
+      }
+    }
+    return count;
+  }
+
  private:
   ~TestMemoryDetails() override {}
 
@@ -207,11 +217,15 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
   details->StartFetchAndWait();
 
+  EXPECT_EQ(1U, details->CountPageTitles());
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
@@ -252,11 +266,15 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
 
+  EXPECT_EQ(1U, details->CountPageTitles());
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
@@ -296,11 +314,15 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
 
+  EXPECT_EQ(2U, details->CountPageTitles());
   EXPECT_THAT(
       details->uma()->GetAllSamples("SiteIsolation.BrowsingInstanceCount"),
       ElementsAre(Bucket(2, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(2, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateAllSitesProcessCountEstimate"),
@@ -343,6 +365,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
       ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   // Could be 11 if subframe processes were reused across BrowsingInstances.
   EXPECT_THAT(details->uma()->GetAllSamples(
@@ -399,6 +424,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
       ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   // Could be 11 if subframe processes were reused across BrowsingInstances.
   EXPECT_THAT(details->uma()->GetAllSamples(
@@ -439,6 +467,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -472,6 +503,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -496,6 +530,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -517,6 +554,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -537,6 +577,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -557,6 +600,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -582,6 +628,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -603,6 +652,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(3, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -625,6 +677,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(2, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -646,6 +701,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(2, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -676,6 +734,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -704,6 +765,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -731,6 +795,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -763,6 +830,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
@@ -790,6 +860,9 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(GetRenderProcessCount(), 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateNothingProcessCountEstimate"),
               ElementsAre(Bucket(1, 1)));
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
