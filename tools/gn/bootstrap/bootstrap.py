@@ -65,7 +65,7 @@ def run_build(tempdir, options):
     shutil.copy2(temp_gn, out_gn)
   else:
     print 'Building gn using itself to %s...' % build_rel
-    build_gn_with_gn(temp_gn, build_rel, options)
+    build_gn_with_gn(temp_gn, build_root, options)
 
   if options.output:
     # Preserve the executable permission bit.
@@ -156,6 +156,7 @@ def write_ninja(path, options):
       'base/third_party/superfasthash/superfasthash.c',
   ])
   static_libraries['base']['sources'].extend([
+      'base/allocator/allocator_extension_thunks.cc',
       'base/at_exit.cc',
       'base/base_paths.cc',
       'base/base_switches.cc',
