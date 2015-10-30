@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 
+#include "core/dom/shadow/ShadowRoot.h"
+
 namespace blink {
 
 PassOwnPtrWillBeRawPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtrWillBeRawPtr<Element> element)
@@ -51,15 +53,20 @@ bool CustomElementCallbackQueue::processInElementQueue(ElementQueueId caller)
     ASSERT(!m_inCreatedCallback);
     bool didWork = false;
 
-    while (m_index < m_queue.size() && owner() == caller) {
-        m_inCreatedCallback = m_queue[m_index]->isCreatedCallback();
+    // Never run custom element callbacks in UA shadow roots since that would
+    // leak the UA root and it's elements into the page.
+    ShadowRoot* shadowRoot = m_element->containingShadowRoot();
+    if (!shadowRoot || shadowRoot->type() != ShadowRootType::UserAgent) {
+        while (m_index < m_queue.size() && owner() == caller) {
+            m_inCreatedCallback = m_queue[m_index]->isCreatedCallback();
 
-        // dispatch() may cause recursion which steals this callback
-        // queue and reenters processInQueue. owner() == caller
-        // detects this recursion and cedes processing.
-        m_queue[m_index++]->dispatch(m_element.get());
-        m_inCreatedCallback = false;
-        didWork = true;
+            // dispatch() may cause recursion which steals this callback
+            // queue and reenters processInQueue. owner() == caller
+            // detects this recursion and cedes processing.
+            m_queue[m_index++]->dispatch(m_element.get());
+            m_inCreatedCallback = false;
+            didWork = true;
+        }
     }
 
     if (owner() == caller && m_index == m_queue.size()) {
