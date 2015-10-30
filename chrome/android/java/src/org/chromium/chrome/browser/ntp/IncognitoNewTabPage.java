@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.graphics.Canvas;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -68,6 +70,13 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
         mIncognitoNewTabPageView =
                 (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
+
+        if (OfflinePageBridge.isEnabled()) {
+            TextView newTabIncognitoMessage = (TextView) mIncognitoNewTabPageView.findViewById(
+                    R.id.new_tab_incognito_message);
+            newTabIncognitoMessage.setText(activity.getResources().getString(
+                    R.string.offline_pages_new_tab_incognito_message));
+        }
     }
 
     /**
