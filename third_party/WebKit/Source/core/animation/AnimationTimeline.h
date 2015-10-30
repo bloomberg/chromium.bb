@@ -72,6 +72,7 @@ public:
 
     void animationAttached(Animation&);
 
+    bool isActive();
     bool hasPendingUpdates() const { return !m_animationsNeedingUpdate.isEmpty(); }
     double zeroTime();
     double currentTime(bool& isNull);

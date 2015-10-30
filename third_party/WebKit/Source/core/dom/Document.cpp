@@ -5445,6 +5445,12 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
     return *(result.storedValue->value);
 }
 
+AnimationClock& Document::animationClock()
+{
+    ASSERT(page());
+    return page()->animator().clock();
+}
+
 Document& Document::ensureTemplateDocument()
 {
     if (isTemplateDocument())

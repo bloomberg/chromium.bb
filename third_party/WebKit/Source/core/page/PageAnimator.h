@@ -6,6 +6,7 @@
 #define PageAnimator_h
 
 #include "core/CoreExport.h"
+#include "core/animation/AnimationClock.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -22,6 +23,7 @@ public:
 
     bool isServicingAnimations() const { return m_servicingAnimations; }
     void updateLayoutAndStyleForPainting(LocalFrame* rootFrame);
+    AnimationClock& clock() { return m_animationClock; }
 
 private:
     explicit PageAnimator(Page&);
@@ -29,6 +31,7 @@ private:
     RawPtrWillBeMember<Page> m_page;
     bool m_servicingAnimations;
     bool m_updatingLayoutAndStyleForPainting;
+    AnimationClock m_animationClock;
 };
 
 }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<iframe id=frame></iframe>
+
+<script>
+var handle = async_test('Animation time should tick consistently across frames');
+var baseTime = document.timeline.currentTime;
+var frameBaseTime = frame.contentDocument.timeline.currentTime;
+setTimeout(function() {
+  var start = performance.now();
+  while (performance.now() - start < 30);
+  var delta = document.timeline.currentTime - baseTime;
+
+  var start = performance.now();
+  while (performance.now() - start < 30);
+  var frameDelta = frame.contentDocument.timeline.currentTime - frameBaseTime;
+
+  handle.step(() => assert_equals(Math.round(delta), Math.round(frameDelta)));
+  handle.done();
+});
+</script>

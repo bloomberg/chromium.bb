@@ -40,7 +40,7 @@ class Node;
 
 class DocumentAnimations {
 public:
-    static void updateAnimationTimingForAnimationFrame(Document&, double monotonicAnimationStartTime);
+    static void updateAnimationTimingForAnimationFrame(Document&);
     static bool needsAnimationTimingUpdate(const Document&);
     static void updateAnimationTimingIfNeeded(Document&);
     static void updateCompositorAnimations(Document&);
