@@ -118,6 +118,9 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   remote_ref = git.GetTrackingBranch(cwd,
                                      branch=stable_branch,
                                      for_push=True)
+  # SyncPushBranch rebases HEAD onto the updated remote. We need to checkout
+  # stable_branch here in order to update it.
+  git.RunGit(cwd, ['checkout', stable_branch])
   git.SyncPushBranch(cwd, remote_ref.remote, remote_ref.ref)
 
   # Check whether any local changes remain after the sync.
@@ -143,7 +146,6 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
        '%s..%s' % (remote_ref.ref, stable_branch)]).output
   description = '%s\n\n%s' % (GIT_COMMIT_SUBJECT, description)
   logging.info('For %s, using description %s', cwd, description)
-  git.RunGit(cwd, ['checkout', stable_branch])
   git.CreatePushBranch(constants.MERGE_BRANCH, cwd,
                        remote_push_branch=remote_ref)
   git.RunGit(cwd, ['merge', '--squash', stable_branch])
