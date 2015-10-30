@@ -267,7 +267,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   }
 
  private:
-  friend class ServiceWorkerContext;
   typedef std::map<int64, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64, ServiceWorkerVersion*> VersionMap;
 

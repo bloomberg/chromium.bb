@@ -23,14 +23,11 @@
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_quota_client.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/service_worker_context.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -89,16 +86,6 @@ bool ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return g_excluded_header_name_set.Get().find(header_name) !=
          g_excluded_header_name_set.Get().end();
-}
-
-ServiceWorkerContext* ServiceWorkerContext::GetServiceWorkerContext(
-    net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ServiceWorkerRequestHandler* handler =
-      ServiceWorkerRequestHandler::GetHandler(request);
-  if (!handler || !handler->context())
-    return nullptr;
-  return handler->context()->wrapper_;
 }
 
 ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
@@ -305,26 +292,6 @@ void ServiceWorkerContextWrapper::SetForceUpdateOnPageLoad(
     return;
   context_core_->SetForceUpdateOnPageLoad(registration_id,
                                           force_update_on_page_load);
-}
-
-static void DidFindRegistrationForDocument(
-    const net::CompletionCallback& callback,
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  int rv = registration ? net::OK : net::ERR_CACHE_MISS;
-  // Use RunSoon here because FindRegistrationForDocument can complete
-  // immediately but CanHandleMainResourceOffline must be async.
-  RunSoon(base::Bind(callback, rv));
-}
-
-void ServiceWorkerContextWrapper::CanHandleMainResourceOffline(
-      const GURL& url,
-      const GURL& first_party,
-      const net::CompletionCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context()->storage()->FindRegistrationForDocument(
-      net::SimplifyUrlForRequest(url),
-      base::Bind(&DidFindRegistrationForDocument, callback));
 }
 
 void ServiceWorkerContextWrapper::GetAllOriginsInfo(

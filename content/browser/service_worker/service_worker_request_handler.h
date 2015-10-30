@@ -109,8 +109,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   void MaybeCompleteCrossSiteTransferInOldProcess(
       int old_process_id);
 
-  ServiceWorkerContextCore* context() const { return context_.get(); }
-
  protected:
   ServiceWorkerRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
