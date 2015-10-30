@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -53,10 +54,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         return accounts;
     }
 
-    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
     @Override
-    public void getAccountsByType(
-            final String type, final org.chromium.base.Callback<Account[]> callback) {
+    public void getAccountsByType(final String type, final Callback<Account[]> callback) {
         new AsyncTask<Void, Void, Account[]>() {
             @Override
             protected Account[] doInBackground(Void... params) {
@@ -94,28 +93,13 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         return mAccountManager.getAuthenticatorTypes();
     }
 
-    // TODO(maxbogue): Remove full Callback path once AccountManagerDelegate.Callback is removed.
     @Override
-    public void hasFeatures(Account account, String[] features,
-            final org.chromium.base.Callback<Boolean> callback) {
-        hasFeatures(account, features, new Callback<Boolean>() {
-            @Override
-            public void gotResult(Boolean result) {
-                callback.onResult(result);
-            }
-        });
-    }
-
-    /**
-     * TODO(maxbogue): Remove once downstream override is removed.
-     */
-    @Deprecated
     public void hasFeatures(Account account, String[] features, final Callback<Boolean> callback) {
         if (!AccountManagerHelper.get(mApplicationContext).hasGetAccountsPermission()) {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    callback.gotResult(false);
+                    callback.onResult(false);
                 }
             });
             return;
@@ -132,7 +116,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                 } catch (OperationCanceledException e) {
                     Log.e(TAG, "Checking features was cancelled. This should not happen.");
                 }
-                callback.gotResult(hasFeatures);
+                callback.onResult(hasFeatures);
             }
         }, null /* handler */);
     }
