@@ -2107,6 +2107,19 @@ void CanvasRenderingContext2D::setImageSmoothingEnabled(bool enabled)
     modifiableState().setImageSmoothingEnabled(enabled);
 }
 
+String CanvasRenderingContext2D::imageSmoothingQuality() const
+{
+    return state().imageSmoothingQuality();
+}
+
+void CanvasRenderingContext2D::setImageSmoothingQuality(const String& quality)
+{
+    if (quality == state().imageSmoothingQuality())
+        return;
+
+    modifiableState().setImageSmoothingQuality(quality);
+}
+
 void CanvasRenderingContext2D::getContextAttributes(Canvas2DContextAttributes& attrs) const
 {
     attrs.setAlpha(m_hasAlpha);

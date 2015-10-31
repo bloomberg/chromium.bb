@@ -33,6 +33,7 @@ typedef (HTMLImageElement or
          ImageBitmap) CanvasImageSource;
 
 enum CanvasFillRule { "nonzero", "evenodd" };
+enum ImageSmoothingQuality {"low", "medium", "high"};
 
 [
     SetWrapperReferenceFrom=canvas,
@@ -62,7 +63,8 @@ enum CanvasFillRule { "nonzero", "evenodd" };
 
     // image smoothing
     [ImplementedAs=imageSmoothingEnabled, DeprecateAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;
-    [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled;
+    [MeasureAs=UnprefixedImageSmoothingEnabled] attribute boolean imageSmoothingEnabled; // (default True)
+    [RuntimeEnabled=ExperimentalCanvasFeatures] attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 
     // colors and styles (see also the CanvasDrawingStyles interface)
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)

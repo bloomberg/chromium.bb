@@ -201,6 +201,8 @@ public:
 
     bool imageSmoothingEnabled() const;
     void setImageSmoothingEnabled(bool);
+    String imageSmoothingQuality() const;
+    void setImageSmoothingQuality(const String&);
 
     void getContextAttributes(Canvas2DContextAttributes&) const;
 
