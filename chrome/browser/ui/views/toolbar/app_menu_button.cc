@@ -36,7 +36,7 @@ bool AppMenuButton::g_open_app_immediately_for_testing = false;
 
 AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     : views::MenuButton(NULL, base::string16(), toolbar_view, false),
-      severity_(WrenchIconPainter::SEVERITY_NONE),
+      severity_(AppMenuIconPainter::SEVERITY_NONE),
       ink_drop_animation_controller_(
           views::InkDropAnimationControllerFactory::
               CreateInkDropAnimationController(this)),
@@ -47,7 +47,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
       destroyed_(nullptr),
       weak_factory_(this) {
   if (!ui::MaterialDesignController::IsModeMaterial())
-    wrench_icon_painter_.reset(new WrenchIconPainter(this));
+    icon_painter_.reset(new AppMenuIconPainter(this));
 
   const int kInkDropLargeSize = 32;
   const int kInkDropLargeCornerRadius = 5;
@@ -66,7 +66,7 @@ AppMenuButton::~AppMenuButton() {
     *destroyed_ = true;
 }
 
-void AppMenuButton::SetSeverity(WrenchIconPainter::Severity severity,
+void AppMenuButton::SetSeverity(AppMenuIconPainter::Severity severity,
                                 bool animate) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     severity_ = severity;
@@ -74,7 +74,7 @@ void AppMenuButton::SetSeverity(WrenchIconPainter::Severity severity,
     return;
   }
 
-  wrench_icon_painter_->SetSeverity(severity, animate);
+  icon_painter_->SetSeverity(severity, animate);
   SchedulePaint();
 }
 
@@ -151,7 +151,7 @@ gfx::Size AppMenuButton::GetPreferredSize() const {
       GetImageSkiaNamed(IDR_TOOLBAR_BEZEL_HOVER)->size();
 }
 
-void AppMenuButton::ScheduleWrenchIconPaint() {
+void AppMenuButton::ScheduleAppMenuIconPaint() {
   SchedulePaint();
 }
 
@@ -159,17 +159,17 @@ void AppMenuButton::UpdateIcon() {
   DCHECK(ui::MaterialDesignController::IsModeMaterial());
   SkColor color = SK_ColorRED;
   switch (severity_) {
-    case WrenchIconPainter::SEVERITY_NONE:
+    case AppMenuIconPainter::SEVERITY_NONE:
       color = GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
       break;
-    case WrenchIconPainter::SEVERITY_LOW:
+    case AppMenuIconPainter::SEVERITY_LOW:
       color = gfx::kGoogleGreen700;
       break;
-    case WrenchIconPainter::SEVERITY_MEDIUM:
+    case AppMenuIconPainter::SEVERITY_MEDIUM:
       color = gfx::kGoogleYellow700;
       break;
-    case WrenchIconPainter::SEVERITY_HIGH:
+    case AppMenuIconPainter::SEVERITY_HIGH:
       color = gfx::kGoogleRed700;
       break;
   }
@@ -265,8 +265,6 @@ void AppMenuButton::OnPaint(gfx::Canvas* canvas) {
   views::MenuButton::OnPaint(canvas);
   if (ui::MaterialDesignController::IsModeMaterial())
     return;
-  wrench_icon_painter_->Paint(canvas,
-                              GetThemeProvider(),
-                              gfx::Rect(size()),
-                              WrenchIconPainter::BEZEL_NONE);
+  icon_painter_->Paint(canvas, GetThemeProvider(), gfx::Rect(size()),
+                       AppMenuIconPainter::BEZEL_NONE);
 }

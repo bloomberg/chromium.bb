@@ -9,19 +9,19 @@
 
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
-#include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
+#include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 
-class WrenchIconPainterDelegateMac;
+class AppMenuIconPainterDelegateMac;
 
-// Cell for the wrench toolbar button. This is used to draw the wrench icon
+// Cell for the wrench toolbar button. This is used to draw the app menu icon
 // and paint severity levels.
 @interface WrenchToolbarButtonCell : ClickHoldButtonCell {
  @private
-  scoped_ptr<WrenchIconPainter> wrenchIconPainter_;
-  scoped_ptr<WrenchIconPainterDelegateMac> delegate_;
+  scoped_ptr<AppMenuIconPainter> iconPainter_;
+  scoped_ptr<AppMenuIconPainterDelegateMac> delegate_;
 }
 
-- (void)setSeverity:(WrenchIconPainter::Severity)severity
+- (void)setSeverity:(AppMenuIconPainter::Severity)severity
       shouldAnimate:(BOOL)shouldAnimate;
 
 @end

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_BADGE_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
+#include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,7 +32,7 @@ class AppMenuBadgeController : public content::NotificationObserver {
     // well as specifying whether it should |animate|. The |type| parameter
     // specifies the type of change (i.e. the source of the notification).
     virtual void UpdateBadgeSeverity(BadgeType type,
-                                     WrenchIconPainter::Severity severity,
+                                     AppMenuIconPainter::Severity severity,
                                      bool animate) = 0;
 
    protected:

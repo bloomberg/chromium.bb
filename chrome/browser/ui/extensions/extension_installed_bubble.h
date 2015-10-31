@@ -27,7 +27,7 @@ class ExtensionRegistry;
 //    BROWSER_ACTION -> The browser action icon in the toolbar.
 //    PAGE_ACTION    -> A preview of the page action icon in the location
 //                      bar which is shown while the Bubble is shown.
-//    GENERIC        -> The wrench menu. This case includes page actions that
+//    GENERIC        -> The app menu. This case includes page actions that
 //                      don't specify a default icon.
 //
 // ExtensionInstallBubble manages its own lifetime.

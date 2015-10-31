@@ -8,24 +8,24 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/geometry/rect.h"
 
-class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
+class AppMenuIconPainterDelegateMac : public AppMenuIconPainter::Delegate {
  public:
-  explicit WrenchIconPainterDelegateMac(NSCell* cell) : cell_(cell) {}
-  ~WrenchIconPainterDelegateMac() override {}
+  explicit AppMenuIconPainterDelegateMac(NSCell* cell) : cell_(cell) {}
+  ~AppMenuIconPainterDelegateMac() override {}
 
-  void ScheduleWrenchIconPaint() override {
+  void ScheduleAppMenuIconPaint() override {
     [[cell_ controlView] setNeedsDisplay:YES];
   }
 
  private:
   NSCell* cell_;
 
-  DISALLOW_COPY_AND_ASSIGN(WrenchIconPainterDelegateMac);
+  DISALLOW_COPY_AND_ASSIGN(AppMenuIconPainterDelegateMac);
 };
 
 @interface WrenchToolbarButtonCell ()
 - (void)commonInit;
-- (WrenchIconPainter::BezelType)currentBezelType;
+- (AppMenuIconPainter::BezelType)currentBezelType;
 @end
 
 @implementation WrenchToolbarButtonCell
@@ -51,32 +51,31 @@ class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
                         [self imageAlphaForWindowState:[controlView window]]);
   ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
   if (themeProvider) {
-    wrenchIconPainter_->Paint(&canvas,
-                              [[controlView window] themeProvider],
-                              gfx::Rect(NSRectToCGRect(cellFrame)),
-                              [self currentBezelType]);
+    iconPainter_->Paint(&canvas, [[controlView window] themeProvider],
+                        gfx::Rect(NSRectToCGRect(cellFrame)),
+                        [self currentBezelType]);
   }
   canvas.Restore();
 
   [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
-- (void)setSeverity:(WrenchIconPainter::Severity)severity
+- (void)setSeverity:(AppMenuIconPainter::Severity)severity
       shouldAnimate:(BOOL)shouldAnimate {
-  wrenchIconPainter_->SetSeverity(severity, shouldAnimate);
+  iconPainter_->SetSeverity(severity, shouldAnimate);
 }
 
 - (void)commonInit {
-  delegate_.reset(new WrenchIconPainterDelegateMac(self));
-  wrenchIconPainter_.reset(new WrenchIconPainter(delegate_.get()));
+  delegate_.reset(new AppMenuIconPainterDelegateMac(self));
+  iconPainter_.reset(new AppMenuIconPainter(delegate_.get()));
 }
 
-- (WrenchIconPainter::BezelType)currentBezelType {
+- (AppMenuIconPainter::BezelType)currentBezelType {
   if ([self isHighlighted])
-    return WrenchIconPainter::BEZEL_PRESSED;
+    return AppMenuIconPainter::BEZEL_PRESSED;
   if ([self isMouseInside])
-    return WrenchIconPainter::BEZEL_HOVER;
-  return WrenchIconPainter::BEZEL_NONE;
+    return AppMenuIconPainter::BEZEL_HOVER;
+  return AppMenuIconPainter::BEZEL_NONE;
 }
 
 @end

@@ -23,8 +23,8 @@ class Extension;
 //    BROWSER_ACTION -> The browserAction icon in the toolbar.
 //    PAGE_ACTION    -> A preview of the pageAction icon in the location
 //                      bar which is shown while the Bubble is shown.
-//    GENERIC        -> The wrench menu. This case includes pageActions that
-//                      don't specify a default icon.
+//    GENERIC        -> The app menu. This case includes pageActions that don't
+//                      specify a default icon.
 class ExtensionInstalledBubbleView
     : public ExtensionInstalledBubble::ExtensionInstalledBubbleUi,
       public views::BubbleDelegateView {

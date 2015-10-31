@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, DISABLED_NonOverrideStarClick) {
   EXPECT_TRUE(BookmarkBubbleView::bookmark_bubble());
 }
 
-// Test that invoking the IDC_BOOKMARK_PAGE command (as done by the wrench menu)
+// Test that invoking the IDC_BOOKMARK_PAGE command (as done by the app menu)
 // brings up the bookmark UI, if no extension requests to override ctrl-D and
 // the user has assigned it to an extension.
 // Flaky on all platforms: https://crbug.com/448956.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
+#include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 
 #include <algorithm>
 
@@ -15,14 +15,14 @@
 
 namespace {
 
-// The wrench icon is made up of this many bars stacked vertically.
+// The app menu icon is made up of this many bars stacked vertically.
 const int kBarCount = 3;
 
 // |value| is the animation progress from 0 to 1. |index| is the index of the
 // bar being drawn. This function returns a new progress value (from 0 to 1)
 // such that bars appear staggered.
 double GetStaggeredValue(double value, int index) {
-  // When animating the wrench icon's bars the bars are staggered by this
+  // When animating the app menu icon's bars the bars are staggered by this
   // factor.
   const double kStaggerFactor = 0.15;
   double maxStaggeredValue = 1.0 - (kBarCount - 1) * kStaggerFactor;
@@ -32,19 +32,17 @@ double GetStaggeredValue(double value, int index) {
 
 }  // namespace
 
-WrenchIconPainter::WrenchIconPainter(Delegate* delegate)
-    : delegate_(delegate),
-      severity_(SEVERITY_NONE) {
-}
+AppMenuIconPainter::AppMenuIconPainter(Delegate* delegate)
+    : delegate_(delegate), severity_(SEVERITY_NONE) {}
 
-WrenchIconPainter::~WrenchIconPainter() {}
+AppMenuIconPainter::~AppMenuIconPainter() {}
 
-void WrenchIconPainter::SetSeverity(Severity severity, bool animate) {
+void AppMenuIconPainter::SetSeverity(Severity severity, bool animate) {
   if (severity_ == severity)
     return;
 
   severity_ = severity;
-  delegate_->ScheduleWrenchIconPaint();
+  delegate_->ScheduleAppMenuIconPaint();
   animation_.reset();
   if (severity_ == SEVERITY_NONE || !animate)
     return;
@@ -64,10 +62,10 @@ void WrenchIconPainter::SetSeverity(Severity severity, bool animate) {
   animation_->Start();
 }
 
-void WrenchIconPainter::Paint(gfx::Canvas* canvas,
-                              ui::ThemeProvider* theme_provider,
-                              const gfx::Rect& rect,
-                              BezelType bezel_type) {
+void AppMenuIconPainter::Paint(gfx::Canvas* canvas,
+                               ui::ThemeProvider* theme_provider,
+                               const gfx::Rect& rect,
+                               BezelType bezel_type) {
   gfx::Point center = rect.CenterPoint();
 
   // Bezel.
@@ -85,8 +83,7 @@ void WrenchIconPainter::Paint(gfx::Canvas* canvas,
 
   if (resource_id) {
     gfx::ImageSkia* image = theme_provider->GetImageSkiaNamed(resource_id);
-    canvas->DrawImageInt(*image,
-                         center.x() - image->width() / 2,
+    canvas->DrawImageInt(*image, center.x() - image->width() / 2,
                          center.y() - image->height() / 2);
   }
 
@@ -128,8 +125,8 @@ void WrenchIconPainter::Paint(gfx::Canvas* canvas,
         }
       }
 
-      canvas->DrawImageInt(*image, 0, 0, width, image->height(),
-                            x, y, width, image->height(), false, paint);
+      canvas->DrawImageInt(*image, 0, 0, width, image->height(), x, y, width,
+                           image->height(), false, paint);
       y += image->height();
     }
   }
@@ -138,11 +135,11 @@ void WrenchIconPainter::Paint(gfx::Canvas* canvas,
     canvas->DrawImageInt(badge_, 0, 0);
 }
 
-void WrenchIconPainter::AnimationProgressed(const gfx::Animation* animation) {
-  delegate_->ScheduleWrenchIconPaint();
+void AppMenuIconPainter::AnimationProgressed(const gfx::Animation* animation) {
+  delegate_->ScheduleAppMenuIconPaint();
 }
 
-int WrenchIconPainter::GetCurrentSeverityImageID() const {
+int AppMenuIconPainter::GetCurrentSeverityImageID() const {
   switch (severity_) {
     case SEVERITY_NONE:
       return 0;

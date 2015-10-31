@@ -18,24 +18,24 @@
 namespace {
 
 // Maps an upgrade level to a severity level.
-WrenchIconPainter::Severity SeverityFromUpgradeLevel(
+AppMenuIconPainter::Severity SeverityFromUpgradeLevel(
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
   switch (level) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
-      return WrenchIconPainter::SEVERITY_NONE;
+      return AppMenuIconPainter::SEVERITY_NONE;
     case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
-      return WrenchIconPainter::SEVERITY_LOW;
+      return AppMenuIconPainter::SEVERITY_LOW;
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-      return WrenchIconPainter::SEVERITY_MEDIUM;
+      return AppMenuIconPainter::SEVERITY_MEDIUM;
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-      return WrenchIconPainter::SEVERITY_HIGH;
+      return AppMenuIconPainter::SEVERITY_HIGH;
     case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      return WrenchIconPainter::SEVERITY_HIGH;
+      return AppMenuIconPainter::SEVERITY_HIGH;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
-      return WrenchIconPainter::SEVERITY_HIGH;
+      return AppMenuIconPainter::SEVERITY_HIGH;
   }
   NOTREACHED();
-  return WrenchIconPainter::SEVERITY_NONE;
+  return AppMenuIconPainter::SEVERITY_NONE;
 }
 
 // Checks if the app menu icon should be animated for the given upgrade level.
@@ -111,7 +111,7 @@ void AppMenuBadgeController::UpdateDelegate() {
 
   if (ShouldShowIncompatibilityWarning()) {
     delegate_->UpdateBadgeSeverity(BADGE_TYPE_INCOMPATIBILITY_WARNING,
-                                   WrenchIconPainter::SEVERITY_MEDIUM, true);
+                                   AppMenuIconPainter::SEVERITY_MEDIUM, true);
     return;
   }
 
@@ -120,12 +120,12 @@ void AppMenuBadgeController::UpdateDelegate() {
     // If you change the severity here, make sure to also change the menu icon
     // and the bubble icon.
     delegate_->UpdateBadgeSeverity(BADGE_TYPE_GLOBAL_ERROR,
-                                   WrenchIconPainter::SEVERITY_MEDIUM, true);
+                                   AppMenuIconPainter::SEVERITY_MEDIUM, true);
     return;
   }
 
   delegate_->UpdateBadgeSeverity(BADGE_TYPE_NONE,
-                                 WrenchIconPainter::SEVERITY_NONE, true);
+                                 AppMenuIconPainter::SEVERITY_NONE, true);
 }
 
 void AppMenuBadgeController::Observe(

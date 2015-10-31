@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_WRENCH_ICON_PAINTER_H_
-#define CHROME_BROWSER_UI_TOOLBAR_WRENCH_ICON_PAINTER_H_
+#ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_PAINTER_H_
+#define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_PAINTER_H_
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/image/image_skia.h"
@@ -20,9 +20,9 @@ namespace ui {
 class ThemeProvider;
 }
 
-// This class is used to draw the wrench icon. It can signify severity levels
-// by changing the wrench icon to different colors.
-class WrenchIconPainter : gfx::AnimationDelegate {
+// This class is used to draw the app menu icon. It can signify severity levels
+// by changing the app menu icon to different colors.
+class AppMenuIconPainter : gfx::AnimationDelegate {
  public:
   enum BezelType {
     BEZEL_NONE,
@@ -39,15 +39,16 @@ class WrenchIconPainter : gfx::AnimationDelegate {
 
   class Delegate {
    public:
-    virtual void ScheduleWrenchIconPaint() = 0;
+    virtual void ScheduleAppMenuIconPaint() = 0;
+
    protected:
     virtual ~Delegate() {}
   };
 
-  explicit WrenchIconPainter(Delegate* delegate);
-  ~WrenchIconPainter() override;
+  explicit AppMenuIconPainter(Delegate* delegate);
+  ~AppMenuIconPainter() override;
 
-  // If |severity| is not |SEVERITY_NONE| then the wrench icon is colored to
+  // If |severity| is not |SEVERITY_NONE| then the app menu icon is colored to
   // match the severity level.
   void SetSeverity(Severity severity, bool animate);
 
@@ -60,7 +61,7 @@ class WrenchIconPainter : gfx::AnimationDelegate {
              BezelType bezel_type);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WrenchIconPainterTest, PaintCallback);
+  FRIEND_TEST_ALL_PREFIXES(AppMenuIconPainterTest, PaintCallback);
 
   // AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -73,7 +74,7 @@ class WrenchIconPainter : gfx::AnimationDelegate {
   gfx::ImageSkia badge_;
   scoped_ptr<gfx::MultiAnimation> animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(WrenchIconPainter);
+  DISALLOW_COPY_AND_ASSIGN(AppMenuIconPainter);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_WRENCH_ICON_PAINTER_H_
+#endif  // CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_PAINTER_H_

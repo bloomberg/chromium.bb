@@ -63,7 +63,7 @@ class ResizeArea;
 //      - The container is set to a width smaller than needed to show all icons.
 //      - There is no other container in 'overflow' mode to handle the
 //        non-visible icons for this container.
-//   s: ToolbarView::kStandardSpacing pixels of empty space (before the wrench
+//   s: ToolbarView::kStandardSpacing pixels of empty space (before the app
 //      menu).
 // The reason the container contains the trailing space "s", rather than having
 // it be handled by the parent view, is so that when the chevron is invisible

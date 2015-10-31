@@ -171,7 +171,7 @@ TEST_F(AppMenuModelTest, Basics) {
   EXPECT_EQ(model.enable_count_, 1);
 }
 
-// Tests global error menu items in the wrench menu.
+// Tests global error menu items in the app menu.
 TEST_F(AppMenuModelTest, GlobalError) {
   // Make sure services required for tests are initialized.
   GlobalErrorService* service =

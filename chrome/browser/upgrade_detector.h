@@ -71,7 +71,7 @@ class UpgradeDetector {
 
   // Retrieves the right icon ID based on the degree of severity (see
   // UpgradeNotificationAnnoyanceLevel, each level has an an accompanying icon
-  // to go with it) to display within the wrench menu.
+  // to go with it) to display within the app menu.
   int GetIconResourceID();
 
   UpgradeNotificationAnnoyanceLevel upgrade_notification_stage() const {

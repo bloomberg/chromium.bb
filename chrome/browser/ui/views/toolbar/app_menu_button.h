@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
+#include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -27,12 +27,12 @@ class ToolbarView;
 
 class AppMenuButton : public views::InkDropHost,
                       public views::MenuButton,
-                      public WrenchIconPainter::Delegate {
+                      public AppMenuIconPainter::Delegate {
  public:
   explicit AppMenuButton(ToolbarView* toolbar_view);
   ~AppMenuButton() override;
 
-  void SetSeverity(WrenchIconPainter::Severity severity, bool animate);
+  void SetSeverity(AppMenuIconPainter::Severity severity, bool animate);
 
   // Shows the app menu. |for_drop| indicates whether the menu is opened for a
   // drag-and-drop operation.
@@ -55,8 +55,8 @@ class AppMenuButton : public views::InkDropHost,
   // views::MenuButton:
   gfx::Size GetPreferredSize() const override;
 
-  // WrenchIconPainter::Delegate:
-  void ScheduleWrenchIconPaint() override;
+  // AppMenuIconPainter::Delegate:
+  void ScheduleAppMenuIconPaint() override;
 
   // Updates the presentation according to |severity_| and the theme provider.
   // Only used in MD.
@@ -86,10 +86,10 @@ class AppMenuButton : public views::InkDropHost,
   void OnPaint(gfx::Canvas* canvas) override;
 
   // Only used in pre-MD.
-  scoped_ptr<WrenchIconPainter> wrench_icon_painter_;
+  scoped_ptr<AppMenuIconPainter> icon_painter_;
 
   // Only used in MD.
-  WrenchIconPainter::Severity severity_;
+  AppMenuIconPainter::Severity severity_;
 
   // Animation controller for the ink drop ripple effect.
   scoped_ptr<views::InkDropAnimationController> ink_drop_animation_controller_;

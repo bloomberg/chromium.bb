@@ -88,10 +88,10 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   void WindowClosing() override;
   ui::ModalType GetModalType() const override;
 
-  // Builds a popup bubble anchored under the wrench menu
+  // Builds a popup bubble anchored under the app menu.
   void InitBubbleContent(views::GridLayout* layout);
 
-  // Builds a modal dialog aligned center top
+  // Builds a modal dialog aligned center top.
   void InitDialogContent(views::GridLayout* layout);
 
   // Initializes the OK/Undo buttons to be used at the bottom of the bubble.

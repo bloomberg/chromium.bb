@@ -272,7 +272,7 @@ class BrowserActionsContainerOverflowTest
   scoped_ptr<views::View> overflow_parent_;
 
   // The overflow BrowserActionsContainer. We manufacture this so that we don't
-  // have to open the wrench menu.
+  // have to open the app menu.
   // Owned by the |overflow_parent_|.
   BrowserActionsContainer* overflow_bar_;
 

@@ -145,7 +145,7 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)browserActionsContainerWillAnimate:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
-- (void)updateWrenchButtonSeverity:(WrenchIconPainter::Severity)severity
+- (void)updateWrenchButtonSeverity:(AppMenuIconPainter::Severity)severity
                            animate:(BOOL)animate;
 @end
 
@@ -191,7 +191,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   }
 
   void UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
-                           WrenchIconPainter::Severity severity,
+                           AppMenuIconPainter::Severity severity,
                            bool animate) override {
     [controller_ updateWrenchButtonSeverity:severity animate:animate];
   }
@@ -672,7 +672,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   [wrenchButton_ setAttachedMenu:[wrenchMenuController_ menu]];
 }
 
-- (void)updateWrenchButtonSeverity:(WrenchIconPainter::Severity)severity
+- (void)updateWrenchButtonSeverity:(AppMenuIconPainter::Severity)severity
                            animate:(BOOL)animate {
   WrenchToolbarButtonCell* cell =
       base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton_ cell]);

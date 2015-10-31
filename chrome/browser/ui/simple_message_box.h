@@ -27,7 +27,7 @@ enum MessageBoxType {
 // is always app-modal.
 //
 // NOTE: In general, you should avoid this since it's usually poor UI.
-// We have a variety of other surfaces such as wrench menu notifications and
+// We have a variety of other surfaces such as app menu notifications and
 // infobars; consult the UI leads for a recommendation.
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const base::string16& title,
@@ -39,7 +39,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
 // be made modal to the |parent|.  (Aura only.)
 //
 // NOTE: In general, you should avoid this since it's usually poor UI.
-// We have a variety of other surfaces such as wrench menu notifications and
+// We have a variety of other surfaces such as app menu notifications and
 // infobars; consult the UI leads for a recommendation.
 MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,
                                               const base::string16& title,

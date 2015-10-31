@@ -43,7 +43,7 @@ class Widget;
 // bookmarks in a MenuItemView. BookmarkMenuDelegate informally implements
 // MenuDelegate as its assumed another class is going to forward the appropriate
 // methods to this class. Doing so allows this class to be used for both menus
-// on the bookmark bar and the bookmarks in the wrench menu.
+// on the bookmark bar and the bookmarks in the app menu.
 class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
                              public BookmarkContextMenuObserver {
  public:

@@ -703,8 +703,8 @@ bool ToolbarView::DoesIntersectRect(const views::View* target,
 }
 
 void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
-                                      WrenchIconPainter::Severity severity,
-                                      bool animate)  {
+                                      AppMenuIconPainter::Severity severity,
+                                      bool animate) {
   // Showing the bubble requires |app_menu_button_| to be in a widget. See
   // comment in ConflictingModuleView for details.
   DCHECK(app_menu_button_->GetWidget());

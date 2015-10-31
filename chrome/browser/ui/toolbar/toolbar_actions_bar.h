@@ -41,9 +41,9 @@ class ToolbarActionViewController;
 //
 // This can come in two flavors, main and "overflow". The main bar is visible
 // next to the omnibox, and the overflow bar is visible inside the chrome
-// (fka wrench) menu. The main bar can have only a single row of icons with
-// flexible width, whereas the overflow bar has multiple rows of icons with a
-// fixed width (the width of the menu).
+// app menu. The main bar can have only a single row of icons with flexible
+// width, whereas the overflow bar has multiple rows of icons with a fixed
+// width (the width of the menu).
 class ToolbarActionsBar : public ToolbarActionsModel::Observer {
  public:
   // A struct to contain the platform settings.

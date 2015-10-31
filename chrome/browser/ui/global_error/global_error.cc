@@ -62,7 +62,7 @@ bool GlobalErrorWithStandardBubble::ShouldCloseOnDeactivate() const {
 }
 
 gfx::Image GlobalErrorWithStandardBubble::GetBubbleViewIcon() {
-  // If you change this make sure to also change the menu icon and the wrench
+  // If you change this make sure to also change the menu icon and the app menu
   // icon color.
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INPUT_ALERT);

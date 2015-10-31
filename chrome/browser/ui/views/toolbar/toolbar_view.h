@@ -182,7 +182,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // AppMenuBadgeController::Delegate:
   void UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
-                           WrenchIconPainter::Severity severity,
+                           AppMenuIconPainter::Severity severity,
                            bool animate) override;
 
   // Returns the number of pixels above the location bar in non-normal display.

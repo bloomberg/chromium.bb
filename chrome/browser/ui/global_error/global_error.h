@@ -35,7 +35,7 @@ class GlobalError {
   // overridden, this is based on the badge resource ID.
   virtual Severity GetSeverity();
 
-  // Returns true if a menu item should be added to the wrench menu.
+  // Returns true if a menu item should be added to the app menu.
   virtual bool HasMenuItem() = 0;
   // Returns the command ID for the menu item.
   virtual int MenuItemCommandID() = 0;
