@@ -1,0 +1,12 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Scale Up
+low
+medium
+high
+Scale Down
+low
+medium
+high
+

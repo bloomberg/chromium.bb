@@ -1565,7 +1565,3 @@ crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass 
 
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
 
-crbug.com/540761 fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
-crbug.com/540761 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
-crbug.com/540761 virtual/display_list_2d_canvas/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsRebaseline ]
-
