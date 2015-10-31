@@ -77,7 +77,7 @@ TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
 
-TEST_P(ToolsQuicClientSessionTest, MaxNumStreams) {
+TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithNoFinOrRst) {
   EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(AnyNumber());
 
   session_->config()->SetMaxStreamsPerConnection(1, 1);
@@ -89,8 +89,41 @@ TEST_P(ToolsQuicClientSessionTest, MaxNumStreams) {
   ASSERT_TRUE(stream);
   EXPECT_FALSE(session_->CreateOutgoingDynamicStream());
 
-  // Close a stream and ensure I can now open a new one.
+  // Close the stream, but without having received a FIN or a RST_STREAM
+  // and check that a new one can not be created.
   session_->CloseStream(stream->id());
+  if (FLAGS_quic_count_unfinished_as_open_streams) {
+    EXPECT_EQ(1u, session_->GetNumOpenStreams());
+  } else {
+    EXPECT_EQ(0u, session_->GetNumOpenStreams());
+  }
+  stream = session_->CreateOutgoingDynamicStream();
+  if (FLAGS_quic_count_unfinished_as_open_streams) {
+    EXPECT_FALSE(stream);
+  } else {
+    EXPECT_TRUE(stream);
+  }
+}
+
+TEST_P(ToolsQuicClientSessionTest, MaxNumStreamsWithRst) {
+  EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(AnyNumber());
+
+  session_->config()->SetMaxStreamsPerConnection(1, 1);
+
+  // Initialize crypto before the client session will create a stream.
+  CompleteCryptoHandshake();
+
+  QuicSpdyClientStream* stream = session_->CreateOutgoingDynamicStream();
+  ASSERT_TRUE(stream);
+  EXPECT_FALSE(session_->CreateOutgoingDynamicStream());
+
+  // Close the stream and receive an RST frame to remove the unfinished stream
+  session_->CloseStream(stream->id());
+  session_->OnRstStream(QuicRstStreamFrame(
+      stream->id(), AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()),
+      0));
+  // Check that a new one can be created.
+  EXPECT_EQ(0u, session_->GetNumOpenStreams());
   stream = session_->CreateOutgoingDynamicStream();
   EXPECT_TRUE(stream);
 }

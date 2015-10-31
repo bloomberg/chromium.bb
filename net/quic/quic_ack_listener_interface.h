@@ -5,8 +5,6 @@
 #ifndef NET_QUIC_QUIC_ACK_LISTENER_INTERFACE_H_
 #define NET_QUIC_QUIC_ACK_LISTENER_INTERFACE_H_
 
-#include "net/quic/quic_ack_listener_interface.h"
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "net/quic/quic_protocol.h"
@@ -19,14 +17,6 @@ class NET_EXPORT_PRIVATE QuicAckListenerInterface
     : public base::RefCounted<QuicAckListenerInterface> {
  public:
   QuicAckListenerInterface() {}
-
-  // Args:
-  //  num_retransmitted_packets - Number of packets that had to be
-  //                              retransmitted.
-  //  num_retransmitted_bytes - Number of bytes that had to be retransmitted.
-  virtual void OnAckNotification(int num_retransmitted_packets,
-                                 int num_retransmitted_bytes,
-                                 QuicTime::Delta delta_largest_observed) = 0;
 
   // Called when a packet is acked.  Called once per packet.
   // |acked_bytes| is the number of data bytes acked.

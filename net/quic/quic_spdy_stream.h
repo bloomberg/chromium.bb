@@ -19,7 +19,6 @@
 #include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stream_sequencer.h"
 #include "net/quic/reliable_quic_stream.h"

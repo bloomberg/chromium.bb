@@ -1105,19 +1105,22 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
 
 TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   Initialize();
-  MockRead reads[] = {
-    MockRead(ASYNC, OK, 0)  // EOF
-  };
   QuicStreamId stream_id = kClientDataStreamId1;
-  scoped_ptr<QuicEncryptedPacket> rst(
+  scoped_ptr<QuicEncryptedPacket> client_rst(
       maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
-    MockWrite(ASYNC, rst->data(), rst->length(), 1),
+      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 0),
+  };
+  scoped_ptr<QuicEncryptedPacket> server_rst(
+      maker_.MakeRstPacket(1, false, stream_id, QUIC_STREAM_CANCELLED));
+  MockRead reads[] = {
+      MockRead(ASYNC, server_rst->data(), server_rst->length(), 1),
+      MockRead(ASYNC, OK, 2)  // EOF
   };
   DeterministicSocketData socket_data(reads, arraysize(reads),
                                       writes, arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
-  socket_data.StopAfter(1);
+  socket_data.StopAfter(2);
 
   HttpRequestInfo request_info;
   std::vector<QuicHttpStream*> streams;
@@ -1152,13 +1155,23 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
 
   // Close the first stream.
   streams.front()->Close(false);
+  // Trigger exchange of RSTs that in turn allow progress for the last
+  // stream.
+  socket_data.RunFor(2);
 
   ASSERT_TRUE(callback_.have_result());
-
   EXPECT_EQ(OK, callback_.WaitForResult());
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+
+  // Force close of the connection to suppress the generation of RST
+  // packets when streams are torn down, which wouldn't be relevant to
+  // this test anyway.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  session->connection()->CloseConnection(QUIC_PUBLIC_RESET, true);
+
   STLDeleteElements(&streams);
 }
 

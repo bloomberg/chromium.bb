@@ -43,82 +43,10 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 
 }  // namespace
 
-// Wrapper that aggregates OnAckNotifications for packets sent using
-// WriteOrBufferData and delivers them to the original
-// QuicAckListenerInterface after all bytes written using
-// WriteOrBufferData are acked.  This level of indirection is
-// necessary because the delegate interface provides no mechanism that
-// WriteOrBufferData can use to inform it that the write required
-// multiple WritevData calls or that only part of the data has been
-// sent out by the time ACKs start arriving.
-class ReliableQuicStream::ProxyAckNotifierDelegate
-    : public QuicAckListenerInterface {
- public:
-  explicit ProxyAckNotifierDelegate(QuicAckListenerInterface* delegate)
-      : delegate_(delegate),
-        pending_acks_(0),
-        wrote_last_data_(false),
-        num_retransmitted_packets_(0),
-        num_retransmitted_bytes_(0) {}
-
-  // TODO(ianswett): Remove this class and indirection once OnAckNotification
-  // goes away because the above class comment is no longer true.
-  void OnAckNotification(int num_retransmitted_packets,
-                         int num_retransmitted_bytes,
-                         QuicTime::Delta delta_largest_observed) override {
-    DCHECK_LT(0, pending_acks_);
-    --pending_acks_;
-    num_retransmitted_packets_ += num_retransmitted_packets;
-    num_retransmitted_bytes_ += num_retransmitted_bytes;
-
-    if (wrote_last_data_ && pending_acks_ == 0) {
-      delegate_->OnAckNotification(num_retransmitted_packets_,
-                                   num_retransmitted_bytes_,
-                                   delta_largest_observed);
-    }
-  }
-
-  void OnPacketAcked(int acked_bytes,
-                     QuicTime::Delta delta_largest_observed) override {
-    delegate_->OnPacketAcked(acked_bytes, delta_largest_observed);
-  }
-
-  void OnPacketRetransmitted(int retransmitted_bytes) override {
-    delegate_->OnPacketRetransmitted(retransmitted_bytes);
-  }
-
-  void WroteData(bool last_data, size_t bytes_consumed) {
-    DCHECK(!wrote_last_data_);
-    ++pending_acks_;
-    wrote_last_data_ = last_data;
-  }
-
- protected:
-  // Delegates are ref counted.
-  ~ProxyAckNotifierDelegate() override {}
-
- private:
-  // Original delegate.  delegate_->OnAckNotification will be called when:
-  //   wrote_last_data_ == true and pending_acks_ == 0
-  scoped_refptr<QuicAckListenerInterface> delegate_;
-
-  // Number of outstanding acks.
-  int pending_acks_;
-
-  // True if no pending writes remain.
-  bool wrote_last_data_;
-
-  int num_retransmitted_packets_;
-  int num_retransmitted_bytes_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyAckNotifierDelegate);
-};
-
 ReliableQuicStream::PendingData::PendingData(
     string data_in,
-    scoped_refptr<ProxyAckNotifierDelegate> delegate_in)
-    : data(data_in), offset(0), delegate(delegate_in) {
-}
+    QuicAckListenerInterface* ack_listener_in)
+    : data(data_in), offset(0), ack_listener(ack_listener_in) {}
 
 ReliableQuicStream::PendingData::~PendingData() {
 }
@@ -277,7 +205,7 @@ void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
 void ReliableQuicStream::WriteOrBufferData(
     StringPiece data,
     bool fin,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+    QuicAckListenerInterface* ack_listener) {
   if (data.empty() && !fin) {
     LOG(DFATAL) << "data.empty() && !fin";
     return;
@@ -292,34 +220,20 @@ void ReliableQuicStream::WriteOrBufferData(
     return;
   }
 
-  scoped_refptr<ProxyAckNotifierDelegate> proxy_delegate;
-  if (ack_notifier_delegate != nullptr) {
-    proxy_delegate = new ProxyAckNotifierDelegate(ack_notifier_delegate);
-  }
-
   QuicConsumedData consumed_data(0, false);
   fin_buffered_ = fin;
 
   if (queued_data_.empty()) {
     struct iovec iov(MakeIovec(data));
-    consumed_data = WritevData(&iov, 1, fin, proxy_delegate.get());
+    consumed_data = WritevData(&iov, 1, fin, ack_listener);
     DCHECK_LE(consumed_data.bytes_consumed, data.length());
   }
 
-  bool write_completed;
   // If there's unconsumed data or an unconsumed fin, queue it.
   if (consumed_data.bytes_consumed < data.length() ||
       (fin && !consumed_data.fin_consumed)) {
     StringPiece remainder(data.substr(consumed_data.bytes_consumed));
-    queued_data_.push_back(PendingData(remainder.as_string(), proxy_delegate));
-    write_completed = false;
-  } else {
-    write_completed = true;
-  }
-
-  if ((proxy_delegate.get() != nullptr) &&
-      (consumed_data.bytes_consumed > 0 || consumed_data.fin_consumed)) {
-    proxy_delegate->WroteData(write_completed, consumed_data.bytes_consumed);
+    queued_data_.push_back(PendingData(remainder.as_string(), ack_listener));
   }
 }
 
@@ -327,7 +241,7 @@ void ReliableQuicStream::OnCanWrite() {
   bool fin = false;
   while (!queued_data_.empty()) {
     PendingData* pending_data = &queued_data_.front();
-    ProxyAckNotifierDelegate* delegate = pending_data->delegate.get();
+    QuicAckListenerInterface* ack_listener = pending_data->ack_listener.get();
     if (queued_data_.size() == 1 && fin_buffered_) {
       fin = true;
     }
@@ -344,19 +258,13 @@ void ReliableQuicStream::OnCanWrite() {
     struct iovec iov = {
         const_cast<char*>(pending_data->data.data()) + pending_data->offset,
         remaining_len};
-    QuicConsumedData consumed_data = WritevData(&iov, 1, fin, delegate);
+    QuicConsumedData consumed_data = WritevData(&iov, 1, fin, ack_listener);
     if (consumed_data.bytes_consumed == remaining_len &&
         fin == consumed_data.fin_consumed) {
       queued_data_.pop_front();
-      if (delegate != nullptr) {
-        delegate->WroteData(true, consumed_data.bytes_consumed);
-      }
     } else {
       if (consumed_data.bytes_consumed > 0) {
         pending_data->offset += consumed_data.bytes_consumed;
-        if (delegate != nullptr) {
-          delegate->WroteData(false, consumed_data.bytes_consumed);
-        }
       }
       break;
     }
@@ -383,7 +291,7 @@ QuicConsumedData ReliableQuicStream::WritevData(
     const struct iovec* iov,
     int iov_count,
     bool fin,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+    QuicAckListenerInterface* ack_listener) {
   if (write_side_closed_) {
     DLOG(ERROR) << ENDPOINT << "Attempt to write when the write side is closed";
     return QuicConsumedData(0, false);
@@ -418,7 +326,7 @@ QuicConsumedData ReliableQuicStream::WritevData(
 
   QuicConsumedData consumed_data = session()->WritevData(
       id(), QuicIOVector(iov, iov_count, write_length), stream_bytes_written_,
-      fin, GetFecProtection(), ack_notifier_delegate);
+      fin, GetFecProtection(), ack_listener);
   stream_bytes_written_ += consumed_data.bytes_consumed;
 
   AddBytesSent(consumed_data.bytes_consumed);

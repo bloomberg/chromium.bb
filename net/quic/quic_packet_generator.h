@@ -55,7 +55,6 @@
 
 #include <list>
 
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_types.h"
@@ -122,7 +121,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // |delegate| (if not nullptr) will be informed once all packets sent as a
   // result of this call are ACKed by the peer.
   QuicConsumedData ConsumeData(QuicStreamId id,
-                               const QuicIOVector& iov,
+                               QuicIOVector iov,
                                QuicStreamOffset offset,
                                bool fin,
                                FecProtection fec_protection,
@@ -222,10 +221,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     fec_send_policy_ = fec_send_policy;
   }
 
-  void set_no_acknotifier(bool no_acknotifier) {
-    no_acknotifier_ = no_acknotifier;
-  }
-
  private:
   friend class test::QuicPacketGeneratorPeer;
 
@@ -307,8 +302,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   bool ack_queued_;
   bool stop_waiting_queued_;
 
-  // Stores notifiers that should be attached to the next serialized packet.
-  std::list<QuicAckNotifier*> ack_notifiers_;
   // Stores ack listeners that should be attached to the next packet.
   std::list<AckListenerWrapper> ack_listeners_;
 
@@ -316,9 +309,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // the maximum size we are actually using now, if we are in the middle of the
   // packet.
   QuicByteCount max_packet_length_;
-
-  // True if the AckNotifier should not be created.
-  bool no_acknotifier_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };

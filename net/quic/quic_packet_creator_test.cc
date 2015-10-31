@@ -10,6 +10,7 @@
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
@@ -36,22 +37,25 @@ namespace {
 struct TestParams {
   TestParams(QuicVersion version,
              bool version_serialization,
-             QuicConnectionIdLength length)
+             QuicConnectionIdLength length,
+             bool copy_use_prefetch)
       : version(version),
         connection_id_length(length),
-        version_serialization(version_serialization) {
-  }
+        version_serialization(version_serialization),
+        copy_use_prefetch(copy_use_prefetch) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ client_version: " << QuicVersionToString(p.version)
        << " connection id length: " << p.connection_id_length
-       << " include version: " << p.version_serialization << " }";
+       << " include version: " << p.version_serialization
+       << " copy use prefetch: " << p.copy_use_prefetch << " }";
     return os;
   }
 
   QuicVersion version;
   QuicConnectionIdLength connection_id_length;
   bool version_serialization;
+  bool copy_use_prefetch;
 };
 
 // Constructs various test permutations.
@@ -60,15 +64,16 @@ vector<TestParams> GetTestParams() {
   QuicConnectionIdLength max = PACKET_8BYTE_CONNECTION_ID;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (size_t i = 0; i < all_supported_versions.size(); ++i) {
-    params.push_back(TestParams(all_supported_versions[i], true, max));
-    params.push_back(TestParams(all_supported_versions[i], false, max));
+    params.push_back(TestParams(all_supported_versions[i], true, max, false));
+    params.push_back(TestParams(all_supported_versions[i], false, max, false));
   }
-  params.push_back(TestParams(
-      all_supported_versions[0], true, PACKET_0BYTE_CONNECTION_ID));
-  params.push_back(TestParams(
-      all_supported_versions[0], true, PACKET_1BYTE_CONNECTION_ID));
-  params.push_back(TestParams(
-      all_supported_versions[0], true, PACKET_4BYTE_CONNECTION_ID));
+  params.push_back(TestParams(all_supported_versions[0], true,
+                              PACKET_0BYTE_CONNECTION_ID, false));
+  params.push_back(TestParams(all_supported_versions[0], true,
+                              PACKET_1BYTE_CONNECTION_ID, false));
+  params.push_back(TestParams(all_supported_versions[0], true,
+                              PACKET_4BYTE_CONNECTION_ID, false));
+  params.push_back(TestParams(all_supported_versions[0], true, max, true));
   return params;
 }
 
@@ -88,6 +93,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     client_framer_.set_visitor(&framer_visitor_);
     client_framer_.set_received_entropy_calculator(&entropy_calculator_);
     server_framer_.set_visitor(&framer_visitor_);
+    FLAGS_quic_packet_creator_prefetch = GetParam().copy_use_prefetch;
   }
 
   ~QuicPacketCreatorTest() override {}

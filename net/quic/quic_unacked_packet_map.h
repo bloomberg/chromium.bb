@@ -19,10 +19,7 @@ class AckNotifierManager;
 // 3) Track sent time of packets to provide RTT measurements from acks.
 class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
  public:
-  // Initialize an instance of UnackedPacketMap.  The AckNotifierManager
-  // provided to the constructor will be notified whenever a packet is removed
-  // from the map.
-  explicit QuicUnackedPacketMap(AckNotifierManager* ack_notifier_manager);
+  QuicUnackedPacketMap();
   ~QuicUnackedPacketMap();
 
   // Adds |serialized_packet| to the map and marks it as sent at |sent_time|.
@@ -129,10 +126,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // RTT measurement purposes.
   void RemoveObsoletePackets();
 
-  void set_no_acknotifier(bool no_acknotifier) {
-    no_acknotifier_ = no_acknotifier;
-  }
-
  private:
   // Called when a packet is retransmitted with a new packet number.
   // |old_packet_number| will remain unacked, but will have no
@@ -178,13 +171,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicByteCount bytes_in_flight_;
   // Number of retransmittable crypto handshake packets.
   size_t pending_crypto_packet_count_;
-
-  // Notifier manager for ACK packets.  We notify it every time we abandon a
-  // packet.
-  AckNotifierManager* ack_notifier_manager_;
-
-  // True if the AckNotifierManager should not be called.
-  bool no_acknotifier_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicUnackedPacketMap);
 };

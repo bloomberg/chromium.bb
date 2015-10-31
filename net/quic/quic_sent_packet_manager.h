@@ -16,7 +16,6 @@
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sustained_bandwidth_recorder.h"
 #include "net/quic/quic_unacked_packet_map.h"
@@ -208,9 +207,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // start threshold and will return 0.
   QuicPacketCount GetSlowStartThresholdInTcpMss() const;
 
-  // Called by the connection every time it receives a serialized packet.
-  void OnSerializedPacket(const SerializedPacket& serialized_packet);
-
   // No longer retransmit data for |stream_id|.
   void CancelRetransmissionsForStream(QuicStreamId stream_id);
 
@@ -249,11 +245,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Used in Chromium, but not in the server.
   size_t consecutive_tlp_count() const {
     return consecutive_tlp_count_;
-  }
-
-  void set_no_acknotifier(bool no_acknotifier) {
-    no_acknotifier_ = no_acknotifier;
-    unacked_packets_.set_no_acknotifier(no_acknotifier);
   }
 
  private:
@@ -357,11 +348,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Tracks if the connection was created by the server or the client.
   Perspective perspective_;
 
-  // An AckNotifier can register to be informed when ACKs have been received for
-  // all packets that a given block of data was sent in. The AckNotifierManager
-  // maintains the currently active notifiers.
-  AckNotifierManager ack_notifier_manager_;
-
   const QuicClock* clock_;
   QuicConnectionStats* stats_;
   DebugDelegate* debug_delegate_;
@@ -411,9 +397,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Records bandwidth from server to client in normal operation, over periods
   // of time with no loss events.
   QuicSustainedBandwidthRecorder sustained_bandwidth_recorder_;
-
-  // True if the AckNotifierManager should not be called.
-  bool no_acknotifier_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

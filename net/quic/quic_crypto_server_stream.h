@@ -33,11 +33,6 @@ class NET_EXPORT_PRIVATE ServerHelloNotifier : public QuicAckListenerInterface {
   explicit ServerHelloNotifier(QuicCryptoServerStream* stream)
       : server_stream_(stream) {}
 
-  // QuicAckListenerInterface implementation
-  void OnAckNotification(int num_retransmitted_packets,
-                         int num_retransmitted_bytes,
-                         QuicTime::Delta delta_largest_observed) override;
-
   void OnPacketAcked(int acked_bytes,
                      QuicTime::Delta delta_largest_observed) override;
 

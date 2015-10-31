@@ -103,3 +103,11 @@ bool FLAGS_quic_implement_stop_reading = true;
 // Invoke the QuicAckListener directly, instead of going through the AckNotifier
 // and AckNotifierManager.
 bool FLAGS_quic_no_ack_notifier = true;
+
+// If true, QuicSession::GetNumOpenStreams will count unfinished
+// streams as open streams, QuicSession::PostProcessAfterData will not
+// check the quota of unifinished streams.
+bool FLAGS_quic_count_unfinished_as_open_streams = true;
+
+// If true, use the unrolled prefetch path in QuicPacketCreator::CopyToBuffer.
+bool FLAGS_quic_packet_creator_prefetch = false;

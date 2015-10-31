@@ -14,7 +14,6 @@
 #include "base/strings/string_piece.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
@@ -433,7 +432,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
   MOCK_METHOD6(WritevData,
                QuicConsumedData(QuicStreamId id,
-                                const QuicIOVector& data,
+                                QuicIOVector data,
                                 QuicStreamOffset offset,
                                 bool fin,
                                 FecProtection fec_protection,
@@ -608,14 +607,9 @@ class MockEntropyCalculator : public TestEntropyCalculator {
   DISALLOW_COPY_AND_ASSIGN(MockEntropyCalculator);
 };
 
-class MockAckNotifierDelegate : public QuicAckListenerInterface {
+class MockAckListener : public QuicAckListenerInterface {
  public:
-  MockAckNotifierDelegate();
-
-  MOCK_METHOD3(OnAckNotification,
-               void(int num_retransmitted_packets,
-                    int num_retransmitted_bytes,
-                    QuicTime::Delta delta_largest_observed));
+  MockAckListener();
 
   MOCK_METHOD2(OnPacketAcked,
                void(int acked_bytes, QuicTime::Delta delta_largest_observed));
@@ -624,10 +618,10 @@ class MockAckNotifierDelegate : public QuicAckListenerInterface {
 
  protected:
   // Object is ref counted.
-  ~MockAckNotifierDelegate() override;
+  ~MockAckListener() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockAckNotifierDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockAckListener);
 };
 
 class MockNetworkChangeVisitor :

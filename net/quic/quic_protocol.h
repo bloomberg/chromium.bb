@@ -34,7 +34,6 @@
 
 namespace net {
 
-class QuicAckNotifier;
 class QuicPacket;
 struct QuicPacketHeader;
 
@@ -727,7 +726,7 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
 typedef std::set<QuicPacketNumber> PacketNumberSet;
 typedef std::list<QuicPacketNumber> PacketNumberList;
 
-typedef std::list<std::pair<QuicPacketNumber, QuicTime>> PacketTimeList;
+typedef std::vector<std::pair<QuicPacketNumber, QuicTime>> PacketTimeVector;
 
 struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
   QuicStopWaitingFrame();
@@ -747,8 +746,8 @@ struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
 // larger new packet numbers are added, with the occasional random access.
 class NET_EXPORT_PRIVATE PacketNumberQueue {
  public:
-  // TODO(jdorfman): Once this is completely switched over to IntervalSet,
-  // remove const_iterator and change the callers to iterate over the intervals.
+  // TODO(jdorfman): remove const_iterator and change the callers to
+  // iterate over the intervals.
   class NET_EXPORT_PRIVATE const_iterator
       : public std::iterator<std::input_iterator_tag,
                              QuicPacketNumber,
@@ -776,8 +775,6 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
     const_iterator operator++(int /* postincrement */);
 
    private:
-    bool use_interval_set_;
-    PacketNumberSet::const_iterator set_iter_;
     IntervalSet<QuicPacketNumber>::const_iterator interval_set_iter_;
     QuicPacketNumber current_;
     QuicPacketNumber last_;
@@ -834,8 +831,6 @@ class NET_EXPORT_PRIVATE PacketNumberQueue {
       const PacketNumberQueue& q);
 
  private:
-  bool use_interval_set_;
-  PacketNumberSet packet_number_set_;
   IntervalSet<QuicPacketNumber> packet_number_intervals_;
 };
 
@@ -849,6 +844,9 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   // Entropy hash of all packets up to largest observed not including missing
   // packets.
   QuicPacketEntropyHash entropy_hash;
+
+  // Whether the ack had to be truncated when sent.
+  bool is_truncated;
 
   // The highest packet number we've observed from the peer.
   //
@@ -864,18 +862,15 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   // sent.
   QuicTime::Delta delta_time_largest_observed;
 
+  // Vector of <packet_number, time> for when packets arrived.
+  PacketTimeVector received_packet_times;
+
   // The set of packets which we're expecting and have not received.
   PacketNumberQueue missing_packets;
-
-  // Whether the ack had to be truncated when sent.
-  bool is_truncated;
 
   // Packets which have been revived via FEC.
   // All of these must also be in missing_packets.
   PacketNumberSet revived_packets;
-
-  // List of <packet_number, time> for when packets arrived.
-  PacketTimeList received_packet_times;
 };
 
 // True if the packet number is greater than largest_observed or is listed
@@ -1171,7 +1166,6 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   bool has_stop_waiting;
 
   // Optional notifiers which will be informed when this packet has been ACKed.
-  std::list<QuicAckNotifier*> notifiers;
   std::list<AckListenerWrapper> listeners;
 };
 

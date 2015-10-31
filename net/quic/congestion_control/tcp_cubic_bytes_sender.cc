@@ -129,7 +129,7 @@ void TcpCubicBytesSender::OnCongestionEvent(
   }
   for (CongestionVector::const_iterator it = acked_packets.begin();
        it != acked_packets.end(); ++it) {
-    OnPacketAcked(it->first, it->second.bytes_sent, bytes_in_flight);
+    OnPacketAcked(it->first, it->second, bytes_in_flight);
   }
 }
 

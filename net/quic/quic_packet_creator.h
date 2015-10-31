@@ -24,7 +24,6 @@ namespace test {
 class QuicPacketCreatorPeer;
 }
 
-class QuicAckNotifier;
 class QuicRandom;
 class QuicRandomBoolSource;
 
@@ -84,7 +83,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // fin but return 0.  If any data is consumed, it will be copied into a
   // new buffer that |frame| will point to and will be stored in |buffer|.
   size_t CreateStreamFrame(QuicStreamId id,
-                           const QuicIOVector& iov,
+                           QuicIOVector iov,
                            size_t iov_offset,
                            QuicStreamOffset offset,
                            bool fin,
@@ -240,7 +239,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Copies |length| bytes from iov starting at offset |iov_offset| into buffer.
   // |iov| must be at least iov_offset+length total length and buffer must be
   // at least |length| long.
-  static void CopyToBuffer(const QuicIOVector& iov,
+  static void CopyToBuffer(QuicIOVector iov,
                            size_t iov_offset,
                            size_t length,
                            char* buffer);

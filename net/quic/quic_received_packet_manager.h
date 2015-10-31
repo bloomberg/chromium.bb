@@ -166,8 +166,6 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
 
   QuicConnectionStats* stats_;
 
-  PacketTimeList received_packet_times_;
-
   DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacketManager);
 };
 

@@ -1413,6 +1413,7 @@ bool QuicFramer::ProcessTimestampsInAckFrame(QuicDataReader* reader,
 
     last_timestamp_ = CalculateTimestampFromWire(time_delta_us);
 
+    ack_frame->received_packet_times.reserve(num_received_packets);
     ack_frame->received_packet_times.push_back(
         std::make_pair(seq_num, creation_time_.Add(last_timestamp_)));
 
@@ -2055,7 +2056,6 @@ bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
   }
 
   uint8 num_received_packets = frame.received_packet_times.size();
-
   if (!writer->WriteBytes(&num_received_packets, 1)) {
     return false;
   }
@@ -2063,7 +2063,7 @@ bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
     return true;
   }
 
-  PacketTimeList::const_iterator it = frame.received_packet_times.begin();
+  PacketTimeVector::const_iterator it = frame.received_packet_times.begin();
   QuicPacketNumber packet_number = it->first;
   QuicPacketNumber delta_from_largest_observed =
       frame.largest_observed - packet_number;

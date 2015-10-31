@@ -33,5 +33,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pacing;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_fix_fin_accounting;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_implement_stop_reading;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_ack_notifier;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_count_unfinished_as_open_streams;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_packet_creator_prefetch;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

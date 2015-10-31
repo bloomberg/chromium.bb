@@ -124,8 +124,8 @@ void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
 
 void QuicSpdyClientStream::SendBody(const string& data,
                                     bool fin,
-                                    QuicAckListenerInterface* delegate) {
-  WriteOrBufferData(data, fin, delegate);
+                                    QuicAckListenerInterface* listener) {
+  WriteOrBufferData(data, fin, listener);
 }
 
 }  // namespace tools

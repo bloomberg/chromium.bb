@@ -27,7 +27,6 @@
 #include "base/strings/string_piece.h"
 #include "net/base/iovec.h"
 #include "net/base/net_export.h"
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stream_sequencer.h"
@@ -172,17 +171,17 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // write_side_closed() becomes true, otherwise fin_buffered_ becomes true.
   void WriteOrBufferData(base::StringPiece data,
                          bool fin,
-                         QuicAckListenerInterface* ack_notifier_delegate);
+                         QuicAckListenerInterface* ack_listener);
 
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume.
-  // If |ack_notifier_delegate| is provided, then it will be notified once all
+  // If |ack_listener| is provided, then it will be notified once all
   // the ACKs for this write have been received.
   // Returns the number of bytes consumed by the connection.
   QuicConsumedData WritevData(const struct iovec* iov,
                               int iov_count,
                               bool fin,
-                              QuicAckListenerInterface* ack_notifier_delegate);
+                              QuicAckListenerInterface* ack_listener);
 
   // Close the write side of the socket.  Further writes will fail.
   // Can be called by the subclass or internally.
@@ -207,7 +206,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
  private:
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
-  class ProxyAckNotifierDelegate;
 
   // Close the read side of the socket.  May cause the stream to be closed.
   // Subclasses and consumers should use StopReading to terminate reading early.
@@ -217,17 +215,16 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   bool read_side_closed() const { return read_side_closed_; }
 
   struct PendingData {
-    PendingData(std::string data_in,
-                scoped_refptr<ProxyAckNotifierDelegate> delegate_in);
+    PendingData(std::string data_in, QuicAckListenerInterface* ack_listener_in);
     ~PendingData();
 
     // Pending data to be written.
     std::string data;
     // Index of the first byte in data still to be written.
     size_t offset;
-    // Delegate that should be notified when the pending data is acked.
+    // AckListener that should be notified when the pending data is acked.
     // Can be nullptr.
-    scoped_refptr<ProxyAckNotifierDelegate> delegate;
+    scoped_refptr<QuicAckListenerInterface> ack_listener;
   };
 
   // Calls MaybeSendBlocked on the stream's flow controller and the connection

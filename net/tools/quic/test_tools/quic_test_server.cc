@@ -32,20 +32,19 @@ class CustomStreamSession : public QuicServerSession {
                       QuicConnection* connection,
                       QuicServerSessionVisitor* visitor,
                       const QuicCryptoServerConfig* crypto_config,
-                      QuicTestServer::StreamCreationFunction creator)
+                      QuicTestServer::StreamFactory* factory)
       : QuicServerSession(config, connection, visitor, crypto_config),
-        // TODO(rtenneti): use std::move when chromium supports it.
-        stream_creator_(creator) {}
+        stream_factory_(factory) {}
 
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
     if (!ShouldCreateIncomingDynamicStream(id)) {
       return nullptr;
     }
-    return stream_creator_(id, this);
+    return stream_factory_->CreateStream(id, this);
   }
 
  private:
-  QuicTestServer::StreamCreationFunction stream_creator_;
+  QuicTestServer::StreamFactory* stream_factory_;  // Not owned.
 };
 
 class QuicTestDispatcher : public QuicDispatcher {
@@ -55,10 +54,13 @@ class QuicTestDispatcher : public QuicDispatcher {
                      const QuicVersionVector& versions,
                      PacketWriterFactory* factory,
                      QuicConnectionHelperInterface* helper)
-      : QuicDispatcher(config, crypto_config, versions, factory, helper) {}
+      : QuicDispatcher(config, crypto_config, versions, factory, helper),
+        session_factory_(nullptr),
+        stream_factory_(nullptr) {}
+
   QuicServerSession* CreateQuicSession(QuicConnectionId id,
                                        const IPEndPoint& client) override {
-    if (session_creator_ == nullptr && stream_creator_ == nullptr) {
+    if (session_factory_ == nullptr && stream_factory_ == nullptr) {
       return QuicDispatcher::CreateQuicSession(id, client);
     }
     QuicConnection* connection = new QuicConnection(
@@ -66,43 +68,36 @@ class QuicTestDispatcher : public QuicDispatcher {
         /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions());
 
     QuicServerSession* session = nullptr;
-    if (stream_creator_ != nullptr) {
+    if (stream_factory_ != nullptr) {
       session = new CustomStreamSession(config(), connection, this,
-                                        crypto_config(), stream_creator_);
+                                        crypto_config(), stream_factory_);
     } else {
-      session = session_creator_(config(), connection, this, crypto_config());
+      session = session_factory_->CreateSession(config(), connection, this,
+                                                crypto_config());
     }
     session->Initialize();
     return session;
   }
 
-  void set_session_creator(QuicTestServer::SessionCreationFunction function) {
-    DCHECK(session_creator_ == nullptr);
-    DCHECK(stream_creator_ == nullptr);
-    // TODO(rtenneti): use std::move when chromium supports it.
-    // session_creator_ = std::move(function);
-    session_creator_ = function;
+  void set_session_factory(QuicTestServer::SessionFactory* factory) {
+    DCHECK(session_factory_ == nullptr);
+    DCHECK(stream_factory_ == nullptr);
+    session_factory_ = factory;
   }
 
-  void set_stream_creator(QuicTestServer::StreamCreationFunction function) {
-    DCHECK(session_creator_ == nullptr);
-    DCHECK(stream_creator_ == nullptr);
-    // TODO(rtenneti): use std::move when chromium supports it.
-    // stream_creator_ = std::move(function);
-    stream_creator_ = function;
+  void set_stream_factory(QuicTestServer::StreamFactory* factory) {
+    DCHECK(session_factory_ == nullptr);
+    DCHECK(stream_factory_ == nullptr);
+    stream_factory_ = factory;
   }
 
-  QuicTestServer::SessionCreationFunction session_creator() {
-    return session_creator_;
-  }
+  QuicTestServer::SessionFactory* session_factory() { return session_factory_; }
 
-  QuicTestServer::StreamCreationFunction stream_creator() {
-    return stream_creator_;
-  }
+  QuicTestServer::StreamFactory* stream_factory() { return stream_factory_; }
 
  private:
-  QuicTestServer::SessionCreationFunction session_creator_;
-  QuicTestServer::StreamCreationFunction stream_creator_;
+  QuicTestServer::SessionFactory* session_factory_;  // Not owned.
+  QuicTestServer::StreamFactory* stream_factory_;    // Not owned.
 };
 
 QuicTestServer::QuicTestServer(ProofSource* proof_source)
@@ -120,15 +115,13 @@ QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
       new QuicEpollConnectionHelper(epoll_server()));
 }
 
-void QuicTestServer::SetSessionCreator(SessionCreationFunction function) {
-  static_cast<QuicTestDispatcher*>(dispatcher())
-      ->set_session_creator(std::move(function));
+void QuicTestServer::SetSessionFactory(SessionFactory* factory) {
+  DCHECK(dispatcher());
+  static_cast<QuicTestDispatcher*>(dispatcher())->set_session_factory(factory);
 }
 
-void QuicTestServer::SetSpdyStreamCreator(StreamCreationFunction function) {
-  DCHECK(dispatcher());
-  static_cast<QuicTestDispatcher*>(dispatcher())
-      ->set_stream_creator(std::move(function));
+void QuicTestServer::SetSpdyStreamFactory(StreamFactory* factory) {
+  static_cast<QuicTestDispatcher*>(dispatcher())->set_stream_factory(factory);
 }
 
 ///////////////////////////   TEST SESSIONS ///////////////////////////////

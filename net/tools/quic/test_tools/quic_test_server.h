@@ -26,15 +26,28 @@ namespace test {
 // Eventually this may be extended to allow custom QuicConnections etc.
 class QuicTestServer : public QuicServer {
  public:
-  typedef std::function<QuicServerSession*(
-      const QuicConfig& config,
-      QuicConnection* connection,
-      QuicServerSessionVisitor* visitor,
-      const QuicCryptoServerConfig* crypto_config)> SessionCreationFunction;
+  // Factory for creating QuicServerSessions.
+  class SessionFactory {
+   public:
+    virtual ~SessionFactory() {}
 
-  typedef std::function<QuicSpdyServerStream*(QuicStreamId id,
-                                              QuicSpdySession* session)>
-      StreamCreationFunction;
+    // Returns a new session owned by the caller.
+    virtual QuicServerSession* CreateSession(
+        const QuicConfig& config,
+        QuicConnection* connection,
+        QuicServerSessionVisitor* visitor,
+        const QuicCryptoServerConfig* crypto_config) = 0;
+  };
+
+  // Factory for creating QuicServerStreams.
+  class StreamFactory {
+   public:
+    virtual ~StreamFactory() {}
+
+    // Returns a new stream owned by the caller.
+    virtual QuicSpdyServerStream* CreateStream(QuicStreamId id,
+                                               QuicSpdySession* session) = 0;
+  };
 
   explicit QuicTestServer(ProofSource* proof_source);
   QuicTestServer(ProofSource* proof_source,
@@ -44,13 +57,13 @@ class QuicTestServer : public QuicServer {
   // Create a custom dispatcher which creates custom sessions.
   QuicDispatcher* CreateQuicDispatcher() override;
 
-  // Sets a custom session creator, for easy custom session logic.
-  // This is incompatible with setting a stream creator.
-  void SetSessionCreator(SessionCreationFunction function);
+  // Sets a custom session factory, owned by the caller, for easy custom
+  // session logic. This is incompatible with setting a stream factory.
+  void SetSessionFactory(SessionFactory* factory);
 
-  // Sets a custom stream creator, for easy custom stream logic.
-  // This is incompatible with setting a session creator.
-  void SetSpdyStreamCreator(StreamCreationFunction function);
+  // Sets a custom stream factory, owned by the caller, for easy custom
+  // stream logic. This is incompatible with setting a session factory.
+  void SetSpdyStreamFactory(StreamFactory* factory);
 };
 
 // Useful test sessions for the QuicTestServer.

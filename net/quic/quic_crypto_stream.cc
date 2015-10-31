@@ -69,12 +69,12 @@ void QuicCryptoStream::SendHandshakeMessage(
 
 void QuicCryptoStream::SendHandshakeMessage(
     const CryptoHandshakeMessage& message,
-    QuicAckListenerInterface* delegate) {
+    QuicAckListenerInterface* listener) {
   DVLOG(1) << ENDPOINT << "Sending " << message.DebugString();
   session()->OnCryptoHandshakeMessageSent(message);
   const QuicData& data = message.GetSerialized();
   // TODO(wtc): check the return value.
-  WriteOrBufferData(string(data.data(), data.length()), false, delegate);
+  WriteOrBufferData(string(data.data(), data.length()), false, listener);
 }
 
 bool QuicCryptoStream::ExportKeyingMaterial(

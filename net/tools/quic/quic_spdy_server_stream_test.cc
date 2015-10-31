@@ -101,7 +101,9 @@ class QuicSpdyServerStreamTest : public ::testing::Test {
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
-    stream_.reset(new QuicSpdyServerStreamPeer(3, &session_));
+    stream_ = new QuicSpdyServerStreamPeer(5, &session_);
+    // Register stream_ in dynamic_stream_map_ and pass ownership to session_.
+    session_.ActivateStream(stream_);
 
     QuicInMemoryCachePeer::ResetForTests();
 
@@ -117,9 +119,7 @@ class QuicSpdyServerStreamTest : public ::testing::Test {
     QuicInMemoryCachePeer::ResetForTests();
   }
 
-  const string& StreamBody() {
-    return QuicSpdyServerStreamPeer::body(stream_.get());
-  }
+  const string& StreamBody() { return QuicSpdyServerStreamPeer::body(stream_); }
 
   StringPiece StreamHeadersValue(const string& key) {
     return (*stream_->mutable_headers())[key];
@@ -129,7 +129,7 @@ class QuicSpdyServerStreamTest : public ::testing::Test {
   MockHelper helper_;
   StrictMock<MockConnection>* connection_;
   StrictMock<MockQuicSpdySession> session_;
-  scoped_ptr<QuicSpdyServerStreamPeer> stream_;
+  QuicSpdyServerStreamPeer* stream_;  // Owned by session_.
   string headers_string_;
   string body_;
 };
@@ -207,11 +207,11 @@ TEST_F(QuicSpdyServerStreamTest, TestSendResponse) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
-  QuicSpdyServerStreamPeer::SendResponse(stream_.get());
+  QuicSpdyServerStreamPeer::SendResponse(stream_);
   if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
   } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   }
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
@@ -227,11 +227,11 @@ TEST_F(QuicSpdyServerStreamTest, TestSendErrorResponse) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
-  QuicSpdyServerStreamPeer::SendErrorResponse(stream_.get());
+  QuicSpdyServerStreamPeer::SendErrorResponse(stream_);
   if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
   } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   }
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
@@ -252,9 +252,9 @@ TEST_F(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
 
   if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
   } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   }
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
@@ -275,9 +275,9 @@ TEST_F(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
 
   if (!FLAGS_quic_implement_stop_reading) {
-    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_TRUE(ReliableQuicStreamPeer::read_side_closed(stream_));
   } else {
-    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+    EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   }
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
@@ -293,8 +293,8 @@ TEST_F(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
 
-  EXPECT_EQ(11, QuicSpdyServerStreamPeer::content_length(stream_.get()));
-  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_.get()));
+  EXPECT_EQ(11, QuicSpdyServerStreamPeer::content_length(stream_));
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_FALSE(stream_->reading_stopped());
   EXPECT_FALSE(stream_->write_side_closed());
 }

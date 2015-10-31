@@ -30,8 +30,6 @@
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/quic_decrypter.h"
-#include "net/quic/quic_ack_notifier.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection_stats.h"
@@ -320,15 +318,15 @@ class NET_EXPORT_PRIVATE QuicConnection
   // data is to be FEC protected. Note that data that is sent immediately
   // following MUST_FEC_PROTECT data may get protected by falling within the
   // same FEC group.
-  // If |delegate| is provided, then it will be informed once ACKs have been
+  // If |listener| is provided, then it will be informed once ACKs have been
   // received for all the packets written in this call.
-  // The |delegate| is not owned by the QuicConnection and must outlive it.
+  // The |listener| is not owned by the QuicConnection and must outlive it.
   QuicConsumedData SendStreamData(QuicStreamId id,
-                                  const QuicIOVector& iov,
+                                  QuicIOVector iov,
                                   QuicStreamOffset offset,
                                   bool fin,
                                   FecProtection fec_protection,
-                                  QuicAckListenerInterface* delegate);
+                                  QuicAckListenerInterface* listener);
 
   // Send a RST_STREAM frame to the peer.
   virtual void SendRstStream(QuicStreamId id,

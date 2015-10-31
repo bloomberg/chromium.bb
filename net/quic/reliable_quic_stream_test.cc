@@ -4,7 +4,6 @@
 
 #include "net/quic/reliable_quic_stream.h"
 
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
@@ -427,17 +426,17 @@ TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
       QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 }
 
-void SaveProxyAckNotifierDelegate(
-    scoped_refptr<QuicAckListenerInterface>* delegate_out,
-    QuicAckListenerInterface* delegate) {
-  *delegate_out = delegate;
+// TODO(ianswett): It's not clear this method is still needed now that
+// ProxyAckNotifierDelegate has been removed.
+void SaveAckListener(scoped_refptr<QuicAckListenerInterface>* listener_out,
+                     QuicAckListenerInterface* listener) {
+  *listener_out = (listener);
 }
 
 TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckNotifierDelegate> delegate(
-      new StrictMock<MockAckNotifierDelegate>);
+  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
 
   const int kDataSize = 16 * 1024;
   const string kData(kDataSize, 'a');
@@ -450,40 +449,30 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
-  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
+  scoped_refptr<QuicAckListenerInterface> ack_listener;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
-      .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
-                          &SaveProxyAckNotifierDelegate, &proxy_delegate))),
-                      Return(QuicConsumedData(kFirstWriteSize, false))));
+      .WillOnce(DoAll(
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
+          Return(QuicConsumedData(kFirstWriteSize, false))));
   stream_->WriteOrBufferData(kData, false, delegate.get());
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_,
-              WritevData(kTestStreamId, _, _, _, _, proxy_delegate.get()))
+              WritevData(kTestStreamId, _, _, _, _, ack_listener.get()))
       .WillOnce(Return(QuicConsumedData(kSecondWriteSize, false)));
   stream_->OnCanWrite();
 
   // No ack expected for an empty write.
   EXPECT_CALL(*session_,
-              WritevData(kTestStreamId, _, _, _, _, proxy_delegate.get()))
+              WritevData(kTestStreamId, _, _, _, _, ack_listener.get()))
       .WillOnce(Return(QuicConsumedData(0, false)));
   stream_->OnCanWrite();
 
   EXPECT_CALL(*session_,
-              WritevData(kTestStreamId, _, _, _, _, proxy_delegate.get()))
+              WritevData(kTestStreamId, _, _, _, _, ack_listener.get()))
       .WillOnce(Return(QuicConsumedData(kLastWriteSize, false)));
   stream_->OnCanWrite();
-
-  // There were two writes, so OnAckNotification is not propagated until the
-  // third Ack arrives.
-  proxy_delegate->OnAckNotification(3, 4, zero_);
-  proxy_delegate->OnAckNotification(30, 40, zero_);
-
-  // The arguments to delegate->OnAckNotification are the sum of the
-  // arguments to proxy_delegate OnAckNotification calls.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(333, 444, zero_));
-  proxy_delegate->OnAckNotification(300, 400, zero_);
 }
 
 // Verify delegate behavior when packets are acked before the WritevData call
@@ -491,8 +480,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
 TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckNotifierDelegate> delegate(
-      new StrictMock<MockAckNotifierDelegate>);
+  scoped_refptr<MockAckListener> ack_listener(new StrictMock<MockAckListener>);
 
   const int kDataSize = 16 * 1024;
   const string kData(kDataSize, 'a');
@@ -506,55 +494,40 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
-      .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
-                          &SaveProxyAckNotifierDelegate, &proxy_delegate))),
-                      Return(QuicConsumedData(kInitialWriteSize, false))));
-  stream_->WriteOrBufferData(kData, false, delegate.get());
+      .WillOnce(DoAll(
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          Return(QuicConsumedData(kInitialWriteSize, false))));
+  stream_->WriteOrBufferData(kData, false, ack_listener.get());
   EXPECT_TRUE(HasWriteBlockedStreams());
-
-  // Handle the ack of the first write.
-  proxy_delegate->OnAckNotification(3, 4, zero_);
-  proxy_delegate = nullptr;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
       .WillOnce(DoAll(
-          WithArgs<5>(Invoke(
-              CreateFunctor(&SaveProxyAckNotifierDelegate, &proxy_delegate))),
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
           Return(QuicConsumedData(kDataSize - kInitialWriteSize, false))));
   stream_->OnCanWrite();
-
-  // Handle the ack for the second write.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(303, 404, zero_));
-  proxy_delegate->OnAckNotification(300, 400, zero_);
 }
 
 // Verify delegate behavior when WriteOrBufferData does not buffer.
 TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckNotifierDelegate> delegate(
-      new StrictMock<MockAckNotifierDelegate>);
+  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
 
   scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
-      .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
-                          &SaveProxyAckNotifierDelegate, &proxy_delegate))),
-                      Return(QuicConsumedData(kDataLen, true))));
+      .WillOnce(DoAll(
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          Return(QuicConsumedData(kDataLen, true))));
   stream_->WriteOrBufferData(kData1, true, delegate.get());
   EXPECT_FALSE(HasWriteBlockedStreams());
-
-  // Handle the ack.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(3, 4, zero_));
-  proxy_delegate->OnAckNotification(3, 4, zero_);
 }
 
 // Verify delegate behavior when WriteOrBufferData buffers all the data.
 TEST_F(ReliableQuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckNotifierDelegate> delegate(
-      new StrictMock<MockAckNotifierDelegate>);
+  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
 
   scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
@@ -564,14 +537,10 @@ TEST_F(ReliableQuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
-      .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
-                          &SaveProxyAckNotifierDelegate, &proxy_delegate))),
-                      Return(QuicConsumedData(kDataLen, true))));
+      .WillOnce(DoAll(
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          Return(QuicConsumedData(kDataLen, true))));
   stream_->OnCanWrite();
-
-  // Handle the ack.
-  EXPECT_CALL(*delegate.get(), OnAckNotification(3, 4, zero_));
-  proxy_delegate->OnAckNotification(3, 4, zero_);
 }
 
 // Verify delegate behavior when WriteOrBufferData when the FIN is
@@ -579,28 +548,22 @@ TEST_F(ReliableQuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
 TEST_F(ReliableQuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckNotifierDelegate> delegate(
-      new StrictMock<MockAckNotifierDelegate>);
+  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
 
   scoped_refptr<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
-      .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
-                          &SaveProxyAckNotifierDelegate, &proxy_delegate))),
-                      Return(QuicConsumedData(kDataLen, false))));
+      .WillOnce(DoAll(
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          Return(QuicConsumedData(kDataLen, false))));
   stream_->WriteOrBufferData(kData1, true, delegate.get());
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _, _))
-      .WillOnce(DoAll(WithArgs<5>(Invoke(CreateFunctor(
-                          &SaveProxyAckNotifierDelegate, &proxy_delegate))),
-                      Return(QuicConsumedData(0, true))));
+      .WillOnce(DoAll(
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          Return(QuicConsumedData(0, true))));
   stream_->OnCanWrite();
-
-  // Handle the acks.
-  proxy_delegate->OnAckNotification(3, 4, zero_);
-  EXPECT_CALL(*delegate.get(), OnAckNotification(33, 44, zero_));
-  proxy_delegate->OnAckNotification(30, 40, zero_);
 }
 
 // Verify that when we receive a packet which violates flow control (i.e. sends

@@ -290,7 +290,7 @@ bool QuicSession::HasOpenDynamicStreams() const {
 
 QuicConsumedData QuicSession::WritevData(
     QuicStreamId id,
-    const QuicIOVector& iov,
+    QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
@@ -728,11 +728,30 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
 }
 
 size_t QuicSession::GetNumOpenStreams() const {
-  if (FLAGS_allow_many_available_streams) {
-    return dynamic_stream_map_.size() - draining_streams_.size();
+  if (FLAGS_quic_count_unfinished_as_open_streams) {
+    if (FLAGS_allow_many_available_streams) {
+      return dynamic_stream_map_.size() - draining_streams_.size() +
+             locally_closed_streams_highest_offset_.size();
+    } else {
+      return dynamic_stream_map_.size() + available_streams_.size() -
+             draining_streams_.size() +
+             locally_closed_streams_highest_offset_.size();
+    }
   } else {
-    return dynamic_stream_map_.size() + available_streams_.size() -
-           draining_streams_.size();
+    if (FLAGS_allow_many_available_streams) {
+      return dynamic_stream_map_.size() - draining_streams_.size();
+    } else {
+      return dynamic_stream_map_.size() + available_streams_.size() -
+             draining_streams_.size();
+    }
+  }
+}
+
+size_t QuicSession::GetNumActiveStreams() const {
+  if (FLAGS_quic_count_unfinished_as_open_streams) {
+    return GetNumOpenStreams() - locally_closed_streams_highest_offset_.size();
+  } else {
+    return GetNumOpenStreams();
   }
 }
 
@@ -775,7 +794,8 @@ void QuicSession::PostProcessAfterData() {
   STLDeleteElements(&closed_streams_);
 
   // A buggy client may fail to send FIN/RSTs. Don't tolerate this.
-  if (locally_closed_streams_highest_offset_.size() > max_open_streams_) {
+  if (!FLAGS_quic_count_unfinished_as_open_streams &&
+      locally_closed_streams_highest_offset_.size() > max_open_streams_) {
     CloseConnection(QUIC_TOO_MANY_UNFINISHED_STREAMS);
   }
 }

@@ -201,13 +201,6 @@ class MtuDiscoveryAckListener : public QuicAckListenerInterface {
   MtuDiscoveryAckListener(QuicConnection* connection, QuicByteCount probe_size)
       : connection_(connection), probe_size_(probe_size) {}
 
-  void OnAckNotification(int /*num_retransmittable_packets*/,
-                         int /*num_retransmittable_bytes*/,
-                         QuicTime::Delta /*delta_largest_observed*/) override {
-    // Since the probe was successful, increase the maximum packet size to that.
-    MaybeIncreaseMtu();
-  }
-
   void OnPacketAcked(int /*acked_bytes*/,
                      QuicTime::Delta /*delta_largest_observed*/) override {
     // MTU discovery packets are not retransmittable, so it must be acked.
@@ -341,9 +334,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   SetMaxPacketLength(perspective_ == Perspective::IS_SERVER
                          ? kDefaultServerMaxPacketSize
                          : kDefaultMaxPacketSize);
-  const bool no_acknotifier = FLAGS_quic_no_ack_notifier;
-  packet_generator_.set_no_acknotifier(no_acknotifier);
-  sent_packet_manager_.set_no_acknotifier(no_acknotifier);
 }
 
 QuicConnection::~QuicConnection() {
@@ -1130,11 +1120,11 @@ void QuicConnection::SendVersionNegotiationPacket() {
 
 QuicConsumedData QuicConnection::SendStreamData(
     QuicStreamId id,
-    const QuicIOVector& iov,
+    QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
     FecProtection fec_protection,
-    QuicAckListenerInterface* delegate) {
+    QuicAckListenerInterface* listener) {
   if (!fin && iov.total_length == 0) {
     LOG(DFATAL) << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);
@@ -1156,7 +1146,7 @@ QuicConsumedData QuicConnection::SendStreamData(
   ScopedRetransmissionScheduler alarm_delayer(this);
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
   return packet_generator_.ConsumeData(id, iov, offset, fin, fec_protection,
-                                       delegate);
+                                       listener);
 }
 
 void QuicConnection::SendRstStream(QuicStreamId id,
@@ -1670,7 +1660,6 @@ void QuicConnection::OnSerializedPacket(
     CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
     return;
   }
-  sent_packet_manager_.OnSerializedPacket(serialized_packet);
   if (serialized_packet.is_fec_packet && fec_alarm_->IsSet()) {
     // If an FEC packet is serialized with the FEC alarm set, cancel the alarm.
     fec_alarm_->Cancel();

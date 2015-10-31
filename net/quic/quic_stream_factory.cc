@@ -1038,7 +1038,7 @@ void QuicStreamFactory::MaybeDisableQuic(QuicChromiumClientSession* session) {
 }
 
 void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
-  DCHECK_EQ(0u, session->GetNumOpenStreams());
+  DCHECK_EQ(0u, session->GetNumActiveStreams());
   MaybeDisableQuic(session);
   OnSessionGoingAway(session);
   delete session;

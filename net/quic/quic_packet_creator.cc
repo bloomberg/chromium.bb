@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/crypto/quic_random.h"
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_data_writer.h"
 #include "net/quic/quic_fec_group.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -261,7 +261,7 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
-                                            const QuicIOVector& iov,
+                                            QuicIOVector iov,
                                             size_t iov_offset,
                                             QuicStreamOffset offset,
                                             bool fin,
@@ -302,7 +302,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
 }
 
 // static
-void QuicPacketCreator::CopyToBuffer(const QuicIOVector& iov,
+void QuicPacketCreator::CopyToBuffer(QuicIOVector iov,
                                      size_t iov_offset,
                                      size_t length,
                                      char* buffer) {
@@ -311,14 +311,56 @@ void QuicPacketCreator::CopyToBuffer(const QuicIOVector& iov,
     iov_offset -= iov.iov[iovnum].iov_len;
     ++iovnum;
   }
-  while (iovnum < iov.iov_count && length > 0) {
-    const size_t copy_len = min(length, iov.iov[iovnum].iov_len - iov_offset);
-    memcpy(buffer, static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset,
-           copy_len);
-    iov_offset = 0;
-    length -= copy_len;
-    buffer += copy_len;
-    ++iovnum;
+  DCHECK_LE(iovnum, iov.iov_count);
+  DCHECK_LE(iov_offset, iov.iov[iovnum].iov_len);
+  if (FLAGS_quic_packet_creator_prefetch) {
+    if (iovnum >= iov.iov_count || length == 0) {
+      return;
+    }
+
+    // Unroll the first iteration that handles iov_offset.
+    const size_t iov_available = iov.iov[iovnum].iov_len - iov_offset;
+    size_t copy_len = min(length, iov_available);
+
+    // Try to prefetch the next iov if there is at least one more after the
+    // current. Otherwise, it looks like an irregular access that the hardware
+    // prefetcher won't speculatively prefetch. Only prefetch one iov because
+    // generally, the iov_offset is not 0, input iov consists of 2K buffers and
+    // the output buffer is ~1.4K.
+    if (copy_len == iov_available && iovnum + 1 < iov.iov_count) {
+      // TODO(ckrasic) - this is unused without prefetch()
+      // char* next_base = static_cast<char*>(iov.iov[iovnum + 1].iov_base);
+      // Prefetch 2 cachelines worth of data to get the prefetcher started;
+      // leave it to the hardware prefetcher after that.
+      // TODO(ckrasic) - investigate what to do about prefetch directives.
+      // prefetch(next_base, PREFETCH_HINT_T0);
+      if (iov.iov[iovnum + 1].iov_len >= 64) {
+        // TODO(ckrasic) - investigate what to do about prefetch directives.
+        // prefetch(next_base + CACHELINE_SIZE, PREFETCH_HINT_T0);
+      }
+    }
+
+    const char* src = static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset;
+    while (true) {
+      memcpy(buffer, src, copy_len);
+      length -= copy_len;
+      buffer += copy_len;
+      if (length == 0 || ++iovnum >= iov.iov_count) {
+        break;
+      }
+      src = static_cast<char*>(iov.iov[iovnum].iov_base);
+      copy_len = min(length, iov.iov[iovnum].iov_len);
+    }
+  } else {
+    while (iovnum < iov.iov_count && length > 0) {
+      const size_t copy_len = min(length, iov.iov[iovnum].iov_len - iov_offset);
+      memcpy(buffer, static_cast<char*>(iov.iov[iovnum].iov_base) + iov_offset,
+             copy_len);
+      iov_offset = 0;
+      length -= copy_len;
+      buffer += copy_len;
+      ++iovnum;
+    }
   }
   LOG_IF(DFATAL, length > 0) << "Failed to copy entire length to buffer.";
 }

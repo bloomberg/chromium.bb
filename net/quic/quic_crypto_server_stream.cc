@@ -20,13 +20,6 @@ using std::string;
 
 namespace net {
 
-void ServerHelloNotifier::OnAckNotification(
-    int num_retransmitted_packets,
-    int num_retransmitted_bytes,
-    QuicTime::Delta delta_largest_observed) {
-  server_stream_->OnServerHelloAcked();
-}
-
 void ServerHelloNotifier::OnPacketAcked(
     int acked_bytes,
     QuicTime::Delta delta_largest_observed) {
@@ -116,6 +109,17 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
 
   if (reply.tag() != kSHLO) {
     SendHandshakeMessage(reply);
+
+    if (FLAGS_enable_quic_stateless_reject_support && reply.tag() == kSREJ) {
+      DCHECK(use_stateless_rejects_if_peer_supported());
+      DCHECK(peer_supports_stateless_rejects());
+      DCHECK(!handshake_confirmed());
+      DVLOG(1) << "Closing connection "
+               << session()->connection()->connection_id()
+               << " because of a stateless reject.";
+      session()->connection()->CloseConnection(
+          QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, /* from_peer */ false);
+    }
     return;
   }
 

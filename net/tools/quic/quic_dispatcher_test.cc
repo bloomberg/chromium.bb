@@ -499,15 +499,18 @@ TEST_P(QuicDispatcherStatelessRejectTest, ParameterizedBasicTest) {
           CreateSessionBasedOnTestParams(connection_id, client_address)));
 
   // Process the first packet for the connection.
+  ProcessPacket(client_address, connection_id, true, "foo");
   if (ExpectStatelessReject()) {
-    // If this is a stateless reject, we expect the connection to close.
+    // If this is a stateless reject, the crypto stream will close the
+    // connection.
     EXPECT_CALL(*session1_, OnConnectionClosed(_, _))
         .Times(1)
         .WillOnce(WithoutArgs(Invoke(
             reinterpret_cast<MockServerConnection*>(session1_->connection()),
             &MockServerConnection::UnregisterOnConnectionClosed)));
+    session1_->connection()->CloseConnection(
+        QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, /* from_peer */ false);
   }
-  ProcessPacket(client_address, connection_id, true, "foo");
 
   // Send a second packet and check the results.  If this is a stateless reject,
   // the existing connection_id will go on the time-wait list.

@@ -5,7 +5,6 @@
 #include "net/quic/quic_unacked_packet_map.h"
 
 #include "base/stl_util.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -25,7 +24,7 @@ const uint32 kDefaultLength = 1000;
 class QuicUnackedPacketMapTest : public ::testing::Test {
  protected:
   QuicUnackedPacketMapTest()
-      : unacked_packets_(&ack_notifier_manager_),
+      : unacked_packets_(),
         now_(QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1000))) {}
 
   ~QuicUnackedPacketMapTest() override {
@@ -116,7 +115,6 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     }
   }
   vector<QuicEncryptedPacket*> packets_;
-  AckNotifierManager ack_notifier_manager_;
   QuicUnackedPacketMap unacked_packets_;
   QuicTime now_;
 };

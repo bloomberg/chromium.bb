@@ -11,7 +11,6 @@
 #include "net/quic/congestion_control/pacing_sender.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils_chromium.h"
@@ -68,7 +67,7 @@ QuicSentPacketManager::QuicSentPacketManager(
     QuicConnectionStats* stats,
     CongestionControlType congestion_control_type,
     LossDetectionType loss_type)
-    : unacked_packets_(&ack_notifier_manager_),
+    : unacked_packets_(),
       perspective_(perspective),
       clock_(clock),
       stats_(stats),
@@ -94,8 +93,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
-      handshake_confirmed_(false),
-      no_acknotifier_(false) {}
+      handshake_confirmed_(false) {}
 
 QuicSentPacketManager::~QuicSentPacketManager() {
 }
@@ -322,7 +320,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // If data is associated with the most recent transmission of this
     // packet, then inform the caller.
     if (it->in_flight) {
-      packets_acked_.push_back(std::make_pair(packet_number, *it));
+      packets_acked_.push_back(std::make_pair(packet_number, it->bytes_sent));
     }
     MarkPacketHandled(packet_number, *it, delta_largest_observed);
   }
@@ -471,15 +469,10 @@ void QuicSentPacketManager::MarkPacketRevived(
   // retransmit it, do not retransmit it anymore.
   pending_retransmissions_.erase(newest_transmission);
 
-  // The AckNotifierManager needs to be notified for revived packets,
+  // The AckListener needs to be notified for revived packets,
   // since it indicates the packet arrived from the appliction's perspective.
-  if (no_acknotifier_) {
-    unacked_packets_.NotifyAndClearListeners(newest_transmission,
-                                             delta_largest_observed);
-  } else {
-    ack_notifier_manager_.OnPacketAcked(newest_transmission,
-                                        delta_largest_observed);
-  }
+  unacked_packets_.NotifyAndClearListeners(newest_transmission,
+                                           delta_largest_observed);
 
   unacked_packets_.RemoveRetransmittability(packet_number);
 }
@@ -494,17 +487,12 @@ void QuicSentPacketManager::MarkPacketHandled(
   // Remove the most recent packet, if it is pending retransmission.
   pending_retransmissions_.erase(newest_transmission);
 
-  // The AckNotifierManager needs to be notified about the most recent
+  // The AckListener needs to be notified about the most recent
   // transmission, since that's the one only one it tracks.
-  if (no_acknotifier_) {
-    // TODO(ianswett): An extra retrieval into the UnackedPacketMap is done
-    // here, so there may be opportunity for optimization.
-    unacked_packets_.NotifyAndClearListeners(newest_transmission,
-                                             delta_largest_observed);
-  } else {
-    ack_notifier_manager_.OnPacketAcked(newest_transmission,
-                                        delta_largest_observed);
-  }
+  // TODO(ianswett): An extra retrieval into the UnackedPacketMap is done
+  // here, so there may be opportunity for optimization.
+  unacked_packets_.NotifyAndClearListeners(newest_transmission,
+                                           delta_largest_observed);
 
   if (newest_transmission != packet_number) {
     const TransmissionInfo& newest_transmission_info =
@@ -558,12 +546,6 @@ bool QuicSentPacketManager::OnPacketSent(
       DLOG(DFATAL) << "Expected packet number to be in "
                    << "pending_retransmissions_.  packet_number: "
                    << original_packet_number;
-    }
-    // Inform the ack notifier of retransmissions so it can calculate the
-    // retransmit rate.
-    if (!no_acknotifier_) {
-      ack_notifier_manager_.OnPacketRetransmitted(original_packet_number,
-                                                  packet_number, bytes);
     }
   }
 
@@ -724,7 +706,8 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
     // should be recorded as a loss to the send algorithm, but not retransmitted
     // until it's known whether the FEC packet arrived.
     ++stats_->packets_lost;
-    packets_lost_.push_back(std::make_pair(packet_number, transmission_info));
+    packets_lost_.push_back(
+        std::make_pair(packet_number, transmission_info.bytes_sent));
     DVLOG(1) << ENDPOINT << "Lost packet " << packet_number;
 
     if (transmission_info.retransmittable_frames != nullptr) {
@@ -923,13 +906,6 @@ QuicByteCount QuicSentPacketManager::GetCongestionWindowInBytes() const {
 
 QuicPacketCount QuicSentPacketManager::GetSlowStartThresholdInTcpMss() const {
   return send_algorithm_->GetSlowStartThreshold() / kDefaultTCPMSS;
-}
-
-void QuicSentPacketManager::OnSerializedPacket(
-    const SerializedPacket& serialized_packet) {
-  if (!no_acknotifier_) {
-    ack_notifier_manager_.OnSerializedPacket(serialized_packet);
-  }
 }
 
 void QuicSentPacketManager::CancelRetransmissionsForStream(

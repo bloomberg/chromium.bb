@@ -49,7 +49,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   // As above, but |delegate| will be notified once |data| is ACKed.
   void SendBody(const std::string& data,
                 bool fin,
-                QuicAckListenerInterface* delegate);
+                QuicAckListenerInterface* listener);
 
   // Returns the response data.
   const std::string& data() { return data_; }

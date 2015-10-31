@@ -176,7 +176,8 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   }
   entropy_tracker_.RecordPacketEntropyHash(packet_number, header.entropy_hash);
 
-  received_packet_times_.push_back(std::make_pair(packet_number, receipt_time));
+  ack_frame_.received_packet_times.push_back(
+      std::make_pair(packet_number, receipt_time));
 
   ack_frame_.revived_packets.erase(packet_number);
 }
@@ -226,11 +227,23 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
           QuicTime::Delta::Zero() :
           approximate_now.Subtract(time_largest_observed_);
 
-  // Remove all packets that are too far from largest_observed to express.
-  received_packet_times_.remove_if(isTooLarge(ack_frame_.largest_observed));
+  // Clear all packet times if any are too far from largest observed.
+  // It's expected this is extremely rare.
+  for (PacketTimeVector::iterator it = ack_frame_.received_packet_times.begin();
+       it != ack_frame_.received_packet_times.end();) {
+    if (ack_frame_.largest_observed - it->first >=
+        numeric_limits<uint8>::max()) {
+      it = ack_frame_.received_packet_times.erase(it);
+    } else {
+      ++it;
+    }
+  }
 
+  // TODO(ianswett): Instead of transferring all the information over,
+  // consider giving the QuicPacketGenerator a reference to this ack frame
+  // and clear it afterwards.
   ack_frame->received_packet_times.clear();
-  ack_frame->received_packet_times.swap(received_packet_times_);
+  ack_frame->received_packet_times.swap(ack_frame_.received_packet_times);
 }
 
 QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(

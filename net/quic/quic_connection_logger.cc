@@ -138,8 +138,8 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
 
   base::ListValue* received = new base::ListValue();
   dict->Set("received_packet_times", received);
-  const PacketTimeList& received_times = frame->received_packet_times;
-  for (PacketTimeList::const_iterator it = received_times.begin();
+  const PacketTimeVector& received_times = frame->received_packet_times;
+  for (PacketTimeVector::const_iterator it = received_times.begin();
        it != received_times.end(); ++it) {
     base::DictionaryValue* info = new base::DictionaryValue();
     info->SetInteger("packet_number", static_cast<int>(it->first));

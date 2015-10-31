@@ -299,20 +299,9 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
       QuicServerSession* session =
           CreateQuicSession(connection_id, current_client_address_);
       DVLOG(1) << "Created new session for " << connection_id;
-      session_map_.insert(make_pair(connection_id, session));
+      session_map_.insert(std::make_pair(connection_id, session));
       session->connection()->ProcessUdpPacket(
           current_server_address_, current_client_address_, *current_packet_);
-
-      if (FLAGS_enable_quic_stateless_reject_support &&
-          session->UsingStatelessRejectsIfPeerSupported() &&
-          session->PeerSupportsStatelessRejects() &&
-          !session->IsCryptoHandshakeConfirmed()) {
-        DVLOG(1) << "Removing new session for " << connection_id
-                 << " because the session is in stateless reject mode and"
-                 << " encryption has not been established.";
-        session->connection()->CloseConnection(
-            QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, /* from_peer */ false);
-      }
       break;
     }
     case kFateTimeWait:

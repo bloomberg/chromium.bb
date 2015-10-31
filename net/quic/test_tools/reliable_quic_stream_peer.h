@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {

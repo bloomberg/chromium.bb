@@ -236,6 +236,7 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
+  EXPECT_FALSE(server_connection_->connected());
 }
 
 TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils_chromium.h"
@@ -15,15 +14,12 @@ using std::max;
 
 namespace net {
 
-QuicUnackedPacketMap::QuicUnackedPacketMap(
-    AckNotifierManager* ack_notifier_manager)
+QuicUnackedPacketMap::QuicUnackedPacketMap()
     : largest_sent_packet_(0),
       largest_observed_(0),
       least_unacked_(1),
       bytes_in_flight_(0),
-      pending_crypto_packet_count_(0),
-      ack_notifier_manager_(ack_notifier_manager),
-      no_acknotifier_(false) {}
+      pending_crypto_packet_count_(0) {}
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   QuicPacketNumber index = least_unacked_;
@@ -60,9 +56,7 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
         packet->retransmittable_frames->HasCryptoHandshake() == IS_HANDSHAKE) {
       ++pending_crypto_packet_count_;
     }
-    if (no_acknotifier_) {
-      info.ack_listeners.swap(packet->listeners);
-    }
+    info.ack_listeners.swap(packet->listeners);
   } else {
     TransferRetransmissionInfo(old_packet_number, packet_number,
                                transmission_type, &info);
@@ -81,7 +75,6 @@ void QuicUnackedPacketMap::RemoveObsoletePackets() {
     if (!IsPacketUseless(least_unacked_, unacked_packets_.front())) {
       break;
     }
-    ack_notifier_manager_->OnPacketRemoved(least_unacked_);
 
     unacked_packets_.pop_front();
     ++least_unacked_;
@@ -107,13 +100,11 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
       &unacked_packets_.at(old_packet_number - least_unacked_);
   RetransmittableFrames* frames = transmission_info->retransmittable_frames;
   transmission_info->retransmittable_frames = nullptr;
-  if (no_acknotifier_) {
-    for (AckListenerWrapper& wrapper : transmission_info->ack_listeners) {
-      wrapper.ack_listener->OnPacketRetransmitted(wrapper.length);
-    }
-    // Transfer the ack listeners if it's present.
-    info->ack_listeners.swap(transmission_info->ack_listeners);
+  for (AckListenerWrapper& wrapper : transmission_info->ack_listeners) {
+    wrapper.ack_listener->OnPacketRetransmitted(wrapper.length);
   }
+  // Transfer the AckListeners if any are present.
+  info->ack_listeners.swap(transmission_info->ack_listeners);
   LOG_IF(DFATAL, frames == nullptr)
       << "Attempt to retransmit packet with no "
       << "retransmittable frames: " << old_packet_number;

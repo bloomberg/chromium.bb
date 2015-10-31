@@ -675,6 +675,11 @@ void QuicChromiumClientSession::OnGoAway(const QuicGoAwayFrame& frame) {
   NotifyFactoryOfSessionGoingAway();
 }
 
+void QuicChromiumClientSession::OnRstStream(const QuicRstStreamFrame& frame) {
+  QuicSession::OnRstStream(frame);
+  OnClosedStream();
+}
+
 void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
                                                    bool from_peer) {
   DCHECK(!connection()->connected());
@@ -933,7 +938,7 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosedLater() {
     RecordUnexpectedNotGoingAway(NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER);
 
   going_away_ = true;
-  DCHECK_EQ(0u, GetNumOpenStreams());
+  DCHECK_EQ(0u, GetNumActiveStreams());
   DCHECK(!connection()->connected());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -949,7 +954,7 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
     RecordUnexpectedNotGoingAway(NOTIFY_FACTORY_OF_SESSION_CLOSED);
 
   going_away_ = true;
-  DCHECK_EQ(0u, GetNumOpenStreams());
+  DCHECK_EQ(0u, GetNumActiveStreams());
   // Will delete |this|.
   if (stream_factory_)
     stream_factory_->OnSessionClosed(this);

@@ -278,9 +278,6 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
   list<SentPacket>::iterator it = sent_packets_.begin();
   while (sender->last_acked < sender->next_acked) {
     ++sender->last_acked;
-    TransmissionInfo info = TransmissionInfo();
-    info.bytes_sent = kPacketSize;
-    info.in_flight = true;
     // Find the next SentPacket for this transfer.
     while (it->transfer != transfer) {
       DCHECK(it != sent_packets_.end());
@@ -290,13 +287,13 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
     if (it->packet_number > sender->last_acked) {
       DVLOG(1) << "Lost packet:" << sender->last_acked
                << " dropped by buffer overflow.";
-      lost_packets.push_back(std::make_pair(sender->last_acked, info));
+      lost_packets.push_back(std::make_pair(sender->last_acked, kPacketSize));
       continue;
     }
     if (it->lost) {
-      lost_packets.push_back(std::make_pair(sender->last_acked, info));
+      lost_packets.push_back(std::make_pair(sender->last_acked, kPacketSize));
     } else {
-      acked_packets.push_back(std::make_pair(sender->last_acked, info));
+      acked_packets.push_back(std::make_pair(sender->last_acked, kPacketSize));
     }
     // This packet has been acked or lost, remove it from sent_packets_.
     largest_observed = *it;

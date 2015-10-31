@@ -153,7 +153,7 @@ class TestSession : public QuicSpdySession {
 
   QuicConsumedData WritevData(
       QuicStreamId id,
-      const QuicIOVector& data,
+      QuicIOVector data,
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,
@@ -969,16 +969,17 @@ TEST_P(QuicSessionTestServer, WindowUpdateUnblocksHeadersStream) {
 }
 
 TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseConnectionClose) {
-  // If a buggy/malicious peer creates too many streams that are not ended with
-  // a FIN or RST then we send a connection close.
+  FLAGS_quic_count_unfinished_as_open_streams = false;
+  // If a buggy/malicious peer creates too many streams that are not ended
+  // with a FIN or RST then we send a connection close.
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS));
 
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenStreams(&session_, kMaxStreams);
 
-  // Create kMaxStreams + 1 data streams, and close them all without receiving a
-  // FIN or a RST_STREAM from the client.
+  // Create kMaxStreams + 1 data streams, and close them all without receiving
+  // a FIN or a RST_STREAM from the client.
   const QuicStreamId kFirstStreamId = kClientDataStreamId1;
   const QuicStreamId kFinalStreamId =
       kClientDataStreamId1 + 2 * kMaxStreams + 1;
@@ -990,8 +991,45 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseConnectionClose) {
     session_.CloseStream(i);
   }
 
-  // Called after any new data is received by the session, and triggers the call
-  // to close the connection.
+  // Called after any new data is received by the session, and triggers the
+  // call to close the connection.
+  session_.PostProcessAfterData();
+}
+
+TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
+  FLAGS_quic_count_unfinished_as_open_streams = true;
+  // If a buggy/malicious peer creates too many streams that are not ended
+  // with a FIN or RST then we send a connection close or an RST to
+  // refuse streams.
+  const QuicStreamId kMaxStreams = 5;
+  QuicSessionPeer::SetMaxOpenStreams(&session_, kMaxStreams);
+  const QuicStreamId kFirstStreamId = kClientDataStreamId1;
+  const QuicStreamId kFinalStreamId = kClientDataStreamId1 + 2 * kMaxStreams;
+
+  // Create kMaxStreams data streams, and close them all without receiving a
+  // FIN or a RST_STREAM from the client.
+  for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += 2) {
+    QuicStreamFrame data1(i, false, 0, StringPiece("HT"));
+    session_.OnStreamFrame(data1);
+    // EXPECT_EQ(1u, session_.GetNumOpenStreams());
+    EXPECT_CALL(*connection_, SendRstStream(i, _, _));
+    session_.CloseStream(i);
+  }
+
+  if (GetParam() <= QUIC_VERSION_27) {
+    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+    EXPECT_CALL(*connection_, SendRstStream(kFinalStreamId, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(*connection_,
+                SendRstStream(kFinalStreamId, QUIC_REFUSED_STREAM, _))
+        .Times(1);
+  }
+  // Create one more data streams to exceed limit of open stream.
+  QuicStreamFrame data1(kFinalStreamId, false, 0, StringPiece("HT"));
+  session_.OnStreamFrame(data1);
+
+  // Called after any new data is received by the session, and triggers the
+  // call to close the connection.
   session_.PostProcessAfterData();
 }
 
@@ -999,8 +1037,19 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   // Verify that a draining stream (which has received a FIN but not consumed
   // it) does not count against the open quota (because it is closed from the
   // protocol point of view).
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS)).Times(0);
+  if (FLAGS_quic_count_unfinished_as_open_streams) {
+    if (GetParam() <= QUIC_VERSION_27) {
+      EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS))
+          .Times(0);
+    } else {
+      EXPECT_CALL(*connection_, SendRstStream(_, QUIC_REFUSED_STREAM, _))
+          .Times(0);
+    }
+  } else {
+    EXPECT_CALL(*connection_,
+                SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS))
+        .Times(0);
+  }
 
   const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenStreams(&session_, kMaxStreams);

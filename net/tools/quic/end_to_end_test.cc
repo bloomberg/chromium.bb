@@ -248,7 +248,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         server_hostname_("example.com"),
         server_started_(false),
         strike_register_no_startup_period_(false),
-        stream_creator_(nullptr) {
+        stream_factory_(nullptr) {
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
@@ -413,9 +413,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_writer_->Initialize(
         QuicDispatcherPeer::GetHelper(dispatcher),
         new ServerDelegate(packet_writer_factory, dispatcher));
-    if (stream_creator_ != nullptr) {
+    if (stream_factory_ != nullptr) {
       static_cast<QuicTestServer*>(server_thread_->server())
-          ->SetSpdyStreamCreator(stream_creator_);
+          ->SetSpdyStreamFactory(stream_factory_);
     }
 
     server_thread_->Start();
@@ -516,9 +516,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   }
 
   // Must be called before Initialize to have effect.
-  void SetSpdyStreamCreator(QuicTestServer::StreamCreationFunction function) {
-    // TODO(rtenneti) use std::move when supported.
-    stream_creator_ = function;
+  void SetSpdyStreamFactory(QuicTestServer::StreamFactory* factory) {
+    stream_factory_ = factory;
   }
 
   bool initialized_;
@@ -535,7 +534,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   QuicVersionVector server_supported_versions_;
   QuicVersion negotiated_version_;
   bool strike_register_no_startup_period_;
-  QuicTestServer::StreamCreationFunction stream_creator_;
+  QuicTestServer::StreamFactory* stream_factory_;
 };
 
 // Run all end to end tests with all supported versions.
@@ -935,7 +934,14 @@ TEST_P(EndToEndTest, StatelessRejectWithPacketLoss) {
   // TODO(jokulik): Once redundant SREJ support is added, this test
   // should succeed.
   server_writer_->set_fake_drop_first_n_packets(1);
-  ASSERT_EQ(!BothSidesSupportStatelessRejects(), Initialize());
+  // If this test will involve version negotiation then the version
+  // negotiation packet will be dropped, not the SREJ, and since the
+  // version negotiation packet will be retransmitted the test will
+  // succeed.
+  const bool will_succeed =
+      !BothSidesSupportStatelessRejects() ||
+      negotiated_version_ != client_supported_versions_.front();
+  ASSERT_EQ(will_succeed, Initialize());
 }
 
 TEST_P(EndToEndTest, SetInitialReceivedConnectionOptions) {
@@ -1654,19 +1660,11 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
   server_thread_->Resume();
 }
 
-// A TestAckNotifierDelegate verifies that its OnAckNotification method has been
+// A TestAckListener verifies that its OnAckNotification method has been
 // called exactly once on destruction.
-class TestAckNotifierDelegate : public QuicAckListenerInterface {
+class TestAckListener : public QuicAckListenerInterface {
  public:
-  explicit TestAckNotifierDelegate(int num_packets)
-      : num_notifications_(num_packets) {}
-
-  void OnAckNotification(int /*num_retransmitted_packets*/,
-                         int /*num_retransmitted_bytes*/,
-                         QuicTime::Delta /*delta_largest_observed*/) override {
-    ASSERT_LT(0, num_notifications_);
-    num_notifications_ = 0;
-  }
+  explicit TestAckListener(int num_packets) : num_notifications_(num_packets) {}
 
   void OnPacketAcked(int /*acked_bytes*/,
                      QuicTime::Delta /*delta_largest_observed*/) override {
@@ -1680,7 +1678,7 @@ class TestAckNotifierDelegate : public QuicAckListenerInterface {
 
  protected:
   // Object is ref counted.
-  ~TestAckNotifierDelegate() override { EXPECT_EQ(0, num_notifications_); }
+  ~TestAckListener() override { EXPECT_EQ(0, num_notifications_); }
 
  private:
   int num_notifications_;
@@ -1708,9 +1706,8 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   request.set_has_complete_message(false);
   client_->SendMessage(request);
 
-  // The TestAckNotifierDelegate will cause a failure if not notified.
-  scoped_refptr<TestAckNotifierDelegate> delegate(
-      new TestAckNotifierDelegate(2));
+  // The TestAckListener will cause a failure if not notified.
+  scoped_refptr<TestAckListener> delegate(new TestAckListener(2));
 
   // Test the AckNotifier's ability to track multiple packets by making the
   // request body exceed the size of a single packet.
@@ -1975,6 +1972,22 @@ class ServerStreamWithErrorResponseBody : public QuicSpdyServerStream {
   string response_body_;
 };
 
+class StreamWithErrorFactory : public QuicTestServer::StreamFactory {
+ public:
+  explicit StreamWithErrorFactory(string response_body)
+      : response_body_(response_body) {}
+
+  ~StreamWithErrorFactory() override {}
+
+  QuicSpdyServerStream* CreateStream(QuicStreamId id,
+                                     QuicSpdySession* session) override {
+    return new ServerStreamWithErrorResponseBody(id, session, response_body_);
+  }
+
+ private:
+  string response_body_;
+};
+
 TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   set_smaller_flow_control_receive_window();
 
@@ -1993,10 +2006,9 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   uint32 response_body_size =
       2 * client_config_.GetInitialStreamFlowControlWindowToSend();
   GenerateBody(&response_body, response_body_size);
-  SetSpdyStreamCreator([response_body](QuicStreamId id,
-                                       QuicSpdySession* session) {
-    return new ServerStreamWithErrorResponseBody(id, session, response_body);
-  });
+
+  StreamWithErrorFactory stream_factory(response_body);
+  SetSpdyStreamFactory(&stream_factory);
 
   ASSERT_TRUE(Initialize());
 

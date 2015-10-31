@@ -87,7 +87,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // we have seen ACKs for all packets resulting from this call.
   virtual QuicConsumedData WritevData(
       QuicStreamId id,
-      const QuicIOVector& iov,
+      QuicIOVector iov,
       QuicStreamOffset offset,
       bool fin,
       FecProtection fec_protection,
@@ -155,6 +155,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Returns the number of currently open streams, excluding the reserved
   // headers and crypto streams.
   virtual size_t GetNumOpenStreams() const;
+
+  // Same as GetNumOpenStreams(), but never counting unfinished streams.
+  virtual size_t GetNumActiveStreams() const;
 
   // Returns the number of "available" streams, the stream ids less than
   // largest_peer_created_stream_id_ that have not yet been opened.

@@ -313,7 +313,7 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   // When UpdateReceivedPacketInfo with a time earlier than the time of the
   // largest observed packet, make sure that the delta is 0, not negative.
   EXPECT_EQ(QuicTime::Delta::Zero(), ack.delta_time_largest_observed);
-  EXPECT_FALSE(ack.received_packet_times.empty());
+  EXPECT_EQ(1ul, ack.received_packet_times.size());
 
   QuicTime four_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(4));
   received_manager_.UpdateReceivedPacketInfo(&ack, four_ms);
@@ -321,6 +321,18 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   // the delta should still be accurate.
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(2),
             ack.delta_time_largest_observed);
+  EXPECT_EQ(0ul, ack.received_packet_times.size());
+
+  header.packet_number = 999u;
+  received_manager_.RecordPacketReceived(0u, header, two_ms);
+  header.packet_number = 4u;
+  received_manager_.RecordPacketReceived(0u, header, two_ms);
+  header.packet_number = 1000u;
+  received_manager_.RecordPacketReceived(0u, header, two_ms);
+  received_manager_.UpdateReceivedPacketInfo(&ack, two_ms);
+  // UpdateReceivedPacketInfo should discard any times which can't be
+  // expressed on the wire.
+  EXPECT_EQ(2ul, ack.received_packet_times.size());
 }
 
 TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedConnectionStats) {

@@ -4,7 +4,6 @@
 
 #include "net/quic/quic_spdy_stream.h"
 
-#include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"

@@ -57,9 +57,7 @@ class TcpCubicBytesSenderTest : public ::testing::Test {
         sender_(new TcpCubicBytesSenderPeer(&clock_, true)),
         packet_number_(1),
         acked_packet_number_(0),
-        bytes_in_flight_(0) {
-    standard_packet_.bytes_sent = kDefaultTCPMSS;
-  }
+        bytes_in_flight_(0) {}
 
   int SendAvailableSendWindow() {
     // Send as long as TimeUntilSend returns Zero.
@@ -86,7 +84,7 @@ class TcpCubicBytesSenderTest : public ::testing::Test {
     for (int i = 0; i < n; ++i) {
       ++acked_packet_number_;
       acked_packets.push_back(
-          std::make_pair(acked_packet_number_, standard_packet_));
+          std::make_pair(acked_packet_number_, kDefaultTCPMSS));
     }
     sender_->OnCongestionEvent(true, bytes_in_flight_, acked_packets,
                                lost_packets);
@@ -100,7 +98,7 @@ class TcpCubicBytesSenderTest : public ::testing::Test {
     for (int i = 0; i < n; ++i) {
       ++acked_packet_number_;
       lost_packets.push_back(
-          std::make_pair(acked_packet_number_, standard_packet_));
+          std::make_pair(acked_packet_number_, kDefaultTCPMSS));
     }
     sender_->OnCongestionEvent(false, bytes_in_flight_, acked_packets,
                                lost_packets);
@@ -111,7 +109,7 @@ class TcpCubicBytesSenderTest : public ::testing::Test {
   void LosePacket(QuicPacketNumber packet_number) {
     SendAlgorithmInterface::CongestionVector acked_packets;
     SendAlgorithmInterface::CongestionVector lost_packets;
-    lost_packets.push_back(std::make_pair(packet_number, standard_packet_));
+    lost_packets.push_back(std::make_pair(packet_number, kDefaultTCPMSS));
     sender_->OnCongestionEvent(false, bytes_in_flight_, acked_packets,
                                lost_packets);
     bytes_in_flight_ -= kDefaultTCPMSS;
@@ -123,7 +121,6 @@ class TcpCubicBytesSenderTest : public ::testing::Test {
   QuicPacketNumber packet_number_;
   QuicPacketNumber acked_packet_number_;
   QuicByteCount bytes_in_flight_;
-  TransmissionInfo standard_packet_;
 };
 
 TEST_F(TcpCubicBytesSenderTest, SimpleSender) {

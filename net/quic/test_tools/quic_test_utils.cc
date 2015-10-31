@@ -372,9 +372,9 @@ MockLossAlgorithm::MockLossAlgorithm() {}
 
 MockLossAlgorithm::~MockLossAlgorithm() {}
 
-MockAckNotifierDelegate::MockAckNotifierDelegate() {}
+MockAckListener::MockAckListener() {}
 
-MockAckNotifierDelegate::~MockAckNotifierDelegate() {}
+MockAckListener::~MockAckListener() {}
 
 MockNetworkChangeVisitor::MockNetworkChangeVisitor() {}
 

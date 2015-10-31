@@ -27,7 +27,7 @@ class RttStats;
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
   // A sorted vector of packets.
-  typedef std::vector<std::pair<QuicPacketNumber, TransmissionInfo>>
+  typedef std::vector<std::pair<QuicPacketNumber, QuicPacketLength>>
       CongestionVector;
 
   static SendAlgorithmInterface* Create(

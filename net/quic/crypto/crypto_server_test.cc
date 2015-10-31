@@ -60,9 +60,10 @@ struct TestParams {
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ use_early_return_when_verifying_chlo: "
-       << p.use_early_return_when_verifying_chlo << endl;
-    os << "  enable_stateless_rejects: " << p.enable_stateless_rejects << endl;
-    os << "  use_stateless_rejects: " << p.use_stateless_rejects << endl;
+       << p.use_early_return_when_verifying_chlo << std::endl;
+    os << "  enable_stateless_rejects: " << p.enable_stateless_rejects
+       << std::endl;
+    os << "  use_stateless_rejects: " << p.use_stateless_rejects << std::endl;
     os << "  versions: " << QuicVersionVectorToString(p.supported_versions)
        << " }";
     return os;
