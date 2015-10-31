@@ -246,7 +246,8 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
   }
 };
 
-TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
+// http://crbug.com/550013
+TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartFirstTime) {
   // We've never completed startup.
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
   CreateSyncService();
@@ -389,7 +390,8 @@ TEST_F(ProfileSyncServiceStartupCrosTest, MAYBE_StartCrosNoCredentials) {
   EXPECT_FALSE(sync_->IsSyncActive());
 }
 
-TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
+// http://crbug.com/550013
+TEST_F(ProfileSyncServiceStartupCrosTest, DISABLED_StartFirstTime) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
@@ -434,7 +436,8 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartNormal) {
 // Test that we can recover from a case where a bug in the code resulted in
 // OnUserChoseDatatypes not being properly called and datatype preferences
 // therefore being left unset.
-TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
+// http://crbug.com/550013
+TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
   profile_->GetPrefs()->ClearPref(
       sync_driver::prefs::kSyncKeepEverythingSynced);
@@ -520,7 +523,8 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_ManagedStartup) {
   sync_->Initialize();
 }
 
-TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
+// http://crbug.com/550013
+TEST_F(ProfileSyncServiceStartupTest, DISABLED_SwitchManaged) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
@@ -550,7 +554,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncManaged);
 }
 
-TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
+// http://crbug.com/550013
+TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartFailure) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
@@ -576,7 +581,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   EXPECT_TRUE(sync_->HasUnrecoverableError());
 }
 
-TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
+// http://crbug.com/550013
+TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartDownloadFailed) {
   // Pre load the tokens
   CreateSyncService();
   std::string account_id =
