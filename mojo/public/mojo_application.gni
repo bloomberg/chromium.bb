@@ -74,8 +74,13 @@ template("mojo_native_application") {
       }
 
       data_deps = []
+      if (!defined(invoker.avoid_runner_cycle) || !invoker.avoid_runner_cycle) {
+        # Give the user an out; as some mojo services are depended on by the
+        # runner.
+        data_deps += [ "//mojo/runner:mojo_runner" ]
+      }
       if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
+        data_deps += invoker.data_deps
       }
 
       # Copy any necessary prebuilt artifacts.

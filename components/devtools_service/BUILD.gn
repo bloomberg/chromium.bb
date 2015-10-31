@@ -41,6 +41,8 @@ mojo_native_application("devtools_service") {
     "main.cc",
   ]
 
+  avoid_runner_cycle = true
+
   deps = [
     ":lib",
     "//mojo/application/public/cpp",

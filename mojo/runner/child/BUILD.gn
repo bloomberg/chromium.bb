@@ -55,6 +55,7 @@ mojom("apptest_interfaces") {
 mojo_native_application("apptests") {
   output_name = "mojo_runner_child_apptest"
   testonly = true
+  avoid_runner_cycle = true
 
   sources = [
     "native_apptest.cc",

@@ -9,6 +9,8 @@ mojo_native_application("tracing") {
     "main.cc",
   ]
 
+  avoid_runner_cycle = true
+
   deps = [
     ":lib",
     "//mojo/application/public/cpp",
