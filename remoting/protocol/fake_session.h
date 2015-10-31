@@ -19,12 +19,12 @@ namespace protocol {
 
 extern const char kTestJid[];
 
-class FakeTransportSession : public TransportSession {
+class FakeTransport : public Transport {
  public:
-  FakeTransportSession();
-  ~FakeTransportSession() override;
+  FakeTransport();
+  ~FakeTransport() override;
 
-  // TransportSession interface.
+  // Transport interface.
   void Start(EventHandler* event_handler,
              Authenticator* authenticator) override;
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
@@ -54,7 +54,7 @@ class FakeSession : public Session {
   ErrorCode error() override;
   const std::string& jid() override;
   const SessionConfig& config() override;
-  FakeTransportSession* GetTransportSession() override;
+  FakeTransport* GetTransport() override;
   FakeStreamChannelFactory* GetQuicChannelFactory() override;
   void Close() override;
 
@@ -64,7 +64,7 @@ class FakeSession : public Session {
 
   std::string jid_;
 
-  FakeTransportSession transport_session_;
+  FakeTransport transport_;
 
   ErrorCode error_;
   bool closed_;

@@ -66,7 +66,7 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 
 JingleSession::~JingleSession() {
   quic_channel_factory_.reset();
-  transport_session_.reset();
+  transport_.reset();
 
   STLDeleteContainerPointers(pending_requests_.begin(),
                              pending_requests_.end());
@@ -102,8 +102,7 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   // clients generate the same session ID concurrently.
   session_id_ = base::Uint64ToString(base::RandGenerator(kuint64max));
 
-  transport_session_ =
-      session_manager_->transport_factory_->CreateTransportSession();
+  transport_ = session_manager_->transport_factory_->CreateTransport();
   quic_channel_factory_.reset(new QuicChannelFactory(session_id_, false));
 
   // Send session-initiate message.
@@ -151,8 +150,7 @@ void JingleSession::InitializeIncomingConnection(
     }
   }
 
-  transport_session_ =
-      session_manager_->transport_factory_->CreateTransportSession();
+  transport_ = session_manager_->transport_factory_->CreateTransport();
 }
 
 void JingleSession::AcceptIncomingConnection(
@@ -222,9 +220,9 @@ const SessionConfig& JingleSession::config() {
   return *config_;
 }
 
-TransportSession* JingleSession::GetTransportSession() {
+Transport* JingleSession::GetTransport() {
   DCHECK(CalledOnValidThread());
-  return transport_session_.get();
+  return transport_.get();
 }
 
 StreamChannelFactory* JingleSession::GetQuicChannelFactory() {
@@ -368,8 +366,7 @@ void JingleSession::OnIncomingMessage(const JingleMessage& message,
       break;
 
     case JingleMessage::TRANSPORT_INFO:
-      if (transport_session_->ProcessTransportInfo(
-              message.transport_info.get())) {
+      if (transport_->ProcessTransportInfo(message.transport_info.get())) {
         reply_callback.Run(JingleMessageReply::NONE);
       } else {
         reply_callback.Run(JingleMessageReply::BAD_REQUEST);
@@ -547,12 +544,11 @@ void JingleSession::ContinueAuthenticationStep() {
 }
 
 void JingleSession::OnAuthenticated() {
-  transport_session_->Start(this, authenticator_.get());
+  transport_->Start(this, authenticator_.get());
 
   if (quic_channel_factory_) {
-    quic_channel_factory_->Start(
-        transport_session_->GetDatagramChannelFactory(),
-        authenticator_->GetAuthKey());
+    quic_channel_factory_->Start(transport_->GetDatagramChannelFactory(),
+                                 authenticator_->GetAuthKey());
   }
 
   SetState(AUTHENTICATED);

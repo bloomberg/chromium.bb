@@ -14,7 +14,7 @@ namespace remoting {
 namespace protocol {
 
 class StreamChannelFactory;
-class TransportSession;
+class Transport;
 struct TransportRoute;
 
 // Generic interface for Chromotocol connection used by both client and host.
@@ -82,8 +82,8 @@ class Session {
   // Returned pointer is valid until connection is closed.
   virtual const SessionConfig& config() = 0;
 
-  // Returns TransportSession that can be used to create transport channels.
-  virtual TransportSession* GetTransportSession() = 0;
+  // Returns Transport that can be used to create transport channels.
+  virtual Transport* GetTransport() = 0;
 
   // Channel factory for QUIC-based channels. Returns nullptr when QUIC is
   // disabled for the session.

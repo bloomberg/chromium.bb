@@ -21,8 +21,8 @@ namespace remoting {
 namespace protocol {
 
 // TransportChannelSocketAdapter implements P2PDatagramSocket interface on
-// top of libjingle's TransportChannel. It is used by IceTransportSession
-// to provide P2PDatagramSocket interface for channels.
+// top of libjingle's TransportChannel. It is used by IceTransport to provide
+// P2PDatagramSocket interface for channels.
 class TransportChannelSocketAdapter : public P2PDatagramSocket,
                                       public sigslot::has_slots<> {
  public:

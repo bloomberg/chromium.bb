@@ -33,7 +33,7 @@ class QuicChannelFactory;
 // created by the JingleSessionManager.
 class JingleSession : public base::NonThreadSafe,
                       public Session,
-                      public TransportSession::EventHandler {
+                      public Transport::EventHandler {
  public:
   ~JingleSession() override;
 
@@ -42,7 +42,7 @@ class JingleSession : public base::NonThreadSafe,
   ErrorCode error() override;
   const std::string& jid() override;
   const SessionConfig& config() override;
-  TransportSession* GetTransportSession() override;
+  Transport* GetTransport() override;
   StreamChannelFactory* GetQuicChannelFactory() override;
   void Close() override;
 
@@ -72,7 +72,7 @@ class JingleSession : public base::NonThreadSafe,
                          IqRequest* request,
                          const buzz::XmlElement* response);
 
-  // TransportSession::Delegate interface.
+  // Transport::EventHandler interface.
   void OnOutgoingTransportInfo(
     scoped_ptr<buzz::XmlElement> transport_info) override;
   void OnTransportRouteChange(const std::string& component,
@@ -136,7 +136,7 @@ class JingleSession : public base::NonThreadSafe,
 
   scoped_ptr<Authenticator> authenticator_;
 
-  scoped_ptr<TransportSession> transport_session_;
+  scoped_ptr<Transport> transport_;
 
   // Pending Iq requests. Used for all messages except transport-info.
   std::set<IqRequest*> pending_requests_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_ICE_TRANSPORT_SESSION_H_
-#define REMOTING_PROTOCOL_ICE_TRANSPORT_SESSION_H_
+#ifndef REMOTING_PROTOCOL_ICE_TRANSPORT_H_
+#define REMOTING_PROTOCOL_ICE_TRANSPORT_H_
 
 #include <list>
 #include <map>
@@ -23,22 +23,22 @@ class ChannelMultiplexer;
 class PseudoTcpChannelFactory;
 class SecureChannelFactory;
 
-class IceTransportSession : public TransportSession,
-                            public IceTransportChannel::Delegate,
-                            public DatagramChannelFactory {
+class IceTransport : public Transport,
+                     public IceTransportChannel::Delegate,
+                     public DatagramChannelFactory {
  public:
   // |port_allocator| must outlive the session.
-  IceTransportSession(cricket::PortAllocator* port_allocator,
-                      const NetworkSettings& network_settings,
-                      TransportRole role);
-  ~IceTransportSession() override;
+  IceTransport(cricket::PortAllocator* port_allocator,
+               const NetworkSettings& network_settings,
+               TransportRole role);
+  ~IceTransport() override;
 
   // Returns a closure that must be called before transport channels start
   // connecting .
   base::Closure GetCanStartClosure();
 
-  // TransportSession interface.
-  void Start(TransportSession::EventHandler* event_handler,
+  // Transport interface.
+  void Start(EventHandler* event_handler,
              Authenticator* authenticator) override;
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
   DatagramChannelFactory* GetDatagramChannelFactory() override;
@@ -83,7 +83,7 @@ class IceTransportSession : public TransportSession,
 
   bool can_start_ = false;
 
-  TransportSession::EventHandler* event_handler_ = nullptr;
+  Transport::EventHandler* event_handler_ = nullptr;
 
   ChannelsMap channels_;
   scoped_ptr<PseudoTcpChannelFactory> pseudotcp_channel_factory_;
@@ -98,13 +98,13 @@ class IceTransportSession : public TransportSession,
   scoped_ptr<IceTransportInfo> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
 
-  base::WeakPtrFactory<IceTransportSession> weak_factory_;
+  base::WeakPtrFactory<IceTransport> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(IceTransportSession);
+  DISALLOW_COPY_AND_ASSIGN(IceTransport);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_ICE_TRANSPORT_SESSION_H_
+#endif  // REMOTING_PROTOCOL_ICE_TRANSPORT_H_
 

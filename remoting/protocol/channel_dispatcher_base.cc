@@ -32,7 +32,7 @@ void ChannelDispatcherBase::Init(Session* session,
   switch (config.transport) {
     case ChannelConfig::TRANSPORT_MUX_STREAM:
       channel_factory_ =
-          session->GetTransportSession()->GetMultiplexedChannelFactory();
+          session->GetTransport()->GetMultiplexedChannelFactory();
       break;
 
     case ChannelConfig::TRANSPORT_QUIC_STREAM:
@@ -40,8 +40,7 @@ void ChannelDispatcherBase::Init(Session* session,
       break;
 
     case ChannelConfig::TRANSPORT_STREAM:
-      channel_factory_ =
-          session->GetTransportSession()->GetStreamChannelFactory();
+      channel_factory_ = session->GetTransport()->GetStreamChannelFactory();
       break;
 
     default:

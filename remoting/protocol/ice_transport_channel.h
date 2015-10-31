@@ -64,7 +64,7 @@ class IceTransportChannel : public sigslot::has_slots<> {
                       TransportRole role);
   ~IceTransportChannel() override;
 
-  // Called by IceTransportSession when it has fresh Jingle info.
+  // Called by IceTransport when it has fresh Jingle info.
   void OnCanStart();
 
   // Connects the channel and calls the |callback| after that.

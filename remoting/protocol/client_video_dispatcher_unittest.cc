@@ -73,7 +73,7 @@ ClientVideoDispatcherTest::ClientVideoDispatcherTest()
   base::RunLoop().RunUntilIdle();
   DCHECK(initialized_);
   host_socket_.PairWith(
-      session_.GetTransportSession()->GetStreamChannelFactory()->GetFakeChannel(
+      session_.GetTransport()->GetStreamChannelFactory()->GetFakeChannel(
           kVideoChannelName));
   reader_.StartReading(&host_socket_,
                        base::Bind(&ClientVideoDispatcherTest::OnReadError,

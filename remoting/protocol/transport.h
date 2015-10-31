@@ -53,9 +53,9 @@ struct TransportRoute {
   net::IPEndPoint local_address;
 };
 
-// TransportSession represents a P2P connection that consists of one or more
+// Transport represents a P2P connection that consists of one or more
 // channels.
-class TransportSession {
+class Transport {
  public:
   class EventHandler {
    public:
@@ -71,10 +71,10 @@ class TransportSession {
     virtual void OnTransportError(ErrorCode error) = 0;
   };
 
-  TransportSession() {}
-  virtual ~TransportSession() {}
+  Transport() {}
+  virtual ~Transport() {}
 
-  // Starts transport session. Both parameters must outlive TransportSession.
+  // Starts transport session. Both parameters must outlive Transport.
   virtual void Start(EventHandler* event_handler,
                      Authenticator* authenticator) = 0;
 
@@ -93,7 +93,7 @@ class TransportSession {
   virtual StreamChannelFactory* GetMultiplexedChannelFactory() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TransportSession);
+  DISALLOW_COPY_AND_ASSIGN(Transport);
 };
 
 class TransportFactory {
@@ -101,8 +101,8 @@ class TransportFactory {
   TransportFactory() { }
   virtual ~TransportFactory() { }
 
-  // Creates a new TransportSession. The factory must outlive the session.
-  virtual scoped_ptr<TransportSession> CreateTransportSession() = 0;
+  // Creates a new Transport. The factory must outlive the session.
+  virtual scoped_ptr<Transport> CreateTransport() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportFactory);

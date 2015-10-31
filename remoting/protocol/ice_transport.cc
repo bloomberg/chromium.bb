@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/ice_transport_session.h"
+#include "remoting/protocol/ice_transport.h"
 
 #include "base/bind.h"
 #include "remoting/protocol/channel_authenticator.h"
@@ -22,27 +22,26 @@ const int kTransportInfoSendDelayMs = 20;
 // Name of the multiplexed channel.
 static const char kMuxChannelName[] = "mux";
 
-IceTransportSession::IceTransportSession(
-    cricket::PortAllocator* port_allocator,
-    const NetworkSettings& network_settings,
-    TransportRole role)
+IceTransport::IceTransport(cricket::PortAllocator* port_allocator,
+                           const NetworkSettings& network_settings,
+                           TransportRole role)
     : port_allocator_(port_allocator),
       network_settings_(network_settings),
       role_(role),
       weak_factory_(this) {}
 
-IceTransportSession::~IceTransportSession() {
+IceTransport::~IceTransport() {
   channel_multiplexer_.reset();
   DCHECK(channels_.empty());
 }
 
-base::Closure IceTransportSession::GetCanStartClosure() {
-  return base::Bind(&IceTransportSession::OnCanStart,
+base::Closure IceTransport::GetCanStartClosure() {
+  return base::Bind(&IceTransport::OnCanStart,
                     weak_factory_.GetWeakPtr());
 }
 
-void IceTransportSession::Start(TransportSession::EventHandler* event_handler,
-                                Authenticator* authenticator) {
+void IceTransport::Start(Transport::EventHandler* event_handler,
+                         Authenticator* authenticator) {
   DCHECK(event_handler);
   DCHECK(!event_handler_);
 
@@ -52,8 +51,7 @@ void IceTransportSession::Start(TransportSession::EventHandler* event_handler,
       pseudotcp_channel_factory_.get(), authenticator));
 }
 
-bool IceTransportSession::ProcessTransportInfo(
-    buzz::XmlElement* transport_info_xml) {
+bool IceTransport::ProcessTransportInfo(buzz::XmlElement* transport_info_xml) {
   IceTransportInfo transport_info;
   if (!transport_info.ParseXml(transport_info_xml))
     return false;
@@ -85,15 +83,15 @@ bool IceTransportSession::ProcessTransportInfo(
   return true;
 }
 
-DatagramChannelFactory* IceTransportSession::GetDatagramChannelFactory() {
+DatagramChannelFactory* IceTransport::GetDatagramChannelFactory() {
   return this;
 }
 
-StreamChannelFactory* IceTransportSession::GetStreamChannelFactory() {
+StreamChannelFactory* IceTransport::GetStreamChannelFactory() {
   return secure_channel_factory_.get();
 }
 
-StreamChannelFactory* IceTransportSession::GetMultiplexedChannelFactory() {
+StreamChannelFactory* IceTransport::GetMultiplexedChannelFactory() {
   if (!channel_multiplexer_.get()) {
     channel_multiplexer_.reset(
         new ChannelMultiplexer(GetStreamChannelFactory(), kMuxChannelName));
@@ -101,7 +99,7 @@ StreamChannelFactory* IceTransportSession::GetMultiplexedChannelFactory() {
   return channel_multiplexer_.get();
 }
 
-void IceTransportSession::OnCanStart() {
+void IceTransport::OnCanStart() {
   DCHECK(!can_start_);
 
   can_start_ = true;
@@ -111,9 +109,8 @@ void IceTransportSession::OnCanStart() {
   }
 }
 
-void IceTransportSession::CreateChannel(
-    const std::string& name,
-    const ChannelCreatedCallback& callback) {
+void IceTransport::CreateChannel(const std::string& name,
+                                 const ChannelCreatedCallback& callback) {
   DCHECK(!channels_[name]);
 
   scoped_ptr<IceTransportChannel> channel(
@@ -125,7 +122,7 @@ void IceTransportSession::CreateChannel(
   channels_[name] = channel.release();
 }
 
-void IceTransportSession::CancelChannelCreation(const std::string& name) {
+void IceTransport::CancelChannelCreation(const std::string& name) {
   ChannelsMap::iterator it = channels_.find(name);
   if (it != channels_.end()) {
     DCHECK(!it->second->is_connected());
@@ -134,8 +131,7 @@ void IceTransportSession::CancelChannelCreation(const std::string& name) {
   }
 }
 
-void IceTransportSession::AddPendingRemoteTransportInfo(
-    IceTransportChannel* channel) {
+void IceTransport::AddPendingRemoteTransportInfo(IceTransportChannel* channel) {
   std::list<IceTransportInfo::IceCredentials>::iterator credentials =
       pending_remote_ice_credentials_.begin();
   while (credentials != pending_remote_ice_credentials_.end()) {
@@ -159,40 +155,38 @@ void IceTransportSession::AddPendingRemoteTransportInfo(
   }
 }
 
-void IceTransportSession::OnTransportIceCredentials(
-    IceTransportChannel* channel,
-    const std::string& ufrag,
-    const std::string& password) {
+void IceTransport::OnTransportIceCredentials(IceTransportChannel* channel,
+                                             const std::string& ufrag,
+                                             const std::string& password) {
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->ice_credentials.push_back(
       IceTransportInfo::IceCredentials(channel->name(), ufrag, password));
 }
 
-void IceTransportSession::OnTransportCandidate(
-    IceTransportChannel* channel,
-    const cricket::Candidate& candidate) {
+void IceTransport::OnTransportCandidate(IceTransportChannel* channel,
+                                        const cricket::Candidate& candidate) {
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->candidates.push_back(
       IceTransportInfo::NamedCandidate(channel->name(), candidate));
 }
 
-void IceTransportSession::OnTransportRouteChange(IceTransportChannel* channel,
-                                                 const TransportRoute& route) {
+void IceTransport::OnTransportRouteChange(IceTransportChannel* channel,
+                                          const TransportRoute& route) {
   if (event_handler_)
     event_handler_->OnTransportRouteChange(channel->name(), route);
 }
 
-void IceTransportSession::OnTransportFailed(IceTransportChannel* channel) {
+void IceTransport::OnTransportFailed(IceTransportChannel* channel) {
   event_handler_->OnTransportError(CHANNEL_CONNECTION_ERROR);
 }
 
-void IceTransportSession::OnTransportDeleted(IceTransportChannel* channel) {
+void IceTransport::OnTransportDeleted(IceTransportChannel* channel) {
   ChannelsMap::iterator it = channels_.find(channel->name());
   DCHECK_EQ(it->second, channel);
   channels_.erase(it);
 }
 
-void IceTransportSession::EnsurePendingTransportInfoMessage() {
+void IceTransport::EnsurePendingTransportInfoMessage() {
   // |transport_info_timer_| must be running iff
   // |pending_transport_info_message_| exists.
   DCHECK_EQ(pending_transport_info_message_ != nullptr,
@@ -204,11 +198,11 @@ void IceTransportSession::EnsurePendingTransportInfoMessage() {
     // that we can send in one message.
     transport_info_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
-        this, &IceTransportSession::SendTransportInfo);
+        this, &IceTransport::SendTransportInfo);
   }
 }
 
-void IceTransportSession::SendTransportInfo() {
+void IceTransport::SendTransportInfo() {
   DCHECK(pending_transport_info_message_);
   event_handler_->OnOutgoingTransportInfo(
       pending_transport_info_message_->ToXml());

@@ -32,7 +32,7 @@ class IceTransportFactory : public TransportFactory {
   ~IceTransportFactory() override;
 
   // TransportFactory interface.
-  scoped_ptr<TransportSession> CreateTransportSession() override;
+  scoped_ptr<Transport> CreateTransport() override;
 
  private:
   void EnsureFreshJingleInfo();

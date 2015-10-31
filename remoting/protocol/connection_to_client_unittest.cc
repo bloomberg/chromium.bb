@@ -74,9 +74,9 @@ TEST_F(ConnectionToClientTest, SendUpdateStream) {
 
   // Verify that something has been written.
   // TODO(sergeyu): Verify that the correct data has been written.
-  FakeStreamSocket* channel = session_->GetTransportSession()
-                                  ->GetStreamChannelFactory()
-                                  ->GetFakeChannel(kVideoChannelName);
+  FakeStreamSocket* channel =
+      session_->GetTransport()->GetStreamChannelFactory()->GetFakeChannel(
+          kVideoChannelName);
   ASSERT_TRUE(channel);
   EXPECT_FALSE(channel->written_data().empty());
 

@@ -6,7 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "remoting/protocol/ice_transport_session.h"
+#include "remoting/protocol/ice_transport.h"
 #include "third_party/webrtc/p2p/client/httpportallocator.h"
 
 namespace remoting {
@@ -33,10 +33,9 @@ IceTransportFactory::~IceTransportFactory() {
   task_runner->DeleteSoon(FROM_HERE, port_allocator_.release());
 }
 
-scoped_ptr<TransportSession>
-IceTransportFactory::CreateTransportSession() {
-  scoped_ptr<IceTransportSession> result(
-      new IceTransportSession(port_allocator_.get(), network_settings_, role_));
+scoped_ptr<Transport> IceTransportFactory::CreateTransport() {
+  scoped_ptr<IceTransport> result(
+      new IceTransport(port_allocator_.get(), network_settings_, role_));
 
   EnsureFreshJingleInfo();
 
