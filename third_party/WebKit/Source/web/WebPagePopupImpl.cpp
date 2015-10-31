@@ -345,7 +345,7 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter)
         if (m_layerTreeView) {
             m_layerTreeView->setVisible(true);
             m_isAcceleratedCompositingActive = true;
-            m_layerTreeView->setDeviceScaleFactor(m_widgetClient->deviceScaleFactor());
+            m_layerTreeView->setDeviceScaleFactor(m_webView->deviceScaleFactor());
         } else {
             m_isAcceleratedCompositingActive = false;
         }

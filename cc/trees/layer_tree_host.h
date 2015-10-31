@@ -238,6 +238,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetImplTransform(const gfx::Transform& transform);
 
   void SetDeviceScaleFactor(float device_scale_factor);
+  void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
+
   float device_scale_factor() const { return device_scale_factor_; }
 
   void UpdateTopControlsState(TopControlsState constraints,
@@ -444,6 +446,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float top_controls_height_;
   float top_controls_shown_ratio_;
   float device_scale_factor_;
+  float painted_device_scale_factor_;
 
   bool visible_;
 

@@ -605,12 +605,6 @@ void RenderWidgetCompositor::detachCompositorAnimationTimeline(
 }
 
 void RenderWidgetCompositor::setViewportSize(
-    const WebSize&,
-    const WebSize& device_viewport_size) {
-  layer_tree_host_->SetViewportSize(device_viewport_size);
-}
-
-void RenderWidgetCompositor::setViewportSize(
     const WebSize& device_viewport_size) {
   layer_tree_host_->SetViewportSize(device_viewport_size);
 }
@@ -1084,6 +1078,11 @@ cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 #endif
   return actual;
+}
+
+void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(
+    float device_scale) {
+  layer_tree_host_->SetPaintedDeviceScaleFactor(device_scale);
 }
 
 }  // namespace content

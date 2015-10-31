@@ -188,7 +188,6 @@ class CONTENT_EXPORT RenderWidget
   blink::WebRect windowResizerRect() override;
   blink::WebRect rootWindowRect() override;
   blink::WebScreenInfo screenInfo() override;
-  float deviceScaleFactor() override;
   void resetInputMethod() override;
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;

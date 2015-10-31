@@ -38,6 +38,7 @@
 #include "content/child/v8_value_converter_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/database_messages.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
@@ -745,8 +746,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // completing initialization.  Otherwise, we can finish it now.
   if (opener_id_ == MSG_ROUTING_NONE)
     did_show_ = true;
-
-  webview()->setDeviceScaleFactor(device_scale_factor_);
+  UpdateDeviceScaleFactor();
   webview()->setDisplayMode(display_mode_);
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
@@ -3195,7 +3195,7 @@ void RenderViewImpl::OnImeConfirmComposition(
 void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   RenderWidget::SetDeviceScaleFactor(device_scale_factor);
   if (webview()) {
-    webview()->setDeviceScaleFactor(device_scale_factor);
+    UpdateDeviceScaleFactor();
     webview()->settings()->setPreferCompositingToLCDTextEnabled(
         PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
   }
@@ -3701,6 +3701,16 @@ void RenderViewImpl::DidStopLoadingIcons() {
           FaviconURL(url, ToFaviconType(icon_urls[i].iconType()), sizes));
   }
   SendUpdateFaviconURL(urls);
+}
+
+void RenderViewImpl::UpdateDeviceScaleFactor() {
+  if (IsUseZoomForDSFEnabled()) {
+    compositor_->SetPaintedDeviceScaleFactor(device_scale_factor_);
+    webview()->setZoomFactorForDeviceScaleFactor(
+        device_scale_factor_);
+  } else {
+    webview()->setDeviceScaleFactor(device_scale_factor_);
+  }
 }
 
 }  // namespace content

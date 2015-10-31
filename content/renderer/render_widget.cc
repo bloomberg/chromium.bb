@@ -25,6 +25,7 @@
 #include "components/scheduler/renderer/render_widget_scheduling_state.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/npapi/webplugin.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
@@ -792,11 +793,15 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   if (!webwidget_)
     return;
 
-  if (compositor_) {
-    compositor_->setViewportSize(new_size, physical_backing_size);
-  }
+  if (compositor_)
+    compositor_->setViewportSize(physical_backing_size);
 
+  bool resized = size_ != new_size ||
+      physical_backing_size_ != physical_backing_size;
+
+  size_ = new_size;
   physical_backing_size_ = physical_backing_size;
+
   top_controls_shrink_blink_size_ = top_controls_shrink_blink_size;
   top_controls_height_ = top_controls_height;
   visible_viewport_size_ = visible_viewport_size;
@@ -810,18 +815,25 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   webwidget_->setTopControlsHeight(top_controls_height,
                                    top_controls_shrink_blink_size_);
 
-  if (size_ != new_size) {
-    size_ = new_size;
-
+  if (resized) {
+    gfx::Size new_widget_size =
+        IsUseZoomForDSFEnabled() ?  physical_backing_size_ : size_;
     // When resizing, we want to wait to paint before ACK'ing the resize.  This
     // ensures that we only resize as fast as we can paint.  We only need to
     // send an ACK if we are resized to a non-empty rect.
-    webwidget_->resize(new_size);
+    webwidget_->resize(new_widget_size);
+  }
+  WebSize pinch_viewport_size;
+
+  if (IsUseZoomForDSFEnabled()) {
+    gfx::SizeF scaled_visible_viewport_size =
+        gfx::ScaleSize(gfx::SizeF(visible_viewport_size), device_scale_factor_);
+    pinch_viewport_size = gfx::ToCeiledSize(scaled_visible_viewport_size);
+  } else {
+    pinch_viewport_size = visible_viewport_size_;
   }
 
-  webwidget()->resizePinchViewport(gfx::Size(
-      visible_viewport_size.width(),
-      visible_viewport_size.height()));
+  webwidget()->resizePinchViewport(pinch_viewport_size);
 
   if (new_size.IsEmpty() || physical_backing_size.IsEmpty()) {
     // In this case there is no paint/composite and therefore no
@@ -1320,6 +1332,7 @@ void RenderWidget::FlushPendingInputEventAck() {
 // WebWidgetClient
 
 void RenderWidget::didAutoResize(const WebSize& new_size) {
+  // TODO(oshima): support UseZoomForDSFEnabled()
   if (size_.width() != new_size.width || size_.height() != new_size.height) {
     size_ = new_size;
 
@@ -1342,14 +1355,14 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
 void RenderWidget::AutoResizeCompositor()  {
   physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
   if (compositor_)
-    compositor_->setViewportSize(size_, physical_backing_size_);
+    compositor_->setViewportSize(physical_backing_size_);
 }
 
 void RenderWidget::initializeLayerTreeView() {
   DCHECK(!host_closing_);
 
   compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
-  compositor_->setViewportSize(size_, physical_backing_size_);
+  compositor_->setViewportSize(physical_backing_size_);
 
   // For background pages and certain tests, we don't want to trigger
   // OutputSurface creation.
@@ -1607,6 +1620,7 @@ void RenderWidget::setToolTipText(const blink::WebString& text,
 }
 
 void RenderWidget::setWindowRect(const WebRect& rect) {
+  // TODO(oshima): Scale back to DIP coordinates.
   WebRect window_rect = rect;
   if (popup_origin_scale_for_emulation_) {
     float scale = popup_origin_scale_for_emulation_;
@@ -1977,8 +1991,16 @@ void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
   WebRect focus_webrect;
   WebRect anchor_webrect;
   webwidget_->selectionBounds(focus_webrect, anchor_webrect);
-  *focus = focus_webrect;
-  *anchor = anchor_webrect;
+  if (IsUseZoomForDSFEnabled()) {
+    float inverse_scale = 1.f / device_scale_factor_;
+    gfx::RectF focus_rect(focus_webrect);
+    *focus = gfx::ToEnclosingRect(gfx::ScaleRect(focus_rect, inverse_scale));
+    gfx::RectF anchor_rect(anchor_webrect);
+    *anchor = gfx::ToEnclosingRect(gfx::ScaleRect(anchor_rect, inverse_scale));
+  } else {
+    *focus = focus_webrect;
+    *anchor = anchor_webrect;
+  }
 }
 
 void RenderWidget::UpdateSelectionBounds() {
@@ -2124,10 +2146,6 @@ bool RenderWidget::CanComposeInline() {
 
 WebScreenInfo RenderWidget::screenInfo() {
   return screen_info_;
-}
-
-float RenderWidget::deviceScaleFactor() {
-  return device_scale_factor_;
 }
 
 void RenderWidget::resetInputMethod() {

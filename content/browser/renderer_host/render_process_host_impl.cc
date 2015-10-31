@@ -1358,6 +1358,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableThreadedCompositing,
     switches::kEnableTouchDragDrop,
     switches::kEnableUnsafeES3APIs,
+    switches::kEnableUseZoomForDSF,
     switches::kEnableViewport,
     switches::kEnableVtune,
     switches::kEnableWebBluetooth,

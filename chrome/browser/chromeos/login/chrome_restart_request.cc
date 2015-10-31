@@ -114,6 +114,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableRGBA4444Textures,
     ::switches::kEnableSlimmingPaintV2,
     ::switches::kEnableTouchDragDrop,
+    ::switches::kEnableUseZoomForDSF,
     ::switches::kEnableViewport,
     ::switches::kEnableZeroCopy,
 #if defined(USE_OZONE)

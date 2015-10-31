@@ -6381,5 +6381,28 @@ class LayerTreeHostTestDestroyWhileInitializingOutputSurface
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDestroyWhileInitializingOutputSurface);
 
+// Makes sure that painted_device_scale_factor is propagated to the
+// frame's metadata.
+class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override {
+    layer_tree_host()->SetPaintedDeviceScaleFactor(2.0f);
+    EXPECT_EQ(1.0f, layer_tree_host()->device_scale_factor());
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+    EXPECT_EQ(2.0f,
+              output_surface()->last_sent_frame().metadata.device_scale_factor);
+    EXPECT_EQ(2.0f, host_impl->active_tree()->painted_device_scale_factor());
+    EXPECT_EQ(1.0f, host_impl->active_tree()->device_scale_factor());
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
+
 }  // namespace
 }  // namespace cc

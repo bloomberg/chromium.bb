@@ -198,6 +198,13 @@ class CC_EXPORT LayerTreeImpl {
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
+  void set_painted_device_scale_factor(float painted_device_scale_factor) {
+    painted_device_scale_factor_ = painted_device_scale_factor;
+  }
+  float painted_device_scale_factor() const {
+    return painted_device_scale_factor_;
+  }
+
   SyncedElasticOverscroll* elastic_overscroll() {
     return elastic_overscroll_.get();
   }
@@ -437,6 +444,7 @@ class CC_EXPORT LayerTreeImpl {
   float max_page_scale_factor_;
 
   float device_scale_factor_;
+  float painted_device_scale_factor_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 

@@ -99,6 +99,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
       top_controls_height_(0.f),
       top_controls_shown_ratio_(0.f),
       device_scale_factor_(1.f),
+      painted_device_scale_factor_(1.f),
       visible_(false),
       page_scale_factor_(1.f),
       min_page_scale_factor_(1.f),
@@ -311,6 +312,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   // properties are set, since those trigger an update of GPU rasterization
   // status, which depends on the device scale factor. (crbug.com/535700)
   sync_tree->SetDeviceScaleFactor(device_scale_factor_);
+  sync_tree->set_painted_device_scale_factor(painted_device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
   if (pending_page_scale_animation_) {
     sync_tree->SetPendingPageScaleAnimation(
@@ -877,6 +879,15 @@ void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
   device_scale_factor_ = device_scale_factor;
 
   property_trees_.needs_rebuild = true;
+  SetNeedsCommit();
+}
+
+void LayerTreeHost::SetPaintedDeviceScaleFactor(
+    float painted_device_scale_factor) {
+  if (painted_device_scale_factor == painted_device_scale_factor_)
+    return;
+  painted_device_scale_factor_ = painted_device_scale_factor;
+
   SetNeedsCommit();
 }
 

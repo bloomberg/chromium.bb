@@ -762,6 +762,8 @@ class CONTENT_EXPORT RenderViewImpl
   void UpdateThemePrefs() {}
 #endif
 
+  void UpdateDeviceScaleFactor();
+
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.

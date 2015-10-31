@@ -411,6 +411,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_zoomLevel(0)
     , m_minimumZoomLevel(zoomFactorToZoomLevel(minTextSizeMultiplier))
     , m_maximumZoomLevel(zoomFactorToZoomLevel(maxTextSizeMultiplier))
+    , m_zoomFactorForDeviceScaleFactor(1.f)
     , m_maximumLegibleScale(1)
     , m_doubleTapZoomPageScaleFactor(0)
     , m_doubleTapZoomPending(false)
@@ -2957,6 +2958,7 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
     LocalFrame* frame = mainFrameImpl()->frame();
     if (!WebLocalFrameImpl::pluginContainerFromFrame(frame)) {
         float zoomFactor = m_zoomFactorOverride ? m_zoomFactorOverride : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
+        zoomFactor *= m_zoomFactorForDeviceScaleFactor;
         frame->setPageZoomFactor(zoomFactor);
     }
 
@@ -3100,6 +3102,14 @@ void WebViewImpl::setDeviceScaleFactor(float scaleFactor)
 
     if (m_layerTreeView)
         updateLayerTreeDeviceScaleFactor();
+}
+
+void WebViewImpl::setZoomFactorForDeviceScaleFactor(float zoomFactorForDeviceScaleFactor)
+{
+    m_zoomFactorForDeviceScaleFactor = zoomFactorForDeviceScaleFactor;
+    if (!m_layerTreeView)
+        return;
+    setZoomLevel(m_zoomLevel);
 }
 
 void WebViewImpl::setDeviceColorProfile(const WebVector<char>& colorProfile)

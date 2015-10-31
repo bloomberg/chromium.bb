@@ -210,6 +210,8 @@ public:
 
     float deviceScaleFactor() const override;
     void setDeviceScaleFactor(float) override;
+    void setZoomFactorForDeviceScaleFactor(float) override;
+
     void setDeviceColorProfile(const WebVector<char>&) override;
     void resetDeviceColorProfile() override;
 
@@ -651,6 +653,9 @@ private:
     double m_minimumZoomLevel;
 
     double m_maximumZoomLevel;
+
+    // Additional zoom factor used to scale the content by device scale factor.
+    double m_zoomFactorForDeviceScaleFactor;
 
     // This value, when multiplied by the font scale factor, gives the maximum
     // page scale that can result from automatic zooms.

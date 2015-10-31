@@ -81,6 +81,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetSurfaceIdNamespace(uint32_t surface_id_namespace);
   cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
       const cc::ManagedMemoryPolicy& policy);
+  void SetPaintedDeviceScaleFactor(float device_scale);
 
   // WebLayerTreeView implementation.
   void setRootLayer(const blink::WebLayer& layer) override;
@@ -89,9 +90,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
       blink::WebCompositorAnimationTimeline* compositor_timeline) override;
   void detachCompositorAnimationTimeline(
       blink::WebCompositorAnimationTimeline* compositor_timeline) override;
-  virtual void setViewportSize(
-      const blink::WebSize& unused_deprecated,
-      const blink::WebSize& device_viewport_size);
   void setViewportSize(const blink::WebSize& device_viewport_size) override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;

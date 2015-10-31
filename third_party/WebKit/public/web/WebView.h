@@ -291,7 +291,13 @@ public:
     virtual float deviceScaleFactor() const = 0;
 
     // Sets the ratio as computed by computePageScaleConstraints.
+    // TODO(oshima): Remove this once the device scale factor implementation is fully
+    // migrated to use zooming mechanism.
     virtual void setDeviceScaleFactor(float) = 0;
+
+    // Sets the additional zoom factor used for device scale factor. This is used
+    // to scale the content by the device scale factor, without affecting zoom level.
+    virtual void setZoomFactorForDeviceScaleFactor(float) = 0;
 
     // Set and reset the device color profile.
     virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
