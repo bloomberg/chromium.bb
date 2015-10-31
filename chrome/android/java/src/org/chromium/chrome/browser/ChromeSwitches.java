@@ -131,18 +131,6 @@ public abstract class ChromeSwitches {
             "use-fake-device-for-media-stream";
 
     /**
-     * Disables the new icon-centric NTP design.
-     * Native switch - switches::kDisableIconNtp
-     */
-    public static final String DISABLE_ICON_NTP = "disable-icon-ntp";
-
-    /**
-     * Enables the new icon-centric NTP design.
-     * Native switch - switches::kEnableIconNtp
-     */
-    public static final String ENABLE_ICON_NTP = "enable-icon-ntp";
-
-    /**
      * Disable domain reliability
      * Native switch - switches::kDisableDomainReliability
      */
