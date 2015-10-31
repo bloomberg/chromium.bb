@@ -1931,12 +1931,22 @@ void Document::updateLayout()
 
 void Document::layoutUpdated()
 {
+    // Plugins can run script inside layout which can detach the page.
+    // TODO(esprehn): Can this still happen now that all plugins are out of
+    // process?
+    if (frame() && frame()->page())
+        frame()->page()->chromeClient().layoutUpdated(frame());
+
     markers().updateRenderedRectsForMarkers();
 
     // The layout system may perform layouts with pending stylesheets. When
     // recording first layout time, we ignore these layouts, since painting is
     // suppressed for them. We're interested in tracking the time of the
     // first real or 'paintable' layout.
+    // TODO(esprehn): This doesn't really make sense, why not track the first
+    // beginFrame? This will catch the first layout in a page that does lots
+    // of layout thrashing even though that layout might not be followed by
+    // a paint for many seconds.
     if (isRenderingReady() && body() && !styleEngine().hasPendingSheets()) {
         if (!m_documentTiming.firstLayout())
             m_documentTiming.markFirstLayout();

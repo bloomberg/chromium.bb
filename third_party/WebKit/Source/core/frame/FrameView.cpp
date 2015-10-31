@@ -1067,15 +1067,6 @@ void FrameView::layout()
     if (!frame().document()->parsing() && frame().loader().stateMachine()->committedFirstRealDocumentLoad())
         m_isVisuallyNonEmpty = true;
 
-    // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
-    // however m_inPerformLayout is not set for most of this function, so none of our RELEASE_ASSERTS
-    // in LocalFrame/Page will fire. One of the post-layout tasks is disconnecting the LocalFrame from
-    // the page in fast/frames/crash-remove-iframe-during-object-beforeload-2.html
-    // necessitating this check here.
-    // ASSERT(frame()->page());
-    if (frame().page())
-        frame().page()->chromeClient().layoutUpdated(m_frame.get());
-
     frame().document()->layoutUpdated();
 }
 
