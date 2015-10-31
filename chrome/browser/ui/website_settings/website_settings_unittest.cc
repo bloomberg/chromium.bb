@@ -707,9 +707,9 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
 TEST_F(WebsiteSettingsTest, AboutBlankPage) {
   SetURL("about:blank");
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE,
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
             website_settings()->site_connection_status());
-  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE,
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT,
             website_settings()->site_identity_status());
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }

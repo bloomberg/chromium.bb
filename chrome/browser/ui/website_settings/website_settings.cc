@@ -356,8 +356,20 @@ void WebsiteSettings::Init(
   isChromeUINativeScheme = url.SchemeIs(chrome::kChromeUINativeScheme);
 #endif
 
-  if (url.SchemeIs(content::kChromeUIScheme) ||
-      url.SchemeIs(url::kAboutScheme) || isChromeUINativeScheme) {
+  if (url.SchemeIs(url::kAboutScheme)) {
+    // All about: URLs except about:blank are redirected.
+    DCHECK_EQ(url::kAboutBlankURL, url.spec());
+    site_identity_status_ = SITE_IDENTITY_STATUS_NO_CERT;
+    site_identity_details_ =
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY);
+    site_connection_status_ = SITE_CONNECTION_STATUS_UNENCRYPTED;
+    site_connection_details_ = l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
+        UTF8ToUTF16(url.spec()));
+    return;
+  }
+
+  if (url.SchemeIs(content::kChromeUIScheme) || isChromeUINativeScheme) {
     site_identity_status_ = SITE_IDENTITY_STATUS_INTERNAL_PAGE;
     site_identity_details_ =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
