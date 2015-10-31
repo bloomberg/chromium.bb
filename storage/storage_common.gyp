@@ -20,6 +20,11 @@
       ],
       'defines': ['STORAGE_COMMON_IMPLEMENTATION'],
       'sources': [
+        'common/blob_storage/blob_item_bytes_request.cc',
+        'common/blob_storage/blob_item_bytes_request.h',
+        'common/blob_storage/blob_item_bytes_response.cc',
+        'common/blob_storage/blob_item_bytes_response.h',
+        'common/blob_storage/blob_storage_constants.h',
         'common/data_element.cc',
         'common/data_element.h',
         'common/database/database_connections.cc',

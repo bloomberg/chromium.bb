@@ -4,6 +4,10 @@
 
 #include "storage/common/data_element.h"
 
+#include <algorithm>
+
+#include "base/strings/string_number_conversions.h"
+
 namespace storage {
 
 DataElement::DataElement()
@@ -50,6 +54,43 @@ void DataElement::SetToDiskCacheEntryRange(uint64 offset, uint64 length) {
   type_ = TYPE_DISK_CACHE_ENTRY;
   offset_ = offset;
   length_ = length;
+}
+
+void PrintTo(const DataElement& x, std::ostream* os) {
+  const uint64 kMaxDataPrintLength = 40;
+  *os << "<DataElement>{type: ";
+  switch (x.type()) {
+    case DataElement::TYPE_BYTES: {
+      uint64 length = std::min(x.length(), kMaxDataPrintLength);
+      *os << "TYPE_BYTES, data: ["
+          << base::HexEncode(x.bytes(), static_cast<size_t>(length));
+      if (length < x.length()) {
+        *os << "<...truncated due to length...>";
+      }
+      *os << "]";
+      break;
+    }
+    case DataElement::TYPE_FILE:
+      *os << "TYPE_FILE, path: " << x.path().AsUTF8Unsafe()
+          << ", expected_modification_time: " << x.expected_modification_time();
+      break;
+    case DataElement::TYPE_BLOB:
+      *os << "TYPE_BLOB, uuid: " << x.blob_uuid();
+      break;
+    case DataElement::TYPE_FILE_FILESYSTEM:
+      *os << "TYPE_FILE_FILESYSTEM, filesystem_url: " << x.filesystem_url();
+      break;
+    case DataElement::TYPE_DISK_CACHE_ENTRY:
+      *os << "TYPE_DISK_CACHE_ENTRY";
+      break;
+    case DataElement::TYPE_BYTES_DESCRIPTION:
+      *os << "TYPE_BYTES_DESCRIPTION";
+      break;
+    case DataElement::TYPE_UNKNOWN:
+      *os << "TYPE_UNKNOWN";
+      break;
+  }
+  *os << ", length: " << x.length() << ", offset: " << x.offset() << "}";
 }
 
 }  // namespace storage

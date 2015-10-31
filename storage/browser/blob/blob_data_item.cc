@@ -33,7 +33,15 @@ BlobDataItem::BlobDataItem(scoped_ptr<DataElement> item,
       disk_cache_stream_index_(disk_cache_stream_index) {
 }
 
-BlobDataItem::~BlobDataItem() {
+BlobDataItem::~BlobDataItem() {}
+
+void PrintTo(const BlobDataItem& x, ::std::ostream* os) {
+  DCHECK(os);
+  *os << "<BlobDataItem>{item: ";
+  PrintTo(*x.item_, os);
+  *os << ", has_data_handle: " << (x.data_handle_.get() ? "true" : "false")
+      << ", disk_cache_entry_ptr: " << x.disk_cache_entry_
+      << ", disk_cache_stream_index_: " << x.disk_cache_stream_index_ << "}";
 }
 
 }  // namespace storage

@@ -5,6 +5,7 @@
 #ifndef STORAGE_COMMON_DATA_ELEMENT_H_
 #define STORAGE_COMMON_DATA_ELEMENT_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -24,6 +25,8 @@ class STORAGE_COMMON_EXPORT DataElement {
   enum Type {
     TYPE_UNKNOWN = -1,
     TYPE_BYTES,
+    // Only used with BlobStorageMsg_StartBuildingBlob
+    TYPE_BYTES_DESCRIPTION,
     TYPE_FILE,
     TYPE_BLOB,
     TYPE_FILE_FILESYSTEM,
@@ -44,9 +47,14 @@ class STORAGE_COMMON_EXPORT DataElement {
     return expected_modification_time_;
   }
 
+  // For use with SetToAllocatedBytes. Should only be used after calling
+  // SetToAllocatedBytes.
+  char* mutable_bytes() { return &buf_[0]; }
+
   // Sets TYPE_BYTES data. This copies the given data into the element.
   void SetToBytes(const char* bytes, int bytes_len) {
     type_ = TYPE_BYTES;
+    bytes_ = nullptr;
     buf_.assign(bytes, bytes + bytes_len);
     length_ = buf_.size();
   }
@@ -70,12 +78,28 @@ class STORAGE_COMMON_EXPORT DataElement {
     length_ = buf_.size();
   }
 
+  void SetToBytesDescription(size_t bytes_len) {
+    type_ = TYPE_BYTES_DESCRIPTION;
+    bytes_ = nullptr;
+    length_ = bytes_len;
+  }
+
   // Sets TYPE_BYTES data. This does NOT copy the given data and the caller
   // should make sure the data is alive when this element is accessed.
   // You cannot use AppendBytes with this method.
   void SetToSharedBytes(const char* bytes, int bytes_len) {
     type_ = TYPE_BYTES;
     bytes_ = bytes;
+    length_ = bytes_len;
+  }
+
+  // Sets TYPE_BYTES data. This allocates the space for the bytes in the
+  // internal vector but does not populate it with anything.  The caller can
+  // then use the bytes() method to access this buffer and populate it.
+  void SetToAllocatedBytes(size_t bytes_len) {
+    type_ = TYPE_BYTES;
+    bytes_ = nullptr;
+    buf_.resize(bytes_len);
     length_ = bytes_len;
   }
 
@@ -107,6 +131,8 @@ class STORAGE_COMMON_EXPORT DataElement {
   void SetToDiskCacheEntryRange(uint64 offset, uint64 length);
 
  private:
+  friend STORAGE_COMMON_EXPORT void PrintTo(const DataElement& x,
+                                            ::std::ostream* os);
   Type type_;
   std::vector<char> buf_;  // For TYPE_BYTES.
   const char* bytes_;  // For TYPE_BYTES.
@@ -137,6 +163,8 @@ inline bool operator==(const DataElement& a, const DataElement& b) {
     case DataElement::TYPE_DISK_CACHE_ENTRY:
       // We compare only length and offset; we trust the entry itself was
       // compared at some higher level such as in BlobDataItem.
+      return true;
+    case DataElement::TYPE_BYTES_DESCRIPTION:
       return true;
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();

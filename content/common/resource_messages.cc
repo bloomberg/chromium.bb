@@ -42,6 +42,10 @@ void ParamTraits<storage::DataElement>::Write(Message* m, const param_type& p) {
       m->WriteData(p.bytes(), static_cast<int>(p.length()));
       break;
     }
+    case storage::DataElement::TYPE_BYTES_DESCRIPTION: {
+      WriteParam(m, p.length());
+      break;
+    }
     case storage::DataElement::TYPE_FILE: {
       WriteParam(m, p.path());
       WriteParam(m, p.offset());
@@ -86,6 +90,13 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
       if (!iter->ReadData(&data, &len))
         return false;
       r->SetToBytes(data, len);
+      break;
+    }
+    case storage::DataElement::TYPE_BYTES_DESCRIPTION: {
+      uint64 length;
+      if (!ReadParam(m, iter, &length))
+        return false;
+      r->SetToBytesDescription(length);
       break;
     }
     case storage::DataElement::TYPE_FILE: {

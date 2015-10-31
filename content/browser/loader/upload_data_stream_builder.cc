@@ -111,6 +111,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         break;
       }
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBody::Element::TYPE_UNKNOWN:
         NOTREACHED();
         break;

@@ -5,6 +5,9 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_DATA_ITEM_H_
 #define STORAGE_BROWSER_BLOB_BLOB_DATA_ITEM_H_
 
+#include <ostream>
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/storage_browser_export.h"
@@ -50,6 +53,7 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   }
   const DataElement& data_element() const { return *item_; }
   const DataElement* data_element_ptr() const { return item_.get(); }
+  DataElement* data_element_ptr() { return item_.get(); }
 
   disk_cache::Entry* disk_cache_entry() const { return disk_cache_entry_; }
   int disk_cache_stream_index() const { return disk_cache_stream_index_; }
@@ -58,8 +62,9 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   friend class BlobDataBuilder;
   friend class BlobStorageContext;
   friend class base::RefCounted<BlobDataItem>;
+  friend STORAGE_EXPORT void PrintTo(const BlobDataItem& x, ::std::ostream* os);
 
-  BlobDataItem(scoped_ptr<DataElement> item);
+  explicit BlobDataItem(scoped_ptr<DataElement> item);
   BlobDataItem(scoped_ptr<DataElement> item,
                const scoped_refptr<DataHandle>& data_handle);
   BlobDataItem(scoped_ptr<DataElement> item,

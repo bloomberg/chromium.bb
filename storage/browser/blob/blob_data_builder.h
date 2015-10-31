@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_BLOB_BLOB_DATA_BUILDER_H_
 
 #include <stdint.h>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -32,11 +33,37 @@ class STORAGE_EXPORT BlobDataBuilder {
 
   const std::string& uuid() const { return uuid_; }
 
+  // Validates the data element that was sent over IPC, and copies the data if
+  // it's a 'bytes' element. Data elements of BYTES_DESCRIPTION or
+  // DISK_CACHE_ENTRY types are not valid IPC data element types, and cannot be
+  // given to this method.
+  void AppendIPCDataElement(const DataElement& ipc_data);
+
+  // Copies the given data into the blob.
   void AppendData(const std::string& data) {
     AppendData(data.c_str(), data.size());
   }
 
+  // Copies the given data into the blob.
   void AppendData(const char* data, size_t length);
+
+  // Adds an item that is flagged for future data population. The memory is not
+  // allocated until the first call to PopulateFutureData. Returns the index of
+  // the item (to be used in PopulateFutureData).
+  // Length cannot be 0.
+  size_t AppendFutureData(size_t length);
+
+  // Populates a part of an item previously allocated with AppendFutureData.
+  // The first call to PopulateFutureData lazily allocates the memory for the
+  // data element.
+  // Returns true if:
+  // * The item was created by using AppendFutureData,
+  // * The offset and length are valid, and
+  // * data is a valid pointer.
+  bool PopulateFutureData(size_t index,
+                          const char* data,
+                          size_t offset,
+                          size_t length);
 
   // You must know the length of the file, you cannot use kuint64max to specify
   // the whole file.  This method creates a ShareableFileReference to the given
@@ -67,10 +94,15 @@ class STORAGE_EXPORT BlobDataBuilder {
     content_disposition_ = content_disposition;
   }
 
+  void Clear();
+
  private:
   friend class BlobStorageContext;
+  friend class BlobAsyncBuilderHostTest;
   friend bool operator==(const BlobDataBuilder& a, const BlobDataBuilder& b);
   friend bool operator==(const BlobDataSnapshot& a, const BlobDataBuilder& b);
+  friend STORAGE_EXPORT void PrintTo(const BlobDataBuilder& x,
+                                     ::std::ostream* os);
 
   std::string uuid_;
   std::string content_type_;
@@ -89,7 +121,7 @@ inline bool operator==(const BlobDataBuilder& a, const BlobDataBuilder& b) {
   if (a.items_.size() != b.items_.size())
     return false;
   for (size_t i = 0; i < a.items_.size(); ++i) {
-    if (a.items_[i] != b.items_[i])
+    if (*(a.items_[i]) != *(b.items_[i]))
       return false;
   }
   return true;
@@ -119,6 +151,7 @@ inline bool operator!=(const BlobDataSnapshot& a, const BlobDataBuilder& b) {
 inline bool operator!=(const BlobDataBuilder& a, const BlobDataBuilder& b) {
   return !(a == b);
 }
+
 #endif  // defined(UNIT_TEST)
 
 }  // namespace storage

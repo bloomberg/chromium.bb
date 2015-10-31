@@ -539,6 +539,7 @@ scoped_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
           .Pass();
     case DataElement::TYPE_BLOB:
     case DataElement::TYPE_BYTES:
+    case DataElement::TYPE_BYTES_DESCRIPTION:
     case DataElement::TYPE_DISK_CACHE_ENTRY:
     case DataElement::TYPE_UNKNOWN:
       break;

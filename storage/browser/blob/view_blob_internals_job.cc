@@ -223,6 +223,7 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
         AddHTMLListItem(kType, "disk cache entry", out);
         AddHTMLListItem(kURL, item.disk_cache_entry()->GetKey(), out);
         break;
+      case DataElement::TYPE_BYTES_DESCRIPTION:
       case DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         break;
