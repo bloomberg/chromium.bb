@@ -60,7 +60,8 @@ function test()
     containerElement.style.width = "300px";
     containerElement.style.height = "300px";
     containerElement.style.overflow = "hidden";
-    dataGrid.show(containerElement);
+    containerElement.appendChild(dataGrid.element);
+    dataGrid.wasShown();
     dataGrid.element.style.width = "100%";
 
     InspectorTest.addResult("Building tree.");
