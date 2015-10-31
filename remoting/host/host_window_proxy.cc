@@ -38,7 +38,7 @@ class HostWindowProxy::Core
 
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
-  void DisconnectSession(protocol::ErrorCode error) override;
+  void DisconnectSession() override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
   void ResetVideoPipeline() override;
@@ -143,15 +143,15 @@ const std::string& HostWindowProxy::Core::client_jid() const {
   return client_jid_;
 }
 
-void HostWindowProxy::Core::DisconnectSession(protocol::ErrorCode error) {
+void HostWindowProxy::Core::DisconnectSession() {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::DisconnectSession, this, error));
+    caller_task_runner_->PostTask(FROM_HERE,
+                                  base::Bind(&Core::DisconnectSession, this));
     return;
   }
 
   if (client_session_control_.get())
-    client_session_control_->DisconnectSession(error);
+    client_session_control_->DisconnectSession();
 }
 
 void HostWindowProxy::Core::OnLocalMouseMoved(

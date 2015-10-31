@@ -731,13 +731,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDS_ERROR_HOST_OVERLOAD" formatter_data="android_java">
         Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.
       </message>
-      <message desc="Error that is shown on the client side after the host has terminated connection that lasted more than maximum allowed duration." name="IDS_ERROR_MAX_SESSION_LENGTH" formatter_data="android_java">
-        The remote session has expired.
-      </message>
-      <message desc="Error that is shown on the client side the host has failed to accept the connection due to a configuration issue." name="IDS_ERROR_HOST_CONFIGURATION_ERROR" formatter_data="android_java">
-        The remote computer has failed to initialize the session. If problem persist please try to configure the host again.
-      </message>
-
       <message desc="Error that is shown on the client side when we don't get a response from the host." name="IDS_ERROR_HOST_IS_OFFLINE" formatter_data="android_java">
         The remote computer is not responding to connection requests. Please verify that it is online and try again.
       </message>

@@ -300,7 +300,7 @@ void LocalInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
     } else if (key_sym == XK_Escape && down && alt_pressed_ && ctrl_pressed_) {
       caller_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
-                                client_session_control_, protocol::OK));
+                                client_session_control_));
     }
   }
 }

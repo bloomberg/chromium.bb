@@ -178,9 +178,7 @@ remoting.ClientSession.ConnectionError = {
   SESSION_REJECTED: 2,
   INCOMPATIBLE_PROTOCOL: 3,
   NETWORK_FAILURE: 4,
-  HOST_OVERLOAD: 5,
-  MAX_SESSION_LENGTH: 6,
-  HOST_CONFIGURATION_ERROR: 7
+  HOST_OVERLOAD: 5
 };
 
 /**
@@ -458,28 +456,24 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate =
   if (status == remoting.ClientSession.State.FAILED) {
     switch (error) {
       case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
-        this.error_ = new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE);
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.HOST_IS_OFFLINE);
         break;
       case remoting.ClientSession.ConnectionError.SESSION_REJECTED:
-        this.error_ =
-            new remoting.Error(remoting.Error.Tag.INVALID_ACCESS_CODE);
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.INVALID_ACCESS_CODE);
         break;
       case remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL:
-        this.error_ =
-            new remoting.Error(remoting.Error.Tag.INCOMPATIBLE_PROTOCOL);
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.INCOMPATIBLE_PROTOCOL);
         break;
       case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
-        this.error_ = new remoting.Error(remoting.Error.Tag.P2P_FAILURE);
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.P2P_FAILURE);
         break;
       case remoting.ClientSession.ConnectionError.HOST_OVERLOAD:
-        this.error_ = new remoting.Error(remoting.Error.Tag.HOST_OVERLOAD);
-        break;
-      case remoting.ClientSession.ConnectionError.MAX_SESSION_LENGTH:
-        this.error_ = new remoting.Error(remoting.Error.Tag.MAX_SESSION_LENGTH);
-        break;
-      case remoting.ClientSession.ConnectionError.HOST_CONFIGURATION_ERROR:
-        this.error_ =
-            new remoting.Error(remoting.Error.Tag.HOST_CONFIGURATION_ERROR);
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.HOST_OVERLOAD);
         break;
       default:
         this.error_ = remoting.Error.unexpected();

@@ -22,11 +22,7 @@ enum ErrorCode {
   SIGNALING_ERROR,
   SIGNALING_TIMEOUT,
   HOST_OVERLOAD,
-  MAX_SESSION_LENGTH,
-  HOST_CONFIGURATION_ERROR,
   UNKNOWN_ERROR,
-
-  ERROR_CODE_MAX = UNKNOWN_ERROR,
 };
 
 // Returns the literal string of |error|.

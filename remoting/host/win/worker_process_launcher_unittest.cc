@@ -303,10 +303,8 @@ void WorkerProcessLauncherTest::SendToProcess(IPC::Message* message) {
 }
 
 void WorkerProcessLauncherTest::SendFakeMessageToLauncher() {
-  if (channel_client_) {
-    channel_client_->Send(
-        new ChromotingDesktopNetworkMsg_DisconnectSession(protocol::OK));
-  }
+  if (channel_client_)
+    channel_client_->Send(new ChromotingDesktopNetworkMsg_DisconnectSession());
 }
 
 void WorkerProcessLauncherTest::CrashWorker() {

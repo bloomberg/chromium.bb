@@ -288,15 +288,15 @@ void ClientSession::OnConnectionAuthenticated(
   is_authenticated_ = true;
 
   if (max_duration_ > base::TimeDelta()) {
-    max_duration_timer_.Start(
-        FROM_HERE, max_duration_,
-        base::Bind(&ClientSession::DisconnectSession, base::Unretained(this),
-                   protocol::MAX_SESSION_LENGTH));
+    // TODO(simonmorris): Let Disconnect() tell the client that the
+    // disconnection was caused by the session exceeding its maximum duration.
+    max_duration_timer_.Start(FROM_HERE, max_duration_,
+                              this, &ClientSession::DisconnectSession);
   }
 
   // Disconnect the session if the connection was rejected by the host.
   if (!event_handler_->OnSessionAuthenticated(this)) {
-    DisconnectSession(protocol::SESSION_REJECTED);
+    DisconnectSession();
     return;
   }
 
@@ -305,7 +305,8 @@ void ClientSession::OnConnectionAuthenticated(
   desktop_environment_ =
       desktop_environment_factory_->Create(weak_factory_.GetWeakPtr());
   if (!desktop_environment_) {
-    DisconnectSession(protocol::HOST_CONFIGURATION_ERROR);
+    // TODO(sergeyu): Fix the host to return an error code (crbug.com/543334).
+    DisconnectSession();
     return;
   }
 
@@ -427,7 +428,7 @@ const std::string& ClientSession::client_jid() const {
   return client_jid_;
 }
 
-void ClientSession::DisconnectSession(protocol::ErrorCode error) {
+void ClientSession::DisconnectSession() {
   DCHECK(CalledOnValidThread());
   DCHECK(connection_.get());
 
@@ -435,7 +436,7 @@ void ClientSession::DisconnectSession(protocol::ErrorCode error) {
 
   // This triggers OnConnectionClosed(), and the session may be destroyed
   // as the result, so this call must be the last in this method.
-  connection_->Disconnect(error);
+  connection_->Disconnect();
 }
 
 void ClientSession::OnLocalMouseMoved(const webrtc::DesktopVector& position) {

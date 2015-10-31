@@ -139,7 +139,7 @@ void JingleSession::InitializeIncomingConnection(
   if (!config_) {
     LOG(WARNING) << "Rejecting connection from " << peer_jid_
                  << " because no compatible configuration has been found.";
-    Close(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
@@ -147,7 +147,7 @@ void JingleSession::InitializeIncomingConnection(
     quic_channel_factory_.reset(new QuicChannelFactory(session_id_, true));
     if (!quic_channel_factory_->ProcessSessionInitiateConfigMessage(
             initiate_message.description->quic_config_message())) {
-      Close(INCOMPATIBLE_PROTOCOL);
+      CloseInternal(INCOMPATIBLE_PROTOCOL);
     }
   }
 
@@ -164,7 +164,7 @@ void JingleSession::AcceptIncomingConnection(
       initiate_message.description->authenticator_message();
 
   if (!first_auth_message) {
-    Close(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
@@ -178,7 +178,8 @@ void JingleSession::AcceptIncomingConnection(
 void JingleSession::ContinueAcceptIncomingConnection() {
   DCHECK_NE(authenticator_->state(), Authenticator::PROCESSING_MESSAGE);
   if (authenticator_->state() == Authenticator::REJECTED) {
-    Close(AuthRejectionReasonToErrorCode(authenticator_->rejection_reason()));
+    CloseInternal(AuthRejectionReasonToErrorCode(
+        authenticator_->rejection_reason()));
     return;
   }
 
@@ -231,51 +232,10 @@ StreamChannelFactory* JingleSession::GetQuicChannelFactory() {
   return quic_channel_factory_.get();
 }
 
-void JingleSession::Close(protocol::ErrorCode error) {
+void JingleSession::Close() {
   DCHECK(CalledOnValidThread());
 
-  if (is_session_active()) {
-    // Send session-terminate message with the appropriate error code.
-    JingleMessage::Reason reason;
-    switch (error) {
-      case OK:
-        reason = JingleMessage::SUCCESS;
-        break;
-      case SESSION_REJECTED:
-      case AUTHENTICATION_FAILED:
-        reason = JingleMessage::DECLINE;
-        break;
-      case INCOMPATIBLE_PROTOCOL:
-        reason = JingleMessage::INCOMPATIBLE_PARAMETERS;
-        break;
-      case HOST_OVERLOAD:
-        reason = JingleMessage::CANCEL;
-        break;
-      case MAX_SESSION_LENGTH:
-        reason = JingleMessage::EXPIRED;
-        break;
-      case HOST_CONFIGURATION_ERROR:
-        reason = JingleMessage::FAILED_APPLICATION;
-        break;
-      default:
-        reason = JingleMessage::GENERAL_ERROR;
-    }
-
-    JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
-                          session_id_);
-    message.reason = reason;
-    SendMessage(message);
-  }
-
-  error_ = error;
-
-  if (state_ != FAILED && state_ != CLOSED) {
-    if (error != OK) {
-      SetState(FAILED);
-    } else {
-      SetState(CLOSED);
-    }
-  }
+  CloseInternal(OK);
 }
 
 void JingleSession::SendMessage(const JingleMessage& message) {
@@ -316,7 +276,7 @@ void JingleSession::OnMessageResponse(
   // |response| will be nullptr if the request timed out.
   if (!response) {
     LOG(ERROR) << type_str << " request timed out.";
-    Close(SIGNALING_TIMEOUT);
+    CloseInternal(SIGNALING_TIMEOUT);
     return;
   } else {
     const std::string& type =
@@ -328,7 +288,7 @@ void JingleSession::OnMessageResponse(
 
       // TODO(sergeyu): There may be different reasons for error
       // here. Parse the response stanza to find failure reason.
-      Close(PEER_IS_OFFLINE);
+      CloseInternal(PEER_IS_OFFLINE);
     }
   }
 }
@@ -355,7 +315,7 @@ void JingleSession::OnTransportRouteChange(const std::string& channel_name,
 }
 
 void JingleSession::OnTransportError(ErrorCode error) {
-  Close(error);
+  CloseInternal(error);
 }
 
 void JingleSession::OnTransportInfoResponse(IqRequest* request,
@@ -384,7 +344,7 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
   if (type != "result") {
     LOG(ERROR) << "Received error in response to transport-info message: \""
                << response->Str() << "\". Terminating the session.";
-    Close(PEER_IS_OFFLINE);
+    CloseInternal(PEER_IS_OFFLINE);
   }
 }
 
@@ -438,19 +398,19 @@ void JingleSession::OnAccept(const JingleMessage& message,
       message.description->authenticator_message();
   if (!auth_message) {
     DLOG(WARNING) << "Received session-accept without authentication message ";
-    Close(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
   if (!InitializeConfigFromDescription(message.description.get())) {
-    Close(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
   if (config_->is_using_quic()) {
     if (!quic_channel_factory_->ProcessSessionAcceptConfigMessage(
             message.description->quic_config_message())) {
-      Close(INCOMPATIBLE_PROTOCOL);
+      CloseInternal(INCOMPATIBLE_PROTOCOL);
       return;
     }
   } else {
@@ -477,7 +437,7 @@ void JingleSession::OnSessionInfo(const JingleMessage& message,
     LOG(WARNING) << "Received unexpected authenticator message "
                  << message.info->Str();
     reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
-    Close(INCOMPATIBLE_PROTOCOL);
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
 
@@ -511,17 +471,11 @@ void JingleSession::OnTerminate(const JingleMessage& message,
     case JingleMessage::CANCEL:
       error_ = HOST_OVERLOAD;
       break;
-    case JingleMessage::EXPIRED:
-      error_ = MAX_SESSION_LENGTH;
+    case JingleMessage::GENERAL_ERROR:
+      error_ = CHANNEL_CONNECTION_ERROR;
       break;
     case JingleMessage::INCOMPATIBLE_PARAMETERS:
       error_ = INCOMPATIBLE_PROTOCOL;
-      break;
-    case JingleMessage::FAILED_APPLICATION:
-      error_ = HOST_CONFIGURATION_ERROR;
-      break;
-    case JingleMessage::GENERAL_ERROR:
-      error_ = CHANNEL_CONNECTION_ERROR;
       break;
     default:
       error_ = UNKNOWN_ERROR;
@@ -587,7 +541,7 @@ void JingleSession::ContinueAuthenticationStep() {
   if (authenticator_->state() == Authenticator::ACCEPTED) {
     OnAuthenticated();
   } else if (authenticator_->state() == Authenticator::REJECTED) {
-    Close(AuthRejectionReasonToErrorCode(
+    CloseInternal(AuthRejectionReasonToErrorCode(
         authenticator_->rejection_reason()));
   }
 }
@@ -602,6 +556,47 @@ void JingleSession::OnAuthenticated() {
   }
 
   SetState(AUTHENTICATED);
+}
+
+void JingleSession::CloseInternal(ErrorCode error) {
+  DCHECK(CalledOnValidThread());
+
+  if (is_session_active()) {
+    // Send session-terminate message with the appropriate error code.
+    JingleMessage::Reason reason;
+    switch (error) {
+      case OK:
+        reason = JingleMessage::SUCCESS;
+        break;
+      case SESSION_REJECTED:
+      case AUTHENTICATION_FAILED:
+        reason = JingleMessage::DECLINE;
+        break;
+      case INCOMPATIBLE_PROTOCOL:
+        reason = JingleMessage::INCOMPATIBLE_PARAMETERS;
+        break;
+      case HOST_OVERLOAD:
+        reason = JingleMessage::CANCEL;
+        break;
+      default:
+        reason = JingleMessage::GENERAL_ERROR;
+    }
+
+    JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
+                          session_id_);
+    message.reason = reason;
+    SendMessage(message);
+  }
+
+  error_ = error;
+
+  if (state_ != FAILED && state_ != CLOSED) {
+    if (error != OK) {
+      SetState(FAILED);
+    } else {
+      SetState(CLOSED);
+    }
+  }
 }
 
 void JingleSession::SetState(State new_state) {

@@ -262,7 +262,7 @@ void DisconnectWindowWin::EndDialog() {
   }
 
   if (client_session_control_)
-    client_session_control_->DisconnectSession(protocol::OK);
+    client_session_control_->DisconnectSession();
 }
 
 // Returns |control| rectangle in the dialog coordinates.

@@ -222,7 +222,7 @@ void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
     active_connections_.erase(i);
 
     // Disconnect the client session.
-    desktop_session_proxy->DisconnectSession(protocol::OK);
+    desktop_session_proxy->DisconnectSession();
   }
 }
 

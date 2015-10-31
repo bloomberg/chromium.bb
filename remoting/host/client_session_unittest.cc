@@ -239,7 +239,7 @@ void ClientSessionTest::CreateClientSession() {
   EXPECT_CALL(*connection, client_stub())
       .WillRepeatedly(Return(&client_stub_));
   EXPECT_CALL(*connection, video_stub()).WillRepeatedly(Return(&video_stub_));
-  EXPECT_CALL(*connection, Disconnect(_));
+  EXPECT_CALL(*connection, Disconnect());
   connection_ = connection.get();
 
   client_session_.reset(new ClientSession(
@@ -258,7 +258,7 @@ void ClientSessionTest::CreateClientSession() {
 }
 
 void ClientSessionTest::DisconnectClientSession() {
-  client_session_->DisconnectSession(protocol::OK);
+  client_session_->DisconnectSession();
   // MockSession won't trigger OnConnectionClosed, so fake it.
   client_session_->OnConnectionClosed(client_session_->connection(),
                                       protocol::OK);
@@ -432,7 +432,7 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   mouse_event.set_y(301);
   connection_->input_stub()->InjectMouseEvent(mouse_event);
 
-  client_session_->DisconnectSession(protocol::OK);
+  client_session_->DisconnectSession();
   client_session_->OnConnectionClosed(connection_, protocol::OK);
   client_session_.reset();
 }

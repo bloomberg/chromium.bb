@@ -172,7 +172,7 @@ void DisconnectWindowGtk::OnClicked(GtkButton* button) {
   DCHECK(CalledOnValidThread());
 
   if (client_session_control_.get())
-    client_session_control_->DisconnectSession(protocol::OK);
+    client_session_control_->DisconnectSession();
 }
 
 gboolean DisconnectWindowGtk::OnDelete(GtkWidget* window,
@@ -180,7 +180,7 @@ gboolean DisconnectWindowGtk::OnDelete(GtkWidget* window,
   DCHECK(CalledOnValidThread());
 
   if (client_session_control_.get())
-    client_session_control_->DisconnectSession(protocol::OK);
+    client_session_control_->DisconnectSession();
   return TRUE;
 }
 

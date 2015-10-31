@@ -54,10 +54,11 @@ void ContinueWindow::DisconnectSession() {
 
   disconnect_timer_.Stop();
   if (client_session_control_.get())
-    client_session_control_->DisconnectSession(protocol::MAX_SESSION_LENGTH);
+    client_session_control_->DisconnectSession();
 }
 
-ContinueWindow::ContinueWindow() {}
+ContinueWindow::ContinueWindow() {
+}
 
 void ContinueWindow::OnSessionExpired() {
   DCHECK(CalledOnValidThread());

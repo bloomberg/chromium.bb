@@ -79,7 +79,7 @@ class ConnectionToClient : public base::NonThreadSafe,
   virtual Session* session();
 
   // Disconnect the client connection.
-  virtual void Disconnect(ErrorCode error);
+  virtual void Disconnect();
 
   // Callback for HostEventDispatcher to be called with a timestamp for each
   // received event.

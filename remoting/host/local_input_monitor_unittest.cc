@@ -67,7 +67,7 @@ TEST_F(LocalInputMonitorTest, Basic) {
   EXPECT_CALL(client_session_control_, client_jid())
       .Times(AnyNumber())
       .WillRepeatedly(ReturnRef(client_jid_));
-  EXPECT_CALL(client_session_control_, DisconnectSession(_))
+  EXPECT_CALL(client_session_control_, DisconnectSession())
       .Times(AnyNumber());
   EXPECT_CALL(client_session_control_, OnLocalMouseMoved(_))
       .Times(AnyNumber());

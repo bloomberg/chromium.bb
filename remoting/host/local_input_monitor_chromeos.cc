@@ -133,7 +133,7 @@ void LocalInputMonitorChromeos::Core::HandleKeyPressed(
       key_event.key_code() == ui::VKEY_ESCAPE) {
     caller_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
-                              client_session_control_, protocol::OK));
+                              client_session_control_));
   }
 }
 

@@ -56,7 +56,7 @@ class FakeSession : public Session {
   const SessionConfig& config() override;
   FakeTransportSession* GetTransportSession() override;
   FakeStreamChannelFactory* GetQuicChannelFactory() override;
-  void Close(ErrorCode error) override;
+  void Close() override;
 
  public:
   EventHandler* event_handler_;

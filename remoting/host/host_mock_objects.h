@@ -61,7 +61,7 @@ class MockClientSessionControl : public ClientSessionControl {
   ~MockClientSessionControl() override;
 
   MOCK_CONST_METHOD0(client_jid, const std::string&());
-  MOCK_METHOD1(DisconnectSession, void(protocol::ErrorCode error));
+  MOCK_METHOD0(DisconnectSession, void());
   MOCK_METHOD1(OnLocalMouseMoved, void(const webrtc::DesktopVector&));
   MOCK_METHOD1(SetDisableInputs, void(bool));
   MOCK_METHOD0(ResetVideoPipeline, void());

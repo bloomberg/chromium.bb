@@ -32,9 +32,7 @@ struct JingleMessage {
     SUCCESS,
     DECLINE,
     CANCEL,
-    EXPIRED,
     GENERAL_ERROR,
-    FAILED_APPLICATION,
     INCOMPATIBLE_PARAMETERS,
   };
 

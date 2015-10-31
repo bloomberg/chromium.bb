@@ -43,9 +43,7 @@ const NameMapElement<JingleMessage::Reason> kReasons[] = {
   { JingleMessage::SUCCESS, "success" },
   { JingleMessage::DECLINE, "decline" },
   { JingleMessage::CANCEL, "cancel" },
-  { JingleMessage::EXPIRED, "expired" },
   { JingleMessage::GENERAL_ERROR, "general-error" },
-  { JingleMessage::FAILED_APPLICATION, "failed-application" },
   { JingleMessage::INCOMPATIBLE_PARAMETERS, "incompatible-parameters" },
 };
 

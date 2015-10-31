@@ -89,10 +89,10 @@ class Session {
   // disabled for the session.
   virtual StreamChannelFactory* GetQuicChannelFactory() = 0;
 
-  // Closes connection. Callbacks are guaranteed not to be called after this
-  // method returns. |error| specifies the error code in case when the session
-  // is being closed due to an error.
-  virtual void Close(ErrorCode error) = 0;
+  // Closes connection. Callbacks are guaranteed not to be called
+  // after this method returns. Must be called before the object is
+  // destroyed, unless the state is set to FAILED or CLOSED.
+  virtual void Close() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Session);

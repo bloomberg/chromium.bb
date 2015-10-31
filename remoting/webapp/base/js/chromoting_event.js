@@ -264,8 +264,6 @@ remoting.ChromotingEvent.ConnectionError = {
   UNEXPECTED: 13,
   CLIENT_SUSPENDED: 14,
   NACL_DISABLED: 15,
-  MAX_SESSION_LENGTH: 16,
-  HOST_CONFIGURATION_ERROR: 17,
 };
 
 /** @enum {number} */
