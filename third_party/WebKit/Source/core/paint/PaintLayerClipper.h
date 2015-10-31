@@ -90,11 +90,6 @@ public:
         return m_cacheSlot;
     }
 
-    bool isComputingPaintingRect() const
-    {
-        return m_cacheSlot == PaintingClipRectsIgnoringOverflowClip || m_cacheSlot == PaintingClipRects;
-    }
-
     const PaintLayer* rootLayer;
     const OverlayScrollbarSizeRelevancy scrollbarRelevancy;
 
@@ -164,8 +159,6 @@ public:
     LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
     LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
 
-    ClipRects* getClipRects(const ClipRectsContext&) const;
-
     ClipRect backgroundClipRect(const ClipRectsContext&) const;
 
     // This method figures out our layerBounds in coordinates relative to
@@ -175,6 +168,8 @@ public:
     void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
         ClipRect& backgroundRect, ClipRect& foregroundRect, const LayoutPoint* offsetFromRoot = 0) const;
 private:
+    ClipRects* getClipRects(const ClipRectsContext&) const;
+
     void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
     ClipRects* clipRectsIfCached(const ClipRectsContext&) const;
     ClipRects* storeClipRectsInCache(const ClipRectsContext&, ClipRects* parentClipRects, const ClipRects&) const;
