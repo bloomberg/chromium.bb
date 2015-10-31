@@ -59,7 +59,7 @@ void convertDeviceRequestOptions(const USBDeviceRequestOptions& options, WebUSBD
 // Allows using a CallbackPromiseAdapter with a WebVector to resolve the
 // getDevices() promise with a HeapVector owning USBDevices.
 class DeviceArray {
-    WTF_MAKE_NONCOPYABLE(DeviceArray);
+    STATIC_ONLY(DeviceArray);
 public:
     using WebType = OwnPtr<WebVector<WebUSBDevice*>>;
 
@@ -70,9 +70,6 @@ public:
             devices.append(USBDevice::create(adoptPtr(webDevice)));
         return devices;
     }
-
-private:
-    DeviceArray() = delete;
 };
 
 } // namespace
