@@ -403,7 +403,7 @@ public class ShortcutHelper {
      * @return the dimensions in dp which the image should have.
      */
     public static int getIdealSplashImageSizeInDp(Context context) {
-        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_size);
+        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_size_ideal);
     }
 
     /**
@@ -412,7 +412,7 @@ public class ShortcutHelper {
      * @return the lower bound of the size which the image should have in dp.
      */
     public static int getMinimumSplashImageSizeInDp(Context context) {
-        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_min_size);
+        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_size_minimum);
     }
 
     /**

@@ -211,7 +211,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
         // Test that bitmap sizes match expectations.
         int idealSize = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.webapp_splash_image_size);
+                R.dimen.webapp_splash_image_size_ideal);
         assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
         assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
     }

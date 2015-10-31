@@ -72828,6 +72828,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="No splashscreen icon"/>
   <int value="1" label="Fallback icon"/>
   <int value="2" label="Custom icon"/>
+  <int value="3" label="Small custom icon"/>
 </enum>
 
 <enum name="SqliteErrorCode" type="int">

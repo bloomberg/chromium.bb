@@ -25,6 +25,8 @@ import java.util.concurrent.TimeoutException;
  */
 public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<WebappActivity0> {
     static final String WEBAPP_ID = "webapp_id";
+    static final String WEBAPP_NAME = "webapp name";
+    static final String WEBAPP_SHORT_NAME = "webapp short name";
 
     // Empty 192x192 image generated with:
     // ShortcutHelper.encodeBitmapAsString(Bitmap.createBitmap(192, 192, Bitmap.Config.ARGB_4444));
@@ -76,6 +78,8 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
         intent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + WEBAPP_ID));
         intent.putExtra(ShortcutHelper.EXTRA_ID, WEBAPP_ID);
         intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");
+        intent.putExtra(ShortcutHelper.EXTRA_NAME, WEBAPP_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, WEBAPP_SHORT_NAME);
         return intent;
     }
 

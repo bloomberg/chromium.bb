@@ -30,7 +30,8 @@ public class WebappUma {
     public static final int SPLASHSCREEN_ICON_TYPE_NONE = 0;
     public static final int SPLASHSCREEN_ICON_TYPE_FALLBACK = 1;
     public static final int SPLASHSCREEN_ICON_TYPE_CUSTOM = 2;
-    public static final int SPLASHSCREEN_ICON_TYPE_MAX = 3;
+    public static final int SPLASHSCREEN_ICON_TYPE_CUSTOM_SMALL = 3;
+    public static final int SPLASHSCREEN_ICON_TYPE_MAX = 4;
 
     // Histogram names are defined in tools/metrics/histograms/histograms.xml.
     public static final String HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR =
