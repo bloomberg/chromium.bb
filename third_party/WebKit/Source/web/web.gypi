@@ -321,8 +321,8 @@
       ['OS!="mac"',
         {
           'web_unittest_files': [
-            # Mac uses ScrollAnimatorMac instead of ScrollAnimatorNone.
-            'tests/ScrollAnimatorNoneTest.cpp',
+            # Mac uses ScrollAnimatorMac instead of ScrollAnimator.
+            'tests/ScrollAnimatorTest.cpp',
           ],
         }
       ],

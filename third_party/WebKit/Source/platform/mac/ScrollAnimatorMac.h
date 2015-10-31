@@ -30,7 +30,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollAnimatorBase.h"
 #include "wtf/RetainPtr.h"
 
 OBJC_CLASS WebScrollAnimationHelperDelegate;
@@ -43,7 +43,7 @@ namespace blink {
 
 class Scrollbar;
 
-class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimator {
+class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
 public:
     ScrollAnimatorMac(ScrollableArea*);

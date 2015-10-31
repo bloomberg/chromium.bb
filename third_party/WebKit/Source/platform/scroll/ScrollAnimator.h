@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Google Inc. All rights reserved.
+ * Copyright (c) 2011, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -31,84 +31,122 @@
 #ifndef ScrollAnimator_h
 #define ScrollAnimator_h
 
-#include "platform/PlatformExport.h"
-#include "platform/PlatformWheelEvent.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "wtf/Forward.h"
+#include "platform/Timer.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/scroll/ScrollAnimatorBase.h"
 
 namespace blink {
 
-class FloatPoint;
-class ScrollableArea;
-class Scrollbar;
+class ScrollAnimatorTest;
 
-class PLATFORM_EXPORT ScrollAnimator {
+class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
 public:
-    static PassOwnPtr<ScrollAnimator> create(ScrollableArea*);
-
-    virtual ~ScrollAnimator();
-
-    // Computes a scroll destination for the given parameters.  The returned
-    // ScrollResultOneDimensional will have didScroll set to false if already at
-    // the destination.  Otherwise, starts scrolling towards the destination and
-    // didScroll is true.  Scrolling may be immediate or animated. The base
-    // class implementation always scrolls immediately, never animates.
-    virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
-
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
-
-    ScrollableArea* scrollableArea() const { return m_scrollableArea; }
-
-    virtual void setIsActive() { }
-
-#if OS(MACOSX)
-    virtual void handleWheelEventPhase(PlatformWheelEventPhase) { }
-#endif
-
-    void setCurrentPosition(const FloatPoint&);
-    FloatPoint currentPosition() const;
-
-    virtual void cancelAnimations() { }
-    virtual void serviceScrollAnimations() { }
-    virtual bool hasRunningAnimation() const { return false; }
-
-    virtual void contentAreaWillPaint() const { }
-    virtual void mouseEnteredContentArea() const { }
-    virtual void mouseExitedContentArea() const { }
-    virtual void mouseMovedInContentArea() const { }
-    virtual void mouseEnteredScrollbar(Scrollbar*) const { }
-    virtual void mouseExitedScrollbar(Scrollbar*) const { }
-    virtual void willStartLiveResize() { }
-    virtual void updateAfterLayout() { }
-    virtual void contentsResized() const { }
-    virtual void willEndLiveResize() { }
-    virtual void contentAreaDidShow() const { }
-    virtual void contentAreaDidHide() const { }
-
-    virtual void finishCurrentScrollAnimations() { }
-
-    virtual void didAddVerticalScrollbar(Scrollbar*) { }
-    virtual void willRemoveVerticalScrollbar(Scrollbar*) { }
-    virtual void didAddHorizontalScrollbar(Scrollbar*) { }
-    virtual void willRemoveHorizontalScrollbar(Scrollbar*) { }
-
-    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*) { return true; }
-
-    virtual void notifyContentAreaScrolled(const FloatSize&) { }
-
-    virtual bool setScrollbarsVisibleForTesting(bool) { return false; }
-protected:
     explicit ScrollAnimator(ScrollableArea*);
+    ~ScrollAnimator() override;
 
-    virtual void notifyPositionChanged();
+    ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
+    void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
-    ScrollableArea* m_scrollableArea;
-    float m_currentPosX; // We avoid using a FloatPoint in order to reduce
-    float m_currentPosY; // subclass code complexity.
+    void cancelAnimations() override;
+    void serviceScrollAnimations() override;
+    bool hasRunningAnimation() const override;
 
-private:
-    float clampScrollPosition(ScrollbarOrientation, float);
+    void updateAfterLayout() override;
+    void willEndLiveResize() override;
+    void didAddVerticalScrollbar(Scrollbar*) override;
+    void didAddHorizontalScrollbar(Scrollbar*) override;
+
+    enum Curve {
+        Linear,
+        Quadratic,
+        Cubic,
+        Quartic,
+        Bounce
+    };
+
+    struct PLATFORM_EXPORT Parameters {
+        Parameters();
+        Parameters(bool isEnabled, double animationTime, double repeatMinimumSustainTime, Curve attackCurve, double attackTime, Curve releaseCurve, double releaseTime, Curve coastTimeCurve, double maximumCoastTime);
+
+        // Note that the times can be overspecified such that releaseTime or releaseTime and attackTime are greater
+        // than animationTime. animationTime takes priority over releaseTime, capping it. attackTime is capped at
+        // whatever time remains, or zero if none.
+        bool m_isEnabled;
+        double m_animationTime;
+        double m_repeatMinimumSustainTime;
+
+        Curve m_attackCurve;
+        double m_attackTime;
+
+        Curve m_releaseCurve;
+        double m_releaseTime;
+
+        Curve m_coastTimeCurve;
+        double m_maximumCoastTime;
+    };
+
+protected:
+    virtual void animationWillStart() { }
+    virtual void animationDidFinish() { }
+
+    Parameters parametersForScrollGranularity(ScrollGranularity) const;
+
+    friend class ScrollAnimatorTest;
+
+    struct PLATFORM_EXPORT PerAxisData {
+        PerAxisData(float* currentPos, int visibleLength);
+        void reset();
+        bool updateDataFromParameters(float step, float delta, float scrollableSize, double currentTime, Parameters*);
+        bool animateScroll(double currentTime);
+        void updateVisibleLength(int visibleLength);
+
+        static double curveAt(Curve, double t);
+        static double attackCurve(Curve, double deltaT, double curveT, double startPos, double attackPos);
+        static double releaseCurve(Curve, double deltaT, double curveT, double releasePos, double desiredPos);
+        static double coastCurve(Curve, double factor);
+
+        static double curveIntegralAt(Curve, double t);
+        static double attackArea(Curve, double startT, double endT);
+        static double releaseArea(Curve, double startT, double endT);
+
+        double newScrollAnimationPosition(double deltaTime);
+
+        float* m_currentPosition;
+        double m_currentVelocity;
+
+        double m_desiredPosition;
+        double m_desiredVelocity;
+
+        double m_startPosition;
+        double m_startTime;
+        double m_startVelocity;
+
+        double m_animationTime;
+        double m_lastAnimationTime;
+
+        double m_attackPosition;
+        double m_attackTime;
+        Curve m_attackCurve;
+
+        double m_releasePosition;
+        double m_releaseTime;
+        Curve m_releaseCurve;
+
+        int m_visibleLength;
+    };
+
+    void startNextTimer();
+    void animationTimerFired();
+
+    void stopAnimationTimerIfNeeded();
+    bool animationTimerActive();
+    void updateVisibleLengths();
+
+    PerAxisData m_horizontalData;
+    PerAxisData m_verticalData;
+
+    double m_startTime;
+    bool m_animationActive;
 };
 
 } // namespace blink

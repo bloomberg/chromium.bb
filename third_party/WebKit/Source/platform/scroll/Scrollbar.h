@@ -41,7 +41,7 @@ class GraphicsContext;
 class IntRect;
 class PlatformGestureEvent;
 class PlatformMouseEvent;
-class ScrollAnimator;
+class ScrollAnimatorBase;
 class ScrollableArea;
 class ScrollbarTheme;
 

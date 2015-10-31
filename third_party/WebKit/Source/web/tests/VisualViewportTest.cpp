@@ -1588,7 +1588,7 @@ TEST_P(ParameterizedVisualViewportTest, FractionalMaxScrollOffset)
 
 // Tests that the slow scrolling after an impl scroll on the visual viewport
 // is continuous. crbug.com/453460 was caused by the impl-path not updating the
-// ScrollAnimator class.
+// ScrollAnimatorBase class.
 TEST_P(ParameterizedVisualViewportTest, SlowScrollAfterImplScroll)
 {
     initializeWithDesktopSettings();

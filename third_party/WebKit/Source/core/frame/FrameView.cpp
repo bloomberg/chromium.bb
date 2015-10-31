@@ -95,7 +95,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
-#include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFrameScheduler.h"
@@ -268,7 +268,7 @@ void FrameView::dispose()
 {
     RELEASE_ASSERT(!isInPerformLayout());
 
-    if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
+    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
         scrollAnimator->cancelAnimations();
     cancelProgrammaticScrollAnimation();
 

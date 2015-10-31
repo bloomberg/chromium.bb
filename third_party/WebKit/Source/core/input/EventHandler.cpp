@@ -92,7 +92,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/Image.h"
 #include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
@@ -1910,13 +1910,13 @@ bool EventHandler::handleGestureShowPress()
     FrameView* view = m_frame->view();
     if (!view)
         return false;
-    if (ScrollAnimator* scrollAnimator = view->existingScrollAnimator())
+    if (ScrollAnimatorBase* scrollAnimator = view->existingScrollAnimator())
         scrollAnimator->cancelAnimations();
     const FrameView::ScrollableAreaSet* areas = view->scrollableAreas();
     if (!areas)
         return false;
     for (const ScrollableArea* scrollableArea : *areas) {
-        ScrollAnimator* animator = scrollableArea->existingScrollAnimator();
+        ScrollAnimatorBase* animator = scrollableArea->existingScrollAnimator();
         if (animator)
             animator->cancelAnimations();
     }

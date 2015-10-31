@@ -30,7 +30,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/DoublePoint.h"
 #include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/Noncopyable.h"
@@ -45,7 +45,7 @@ class HostWindow;
 class PlatformWheelEvent;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
-class ScrollAnimator;
+class ScrollAnimatorBase;
 class WebCompositorAnimationTimeline;
 
 enum ScrollBehavior {
@@ -122,11 +122,11 @@ public:
     void setScrollbarOverlayStyle(ScrollbarOverlayStyle);
     ScrollbarOverlayStyle scrollbarOverlayStyle() const { return static_cast<ScrollbarOverlayStyle>(m_scrollbarOverlayStyle); }
 
-    // This getter will create a ScrollAnimator if it doesn't already exist.
-    ScrollAnimator* scrollAnimator() const;
+    // This getter will create a ScrollAnimatorBase if it doesn't already exist.
+    ScrollAnimatorBase* scrollAnimator() const;
 
-    // This getter will return null if the ScrollAnimator hasn't been created yet.
-    ScrollAnimator* existingScrollAnimator() const { return m_animators ? m_animators->scrollAnimator.get() : 0; }
+    // This getter will return null if the ScrollAnimatorBase hasn't been created yet.
+    ScrollAnimatorBase* existingScrollAnimator() const { return m_animators ? m_animators->scrollAnimator.get() : 0; }
 
     ProgrammaticScrollAnimator* programmaticScrollAnimator() const;
     ProgrammaticScrollAnimator* existingProgrammaticScrollAnimator() const
@@ -306,7 +306,7 @@ protected:
     void resetScrollOriginChanged() { m_scrollOriginChanged = false; }
 
     // Needed to let the animators call scrollPositionChanged.
-    friend class ScrollAnimator;
+    friend class ScrollAnimatorBase;
     friend class ProgrammaticScrollAnimator;
     void scrollPositionChanged(const DoublePoint&, ScrollType);
 
@@ -339,7 +339,7 @@ private:
     IntRect m_verticalBarDamage;
 
     struct ScrollableAreaAnimators {
-        OwnPtr<ScrollAnimator> scrollAnimator;
+        OwnPtr<ScrollAnimatorBase> scrollAnimator;
         OwnPtr<ProgrammaticScrollAnimator> programmaticScrollAnimator;
     };
 

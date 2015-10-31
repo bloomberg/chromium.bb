@@ -2538,7 +2538,7 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node, bool visible)
     ScrollableArea* scrollableArea = layer->scrollableArea();
     if (!scrollableArea)
         return false;
-    ScrollAnimator* animator = layer->scrollableArea()->scrollAnimator();
+    ScrollAnimatorBase* animator = layer->scrollableArea()->scrollAnimator();
     if (!animator)
         return false;
 

@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Tests for the ScrollAnimatorNone class.
+// Tests for the ScrollAnimator class.
 
 #include "config.h"
-#include "platform/scroll/ScrollAnimatorNone.h"
+#include "platform/scroll/ScrollAnimator.h"
 
 #include "platform/Logging.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollableArea.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -86,7 +86,7 @@ private:
     bool m_scrollAnimatorEnabled;
 };
 
-class MockScrollAnimatorNone : public ScrollAnimatorNone {
+class MockScrollAnimatorNone : public ScrollAnimator {
 public:
     static PassOwnPtr<MockScrollAnimatorNone> create(ScrollableArea* scrollableArea)
     {
@@ -118,7 +118,7 @@ public:
 
 private:
     explicit MockScrollAnimatorNone(ScrollableArea* scrollableArea)
-        : ScrollAnimatorNone(scrollableArea) { }
+        : ScrollAnimator(scrollableArea) { }
 
 };
 
@@ -187,11 +187,11 @@ TEST(ScrollAnimatorEnabled, Disabled)
     scrollAnimatorNone->reset();
 }
 
-class ScrollAnimatorNoneTest : public testing::Test {
+class ScrollAnimatorTest : public testing::Test {
 public:
-    struct SavePerAxisData : public ScrollAnimatorNone::PerAxisData {
-        SavePerAxisData(const ScrollAnimatorNone::PerAxisData& data)
-            : ScrollAnimatorNone::PerAxisData(0, 768)
+    struct SavePerAxisData : public ScrollAnimator::PerAxisData {
+        SavePerAxisData(const ScrollAnimator::PerAxisData& data)
+            : ScrollAnimator::PerAxisData(0, 768)
             , m_mockScrollableArea(MockScrollableArea::create(true))
             , m_mockScrollAnimatorNone(MockScrollAnimatorNone::create(m_mockScrollableArea.get()))
         {
@@ -219,7 +219,7 @@ public:
         OwnPtr<MockScrollAnimatorNone> m_mockScrollAnimatorNone;
     };
 
-    ScrollAnimatorNoneTest()
+    ScrollAnimatorTest()
         : m_mockScrollableArea(MockScrollableArea::create(true))
         , m_mockScrollAnimatorNone(MockScrollAnimatorNone::create(m_mockScrollableArea.get()))
     {
@@ -228,7 +228,7 @@ public:
     void SetUp() override
     {
         m_currentPosition = 100;
-        m_data = new ScrollAnimatorNone::PerAxisData(&m_currentPosition, 768);
+        m_data = new ScrollAnimator::PerAxisData(&m_currentPosition, 768);
     }
     void TearDown() override
     {
@@ -236,17 +236,17 @@ public:
     }
 
     void reset();
-    bool updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, ScrollAnimatorNone::Parameters*);
+    bool updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, ScrollAnimator::Parameters*);
     bool animateScroll(double currentTime);
 
-    double attackArea(ScrollAnimatorNone::Curve, double startT, double endT);
-    double releaseArea(ScrollAnimatorNone::Curve, double startT, double endT);
-    double attackCurve(ScrollAnimatorNone::Curve, double deltaT, double curveT, double startPosition, double attackPosition);
-    double releaseCurve(ScrollAnimatorNone::Curve, double deltaT, double curveT, double releasePosition, double desiredPosition);
-    double coastCurve(ScrollAnimatorNone::Curve, double factor);
+    double attackArea(ScrollAnimator::Curve, double startT, double endT);
+    double releaseArea(ScrollAnimator::Curve, double startT, double endT);
+    double attackCurve(ScrollAnimator::Curve, double deltaT, double curveT, double startPosition, double attackPosition);
+    double releaseCurve(ScrollAnimator::Curve, double deltaT, double curveT, double releasePosition, double desiredPosition);
+    double coastCurve(ScrollAnimator::Curve, double factor);
 
-    void curveTestInner(ScrollAnimatorNone::Curve, double step, double time);
-    void curveTest(ScrollAnimatorNone::Curve);
+    void curveTestInner(ScrollAnimator::Curve, double step, double time);
+    void curveTest(ScrollAnimator::Curve);
 
     void checkDesiredPosition(float expectedPosition);
     void checkSoftLanding(float expectedPosition);
@@ -259,21 +259,21 @@ public:
     OwnPtrWillBePersistent<MockScrollableArea> m_mockScrollableArea;
     OwnPtr<MockScrollAnimatorNone> m_mockScrollAnimatorNone;
     bool m_scrollingDown;
-    ScrollAnimatorNone::PerAxisData* m_data;
+    ScrollAnimator::PerAxisData* m_data;
 };
 
-double ScrollAnimatorNoneTest::kTickTime = 1 / 60.0;
-double ScrollAnimatorNoneTest::kAnimationTime = 0.01;
-double ScrollAnimatorNoneTest::kStartTime = 10.0;
-double ScrollAnimatorNoneTest::kEndTime = 20.0;
+double ScrollAnimatorTest::kTickTime = 1 / 60.0;
+double ScrollAnimatorTest::kAnimationTime = 0.01;
+double ScrollAnimatorTest::kStartTime = 10.0;
+double ScrollAnimatorTest::kEndTime = 20.0;
 
-void ScrollAnimatorNoneTest::reset()
+void ScrollAnimatorTest::reset()
 {
     m_data->reset();
     m_scrollingDown = true;
 }
 
-bool ScrollAnimatorNoneTest::updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, ScrollAnimatorNone::Parameters* parameters)
+bool ScrollAnimatorTest::updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, ScrollAnimator::Parameters* parameters)
 {
     if (step * multiplier)
         m_scrollingDown = (step * multiplier > 0);
@@ -310,7 +310,7 @@ bool ScrollAnimatorNoneTest::updateDataFromParameters(float step, float multipli
     return result;
 }
 
-bool ScrollAnimatorNoneTest::animateScroll(double currentTime)
+bool ScrollAnimatorTest::animateScroll(double currentTime)
 {
     double oldPosition = *m_data->m_currentPosition;
     bool testEstimatedMaxVelocity = m_data->m_startTime + m_data->m_animationTime - m_data->m_lastAnimationTime > m_data->m_releaseTime;
@@ -338,32 +338,32 @@ bool ScrollAnimatorNoneTest::animateScroll(double currentTime)
     return result;
 }
 
-double ScrollAnimatorNoneTest::attackArea(ScrollAnimatorNone::Curve curve, double startT, double endT)
+double ScrollAnimatorTest::attackArea(ScrollAnimator::Curve curve, double startT, double endT)
 {
-    return ScrollAnimatorNone::PerAxisData::attackArea(curve, startT, endT);
+    return ScrollAnimator::PerAxisData::attackArea(curve, startT, endT);
 }
 
-double ScrollAnimatorNoneTest::releaseArea(ScrollAnimatorNone::Curve curve, double startT, double endT)
+double ScrollAnimatorTest::releaseArea(ScrollAnimator::Curve curve, double startT, double endT)
 {
-    return ScrollAnimatorNone::PerAxisData::releaseArea(curve, startT, endT);
+    return ScrollAnimator::PerAxisData::releaseArea(curve, startT, endT);
 }
 
-double ScrollAnimatorNoneTest::attackCurve(ScrollAnimatorNone::Curve curve, double deltaT, double curveT, double startPosition, double attackPosition)
+double ScrollAnimatorTest::attackCurve(ScrollAnimator::Curve curve, double deltaT, double curveT, double startPosition, double attackPosition)
 {
-    return ScrollAnimatorNone::PerAxisData::attackCurve(curve, deltaT, curveT, startPosition, attackPosition);
+    return ScrollAnimator::PerAxisData::attackCurve(curve, deltaT, curveT, startPosition, attackPosition);
 }
 
-double ScrollAnimatorNoneTest::releaseCurve(ScrollAnimatorNone::Curve curve, double deltaT, double curveT, double releasePosition, double desiredPosition)
+double ScrollAnimatorTest::releaseCurve(ScrollAnimator::Curve curve, double deltaT, double curveT, double releasePosition, double desiredPosition)
 {
-    return ScrollAnimatorNone::PerAxisData::releaseCurve(curve, deltaT, curveT, releasePosition, desiredPosition);
+    return ScrollAnimator::PerAxisData::releaseCurve(curve, deltaT, curveT, releasePosition, desiredPosition);
 }
 
-double ScrollAnimatorNoneTest::coastCurve(ScrollAnimatorNone::Curve curve, double factor)
+double ScrollAnimatorTest::coastCurve(ScrollAnimator::Curve curve, double factor)
 {
-    return ScrollAnimatorNone::PerAxisData::coastCurve(curve, factor);
+    return ScrollAnimator::PerAxisData::coastCurve(curve, factor);
 }
 
-void ScrollAnimatorNoneTest::curveTestInner(ScrollAnimatorNone::Curve curve, double step, double time)
+void ScrollAnimatorTest::curveTestInner(ScrollAnimator::Curve curve, double step, double time)
 {
     const double kPosition = 1000;
 
@@ -380,7 +380,7 @@ void ScrollAnimatorNoneTest::curveTestInner(ScrollAnimatorNone::Curve curve, dou
         accumulate += (oldPos + newPos) / 2 * (step / time);
         oldPos = newPos;
         oldVelocity = velocity;
-        if (curve != ScrollAnimatorNone::Bounce) {
+        if (curve != ScrollAnimator::Bounce) {
             EXPECT_LE(-.0001, velocityDelta);
             EXPECT_LT(0, delta);
         }
@@ -402,7 +402,7 @@ void ScrollAnimatorNoneTest::curveTestInner(ScrollAnimatorNone::Curve curve, dou
         accumulate -= (kPosition - (oldPos + newPos) / 2) * (step / time);
         oldPos = newPos;
         oldVelocity = velocity;
-        if (curve != ScrollAnimatorNone::Bounce) {
+        if (curve != ScrollAnimator::Bounce) {
             EXPECT_GE(0.01, velocityDelta);
             EXPECT_LT(0, delta);
         }
@@ -413,7 +413,7 @@ void ScrollAnimatorNoneTest::curveTestInner(ScrollAnimatorNone::Curve curve, dou
     }
 }
 
-void ScrollAnimatorNoneTest::curveTest(ScrollAnimatorNone::Curve curve)
+void ScrollAnimatorTest::curveTest(ScrollAnimator::Curve curve)
 {
     curveTestInner(curve, 0.01, 0.25);
     curveTestInner(curve, 0.2, 10);
@@ -422,57 +422,57 @@ void ScrollAnimatorNoneTest::curveTest(ScrollAnimatorNone::Curve curve)
     curveTestInner(curve, 0.25, 40);
 }
 
-void ScrollAnimatorNoneTest::checkDesiredPosition(float expectedPosition)
+void ScrollAnimatorTest::checkDesiredPosition(float expectedPosition)
 {
     EXPECT_EQ(expectedPosition, m_data->m_desiredPosition);
 }
 
-void ScrollAnimatorNoneTest::checkSoftLanding(float expectedPosition)
+void ScrollAnimatorTest::checkSoftLanding(float expectedPosition)
 {
     EXPECT_EQ(expectedPosition, m_currentPosition);
     EXPECT_LE(m_data->m_desiredVelocity / 2, m_data->m_currentVelocity);
 }
 
-TEST_F(ScrollAnimatorNoneTest, CurveMathLinear)
+TEST_F(ScrollAnimatorTest, CurveMathLinear)
 {
-    curveTest(ScrollAnimatorNone::Linear);
+    curveTest(ScrollAnimator::Linear);
 }
 
-TEST_F(ScrollAnimatorNoneTest, CurveMathQuadratic)
+TEST_F(ScrollAnimatorTest, CurveMathQuadratic)
 {
-    curveTest(ScrollAnimatorNone::Quadratic);
+    curveTest(ScrollAnimator::Quadratic);
 }
 
-TEST_F(ScrollAnimatorNoneTest, CurveMathCubic)
+TEST_F(ScrollAnimatorTest, CurveMathCubic)
 {
-    curveTest(ScrollAnimatorNone::Cubic);
+    curveTest(ScrollAnimator::Cubic);
 }
 
-TEST_F(ScrollAnimatorNoneTest, CurveMathQuartic)
+TEST_F(ScrollAnimatorTest, CurveMathQuartic)
 {
-    curveTest(ScrollAnimatorNone::Quartic);
+    curveTest(ScrollAnimator::Quartic);
 }
 
-TEST_F(ScrollAnimatorNoneTest, CurveMathBounce)
+TEST_F(ScrollAnimatorTest, CurveMathBounce)
 {
-    curveTest(ScrollAnimatorNone::Bounce);
+    curveTest(ScrollAnimator::Bounce);
 }
 
-TEST_F(ScrollAnimatorNoneTest, CurveMathCoast)
+TEST_F(ScrollAnimatorTest, CurveMathCoast)
 {
     for (double t = .25; t < 1; t += .25) {
-        EXPECT_EQ(t, coastCurve(ScrollAnimatorNone::Linear, t));
-        EXPECT_LT(t, coastCurve(ScrollAnimatorNone::Quadratic, t));
-        EXPECT_LT(t, coastCurve(ScrollAnimatorNone::Cubic, t));
-        EXPECT_LT(coastCurve(ScrollAnimatorNone::Quadratic, t), coastCurve(ScrollAnimatorNone::Cubic, t));
-        EXPECT_LT(t, coastCurve(ScrollAnimatorNone::Quartic, t));
-        EXPECT_LT(coastCurve(ScrollAnimatorNone::Cubic, t), coastCurve(ScrollAnimatorNone::Quartic, t));
+        EXPECT_EQ(t, coastCurve(ScrollAnimator::Linear, t));
+        EXPECT_LT(t, coastCurve(ScrollAnimator::Quadratic, t));
+        EXPECT_LT(t, coastCurve(ScrollAnimator::Cubic, t));
+        EXPECT_LT(coastCurve(ScrollAnimator::Quadratic, t), coastCurve(ScrollAnimator::Cubic, t));
+        EXPECT_LT(t, coastCurve(ScrollAnimator::Quartic, t));
+        EXPECT_LT(coastCurve(ScrollAnimator::Cubic, t), coastCurve(ScrollAnimator::Quartic, t));
     }
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollOnceLinear)
+TEST_F(ScrollAnimatorTest, ScrollOnceLinear)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Linear, 3 * kTickTime, ScrollAnimatorNone::Linear, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Linear, 3 * kTickTime, ScrollAnimator::Linear, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -480,9 +480,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollOnceLinear)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollOnceQuadratic)
+TEST_F(ScrollAnimatorTest, ScrollOnceQuadratic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -490,9 +490,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollOnceQuadratic)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollLongQuadratic)
+TEST_F(ScrollAnimatorTest, ScrollLongQuadratic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 20 * kTickTime, 0, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 20 * kTickTime, 0, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -500,9 +500,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollLongQuadratic)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollQuadraticNoSustain)
+TEST_F(ScrollAnimatorTest, ScrollQuadraticNoSustain)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 8 * kTickTime, 0, ScrollAnimatorNone::Quadratic, 4 * kTickTime, ScrollAnimatorNone::Quadratic, 4 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 8 * kTickTime, 0, ScrollAnimator::Quadratic, 4 * kTickTime, ScrollAnimator::Quadratic, 4 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -510,9 +510,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollQuadraticNoSustain)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollQuadraticSmoothed)
+TEST_F(ScrollAnimatorTest, ScrollQuadraticSmoothed)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 8 * kTickTime, 8 * kTickTime, ScrollAnimatorNone::Quadratic, 4 * kTickTime, ScrollAnimatorNone::Quadratic, 4 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 8 * kTickTime, 8 * kTickTime, ScrollAnimator::Quadratic, 4 * kTickTime, ScrollAnimator::Quadratic, 4 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -520,9 +520,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollQuadraticSmoothed)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollOnceCubic)
+TEST_F(ScrollAnimatorTest, ScrollOnceCubic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -530,9 +530,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollOnceCubic)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollOnceQuartic)
+TEST_F(ScrollAnimatorTest, ScrollOnceQuartic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Quartic, 3 * kTickTime, ScrollAnimatorNone::Quartic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Quartic, 3 * kTickTime, ScrollAnimator::Quartic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -540,9 +540,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollOnceQuartic)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollOnceShort)
+TEST_F(ScrollAnimatorTest, ScrollOnceShort)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -550,9 +550,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollOnceShort)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollTwiceQuadratic)
+TEST_F(ScrollAnimatorTest, ScrollTwiceQuadratic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -581,9 +581,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollTwiceQuadratic)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollLotsQuadratic)
+TEST_F(ScrollAnimatorTest, ScrollLotsQuadratic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 10000, kStartTime, &parameters));
     bool result = true;
@@ -602,9 +602,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollLotsQuadratic)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollLotsQuadraticSmoothed)
+TEST_F(ScrollAnimatorTest, ScrollLotsQuadraticSmoothed)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 10 * kTickTime, 6 * kTickTime, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Quadratic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 10 * kTickTime, 6 * kTickTime, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Quadratic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 10000, kStartTime, &parameters));
     bool result = true;
@@ -623,9 +623,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollLotsQuadraticSmoothed)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollTwiceCubic)
+TEST_F(ScrollAnimatorTest, ScrollTwiceCubic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -654,9 +654,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollTwiceCubic)
         result = animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollLotsCubic)
+TEST_F(ScrollAnimatorTest, ScrollLotsCubic)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 10000, kStartTime, &parameters));
     bool result = true;
@@ -675,9 +675,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollLotsCubic)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollLotsCubicSmoothed)
+TEST_F(ScrollAnimatorTest, ScrollLotsCubicSmoothed)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 10 * kTickTime, 6 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 10 * kTickTime, 6 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 10000, kStartTime, &parameters));
     bool result = true;
@@ -696,9 +696,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollLotsCubicSmoothed)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollWheelTrace)
+TEST_F(ScrollAnimatorTest, ScrollWheelTrace)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 11 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 11 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     // Constructed from an actual scroll wheel trace that exhibited a glitch.
     bool result = updateDataFromParameters(1, 53.33f, 1000, 100.5781f, &parameters);
@@ -720,9 +720,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollWheelTrace)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollWheelTraceSmoothed)
+TEST_F(ScrollAnimatorTest, ScrollWheelTraceSmoothed)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 11 * kTickTime, 7 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 11 * kTickTime, 7 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     // Constructed from an actual scroll wheel trace that exhibited a glitch.
     bool result = updateDataFromParameters(1, 53.33f, 1000, 100.5781f, &parameters);
@@ -744,9 +744,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollWheelTraceSmoothed)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, LinuxTrackPadTrace)
+TEST_F(ScrollAnimatorTest, LinuxTrackPadTrace)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 11 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 11 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     bool result = updateDataFromParameters(1.00, 60.00, 1000, 100.6863, &parameters);
     result = result && updateDataFromParameters(1.00, 20.00, 1000, 100.6897, &parameters);
@@ -774,9 +774,9 @@ TEST_F(ScrollAnimatorNoneTest, LinuxTrackPadTrace)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, LinuxTrackPadTraceSmoothed)
+TEST_F(ScrollAnimatorTest, LinuxTrackPadTraceSmoothed)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 11 * kTickTime, 7 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 11 * kTickTime, 7 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     bool result = updateDataFromParameters(1.00, 60.00, 1000, 100.6863, &parameters);
     result = result && updateDataFromParameters(1.00, 20.00, 1000, 100.6897, &parameters);
@@ -804,9 +804,9 @@ TEST_F(ScrollAnimatorNoneTest, LinuxTrackPadTraceSmoothed)
         result = result && animateScroll(t);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollDownToBumper)
+TEST_F(ScrollAnimatorTest, ScrollDownToBumper)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 10 * kTickTime, 7 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 10 * kTickTime, 7 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 20, 200, kStartTime, &parameters));
     bool result = true;
@@ -824,9 +824,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollDownToBumper)
     checkSoftLanding(200);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollUpToBumper)
+TEST_F(ScrollAnimatorTest, ScrollUpToBumper)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 10 * kTickTime, 7 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 10 * kTickTime, 7 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, -20, 200, kStartTime, &parameters));
     bool result = true;
@@ -844,9 +844,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollUpToBumper)
     checkSoftLanding(0);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollUpToBumperCoast)
+TEST_F(ScrollAnimatorTest, ScrollUpToBumperCoast)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 11 * kTickTime, 2 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 1);
+    ScrollAnimator::Parameters parameters(true, 11 * kTickTime, 2 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 1);
 
     m_currentPosition = 40000;
     EXPECT_TRUE(updateDataFromParameters(1, -10000, 50000, kStartTime, &parameters));
@@ -865,9 +865,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollUpToBumperCoast)
     checkSoftLanding(0);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollDownToBumperCoast)
+TEST_F(ScrollAnimatorTest, ScrollDownToBumperCoast)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 11 * kTickTime, 2 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 1);
+    ScrollAnimator::Parameters parameters(true, 11 * kTickTime, 2 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 1);
 
     m_currentPosition = 10000;
     EXPECT_TRUE(updateDataFromParameters(1, 10000, 50000, kStartTime, &parameters));
@@ -886,9 +886,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollDownToBumperCoast)
     checkSoftLanding(50000);
 }
 
-TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalency)
+TEST_F(ScrollAnimatorTest, VaryingInputsEquivalency)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Linear, 0);
 
     reset();
     EXPECT_TRUE(updateDataFromParameters(1, 300, 50000, kStartTime, &parameters));
@@ -919,9 +919,9 @@ TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalency)
     EXPECT_EQ(dataSingle, dataMany);
 }
 
-TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalencyCoast)
+TEST_F(ScrollAnimatorTest, VaryingInputsEquivalencyCoast)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Linear, 1);
+    ScrollAnimator::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Linear, 1);
 
     reset();
     updateDataFromParameters(1, 300, 50000, kStartTime, &parameters);
@@ -952,9 +952,9 @@ TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalencyCoast)
     EXPECT_EQ(dataSingle, dataMany);
 }
 
-TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalencyCoastLarge)
+TEST_F(ScrollAnimatorTest, VaryingInputsEquivalencyCoastLarge)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Linear, 1);
+    ScrollAnimator::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Linear, 1);
 
     reset();
     EXPECT_TRUE(updateDataFromParameters(1, 30000, 50000, kStartTime, &parameters));
@@ -985,9 +985,9 @@ TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalencyCoastLarge)
     EXPECT_EQ(dataSingle, dataMany);
 }
 
-TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalencyCoastSteep)
+TEST_F(ScrollAnimatorTest, VaryingInputsEquivalencyCoastSteep)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Cubic, 5 * kTickTime, ScrollAnimatorNone::Quadratic, 1);
+    ScrollAnimator::Parameters parameters(true, 15 * kTickTime, 10 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Cubic, 5 * kTickTime, ScrollAnimator::Quadratic, 1);
 
     reset();
     EXPECT_TRUE(updateDataFromParameters(1, 30000, 50000, kStartTime, &parameters));
@@ -1018,9 +1018,9 @@ TEST_F(ScrollAnimatorNoneTest, VaryingInputsEquivalencyCoastSteep)
     EXPECT_EQ(dataSingle, dataMany);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ScrollStopInMiddle)
+TEST_F(ScrollAnimatorTest, ScrollStopInMiddle)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;
@@ -1039,9 +1039,9 @@ TEST_F(ScrollAnimatorNoneTest, ScrollStopInMiddle)
     checkDesiredPosition(after);
 }
 
-TEST_F(ScrollAnimatorNoneTest, ReverseInMiddle)
+TEST_F(ScrollAnimatorTest, ReverseInMiddle)
 {
-    ScrollAnimatorNone::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Cubic, 3 * kTickTime, ScrollAnimatorNone::Linear, 0);
+    ScrollAnimator::Parameters parameters(true, 7 * kTickTime, 0, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
 
     EXPECT_TRUE(updateDataFromParameters(1, 40, 1000, kStartTime, &parameters));
     bool result = true;

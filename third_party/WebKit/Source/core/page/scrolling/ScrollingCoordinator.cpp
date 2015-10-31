@@ -53,7 +53,7 @@
 #if OS(MACOSX)
 #include "platform/mac/ScrollAnimatorMac.h"
 #endif
-#include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationTimeline.h"

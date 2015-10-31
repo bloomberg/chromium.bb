@@ -322,8 +322,8 @@
 
           # Mac uses only ScrollAnimatorMac.
           ['exclude', 'scroll/ScrollbarThemeNonMacCommon\\.(cpp|h)$'],
-          ['exclude', 'scroll/ScrollAnimatorNone\\.cpp$'],
-          ['exclude', 'scroll/ScrollAnimatorNone\\.h$'],
+          ['exclude', 'scroll/ScrollAnimator\\.cpp$'],
+          ['exclude', 'scroll/ScrollAnimator\\.h$'],
 
           ['exclude', 'fonts/skia/FontCacheSkia\\.cpp$'],
 

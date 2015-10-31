@@ -269,7 +269,7 @@ void PaintLayer::updateLayerPositionRecursive()
     // FIXME(400589): We would like to do this in PaintLayerScrollableArea::updateAfterLayout,
     // but it depends on the size computed by updateLayerPosition.
     if (m_scrollableArea) {
-        if (ScrollAnimator* scrollAnimator = m_scrollableArea->existingScrollAnimator())
+        if (ScrollAnimatorBase* scrollAnimator = m_scrollableArea->existingScrollAnimator())
             scrollAnimator->updateAfterLayout();
     }
 

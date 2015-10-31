@@ -220,8 +220,8 @@ component("platform") {
       # Uses KillRingMac.mm instead.
       "KillRingNone.cpp",
       "fonts/skia/FontCacheSkia.cpp",
-      "scroll/ScrollAnimatorNone.cpp",
-      "scroll/ScrollAnimatorNone.h",
+      "scroll/ScrollAnimator.cpp",
+      "scroll/ScrollAnimator.h",
 
       # Mac uses only ScrollAnimatorMac.
       "scroll/ScrollbarThemeNonMacCommon.cpp",
