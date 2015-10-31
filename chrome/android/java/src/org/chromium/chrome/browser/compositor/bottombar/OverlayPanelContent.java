@@ -156,15 +156,6 @@ public class OverlayPanelContent {
     // ============================================================================================
 
     /**
-     * Creates a ContentViewCore. This method will be overridden by tests.
-     * @param activity The ChromeActivity.
-     * @return The newly created ContentViewCore.
-     */
-    protected ContentViewCore createContentViewCore(ChromeActivity activity) {
-        return new ContentViewCore(activity);
-    }
-
-    /**
      * Create a new ContentViewCore that will be managed by this panel.
      */
     private void createNewContentView() {
@@ -176,7 +167,7 @@ public class OverlayPanelContent {
             destroyContentView();
         }
 
-        mContentViewCore = createContentViewCore(mActivity);
+        mContentViewCore = new ContentViewCore(mActivity);
 
         if (mContentViewClient == null) {
             mContentViewClient = new ContentViewClient();
@@ -254,6 +245,14 @@ public class OverlayPanelContent {
             // After everything has been disposed, notify the observer.
             mContentDelegate.onContentViewDestroyed();
         }
+    }
+
+    /**
+     * @return Whether the ContentViewCore was created.
+     */
+    @VisibleForTesting
+    public boolean didCreateContentView() {
+        return mContentViewCore != null;
     }
 
     /**
