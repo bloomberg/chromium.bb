@@ -19,10 +19,10 @@ import zipfile
 # Some clients do not add //build/android/gyp to PYTHONPATH.
 import md5_check  # pylint: disable=relative-import
 
-CHROMIUM_SRC = os.path.normpath(
-    os.path.join(os.path.dirname(__file__),
-                 os.pardir, os.pardir, os.pardir, os.pardir))
-COLORAMA_ROOT = os.path.join(CHROMIUM_SRC,
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+from pylib import constants
+
+COLORAMA_ROOT = os.path.join(constants.DIR_SOURCE_ROOT,
                              'third_party', 'colorama', 'src')
 # aapt should ignore OWNERS files in addition the default ignore pattern.
 AAPT_IGNORE_PATTERN = ('!OWNERS:!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:' +
@@ -339,8 +339,9 @@ def GetPythonDependencies():
 
   abs_module_paths = map(os.path.abspath, module_paths)
 
+  assert os.path.isabs(constants.DIR_SOURCE_ROOT)
   non_system_module_paths = [
-      p for p in abs_module_paths if p.startswith(CHROMIUM_SRC)]
+      p for p in abs_module_paths if p.startswith(constants.DIR_SOURCE_ROOT)]
   def ConvertPycToPy(s):
     if s.endswith('.pyc'):
       return s[:-1]
