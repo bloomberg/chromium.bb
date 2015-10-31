@@ -1062,11 +1062,6 @@ void FrameView::layout()
     layoutView()->assertSubtreeIsLaidOut();
 #endif
 
-    // Ensure that we become visually non-empty eventually.
-    // TODO(esprehn): This should check isRenderingReady() instead.
-    if (!frame().document()->parsing() && frame().loader().stateMachine()->committedFirstRealDocumentLoad())
-        m_isVisuallyNonEmpty = true;
-
     frame().document()->layoutUpdated();
 }
 
@@ -2611,6 +2606,11 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 
     if (lifecycle().state() < DocumentLifecycle::LayoutClean)
         lifecycle().advanceTo(DocumentLifecycle::LayoutClean);
+
+    // Ensure that we become visually non-empty eventually.
+    // TODO(esprehn): This should check isRenderingReady() instead.
+    if (frame().document()->hasFinishedParsing() && frame().loader().stateMachine()->committedFirstRealDocumentLoad())
+        m_isVisuallyNonEmpty = true;
 }
 
 void FrameView::invalidateTreeIfNeededRecursive()

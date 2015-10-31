@@ -25,6 +25,7 @@ protected:
 
     Document& document();
     WebViewImpl& webView();
+    const SimWebViewClient& webViewClient() const;
     SimCompositor& compositor();
 
 private:

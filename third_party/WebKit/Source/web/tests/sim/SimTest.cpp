@@ -54,6 +54,11 @@ WebViewImpl& SimTest::webView()
     return *m_webViewHelper.webViewImpl();
 }
 
+const SimWebViewClient& SimTest::webViewClient() const
+{
+    return m_webViewClient;
+}
+
 SimCompositor& SimTest::compositor()
 {
     return m_compositor;

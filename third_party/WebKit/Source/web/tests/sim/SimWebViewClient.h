@@ -17,7 +17,18 @@ public:
 
     WebLayerTreeView* layerTreeView() override { return m_layerTreeView; }
 
+    bool hadVisuallyNonEmptyLayout() const { return m_hadVisuallyNonEmptyLayout; }
+    bool hadFinishedParsingLayout() const { return m_hadFinishedParsingLayout; }
+    bool hadFinishedLoadingLayout() const { return m_hadFinishedLoadingLayout; }
+
 private:
+    // WebWidgetClient overrides.
+    void didMeaningfulLayout(WebMeaningfulLayout) override;
+
+    bool m_hadVisuallyNonEmptyLayout;
+    bool m_hadFinishedParsingLayout;
+    bool m_hadFinishedLoadingLayout;
+
     WebLayerTreeView* m_layerTreeView;
 };
 
