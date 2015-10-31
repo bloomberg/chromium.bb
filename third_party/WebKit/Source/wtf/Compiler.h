@@ -42,12 +42,12 @@
 #define WTF_COMPILER_CLANG 1
 #endif
 
-/* COMPILER(MSVC) - Microsoft Visual C++ */
+/* COMPILER(MSVC) - Microsoft Visual C++ (and Clang when compiling for Windows). */
 #if defined(_MSC_VER)
 #define WTF_COMPILER_MSVC 1
 #endif
 
-/* COMPILER(GCC) - GNU Compiler Collection */
+/* COMPILER(GCC) - GNU Compiler Collection (and Clang when compiling for platforms other than Windows). */
 #if defined(__GNUC__)
 #define WTF_COMPILER_GCC 1
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
