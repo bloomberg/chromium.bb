@@ -242,7 +242,8 @@ template("write_build_config") {
   build_config = invoker.build_config
 
   assert(type == "android_apk" || type == "java_library" ||
-         type == "android_resources" || type == "deps_dex")
+         type == "android_resources" || type == "deps_dex" ||
+         type == "android_assets")
 
   action(target_name) {
     deps = []
@@ -283,15 +284,18 @@ template("write_build_config") {
 
     is_java_library = type == "java_library"
     is_apk = type == "android_apk"
+    is_android_assets = type == "android_assets"
     is_android_resources = type == "android_resources"
     is_deps_dex = type == "deps_dex"
 
-    supports_android = is_apk || is_android_resources || is_deps_dex ||
-                       (is_java_library && defined(invoker.supports_android) &&
-                        invoker.supports_android)
-    requires_android = is_apk || is_android_resources || is_deps_dex ||
-                       (is_java_library && defined(invoker.requires_android) &&
-                        invoker.requires_android)
+    supports_android =
+        is_apk || is_android_assets || is_android_resources || is_deps_dex ||
+        (is_java_library && defined(invoker.supports_android) &&
+         invoker.supports_android)
+    requires_android =
+        is_apk || is_android_assets || is_android_resources || is_deps_dex ||
+        (is_java_library && defined(invoker.requires_android) &&
+         invoker.requires_android)
 
     assert(!requires_android || supports_android,
            "requires_android requires" + " supports_android")
@@ -337,6 +341,27 @@ template("write_build_config") {
         "--tested-apk-config",
         rebase_path(apk_under_test_config, root_build_dir),
       ]
+    }
+
+    if (is_android_assets) {
+      if (defined(invoker.asset_sources)) {
+        inputs += invoker.asset_sources
+        _rebased_asset_sources =
+            rebase_path(invoker.asset_sources, root_build_dir)
+        args += [ "--asset-sources=$_rebased_asset_sources" ]
+      }
+      if (defined(invoker.asset_renaming_sources)) {
+        inputs += invoker.asset_renaming_sources
+        _rebased_asset_renaming_sources =
+            rebase_path(invoker.asset_renaming_sources, root_build_dir)
+        args += [ "--asset-renaming-sources=$_rebased_asset_renaming_sources" ]
+
+        # These are zip paths, so no need to rebase.
+        args += [ "--asset-renaming-destinations=${invoker.asset_renaming_destinations}" ]
+      }
+      if (defined(invoker.disable_compression) && invoker.disable_compression) {
+        args += [ "--disable-asset-compression" ]
+      }
     }
 
     if (is_android_resources || is_apk) {
@@ -480,6 +505,8 @@ template("process_java_prebuilt") {
 # Creates an unsigned .apk.
 #
 # Variables
+#   assets_build_config: Path to android_apk .build_config containing merged
+#       asset information.
 #   deps: Specifies the dependencies of this target.
 #   dex_path: Path to classes.dex file to include (optional).
 #   resource_packaged_apk_path: Path to .ap_ to use.
@@ -525,6 +552,15 @@ template("package_apk") {
       "--resource-apk=$_rebased_resource_packaged_apk_path",
       "--output-apk=$_rebased_packaged_apk_path",
     ]
+    if (defined(invoker.assets_build_config)) {
+      inputs += [ invoker.assets_build_config ]
+      _rebased_build_config =
+          rebase_path(invoker.assets_build_config, root_build_dir)
+      args += [
+        "--assets=@FileArg($_rebased_build_config:assets)",
+        "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
+      ]
+    }
     if (defined(invoker.dex_path)) {
       _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
       args += [ "--dex-file=$_rebased_dex_path" ]
@@ -636,6 +672,8 @@ template("create_apk") {
     _incremental_deps = invoker.incremental_deps
   }
 
+  # TODO(agrieve): Remove support for asset_location in favor of using
+  # android_assets() everywhere (http://crbug.com/547162).
   if (defined(invoker.asset_location)) {
     _asset_location = invoker.asset_location
     assert(_asset_location != "")  # Mark as used.
@@ -802,7 +840,11 @@ template("create_apk") {
 
   package_target = "${target_name}__package"
   package_apk(package_target) {
-    forward_variables_from(invoker, [ "native_libs_dir" ])
+    forward_variables_from(invoker,
+                           [
+                             "assets_build_config",
+                             "native_libs_dir",
+                           ])
     deps = _deps + [ ":${_package_resources_target_name}" ]
 
     if (defined(_dex_path)) {
@@ -815,6 +857,7 @@ template("create_apk") {
 
   _incremental_package_target = "${target_name}_incremental__package"
   package_apk(_incremental_package_target) {
+    forward_variables_from(invoker, [ "assets_build_config" ])
     _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
     deps = _incremental_deps + [
              ":${_incremental_package_resources_target_name}",

@@ -680,6 +680,87 @@ template("android_resources") {
   }
 }
 
+# Declare an Android assets target.
+#
+# Defines a set of files to include as assets in a dependent apk.
+#
+# To include these assets in an apk, this target should be listed in
+# the apk's deps, or in the deps of a library target used by an apk.
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Any Android assets
+#     listed in deps will be included by libraries/apks that depend on this
+#     target.
+#   sources: List of files to include as assets.
+#   renaming_sources: List of files to include as assets and be renamed.
+#   renaming_destinations: List of asset paths for files in renaming_sources.
+#   disable_compression: Whether to disable compression for files that are
+#     known to be compressable (default: false).
+#
+# Example:
+# android_assets("content_shell_assets") {
+#   deps = [
+#     ":generates_foo",
+#     ":other_assets",
+#     ]
+#   sources = [
+#     "//path/asset1.png",
+#     "//path/asset2.png",
+#     "$target_gen_dir/foo.dat",
+#   ]
+# }
+#
+# android_assets("overriding_content_shell_assets") {
+#   deps = [ ":content_shell_assets" ]
+#   # Override foo.dat from content_shell_assets.
+#   sources = [ "//custom/foo.dat" ]
+#   renaming_sources = [ "//path/asset2.png" ]
+#   renaming_destinations = [ "renamed/asset2.png" ]
+# }
+template("android_assets") {
+  set_sources_assignment_filter([])
+  forward_variables_from(invoker, [ "testonly" ])
+
+  _build_config = "$target_gen_dir/$target_name.build_config"
+  _build_config_target_name = "${target_name}__build_config"
+
+  write_build_config(_build_config_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "disable_compression",
+                           ])
+    type = "android_assets"
+    build_config = _build_config
+    if (defined(invoker.sources)) {
+      asset_sources = invoker.sources
+    }
+    if (defined(invoker.renaming_sources)) {
+      assert(defined(invoker.renaming_destinations))
+      _source_count = 0
+      foreach(_, invoker.renaming_sources) {
+        _source_count += 1
+      }
+      _dest_count = 0
+      foreach(_, invoker.renaming_destinations) {
+        _dest_count += 1
+      }
+      assert(
+          _source_count == _dest_count,
+          "android_assets() renaming_sources.length != renaming_destinations.length")
+      asset_renaming_sources = invoker.renaming_sources
+      asset_renaming_destinations = invoker.renaming_destinations
+    }
+  }
+
+  group(target_name) {
+    forward_variables_from(invoker, [ "visibility" ])
+    public_deps = [
+      ":$_build_config_target_name",
+    ]
+  }
+}
+
 # Declare a target that generates localized strings.xml from a .grd file.
 #
 # If this target is included in the deps of an android resources/library/apk,
@@ -1520,6 +1601,7 @@ template("android_apk") {
                            ])
     apk_path = _final_apk_path
     android_manifest = _android_manifest
+    assets_build_config = _build_config
     resources_zip = _all_resources_zip_path
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
@@ -1540,11 +1622,14 @@ template("android_apk") {
     keystore_password = _keystore_password
 
     # Incremental apk does not use native libs nor final dex.
-    incremental_deps =
-        deps + _android_manifest_deps + [ ":$process_resources_target" ]
+    incremental_deps = deps + _android_manifest_deps + [
+                         ":$build_config_target",
+                         ":$process_resources_target",
+                       ]
 
     # This target generates the input file _all_resources_zip_path.
     deps += _android_manifest_deps + [
+              ":$build_config_target",
               ":$process_resources_target",
               ":$final_dex_target_name",
             ]

@@ -26,6 +26,7 @@ Note: If paths to input files are passed in this way, it is important that:
     b. the files are added to the action's depfile
 """
 
+import itertools
 import optparse
 import os
 import sys
@@ -108,6 +109,40 @@ class Deps(object):
     return self.all_deps_config_paths
 
 
+def _MergeAssets(all_assets):
+  """Merges all assets from the given deps.
+
+  Returns:
+    A tuple of lists: (compressed, uncompressed)
+    Each tuple entry is a list of "srcPath:zipPath". srcPath is the path of the
+    asset to add, and zipPath is the location within the zip (excluding assets/
+    prefix)
+  """
+  compressed = {}
+  uncompressed = {}
+  for asset_dep in all_assets:
+    entry = asset_dep['assets']
+    disable_compression = entry.get('disable_compression', False)
+    dest_map = uncompressed if disable_compression else compressed
+    other_map = compressed if disable_compression else uncompressed
+    outputs = entry.get('outputs', [])
+    for src, dest in itertools.izip_longest(entry['sources'], outputs):
+      if not dest:
+        dest = os.path.basename(src)
+      # Merge so that each path shows up in only one of the lists, and that
+      # deps of the same target override previous ones.
+      other_map.pop(dest, 0)
+      dest_map[dest] = src
+
+  def create_list(asset_map):
+    ret = ['%s:%s' % (src, dest) for dest, src in asset_map.iteritems()]
+    # Sort to ensure deterministic ordering.
+    ret.sort()
+    return ret
+
+  return create_list(compressed), create_list(uncompressed)
+
+
 def main(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -128,6 +163,15 @@ def main(argv):
   parser.add_option('--package-name',
       help='Java package name for these resources.')
   parser.add_option('--android-manifest', help='Path to android manifest.')
+
+  # android_assets options
+  parser.add_option('--asset-sources', help='List of asset sources.')
+  parser.add_option('--asset-renaming-sources',
+                    help='List of asset sources with custom destinations.')
+  parser.add_option('--asset-renaming-destinations',
+                    help='List of asset custom destinations.')
+  parser.add_option('--disable-asset-compression', action='store_true',
+                    help='Whether to disable asset compression.')
 
   # java library options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
@@ -154,17 +198,16 @@ def main(argv):
   if args:
     parser.error('No positional arguments should be given.')
 
-
-  if not options.type in [
-      'java_library', 'android_resources', 'android_apk', 'deps_dex']:
+  required_options_map = {
+      'java_library': ['build_config', 'jar_path'],
+      'android_assets': ['build_config'],
+      'android_resources': ['build_config', 'resources_zip'],
+      'android_apk': ['build_config', 'jar_path', 'dex_path', 'resources_zip'],
+      'deps_dex': ['build_config', 'dex_path']
+  }
+  required_options = required_options_map.get(options.type)
+  if not required_options:
     raise Exception('Unknown type: <%s>' % options.type)
-
-  required_options = ['build_config'] + {
-      'java_library': ['jar_path'],
-      'android_resources': ['resources_zip'],
-      'android_apk': ['jar_path', 'dex_path', 'resources_zip'],
-      'deps_dex': ['dex_path']
-    }[options.type]
 
   if options.native_libs:
     required_options.append('readelf_path')
@@ -182,8 +225,8 @@ def main(argv):
   possible_deps_config_paths = build_utils.ParseGypList(
       options.possible_deps_configs)
 
-  allow_unknown_deps = (options.type == 'android_apk' or
-                        options.type == 'android_resources')
+  allow_unknown_deps = (options.type in
+                        ('android_apk', 'android_assets', 'android_resources'))
   unknown_deps = [
       c for c in possible_deps_config_paths if not os.path.exists(c)]
   if unknown_deps and not allow_unknown_deps:
@@ -261,6 +304,23 @@ def main(argv):
   if options.type == 'android_apk':
     # Apks will get their resources srcjar explicitly passed to the java step.
     config['javac']['srcjars'] = []
+
+  if options.type == 'android_assets':
+    all_asset_sources = []
+    if options.asset_renaming_sources:
+      all_asset_sources.extend(
+          build_utils.ParseGypList(options.asset_renaming_sources))
+    if options.asset_sources:
+      all_asset_sources.extend(build_utils.ParseGypList(options.asset_sources))
+
+    deps_info['assets'] = {
+        'sources': all_asset_sources
+    }
+    if options.asset_renaming_destinations:
+      deps_info['assets']['outputs'] = (
+          build_utils.ParseGypList(options.asset_renaming_destinations))
+    if options.disable_asset_compression:
+      deps_info['assets']['disable_compression'] = True
 
   if options.type == 'android_resources':
     deps_info['resources_zip'] = options.resources_zip
@@ -358,6 +418,8 @@ def main(argv):
       'libraries': library_paths,
       'java_libraries_list': java_libraries_list_holder[0],
     }
+    config['assets'], config['uncompressed_assets'] = (
+        _MergeAssets(deps.All('android_assets')))
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 
