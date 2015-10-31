@@ -823,12 +823,11 @@ void Layer::OnAnimationStarted(const cc::AnimationEvent& event) {
 }
 
 void Layer::CollectAnimators(
-    std::vector<scoped_refptr<LayerAnimator> >* animators) {
+    std::vector<scoped_refptr<LayerAnimator>>* animators) {
   if (IsAnimating())
     animators->push_back(animator_);
-  std::for_each(children_.begin(), children_.end(),
-                std::bind2nd(std::mem_fun(&Layer::CollectAnimators),
-                             animators));
+  for (auto* child : children_)
+    child->CollectAnimators(animators);
 }
 
 void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
@@ -1082,11 +1081,8 @@ void Layer::AddAnimatorsInTreeToCollection(
   DCHECK(collection);
   if (IsAnimating())
     animator_->AddToCollection(collection);
-  std::for_each(
-      children_.begin(),
-      children_.end(),
-      std::bind2nd(std::mem_fun(&Layer::AddAnimatorsInTreeToCollection),
-                   collection));
+  for (auto* child : children_)
+    child->AddAnimatorsInTreeToCollection(collection);
 }
 
 void Layer::RemoveAnimatorsInTreeFromCollection(
@@ -1094,11 +1090,8 @@ void Layer::RemoveAnimatorsInTreeFromCollection(
   DCHECK(collection);
   if (IsAnimating())
     animator_->RemoveFromCollection(collection);
-  std::for_each(
-      children_.begin(),
-      children_.end(),
-      std::bind2nd(std::mem_fun(&Layer::RemoveAnimatorsInTreeFromCollection),
-                   collection));
+  for (auto* child : children_)
+    child->RemoveAnimatorsInTreeFromCollection(collection);
 }
 
 bool Layer::IsAnimating() const {

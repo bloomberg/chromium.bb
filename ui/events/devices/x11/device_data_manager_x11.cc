@@ -113,8 +113,13 @@ namespace ui {
 
 namespace {
 
-bool DeviceHasId(const ui::InputDevice input_device, int id) {
-  return input_device.id == id;
+template <typename Iterator>
+Iterator FindDeviceWithId(Iterator begin, Iterator end, int id) {
+  for (auto it = begin; it != end; ++it) {
+    if (it->id == id)
+      return it;
+  }
+  return end;
 }
 
 }  // namespace
@@ -696,9 +701,8 @@ bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {
 
   const std::vector<TouchscreenDevice>& touch_devices =
       ui::DeviceDataManager::GetInstance()->touchscreen_devices();
-  std::vector<TouchscreenDevice>::const_iterator it =
-      std::find_if(touch_devices.begin(), touch_devices.end(),
-                   std::bind2nd(std::ptr_fun(&DeviceHasId), touch_device_id));
+  std::vector<TouchscreenDevice>::const_iterator it = FindDeviceWithId(
+      touch_devices.begin(), touch_devices.end(), touch_device_id);
   return it != touch_devices.end() && it->type == INPUT_DEVICE_INTERNAL;
 #endif  // defined(OS_CHROMEOS)
   return false;
@@ -716,9 +720,7 @@ void DeviceDataManagerX11::DisableDevice(int deviceid) {
   // TODO(rsadam@): Support blocking touchscreen devices.
   std::vector<KeyboardDevice> keyboards = keyboard_devices();
   std::vector<KeyboardDevice>::iterator it =
-      std::find_if(keyboards.begin(),
-                   keyboards.end(),
-                   std::bind2nd(std::ptr_fun(&DeviceHasId), deviceid));
+      FindDeviceWithId(keyboards.begin(), keyboards.end(), deviceid);
   if (it != std::end(keyboards)) {
     blocked_keyboards_.insert(
         std::pair<int, KeyboardDevice>(deviceid, *it));
@@ -767,9 +769,9 @@ void DeviceDataManagerX11::OnKeyboardDevicesUpdated(
            blocked_keyboards_.begin();
        blocked_iter != blocked_keyboards_.end();) {
     // Check if the blocked device still exists in list of devices.
-    std::vector<KeyboardDevice>::iterator it = std::find_if(
-        keyboards.begin(), keyboards.end(),
-        std::bind2nd(std::ptr_fun(&DeviceHasId), (*blocked_iter).first));
+    int device_id = blocked_iter->first;
+    std::vector<KeyboardDevice>::iterator it =
+        FindDeviceWithId(keyboards.begin(), keyboards.end(), device_id);
     // If the device no longer exists, unblock it, else filter it out from our
     // active list.
     if (it == keyboards.end()) {

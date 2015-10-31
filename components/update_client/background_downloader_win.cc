@@ -310,19 +310,22 @@ HRESULT FindBitsJobIf(Predicate pred,
 
 // Compares the job creation time and returns true if the job creation time
 // is older than |num_days|.
-struct JobCreationOlderThanDays
-    : public std::binary_function<IBackgroundCopyJob*, int, bool> {
-  bool operator()(IBackgroundCopyJob* job, int num_days) const;
+class JobCreationOlderThanDays {
+ public:
+  JobCreationOlderThanDays(int num_days) : num_days_(num_days) {}
+  bool operator()(IBackgroundCopyJob* job) const;
+
+ private:
+  int num_days_;
 };
 
-bool JobCreationOlderThanDays::operator()(IBackgroundCopyJob* job,
-                                          int num_days) const {
+bool JobCreationOlderThanDays::operator()(IBackgroundCopyJob* job) const {
   BG_JOB_TIMES times = {};
   HRESULT hr = job->GetTimes(&times);
   if (FAILED(hr))
     return false;
 
-  const base::TimeDelta time_delta(base::TimeDelta::FromDays(num_days));
+  const base::TimeDelta time_delta(base::TimeDelta::FromDays(num_days_));
   const base::Time creation_time(base::Time::FromFileTime(times.CreationTime));
 
   return creation_time + time_delta < base::Time::Now();
@@ -330,15 +333,17 @@ bool JobCreationOlderThanDays::operator()(IBackgroundCopyJob* job,
 
 // Compares the url of a file in a job and returns true if the remote name
 // of any file in a job matches the argument.
-struct JobFileUrlEqual : public std::binary_function<IBackgroundCopyJob*,
-                                                     const base::string16&,
-                                                     bool> {
-  bool operator()(IBackgroundCopyJob* job,
-                  const base::string16& remote_name) const;
+class JobFileUrlEqual {
+ public:
+  JobFileUrlEqual(const base::string16& remote_name)
+      : remote_name_(remote_name) {}
+  bool operator()(IBackgroundCopyJob* job) const;
+
+ private:
+  base::string16 remote_name_;
 };
 
-bool JobFileUrlEqual::operator()(IBackgroundCopyJob* job,
-                                 const base::string16& remote_name) const {
+bool JobFileUrlEqual::operator()(IBackgroundCopyJob* job) const {
   std::vector<ScopedComPtr<IBackgroundCopyFile>> files;
   HRESULT hr = GetFilesInJob(job, &files);
   if (FAILED(hr))
@@ -347,7 +352,7 @@ bool JobFileUrlEqual::operator()(IBackgroundCopyJob* job,
   for (size_t i = 0; i != files.size(); ++i) {
     ScopedCoMem<base::char16> name;
     if (SUCCEEDED(files[i]->GetRemoteName(&name)) &&
-        remote_name.compare(name) == 0)
+        remote_name_.compare(name) == 0)
       return true;
   }
 
@@ -395,7 +400,7 @@ HRESULT CleanupStaleJobs(
 
   std::vector<ScopedComPtr<IBackgroundCopyJob>> jobs;
   HRESULT hr = FindBitsJobIf(
-      std::bind2nd(JobCreationOlderThanDays(), kPurgeStaleJobsAfterDays),
+      JobCreationOlderThanDays(kPurgeStaleJobsAfterDays),
       bits_manager.get(), &jobs);
   if (FAILED(hr))
     return hr;
@@ -730,7 +735,7 @@ HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url,
                                               IBackgroundCopyJob** job) {
   std::vector<ScopedComPtr<IBackgroundCopyJob>> jobs;
   HRESULT hr = FindBitsJobIf(
-      std::bind2nd(JobFileUrlEqual(), base::SysUTF8ToWide(url.spec())),
+      JobFileUrlEqual(base::SysUTF8ToWide(url.spec())),
       bits_manager_.get(), &jobs);
   if (SUCCEEDED(hr) && !jobs.empty()) {
     *job = jobs.front().Detach();

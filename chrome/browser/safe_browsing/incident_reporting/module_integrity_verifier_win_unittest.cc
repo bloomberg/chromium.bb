@@ -31,7 +31,7 @@ class ScopedModuleModifier {
   explicit ScopedModuleModifier(uint8_t* address) : address_(address) {
     uint8_t modification[ModificationLength];
     std::transform(address, address + ModificationLength, &modification[0],
-                   std::bind2nd(std::plus<uint8_t>(), 1U));
+                   [](uint8_t byte) { return byte + 1U; });
     SIZE_T bytes_written = 0;
     EXPECT_NE(0, WriteProcessMemory(GetCurrentProcess(),
                                     address,
@@ -44,7 +44,7 @@ class ScopedModuleModifier {
   ~ScopedModuleModifier() {
     uint8_t modification[ModificationLength];
     std::transform(address_, address_ + ModificationLength, &modification[0],
-                   std::bind2nd(std::minus<uint8_t>(), 1U));
+                   [](uint8_t byte) { return byte - 1U; });
     SIZE_T bytes_written = 0;
     EXPECT_NE(0, WriteProcessMemory(GetCurrentProcess(),
                                     address_,

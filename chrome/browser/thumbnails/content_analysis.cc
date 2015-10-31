@@ -165,9 +165,10 @@ void ConstrainedProfileThresholding(const std::vector<float>& profile,
           current_clip_index / 255.0f + range.first;
       // Recount, rather than assume. One-offs due to rounding can be very
       // harmful when eroding / dilating the result.
-      size_for_threshold = std::count_if(
-          profile.begin(), profile.end(),
-          std::bind2nd(std::greater<float>(), current_threshold));
+      size_for_threshold = std::count_if(profile.begin(), profile.end(),
+                                         [current_threshold](float value) {
+                                           return value > current_threshold;
+                                         });
     }
   }
 
@@ -612,10 +613,10 @@ void ConstrainedProfileSegmentation(const std::vector<float>& row_profile,
 
   int auto_segmented_width = count_if(
       column_profile.begin(), column_profile.end(),
-      std::bind2nd(std::greater<float>(), column_threshold));
-  int auto_segmented_height = count_if(
-      row_profile.begin(), row_profile.end(),
-      std::bind2nd(std::greater<float>(), row_threshold));
+      [column_threshold](float value) { return value > column_threshold; });
+  int auto_segmented_height =
+      count_if(row_profile.begin(), row_profile.end(),
+               [row_threshold](float value) { return value > row_threshold; });
 
   gfx::Size computed_size = AdjustClippingSizeToAspectRatio(
       target_size,
@@ -766,4 +767,4 @@ SkBitmap CreateRetargetedThumbnailImage(
   return ComputeDecimatedImage(source_bitmap, included_rows, included_columns);
 }
 
-}  // thumbnailing_utils
+}  // namespace thumbnailing_utils

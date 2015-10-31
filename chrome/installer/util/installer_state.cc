@@ -574,9 +574,8 @@ void InstallerState::RemoveOldVersionDirectories(
 
 void InstallerState::AddComDllList(
     std::vector<base::FilePath>* com_dll_list) const {
-  std::for_each(products_.begin(), products_.end(),
-                std::bind2nd(std::mem_fun(&Product::AddComDllList),
-                             com_dll_list));
+  for (auto* product : products_)
+    product->AddComDllList(com_dll_list);
 }
 
 void InstallerState::UpdateStage(installer::InstallerStage stage) const {

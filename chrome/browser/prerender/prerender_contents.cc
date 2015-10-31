@@ -525,8 +525,8 @@ bool PrerenderContents::Matches(
       session_storage_namespace_id_ != session_storage_namespace->id()) {
     return false;
   }
-  return std::count_if(alias_urls_.begin(), alias_urls_.end(),
-                       std::bind2nd(std::equal_to<GURL>(), url)) != 0;
+  return std::find(alias_urls_.begin(), alias_urls_.end(), url) !=
+         alias_urls_.end();
 }
 
 void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {

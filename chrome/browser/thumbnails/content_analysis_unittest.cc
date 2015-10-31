@@ -438,10 +438,9 @@ TEST_F(ThumbnailContentAnalysisTest, AutoSegmentPeaks) {
 
   // There should be roughly 50% above and below the threshold.
   // Random is not really random thanks to srand, so we can sort-of compare.
-  int above_count = std::count_if(
-      profile_info.begin(),
-      profile_info.end(),
-      std::bind2nd(std::greater<float>(), threshold));
+  int above_count =
+      std::count_if(profile_info.begin(), profile_info.end(),
+                    [threshold](float value) { return value > threshold; });
   EXPECT_GT(above_count, 450);  // Not much to expect.
   EXPECT_LT(above_count, 550);
 
@@ -451,18 +450,16 @@ TEST_F(ThumbnailContentAnalysisTest, AutoSegmentPeaks) {
   }
   threshold = AutoSegmentPeaks(profile_info);
 
-  above_count = std::count_if(
-      profile_info.begin(),
-      profile_info.end(),
-      std::bind2nd(std::greater<float>(), threshold));
+  above_count =
+      std::count_if(profile_info.begin(), profile_info.end(),
+                    [threshold](float value) { return value > threshold; });
   EXPECT_LT(above_count, 500);  // Negative y expected to fall below threshold.
 
   // Expect two peaks around between 0 and 250 and 500 and 750.
   std::vector<bool> thresholded_values(profile_info.size(), false);
-  std::transform(profile_info.begin(),
-                 profile_info.end(),
+  std::transform(profile_info.begin(), profile_info.end(),
                  thresholded_values.begin(),
-                 std::bind2nd(std::greater<float>(), threshold));
+                 [threshold](float value) { return value > threshold; });
   EXPECT_TRUE(thresholded_values[125]);
   EXPECT_TRUE(thresholded_values[625]);
   int transitions = 0;
@@ -481,37 +478,21 @@ TEST_F(ThumbnailContentAnalysisTest, ConstrainedProfileSegmentation) {
   std::vector<float> columns_profile(kColumnCount);
 
   std::srand(42);
-  std::generate(rows_profile.begin(), rows_profile.end(), std::rand);
-  std::generate(columns_profile.begin(), columns_profile.end(), std::rand);
-
-  // Bring noise level to 0-1.
-  std::transform(rows_profile.begin(),
-                 rows_profile.end(),
-                 rows_profile.begin(),
-                 std::bind2nd(std::divides<float>(), RAND_MAX));
-  std::transform(columns_profile.begin(),
-                 columns_profile.end(),
-                 columns_profile.begin(),
-                 std::bind2nd(std::divides<float>(), RAND_MAX));
-
-  // Set up values to 0-1.
-  std::transform(rows_profile.begin(),
-                 rows_profile.end(),
-                 rows_profile.begin(),
-                 std::bind2nd(std::plus<float>(), 1.0f));
-  std::transform(columns_profile.begin(),
-                 columns_profile.end(),
-                 columns_profile.begin(),
-                 std::bind2nd(std::plus<float>(), 1.0f));
+  std::generate(rows_profile.begin(), rows_profile.end(), []() {
+    return std::rand() / static_cast<float>(RAND_MAX) + 1.f;
+  });
+  std::generate(columns_profile.begin(), columns_profile.end(), []() {
+    return std::rand() / static_cast<float>(RAND_MAX) + 1.f;
+  });
 
   std::transform(rows_profile.begin() + 300,
                  rows_profile.begin() + 450,
                  rows_profile.begin() + 300,
-                 std::bind2nd(std::plus<float>(), 8.0f));
+                 [](float value) { return value + 8.f; });
   std::transform(columns_profile.begin() + 400,
                  columns_profile.begin() + 1000,
                  columns_profile.begin() + 400,
-                 std::bind2nd(std::plus<float>(), 10.0f));
+                 [](float value) { return value + 10.f; });
 
   // Make sure that threshold falls somewhere reasonable.
   float row_threshold = AutoSegmentPeaks(rows_profile);
@@ -521,7 +502,7 @@ TEST_F(ThumbnailContentAnalysisTest, ConstrainedProfileSegmentation) {
   int row_above_count = std::count_if(
       rows_profile.begin(),
       rows_profile.end(),
-      std::bind2nd(std::greater<float>(), row_threshold));
+      [row_threshold](float value) { return value > row_threshold; });
   EXPECT_EQ(row_above_count, 150);
 
   float column_threshold = AutoSegmentPeaks(columns_profile);
@@ -531,7 +512,7 @@ TEST_F(ThumbnailContentAnalysisTest, ConstrainedProfileSegmentation) {
   int column_above_count = std::count_if(
       columns_profile.begin(),
       columns_profile.end(),
-      std::bind2nd(std::greater<float>(), column_threshold));
+      [column_threshold](float value) { return value > column_threshold; });
   EXPECT_EQ(column_above_count, 600);
 
 
@@ -696,7 +677,7 @@ TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
   int histogram[256] = {};
   color_utils::BuildLumaHistogram(result, histogram);
   int non_zero_color_count = std::count_if(
-      histogram, histogram + 256, std::bind2nd(std::greater<int>(), 0));
+      histogram, histogram + 256, [](int value) { return value > 0; });
   EXPECT_GT(non_zero_color_count, 4);
 
 }
