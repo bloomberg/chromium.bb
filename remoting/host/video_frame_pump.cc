@@ -162,6 +162,9 @@ scoped_ptr<VideoFramePump::PacketWithTimestamps> VideoFramePump::EncodeFrame(
     packet->set_capture_time_ms(frame->capture_time_ms());
 
   timestamps->encode_ended_time = base::TimeTicks::Now();
+  packet->set_encode_time_ms(
+      (timestamps->encode_ended_time - timestamps->encode_started_time)
+          .InMilliseconds());
 
   return make_scoped_ptr(
       new PacketWithTimestamps(packet.Pass(), timestamps.Pass()));
