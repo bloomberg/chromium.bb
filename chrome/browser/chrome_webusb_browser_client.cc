@@ -11,9 +11,11 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/common/origin_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
@@ -74,6 +76,7 @@ void ChromeWebUsbBrowserClient::OnDeviceAdded(
     return;
   }
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   message_center::RichNotificationData rich_notification_data;
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
@@ -83,8 +86,8 @@ void ChromeWebUsbBrowserClient::OnDeviceAdded(
           l10n_util::GetStringFUTF16(
               IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION,
               base::UTF8ToUTF16(landing_page.GetContent())),
-          // TODO(juncai): use generic USB device icon here.
-          gfx::Image(), base::string16(), GURL(),
+          rb.GetNativeImageNamed(IDR_USB_NOTIFICATION_ICON),
+          base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               kWebUsbDetectorNotificationID),
