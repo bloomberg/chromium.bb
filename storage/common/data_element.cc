@@ -93,4 +93,35 @@ void PrintTo(const DataElement& x, std::ostream* os) {
   *os << ", length: " << x.length() << ", offset: " << x.offset() << "}";
 }
 
+bool operator==(const DataElement& a, const DataElement& b) {
+  if (a.type() != b.type() || a.offset() != b.offset() ||
+      a.length() != b.length())
+    return false;
+  switch (a.type()) {
+    case DataElement::TYPE_BYTES:
+      return memcmp(a.bytes(), b.bytes(), b.length()) == 0;
+    case DataElement::TYPE_FILE:
+      return a.path() == b.path() &&
+             a.expected_modification_time() == b.expected_modification_time();
+    case DataElement::TYPE_BLOB:
+      return a.blob_uuid() == b.blob_uuid();
+    case DataElement::TYPE_FILE_FILESYSTEM:
+      return a.filesystem_url() == b.filesystem_url();
+    case DataElement::TYPE_DISK_CACHE_ENTRY:
+      // We compare only length and offset; we trust the entry itself was
+      // compared at some higher level such as in BlobDataItem.
+      return true;
+    case DataElement::TYPE_BYTES_DESCRIPTION:
+      return true;
+    case DataElement::TYPE_UNKNOWN:
+      NOTREACHED();
+      return false;
+  }
+  return false;
+}
+
+bool operator!=(const DataElement& a, const DataElement& b) {
+  return !(a == b);
+}
+
 }  // namespace storage

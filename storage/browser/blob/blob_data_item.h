@@ -82,17 +82,8 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   int disk_cache_stream_index_;  // For TYPE_DISK_CACHE_ENTRY.
 };
 
-#if defined(UNIT_TEST)
-inline bool operator==(const BlobDataItem& a, const BlobDataItem& b) {
-  return a.disk_cache_entry() == b.disk_cache_entry() &&
-         a.disk_cache_stream_index() == b.disk_cache_stream_index() &&
-         a.data_element() == b.data_element();
-}
-
-inline bool operator!=(const BlobDataItem& a, const BlobDataItem& b) {
-  return !(a == b);
-}
-#endif  // defined(UNIT_TEST)
+STORAGE_EXPORT bool operator==(const BlobDataItem& a, const BlobDataItem& b);
+STORAGE_EXPORT bool operator!=(const BlobDataItem& a, const BlobDataItem& b);
 
 }  // namespace storage
 

@@ -78,4 +78,16 @@ void PrintTo(const BlobItemBytesRequest& request, std::ostream* os) {
       << ", handle_offset: " << request.handle_offset << "}";
 }
 
+bool operator==(const BlobItemBytesRequest& a, const BlobItemBytesRequest& b) {
+  return a.request_number == b.request_number &&
+         a.transport_strategy == b.transport_strategy &&
+         a.renderer_item_index == b.renderer_item_index &&
+         a.renderer_item_offset == b.renderer_item_offset && a.size == b.size &&
+         a.handle_index == b.handle_index && a.handle_offset == b.handle_offset;
+}
+
+bool operator!=(const BlobItemBytesRequest& a, const BlobItemBytesRequest& b) {
+  return !(a == b);
+}
+
 }  // namespace storage

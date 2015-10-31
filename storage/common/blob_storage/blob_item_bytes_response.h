@@ -37,21 +37,11 @@ struct STORAGE_COMMON_EXPORT BlobItemBytesResponse {
 STORAGE_COMMON_EXPORT void PrintTo(const BlobItemBytesResponse& response,
                                    std::ostream* os);
 
-#if defined(UNIT_TEST)
-STORAGE_COMMON_EXPORT inline bool operator==(const BlobItemBytesResponse& a,
-                                             const BlobItemBytesResponse& b) {
-  return a.request_number == b.request_number &&
-         a.inline_data.size() == b.inline_data.size() &&
-         std::equal(a.inline_data.begin(),
-                    a.inline_data.begin() + a.inline_data.size(),
-                    b.inline_data.begin());
-}
+STORAGE_COMMON_EXPORT bool operator==(const BlobItemBytesResponse& a,
+                                      const BlobItemBytesResponse& b);
 
-STORAGE_COMMON_EXPORT inline bool operator!=(const BlobItemBytesResponse& a,
-                                             const BlobItemBytesResponse& b) {
-  return !(a == b);
-}
-#endif  // defined(UNIT_TEST)
+STORAGE_COMMON_EXPORT bool operator!=(const BlobItemBytesResponse& a,
+                                      const BlobItemBytesResponse& b);
 
 }  // namespace storage
 

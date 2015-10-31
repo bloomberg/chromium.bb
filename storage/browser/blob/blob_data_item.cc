@@ -44,4 +44,14 @@ void PrintTo(const BlobDataItem& x, ::std::ostream* os) {
       << ", disk_cache_stream_index_: " << x.disk_cache_stream_index_ << "}";
 }
 
+bool operator==(const BlobDataItem& a, const BlobDataItem& b) {
+  return a.disk_cache_entry() == b.disk_cache_entry() &&
+         a.disk_cache_stream_index() == b.disk_cache_stream_index() &&
+         a.data_element() == b.data_element();
+}
+
+bool operator!=(const BlobDataItem& a, const BlobDataItem& b) {
+  return !(a == b);
+}
+
 }  // namespace storage

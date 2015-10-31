@@ -610,6 +610,7 @@
       'child/background_sync/background_sync_type_converters_unittest.cc',
       'child/blink_platform_impl_unittest.cc',
       'child/blob_storage/blob_consolidation_unittest.cc',
+      'child/blob_storage/blob_transport_controller_unittest.cc',
       'child/fileapi/webfilewriter_base_unittest.cc',
       'child/indexed_db/indexed_db_dispatcher_unittest.cc',
       'child/indexed_db/mock_webidbcallbacks.cc',

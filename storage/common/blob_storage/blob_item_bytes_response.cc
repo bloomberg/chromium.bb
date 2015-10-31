@@ -36,4 +36,18 @@ void PrintTo(const BlobItemBytesResponse& response, ::std::ostream* os) {
   *os << "]}";
 }
 
+bool operator==(const BlobItemBytesResponse& a,
+                const BlobItemBytesResponse& b) {
+  return a.request_number == b.request_number &&
+         a.inline_data.size() == b.inline_data.size() &&
+         std::equal(a.inline_data.begin(),
+                    a.inline_data.begin() + a.inline_data.size(),
+                    b.inline_data.begin());
+}
+
+bool operator!=(const BlobItemBytesResponse& a,
+                const BlobItemBytesResponse& b) {
+  return !(a == b);
+}
+
 }  // namespace storage
