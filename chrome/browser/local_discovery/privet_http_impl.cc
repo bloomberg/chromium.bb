@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -16,6 +17,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
@@ -87,33 +89,9 @@ GURL CreatePrivetParamURL(const std::string& path,
   return url.ReplaceComponents(replacements);
 }
 
-// Used before we have any certificate fingerprint.
-class FailingCertVerifier : public net::CertVerifier {
- public:
-  int Verify(net::X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
-             net::CRLSet* crl_set,
-             net::CertVerifyResult* verify_result,
-             const net::CompletionCallback& callback,
-             scoped_ptr<Request>* out_req,
-             const net::BoundNetLog& net_log) override {
-    verify_result->verified_cert = cert;
-    verify_result->cert_status = net::CERT_STATUS_INVALID;
-    return net::ERR_CERT_INVALID;
-  }
-};
-
-// Used before when we have the certificate fingerprint.
-// Privet v3 devices should supports https but with self-signed sertificates.
-// So normal validation is not usefull.
-// Before using https Privet v3 pairing generates same secret on device and
-// client side Spake2 on insecure channel. Than device sends fingerprint
-// to client using same insecure channel. fingerprint is signed with the secret
-// generated before.
-// More info on pairing:
-// https://developers.google.com/cloud-devices/v1/reference/local-api/pairing_start
+// Class verifies certificate by its fingerprint received using different
+// channel. It's the only know information about device with self-signed
+// certificate.
 class FingerprintVerifier : public net::CertVerifier {
  public:
   explicit FingerprintVerifier(
@@ -129,7 +107,8 @@ class FingerprintVerifier : public net::CertVerifier {
              const net::CompletionCallback& callback,
              scoped_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
-    // Mark certificat as invalid as we didn't check that.
+    // Mark certificate as invalid as we didn't check it.
+    verify_result->Reset();
     verify_result->verified_cert = cert;
     verify_result->cert_status = net::CERT_STATUS_INVALID;
 
@@ -152,16 +131,13 @@ class PrivetContextGetter : public net::URLRequestContextGetter {
       const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner,
       const net::SHA256HashValue& certificate_fingerprint)
       : verifier_(new FingerprintVerifier(certificate_fingerprint)),
-        net_task_runner_(net_task_runner) {}
-
-  // Don't allow any https without fingerprint. Device with valid certificate
-  // may be different from the one which user is trying to pair.
-  explicit PrivetContextGetter(
-      const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner)
-      : verifier_(new FailingCertVerifier()),
-        net_task_runner_(net_task_runner) {}
+        net_task_runner_(net_task_runner) {
+    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnablePrivetV3));
+  }
 
   net::URLRequestContext* GetURLRequestContext() override {
+    DCHECK(net_task_runner_->BelongsToCurrentThread());
     if (!context_) {
       net::URLRequestContextBuilder builder;
       builder.set_proxy_service(net::ProxyService::CreateDirect());
@@ -180,7 +156,9 @@ class PrivetContextGetter : public net::URLRequestContextGetter {
   }
 
  protected:
-  ~PrivetContextGetter() override = default;
+  ~PrivetContextGetter() override {
+    DCHECK(net_task_runner_->BelongsToCurrentThread());
+  }
 
  private:
   scoped_ptr<net::CertVerifier> verifier_;
@@ -631,7 +609,8 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
                                     pwg_file_path_);
   } else {
     // TODO(noamsml): Move to file-based upload data?
-    std::string data_str((const char*)data_->front(), data_->size());
+    std::string data_str(reinterpret_cast<const char*>(data_->front()),
+                         data_->size());
     url_fetcher_->SetUploadData(kPrivetContentTypePDF, data_str);
   }
 
@@ -799,18 +778,8 @@ void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(
 PrivetHTTPClientImpl::PrivetHTTPClientImpl(
     const std::string& name,
     const net::HostPortPair& host_port,
-    net::URLRequestContextGetter* request_context)
-    : PrivetHTTPClientImpl(name,
-                           host_port,
-                           request_context->GetNetworkTaskRunner()) {}
-
-PrivetHTTPClientImpl::PrivetHTTPClientImpl(
-    const std::string& name,
-    const net::HostPortPair& host_port,
-    const scoped_refptr<base::SingleThreadTaskRunner>& net_task_runner)
-    : name_(name),
-      context_getter_(new PrivetContextGetter(net_task_runner)),
-      host_port_(host_port) {}
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter)
+    : name_(name), context_getter_(context_getter), host_port_(host_port) {}
 
 PrivetHTTPClientImpl::~PrivetHTTPClientImpl() {
 }

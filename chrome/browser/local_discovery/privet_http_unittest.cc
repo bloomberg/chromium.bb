@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -11,11 +12,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
@@ -35,7 +37,7 @@ using testing::StrictMock;
 using testing::NiceMock;
 
 using content::BrowserThread;
-using net::SpawnedTestServer;
+using net::EmbeddedTestServer;
 
 const char kSampleInfoResponse[] = "{"
     "       \"version\": \"1.0\","
@@ -1085,14 +1087,19 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
 }
 #endif  // ENABLE_PRINT_PREVIEW
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 class PrivetHttpWithServerTest : public ::testing::Test,
                                  public PrivetURLFetcher::Delegate {
  protected:
   PrivetHttpWithServerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnablePrivetV3);
+    context_getter_ = new net::TestURLRequestContextGetter(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  }
+
   void OnError(PrivetURLFetcher* fetcher,
                PrivetURLFetcher::ErrorType error) override {
     done_ = true;
@@ -1120,10 +1127,19 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     return true;
   }
 
+  void CreateServer(EmbeddedTestServer::Type type) {
+    server_.reset(new EmbeddedTestServer(type));
+    ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
+
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    server_->ServeFilesFromDirectory(
+        test_data_dir.Append(FILE_PATH_LITERAL("chrome/test/data")));
+  }
+
   void CreateClient() {
-    client_.reset(new PrivetHTTPClientImpl(
-        "test", https_server_->host_port_pair(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+    client_.reset(new PrivetHTTPClientImpl("test", server_->host_port_pair(),
+                                           context_getter_));
   }
 
   void Run() {
@@ -1133,8 +1149,8 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     base::RunLoop run_loop;
     quit_ = run_loop.QuitClosure();
 
-    auto fetcher = client_->CreateURLFetcher(
-        https_server_->GetURL("files/simple.html"), net::URLFetcher::GET, this);
+    scoped_ptr<PrivetURLFetcher> fetcher = client_->CreateURLFetcher(
+        server_->GetURL("/simple.html"), net::URLFetcher::GET, this);
 
     fetcher->SetMaxRetries(1);
     fetcher->V3Mode();
@@ -1149,18 +1165,15 @@ class PrivetHttpWithServerTest : public ::testing::Test,
   bool done_ = false;
   PrivetURLFetcher::ErrorType error_ = PrivetURLFetcher::ErrorType();
   content::TestBrowserThreadBundle thread_bundle_;
-
-  scoped_ptr<SpawnedTestServer> https_server_;
+  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
+  scoped_ptr<EmbeddedTestServer> server_;
   scoped_ptr<PrivetHTTPClientImpl> client_;
 
   base::Closure quit_;
 };
 
-TEST_F(PrivetHttpWithServerTest, Http) {
-  https_server_.reset(new SpawnedTestServer(net::BaseTestServer::TYPE_HTTP,
-                                            SpawnedTestServer::kLocalhost,
-                                            base::FilePath(kDocRoot)));
-  ASSERT_TRUE(https_server_->Start());
+TEST_F(PrivetHttpWithServerTest, HttpServer) {
+  CreateServer(EmbeddedTestServer::TYPE_HTTP);
 
   CreateClient();
   Run();
@@ -1168,46 +1181,31 @@ TEST_F(PrivetHttpWithServerTest, Http) {
 
   CreateClient();
   net::SHA256HashValue fingerprint = {};
-  client_->SwitchToHttps(https_server_->host_port_pair().port(), fingerprint);
-
+  client_->SwitchToHttps(server_->host_port_pair().port(), fingerprint);
   Run();
   EXPECT_FALSE(success_);
   EXPECT_EQ(PrivetURLFetcher::UNKNOWN_ERROR, error_);
 }
 
-TEST_F(PrivetHttpWithServerTest, Https) {
-  https_server_.reset(new SpawnedTestServer(
-      SpawnedTestServer::TYPE_HTTPS,
-      SpawnedTestServer::SSLOptions(SpawnedTestServer::SSLOptions::CERT_OK),
-      base::FilePath(kDocRoot)));
-  ASSERT_TRUE(https_server_->Start());
+TEST_F(PrivetHttpWithServerTest, HttpsServer) {
+  CreateServer(EmbeddedTestServer::TYPE_HTTPS);
 
   CreateClient();
   Run();
-#ifdef OS_MACOSX
-  // Seems like an issue of the test server, it's in HTTPS mode and still
-  // accepts
-  // HTTP requests.
-  // TODO(vitalybuka): Remove #ifdef when test server is fixed.
-  EXPECT_TRUE(success_);
-#else
   EXPECT_FALSE(success_);
   EXPECT_EQ(PrivetURLFetcher::UNKNOWN_ERROR, error_);
-#endif  // OS_MACOSX
 
   CreateClient();
   net::SHA256HashValue fingerprint =
       net::X509Certificate::CalculateFingerprint256(
-          https_server_->GetCertificate()->os_cert_handle());
-  client_->SwitchToHttps(https_server_->host_port_pair().port(), fingerprint);
-
+          server_->GetCertificate()->os_cert_handle());
+  client_->SwitchToHttps(server_->host_port_pair().port(), fingerprint);
   Run();
   EXPECT_TRUE(success_);
 
   CreateClient();
   fingerprint = {};
-  client_->SwitchToHttps(https_server_->host_port_pair().port(), fingerprint);
-
+  client_->SwitchToHttps(server_->host_port_pair().port(), fingerprint);
   Run();
   EXPECT_FALSE(success_);
   EXPECT_EQ(PrivetURLFetcher::REQUEST_CANCELED, error_);

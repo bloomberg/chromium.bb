@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/linked_ptr.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -76,9 +78,8 @@ base::LazyInstance<BrowserContextKeyedAPIFactory<GcdPrivateAPI> > g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 scoped_ptr<local_discovery::GCDApiFlow> MakeGCDApiFlow(Profile* profile) {
-  if (g_gcd_api_flow_factory) {
+  if (g_gcd_api_flow_factory)
     return g_gcd_api_flow_factory->CreateGCDApiFlow();
-  }
 
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
@@ -220,9 +221,8 @@ GcdPrivateAPIImpl::GcdPrivateAPIImpl(content::BrowserContext* context)
 }
 
 GcdPrivateAPIImpl::~GcdPrivateAPIImpl() {
-  if (EventRouter::Get(browser_context_)) {
+  if (EventRouter::Get(browser_context_))
     EventRouter::Get(browser_context_)->UnregisterObserver(this);
-  }
 }
 
 void GcdPrivateAPIImpl::OnListenerAdded(const EventListenerInfo& details) {
@@ -317,6 +317,11 @@ bool GcdPrivateAPIImpl::QueryForDevices() {
 void GcdPrivateAPIImpl::CreateSession(const std::string& service_name,
                                       const CreateSessionCallback& callback) {
   int session_id = last_session_id_++;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrivetV3)) {
+    return callback.Run(session_id, gcd_private::STATUS_SESSIONERROR,
+                        base::DictionaryValue());
+  }
   scoped_ptr<local_discovery::PrivetHTTPAsynchronousFactory> factory(
       local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
           browser_context_->GetRequestContext()));
@@ -430,9 +435,8 @@ void GcdPrivateAPIImpl::OnWifiPassword(const SuccessCallback& callback,
                                        bool success,
                                        const std::string& ssid,
                                        const std::string& password) {
-  if (success) {
+  if (success)
     wifi_passwords_[ssid] = password;
-  }
 
   callback.Run(success);
 }

@@ -107,17 +107,17 @@ void PrivetURLFetcher::ResetTokenMapForTests() {
 }
 
 void PrivetURLFetcher::SetMaxRetries(int max_retries) {
-  DCHECK(tries_ == 0);
+  DCHECK_EQ(tries_, 0);
   max_retries_ = max_retries;
 }
 
 void PrivetURLFetcher::DoNotRetryOnTransientError() {
-  DCHECK(tries_ == 0);
+  DCHECK_EQ(tries_, 0);
   do_not_retry_on_transient_error_ = true;
 }
 
 void PrivetURLFetcher::SendEmptyPrivetToken() {
-  DCHECK(tries_ == 0);
+  DCHECK_EQ(tries_, 0);
   send_empty_privet_token_ = true;
 }
 
@@ -136,7 +136,7 @@ std::string PrivetURLFetcher::GetHostString() {
 }
 
 void PrivetURLFetcher::SaveResponseToFile() {
-  DCHECK(tries_ == 0);
+  DCHECK_EQ(tries_, 0);
   make_response_file_ = true;
 }
 
@@ -145,7 +145,7 @@ void PrivetURLFetcher::V3Mode() {
 }
 
 void PrivetURLFetcher::SetByteRange(int start, int end) {
-  DCHECK(tries_ == 0);
+  DCHECK_EQ(tries_, 0);
   byte_range_start_ = start;
   byte_range_end_ = end;
   has_byte_range_ = true;
@@ -154,7 +154,7 @@ void PrivetURLFetcher::SetByteRange(int start, int end) {
 void PrivetURLFetcher::Try() {
   tries_++;
   if (tries_ <= max_retries_) {
-    DVLOG(1) << "Try no. " << tries_;
+    DVLOG(1) << "Attempt: " << tries_;
     url_fetcher_ = net::URLFetcher::Create(url_, request_type_, this);
     // Privet requests are relevant to hosts on local network only.
     url_fetcher_->SetLoadFlags(
