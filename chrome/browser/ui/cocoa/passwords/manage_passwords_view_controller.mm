@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
 
 #include <cmath>
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"

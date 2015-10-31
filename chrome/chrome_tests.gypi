@@ -486,7 +486,7 @@
       'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
       'browser/ui/cocoa/one_click_signin_bubble_controller_browsertest.mm',
       'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
-      'browser/ui/cocoa/passwords/manage_passwords_bubble_browsertest.mm',
+      'browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm',
       'browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm',
       'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
       'browser/ui/cocoa/view_id_util_browsertest.mm',

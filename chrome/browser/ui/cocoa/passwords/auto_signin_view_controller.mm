@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_auto_signin_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/auto_signin_view_controller.h"
 
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"

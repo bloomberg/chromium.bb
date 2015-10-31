@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_controller.h"
+#include "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
-#include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
+#include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
@@ -10,9 +10,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
-#include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
+#include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_vector.h"
@@ -11,8 +11,8 @@
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.h"
-#include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
+#import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
+#include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #include "chrome/browser/ui/passwords/account_chooser_more_combobox_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"

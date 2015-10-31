@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_cocoa.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 
 #include "base/mac/scoped_block.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 #include "content/public/browser/web_contents.h"
 

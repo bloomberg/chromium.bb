@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORDS_BUBBLE_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORDS_BUBBLE_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
 namespace content {
@@ -74,4 +75,4 @@ class ManagePasswordsBubbleCocoa {
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORDS_BUBBLE_COCOA_H_

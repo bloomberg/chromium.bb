@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -10,10 +10,10 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_auto_signin_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_confirmation_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/auto_signin_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/confirmation_password_saved_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 @interface ManagePasswordsBubbleController ()

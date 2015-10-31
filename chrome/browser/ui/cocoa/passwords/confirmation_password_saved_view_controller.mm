@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_confirmation_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/confirmation_password_saved_view_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
