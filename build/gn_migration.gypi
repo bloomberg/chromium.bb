@@ -241,7 +241,6 @@
           ],
           'dependencies!': [
             # TODO(GYP): All of these targets need to be ported over.
-            '../chrome/chrome.gyp:unit_tests',
             '../url/url.gyp:url_unittests',
           ],
         }],
@@ -250,6 +249,7 @@
             '../chrome/android/chrome_apk.gyp:chrome_public_apk',
             '../chrome/android/chrome_apk.gyp:chrome_public_test_apk',
             '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
+            '../chrome/chrome.gyp:unit_tests_apk',
             '../third_party/custom_tabs_client/custom_tabs_client.gyp:custom_tabs_client_example_apk',
           ],
         }],
@@ -774,8 +774,6 @@
             '../chrome/android/chrome_apk.gyp:chrome_sync_shell_apk',
             '../chrome/android/chrome_apk.gyp:chrome_sync_shell_test_apk',
             '../chrome/chrome.gyp:chrome_junit_tests',
-            '../chrome/chrome.gyp:unit_tests',
-            '../chrome/chrome.gyp:unit_tests_apk',
             '../remoting/remoting.gyp:remoting_apk',
           ],
         }],

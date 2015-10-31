@@ -276,7 +276,6 @@ group("both_gn_and_gyp") {
       "//ui/message_center:test_support",
     ]
     deps -= [
-      "//chrome/test:unit_tests",  # TODO(GYP)
       "//net:net_perftests",
       "//url:url_unittests",
     ]
