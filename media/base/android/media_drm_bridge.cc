@@ -651,12 +651,7 @@ void MediaDrmBridge::OnSessionKeysChange(JNIEnv* env,
              << base::HexEncode(&key_id[0], key_id.size()) << ", "
              << key_status;
 
-    // TODO(xhwang): Update CdmKeyInformation to take key_id and status in the
-    // constructor.
-    scoped_ptr<CdmKeyInformation> cdm_key_information(new CdmKeyInformation());
-    cdm_key_information->key_id = key_id;
-    cdm_key_information->status = key_status;
-    cdm_keys_info.push_back(cdm_key_information.release());
+    cdm_keys_info.push_back(new CdmKeyInformation(key_id, key_status, 0));
   }
 
   task_runner_->PostTask(

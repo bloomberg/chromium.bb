@@ -136,10 +136,8 @@ void BrowserCdmCast::OnSessionKeysChange(
     const ::media::KeyIdAndKeyPairs& keys) {
   ::media::CdmKeysInfo cdm_keys_info;
   for (const std::pair<std::string, std::string>& key : keys) {
-    scoped_ptr< ::media::CdmKeyInformation> cdm_key_information(
-        new ::media::CdmKeyInformation());
-    cdm_key_information->key_id.assign(key.first.begin(), key.first.end());
-    cdm_keys_info.push_back(cdm_key_information.release());
+    cdm_keys_info.push_back(new ::media::CdmKeyInformation(
+        key.first, ::media::CdmKeyInformation::USABLE, 0));
   }
   session_keys_change_cb_.Run(session_id, true, cdm_keys_info.Pass());
 

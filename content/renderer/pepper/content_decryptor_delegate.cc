@@ -811,13 +811,11 @@ void ContentDecryptorDelegate::OnSessionKeysChange(
   media::CdmKeysInfo keys_info;
   keys_info.reserve(key_count);
   for (uint32_t i = 0; i < key_count; ++i) {
-    scoped_ptr<media::CdmKeyInformation> key_info(new media::CdmKeyInformation);
     const auto& info = key_information[i];
-    key_info->key_id.assign(info.key_id, info.key_id + info.key_id_size);
-    key_info->status =
-        PpCdmKeyStatusToCdmKeyInformationKeyStatus(info.key_status);
-    key_info->system_code = info.system_code;
-    keys_info.push_back(key_info.release());
+    keys_info.push_back(new media::CdmKeyInformation(
+        info.key_id, info.key_id_size,
+        PpCdmKeyStatusToCdmKeyInformationKeyStatus(info.key_status),
+        info.system_code));
   }
 
   session_keys_change_cb_.Run(session_id_string->value(),

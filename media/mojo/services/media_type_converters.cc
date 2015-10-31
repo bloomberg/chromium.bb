@@ -501,12 +501,10 @@ scoped_ptr<media::CdmKeyInformation>
 TypeConverter<scoped_ptr<media::CdmKeyInformation>,
               media::interfaces::CdmKeyInformationPtr>::
     Convert(const media::interfaces::CdmKeyInformationPtr& input) {
-  scoped_ptr<media::CdmKeyInformation> info(new media::CdmKeyInformation());
-  info->key_id = input->key_id.storage();
-  info->status =
-      static_cast<media::CdmKeyInformation::KeyStatus>(input->status);
-  info->system_code = input->system_code;
-  return info.Pass();
+  return make_scoped_ptr(new media::CdmKeyInformation(
+      input->key_id.storage(),
+      static_cast<media::CdmKeyInformation::KeyStatus>(input->status),
+      input->system_code));
 }
 
 // static
