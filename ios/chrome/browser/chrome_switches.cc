@@ -12,18 +12,8 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
-// Disables the blocking of external URL requests from sub-frames not initiated
-// by user interaction.
-const char kDisableIOSBlockUnpromptedExternalURLs[] =
-    "disable-block-external-urls";
-
 // Disables the use of WKWebView instead of UIWebView.
 const char kDisableIOSWKWebView[] = "disable-wkwebview";
-
-// Enables the blocking of external URL requests from sub-frames not initiated
-// by user interaction.
-const char kEnableIOSBlockUnpromptedExternalURLs[] =
-    "enable-block-external-urls";
 
 // Enables the use of WKWebView instead of UIWebView.
 const char kEnableIOSWKWebView[] = "enable-wkwebview";

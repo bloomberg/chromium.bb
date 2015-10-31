@@ -13,9 +13,6 @@ namespace experimental_flags {
 // Whether background crash report upload should generate a local notification.
 bool IsAlertOnBackgroundUploadEnabled();
 
-// Whether external URL request blocking from subframes is enabled.
-bool IsExternalURLBlockingEnabled();
-
 // Whether the new bookmark collection experience is enabled.
 bool IsBookmarkCollectionEnabled();
 
