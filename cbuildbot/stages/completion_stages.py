@@ -18,9 +18,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
-from chromite.lib import git
 from chromite.lib import patch as cros_patch
-from chromite.lib import portage_util
 
 
 def GetBuilderSuccessMap(builder_run, overall_success):
@@ -485,11 +483,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   def HandleSuccess(self):
     if self._run.config.master:
       self.sync_stage.pool.SubmitPool(reason=constants.STRATEGY_CQ_SUCCESS)
-      # After submitting the pool, update the commit hashes for uprevved
-      # ebuilds.
-      manifest = git.ManifestCheckout.Cached(self._build_root)
-      portage_util.EBuild.UpdateCommitHashesForChanges(
-          self.sync_stage.pool.changes, self._build_root, manifest)
       if config_lib.IsPFQType(self._run.config.build_type):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
@@ -830,10 +823,17 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     overlays, push_overlays = self._ExtractOverlays()
     assert push_overlays, 'push_overlays must be set to run this stage'
 
-    # If the build failed, we don't want to push our local changes, because
-    # they might include some CLs that failed. Instead, clean up our local
-    # changes and do a fresh uprev.
-    if not self.success:
+    # If we're a commit queue, we should clean out our local changes, resync,
+    # and reapply our uprevs. This is necessary so that 1) we are sure to point
+    # at the remote SHA1s, not our local SHA1s; 2) we can avoid doing a
+    # rebase; 3) in the case of failure, we don't submit the changes that were
+    # committed locally.
+    #
+    # If we're not a commit queue and the build succeeded, we can skip the
+    # cleanup here. This is a cheap trick so that the Chrome PFQ pushes its
+    # earlier uprev from the SyncChrome stage (it would be a bit tricky to
+    # replicate the uprev here, so we'll leave it alone).
+    if config_lib.IsCQType(self._run.config.build_type) or not self.success:
       # Clean up our root and sync down the latest changes that were
       # submitted.
       commands.BuildRootGitCleanup(self._build_root)

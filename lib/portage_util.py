@@ -857,36 +857,6 @@ class EBuild(object):
 
     return ebuild_projects
 
-  @classmethod
-  def UpdateCommitHashesForChanges(cls, changes, buildroot, manifest):
-    """Updates the commit hashes for the EBuilds uprevved in changes.
-
-    Args:
-      changes: Changes from Gerrit that are being pushed.
-      buildroot: Path to root of build directory.
-      manifest: git.ManifestCheckout object.
-    """
-    path_sha1s = {}
-    overlay_list = FindOverlays(constants.BOTH_OVERLAYS, buildroot=buildroot)
-    ebuild_paths = cls._GetEBuildPaths(buildroot, manifest, overlay_list,
-                                       changes)
-    for ebuild, paths in ebuild_paths.iteritems():
-      # Calculate any SHA1s that are not already in path_sha1s.
-      for path in set(paths).difference(path_sha1s):
-        path_sha1s[path] = cls._GetSHA1ForPath(manifest, path)
-
-      sha1s = [path_sha1s[path] for path in paths]
-      logging.info('Updating ebuild for package %s with commit hashes %r',
-                   ebuild.package, sha1s)
-      updates = dict(CROS_WORKON_COMMIT=cls.FormatBashArray(sha1s))
-      EBuild.UpdateEBuild(ebuild.ebuild_path, updates)
-
-    # Commit any changes to all overlays.
-    for overlay in overlay_list:
-      if EBuild.GitRepoHasChanges(overlay):
-        EBuild.CommitChange('Updating commit hashes in ebuilds '
-                            'to match remote repository.', overlay=overlay)
-
 
 class PortageDBException(Exception):
   """Generic PortageDB error."""

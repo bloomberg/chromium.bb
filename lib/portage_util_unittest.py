@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import cStringIO
-import mock
 import os
 
 from chromite.cbuildbot import constants
@@ -453,33 +452,6 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     mock_message = 'Commitme'
     self.m_ebuild.CommitChange(mock_message, '.')
     m.assert_called_once_with('.', ['commit', '-a', '-m', 'Commitme'])
-
-  def testUpdateCommitHashesForChanges(self):
-    """Tests that we can update the commit hashes for changes correctly."""
-    build_root = 'fakebuildroot'
-    overlays = ['public_overlay']
-    changes = ['fake change']
-    paths = ['fake_path1', 'fake_path2']
-    sha1s = ['sha1', 'shaaaaaaaaaaaaaaaa2']
-    path_ebuilds = {self.m_ebuild: paths}
-
-    self.PatchObject(portage_util, 'FindOverlays', return_value=overlays)
-    self.PatchObject(portage_util.EBuild, '_GetEBuildPaths',
-                     return_value=path_ebuilds)
-    self.PatchObject(portage_util.EBuild, '_GetSHA1ForPath',
-                     side_effect=reversed(sha1s))
-    update_mock = self.PatchObject(portage_util.EBuild, 'UpdateEBuild')
-    self.PatchObject(portage_util.EBuild, 'GitRepoHasChanges',
-                     return_value=True)
-    commit_mock = self.PatchObject(portage_util.EBuild, 'CommitChange')
-
-    portage_util.EBuild.UpdateCommitHashesForChanges(changes, build_root,
-                                                     MANIFEST)
-
-    update_mock.assert_called_once_with(
-        self.m_ebuild.ebuild_path,
-        {'CROS_WORKON_COMMIT': '(%s)' % ' '.join('"%s"' % x for x in sha1s)})
-    commit_mock.assert_called_once_with(mock.ANY, overlay=overlays[0])
 
   def testGitRepoHasChanges(self):
     """Tests that GitRepoHasChanges works correctly."""
