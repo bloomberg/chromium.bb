@@ -45,16 +45,18 @@ void SetupLightSpeedTrials() {
 void SetupStunProbeTrial() {
 #if defined(ENABLE_WEBRTC)
   std::map<std::string, std::string> params;
-  if (!variations::GetVariationParams("StunProbeTrial", &params))
+  if (!variations::GetVariationParams("StunProbeTrial2", &params))
     return;
 
   // The parameter, used by StartStunFieldTrial, should have the following
-  // format: "request_per_ip/interval/sharedsocket/server1:port/server2:port/
-  // server3:port/"
+  // format: "request_per_ip/interval/sharedsocket/batch_size/total_batches/
+  // server1:port/server2:port/server3:port/"
   std::string cmd_param = params["request_per_ip"] + "/" + params["interval"] +
                           "/" + params["sharedsocket"] + "/" +
-                          params["server1"] + "/" + params["server2"] + "/" +
-                          params["server3"] + "/";
+                          params["batch_size"] + "/" + params["total_batches"] +
+                          "/" + params["server1"] + "/" + params["server2"] +
+                          "/" + params["server3"] + "/" + params["server4"] +
+                          "/" + params["server5"] + "/" + params["server6"];
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWebRtcStunProbeTrialParameter, cmd_param);

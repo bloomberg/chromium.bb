@@ -51927,6 +51927,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Stun.BatchSuccessPercent" units="percent">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    For clients using a shared source port per STUN binding request toward the
+    specified servers, success rate for requests which received a response with
+    various intervals between requests. Only the first instance of renderers
+    will conduct the trial and log this result. The STUN binding requests are
+    grouped into multiple batches and the success rate is calculated for an
+    individual batch.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Stun.ResponseLatency" units="milliseconds">
   <owner>guoweis@chromium.org</owner>
   <summary>
@@ -76114,6 +76126,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Platform.Storage.Flash.BadBlocks"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="BatchStunPingParameters" separator=".">
+  <suffix name="1ms.1" label="1ms gap, 1st batch"/>
+  <suffix name="1ms.2" label="1ms gap, 2nd batch"/>
+  <suffix name="1ms.3" label="1ms gap, 3rd batch"/>
+  <suffix name="5ms.1" label="5ms gap, 1st batch"/>
+  <suffix name="5ms.2" label="5ms gap, 2nd batch"/>
+  <suffix name="5ms.3" label="5ms gap, 3rd batch"/>
+  <suffix name="10ms.1" label="10ms gap, 1st batch"/>
+  <suffix name="10ms.2" label="10ms gap, 2nd batch"/>
+  <suffix name="10ms.3" label="10ms gap, 3rd batch"/>
+  <suffix name="25ms.1" label="25ms gap, 1st batch"/>
+  <suffix name="25ms.2" label="25ms gap, 2nd batch"/>
+  <suffix name="25ms.3" label="25ms gap, 3rd batch"/>
+  <suffix name="50ms.1" label="50ms gap, 1st batch"/>
+  <suffix name="50ms.2" label="50ms gap, 2nd batch"/>
+  <suffix name="50ms.3" label="50ms gap, 3rd batch"/>
+  <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.NoNAT"/>
+  <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.NonSymNAT"/>
+  <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.SymNAT"/>
+  <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.UnknownNAT"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="CacheInstance" separator="." ordering="prefix">
   <suffix name="App"
       label="Collected from the HTML5 Application Cache instance."/>
@@ -77899,6 +77933,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="UnknownNAT"/>
   <suffix name="SymNAT"/>
   <suffix name="NonSymNAT"/>
+  <affected-histogram name="WebRTC.Stun.BatchSuccessPercent"/>
   <affected-histogram name="WebRTC.Stun.ResponseLatency"/>
   <affected-histogram name="WebRTC.Stun.SuccessPercent"/>
 </histogram_suffixes>

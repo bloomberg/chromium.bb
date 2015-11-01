@@ -657,8 +657,6 @@ void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
   if (!cmd_line->HasSwitch(switches::kWebRtcStunProbeTrialParameter))
     return;
 
-  GetPcFactory();
-
   // The underneath IPC channel has to be connected before sending any IPC
   // message.
   if (!p2p_socket_dispatcher_->connected()) {
@@ -669,6 +667,12 @@ void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
         base::TimeDelta::FromSeconds(1));
     return;
   }
+
+  // GetPcFactory could trigger an IPC message. If done before
+  // |p2p_socket_dispatcher_| is connected, that'll put the
+  // |p2p_socket_dispatcher_| in a bad state such that no other IPC message can
+  // be processed.
+  GetPcFactory();
 
   const std::string params =
       cmd_line->GetSwitchValueASCII(switches::kWebRtcStunProbeTrialParameter);
@@ -683,10 +687,10 @@ void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
 
 void PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread(
     const std::string& params) {
+  DCHECK(network_manager_);
   DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
-  rtc::NetworkManager::NetworkList networks;
-  network_manager_->GetNetworks(&networks);
-  stun_prober_ = StartStunProbeTrial(networks, params, socket_factory_.get());
+  stun_trial_.reset(
+      new StunProberTrial(network_manager_, params, socket_factory_.get()));
 }
 
 void PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
