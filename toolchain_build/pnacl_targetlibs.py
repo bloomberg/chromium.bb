@@ -630,6 +630,10 @@ def SubzeroRuntimeCommands(arch, out_dir):
     LlcArchArgs = [ '-mtriple=i686-linux-gnu', '-mcpu=pentium4m']
   elif arch == 'x86-32':
     LlcArchArgs = [ '-mtriple=i686-none-nacl-gnu', '-mcpu=pentium4m']
+  elif arch == 'arm-linux':
+    LlcArchArgs = [ '-mtriple=arm-linux-gnu', '-mcpu=cortex-a9']
+  elif arch == 'arm':
+    LlcArchArgs = [ '-mtriple=arm-none-nacl-gnu', '-mcpu=cortex-a9']
   else:
     return []
   return [
@@ -813,6 +817,18 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
   return libs
 
 def UnsandboxedRuntime(arch, is_canonical):
+  if arch not in ('arm-linux', 'x86-32-linux'):
+    return {}
+
+  prefix = {
+    'arm-linux': 'arm-linux-gnueabihf-',
+    'x86-32-linux': '',
+  }[arch]
+  arch_cflags = {
+    'arm-linux': ['-mcpu=cortex-a9', '-D__arm_nonsfi_linux__'],
+    'x86-32-linux': ['-m32'],
+  }[arch]
+
   libs = {
       GSDJoin('unsandboxed_runtime', arch): {
           'type': TargetLibBuildType(is_canonical),
@@ -831,19 +847,17 @@ def UnsandboxedRuntime(arch, is_canonical):
               # even on non-Linux systems is OK.
               # TODO(dschuff): this include path breaks the input encapsulation
               # for build rules.
-              command.Command([
-                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
-                  '-I%(top_srcdir)s/..', '-DNACL_LINUX=1', '-DDEFINE_MAIN',
+              command.Command([prefix + 'gcc'] + arch_cflags + ['-O2', '-Wall',
+                  '-Werror', '-I%(top_srcdir)s/..',
+                  '-DNACL_LINUX=1', '-DDEFINE_MAIN',
                   '-c', command.path.join('%(support)s', 'irt_interfaces.c'),
                   '-o', command.path.join('%(output)s', 'unsandboxed_irt.o')]),
-              command.Command([
-                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
-                  '-I%(top_srcdir)s/..',
+              command.Command([prefix + 'gcc'] + arch_cflags + ['-O2', '-Wall',
+                  '-Werror', '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(support)s', 'irt_random.c'),
                   '-o', command.path.join('%(output)s', 'irt_random.o')]),
-              command.Command([
-                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
-                  '-I%(top_srcdir)s/..',
+              command.Command([prefix + 'gcc'] + arch_cflags + ['-O2', '-Wall',
+                  '-Werror', '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(untrusted)s', 'irt_query_list.c'),
                   '-o', command.path.join('%(output)s', 'irt_query_list.o')]),
           ] + SubzeroRuntimeCommands(arch, '%(output)s'),

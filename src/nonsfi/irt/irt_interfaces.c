@@ -362,6 +362,27 @@ void *__nacl_read_tp(void) {
 }
 #endif
 
+#if defined(__arm_nonsfi_linux__)
+
+__asm__(".pushsection .text, \"ax\", %progbits\n"
+        ".global __aeabi_read_tp\n"
+        ".type __aeabi_read_tp, %function\n"
+        ".arm\n"
+        "__aeabi_read_tp:\n"
+        "push {r1-r3, lr}\n"
+        "vpush {d0-d7}\n"
+        "blx aeabi_read_tp_impl\n"
+        "vpop {d0-d7}\n"
+        "pop {r1-r3, pc}\n"
+        ".popsection\n");
+
+void *aeabi_read_tp_impl(void) {
+  return g_tls_value;
+}
+
+#endif
+
+
 struct thread_args {
   void (*start_func)(void);
   void *thread_ptr;
