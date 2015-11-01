@@ -8,24 +8,26 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "content/common/mac/io_surface_manager.h"
+#include "content/common/content_export.h"
 #include "content/common/mac/io_surface_manager_token.h"
+#include "ui/gfx/mac/io_surface_manager.h"
 
 namespace content {
 
 // Implementation of IOSurfaceManager that registers and acquires IOSurfaces
 // through a Mach service.
-class CONTENT_EXPORT ChildIOSurfaceManager : public IOSurfaceManager {
+class CONTENT_EXPORT ChildIOSurfaceManager : public gfx::IOSurfaceManager {
  public:
   // Returns the global ChildIOSurfaceManager.
   static ChildIOSurfaceManager* GetInstance();
 
   // Overridden from IOSurfaceManager:
-  bool RegisterIOSurface(IOSurfaceId io_surface_id,
+  bool RegisterIOSurface(gfx::IOSurfaceId io_surface_id,
                          int client_id,
                          IOSurfaceRef io_surface) override;
-  void UnregisterIOSurface(IOSurfaceId io_surface_id, int client_id) override;
-  IOSurfaceRef AcquireIOSurface(IOSurfaceId io_surface_id) override;
+  void UnregisterIOSurface(gfx::IOSurfaceId io_surface_id,
+                           int client_id) override;
+  IOSurfaceRef AcquireIOSurface(gfx::IOSurfaceId io_surface_id) override;
 
   // Set the service Mach port. Ownership of |service_port| is passed to the
   // manager.

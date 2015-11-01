@@ -110,7 +110,7 @@ void ContentTestSuite::Initialize() {
       InProcessSurfaceTextureManager::GetInstance());
 #endif
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  IOSurfaceManager::SetInstance(InProcessIOSurfaceManager::GetInstance());
+  gfx::IOSurfaceManager::SetInstance(InProcessIOSurfaceManager::GetInstance());
 #endif
 #if defined(USE_OZONE)
   if (!is_child_process) {

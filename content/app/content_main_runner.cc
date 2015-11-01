@@ -670,7 +670,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       if (service_port.is_valid()) {
         ChildIOSurfaceManager::GetInstance()->set_service_port(
             service_port.release());
-        IOSurfaceManager::SetInstance(ChildIOSurfaceManager::GetInstance());
+        gfx::IOSurfaceManager::SetInstance(
+            ChildIOSurfaceManager::GetInstance());
       }
     }
 #elif defined(OS_WIN)

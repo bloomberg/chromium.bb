@@ -129,6 +129,8 @@ component("gfx") {
     "linux_font_delegate.h",
     "mac/coordinate_conversion.h",
     "mac/coordinate_conversion.mm",
+    "mac/io_surface_manager.cc",
+    "mac/io_surface_manager.h",
     "mac/nswindow_frame_controls.h",
     "mac/nswindow_frame_controls.mm",
     "mac/scoped_cocoa_disable_screen_updates.h",
@@ -387,6 +389,10 @@ component("gfx") {
       "chromeos/codec/jpeg_codec_robust_slow.h",
     ]
     deps += [ "//third_party/libjpeg" ]
+  }
+
+  if (is_mac) {
+    libs = [ "IOSurface.framework" ]
   }
 
   if (!use_aura) {

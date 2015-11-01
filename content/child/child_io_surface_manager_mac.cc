@@ -16,7 +16,7 @@ ChildIOSurfaceManager* ChildIOSurfaceManager::GetInstance() {
       base::LeakySingletonTraits<ChildIOSurfaceManager>>::get();
 }
 
-bool ChildIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,
+bool ChildIOSurfaceManager::RegisterIOSurface(gfx::IOSurfaceId io_surface_id,
                                               int client_id,
                                               IOSurfaceRef io_surface) {
   DCHECK(service_port_.is_valid());
@@ -68,7 +68,7 @@ bool ChildIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,
   return data.reply.msg.result;
 }
 
-void ChildIOSurfaceManager::UnregisterIOSurface(IOSurfaceId io_surface_id,
+void ChildIOSurfaceManager::UnregisterIOSurface(gfx::IOSurfaceId io_surface_id,
                                                 int client_id) {
   DCHECK(service_port_.is_valid());
   DCHECK(!token_.IsZero());
@@ -92,7 +92,7 @@ void ChildIOSurfaceManager::UnregisterIOSurface(IOSurfaceId io_surface_id,
 }
 
 IOSurfaceRef ChildIOSurfaceManager::AcquireIOSurface(
-    IOSurfaceId io_surface_id) {
+    gfx::IOSurfaceId io_surface_id) {
   DCHECK(service_port_.is_valid());
   DCHECK(!token_.IsZero());
 

@@ -18,9 +18,9 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/mac/io_surface_manager.h"
 #include "content/common/mac/io_surface_manager_messages.h"
 #include "content/common/mac/io_surface_manager_token.h"
+#include "ui/gfx/mac/io_surface_manager.h"
 
 namespace content {
 
@@ -31,7 +31,7 @@ namespace content {
 
 // Implementation of IOSurfaceManager that provides a mechanism for child
 // processes to register and acquire IOSurfaces through a Mach service.
-class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
+class CONTENT_EXPORT BrowserIOSurfaceManager : public gfx::IOSurfaceManager {
  public:
   // Returns the global BrowserIOSurfaceManager.
   static BrowserIOSurfaceManager* GetInstance();
@@ -44,11 +44,12 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
   static std::string GetMachPortName();
 
   // Overridden from IOSurfaceManager:
-  bool RegisterIOSurface(IOSurfaceId io_surface_id,
+  bool RegisterIOSurface(gfx::IOSurfaceId io_surface_id,
                          int client_id,
                          IOSurfaceRef io_surface) override;
-  void UnregisterIOSurface(IOSurfaceId io_surface_id, int client_id) override;
-  IOSurfaceRef AcquireIOSurface(IOSurfaceId io_surface_id) override;
+  void UnregisterIOSurface(gfx::IOSurfaceId io_surface_id,
+                           int client_id) override;
+  IOSurfaceRef AcquireIOSurface(gfx::IOSurfaceId io_surface_id) override;
 
   // Performs any necessary setup that cannot happen in the constructor.
   void EnsureRunning();
@@ -102,7 +103,7 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
 
   // Stores the IOSurfaces for all GPU clients. The key contains the IOSurface
   // id and the Child process unique id of the owner.
-  using IOSurfaceMapKey = std::pair<IOSurfaceId, int>;
+  using IOSurfaceMapKey = std::pair<gfx::IOSurfaceId, int>;
   using IOSurfaceMap =
       base::ScopedPtrHashMap<IOSurfaceMapKey,
                              scoped_ptr<base::mac::ScopedMachSendRight>>;

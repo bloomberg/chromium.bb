@@ -630,9 +630,11 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:IOSurfaceManager");
     if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-      IOSurfaceManager::SetInstance(InProcessIOSurfaceManager::GetInstance());
+      gfx::IOSurfaceManager::SetInstance(
+          InProcessIOSurfaceManager::GetInstance());
     } else {
-      IOSurfaceManager::SetInstance(BrowserIOSurfaceManager::GetInstance());
+      gfx::IOSurfaceManager::SetInstance(
+          BrowserIOSurfaceManager::GetInstance());
     }
   }
 

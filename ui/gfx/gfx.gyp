@@ -218,6 +218,8 @@
         'linux_font_delegate.h',
         'mac/coordinate_conversion.h',
         'mac/coordinate_conversion.mm',
+        'mac/io_surface_manager.cc',
+        'mac/io_surface_manager.h',
         'mac/nswindow_frame_controls.h',
         'mac/nswindow_frame_controls.mm',
         'mac/scoped_cocoa_disable_screen_updates.h',
@@ -374,6 +376,13 @@
           # C4324 is structure was padded due to __declspec(align()), which is
           # uninteresting.
           'msvs_disabled_warnings': [ 4267, 4324 ],
+        }],
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
+            ],
+          },
         }],
         ['OS=="android"', {
           'sources!': [

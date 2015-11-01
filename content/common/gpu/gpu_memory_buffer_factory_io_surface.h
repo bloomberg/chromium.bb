@@ -15,10 +15,10 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
-#include "content/common/mac/io_surface_manager.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/mac/io_surface_manager.h"
 
 namespace gl {
 class GLImage;
@@ -35,9 +35,6 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryIOSurface
 
   static bool IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
                                                       gfx::BufferUsage usage);
-
-  static IOSurfaceRef CreateIOSurface(const gfx::Size& size,
-                                      gfx::BufferFormat format);
 
   // Overridden from GpuMemoryBufferFactory:
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
@@ -66,7 +63,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryIOSurface
       int client_id) override;
 
  private:
-  typedef std::pair<IOSurfaceId, int> IOSurfaceMapKey;
+  typedef std::pair<gfx::IOSurfaceId, int> IOSurfaceMapKey;
   typedef base::hash_map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>
       IOSurfaceMap;
   IOSurfaceMap io_surfaces_;

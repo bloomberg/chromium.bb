@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
-#include "content/common/mac/io_surface_manager.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/mac/io_surface_manager.h"
 
 namespace content {
 namespace {
@@ -26,7 +26,7 @@ uint32_t LockFlags(gfx::BufferUsage usage) {
 }
 
 void FreeIOSurfaceForTesting(gfx::GpuMemoryBufferId id) {
-  IOSurfaceManager::GetInstance()->UnregisterIOSurface(id, 0);
+  gfx::IOSurfaceManager::GetInstance()->UnregisterIOSurface(id, 0);
 }
 
 }  // namespace
@@ -54,7 +54,7 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-      IOSurfaceManager::GetInstance()->AcquireIOSurface(handle.id));
+      gfx::IOSurfaceManager::GetInstance()->AcquireIOSurface(handle.id));
   if (!io_surface)
     return nullptr;
 
@@ -78,11 +78,11 @@ base::Closure GpuMemoryBufferImplIOSurface::AllocateForTesting(
     gfx::BufferUsage usage,
     gfx::GpuMemoryBufferHandle* handle) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-      GpuMemoryBufferFactoryIOSurface::CreateIOSurface(size, format));
+      gfx::IOSurfaceManager::CreateIOSurface(size, format));
   DCHECK(io_surface);
   gfx::GpuMemoryBufferId kBufferId(1);
-  bool rv = IOSurfaceManager::GetInstance()->RegisterIOSurface(kBufferId, 0,
-                                                               io_surface);
+  bool rv = gfx::IOSurfaceManager::GetInstance()->RegisterIOSurface(
+      kBufferId, 0, io_surface);
   DCHECK(rv);
   handle->type = gfx::IO_SURFACE_BUFFER;
   handle->id = kBufferId;

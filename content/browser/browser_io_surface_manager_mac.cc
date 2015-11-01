@@ -59,7 +59,7 @@ std::string BrowserIOSurfaceManager::GetMachPortName() {
   return GetMachPortNameByPid(getpid());
 }
 
-bool BrowserIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,
+bool BrowserIOSurfaceManager::RegisterIOSurface(gfx::IOSurfaceId io_surface_id,
                                                 int client_id,
                                                 IOSurfaceRef io_surface) {
   base::AutoLock lock(lock_);
@@ -71,8 +71,9 @@ bool BrowserIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,
   return true;
 }
 
-void BrowserIOSurfaceManager::UnregisterIOSurface(IOSurfaceId io_surface_id,
-                                                  int client_id) {
+void BrowserIOSurfaceManager::UnregisterIOSurface(
+    gfx::IOSurfaceId io_surface_id,
+    int client_id) {
   base::AutoLock lock(lock_);
 
   IOSurfaceMapKey key(io_surface_id, client_id);
@@ -81,7 +82,7 @@ void BrowserIOSurfaceManager::UnregisterIOSurface(IOSurfaceId io_surface_id,
 }
 
 IOSurfaceRef BrowserIOSurfaceManager::AcquireIOSurface(
-    IOSurfaceId io_surface_id) {
+    gfx::IOSurfaceId io_surface_id) {
   base::AutoLock lock(lock_);
 
   IOSurfaceMapKey key(
@@ -253,7 +254,8 @@ void BrowserIOSurfaceManager::HandleRegisterIOSurfaceRequest(
     return;
   }
 
-  IOSurfaceMapKey key(IOSurfaceId(request.io_surface_id), request.client_id);
+  IOSurfaceMapKey key(gfx::IOSurfaceId(request.io_surface_id),
+                      request.client_id);
   io_surfaces_.add(key, make_scoped_ptr(new base::mac::ScopedMachSendRight(
                             request.io_surface_port.name)));
   reply->result = true;
@@ -272,7 +274,8 @@ bool BrowserIOSurfaceManager::HandleUnregisterIOSurfaceRequest(
     return false;
   }
 
-  IOSurfaceMapKey key(IOSurfaceId(request.io_surface_id), request.client_id);
+  IOSurfaceMapKey key(gfx::IOSurfaceId(request.io_surface_id),
+                      request.client_id);
   io_surfaces_.erase(key);
   return true;
 }
@@ -303,7 +306,7 @@ void BrowserIOSurfaceManager::HandleAcquireIOSurfaceRequest(
   }
 
   reply->result = true;
-  IOSurfaceMapKey key(IOSurfaceId(request.io_surface_id),
+  IOSurfaceMapKey key(gfx::IOSurfaceId(request.io_surface_id),
                       child_process_id_it->second);
   auto it = io_surfaces_.find(key);
   if (it == io_surfaces_.end()) {

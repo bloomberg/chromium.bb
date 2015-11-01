@@ -414,8 +414,6 @@
       'common/mac/font_descriptor.mm',
       'common/mac/font_loader.h',
       'common/mac/font_loader.mm',
-      'common/mac/io_surface_manager.cc',
-      'common/mac/io_surface_manager.h',
       'common/mac/io_surface_manager_messages.h',
       'common/mac/io_surface_manager_token.h',
       'common/manifest_manager_messages.h',
