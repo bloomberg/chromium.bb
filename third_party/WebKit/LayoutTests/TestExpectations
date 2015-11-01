@@ -258,11 +258,6 @@ crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ P
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
 crbug.com/389648 crbug.com/517123 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
-crbug.com/421854 [ SnowLeopard Debug ] fast/text/atsui-bidi-control.html [ Pass Crash ]
-crbug.com/421854 [ SnowLeopard Debug ] fast/dom/52776.html [ Pass Crash ]
-crbug.com/418091 [ SnowLeopard Debug ] media/track/track-cue-rendering-rtl.html [ Pass Crash ]
-crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ Pass Crash ]
-crbug.com/449242 [ SnowLeopard Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass Crash ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 crbug.com/423739 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
 crbug.com/423739 fast/dom/Window/Location/location-override-valueOf.html [ NeedsManualRebaseline ]
@@ -877,10 +872,6 @@ crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 
-# These are experiencing assertions in harfbuzz.
-# fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsRebaseline expectation up above.
-crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-script.html [ Crash ]
-
 crbug.com/418091 [ SnowLeopard ] fast/text/international/zerowidthjoiner.html [ Failure ]
 
 crbug.com/507351 [ Mac ] fast/text/international/kana-voiced-sound-marks.html [ Failure ]
@@ -996,8 +987,6 @@ crbug.com/521124 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 crbug.com/521124 [ Win7 Release ] fast/text/justify-ideograph-vertical.html [ Pass Failure ]
 crbug.com/521124 [ Win7 Release ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 crbug.com/521124 [ Win7 ] fast/text/orientation-sideways.html [ Pass Failure ]
-
-crbug.com/419769 [ Debug SnowLeopard ] fast/forms/time-multiple-fields/time-multiple-fields-localization.html [ Crash ]
 
 # Re-check these after the re-baseline for crbug.com/512991
 #crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
