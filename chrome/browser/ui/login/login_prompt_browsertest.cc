@@ -27,7 +27,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::NavigationController;
 using content::OpenURLParams;
@@ -93,15 +93,15 @@ void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
   }
 }
 
-const char kPrefetchAuthPage[] = "files/login/prefetch.html";
+const char kPrefetchAuthPage[] = "/login/prefetch.html";
 
-const char kMultiRealmTestPage[] = "files/login/multi_realm.html";
+const char kMultiRealmTestPage[] = "/login/multi_realm.html";
 const int  kMultiRealmTestRealmCount = 2;
 
-const char kSingleRealmTestPage[] = "files/login/single_realm.html";
+const char kSingleRealmTestPage[] = "/login/single_realm.html";
 
-const char* kAuthBasicPage = "auth-basic";
-const char* kAuthDigestPage = "auth-digest";
+const char kAuthBasicPage[] = "/auth-basic";
+const char kAuthDigestPage[] = "/auth-digest";
 
 base::string16 ExpectedTitleFromAuth(const base::string16& username,
                                      const base::string16& password) {
@@ -118,9 +118,8 @@ base::string16 ExpectedTitleFromAuth(const base::string16& username,
 // browser, and triggering a timeout to cause failure when the
 // prefetch resource requires authorization.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL test_page = test_server()->GetURL(kPrefetchAuthPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kPrefetchAuthPage);
 
   class SetPrefetchForTest {
    public:
@@ -155,13 +154,12 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
 
   load_stop_waiter.Wait();
   EXPECT_TRUE(observer.handlers().empty());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // Test that "Basic" HTTP authentication works.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL test_page = test_server()->GetURL(kAuthBasicPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -210,8 +208,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
 
 // Test that "Digest" HTTP authentication works.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestDigestAuth) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL test_page = test_server()->GetURL(kAuthDigestPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kAuthDigestPage);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -260,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestDigestAuth) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents1 =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -285,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller1);
     contents1->OpenURL(OpenURLParams(
-        test_server()->GetURL(kAuthBasicPage), Referrer(),
+        embedded_test_server()->GetURL(kAuthBasicPage), Referrer(),
         CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
     auth_needed_waiter.Wait();
   }
@@ -293,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller2);
     contents2->OpenURL(OpenURLParams(
-        test_server()->GetURL(kAuthDigestPage), Referrer(),
+        embedded_test_server()->GetURL(kAuthDigestPage), Referrer(),
         CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
     auth_needed_waiter.Wait();
   }
@@ -321,11 +319,11 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
 
 // Test login prompt cancellation.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL auth_page = test_server()->GetURL(kAuthBasicPage);
-  GURL no_auth_page_1 = test_server()->GetURL("a");
-  GURL no_auth_page_2 = test_server()->GetURL("b");
-  GURL no_auth_page_3 = test_server()->GetURL("c");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL auth_page = embedded_test_server()->GetURL(kAuthBasicPage);
+  GURL no_auth_page_1 = embedded_test_server()->GetURL("/a");
+  GURL no_auth_page_2 = embedded_test_server()->GetURL("/b");
+  GURL no_auth_page_3 = embedded_test_server()->GetURL("/c");
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -422,8 +420,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
 // displaying the page.  First we check whether cancelling works as
 // expected.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL test_page = test_server()->GetURL(kMultiRealmTestPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kMultiRealmTestPage);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -467,14 +465,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmCancellation) {
   EXPECT_EQ(0, observer.auth_supplied_count());
   EXPECT_LT(0, observer.auth_needed_count());
   EXPECT_LT(0, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // Similar to the MultipleRealmCancellation test above, but tests
 // whether supplying credentials work as exepcted.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmConfirmation) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL test_page = test_server()->GetURL(kMultiRealmTestPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kMultiRealmTestPage);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -518,14 +515,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmConfirmation) {
   EXPECT_LT(0, observer.auth_needed_count());
   EXPECT_LT(0, observer.auth_supplied_count());
   EXPECT_EQ(0, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // Testing for recovery from an incorrect password for the case where
 // there are multiple authenticated resources.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL test_page = test_server()->GetURL(kSingleRealmTestPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kSingleRealmTestPage);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -585,17 +581,16 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
   EXPECT_LT(0, observer.auth_needed_count());
   EXPECT_EQ(0, observer.auth_cancelled_count());
   EXPECT_EQ(observer.auth_needed_count(), observer.auth_supplied_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // If the favicon is an authenticated resource, we shouldn't prompt
 // for credentials.  The same URL, if requested elsewhere should
 // prompt for credentials.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
-  const char* kFaviconTestPage = "files/login/has_favicon.html";
-  const char* kFaviconResource = "auth-basic/favicon.gif";
+  const char kFaviconTestPage[] = "/login/has_favicon.html";
+  const char kFaviconResource[] = "/auth-basic/favicon.gif";
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -607,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   // First load a page that has a favicon that requires
   // authentication.  There should be no login prompt.
   {
-    GURL test_page = test_server()->GetURL(kFaviconTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kFaviconTestPage);
     WindowedLoadStopObserver load_stop_waiter(controller, 1);
     browser()->OpenURL(OpenURLParams(
         test_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
@@ -618,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   // Now request the same favicon, but directly as the document.
   // There should be one login prompt.
   {
-    GURL test_page = test_server()->GetURL(kFaviconResource);
+    GURL test_page = embedded_test_server()->GetURL(kFaviconResource);
     WindowedLoadStopObserver load_stop_waiter(controller, 1);
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     browser()->OpenURL(OpenURLParams(
@@ -642,17 +637,16 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   EXPECT_EQ(0, observer.auth_supplied_count());
   EXPECT_EQ(1, observer.auth_needed_count());
   EXPECT_EQ(1, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // Block crossdomain image login prompting as a phishing defense.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        BlockCrossdomainPromptForSubresources) {
-  const char* kTestPage = "files/login/load_img_from_b.html";
+  const char kTestPage[] = "/login/load_img_from_b.html";
 
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
   host_resolver()->AddRule("www.b.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -663,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Load a page that has a cross-domain sub-resource authentication.
   // There should be no login prompt.
   {
-    GURL test_page = test_server()->GetURL(kTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kTestPage);
     ASSERT_EQ("127.0.0.1", test_page.host());
 
     // Change the host from 127.0.0.1 to www.a.com so that when the
@@ -684,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Now request the same page, but from the same origin.
   // There should be one login prompt.
   {
-    GURL test_page = test_server()->GetURL(kTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kTestPage);
     ASSERT_EQ("127.0.0.1", test_page.host());
 
     // Change the host from 127.0.0.1 to www.b.com so that when the
@@ -711,17 +705,16 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   }
 
   EXPECT_EQ(1, observer.auth_needed_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // Allow crossdomain iframe login prompting despite the above.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        AllowCrossdomainPromptForSubframes) {
-  const char* kTestPage = "files/login/load_iframe_from_b.html";
+  const char kTestPage[] = "/login/load_iframe_from_b.html";
 
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
   host_resolver()->AddRule("www.b.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -731,7 +724,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   // Load a page that has a cross-domain iframe authentication.
   {
-    GURL test_page = test_server()->GetURL(kTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kTestPage);
     ASSERT_EQ("127.0.0.1", test_page.host());
 
     // Change the host from 127.0.0.1 to www.a.com so that when the
@@ -767,11 +760,10 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ("www.a.com", contents->GetVisibleURL().host());
 
   EXPECT_EQ(1, observer.auth_needed_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Get NavigationController for tab 1.
   content::WebContents* contents_1 =
@@ -800,13 +792,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
     WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
     WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_1->OpenURL(OpenURLParams(
-        test_server()->GetURL("auth-basic/1"),
+        embedded_test_server()->GetURL("/auth-basic/1"),
         content::Referrer(),
         CURRENT_TAB,
         ui::PAGE_TRANSITION_TYPED,
         false));
     contents_2->OpenURL(OpenURLParams(
-        test_server()->GetURL("auth-basic/2"),
+        embedded_test_server()->GetURL("/auth-basic/2"),
         content::Referrer(),
         CURRENT_TAB,
         ui::PAGE_TRANSITION_TYPED,
@@ -831,11 +823,10 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
   EXPECT_EQ(2, observer.auth_needed_count());
   EXPECT_EQ(2, observer.auth_supplied_count());
   EXPECT_EQ(0, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Get NavigationController for tab 1.
   content::WebContents* contents_1 =
@@ -864,13 +855,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
     WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
     WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_1->OpenURL(OpenURLParams(
-        test_server()->GetURL("auth-basic/1"),
+        embedded_test_server()->GetURL("/auth-basic/1"),
         content::Referrer(),
         CURRENT_TAB,
         ui::PAGE_TRANSITION_TYPED,
         false));
     contents_2->OpenURL(OpenURLParams(
-        test_server()->GetURL("auth-basic/2"),
+        embedded_test_server()->GetURL("/auth-basic/2"),
         content::Referrer(),
         CURRENT_TAB,
         ui::PAGE_TRANSITION_TYPED,
@@ -895,12 +886,11 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
   EXPECT_EQ(2, observer.auth_needed_count());
   EXPECT_EQ(0, observer.auth_supplied_count());
   EXPECT_EQ(2, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        SupplyRedundantAuthsMultiProfile) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Get NavigationController for regular tab.
   content::WebContents* contents =
@@ -929,13 +919,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
     WindowedAuthNeededObserver auth_needed_waiter_incognito(
         controller_incognito);
     contents->OpenURL(OpenURLParams(
-        test_server()->GetURL("auth-basic/1"),
+        embedded_test_server()->GetURL("/auth-basic/1"),
         content::Referrer(),
         CURRENT_TAB,
         ui::PAGE_TRANSITION_TYPED,
         false));
     contents_incognito->OpenURL(OpenURLParams(
-        test_server()->GetURL("auth-basic/2"),
+        embedded_test_server()->GetURL("/auth-basic/2"),
         content::Referrer(),
         CURRENT_TAB,
         ui::PAGE_TRANSITION_TYPED,
@@ -968,16 +958,15 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(1, observer_incognito.auth_needed_count());
   EXPECT_EQ(0, observer_incognito.auth_supplied_count());
   EXPECT_EQ(0, observer_incognito.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // If an XMLHttpRequest is made with incorrect credentials, there should be no
 // login prompt; instead the 401 status should be returned to the script.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        NoLoginPromptForXHRWithBadCredentials) {
-  const char* kXHRTestPage = "files/login/xhr_with_credentials.html#incorrect";
+  const char kXHRTestPage[] = "/login/xhr_with_credentials.html#incorrect";
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -989,7 +978,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Load a page which makes a synchronous XMLHttpRequest for an authenticated
   // resource with the wrong credentials.  There should be no login prompt.
   {
-    GURL test_page = test_server()->GetURL(kXHRTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kXHRTestPage);
     WindowedLoadStopObserver load_stop_waiter(controller, 1);
     browser()->OpenURL(OpenURLParams(
         test_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
@@ -1003,16 +992,15 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(0, observer.auth_supplied_count());
   EXPECT_EQ(0, observer.auth_needed_count());
   EXPECT_EQ(0, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // If an XMLHttpRequest is made with correct credentials, there should be no
 // login prompt either.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        NoLoginPromptForXHRWithGoodCredentials) {
-  const char* kXHRTestPage = "files/login/xhr_with_credentials.html#secret";
+  const char kXHRTestPage[] = "/login/xhr_with_credentials.html#secret";
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1024,7 +1012,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Load a page which makes a synchronous XMLHttpRequest for an authenticated
   // resource with the wrong credentials.  There should be no login prompt.
   {
-    GURL test_page = test_server()->GetURL(kXHRTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kXHRTestPage);
     WindowedLoadStopObserver load_stop_waiter(controller, 1);
     browser()->OpenURL(OpenURLParams(
         test_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
@@ -1038,16 +1026,15 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(0, observer.auth_supplied_count());
   EXPECT_EQ(0, observer.auth_needed_count());
   EXPECT_EQ(0, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // If an XMLHttpRequest is made without credentials, there should be a login
 // prompt.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        LoginPromptForXHRWithoutCredentials) {
-  const char* kXHRTestPage = "files/login/xhr_without_credentials.html";
+  const char kXHRTestPage[] = "/login/xhr_without_credentials.html";
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1059,7 +1046,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Load a page which makes a synchronous XMLHttpRequest for an authenticated
   // resource with the wrong credentials.  There should be no login prompt.
   {
-    GURL test_page = test_server()->GetURL(kXHRTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kXHRTestPage);
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     browser()->OpenURL(OpenURLParams(
         test_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
@@ -1102,16 +1089,15 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(2, observer.auth_supplied_count());
   EXPECT_EQ(2, observer.auth_needed_count());
   EXPECT_EQ(0, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // If an XMLHttpRequest is made without credentials, there should be a login
 // prompt.  If it's cancelled, the script should get a 401 status.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        LoginPromptForXHRWithoutCredentialsCancelled) {
-  const char* kXHRTestPage = "files/login/xhr_without_credentials.html";
+  const char kXHRTestPage[] = "/login/xhr_without_credentials.html";
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1123,7 +1109,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Load a page which makes a synchronous XMLHttpRequest for an authenticated
   // resource with the wrong credentials.  There should be no login prompt.
   {
-    GURL test_page = test_server()->GetURL(kXHRTestPage);
+    GURL test_page = embedded_test_server()->GetURL(kXHRTestPage);
     WindowedAuthNeededObserver auth_needed_waiter(controller);
     browser()->OpenURL(OpenURLParams(
         test_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
@@ -1147,7 +1133,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(0, observer.auth_supplied_count());
   EXPECT_EQ(1, observer.auth_needed_count());
   EXPECT_EQ(1, observer.auth_cancelled_count());
-  EXPECT_TRUE(test_server()->Stop());
 }
 
 // If a cross origin navigation triggers a login prompt, the destination URL
@@ -1196,9 +1181,9 @@ void LoginPromptBrowserTest::TestCrossOriginPrompt(
 // interstitial should be shown.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        ShowCorrectUrlForCrossOriginMainFrameRequests) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  GURL test_page = test_server()->GetURL(kAuthBasicPage);
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
   ASSERT_EQ("127.0.0.1", test_page.host());
   std::string auth_host("127.0.0.1");
   TestCrossOriginPrompt(test_page, auth_host, true);
@@ -1209,10 +1194,10 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        ShowCorrectUrlForCrossOriginMainFrameRedirects) {
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  const char* kTestPage = "files/login/cross_origin.html";
-  GURL test_page = test_server()->GetURL(kTestPage);
+  const char kTestPage[] = "/login/cross_origin.html";
+  GURL test_page = embedded_test_server()->GetURL(kTestPage);
   ASSERT_EQ("127.0.0.1", test_page.host());
   std::string auth_host("www.a.com");
   TestCrossOriginPrompt(test_page, auth_host, true);
@@ -1227,18 +1212,19 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        CancelLoginInterstitialOnRedirect) {
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
   host_resolver()->AddRule("www.b.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // The test page redirects to www.a.com which triggers an auth dialog.
-  const char* kTestPage = "files/login/cross_origin.html";
-  GURL test_page = test_server()->GetURL(kTestPage);
+  const char kTestPage[] = "/login/cross_origin.html";
+  GURL test_page = embedded_test_server()->GetURL(kTestPage);
   ASSERT_EQ("127.0.0.1", test_page.host());
 
   // The page at b.com simply displays an auth dialog.
   GURL::Replacements replace_host2;
   replace_host2.SetHostStr("www.b.com");
-  GURL page2 =
-      test_server()->GetURL(kAuthBasicPage).ReplaceComponents(replace_host2);
+  GURL page2 = embedded_test_server()
+                   ->GetURL(kAuthBasicPage)
+                   .ReplaceComponents(replace_host2);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1288,11 +1274,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     LoginPromptBrowserTest,
     DISABLED_LoginInterstitialShouldReplaceExistingInterstitial) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
-      base::FilePath());
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   ASSERT_TRUE(https_server.Start());
 
   content::WebContents* contents =
@@ -1362,12 +1345,9 @@ IN_PROC_BROWSER_TEST_F(
 // is any other interstitial being displayed.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        ShouldReplaceExistingInterstitialWhenNavigated) {
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
-      base::FilePath());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   ASSERT_TRUE(https_server.Start());
 
   content::WebContents* contents =
@@ -1377,7 +1357,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   observer.Register(content::Source<NavigationController>(controller));
 
-  GURL auth_url = test_server()->GetURL(kAuthBasicPage);
+  GURL auth_url = embedded_test_server()->GetURL(kAuthBasicPage);
   GURL broken_ssl_page = https_server.GetURL("/");
 
   // Navigate to an auth url and wait for the login prompt.
