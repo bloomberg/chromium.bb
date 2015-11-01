@@ -1276,7 +1276,8 @@ struct WeakProcessingHashTableHelper<WeakHandlingInCollections, Key, Value, Extr
     {
         typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
         HashTableType* table = reinterpret_cast<HashTableType*>(closure);
-        ASSERT(table->m_table);
+        if (!table->m_table)
+            return;
         // Now perform weak processing (this is a no-op if the backing was
         // accessible through an iterator and was already marked strongly).
         typedef typename HashTableType::ValueType ValueType;
