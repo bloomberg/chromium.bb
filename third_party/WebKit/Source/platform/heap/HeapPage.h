@@ -720,14 +720,18 @@ public:
 
 private:
     void allocatePage();
-    Address lazySweepPages(size_t, size_t gcInfoIndex) override;
     Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
+    Address allocateFromFreeList(size_t, size_t gcInfoIndex);
+
+    Address lazySweepPages(size_t, size_t gcInfoIndex) override;
+
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
-    size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
     bool hasCurrentAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
     void setAllocationPoint(Address, size_t);
+
+    size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
+    void setRemainingAllocationSize(size_t);
     void updateRemainingAllocationSize();
-    Address allocateFromFreeList(size_t, size_t gcInfoIndex);
 
     FreeList m_freeList;
     Address m_currentAllocationPoint;

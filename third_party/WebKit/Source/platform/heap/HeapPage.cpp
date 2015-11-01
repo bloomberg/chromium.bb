@@ -571,15 +571,7 @@ void NormalPageHeap::promptlyFreeObject(HeapObjectHeader* header)
         header->finalize(payload, payloadSize);
         if (address + size == m_currentAllocationPoint) {
             m_currentAllocationPoint = address;
-            m_remainingAllocationSize += size;
-            // Sync recorded allocated-object size:
-            //  - if previous alloc checkpoint is larger, allocation size has increased.
-            //  - if smaller, a net reduction in size since last call to updateRemainingAllocationSize().
-            if (m_lastRemainingAllocationSize > m_remainingAllocationSize)
-                Heap::increaseAllocatedObjectSize(m_lastRemainingAllocationSize - m_remainingAllocationSize);
-            else if (m_lastRemainingAllocationSize != m_remainingAllocationSize)
-                Heap::decreaseAllocatedObjectSize(m_remainingAllocationSize - m_lastRemainingAllocationSize);
-            m_lastRemainingAllocationSize = m_remainingAllocationSize;
+            setRemainingAllocationSize(m_remainingAllocationSize + size);
             SET_MEMORY_INACCESSIBLE(address, size);
             return;
         }
@@ -603,8 +595,8 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
     size_t expandSize = allocationSize - header->size();
     if (isObjectAllocatedAtAllocationPoint(header) && expandSize <= m_remainingAllocationSize) {
         m_currentAllocationPoint += expandSize;
-        m_remainingAllocationSize -= expandSize;
-
+        ASSERT(m_remainingAllocationSize >= expandSize);
+        setRemainingAllocationSize(m_remainingAllocationSize - expandSize);
         // Unpoison the memory used for the object (payload).
         SET_MEMORY_ACCESSIBLE(header->payloadEnd(), expandSize);
         header->setSize(allocationSize);
@@ -623,7 +615,7 @@ bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
     size_t shrinkSize = header->size() - allocationSize;
     if (isObjectAllocatedAtAllocationPoint(header)) {
         m_currentAllocationPoint -= shrinkSize;
-        m_remainingAllocationSize += shrinkSize;
+        setRemainingAllocationSize(m_remainingAllocationSize + shrinkSize);
         SET_MEMORY_INACCESSIBLE(m_currentAllocationPoint, shrinkSize);
         header->setSize(allocationSize);
         return true;
@@ -665,6 +657,20 @@ Address NormalPageHeap::lazySweepPages(size_t allocationSize, size_t gcInfoIndex
         }
     }
     return result;
+}
+
+void NormalPageHeap::setRemainingAllocationSize(size_t newRemainingAllocationSize)
+{
+    m_remainingAllocationSize = newRemainingAllocationSize;
+
+    // Sync recorded allocated-object size:
+    //  - if previous alloc checkpoint is larger, allocation size has increased.
+    //  - if smaller, a net reduction in size since last call to updateRemainingAllocationSize().
+    if (m_lastRemainingAllocationSize > m_remainingAllocationSize)
+        Heap::increaseAllocatedObjectSize(m_lastRemainingAllocationSize - m_remainingAllocationSize);
+    else if (m_lastRemainingAllocationSize != m_remainingAllocationSize)
+        Heap::decreaseAllocatedObjectSize(m_remainingAllocationSize - m_lastRemainingAllocationSize);
+    m_lastRemainingAllocationSize = m_remainingAllocationSize;
 }
 
 void NormalPageHeap::updateRemainingAllocationSize()
