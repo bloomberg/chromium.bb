@@ -1754,8 +1754,11 @@ static inline void handleDynamicFloatPositionChange(LayoutObject* object)
 
 StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
 {
-    if (diff.transformChanged() && isSVG())
-        diff.setNeedsFullLayout();
+    if (diff.transformChanged() && isSVG()) {
+        // Skip a full layout for transforms at the html/svg boundary which do not affect sizes inside SVG.
+        if (!isSVGRoot())
+            diff.setNeedsFullLayout();
+    }
 
     // If transform changed, and the layer does not paint into its own separate backing, then we need to invalidate paints.
     if (diff.transformChanged()) {
