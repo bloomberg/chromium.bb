@@ -108,7 +108,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   root->SetString(keys::kDescription, base::UTF16ToUTF8(web_app.description));
   root->SetString(keys::kLaunchWebURL, web_app.app_url.spec());
   if (web_app.generated_icon_color != SK_ColorTRANSPARENT) {
-    root->SetString(keys::kAppIconColor, image_util::GenerateCSSColorString(
+    root->SetString(keys::kAppIconColor, image_util::GenerateHexColorString(
                                              web_app.generated_icon_color));
   }
 

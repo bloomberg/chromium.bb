@@ -63,7 +63,7 @@ bool AppIconColorHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
 
-    if (!image_util::ParseCSSColorString(
+    if (!image_util::ParseHexColorString(
             app_icon_color_info->icon_color_string_,
             &app_icon_color_info->icon_color_)) {
       *error =

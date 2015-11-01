@@ -565,7 +565,7 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   } else if (color_value->IsType(base::Value::TYPE_STRING)) {
     std::string color_string;
     EXTENSION_FUNCTION_VALIDATE(details_->GetString("color", &color_string));
-    if (!image_util::ParseCSSColorString(color_string, &color))
+    if (!image_util::ParseCssColorString(color_string, &color))
       return false;
   }
 

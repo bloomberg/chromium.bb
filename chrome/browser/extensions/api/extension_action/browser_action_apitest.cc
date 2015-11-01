@@ -616,6 +616,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
   // Test that array values set color correctly.
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(extension->GetResourceURL("update3.html")));
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Test that hsl() values 'hsl(120, 100%, 50%)' set color correctly.
+  ASSERT_EQ(SkColorSetARGB(255, 0, 255, 0),
+            action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {

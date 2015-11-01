@@ -535,7 +535,7 @@ bool AppWindowCreateFunction::GetFrameOptions(
       return false;
     }
 
-    if (!image_util::ParseCSSColorString(
+    if (!image_util::ParseHexColorString(
             *options.frame->as_frame_options->color,
             &create_params->active_frame_color)) {
       error_ = app_window_constants::kInvalidColorSpecification;
@@ -546,7 +546,7 @@ bool AppWindowCreateFunction::GetFrameOptions(
     create_params->inactive_frame_color = create_params->active_frame_color;
 
     if (options.frame->as_frame_options->inactive_color.get()) {
-      if (!image_util::ParseCSSColorString(
+      if (!image_util::ParseHexColorString(
               *options.frame->as_frame_options->inactive_color,
               &create_params->inactive_frame_color)) {
         error_ = app_window_constants::kInvalidColorSpecification;
