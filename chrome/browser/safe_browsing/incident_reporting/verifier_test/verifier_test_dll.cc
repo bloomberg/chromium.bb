@@ -8,7 +8,7 @@
 
 namespace {
 
-void* g_somestate = nullptr;
+void (*g_somestate)(int) = nullptr;
 int g_somevalue = 0;
 
 }  // namespace
