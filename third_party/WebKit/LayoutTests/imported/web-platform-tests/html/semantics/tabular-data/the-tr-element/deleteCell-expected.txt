@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS HTMLTableRowElement deleteCell(0) 
+PASS HTMLTableRowElement deleteCell(-1) 
+PASS HTMLTableRowElement deleteCell(-2) 
+PASS HTMLTableRowElement deleteCell(cells.length) 
+FAIL HTMLTableRowElement deleteCell(-1) with no cells Failed to execute 'deleteCell' on 'HTMLTableRowElement': The value provided (-1) is outside the range [0, 0).
+Harness: the test ran to completion.
+
