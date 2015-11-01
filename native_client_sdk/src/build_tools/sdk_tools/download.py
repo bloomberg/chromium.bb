@@ -26,19 +26,25 @@ def UrlOpen(url):
 
 
 def MakeProgressFunction(file_size):
+  '''Returns a progress function based on a known file size'''
   # An inner function can only read nonlocal variables, not assign them. We can
   # work around this by using a list of one element.
   dots = [0]
+  console = sys.stdout.isatty()
   def ShowKnownProgress(progress):
-    '''Returns a progress function based on a known file size'''
     if progress == 0:
-      sys.stdout.write('|%s|\n' % ('=' * 48))
+      sys.stdout.write('|%s|  %s\n' % ('=' * 48, file_size))
     elif progress == -1:
       sys.stdout.write('\n')
     else:
       new_dots = progress * 50 / file_size - dots[0]
-      sys.stdout.write('.' * new_dots)
       dots[0] += new_dots
+      if not console:
+        sys.stdout.write('.' * new_dots)
+      else:
+        # use line rewrite capability
+        sys.stdout.write(
+            '\r%s  %s/%s kB' % ('.' * dots[0], progress//1000, file_size//1000))
     sys.stdout.flush()
 
   return ShowKnownProgress
@@ -54,7 +60,7 @@ def DownloadAndComputeHash(from_stream, to_stream=None, progress_func=None):
     progress_func: [optional] A function used to report download progress. If
                    provided, progress_func is called with progress=0 at the
                    beginning of the download, periodically with progress>0
-                   (== number of bytes read do far) during the download, and
+                   (== number of bytes read so far) during the download, and
                    progress=-1 at the end or if the download was aborted.
 
   Return
