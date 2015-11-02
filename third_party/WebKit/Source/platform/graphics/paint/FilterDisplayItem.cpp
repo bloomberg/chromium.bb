@@ -29,9 +29,9 @@ void BeginFilterDisplayItem::replay(GraphicsContext& context) const
     context.translate(-m_bounds.x(), -m_bounds.y());
 }
 
-void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void BeginFilterDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendFilterItem(*m_webFilterOperations, m_bounds);
+    list->appendFilterItem(visualRect, *m_webFilterOperations, m_bounds);
 }
 
 bool BeginFilterDisplayItem::drawsContent() const
@@ -56,9 +56,9 @@ void EndFilterDisplayItem::replay(GraphicsContext& context) const
     context.restore();
 }
 
-void EndFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void EndFilterDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndFilterItem();
+    list->appendEndFilterItem(visualRect);
 }
 
 } // namespace blink

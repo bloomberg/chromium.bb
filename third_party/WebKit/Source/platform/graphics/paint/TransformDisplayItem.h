@@ -18,7 +18,7 @@ public:
         , m_transform(transform) { }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
     const AffineTransform& transform() const { return m_transform; }
 
@@ -43,7 +43,7 @@ public:
         : PairedEndDisplayItem(client, EndTransform, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)

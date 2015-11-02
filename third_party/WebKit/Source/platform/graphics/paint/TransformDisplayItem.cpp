@@ -17,9 +17,9 @@ void BeginTransformDisplayItem::replay(GraphicsContext& context) const
     context.concatCTM(m_transform);
 }
 
-void BeginTransformDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void BeginTransformDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendTransformItem(affineTransformToSkMatrix(m_transform));
+    list->appendTransformItem(visualRect, affineTransformToSkMatrix(m_transform));
 }
 
 #ifndef NDEBUG
@@ -36,9 +36,9 @@ void EndTransformDisplayItem::replay(GraphicsContext& context) const
     context.restore();
 }
 
-void EndTransformDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void EndTransformDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndTransformItem();
+    list->appendEndTransformItem(visualRect);
 }
 
 } // namespace blink

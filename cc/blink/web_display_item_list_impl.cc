@@ -46,7 +46,9 @@ WebDisplayItemListImpl::WebDisplayItemListImpl(
     : display_item_list_(display_list) {
 }
 
-void WebDisplayItemListImpl::appendDrawingItem(const SkPicture* picture) {
+void WebDisplayItemListImpl::appendDrawingItem(
+    const blink::WebRect& visual_rect,
+    const SkPicture* picture) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
         display_item_list_->CreateAndAppendItem<cc::DrawingDisplayItem>();
@@ -59,6 +61,7 @@ void WebDisplayItemListImpl::appendDrawingItem(const SkPicture* picture) {
 }
 
 void WebDisplayItemListImpl::appendClipItem(
+    const blink::WebRect& visual_rect,
     const blink::WebRect& clip_rect,
     const blink::WebVector<SkRRect>& rounded_clip_rects) {
   std::vector<SkRRect> rounded_rects;
@@ -75,7 +78,8 @@ void WebDisplayItemListImpl::appendClipItem(
   }
 }
 
-void WebDisplayItemListImpl::appendEndClipItem() {
+void WebDisplayItemListImpl::appendEndClipItem(
+    const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::EndClipDisplayItem>();
   } else {
@@ -83,9 +87,11 @@ void WebDisplayItemListImpl::appendEndClipItem() {
   }
 }
 
-void WebDisplayItemListImpl::appendClipPathItem(const SkPath& clip_path,
-                                                SkRegion::Op clip_op,
-                                                bool antialias) {
+void WebDisplayItemListImpl::appendClipPathItem(
+    const blink::WebRect& visual_rect,
+    const SkPath& clip_path,
+    SkRegion::Op clip_op,
+    bool antialias) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
         display_item_list_->CreateAndAppendItem<cc::ClipPathDisplayItem>();
@@ -97,7 +103,8 @@ void WebDisplayItemListImpl::appendClipPathItem(const SkPath& clip_path,
   }
 }
 
-void WebDisplayItemListImpl::appendEndClipPathItem() {
+void WebDisplayItemListImpl::appendEndClipPathItem(
+    const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::EndClipPathDisplayItem>();
   } else {
@@ -106,6 +113,7 @@ void WebDisplayItemListImpl::appendEndClipPathItem() {
 }
 
 void WebDisplayItemListImpl::appendFloatClipItem(
+    const blink::WebRect& visual_rect,
     const blink::WebFloatRect& clip_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     auto* item =
@@ -118,7 +126,8 @@ void WebDisplayItemListImpl::appendFloatClipItem(
   }
 }
 
-void WebDisplayItemListImpl::appendEndFloatClipItem() {
+void WebDisplayItemListImpl::appendEndFloatClipItem(
+    const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::EndFloatClipDisplayItem>();
   } else {
@@ -126,7 +135,9 @@ void WebDisplayItemListImpl::appendEndFloatClipItem() {
   }
 }
 
-void WebDisplayItemListImpl::appendTransformItem(const SkMatrix44& matrix) {
+void WebDisplayItemListImpl::appendTransformItem(
+    const blink::WebRect& visual_rect,
+    const SkMatrix44& matrix) {
   gfx::Transform transform;
   transform.matrix() = matrix;
 
@@ -141,7 +152,8 @@ void WebDisplayItemListImpl::appendTransformItem(const SkMatrix44& matrix) {
   }
 }
 
-void WebDisplayItemListImpl::appendEndTransformItem() {
+void WebDisplayItemListImpl::appendEndTransformItem(
+    const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::EndTransformDisplayItem>();
   } else {
@@ -150,6 +162,7 @@ void WebDisplayItemListImpl::appendEndTransformItem() {
 }
 
 void WebDisplayItemListImpl::appendCompositingItem(
+    const blink::WebRect& visual_rect,
     float opacity,
     SkXfermode::Mode xfermode,
     SkRect* bounds,
@@ -172,7 +185,8 @@ void WebDisplayItemListImpl::appendCompositingItem(
   }
 }
 
-void WebDisplayItemListImpl::appendEndCompositingItem() {
+void WebDisplayItemListImpl::appendEndCompositingItem(
+    const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>();
   } else {
@@ -181,6 +195,7 @@ void WebDisplayItemListImpl::appendEndCompositingItem() {
 }
 
 void WebDisplayItemListImpl::appendFilterItem(
+    const blink::WebRect& visual_rect,
     const blink::WebFilterOperations& filters,
     const blink::WebFloatRect& bounds) {
   const WebFilterOperationsImpl& filters_impl =
@@ -197,7 +212,8 @@ void WebDisplayItemListImpl::appendFilterItem(
   }
 }
 
-void WebDisplayItemListImpl::appendEndFilterItem() {
+void WebDisplayItemListImpl::appendEndFilterItem(
+    const blink::WebRect& visual_rect) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::EndFilterDisplayItem>();
   } else {
@@ -206,15 +222,18 @@ void WebDisplayItemListImpl::appendEndFilterItem() {
 }
 
 void WebDisplayItemListImpl::appendScrollItem(
-    const blink::WebSize& scrollOffset,
+    const blink::WebRect& visual_rect,
+    const blink::WebSize& scroll_offset,
     ScrollContainerId) {
   SkMatrix44 matrix;
-  matrix.setTranslate(-scrollOffset.width, -scrollOffset.height, 0);
-  appendTransformItem(matrix);
+  matrix.setTranslate(-scroll_offset.width, -scroll_offset.height, 0);
+  // TODO(wkorman): Should we translate the visual rect as well?
+  appendTransformItem(visual_rect, matrix);
 }
 
-void WebDisplayItemListImpl::appendEndScrollItem() {
-  appendEndTransformItem();
+void WebDisplayItemListImpl::appendEndScrollItem(
+    const blink::WebRect& visual_rect) {
+  appendEndTransformItem(visual_rect);
 }
 
 WebDisplayItemListImpl::~WebDisplayItemListImpl() {

@@ -24,7 +24,7 @@ public:
 private:
     // CachedDisplayItem is never replayed or appended to WebDisplayItemList.
     void replay(GraphicsContext&) const final { ASSERT_NOT_REACHED(); }
-    void appendToWebDisplayItemList(WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

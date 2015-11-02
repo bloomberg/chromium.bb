@@ -275,7 +275,8 @@ void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, co
     canvas->drawPath(m_path.skPath(), paint);
 
     RefPtr<const SkPicture> picture = adoptRef(recorder.endRecording());
-    webDisplayItemList->appendDrawingItem(picture.get());
+    // TODO(wkorman): Pass actual visual rect with the drawing item.
+    webDisplayItemList->appendDrawingItem(IntRect(), picture.get());
 }
 
 void LinkHighlightImpl::startHighlightAnimationIfNeeded()

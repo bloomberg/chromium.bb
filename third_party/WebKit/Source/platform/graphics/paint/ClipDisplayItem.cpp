@@ -21,7 +21,7 @@ void ClipDisplayItem::replay(GraphicsContext& context) const
         context.clipRoundedRect(roundedRect, SkRegion::kIntersect_Op);
 }
 
-void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void ClipDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     WebVector<SkRRect> webRoundedRects(m_roundedRectClips.size());
     for (size_t i = 0; i < m_roundedRectClips.size(); ++i) {
@@ -39,7 +39,7 @@ void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
         skRoundedRect.setRectRadii(m_roundedRectClips[i].rect(), skRadii);
         webRoundedRects[i] = skRoundedRect;
     }
-    list->appendClipItem(m_clipRect, webRoundedRects);
+    list->appendClipItem(visualRect, m_clipRect, webRoundedRects);
 }
 
 void EndClipDisplayItem::replay(GraphicsContext& context) const
@@ -47,9 +47,9 @@ void EndClipDisplayItem::replay(GraphicsContext& context) const
     context.restore();
 }
 
-void EndClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void EndClipDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndClipItem();
+    list->appendEndClipItem(visualRect);
 }
 
 #ifndef NDEBUG

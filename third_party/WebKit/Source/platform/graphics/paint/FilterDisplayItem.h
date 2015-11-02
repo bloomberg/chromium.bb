@@ -25,7 +25,7 @@ public:
         , m_bounds(bounds) { }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
     bool drawsContent() const override;
 
 private:
@@ -53,7 +53,7 @@ public:
         : PairedEndDisplayItem(client, EndFilter, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)

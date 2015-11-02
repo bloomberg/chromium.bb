@@ -20,7 +20,7 @@ public:
         , m_clipPath(clipPath.skPath()) { }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
     const SkPath m_clipPath;
@@ -42,7 +42,7 @@ public:
         : PairedEndDisplayItem(client, EndClipPath, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)

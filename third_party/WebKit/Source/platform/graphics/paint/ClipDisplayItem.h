@@ -31,7 +31,7 @@ public:
     }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #ifndef NDEBUG
@@ -59,7 +59,7 @@ public:
     }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)

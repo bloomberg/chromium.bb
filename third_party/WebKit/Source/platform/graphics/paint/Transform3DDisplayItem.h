@@ -28,7 +28,7 @@ public:
     }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
     const TransformationMatrix& transform() const { return m_transform; }
     const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
@@ -59,7 +59,7 @@ public:
     }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)

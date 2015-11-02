@@ -17,10 +17,10 @@ void BeginScrollDisplayItem::replay(GraphicsContext& context) const
     context.translate(-m_currentOffset.width(), -m_currentOffset.height());
 }
 
-void BeginScrollDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void BeginScrollDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     WebDisplayItemList::ScrollContainerId scrollContainerId = client();
-    list->appendScrollItem(m_currentOffset, scrollContainerId);
+    list->appendScrollItem(visualRect, m_currentOffset, scrollContainerId);
 }
 
 #ifndef NDEBUG
@@ -36,9 +36,9 @@ void EndScrollDisplayItem::replay(GraphicsContext& context) const
     context.restore();
 }
 
-void EndScrollDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void EndScrollDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndScrollItem();
+    list->appendEndScrollItem(visualRect);
 }
 
 } // namespace blink

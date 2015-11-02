@@ -17,7 +17,7 @@ public:
         : PairedBeginDisplayItem(client, BeginFixedPositionContainer, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const final { }
-    void appendToWebDisplayItemList(WebDisplayItemList*) const final;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const final;
 };
 
 class PLATFORM_EXPORT EndFixedPositionContainerDisplayItem final : public PairedEndDisplayItem {
@@ -26,7 +26,7 @@ public:
         : PairedEndDisplayItem(client, EndFixedPositionContainer, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const final { }
-    void appendToWebDisplayItemList(WebDisplayItemList*) const final;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const final;
 
 private:
 #if ENABLE(ASSERT)

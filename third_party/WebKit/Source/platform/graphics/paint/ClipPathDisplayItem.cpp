@@ -18,9 +18,9 @@ void BeginClipPathDisplayItem::replay(GraphicsContext& context) const
     context.clipPath(m_clipPath, AntiAliased);
 }
 
-void BeginClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void BeginClipPathDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendClipPathItem(m_clipPath, SkRegion::kIntersect_Op, true);
+    list->appendClipPathItem(visualRect, m_clipPath, SkRegion::kIntersect_Op, true);
 }
 
 void EndClipPathDisplayItem::replay(GraphicsContext& context) const
@@ -28,9 +28,9 @@ void EndClipPathDisplayItem::replay(GraphicsContext& context) const
     context.restore();
 }
 
-void EndClipPathDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void EndClipPathDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
-    list->appendEndClipPathItem();
+    list->appendEndClipPathItem(visualRect);
 }
 
 #ifndef NDEBUG

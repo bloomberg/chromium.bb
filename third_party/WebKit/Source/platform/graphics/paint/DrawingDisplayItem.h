@@ -39,7 +39,7 @@ public:
     }
 
     void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
     bool drawsContent() const override;
 
     const SkPicture* picture() const { return m_picture.get(); }

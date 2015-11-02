@@ -6,6 +6,7 @@
 #include "platform/graphics/paint/PaintArtifact.h"
 
 #include "platform/TraceEvent.h"
+#include "platform/geometry/IntRect.h"
 
 namespace blink {
 
@@ -40,8 +41,10 @@ void PaintArtifact::replay(GraphicsContext& graphicsContext) const
 void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
-    for (const DisplayItem& displayItem : m_displayItemList)
-        displayItem.appendToWebDisplayItemList(list);
+    for (const DisplayItem& displayItem : m_displayItemList) {
+        // TODO(wkorman): Pass the actual visual rect for the display item.
+        displayItem.appendToWebDisplayItemList(IntRect(), list);
+    }
 }
 
 } // namespace blink

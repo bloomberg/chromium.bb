@@ -74,7 +74,8 @@ static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const Pa
         // one big flat SkPicture.
         SkRect skBounds = SkRect::MakeXYWH(bounds.x, bounds.y, bounds.width, bounds.height);
         RefPtr<SkPicture> picture = paintArtifactToSkPicture(artifact, skBounds);
-        list->appendDrawingItem(picture.get());
+        // TODO(wkorman): Pass actual visual rect with the drawing item.
+        list->appendDrawingItem(IntRect(), picture.get());
         return;
     }
     artifact.appendToWebDisplayItemList(list);

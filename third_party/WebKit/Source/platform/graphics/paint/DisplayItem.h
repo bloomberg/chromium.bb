@@ -20,6 +20,7 @@
 namespace blink {
 
 class GraphicsContext;
+class IntRect;
 class WebDisplayItemList;
 
 class PLATFORM_EXPORT DisplayItem {
@@ -266,7 +267,7 @@ public:
     void setSkippedCache() { m_skippedCache = true; }
     bool skippedCache() const { return m_skippedCache; }
 
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const { }
+    virtual void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const { }
 
     // See comments of enum Type for usage of the following macros.
 #define DEFINE_CATEGORY_METHODS(Category) \

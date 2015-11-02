@@ -11,12 +11,12 @@
 
 namespace blink {
 
-void BeginFixedPositionDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void BeginFixedPositionDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     // TODO(trchen): Should implement the compositor counterpart and update transform tree algorithm.
 }
 
-void EndFixedPositionDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void EndFixedPositionDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     // TODO(trchen): Should implement the compositor counterpart and update transform tree algorithm.
 }

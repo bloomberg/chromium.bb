@@ -17,7 +17,7 @@ SimDisplayItemList::SimDisplayItemList()
 {
 }
 
-void SimDisplayItemList::appendDrawingItem(const SkPicture* picture)
+void SimDisplayItemList::appendDrawingItem(const WebRect&, const SkPicture* picture)
 {
     m_containsText |= picture->hasText();
 
