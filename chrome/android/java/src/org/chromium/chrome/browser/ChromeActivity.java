@@ -640,9 +640,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     protected void onDeferredStartup() {
         super.onDeferredStartup();
-        boolean crashDumpUploadingDisabled = getIntent() != null
-                && getIntent().hasExtra(
-                        ChromeTabbedActivity.INTENT_EXTRA_DISABLE_CRASH_DUMP_UPLOADING);
+        boolean crashDumpUploadingDisabled =
+                CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
         DeferredStartupHandler.getInstance()
                 .onDeferredStartup(getChromeApplication(), crashDumpUploadingDisabled);
 

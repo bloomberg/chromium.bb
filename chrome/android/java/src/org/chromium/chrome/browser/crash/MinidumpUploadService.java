@@ -234,11 +234,13 @@ public class MinidumpUploadService extends IntentService {
         // Try to upload minidump
         MinidumpUploadCallable minidumpUploadCallable =
                 createMinidumpUploadCallable(minidumpFile, logfile);
-        boolean success = minidumpUploadCallable.call();
+        @MinidumpUploadCallable.MinidumpUploadStatus int uploadStatus =
+                minidumpUploadCallable.call();
 
-        if (success) {
+        if (uploadStatus == MinidumpUploadCallable.UPLOAD_SUCCESS) {
+            // Only update UMA stats if an intended and successful upload.
             ChromePreferenceManager.getInstance(this).incrementBreakpadUploadSuccessCount();
-        } else {
+        } else if (uploadStatus == MinidumpUploadCallable.UPLOAD_FAILURE) {
             // Unable to upload minidump. Incrementing try number and restarting.
 
             // Only create another attempt if we have successfully renamed

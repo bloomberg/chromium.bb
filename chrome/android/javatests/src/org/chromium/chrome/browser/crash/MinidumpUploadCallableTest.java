@@ -117,11 +117,11 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
     private static class MockCrashReportingPermissionManager
             implements CrashReportingPermissionManager {
         private final boolean mIsPermitted;
-        private final boolean mIsLimitted;
+        private final boolean mIsLimited;
 
-        MockCrashReportingPermissionManager(boolean isPermitted, boolean isLimitted) {
+        MockCrashReportingPermissionManager(boolean isPermitted, boolean isLimited) {
             mIsPermitted = isPermitted;
-            mIsLimitted = isLimitted;
+            mIsLimited = isLimited;
         }
 
         @Override
@@ -131,7 +131,7 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
 
         @Override
         public boolean isUploadLimited() {
-            return mIsLimitted;
+            return mIsLimited;
         }
     }
 
@@ -200,7 +200,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        assertTrue(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_SUCCESS,
+                minidumpUploadCallable.call().intValue());
         assertTrue(mExpectedFileAfterUpload.exists());
         assertValidUploadLogEntry();
     }
@@ -215,7 +216,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        assertFalse(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_DISABLED,
+                minidumpUploadCallable.call().intValue());
         assertFalse(mExpectedFileAfterUpload.exists());
     }
 
@@ -233,7 +235,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
                 MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
                 minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
-        assertFalse(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_FAILURE,
+                minidumpUploadCallable.call().intValue());
         assertFalse(mExpectedFileAfterUpload.exists());
     }
 
@@ -251,7 +254,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
                 MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
                 minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
-        assertTrue(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_SUCCESS,
+                minidumpUploadCallable.call().intValue());
         assertTrue(mExpectedFileAfterUpload.exists());
     }
 
@@ -268,13 +272,15 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
                 MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY,
                 minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
-        assertFalse(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_FAILURE,
+                minidumpUploadCallable.call().intValue());
         assertFalse(mExpectedFileAfterUpload.exists());
 
         setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(),
                 MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
                 minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
-        assertTrue(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_SUCCESS,
+                minidumpUploadCallable.call().intValue());
         assertTrue(mExpectedFileAfterUpload.exists());
 
         // After a successful upload we need to the create upload file again.
@@ -283,7 +289,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         setUpCrashPreferences(minidumpUploadCallable.getCurrentDay() - 1,
                 MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY,
                 minidumpUploadCallable.getFirstDayOfCurrentWeek(), 0);
-        assertTrue(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_SUCCESS,
+                minidumpUploadCallable.call().intValue());
         assertTrue(mExpectedFileAfterUpload.exists());
     }
 
@@ -303,7 +310,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         setUpCrashPreferences(minidumpUploadCallable.getCurrentDay(), 2,
                 minidumpUploadCallable.getFirstDayOfCurrentWeek(),
                 MinidumpUploadCallable.LOG_WEEKLY_SIZE_LIMIT_BYTES - fileSize / 2);
-        assertFalse(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_FAILURE,
+                minidumpUploadCallable.call().intValue());
         assertFalse(mExpectedFileAfterUpload.exists());
 
         // This upload should be allowed although there is not enough weekly limit left, because as
@@ -312,7 +320,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 MinidumpUploadCallable.LOG_UPLOAD_LIMIT_PER_DAY - 1,
                 minidumpUploadCallable.getFirstDayOfCurrentWeek() - 7,
                 MinidumpUploadCallable.LOG_WEEKLY_SIZE_LIMIT_BYTES - fileSize / 2);
-        assertTrue(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_SUCCESS,
+                minidumpUploadCallable.call().intValue());
         assertTrue(mExpectedFileAfterUpload.exists());
 
         // After a successful upload we need to create the upload file again.
@@ -320,7 +329,8 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         extendUploadFile(fileSize);
 
         // This upload should be allowed as there is enough weekly limit left.
-        assertTrue(minidumpUploadCallable.call());
+        assertEquals(MinidumpUploadCallable.UPLOAD_SUCCESS,
+                minidumpUploadCallable.call().intValue());
         assertTrue(mExpectedFileAfterUpload.exists());
     }
 

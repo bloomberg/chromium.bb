@@ -125,13 +125,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public static final String INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT = "render_process_limit";
 
     /**
-     * Sending an intent with this extra disable uploading of minidumps.
-     * This is only used for testing, when certain tests want to force this behaviour.
-     */
-    public static final String INTENT_EXTRA_DISABLE_CRASH_DUMP_UPLOADING =
-            "disable_crash_dump_uploading";
-
-    /**
      * Sending an intent with this action to Chrome will cause it to close all tabs
      * (iff the --enable-test-intents command line flag is set). If a URL is supplied in the
      * intent data, this will be loaded and unaffected by the close all action.

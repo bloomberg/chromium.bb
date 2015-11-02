@@ -163,7 +163,9 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         List<CountedMinidumpUploadCallable> callables =
                 new ArrayList<CountedMinidumpUploadCallable>();
         callables.add(new CountedMinidumpUploadCallable(
-                "chromium_renderer-111.dmp1", true, false));
+                "chromium_renderer-111.dmp1",
+                MinidumpUploadCallable.UPLOAD_SUCCESS,
+                false));
         runUploadCrashTest(callables);
     }
 
@@ -175,7 +177,9 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
                 new ArrayList<CountedMinidumpUploadCallable>();
         for (int i = 0; i < MinidumpUploadService.MAX_TRIES_ALLOWED; i++) {
             callables.add(new CountedMinidumpUploadCallable(
-                    "chromium_renderer-111.dmp1" + (i > 0 ? ".try" + i : "") , false, true));
+                    "chromium_renderer-111.dmp1" + (i > 0 ? ".try" + i : "") ,
+                    MinidumpUploadCallable.UPLOAD_FAILURE,
+                    true));
         }
         runUploadCrashTest(callables);
     }
@@ -186,9 +190,13 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         List<CountedMinidumpUploadCallable> callables =
                 new ArrayList<CountedMinidumpUploadCallable>();
         callables.add(new CountedMinidumpUploadCallable(
-                "chromium_renderer-111.dmp1", false, true));
+                "chromium_renderer-111.dmp1",
+                MinidumpUploadCallable.UPLOAD_FAILURE,
+                true));
         callables.add(new CountedMinidumpUploadCallable(
-                "chromium_renderer-111.dmp1.try1", true, true));
+                "chromium_renderer-111.dmp1.try1",
+                MinidumpUploadCallable.UPLOAD_SUCCESS,
+                true));
         runUploadCrashTest(callables);
     }
 
@@ -198,7 +206,9 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         List<CountedMinidumpUploadCallable> callables =
                 new ArrayList<CountedMinidumpUploadCallable>();
         callables.add(new CountedMinidumpUploadCallable(
-                "chromium_renderer-111.dmp1", false, false));
+                "chromium_renderer-111.dmp1",
+                MinidumpUploadCallable.UPLOAD_FAILURE,
+                false));
         runUploadCrashTest(callables);
     }
 
@@ -377,7 +387,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
      */
     private static class CountedMinidumpUploadCallable extends MinidumpUploadCallable {
         private int mCalledCount;
-        private final boolean mResult;
+        @MinidumpUploadCallable.MinidumpUploadStatus private final int mResult;
         private final boolean mTriggerNetworkChange;
 
         /**
@@ -388,14 +398,14 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
          *     This essentially triggers a retry if result is set to fail.
          */
         private CountedMinidumpUploadCallable(
-                String fileName, boolean result, boolean networkChange) {
+                String fileName, int result, boolean networkChange) {
             super(new File(fileName), null, null, null, null);
             this.mResult = result;
             this.mTriggerNetworkChange = networkChange;
         }
 
         @Override
-        public Boolean call() {
+        public Integer call() {
             ++mCalledCount;
             return mResult;
         }

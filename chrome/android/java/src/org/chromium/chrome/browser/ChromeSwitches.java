@@ -44,6 +44,13 @@ public abstract class ChromeSwitches {
     /** Force the crash dump to be uploaded regardless of preferences. */
     public static final String FORCE_CRASH_DUMP_UPLOAD = "force-dump-upload";
 
+    /**
+     * Force the crash dump NOT to be uploaded regardless of preferences.
+     * This is intended for testing use, when command-line switches may be needed.
+     * Overrides any other upload preference.
+     */
+    public static final String DISABLE_CRASH_DUMP_UPLOAD = "disable-dump-upload";
+
     /** Enable debug logs for the video casting feature. */
     public static final String ENABLE_CAST_DEBUG_LOGS = "enable-cast-debug";
 
