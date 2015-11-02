@@ -208,6 +208,16 @@ message ClientDownloadRequest {
     repeated Element element = 1;
   }
 
+  // This is an OS X only message to report extended attribute informations.
+  // Extended attributes on OS X are used for various security mechanisms,
+  // which makes them interesting to Chrome.
+  message ExtendedAttr {
+    // This is the name of the extended attribute.
+    required string key = 1;
+    // This is the value of the extended attribute.
+    optional bytes value = 2;
+  }
+
   message SignatureInfo {
     // All certificate chains for each of the binary's signers.  Multiple chains
     // may be present if the binary or any certificate has multiple signers.
@@ -225,6 +235,11 @@ message ClientDownloadRequest {
     // On Mac, this is the code signature blob referenced by the
     // LC_CODE_SIGNATURE load command.
     repeated bytes signed_data = 3;
+
+    // On OS X, code signing data can be contained in the extended attributes of
+    // a file. As Gatekeeper respects this signature, we look for it and collect
+    // it.
+    repeated ExtendedAttr xattr = 4;
   }
 
   // This field will only be set if the binary is signed.
@@ -421,10 +436,21 @@ message ClientIncidentReport {
       repeated string split_key = 3;
       optional ValueState value_state = 4;
     }
+
     message BinaryIntegrityIncident {
       optional string file_basename = 1;
       optional ClientDownloadRequest.SignatureInfo signature = 2;
+      optional ClientDownloadRequest.ImageHeaders image_headers = 3;
+      optional int32 sec_error = 4;
+
+      message ContainedFile {
+        optional string relative_path = 1;
+        optional ClientDownloadRequest.SignatureInfo signature = 2;
+        optional ClientDownloadRequest.ImageHeaders image_headers = 3;
+      }
+      repeated ContainedFile contained_file = 5;
     }
+
     message BlacklistLoadIncident {
       optional string path = 1;
       optional ClientDownloadRequest.Digests digest = 2;

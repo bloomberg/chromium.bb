@@ -57,3 +57,47 @@ signedexecutablefat: executablefat codesign.keychain
 		$(PWD)/codesign.keychain
 	codesign -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
 		$@ --all-architectures
+
+.PHONY: test-bundle.app
+test-bundle.app: signedexecutablefat libsigned64.dylib executable32
+	ditto base-bundle.app $@
+	ditto $< $@/Contents/MacOS/test-bundle
+	ditto $(word 2,$^) $@/Contents/Frameworks/$(word 2,$^)
+	ditto $(word 3,$^) $@/Contents/Resources/$(word 3,$^)
+	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
+		$(PWD)/codesign.keychain
+	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
+		$@ --all-architectures --resource-rules ResourceRules
+
+.PHONY: modified-bundle.app
+modified-bundle.app: test-bundle.app lib32.dylib executable64
+	ditto $< $@
+	touch $@/Contents/Resources/codesign.cfg
+	ditto $(word 2,$^) $@/Contents/Frameworks/libsigned64.dylib
+	ditto $(word 3,$^) $@/Contents/Resources/executable32
+	echo "foo" >> $@/Contents/Resources/Base.lproj/MainMenu.nib
+	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
+		$(PWD)/codesign.keychain
+	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
+		$@/Contents/Resources/Base.lproj/MainMenu.nib
+
+.PHONY: modified-bundle-and-exec.app
+modified-bundle-and-exec.app: test-bundle.app lib32.dylib executable64
+	ditto $< $@
+	touch $@/Contents/Resources/codesign.cfg
+	ditto $(word 2,$^) $@/Contents/Frameworks/libsigned64.dylib
+	ditto $(word 3,$^) $@/Contents/Resources/executable32
+	printf '\x31' | dd bs=1 seek=8097 count=1 conv=notrunc \
+	of=$@/Contents/MacOS/test-bundle
+
+.PHONY: modified-main-exec32.app
+modified-main-exec32.app: test-bundle.app
+	ditto $< $@
+	printf '\x31' | dd bs=1 seek=8097 count=1 conv=notrunc \
+										 of=$@/Contents/MacOS/test-bundle
+
+.PHONY: modified-main-exec64.app
+modified-main-exec64.app: test-bundle.app
+	ditto $< $@
+	printf '\x31' | dd bs=1 seek=24448 count=1 conv=notrunc \
+	of=$@/Contents/MacOS/test-bundle

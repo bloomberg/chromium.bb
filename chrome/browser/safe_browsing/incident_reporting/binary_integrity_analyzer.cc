@@ -18,32 +18,35 @@
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
 
-namespace {
-
 void RecordSignatureVerificationTime(size_t file_index,
-    const base::TimeDelta& verification_time) {
+                                     const base::TimeDelta& verification_time) {
   static const char kHistogramName[] = "SBIRS.VerifyBinaryIntegrity.";
 
   base::HistogramBase* signature_verification_time_histogram =
       base::Histogram::FactoryTimeGet(
           std::string(kHistogramName) + base::SizeTToString(file_index),
           base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromSeconds(20),
-          50,
+          base::TimeDelta::FromSeconds(20), 50,
           base::Histogram::kUmaTargetedHistogramFlag);
 
-    signature_verification_time_histogram->AddTime(verification_time);
+  signature_verification_time_histogram->AddTime(verification_time);
 }
 
-}  // namespace
+void ClearBinaryIntegrityForFile(IncidentReceiver* incident_receiver,
+                                 const std::string& basename) {
+  scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
+      incident(new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
+  incident->set_file_basename(basename);
+  incident_receiver->ClearIncidentForProcess(
+      make_scoped_ptr(new BinaryIntegrityIncident(incident.Pass())));
+}
 
 void RegisterBinaryIntegrityAnalysis() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   scoped_refptr<SafeBrowsingService> safe_browsing_service(
       g_browser_process->safe_browsing_service());
 
@@ -51,53 +54,5 @@ void RegisterBinaryIntegrityAnalysis() {
       base::Bind(&VerifyBinaryIntegrity));
 #endif
 }
-
-void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
-  scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor(
-      new BinaryFeatureExtractor());
-
-  std::vector<base::FilePath> critical_binaries = GetCriticalBinariesPath();
-  for (size_t i = 0; i < critical_binaries.size(); ++i) {
-    base::FilePath binary_path(critical_binaries[i]);
-    if (!base::PathExists(binary_path))
-      continue;
-
-    scoped_ptr<ClientDownloadRequest_SignatureInfo> signature_info(
-        new ClientDownloadRequest_SignatureInfo());
-
-    base::TimeTicks time_before = base::TimeTicks::Now();
-    binary_feature_extractor->CheckSignature(binary_path, signature_info.get());
-    RecordSignatureVerificationTime(i, base::TimeTicks::Now() - time_before);
-
-    // Only create a report if the signature is untrusted.
-    if (!signature_info->trusted()) {
-      scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
-          incident(
-              new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
-
-      incident->set_file_basename(binary_path.BaseName().AsUTF8Unsafe());
-      incident->set_allocated_signature(signature_info.release());
-
-      // Send the report.
-      incident_receiver->AddIncidentForProcess(
-          make_scoped_ptr(new BinaryIntegrityIncident(incident.Pass())));
-    } else {
-      // The binary is integral, remove previous report so that next incidents
-      // for the binary will be reported.
-      scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
-          incident(
-              new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
-      incident->set_file_basename(binary_path.BaseName().AsUTF8Unsafe());
-      incident_receiver->ClearIncidentForProcess(
-          make_scoped_ptr(new BinaryIntegrityIncident(incident.Pass())));
-    }
-  }
-}
-
-#if !defined(OS_WIN)
-std::vector<base::FilePath> GetCriticalBinariesPath() {
-  return std::vector<base::FilePath>();
-}
-#endif  // !defined(OS_WIN)
 
 }  // namespace safe_browsing

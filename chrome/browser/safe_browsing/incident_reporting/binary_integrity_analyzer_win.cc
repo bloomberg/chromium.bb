@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
+#include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer_win.h"
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/common/chrome_version.h"
+#include "chrome/common/safe_browsing/binary_feature_extractor.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 
 namespace safe_browsing {
 
@@ -41,6 +46,44 @@ std::vector<base::FilePath> GetCriticalBinariesPath() {
   }
 
   return critical_binaries;
+}
+
+void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver) {
+  scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor(
+      new BinaryFeatureExtractor());
+
+  std::vector<base::FilePath> critical_binaries = GetCriticalBinariesPath();
+  for (size_t i = 0; i < critical_binaries.size(); ++i) {
+    base::FilePath binary_path(critical_binaries[i]);
+    if (!base::PathExists(binary_path))
+      continue;
+
+    scoped_ptr<ClientDownloadRequest_SignatureInfo> signature_info(
+        new ClientDownloadRequest_SignatureInfo());
+
+    base::TimeTicks time_before = base::TimeTicks::Now();
+    binary_feature_extractor->CheckSignature(binary_path, signature_info.get());
+    RecordSignatureVerificationTime(i, base::TimeTicks::Now() - time_before);
+
+    // Only create a report if the signature is untrusted.
+    if (!signature_info->trusted()) {
+      scoped_ptr<ClientIncidentReport_IncidentData_BinaryIntegrityIncident>
+          incident(
+              new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
+
+      incident->set_file_basename(binary_path.BaseName().AsUTF8Unsafe());
+      incident->set_allocated_signature(signature_info.release());
+
+      // Send the report.
+      incident_receiver->AddIncidentForProcess(
+          make_scoped_ptr(new BinaryIntegrityIncident(incident.Pass())));
+    } else {
+      // The binary is integral, remove previous report so that next incidents
+      // for the binary will be reported.
+      ClearBinaryIntegrityForFile(incident_receiver.get(),
+                                  binary_path.BaseName().AsUTF8Unsafe());
+    }
+  }
 }
 
 }  // namespace safe_browsing

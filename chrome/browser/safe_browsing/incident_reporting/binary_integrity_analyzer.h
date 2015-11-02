@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_BINARY_INTEGRITY_ANALYZER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_BINARY_INTEGRITY_ANALYZER_H_
 
-#include <vector>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
 class FilePath;
+class TimeDelta;
 }  // namespace base
 
 namespace safe_browsing {
@@ -26,8 +27,14 @@ void RegisterBinaryIntegrityAnalysis();
 // service will decide when to start the analysis.
 void VerifyBinaryIntegrity(scoped_ptr<IncidentReceiver> incident_receiver);
 
-// Returns a vector containing the paths to all the binaries to verify.
-std::vector<base::FilePath> GetCriticalBinariesPath();
+// Record how long the signature verification took.
+void RecordSignatureVerificationTime(size_t file_index,
+                                     const base::TimeDelta& verification_time);
+
+// Clear past incident reports for a file or bundle. This is used if the code
+// object is now integral, as it will allow future incidents to be reported.
+void ClearBinaryIntegrityForFile(IncidentReceiver* incident_receiver,
+                                 const std::string& basename);
 
 }  // namespace safe_browsing
 
