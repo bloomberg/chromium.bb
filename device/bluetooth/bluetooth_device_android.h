@@ -94,6 +94,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
                                int32_t status,
                                bool connected);
 
+  // Callback indicating when all services of the device have been
+  // discovered.
+  void OnGattServicesDiscovered(JNIEnv* env, jobject jcaller);
+
   // Creates Bluetooth GATT service objects and adds them to
   // BluetoothDevice::gatt_services_ if they are not already there.
   void CreateGattRemoteService(

@@ -167,6 +167,7 @@ final class ChromeBluetoothDevice {
                             nativeCreateGattRemoteService(
                                     mNativeBluetoothDeviceAndroid, serviceInstanceId, service);
                         }
+                        nativeOnGattServicesDiscovered(mNativeBluetoothDeviceAndroid);
                     }
                 }
             });
@@ -186,4 +187,7 @@ final class ChromeBluetoothDevice {
     // http://crbug.com/505554
     private native void nativeCreateGattRemoteService(long nativeBluetoothDeviceAndroid,
             String instanceId, Object bluetoothGattServiceWrapper);
+
+    // Binds to BluetoothDeviceAndroid::GattServicesDiscovered.
+    private native void nativeOnGattServicesDiscovered(long nativeBluetoothDeviceAndroid);
 }

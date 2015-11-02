@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -423,6 +424,28 @@ TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_FAILED, last_connect_error_code_);
   for (BluetoothGattConnection* connection : gatt_connections_)
     EXPECT_FALSE(connection->IsConnected());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+TEST_F(BluetoothTest, GattServices_ObserversCalls) {
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(),
+                               GetConnectErrorCallback());
+  TestBluetoothAdapterObserver observer(adapter_);
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+
+  EXPECT_EQ(1, observer.gatt_services_discovered_count());
+  EXPECT_EQ(2, observer.gatt_service_added_count());
 }
 #endif  // defined(OS_ANDROID)
 

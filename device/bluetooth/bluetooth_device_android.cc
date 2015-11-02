@@ -223,6 +223,12 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(JNIEnv* env,
   }
 }
 
+void BluetoothDeviceAndroid::OnGattServicesDiscovered(JNIEnv* env,
+                                                      jobject jcaller) {
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, GetAdapter()->GetObservers(),
+                    GattServicesDiscovered(GetAdapter(), this));
+}
+
 void BluetoothDeviceAndroid::CreateGattRemoteService(
     JNIEnv* env,
     jobject caller,
