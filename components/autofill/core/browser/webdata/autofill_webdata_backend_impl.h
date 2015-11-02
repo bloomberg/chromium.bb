@@ -80,9 +80,6 @@ class AutofillWebDataBackendImpl
       int limit,
       WebDatabase* db);
 
-  // Returns true if there are any elements in the form.
-  scoped_ptr<WDTypedResult> HasFormElements(WebDatabase* db);
-
   // Removes form elements recorded for Autocomplete from the database.
   WebDatabase::State RemoveFormElementsAddedBetween(
       const base::Time& delete_begin,
@@ -113,6 +110,13 @@ class AutofillWebDataBackendImpl
   // Returns the local/server Autofill profiles from the web database.
   scoped_ptr<WDTypedResult> GetAutofillProfiles(WebDatabase* db);
   scoped_ptr<WDTypedResult> GetServerProfiles(WebDatabase* db);
+
+  // Returns the number of autofill entries whose interval between creation date
+  // and last usage is entirely contained between [|begin|, |end|).
+  scoped_ptr<WDTypedResult> GetCountOfEntriesContainedBetween(
+      const base::Time& begin,
+      const base::Time& end,
+      WebDatabase* db);
 
   // Updates Autofill entries in the web database.
   WebDatabase::State UpdateAutofillEntries(

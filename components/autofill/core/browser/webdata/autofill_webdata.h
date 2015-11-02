@@ -48,10 +48,6 @@ class AutofillWebData {
       int limit,
       WebDataServiceConsumer* consumer) = 0;
 
-  // Checks if there are any form elements in the database.
-  virtual WebDataServiceBase::Handle HasFormElements(
-      WebDataServiceConsumer* consumer) = 0;
-
   // Removes form elements recorded for Autocomplete from the database.
   virtual void RemoveFormElementsAddedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) = 0;
@@ -76,6 +72,14 @@ class AutofillWebData {
   virtual WebDataServiceBase::Handle GetAutofillProfiles(
       WebDataServiceConsumer* consumer) = 0;
   virtual WebDataServiceBase::Handle GetServerProfiles(
+      WebDataServiceConsumer* consumer) = 0;
+
+  // Schedules a task to count the number of entries contained in the time
+  // interval [|begin|, |end|). |begin| and |end| can be null to indicate
+  // no time limitation.
+  virtual WebDataServiceBase::Handle GetCountOfEntriesContainedBetween(
+      const base::Time& begin,
+      const base::Time& end,
       WebDataServiceConsumer* consumer) = 0;
 
   // Schedules a task to update autofill entries in the web database.

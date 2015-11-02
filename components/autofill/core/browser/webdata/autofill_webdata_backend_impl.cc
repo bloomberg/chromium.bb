@@ -120,14 +120,6 @@ AutofillWebDataBackendImpl::GetFormValuesForElementName(
                                                  values));
 }
 
-scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::HasFormElements(
-    WebDatabase* db) {
-  DCHECK(db_thread_->BelongsToCurrentThread());
-  bool value = AutofillTable::FromWebDatabase(db)->HasFormElements();
-  return scoped_ptr<WDTypedResult>(
-      new WDResult<bool>(AUTOFILL_VALUE_RESULT, value));
-}
-
 WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end,
@@ -261,6 +253,18 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
           profiles,
           base::Bind(&AutofillWebDataBackendImpl::DestroyAutofillProfileResult,
               base::Unretained(this))));
+}
+
+scoped_ptr<WDTypedResult>
+    AutofillWebDataBackendImpl::GetCountOfEntriesContainedBetween(
+        const base::Time& begin,
+        const base::Time& end,
+        WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  int value = AutofillTable::FromWebDatabase(db)
+      ->GetCountOfEntriesContainedBetween(begin, end);
+  return scoped_ptr<WDTypedResult>(
+      new WDResult<int>(AUTOFILL_VALUE_RESULT, value));
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillEntries(

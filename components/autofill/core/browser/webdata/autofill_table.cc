@@ -542,15 +542,6 @@ bool AutofillTable::GetFormValuesForElementName(
   return succeeded;
 }
 
-bool AutofillTable::HasFormElements() {
-  sql::Statement s(db_->GetUniqueStatement("SELECT COUNT(*) FROM autofill"));
-  if (!s.Step()) {
-    NOTREACHED();
-    return false;
-  }
-  return s.ColumnInt(0) > 0;
-}
-
 bool AutofillTable::RemoveFormElementsAddedBetween(
     const Time& delete_begin,
     const Time& delete_end,
@@ -707,6 +698,25 @@ bool AutofillTable::AddFormFieldValuesTime(
     seen_names.insert(element.name);
   }
   return result;
+}
+
+int AutofillTable::GetCountOfEntriesContainedBetween(
+    const Time& begin,
+    const Time& end) {
+  const time_t begin_time_t = begin.ToTimeT();
+  const time_t end_time_t = GetEndTime(end);
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT COUNT(*) FROM autofill "
+      "WHERE date_created >= ? AND date_last_used < ?"));
+  s.BindInt64(0, begin_time_t);
+  s.BindInt64(1, end_time_t);
+
+  if (!s.Step()) {
+    NOTREACHED();
+    return false;
+  }
+  return s.ColumnInt(0);
 }
 
 bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
