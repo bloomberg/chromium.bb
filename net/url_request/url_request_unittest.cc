@@ -7282,19 +7282,8 @@ TEST_F(URLRequestTestHTTP, SetSubsequentJobPriority) {
 // does not return an HttpTransaction.
 TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
   // Create a new HttpNetworkLayer that thinks it's suspended.
-  HttpNetworkSession::Params params;
-  params.host_resolver = default_context_.host_resolver();
-  params.cert_verifier = default_context_.cert_verifier();
-  params.transport_security_state = default_context_.transport_security_state();
-  params.proxy_service = default_context_.proxy_service();
-  params.ssl_config_service = default_context_.ssl_config_service();
-  params.http_auth_handler_factory =
-      default_context_.http_auth_handler_factory();
-  params.network_delegate = &default_network_delegate_;
-  params.http_server_properties = default_context_.http_server_properties();
-  HttpNetworkSession network_session(params);
-  scoped_ptr<HttpNetworkLayer> network_layer(
-      new HttpNetworkLayer(&network_session));
+  scoped_ptr<HttpNetworkLayer> network_layer(new HttpNetworkLayer(
+      default_context_.http_transaction_factory()->GetSession()));
   network_layer->OnSuspend();
 
   HttpCache http_cache(network_layer.Pass(),
@@ -7315,38 +7304,68 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
   EXPECT_EQ(ERR_NETWORK_IO_SUSPENDED, req->status().error());
 }
 
-// Check that creating a network request while entering/exiting suspend mode
-// fails as it should in the case there is no cache.  This is the only case
-// where an HttpTransactionFactory does not return an HttpTransaction.
-TEST_F(URLRequestTestHTTP, NetworkSuspendTestNoCache) {
-  // Create a new HttpNetworkLayer that thinks it's suspended.
-  HttpNetworkSession::Params params;
-  params.host_resolver = default_context_.host_resolver();
-  params.cert_verifier = default_context_.cert_verifier();
-  params.transport_security_state = default_context_.transport_security_state();
-  params.proxy_service = default_context_.proxy_service();
-  params.ssl_config_service = default_context_.ssl_config_service();
-  params.http_auth_handler_factory =
-      default_context_.http_auth_handler_factory();
-  params.network_delegate = &default_network_delegate_;
-  params.http_server_properties = default_context_.http_server_properties();
-  HttpNetworkSession network_session(params);
-  HttpNetworkLayer network_layer(&network_session);
-  network_layer.OnSuspend();
+namespace {
 
+// HttpTransactionFactory that synchronously fails to create transactions.
+class FailingHttpTransactionFactory : public HttpTransactionFactory {
+ public:
+  explicit FailingHttpTransactionFactory(HttpNetworkSession* network_session)
+      : network_session_(network_session) {}
+
+  ~FailingHttpTransactionFactory() override {}
+
+  // HttpTransactionFactory methods:
+  int CreateTransaction(RequestPriority priority,
+                        scoped_ptr<HttpTransaction>* trans) override {
+    return ERR_FAILED;
+  }
+
+  HttpCache* GetCache() override { return nullptr; }
+
+  HttpNetworkSession* GetSession() override { return network_session_; }
+
+ private:
+  HttpNetworkSession* network_session_;
+
+  DISALLOW_COPY_AND_ASSIGN(FailingHttpTransactionFactory);
+};
+
+}  // namespace
+
+// Check that when a request that fails to create an HttpTransaction can be
+// cancelled while the failure notification is pending, and doesn't send two
+// failure notifications.
+//
+// This currently only happens when in suspend mode and there's no cache, but
+// just use a special HttpTransactionFactory, to avoid depending on those
+// behaviors.
+TEST_F(URLRequestTestHTTP, NetworkCancelAfterCreateTransactionFailsTest) {
+  FailingHttpTransactionFactory http_transaction_factory(
+      default_context_.http_transaction_factory()->GetSession());
   TestURLRequestContext context(true);
-  context.set_http_transaction_factory(&network_layer);
+  context.set_http_transaction_factory(&http_transaction_factory);
+  context.set_network_delegate(default_network_delegate());
   context.Init();
 
   TestDelegate d;
   scoped_ptr<URLRequest> req(
       context.CreateRequest(GURL("http://127.0.0.1/"), DEFAULT_PRIORITY, &d));
+  // Don't send cookies (Collecting cookies is asynchronous, and need request to
+  // try to create an HttpNetworkTransaction synchronously on start).
+  req->SetLoadFlags(LOAD_DO_NOT_SEND_COOKIES);
   req->Start();
+  req->Cancel();
   base::RunLoop().Run();
+  // Run pending error task, if there is one.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(d.request_failed());
-  EXPECT_EQ(URLRequestStatus::FAILED, req->status().status());
-  EXPECT_EQ(ERR_NETWORK_IO_SUSPENDED, req->status().error());
+  EXPECT_EQ(1, d.response_started_count());
+  EXPECT_EQ(URLRequestStatus::CANCELED, req->status().status());
+
+  // NetworkDelegate should see the cancellation, but not the error.
+  EXPECT_EQ(1, default_network_delegate()->canceled_requests());
+  EXPECT_EQ(0, default_network_delegate()->error_count());
 }
 
 TEST_F(URLRequestTestHTTP, NetworkAccessedSetOnNetworkRequest) {

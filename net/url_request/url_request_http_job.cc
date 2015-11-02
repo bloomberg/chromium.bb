@@ -278,11 +278,9 @@ void URLRequestHttpJob::Start() {
 }
 
 void URLRequestHttpJob::Kill() {
-  if (!transaction_.get())
-    return;
-
   weak_factory_.InvalidateWeakPtrs();
-  DestroyTransaction();
+  if (transaction_)
+    DestroyTransaction();
   URLRequestJob::Kill();
 }
 
@@ -483,8 +481,7 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
 
 void URLRequestHttpJob::StartTransactionInternal() {
   // This should only be called while the request's status is IO_PENDING.
-  // TODO(mmenke):  Switch to DCHECK once https://crbug.com/508900 is fixed.
-  CHECK_EQ(URLRequestStatus::IO_PENDING, request_->status().status());
+  DCHECK_EQ(URLRequestStatus::IO_PENDING, request_->status().status());
 
   // NOTE: This method assumes that request_info_ is already setup properly.
 
@@ -540,13 +537,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
 
   if (rv == ERR_IO_PENDING)
     return;
-
-  // The transaction should not have been deleted, and the request status should
-  // still be IO_PENDING at this point.
-  // TODO(mmenke):  Remove once https://crbug.com/508900 is fixed.
-  if (rv == OK)
-    CHECK(transaction_);
-  CHECK_EQ(URLRequestStatus::IO_PENDING, request_->status().status());
 
   // The transaction started synchronously, but we need to notify the
   // URLRequest delegate via the message loop.
