@@ -2528,28 +2528,26 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
                                       const URLRow& row,
                                       const RedirectList& redirects,
                                       base::Time visit_time) {
-  URLRow url_info(row);
   if (typed_url_syncable_service_)
-    typed_url_syncable_service_->OnUrlVisited(transition, &url_info);
+    typed_url_syncable_service_->OnURLVisited(this, transition, row, redirects,
+                                              visit_time);
 
-  FOR_EACH_OBSERVER(
-      HistoryBackendObserver, observers_,
-      OnURLVisited(this, transition, url_info, redirects, visit_time));
+  FOR_EACH_OBSERVER(HistoryBackendObserver, observers_,
+                    OnURLVisited(this, transition, row, redirects, visit_time));
 
   if (delegate_)
-    delegate_->NotifyURLVisited(transition, url_info, redirects, visit_time);
+    delegate_->NotifyURLVisited(transition, row, redirects, visit_time);
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
-  URLRows changed_urls(rows);
   if (typed_url_syncable_service_)
-    typed_url_syncable_service_->OnUrlsModified(&changed_urls);
+    typed_url_syncable_service_->OnURLsModified(this, rows);
 
   FOR_EACH_OBSERVER(HistoryBackendObserver, observers_,
-                    OnURLsModified(this, changed_urls));
+                    OnURLsModified(this, rows));
 
   if (delegate_)
-    delegate_->NotifyURLsModified(changed_urls);
+    delegate_->NotifyURLsModified(rows);
 }
 
 void HistoryBackend::NotifyURLsDeleted(bool all_history,
@@ -2558,8 +2556,8 @@ void HistoryBackend::NotifyURLsDeleted(bool all_history,
                                        const std::set<GURL>& favicon_urls) {
   URLRows copied_rows(rows);
   if (typed_url_syncable_service_) {
-    typed_url_syncable_service_->OnUrlsDeleted(all_history, expired,
-                                               &copied_rows);
+    typed_url_syncable_service_->OnURLsDeleted(this, all_history, expired,
+                                               copied_rows, favicon_urls);
   }
 
   FOR_EACH_OBSERVER(

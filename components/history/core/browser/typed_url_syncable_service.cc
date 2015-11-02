@@ -263,9 +263,10 @@ syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
   return syncer::SyncError();
 }
 
-void TypedUrlSyncableService::OnUrlsModified(URLRows* changed_urls) {
+void TypedUrlSyncableService::OnURLsModified(
+    history::HistoryBackend* history_backend,
+    const history::URLRows& changed_urls) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(changed_urls);
 
   if (processing_syncer_changes_)
     return;  // These are changes originating from us, ignore.
@@ -275,13 +276,12 @@ void TypedUrlSyncableService::OnUrlsModified(URLRows* changed_urls) {
   // Create SyncChangeList.
   syncer::SyncChangeList changes;
 
-  for (URLRows::iterator url = changed_urls->begin();
-       url != changed_urls->end(); ++url) {
+  for (const auto& row : changed_urls) {
     // Only care if the modified URL is typed.
-    if (url->typed_count() > 0) {
+    if (row.typed_count() >= 0) {
       // If there were any errors updating the sync node, just ignore them and
       // continue on to process the next URL.
-      CreateOrUpdateSyncNode(*url, &changes);
+      CreateOrUpdateSyncNode(row, &changes);
     }
   }
 
@@ -290,31 +290,37 @@ void TypedUrlSyncableService::OnUrlsModified(URLRows* changed_urls) {
     sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
-void TypedUrlSyncableService::OnUrlVisited(ui::PageTransition transition,
-                                           URLRow* row) {
+void TypedUrlSyncableService::OnURLVisited(
+    history::HistoryBackend* history_backend,
+    ui::PageTransition transition,
+    const history::URLRow& row,
+    const history::RedirectList& redirects,
+    base::Time visit_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(row);
 
   if (processing_syncer_changes_)
     return;  // These are changes originating from us, ignore.
   if (!sync_processor_.get())
     return;  // Sync processor not yet initialized, don't sync.
-  if (!ShouldSyncVisit(transition, row))
+  if (!ShouldSyncVisit(row.typed_count(), transition))
     return;
 
   // Create SyncChangeList.
   syncer::SyncChangeList changes;
 
-  CreateOrUpdateSyncNode(*row, &changes);
+  CreateOrUpdateSyncNode(row, &changes);
 
   // Send SyncChangeList to server if there are any changes.
   if (changes.size() > 0)
     sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
-void TypedUrlSyncableService::OnUrlsDeleted(bool all_history,
-                                            bool expired,
-                                            URLRows* rows) {
+void TypedUrlSyncableService::OnURLsDeleted(
+    history::HistoryBackend* history_backend,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (processing_syncer_changes_)
@@ -335,27 +341,24 @@ void TypedUrlSyncableService::OnUrlsDeleted(bool all_history,
 
   if (all_history) {
     // Delete all synced typed urls.
-    for (std::set<GURL>::const_iterator url = synced_typed_urls_.begin();
-         url != synced_typed_urls_.end(); ++url) {
+    for (const auto& url : synced_typed_urls_) {
       VisitVector visits;
-      URLRow row(*url);
+      URLRow row(url);
       AddTypedUrlToChangeList(syncer::SyncChange::ACTION_DELETE, row, visits,
-                              url->spec(), &changes);
+                              url.spec(), &changes);
     }
     // Clear cache of server state.
     synced_typed_urls_.clear();
   } else {
-    DCHECK(rows);
     // Delete rows.
-    for (URLRows::const_iterator row = rows->begin(); row != rows->end();
-         ++row) {
+    for (const auto& row : deleted_rows) {
       // Add specifics to change list for all synced urls that were deleted.
-      if (synced_typed_urls_.find(row->url()) != synced_typed_urls_.end()) {
+      if (synced_typed_urls_.find(row.url()) != synced_typed_urls_.end()) {
         VisitVector visits;
-        AddTypedUrlToChangeList(syncer::SyncChange::ACTION_DELETE, *row, visits,
-                                row->url().spec(), &changes);
+        AddTypedUrlToChangeList(syncer::SyncChange::ACTION_DELETE, row, visits,
+                                row.url().spec(), &changes);
         // Delete typed url from cache.
-        synced_typed_urls_.erase(row->url());
+        synced_typed_urls_.erase(row.url());
       }
     }
   }
@@ -763,15 +766,8 @@ bool TypedUrlSyncableService::ShouldIgnoreVisits(
   return true;
 }
 
-bool TypedUrlSyncableService::ShouldSyncVisit(
-    ui::PageTransition page_transition,
-    URLRow* row) {
-  if (!row)
-    return false;
-  int typed_count = row->typed_count();
-  ui::PageTransition transition = ui::PageTransitionFromInt(
-      page_transition & ui::PAGE_TRANSITION_CORE_MASK);
-
+bool TypedUrlSyncableService::ShouldSyncVisit(int typed_count,
+                                              ui::PageTransition transition) {
   // Just use an ad-hoc criteria to determine whether to ignore this
   // notification. For most users, the distribution of visits is roughly a bell
   // curve with a long tail - there are lots of URLs with < 5 visits so we want
@@ -779,7 +775,8 @@ bool TypedUrlSyncableService::ShouldSyncVisit(
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
-  return (transition == ui::PAGE_TRANSITION_TYPED && typed_count > 0 &&
+  return (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
+          typed_count >= 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
 }
@@ -787,7 +784,7 @@ bool TypedUrlSyncableService::ShouldSyncVisit(
 bool TypedUrlSyncableService::CreateOrUpdateSyncNode(
     URLRow url,
     syncer::SyncChangeList* changes) {
-  DCHECK_GT(url.typed_count(), 0);
+  DCHECK_GE(url.typed_count(), 0);
 
   if (ShouldIgnoreUrl(url.url()))
     return true;
@@ -798,6 +795,15 @@ bool TypedUrlSyncableService::CreateOrUpdateSyncNode(
     DLOG(ERROR) << "Could not load visits for url: " << url.url();
     return false;
   }
+
+  if (std::find_if(visit_vector.begin(), visit_vector.end(),
+                   [](const history::VisitRow& visit) {
+                     return ui::PageTransitionCoreTypeIs(
+                         visit.transition, ui::PAGE_TRANSITION_TYPED);
+                   }) == visit_vector.end())
+    // This URL has no TYPED visits, don't sync it
+    return false;
+
   DCHECK(!visit_vector.empty());
 
   std::string title = url.url().spec();
@@ -956,6 +962,13 @@ bool TypedUrlSyncableService::FixupURLAndGetVisits(URLRow* url,
   // This is a workaround for http://crbug.com/84258.
   if (visits->empty()) {
     DVLOG(1) << "Found empty visits for URL: " << url->url();
+    if (url->last_visit().is_null()) {
+      // If modified URL is bookmarked, history backend treats it as modified
+      // even if all its visits are deleted. Return false to stop further
+      // processing because sync expects valid visit time for modified entry.
+      return false;
+    }
+
     VisitRow visit(url->id(), url->last_visit(), 0, ui::PAGE_TRANSITION_TYPED,
                    0);
     visits->push_back(visit);

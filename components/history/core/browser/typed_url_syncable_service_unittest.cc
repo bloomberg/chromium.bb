@@ -57,6 +57,14 @@ bool URLsEqual(URLRow& row, sync_pb::TypedUrlSpecifics& specifics) {
           (row.hidden() == specifics.hidden()));
 }
 
+bool URLsEqual(history::URLRow& lhs, history::URLRow& rhs) {
+  // Only compare synced fields (ignore typed_count and visit_count as those
+  // are maintained by the history subsystem).
+  return (lhs.url().spec().compare(rhs.url().spec()) == 0) &&
+         (lhs.title().compare(rhs.title()) == 0) &&
+         (lhs.hidden() == rhs.hidden());
+}
+
 void AddNewestVisit(ui::PageTransition transition,
                     int64 visit_time,
                     URLRow* url,
@@ -116,6 +124,19 @@ URLRow MakeTypedUrlRow(const std::string& url,
 
   history_url.set_visit_count(visits->size());
   return history_url;
+}
+
+static sync_pb::TypedUrlSpecifics MakeTypedUrlSpecifics(const char* url,
+                                                        const char* title,
+                                                        int64 last_visit,
+                                                        bool hidden) {
+  sync_pb::TypedUrlSpecifics typed_url;
+  typed_url.set_url(url);
+  typed_url.set_title(title);
+  typed_url.set_hidden(hidden);
+  typed_url.add_visits(last_visit);
+  typed_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
+  return typed_url;
 }
 
 class TestHistoryBackend;
@@ -253,6 +274,15 @@ class TypedUrlSyncableServiceTest : public testing::Test {
   static history::VisitRow CreateVisit(ui::PageTransition type,
                                        int64 timestamp);
 
+  static const TypedUrlSyncableService::MergeResult DIFF_NONE =
+      TypedUrlSyncableService::DIFF_NONE;
+  static const TypedUrlSyncableService::MergeResult DIFF_UPDATE_NODE =
+      TypedUrlSyncableService::DIFF_UPDATE_NODE;
+  static const TypedUrlSyncableService::MergeResult DIFF_LOCAL_ROW_CHANGED =
+      TypedUrlSyncableService::DIFF_LOCAL_ROW_CHANGED;
+  static const TypedUrlSyncableService::MergeResult DIFF_LOCAL_VISITS_ADDED =
+      TypedUrlSyncableService::DIFF_LOCAL_VISITS_ADDED;
+
  protected:
   base::MessageLoop message_loop_;
   base::FilePath test_dir_;
@@ -297,14 +327,15 @@ bool TypedUrlSyncableServiceTest::BuildAndPushLocalChanges(
       int typed = i < num_typed_urls ? 1 : 0;
       VisitVector visits;
       visit_vectors->push_back(visits);
-      rows->push_back(MakeTypedUrlRow(
-          urls[i], "pie", typed, i + 3, false, &visit_vectors->back()));
+      rows->push_back(MakeTypedUrlRow(urls[i], kTitle, typed, i + 3, false,
+                                      &visit_vectors->back()));
       fake_history_backend_->SetVisitsForUrl(rows->back(),
                                              visit_vectors->back());
       changed_urls.push_back(rows->back());
     }
 
-    typed_url_sync_service_->OnUrlsModified(&changed_urls);
+    typed_url_sync_service_->OnURLsModified(fake_history_backend_.get(),
+                                            changed_urls);
   }
 
   // Check that communication with sync was successful.
@@ -445,7 +476,8 @@ TEST_F(TypedUrlSyncableServiceTest, UpdateLocalTypedUrl) {
   changed_urls.push_back(url_row);
 
   // Notify typed url sync service of the update.
-  typed_url_sync_service_->OnUrlsModified(&changed_urls);
+  typed_url_sync_service_->OnURLsModified(fake_history_backend_.get(),
+                                          changed_urls);
 
   ASSERT_EQ(1U, changes.size());
   ASSERT_TRUE(changes[0].IsValid());
@@ -504,7 +536,9 @@ TEST_F(TypedUrlSyncableServiceTest, ReloadVisitLocalTypedUrl) {
   changed_urls.push_back(url_row);
 
   // Notify typed url sync service of the update.
-  typed_url_sync_service_->OnUrlVisited(ui::PAGE_TRANSITION_RELOAD, &url_row);
+  typed_url_sync_service_->OnURLVisited(
+      fake_history_backend_.get(), ui::PAGE_TRANSITION_RELOAD, url_row,
+      RedirectList(), base::Time::FromInternalValue(7));
 
   ASSERT_EQ(0U, changes.size());
 
@@ -538,7 +572,9 @@ TEST_F(TypedUrlSyncableServiceTest, LinkVisitLocalTypedUrl) {
 
   ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
   // Notify typed url sync service of non-typed visit, expect no change.
-  typed_url_sync_service_->OnUrlVisited(transition, &url_row);
+  typed_url_sync_service_->OnURLVisited(fake_history_backend_.get(), transition,
+                                        url_row, RedirectList(),
+                                        base::Time::FromInternalValue(6));
   ASSERT_EQ(0u, changes.size());
 }
 
@@ -566,7 +602,9 @@ TEST_F(TypedUrlSyncableServiceTest, TypedVisitLocalTypedUrl) {
 
   // Notify typed url sync service of typed visit.
   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
-  typed_url_sync_service_->OnUrlVisited(transition, &url_row);
+  typed_url_sync_service_->OnURLVisited(fake_history_backend_.get(), transition,
+                                        url_row, RedirectList(),
+                                        base::Time::Now());
 
   ASSERT_EQ(1U, changes.size());
   ASSERT_TRUE(changes[0].IsValid());
@@ -636,7 +674,8 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteLocalTypedUrl) {
   }
 
   // Notify typed url sync service.
-  typed_url_sync_service_->OnUrlsDeleted(false, false, &rows);
+  typed_url_sync_service_->OnURLsDeleted(fake_history_backend_.get(), false,
+                                         false, rows, std::set<GURL>());
 
   ASSERT_EQ(3u, changes.size());
   for (size_t i = 0; i < changes.size(); ++i) {
@@ -686,7 +725,9 @@ TEST_F(TypedUrlSyncableServiceTest, DeleteAllLocalTypedUrl) {
   bool all_history = true;
 
   // Notify typed url sync service.
-  typed_url_sync_service_->OnUrlsDeleted(all_history, false, NULL);
+  typed_url_sync_service_->OnURLsDeleted(fake_history_backend_.get(),
+                                         all_history, false, URLRows(),
+                                         std::set<GURL>());
 
   ASSERT_EQ(4u, changes.size());
   for (size_t i = 0; i < changes.size(); ++i) {
@@ -729,7 +770,9 @@ TEST_F(TypedUrlSyncableServiceTest, MaxVisitLocalTypedUrl) {
 
   // Notify typed url sync service of typed visit.
   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
-  typed_url_sync_service_->OnUrlVisited(transition, &url_row);
+  typed_url_sync_service_->OnURLVisited(fake_history_backend_.get(), transition,
+                                        url_row, RedirectList(),
+                                        base::Time::Now());
 
   syncer::SyncChangeList& changes = fake_change_processor_->changes();
   ASSERT_EQ(1U, changes.size());
@@ -780,7 +823,9 @@ TEST_F(TypedUrlSyncableServiceTest, ThrottleVisitLocalTypedUrl) {
 
   // Notify typed url sync service of typed visit.
   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
-  typed_url_sync_service_->OnUrlVisited(transition, &url_row);
+  typed_url_sync_service_->OnURLVisited(fake_history_backend_.get(), transition,
+                                        url_row, RedirectList(),
+                                        base::Time::Now());
 
   // Should throttle, so sync and local cache should not update.
   syncer::SyncChangeList& changes = fake_change_processor_->changes();
@@ -795,7 +840,9 @@ TEST_F(TypedUrlSyncableServiceTest, ThrottleVisitLocalTypedUrl) {
   fake_history_backend_->SetVisitsForUrl(url_row, visits);
 
   // Notify typed url sync service of typed visit.
-  typed_url_sync_service_->OnUrlVisited(transition, &url_row);
+  typed_url_sync_service_->OnURLVisited(fake_history_backend_.get(), transition,
+                                        url_row, RedirectList(),
+                                        base::Time::Now());
 
   ASSERT_EQ(1u, changes.size());
   ASSERT_TRUE(changes[0].IsValid());
@@ -1280,6 +1327,125 @@ TEST_F(TypedUrlSyncableServiceTest, NoTypedVisits) {
   EXPECT_EQ(1000, typed_url.visits(0));
   EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
             ui::PageTransitionFromInt(typed_url.visit_transitions(0)));
+}
+
+TEST_F(TypedUrlSyncableServiceTest, MergeUrls) {
+  history::VisitVector visits1;
+  history::URLRow row1(MakeTypedUrlRow(kURL, kTitle, 2, 3, false, &visits1));
+  sync_pb::TypedUrlSpecifics specs1(
+      MakeTypedUrlSpecifics(kURL, kTitle, 3, false));
+  history::URLRow new_row1((GURL(kURL)));
+  std::vector<history::VisitInfo> new_visits1;
+  EXPECT_TRUE(TypedUrlSyncableServiceTest::MergeUrls(specs1, row1, &visits1,
+                                                     &new_row1, &new_visits1) ==
+              TypedUrlSyncableServiceTest::DIFF_NONE);
+
+  history::VisitVector visits2;
+  history::URLRow row2(MakeTypedUrlRow(kURL, kTitle, 2, 3, false, &visits2));
+  sync_pb::TypedUrlSpecifics specs2(
+      MakeTypedUrlSpecifics(kURL, kTitle, 3, true));
+  history::VisitVector expected_visits2;
+  history::URLRow expected2(
+      MakeTypedUrlRow(kURL, kTitle, 2, 3, true, &expected_visits2));
+  history::URLRow new_row2((GURL(kURL)));
+  std::vector<history::VisitInfo> new_visits2;
+  EXPECT_TRUE(TypedUrlSyncableServiceTest::MergeUrls(specs2, row2, &visits2,
+                                                     &new_row2, &new_visits2) ==
+              TypedUrlSyncableServiceTest::DIFF_LOCAL_ROW_CHANGED);
+  EXPECT_TRUE(URLsEqual(new_row2, expected2));
+
+  history::VisitVector visits3;
+  history::URLRow row3(MakeTypedUrlRow(kURL, kTitle, 2, 3, false, &visits3));
+  sync_pb::TypedUrlSpecifics specs3(
+      MakeTypedUrlSpecifics(kURL, kTitle2, 3, true));
+  history::VisitVector expected_visits3;
+  history::URLRow expected3(
+      MakeTypedUrlRow(kURL, kTitle2, 2, 3, true, &expected_visits3));
+  history::URLRow new_row3((GURL(kURL)));
+  std::vector<history::VisitInfo> new_visits3;
+  EXPECT_EQ(TypedUrlSyncableServiceTest::DIFF_LOCAL_ROW_CHANGED |
+                TypedUrlSyncableServiceTest::DIFF_NONE,
+            TypedUrlSyncableServiceTest::MergeUrls(specs3, row3, &visits3,
+                                                   &new_row3, &new_visits3));
+  EXPECT_TRUE(URLsEqual(new_row3, expected3));
+
+  // Create one node in history DB with timestamp of 3, and one node in sync
+  // DB with timestamp of 4. Result should contain one new item (4).
+  history::VisitVector visits4;
+  history::URLRow row4(MakeTypedUrlRow(kURL, kTitle, 2, 3, false, &visits4));
+  sync_pb::TypedUrlSpecifics specs4(
+      MakeTypedUrlSpecifics(kURL, kTitle2, 4, false));
+  history::VisitVector expected_visits4;
+  history::URLRow expected4(
+      MakeTypedUrlRow(kURL, kTitle2, 2, 4, false, &expected_visits4));
+  history::URLRow new_row4((GURL(kURL)));
+  std::vector<history::VisitInfo> new_visits4;
+  EXPECT_EQ(TypedUrlSyncableServiceTest::DIFF_UPDATE_NODE |
+                TypedUrlSyncableServiceTest::DIFF_LOCAL_ROW_CHANGED |
+                TypedUrlSyncableServiceTest::DIFF_LOCAL_VISITS_ADDED,
+            TypedUrlSyncableServiceTest::MergeUrls(specs4, row4, &visits4,
+                                                   &new_row4, &new_visits4));
+  EXPECT_EQ(1U, new_visits4.size());
+  EXPECT_EQ(specs4.visits(0), new_visits4[0].first.ToInternalValue());
+  EXPECT_TRUE(URLsEqual(new_row4, expected4));
+  EXPECT_EQ(2U, visits4.size());
+
+  history::VisitVector visits5;
+  history::URLRow row5(MakeTypedUrlRow(kURL, kTitle, 1, 4, false, &visits5));
+  sync_pb::TypedUrlSpecifics specs5(
+      MakeTypedUrlSpecifics(kURL, kTitle, 3, false));
+  history::VisitVector expected_visits5;
+  history::URLRow expected5(
+      MakeTypedUrlRow(kURL, kTitle, 2, 3, false, &expected_visits5));
+  history::URLRow new_row5((GURL(kURL)));
+  std::vector<history::VisitInfo> new_visits5;
+
+  // UPDATE_NODE should be set because row5 has a newer last_visit timestamp.
+  EXPECT_EQ(TypedUrlSyncableServiceTest::DIFF_UPDATE_NODE |
+                TypedUrlSyncableServiceTest::DIFF_NONE,
+            TypedUrlSyncableServiceTest::MergeUrls(specs5, row5, &visits5,
+                                                   &new_row5, &new_visits5));
+  EXPECT_TRUE(URLsEqual(new_row5, expected5));
+  EXPECT_EQ(0U, new_visits5.size());
+}
+
+TEST_F(TypedUrlSyncableServiceTest, MergeUrlsAfterExpiration) {
+  // Tests to ensure that we don't resurrect expired URLs (URLs that have been
+  // deleted from the history DB but still exist in the sync DB).
+
+  // First, create a history row that has two visits, with timestamps 2 and 3.
+  history::VisitVector(history_visits);
+  history_visits.push_back(history::VisitRow(
+      0, base::Time::FromInternalValue(2), 0, ui::PAGE_TRANSITION_TYPED, 0));
+  history::URLRow history_url(
+      MakeTypedUrlRow(kURL, kTitle, 2, 3, false, &history_visits));
+
+  // Now, create a sync node with visits at timestamps 1, 2, 3, 4.
+  sync_pb::TypedUrlSpecifics node(
+      MakeTypedUrlSpecifics(kURL, kTitle, 1, false));
+  node.add_visits(2);
+  node.add_visits(3);
+  node.add_visits(4);
+  node.add_visit_transitions(2);
+  node.add_visit_transitions(3);
+  node.add_visit_transitions(4);
+  history::URLRow new_history_url(history_url.url());
+  std::vector<history::VisitInfo> new_visits;
+  EXPECT_EQ(
+      TypedUrlSyncableServiceTest::DIFF_NONE |
+          TypedUrlSyncableServiceTest::DIFF_LOCAL_VISITS_ADDED,
+      TypedUrlSyncableServiceTest::MergeUrls(node, history_url, &history_visits,
+                                             &new_history_url, &new_visits));
+  EXPECT_TRUE(URLsEqual(history_url, new_history_url));
+  EXPECT_EQ(1U, new_visits.size());
+  EXPECT_EQ(4U, new_visits[0].first.ToInternalValue());
+  // We should not sync the visit with timestamp #1 since it is earlier than
+  // any other visit for this URL in the history DB. But we should sync visit
+  // #4.
+  EXPECT_EQ(3U, history_visits.size());
+  EXPECT_EQ(2U, history_visits[0].visit_time.ToInternalValue());
+  EXPECT_EQ(3U, history_visits[1].visit_time.ToInternalValue());
+  EXPECT_EQ(4U, history_visits[2].visit_time.ToInternalValue());
 }
 
 }  // namespace history

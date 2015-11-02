@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
+#include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
@@ -33,7 +34,8 @@ class HistoryBackend;
 class TypedUrlSyncableServiceTest;
 class URLRow;
 
-class TypedUrlSyncableService : public syncer::SyncableService {
+class TypedUrlSyncableService : public syncer::SyncableService,
+                                public history::HistoryBackendObserver {
  public:
   explicit TypedUrlSyncableService(HistoryBackend* history_backend);
   ~TypedUrlSyncableService() override;
@@ -52,10 +54,19 @@ class TypedUrlSyncableService : public syncer::SyncableService {
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // Called directly by HistoryBackend when local url data changes.
-  void OnUrlsModified(URLRows* changed_urls);
-  void OnUrlVisited(ui::PageTransition transition, URLRow* row);
-  void OnUrlsDeleted(bool all_history, bool expired, URLRows* rows);
+  // history::HistoryBackendObserver:
+  void OnURLVisited(history::HistoryBackend* history_backend,
+                    ui::PageTransition transition,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
+                    base::Time visit_time) override;
+  void OnURLsModified(history::HistoryBackend* history_backend,
+                      const history::URLRows& changed_urls) override;
+  void OnURLsDeleted(history::HistoryBackend* history_backend,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
 
  private:
   friend class TypedUrlSyncableServiceTest;
@@ -142,7 +153,7 @@ class TypedUrlSyncableService : public syncer::SyncableService {
   // notification. We use this to throttle the number of sync changes we send
   // to the server so we don't hit the server for every
   // single typed URL visit.
-  bool ShouldSyncVisit(ui::PageTransition transition, URLRow* row);
+  bool ShouldSyncVisit(int typed_count, ui::PageTransition transition);
 
   // Utility routine that either updates an existing sync node or creates a
   // new one for the passed |typed_url| if one does not already exist. Returns
