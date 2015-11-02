@@ -30,7 +30,8 @@ int LauncherProcessMain(int argc, char** argv) {
   mojo::runner::Tracer tracer;
   base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableMultiprocess);
+  if (!command_line->HasSwitch(switches::kMojoSingleProcess))
+    command_line->AppendSwitch(switches::kEnableMultiprocess);
   command_line->AppendSwitch("use-new-edk");
   // http://crbug.com/546644
   command_line->AppendSwitch(switches::kMojoNoSandbox);
