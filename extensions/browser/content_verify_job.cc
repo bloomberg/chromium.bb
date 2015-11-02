@@ -24,7 +24,9 @@ ContentVerifyJob::TestObserver* g_test_observer = NULL;
 
 class ScopedElapsedTimer {
  public:
-  ScopedElapsedTimer(base::TimeDelta* total) : total_(total) { DCHECK(total_); }
+  explicit ScopedElapsedTimer(base::TimeDelta* total) : total_(total) {
+    DCHECK(total_);
+  }
 
   ~ScopedElapsedTimer() { *total_ += timer.Elapsed(); }
 
@@ -80,7 +82,8 @@ void ContentVerifyJob::BytesRead(int count, const char* data) {
     FailureReason reason =
         g_test_delegate->BytesRead(hash_reader_->extension_id(), count, data);
     if (reason != NONE)
-      return DispatchFailureCallback(reason);
+      DispatchFailureCallback(reason);
+    return;
   }
   if (!hashes_ready_) {
     queue_.append(data, count);
@@ -102,7 +105,7 @@ void ContentVerifyJob::BytesRead(int count, const char* data) {
     int bytes_to_hash =
         std::min(hash_reader_->block_size() - current_hash_byte_count_,
                  count - bytes_added);
-    DCHECK(bytes_to_hash > 0);
+    DCHECK_GT(bytes_to_hash, 0);
     current_hash_->Update(data + bytes_added, bytes_to_hash);
     bytes_added += bytes_to_hash;
     current_hash_byte_count_ += bytes_to_hash;
@@ -126,10 +129,9 @@ void ContentVerifyJob::DoneReading() {
   if (g_test_delegate) {
     FailureReason reason =
         g_test_delegate->DoneReading(hash_reader_->extension_id());
-    if (reason != NONE) {
+    if (reason != NONE)
       DispatchFailureCallback(reason);
-      return;
-    }
+    return;
   }
   done_reading_ = true;
   if (hashes_ready_) {
@@ -181,9 +183,9 @@ void ContentVerifyJob::OnHashesReady(bool success) {
   }
   if (done_reading_) {
     ScopedElapsedTimer timer(&time_spent_);
-    if (!FinishBlock())
+    if (!FinishBlock()) {
       DispatchFailureCallback(HASH_MISMATCH);
-    else if (g_test_observer) {
+    } else if (g_test_observer) {
       g_test_observer->JobFinished(hash_reader_->extension_id(),
                                    hash_reader_->relative_path(), failed_);
     }
