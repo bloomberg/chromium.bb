@@ -58,8 +58,8 @@ public class UrlBar extends VerticallyFixedEditText {
 
     // TextView becomes very slow on long strings, so we limit maximum length
     // of what is displayed to the user, see limitDisplayableLength().
-    private static final int MAX_DISPLAYABLE_LENGHT = 4000;
-    private static final int MAX_DISPLAYABLE_LENGHT_LOW_END = 1000;
+    private static final int MAX_DISPLAYABLE_LENGTH = 4000;
+    private static final int MAX_DISPLAYABLE_LENGTH_LOW_END = 1000;
 
     /** The contents of the URL that precede the path/query after being formatted. */
     private String mFormattedUrlLocation;
@@ -123,6 +123,11 @@ public class UrlBar extends VerticallyFixedEditText {
     private boolean mSelectionChangedInBatchMode;
 
     private boolean mIsPastedText;
+    // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
+    // ellispize span was applied the last time the text changed.  A true value here does not
+    // guarantee that the text does contain the span currently as newly set text may have cleared
+    // this (and it the value will only be recalculated after the text has been changed).
+    private boolean mDidEllipsizeTextHint;
 
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
@@ -325,6 +330,7 @@ public class UrlBar extends VerticallyFixedEditText {
     public void onEndBatchEdit() {
         super.onEndBatchEdit();
         mInBatchEditMode = false;
+        limitDisplayableLength();
         if (mSelectionChangedInBatchMode) {
             validateSelection(getSelectionStart(), getSelectionEnd());
             mSelectionChangedInBatchMode = false;
@@ -762,6 +768,7 @@ public class UrlBar extends VerticallyFixedEditText {
     @Override
     protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
+        if (!mInBatchEditMode) limitDisplayableLength();
         mIsPastedText = false;
     }
 
@@ -776,7 +783,6 @@ public class UrlBar extends VerticallyFixedEditText {
         // URL is being edited).
         if (!TextUtils.equals(getEditableText(), text)) {
             super.setText(text, type);
-            limitDisplayableLength();
             mAccessibilityTextOverride = null;
         }
 
@@ -807,11 +813,25 @@ public class UrlBar extends VerticallyFixedEditText {
         // That affects only presentation of the text, and doesn't affect other aspects like
         // copying to the clipboard, getting text with getText(), etc.
         final int maxLength = SysUtils.isLowEndDevice()
-                ? MAX_DISPLAYABLE_LENGHT_LOW_END : MAX_DISPLAYABLE_LENGHT;
+                ? MAX_DISPLAYABLE_LENGTH_LOW_END : MAX_DISPLAYABLE_LENGTH;
 
         Editable text = getText();
         int textLength = text.length();
-        if (textLength <= maxLength) return;
+        if (textLength <= maxLength) {
+            if (mDidEllipsizeTextHint) {
+                EllipsisSpan[] spans = text.getSpans(0, textLength, EllipsisSpan.class);
+                if (spans != null && spans.length > 0) {
+                    assert spans.length == 1 : "Should never apply more than a single EllipsisSpan";
+                    for (int i = 0; i < spans.length; i++) {
+                        text.removeSpan(spans[i]);
+                    }
+                }
+            }
+            mDidEllipsizeTextHint = false;
+            return;
+        }
+
+        mDidEllipsizeTextHint = true;
 
         int spanLeft = text.nextSpanTransition(0, textLength, EllipsisSpan.class);
         if (spanLeft != textLength) return;
