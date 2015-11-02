@@ -286,6 +286,7 @@
   },
   "Linux Builder": {
     "additional_compile_targets": [
+      "components/mus/example:all",
       "mandoline:all"
     ]
   },
@@ -551,6 +552,9 @@
       },
       {
         "test": "mojo_view_manager_lib_unittests"
+      },
+      {
+        "test": "mustash_unittests"
       },
       {
         "swarming": {

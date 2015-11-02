@@ -304,6 +304,10 @@
     "label": "//ui/message_center:message_center_unittests",
     "type": "unknown",
   },
+  "mustash_unittests": {
+    "label": "//components/mus/example:mustash_unittests",
+    "type": "unknown",
+  },
   "nacl_loader_unittests": {
     "label": "//components/nacl:nacl_loader_unittests",
     "type": "raw",

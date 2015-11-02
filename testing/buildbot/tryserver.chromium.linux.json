@@ -76,6 +76,7 @@
       "chromeos_unittests",
       "components_browsertests",
       "components_unittests",
+      "components/mus/example:all",
       "content_browsertests",
       "content_unittests",
       "crypto_unittests",

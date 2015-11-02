@@ -1514,6 +1514,7 @@
       "chromedriver_unittests",
       "components_browsertests",
       "components_unittests",
+      "components/mus/example:all",
       "compositor_unittests",
       "content_unittests",
       "courgette_unittests",
@@ -1595,6 +1596,9 @@
         "test": "mojo_view_manager_lib_unittests"
       },
       {
+        "test": "mustash_unittests"
+      },
+      {
         "test": "resource_provider_unittests"
       },
       {
@@ -1620,6 +1624,7 @@
       "chromedriver_unittests",
       "components_browsertests",
       "components_unittests",
+      "components/mus/example:all",
       "compositor_unittests",
       "content_browsertests",
       "content_unittests",

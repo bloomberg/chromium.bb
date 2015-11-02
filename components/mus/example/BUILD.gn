@@ -4,6 +4,16 @@
 
 import("//testing/test.gni")
 
+# Target that builders build.
+group("all") {
+  testonly = true
+
+  deps = [
+    ":example",
+    ":mustash_unittests",
+  ]
+}
+
 group("example") {
   testonly = true
 
