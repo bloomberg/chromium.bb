@@ -319,6 +319,9 @@
     </style>
     <style name="WebNotificationButtons">
         <item name="android:layout_marginStart">0dp</item>
+        <item name="android:showDividers">middle</item>
+        <item name="android:divider">?android:attr/listDivider</item>
+        <item name="android:dividerPadding">12dp</item>
     </style>
     <style name="WebNotificationButton"
         parent="@android:style/Widget.DeviceDefault.Button.Borderless.Small">
