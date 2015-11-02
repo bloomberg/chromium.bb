@@ -69,6 +69,9 @@ class NET_EXPORT_PRIVATE Input {
   size_t len_;
 };
 
+// Returns true if |lhs|'s data is lexicographically less than |rhs|'s data.
+NET_EXPORT_PRIVATE bool operator<(const Input& lhs, const Input& rhs);
+
 // This class provides ways to read data from an Input in a bounds-checked way.
 // The ByteReader is designed to read through the input sequentially. Once a
 // byte has been read with a ByteReader, the caller can't go back and re-read

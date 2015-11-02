@@ -11,6 +11,7 @@ namespace der {
 namespace test {
 
 const uint8_t kInput[] = {'t', 'e', 's', 't'};
+const uint8_t kInput2[] = {'t', 'e', 'a', 'l'};
 
 TEST(InputTest, Equals) {
   Input test(kInput);
@@ -25,6 +26,19 @@ TEST(InputTest, Equals) {
   Input test_truncated(kInput, arraysize(kInput) - 1);
   EXPECT_FALSE(test.Equals(test_truncated));
   EXPECT_FALSE(test_truncated.Equals(test));
+}
+
+TEST(InputTest, LessThan) {
+  Input test(kInput);
+  EXPECT_FALSE(test < test);
+
+  Input test2(kInput2);
+  EXPECT_FALSE(test < test2);
+  EXPECT_TRUE(test2 < test);
+
+  Input test_truncated(kInput, arraysize(kInput) - 1);
+  EXPECT_FALSE(test < test_truncated);
+  EXPECT_TRUE(test_truncated < test);
 }
 
 TEST(InputTest, AsString) {

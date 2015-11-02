@@ -4,6 +4,8 @@
 
 #include <string.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "net/der/input.h"
 
@@ -25,6 +27,12 @@ bool Input::Equals(const Input& other) const {
 
 std::string Input::AsString() const {
   return std::string(reinterpret_cast<const char*>(data_), len_);
+}
+
+bool operator<(const Input& lhs, const Input& rhs) {
+  return std::lexicographical_compare(
+      lhs.UnsafeData(), lhs.UnsafeData() + lhs.Length(), rhs.UnsafeData(),
+      rhs.UnsafeData() + rhs.Length());
 }
 
 ByteReader::ByteReader(const Input& in)

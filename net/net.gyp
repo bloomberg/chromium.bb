@@ -360,6 +360,7 @@
                 'action_name': 'copy_test_data',
                 'variables': {
                   'test_data_files': [
+                    'data/certificate_policies_unittest/',
                     'data/name_constraints_unittest/',
                     'data/ssl/certificates/',
                     'data/test.html',
