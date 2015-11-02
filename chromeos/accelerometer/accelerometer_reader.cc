@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -228,17 +229,18 @@ void AccelerometerFileReader::Initialize(
 
   // Check for accelerometer symlink which will be created by the udev rules
   // file on detecting the device.
-  base::FilePath device;
-
   if (base::IsDirectoryEmpty(base::FilePath(kAccelerometerDevicePath))) {
-    LOG(ERROR) << "Accelerometer device directory is empty at "
-               << kAccelerometerDevicePath;
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      LOG(ERROR) << "Accelerometer device directory is empty at "
+                 << kAccelerometerDevicePath;
+    }
     return;
   }
-
   if (!base::PathExists(base::FilePath(kAccelerometerTriggerPath))) {
-    LOG(ERROR) << "Accelerometer trigger does not exist at"
-               << kAccelerometerTriggerPath;
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      LOG(ERROR) << "Accelerometer trigger does not exist at"
+                 << kAccelerometerTriggerPath;
+    }
     return;
   }
 
