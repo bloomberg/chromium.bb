@@ -367,6 +367,9 @@
                   'components/gcm_driver/|'\
                   'google_apis/gcm/',
     },
+    'gcm_crypto': {
+      'filepath': 'components/gcm_driver/crypto/',
+    },
     'geolocation': {
       'filepath': 'chrome/browser/geolocation/|'\
                   'content/browser/geolocation|'\
@@ -1303,7 +1306,8 @@
                           'mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',
                       'mkwst+moarreviews-shell@chromium.org',
-                      'mlamouri+watch-content@chromium.org'],
+                      'mlamouri+watch-content@chromium.org',
+                      'peter@chromium.org'],
     'content_worker': ['blink-worker-reviews@chromium.org',
                        'kinuko+watch@chromium.org'],
     'custom_handlers': ['vabr+watchlist@chromium.org'],
@@ -1333,6 +1337,7 @@
     'filesapp': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'gcm': ['zea+watch@chromium.org'],
+    'gcm_crypto': ['peter@chromium.org'],
     'geolocation': ['mvanouwerkerk@chromium.org',
                     'mlamouri+watch-geolocation@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
@@ -1393,7 +1398,7 @@
     'netinfo': ['jkarlin+watch@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
     'network_quality': ['rdsmith@chromium.org'],
-    'notifications': ['peter+watch@chromium.org',
+    'notifications': ['peter@chromium.org',
                       'mlamouri+watch-notifications@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
     'ntp': ['dbeam+watch-ntp@chromium.org',
@@ -1424,7 +1429,7 @@
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'gavinp+prer@chromium.org', 'davidben+watch@chromium.org'],
-    'push_messaging': ['peter+watch@chromium.org', 'johnme+watch@chromium.org',
+    'push_messaging': ['peter@chromium.org', 'johnme+watch@chromium.org',
                        'mvanouwerkerk+watch@chromium.org'],
     'pyauto': ['anantha@chromium.org',
                'dyu@chromium.org',
@@ -1604,7 +1609,7 @@
     'blink_preloadScanner': [ 'yoav@yoav.ws' ],
     'blink_push_messaging': [ 'johnme+watch@chromium.org',
                               'mvanouwerkerk+watch@chromium.org',
-                              'peter+watch@chromium.org' ],
+                              'peter@chromium.org' ],
     'blink_client_hints': [ 'yoav@yoav.ws' ],
     'blink_scheduler': [ 'scheduler-bugs@chromium.org' ],
     'blink_track': [ 'vcarbune@chromium.org',
@@ -1630,7 +1635,7 @@
                              'dglazkov+blink@chromium.org' ],
     'blink_mediastream': [ 'tommyw+watchlist@chromium.org' ],
     'blink_navigator_content_utils': [ 'gyuyoung.kim@chromium.org' ],
-    'blink_notifications': [ 'peter+watch@chromium.org' ],
+    'blink_notifications': [ 'peter@chromium.org' ],
     'blink_geolocation': [ 'mvanouwerkerk+watch@chromium.org',
                            'timvolodine@chromium.org',
                            'mlamouri+watch-blink@chromium.org' ],
