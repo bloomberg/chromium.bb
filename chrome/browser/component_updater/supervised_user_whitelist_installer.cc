@@ -31,6 +31,7 @@
 #include "components/component_updater/default_component_installer.h"
 #include "components/crx_file/id_util.h"
 #include "components/safe_json/json_sanitizer.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace component_updater {
 
@@ -63,6 +64,14 @@ base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
   return base_dir.empty()
              ? base::FilePath()
              : base_dir.AppendASCII(crx_id + kSanitizedWhitelistExtension);
+}
+
+void RecordUncleanUninstall() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &base::RecordAction,
+          base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall")));
 }
 
 void OnWhitelistSanitizationError(const base::FilePath& whitelist,
@@ -135,8 +144,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
       if (registered_whitelists.count(crx_id) > 0)
         continue;
 
-      base::RecordAction(
-          base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall"));
+      RecordUncleanUninstall();
 
       if (!base::DeleteFile(path, true))
         DPLOG(ERROR) << "Couldn't delete " << path.value();
@@ -167,8 +175,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
       if (registered_whitelists.count(crx_id) > 0)
         continue;
 
-      base::RecordAction(
-          base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall"));
+      RecordUncleanUninstall();
 
       if (!base::DeleteFile(path, true))
         DPLOG(ERROR) << "Couldn't delete " << path.value();
