@@ -45,15 +45,14 @@
 
             <TextView
                 android:id="@+id/title"
-                style="@style/WebNotificationTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@id/time"
                 android:layout_alignParentTop="true"
-                android:layout_marginTop="4dp"
                 android:singleLine="true"
-                android:ellipsize="end"/>
+                android:ellipsize="end"
+                style="@style/WebNotificationTitleBig"/>
 
             <TextView
                 android:id="@+id/time"
@@ -72,38 +71,38 @@
 
         <TextView
             android:id="@+id/body"
-            style="@style/WebNotificationBodyBig"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:maxLines="8"
-            android:ellipsize="end"/>
+            android:ellipsize="end"
+            style="@style/WebNotificationBodyBig"/>
 
         <ImageView
             android:id="@+id/button_divider"
-            style="@style/WebNotificationDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="2dp"
             android:contentDescription="@null"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            style="@style/WebNotificationDivider"/>
 
         <LinearLayout
             android:id="@+id/buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="-8dp"
             android:orientation="horizontal"        
-            android:visibility="gone"/>
+            android:visibility="gone"
+            style="@style/WebNotificationButtons"/>
 
         <ImageView
             android:id="@+id/footer_divider"
-            style="@style/WebNotificationDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginBottom="8dp"
-            android:contentDescription="@null"/>
+            android:contentDescription="@null"
+            style="@style/WebNotificationDivider"/>
 
         <TextView
             android:id="@+id/origin"

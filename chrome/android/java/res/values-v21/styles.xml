@@ -63,23 +63,46 @@
 
     <!-- Web Notifications -->
     <style name="WebNotificationTitle"
-        parent="@android:style/TextAppearance.Material.Notification.Title"/>
+        parent="@android:style/TextAppearance.Material.Notification.Title">
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+    </style>
+    <style name="WebNotificationTitleBig"
+        parent="@android:style/TextAppearance.Material.Notification.Title">
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+    </style>
     <style name="WebNotificationBody"
-        parent="@android:style/TextAppearance.Material.Notification.Line2"/>
+        parent="@android:style/TextAppearance.Material.Notification.Line2">
+        <item name="android:layout_marginBottom">-1dp</item>
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginTop">-1dp</item>
+    </style>
     <style name="WebNotificationBodyBig"
-        parent="@android:style/TextAppearance.Material.Notification"/>
+        parent="@android:style/TextAppearance.Material.Notification">
+        <item name="android:layout_marginStart">0dp</item>
+    </style>
     <style name="WebNotificationOrigin"
-        parent="@android:style/TextAppearance.Material.Notification.Info"/>
+        parent="@android:style/TextAppearance.Material.Notification.Info">
+        <item name="android:layout_marginStart">0dp</item>
+    </style>
     <style name="WebNotificationTime"
         parent="@android:style/TextAppearance.Material.Notification.Time"/>
     <style name="WebNotificationDivider">
         <!-- From the non-public Drawable notification_template_divider -->
         <item name="android:background">#29000000</item>
     </style>
+    <style name="WebNotificationButtons">
+        <item name="android:layout_marginStart">-8dp</item>
+    </style>
     <style name="WebNotificationButton"
         parent="@android:style/Widget.DeviceDefault.Light.Button.Borderless.Small">
-        <item name="android:textColor">@color/secondary_text_default_material_light</item>
         <item name="android:background">@drawable/web_notification_button_background</item>
+        <item name="android:textColor">@color/secondary_text_default_material_light</item>
+    </style>
+    <style name="WebNotificationLargeIcon">
+        <item name="android:padding">12dp</item>
+        <item name="android:background">@null</item>
     </style>
 
     <style name="IncognitoTheme" parent="MainTheme">
