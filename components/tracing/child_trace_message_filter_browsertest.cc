@@ -33,7 +33,7 @@ class MockDumpProvider : public base::trace_event::MemoryDumpProvider {
                     base::trace_event::ProcessMemoryDump* pmd));
 };
 
-class ChildTracingTest : public content::RenderViewTest {
+class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
  public:
   // Used as callback argument for MemoryDumpManager::RequestGlobalDump():
   void OnMemoryDumpCallback(uint64 dump_guid, bool status) {
@@ -59,11 +59,16 @@ class ChildTracingTest : public content::RenderViewTest {
     callback_call_count_ = 0;
     last_callback_dump_guid_ = 0;
     last_callback_status_ = false;
+    wait_for_ipc_message_type_ = 0;
     callback_ = base::Bind(&ChildTracingTest::OnMemoryDumpCallback,
                            base::Unretained(this));
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     ctmf_ = make_scoped_refptr(new ChildTraceMessageFilter(task_runner_.get()));
     render_thread_->AddFilter(ctmf_.get());
+
+    // Add a filter to the TestSink which allows to WaitForIPCMessage() by
+    // posting a nested RunLoop closure when a given IPC Message is seen.
+    render_thread_->sink().AddFilter(this);
 
     // Getting an instance of |ChildMemoryDumpManagerDelegateImpl| calls
     // |MemoryDumpManager::Initialize| with the correct delegate.
@@ -71,12 +76,33 @@ class ChildTracingTest : public content::RenderViewTest {
   }
 
   void TearDown() override {
+    render_thread_->sink().RemoveFilter(this);
     RenderViewTest::TearDown();
     MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
         mock_dump_provider_.get());
     mock_dump_provider_.reset();
     ctmf_ = nullptr;
     task_runner_ = nullptr;
+  }
+
+  // IPC::Filter implementation.
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() == wait_for_ipc_message_type_) {
+      DCHECK(!wait_for_ipc_closure_.is_null());
+      task_runner_->PostTask(FROM_HERE, wait_for_ipc_closure_);
+    }
+    // Always propagate messages to the sink, never consume them here.
+    return false;
+  }
+
+  const IPC::Message* WaitForIPCMessage(uint32_t message_type) {
+    base::RunLoop run_loop;
+    wait_for_ipc_message_type_ = message_type;
+    wait_for_ipc_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+    wait_for_ipc_message_type_ = 0;
+    wait_for_ipc_closure_.Reset();
+    return render_thread_->sink().GetUniqueMessageMatching(message_type);
   }
 
   // Simulates a synthetic browser -> child (this process) IPC message.
@@ -107,8 +133,8 @@ class ChildTracingTest : public content::RenderViewTest {
         {dump_guid, MemoryDumpType::EXPLICITLY_TRIGGERED}));
 
     // Check that a child -> browser response to the local dump request is sent.
-    const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
-        TracingHostMsg_ProcessMemoryDumpResponse::ID);
+    const IPC::Message* msg =
+        WaitForIPCMessage(TracingHostMsg_ProcessMemoryDumpResponse::ID);
     EXPECT_NE(nullptr, msg);
 
     // Check that the |dump_guid| and the |sucess| fields are properly set.
@@ -138,6 +164,8 @@ class ChildTracingTest : public content::RenderViewTest {
   scoped_ptr<MockDumpProvider> mock_dump_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::trace_event::MemoryDumpCallback callback_;
+  uint32_t wait_for_ipc_message_type_;
+  base::Closure wait_for_ipc_closure_;
   uint32 callback_call_count_;
   uint64 last_callback_dump_guid_;
   bool last_callback_status_;

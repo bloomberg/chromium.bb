@@ -20,6 +20,7 @@
 namespace base {
 
 class SingleThreadTaskRunner;
+class Thread;
 
 namespace trace_event {
 
@@ -159,7 +160,8 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
         MemoryDumpRequestArgs req_args,
         MemoryDumpProviderInfoSet::iterator next_dump_provider,
         const scoped_refptr<MemoryDumpSessionState>& session_state,
-        MemoryDumpCallback callback);
+        MemoryDumpCallback callback,
+        const scoped_refptr<SingleThreadTaskRunner>& dump_thread_task_runner);
     ~ProcessMemoryDumpAsyncState();
 
     // The ProcessMemoryDump container, where each dump provider will dump its
@@ -179,7 +181,14 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     // The thread on which FinalizeDumpAndAddToTrace() (and hence |callback|)
     // should be invoked. This is the thread on which the initial
     // CreateProcessDump() request was called.
-    const scoped_refptr<SingleThreadTaskRunner> task_runner;
+    const scoped_refptr<SingleThreadTaskRunner> callback_task_runner;
+
+    // The thread on which unbound dump providers should be invoked.
+    // This is essentially |dump_thread_|.task_runner() but needs to be kept
+    // as a separate variable as it needs to be accessed by arbitrary dumpers'
+    // threads outside of the lock_ to avoid races when disabling tracing.
+    // It is immutable for all the duration of a tracing session.
+    const scoped_refptr<SingleThreadTaskRunner> dump_thread_task_runner;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ProcessMemoryDumpAsyncState);
@@ -232,6 +241,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // For time-triggered periodic dumps.
   RepeatingTimer periodic_dump_timer_;
+
+  // Thread used for MemoryDumpProviders which don't specify a thread affinity.
+  scoped_ptr<Thread> dump_thread_;
 
   // The unique id of the child process. This is created only for tracing and is
   // expected to be valid only when tracing is enabled.

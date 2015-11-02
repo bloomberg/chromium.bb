@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/memory_profiler_allocation_context.h"
@@ -282,7 +283,8 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   {
     AutoLock lock(lock_);
     pmd_async_state.reset(new ProcessMemoryDumpAsyncState(
-        args, dump_providers_.begin(), session_state_, callback));
+        args, dump_providers_.begin(), session_state_, callback,
+        dump_thread_->task_runner()));
   }
 
   TRACE_EVENT_WITH_FLOW0(kTraceCategory, "MemoryDumpManager::CreateProcessDump",
@@ -331,10 +333,21 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
     auto mdp_info = pmd_async_state->next_dump_provider;
     mdp = mdp_info->dump_provider;
     dump_provider_name = mdp_info->name;
+
+    // If the dump provider did not specify a thread affinity, dump on
+    // |dump_thread_|.
+    SingleThreadTaskRunner* task_runner = mdp_info->task_runner.get();
+    if (!task_runner)
+      task_runner = pmd_async_state->dump_thread_task_runner.get();
+
+    // |dump_thread_| might have been Stop()-ed at this point (if tracing was
+    // disabled in the meanwhile). In such case the PostTask() below will fail.
+    // |task_runner|, however, should always be non-null.
+    DCHECK(task_runner);
+
     if (mdp_info->disabled || mdp_info->unregistered) {
       skip_dump = true;
-    } else if (mdp_info->task_runner &&
-               !mdp_info->task_runner->BelongsToCurrentThread()) {
+    } else if (!task_runner->BelongsToCurrentThread()) {
       // It's time to hop onto another thread.
 
       // Copy the callback + arguments just for the unlikley case in which
@@ -343,9 +356,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
       // abort.
       MemoryDumpCallback callback = pmd_async_state->callback;
       scoped_refptr<SingleThreadTaskRunner> callback_task_runner =
-          pmd_async_state->task_runner;
+          pmd_async_state->callback_task_runner;
 
-      const bool did_post_task = mdp_info->task_runner->PostTask(
+      const bool did_post_task = task_runner->PostTask(
           FROM_HERE, Bind(&MemoryDumpManager::ContinueAsyncProcessDump,
                           Unretained(this), Passed(pmd_async_state.Pass())));
       if (did_post_task)
@@ -407,12 +420,12 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
 void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     scoped_ptr<ProcessMemoryDumpAsyncState> pmd_async_state) {
   const uint64_t dump_guid = pmd_async_state->req_args.dump_guid;
-  if (!pmd_async_state->task_runner->BelongsToCurrentThread()) {
-    scoped_refptr<SingleThreadTaskRunner> task_runner =
-        pmd_async_state->task_runner;
-    task_runner->PostTask(FROM_HERE,
-                          Bind(&MemoryDumpManager::FinalizeDumpAndAddToTrace,
-                               Passed(pmd_async_state.Pass())));
+  if (!pmd_async_state->callback_task_runner->BelongsToCurrentThread()) {
+    scoped_refptr<SingleThreadTaskRunner> callback_task_runner =
+        pmd_async_state->callback_task_runner;
+    callback_task_runner->PostTask(
+        FROM_HERE, Bind(&MemoryDumpManager::FinalizeDumpAndAddToTrace,
+                        Passed(pmd_async_state.Pass())));
     return;
   }
 
@@ -469,6 +482,13 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   // while the |lock_| is taken;
   TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
 
+  // Spin-up the thread used to invoke unbound dump providers.
+  scoped_ptr<Thread> dump_thread(new Thread("MemoryInfra"));
+  if (!dump_thread->Start()) {
+    LOG(ERROR) << "Failed to start the memory-infra thread for tracing";
+    return;
+  }
+
   AutoLock lock(lock_);
 
   DCHECK(delegate_);  // At this point we must have a delegate.
@@ -484,6 +504,8 @@ void MemoryDumpManager::OnTraceLogEnabled() {
         scoped_refptr<ConvertableToTraceFormat>(stack_frame_deduplicator));
   }
 
+  DCHECK(!dump_thread_);
+  dump_thread_ = dump_thread.Pass();
   session_state_ = new MemoryDumpSessionState(stack_frame_deduplicator);
 
   for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
@@ -533,10 +555,19 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 }
 
 void MemoryDumpManager::OnTraceLogDisabled() {
-  AutoLock lock(lock_);
-  periodic_dump_timer_.Stop();
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
-  session_state_ = nullptr;
+  scoped_ptr<Thread> dump_thread;
+  {
+    AutoLock lock(lock_);
+    dump_thread = dump_thread_.Pass();
+    session_state_ = nullptr;
+  }
+
+  // Thread stops are blocking and must be performed outside of the |lock_|
+  // or will deadlock (e.g., if ContinueAsyncProcessDump() tries to acquire it).
+  periodic_dump_timer_.Stop();
+  if (dump_thread)
+    dump_thread->Stop();
 }
 
 uint64_t MemoryDumpManager::GetTracingProcessId() const {
@@ -560,19 +591,22 @@ bool MemoryDumpManager::MemoryDumpProviderInfo::operator<(
     const MemoryDumpProviderInfo& other) const {
   if (task_runner == other.task_runner)
     return dump_provider < other.dump_provider;
-  return task_runner < other.task_runner;
+  // Ensure that unbound providers (task_runner == nullptr) always run last.
+  return !(task_runner < other.task_runner);
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     MemoryDumpRequestArgs req_args,
     MemoryDumpProviderInfoSet::iterator next_dump_provider,
     const scoped_refptr<MemoryDumpSessionState>& session_state,
-    MemoryDumpCallback callback)
+    MemoryDumpCallback callback,
+    const scoped_refptr<SingleThreadTaskRunner>& dump_thread_task_runner)
     : process_memory_dump(session_state),
       req_args(req_args),
       next_dump_provider(next_dump_provider),
       callback(callback),
-      task_runner(MessageLoop::current()->task_runner()) {}
+      callback_task_runner(MessageLoop::current()->task_runner()),
+      dump_thread_task_runner(dump_thread_task_runner) {}
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::~ProcessMemoryDumpAsyncState() {
 }
