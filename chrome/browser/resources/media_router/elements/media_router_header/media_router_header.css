@@ -41,6 +41,10 @@
   margin: 0;
 }
 
+paper-icon-button {
+  display: inline;
+}
+
 paper-toolbar {
   -webkit-padding-start: 8px;
   height: 52px;
