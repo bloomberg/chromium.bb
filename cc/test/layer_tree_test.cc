@@ -233,8 +233,8 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->FinishAllRenderingOnImpl();
   };
 
-  void SetVisibleOnImpl(CompletionEvent* completion, bool visible) override {
-    ThreadProxy::SetVisibleOnImpl(completion, visible);
+  void SetVisibleOnImpl(bool visible) override {
+    ThreadProxy::SetVisibleOnImpl(visible);
     test_hooks_->SetVisibleOnImpl(visible);
   }
 

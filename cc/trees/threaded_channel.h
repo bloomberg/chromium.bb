@@ -87,10 +87,10 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void SetNeedsCommitOnImpl() override;
   void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override;
+  void SetVisibleOnImpl(bool visible) override;
 
   // Blocking calls to ProxyImpl
   void FinishAllRenderingOnImpl(CompletionEvent* completion) override;
-  void SetVisibleOnImpl(CompletionEvent* completion, bool visible) override;
   void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override;
   void FinishGLOnImpl(CompletionEvent* completion) override;
   void MainFrameWillHappenOnImplForTesting(

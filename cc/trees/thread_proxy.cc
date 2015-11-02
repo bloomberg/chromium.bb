@@ -156,18 +156,13 @@ bool ThreadProxy::CommitToActiveTree() const {
 
 void ThreadProxy::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "ThreadProxy::SetVisible", "visible", visible);
-  DebugScopedSetMainThreadBlocked main_thread_blocked(this);
-
-  CompletionEvent completion;
-  main().channel_main->SetVisibleOnImpl(&completion, visible);
-  completion.Wait();
+  main().channel_main->SetVisibleOnImpl(visible);
 }
 
-void ThreadProxy::SetVisibleOnImpl(CompletionEvent* completion, bool visible) {
+void ThreadProxy::SetVisibleOnImpl(bool visible) {
   TRACE_EVENT1("cc", "ThreadProxy::SetVisibleOnImplThread", "visible", visible);
   impl().layer_tree_host_impl->SetVisible(visible);
   impl().scheduler->SetVisible(visible);
-  completion->Signal();
 }
 
 void ThreadProxy::SetThrottleFrameProduction(bool throttle) {

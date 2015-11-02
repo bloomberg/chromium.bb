@@ -283,7 +283,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;
   void SetDeferCommitsOnImpl(bool defer_commits) const override;
   void FinishAllRenderingOnImpl(CompletionEvent* completion) override;
-  void SetVisibleOnImpl(CompletionEvent* completion, bool visible) override;
+  void SetVisibleOnImpl(bool visible) override;
   void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override;
   void FinishGLOnImpl(CompletionEvent* completion) override;
   void MainFrameWillHappenOnImplForTesting(

@@ -37,7 +37,7 @@ class CC_EXPORT ProxyImpl {
   virtual void SetNeedsCommitOnImpl() = 0;
   virtual void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) = 0;
   virtual void FinishAllRenderingOnImpl(CompletionEvent* completion) = 0;
-  virtual void SetVisibleOnImpl(CompletionEvent* completion, bool visible) = 0;
+  virtual void SetVisibleOnImpl(bool visible) = 0;
   virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) = 0;
   virtual void FinishGLOnImpl(CompletionEvent* completion) = 0;
   virtual void MainFrameWillHappenOnImplForTesting(

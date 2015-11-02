@@ -98,12 +98,10 @@ void ThreadedChannel::StartCommitOnImpl(CompletionEvent* completion) {
                             proxy_impl_->GetImplWeakPtr(), completion));
 }
 
-void ThreadedChannel::SetVisibleOnImpl(CompletionEvent* completion,
-                                       bool visible) {
+void ThreadedChannel::SetVisibleOnImpl(bool visible) {
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ProxyImpl::SetVisibleOnImpl, proxy_impl_->GetImplWeakPtr(),
-                 completion, visible));
+      FROM_HERE, base::Bind(&ProxyImpl::SetVisibleOnImpl,
+                            proxy_impl_->GetImplWeakPtr(), visible));
 }
 
 void ThreadedChannel::ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) {
