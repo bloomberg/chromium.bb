@@ -474,6 +474,10 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
     NotifyDeviceChanged(device_chromeos);
   }
 
+  if (property_name == properties->gatt_services.name()) {
+    NotifyGattServicesDiscovered(device_chromeos);
+  }
+
   // When a device becomes paired, mark it as trusted so that the user does
   // not need to approve every incoming connection
   if (property_name == properties->paired.name() &&
@@ -930,6 +934,14 @@ void BluetoothAdapterChromeOS::NotifyGattServiceChanged(
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
                     observers_,
                     GattServiceChanged(this, service));
+}
+
+void BluetoothAdapterChromeOS::NotifyGattServicesDiscovered(
+    BluetoothDeviceChromeOS* device) {
+  DCHECK(device->adapter_ == this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    GattServicesDiscovered(this, device));
 }
 
 void BluetoothAdapterChromeOS::NotifyGattDiscoveryComplete(

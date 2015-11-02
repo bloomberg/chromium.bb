@@ -109,6 +109,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                     BluetoothDevice* device,
                                     BluetoothGattService* service) {}
 
+    // Called when all the GATT Services in |device| have been discovered
+    // and GattServiceAdded has been called for each service.
+    virtual void GattServicesDiscovered(BluetoothAdapter* adapter,
+                                        BluetoothDevice* device) {}
+
     // Called when all characteristic and descriptor discovery procedures are
     // known to be completed for the GATT service |service|. This method will be
     // called after the initial discovery of a GATT service and will usually be

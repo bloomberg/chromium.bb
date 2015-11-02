@@ -39,6 +39,7 @@ void TestBluetoothAdapterObserver::Reset() {
   last_device_address_.clear();
   gatt_service_added_count_ = 0;
   gatt_service_removed_count_ = 0;
+  gatt_services_discovered_count_ = 0;
   gatt_service_changed_count_ = 0;
   gatt_discovery_complete_count_ = 0;
   gatt_characteristic_added_count_ = 0;
@@ -171,6 +172,18 @@ void TestBluetoothAdapterObserver::GattServiceRemoved(
 
   // The device should return NULL for this service.
   EXPECT_FALSE(device->GetGattService(last_gatt_service_id_));
+
+  QuitMessageLoop();
+}
+
+void TestBluetoothAdapterObserver::GattServicesDiscovered(
+    BluetoothAdapter* adapter,
+    BluetoothDevice* device) {
+  ASSERT_EQ(adapter_.get(), adapter);
+
+  ++gatt_services_discovered_count_;
+  last_device_ = device;
+  last_device_address_ = device->GetAddress();
 
   QuitMessageLoop();
 }

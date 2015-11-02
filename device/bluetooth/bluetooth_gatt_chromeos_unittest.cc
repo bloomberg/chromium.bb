@@ -352,6 +352,37 @@ TEST_F(BluetoothGattChromeOSTest, GattServiceAddedAndRemoved) {
             adapter_->GetDevice(FakeBluetoothDeviceClient::kLowEnergyAddress));
 }
 
+TEST_F(BluetoothGattChromeOSTest, ServicesDiscovered) {
+  // Create a fake LE device. We store the device pointer here because this is a
+  // test. It's unsafe to do this in production as the device might get deleted.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(FakeBluetoothDeviceClient::kLowEnergyAddress);
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+
+  ASSERT_TRUE(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  EXPECT_EQ(0, observer.gatt_services_discovered_count());
+
+  // Expose the fake Heart Rate Service.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+  // Notify that all services have been discovered.
+  properties->gatt_services.ReplaceValue(
+      fake_bluetooth_gatt_service_client_->GetServices());
+
+  EXPECT_EQ(1, observer.gatt_services_discovered_count());
+  EXPECT_EQ(device, observer.last_device());
+  EXPECT_EQ(FakeBluetoothDeviceClient::kLowEnergyAddress,
+            observer.last_device_address());
+}
+
 TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),

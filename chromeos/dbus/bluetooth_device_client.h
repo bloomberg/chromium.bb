@@ -84,6 +84,12 @@ class CHROMEOS_EXPORT BluetoothDeviceClient : public DBusClient {
     // discovered during inquiry. Read-only.
     dbus::Property<int16> rssi;
 
+    // List of GATT service object paths. Each referenced object exports the
+    // org.bluez.GattService1 interface and represents a remote GATT service.
+    // This property will be updated once all remote GATT services of this
+    // device have been discovered and exported over D-Bus. Read-only.
+    dbus::Property<std::vector<dbus::ObjectPath>> gatt_services;
+
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
                const PropertyChangedCallback& callback);

@@ -128,6 +128,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   void NotifyGattServiceAdded(BluetoothRemoteGattServiceChromeOS* service);
   void NotifyGattServiceRemoved(BluetoothRemoteGattServiceChromeOS* service);
   void NotifyGattServiceChanged(BluetoothRemoteGattServiceChromeOS* service);
+  void NotifyGattServicesDiscovered(BluetoothDeviceChromeOS* device);
   void NotifyGattDiscoveryComplete(BluetoothRemoteGattServiceChromeOS* service);
   void NotifyGattCharacteristicAdded(
       BluetoothRemoteGattCharacteristicChromeOS* characteristic);

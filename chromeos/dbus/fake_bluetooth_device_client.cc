@@ -390,6 +390,7 @@ void FakeBluetoothDeviceClient::Connect(const dbus::ObjectPath& object_path,
             DBusThreadManager::Get()->GetBluetoothGattServiceClient());
     gatt_service_client->ExposeHeartRateService(
         dbus::ObjectPath(kLowEnergyPath));
+    properties->gatt_services.ReplaceValue(gatt_service_client->GetServices());
   }
 
   AddInputDeviceIfNeeded(object_path, properties);
