@@ -102,6 +102,13 @@ public:
         SymbolKey = 1 << 18,
 
         ScrollLockOn = 1 << 19,
+
+        // The set of non-stateful modifiers that specifically change the
+        // interpretation of the key being pressed. For example; IsLeft,
+        // IsRight, IsComposing don't change the meaning of the key
+        // being pressed. NumLockOn, ScrollLockOn, CapsLockOn are stateful
+        // and don't indicate explicit depressed state.
+        KeyModifiers = SymbolKey | FnKey | OSKey | AltGrKey | MetaKey | AltKey | CtrlKey | ShiftKey,
     };
 
     enum RailsMode {
