@@ -453,7 +453,6 @@ html element frame
     property contentDocument
     property contentWindow
     property frameBorder
-    property getSVGDocument
     property longDesc
     property marginHeight
     property marginWidth

@@ -32,8 +32,4 @@ interface HTMLFrameElement : HTMLElement {
 
     [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
     [Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
-
-    // FIXME: The spec defines getSVGDocument() for HTMLIFrameElement,
-    // HTMLEmbedElement and HTMLObjectElement, but not here.
-    [Measure, CheckSecurity=Node, RaisesException] Document? getSVGDocument();
 };

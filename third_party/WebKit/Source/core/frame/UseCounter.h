@@ -742,7 +742,6 @@ public:
         V8TouchEvent_InitTouchEvent_Method = 872,
         V8UIEvent_InitUIEvent_Method = 873,
         V8Document_CreateTouch_Method = 874,
-        V8HTMLFrameElement_GetSVGDocument_Method = 875,
         RequestFileSystemNonWebbyOrigin = 876,
         V8Console_Memory_AttributeGetter = 877,
         V8Console_Memory_AttributeSetter = 878,

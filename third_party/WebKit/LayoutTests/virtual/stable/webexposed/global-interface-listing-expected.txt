@@ -1663,7 +1663,6 @@ interface HTMLFrameElement : HTMLElement
     getter scrolling
     getter src
     method constructor
-    method getSVGDocument
     setter frameBorder
     setter longDesc
     setter marginHeight
