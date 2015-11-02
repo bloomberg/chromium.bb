@@ -69,7 +69,7 @@ So for example, you could use the plugin in this directory with:
 
 ## Using the clang static analyzer
 
-See [clang_static_analyser.md](clang_static_analyser.md).
+See [clang_static_analyzer.md](clang_static_analyzer.md).
 
 ## Windows
 
