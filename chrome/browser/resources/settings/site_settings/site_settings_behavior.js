@@ -6,6 +6,7 @@
  * @fileoverview Behavior common to Site Settings classes.
  */
 
+/** @polymerBehavior */
 var SiteSettingsBehaviorImpl = {
   /**
    * Returns whether the category default is set to enabled or not.

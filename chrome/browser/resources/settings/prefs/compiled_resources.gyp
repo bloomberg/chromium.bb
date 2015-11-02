@@ -9,6 +9,7 @@
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+          'prefs_behavior.js',
           'prefs_types.js',
         ],
         'externs': [
