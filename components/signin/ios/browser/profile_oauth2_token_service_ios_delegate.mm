@@ -204,9 +204,12 @@ void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
   // Clean-up stale data from prefs.
   ClearExcludedSecondaryAccounts();
 
-  // LoadCredentials() is called iff the user is signed in to Chrome, so the
-  // primary account id must not be empty.
-  DCHECK(!primary_account_id.empty());
+  if (primary_account_id.empty()) {
+    // On startup, always fire refresh token loaded even if there is nothing
+    // to load (not authenticated).
+    FireRefreshTokensLoaded();
+    return;
+  }
 
   ReloadCredentials(primary_account_id);
   FireRefreshTokensLoaded();

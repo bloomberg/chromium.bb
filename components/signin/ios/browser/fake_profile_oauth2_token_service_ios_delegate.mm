@@ -33,6 +33,8 @@ FakeProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
 
 bool FakeProfileOAuth2TokenServiceIOSDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   return !GetRefreshToken(account_id).empty();
 }
 
@@ -57,6 +59,8 @@ FakeProfileOAuth2TokenServiceIOSDelegate::GetAccounts() {
 }
 
 void FakeProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   std::vector<std::string> account_ids = GetAccounts();
   for (std::vector<std::string>::const_iterator it = account_ids.begin();
        it != account_ids.end(); it++) {
@@ -66,6 +70,7 @@ void FakeProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
 
 void FakeProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     const std::string& primary_account_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   FireRefreshTokensLoaded();
 }
 
@@ -77,11 +82,16 @@ void FakeProfileOAuth2TokenServiceIOSDelegate::UpdateCredentials(
 
 void FakeProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
     const std::string& account_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   UpdateCredentials(account_id, "fake_refresh_token");
 }
 
 void FakeProfileOAuth2TokenServiceIOSDelegate::RemoveAccount(
     const std::string& account_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!account_id.empty());
+
   IssueRefreshTokenForUser(account_id, "");
 }
 

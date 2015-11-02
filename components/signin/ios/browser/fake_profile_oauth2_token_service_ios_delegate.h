@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_IOS_BROWSER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_
 #define COMPONENTS_SIGNIN_IOS_BROWSER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_
 
+#include "base/threading/thread_checker.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 
 class FakeProfileOAuth2TokenServiceIOSDelegate
@@ -39,6 +40,11 @@ class FakeProfileOAuth2TokenServiceIOSDelegate
   void IssueRefreshTokenForUser(const std::string& account_id,
                                 const std::string& token);
   std::string GetRefreshToken(const std::string& account_id) const;
+
+  // Calls to this class are expected to be made from the browser UI thread.
+  // The purpose of this checker is to detect access to
+  // ProfileOAuth2TokenService from multiple threads in upstream code.
+  base::ThreadChecker thread_checker_;
 
   // Maps account ids to their refresh token strings.
   std::map<std::string, std::string> refresh_tokens_;

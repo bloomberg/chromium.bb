@@ -40,11 +40,11 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // after service is used between profile restarts.
   //
   // Only call this method if there is at least one account connected to the
-  // profile, otherwise startup will cause unneeded work on the IO thread.  The
-  // primary account is specified with the |primary_account_id| argument and
-  // should not be empty.  For a regular profile, the primary account id comes
-  // from SigninManager.  For a supervised user, the id comes from
-  // SupervisedUserService.
+  // profile, otherwise startup will cause unneeded work on the IO thread. The
+  // primary account is specified with the |primary_account_id| argument. If
+  // empty, no credentials will be loaded. For a regular profile, the primary
+  // account id comes from SigninManager. For a supervised user, the id comes
+  // from SupervisedUserService.
   virtual void LoadCredentials(const std::string& primary_account_id);
 
   // Updates a |refresh_token| for an |account_id|. Credentials are persisted,
