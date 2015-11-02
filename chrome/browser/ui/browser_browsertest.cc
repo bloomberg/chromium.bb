@@ -3120,7 +3120,9 @@ class URLRequestNonsecureConnection : public net::URLRequestMockHTTPJob {
 
 class BrowserTestNonsecureURLRequest : public BrowserTest {
  public:
-  BrowserTestNonsecureURLRequest() : BrowserTest() {}
+  // TODO(thakis): Add back the `: BrowserTest()` once
+  // http://llvm.org/PR25370 is fixed, http://crbug.com/549765
+  BrowserTestNonsecureURLRequest() /* : BrowserTest() */ {}
   void SetUpOnMainThread() override {
     base::FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
