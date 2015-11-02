@@ -4,7 +4,6 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_audio.h"
@@ -158,12 +157,6 @@ const PPB_WheelInputEvent* PPBWheelInputEvent() {
 
 
 // Dev interfaces.
-
-const PPB_Font_Dev* PPBFontDev() {
-  return reinterpret_cast<const PPB_Font_Dev*>(
-      // Change to GetBrowserInterfaceSafe when moving out of dev.
-      GetBrowserInterface(PPB_FONT_DEV_INTERFACE));
-}
 
 const PPB_Memory_Dev* PPBMemoryDev() {
   return reinterpret_cast<const PPB_Memory_Dev*>(

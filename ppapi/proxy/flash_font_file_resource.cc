@@ -6,7 +6,6 @@
 
 #include <cstring>
 
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 

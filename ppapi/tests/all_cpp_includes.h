@@ -18,7 +18,6 @@
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/device_ref_dev.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"
-#include "ppapi/cpp/dev/font_dev.h"
 #include "ppapi/cpp/dev/ime_input_event_dev.h"
 #include "ppapi/cpp/dev/memory_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"

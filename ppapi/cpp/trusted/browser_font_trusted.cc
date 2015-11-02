@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/point.h"
@@ -19,29 +18,6 @@ namespace {
 
 template <> const char* interface_name<PPB_BrowserFont_Trusted_1_0>() {
   return PPB_BROWSERFONT_TRUSTED_INTERFACE_1_0;
-}
-template <> const char* interface_name<PPB_Font_Dev_0_6>() {
-  return PPB_FONT_DEV_INTERFACE_0_6;
-}
-
-// This class provides backwards compat for PPB_Font, which is binary
-// compatible with the BrowserFont interface.
-// TODO(brettw) remove PPB_Font altogether when Flash is updated.
-const PP_FontDescription_Dev* BrowserFontDescToFontDesc(
-    const PP_BrowserFont_Trusted_Description* desc) {
-  return reinterpret_cast<const PP_FontDescription_Dev*>(desc);
-}
-PP_FontDescription_Dev* BrowserFontDescToFontDesc(
-    PP_BrowserFont_Trusted_Description* desc) {
-  return reinterpret_cast<PP_FontDescription_Dev*>(desc);
-}
-PP_FontMetrics_Dev* BrowserFontMetricsToFontMetrics(
-    PP_BrowserFont_Trusted_Metrics* metrics) {
-  return reinterpret_cast<PP_FontMetrics_Dev*>(metrics);
-}
-const PP_TextRun_Dev* BrowserFontTextRunToFontTextRun(
-    const PP_BrowserFont_Trusted_TextRun* run) {
-  return reinterpret_cast<const PP_TextRun_Dev*>(run);
 }
 
 }  // namespace
@@ -137,10 +113,6 @@ BrowserFont_Trusted::BrowserFont_Trusted(
     PassRefFromConstructor(get_interface<PPB_BrowserFont_Trusted_1_0>()->Create(
         instance.pp_instance(),
         &description.pp_font_description()));
-  } else if (!has_interface<PPB_Font_Dev_0_6>()) {
-    PassRefFromConstructor(get_interface<PPB_Font_Dev_0_6>()->Create(
-        instance.pp_instance(),
-        BrowserFontDescToFontDesc(&description.pp_font_description())));
   }
 }
 
@@ -156,10 +128,11 @@ BrowserFont_Trusted& BrowserFont_Trusted::operator=(
 
 // static
 Var BrowserFont_Trusted::GetFontFamilies(const InstanceHandle& instance) {
-  if (!has_interface<PPB_Font_Dev_0_6>())
+  if (!has_interface<PPB_BrowserFont_Trusted_1_0>())
     return Var();
+
   return Var(PASS_REF,
-             get_interface<PPB_Font_Dev_0_6>()->GetFontFamilies(
+             get_interface<PPB_BrowserFont_Trusted_1_0>()->GetFontFamilies(
                  instance.pp_instance()));
 }
 
@@ -171,12 +144,6 @@ bool BrowserFont_Trusted::Describe(
   if (has_interface<PPB_BrowserFont_Trusted_1_0>()) {
     if (!get_interface<PPB_BrowserFont_Trusted_1_0>()->Describe(
         pp_resource(), &description->pp_font_description_, metrics))
-      return false;
-  } else if (!has_interface<PPB_Font_Dev_0_6>()) {
-    if (!get_interface<PPB_Font_Dev_0_6>()->Describe(
-        pp_resource(),
-        BrowserFontDescToFontDesc(&description->pp_font_description_),
-        BrowserFontMetricsToFontMetrics(metrics)))
       return false;
   }
   description->face_ = Var(PASS_REF,
@@ -199,15 +166,6 @@ bool BrowserFont_Trusted::DrawTextAt(ImageData* dest,
         color,
         &clip.pp_rect(),
         PP_FromBool(image_data_is_opaque)));
-  } else if (!has_interface<PPB_Font_Dev_0_6>()) {
-    return PP_ToBool(get_interface<PPB_Font_Dev_0_6>()->DrawTextAt(
-        pp_resource(),
-        dest->pp_resource(),
-        BrowserFontTextRunToFontTextRun(&text.pp_text_run()),
-        &position.pp_point(),
-        color,
-        &clip.pp_rect(),
-        PP_FromBool(image_data_is_opaque)));
   }
   return false;
 }
@@ -217,10 +175,6 @@ int32_t BrowserFont_Trusted::MeasureText(const BrowserFontTextRun& text) const {
     return get_interface<PPB_BrowserFont_Trusted_1_0>()->MeasureText(
         pp_resource(),
         &text.pp_text_run());
-  } else if (!has_interface<PPB_Font_Dev_0_6>()) {
-    return get_interface<PPB_Font_Dev_0_6>()->MeasureText(
-        pp_resource(),
-        BrowserFontTextRunToFontTextRun(&text.pp_text_run()));
   }
   return -1;
 }
@@ -234,11 +188,6 @@ uint32_t BrowserFont_Trusted::CharacterOffsetForPixel(
             pp_resource(),
             &text.pp_text_run(),
             pixel_position);
-  } else if (!has_interface<PPB_Font_Dev_0_6>()) {
-    return get_interface<PPB_Font_Dev_0_6>()->CharacterOffsetForPixel(
-        pp_resource(),
-        BrowserFontTextRunToFontTextRun(&text.pp_text_run()),
-        pixel_position);
   }
   return 0;
 }
@@ -252,11 +201,6 @@ int32_t BrowserFont_Trusted::PixelOffsetForCharacter(
            pp_resource(),
            &text.pp_text_run(),
            char_offset);
-  } else if (!has_interface<PPB_Font_Dev_0_6>()) {
-    return get_interface<PPB_Font_Dev_0_6>()->PixelOffsetForCharacter(
-        pp_resource(),
-        BrowserFontTextRunToFontTextRun(&text.pp_text_run()),
-        char_offset);
   }
   return 0;
 }

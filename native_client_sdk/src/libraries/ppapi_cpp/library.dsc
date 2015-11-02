@@ -66,7 +66,6 @@
         # ppapi/cpp/dev
         'cursor_control_dev.cc',
         'file_chooser_dev.cc',
-        'font_dev.cc',
         'memory_dev.cc',
         'printing_dev.cc',
         'scriptable_object_deprecated.cc',
@@ -154,7 +153,6 @@
       'FILES': [
         'cursor_control_dev.h',
         'file_chooser_dev.h',
-        'font_dev.h',
         'memory_dev.h',
         'printing_dev.h',
         'scriptable_object_deprecated.h',

@@ -4,7 +4,6 @@
 
 #include "ppapi/cpp/private/flash_font_file.h"
 
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/private/ppb_flash_font_file.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/cpp/instance_handle.h"

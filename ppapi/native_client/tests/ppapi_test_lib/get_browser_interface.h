@@ -5,8 +5,8 @@
 // Defines helper functions for all interfaces supported by the Native Client
 // proxy.
 
-#ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
-#define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
+#ifndef PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
+#define PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
 
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -28,7 +28,6 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/private/ppb_testing_private.h"
 
@@ -71,7 +70,6 @@ const PPB_WheelInputEvent* PPBWheelInputEvent();
 // Lookup returns NULL if the interface is not available.
 //
 
-const PPB_Font_Dev* PPBFontDev();
 const PPB_Memory_Dev* PPBMemoryDev();
 
 //
@@ -81,4 +79,4 @@ const PPB_Memory_Dev* PPBMemoryDev();
 
 const PPB_Testing_Private* PPBTestingPrivate();
 
-#endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
+#endif  // PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_

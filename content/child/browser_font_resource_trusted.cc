@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/web_preferences.h"
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
@@ -98,7 +97,7 @@ class TextRunCollection {
     }
 
     // Override run, return the single one.
-    DCHECK(index == 0);
+    DCHECK_EQ(0, index);
     *run_start = 0;
     *run_len = static_cast<int32_t>(text_.size());
     return override_run_;
@@ -150,18 +149,22 @@ WebFontDescription PPFontDescToWebFontDesc(
   static_assert(static_cast<int>(WebFontDescription::Weight900) ==
                 static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_900),
                 "font Weight900");
-  static_assert(WebFontDescription::GenericFamilyStandard ==
-                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_DEFAULT),
-                "FamilyStandard");
-  static_assert(WebFontDescription::GenericFamilySerif ==
-                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_SERIF),
-                "FamilySerif");
-  static_assert(WebFontDescription::GenericFamilySansSerif ==
-                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_SANSSERIF),
-                "FamilySansSerif");
-  static_assert(WebFontDescription::GenericFamilyMonospace ==
-                PP_FAMILY_TO_WEB_FAMILY(PP_FONTFAMILY_MONOSPACE),
-                "FamilyMonospace");
+  static_assert(
+      WebFontDescription::GenericFamilyStandard ==
+      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT),
+      "FamilyStandard");
+  static_assert(
+      WebFontDescription::GenericFamilySerif ==
+      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_SERIF),
+      "FamilySerif");
+  static_assert(
+      WebFontDescription::GenericFamilySansSerif ==
+      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF),
+      "FamilySansSerif");
+  static_assert(
+      WebFontDescription::GenericFamilyMonospace ==
+      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE),
+      "FamilyMonospace");
 
   StringVar* face_name = StringVar::FromPPVar(font.face);  // Possibly null.
 

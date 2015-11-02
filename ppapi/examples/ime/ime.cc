@@ -10,7 +10,6 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/font_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
@@ -19,6 +18,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/text_input_controller.h"
+#include "ppapi/cpp/trusted/browser_font_trusted.h"
 
 namespace {
 
@@ -61,9 +61,9 @@ void FillRect(pp::ImageData* image, const pp::Rect& rect, uint32_t color) {
 size_t GetPrevCharOffsetUtf8(const std::string& str, size_t current_pos) {
   size_t i = current_pos;
   if (i > 0) {
-    do
+    do {
       --i;
-    while (i > 0 && (str[i] & 0xc0) == 0x80);
+    } while (i > 0 && (str[i] & 0xc0) == 0x80);
   }
   return i;
 }
@@ -71,9 +71,9 @@ size_t GetPrevCharOffsetUtf8(const std::string& str, size_t current_pos) {
 size_t GetNextCharOffsetUtf8(const std::string& str, size_t current_pos) {
   size_t i = current_pos;
   if (i < str.size()) {
-    do
+    do {
       ++i;
-    while (i < str.size() && (str[i] & 0xc0) == 0x80);
+    } while (i < str.size() && (str[i] & 0xc0) == 0x80);
   }
   return i;
 }
@@ -132,10 +132,10 @@ class MyTextField {
         caret_pos_(std::string::npos),
         anchor_pos_(std::string::npos),
         target_segment_(0) {
-    pp::FontDescription_Dev desc;
-    desc.set_family(PP_FONTFAMILY_SANSSERIF);
+    pp::BrowserFontDescription desc;
+    desc.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF);
     desc.set_size(font_size_);
-    font_ = pp::Font_Dev(instance_, desc);
+    font_ = pp::BrowserFont_Trusted(instance_, desc);
   }
 
   // Paint on the specified ImageData.
@@ -159,7 +159,7 @@ class MyTextField {
         std::string str = utf8_text_.substr(0, caret_pos_);
         font_.DrawTextAt(
             image,
-            pp::TextRun_Dev(str.c_str(), false, false),
+            pp::BrowserFontTextRun(str.c_str(), false, false),
             pp::Point(offset, area_.y() + font_size_),
             kTextfieldTextColor,
             clip,
@@ -181,7 +181,7 @@ class MyTextField {
         // composition text
         font_.DrawTextAt(
             image,
-            pp::TextRun_Dev(str.c_str(), false, false),
+            pp::BrowserFontTextRun(str.c_str(), false, false),
             pp::Point(offset, area_.y() + font_size_),
             kTextfieldPreeditTextColor,
             clip,
@@ -213,7 +213,7 @@ class MyTextField {
         std::string str = utf8_text_.substr(caret_pos_);
         font_.DrawTextAt(
             image,
-            pp::TextRun_Dev(str.c_str(), false, false),
+            pp::BrowserFontTextRun(str.c_str(), false, false),
             pp::Point(offset, area_.y() + font_size_),
             kTextfieldTextColor,
             clip,
@@ -222,7 +222,7 @@ class MyTextField {
     } else {
       font_.DrawTextAt(
           image,
-          pp::TextRun_Dev(utf8_text_.c_str(), false, false),
+          pp::BrowserFontTextRun(utf8_text_.c_str(), false, false),
           pp::Point(area_.x(), area_.y() + font_size_),
           kTextfieldTextColor,
           clip,
@@ -284,7 +284,7 @@ class MyTextField {
 
     // The text field is focused.
     size_t n = font_.CharacterOffsetForPixel(
-        pp::TextRun_Dev(utf8_text_.c_str()), x - area_.x());
+        pp::BrowserFontTextRun(utf8_text_.c_str()), x - area_.x());
     caret_pos_ = anchor_pos_ = GetNthCharOffsetUtf8(utf8_text_, n);
     CaretPosChanged();
     return true;
@@ -294,7 +294,7 @@ class MyTextField {
     if (!Focused())
       return;
     size_t n = font_.CharacterOffsetForPixel(
-        pp::TextRun_Dev(utf8_text_.c_str()), x - area_.x());
+        pp::BrowserFontTextRun(utf8_text_.c_str()), x - area_.x());
     caret_pos_ = GetNthCharOffsetUtf8(utf8_text_, n);
   }
 
@@ -387,7 +387,7 @@ class MyTextField {
 
   pp::Rect area_;
   int font_size_;
-  pp::Font_Dev font_;
+  pp::BrowserFont_Trusted font_;
   std::string utf8_text_;
   size_t caret_pos_;
   size_t anchor_pos_;

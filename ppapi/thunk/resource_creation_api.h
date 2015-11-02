@@ -25,7 +25,6 @@
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 
 struct PP_Flash_Menu;
-struct PP_FontDescription_Dev;
 struct PP_BrowserFont_Trusted_Description;
 struct PP_NetAddress_IPv4;
 struct PP_NetAddress_IPv6;
