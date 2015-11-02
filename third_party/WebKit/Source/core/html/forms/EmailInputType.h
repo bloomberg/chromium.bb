@@ -39,6 +39,10 @@ class EmailInputType final : public BaseTextInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
+    // They are public for unit testing.
+    CORE_EXPORT static String convertEmailAddressToASCII(const String&);
+    CORE_EXPORT static bool isValidEmailAddress(const String&);
+
 private:
     EmailInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
     void countUsage() override;

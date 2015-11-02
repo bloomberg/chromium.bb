@@ -33,6 +33,7 @@
 #include "platform/JSONValues.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
+#include "wtf/LeakAnnotations.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include <unicode/idna.h>
@@ -55,7 +56,7 @@ static const int32_t maximumDomainNameLength = 255;
 // Use the same option as in url/url_canon_icu.cc
 static const int32_t idnaConversionOption = UIDNA_CHECK_BIDI;
 
-static String convertEmailAddressToASCII(const String& address)
+String EmailInputType::convertEmailAddressToASCII(const String& address)
 {
     if (address.containsOnlyASCII())
         return address;
@@ -132,12 +133,13 @@ static bool checkValidDotUsage(const String& domain)
     return domain.find("..") == kNotFound;
 }
 
-static bool isValidEmailAddress(const String& address)
+bool EmailInputType::isValidEmailAddress(const String& address)
 {
     int addressLength = address.length();
     if (!addressLength)
         return false;
 
+    WTF_ANNOTATE_SCOPED_MEMORY_LEAK;
     DEFINE_STATIC_LOCAL(const ScriptRegexp, regExp, (emailPattern, TextCaseInsensitive));
 
     int matchLength;

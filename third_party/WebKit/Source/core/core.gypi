@@ -3840,6 +3840,7 @@
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
             'html/canvas/CanvasFontCacheTest.cpp',
+            'html/forms/EmailInputTypeTest.cpp',
             'html/forms/FileInputTypeTest.cpp',
             'html/forms/StepRangeTest.cpp',
             'html/parser/AtomicHTMLTokenTest.cpp',
