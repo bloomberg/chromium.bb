@@ -316,6 +316,12 @@ RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
       ->GetWidget();
 }
 
+FrameTreeNode* RenderFrameHostManager::GetOuterDelegateNode() {
+  int outer_contents_frame_tree_node_id =
+      delegate_->GetOuterDelegateFrameTreeNodeID();
+  return FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id);
+}
+
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
   if (frame_tree_node_->IsMainFrame())
     return nullptr;

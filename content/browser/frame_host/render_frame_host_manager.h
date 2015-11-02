@@ -232,6 +232,10 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // remote frames.
   RenderWidgetHostImpl* GetOuterRenderWidgetHostForKeyboardInput();
 
+  // Return the FrameTreeNode for the frame in the outer WebContents (if any)
+  // that contains the inner WebContents.
+  FrameTreeNode* GetOuterDelegateNode();
+
   RenderFrameProxyHost* GetProxyToParent();
 
   // Returns the proxy to inner WebContents in the outer WebContents's

@@ -234,12 +234,17 @@ void CrossProcessFrameConnector::SetSize(gfx::Rect frame_rect) {
 
 RenderWidgetHostViewBase*
 CrossProcessFrameConnector::GetRootRenderWidgetHostView() {
-  return static_cast<RenderWidgetHostViewBase*>(
-      frame_proxy_in_parent_renderer_->frame_tree_node()
-          ->frame_tree()
-          ->root()
-          ->current_frame_host()
-          ->GetView());
+  RenderFrameHostImpl* top_host = frame_proxy_in_parent_renderer_->
+      frame_tree_node()->frame_tree()->root()->current_frame_host();
+
+  // This method should return the root RWHV from the top-level WebContents,
+  // in the case of nested WebContents.
+  while (top_host->frame_tree_node()->render_manager()->ForInnerDelegate()) {
+    top_host = top_host->frame_tree_node()->render_manager()->
+        GetOuterDelegateNode()->frame_tree()->root()->current_frame_host();
+  }
+
+  return static_cast<RenderWidgetHostViewBase*>(top_host->GetView());
 }
 
 }  // namespace content
