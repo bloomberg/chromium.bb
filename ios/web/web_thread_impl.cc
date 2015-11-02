@@ -497,7 +497,7 @@ base::MessageLoop* WebThread::UnsafeGetMessageLoopForThread(ID identifier) {
 }
 
 // static
-void WebThreadImpl::SetDelegate(ID identifier, WebThreadDelegate* delegate) {
+void WebThread::SetDelegate(ID identifier, WebThreadDelegate* delegate) {
   using base::subtle::AtomicWord;
   WebThreadGlobals& globals = g_globals.Get();
   AtomicWord* storage =

@@ -1212,7 +1212,7 @@
           ],
           'dependencies': [
             '../ios/ios_tests.gyp:test_support_ios',
-            '../ios/web/ios_web.gyp:test_support_ios_web',
+            '../ios/web/ios_web.gyp:ios_web_test_support',
             '../third_party/ocmock/ocmock.gyp:ocmock',
             'components.gyp:autofill_ios_browser',
             'components.gyp:sessions_ios',

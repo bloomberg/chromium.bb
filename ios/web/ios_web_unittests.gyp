@@ -20,7 +20,7 @@
         '../../ui/base/ui_base.gyp:ui_base_test_support',
         '../testing/ios_testing.gyp:ocmock_support',
         'ios_web.gyp:ios_web',
-        'ios_web.gyp:test_support_ios_web',
+        'ios_web.gyp:ios_web_test_support',
       ],
       'sources': [
         'active_state_manager_impl_unittest.mm',

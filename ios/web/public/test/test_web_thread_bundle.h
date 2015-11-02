@@ -33,9 +33,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
+class MessageLoop;
+}
+
 namespace web {
 
-class TestWebThreadBundleImpl;
+class TestWebThread;
 
 class TestWebThreadBundle {
  public:
@@ -58,7 +62,15 @@ class TestWebThreadBundle {
   ~TestWebThreadBundle();
 
  private:
-  scoped_ptr<TestWebThreadBundleImpl> impl_;
+  void Init(int options);
+
+  scoped_ptr<base::MessageLoop> message_loop_;
+  scoped_ptr<TestWebThread> ui_thread_;
+  scoped_ptr<TestWebThread> db_thread_;
+  scoped_ptr<TestWebThread> file_thread_;
+  scoped_ptr<TestWebThread> file_user_blocking_thread_;
+  scoped_ptr<TestWebThread> cache_thread_;
+  scoped_ptr<TestWebThread> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebThreadBundle);
 };

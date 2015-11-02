@@ -10,7 +10,7 @@
 
 namespace web {
 
-class WebThreadDelegate;
+class WebTestSuiteListener;
 
 class WebThreadImpl : public WebThread, public base::Thread {
  public:
@@ -25,20 +25,6 @@ class WebThreadImpl : public WebThread, public base::Thread {
   ~WebThreadImpl() override;
 
   static void ShutdownThreadPool();
-
-  // TODO(stuartmorgan): Move this to WebThread (where it belongs) once
-  // the alternate BrowserThread-backed-WebThread implementation goes away. See
-  // the note in web_thread_delegate.h.
-  //
-  // Sets the delegate for the specified WebThread.
-  //
-  // Only one delegate may be registered at a time. Delegates may be
-  // unregistered by providing a nullptr pointer.
-  //
-  // If the caller unregisters a delegate before CleanUp has been
-  // called, it must perform its own locking to ensure the delegate is
-  // not deleted while unregistering.
-  static void SetDelegate(ID identifier, WebThreadDelegate* delegate);
 
  protected:
   void Init() override;
@@ -76,6 +62,7 @@ class WebThreadImpl : public WebThread, public base::Thread {
   // For testing.
   friend class TestWebThreadBundle;
   friend class TestWebThreadBundleImpl;
+  friend class WebTestSuiteListener;
   static void FlushThreadPoolHelperForTesting();
 
   // The identifier of this thread.  Only one thread can exist with a given

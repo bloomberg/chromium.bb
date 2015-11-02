@@ -68,15 +68,12 @@ void WebMainLoop::MainMessageLoopStart() {
   if (!base::MessageLoop::current()) {
     main_message_loop_.reset(new base::MessageLoopForUI);
   }
-  // Note: In Chrome, Attach() is called in
-  // ChromeBrowserMainPartsIOS::PreMainMessageLoopStart().
   base::MessageLoopForUI::current()->Attach();
 
   InitializeMainThread();
 
 #if 0
-  // TODO(droger): SystemMonitor is not working properly on iOS.
-  // See http://crbug.com/228014.
+  // TODO(crbug.com/228014): SystemMonitor is not working properly on iOS.
   system_monitor_.reset(new base::SystemMonitor);
 #endif
   // TODO(rohitrao): Do we need PowerMonitor on iOS, or can we get rid of it?

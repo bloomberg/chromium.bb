@@ -24,6 +24,8 @@ class Location;
 
 namespace web {
 
+class WebThreadDelegate;
+
 // Use DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::ID) to assert that a function
 // can only be called on the named WebThread.
 // TODO(ios): rename to DCHECK_CURRENTLY_ON once iOS is independent from
@@ -204,6 +206,16 @@ class WebThread {
   // lifetime of the thread.
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
       ID identifier);
+
+  // Sets the delegate for the specified WebThread.
+  //
+  // Only one delegate may be registered at a time. Delegates may be
+  // unregistered by providing a nullptr pointer.
+  //
+  // If the caller unregisters a delegate before CleanUp has been
+  // called, it must perform its own locking to ensure the delegate is
+  // not deleted while unregistering.
+  static void SetDelegate(ID identifier, WebThreadDelegate* delegate);
 
   // Returns an appropriate error message for when
   // DCHECK_CURRENTLY_ON_WEB_THREAD() fails.

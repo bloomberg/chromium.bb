@@ -19,6 +19,7 @@
         'ios_web.gyp:ios_web_app',
         '../../base/base.gyp:base',
         '../../net/net.gyp:net',
+        '../../net/net.gyp:net_extras',
         '../../ui/base/ui_base.gyp:ui_base',
       ],
       'xcode_settings': {

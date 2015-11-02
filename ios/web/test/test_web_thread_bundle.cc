@@ -11,41 +11,15 @@
 
 namespace web {
 
-// Implmentation of TestWebThreadBundle using TestWebThreads.
-// TODO(stuartmorgan): The only reason this is a separate impl class is to
-// keep the implementation details out of the header so that it can be shared
-// with the adapter implementation that uses TestBrowserThreadBundle. Once that
-// version is gone, fold this into TestWebThreadBundle.
-class TestWebThreadBundleImpl {
- public:
-  explicit TestWebThreadBundleImpl();
-  explicit TestWebThreadBundleImpl(int options);
-
-  ~TestWebThreadBundleImpl();
-
- private:
-  void Init(int options);
-
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<TestWebThread> ui_thread_;
-  scoped_ptr<TestWebThread> db_thread_;
-  scoped_ptr<TestWebThread> file_thread_;
-  scoped_ptr<TestWebThread> file_user_blocking_thread_;
-  scoped_ptr<TestWebThread> cache_thread_;
-  scoped_ptr<TestWebThread> io_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebThreadBundleImpl);
-};
-
-TestWebThreadBundleImpl::TestWebThreadBundleImpl() {
+TestWebThreadBundle::TestWebThreadBundle() {
   Init(TestWebThreadBundle::DEFAULT);
 }
 
-TestWebThreadBundleImpl::TestWebThreadBundleImpl(int options) {
+TestWebThreadBundle::TestWebThreadBundle(int options) {
   Init(options);
 }
 
-TestWebThreadBundleImpl::~TestWebThreadBundleImpl() {
+TestWebThreadBundle::~TestWebThreadBundle() {
   // To avoid memory leaks, ensure that any tasks posted to the blocking pool
   // via PostTaskAndReply are able to reply back to the originating thread, by
   // flushing the blocking pool while the browser threads still exist.
@@ -76,7 +50,7 @@ TestWebThreadBundleImpl::~TestWebThreadBundleImpl() {
   base::RunLoop().RunUntilIdle();
 }
 
-void TestWebThreadBundleImpl::Init(int options) {
+void TestWebThreadBundle::Init(int options) {
   if (options & TestWebThreadBundle::IO_MAINLOOP) {
     message_loop_.reset(new base::MessageLoopForIO());
   } else {
@@ -122,19 +96,6 @@ void TestWebThreadBundleImpl::Init(int options) {
   } else {
     io_thread_.reset(new TestWebThread(WebThread::IO, message_loop_.get()));
   }
-}
-
-#pragma mark - TestWebThreadBundle
-
-TestWebThreadBundle::TestWebThreadBundle()
-    : impl_(new TestWebThreadBundleImpl()) {
-}
-
-TestWebThreadBundle::TestWebThreadBundle(int options)
-    : impl_(new TestWebThreadBundleImpl(options)) {
-}
-
-TestWebThreadBundle::~TestWebThreadBundle() {
 }
 
 }  // namespace web

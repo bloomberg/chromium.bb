@@ -25,7 +25,7 @@
         '../../third_party/ocmock/ocmock.gyp:ocmock',
         '../ios_tests.gyp:test_support_ios',
         '../web/ios_web.gyp:ios_web',
-        '../web/ios_web.gyp:test_support_ios_web',
+        '../web/ios_web.gyp:ios_web_test_support',
         'ios_chrome.gyp:ios_chrome_app',
         'ios_chrome.gyp:ios_chrome_browser',
         'ios_chrome.gyp:ios_chrome_common',
