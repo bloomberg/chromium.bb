@@ -30,7 +30,6 @@
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
-#include "core/css/TreeBoundaryCrossingRules.h"
 #include "core/css/resolver/CSSPropertyPriority.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
@@ -208,6 +207,7 @@ private:
     void matchAuthorRules(Element*, ElementRuleCollector&);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();
+    void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&);
     void resetRuleFeatures();
 
     void applyMatchedProperties(StyleResolverState&, const MatchResult&);
@@ -251,7 +251,8 @@ private:
     OwnPtrWillBeMember<RuleSet> m_siblingRuleSet;
     OwnPtrWillBeMember<RuleSet> m_uncommonAttributeRuleSet;
     OwnPtrWillBeMember<RuleSet> m_watchedSelectorsRules;
-    TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
+
+    DocumentOrderedList m_treeBoundaryCrossingScopes;
 
     bool m_needCollectFeatures;
     bool m_printMediaType;
