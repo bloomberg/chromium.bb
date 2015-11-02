@@ -1,0 +1,27 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.sendCommand("Debugger.enable", { });
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "document.querySelector('object')" }, callbackEvaluate);
+
+    function callbackEvaluate(result)
+    {
+        InspectorTest.sendCommand("Debugger.getFunctionDetails", { "functionId": result.result.result.objectId }, callbackGetFunctionDetails);
+    }
+
+    function callbackGetFunctionDetails(result)
+    {
+        InspectorTest.log(JSON.stringify(result.result, null, 4));
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+<object type="application/pdf" data="data:text/plain,"></object>
+</body>
+</html>

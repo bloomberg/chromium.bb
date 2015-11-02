@@ -1,0 +1,13 @@
+
+{
+    "details": {
+        "location": {
+            "lineNumber": -1,
+            "columnNumber": -1,
+            "scriptId": "0"
+        },
+        "functionName": "",
+        "isGenerator": false
+    }
+}
+

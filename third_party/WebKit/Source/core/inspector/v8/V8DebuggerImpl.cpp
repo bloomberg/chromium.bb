@@ -696,14 +696,14 @@ v8::Local<v8::String> V8DebuggerImpl::v8InternalizedString(const char* str) cons
     return v8::String::NewFromUtf8(m_isolate, str, v8::NewStringType::kInternalized).ToLocalChecked();
 }
 
-v8::Local<v8::Value> V8DebuggerImpl::functionScopes(v8::Local<v8::Function> function)
+v8::MaybeLocal<v8::Value> V8DebuggerImpl::functionScopes(v8::Local<v8::Function> function)
 {
     if (!enabled()) {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
     }
     v8::Local<v8::Value> argv[] = { function };
-    return callDebuggerMethod("getFunctionScopes", 1, argv).ToLocalChecked();
+    return callDebuggerMethod("getFunctionScopes", 1, argv);
 }
 
 v8::Local<v8::Value> V8DebuggerImpl::generatorObjectDetails(v8::Local<v8::Object>& object)

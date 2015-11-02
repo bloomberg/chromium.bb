@@ -46,7 +46,7 @@ public:
     virtual bool pausingOnNextStatement() = 0;
 
     // TODO: these methods will not be public once InjectedScriptHost is in the implementation.
-    virtual v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>) = 0;
+    virtual v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>) = 0;
     virtual v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&) = 0;
     virtual v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&) = 0;
     virtual v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue) = 0;

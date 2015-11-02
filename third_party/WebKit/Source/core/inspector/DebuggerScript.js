@@ -57,6 +57,8 @@ DebuggerScript.getAfterCompileScript = function(eventData)
 DebuggerScript.getFunctionScopes = function(fun)
 {
     var mirror = MakeMirror(fun);
+    if (!mirror.isFunction())
+        return null;
     var count = mirror.scopeCount();
     if (count == 0)
         return null;

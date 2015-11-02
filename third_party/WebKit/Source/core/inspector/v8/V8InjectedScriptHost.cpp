@@ -212,9 +212,9 @@ void V8InjectedScriptHost::functionDetailsCallback(const v8::FunctionCallbackInf
 
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.Holder());
     V8Debugger& debugger = host->debugger();
-    v8::Local<v8::Value> scopes = debugger.functionScopes(function);
-    if (!scopes.IsEmpty() && scopes->IsArray())
-        result->Set(v8AtomicString(isolate, "rawScopes"), scopes);
+    v8::MaybeLocal<v8::Value> scopes = debugger.functionScopes(function);
+    if (!scopes.IsEmpty() && scopes.ToLocalChecked()->IsArray())
+        result->Set(v8AtomicString(isolate, "rawScopes"), scopes.ToLocalChecked());
 
     v8SetReturnValue(info, result);
 }
