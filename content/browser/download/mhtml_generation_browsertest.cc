@@ -28,16 +28,25 @@ class MHTMLGenerationTest : public ContentBrowserTest {
  public:
   MHTMLGenerationTest() : has_mhtml_callback_run_(false), file_size_(0) {}
 
-  void MHTMLGenerated(base::Closure quit_closure, int64 size) {
-    has_mhtml_callback_run_ = true;
-    file_size_ = size;
-    quit_closure.Run();
-  }
-
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     ContentBrowserTest::SetUp();
+  }
+
+  void GenerateMHTML(const base::FilePath& path, const GURL& url) {
+    NavigateToURL(shell(), url);
+
+    base::RunLoop run_loop;
+    shell()->web_contents()->GenerateMHTML(
+        path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
+                         run_loop.QuitClosure()));
+
+    // Block until the MHTML is generated.
+    run_loop.Run();
+
+    EXPECT_TRUE(has_mhtml_callback_run());
   }
 
   bool has_mhtml_callback_run() const { return has_mhtml_callback_run_; }
@@ -46,6 +55,12 @@ class MHTMLGenerationTest : public ContentBrowserTest {
   base::ScopedTempDir temp_dir_;
 
  private:
+  void MHTMLGenerated(base::Closure quit_closure, int64 size) {
+    has_mhtml_callback_run_ = true;
+    file_size_ = size;
+    quit_closure.Run();
+  }
+
   bool has_mhtml_callback_run_;
   int64 file_size_;
 };
@@ -55,47 +70,61 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 // test is to ensure we were successfull in creating the MHTML data from the
 // renderer.
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
   base::FilePath path(temp_dir_.path());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
-
-  base::RunLoop run_loop;
-  shell()->web_contents()->GenerateMHTML(
-      path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
-                       run_loop.QuitClosure()));
-
-  // Block until the MHTML is generated.
-  run_loop.Run();
-
-  EXPECT_TRUE(has_mhtml_callback_run());
-  EXPECT_GT(file_size(), 0);
+  GenerateMHTML(path, embedded_test_server()->GetURL("/simple_page.html"));
+  ASSERT_FALSE(HasFailure());
 
   // Make sure the actual generated file has some contents.
+  EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
   int64 file_size;
   ASSERT_TRUE(base::GetFileSize(path, &file_size));
-  EXPECT_GT(file_size, 100);
+  EXPECT_GT(file_size, 100);  // Verify the actual file size.
+}
+
+// This test verifies how MHTML serialization handles frames that have
+// the same URI (especially about:blank URI) but different content.
+// It should preserve contents of all the frames.
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, LocalAboutBlankSubframes) {
+  base::FilePath path(temp_dir_.path());
+  path = path.Append(FILE_PATH_LITERAL("test-local-about-blank-subframes.mht"));
+
+  GenerateMHTML(path, embedded_test_server()->GetURL(
+                          "/download/local-about-blank-subframes.html"));
+  ASSERT_FALSE(HasFailure());
+
+  std::string mhtml;
+  ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
+
+  // Make sure the contents of all frames are present.
+  // 1. Check for contents (this is insufficient as it can also hit the contents
+  //    in the iframe.srcdoc attribute).
+  EXPECT_THAT(mhtml, HasSubstr("main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3"));
+  EXPECT_THAT(mhtml, HasSubstr("sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e"));
+  EXPECT_THAT(mhtml, HasSubstr("sub2: 07014068-604d-45ae-884f-a068cfe7bc0a"));
+  EXPECT_THAT(mhtml, HasSubstr("sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4"));
+  // 2. Count the number of text/html mhtml parts.
+  int count = 0;
+  size_t pos = 0;
+  for (;;) {
+    pos = mhtml.find("Content-Type: text/html", pos);
+    if (pos == std::string::npos)
+      break;
+    count++;
+    pos++;
+  }
+  EXPECT_EQ(4, count) << "Verify number of text/html parts in the mhtml output";
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
   base::FilePath path(FILE_PATH_LITERAL("/invalid/file/path"));
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
+  GenerateMHTML(path, embedded_test_server()->GetURL(
+                          "/download/local-about-blank-subframes.html"));
+  ASSERT_FALSE(HasFailure());  // No failures with the invocation itself?
 
-  base::RunLoop run_loop;
-  shell()->web_contents()->GenerateMHTML(
-      path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
-                       run_loop.QuitClosure()));
-
-  // Block until the MHTML is generated.
-  run_loop.Run();
-
-  EXPECT_TRUE(has_mhtml_callback_run());
-  EXPECT_EQ(file_size(), -1);  // Expecting failure.
+  EXPECT_EQ(file_size(), -1);  // Expecting that the callback reported failure.
 }
 
 // Test suite that allows testing --site-per-process against cross-site frames.
@@ -134,18 +163,8 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationSitePerProcessTest,
 
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_one_frame.html"));
-  NavigateToURL(shell(), url);
-
-  base::RunLoop run_loop;
-  shell()->web_contents()->GenerateMHTML(
-      path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this,
-                       run_loop.QuitClosure()));
-
-  // Block until the MHTML is generated.
-  run_loop.Run();
-
-  EXPECT_TRUE(has_mhtml_callback_run());
-  EXPECT_GT(file_size(), 0);
+  GenerateMHTML(path, url);
+  ASSERT_FALSE(HasFailure());
 
   std::string mhtml;
   ASSERT_TRUE(base::ReadFileToString(path, &mhtml));
