@@ -248,6 +248,11 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
+crbug.com/539108 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-br.html [ NeedsRebaseline ]
+crbug.com/539108 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-p.html [ NeedsRebaseline ]
+crbug.com/539108 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-br.html [ NeedsRebaseline ]
+crbug.com/539108 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ NeedsRebaseline ]
+
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
