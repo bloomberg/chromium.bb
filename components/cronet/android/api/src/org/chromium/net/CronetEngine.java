@@ -395,7 +395,7 @@ public abstract class CronetEngine {
      * be called on {@code executor}'s thread. {@code executor} must not run
      * tasks on the current thread to prevent blocking networking operations
      * and causing exceptions during shutdown. Request is given medium priority,
-     * see {@link UrlRequest#REQUEST_PRIORITY_MEDIUM}. To specify other
+     * see {@link UrlRequest.Builder#REQUEST_PRIORITY_MEDIUM}. To specify other
      * priorities see {@link #createRequest(String, UrlRequest.Callback,
      * Executor, int priority)}.
      *
@@ -403,7 +403,7 @@ public abstract class CronetEngine {
      * @param callback callback object that gets invoked on different events.
      * @param executor {@link Executor} on which all callbacks will be invoked.
      * @return new request.
-     * @deprecated Use {@link Builder#build}.
+     * @deprecated Use {@link UrlRequest.Builder#build}.
      */
     @Deprecated
     public abstract UrlRequest createRequest(
@@ -419,10 +419,10 @@ public abstract class CronetEngine {
      * @param callback callback object that gets invoked on different events.
      * @param executor {@link Executor} on which all callbacks will be invoked.
      * @param priority priority of the request which should be one of the
-     *         {@link UrlRequest#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}
+     *         {@link UrlRequest.Builder#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}
      *         values.
      * @return new request.
-     * @deprecated Use {@link Builder#build}.
+     * @deprecated Use {@link UrlRequest.Builder#build}.
      */
     @Deprecated
     public abstract UrlRequest createRequest(
@@ -625,8 +625,9 @@ public abstract class CronetEngine {
 
     /**
      * Creates a {@link CronetEngine} with the given {@link Builder}.
-     * @param context Android {@link Context}.
-     * @param config engine configuration.
+     *
+     * @param builder builder to used for creating the CronetEngine instance.
+     * @return the created CronetEngine instance.
      * @deprecated Use {@link CronetEngine.Builder}.
      */
     @Deprecated

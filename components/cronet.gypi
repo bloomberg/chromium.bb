@@ -55,7 +55,7 @@
             'cronet/android/java/src/org/chromium/net/CronetEngineBuilderList.template',
           ],
           'variables': {
-            'package_name': 'org/chromium/cronet',
+            'package_name': 'org/chromium/net',
             'template_deps': ['cronet/url_request_context_config_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],

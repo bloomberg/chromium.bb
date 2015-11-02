@@ -75,7 +75,7 @@ struct URLRequestContextConfig {
   std::string user_agent;
   // App-provided list of servers that support QUIC.
   ScopedVector<QuicHint> quic_hints;
-  // Comma-separted list of QUIC connection options.
+  // Comma-separated list of QUIC connection options.
   std::string quic_connection_options;
   // Enable Data Reduction Proxy with authentication key.
   std::string data_reduction_proxy_key;

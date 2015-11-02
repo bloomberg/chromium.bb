@@ -392,7 +392,7 @@ class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
-    // Native methods are implemented in cronet_url_request_context.cc.
+    // Native methods are implemented in cronet_url_request_context_adapter.cc.
     private static native long nativeCreateRequestContextAdapter(String config);
 
     private static native int nativeSetMinLogLevel(int loggingLevel);

@@ -58,8 +58,7 @@ void URLRequestContextConfig::QuicHint::RegisterJSONConverter(
 
 URLRequestContextConfig::URLRequestContextConfig() {}
 
-URLRequestContextConfig::~URLRequestContextConfig() {
-}
+URLRequestContextConfig::~URLRequestContextConfig() {}
 
 bool URLRequestContextConfig::LoadFromJSON(const std::string& config_string) {
   scoped_ptr<base::Value> config_value = base::JSONReader::Read(config_string);
