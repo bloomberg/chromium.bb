@@ -106,12 +106,14 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
         return;
 
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    WillBeHeapVector<RawPtrWillBeMember<Observer>> snapshotOfObservers;
+    Vector<RawPtrWillBeUntracedMember<Observer>> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (Observer* observer : snapshotOfObservers) {
         // FIXME: Oilpan: At the moment, it's possible that the Observer is
-        // destructed during the iteration. Once we enable Oilpan by default
-        // for Observers, we can remove the hack by making m_observers
+        // destructed during the iteration.
+        // Once we enable Oilpan by default for Observers *and*
+        // Observer::contextDestroyed() does not call removeObserver(),
+        // we can remove the hack by making m_observers
         // a HeapHashSet<WeakMember<Observers>>. (i.e., we can just iterate
         // m_observers without taking a snapshot).
         if (m_observers.contains(observer)) {
@@ -119,6 +121,7 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
             observer->contextDestroyed();
         }
     }
+
     m_didCallContextDestroyed = true;
 }
 
