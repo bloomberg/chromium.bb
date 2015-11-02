@@ -118,14 +118,12 @@ class OZONE_EXPORT HardwareDisplayController {
   //
   // Note that this function does not block. Also, this function should not be
   // called again before the page flip occurrs.
-  //
-  // Returns true if the page flip was successfully registered, false otherwise.
-  //
-  // When called with |test_only| true, this performs the page flip without
-  // changing any state, reporting if this page flip would be allowed to occur.
-  bool SchedulePageFlip(const OverlayPlaneList& plane_list,
-                        bool test_only,
+  void SchedulePageFlip(const OverlayPlaneList& plane_list,
                         const PageFlipCallback& callback);
+
+  // Returns true if the page flip with the |plane_list| would succeed. This
+  // doesn't change any state.
+  bool TestPageFlip(const OverlayPlaneList& plane_list);
 
   std::vector<uint32_t> GetCompatibleHardwarePlaneIds(
       const OverlayPlane& plane) const;
@@ -158,6 +156,10 @@ class OZONE_EXPORT HardwareDisplayController {
   scoped_refptr<DrmDevice> GetAllocationDrmDevice() const;
 
  private:
+  bool ActualSchedulePageFlip(const OverlayPlaneList& plane_list,
+                              bool test_only,
+                              const PageFlipCallback& callback);
+
   base::ScopedPtrHashMap<DrmDevice*, scoped_ptr<HardwareDisplayPlaneList>>
       owned_hardware_planes_;
 

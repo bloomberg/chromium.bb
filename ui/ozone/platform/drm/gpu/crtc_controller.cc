@@ -33,7 +33,7 @@ CrtcController::~CrtcController() {
     SetCursor(nullptr);
     drm_->DisableCrtc(crtc_);
     if (page_flip_request_)
-      SignalPageFlipRequest();
+      SignalPageFlipRequest(gfx::SwapResult::SWAP_ACK);
   }
 }
 
@@ -119,11 +119,6 @@ std::vector<uint32_t> CrtcController::GetCompatibleHardwarePlaneIds(
   return drm_->plane_manager()->GetCompatibleHardwarePlaneIds(plane, crtc_);
 }
 
-void CrtcController::PageFlipFailed() {
-  pending_planes_.clear();
-  SignalPageFlipRequest();
-}
-
 void CrtcController::OnPageFlipEvent(unsigned int frame,
                                      unsigned int seconds,
                                      unsigned int useconds) {
@@ -131,10 +126,7 @@ void CrtcController::OnPageFlipEvent(unsigned int frame,
       static_cast<uint64_t>(seconds) * base::Time::kMicrosecondsPerSecond +
       useconds;
 
-  current_planes_.clear();
-  current_planes_.swap(pending_planes_);
-
-  SignalPageFlipRequest();
+  SignalPageFlipRequest(gfx::SwapResult::SWAP_ACK);
 }
 
 bool CrtcController::SetCursor(const scoped_refptr<ScanoutBuffer>& buffer) {
@@ -168,10 +160,15 @@ bool CrtcController::ResetCursor() {
   return status;
 }
 
-void CrtcController::SignalPageFlipRequest() {
+void CrtcController::SignalPageFlipRequest(gfx::SwapResult result) {
+  if (result == gfx::SwapResult::SWAP_ACK)
+    current_planes_.swap(pending_planes_);
+
+  pending_planes_.clear();
+
   scoped_refptr<PageFlipRequest> request;
   request.swap(page_flip_request_);
-  request->Signal(gfx::SwapResult::SWAP_ACK);
+  request->Signal(result);
 }
 
 }  // namespace ui

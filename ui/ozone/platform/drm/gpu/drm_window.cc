@@ -32,9 +32,6 @@ namespace {
 #define DRM_CAP_CURSOR_HEIGHT 0x9
 #endif
 
-void EmptyFlipCallback(gfx::SwapResult) {
-}
-
 void UpdateCursorImage(DrmBuffer* cursor, const SkBitmap& image) {
   SkRect damage;
   image.getBounds(&damage);
@@ -140,9 +137,7 @@ void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
     return;
   }
 
-  // Controller should call the callback in all cases.
-  controller_->SchedulePageFlip(last_submitted_planes_, false /* test_only */,
-                                callback);
+  controller_->SchedulePageFlip(last_submitted_planes_, callback);
 }
 
 std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
@@ -195,11 +190,7 @@ std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
 
     compatible_test_list.push_back(plane);
 
-    bool page_flip_succeeded = controller_->SchedulePageFlip(
-        compatible_test_list, true /* test_only */,
-        base::Bind(&EmptyFlipCallback));
-
-    if (page_flip_succeeded) {
+    if (controller_->TestPageFlip(compatible_test_list)) {
       overlay_params.plane_ids =
           controller_->GetCompatibleHardwarePlaneIds(plane);
       params.push_back(overlay_params);

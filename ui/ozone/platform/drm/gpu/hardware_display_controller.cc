@@ -23,6 +23,12 @@
 
 namespace ui {
 
+namespace {
+
+void EmptyFlipCallback(gfx::SwapResult) {}
+
+}  // namespace
+
 HardwareDisplayController::HardwareDisplayController(
     scoped_ptr<CrtcController> controller,
     const gfx::Point& origin)
@@ -72,7 +78,19 @@ void HardwareDisplayController::Disable() {
   is_disabled_ = true;
 }
 
-bool HardwareDisplayController::SchedulePageFlip(
+void HardwareDisplayController::SchedulePageFlip(
+    const OverlayPlaneList& plane_list,
+    const PageFlipCallback& callback) {
+  ActualSchedulePageFlip(plane_list, false /* test_only */, callback);
+}
+
+bool HardwareDisplayController::TestPageFlip(
+    const OverlayPlaneList& plane_list) {
+  return ActualSchedulePageFlip(plane_list, true /* test_only */,
+                                base::Bind(&EmptyFlipCallback));
+}
+
+bool HardwareDisplayController::ActualSchedulePageFlip(
     const OverlayPlaneList& plane_list,
     bool test_only,
     const PageFlipCallback& callback) {
