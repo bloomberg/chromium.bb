@@ -25,7 +25,13 @@ AVDACodecImage::AVDACodecImage(
       media_codec_(codec),
       decoder_(decoder),
       surface_texture_(surface_texture),
-      detach_surface_texture_on_destruction_(false) {}
+      detach_surface_texture_on_destruction_(false),
+      texture_(0),
+      need_shader_info_(true),
+      texmatrix_uniform_location_(-1) {
+  memset(gl_matrix_, 0, sizeof(gl_matrix_));
+  gl_matrix_[0] = gl_matrix_[5] = gl_matrix_[10] = gl_matrix_[15] = 1.0f;
+}
 
 AVDACodecImage::~AVDACodecImage() {}
 
@@ -73,6 +79,8 @@ bool AVDACodecImage::CopyTexImage(unsigned target) {
   // Make sure that we have the right image in the front buffer.
   bound_texture |= UpdateSurfaceTexture();
 
+  InstallTextureMatrix();
+
   // Sneakily bind the ST texture handle in the real GL context.
   // If we called UpdateTexImage() to update the ST front buffer, then we can
   // skip this.  Since one draw/frame is the common case, we optimize for it.
@@ -85,18 +93,12 @@ bool AVDACodecImage::CopyTexImage(unsigned target) {
   // to updateTexImage() to the right place in the cc to send it to the shader.
   // For now, we just skip it.  crbug.com/530681
 
-  gpu::gles2::TextureManager* texture_manager =
-      decoder_->GetContextGroup()->texture_manager();
-  gpu::gles2::Texture* texture =
-      texture_manager->GetTextureForServiceId(
-          shared_state_->surface_texture_service_id());
-  if (texture) {
-    // By setting image state to UNBOUND instead of COPIED we ensure that
-    // CopyTexImage() is called each time the surface texture is used for
-    // drawing.
-    texture->SetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
-                           gpu::gles2::Texture::UNBOUND);
-  }
+  // By setting image state to UNBOUND instead of COPIED we ensure that
+  // CopyTexImage() is called each time the surface texture is used for drawing.
+  // It would be nice if we could do this via asking for the currently bound
+  // Texture, but the active unit never seems to change.
+  texture_->SetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
+                          gpu::gles2::Texture::UNBOUND);
 
   return true;
 }
@@ -137,6 +139,9 @@ bool AVDACodecImage::UpdateSurfaceTexture() {
     // Swap the rendered image to the front.
     surface_texture_->UpdateTexImage();
 
+    // Helpfully, this is already column major.
+    surface_texture_->GetTransformMatrix(gl_matrix_);
+
     // UpdateTexImage() binds the ST's texture.
     return true;
   }
@@ -160,6 +165,10 @@ void AVDACodecImage::SetMediaCodec(media::MediaCodecBridge* codec) {
   media_codec_ = codec;
 }
 
+void AVDACodecImage::setTexture(gpu::gles2::Texture* texture) {
+  texture_ = texture;
+}
+
 void AVDACodecImage::AttachSurfaceTextureToContext() {
   GLint surface_texture_service_id;
   // Use the PictureBuffer's texture.  We could also generate a new texture
@@ -180,6 +189,34 @@ void AVDACodecImage::AttachSurfaceTextureToContext() {
   detach_surface_texture_on_destruction_ = true;
 
   // We do not restore the GL state here.
+}
+
+void AVDACodecImage::InstallTextureMatrix() {
+  // glUseProgram() has been run already -- just modify the uniform.
+  // Updating this via VideoFrameProvider::Client::DidUpdateMatrix() would
+  // be a better solution, except that we'd definitely miss a frame at this
+  // point in drawing.
+  // Our current method assumes that we'll end up being a stream resource,
+  // and that the program has a texMatrix uniform that does what we want.
+  if (need_shader_info_) {
+    GLint program_id = -1;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
+
+    if (program_id >= 0) {
+      // This is memorized from cc/output/shader.cc .
+      const char* uniformName = "texMatrix";
+      texmatrix_uniform_location_ =
+          glGetUniformLocation(program_id, uniformName);
+      DCHECK(texmatrix_uniform_location_ != -1);
+    }
+
+    // Only try once.
+    need_shader_info_ = false;
+  }
+
+  if (texmatrix_uniform_location_ >= 0) {
+    glUniformMatrix4fv(texmatrix_uniform_location_, 1, false, gl_matrix_);
+  }
 }
 
 }  // namespace content

@@ -21,7 +21,7 @@ namespace content {
 // TODO(liberato): This is an entirely made-up number.  It depends on how
 // many decoded buffers that the MediaCodec is willing to have outstanding
 // at any one time.  Only one is guaranteed.  crbug.com/531606.
-enum { kNumPictureBuffers = 4 };
+enum { kNumPictureBuffers = 3 };
 
 AndroidDeferredRenderingBackingStrategy::
     AndroidDeferredRenderingBackingStrategy()
@@ -103,14 +103,16 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
     // Also set the parameters for the level if we're not clearing
     // the image.
     const gfx::Size size = state_provider_->GetSize();
-    texture_manager->SetTarget(texture_ref, GetTextureTarget());
     texture_manager->SetLevelInfo(texture_ref, GetTextureTarget(), 0, GL_RGBA,
                                   size.width(), size.height(), 1, 0, GL_RGBA,
-                                  GL_UNSIGNED_BYTE, gfx::Rect(size));
-  }
+                                  GL_UNSIGNED_BYTE, gfx::Rect());
 
-  texture_manager->SetLevelImage(texture_ref, GetTextureTarget(), 0,
-                                 image.get(), gpu::gles2::Texture::UNBOUND);
+    texture_manager->SetLevelImage(texture_ref, GetTextureTarget(), 0,
+                                   image.get(), gpu::gles2::Texture::UNBOUND);
+
+    static_cast<AVDACodecImage*>(image.get())
+        ->setTexture(texture_ref->texture());
+  }
 }
 
 void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
@@ -147,7 +149,7 @@ void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBufferForPicture(
   // See if there is a media codec buffer still attached to this image.
   const int32 codec_buffer = avImage->GetMediaCodecBufferIndex();
 
-  if (codec_buffer > 0) {
+  if (codec_buffer >= 0) {
     // PictureBuffer wasn't displayed, so release the buffer.
     media_codec_->ReleaseOutputBuffer(codec_buffer, false);
     avImage->SetMediaCodecBufferIndex(-1);
@@ -169,8 +171,8 @@ void AndroidDeferredRenderingBackingStrategy::DismissOnePictureBuffer(
   // release it.
   ReleaseCodecBufferForPicture(picture_buffer);
 
-  // Paranoia.  The texture should be dropped anyway, causing the picture to
-  // be deleted anyway.
+  // Paranoia.  The texture will be dropped anyway, causing the picture to be
+  // deleted then.
   SetImageForPicture(picture_buffer, 0);
 
   // TODO(liberato): If we really want to re-use a picture buffer's texture as

@@ -55,6 +55,8 @@ class AVDACodecImage : public gl::GLImage {
 
   void SetMediaCodec(media::MediaCodecBridge* codec);
 
+  void setTexture(gpu::gles2::Texture* texture);
+
  private:
   // Make sure that the surface texture's front buffer is current.
   // Returns true if the ST's texture was bound to the active unit.
@@ -63,6 +65,9 @@ class AVDACodecImage : public gl::GLImage {
   // Attach the surface texture to our GL context, with a texture that we
   // create for it.
   void AttachSurfaceTextureToContext();
+
+  // Install the current texture matrix into the shader.
+  void InstallTextureMatrix();
 
   // Shared state between the AVDA and all AVDACodecImages.
   scoped_refptr<AVDASharedState> shared_state_;
@@ -84,6 +89,18 @@ class AVDACodecImage : public gl::GLImage {
   // Should we detach |surface_texture_| from its GL context when we are
   // deleted?  This happens when it's using our Texture's texture handle.
   bool detach_surface_texture_on_destruction_;
+
+  // The texture that we're attached to.
+  gpu::gles2::Texture* texture_;
+
+  // Have we cached |texmatrix_uniform_location_| yet?
+  bool need_shader_info_;
+
+  // Uniform ID of the texture matrix in the shader.
+  GLint texmatrix_uniform_location_;
+
+  // Texture matrix of the front buffer of the surface texture.
+  float gl_matrix_[16];
 
   DISALLOW_COPY_AND_ASSIGN(AVDACodecImage);
 };
