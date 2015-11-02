@@ -3458,14 +3458,13 @@ WebContentDetectionResult RenderViewImpl::detectContentAround(
   return WebContentDetectionResult();
 }
 
-void RenderViewImpl::scheduleContentIntent(const WebURL& intent) {
+void RenderViewImpl::scheduleContentIntent(const WebURL& intent,
+                                           bool is_main_frame) {
   // Introduce a short delay so that the user can notice the content.
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&RenderViewImpl::LaunchAndroidContentIntent,
-                 AsWeakPtr(),
-                 intent,
-                 expected_content_intent_id_),
+      base::Bind(&RenderViewImpl::LaunchAndroidContentIntent, AsWeakPtr(),
+                 intent, expected_content_intent_id_, is_main_frame),
       base::TimeDelta::FromMilliseconds(kContentIntentDelayMilliseconds));
 }
 
@@ -3474,15 +3473,18 @@ void RenderViewImpl::cancelScheduledContentIntents() {
 }
 
 void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
-                                                size_t request_id) {
+                                                size_t request_id,
+                                                bool is_main_frame) {
   if (request_id != expected_content_intent_id_)
     return;
 
   // Remove the content highlighting if any.
   ScheduleComposite();
 
-  if (!intent.is_empty())
-    Send(new ViewHostMsg_StartContentIntent(routing_id_, intent));
+  if (!intent.is_empty()) {
+    Send(
+        new ViewHostMsg_StartContentIntent(routing_id_, intent, is_main_frame));
+  }
 }
 
 bool RenderViewImpl::openDateTimeChooser(

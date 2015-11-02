@@ -261,12 +261,9 @@ public class AwContentsClientBridge {
 
     @CalledByNative
     private boolean shouldOverrideUrlLoading(
-            String url, boolean hasUserGesture, boolean isRedirect) {
-        if (mClient.hasWebViewClient()) {
-            return mClient.shouldOverrideUrlLoading(url);
-        } else {
-            return AwContentsClient.sendBrowsingIntent(mContext, url, hasUserGesture, isRedirect);
-        }
+            String url, boolean hasUserGesture, boolean isRedirect, boolean isMainFrame) {
+        return mClient.shouldIgnoreNavigation(
+                mContext, url, isMainFrame, hasUserGesture, isRedirect);
     }
 
     void confirmJsResult(int id, String prompt) {

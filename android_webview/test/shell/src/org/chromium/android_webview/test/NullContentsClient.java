@@ -50,7 +50,7 @@ public class NullContentsClient extends AwContentsClient {
     }
 
     @Override
-    public boolean shouldOverrideUrlLoading(String url) {
+    public boolean shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest request) {
         return false;
     }
 

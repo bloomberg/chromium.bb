@@ -110,11 +110,12 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_OnContentsSizeChanged,
 // navigations. See AwContentRendererClient::HandleNavigation for all
 // cornercases. This is sent before updating the NavigationController state
 // or creating a URLRequest for the main frame resource.
-IPC_SYNC_MESSAGE_CONTROL4_1(AwViewHostMsg_ShouldOverrideUrlLoading,
+IPC_SYNC_MESSAGE_CONTROL5_1(AwViewHostMsg_ShouldOverrideUrlLoading,
                             int /* render_frame_id id */,
                             base::string16 /* in - url */,
                             bool /* in - has_user_gesture */,
                             bool /* in - is_redirect */,
+                            bool /* in - is_main_frame */,
                             bool /* out - result */)
 
 // Sent when a subframe is created.

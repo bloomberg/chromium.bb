@@ -638,7 +638,8 @@ void ContentViewCoreImpl::GetScaledContentBitmap(
                                result_callback);
 }
 
-void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
+void ContentViewCoreImpl::StartContentIntent(const GURL& content_url,
+                                             bool is_main_frame) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
@@ -647,7 +648,8 @@ void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
       ConvertUTF8ToJavaString(env, content_url.spec());
   Java_ContentViewCore_startContentIntent(env,
                                           j_obj.obj(),
-                                          jcontent_url.obj());
+                                          jcontent_url.obj(),
+                                          is_main_frame);
 }
 
 void ContentViewCoreImpl::ShowDisambiguationPopup(

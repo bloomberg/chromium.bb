@@ -271,6 +271,12 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         public Map<String, String> getRequestHeaders() {
             return mRequest.requestHeaders;
         }
+
+        // TODO(mnaganov): Uncomment when we completely switch builds to the next API level.
+        //@Override
+        public boolean isRedirect() {
+            return mRequest.isRedirect;
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -319,14 +325,15 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     /**
-     * @see AwContentsClient#shouldOverrideUrlLoading(java.lang.String)
+     * @see AwContentsClient#shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest)
      */
     @Override
-    public boolean shouldOverrideUrlLoading(String url) {
+    public boolean shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest request) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.shouldOverrideUrlLoading");
-            if (TRACE) Log.d(TAG, "shouldOverrideUrlLoading=" + url);
-            boolean result = mWebViewClient.shouldOverrideUrlLoading(mWebView, url);
+            if (TRACE) Log.d(TAG, "shouldOverrideUrlLoading=" + request.url);
+            boolean result;
+            result = mWebViewClient.shouldOverrideUrlLoading(mWebView, request.url);
             return result;
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.shouldOverrideUrlLoading");

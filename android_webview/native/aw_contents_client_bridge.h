@@ -56,7 +56,8 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
       override;
   bool ShouldOverrideUrlLoading(const base::string16& url,
                                 bool has_user_gesture,
-                                bool is_redirect) override;
+                                bool is_redirect,
+                                bool is_main_frame) override;
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env, jobject obj, jboolean proceed, jint id);

@@ -213,7 +213,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
-  void OnStartContentIntent(const GURL& content_url);
+  void OnStartContentIntent(const GURL& content_url, bool is_main_frame);
   void OnSetNeedsBeginFrames(bool enabled);
   void OnSmartClipDataExtracted(const base::string16& text,
                                 const base::string16& html,

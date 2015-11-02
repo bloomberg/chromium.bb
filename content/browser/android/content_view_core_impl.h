@@ -265,7 +265,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                         const gfx::PointF& selection_anchor,
                         const gfx::RectF& selection_rect);
 
-  void StartContentIntent(const GURL& content_url);
+  void StartContentIntent(const GURL& content_url, bool is_main_frame);
 
   // Shows the disambiguation popup
   // |rect_pixels|   --> window coordinates which |zoomed_bitmap| represents

@@ -208,6 +208,20 @@ public class DOMUtils {
     }
 
     /**
+     * Click a DOM node returned by JS code, scrolling it into view first.
+     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param jsCode The JS code to find the node.
+     */
+    public static void clickNodeByJs(ActivityInstrumentationTestCase2 activityTestCase,
+            final ContentViewCore viewCore, String jsCode)
+            throws InterruptedException, TimeoutException {
+        scrollNodeIntoViewByJs(viewCore.getWebContents(), jsCode);
+        int[] clickTarget = getClickTargetForNodeByJs(viewCore, jsCode);
+        TouchCommon.singleClickView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+    }
+
+    /**
      * Long-press a DOM node by its id, scrolling it into view first.
      * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
@@ -241,8 +255,18 @@ public class DOMUtils {
      */
     public static void scrollNodeIntoView(WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
+        scrollNodeIntoViewByJs(webContents, "document.getElementById('" + nodeId + "')");
+    }
+
+    /**
+     * Scrolls the view to ensure that the required DOM node is visible.
+     * @param webContents The WebContents in which the node lives.
+     * @param jsCode The JS code to find the node.
+     */
+    public static void scrollNodeIntoViewByJs(WebContents webContents, String jsCode)
+            throws InterruptedException, TimeoutException {
         JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
-                "document.getElementById('" + nodeId + "').scrollIntoView()");
+                jsCode + ".scrollIntoView()");
     }
 
     /**

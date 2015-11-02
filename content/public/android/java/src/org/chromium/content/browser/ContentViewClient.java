@@ -135,7 +135,7 @@ public class ContentViewClient {
     /**
      * Called when a new content intent is requested to be started.
      */
-    public void onStartContentIntent(Context context, String intentUrl) {
+    public void onStartContentIntent(Context context, String intentUrl, boolean isMainFrame) {
         Intent intent;
         // Perform generic parsing of the URI to turn it into an Intent.
         try {

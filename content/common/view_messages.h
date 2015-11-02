@@ -1367,8 +1367,9 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_FindMatchRects_Reply,
                     gfx::RectF /* active_rect */)
 
 // Start an android intent with the given URI.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
-                    GURL /* content_url */)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_StartContentIntent,
+                    GURL /* content_url */,
+                    bool /* is_main_frame */)
 
 // This message runs the MediaCodec for decoding audio for webaudio.
 IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,

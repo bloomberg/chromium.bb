@@ -1414,9 +1414,10 @@ public:
         return m_contentDetectionResult;
     }
 
-    void scheduleContentIntent(const WebURL& url) override
+    void scheduleContentIntent(const WebURL& url, bool isMainFrame) override
     {
         m_scheduledIntentURL = url;
+        m_wasInMainFrame = isMainFrame;
     }
 
     void cancelScheduledContentIntents() override
@@ -1429,25 +1430,26 @@ public:
         m_contentDetectionRequested = false;
         m_pendingIntentsCancelled = false;
         m_scheduledIntentURL = WebURL();
+        m_wasInMainFrame = false;
         m_contentDetectionResult = WebContentDetectionResult();
     }
 
     bool contentDetectionRequested() const { return m_contentDetectionRequested; }
     bool pendingIntentsCancelled() const { return m_pendingIntentsCancelled; }
     const WebURL& scheduledIntentURL() const { return m_scheduledIntentURL; }
+    bool wasInMainFrame() const { return m_wasInMainFrame; }
     void setContentDetectionResult(const WebContentDetectionResult& result) { m_contentDetectionResult = result; }
 
 private:
     bool m_contentDetectionRequested;
     bool m_pendingIntentsCancelled;
     WebURL m_scheduledIntentURL;
+    bool m_wasInMainFrame;
     WebContentDetectionResult m_contentDetectionResult;
 };
 
-static bool tapElementById(WebView* webView, WebInputEvent::Type type, const WebString& id)
+static bool tapElement(WebView* webView, WebInputEvent::Type type, const PassRefPtrWillBeRawPtr<Element>& element)
 {
-    ASSERT(webView);
-    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webView->mainFrame()->document().getElementById(id));
     if (!element)
         return false;
 
@@ -1462,9 +1464,17 @@ static bool tapElementById(WebView* webView, WebInputEvent::Type type, const Web
     event.x = center.x();
     event.y = center.y();
 
+    ASSERT(webView);
     webView->handleInputEvent(event);
     runPendingTasks();
     return true;
+}
+
+static bool tapElementById(WebView* webView, WebInputEvent::Type type, const WebString& id)
+{
+    ASSERT(webView);
+    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webView->mainFrame()->document().getElementById(id));
+    return tapElement(webView, type, element);
 }
 
 TEST_F(WebViewTest, DetectContentAroundPosition)
@@ -1507,6 +1517,7 @@ TEST_F(WebViewTest, DetectContentAroundPosition)
     client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, noListener));
     EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
+    EXPECT_TRUE(client.wasInMainFrame());
 
     // Tapping elsewhere should cancel the scheduled intent.
     WebGestureEvent event;
@@ -1515,6 +1526,29 @@ TEST_F(WebViewTest, DetectContentAroundPosition)
     webView->handleInputEvent(event);
     runPendingTasks();
     EXPECT_TRUE(client.pendingIntentsCancelled());
+
+    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
+}
+
+TEST_F(WebViewTest, ContentDetectionInIframe)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("content_listeners_iframe.html"));
+
+    ContentDetectorClient client;
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "content_listeners_iframe.html", true, 0, &client);
+    webView->resize(WebSize(500, 300));
+    webView->layout();
+    runPendingTasks();
+
+    WebString noListener = WebString::fromUTF8("noListener");
+    WebString frameName = WebString::fromUTF8("innerFrame");
+
+    WebURL intentURL = toKURL(m_baseURL);
+    client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
+    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webView->findFrameByName(frameName)->document().getElementById(noListener));
+    EXPECT_TRUE(tapElement(webView, WebInputEvent::GestureTap, element));
+    EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
+    EXPECT_FALSE(client.wasInMainFrame());
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }

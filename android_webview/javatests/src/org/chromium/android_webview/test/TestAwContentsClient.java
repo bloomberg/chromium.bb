@@ -431,13 +431,12 @@ public class TestAwContentsClient extends NullContentsClient {
      */
     public static class ShouldOverrideUrlLoadingHelper extends CallbackHelper {
         private String mShouldOverrideUrlLoadingUrl;
-        private String mPreviousShouldOverrideUrlLoadingUrl;
         private boolean mShouldOverrideUrlLoadingReturnValue = false;
+        private boolean mIsRedirect;
+        private boolean mHasUserGesture;
+        private boolean mIsMainFrame;
         void setShouldOverrideUrlLoadingUrl(String url) {
             mShouldOverrideUrlLoadingUrl = url;
-        }
-        void setPreviousShouldOverrideUrlLoadingUrl(String url) {
-            mPreviousShouldOverrideUrlLoadingUrl = url;
         }
         void setShouldOverrideUrlLoadingReturnValue(boolean value) {
             mShouldOverrideUrlLoadingReturnValue = value;
@@ -446,26 +445,35 @@ public class TestAwContentsClient extends NullContentsClient {
             assert getCallCount() > 0;
             return mShouldOverrideUrlLoadingUrl;
         }
-        public String getPreviousShouldOverrideUrlLoadingUrl() {
-            assert getCallCount() > 1;
-            return mPreviousShouldOverrideUrlLoadingUrl;
-        }
         public boolean getShouldOverrideUrlLoadingReturnValue() {
             return mShouldOverrideUrlLoadingReturnValue;
         }
-        public void notifyCalled(String url) {
-            mPreviousShouldOverrideUrlLoadingUrl = mShouldOverrideUrlLoadingUrl;
+        public boolean isRedirect() {
+            return mIsRedirect;
+        }
+        public boolean hasUserGesture() {
+            return mHasUserGesture;
+        }
+        public boolean isMainFrame() {
+            return mIsMainFrame;
+        }
+        public void notifyCalled(
+                String url, boolean isRedirect, boolean hasUserGesture, boolean isMainFrame) {
             mShouldOverrideUrlLoadingUrl = url;
+            mIsRedirect = isRedirect;
+            mHasUserGesture = hasUserGesture;
+            mIsMainFrame = isMainFrame;
             notifyCalled();
         }
     }
 
     @Override
-    public boolean shouldOverrideUrlLoading(String url) {
-        super.shouldOverrideUrlLoading(url);
+    public boolean shouldOverrideUrlLoading(AwWebResourceRequest request) {
+        super.shouldOverrideUrlLoading(request);
         boolean returnValue =
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
-        mShouldOverrideUrlLoadingHelper.notifyCalled(url);
+        mShouldOverrideUrlLoadingHelper.notifyCalled(
+                request.url, request.isRedirect, request.hasUserGesture, request.isMainFrame);
         return returnValue;
     }
 

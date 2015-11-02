@@ -260,7 +260,9 @@ public:
     virtual WebContentDetectionResult detectContentAround(const WebHitTestResult&) { return WebContentDetectionResult(); }
 
     // Schedules a new content intent with the provided url.
-    virtual void scheduleContentIntent(const WebURL&) { }
+    // The boolean flag is set to true when the user gesture has been applied
+    // to the element from the main frame.
+    virtual void scheduleContentIntent(const WebURL&, bool isMainFrame) { }
 
     // Cancels any previously scheduled content intents that have not yet launched.
     virtual void cancelScheduledContentIntents() { }

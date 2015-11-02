@@ -35,7 +35,7 @@ public class TestContentViewClient extends ContentViewClient {
      */
 
     @Override
-    public void onStartContentIntent(Context context, String contentUrl) {
+    public void onStartContentIntent(Context context, String contentUrl, boolean isMainFrame) {
         mOnStartContentIntentHelper.notifyCalled(contentUrl);
     }
 }

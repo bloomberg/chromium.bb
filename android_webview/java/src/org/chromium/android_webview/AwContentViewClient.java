@@ -39,16 +39,10 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     }
 
     @Override
-    public void onStartContentIntent(Context context, String contentUrl) {
-        if (mAwContentsClient.hasWebViewClient()) {
-            //  Callback when detecting a click on a content link.
-            mAwContentsClient.shouldOverrideUrlLoading(contentUrl);
-            return;
-        }
-
+    public void onStartContentIntent(Context context, String contentUrl, boolean isMainFrame) {
         // Comes from WebViewImpl::detectContentOnTouch in Blink, so must be user-initiated, and
         // isn't a redirect.
-        AwContentsClient.sendBrowsingIntent(context, contentUrl, true, false);
+        mAwContentsClient.shouldIgnoreNavigation(context, contentUrl, isMainFrame, true, false);
     }
 
     @Override

@@ -99,6 +99,8 @@ public abstract class AwContentsClient {
         public boolean isMainFrame;
         // Was a gesture associated with the request? Don't trust can easily be spoofed.
         public boolean hasUserGesture;
+        // Was it a result of a server-side redirect?
+        public boolean isRedirect;
         // Method used (GET/POST/OPTIONS)
         public String method;
         // Headers that would have been sent to server.
@@ -129,7 +131,7 @@ public abstract class AwContentsClient {
 
     public abstract boolean shouldOverrideKeyEvent(KeyEvent event);
 
-    public abstract boolean shouldOverrideUrlLoading(String url);
+    public abstract boolean shouldOverrideUrlLoading(AwWebResourceRequest request);
 
     public abstract void onLoadResource(String url);
 
@@ -154,7 +156,22 @@ public abstract class AwContentsClient {
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,
             String mimeType, long contentLength);
 
-    public static boolean sendBrowsingIntent(Context context, String url, boolean hasUserGesture,
+    public final boolean shouldIgnoreNavigation(Context context, String url, boolean isMainFrame,
+            boolean hasUserGesture, boolean isRedirect) {
+        if (hasWebViewClient()) {
+            AwWebResourceRequest request = new AwWebResourceRequest();
+            request.url = url;
+            request.isMainFrame = isMainFrame;
+            request.hasUserGesture = hasUserGesture;
+            request.isRedirect = isRedirect;
+            request.method = "GET";  // Only GET requests can be overridden.
+            return shouldOverrideUrlLoading(request);
+        } else {
+            return sendBrowsingIntent(context, url, hasUserGesture, isRedirect);
+        }
+    }
+
+    private static boolean sendBrowsingIntent(Context context, String url, boolean hasUserGesture,
             boolean isRedirect) {
         if (!hasUserGesture && !isRedirect) {
             Log.w(TAG, "Denied starting an intent without a user gesture, URI " + url);
@@ -367,7 +384,7 @@ public abstract class AwContentsClient {
      */
     public abstract void onNewPicture(Picture picture);
 
-    public void updateTitle(String title, boolean forceNotification) {
+    public final void updateTitle(String title, boolean forceNotification) {
         if (!forceNotification && TextUtils.equals(mTitle, title)) return;
         mTitle = title;
         mCallbackHelper.postOnReceivedTitle(mTitle);

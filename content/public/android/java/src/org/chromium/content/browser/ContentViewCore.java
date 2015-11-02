@@ -2927,8 +2927,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     @CalledByNative
-    private void startContentIntent(String contentUrl) {
-        getContentViewClient().onStartContentIntent(getContext(), contentUrl);
+    private void startContentIntent(String contentUrl, boolean isMainFrame) {
+        getContentViewClient().onStartContentIntent(getContext(), contentUrl, isMainFrame);
     }
 
     @Override

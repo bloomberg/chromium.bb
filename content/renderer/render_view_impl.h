@@ -406,7 +406,8 @@ class CONTENT_EXPORT RenderViewImpl
   void pageImportanceSignalsChanged() override;
 
 #if defined(OS_ANDROID)
-  void scheduleContentIntent(const blink::WebURL& intent) override;
+  void scheduleContentIntent(const blink::WebURL& intent,
+                             bool is_main_frame) override;
   void cancelScheduledContentIntents() override;
   blink::WebContentDetectionResult detectContentAround(
       const blink::WebHitTestResult& touch_hit) override;
@@ -700,7 +701,9 @@ class CONTENT_EXPORT RenderViewImpl
 
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.
-  void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
+  void LaunchAndroidContentIntent(const GURL& intent_url,
+                                  size_t request_id,
+                                  bool is_main_frame);
 #endif
 
   // Sends a reply to the current find operation handling if it was a

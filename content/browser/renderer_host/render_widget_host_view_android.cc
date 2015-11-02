@@ -690,9 +690,9 @@ void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrames(bool enabled) {
 }
 
 void RenderWidgetHostViewAndroid::OnStartContentIntent(
-    const GURL& content_url) {
+    const GURL& content_url, bool is_main_frame) {
   if (content_view_core_)
-    content_view_core_->StartContentIntent(content_url);
+    content_view_core_->StartContentIntent(content_url, is_main_frame);
 }
 
 void RenderWidgetHostViewAndroid::OnSmartClipDataExtracted(

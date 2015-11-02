@@ -508,14 +508,11 @@ public class AwContents implements SmartClipProvider,
                 // If this is used for all navigations in future, cases for application initiated
                 // load, redirect and backforward should also be filtered out.
                 if (!navigationParams.isPost) {
-                    if (!mContentsClient.hasWebViewClient()) {
-                        ignoreNavigation = AwContentsClient.sendBrowsingIntent(mContext, url,
-                                navigationParams.hasUserGesture
-                                        || navigationParams.hasUserGestureCarryover,
-                                navigationParams.isRedirect);
-                    } else {
-                        ignoreNavigation = mContentsClient.shouldOverrideUrlLoading(url);
-                    }
+                    ignoreNavigation = mContentsClient.shouldIgnoreNavigation(
+                            mContext, url, navigationParams.isMainFrame,
+                            navigationParams.hasUserGesture
+                            || navigationParams.hasUserGestureCarryover,
+                            navigationParams.isRedirect);
                 }
             }
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
