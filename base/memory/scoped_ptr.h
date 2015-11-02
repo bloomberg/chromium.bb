@@ -216,11 +216,17 @@ class scoped_ptr_impl {
   }
 
   ~scoped_ptr_impl() {
-    if (data_.ptr != nullptr) {
-      // Not using get_deleter() saves one function call in non-optimized
-      // builds.
-      static_cast<D&>(data_)(data_.ptr);
-    }
+    // Match libc++, which calls reset() in its destructor.
+    // Use nullptr as the new value for three reasons:
+    // 1. libc++ does it.
+    // 2. Avoids infinitely recursing into destructors if two classes are owned
+    //    in a reference cycle (see ScopedPtrTest.ReferenceCycle).
+    // 3. If |this| is accessed in the future, in a use-after-free bug, attempts
+    //    to dereference |this|'s pointer should cause either a failure or a
+    //    segfault closer to the problem. If |this| wasn't reset to nullptr,
+    //    the access would cause the deleted memory to be read or written
+    //    leading to other more subtle issues.
+    reset(nullptr);
   }
 
   void reset(T* p) {
