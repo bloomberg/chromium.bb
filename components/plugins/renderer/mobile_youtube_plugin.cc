@@ -51,7 +51,7 @@ bool IsValidYouTubeVideo(const std::string& path) {
 
   // Youtube flash url can start with /v/ or /e/.
   if (!base::StartsWith(path, kSlashVSlash,
-                        base::CompareCase::INSENSITIVE_ASCII) ||
+                        base::CompareCase::INSENSITIVE_ASCII) &&
       !base::StartsWith(path, kSlashESlash,
                         base::CompareCase::INSENSITIVE_ASCII))
     return false;
