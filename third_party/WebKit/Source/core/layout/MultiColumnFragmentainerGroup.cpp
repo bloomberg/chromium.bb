@@ -55,14 +55,15 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
     m_maxColumnHeight = calculateMaxColumnHeight();
 
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
-    LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread();
-    if (enclosingFlowThread && enclosingFlowThread->isPageLogicalHeightKnown()) {
-        // TODO(mstensho): Do this better. If height is auto here, we shouldn't set a
-        // height, or forced breaks and pagination struts might mess up column balancing.
-        LayoutUnit columnHeight = heightIsAuto() ? m_maxColumnHeight : heightAdjustedForRowOffset(flowThread->columnHeightAvailable());
-        setAndConstrainColumnHeight(columnHeight);
-    } else if (heightIsAuto()) {
-        m_columnHeight = LayoutUnit();
+    if (heightIsAuto()) {
+        LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread();
+        if (enclosingFlowThread && enclosingFlowThread->isPageLogicalHeightKnown()) {
+            // Even if height is auto, we set an initial height, in order to tell how much content
+            // this MultiColumnFragmentainerGroup can hold, and when we need to append a new one.
+            m_columnHeight = m_maxColumnHeight;
+        } else {
+            m_columnHeight = LayoutUnit();
+        }
     } else {
         setAndConstrainColumnHeight(heightAdjustedForRowOffset(flowThread->columnHeightAvailable()));
     }

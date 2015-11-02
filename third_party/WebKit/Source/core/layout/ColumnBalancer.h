@@ -76,6 +76,14 @@ private:
     void examineBoxBeforeLeaving(const LayoutBox&);
     void examineLine(const RootInlineBox&);
 
+    // Record that there's a pagination strut that ends at the specified |offsetInFlowThread|, which
+    // is an offset exactly at the top of some column.
+    void recordStrutBeforeOffset(LayoutUnit offsetInFlowThread, LayoutUnit strut);
+
+    // Return the accumulated space used by struts at all column boundaries preceding the specified
+    // flowthread offset.
+    LayoutUnit spaceUsedByStrutsAt(LayoutUnit offsetInFlowThread) const;
+
     // Add a content run, specified by its end position. A content run is appended at every
     // forced/explicit break and at the end of the column set. The content runs are used to
     // determine where implicit/soft breaks will occur, in order to calculate an initial column
@@ -117,6 +125,19 @@ private:
         unsigned m_assumedImplicitBreaks; // Number of implicit breaks in this run assumed so far.
     };
     Vector<ContentRun, 32> m_contentRuns;
+
+    // Shortest strut found at each column boundary (index 0 being the boundary between the first
+    // and the second column, index 1 being the one between the second and the third boundary, and
+    // so on). There may be several objects that cross the same column boundary, and we're only
+    // interested in the shortest one. For example, when having a float beside regular in-flow
+    // content, we end up with two parallel fragmentation flows [1]. The shortest strut found at a
+    // column boundary is the amount of space that we wasted at said column boundary, and it needs
+    // to be deducted when estimating the initial balanced column height, or we risk making the
+    // column row too tall. An entry set to LayoutUnit::max() means that we didn't detect any object
+    // crossing that boundary.
+    //
+    // [1] http://www.w3.org/TR/css3-break/#parallel-flows
+    Vector<LayoutUnit, 32> m_shortestStruts;
 };
 
 // If we have previously used InitialColumnHeightFinder to estimate an initial column height, and

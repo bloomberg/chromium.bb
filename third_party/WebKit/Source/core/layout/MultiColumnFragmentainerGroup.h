@@ -72,6 +72,12 @@ public:
     void collectLayerFragments(PaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const;
     LayoutRect calculateOverflow() const;
 
+    enum ColumnIndexCalculationMode {
+        ClampToExistingColumns, // Stay within the range of already existing columns.
+        AssumeNewColumns // Allow column indices outside the range of already existing columns.
+    };
+    unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread, ColumnIndexCalculationMode = ClampToExistingColumns) const;
+
     // The "CSS actual" value of column-count. This includes overflowing columns, if any.
     unsigned actualColumnCount() const;
 
@@ -86,12 +92,6 @@ private:
     LayoutUnit logicalTopInFlowThreadAt(unsigned columnIndex) const { return m_logicalTopInFlowThread + columnIndex * m_columnHeight; }
     LayoutRect flowThreadPortionRectAt(unsigned columnIndex) const;
     LayoutRect flowThreadPortionOverflowRectAt(unsigned columnIndex) const;
-
-    enum ColumnIndexCalculationMode {
-        ClampToExistingColumns, // Stay within the range of already existing columns.
-        AssumeNewColumns // Allow column indices outside the range of already existing columns.
-    };
-    unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread, ColumnIndexCalculationMode = ClampToExistingColumns) const;
 
     // Return the column that the specified visual point belongs to. Only the coordinate on the
     // column progression axis is relevant. Every point belongs to a column, even if said point is

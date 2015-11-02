@@ -78,6 +78,9 @@ void ColumnBalancer::traverseSubtree(const LayoutBox& box)
 InitialColumnHeightFinder::InitialColumnHeightFinder(const MultiColumnFragmentainerGroup& group)
     : ColumnBalancer(group)
 {
+    m_shortestStruts.resize(group.columnSet().usedColumnCount());
+    for (auto& strut : m_shortestStruts)
+        strut = LayoutUnit::max();
     traverse();
     // We have now found each explicit / forced break, and their location. Now we need to figure out
     // how many additional implicit / soft breaks we need and guess where they will occur, in order
@@ -95,8 +98,13 @@ LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const
 void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
 {
     ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
-    if (box.hasForcedBreakBefore())
+    if (box.hasForcedBreakBefore()) {
         addContentRun(flowThreadOffset());
+    } else if (isFirstAfterBreak(flowThreadOffset())) {
+        // This box is first after a soft break.
+        recordStrutBeforeOffset(flowThreadOffset(), box.paginationStrut());
+    }
+
     if (box.hasForcedBreakAfter())
         addContentRun(flowThreadOffset() + box.logicalHeight());
 }
@@ -107,10 +115,41 @@ void InitialColumnHeightFinder::examineBoxBeforeLeaving(const LayoutBox& box)
 
 void InitialColumnHeightFinder::examineLine(const RootInlineBox& line)
 {
+    LayoutUnit lineTop = line.lineTopWithLeading();
+    LayoutUnit lineTopInFlowThread = flowThreadOffset() + lineTop;
+    ASSERT(isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut());
+    if (isFirstAfterBreak(lineTopInFlowThread))
+        recordStrutBeforeOffset(lineTopInFlowThread, line.paginationStrut());
+}
+
+void InitialColumnHeightFinder::recordStrutBeforeOffset(LayoutUnit offsetInFlowThread, LayoutUnit strut)
+{
+    const LayoutMultiColumnSet& columnSet = group().columnSet();
+    ASSERT(columnSet.usedColumnCount() >= 1);
+    unsigned columnCount = columnSet.usedColumnCount();
+    ASSERT(m_shortestStruts.size() == columnCount);
+    unsigned index = group().columnIndexAtOffset(offsetInFlowThread - strut, MultiColumnFragmentainerGroup::AssumeNewColumns);
+    if (index >= columnCount)
+        return;
+    m_shortestStruts[index] = std::min(m_shortestStruts[index], strut);
+}
+
+LayoutUnit InitialColumnHeightFinder::spaceUsedByStrutsAt(LayoutUnit offsetInFlowThread) const
+{
+    unsigned stopBeforeColumn = group().columnIndexAtOffset(offsetInFlowThread, MultiColumnFragmentainerGroup::AssumeNewColumns) + 1;
+    stopBeforeColumn = std::min(stopBeforeColumn, group().columnSet().usedColumnCount());
+    ASSERT(stopBeforeColumn <= m_shortestStruts.size());
+    LayoutUnit totalStrutSpace;
+    for (unsigned i = 0; i < stopBeforeColumn; i++) {
+        if (m_shortestStruts[i] != LayoutUnit::max())
+            totalStrutSpace += m_shortestStruts[i];
+    }
+    return totalStrutSpace;
 }
 
 void InitialColumnHeightFinder::addContentRun(LayoutUnit endOffsetInFlowThread)
 {
+    endOffsetInFlowThread -= spaceUsedByStrutsAt(endOffsetInFlowThread);
     if (!m_contentRuns.isEmpty() && endOffsetInFlowThread <= m_contentRuns.last().breakOffset())
         return;
     // Append another item as long as we haven't exceeded used column count. What ends up in the
