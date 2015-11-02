@@ -131,28 +131,23 @@ public:
 
     size_t addCount(const WebPrerender& prerender) const
     {
-        return std::count_if(m_addedPrerenders.begin(), m_addedPrerenders.end(), std::bind1st(WebPrerenderEqual(), prerender));
+        return std::count_if(m_addedPrerenders.begin(), m_addedPrerenders.end(),
+                             [&prerender](const WebPrerender& other) { return other.toPrerender() == prerender.toPrerender(); });
     }
 
     size_t cancelCount(const WebPrerender& prerender) const
     {
-        return std::count_if(m_canceledPrerenders.begin(), m_canceledPrerenders.end(), std::bind1st(WebPrerenderEqual(), prerender));
+        return std::count_if(m_canceledPrerenders.begin(), m_canceledPrerenders.end(),
+                             [&prerender](const WebPrerender& other) { return other.toPrerender() == prerender.toPrerender(); });
     }
 
     size_t abandonCount(const WebPrerender& prerender) const
     {
-        return std::count_if(m_abandonedPrerenders.begin(), m_abandonedPrerenders.end(), std::bind1st(WebPrerenderEqual(), prerender));
+        return std::count_if(m_abandonedPrerenders.begin(), m_abandonedPrerenders.end(),
+                             [&prerender](const WebPrerender& other) { return other.toPrerender() == prerender.toPrerender(); });
     }
 
 private:
-    class WebPrerenderEqual : public std::binary_function<WebPrerender, WebPrerender, bool> {
-    public:
-        bool operator()(const WebPrerender& first, const WebPrerender& second) const
-        {
-            return first.toPrerender() == second.toPrerender();
-        }
-    };
-
     // From WebPrerenderingSupport:
     void add(const WebPrerender& prerender) override
     {

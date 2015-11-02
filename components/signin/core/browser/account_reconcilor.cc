@@ -23,16 +23,17 @@
 
 namespace {
 
-class AccountEqualToFunc : public std::equal_to<gaia::ListedAccount> {
+class AccountEqualToFunc {
  public:
-  bool operator()(const gaia::ListedAccount& p1,
-                  const gaia::ListedAccount& p2) const;
+  AccountEqualToFunc(const gaia::ListedAccount& account) : account_(account) {}
+  bool operator()(const gaia::ListedAccount& other) const;
+
+ private:
+  gaia::ListedAccount account_;
 };
 
-bool AccountEqualToFunc::operator()(
-    const gaia::ListedAccount& p1,
-    const gaia::ListedAccount& p2) const {
-  return p1.valid == p2.valid && p1.id == p2.id;
+bool AccountEqualToFunc::operator()(const gaia::ListedAccount& other) const {
+  return account_.valid == other.valid && account_.id == other.id;
 }
 
 gaia::ListedAccount AccountForId(const std::string& account_id) {
@@ -405,20 +406,17 @@ void AccountReconcilor::FinishReconcile() {
   int added_to_cookie = 0;
   for (size_t i = 0; i < add_to_cookie_copy.size(); ++i) {
     if (gaia_accounts_.end() !=
-            std::find_if(gaia_accounts_.begin(),
-                         gaia_accounts_.end(),
-                         std::bind1st(AccountEqualToFunc(),
-                                      AccountForId(add_to_cookie_copy[i])))) {
+        std::find_if(gaia_accounts_.begin(), gaia_accounts_.end(),
+                     AccountEqualToFunc(AccountForId(add_to_cookie_copy[i])))) {
       cookie_manager_service_->SignalComplete(
           add_to_cookie_copy[i],
           GoogleServiceAuthError::AuthErrorNone());
     } else {
       PerformMergeAction(add_to_cookie_copy[i]);
       if (original_gaia_accounts.end() ==
-              std::find_if(original_gaia_accounts.begin(),
-                           original_gaia_accounts.end(),
-                           std::bind1st(AccountEqualToFunc(),
-                                        AccountForId(add_to_cookie_copy[i])))) {
+          std::find_if(
+              original_gaia_accounts.begin(), original_gaia_accounts.end(),
+              AccountEqualToFunc(AccountForId(add_to_cookie_copy[i])))) {
         added_to_cookie++;
       }
     }

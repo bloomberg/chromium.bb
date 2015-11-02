@@ -145,8 +145,7 @@ std::vector<std::string> GetSecondaryAccountsForProfile(
   // The vector returned by ProfileOAuth2TokenService::GetAccounts() contains
   // the primary account too, so we need to remove it from the list.
   std::vector<std::string>::iterator primary_index =
-      std::find_if(accounts.begin(), accounts.end(),
-                   std::bind1st(std::equal_to<std::string>(), primary_account));
+      std::find(accounts.begin(), accounts.end(), primary_account);
   DCHECK(primary_index != accounts.end());
   accounts.erase(primary_index);
 

@@ -211,7 +211,7 @@ TEST(RecursiveGaussian, SmoothingImpulse) {
   // Smooth the inverse now.
   std::vector<unsigned char> output2(dest_byte_count);
   std::transform(input.begin(), input.end(), input.begin(),
-                 std::bind1st(std::minus<unsigned char>(), 255U));
+                 [](unsigned char c) { return 255U - c; });
   SingleChannelRecursiveGaussianY(&input[0], src_row_stride,
                                   kChannelIndex, kChannelCount,
                                   recursive_filter, image_size,
@@ -296,7 +296,7 @@ TEST(RecursiveGaussian, FirstDerivative) {
 
   // Try inverted image. Behaviour should be very similar (modulo rounding).
   std::transform(input.begin(), input.end(), input.begin(),
-                 std::bind1st(std::minus<unsigned char>(), 255U));
+                 [](unsigned char c) { return 255U - c; });
   SingleChannelRecursiveGaussianX(&input[0], src_row_stride,
                                   kChannelIndex, kChannelCount,
                                   recursive_filter, image_size,

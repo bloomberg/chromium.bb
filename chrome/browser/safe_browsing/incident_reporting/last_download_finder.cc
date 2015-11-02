@@ -217,11 +217,9 @@ LastDownloadFinder::LastDownloadFinder(
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
 
-  // Begin the seach for all given profiles.
-  std::for_each(
-      profiles.begin(),
-      profiles.end(),
-      std::bind1st(std::mem_fun(&LastDownloadFinder::SearchInProfile), this));
+  // Begin the search for all given profiles.
+  for (auto* profile : profiles)
+    SearchInProfile(profile);
 }
 
 void LastDownloadFinder::SearchInProfile(Profile* profile) {

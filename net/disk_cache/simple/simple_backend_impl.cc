@@ -739,10 +739,8 @@ void SimpleBackendImpl::DoomEntriesComplete(
     scoped_ptr<std::vector<uint64> > entry_hashes,
     const net::CompletionCallback& callback,
     int result) {
-  std::for_each(
-      entry_hashes->begin(), entry_hashes->end(),
-      std::bind1st(std::mem_fun(&SimpleBackendImpl::OnDoomComplete),
-                   this));
+  for (const uint64& entry_hash : *entry_hashes)
+    OnDoomComplete(entry_hash);
   callback.Run(result);
 }
 

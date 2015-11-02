@@ -468,17 +468,15 @@ void PrerenderLinkManager::StartPendingPrerendersForLauncher(
 void PrerenderLinkManager::CancelPendingPrerendersForLauncher(
     PrerenderContents* launcher) {
   // Remove all pending prerenders for this launcher.
-  std::vector<std::list<LinkPrerender>::iterator> to_erase;
   for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
-       i != prerenders_.end(); ++i) {
+       i != prerenders_.end();) {
     if (i->deferred_launcher == launcher) {
       DCHECK(!i->handle);
-      to_erase.push_back(i);
+      i = prerenders_.erase(i);
+    } else {
+      ++i;
     }
   }
-  std::for_each(to_erase.begin(), to_erase.end(),
-                std::bind1st(std::mem_fun(&std::list<LinkPrerender>::erase),
-                             &prerenders_));
 }
 
 void PrerenderLinkManager::Shutdown() {

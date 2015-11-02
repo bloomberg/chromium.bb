@@ -122,9 +122,8 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
   // From SimpleIndexDelegate:
   void DoomEntries(std::vector<uint64>* entry_hashes,
                    const net::CompletionCallback& callback) override {
-    std::for_each(entry_hashes->begin(), entry_hashes->end(),
-                  std::bind1st(std::mem_fun(&SimpleIndex::Remove),
-                               index_.get()));
+    for (const uint64& entry_hash : *entry_hashes)
+      index_->Remove(entry_hash);
     last_doom_entry_hashes_ = *entry_hashes;
     ++doom_entries_calls_;
   }
