@@ -1890,7 +1890,7 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const
     if (textSelection.isValid())
         return textSelection;
 
-    if (!layoutObject() || !layoutObject()->frame())
+    if (!node() || !layoutObject()->frame())
         return AXRange();
 
     VisibleSelection selection = layoutObject()->frame()->selection().selection();
