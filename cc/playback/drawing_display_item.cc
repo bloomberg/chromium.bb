@@ -8,6 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "base/values.h"
 #include "cc/debug/picture_debug_util.h"
 #include "cc/proto/display_item.pb.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -92,11 +93,14 @@ void DrawingDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->BeginDictionary();
   array->SetString("name", "DrawingDisplayItem");
-  array->SetString(
-      "cullRect",
-      base::StringPrintf("[%f,%f,%f,%f]", picture_->cullRect().x(),
-                         picture_->cullRect().y(), picture_->cullRect().width(),
-                         picture_->cullRect().height()));
+
+  array->BeginArray("cullRect");
+  array->AppendInteger(picture_->cullRect().x());
+  array->AppendInteger(picture_->cullRect().y());
+  array->AppendInteger(picture_->cullRect().width());
+  array->AppendInteger(picture_->cullRect().height());
+  array->EndArray();
+
   std::string b64_picture;
   PictureDebugUtil::SerializeAsBase64(picture_.get(), &b64_picture);
   array->SetString("skp64", b64_picture);
