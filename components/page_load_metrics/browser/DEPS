@@ -1,5 +1,6 @@
 include_rules = [
   "+content/public/browser",
   "+components/page_load_metrics/browser",
+  "+components/rappor",
   "+net/base",
 ]

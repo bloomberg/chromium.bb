@@ -27,6 +27,10 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
+namespace rappor {
+class RapporService;
+}
+
 namespace page_load_metrics {
 
 // These constants are for keeping the tests in sync.
@@ -52,6 +56,9 @@ const char kBGProvisionalEvents[] = "PageLoad.Events.Provisional.Background";
 const char kBGCommittedEvents[] = "PageLoad.Events.Committed.Background";
 
 const char kErrorEvents[] = "PageLoad.Events.InternalError";
+
+const char kRapporMetricsNameCoarseTiming[] =
+    "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
 
 // NOTE: Some of these histograms are separated into a separate histogram
 // specified by the ".Background" suffix. For these events, we put them into the
@@ -151,10 +158,16 @@ enum InternalErrorLoadEvent {
   ERR_LAST_ENTRY
 };
 
+// This class tracks a given page load, starting from navigation start /
+// provisional load, until a new navigation commits or the navigation fails. It
+// also records RAPPOR/UMA about the page load.
+// MetricsWebContentsObserver manages a set of provisional PageLoadTrackers, as
+// well as a committed PageLoadTracker.
 class PageLoadTracker {
  public:
   // Caller must guarantee that the observers pointer outlives this class.
   PageLoadTracker(bool in_foreground,
+                  rappor::RapporService* const rappor_service,
                   base::ObserverList<PageLoadMetricsObserver, true>* observers);
   ~PageLoadTracker();
   void Commit(content::NavigationHandle* navigation_handle);
@@ -169,7 +182,12 @@ class PageLoadTracker {
 
  private:
   PageLoadExtraInfo GetPageLoadMetricsInfo();
+  // Only valid to call post-commit.
+  const GURL& GetCommittedURL();
+
+  base::TimeDelta GetBackgroundDelta();
   void RecordTimingHistograms();
+  void RecordRappor();
 
   bool has_commit_;
 
@@ -181,6 +199,12 @@ class PageLoadTracker {
   bool started_in_foreground_;
 
   PageLoadTiming timing_;
+  GURL url_;
+
+  // This RapporService is owned by and shares a lifetime with
+  // g_browser_process's MetricsServicesManager. It can be NULL. The underlying
+  // RapporService will be freed when the when the browser process is killed.
+  rappor::RapporService* const rappor_service_;
 
   // List of observers. This must outlive the class.
   base::ObserverList<PageLoadMetricsObserver, true>* observers_;
@@ -196,9 +220,13 @@ class MetricsWebContentsObserver
       public PageLoadMetricsObservable {
  public:
   // Note that the returned metrics is owned by the web contents.
+  // The caller must guarantee that the RapporService (if non-null) will
+  // outlive the WebContents.
   static MetricsWebContentsObserver* CreateForWebContents(
-      content::WebContents* web_contents);
-  explicit MetricsWebContentsObserver(content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      rappor::RapporService* rappor_service);
+  MetricsWebContentsObserver(content::WebContents* web_contents,
+                             rappor::RapporService* rappor_service);
   ~MetricsWebContentsObserver() override;
 
   void AddObserver(PageLoadMetricsObserver* observer) override;
@@ -233,7 +261,9 @@ class MetricsWebContentsObserver
       provisional_loads_;
   scoped_ptr<PageLoadTracker> committed_load_;
 
+  rappor::RapporService* const rappor_service_;
   base::ObserverList<PageLoadMetricsObserver, true> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };
 

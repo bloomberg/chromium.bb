@@ -14,6 +14,36 @@
 
 namespace rappor {
 
+// This class duplicates the functionality of Sample, with a cohort initialized
+// always to 0. It keeps a shadow object around which copies every flag field
+// and string field set on the Sample.
+class TestSample : public Sample {
+ public:
+  TestSample(RapporType type);
+  ~TestSample() override;
+
+  // Sample:
+  void SetStringField(const std::string& field_name,
+                      const std::string& value) override;
+  void SetFlagsField(const std::string& field_name,
+                     uint64_t flags,
+                     size_t num_flags) override;
+
+  struct Shadow {
+    explicit Shadow(RapporType type);
+    Shadow(const Shadow& other);
+    ~Shadow();
+    RapporType type;
+    std::map<std::string, uint64_t> flag_fields;
+    std::map<std::string, std::string> string_fields;
+  };
+
+  Shadow GetShadow() { return shadow_; }
+
+ private:
+  Shadow shadow_;
+};
+
 // This class provides a simple instance that can be instantiated by tests
 // and examined to check that metrics were recorded.  It assumes the most
 // permissive settings so that any metric can be recorded.
@@ -23,7 +53,10 @@ class TestRapporService : public RapporService {
 
   ~TestRapporService() override;
 
-  // Intercepts the sample being recorded and saves it in a test structure.
+  // RapporService:
+  scoped_ptr<Sample> CreateSample(RapporType type) override;
+  void RecordSampleObj(const std::string& metric_name,
+                       scoped_ptr<Sample> sample) override;
   void RecordSample(const std::string& metric_name,
                     RapporType type,
                     const std::string& sample) override;
@@ -37,6 +70,13 @@ class TestRapporService : public RapporService {
   // Gets the reports proto that would be uploaded.
   // This clears the internal map of metrics.
   void GetReports(RapporReports* reports);
+
+  // Gets the recorded sample for |metric_name|. This returns the shadow object
+  // for the sample, which contains the string fields, flag fields, and type.
+  // Limitation: if the metric was logged more than once, this will return the
+  // latest sample that was logged.
+  TestSample::Shadow* GetRecordedSampleForMetric(
+      const std::string& metric_name);
 
   // Gets the recorded sample/type for a |metric_name|, and returns whether the
   // recorded metric was found. Limitation: if the metric was logged more than
@@ -68,6 +108,11 @@ class TestRapporService : public RapporService {
   };
   typedef std::map<std::string, RapporSample> SamplesMap;
   SamplesMap samples_;
+
+  // Recording a TestSample inserts its shadow into this map, which has all of
+  // its fields copied.
+  typedef std::map<std::string, TestSample::Shadow> ShadowMap;
+  ShadowMap shadows_;
 
   TestingPrefServiceSimple test_prefs_;
 

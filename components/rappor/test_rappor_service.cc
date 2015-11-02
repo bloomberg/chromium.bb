@@ -4,6 +4,7 @@
 
 #include "components/rappor/test_rappor_service.h"
 
+#include "base/logging.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"
@@ -20,6 +21,34 @@ bool MockIsIncognito(bool* is_incognito) {
 
 }  // namespace
 
+TestSample::TestSample(RapporType type)
+    : Sample(0, internal::kRapporParametersForType[type]), shadow_(type) {}
+
+TestSample::~TestSample() {}
+
+void TestSample::SetStringField(const std::string& field_name,
+                                const std::string& value) {
+  shadow_.string_fields[field_name] = value;
+  Sample::SetStringField(field_name, value);
+}
+
+void TestSample::SetFlagsField(const std::string& field_name,
+                               uint64_t flags,
+                               size_t num_flags) {
+  shadow_.flag_fields[field_name] = flags;
+  Sample::SetFlagsField(field_name, flags, num_flags);
+}
+
+TestSample::Shadow::Shadow(RapporType type) : type(type) {}
+
+TestSample::Shadow::Shadow(const TestSample::Shadow& other) {
+  type = other.type;
+  flag_fields = other.flag_fields;
+  string_fields = other.string_fields;
+}
+
+TestSample::Shadow::~Shadow() {}
+
 TestRapporService::TestRapporService()
     : RapporService(&test_prefs_, base::Bind(&MockIsIncognito, &is_incognito_)),
       next_rotation_(base::TimeDelta()),
@@ -33,6 +62,23 @@ TestRapporService::TestRapporService()
 }
 
 TestRapporService::~TestRapporService() {}
+
+scoped_ptr<Sample> TestRapporService::CreateSample(RapporType type) {
+  scoped_ptr<TestSample> test_sample(new TestSample(type));
+  return test_sample.Pass();
+}
+
+// Intercepts the sample being recorded and saves it in a test structure.
+void TestRapporService::RecordSampleObj(const std::string& metric_name,
+                                        scoped_ptr<Sample> sample) {
+  TestSample* test_sample = static_cast<TestSample*>(sample.get());
+  // Erase the previous sample if we logged one.
+  shadows_.erase(metric_name);
+  shadows_.insert(std::pair<std::string, TestSample::Shadow>(
+      metric_name, test_sample->GetShadow()));
+  // Original version is still called.
+  RapporService::RecordSampleObj(metric_name, sample.Pass());
+}
 
 void TestRapporService::RecordSample(const std::string& metric_name,
                                      RapporType type,
@@ -54,6 +100,14 @@ int TestRapporService::GetReportsCount() {
 
 void TestRapporService::GetReports(RapporReports* reports) {
   ExportMetrics(reports);
+}
+
+TestSample::Shadow* TestRapporService::GetRecordedSampleForMetric(
+    const std::string& metric_name) {
+  ShadowMap::iterator it = shadows_.find(metric_name);
+  if (it == shadows_.end())
+    return nullptr;
+  return &it->second;
 }
 
 bool TestRapporService::GetRecordedSampleForMetric(

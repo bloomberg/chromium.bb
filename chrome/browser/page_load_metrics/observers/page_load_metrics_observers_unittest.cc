@@ -44,8 +44,9 @@ class PageLoadMetricsObserverTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
     NavigateAndCommit(GURL("http://www.google.com"));
-    observer_ = make_scoped_ptr(
-        new page_load_metrics::MetricsWebContentsObserver(web_contents()));
+    observer_ =
+        make_scoped_ptr(new page_load_metrics::MetricsWebContentsObserver(
+            web_contents(), nullptr));
     observer_->WasShown();
 
     // Add PageLoadMetricsObservers here.

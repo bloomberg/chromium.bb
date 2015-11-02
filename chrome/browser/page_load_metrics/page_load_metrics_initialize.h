@@ -9,10 +9,15 @@ namespace content {
 class WebContents;
 }
 
+namespace rappor {
+class RapporService;
+}
+
 namespace chrome {
 
 void InitializePageLoadMetricsForWebContents(
-    content::WebContents* web_contents);
+    content::WebContents* web_contents,
+    rappor::RapporService* rappor_service);
 
 }  // namespace chrome
 

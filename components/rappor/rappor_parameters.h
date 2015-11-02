@@ -9,6 +9,18 @@
 
 namespace rappor {
 
+// The type of data stored in a metric.
+enum RapporType {
+  // Generic metrics from UMA opt-in users.
+  UMA_RAPPOR_TYPE = 0,
+  // Generic metrics for SafeBrowsing users.
+  SAFEBROWSING_RAPPOR_TYPE,
+  // Deprecated: Use UMA_RAPPOR_TYPE for new metrics
+  ETLD_PLUS_ONE_RAPPOR_TYPE,
+  NUM_RAPPOR_TYPES,
+  COARSE_RAPPOR_TYPE = SAFEBROWSING_RAPPOR_TYPE,
+};
+
 enum Probability {
   PROBABILITY_75,    // 75%
   PROBABILITY_50,    // 50%
@@ -59,6 +71,40 @@ struct RapporParameters {
   // The reporting level this metric is reported at.
   RecordingGroup recording_group;
 };
+
+namespace internal {
+
+const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
+    // UMA_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     4 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::PROBABILITY_50 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_25 /* Zero coin probability */,
+     UMA_RAPPOR_GROUP /* Recording group */},
+    // SAFEBROWSING_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     1 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::PROBABILITY_50 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_25 /* Zero coin probability */,
+     SAFEBROWSING_RAPPOR_GROUP /* Recording group */},
+    // ETLD_PLUS_ONE_RAPPOR_TYPE
+    {128 /* Num cohorts */,
+     16 /* Bloom filter size bytes */,
+     2 /* Bloom filter hash count */,
+     rappor::PROBABILITY_50 /* Fake data probability */,
+     rappor::PROBABILITY_50 /* Fake one probability */,
+     rappor::PROBABILITY_75 /* One coin probability */,
+     rappor::PROBABILITY_25 /* Zero coin probability */,
+     UMA_RAPPOR_GROUP /* Recording group */},
+};
+
+}  // namespace internal
 
 }  // namespace rappor
 

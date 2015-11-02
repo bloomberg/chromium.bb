@@ -6,6 +6,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -24,10 +25,11 @@ void RegisterPageLoadMetricsObservers(
 namespace chrome {
 
 void InitializePageLoadMetricsForWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    rappor::RapporService* rappor_service) {
   RegisterPageLoadMetricsObservers(
       page_load_metrics::MetricsWebContentsObserver::CreateForWebContents(
-          web_contents));
+          web_contents, rappor_service));
 }
 
 }  // namespace chrome

@@ -10,6 +10,8 @@
 #include "components/page_load_metrics/browser/page_load_metrics_macros.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "components/rappor/rappor_service.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -74,7 +76,7 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   return true;
 }
 
-base::Time WallTimeFromTimeTicks(base::TimeTicks time) {
+base::Time WallTimeFromTimeTicks(const base::TimeTicks& time) {
   return base::Time::FromDoubleT(
       (time - base::TimeTicks::UnixEpoch()).InSecondsF());
 }
@@ -92,18 +94,45 @@ base::TimeDelta GetFirstContentfulPaint(const PageLoadTiming& timing) {
   return std::min(timing.first_text_paint, timing.first_image_paint);
 }
 
+// The number of buckets in the bitfield histogram. These buckets are described
+// in rappor.xml in PageLoad.CoarseTiming.NavigationToFirstContentfulPaint.
+// The bucket flag is defined by 1 << bucket_index, and is the bitfield
+// representing which timing bucket the page load falls into, i.e. 000010
+// would be the bucket flag showing that the page took between 2 and 4 seconds
+// to load.
+const size_t kNumRapporHistogramBuckets = 6;
+
+uint64_t RapporHistogramBucketIndex(const base::TimeDelta& time) {
+  int64 seconds = time.InSeconds();
+  if (seconds < 2)
+    return 0;
+  if (seconds < 4)
+    return 1;
+  if (seconds < 8)
+    return 2;
+  if (seconds < 16)
+    return 3;
+  if (seconds < 32)
+    return 4;
+  return 5;
+}
+
 }  // namespace
 
 PageLoadTracker::PageLoadTracker(
     bool in_foreground,
+    rappor::RapporService* const rappor_service,
     base::ObserverList<PageLoadMetricsObserver, true>* observers)
     : has_commit_(false),
       started_in_foreground_(in_foreground),
+      rappor_service_(rappor_service),
       observers_(observers) {}
 
 PageLoadTracker::~PageLoadTracker() {
-  if (has_commit_)
+  if (has_commit_) {
     RecordTimingHistograms();
+    RecordRappor();
+  }
 }
 
 void PageLoadTracker::WebContentsHidden() {
@@ -121,6 +150,7 @@ void PageLoadTracker::WebContentsShown() {
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   has_commit_ = true;
+  url_ = navigation_handle->GetURL();
   // We log the event that this load started. Because we don't know if a load is
   // relevant or if it will commit before now, we have to log this event at
   // commit time.
@@ -164,6 +194,32 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
                            started_in_foreground_);
 }
 
+const GURL& PageLoadTracker::GetCommittedURL() {
+  DCHECK(has_commit_);
+  return url_;
+}
+
+// Blink calculates navigation start using TimeTicks, but converts to epoch time
+// in its public API. Thus, to compare time values to navigation start, we
+// calculate the current time since the epoch using TimeTicks, and convert to
+// Time. This method is similar to how blink converts TimeTicks to epoch time.
+// There may be slight inaccuracies due to inter-process timestamps, but
+// this solution is the best we have right now.
+//
+// returns a TimeDelta which is
+//  - Infinity if we were never backgrounded
+//  - null (TimeDelta()) if we started backgrounded
+//  - elapsed time to first background if we started in the foreground and
+//    backgrounded.
+base::TimeDelta PageLoadTracker::GetBackgroundDelta() {
+  if (started_in_foreground_) {
+    if (background_time_.is_null())
+      return base::TimeDelta::Max();
+    return WallTimeFromTimeTicks(background_time_) - timing_.navigation_start;
+  }
+  return base::TimeDelta();
+}
+
 void PageLoadTracker::RecordTimingHistograms() {
   DCHECK(has_commit_);
   if (timing_.IsEmpty()) {
@@ -175,15 +231,7 @@ void PageLoadTracker::RecordTimingHistograms() {
   FOR_EACH_OBSERVER(PageLoadMetricsObserver, *observers_,
                     OnComplete(timing_, info));
 
-  // This method is similar to how blink converts TimeTicks to epoch time.
-  // There may be slight inaccuracies due to inter-process timestamps, but
-  // this solution is the best we have right now.
-  base::TimeDelta background_delta;
-  if (started_in_foreground_) {
-    background_delta = background_time_.is_null()
-        ? base::TimeDelta::Max()
-        : WallTimeFromTimeTicks(background_time_) - timing_.navigation_start;
-  }
+  base::TimeDelta background_delta = GetBackgroundDelta();
 
   if (!timing_.dom_content_loaded_event_start.is_zero()) {
     if (timing_.dom_content_loaded_event_start < background_delta) {
@@ -297,17 +345,46 @@ void PageLoadTracker::RecordCommittedEvent(CommittedLoadEvent event,
   }
 }
 
+void PageLoadTracker::RecordRappor() {
+  DCHECK(!GetCommittedURL().is_empty());
+  if (!rappor_service_)
+    return;
+  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing_);
+  // Log the eTLD+1 of sites that show poor loading performance.
+  if (!first_contentful_paint.is_zero() &&
+      first_contentful_paint < GetBackgroundDelta()) {
+    scoped_ptr<rappor::Sample> sample =
+        rappor_service_->CreateSample(rappor::UMA_RAPPOR_TYPE);
+    sample->SetStringField("Domain", rappor::GetDomainAndRegistrySampleFromGURL(
+                                         GetCommittedURL()));
+    uint64_t bucket_index = RapporHistogramBucketIndex(first_contentful_paint);
+    sample->SetFlagsField("Bucket", uint64_t(1) << bucket_index,
+                          kNumRapporHistogramBuckets);
+    // The IsSlow flag is just a one bit boolean if the first layout was > 10s.
+    sample->SetFlagsField("IsSlow", first_contentful_paint.InSecondsF() >= 10,
+                          1);
+    rappor_service_->RecordSampleObj(
+        "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint",
+        sample.Pass());
+  }
+}
+
+// static
 MetricsWebContentsObserver::MetricsWebContentsObserver(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), in_foreground_(false) {}
+    content::WebContents* web_contents,
+    rappor::RapporService* rappor_service)
+    : content::WebContentsObserver(web_contents),
+      in_foreground_(false),
+      rappor_service_(rappor_service) {}
 
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    rappor::RapporService* rappor_service) {
   DCHECK(web_contents);
 
   MetricsWebContentsObserver* metrics = FromWebContents(web_contents);
   if (!metrics) {
-    metrics = new MetricsWebContentsObserver(web_contents);
+    metrics = new MetricsWebContentsObserver(web_contents, rappor_service);
     web_contents->SetUserData(UserDataKey(), metrics);
   }
   return metrics;
@@ -355,9 +432,9 @@ void MetricsWebContentsObserver::DidStartNavigation(
   // Passing a raw pointer to observers_ is safe because the
   // MetricsWebContentsObserver owns the PageLoadMetricsObserver list and is
   // torn down after the PageLoadTracker.
-  provisional_loads_.insert(
-      navigation_handle,
-      make_scoped_ptr(new PageLoadTracker(in_foreground_, &observers_)));
+  provisional_loads_.insert(navigation_handle,
+                            make_scoped_ptr(new PageLoadTracker(
+                                in_foreground_, rappor_service_, &observers_)));
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(

@@ -9,10 +9,13 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "components/rappor/rappor_utils.h"
+#include "components/rappor/test_rappor_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace page_load_metrics {
 
@@ -40,7 +43,8 @@ class MetricsWebContentsObserverTest
   }
 
   void AttachObserver() {
-    observer_.reset(new MetricsWebContentsObserver(web_contents()));
+    observer_.reset(
+        new MetricsWebContentsObserver(web_contents(), &rappor_tester_));
     observer_->WasShown();
   }
 
@@ -93,6 +97,7 @@ class MetricsWebContentsObserverTest
 
  protected:
   base::HistogramTester histogram_tester_;
+  rappor::TestRapporService rappor_tester_;
   scoped_ptr<MetricsWebContentsObserver> observer_;
 
  private:
@@ -606,10 +611,69 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
   observer_->OnMessageReceived(
       PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
       main_rfh());
-
   // Navigate again to force histogram logging.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   AssertNoHistogramsLogged();
+}
+
+TEST_F(MetricsWebContentsObserverTest, NoRappor) {
+  rappor::TestSample::Shadow* sample_obj =
+      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+  EXPECT_EQ(sample_obj, nullptr);
+}
+
+TEST_F(MetricsWebContentsObserverTest, RapporLongPageLoad) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_image_paint = base::TimeDelta::FromSeconds(40);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+
+  // Navigate again to force logging RAPPOR.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  rappor::TestSample::Shadow* sample_obj =
+      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+  const auto& string_it = sample_obj->string_fields.find("Domain");
+  EXPECT_NE(string_it, sample_obj->string_fields.end());
+  EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),
+            string_it->second);
+
+  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
+  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
+  EXPECT_EQ(1u, flag_it->second);
+}
+
+TEST_F(MetricsWebContentsObserverTest, RapporQuickPageLoad) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_text_paint = base::TimeDelta::FromSeconds(1);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  observer_->OnMessageReceived(
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      main_rfh());
+
+  // Navigate again to force logging RAPPOR.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  rappor::TestSample::Shadow* sample_obj =
+      rappor_tester_.GetRecordedSampleForMetric(kRapporMetricsNameCoarseTiming);
+  const auto& string_it = sample_obj->string_fields.find("Domain");
+  EXPECT_NE(string_it, sample_obj->string_fields.end());
+  EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),
+            string_it->second);
+
+  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
+  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
+  EXPECT_EQ(0u, flag_it->second);
 }
 
 }  // namespace page_load_metrics
