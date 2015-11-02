@@ -48,6 +48,9 @@ const char kSessionManagerSetFlagsForUser[] = "SetFlagsForUser";
 const char kSessionManagerGetServerBackedStateKeys[] =
     "GetServerBackedStateKeys";
 const char kSessionManagerInitMachineInfo[] = "InitMachineInfo";
+const char kSessionManagerCheckArcAvailability[] = "CheckArcAvailability";
+const char kSessionManagerStartArcInstance[] = "StartArcInstance";
+const char kSessionManagerStopArcInstance[] = "StopArcInstance";
 // Signals
 const char kLoginPromptVisibleSignal[] = "LoginPromptVisible";
 const char kSessionStateChangedSignal[] = "SessionStateChanged";
@@ -57,6 +60,9 @@ const char kScreenIsUnlockedSignal[] = "ScreenIsUnlocked";
 // Ownership API signals.
 const char kOwnerKeySetSignal[] = "SetOwnerKeyComplete";
 const char kPropertyChangeCompleteSignal[] = "PropertyChangeComplete";
+// ARC instance signals.
+const char kArcInstanceStopped[] = "ArcInstanceStopped";
+const char kArcInstanceRebooted[] = "ArcInstanceRebooted";
 }  // namespace login_manager
 
 #endif  // SYSTEM_API_DBUS_LOGIN_MANAGER_DBUS_CONSTANTS_H_
