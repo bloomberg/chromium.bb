@@ -167,8 +167,8 @@ bool PackageManagerImpl::ShouldHandleWithContentHandler(
   // Why doesn't that happen when running different apps? Because
   // your_thing.mojo!base::AtExitManager and
   // my_thing.mojo!base::AtExitManager are different symbols.
-  bool use_real_qualifier = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kMojoSingleProcess);
+  bool use_real_qualifier = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMultiprocess);
 
   GURL content_handler_url;
   // The response begins with a #!mojo <content-handler-url>.
