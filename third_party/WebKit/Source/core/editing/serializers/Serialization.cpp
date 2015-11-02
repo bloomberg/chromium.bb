@@ -243,8 +243,9 @@ template <typename Strategy>
 String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionTemplate<Strategy>& startPosition, const PositionTemplate<Strategy>& endPosition,
     EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
-    ASSERT(startPosition.isNotNull());
-    ASSERT(endPosition.isNotNull());
+    if (startPosition.isNull() || endPosition.isNull())
+        return emptyString();
+
     ASSERT(startPosition.compareTo(endPosition) <= 0);
 
     bool collapsed = startPosition == endPosition;
@@ -264,13 +265,11 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionTemplate<Stra
 
 String createMarkup(const Position& startPosition, const Position& endPosition, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
-    ASSERT(startPosition.compareTo(endPosition) <= 0);
     return CreateMarkupAlgorithm<EditingStrategy>::createMarkup(startPosition, endPosition, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
 String createMarkup(const PositionInComposedTree& startPosition, const PositionInComposedTree& endPosition, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
-    ASSERT(startPosition.compareTo(endPosition) <= 0);
     return CreateMarkupAlgorithm<EditingInComposedTreeStrategy>::createMarkup(startPosition, endPosition, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 

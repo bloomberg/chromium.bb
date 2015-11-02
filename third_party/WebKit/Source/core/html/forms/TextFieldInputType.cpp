@@ -419,8 +419,7 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
     // that case, and nothing in the text field will be removed.
     unsigned selectionLength = 0;
     if (element().focused()) {
-        const VisibleSelection& selection = element().document().frame()->selection().selection();
-        selectionLength = plainText(selection.toNormalizedEphemeralRange()).length();
+        selectionLength = element().document().frame()->selection().selectedText().length();
     }
     ASSERT(oldLength >= selectionLength);
 
