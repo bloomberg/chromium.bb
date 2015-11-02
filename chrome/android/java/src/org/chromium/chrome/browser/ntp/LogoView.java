@@ -17,12 +17,15 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Property;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.widget.LoadingView;
 
 import java.lang.ref.WeakReference;
 
@@ -34,7 +37,7 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
  * available. It also maintains a {@link BaseGifDrawable} that will be played when the user clicks
  * this view and we have an animated GIF logo ready.
  */
-public class LogoView extends View implements OnClickListener {
+public class LogoView extends FrameLayout implements OnClickListener {
 
     // Number of milliseconds for a new logo to fade in.
     private static final int LOGO_TRANSITION_TIME_MS = 400;
@@ -54,6 +57,8 @@ public class LogoView extends View implements OnClickListener {
     private Matrix mAnimatedLogoMatrix;
     private boolean mLogoIsDefault;
     private boolean mNewLogoIsDefault;
+
+    private LoadingView mLoadingView;
 
     /**
      * A measure from 0 to 1 of how much the new logo has faded in. 0 shows the old logo, 1 shows
@@ -99,6 +104,14 @@ public class LogoView extends View implements OnClickListener {
         // logo is shown, this view will be marked clickable again.
         setOnClickListener(this);
         setClickable(false);
+        setWillNotDraw(false);
+
+        mLoadingView = new LoadingView(getContext());
+        LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER;
+        mLoadingView.setLayoutParams(lp);
+        mLoadingView.setVisibility(View.GONE);
+        addView(mLoadingView);
     }
 
     /**
@@ -130,6 +143,7 @@ public class LogoView extends View implements OnClickListener {
      * Starts playing the given animated GIF logo.
      */
     public void playAnimatedLogo(BaseGifImage gifImage) {
+        mLoadingView.hideLoadingUI();
         mAnimatedLogoDrawable = new BaseGifDrawable(gifImage, Config.ARGB_8888);
         mAnimatedLogoMatrix = new Matrix();
         setMatrix(mAnimatedLogoDrawable.getIntrinsicWidth(),
@@ -137,6 +151,13 @@ public class LogoView extends View implements OnClickListener {
         // Set callback here to ensure #invalidateDrawable() is called.
         mAnimatedLogoDrawable.setCallback(this);
         mAnimatedLogoDrawable.start();
+    }
+
+    /**
+     * Lets logo view show a spinning progressbar.
+     */
+    public void showLoadingView() {
+        mLoadingView.showLoadingUI();
     }
 
     /**

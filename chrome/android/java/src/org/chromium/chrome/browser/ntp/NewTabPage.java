@@ -364,6 +364,7 @@ public class NewTabPage
             if (mIsDestroyed) return;
 
             if (!isAnimatedLogoShowing && mAnimatedLogoUrl != null) {
+                mNewTabPageView.showLogoLoadingView();
                 mLogoBridge.getAnimatedLogo(new LogoBridge.AnimatedLogoCallback() {
                     @Override
                     public void onAnimatedLogoAvailable(BaseGifImage animatedLogoImage) {

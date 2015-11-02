@@ -35,27 +35,19 @@
         android:textSize="16sp"
         android:visibility="gone" />
 
-    <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkLoadingView
+    <org.chromium.chrome.browser.widget.LoadingView
         android:id="@+id/eb_initial_loading_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#f2f2f2"
-        android:visibility="gone" >
-
-        <ProgressBar
-            android:id="@+id/eb_loading_circle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_centerInParent="true"
-            android:visibility="gone" />
-    </org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkLoadingView>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
     <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkActionBar
         android:id="@id/eb_action_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentTop="true" >
+        android:layout_alignParentTop="true"
+        android:background="@color/enhanced_bookmark_appbar_background" >
 
         <org.chromium.chrome.browser.widget.NumberRollView
             android:id="@+id/selection_mode_number"

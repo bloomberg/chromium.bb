@@ -526,6 +526,13 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
+     * Shows a progressbar indicating the animated logo is being downloaded.
+     */
+    void showLogoLoadingView() {
+        mSearchProviderLogoView.showLoadingView();
+    }
+
+    /**
      * Starts playing the given animated GIF logo.
      */
     void playAnimatedLogo(BaseGifImage gifImage) {

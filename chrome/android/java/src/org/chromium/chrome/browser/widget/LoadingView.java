@@ -2,37 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.enhancedbookmarks;
+package org.chromium.chrome.browser.widget;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
-import org.chromium.chrome.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
- * View for showing loading content animation. The animation logic follows the Android loading
- * content UI guideline.
+ * A {@link ProgressBar} that understands the hiding/showing policy defined in Material Design.
  */
-public class EnhancedBookmarkLoadingView extends FrameLayout {
+public class LoadingView extends ProgressBar {
     private static final int LOADING_ANIMATION_DELAY_MS = 500;
     private static final int MINIMUM_ANIMATION_SHOW_TIME_MS = 500;
 
     private long mStartTime = -1;
 
-    private ProgressBar mLoadingProgressBar;
-
     private final Runnable mDelayedShow = new Runnable() {
         @Override
         public void run() {
-            mStartTime = System.currentTimeMillis();
-            mLoadingProgressBar.setAlpha(1.0f);
-            mLoadingProgressBar.setVisibility(View.VISIBLE);
+            mStartTime = SystemClock.elapsedRealtime();
+            setVisibility(View.VISIBLE);
+            setAlpha(1.0f);
         }
     };
 
@@ -52,16 +48,17 @@ public class EnhancedBookmarkLoadingView extends FrameLayout {
     };
 
     /**
-     * Constructor for inflating from XML.
+     * Constructor for creating the view programatically.
      */
-    public EnhancedBookmarkLoadingView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public LoadingView(Context context) {
+        super(context);
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        mLoadingProgressBar = (ProgressBar) findViewById(R.id.eb_loading_circle);
+    /**
+     * Constructor for inflating from XML.
+     */
+    public LoadingView(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
     /**
@@ -71,10 +68,7 @@ public class EnhancedBookmarkLoadingView extends FrameLayout {
         removeCallbacks(mDelayedShow);
         removeCallbacks(mDelayedHide);
 
-        setVisibility(VISIBLE);
-        setAlpha(1.0f);
-        mLoadingProgressBar.setVisibility(GONE);
-
+        setVisibility(GONE);
         postDelayed(mDelayedShow, LOADING_ANIMATION_DELAY_MS);
     }
 
@@ -86,11 +80,9 @@ public class EnhancedBookmarkLoadingView extends FrameLayout {
         removeCallbacks(mDelayedShow);
         removeCallbacks(mDelayedHide);
 
-        if (mLoadingProgressBar.getVisibility() == VISIBLE) {
+        if (getVisibility() == VISIBLE) {
             postDelayed(mDelayedHide, Math.max(0,
-                    mStartTime + MINIMUM_ANIMATION_SHOW_TIME_MS - System.currentTimeMillis()));
-        } else {
-            setVisibility(GONE);
+                    mStartTime + MINIMUM_ANIMATION_SHOW_TIME_MS - SystemClock.elapsedRealtime()));
         }
     }
 }

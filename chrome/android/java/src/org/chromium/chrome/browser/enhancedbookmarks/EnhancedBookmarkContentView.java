@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
+import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -22,14 +23,14 @@ import java.util.List;
 
 /**
  * A ViewGroup that holds an {@link EnhancedBookmarkActionBar}, a {@link FadingShadowView}, a
- * {@link EnhancedBookmarkRecyclerView} and a {@link EnhancedBookmarkLoadingView}.
+ * {@link EnhancedBookmarkRecyclerView} and a {@link LoadingView}.
  */
 public class EnhancedBookmarkContentView extends RelativeLayout implements
         EnhancedBookmarkUIObserver {
     private EnhancedBookmarkDelegate mDelegate;
     private EnhancedBookmarkRecyclerView mItemsContainer;
     private EnhancedBookmarkActionBar mActionBar;
-    private EnhancedBookmarkLoadingView mLoadingView;
+    private LoadingView mLoadingView;
 
     /**
      * Creates an instance of {@link EnhancedBookmarkContentView}. This constructor should be used
@@ -48,7 +49,7 @@ public class EnhancedBookmarkContentView extends RelativeLayout implements
                 ? R.string.offline_pages_folder_empty : R.string.bookmarks_folder_empty);
         mItemsContainer.setEmptyView(emptyView);
         mActionBar = (EnhancedBookmarkActionBar) findViewById(R.id.eb_action_bar);
-        mLoadingView = (EnhancedBookmarkLoadingView) findViewById(R.id.eb_initial_loading_view);
+        mLoadingView = (LoadingView) findViewById(R.id.eb_initial_loading_view);
         FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);
         if (DeviceFormFactor.isLargeTablet(getContext())) {
             shadow.setVisibility(View.GONE);
