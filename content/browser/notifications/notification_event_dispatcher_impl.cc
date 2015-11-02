@@ -82,18 +82,17 @@ void DispatchNotificationClickEventOnRegistration(
     const scoped_refptr<ServiceWorkerRegistration>&
         service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (service_worker_status == SERVICE_WORKER_OK) {
-    base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
-        base::Bind(&NotificationClickEventFinished,
-                   dispatch_complete_callback,
-                   service_worker_registration);
-
 #if defined(OS_ANDROID)
     // This LOG(INFO) deliberately exists to help track down the cause of
     // https://crbug.com/534537, where notifications sometimes do not react to
     // the user clicking on them. It should be removed once that's fixed.
-    LOG(INFO) << "Dispatching notificationclick event to the Service Worker.";
+  LOG(INFO) << "Trying to dispatch notification for SW with status: "
+            << service_worker_status << " action_index: " << action_index;
 #endif
+  if (service_worker_status == SERVICE_WORKER_OK) {
+    base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
+        base::Bind(&NotificationClickEventFinished, dispatch_complete_callback,
+                   service_worker_registration);
 
     DCHECK(service_worker_registration->active_version());
     service_worker_registration->active_version()->
@@ -150,6 +149,14 @@ void FindServiceWorkerRegistration(
     bool success,
     const NotificationDatabaseData& notification_database_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+#if defined(OS_ANDROID)
+  // This LOG(INFO) deliberately exists to help track down the cause of
+  // https://crbug.com/534537, where notifications sometimes do not react to
+  // the user clicking on them. It should be removed once that's fixed.
+  LOG(INFO) << "Lookup for ServiceWoker Registration: sucesss:" << success
+            << " action_index: " << action_index;
+#endif
   if (!success) {
     BrowserThread::PostTask(
         BrowserThread::UI,
