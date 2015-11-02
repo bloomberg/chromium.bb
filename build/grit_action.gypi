@@ -19,7 +19,7 @@
     'grit_resource_ids%': '<(DEPTH)/tools/gritsettings/resource_ids',
     # This makes it possible to add more defines in specific targets,
     # instead of build/common.gypi .
-    'grit_additional_defines%': [],
+    'grit_additional_defines%': ['-D', 'version=<(version_full)'],
     'grit_rc_header_format%': [],
     'grit_whitelist%': '',
 
@@ -37,6 +37,9 @@
       }],
     ],
   },
+  'includes': [
+    '../build/util/version.gypi'
+  ],
   'conditions': [
     ['"<(grit_whitelist)"==""', {
       'variables': {
