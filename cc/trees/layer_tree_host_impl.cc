@@ -959,7 +959,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     }
   }
 
-  if (have_missing_animated_tiles)
+  // If CommitToActiveTree() is true, then we wait to draw until
+  // NotifyReadyToDraw. That means we're in as good shape as is possible now,
+  // so there's no reason to stop the draw now (and this is not supported by
+  // SingleThreadProxy).
+  if (have_missing_animated_tiles && !CommitToActiveTree())
     draw_result = DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
 
   // When we require high res to draw, abort the draw (almost) always. This does
@@ -1778,6 +1782,7 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   // We have released tilings for both active and pending tree.
   // We would not have any content to draw until the pending tree is activated.
   // Prevent the active tree from drawing until activation.
+  // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
   SetRequiresHighResToDraw();
 
   tree_resources_for_gpu_rasterization_dirty_ = false;
@@ -2021,10 +2026,12 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
 
   // If we just became visible, we have to ensure that we draw high res tiles,
   // to prevent checkerboard/low res flashes.
-  if (visible_)
+  if (visible_) {
+    // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
     SetRequiresHighResToDraw();
-  else
+  } else {
     EvictAllUIResources();
+  }
 
   // Call PrepareTiles to evict tiles when we become invisible.
   if (!visible)
@@ -2300,6 +2307,7 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   // There will not be anything to draw here, so set high res
   // to avoid checkerboards, typically when we are recovering
   // from lost context.
+  // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
   SetRequiresHighResToDraw();
 
   return true;
