@@ -195,12 +195,22 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
       return DomKey::CONTROL;
     case XKB_KEY_Caps_Lock:
       return DomKey::CAPS_LOCK;
+#if defined(OS_CHROMEOS)
+    case XKB_KEY_Meta_L:
+    case XKB_KEY_Meta_R:
+    case XKB_KEY_Alt_L:
+    case XKB_KEY_Alt_R:
+      // The Shift+Alt generates a KeySym for the Meta key. On ChromeOS the Meta
+      // key is not used and we should still get the Alt key. crbug.com/541468.
+      return DomKey::ALT;
+#else
     case XKB_KEY_Meta_L:
     case XKB_KEY_Meta_R:
       return DomKey::META;
     case XKB_KEY_Alt_L:
     case XKB_KEY_Alt_R:
       return DomKey::ALT;
+#endif  // defined(OS_CHROMEOS)
     case XKB_KEY_Super_L:
     case XKB_KEY_Super_R:
       return DomKey::OS;
