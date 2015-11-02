@@ -329,7 +329,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
       this, &MediaRouterUI::RouteCreationTimeout);
 
   router_->CreateRoute(source.id(), sink_id, origin,
-                       SessionTabHelper::IdForTab(initiator_),
+                       initiator_,
                        route_response_callbacks);
   return true;
 }

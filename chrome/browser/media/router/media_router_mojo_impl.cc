@@ -18,6 +18,7 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "extensions/browser/process_manager.h"
 
 #define DVLOG_WITH_INSTANCE(level) \
@@ -267,7 +268,7 @@ void MediaRouterMojoImpl::CreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
     const GURL& origin,
-    int tab_id,
+    content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -277,6 +278,8 @@ void MediaRouterMojoImpl::CreateRoute(
       callback.Run(nullptr, "", "Invalid origin");
     return;
   }
+
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::Bind(
       &MediaRouterMojoImpl::DoCreateRoute, base::Unretained(this), source_id,
       sink_id, origin.is_empty() ? "" : origin.spec(), tab_id, callbacks));
@@ -286,7 +289,7 @@ void MediaRouterMojoImpl::JoinRoute(
     const MediaSource::Id& source_id,
     const std::string& presentation_id,
     const GURL& origin,
-    int tab_id,
+    content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -296,6 +299,8 @@ void MediaRouterMojoImpl::JoinRoute(
       callback.Run(nullptr, "", "Invalid origin");
     return;
   }
+
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoJoinRoute,
                         base::Unretained(this), source_id, presentation_id,
                         origin.is_empty() ? "" : origin.spec(), tab_id,

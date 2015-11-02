@@ -17,6 +17,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/presentation_session_message.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace media_router {
 
 class IssuesObserver;
@@ -43,9 +47,6 @@ using MediaRouteResponseCallback =
                         const std::string& presentation_id,
                         const std::string& error)>;
 
-// Used in cases where a tab ID is not applicable in CreateRoute/JoinRoute.
-const int kInvalidTabId = -1;
-
 // An interface for handling resources related to media routing.
 // Responsible for registering observers for receiving sink availability
 // updates, handling route requests/responses, and operating on routes (e.g.
@@ -60,26 +61,26 @@ class MediaRouter : public KeyedService {
 
   // Creates a media route from |source_id| to |sink_id|.
   // |origin| is the URL of requestor's page.
-  // |tab_id| is the ID of the tab in which the request was made.
-  // |origin| and |tab_id| are used for enforcing same-origin and/or same-tab
-  // scope for JoinRoute() requests. (e.g., if enforced, the page
+  // |web_contents| is the WebContents of the tab in which the request was made.
+  // |origin| and |web_contents| are used for enforcing same-origin and/or
+  // same-tab scope for JoinRoute() requests. (e.g., if enforced, the page
   // requesting JoinRoute() must have the same origin as the page that requested
   // CreateRoute()).
-  // The caller may pass in|kInvalidTabId| if tab is not applicable.
+  // The caller may pass in nullptr for |web_contents| if tab is not applicable.
   // Each callback in |callbacks| is invoked with a response indicating
   // success or failure, in the order they are listed.
   virtual void CreateRoute(
       const MediaSource::Id& source_id,
       const MediaSink::Id& sink_id,
       const GURL& origin,
-      int tab_id,
+      content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) = 0;
 
   // Joins an existing route identified by |presentation_id|.
   // |source|: The source to route to the existing route.
   // |presentation_id|: Presentation ID of the existing route.
-  // |origin|, |tab_id|: Origin and tab of the join route request. Used for
-  // validation when enforcing same-origin and/or same-tab scope.
+  // |origin|, |web_contents|: Origin and WebContents of the join route request.
+  // Used for validation when enforcing same-origin and/or same-tab scope.
   // (See CreateRoute documentation).
   // Each callback in |callbacks| is invoked with a response indicating
   // success or failure, in the order they are listed.
@@ -87,7 +88,7 @@ class MediaRouter : public KeyedService {
       const MediaSource::Id& source,
       const std::string& presentation_id,
       const GURL& origin,
-      int tab_id,
+      content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) = 0;
 
   // Closes the media route specified by |route_id|.

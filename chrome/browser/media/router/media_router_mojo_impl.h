@@ -66,13 +66,13 @@ class MediaRouterMojoImpl : public MediaRouter,
       const MediaSource::Id& source_id,
       const MediaSink::Id& sink_id,
       const GURL& origin,
-      int tab_id,
+      content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) override;
   void JoinRoute(
       const MediaSource::Id& source_id,
       const std::string& presentation_id,
       const GURL& origin,
-      int tab_id,
+      content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) override;
   void CloseRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,

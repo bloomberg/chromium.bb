@@ -70,9 +70,10 @@ void MediaRouterE2EBrowserTest::OnRouteResponseReceived(
   route_id_ = route->media_route_id();
 }
 
-void MediaRouterE2EBrowserTest::CreateMediaRoute(const MediaSource& source,
-                                                 const GURL& origin,
-                                                 int tab_id) {
+void MediaRouterE2EBrowserTest::CreateMediaRoute(
+    const MediaSource& source,
+    const GURL& origin,
+    content::WebContents* web_contents) {
   DCHECK(media_router_);
   observer_.reset(new TestMediaSinksObserver(media_router_, source));
 
@@ -92,7 +93,7 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(const MediaSource& source,
   route_response_callbacks.push_back(
       base::Bind(&MediaRouterE2EBrowserTest::OnRouteResponseReceived,
                  base::Unretained(this)));
-  media_router_->CreateRoute(source.id(), sink.id(), origin, tab_id,
+  media_router_->CreateRoute(source.id(), sink.id(), origin, web_contents,
                              route_response_callbacks);
 
   // Wait for the route request to be fulfilled (and route to be started).
@@ -135,11 +136,13 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), GURL("about:blank"), 1);
-  int tab_id = SessionTabHelper::IdForTab(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
 
   // Wait for 30 seconds to make sure the route is stable.
-  CreateMediaRoute(MediaSourceForTab(tab_id), GURL("http://origin/"), tab_id);
+  CreateMediaRoute(
+      MediaSourceForTab(tab_id), GURL("http://origin/"), web_contents);
   Wait(base::TimeDelta::FromSeconds(30));
 
   // Wait for 10 seconds to make sure route has been stopped.
@@ -150,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_CastApp) {
   // Wait for 30 seconds to make sure the route is stable.
   CreateMediaRoute(MediaSourceForPresentationUrl(kCastAppPresentationUrl),
-                   GURL("http://origin/"), kInvalidTabId);
+                   GURL("http://origin/"), nullptr);
   Wait(base::TimeDelta::FromSeconds(30));
 
   // Wait for 10 seconds to make sure route has been stopped.

@@ -55,7 +55,7 @@ const char kSinkId2[] = "sink2";
 const char kSinkName[] = "sinkName";
 const char kPresentationId[] = "presentationId";
 const char kOrigin[] = "http://origin/";
-const int kTabId = 123;
+const int kInvalidTabId = -1;
 const uint8 kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 
 bool ArePresentationSessionMessagesEqual(
@@ -180,7 +180,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   // in runnable parameter lists.
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
-                          mojo::String(kOrigin), kTabId, _))
+                          mojo::String(kOrigin), kInvalidTabId, _))
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& sink,
           const mojo::String& presentation_id, const mojo::String& origin,
@@ -195,7 +195,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
-  router()->CreateRoute(kSource, kSinkId, GURL(kOrigin), kTabId,
+  router()->CreateRoute(kSource, kSinkId, GURL(kOrigin), nullptr,
                         route_response_callbacks);
   ProcessEventLoop();
 }
@@ -203,7 +203,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
 TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
-                          mojo::String(kOrigin), kTabId, _))
+                          mojo::String(kOrigin), kInvalidTabId, _))
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& sink,
              const mojo::String& presentation_id, const mojo::String& origin,
@@ -217,7 +217,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
-  router()->CreateRoute(kSource, kSinkId, GURL(kOrigin), kTabId,
+  router()->CreateRoute(kSource, kSinkId, GURL(kOrigin), nullptr,
                         route_response_callbacks);
   ProcessEventLoop();
 }
@@ -236,7 +236,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   // in runnable parameter lists.
   EXPECT_CALL(mock_media_route_provider_,
               JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
-                        mojo::String(kOrigin), kTabId, _))
+                        mojo::String(kOrigin), kInvalidTabId, _))
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& presentation_id,
           const mojo::String& origin, int tab_id,
@@ -250,7 +250,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
-  router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), kTabId,
+  router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), nullptr,
                       route_response_callbacks);
   ProcessEventLoop();
 }
@@ -258,7 +258,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
 TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
   EXPECT_CALL(mock_media_route_provider_,
               JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
-                        mojo::String(kOrigin), kTabId, _))
+                        mojo::String(kOrigin), kInvalidTabId, _))
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& presentation_id,
              const mojo::String& origin, int tab_id,
@@ -271,7 +271,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
-  router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), kTabId,
+  router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), nullptr,
                       route_response_callbacks);
   ProcessEventLoop();
 }

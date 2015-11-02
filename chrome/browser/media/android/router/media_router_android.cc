@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
@@ -57,7 +58,7 @@ void MediaRouterAndroid::CreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
     const GURL& origin,
-    int tab_id,
+    content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks) {
   if (!origin.is_valid()) {
     for (const MediaRouteResponseCallback& callback : callbacks)
@@ -69,6 +70,12 @@ void MediaRouterAndroid::CreateRoute(
   // https://crbug.com/522239
   std::string presentation_id("mr_");
   presentation_id += base::GenerateGUID();
+
+  int tab_id = -1;
+  TabAndroid* tab = web_contents
+      ? TabAndroid::FromWebContents(web_contents) : nullptr;
+  if (tab)
+    tab_id = tab->GetAndroidId();
 
   MediaRouteRequest* request = new MediaRouteRequest(
       MediaSource(source_id),
@@ -101,15 +108,22 @@ void MediaRouterAndroid::JoinRoute(
     const MediaSource::Id& source_id,
     const std::string& presentation_id,
     const GURL& origin,
-    int tab_id,
+    content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks) {
-  DVLOG(2) << "JoinRoute: " << source_id << ", " << presentation_id << ", "
-           << origin.spec() << ", " << tab_id;
   if (!origin.is_valid()) {
     for (const MediaRouteResponseCallback& callback : callbacks)
       callback.Run(nullptr, "", "Invalid origin");
     return;
   }
+
+  int tab_id = -1;
+  TabAndroid* tab = web_contents
+      ? TabAndroid::FromWebContents(web_contents) : nullptr;
+  if (tab)
+    tab_id = tab->GetAndroidId();
+
+  DVLOG(2) << "JoinRoute: " << source_id << ", " << presentation_id << ", "
+           << origin.spec() << ", " << tab_id;
 
   MediaRouteRequest* request = new MediaRouteRequest(
       MediaSource(source_id),

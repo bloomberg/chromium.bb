@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -47,18 +46,13 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
       base::Bind(&CreatePresentationSessionRequest::HandleRouteResponse,
                  base::Passed(&request)));
 
-  int tab_id = -1;
-  TabAndroid* tab = TabAndroid::FromWebContents(initiator());
-  if (tab)
-    tab_id = tab->GetAndroidId();
-
   MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
       initiator()->GetBrowserContext());
   router->CreateRoute(
       source_id,
       ConvertJavaStringToUTF8(env, jsink_id),
       origin,
-      tab_id,
+      initiator(),
       route_response_callbacks);
 }
 

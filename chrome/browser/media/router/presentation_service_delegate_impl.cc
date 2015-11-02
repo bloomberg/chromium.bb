@@ -631,7 +631,7 @@ void PresentationServiceDelegateImpl::JoinSession(
       GetLastCommittedURLForFrame(
           RenderFrameHostId(render_process_id, render_frame_id))
           .GetOrigin(),
-      SessionTabHelper::IdForTab(web_contents_), route_response_callbacks);
+      web_contents_, route_response_callbacks);
 }
 
 void PresentationServiceDelegateImpl::CloseSession(
