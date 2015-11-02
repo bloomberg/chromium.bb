@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
@@ -691,6 +692,10 @@ int BrowserMainLoop::PreCreateThreads() {
 
     result_code_ = parts_->PreCreateThreads();
   }
+
+  // Initialize an instance of FeatureList. This will be a no-op if an instance
+  // was already set up by the embedder.
+  base::FeatureList::InitializeInstance();
 
   // TODO(chrisha): Abstract away this construction mess to a helper function,
   // once MemoryPressureMonitor is made a concrete class.

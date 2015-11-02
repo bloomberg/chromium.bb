@@ -127,6 +127,10 @@ class BASE_EXPORT FeatureList {
   static std::vector<std::string> SplitFeatureListString(
       const std::string& input);
 
+  // Initializes and sets a default instance of FeatureList if one has not yet
+  // already been set. No-op otherwise.
+  static void InitializeInstance();
+
   // Returns the singleton instance of FeatureList. Will return null until an
   // instance is registered via SetInstance().
   static FeatureList* GetInstance();

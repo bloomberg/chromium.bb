@@ -95,6 +95,13 @@ std::vector<std::string> FeatureList::SplitFeatureListString(
 }
 
 // static
+void FeatureList::InitializeInstance() {
+  if (g_instance)
+    return;
+  SetInstance(make_scoped_ptr(new FeatureList));
+}
+
+// static
 FeatureList* FeatureList::GetInstance() {
   return g_instance;
 }
