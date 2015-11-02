@@ -386,13 +386,13 @@ if (window.location.search) {
     debugHint = function(id) { return ""; };
 }
 
-function testSVGInObjectWithPlaceholder(placeholderWidthAttr, placeholderHeightAttr) {
+function testSVGInObjectWithPlaceholder(placeholderWidthAttr, placeholderHeightAttr, viewBoxAttr) {
     doCombinationTest(
         [["containerWidthStyle", [null, "400px"]],
          ["containerHeightStyle", [null, "400px"]],
          ["placeholderWidthAttr", [placeholderWidthAttr]],
          ["placeholderHeightAttr", [placeholderHeightAttr]],
-         ["svgViewBoxAttr", [ null, "0 0 100 200" ]],
+         ["svgViewBoxAttr", [ viewBoxAttr ]],
          ["svgWidthAttr", [ null, "200", "25%" ]],
          ["svgHeightAttr", [ null, "200", "25%" ]]],
         function(config, id) {
