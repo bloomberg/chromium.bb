@@ -7,9 +7,10 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "jni/JsonSanitizer_jni.h"
 
 namespace safe_json {
@@ -73,13 +74,13 @@ void JsonSanitizerAndroid::Sanitize(const std::string& unsafe_json) {
 }
 
 void JsonSanitizerAndroid::OnSuccess(const std::string& json) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(success_callback_, json));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(success_callback_, json));
 }
 
 void JsonSanitizerAndroid::OnError(const std::string& error) {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(error_callback_, error));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(error_callback_, error));
 }
 
 }  // namespace

@@ -7,6 +7,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/tuple.h"
 #include "base/values.h"
 #include "components/safe_json/safe_json_parser_messages.h"
@@ -87,7 +88,7 @@ bool SafeJsonParserImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SafeJsonParserImpl::Start() {
-  caller_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  caller_task_runner_ = base::SequencedTaskRunnerHandle::Get();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
