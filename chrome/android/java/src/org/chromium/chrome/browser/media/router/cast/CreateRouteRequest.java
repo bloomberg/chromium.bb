@@ -73,6 +73,13 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             mSession.close();
             mSession = null;
         }
+
+        @Override
+        public void onVolumeChanged() {
+            if (mSession == null) return;
+
+            mSession.onVolumeChanged();
+        }
     }
 
     private final MediaSource mSource;
