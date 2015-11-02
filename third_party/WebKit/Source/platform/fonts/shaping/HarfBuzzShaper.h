@@ -238,7 +238,7 @@ private:
         bool isLastResort);
     bool collectFallbackHintChars(Vector<UChar32>& hint, bool needsList);
 
-    void insertRunIntoShapeResult(ShapeResult*, PassOwnPtr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs, int, hb_buffer_t*);
+    void insertRunIntoShapeResult(ShapeResult*, PassOwnPtr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs, hb_buffer_t*);
     float adjustSpacing(ShapeResult::RunInfo*, size_t glyphIndex, unsigned currentCharacterIndex, float& offsetX, float& totalAdvance);
 
     OwnPtr<UChar[]> m_normalizedBuffer;

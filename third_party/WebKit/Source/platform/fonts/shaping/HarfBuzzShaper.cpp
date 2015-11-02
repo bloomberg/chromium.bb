@@ -828,23 +828,23 @@ static const uint16_t* toUint16(const UChar* src)
 
 static inline void addToHarfBuzzBufferInternal(hb_buffer_t* buffer,
     const FontDescription& fontDescription, const UChar* normalizedBuffer,
-    unsigned startIndex, unsigned numCharacters)
+    unsigned normalizedBufferLength, unsigned startIndex, unsigned numCharacters)
 {
     // TODO: Revisit whether we can always fill the hb_buffer_t with the
     // full run text, but only specify startIndex and numCharacters for the part
     // to be shaped. Then simplify/change the complicated index computations in
     // extractShapeResults().
     if (fontDescription.variant() == FontVariantSmallCaps) {
-        String upperText = String(normalizedBuffer + startIndex, numCharacters)
+        String upperText = String(normalizedBuffer, normalizedBufferLength)
             .upper();
         // TextRun is 16 bit, therefore upperText is 16 bit, even after we call
         // makeUpper().
         ASSERT(!upperText.is8Bit());
         hb_buffer_add_utf16(buffer, toUint16(upperText.characters16()),
-            numCharacters, 0, numCharacters);
+            normalizedBufferLength, startIndex, numCharacters);
     } else {
-        hb_buffer_add_utf16(buffer, toUint16(normalizedBuffer + startIndex),
-            numCharacters, 0, numCharacters);
+        hb_buffer_add_utf16(buffer, toUint16(normalizedBuffer),
+            normalizedBufferLength, startIndex, numCharacters);
     }
 }
 
@@ -869,14 +869,9 @@ inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
     hb_buffer_set_direction(harfBuzzBuffer, TextDirectionToHBDirection(m_textRun.direction(),
         m_font->fontDescription().orientation(), currentFont));
 
-    // Add a space as pre-context to the buffer. This prevents showing dotted-circle
-    // for combining marks at the beginning of runs.
-    static const uint16_t preContext = spaceCharacter;
-    hb_buffer_add_utf16(harfBuzzBuffer, &preContext, 1, 1, 0);
-
     addToHarfBuzzBufferInternal(harfBuzzBuffer,
-        m_font->fontDescription(), m_normalizedBuffer.get(), startIndex,
-        numCharacters);
+        m_font->fontDescription(), m_normalizedBuffer.get(), m_normalizedBufferLength,
+        startIndex, numCharacters);
 
     HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(currentFontRangeFrom, currentFontRangeTo), hb_font_destroy);
     hb_shape(harfBuzzFont.get(), harfBuzzBuffer, m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
@@ -957,9 +952,9 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
         unsigned numGlyphsToInsert = 0;
         unsigned startIndex = 0;
         if (HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harfBuzzBuffer))) {
-            startIndex = currentQueueItem.m_startIndex + glyphInfo[lastChangePosition].cluster;
+            startIndex = glyphInfo[lastChangePosition].cluster;
             if (glyphIndex == numGlyphs) {
-                numCharacters = currentQueueItem.m_numCharacters - glyphInfo[lastChangePosition].cluster;
+                numCharacters = currentQueueItem.m_startIndex + currentQueueItem.m_numCharacters - glyphInfo[lastChangePosition].cluster;
                 numGlyphsToInsert = numGlyphs - lastChangePosition;
             } else {
                 numCharacters = glyphInfo[glyphIndex].cluster - glyphInfo[lastChangePosition].cluster;
@@ -967,9 +962,9 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
             }
         } else {
             // Direction Backwards
-            startIndex = currentQueueItem.m_startIndex + glyphInfo[glyphIndex - 1].cluster;
+            startIndex = glyphInfo[glyphIndex - 1].cluster;
             if (lastChangePosition == 0) {
-                numCharacters = currentQueueItem.m_numCharacters - glyphInfo[glyphIndex - 1].cluster;
+                numCharacters = currentQueueItem.m_startIndex + currentQueueItem.m_numCharacters - glyphInfo[glyphIndex - 1].cluster;
             } else {
                 numCharacters = glyphInfo[lastChangePosition - 1].cluster - glyphInfo[glyphIndex - 1].cluster;
             }
@@ -1003,7 +998,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
                 ICUScriptToHBScript(currentRunScript),
                 startIndex,
                 numGlyphsToInsert, numCharacters));
-            insertRunIntoShapeResult(shapeResult, run.release(), lastChangePosition, numGlyphsToInsert, currentQueueItem.m_startIndex, harfBuzzBuffer);
+            insertRunIntoShapeResult(shapeResult, run.release(), lastChangePosition, numGlyphsToInsert, harfBuzzBuffer);
         }
         lastChangePosition = glyphIndex;
     }
@@ -1167,7 +1162,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
 // TODO crbug.com/542701: This should be a method on ShapeResult.
 void HarfBuzzShaper::insertRunIntoShapeResult(ShapeResult* result,
     PassOwnPtr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs,
-    int bufferStartCharIndex, hb_buffer_t* harfBuzzBuffer)
+    hb_buffer_t* harfBuzzBuffer)
 {
     ASSERT(numGlyphs > 0);
     OwnPtr<ShapeResult::RunInfo> run(runToInsert);
@@ -1191,7 +1186,7 @@ void HarfBuzzShaper::insertRunIntoShapeResult(ShapeResult* result,
         // One out of x_advance and y_advance is zero, depending on
         // whether the buffer direction is horizontal or vertical.
         float advance = harfBuzzPositionToFloat(glyphPositions[startGlyph + i].x_advance - glyphPositions[startGlyph + i].y_advance);
-        unsigned currentCharacterIndex = bufferStartCharIndex + glyphInfos[startGlyph + i].cluster;
+        unsigned currentCharacterIndex = glyphInfos[startGlyph + i].cluster;
         RELEASE_ASSERT(m_normalizedBufferLength > currentCharacterIndex);
         bool isClusterEnd = runEnd || glyphInfos[startGlyph + i].cluster != glyphInfos[startGlyph + i + 1].cluster;
         float spacing = 0;
