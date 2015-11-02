@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
@@ -283,8 +283,13 @@ Status JwkReader::GetBytes(const std::string& member_name,
   if (status.IsError())
     return status;
 
-  if (!Base64DecodeUrlSafe(base64_string, result))
+  // The JSON web signature spec says that padding is omitted.
+  // https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2
+  if (!base::Base64UrlDecode(base64_string,
+                             base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+                             result)) {
     return Status::ErrorJwkBase64Decode(member_name);
+  }
 
   return Status::Success();
 }
@@ -357,44 +362,21 @@ void JwkWriter::SetString(const std::string& member_name,
 
 void JwkWriter::SetBytes(const std::string& member_name,
                          const CryptoData& value) {
-  dict_.SetString(member_name, Base64EncodeUrlSafe(base::StringPiece(
-                                   reinterpret_cast<const char*>(value.bytes()),
-                                   value.byte_length())));
+  // The JSON web signature spec says that padding is omitted.
+  // https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2
+  std::string base64url_encoded;
+  base::Base64UrlEncode(
+      base::StringPiece(reinterpret_cast<const char*>(value.bytes()),
+                        value.byte_length()),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64url_encoded);
+
+  dict_.SetString(member_name, base64url_encoded);
 }
 
 void JwkWriter::ToJson(std::vector<uint8_t>* utf8_bytes) const {
   std::string json;
   base::JSONWriter::Write(dict_, &json);
   utf8_bytes->assign(json.begin(), json.end());
-}
-
-bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
-  // The JSON web signature spec specifically says that padding is omitted.
-  if (input.find_first_of("+/=") != std::string::npos)
-    return false;
-
-  std::string base64_encoded_text(input);
-  std::replace(base64_encoded_text.begin(), base64_encoded_text.end(), '-',
-               '+');
-  std::replace(base64_encoded_text.begin(), base64_encoded_text.end(), '_',
-               '/');
-  base64_encoded_text.append((4 - base64_encoded_text.size() % 4) % 4, '=');
-  return base::Base64Decode(base64_encoded_text, output);
-}
-
-std::string Base64EncodeUrlSafe(const base::StringPiece& input) {
-  std::string output;
-  base::Base64Encode(input, &output);
-  std::replace(output.begin(), output.end(), '+', '-');
-  std::replace(output.begin(), output.end(), '/', '_');
-  output.erase(std::remove(output.begin(), output.end(), '='), output.end());
-  return output;
-}
-
-std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input) {
-  const base::StringPiece string_piece(
-      reinterpret_cast<const char*>(vector_as_array(&input)), input.size());
-  return Base64EncodeUrlSafe(string_piece);
 }
 
 Status GetWebCryptoUsagesFromJwkKeyOpsForTest(

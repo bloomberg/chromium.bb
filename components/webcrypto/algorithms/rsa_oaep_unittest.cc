@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64url.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_dispatch.h"
@@ -25,6 +26,17 @@ blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
       new blink::WebCryptoRsaOaepParams(
           !label.empty(), vector_as_array(&label),
           static_cast<unsigned int>(label.size())));
+}
+
+std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input) {
+  // The JSON web signature spec says that padding is omitted.
+  // https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2
+  std::string base64url_encoded;
+  base::Base64UrlEncode(
+      base::StringPiece(reinterpret_cast<const char*>(vector_as_array(&input)),
+                        input.size()),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &base64url_encoded);
+  return base64url_encoded;
 }
 
 scoped_ptr<base::DictionaryValue> CreatePublicKeyJwkDict() {

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/base64url.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -26,6 +27,17 @@
 #include "third_party/re2/re2/re2.h"
 
 namespace webcrypto {
+
+namespace {
+
+bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
+  // The JSON web signature spec says that padding is omitted.
+  // https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2
+  return base::Base64UrlDecode(
+      input, base::Base64UrlDecodePolicy::DISALLOW_PADDING, output);
+}
+
+}  // namespace
 
 // static
 void WebCryptoTestBase::SetUpTestCase() {

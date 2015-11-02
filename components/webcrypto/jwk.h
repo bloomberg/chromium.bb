@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
@@ -125,17 +124,6 @@ class JwkWriter {
  private:
   base::DictionaryValue dict_;
 };
-
-// This decodes JWK's flavor of base64 encoding, as described by:
-// https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-36#section-2
-//
-// In essence it is RFC 4648 'base64url' encoding where padding is omitted.
-bool Base64DecodeUrlSafe(const std::string& input, std::string* output);
-
-// Encodes |input| using JWK's flavor of base64 encoding. See the description
-// above for details.
-std::string Base64EncodeUrlSafe(const base::StringPiece& input);
-std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input);
 
 // Converts a JWK "key_ops" array to the corresponding WebCrypto usages. Used by
 // testing.
