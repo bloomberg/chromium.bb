@@ -158,7 +158,7 @@ public:
     }
 
 #ifndef NDEBUG
-    void show();
+    void show() const;
 #endif
 
     DECLARE_TRACE();

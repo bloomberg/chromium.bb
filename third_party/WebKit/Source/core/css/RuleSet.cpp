@@ -393,7 +393,7 @@ DEFINE_TRACE(RuleSet)
 }
 
 #ifndef NDEBUG
-void RuleSet::show()
+void RuleSet::show() const
 {
     for (const auto& rule: m_allRules)
         rule.selector().show();
