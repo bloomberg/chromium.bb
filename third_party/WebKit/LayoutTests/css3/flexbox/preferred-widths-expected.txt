@@ -14,22 +14,6 @@ horizontal-tb overflowY column-reverse
 PASS
 horizontal-tb overflowX column-reverse
 PASS
-horizontal-bt overflowY row
-PASS
-horizontal-bt overflowX row
-PASS
-horizontal-bt overflowY column
-PASS
-horizontal-bt overflowX column
-PASS
-horizontal-bt overflowY row-reverse
-PASS
-horizontal-bt overflowX row-reverse
-PASS
-horizontal-bt overflowY column-reverse
-PASS
-horizontal-bt overflowX column-reverse
-PASS
 vertical-lr overflowY row
 PASS
 vertical-lr overflowX row

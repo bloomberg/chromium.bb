@@ -1,12 +1,12 @@
 <div style="
-    width: 200px;
-    height: 100px;
+    width: 100px;
+    height: 200px;
     -webkit-columns: 2;
     -webkit-column-gap: 0;
     columns: 2;
     column-gap: 0;
     column-fill: auto;
-    -webkit-writing-mode: horizontal-bt;
+    writing-mode: vertical-rl;
     font: 20px Ahem;
 ">
     1111 2222 3333 4444 5
@@ -17,6 +17,6 @@
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    var offset = document.caretRangeFromPoint(38, 18).startOffset;
+    var offset = document.caretRangeFromPoint(18, 38).startOffset;
     document.getElementById("result").innerText = offset === 26 ? "PASS" : "FAIL";
 </script>

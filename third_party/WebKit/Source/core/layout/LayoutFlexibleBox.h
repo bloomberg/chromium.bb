@@ -83,6 +83,10 @@ private:
         NeverLayout
     };
 
+    enum class TransformedWritingMode {
+        TopToBottomWritingMode, RightToLeftWritingMode, LeftToRightWritingMode, BottomToTopWritingMode
+    };
+
     typedef HashMap<const LayoutBox*, LayoutUnit> InflexibleFlexItemSize;
     typedef Vector<LayoutBox*> OrderedFlexItemList;
 
@@ -107,7 +111,7 @@ private:
     LayoutUnit crossAxisContentExtent() const;
     LayoutUnit mainAxisContentExtent(LayoutUnit contentLogicalHeight);
     LayoutUnit computeMainAxisExtentForChild(const LayoutBox& child, SizeType, const Length& size);
-    WritingMode transformedWritingMode() const;
+    TransformedWritingMode transformedWritingMode() const;
     LayoutUnit flowAwareBorderStart() const;
     LayoutUnit flowAwareBorderEnd() const;
     LayoutUnit flowAwareBorderBefore() const;

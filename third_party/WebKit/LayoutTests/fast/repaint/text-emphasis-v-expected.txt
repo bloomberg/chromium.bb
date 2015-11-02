@@ -85,8 +85,8 @@ layer at (8,8) size 128x192
       LayoutText {#text} at (0,0) size 128x32
         text run at (0,0) width 128: "1111"
     LayoutBlockFlow {DIV} at (0,96) size 128x48
-      LayoutText {#text} at (0,0) size 128x32
-        text run at (0,0) width 128: "1111"
-    LayoutBlockFlow {DIV} at (0,144) size 128x48
       LayoutText {#text} at (0,16) size 128x32
         text run at (0,16) width 128: "1111"
+    LayoutBlockFlow {DIV} at (0,144) size 128x48
+      LayoutText {#text} at (0,0) size 128x32
+        text run at (0,0) width 128: "1111"

@@ -13,10 +13,6 @@
     -webkit-writing-mode: horizontal-tb;
 }
 
-.horizontal-bt {
-    -webkit-writing-mode: horizontal-bt;
-}
-
 .vertical-rl {
     -webkit-writing-mode: vertical-rl;
 }
@@ -54,7 +50,7 @@ p {
     to the same corner.</p>
 </body>
 <script>
-var writingModes = ['horizontal-bt', 'vertical-rl', 'vertical-lr', 'horizontal-tb'];
+var writingModes = ['vertical-rl', 'vertical-lr', 'horizontal-tb'];
 var flexDirections = ['row', 'column', 'row-reverse', 'column-reverse'];
 writingModes.forEach(function(writingMode) {
     flexDirections.forEach(function(flexDirection) {

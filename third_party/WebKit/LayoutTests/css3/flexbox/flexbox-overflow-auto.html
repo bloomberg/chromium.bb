@@ -20,10 +20,6 @@
     -webkit-writing-mode: horizontal-tb;
 }
 
-.horizontal-bt {
-    -webkit-writing-mode: horizontal-bt;
-}
-
 .vertical-rl {
     -webkit-writing-mode: vertical-rl;
 }
@@ -69,7 +65,7 @@
     <p>Scrollbars should work in all the flexboxes.</p>
 </body>
 <script>
-var writingModes = ['horizontal-tb', 'horizontal-bt', 'vertical-rl', 'vertical-lr'];
+var writingModes = ['horizontal-tb', 'vertical-rl', 'vertical-lr'];
 var flexDirections = ['row', 'column', 'row-reverse', 'column-reverse'];
 var testContents = '';
 writingModes.forEach(function(writingMode) {

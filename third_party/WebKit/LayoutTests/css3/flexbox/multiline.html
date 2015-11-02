@@ -23,9 +23,6 @@
 .horizontal-tb {
     -webkit-writing-mode: horizontal-tb;
 }
-.horizontal-bt {
-    -webkit-writing-mode: horizontal-bt;
-}
 .vertical-rl {
     -webkit-writing-mode: vertical-rl;
 }
@@ -220,160 +217,6 @@ var expectations = {
                     'child2': [10, 30, 0, 0],
                     'child3': [5, 60, 10, 0],
                     'child4': [20, 70, 15, -10],
-                    'child5': [10, 60, 35, 0],
-                },
-            },
-        },
-    },
-    'horizontal-bt': {
-        'row': {
-            'ltr': {
-                'wrap': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 0, 40],
-                    'child2': [30, 10, 30, 35],
-                    'child3': [60, 5, 0, 30],
-                    'child4': [70, 20, 0, 10],
-                    'child5': [60, 10, 0, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 0, 0],
-                    'child2': [30, 10, 30, 0],
-                    'child3': [60, 5, 0, 10],
-                    'child4': [70, 20, 0, 15],
-                    'child5': [60, 10, 0, 35],
-                },
-            },
-            'rtl': {
-                'wrap': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 30, 40],
-                    'child2': [30, 10, 0, 35],
-                    'child3': [60, 5, 0, 30],
-                    'child4': [70, 20, -10, 10],
-                    'child5': [60, 10, 0, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 30, 0],
-                    'child2': [30, 10, 0, 0],
-                    'child3': [60, 5, 0, 10],
-                    'child4': [70, 20, -10, 15],
-                    'child5': [60, 10, 0, 35],
-                },
-            },
-        },
-        'column': {
-            'ltr': {
-                'wrap': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 0, 30],
-                    'child2': [10, 30, 0, 0],
-                    'child3': [5, 60, 10, 0],
-                    'child4': [20, 70, 15, -10],
-                    'child5': [10, 60, 35, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 595, 30],
-                    'child2': [10, 30, 590, 0],
-                    'child3': [5, 60, 585, 0],
-                    'child4': [20, 70, 565, -10],
-                    'child5': [10, 60, 555, 0],
-                },
-            },
-            'rtl': {
-                'wrap': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 595, 30],
-                    'child2': [10, 30, 590, 0],
-                    'child3': [5, 60, 585, 0],
-                    'child4': [20, 70, 565, -10],
-                    'child5': [10, 60, 555, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 0, 30],
-                    'child2': [10, 30, 0, 0],
-                    'child3': [5, 60, 10, 0],
-                    'child4': [20, 70, 15, -10],
-                    'child5': [10, 60, 35, 0],
-                },
-            },
-        },
-        'row-reverse': {
-            'ltr': {
-                'wrap': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 30, 40],
-                    'child2': [30, 10, 0, 35],
-                    'child3': [60, 5, 0, 30],
-                    'child4': [70, 20, -10, 10],
-                    'child5': [60, 10, 0, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 30, 0],
-                    'child2': [30, 10, 0, 0],
-                    'child3': [60, 5, 0, 10],
-                    'child4': [70, 20, -10, 15],
-                    'child5': [60, 10, 0, 35],
-                },
-            },
-            'rtl': {
-                'wrap': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 0, 40],
-                    'child2': [30, 10, 30, 35],
-                    'child3': [60, 5, 0, 30],
-                    'child4': [70, 20, 0, 10],
-                    'child5': [60, 10, 0, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [60, 45],
-                    'child1': [30, 5, 0, 0],
-                    'child2': [30, 10, 30, 0],
-                    'child3': [60, 5, 0, 10],
-                    'child4': [70, 20, 0, 15],
-                    'child5': [60, 10, 0, 35],
-                },
-            },
-        },
-        'column-reverse': {
-            'ltr': {
-                'wrap': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 0, 0],
-                    'child2': [10, 30, 0, 30],
-                    'child3': [5, 60, 10, 0],
-                    'child4': [20, 70, 15, 0],
-                    'child5': [10, 60, 35, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 595, 0],
-                    'child2': [10, 30, 590, 30],
-                    'child3': [5, 60, 585, 0],
-                    'child4': [20, 70, 565, 0],
-                    'child5': [10, 60, 555, 0],
-                },
-            },
-            'rtl': {
-                'wrap': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 595, 0],
-                    'child2': [10, 30, 590, 30],
-                    'child3': [5, 60, 585, 0],
-                    'child4': [20, 70, 565, 0],
-                    'child5': [10, 60, 555, 0],
-                },
-                'wrap-reverse': {
-                    'flexbox': [600, 60],
-                    'child1': [5, 30, 0, 0],
-                    'child2': [10, 30, 0, 30],
-                    'child3': [5, 60, 10, 0],
-                    'child4': [20, 70, 15, 0],
                     'child5': [10, 60, 35, 0],
                 },
             },
@@ -711,7 +554,7 @@ function addChild(flexbox, mainAxis, crossAxis, preferredSize, crossAxisLength, 
     flexbox.appendChild(child);
 }
 
-var writingModes = ['horizontal-tb', 'horizontal-bt', 'vertical-rl', 'vertical-lr'];
+var writingModes = ['horizontal-tb', 'vertical-rl', 'vertical-lr'];
 var flexDirections = ['row', 'column', 'row-reverse', 'column-reverse'];
 var directions = ['ltr', 'rtl'];
 var wraps = ['wrap', 'wrap-reverse'];

@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <style>
-    #outer > div { margin: 0 25px; }
+    #outer > div { margin: 25px 0; }
 </style>
 <div id="outer" style="
     outline: dashed lightblue;
-    width: 150px;
+    height: 150px;
     padding: 25px;
-    -webkit-writing-mode: horizontal-bt;
+    writing-mode: vertical-rl;
 ">
     <div id="before-before" style="
         background-color: purple;
-        height: 10px;
+        width: 10px;
     "></div>
     <div id="before" style="
         background-color: silver;
-        height: 15px;
+        width: 15px;
     "></div>
     <div id="middle" style="
         background-color: blue;
-        height: 100px;
+        width: 100px;
     "></div>
     <div id="after" style="
         background-color: silver;
-        height: 15px;
+        width: 15px;
     "></div>
     <div id="after-after" style="
         background-color: purple;
-        height: 10px;
+        width: 10px;
     "></div>
 </div>
 <table id="results">
     <thead>
         <tr>
-            <th>y</th>
             <th>x</th>
+            <th>y</th>
             <th>element</th>
             <th>range start container</th>
         </tr>
@@ -50,11 +50,11 @@
         row.appendChild(document.createElement("td")).appendChild(document.createTextNode(text));
     }
 
-    function test(x, y)
+    function test(y, x)
     {
         var row = document.getElementById("table-body").appendChild(document.createElement("tr"));
-        addCell(row, y);
         addCell(row, x);
+        addCell(row, y);
         addCell(row, document.elementFromPoint(8 + x, 8 + y).id);
         addCell(row, document.caretRangeFromPoint(8 + x, 8 + y).startContainer.id);
     }

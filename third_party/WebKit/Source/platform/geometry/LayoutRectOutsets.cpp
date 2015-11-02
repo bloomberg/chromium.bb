@@ -76,8 +76,6 @@ LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const
     switch (writingMode) {
     case TopToBottomWritingMode:
         return m_top;
-    case BottomToTopWritingMode:
-        return m_bottom;
     case LeftToRightWritingMode:
         return m_left;
     case RightToLeftWritingMode:
@@ -92,8 +90,6 @@ LayoutUnit LayoutRectOutsets::after(WritingMode writingMode) const
     switch (writingMode) {
     case TopToBottomWritingMode:
         return m_bottom;
-    case BottomToTopWritingMode:
-        return m_top;
     case LeftToRightWritingMode:
         return m_right;
     case RightToLeftWritingMode:
@@ -123,9 +119,6 @@ void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value)
     case TopToBottomWritingMode:
         m_top = value;
         break;
-    case BottomToTopWritingMode:
-        m_bottom = value;
-        break;
     case LeftToRightWritingMode:
         m_left = value;
         break;
@@ -143,9 +136,6 @@ void LayoutRectOutsets::setAfter(WritingMode writingMode, LayoutUnit value)
     switch (writingMode) {
     case TopToBottomWritingMode:
         m_bottom = value;
-        break;
-    case BottomToTopWritingMode:
-        m_top = value;
         break;
     case LeftToRightWritingMode:
         m_right = value;

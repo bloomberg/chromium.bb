@@ -1533,8 +1533,6 @@ const BorderValue& ComputedStyle::borderBefore() const
     switch (writingMode()) {
     case TopToBottomWritingMode:
         return borderTop();
-    case BottomToTopWritingMode:
-        return borderBottom();
     case LeftToRightWritingMode:
         return borderLeft();
     case RightToLeftWritingMode:
@@ -1549,8 +1547,6 @@ const BorderValue& ComputedStyle::borderAfter() const
     switch (writingMode()) {
     case TopToBottomWritingMode:
         return borderBottom();
-    case BottomToTopWritingMode:
-        return borderTop();
     case LeftToRightWritingMode:
         return borderRight();
     case RightToLeftWritingMode:
@@ -1579,8 +1575,6 @@ int ComputedStyle::borderBeforeWidth() const
     switch (writingMode()) {
     case TopToBottomWritingMode:
         return borderTopWidth();
-    case BottomToTopWritingMode:
-        return borderBottomWidth();
     case LeftToRightWritingMode:
         return borderLeftWidth();
     case RightToLeftWritingMode:
@@ -1595,8 +1589,6 @@ int ComputedStyle::borderAfterWidth() const
     switch (writingMode()) {
     case TopToBottomWritingMode:
         return borderBottomWidth();
-    case BottomToTopWritingMode:
-        return borderTopWidth();
     case LeftToRightWritingMode:
         return borderRightWidth();
     case RightToLeftWritingMode:

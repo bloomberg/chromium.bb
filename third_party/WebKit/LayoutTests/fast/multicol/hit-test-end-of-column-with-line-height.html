@@ -6,8 +6,8 @@
     columns: 2;
     column-gap: 0;
     column-fill: auto;
-    width: 400px;
-    height: 80px;
+    -webkit-logical-width: 400px;
+    -webkit-logical-height: 80px;
     font: 20px Ahem;
     line-height: 2;
 ">Lorem ipsum dolor sit amet</div>
@@ -32,14 +32,14 @@
     log(hitOffset === 14 ? "PASS" : "FAIL: hit offset " + hitOffset + ".");
 
     // Now test with a flipped lines writing mode.
-    target.style.webkitWritingMode = "horizontal-bt";
+    target.style.webkitWritingMode = "vertical-rl";
 
     // Clicking above the last line in the first column should not select anything from the first
     // line on the second column.
-    hitOffset = document.caretRangeFromPoint(target.offsetLeft + 190, target.offsetTop + 3).startOffset;
+    hitOffset = document.caretRangeFromPoint(target.offsetLeft + 80, target.offsetTop + 193).startOffset;
     log(hitOffset === 11 ? "PASS" : "FAIL: hit offset " + hitOffset + ".");
 
     // Clicking below the first line in the second column should not snap to the beginning of the line.
-    hitOffset = document.caretRangeFromPoint(target.offsetLeft + 250, target.offsetTop + 78).startOffset;
+    hitOffset = document.caretRangeFromPoint(target.offsetLeft + 77, target.offsetTop + 250).startOffset;
     log(hitOffset === 14 ? "PASS" : "FAIL: hit offset " + hitOffset + ".");
 </script>

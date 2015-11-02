@@ -2668,9 +2668,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(WritingMode e)
     case LeftToRightWritingMode:
         m_value.valueID = CSSValueVerticalLr;
         break;
-    case BottomToTopWritingMode:
-        m_value.valueID = CSSValueHorizontalBt;
-        break;
     }
 }
 
@@ -2690,8 +2687,6 @@ template<> inline WritingMode CSSPrimitiveValue::convertTo() const
         return RightToLeftWritingMode;
     case CSSValueVerticalLr:
         return LeftToRightWritingMode;
-    case CSSValueHorizontalBt:
-        return BottomToTopWritingMode;
     default:
         break;
     }

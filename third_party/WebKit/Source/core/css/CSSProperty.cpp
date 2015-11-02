@@ -56,20 +56,6 @@ static CSSPropertyID resolveToPhysicalProperty(TextDirection direction, WritingM
             return shorthand.properties()[logicalSide];
         }
 
-        if (writingMode == BottomToTopWritingMode) {
-            // Start = Left, End = Right, Before = Bottom, After = Top.
-            switch (logicalSide) {
-            case StartSide:
-                return shorthand.properties()[LeftSide];
-            case EndSide:
-                return shorthand.properties()[RightSide];
-            case BeforeSide:
-                return shorthand.properties()[BottomSide];
-            default:
-                return shorthand.properties()[TopSide];
-            }
-        }
-
         if (writingMode == LeftToRightWritingMode) {
             // Start = Top, End = Bottom, Before = Left, After = Right.
             switch (logicalSide) {
@@ -111,20 +97,6 @@ static CSSPropertyID resolveToPhysicalProperty(TextDirection direction, WritingM
         }
     }
 
-    if (writingMode == BottomToTopWritingMode) {
-        // Start = Right, End = Left, Before = Bottom, After = Top
-        switch (logicalSide) {
-        case StartSide:
-            return shorthand.properties()[RightSide];
-        case EndSide:
-            return shorthand.properties()[LeftSide];
-        case BeforeSide:
-            return shorthand.properties()[BottomSide];
-        default:
-            return shorthand.properties()[TopSide];
-        }
-    }
-
     if (writingMode == LeftToRightWritingMode) {
         // Start = Bottom, End = Top, Before = Left, After = Right
         switch (logicalSide) {
@@ -156,7 +128,7 @@ enum LogicalExtent { LogicalWidth, LogicalHeight };
 
 static CSSPropertyID resolveToPhysicalProperty(WritingMode writingMode, LogicalExtent logicalSide, const CSSPropertyID* properties)
 {
-    if (writingMode == TopToBottomWritingMode || writingMode == BottomToTopWritingMode)
+    if (isHorizontalWritingMode(writingMode))
         return properties[logicalSide];
     return logicalSide == LogicalWidth ? properties[1] : properties[0];
 }

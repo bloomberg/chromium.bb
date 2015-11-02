@@ -25,9 +25,6 @@
 .horizontal-tb {
     -webkit-writing-mode: horizontal-tb;
 }
-.horizontal-bt {
-    -webkit-writing-mode: horizontal-bt;
-}
 .vertical-rl {
     -webkit-writing-mode: vertical-rl;
 }
@@ -105,22 +102,6 @@ var physicalExpectations = {
             childrow: [90, 20, 48, 23]
         }
     },
-    'horizontal-bt': {
-        rtl: {
-            containersize: horizontalContainerSize,
-            flexitemcolumn: [30, 100, 110, 10],
-            flexitemrow: [100, 50, 40, 60],
-            childcolumn: [20, 20, 118, 73],
-            childrow: [90, 20, 48, 73]
-        },
-        ltr : {
-            containersize: horizontalContainerSize,
-            flexitemcolumn: [30, 100, 40, 10],
-            flexitemrow: [100, 50, 40, 60],
-            childcolumn: [20, 20, 48, 73],
-            childrow: [90, 20, 48, 73]
-        }
-    },
     'vertical-lr': {
         rtl: {
             containersize: horizontalContainerSize,
@@ -172,22 +153,6 @@ var logicalExpectations = {
             childrow: [90, 20, 48, 23]
         }
     },
-    'horizontal-bt': {
-        rtl: {
-            containersize: horizontalContainerSize,
-            flexitemcolumn: [30, 100, 90, 30],
-            flexitemrow: [100, 50, 20, 80],
-            childcolumn: [20, 20, 92, 97],
-            childrow: [90, 20, 22, 97]
-        },
-        ltr : {
-            containersize: horizontalContainerSize,
-            flexitemcolumn: [30, 100, 40, 30],
-            flexitemrow: [100, 50, 40, 80],
-            childcolumn: [20, 20, 48, 97],
-            childrow: [90, 20, 48, 97]
-        }
-    },
     'vertical-lr': {
         rtl: {
             containersize: verticalContainerSize,
@@ -222,7 +187,7 @@ var logicalExpectations = {
     }
 }
 
-var writingModes = ['horizontal-tb', 'horizontal-bt', 'vertical-lr', 'vertical-rl'];
+var writingModes = ['horizontal-tb', 'vertical-lr', 'vertical-rl'];
 var flexFlows = ['row', 'column', 'row-reverse', 'column-reverse'];
 var directions = ['rtl', 'ltr'];
 var marginTypes = ['physical', 'logical'];

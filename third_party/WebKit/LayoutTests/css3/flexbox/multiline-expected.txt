@@ -30,38 +30,6 @@ horizontal-tb rtl column-reverse wrap
 PASS
 horizontal-tb rtl column-reverse wrap-reverse
 PASS
-horizontal-bt ltr row wrap
-PASS
-horizontal-bt ltr row wrap-reverse
-PASS
-horizontal-bt rtl row wrap
-PASS
-horizontal-bt rtl row wrap-reverse
-PASS
-horizontal-bt ltr column wrap
-PASS
-horizontal-bt ltr column wrap-reverse
-PASS
-horizontal-bt rtl column wrap
-PASS
-horizontal-bt rtl column wrap-reverse
-PASS
-horizontal-bt ltr row-reverse wrap
-PASS
-horizontal-bt ltr row-reverse wrap-reverse
-PASS
-horizontal-bt rtl row-reverse wrap
-PASS
-horizontal-bt rtl row-reverse wrap-reverse
-PASS
-horizontal-bt ltr column-reverse wrap
-PASS
-horizontal-bt ltr column-reverse wrap-reverse
-PASS
-horizontal-bt rtl column-reverse wrap
-PASS
-horizontal-bt rtl column-reverse wrap-reverse
-PASS
 vertical-rl ltr row wrap
 PASS
 vertical-rl ltr row wrap-reverse

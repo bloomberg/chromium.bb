@@ -186,7 +186,6 @@ inline LayoutUnit borderBeforeInWritingMode(const LayoutBox& layoutBox, WritingM
 {
     switch (writingMode) {
     case TopToBottomWritingMode: return layoutBox.borderTop();
-    case BottomToTopWritingMode: return layoutBox.borderBottom();
     case LeftToRightWritingMode: return layoutBox.borderLeft();
     case RightToLeftWritingMode: return layoutBox.borderRight();
     }
@@ -199,7 +198,6 @@ inline LayoutUnit borderAndPaddingBeforeInWritingMode(const LayoutBox& layoutBox
 {
     switch (writingMode) {
     case TopToBottomWritingMode: return layoutBox.borderTop() + layoutBox.paddingTop();
-    case BottomToTopWritingMode: return layoutBox.borderBottom() + layoutBox.paddingBottom();
     case LeftToRightWritingMode: return layoutBox.borderLeft() + layoutBox.paddingLeft();
     case RightToLeftWritingMode: return layoutBox.borderRight() + layoutBox.paddingRight();
     }

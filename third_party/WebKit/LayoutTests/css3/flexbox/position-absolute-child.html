@@ -22,9 +22,6 @@ body {
 .horizontal-tb {
     -webkit-writing-mode: horizontal-tb;
 }
-.horizontal-bt {
-    -webkit-writing-mode: horizontal-bt;
-}
 .vertical-rl {
     -webkit-writing-mode: vertical-rl;
 }
@@ -74,7 +71,7 @@ function getFlexDirection(flexFlow, writingMode)
     return (flexFlow.indexOf('row') != -1) ? 'height' : 'width';
 }
 
-var writingModes = ['horizontal-tb', 'horizontal-bt', 'vertical-rl', 'vertical-lr'];
+var writingModes = ['horizontal-tb', 'vertical-rl', 'vertical-lr'];
 var flexFlows = ['row', 'column', 'row-reverse', 'column-reverse'];
 var directions = ['ltr', 'rtl'];
 
@@ -174,106 +171,6 @@ var expectations = {
                 { offsets: [90, 50, 10], crossAxisOffset: 60 },
                 { offsets: [50, 50, 10], crossAxisOffset: 60 },
                 { offsets: [50, 10, 10], crossAxisOffset: 60 },
-            ],
-        },
-    },
-    'horizontal-bt': {
-        // This matches the horizontal-tb values above.
-        row: {
-            ltr: [
-                { offsets: [0, 0, 240], sizes: [0, 240, 360] },
-                { offsets: [0, 150, 150], sizes: [150, 0, 450] },
-                { offsets: [0, 200, 600], sizes: [200, 400, 0] },
-                { offsets: [0, 0, 560] },
-                { offsets: [0, 560, 560] },
-                { offsets: [0, 560, 600] },
-                { offsets: [10, 10, 50], crossAxisOffset: 60 },
-                { offsets: [10, 50, 50], crossAxisOffset: 60 },
-                { offsets: [10, 50, 90], crossAxisOffset: 60 },
-            ],
-            rtl: [
-                { offsets: [600, 360, 0], sizes: [0, 240, 360] },
-                { offsets: [450, 450, 0], sizes: [150, 0, 450] },
-                { offsets: [400, 0, 0], sizes: [200, 400, 0] },
-                { offsets: [580, 560, 0] },
-                { offsets: [560, 20, 0] },
-                { offsets: [560, 0, -20] },
-                { offsets: [50, 50, 10], crossAxisOffset: 60 },
-                { offsets: [50, 10, 10], crossAxisOffset: 60 },
-                { offsets: [50, 10, -30], crossAxisOffset: 60 },
-            ],
-        },
-        // horizontal-bt flips the main axis direction so the offsets are different from horizontal-tb.
-        column: {
-            ltr: [
-                { offsets: [120, 72, 0], sizes: [0, 48, 72] },
-                { offsets: [90, 90, 0], sizes: [30, 0, 90] },
-                { offsets: [80, 0, 0], sizes: [40, 80, 0] },
-                { offsets: [100, 80, 0] },
-                { offsets: [80, 20, 0] },
-                { offsets: [80, 0, -20] },
-                { offsets: [50, 50, 10], crossAxisOffset: 0 },
-                { offsets: [50, 10, 10], crossAxisOffset: 0 },
-                { offsets: [50, 10, -30], crossAxisOffset: 0 },
-            ],
-            rtl: [
-                { offsets: [120, 72, 0], sizes: [0, 48, 72] },
-                { offsets: [90, 90, 0], sizes: [30, 0, 90] },
-                { offsets: [80, 0, 0], sizes: [40, 80, 0] },
-                { offsets: [100, 80, 0] },
-                { offsets: [80, 20, 0] },
-                { offsets: [80, 0, -20] },
-                { offsets: [50, 50, 10], crossAxisOffset: 60 },
-                { offsets: [50, 10, 10], crossAxisOffset: 60 },
-                { offsets: [50, 10, -30], crossAxisOffset: 60 },
-            ],
-        },
-        'row-reverse': {
-            ltr: [
-                { offsets: [600, 360, 0], sizes: [0, 240, 360] },
-                { offsets: [450, 450, 0], sizes: [150, 0, 450] },
-                { offsets: [400, 0, 0], sizes: [200, 400, 0] },
-                { offsets: [600, 560, 0] },
-                { offsets: [560, 40, 0] },
-                { offsets: [560, 0, 0] },
-                { offsets: [90, 50, 10], crossAxisOffset: 60 },
-                { offsets: [50, 50, 10], crossAxisOffset: 60 },
-                { offsets: [50, 10, 10], crossAxisOffset: 60 },
-            ],
-            rtl: [
-                { offsets: [0, 0, 240], sizes: [0, 240, 360] },
-                { offsets: [0, 150, 150], sizes: [150, 0, 450] },
-                { offsets: [0, 200, 600], sizes: [200, 400, 0] },
-                { offsets: [-20, 0, 560] },
-                { offsets: [0, 540, 560] },
-                { offsets: [0, 560, 580] },
-                { offsets: [-30, 10, 50], crossAxisOffset: 60 },
-                { offsets: [10, 10, 50], crossAxisOffset: 60 },
-                { offsets: [10, 50, 50], crossAxisOffset: 60 },
-            ],
-        },
-        'column-reverse': {
-            ltr: [
-                { offsets: [0, 0, 48], sizes: [0, 48, 72] },
-                { offsets: [0, 30, 30], sizes: [30, 0, 90] },
-                { offsets: [0, 40, 120], sizes: [40, 80, 0] },
-                { offsets: [-20, 0, 80] },
-                { offsets: [0, 60, 80] },
-                { offsets: [0, 80, 100] },
-                { offsets: [-30, 10, 50], crossAxisOffset: 0 },
-                { offsets: [10, 10, 50], crossAxisOffset: 0 },
-                { offsets: [10, 50, 50], crossAxisOffset: 0 },
-            ],
-            rtl: [
-                { offsets: [0, 0, 48], sizes: [0, 48, 72] },
-                { offsets: [0, 30, 30], sizes: [30, 0, 90] },
-                { offsets: [0, 40, 120], sizes: [40, 80, 0] },
-                { offsets: [-20, 0, 80] },
-                { offsets: [0, 60, 80] },
-                { offsets: [0, 80, 100] },
-                { offsets: [-30, 10, 50], crossAxisOffset: 60 },
-                { offsets: [10, 10, 50], crossAxisOffset: 60 },
-                { offsets: [10, 50, 50], crossAxisOffset: 60 },
             ],
         },
     },

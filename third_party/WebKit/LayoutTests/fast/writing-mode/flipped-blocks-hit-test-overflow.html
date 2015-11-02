@@ -2,9 +2,9 @@
     #target { background-color: red; }
     #target:hover { background-color: green; }
 </style>
-<div style="margin: 100px 0 0 92px; -webkit-writing-mode: horizontal-bt; height: 100px; width: 100px;">
-    <div style="height: 100px;"></div>
-    <div id="target" style="height: 50px;"></div>
+<div style="margin: 92px 100px 0 100px; writing-mode: vertical-rl; height: 100px; width: 100px;">
+    <div style="width: 100px;"></div>
+    <div id="target" style="width: 50px;"></div>
 </div>
 <p>
     This tests hit-testing in the overflow area of flipped-blocks writing mode
@@ -17,7 +17,7 @@
 </p>
 <script>
     var target = document.getElementById("target");
-    var result = document.elementFromPoint(150, 75);
+    var result = document.elementFromPoint(75, 150);
     if (window.testRunner)
         testRunner.dumpAsText();
 

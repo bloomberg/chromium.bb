@@ -458,22 +458,26 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& chi
     return child.computeLogicalWidthUsing(sizeType, size, contentLogicalWidth(), this) - borderAndPadding;
 }
 
-WritingMode LayoutFlexibleBox::transformedWritingMode() const
+LayoutFlexibleBox::TransformedWritingMode LayoutFlexibleBox::transformedWritingMode() const
 {
     WritingMode mode = style()->writingMode();
-    if (!isColumnFlow())
-        return mode;
+    if (!isColumnFlow()) {
+        static_assert(static_cast<TransformedWritingMode>(TopToBottomWritingMode) == TransformedWritingMode::TopToBottomWritingMode
+            && static_cast<TransformedWritingMode>(LeftToRightWritingMode) == TransformedWritingMode::LeftToRightWritingMode
+            && static_cast<TransformedWritingMode>(RightToLeftWritingMode) == TransformedWritingMode::RightToLeftWritingMode,
+            "WritingMode and TransformedWritingMode must match values.");
+        return static_cast<TransformedWritingMode>(mode);
+    }
 
     switch (mode) {
     case TopToBottomWritingMode:
-    case BottomToTopWritingMode:
-        return style()->isLeftToRightDirection() ? LeftToRightWritingMode : RightToLeftWritingMode;
+        return style()->isLeftToRightDirection() ? TransformedWritingMode::LeftToRightWritingMode : TransformedWritingMode::RightToLeftWritingMode;
     case LeftToRightWritingMode:
     case RightToLeftWritingMode:
-        return style()->isLeftToRightDirection() ? TopToBottomWritingMode : BottomToTopWritingMode;
+        return style()->isLeftToRightDirection() ? TransformedWritingMode::TopToBottomWritingMode : TransformedWritingMode::BottomToTopWritingMode;
     }
     ASSERT_NOT_REACHED();
-    return TopToBottomWritingMode;
+    return TransformedWritingMode::TopToBottomWritingMode;
 }
 
 LayoutUnit LayoutFlexibleBox::flowAwareBorderStart() const
@@ -493,13 +497,13 @@ LayoutUnit LayoutFlexibleBox::flowAwareBorderEnd() const
 LayoutUnit LayoutFlexibleBox::flowAwareBorderBefore() const
 {
     switch (transformedWritingMode()) {
-    case TopToBottomWritingMode:
+    case TransformedWritingMode::TopToBottomWritingMode:
         return borderTop();
-    case BottomToTopWritingMode:
+    case TransformedWritingMode::BottomToTopWritingMode:
         return borderBottom();
-    case LeftToRightWritingMode:
+    case TransformedWritingMode::LeftToRightWritingMode:
         return borderLeft();
-    case RightToLeftWritingMode:
+    case TransformedWritingMode::RightToLeftWritingMode:
         return borderRight();
     }
     ASSERT_NOT_REACHED();
@@ -509,13 +513,13 @@ LayoutUnit LayoutFlexibleBox::flowAwareBorderBefore() const
 LayoutUnit LayoutFlexibleBox::flowAwareBorderAfter() const
 {
     switch (transformedWritingMode()) {
-    case TopToBottomWritingMode:
+    case TransformedWritingMode::TopToBottomWritingMode:
         return borderBottom();
-    case BottomToTopWritingMode:
+    case TransformedWritingMode::BottomToTopWritingMode:
         return borderTop();
-    case LeftToRightWritingMode:
+    case TransformedWritingMode::LeftToRightWritingMode:
         return borderRight();
-    case RightToLeftWritingMode:
+    case TransformedWritingMode::RightToLeftWritingMode:
         return borderLeft();
     }
     ASSERT_NOT_REACHED();
@@ -539,13 +543,13 @@ LayoutUnit LayoutFlexibleBox::flowAwarePaddingEnd() const
 LayoutUnit LayoutFlexibleBox::flowAwarePaddingBefore() const
 {
     switch (transformedWritingMode()) {
-    case TopToBottomWritingMode:
+    case TransformedWritingMode::TopToBottomWritingMode:
         return paddingTop();
-    case BottomToTopWritingMode:
+    case TransformedWritingMode::BottomToTopWritingMode:
         return paddingBottom();
-    case LeftToRightWritingMode:
+    case TransformedWritingMode::LeftToRightWritingMode:
         return paddingLeft();
-    case RightToLeftWritingMode:
+    case TransformedWritingMode::RightToLeftWritingMode:
         return paddingRight();
     }
     ASSERT_NOT_REACHED();
@@ -555,13 +559,13 @@ LayoutUnit LayoutFlexibleBox::flowAwarePaddingBefore() const
 LayoutUnit LayoutFlexibleBox::flowAwarePaddingAfter() const
 {
     switch (transformedWritingMode()) {
-    case TopToBottomWritingMode:
+    case TransformedWritingMode::TopToBottomWritingMode:
         return paddingBottom();
-    case BottomToTopWritingMode:
+    case TransformedWritingMode::BottomToTopWritingMode:
         return paddingTop();
-    case LeftToRightWritingMode:
+    case TransformedWritingMode::LeftToRightWritingMode:
         return paddingRight();
-    case RightToLeftWritingMode:
+    case TransformedWritingMode::RightToLeftWritingMode:
         return paddingLeft();
     }
     ASSERT_NOT_REACHED();
@@ -585,13 +589,13 @@ LayoutUnit LayoutFlexibleBox::flowAwareMarginEndForChild(const LayoutBox& child)
 LayoutUnit LayoutFlexibleBox::flowAwareMarginBeforeForChild(const LayoutBox& child) const
 {
     switch (transformedWritingMode()) {
-    case TopToBottomWritingMode:
+    case TransformedWritingMode::TopToBottomWritingMode:
         return child.marginTop();
-    case BottomToTopWritingMode:
+    case TransformedWritingMode::BottomToTopWritingMode:
         return child.marginBottom();
-    case LeftToRightWritingMode:
+    case TransformedWritingMode::LeftToRightWritingMode:
         return child.marginLeft();
-    case RightToLeftWritingMode:
+    case TransformedWritingMode::RightToLeftWritingMode:
         return child.marginRight();
     }
     ASSERT_NOT_REACHED();

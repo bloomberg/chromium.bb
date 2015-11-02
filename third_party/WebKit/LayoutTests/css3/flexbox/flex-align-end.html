@@ -32,9 +32,6 @@
 .horizontal-tb {
     -webkit-writing-mode: horizontal-tb;
 }
-.horizontal-bt {
-    -webkit-writing-mode: horizontal-bt;
-}
 .vertical-rl {
     -webkit-writing-mode: vertical-rl;
 }
@@ -58,12 +55,6 @@ var expectations = {
         'column': { rtl: [0, 0], ltr: [-10, 0]},
         'column-reverse': { rtl: [0, -10], ltr: [-10, -10]}
     },
-    'horizontal-bt': {
-        'row': { rtl: [-10, 0], ltr: [0, 0]},
-        'row-reverse': { rtl: [0, 0], ltr: [-10, 0]},
-        'column': { rtl: [0, -10], ltr: [-10, -10]},
-        'column-reverse': { rtl: [0, 0], ltr: [-10, 0]}
-    },
     'vertical-lr': {
         'row': { rtl: [-10, -10], ltr: [-10, 0]},
         'row-reverse': { rtl: [-10, 0], ltr: [-10, -10]},
@@ -78,7 +69,7 @@ var expectations = {
     }
 }
 
-var writingModes = ['horizontal-tb', 'horizontal-bt', 'vertical-lr', 'vertical-rl'];
+var writingModes = ['horizontal-tb', 'vertical-lr', 'vertical-rl'];
 var flexFlows = ['row', 'column', 'row-reverse', 'column-reverse'];
 var directions = ['ltr', 'rtl'];
 

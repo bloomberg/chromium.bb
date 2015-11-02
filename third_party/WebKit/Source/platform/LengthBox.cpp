@@ -48,8 +48,6 @@ const Length& LengthBox::before(WritingMode writingMode) const
     switch (writingMode) {
     case TopToBottomWritingMode:
         return m_top;
-    case BottomToTopWritingMode:
-        return m_bottom;
     case LeftToRightWritingMode:
         return m_left;
     case RightToLeftWritingMode:
@@ -64,8 +62,6 @@ const Length& LengthBox::after(WritingMode writingMode) const
     switch (writingMode) {
     case TopToBottomWritingMode:
         return m_bottom;
-    case BottomToTopWritingMode:
-        return m_top;
     case LeftToRightWritingMode:
         return m_right;
     case RightToLeftWritingMode:

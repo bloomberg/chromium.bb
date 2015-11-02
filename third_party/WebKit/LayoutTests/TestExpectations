@@ -338,6 +338,15 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
+crbug.com/533448 fast/html/details-writing-mode.html [ NeedsRebaseline ]
+crbug.com/533448 fast/ruby/position-after.html [ NeedsRebaseline ]
+crbug.com/533448 fast/table/border-collapsing/002-vertical.html [ NeedsRebaseline ]
+crbug.com/533448 fast/table/border-collapsing/equal-precedence-resolution-vertical.html [ NeedsRebaseline ]
+crbug.com/533448 fast/text/emphasis-avoid-ruby.html [ NeedsRebaseline ]
+crbug.com/533448 [ Linux Lion Mavericks MountainLion Retina Win XP ] fast/text/emphasis-overlap.html [ NeedsRebaseline ]
+crbug.com/533448 fast/text/emphasis.html [ NeedsRebaseline ]
+crbug.com/533448 [ Linux Mac XP Win7 ] fast/text/international/vertical-text-metrics-test.html [ NeedsRebaseline ]
+
 crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
@@ -1364,7 +1373,6 @@ crbug.com/521764 [ Win10 ] fast/tokenizer/001.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] fast/writing-mode/fallback-orientation.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/writing-mode/japanese-lr-text.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/writing-mode/japanese-rl-text.html [ Failure Timeout ]
-crbug.com/521764 [ Win10 ] fast/writing-mode/japanese-ruby-horizontal-bt.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/writing-mode/vertical-align-table-baseline.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/writing-mode/vertical-baseline-alignment.html [ Failure Timeout ]

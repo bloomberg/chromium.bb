@@ -4463,8 +4463,6 @@ LayoutRect LayoutBox::visualOverflowRectForPropagation(const ComputedStyle& pare
     // in a particular axis, then we have to flip the rect along that axis.
     if (style()->writingMode() == RightToLeftWritingMode || parentStyle.writingMode() == RightToLeftWritingMode)
         rect.setX(size().width() - rect.maxX());
-    else if (style()->writingMode() == BottomToTopWritingMode || parentStyle.writingMode() == BottomToTopWritingMode)
-        rect.setY(size().height() - rect.maxY());
 
     return rect;
 }
@@ -4515,8 +4513,6 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(const ComputedStyle& pare
     // in a particular axis, then we have to flip the rect along that axis.
     if (style()->writingMode() == RightToLeftWritingMode || parentStyle.writingMode() == RightToLeftWritingMode)
         rect.setX(size().width() - rect.maxX());
-    else if (style()->writingMode() == BottomToTopWritingMode || parentStyle.writingMode() == BottomToTopWritingMode)
-        rect.setY(size().height() - rect.maxY());
 
     return rect;
 }

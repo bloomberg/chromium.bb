@@ -1,5 +1,5 @@
 <meta name=viewport content="width=device-width">
-<div style="border: solid; -webkit-writing-mode: horizontal-bt; -webkit-logical-width: 200px; -webkit-logical-height: 400px;
+<div style="border: solid; writing-mode: vertical-rl; -webkit-logical-width: 200px; -webkit-logical-height: 400px;
     font-size: 36px; line-height: 2;
 ">
     Lorem ipsum dolor <span id="target">sit</span> amet consectetur adipiscing elit.
@@ -14,9 +14,9 @@
     var target = document.getElementById("target");
     var range = document.createRange();
     range.selectNode(target.firstChild);
-    var textTop = range.getClientRects()[0].top;
+    var textTop = range.getClientRects()[0].right;
     range.selectNode(target);
-    var spanTop = range.getClientRects()[0].top;
+    var spanTop = range.getClientRects()[0].right;
     if (spanTop === textTop)
         result.innerText = "PASS";
     else
