@@ -658,7 +658,7 @@
       'default_for_enterprise_users': False,
       'caption': '''Allow Dinosaur Easter Egg Game''',
       'tags': [],
-      'desc': '''Allow users to play dinosaur easter game when device is offline.
+      'desc': '''Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.''',
     },

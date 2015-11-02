@@ -1480,8 +1480,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           instant_service->IsInstantProcess(process->GetID()))
         command_line->AppendSwitch(switches::kInstantProcess);
 
-      if ((prefs->HasPrefPath(prefs::kAllowDinosaurEasterEgg) &&
-           (!prefs->GetBoolean(prefs::kAllowDinosaurEasterEgg))))
+      if (prefs->HasPrefPath(prefs::kAllowDinosaurEasterEgg) &&
+          !prefs->GetBoolean(prefs::kAllowDinosaurEasterEgg))
         command_line->AppendSwitch(switches::kDisableDinosaurEasterEgg);
     }
 
