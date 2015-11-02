@@ -4,7 +4,7 @@
 
 source_set("trace_event") {
   sources = [
-    "exported/trace_event_common.h",
+    "common/trace_event_common.h",
     "java_heap_dump_provider_android.cc",
     "java_heap_dump_provider_android.h",
     "memory_allocator_dump.cc",

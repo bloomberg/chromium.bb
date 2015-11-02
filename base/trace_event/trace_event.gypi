@@ -4,7 +4,7 @@
 {
   'variables': {
     'trace_event_sources' : [
-      'trace_event/exported/trace_event_common.h',
+      'trace_event/common/trace_event_common.h',
       'trace_event/java_heap_dump_provider_android.cc',
       'trace_event/java_heap_dump_provider_android.h',
       'trace_event/memory_allocator_dump.cc',
