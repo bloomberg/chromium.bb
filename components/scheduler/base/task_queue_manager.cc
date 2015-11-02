@@ -44,12 +44,10 @@ TaskQueueManager::TaskQueueManager(
                                      "TaskQueueManager", this);
   selector_.SetTaskQueueSelectorObserver(this);
 
-  do_work_from_main_thread_closure_ =
+  decrement_pending_and_do_work_closure_ =
       base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
-  do_work_from_other_thread_closure_ =
+  do_work_closure_ =
       base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
-  delayed_queue_wakeup_closure_ =
-      base::Bind(&TaskQueueManager::DelayedDoWork, weak_factory_.GetWeakPtr());
 }
 
 TaskQueueManager::~TaskQueueManager() {
@@ -222,21 +220,9 @@ void TaskQueueManager::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
       delayed_wakeup_multimap_.end()) {
     base::TimeDelta delay =
         std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
-    main_task_runner_->PostDelayedTask(FROM_HERE, delayed_queue_wakeup_closure_,
-                                       delay);
+    main_task_runner_->PostDelayedTask(FROM_HERE, do_work_closure_, delay);
   }
   delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));
-}
-
-void TaskQueueManager::DelayedDoWork() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  {
-    internal::LazyNow lazy_now(this);
-    WakeupReadyDelayedQueues(&lazy_now);
-  }
-
-  DoWork(false);
 }
 
 void TaskQueueManager::WakeupReadyDelayedQueues(internal::LazyNow* lazy_now) {
@@ -269,9 +255,10 @@ void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
       return;
     }
     pending_dowork_count_++;
-    main_task_runner_->PostTask(FROM_HERE, do_work_from_main_thread_closure_);
+    main_task_runner_->PostTask(FROM_HERE,
+                                decrement_pending_and_do_work_closure_);
   } else {
-    main_task_runner_->PostTask(FROM_HERE, do_work_from_other_thread_closure_);
+    main_task_runner_->PostTask(FROM_HERE, do_work_closure_);
   }
 }
 

@@ -183,7 +183,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   // from the thread the TaskQueueManager was created on.
   void UnregisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
 
-  // Schedule a call to DelayedDoWork at |delayed_run_time| which will call
+  // Schedule a call to DoWork at |delayed_run_time| which indirectly calls
   // TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue for |queue|.
   // Can be called from any thread.
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
@@ -193,10 +193,6 @@ class SCHEDULER_EXPORT TaskQueueManager
   // Function calling ScheduleDelayedWork that's suitable for use in base::Bind.
   void ScheduleDelayedWorkTask(scoped_refptr<internal::TaskQueueImpl> queue,
                                base::TimeTicks delayed_run_time);
-
-  // Calls WakeupReadyDelayedQueues followed by DoWork so that ready delayed
-  // tasks are enqueued and run. Must be called from the main thread.
-  void DelayedDoWork();
 
   // Call TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue for each
   // registered queue for which the delay has elapsed.
@@ -231,9 +227,8 @@ class SCHEDULER_EXPORT TaskQueueManager
   scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner_;
   internal::TaskQueueSelector selector_;
 
-  base::Closure do_work_from_main_thread_closure_;
-  base::Closure do_work_from_other_thread_closure_;
-  base::Closure delayed_queue_wakeup_closure_;
+  base::Closure decrement_pending_and_do_work_closure_;
+  base::Closure do_work_closure_;
 
   bool task_was_run_on_quiescence_monitored_queue_;
 
