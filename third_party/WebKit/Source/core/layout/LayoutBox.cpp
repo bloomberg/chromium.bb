@@ -2850,7 +2850,7 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
         return overrideContainingBlockContentLogicalWidth();
 
     if (containingBlock->isBox())
-        return toLayoutBox(containingBlock)->clientLogicalWidth();
+        return std::max(LayoutUnit(), toLayoutBox(containingBlock)->clientLogicalWidth());
 
     ASSERT(containingBlock->isLayoutInline() && containingBlock->isInFlowPositioned());
 
