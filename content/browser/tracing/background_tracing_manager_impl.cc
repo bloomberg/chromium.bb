@@ -213,7 +213,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   return true;
 }
 
-bool BackgroundTracingManagerImpl::HasActiveScenarioForTesting() {
+bool BackgroundTracingManagerImpl::HasActiveScenario() {
   return config_;
 }
 

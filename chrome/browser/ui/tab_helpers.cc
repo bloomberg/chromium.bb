@@ -250,10 +250,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
         web_contents);
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNavigationTracing) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTraceUploadURL)) {
+  if (tracing::NavigationTracingObserver::IsEnabled())
     tracing::NavigationTracingObserver::CreateForWebContents(web_contents);
-  }
 }

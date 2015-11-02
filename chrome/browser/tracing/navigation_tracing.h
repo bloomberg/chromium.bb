@@ -16,6 +16,9 @@ void SetupNavigationTracing();
 class NavigationTracingObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NavigationTracingObserver> {
+ public:
+  static bool IsEnabled();
+
  private:
   friend class content::WebContentsUserData<NavigationTracingObserver>;
 

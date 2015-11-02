@@ -228,14 +228,14 @@ class ChromeTracingDelegateBrowserTestOnStartup
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        ScenarioSetFromFieldtrial) {
   // We should reach this point without crashing.
-  EXPECT_TRUE(content::BackgroundTracingManager::GetInstance()
-                  ->HasActiveScenarioForTesting());
+  EXPECT_TRUE(
+      content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_StartupTracingThrottle) {
-  EXPECT_TRUE(content::BackgroundTracingManager::GetInstance()
-                  ->HasActiveScenarioForTesting());
+  EXPECT_TRUE(
+      content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 
   // Simulate a trace upload.
   PrefService* local_state = g_browser_process->local_state();
@@ -248,8 +248,8 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        StartupTracingThrottle) {
   // The startup scenario should *not* be started, since not enough
   // time has elapsed since the last upload (set in the PRE_ above).
-  EXPECT_FALSE(content::BackgroundTracingManager::GetInstance()
-                   ->HasActiveScenarioForTesting());
+  EXPECT_FALSE(
+      content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 }
 
 }  // namespace

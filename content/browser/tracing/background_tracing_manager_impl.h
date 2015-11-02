@@ -37,6 +37,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void OnRuleTriggered(const BackgroundTracingRule* triggered_rule,
                        StartedFinalizingCallback callback);
   void AbortScenario();
+  bool HasActiveScenario() override;
 
   // For tests
   void InvalidateTriggerHandlesForTesting() override;
@@ -45,7 +46,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   CONTENT_EXPORT void SetRuleTriggeredCallbackForTesting(
       const base::Closure& callback);
   void FireTimerForTesting() override;
-  bool HasActiveScenarioForTesting() override;
   CONTENT_EXPORT bool IsTracingForTesting();
 
  private:

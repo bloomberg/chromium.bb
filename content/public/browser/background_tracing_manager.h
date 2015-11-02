@@ -87,11 +87,12 @@ class BackgroundTracingManager {
   // be passed to DidTriggerHappen().
   virtual TriggerHandle RegisterTriggerType(const char* trigger_name) = 0;
 
+  virtual bool HasActiveScenario() = 0;
+
   virtual void InvalidateTriggerHandlesForTesting() = 0;
   virtual void SetTracingEnabledCallbackForTesting(
       const base::Closure& callback) = 0;
   virtual void FireTimerForTesting() = 0;
-  virtual bool HasActiveScenarioForTesting() = 0;
 
  protected:
   virtual ~BackgroundTracingManager() {}

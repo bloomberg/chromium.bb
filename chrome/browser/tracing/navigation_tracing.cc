@@ -78,6 +78,10 @@ void SetupNavigationTracing() {
       content::BackgroundTracingManager::NO_DATA_FILTERING);
 }
 
+bool NavigationTracingObserver::IsEnabled() {
+  return content::BackgroundTracingManager::GetInstance()->HasActiveScenario();
+}
+
 NavigationTracingObserver::NavigationTracingObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
