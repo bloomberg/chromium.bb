@@ -178,8 +178,9 @@
           'dependencies': [
             '../base/base.gyp:base_unittests_apk',
             '../base/base.gyp:chromium_android_linker',
-            '../breakpad/breakpad.gyp:dump_syms#host',
+            '../breakpad/breakpad.gyp:breakpad_unittests_deps',
             '../breakpad/breakpad.gyp:symupload#host',
+            '../breakpad/breakpad.gyp:microdump_stackwalk#host',
             '../breakpad/breakpad.gyp:minidump_dump#host',
             '../breakpad/breakpad.gyp:minidump_stackwalk#host',
             '../build/android/rezip.gyp:rezip_apk_jar',
@@ -391,9 +392,17 @@
             '../rlz/rlz.gyp:rlz_unittests',
           ],
         }],
+        ['OS=="linux" or OS=="android" or os_bsd==1', {
+          'dependencies': [
+            '../breakpad/breakpad.gyp:breakpad_unittests',
+            '../breakpad/breakpad.gyp:core-2-minidump',
+            '../breakpad/breakpad.gyp:dump_syms#host',
+            '../breakpad/breakpad.gyp:generate_test_dump',
+            '../breakpad/breakpad.gyp:minidump-2-core',
+          ],
+        }],
         ['OS=="linux" or os_bsd==1', {
           'dependencies': [
-            '../breakpad/breakpad.gyp:core-2-minidump',
             '../breakpad/breakpad.gyp:microdump_stackwalk',
             '../breakpad/breakpad.gyp:minidump_dump',
             '../breakpad/breakpad.gyp:minidump_stackwalk',
@@ -403,10 +412,6 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../breakpad/breakpad.gyp:breakpad_unittests',
-            '../breakpad/breakpad.gyp:dump_syms#host',
-            '../breakpad/breakpad.gyp:generate_test_dump',
-            '../breakpad/breakpad.gyp:minidump-2-core',
             '../dbus/dbus.gyp:dbus_test_server',
             '../dbus/dbus.gyp:dbus_unittests',
             '../media/cast/cast.gyp:tap_proxy',
@@ -737,7 +742,6 @@
           'dependencies': [
             '../base/base.gyp:base_perftests_apk',
             '../base/base.gyp:base_junit_tests',
-            '../breakpad/breakpad.gyp:breakpad_unittests_deps',
             '../cc/cc_tests.gyp:cc_perftests_apk',
             '../components/components.gyp:cronet_sample_apk',
             '../components/components.gyp:cronet_sample_test_apk',

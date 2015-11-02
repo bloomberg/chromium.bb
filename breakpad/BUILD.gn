@@ -4,6 +4,10 @@
 
 import("//testing/test.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 config("tools_config") {
   include_dirs = [
     "src",
@@ -180,6 +184,7 @@ if (!is_win && current_toolchain == host_toolchain) {
   }
 
   executable("minidump_dump") {
+    set_sources_assignment_filter([])
     sources = [
       "src/processor/basic_code_module.h",
       "src/processor/basic_code_modules.cc",
@@ -382,31 +387,29 @@ if (is_mac) {
   }
 }
 
-if (is_linux) {
-  executable("symupload") {
-    sources = [
-      "src/common/linux/http_upload.cc",
-      "src/common/linux/http_upload.h",
-      "src/tools/linux/symupload/sym_upload.cc",
-    ]
-
-    include_dirs = [
-      "src",
-      "src/third_party",
-    ]
-
-    configs += [ ":tools_config" ]
-
-    libs = [ "dl" ]
-
-    deps = [
-      "//build/config/sanitizers:deps",
-    ]
-  }
-}
-
 if (is_linux || is_android) {
   if (current_toolchain == host_toolchain) {
+    executable("symupload") {
+      sources = [
+        "src/common/linux/http_upload.cc",
+        "src/common/linux/http_upload.h",
+        "src/tools/linux/symupload/sym_upload.cc",
+      ]
+
+      include_dirs = [
+        "src",
+        "src/third_party",
+      ]
+
+      configs += [ ":tools_config" ]
+
+      libs = [ "dl" ]
+
+      deps = [
+        "//build/config/sanitizers:deps",
+      ]
+    }
+
     # dump_syms is a host tool, so only compile it for the host system.
     executable("dump_syms") {
       sources = [
@@ -555,6 +558,7 @@ if (is_linux || is_android) {
   }
 
   static_library("processor_support") {
+    set_sources_assignment_filter([])
     sources = [
       "src/common/scoped_ptr.h",
       "src/processor/basic_code_modules.cc",
@@ -580,10 +584,12 @@ if (is_linux || is_android) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
   }
-}
 
-if (is_linux) {
-  test("breakpad_unittests") {
+  # "breakpad_unittests" cannot use the test() template because the test is run
+  # as an executable not as an APK on Android.
+  executable("breakpad_unittests") {
+    testonly = true
+    set_sources_assignment_filter([])
     sources = [
       "linux/breakpad_googletest_includes.h",
       "src/client/linux/handler/exception_handler_unittest.cc",
@@ -616,6 +622,7 @@ if (is_linux) {
       ":client",
       ":processor_support",
       ":linux_dumper_unittest_helper",
+      "//build/config/sanitizers:deps",
       "//testing/gtest",
       "//testing/gtest:gtest_main",
       "//testing/gmock",
@@ -640,11 +647,11 @@ if (is_linux) {
       sources += [ "src/common/android/breakpad_getcontext_unittest.cc" ]
       libs = [ "log" ]
       include_dirs += [ "src/common/android/include" ]
-      isolate_file = "breakpad_unittests.isolate"
     }
   }
 
   executable("linux_dumper_unittest_helper") {
+    set_sources_assignment_filter([])
     testonly = true
     sources = [
       "src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc",
@@ -662,6 +669,7 @@ if (is_linux) {
   }
 
   executable("generate_test_dump") {
+    set_sources_assignment_filter([])
     testonly = true
     sources = [
       "linux/generate-test-dump.cc",
@@ -685,6 +693,7 @@ if (is_linux) {
   }
 
   executable("minidump-2-core") {
+    set_sources_assignment_filter([])
     sources = [
       "src/tools/linux/md2core/minidump-2-core.cc",
     ]
@@ -698,6 +707,7 @@ if (is_linux) {
   }
 
   executable("core-2-minidump") {
+    set_sources_assignment_filter([])
     sources = [
       "src/tools/linux/core2md/core2md.cc",
     ]
@@ -816,5 +826,27 @@ if (is_win) {
     ]
     configs += [ ":sender_config" ]
     public_configs = [ ":sender_config" ]
+  }
+}
+
+if (is_android) {
+  create_native_executable_dist("breakpad_unittests_deps") {
+    testonly = true
+    dist_dir = "$root_out_dir/breakpad_unittests_deps"
+    binary = "$root_out_dir/breakpad_unittests"
+    deps = [
+      ":breakpad_unittests",
+    ]
+
+    if (is_component_build) {
+      deps += [ "//build/android:cpplib_stripped" ]
+    }
+  }
+
+  test_runner_script("breakpad_unittests__test_runner_script") {
+    test_name = "breakpad_unittests"
+    test_type = "gtest"
+    test_suite = "breakpad_unittests"
+    isolate_file = "breakpad_unittests.isolate"
   }
 }

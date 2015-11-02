@@ -299,9 +299,11 @@ group("both_gn_and_gyp") {
     }
   }
 
-  if (is_linux) {  # TODO(GYP): || is_android || is_bsd?
+  if (is_linux || is_android) {  # TODO(GYP): || is_bsd?
     deps += [
+      "//breakpad:breakpad_unittests",
       "//breakpad:core-2-minidump",
+      "//breakpad:generate_test_dump",
       "//breakpad:minidump-2-core",
     ]
   }
@@ -324,8 +326,6 @@ group("both_gn_and_gyp") {
   if (is_linux) {
     # The following are definitely linux-only.
     deps += [
-      "//breakpad:breakpad_unittests",
-      "//breakpad:generate_test_dump",
       "//dbus:dbus_test_server",
       "//dbus:dbus_unittests",
       "//net:disk_cache_memory_test",
@@ -705,8 +705,12 @@ if (!is_ios) {
     # so we need to specify the dependencies here instead.
     if (is_android) {
       deps += [
+        "//breakpad:breakpad_unittests_deps",
         "//breakpad:dump_syms($host_toolchain)",
+        "//breakpad:microdump_stackwalk($host_toolchain)",
+        "//breakpad:minidump_dump($host_toolchain)",
         "//breakpad:minidump_stackwalk($host_toolchain)",
+        "//breakpad:symupload($host_toolchain)",
         "//content/shell/android:content_shell_apk",
         "//tools/imagediff($host_toolchain)",
       ]
