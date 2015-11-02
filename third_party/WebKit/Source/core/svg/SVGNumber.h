@@ -72,12 +72,7 @@ protected:
     float m_value;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGNumber> toSVGNumber(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGNumber::classType());
-    return static_pointer_cast<SVGNumber>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumber);
 
 // SVGNumber which also accepts percentage as its value.
 // This is used for <stop> "offset"

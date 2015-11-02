@@ -3,14 +3,18 @@
 <body>
 <template id="target-template">
 <svg width="0" height="0">
-<stop class="target" />
+<defs>
+<filter>
+<feDisplacementMap class="target" />
+</filter>
+</defs>
 </svg>
 </template>
 <script src="../svg-attribute-interpolation/resources/interpolation-test.js"></script>
 <script>
 'use strict';
 assertAttributeInterpolation({
-  property: 'offset',
+  property: 'scale',
   underlying: '3',
   from: '1',
   fromComposite: 'add',
@@ -26,7 +30,7 @@ assertAttributeInterpolation({
 ]);
 
 assertAttributeInterpolation({
-  property: 'offset',
+  property: 'scale',
   underlying: '5',
   from: '1',
   fromComposite: 'replace',
@@ -42,7 +46,7 @@ assertAttributeInterpolation({
 ]);
 
 assertAttributeInterpolation({
-  property: 'offset',
+  property: 'scale',
   underlying: '5',
   from: '',
   fromComposite: 'add',

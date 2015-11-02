@@ -38,6 +38,7 @@
 #include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
+#include "core/animation/SVGNumberInterpolationType.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/SVGValueInterpolationType.h"
 #include "core/animation/TransformSVGInterpolation.h"
@@ -262,7 +263,33 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(PropertyHandl
         applicableTypes->append(new CSSValueInterpolationType(cssProperty));
     } else {
         const QualifiedName& attribute = property.svgAttribute();
-        if (attribute == HTMLNames::classAttr
+        if (attribute == SVGNames::amplitudeAttr
+            || attribute == SVGNames::azimuthAttr
+            || attribute == SVGNames::biasAttr
+            || attribute == SVGNames::diffuseConstantAttr
+            || attribute == SVGNames::divisorAttr
+            || attribute == SVGNames::elevationAttr
+            || attribute == SVGNames::exponentAttr
+            || attribute == SVGNames::interceptAttr
+            || attribute == SVGNames::k1Attr
+            || attribute == SVGNames::k2Attr
+            || attribute == SVGNames::k3Attr
+            || attribute == SVGNames::k4Attr
+            || attribute == SVGNames::limitingConeAngleAttr
+            || attribute == SVGNames::offsetAttr
+            || attribute == SVGNames::pathLengthAttr
+            || attribute == SVGNames::pointsAtXAttr
+            || attribute == SVGNames::pointsAtYAttr
+            || attribute == SVGNames::pointsAtZAttr
+            || attribute == SVGNames::scaleAttr
+            || attribute == SVGNames::seedAttr
+            || attribute == SVGNames::slopeAttr
+            || attribute == SVGNames::specularConstantAttr
+            || attribute == SVGNames::specularExponentAttr
+            || attribute == SVGNames::surfaceScaleAttr
+            || attribute == SVGNames::zAttr) {
+            applicableTypes->append(new SVGNumberInterpolationType(attribute));
+        } else if (attribute == HTMLNames::classAttr
             || attribute == SVGNames::clipPathUnitsAttr
             || attribute == SVGNames::edgeModeAttr
             || attribute == SVGNames::filterUnitsAttr
@@ -290,10 +317,13 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(PropertyHandl
             || attribute == SVGNames::xChannelSelectorAttr
             || attribute == SVGNames::yChannelSelectorAttr
             || attribute == XLinkNames::hrefAttr) {
-            applicableTypes->append(new SVGValueInterpolationType(attribute));
+            // Use default SVGValueInterpolationType.
         } else {
             fallbackToLegacy = true;
         }
+
+        if (!fallbackToLegacy)
+            applicableTypes->append(new SVGValueInterpolationType(attribute));
     }
 
     if (fallbackToLegacy) {
@@ -539,10 +569,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedLengthList:
         interpolation = ListSVGInterpolation<LengthSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
-    case AnimatedNumber: {
-        SVGNumberNegativeValuesMode negativeValuesMode = &attribute->attributeName() == &SVGNames::pathLengthAttr ? ForbidNegativeNumbers : AllowNegativeNumbers;
-        return NumberSVGInterpolation::create(fromValue, toValue, attribute, negativeValuesMode);
-    }
     case AnimatedNumberOptionalNumber:
         return NumberOptionalNumberSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedNumberList:
@@ -559,6 +585,11 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     case AnimatedTransformList:
         interpolation = ListSVGInterpolation<TransformSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
+
+    // Handled by SVGInterpolationTypes.
+    case AnimatedNumber:
+        ASSERT_NOT_REACHED();
+        // Fallthrough.
 
     // TODO(ericwilligers): Support more animation types.
     default:
