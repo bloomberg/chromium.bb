@@ -1,9 +1,9 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 746
+layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x746 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x746
-    LayoutBlockFlow {BODY} at (8,8) size 769x0
-      LayoutBlockFlow (floating) {DIV} at (8,8) size 366x146 [border: (3px solid #000000)]
+layer at (0,0) size 800x569
+  LayoutBlockFlow {HTML} at (0,0) size 800x569
+    LayoutBlockFlow {BODY} at (8,8) size 784x553
+      LayoutBlockFlow {DIV} at (4,4) size 366x146 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 270x27
           text run at (3,3) width 270: "Lorem ipsum dolor sit amet,"
         LayoutInline {SPAN} at (0,0) size 213x27
@@ -19,7 +19,9 @@ layer at (0,0) size 785x746 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (112,73) width 12: ", "
           text run at (124,73) width 209: "lobortis eu iaculis vel,"
           text run at (3,115) width 207: "scelerisque nec dolor."
-      LayoutBlockFlow (floating) {DIV} at (390,8) size 366x146 [border: (3px solid #000000)]
+      LayoutText {#text} at (374,119) size 6x27
+        text run at (374,119) width 6: " "
+      LayoutBlockFlow {DIV} at (384,4) size 366x146 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 270x27
           text run at (3,3) width 270: "Lorem ipsum dolor sit amet,"
         LayoutInline {SPAN} at (0,0) size 213x27
@@ -35,7 +37,8 @@ layer at (0,0) size 785x746 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (112,73) width 12: ", "
           text run at (124,73) width 209: "lobortis eu iaculis vel,"
           text run at (3,115) width 207: "scelerisque nec dolor."
-      LayoutBlockFlow (floating) {DIV} at (8,170) size 366x185 [border: (3px solid #000000)]
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (4,158) size 366x185 [border: (3px solid #000000)]
         LayoutText {#text} at (3,18) size 70x27
           text run at (3,18) width 70: "Lorem "
         LayoutInline {SPAN} at (0,0) size 57x27
@@ -95,67 +98,67 @@ layer at (0,0) size 785x746 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (196,126) width 6: " "
           text run at (202,126) width 131: "eu iaculis vel,"
           text run at (3,154) width 207: "scelerisque nec dolor."
-      LayoutBlockFlow (floating) {DIV} at (390,170) size 366x184 [border: (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 70x27
-          text run at (3,3) width 70: "Lorem "
-        LayoutInline {SPAN} at (0,0) size 57x27
-          LayoutText {#text} at (73,3) size 57x27
-            text run at (73,3) width 57: "ipsum"
-        LayoutText {#text} at (130,3) size 6x27
-          text run at (130,3) width 6: " "
-        LayoutInline {SPAN} at (0,0) size 50x27
-          LayoutText {#text} at (136,3) size 50x27
-            text run at (136,3) width 50: "dolor"
-        LayoutText {#text} at (186,3) size 6x27
-          text run at (186,3) width 6: " "
-        LayoutInline {SPAN} at (0,0) size 22x27
-          LayoutText {#text} at (192,3) size 22x27
-            text run at (192,3) width 22: "sit"
-        LayoutText {#text} at (214,3) size 6x27
-          text run at (214,3) width 6: " "
-        LayoutInline {SPAN} at (0,0) size 47x27
-          LayoutText {#text} at (220,3) size 47x27
-            text run at (220,3) width 47: "amet"
-        LayoutText {#text} at (267,3) size 6x27
-          text run at (267,3) width 6: ","
-        LayoutInline {SPAN} at (0,0) size 111x27
-          LayoutText {#text} at (3,45) size 111x27
-            text run at (3,45) width 111: "consectetur"
-        LayoutText {#text} at (114,45) size 6x27
-          text run at (114,45) width 6: " "
-        LayoutInline {SPAN} at (0,0) size 96x27
-          LayoutText {#text} at (120,45) size 96x27
-            text run at (120,45) width 96: "adipiscing"
-        LayoutText {#text} at (216,45) size 6x27
-          text run at (216,45) width 6: " "
-        LayoutInline {SPAN} at (0,0) size 30x27
-          LayoutText {#text} at (222,45) size 30x27
-            text run at (222,45) width 30: "elit"
-        LayoutText {#text} at (252,45) size 12x27
-          text run at (252,45) width 12: ". "
-        LayoutInline {SPAN} at (0,0) size 82x27
-          LayoutText {#text} at (264,45) size 82x27
-            text run at (264,45) width 82: "Aliquam"
-        LayoutText {#text} at (346,45) size 6x27
-          text run at (346,45) width 6: ","
-        LayoutInline {SPAN} at (0,0) size 42x27
-          LayoutText {#text} at (3,99) size 42x27
-            text run at (3,99) width 42: "odio"
-        LayoutText {#text} at (45,99) size 6x27
-          text run at (45,99) width 6: " "
-        LayoutInline {SPAN} at (0,0) size 61x27
-          LayoutText {#text} at (51,99) size 61x27
-            text run at (51,99) width 61: "sapien"
-        LayoutText {#text} at (112,99) size 12x27
-          text run at (112,99) width 12: ", "
-        LayoutInline {SPAN} at (0,0) size 72x27
-          LayoutText {#text} at (124,99) size 72x27
-            text run at (124,99) width 72: "lobortis"
-        LayoutText {#text} at (196,99) size 330x81
-          text run at (196,99) width 6: " "
-          text run at (202,99) width 131: "eu iaculis vel,"
-          text run at (3,153) width 207: "scelerisque nec dolor."
-      LayoutBlockFlow (floating) {DIV} at (390,370) size 366x198 [border: (3px solid #000000)]
+      LayoutText {#text} at (374,312) size 6x27
+        text run at (374,312) width 6: " "
+      LayoutBlockFlow {DIV} at (384,173) size 366x156 [border: (3px solid #000000)]
+        LayoutText {#text} at (30,3) size 27x70
+          text run at (30,3) width 70: "Lorem "
+        LayoutInline {SPAN} at (0,0) size 27x57
+          LayoutText {#text} at (30,73) size 27x57
+            text run at (30,73) width 57: "ipsum"
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutInline {SPAN} at (0,0) size 27x50
+          LayoutText {#text} at (84,3) size 27x50
+            text run at (84,3) width 50: "dolor"
+        LayoutText {#text} at (84,53) size 27x6
+          text run at (84,53) width 6: " "
+        LayoutInline {SPAN} at (0,0) size 27x22
+          LayoutText {#text} at (84,59) size 27x22
+            text run at (84,59) width 22: "sit"
+        LayoutText {#text} at (84,81) size 27x6
+          text run at (84,81) width 6: " "
+        LayoutInline {SPAN} at (0,0) size 27x47
+          LayoutText {#text} at (84,87) size 27x47
+            text run at (84,87) width 47: "amet"
+        LayoutText {#text} at (84,134) size 27x6
+          text run at (84,134) width 6: ","
+        LayoutInline {SPAN} at (0,0) size 27x111
+          LayoutText {#text} at (125,3) size 27x111
+            text run at (125,3) width 111: "consectetur"
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutInline {SPAN} at (0,0) size 27x96
+          LayoutText {#text} at (179,3) size 27x96
+            text run at (179,3) width 96: "adipiscing"
+        LayoutText {#text} at (179,99) size 27x6
+          text run at (179,99) width 6: " "
+        LayoutInline {SPAN} at (0,0) size 27x30
+          LayoutText {#text} at (179,105) size 27x30
+            text run at (179,105) width 30: "elit"
+        LayoutText {#text} at (179,135) size 27x6
+          text run at (179,135) width 6: "."
+        LayoutInline {SPAN} at (0,0) size 27x82
+          LayoutText {#text} at (221,3) size 27x82
+            text run at (221,3) width 82: "Aliquam"
+        LayoutText {#text} at (221,85) size 27x12
+          text run at (221,85) width 12: ", "
+        LayoutInline {SPAN} at (0,0) size 27x42
+          LayoutText {#text} at (221,97) size 27x42
+            text run at (221,97) width 42: "odio"
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutInline {SPAN} at (0,0) size 27x61
+          LayoutText {#text} at (275,3) size 27x61
+            text run at (275,3) width 61: "sapien"
+        LayoutText {#text} at (275,64) size 27x12
+          text run at (275,64) width 12: ", "
+        LayoutInline {SPAN} at (0,0) size 27x72
+          LayoutText {#text} at (275,76) size 27x72
+            text run at (275,76) width 72: "lobortis"
+        LayoutText {#text} at (303,3) size 83x146
+          text run at (303,3) width 131: "eu iaculis vel,"
+          text run at (331,3) width 146: "scelerisque nec"
+          text run at (359,3) width 55: "dolor."
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (4,351) size 366x198 [border: (3px solid #000000)]
         LayoutText {#text} at (3,13) size 270x27
           text run at (3,13) width 270: "Lorem ipsum dolor sit amet,"
         LayoutInline {SPAN} at (0,0) size 213x27
@@ -171,7 +174,9 @@ layer at (0,0) size 785x746 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (112,109) width 12: ", "
           text run at (124,109) width 209: "lobortis eu iaculis vel,"
           text run at (3,157) width 207: "scelerisque nec dolor."
-      LayoutBlockFlow (floating) {DIV} at (8,584) size 366x146 [border: (3px solid #000000)]
+      LayoutText {#text} at (374,508) size 6x27
+        text run at (374,508) width 6: " "
+      LayoutBlockFlow {DIV} at (384,393) size 366x146 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 270x27
           text run at (3,3) width 270: "Lorem ipsum dolor sit amet,"
         LayoutInline {SPAN} at (0,0) size 213x27
@@ -187,5 +192,7 @@ layer at (0,0) size 785x746 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (112,73) width 12: ", "
           text run at (124,73) width 209: "lobortis eu iaculis vel,"
           text run at (3,115) width 207: "scelerisque nec dolor."
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 selection start: position 10 of child 0 {#text} of child 1 {SPAN} of child 10 {DIV} of body
 selection end:   position 7 of child 0 {#text} of child 3 {SPAN} of child 10 {DIV} of body

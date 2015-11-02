@@ -3,20 +3,16 @@ Simple text path
 string「あ、変っ！」。
 string「あ、変っ！」。
 string「あ、変っ！」。
-string「あ、変っ！」。
 
 Complex text path
 
 string「あ、変っ！」。
 string「あ、変っ！」。
 string「あ、変っ！」。
-string「あ、変っ！」。
 
 width=194
-width=194
 width=24
 width=24
-width=194
 width=194
 width=24
 width=24
