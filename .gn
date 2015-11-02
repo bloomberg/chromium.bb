@@ -106,7 +106,8 @@ check_targets = [
   #"//components/metrics/*",
   #"//components/metrics_services_manager/*",
   #"//components/mime_util/*",
-  #"//components/mus/*",
+  "//components/mus/*",
+
   #"//components/nacl/*",
   #"//components/navigation_interception/*",
   #"//components/navigation_metrics/*",

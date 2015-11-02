@@ -8,7 +8,6 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
-#include "ui/mojo/geometry/geometry_util.h"
 
 WindowLayout::WindowLayout(mus::Window* owner) : LayoutManager(owner) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);

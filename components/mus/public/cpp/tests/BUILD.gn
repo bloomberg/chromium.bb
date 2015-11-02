@@ -11,6 +11,7 @@ source_set("unittest_support") {
   ]
 
   deps = [
+    "//base",
     "//components/mus/public/cpp",
   ]
 }
