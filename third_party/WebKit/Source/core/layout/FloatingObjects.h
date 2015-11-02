@@ -49,11 +49,9 @@ public:
     // Note that Type uses bits so you can use FloatLeftRight as a mask to query for both left and right.
     enum Type { FloatLeft = 1, FloatRight = 2, FloatLeftRight = 3 };
 
-    enum Ownership { DirectlyContained, IndirectlyContained, IntrudingNonDescendant };
-
     static PassOwnPtr<FloatingObject> create(LayoutBox*);
 
-    PassOwnPtr<FloatingObject> copyToNewContainer(LayoutSize, Ownership) const;
+    PassOwnPtr<FloatingObject> copyToNewContainer(LayoutSize, bool shouldPaint = false, bool isDescendant = false) const;
 
     PassOwnPtr<FloatingObject> unsafeClone() const;
 
@@ -85,8 +83,10 @@ public:
     void setIsInPlacedTree(bool value) { m_isInPlacedTree = value; }
 #endif
 
-    bool isDirectlyContained() const { return m_ownership == DirectlyContained; }
-    bool isDescendant() const { return m_ownership == DirectlyContained || m_ownership == IndirectlyContained; }
+    bool shouldPaint() const { return m_shouldPaint; }
+    void setShouldPaint(bool shouldPaint) { m_shouldPaint = shouldPaint; }
+    bool isDescendant() const { return m_isDescendant; }
+    void setIsDescendant(bool isDescendant) { m_isDescendant = isDescendant; }
     bool isLowestNonOverhangingFloatInChild() const { return m_isLowestNonOverhangingFloatInChild; }
     void setIsLowestNonOverhangingFloatInChild(bool isLowestNonOverhangingFloatInChild) { m_isLowestNonOverhangingFloatInChild = isLowestNonOverhangingFloatInChild; }
 
@@ -96,7 +96,7 @@ public:
 
 private:
     explicit FloatingObject(LayoutBox*);
-    FloatingObject(LayoutBox*, Type, const LayoutRect&, Ownership, bool isLowestNonOverhangingFloatInChild);
+    FloatingObject(LayoutBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant, bool isLowestNonOverhangingFloatInChild);
 
     LayoutBox* m_layoutObject;
     RootInlineBox* m_originatingLine;
@@ -104,7 +104,8 @@ private:
     int m_paginationStrut; // FIXME: Is this class size-sensitive? Does this need 32-bits?
 
     unsigned m_type : 2; // Type (left or right aligned)
-    unsigned m_ownership : 2; // Ownership
+    unsigned m_shouldPaint : 1;
+    unsigned m_isDescendant : 1;
     unsigned m_isPlaced : 1;
     unsigned m_isLowestNonOverhangingFloatInChild : 1;
 #if ENABLE(ASSERT)

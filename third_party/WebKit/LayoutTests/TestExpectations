@@ -899,6 +899,15 @@ crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] fast/text/international/bdo-bidi-width.html [ Failure ]
 
+crbug.com/507950 fast/repaint/content-into-overflow.html [ NeedsRebaseline ]
+crbug.com/507950 fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
+crbug.com/507950 fast/repaint/float-overflow.html [ NeedsRebaseline ]
+crbug.com/507950 fast/repaint/overflow-into-content.html [ NeedsRebaseline ]
+crbug.com/507950 virtual/syncpaint/fast/repaint/content-into-overflow.html [ NeedsRebaseline ]
+crbug.com/507950 virtual/syncpaint/fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
+crbug.com/507950 virtual/syncpaint/fast/repaint/float-overflow.html [ NeedsRebaseline ]
+crbug.com/507950 virtual/syncpaint/fast/repaint/overflow-into-content.html [ NeedsRebaseline ]
+
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-no-overried-inherited-visibility-hidden.html [ Failure ]
@@ -1125,6 +1134,8 @@ crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failur
 
 # Unclear semantics of ToString (actually ToPrimitive) across iframes.
 crbug.com/532469 http/tests/security/cross-frame-access-custom.html [ NeedsManualRebaseline ]
+
+crbug.com/507590 fast/block/float/containing-block-change-compositing.html [ Failure ]
 
 # Win10 specific failures that still need triaging.
 crbug.com/521730 [ Win10 ] fast/text/shaping/same-script-different-lang.html [ Failure Timeout ]

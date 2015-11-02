@@ -46,7 +46,8 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject)
     : m_layoutObject(layoutObject)
     , m_originatingLine(nullptr)
     , m_paginationStrut(0)
-    , m_ownership(DirectlyContained)
+    , m_shouldPaint(true)
+    , m_isDescendant(false)
     , m_isPlaced(false)
     , m_isLowestNonOverhangingFloatInChild(false)
 #if ENABLE(ASSERT)
@@ -61,13 +62,14 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject)
         m_type = FloatRight;
 }
 
-FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutRect& frameRect, Ownership ownership, bool isLowestNonOverhangingFloatInChild)
+FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutRect& frameRect, bool shouldPaint, bool isDescendant, bool isLowestNonOverhangingFloatInChild)
     : m_layoutObject(layoutObject)
     , m_originatingLine(nullptr)
     , m_frameRect(frameRect)
     , m_paginationStrut(0)
     , m_type(type)
-    , m_ownership(ownership)
+    , m_shouldPaint(shouldPaint)
+    , m_isDescendant(isDescendant)
     , m_isPlaced(true)
     , m_isLowestNonOverhangingFloatInChild(isLowestNonOverhangingFloatInChild)
 #if ENABLE(ASSERT)
@@ -78,17 +80,21 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutR
 
 PassOwnPtr<FloatingObject> FloatingObject::create(LayoutBox* layoutObject)
 {
-    return adoptPtr(new FloatingObject(layoutObject));
+    OwnPtr<FloatingObject> newObj = adoptPtr(new FloatingObject(layoutObject));
+    newObj->setShouldPaint(!layoutObject->hasSelfPaintingLayer()); // If a layer exists, the float will paint itself. Otherwise someone else will.
+    newObj->setIsDescendant(true);
+
+    return newObj.release();
 }
 
-PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, Ownership ownership) const
+PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, bool shouldPaint, bool isDescendant) const
 {
-    return adoptPtr(new FloatingObject(layoutObject(), type(), LayoutRect(frameRect().location() - offset, frameRect().size()), ownership, isLowestNonOverhangingFloatInChild()));
+    return adoptPtr(new FloatingObject(layoutObject(), type(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant, isLowestNonOverhangingFloatInChild()));
 }
 
 PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
 {
-    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), type(), m_frameRect, static_cast<Ownership>(m_ownership), false));
+    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), type(), m_frameRect, m_shouldPaint, m_isDescendant, false));
     cloneObject->m_paginationStrut = m_paginationStrut;
     cloneObject->m_isPlaced = m_isPlaced;
     return cloneObject.release();
