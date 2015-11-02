@@ -182,6 +182,7 @@ int SyntheticWebTouchEvent::PressPoint(float x, float y) {
   point.radiusX = point.radiusY = 1.f;
   point.rotationAngle = 1.f;
   point.force = 1.f;
+  point.tiltX = point.tiltY = 0;
   ++touchesLength;
   WebTouchEventTraits::ResetType(
       WebInputEvent::TouchStart, timeStampSeconds, this);

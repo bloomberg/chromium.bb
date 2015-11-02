@@ -56,7 +56,9 @@ bool HasPointChanged(const WebTouchPoint& point_1,
       point_1.radiusX != point_2.radiusX ||
       point_1.radiusY != point_2.radiusY ||
       point_1.rotationAngle != point_2.rotationAngle ||
-      point_1.force != point_2.force) {
+      point_1.force != point_2.force ||
+      point_1.tiltX != point_2.tiltX ||
+      point_1.tiltY != point_2.tiltY) {
     return true;
   }
   return false;

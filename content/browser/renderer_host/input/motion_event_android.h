@@ -29,6 +29,7 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
             jfloat touch_major_pixels,
             jfloat touch_minor_pixels,
             jfloat orientation_rad,
+            jfloat tilt_rad,
             jint tool_type);
     jint id;
     jfloat pos_x_pixels;
@@ -36,6 +37,7 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
     jfloat touch_major_pixels;
     jfloat touch_minor_pixels;
     jfloat orientation_rad;
+    jfloat tilt_rad;
     jint tool_type;
   };
 
@@ -71,6 +73,7 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
   float GetTouchMinor(size_t pointer_index) const override;
   float GetOrientation(size_t pointer_index) const override;
   float GetPressure(size_t pointer_index) const override;
+  float GetTilt(size_t pointer_index) const override;
   base::TimeTicks GetEventTime() const override;
   size_t GetHistorySize() const override;
   base::TimeTicks GetHistoricalEventTime(
@@ -120,6 +123,7 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
     float touch_major;
     float touch_minor;
     float orientation;
+    float tilt;
     ToolType tool_type;
   } cached_pointers_[MAX_POINTERS_TO_CACHE];
 

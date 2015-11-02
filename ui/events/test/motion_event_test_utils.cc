@@ -213,6 +213,7 @@ std::string ToString(const MotionEvent& event) {
          << event.GetTouchMinor(pi) << ")"
          << "\n  Orientation: " << event.GetOrientation(pi)
          << "\n  Pressure: " << event.GetPressure(pi)
+         << "\n  Tilt: " << event.GetTilt(pi)
          << "\n  Tool: " << event.GetToolType(pi);
       if (history_size) {
         ss << "\n  History: [";

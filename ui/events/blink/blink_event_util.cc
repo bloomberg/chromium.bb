@@ -125,7 +125,8 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
   DCHECK_LE(minor_radius, major_radius);
   DCHECK(!major_radius || minor_radius);
 
-  float orientation_deg = event.GetOrientation(pointer_index) * 180.f / M_PI;
+  float orientation_rad = event.GetOrientation(pointer_index);
+  float orientation_deg = orientation_rad * 180.f / M_PI;
   DCHECK_GE(major_radius, 0);
   DCHECK_GE(minor_radius, 0);
   DCHECK_GE(major_radius, minor_radius);
@@ -157,6 +158,18 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
   }
 
   touch.force = event.GetPressure(pointer_index);
+
+  if (event.GetToolType(pointer_index) == MotionEvent::TOOL_TYPE_STYLUS) {
+    // A stylus points to a direction specified by orientation and tilts to
+    // the opposite direction. Coordinate system is left-handed.
+    float tilt_rad = event.GetTilt(pointer_index);
+    float r = sin(tilt_rad);
+    float z = cos(tilt_rad);
+    touch.tiltX = lround(atan2(sin(-orientation_rad) * r, z) * 180.f / M_PI);
+    touch.tiltY = lround(atan2(cos(-orientation_rad) * r, z) * 180.f / M_PI);
+  } else {
+    touch.tiltX = touch.tiltY = 0;
+  }
 
   return touch;
 }

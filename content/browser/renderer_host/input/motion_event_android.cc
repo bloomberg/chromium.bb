@@ -129,6 +129,7 @@ MotionEventAndroid::Pointer::Pointer(jint id,
                                      jfloat touch_major_pixels,
                                      jfloat touch_minor_pixels,
                                      jfloat orientation_rad,
+                                     jfloat tilt_rad,
                                      jint tool_type)
     : id(id),
       pos_x_pixels(pos_x_pixels),
@@ -136,6 +137,7 @@ MotionEventAndroid::Pointer::Pointer(jint id,
       touch_major_pixels(touch_major_pixels),
       touch_minor_pixels(touch_minor_pixels),
       orientation_rad(orientation_rad),
+      tilt_rad(tilt_rad),
       tool_type(tool_type) {
 }
 
@@ -144,6 +146,7 @@ MotionEventAndroid::CachedPointer::CachedPointer()
       touch_major(0),
       touch_minor(0),
       orientation(0),
+      tilt(0),
       tool_type(TOOL_TYPE_UNKNOWN) {
 }
 
@@ -273,6 +276,16 @@ float MotionEventAndroid::GetPressure(size_t pointer_index) const {
       AttachCurrentThread(), event_.obj(), pointer_index);
 }
 
+float MotionEventAndroid::GetTilt(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, cached_pointer_count_);
+  if (pointer_index < MAX_POINTERS_TO_CACHE)
+    return cached_pointers_[pointer_index].tilt;
+  if (!event_.obj())
+    return 0.f;
+  return ToValidFloat(Java_MotionEvent_getAxisValueF_I_I(
+      AttachCurrentThread(), event_.obj(), AXIS_TILT, pointer_index));
+}
+
 base::TimeTicks MotionEventAndroid::GetEventTime() const {
   return cached_time_;
 }
@@ -336,6 +349,7 @@ MotionEventAndroid::CachedPointer MotionEventAndroid::FromAndroidPointer(
   result.touch_major = ToDips(pointer.touch_major_pixels);
   result.touch_minor = ToDips(pointer.touch_minor_pixels);
   result.orientation = ToValidFloat(pointer.orientation_rad);
+  result.tilt = ToValidFloat(pointer.tilt_rad);
   result.tool_type = FromAndroidToolType(pointer.tool_type);
   return result;
 }

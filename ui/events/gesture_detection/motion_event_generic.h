@@ -34,6 +34,7 @@ struct GESTURE_DETECTION_EXPORT PointerProperties {
   float touch_major;
   float touch_minor;
   float orientation;
+  float tilt;
   // source_device_id is only used on Aura.
   int source_device_id;
 };
@@ -62,6 +63,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   float GetTouchMinor(size_t pointer_index) const override;
   float GetOrientation(size_t pointer_index) const override;
   float GetPressure(size_t pointer_index) const override;
+  float GetTilt(size_t pointer_index) const override;
   ToolType GetToolType(size_t pointer_index) const override;
   int GetButtonState() const override;
   int GetFlags() const override;
