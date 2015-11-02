@@ -59,7 +59,6 @@
 
 #if OS(WIN)
 #include <windows.h>
-#define HAVE_ISDEBUGGERPRESENT 1
 #endif
 
 #if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
@@ -114,7 +113,7 @@ static void vprintf_stderr_common(const char* format, va_list args)
 
 #elif OS(ANDROID)
     __android_log_vprint(ANDROID_LOG_WARN, "WebKit", format, args);
-#elif HAVE(ISDEBUGGERPRESENT)
+#elif OS(WIN)
     if (IsDebuggerPresent()) {
         size_t size = 1024;
 
