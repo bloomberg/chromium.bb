@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/profile_metrics/counts.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -143,7 +144,7 @@ enum ProfileAvatar {
 };
 
 bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
-                                             ProfileCounts* counts) {
+                                             profile_metrics::Counts* counts) {
   const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
   size_t number_of_profiles = info_cache.GetNumberOfProfiles();
   counts->total = number_of_profiles;
@@ -176,7 +177,7 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
 
 void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  ProfileCounts counts;
+  profile_metrics::Counts counts;
   if (CountProfileInformation(manager, &counts)) {
     size_t limited_total = counts.total;
     size_t limited_signedin = counts.signedin;
@@ -207,25 +208,13 @@ void ProfileMetrics::UpdateReportedOSProfileStatistics(
 #endif
 
 void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
-  ProfileCounts counts;
+  profile_metrics::Counts counts;
   bool success = CountProfileInformation(manager, &counts);
-  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfiles", counts.total);
+
+  profile_metrics::LogProfileMetricsCounts(counts);
 
   // Ignore other metrics if we have no profiles.
   if (success) {
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfiles",
-                             counts.supervised);
-    UMA_HISTOGRAM_COUNTS_100("Profile.PercentageOfManagedProfiles",
-                             100 * counts.supervised / counts.total);
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfiles",
-                             counts.signedin);
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfUnusedProfiles",
-                             counts.unused);
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfilesWithGAIAIcons",
-                             counts.gaia_icon);
-    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfilesWithAuthErrors",
-                             counts.auth_errors);
-
     LogLockedProfileInformation(manager);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

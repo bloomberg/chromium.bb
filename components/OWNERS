@@ -232,6 +232,10 @@ per-file policy*=bartfab@chromium.org
 per-file policy*=atwilson@chromium.org
 per-file policy*=cschuet@chromium.org
 
+per-file profile_metrics*=anthonyvd@chromium.org
+per-file profile_metrics*=erg@chromium.org
+per-file profile_metrics*=mlerman@chromium.org
+
 per-file proximity_auth*=isherman@chromium.org
 per-file proximity_auth*=tbarzic@chromium.org
 per-file proximity_auth*=tengs@chromium.org

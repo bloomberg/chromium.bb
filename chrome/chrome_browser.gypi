@@ -3234,6 +3234,7 @@
             '../components/components.gyp:password_manager_sync_browser',
             '../components/components.gyp:plugins_common',
             '../components/components.gyp:power',
+            '../components/components.gyp:profile_metrics',
             '../components/components.gyp:proxy_config',
             '../components/components.gyp:safe_browsing_db',
             '../components/components.gyp:safe_json',

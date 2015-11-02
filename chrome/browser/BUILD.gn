@@ -297,6 +297,7 @@ source_set("browser") {
       "//components/password_manager/content/browser",
       "//components/password_manager/sync/browser",
       "//components/plugins/common",
+      "//components/profile_metrics",
       "//components/proxy_config",
       "//components/resources",
       "//components/safe_browsing_db",

@@ -76,6 +76,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/printing/browser",
   "+components/printing/common",
+  "+components/profile_metrics",
   "+components/proximity_auth",
   "+components/proxy_config",
   "+components/query_parser",

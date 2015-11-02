@@ -19,24 +19,12 @@ namespace base {
 class FilePath;
 }
 
+namespace profile_metrics {
+struct Counts;
+}
+
 class ProfileMetrics {
  public:
-  struct ProfileCounts {
-    size_t total;
-    size_t signedin;
-    size_t supervised;
-    size_t unused;
-    size_t gaia_icon;
-    size_t auth_errors;
-
-    ProfileCounts()
-        : total(0),
-          signedin(0),
-          supervised(0),
-          unused(0),
-          gaia_icon(0),
-          auth_errors(0) {}
-  };
 
   // Enum for counting the ways users were added.
   enum ProfileAdd {
@@ -213,7 +201,7 @@ class ProfileMetrics {
   // Count and return summary information about the profiles currently in the
   // |manager|. This information is returned in the output variable |counts|.
   static bool CountProfileInformation(ProfileManager* manager,
-                                      ProfileCounts* counts);
+                                      profile_metrics::Counts* counts);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   static void LogNumberOfProfileSwitches();
