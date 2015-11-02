@@ -77,7 +77,6 @@ Node* V8GCController::opaqueRootForGC(v8::Isolate*, Node* node)
 {
     ASSERT(node);
     // FIXME: Remove the special handling for image elements.
-    // The same special handling is in V8GCController::gcTree().
     // Maybe should image elements be active DOM nodes?
     // See https://code.google.com/p/chromium/issues/detail?id=164882
     if (node->inDocument() || (isHTMLImageElement(*node) && toHTMLImageElement(*node).hasPendingActivity())) {
@@ -100,153 +99,54 @@ Node* V8GCController::opaqueRootForGC(v8::Isolate*, Node* node)
     return node;
 }
 
-// Regarding a minor GC algorithm for DOM nodes, see this document:
-// https://docs.google.com/a/google.com/presentation/d/1uifwVYGNYTZDoGLyCb7sXa7g49mWNMW2gaWvMN5NLk8/edit#slide=id.p
-class MinorGCWrapperVisitor : public v8::PersistentHandleVisitor {
+class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
 public:
-    explicit MinorGCWrapperVisitor(v8::Isolate* isolate)
+    explicit MinorGCUnmodifiedWrapperVisitor(v8::Isolate* isolate)
         : m_isolate(isolate)
     { }
 
     void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) override
     {
-        // A minor DOM GC can collect only Nodes.
-        if (classId != WrapperTypeInfo::NodeClassId)
-            return;
 
-        // To make minor GC cycle time bounded, we limit the number of wrappers handled
-        // by each minor GC cycle to 10000. This value was selected so that the minor
-        // GC cycle time is bounded to 20 ms in a case where the new space size
-        // is 16 MB and it is full of wrappers (which is almost the worst case).
-        // Practically speaking, as far as I crawled real web applications,
-        // the number of wrappers handled by each minor GC cycle is at most 3000.
-        // So this limit is mainly for pathological micro benchmarks.
-        //
-        // In Oilpan, we don't limit the number of wrappers to collect as many
-        // wrappers in minor GC cycles as possible. This may increase the pause
-        // time of a minor GC, but if we give up collecting wrappers in a minor
-        // GC, it will instead end up with increasing the cost of subsequent
-        // Oilpan's GCs. Thus it will be better to collect as many wrappers as
-        // possible for minimizing the value of max(a pause time of a minor GC,
-        // a pause time of Oilpan's GC).
-#if !ENABLE(OILPAN)
-        const unsigned wrappersHandledByEachMinorGC = 10000;
-        if (m_nodesInNewSpace.size() >= wrappersHandledByEachMinorGC)
+        if (classId != WrapperTypeInfo::NodeClassId && classId != WrapperTypeInfo::ObjectClassId) {
             return;
-#endif
+        }
 
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
-        ASSERT(V8Node::hasInstance(wrapper, m_isolate));
-        Node* node = V8Node::toImpl(wrapper);
-        // A minor DOM GC can handle only node wrappers in the main world.
-        // Note that node->wrapper().IsEmpty() returns true for nodes that
-        // do not have wrappers in the main world.
-        if (node->containsWrapper()) {
-            const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-            ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(wrapper);
-            if (activeDOMObject && activeDOMObject->hasPendingActivity())
+        const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
+        ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(wrapper);
+        if (activeDOMObject && activeDOMObject->hasPendingActivity()) {
+            v8::Persistent<v8::Object>::Cast(*value).MarkActive();
+            return;
+        }
+
+        if (classId == WrapperTypeInfo::NodeClassId) {
+            ASSERT(V8Node::hasInstance(wrapper, m_isolate));
+            Node* node = V8Node::toImpl(wrapper);
+            if (node->hasEventListeners()) {
+                v8::Persistent<v8::Object>::Cast(*value).MarkActive();
                 return;
+            }
             // FIXME: Remove the special handling for image elements.
             // The same special handling is in V8GCController::opaqueRootForGC().
             // Maybe should image elements be active DOM nodes?
             // See https://code.google.com/p/chromium/issues/detail?id=164882
-            if (isHTMLImageElement(*node) && toHTMLImageElement(*node).hasPendingActivity())
+            if (isHTMLImageElement(*node) && toHTMLImageElement(*node).hasPendingActivity()) {
+                v8::Persistent<v8::Object>::Cast(*value).MarkActive();
                 return;
+            }
             // FIXME: Remove the special handling for SVG elements.
             // We currently can't collect SVG Elements from minor gc, as we have
             // strong references from SVG property tear-offs keeping context SVG element alive.
-            if (node->isSVGElement())
+            if (node->isSVGElement()) {
+                v8::Persistent<v8::Object>::Cast(*value).MarkActive();
                 return;
-
-            m_nodesInNewSpace.append(node);
-            node->markV8CollectableDuringMinorGC();
-        }
-    }
-
-    void notifyFinished()
-    {
-        for (size_t i = 0; i < m_nodesInNewSpace.size(); i++) {
-            Node* node = m_nodesInNewSpace[i];
-            ASSERT(node->containsWrapper());
-            if (node->isV8CollectableDuringMinorGC()) { // This branch is just for performance.
-                gcTree(m_isolate, node);
-                node->clearV8CollectableDuringMinorGC();
             }
         }
     }
 
 private:
-    bool traverseTree(Node* rootNode, WillBeHeapVector<RawPtrWillBeMember<Node>, initialNodeVectorSize>* partiallyDependentNodes)
-    {
-        // To make each minor GC time bounded, we might need to give up
-        // traversing at some point for a large DOM tree. That being said,
-        // I could not observe the need even in pathological test cases.
-        for (Node& node : NodeTraversal::startsAt(rootNode)) {
-            if (node.containsWrapper()) {
-                if (!node.isV8CollectableDuringMinorGC()) {
-                    // This node is not in the new space of V8. This indicates that
-                    // the minor GC cannot anyway judge reachability of this DOM tree.
-                    // Thus we give up traversing the DOM tree.
-                    return false;
-                }
-                node.clearV8CollectableDuringMinorGC();
-                partiallyDependentNodes->append(&node);
-            }
-            if (ShadowRoot* shadowRoot = node.youngestShadowRoot()) {
-                if (!traverseTree(shadowRoot, partiallyDependentNodes))
-                    return false;
-            } else if (node.isShadowRoot()) {
-                if (ShadowRoot* shadowRoot = toShadowRoot(node).olderShadowRoot()) {
-                    if (!traverseTree(shadowRoot, partiallyDependentNodes))
-                        return false;
-                }
-            }
-            // <template> has a |content| property holding a DOM fragment which we must traverse,
-            // just like we do for the shadow trees above.
-            if (isHTMLTemplateElement(node)) {
-                if (!traverseTree(toHTMLTemplateElement(node).content(), partiallyDependentNodes))
-                    return false;
-            }
-
-            // Document maintains the list of imported documents through HTMLImportsController.
-            if (node.isDocumentNode()) {
-                Document& document = toDocument(node);
-                HTMLImportsController* controller = document.importsController();
-                if (controller && document == controller->master()) {
-                    for (unsigned i = 0; i < controller->loaderCount(); ++i) {
-                        if (!traverseTree(controller->loaderDocumentAt(i), partiallyDependentNodes))
-                            return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    void gcTree(v8::Isolate* isolate, Node* startNode)
-    {
-        WillBeHeapVector<RawPtrWillBeMember<Node>, initialNodeVectorSize> partiallyDependentNodes;
-
-        Node* node = startNode;
-        while (Node* parent = node->parentOrShadowHostOrTemplateHostNode())
-            node = parent;
-
-        if (!traverseTree(node, &partiallyDependentNodes))
-            return;
-
-        // We completed the DOM tree traversal. All wrappers in the DOM tree are
-        // stored in partiallyDependentNodes and are expected to exist in the new space of V8.
-        // We report those wrappers to V8 as an object group.
-        if (!partiallyDependentNodes.size())
-            return;
-        Node* groupRoot = partiallyDependentNodes[0];
-        for (size_t i = 0; i < partiallyDependentNodes.size(); i++) {
-            partiallyDependentNodes[i]->markAsDependentGroup(groupRoot, isolate);
-        }
-    }
-
-    WillBePersistentHeapVector<RawPtrWillBeMember<Node>> m_nodesInNewSpace;
     v8::Isolate* m_isolate;
 };
 
@@ -343,12 +243,11 @@ static unsigned long long usedHeapSize(v8::Isolate* isolate)
 
 namespace {
 
-void objectGroupingForMinorGC(v8::Isolate* isolate)
+void visitWeakHandlesForMinorGC(v8::Isolate* isolate)
 {
     ASSERT(isMainThread());
-    MinorGCWrapperVisitor visitor(isolate);
-    v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
-    visitor.notifyFinished();
+    MinorGCUnmodifiedWrapperVisitor visitor(isolate);
+    isolate->VisitWeakHandles(&visitor);
 }
 
 void objectGroupingForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
@@ -393,7 +292,7 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
         if (isMainThread()) {
             {
                 TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
-                objectGroupingForMinorGC(isolate);
+                visitWeakHandlesForMinorGC(isolate);
             }
             V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
             TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MinorGC");

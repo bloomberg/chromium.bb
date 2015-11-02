@@ -43,6 +43,12 @@ RenderProcessImpl::RenderProcessImpl()
   }
 #endif
 
+  std::string scavenge_reclaim_unmodified_flag(
+      "--scavenge_reclaim_unmodified_objects");
+  v8::V8::SetFlagsFromString(
+      scavenge_reclaim_unmodified_flag.c_str(),
+      static_cast<int>(scavenge_reclaim_unmodified_flag.size()));
+
   if (base::SysInfo::IsLowEndDevice()) {
     std::string optimize_flag("--optimize-for-size");
     v8::V8::SetFlagsFromString(optimize_flag.c_str(),
