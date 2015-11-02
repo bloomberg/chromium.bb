@@ -1,4 +1,4 @@
 Tests the TimelineFlameChart automatically sized window.
 
-time delta: 1472.2229998111725
+time delta: 1416.3081498146057
 

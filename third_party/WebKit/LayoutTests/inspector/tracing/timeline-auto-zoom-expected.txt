@@ -1,0 +1,1 @@
+Test auto zoom feature of the timeline.
