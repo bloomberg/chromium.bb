@@ -250,10 +250,9 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Left pressed.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp,
-                              ui::EF_LEFT_MOUSE_BUTTON,
-                              ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent aura_event(
+        ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
+        timestamp, ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
@@ -269,8 +268,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Left released.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp, 0,
+    ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::Point(123, 321),
+                              gfx::Point(123, 321), timestamp, 0,
                               ui::EF_LEFT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
@@ -287,10 +286,9 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Middle pressed.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp,
-                              ui::EF_MIDDLE_MOUSE_BUTTON,
-                              ui::EF_MIDDLE_MOUSE_BUTTON);
+    ui::MouseEvent aura_event(
+        ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
+        timestamp, ui::EF_MIDDLE_MOUSE_BUTTON, ui::EF_MIDDLE_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
@@ -306,8 +304,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Middle released.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp, 0,
+    ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::Point(123, 321),
+                              gfx::Point(123, 321), timestamp, 0,
                               ui::EF_MIDDLE_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
@@ -324,10 +322,9 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Right pressed.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp,
-                              ui::EF_RIGHT_MOUSE_BUTTON,
-                              ui::EF_RIGHT_MOUSE_BUTTON);
+    ui::MouseEvent aura_event(
+        ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
+        timestamp, ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
@@ -343,8 +340,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Right released.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp, 0,
+    ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::Point(123, 321),
+                              gfx::Point(123, 321), timestamp, 0,
                               ui::EF_RIGHT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
@@ -361,8 +358,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Moved
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_MOVED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp, 0, 0);
+    ui::MouseEvent aura_event(ui::ET_MOUSE_MOVED, gfx::Point(123, 321),
+                              gfx::Point(123, 321), timestamp, 0, 0);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
@@ -378,8 +375,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Moved with left down
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_MOVED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp,
+    ui::MouseEvent aura_event(ui::ET_MOUSE_MOVED, gfx::Point(123, 321),
+                              gfx::Point(123, 321), timestamp,
                               ui::EF_LEFT_MOUSE_BUTTON, 0);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
@@ -396,8 +393,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Left with shift pressed.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp,
+    ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::Point(123, 321),
+                              gfx::Point(123, 321), timestamp,
                               ui::EF_LEFT_MOUSE_BUTTON | ui::EF_SHIFT_DOWN,
                               ui::EF_LEFT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
@@ -415,10 +412,9 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Default values for PointerDetails.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp,
-                              ui::EF_LEFT_MOUSE_BUTTON,
-                              ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent aura_event(
+        ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
+        timestamp, ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
 
     EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
@@ -434,10 +430,9 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Stylus values for PointerDetails.
     base::TimeDelta timestamp = ui::EventTimeForNow();
-    ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::PointF(123.0, 321.0),
-                              gfx::PointF(123.0, 321.0), timestamp,
-                              ui::EF_LEFT_MOUSE_BUTTON,
-                              ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent aura_event(
+        ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
+        timestamp, ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     aura_event.set_pointer_details(
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN,
                            /* radius_x */ 0.0f,
@@ -466,7 +461,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
     ui::MouseWheelEvent aura_event(
         gfx::Vector2d(ui::MouseWheelEvent::kWheelDelta * 2,
                       -ui::MouseWheelEvent::kWheelDelta * 2),
-        gfx::PointF(123.0, 321.0), gfx::PointF(123.0, 321.0), timestamp, 0, 0);
+        gfx::Point(123, 321), gfx::Point(123, 321), timestamp, 0, 0);
     blink::WebMouseWheelEvent webkit_event = MakeWebMouseWheelEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
@@ -490,7 +485,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
     base::TimeDelta timestamp = ui::EventTimeForNow();
     ui::MouseWheelEvent aura_event(
         gfx::Vector2d(0, -ui::MouseWheelEvent::kWheelDelta * 2),
-        gfx::PointF(123.0, 321.0), gfx::PointF(123.0, 321.0), timestamp,
+        gfx::Point(123, 321), gfx::Point(123, 321), timestamp,
         ui::EF_SHIFT_DOWN, 0);
     blink::WebMouseWheelEvent webkit_event = MakeWebMouseWheelEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),

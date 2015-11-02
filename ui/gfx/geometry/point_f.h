@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -19,6 +20,9 @@ class GFX_EXPORT PointF {
   PointF() : x_(0.f), y_(0.f) {}
   PointF(float x, float y) : x_(x), y_(y) {}
   ~PointF() {}
+
+  explicit PointF(const Point& p)
+      : PointF(static_cast<float>(p.x()), static_cast<float>(p.y())) {}
 
   float x() const { return x_; }
   float y() const { return y_; }

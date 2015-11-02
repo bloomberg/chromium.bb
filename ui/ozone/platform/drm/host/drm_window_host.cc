@@ -113,7 +113,7 @@ void DrmWindowHost::SetCursor(PlatformCursor cursor) {
 }
 
 void DrmWindowHost::MoveCursorTo(const gfx::Point& location) {
-  event_factory_->WarpCursorTo(widget_, location);
+  event_factory_->WarpCursorTo(widget_, gfx::PointF(location));
 }
 
 void DrmWindowHost::ConfineCursorToBounds(const gfx::Rect& bounds) {
@@ -162,7 +162,7 @@ bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
     return display_bounds == bounds_;
   } else if (event->IsLocatedEvent()) {
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
-    return bounds_.Contains(gfx::ToFlooredPoint(located_event->location()));
+    return bounds_.Contains(located_event->location());
   }
 
   // TODO(spang): For non-ash builds we would need smarter keyboard focus.
@@ -176,10 +176,10 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
   if (event->IsLocatedEvent()) {
     // Make the event location relative to this window's origin.
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
-    gfx::PointF location = located_event->location();
-    location -= bounds_.OffsetFromOrigin();
-    located_event->set_location(location);
-    located_event->set_root_location(location);
+    gfx::PointF location = located_event->location_f();
+    location -= gfx::Vector2dF(bounds_.OffsetFromOrigin());
+    located_event->set_location_f(location);
+    located_event->set_root_location_f(location);
   }
   DispatchEventFromNativeUiEvent(
       native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,

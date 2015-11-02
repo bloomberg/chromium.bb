@@ -258,8 +258,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // Binds DispatchKeyWithFlags to a specific key and flags.
   base::Closure BindKeyEventWithFlags(const ui::KeyboardCode key, int flags);
 
-  scoped_ptr<ui::Event> CreateMouseMoveEvent(const gfx::PointF& location,
-                                             int flags);
+  scoped_ptr<ui::MouseEvent> CreateMouseMoveEvent(const gfx::PointF& location,
+                                                  int flags);
 
   void EnterTouchToMouseMode();
 

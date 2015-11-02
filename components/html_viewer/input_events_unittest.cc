@@ -46,9 +46,9 @@ TEST(InputEventLibTest, MouseEventConversion) {
 
 TEST(InputEventLibTest, MouseWheelEventConversionNonPrecise) {
   scoped_ptr<ui::Event> original_wheel(new ui::MouseWheelEvent(
-      gfx::Vector2d(-1.0 * ui::MouseWheelEvent::kWheelDelta,
-                    -2.0 * ui::MouseWheelEvent::kWheelDelta),
-      gfx::PointF(1.0, 2.0), gfx::PointF(3.0, 4.0), EventTimeForNow(), 0, 0));
+      gfx::Vector2d(-1 * ui::MouseWheelEvent::kWheelDelta,
+                    -2 * ui::MouseWheelEvent::kWheelDelta),
+      gfx::Point(1, 2), gfx::Point(3, 4), EventTimeForNow(), 0, 0));
 
   mus::mojom::EventPtr mojo_event(mus::mojom::Event::From(*original_wheel));
 

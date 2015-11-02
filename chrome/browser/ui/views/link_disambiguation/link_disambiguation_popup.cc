@@ -85,12 +85,14 @@ void LinkDisambiguationPopup::ZoomBubbleView::OnMouseEvent(
     ui::MouseEvent* event) {
   // Transform mouse event back to coordinate system of the web content window
   // before providing to the callback.
+  ui::MouseEvent xform_event(event->type(), gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), event->flags(),
+                             event->changed_button_flags());
   gfx::PointF xform_location(
       (event->location().x() / scale_) + target_rect_.x(),
       (event->location().y() / scale_) + target_rect_.y());
-  ui::MouseEvent xform_event(event->type(), xform_location, xform_location,
-                             ui::EventTimeForNow(), event->flags(),
-                             event->changed_button_flags());
+  xform_event.set_location_f(xform_location);
+  xform_event.set_root_location_f(xform_location);
   mouse_cb_.Run(&xform_event);
   event->SetHandled();
 

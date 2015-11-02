@@ -51,15 +51,16 @@ gfx::Rect AdjustDragImageBoundsForScaleAndOffset(
     int vertical_offset,
     float scale,
     gfx::Vector2d* drag_image_offset) {
-  gfx::PointF final_origin = drag_image_bounds.origin();
+  gfx::Point final_origin = drag_image_bounds.origin();
   gfx::SizeF final_size = gfx::SizeF(drag_image_bounds.size());
   final_size.Scale(scale);
   drag_image_offset->set_x(drag_image_offset->x() * scale);
   drag_image_offset->set_y(drag_image_offset->y() * scale);
-  float total_x_offset = drag_image_offset->x();
-  float total_y_offset = drag_image_offset->y() - vertical_offset;
+  int total_x_offset = drag_image_offset->x();
+  int total_y_offset = drag_image_offset->y() - vertical_offset;
   final_origin.Offset(-total_x_offset, -total_y_offset);
-  return gfx::ToEnclosingRect(gfx::RectF(final_origin, final_size));
+  return gfx::ToEnclosingRect(
+      gfx::RectF(gfx::PointF(final_origin), final_size));
 }
 
 void DispatchGestureEndToWindow(aura::Window* window) {
@@ -263,8 +264,10 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, event.location_f(),
-                            event.root_location_f(), drag_operation_);
+      ui::DropTargetEvent e(*drag_data_, gfx::Point(), gfx::Point(),
+                            drag_operation_);
+      e.set_location_f(event.location_f());
+      e.set_root_location_f(event.root_location_f());
       e.set_flags(event.flags());
       delegate->OnDragEntered(e);
     }
@@ -272,8 +275,10 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, event.location_f(),
-                            event.root_location_f(), drag_operation_);
+      ui::DropTargetEvent e(*drag_data_, gfx::Point(), gfx::Point(),
+                            drag_operation_);
+      e.set_location_f(event.location_f());
+      e.set_root_location_f(event.root_location_f());
       e.set_flags(event.flags());
       op = delegate->OnDragUpdated(e);
       gfx::NativeCursor cursor = ui::kCursorNoDrop;
@@ -312,8 +317,10 @@ void DragDropController::Drop(aura::Window* target,
   aura::client::DragDropDelegate* delegate =
       aura::client::GetDragDropDelegate(target);
   if (delegate) {
-    ui::DropTargetEvent e(*drag_data_, event.location_f(),
-                          event.root_location_f(), drag_operation_);
+    ui::DropTargetEvent e(*drag_data_, gfx::Point(), gfx::Point(),
+                          drag_operation_);
+    e.set_location_f(event.location_f());
+    e.set_root_location_f(event.root_location_f());
     e.set_flags(event.flags());
     drag_operation_ = delegate->OnPerformDrop(e);
     if (drag_operation_ == 0)
@@ -420,8 +427,8 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
   gfx::PointF touch_offset_root_location = touch_offset_event.root_location_f();
   touch_offset_location.Offset(0, kTouchDragImageVerticalOffset);
   touch_offset_root_location.Offset(0, kTouchDragImageVerticalOffset);
-  touch_offset_event.set_location(touch_offset_location);
-  touch_offset_event.set_root_location(touch_offset_root_location);
+  touch_offset_event.set_location_f(touch_offset_location);
+  touch_offset_event.set_root_location_f(touch_offset_root_location);
 
   aura::Window* translated_target =
       drag_drop_tracker_->GetTarget(touch_offset_event);

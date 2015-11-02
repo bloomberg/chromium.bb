@@ -1157,8 +1157,8 @@ void Textfield::GetSelectionEndPoints(ui::SelectionBound* anchor,
   gfx::Rect r1 = render_text->GetCursorBounds(start_sel, true);
   gfx::Rect r2 = render_text->GetCursorBounds(sel, true);
 
-  anchor->SetEdge(r1.origin(), r1.bottom_left());
-  focus->SetEdge(r2.origin(), r2.bottom_left());
+  anchor->SetEdge(gfx::PointF(r1.origin()), gfx::PointF(r1.bottom_left()));
+  focus->SetEdge(gfx::PointF(r2.origin()), gfx::PointF(r2.bottom_left()));
 
   // Determine the SelectionBound's type for focus and anchor.
   // TODO(mfomitchev): Ideally we should have different logical directions for

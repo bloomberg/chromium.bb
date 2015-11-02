@@ -14,6 +14,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace gfx {
 

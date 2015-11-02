@@ -63,7 +63,7 @@ class TestTouchEvent : public ui::TouchEvent {
                  int flags,
                  base::TimeDelta timestamp)
       : TouchEvent(type,
-                   gfx::PointF(root_location),
+                   root_location,
                    flags,
                    touch_id,
                    timestamp,
@@ -164,7 +164,7 @@ void EventGenerator::ReleaseRightButton() {
 }
 
 void EventGenerator::MoveMouseWheel(int delta_x, int delta_y) {
-  auto location = gfx::PointF(GetLocationInCurrentRoot());
+  gfx::Point location = GetLocationInCurrentRoot();
   ui::MouseEvent mouseev(ui::ET_MOUSEWHEEL, location, location,
                          ui::EventTimeForNow(), flags_, 0);
   ui::MouseWheelEvent wheelev(mouseev, delta_x, delta_y);
@@ -370,11 +370,13 @@ void EventGenerator::GestureScrollSequenceWithCallback(
 
   float dx = static_cast<float>(end.x() - start.x()) / steps;
   float dy = static_cast<float>(end.y() - start.y()) / steps;
-  gfx::PointF location = start;
+  gfx::PointF location(start);
   for (int i = 0; i < steps; ++i) {
     location.Offset(dx, dy);
     timestamp += step_delay;
-    ui::TouchEvent move(ui::ET_TOUCH_MOVED, location, kTouchId, timestamp);
+    ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(), kTouchId, timestamp);
+    move.set_location_f(location);
+    move.set_root_location_f(location);
     Dispatch(&move);
     callback.Run(ui::ET_GESTURE_SCROLL_UPDATE, gfx::Vector2dF(dx, dy));
   }

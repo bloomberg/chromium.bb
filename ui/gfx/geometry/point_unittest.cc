@@ -10,23 +10,13 @@
 
 namespace gfx {
 
-namespace {
-
-int TestPointF(const PointF& p) {
-  return p.x();
-}
-
-}  // namespace
-
 TEST(PointTest, ToPointF) {
-  // Check that implicit conversion from integer to float compiles.
+  // Check that explicit conversion from integer to float compiles.
   Point a(10, 20);
-  float x = TestPointF(a);
-  EXPECT_EQ(x, a.x());
+  PointF b = PointF(a);
 
-  PointF b(10, 20);
-  EXPECT_EQ(a, b);
-  EXPECT_EQ(b, a);
+  EXPECT_EQ(static_cast<float>(a.x()), b.x());
+  EXPECT_EQ(static_cast<float>(a.y()), b.y());
 }
 
 TEST(PointTest, IsOrigin) {
@@ -96,13 +86,12 @@ TEST(PointTest, ToRoundedPoint) {
 }
 
 TEST(PointTest, Scale) {
-  EXPECT_EQ(PointF().ToString(), ScalePoint(Point(), 2).ToString());
-  EXPECT_EQ(PointF().ToString(), ScalePoint(Point(), 2, 2).ToString());
+  EXPECT_EQ(PointF().ToString(), ScalePoint(PointF(), 2).ToString());
+  EXPECT_EQ(PointF().ToString(), ScalePoint(PointF(), 2, 2).ToString());
 
+  EXPECT_EQ(PointF(2, -2).ToString(), ScalePoint(PointF(1, -1), 2).ToString());
   EXPECT_EQ(PointF(2, -2).ToString(),
-            ScalePoint(Point(1, -1), 2).ToString());
-  EXPECT_EQ(PointF(2, -2).ToString(),
-            ScalePoint(Point(1, -1), 2, 2).ToString());
+            ScalePoint(PointF(1, -1), 2, 2).ToString());
 
   PointF zero;
   PointF one(1, -1);

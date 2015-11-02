@@ -108,12 +108,8 @@ class TabScrubberTest : public InProcessBrowserTest,
 
     float offset = GetTabCenter(browser, index) -
         GetStartX(browser, active_index, direction);
-    ui::ScrollEvent scroll_event(ui::ET_SCROLL,
-                                 gfx::PointF(0, 0),
-                                 ui::EventTimeForNow(),
-                                 0,
-                                 offset, 0,
-                                 offset, 0,
+    ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(0, 0),
+                                 ui::EventTimeForNow(), 0, offset, 0, offset, 0,
                                  3);
     event_generator.Dispatch(&scroll_event);
   }

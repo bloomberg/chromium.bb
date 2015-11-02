@@ -122,13 +122,13 @@ void WindowTreeHost::ConvertPointFromNativeScreen(gfx::Point* point) const {
 }
 
 void WindowTreeHost::ConvertPointToHost(gfx::Point* point) const {
-  gfx::Point3F point_3f(*point);
+  auto point_3f = gfx::Point3F(gfx::PointF(*point));
   GetRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
 void WindowTreeHost::ConvertPointFromHost(gfx::Point* point) const {
-  gfx::Point3F point_3f(*point);
+  auto point_3f = gfx::Point3F(gfx::PointF(*point));
   GetInverseRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }

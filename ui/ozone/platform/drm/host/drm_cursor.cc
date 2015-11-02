@@ -58,7 +58,7 @@ void DrmCursor::OnWindowAdded(gfx::AcceleratedWidget window,
     state_.window = window;
     state_.display_bounds_in_screen = bounds_in_screen;
     state_.confined_bounds = cursor_confined_bounds;
-    SetCursorLocationLocked(cursor_confined_bounds.CenterPoint());
+    SetCursorLocationLocked(gfx::PointF(cursor_confined_bounds.CenterPoint()));
   }
 }
 
@@ -74,13 +74,14 @@ void DrmCursor::OnWindowRemoved(gfx::AcceleratedWidget window) {
       state_.window = dest_window->GetAcceleratedWidget();
       state_.display_bounds_in_screen = dest_window->GetBounds();
       state_.confined_bounds = dest_window->GetCursorConfinedBounds();
-      SetCursorLocationLocked(state_.confined_bounds.CenterPoint());
+      SetCursorLocationLocked(
+          gfx::PointF(state_.confined_bounds.CenterPoint()));
       SendCursorShowLocked();
     } else {
       state_.window = gfx::kNullAcceleratedWidget;
       state_.display_bounds_in_screen = gfx::Rect();
       state_.confined_bounds = gfx::Rect();
-      state_.location = gfx::Point();
+      state_.location = gfx::PointF();
     }
   }
 }
@@ -206,7 +207,7 @@ void DrmCursor::SetCursorLocationLocked(const gfx::PointF& location) {
   state_.lock.AssertAcquired();
 
   gfx::PointF clamped_location = location;
-  clamped_location.SetToMax(state_.confined_bounds.origin());
+  clamped_location.SetToMax(gfx::PointF(state_.confined_bounds.origin()));
   // Right and bottom edges are exclusive.
   clamped_location.SetToMin(gfx::PointF(state_.confined_bounds.right() - 1,
                                         state_.confined_bounds.bottom() - 1));

@@ -317,21 +317,24 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
         case mus::mojom::POINTER_KIND_MOUSE: {
           // TODO: last flags isn't right. Need to send changed_flags.
           scoped_ptr<ui::MouseEvent> event(new ui::MouseEvent(
-              MojoMouseEventTypeToUIEvent(input), location, screen_location,
+              MojoMouseEventTypeToUIEvent(input), gfx::Point(), gfx::Point(),
               ui::EventTimeForNow(), ui::EventFlags(input->flags),
               ui::EventFlags(input->flags)));
+          event->set_location_f(location);
+          event->set_root_location_f(screen_location);
           return event.Pass();
         } break;
         case mus::mojom::POINTER_KIND_TOUCH: {
           DCHECK(input->pointer_data->brush_data);
           scoped_ptr<ui::TouchEvent> touch_event(new ui::TouchEvent(
-              MojoTouchEventTypeToUIEvent(input), location,
+              MojoTouchEventTypeToUIEvent(input), gfx::Point(),
               ui::EventFlags(input->flags), input->pointer_data->pointer_id,
               base::TimeDelta::FromInternalValue(input->time_stamp),
               input->pointer_data->brush_data->width,
               input->pointer_data->brush_data->height, 0,
               input->pointer_data->brush_data->pressure));
-          touch_event->set_root_location(screen_location);
+          touch_event->set_location_f(location);
+          touch_event->set_root_location_f(screen_location);
           return touch_event.Pass();
         } break;
         case mus::mojom::POINTER_KIND_PEN:
@@ -342,9 +345,11 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
     case mus::mojom::EVENT_TYPE_WHEEL: {
       DCHECK(input->pointer_data && input->pointer_data->wheel_data);
       scoped_ptr<ui::MouseEvent> pre_wheel_event(new ui::MouseEvent(
-          MojoWheelEventTypeToUIEvent(input), location, screen_location,
+          MojoWheelEventTypeToUIEvent(input), gfx::Point(), gfx::Point(),
           ui::EventTimeForNow(), ui::EventFlags(input->flags),
           ui::EventFlags(input->flags)));
+      pre_wheel_event->set_location_f(location);
+      pre_wheel_event->set_root_location_f(screen_location);
       scoped_ptr<ui::MouseEvent> wheel_event(new ui::MouseWheelEvent(
           *pre_wheel_event,
           static_cast<int>(input->pointer_data->wheel_data->delta_x),

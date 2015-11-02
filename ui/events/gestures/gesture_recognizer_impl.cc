@@ -172,17 +172,14 @@ bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
   // pointer_state is modified every time after DispatchCancelTouchEvent.
   scoped_ptr<MotionEvent> pointer_state_clone = pointer_state.Clone();
   for (size_t i = 0; i < pointer_state_clone->GetPointerCount(); ++i) {
-    gfx::PointF point(pointer_state_clone->GetX(i),
-                      pointer_state_clone->GetY(i));
-    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED,
-                           point,
+    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(),
                            ui::EF_IS_SYNTHESIZED,
                            pointer_state_clone->GetPointerId(i),
-                           ui::EventTimeForNow(),
-                           0.0f,
-                           0.0f,
-                           0.0f,
-                           0.0f);
+                           ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
+    gfx::PointF point(pointer_state_clone->GetX(i),
+                      pointer_state_clone->GetY(i));
+    touch_event.set_location_f(point);
+    touch_event.set_root_location_f(point);
     GestureEventHelper* helper = FindDispatchHelperForConsumer(consumer);
     if (helper)
       helper->DispatchCancelTouchEvent(&touch_event);

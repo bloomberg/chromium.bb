@@ -502,8 +502,8 @@ class TimedEvents {
   }
 
   void SendScrollEvents(ui::EventProcessor* dispatcher,
-                        float x_start,
-                        float y_start,
+                        int x_start,
+                        int y_start,
                         int dx,
                         int dy,
                         int touch_id,
@@ -516,8 +516,7 @@ class TimedEvents {
     for (int i = 0; i < num_steps; i++) {
       x += dx;
       y += dy;
-      ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(x, y),
-                          touch_id,
+      ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(x, y), touch_id,
                           base::TimeDelta::FromMilliseconds(simulated_now_));
       ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move);
       ASSERT_FALSE(details.dispatcher_destroyed);
@@ -531,9 +530,10 @@ class TimedEvents {
                        int touch_id,
                        GestureEventConsumeDelegate* delegate) {
     delegate->Reset();
-    ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(x, y),
-                        touch_id,
+    ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(), touch_id,
                         base::TimeDelta::FromMilliseconds(simulated_now_));
+    move.set_location_f(gfx::PointF(x, y));
+    move.set_root_location_f(gfx::PointF(x, y));
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move);
     ASSERT_FALSE(details.dispatcher_destroyed);
     simulated_now_++;
@@ -562,7 +562,7 @@ class TestEventHandler : public ui::EventHandler {
         touch_moved_count_++;
         break;
       case ui::ET_TOUCH_CANCELLED:
-        cancelled_touch_points_.push_back(event->location());
+        cancelled_touch_points_.push_back(event->location_f());
         break;
       default:
         break;
@@ -1116,12 +1116,11 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
     scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
         delegate.get(), -1234, bounds, root_window()));
 
-    const float kPositionX = 101;
-    const float kPositionY = 201;
+    const int kPositionX = 101;
+    const int kPositionY = 201;
     delegate->Reset();
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                         gfx::PointF(kPositionX, kPositionY),
-                         kTouchId,
+                         gfx::Point(kPositionX, kPositionY), kTouchId,
                          tes.Now());
     DispatchEventUsingWindowDispatcher(&press);
     EXPECT_EQ(gfx::Rect(kPositionX - radius, kPositionY - radius, radius * 2,
@@ -1140,11 +1139,10 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
 
     // Release the touch. This should end the scroll.
     delegate->Reset();
-    ui::TouchEvent release(ui::ET_TOUCH_RELEASED,
-                               gfx::PointF(kPositionX + kScrollAmount,
-                                           kPositionY + kScrollAmount),
-                               kTouchId, press.time_stamp() +
-                               base::TimeDelta::FromMilliseconds(50));
+    ui::TouchEvent release(
+        ui::ET_TOUCH_RELEASED,
+        gfx::Point(kPositionX + kScrollAmount, kPositionY + kScrollAmount),
+        kTouchId, press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
     DispatchEventUsingWindowDispatcher(&release);
     EXPECT_EQ(
         gfx::Rect(kPositionX + kScrollAmount - radius,
@@ -1853,14 +1851,12 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   // should generate both SCROLL_BEGIN and PINCH_BEGIN gestures.
   queued_delegate->Reset();
   delegate->Reset();
-  ui::TouchEvent move(
-      ui::ET_TOUCH_MOVED,
-      gfx::PointF(203 +
-                      ui::GestureConfiguration::GetInstance()
-                          ->max_touch_move_in_pixels_for_click(),
-                  303),
-      kTouchId2,
-      tes.Now());
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED,
+                      gfx::Point(203 +
+                                     ui::GestureConfiguration::GetInstance()
+                                         ->max_touch_move_in_pixels_for_click(),
+                                 303),
+                      kTouchId2, tes.Now());
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
@@ -2184,13 +2180,17 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
 
   // Touches should now be associated with the closest touch within
   // ui::GestureConfiguration::max_separation_for_gesture_touches_in_pixels
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 11), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(11.f, 11.f), -1);
   EXPECT_EQ("0", WindowIDAsString(target));
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 11), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(511.f, 11.f), -1);
   EXPECT_EQ("1", WindowIDAsString(target));
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 511), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(11.f, 511.f), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 511), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(511.f, 511.f), -1);
   EXPECT_EQ("3", WindowIDAsString(target));
 
   // Add a touch in the middle associated with windows[2]
@@ -2201,20 +2201,24 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
                       kNumWindows, tes.Now());
   DispatchEventUsingWindowDispatcher(&move);
 
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(250, 250), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(250.f, 250.f), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
 
   // Make sure that ties are broken by distance to a current touch
   // Closer to the point in the bottom right.
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(380, 380), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(380.f, 380.f), -1);
   EXPECT_EQ("3", WindowIDAsString(target));
 
   // This touch is closer to the point in the middle
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(300, 300), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(300.f, 300.f), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
 
   // A touch too far from other touches won't be locked to anything
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(1000.f, 1000.f), -1);
   EXPECT_TRUE(target == NULL);
 
   // Move a touch associated with windows[2] to 1000, 1000
@@ -2222,7 +2226,8 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
                        kNumWindows, tes.Now());
   DispatchEventUsingWindowDispatcher(&move2);
 
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000), -1);
+  target =
+      gesture_recognizer->GetTargetForLocation(gfx::PointF(1000.f, 1000.f), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
 
   for (int i = 0; i < kNumWindows; ++i) {
@@ -3630,8 +3635,8 @@ TEST_F(GestureRecognizerTest, CancelAllActiveTouches) {
                   ui::ET_GESTURE_END);
   const std::vector<gfx::PointF>& points = handler->cancelled_touch_points();
   EXPECT_EQ(2U, points.size());
-  EXPECT_EQ(gfx::Point(101, 201), points[0]);
-  EXPECT_EQ(gfx::Point(350, 300), points[1]);
+  EXPECT_EQ(gfx::PointF(101.f, 201.f), points[0]);
+  EXPECT_EQ(gfx::PointF(350.f, 300.f), points[1]);
 }
 
 // Check that appropriate touch events generate show press events
@@ -3877,9 +3882,10 @@ TEST_F(GestureRecognizerTest, TestExceedingSlopSlowly) {
   EXPECT_EQ(0, delegate->scroll_x_hint());
   delegate->Reset();
 
-
-  ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::PointF(13.1f, 10.f), kTouchId,
+  ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(), kTouchId,
                        tes.LeapForward(40));
+  move3.set_location_f(gfx::PointF(13.1f, 10.f));
+  move3.set_root_location_f(gfx::PointF(13.1f, 10.f));
   DispatchEventUsingWindowDispatcher(&move3);
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());

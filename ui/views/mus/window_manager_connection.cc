@@ -43,9 +43,9 @@ struct TypeConverter<gfx::Display, mus::mojom::DisplayPtr> {
     result.SetScaleAndBounds(input->device_pixel_ratio,
                              input->bounds.To<gfx::Rect>());
     gfx::Rect work_area(
-        gfx::ToFlooredPoint(gfx::ScalePoint(
+        gfx::ScaleToFlooredPoint(
             gfx::Point(input->work_area->x, input->work_area->y),
-            1.0f / input->device_pixel_ratio)),
+            1.0f / input->device_pixel_ratio),
         gfx::ScaleToFlooredSize(
             gfx::Size(input->work_area->width, input->work_area->height),
             1.0f / input->device_pixel_ratio));

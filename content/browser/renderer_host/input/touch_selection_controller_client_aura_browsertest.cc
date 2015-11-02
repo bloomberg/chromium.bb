@@ -355,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
 
   // Put a finger down: the quick menu should go away, while touch handles stay
   // there.
-  ui::TouchEvent touch_down(ui::ET_TOUCH_PRESSED, gfx::PointF(10, 10), 0,
+  ui::TouchEvent touch_down(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0,
                             ui::EventTimeForNow());
   rwhva->OnTouchEvent(&touch_down);
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 
   // Lift the finger up: the quick menu should re-appear.
-  ui::TouchEvent touch_up(ui::ET_TOUCH_RELEASED, gfx::PointF(10, 10), 0,
+  ui::TouchEvent touch_up(ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 0,
                           ui::EventTimeForNow());
   rwhva->OnTouchEvent(&touch_up);
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,

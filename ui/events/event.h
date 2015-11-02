@@ -262,10 +262,16 @@ class EVENTS_EXPORT LocatedEvent : public Event {
 
   float x() const { return location_.x(); }
   float y() const { return location_.y(); }
-  void set_location(const gfx::PointF& location) { location_ = location; }
+  void set_location(const gfx::Point& location) {
+    location_ = gfx::PointF(location);
+  }
+  void set_location_f(const gfx::PointF& location) { location_ = location; }
   gfx::Point location() const { return gfx::ToFlooredPoint(location_); }
   const gfx::PointF& location_f() const { return location_; }
-  void set_root_location(const gfx::PointF& root_location) {
+  void set_root_location(const gfx::Point& root_location) {
+    root_location_ = gfx::PointF(root_location);
+  }
+  void set_root_location_f(const gfx::PointF& root_location) {
     root_location_ = root_location;
   }
   gfx::Point root_location() const {
@@ -401,8 +407,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
 
   // Used for synthetic events in testing, gesture recognizer and Ozone
   MouseEvent(EventType type,
-             const gfx::PointF& location,
-             const gfx::PointF& root_location,
+             const gfx::Point& location,
+             const gfx::Point& root_location,
              base::TimeDelta time_stamp,
              int flags,
              int changed_button_flags);
@@ -518,8 +524,8 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 
   // Used for synthetic events in testing and by the gesture recognizer.
   MouseWheelEvent(const gfx::Vector2d& offset,
-                  const gfx::PointF& location,
-                  const gfx::PointF& root_location,
+                  const gfx::Point& location,
+                  const gfx::Point& root_location,
                   base::TimeDelta time_stamp,
                   int flags,
                   int changed_button_flags);
@@ -552,12 +558,12 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
         pointer_details_(model.pointer_details_) {}
 
   TouchEvent(EventType type,
-             const gfx::PointF& location,
+             const gfx::Point& location,
              int touch_id,
              base::TimeDelta time_stamp);
 
   TouchEvent(EventType type,
-             const gfx::PointF& location,
+             const gfx::Point& location,
              int flags,
              int touch_id,
              base::TimeDelta timestamp,
@@ -854,7 +860,7 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
 
   // Used for tests.
   ScrollEvent(EventType type,
-              const gfx::PointF& location,
+              const gfx::Point& location,
               base::TimeDelta time_stamp,
               int flags,
               float x_offset,

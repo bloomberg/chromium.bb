@@ -326,12 +326,16 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
 }
 
 MouseEvent::MouseEvent(EventType type,
-                       const gfx::PointF& location,
-                       const gfx::PointF& root_location,
+                       const gfx::Point& location,
+                       const gfx::Point& root_location,
                        base::TimeDelta time_stamp,
                        int flags,
                        int changed_button_flags)
-    : LocatedEvent(type, location, root_location, time_stamp, flags),
+    : LocatedEvent(type,
+                   gfx::PointF(location),
+                   gfx::PointF(root_location),
+                   time_stamp,
+                   flags),
       changed_button_flags_(changed_button_flags),
       pointer_details_(PointerDetails(EventPointerType::POINTER_TYPE_MOUSE)) {
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
@@ -485,8 +489,8 @@ MouseWheelEvent::MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event)
 }
 
 MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
-                                 const gfx::PointF& location,
-                                 const gfx::PointF& root_location,
+                                 const gfx::Point& location,
+                                 const gfx::Point& root_location,
                                  base::TimeDelta time_stamp,
                                  int flags,
                                  int changed_button_flags)
@@ -496,8 +500,7 @@ MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
                  time_stamp,
                  flags,
                  changed_button_flags),
-      offset_(offset) {
-}
+      offset_(offset) {}
 
 #if defined(OS_WIN)
 // This value matches windows WHEEL_DELTA.
@@ -535,10 +538,14 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
 }
 
 TouchEvent::TouchEvent(EventType type,
-                       const gfx::PointF& location,
+                       const gfx::Point& location,
                        int touch_id,
                        base::TimeDelta time_stamp)
-    : LocatedEvent(type, location, location, time_stamp, 0),
+    : LocatedEvent(type,
+                   gfx::PointF(location),
+                   gfx::PointF(location),
+                   time_stamp,
+                   0),
       touch_id_(touch_id),
       unique_event_id_(ui::GetNextTouchEventId()),
       rotation_angle_(0.0f),
@@ -549,7 +556,7 @@ TouchEvent::TouchEvent(EventType type,
 }
 
 TouchEvent::TouchEvent(EventType type,
-                       const gfx::PointF& location,
+                       const gfx::Point& location,
                        int flags,
                        int touch_id,
                        base::TimeDelta time_stamp,
@@ -557,7 +564,11 @@ TouchEvent::TouchEvent(EventType type,
                        float radius_y,
                        float angle,
                        float force)
-    : LocatedEvent(type, location, location, time_stamp, flags),
+    : LocatedEvent(type,
+                   gfx::PointF(location),
+                   gfx::PointF(location),
+                   time_stamp,
+                   flags),
       touch_id_(touch_id),
       unique_event_id_(ui::GetNextTouchEventId()),
       rotation_angle_(angle),
@@ -926,7 +937,7 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
 }
 
 ScrollEvent::ScrollEvent(EventType type,
-                         const gfx::PointF& location,
+                         const gfx::Point& location,
                          base::TimeDelta time_stamp,
                          int flags,
                          float x_offset,

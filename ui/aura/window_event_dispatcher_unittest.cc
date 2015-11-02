@@ -2513,8 +2513,10 @@ TEST_F(WindowEventDispatcherTest, GestureEventCoordinates) {
 
   delegate.set_window(window.get());
 
-  ui::TouchEvent touch_pressed_event(
-      ui::ET_TOUCH_PRESSED, gfx::PointF(kX, kY), 0, ui::EventTimeForNow());
+  ui::TouchEvent touch_pressed_event(ui::ET_TOUCH_PRESSED, gfx::Point(), 0,
+                                     ui::EventTimeForNow());
+  touch_pressed_event.set_location_f(gfx::PointF(kX, kY));
+  touch_pressed_event.set_root_location_f(gfx::PointF(kX, kY));
 
   DispatchEventUsingWindowDispatcher(&touch_pressed_event);
 
@@ -2564,9 +2566,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesMarkedWhenCausingScroll) {
 
   // Delay the release to avoid fling generation.
   ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED,
-      location + gfx::Vector2dF(200, 200),
-      0,
+      ui::ET_TOUCH_RELEASED, location + gfx::Vector2d(200, 200), 0,
       ui::EventTimeForNow() + base::TimeDelta::FromSeconds(1));
   DispatchEventUsingWindowDispatcher(&release);
   EXPECT_FALSE(recorder.LastTouchMayCauseScrolling());

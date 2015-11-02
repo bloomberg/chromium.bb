@@ -733,7 +733,7 @@ TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
   // Start touch editing, check that the handle is above the first window, and
   // end touch editing.
   StartTouchEditing();
-  auto test_point = gfx::PointF(GetCursorHandleDragPoint());
+  gfx::Point test_point = GetCursorHandleDragPoint();
   ui::MouseEvent test_event1(ui::ET_MOUSE_MOVED, test_point, test_point,
                              ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(GetCursorHandleNativeView(),

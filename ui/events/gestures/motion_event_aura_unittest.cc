@@ -15,8 +15,8 @@
 namespace {
 
 ui::TouchEvent TouchWithType(ui::EventType type, int id) {
-  return ui::TouchEvent(
-      type, gfx::PointF(0, 0), id, base::TimeDelta::FromMilliseconds(0));
+  return ui::TouchEvent(type, gfx::Point(0, 0), id,
+                        base::TimeDelta::FromMilliseconds(0));
 }
 
 ui::TouchEvent TouchWithPosition(ui::EventType type,
@@ -25,16 +25,10 @@ ui::TouchEvent TouchWithPosition(ui::EventType type,
                                  float y,
                                  float raw_x,
                                  float raw_y) {
-  ui::TouchEvent event(type,
-                       gfx::PointF(x, y),
-                       0,
-                       id,
-                       base::TimeDelta::FromMilliseconds(0),
-                       0,
-                       0,
-                       0,
-                       0);
-  event.set_root_location(gfx::PointF(raw_x, raw_y));
+  ui::TouchEvent event(type, gfx::Point(), 0, id,
+                       base::TimeDelta::FromMilliseconds(0), 0, 0, 0, 0);
+  event.set_location_f(gfx::PointF(x, y));
+  event.set_root_location_f(gfx::PointF(raw_x, raw_y));
   return event;
 }
 
@@ -44,22 +38,15 @@ ui::TouchEvent TouchWithTapParams(ui::EventType type,
                                  float radius_y,
                                  float rotation_angle,
                                  float pressure) {
-  ui::TouchEvent event(type,
-                       gfx::PointF(1, 1),
-                       0,
-                       id,
-                       base::TimeDelta::FromMilliseconds(0),
-                       radius_x,
-                       radius_y,
-                       rotation_angle,
-                       pressure);
-  event.set_root_location(gfx::PointF(1, 1));
+  ui::TouchEvent event(type, gfx::Point(1, 1), 0, id,
+                       base::TimeDelta::FromMilliseconds(0), radius_x, radius_y,
+                       rotation_angle, pressure);
   return event;
 }
 
 ui::TouchEvent TouchWithTime(ui::EventType type, int id, int ms) {
-  return ui::TouchEvent(
-      type, gfx::PointF(0, 0), id, base::TimeDelta::FromMilliseconds(ms));
+  return ui::TouchEvent(type, gfx::Point(0, 0), id,
+                        base::TimeDelta::FromMilliseconds(ms));
 }
 
 base::TimeTicks MsToTicks(int ms) {
@@ -360,7 +347,7 @@ TEST(MotionEventAuraTest, Timestamps) {
 
   TouchEvent move0 = TouchWithTime(
       ui::ET_TOUCH_MOVED, ids[0], times_in_ms[2]);
-  move0.set_location(gfx::PointF(12, 21));
+  move0.set_location(gfx::Point(12, 21));
   EXPECT_TRUE(event.OnTouch(move0));
   EXPECT_EQ(MsToTicks(times_in_ms[2]), event.GetEventTime());
 
@@ -391,7 +378,7 @@ TEST(MotionEventAuraTest, CachedAction) {
   EXPECT_EQ(1, clone->GetActionIndex());
 
   TouchEvent move0 = TouchWithType(ET_TOUCH_MOVED, ids[0]);
-  move0.set_location(gfx::PointF(10, 12));
+  move0.set_location(gfx::Point(10, 12));
   EXPECT_TRUE(event.OnTouch(move0));
   EXPECT_EQ(MotionEvent::ACTION_MOVE, event.GetAction());
   EXPECT_EQ(2U, event.GetPointerCount());

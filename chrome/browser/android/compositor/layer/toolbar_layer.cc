@@ -54,7 +54,8 @@ void ToolbarLayer::PushResource(
   layer_->SetBounds(size);
 
   toolbar_background_layer_->SetBounds(resource->padding.size());
-  toolbar_background_layer_->SetPosition(resource->padding.origin());
+  toolbar_background_layer_->SetPosition(
+      gfx::PointF(resource->padding.origin()));
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
   bool url_bar_visible = (resource->aperture.width() != 0);

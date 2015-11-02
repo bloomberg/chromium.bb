@@ -80,8 +80,8 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
       // cell. A touch exploration event is just a mouse move event with
       // the ui::EF_TOUCH_ACCESSIBILITY flag set.
       gfx::Rect bounds = window->GetBoundsInRootWindow();
-      gfx::PointF location(bounds.x() + 50 * col + 25,
-                           bounds.y() + 50 * row + 25);
+      gfx::Point location(bounds.x() + 50 * col + 25,
+                          bounds.y() + 50 * row + 25);
       int flags = ui::EF_TOUCH_ACCESSIBILITY;
       scoped_ptr<ui::Event> mouse_move_event(new ui::MouseEvent(
           ui::ET_MOUSE_MOVED, location, location, ui::EventTimeForNow(),

@@ -39,8 +39,11 @@ class LocatedEventTestApi : public EventTestApi {
   explicit LocatedEventTestApi(LocatedEvent* located_event);
   ~LocatedEventTestApi() override;
 
-  void set_location(const gfx::PointF& location) {
-    located_event_->location_ = location;
+  void set_location(const gfx::Point& location) {
+    located_event_->set_location(location);
+  }
+  void set_location_f(const gfx::PointF& location) {
+    located_event_->set_location_f(location);
   }
 
  private:

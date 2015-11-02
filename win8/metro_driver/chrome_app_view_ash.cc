@@ -388,10 +388,9 @@ class ChromeAppViewAsh::PointerInfoHandler {
     // via the win32 scale factor which achieves the needful.
     gfx::Point dip_point_metro(point.X, point.Y);
     gfx::Point scaled_point_metro =
-      gfx::ToCeiledPoint(gfx::ScalePoint(dip_point_metro, metro_dpi_scale_));
+        gfx::ScaleToCeiledPoint(dip_point_metro, metro_dpi_scale_);
     gfx::Point dip_point_win32 =
-        gfx::ToCeiledPoint(gfx::ScalePoint(scaled_point_metro,
-                                           1.0 / win32_dpi_scale_));
+        gfx::ScaleToCeiledPoint(scaled_point_metro, 1.0 / win32_dpi_scale_);
     x_ = dip_point_win32.x();
     y_ = dip_point_win32.y();
 

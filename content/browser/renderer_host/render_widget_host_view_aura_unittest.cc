@@ -1083,7 +1083,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   sink_->ClearMessages();
 
   // Simulates the mouse press.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                              0);
   view_->OnMouseEvent(&mouse_event);
@@ -1110,11 +1110,11 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   // Start with no touch-event handler in the renderer.
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::PointF(30.f, 30.f), 0,
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
                        ui::EventTimeForNow());
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(20.f, 20.f), 0,
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
                       ui::EventTimeForNow());
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::PointF(20.f, 20.f), 0,
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
                          ui::EventTimeForNow());
 
   // The touch events should get forwarded from the view, but they should not
@@ -1169,14 +1169,14 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::PointF(20.f, 20.f), 0,
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
                        base::Time::NowFromSystemTime() - base::Time());
   view_->OnTouchEvent(&move2);
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
-  ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::PointF(20.f, 20.f), 0,
+  ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
                           base::Time::NowFromSystemTime() - base::Time());
   view_->OnTouchEvent(&release2);
   EXPECT_TRUE(press.synchronous_handling_disabled());
@@ -1191,7 +1191,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   view_->UseFakeDispatcher();
   GetSentMessageCountAndResetSink();
 
-  ui::TouchEvent press0(ui::ET_TOUCH_PRESSED, gfx::PointF(30.f, 30.f), 0,
+  ui::TouchEvent press0(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
                         ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press0);
@@ -1202,7 +1202,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent move0(ui::ET_TOUCH_MOVED, gfx::PointF(20.f, 20.f), 0,
+  ui::TouchEvent move0(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
                        ui::EventTimeForNow());
 
   view_->OnTouchEvent(&move0);
@@ -1215,7 +1215,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the second touchstart, only the state of the second touch point is
   // StatePressed, the state of the first touch point is StateStationary.
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::PointF(10.f, 10.f), 1,
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1,
                         ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press1);
@@ -1229,7 +1229,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the touchmove of second point, the state of the second touch point is
   // StateMoved, the state of the first touch point is StateStationary.
-  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::PointF(30.f, 30.f), 1,
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(30, 30), 1,
                        ui::EventTimeForNow());
 
   view_->OnTouchEvent(&move1);
@@ -1242,7 +1242,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the touchmove of first point, the state of the first touch point is
   // StateMoved, the state of the second touch point is StateStationary.
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::PointF(10.f, 10.f), 0,
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 0,
                        ui::EventTimeForNow());
 
   view_->OnTouchEvent(&move2);
@@ -1253,7 +1253,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(2U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent cancel0(ui::ET_TOUCH_CANCELLED, gfx::PointF(10.f, 10.f), 0,
+  ui::TouchEvent cancel0(ui::ET_TOUCH_CANCELLED, gfx::Point(10, 10), 0,
                          ui::EventTimeForNow());
 
   // For the touchcancel, only the state of the current touch point is
@@ -1262,7 +1262,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent cancel1(ui::ET_TOUCH_CANCELLED, gfx::PointF(30.f, 30.f), 1,
+  ui::TouchEvent cancel1(ui::ET_TOUCH_CANCELLED, gfx::Point(30, 30), 1,
                          ui::EventTimeForNow());
 
   view_->OnTouchEvent(&cancel1);
@@ -1278,11 +1278,11 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
 
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::PointF(30.f, 30.f), 0,
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
                        ui::EventTimeForNow());
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(20.f, 20.f), 0,
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
                       ui::EventTimeForNow());
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::PointF(20.f, 20.f), 0,
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
                          ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press);
@@ -2485,10 +2485,10 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventPositionsArentRounded) {
   view_->InitAsChild(NULL);
   view_->Show();
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                       gfx::PointF(kX, kY),
-                       0,
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(), 0,
                        ui::EventTimeForNow());
+  press.set_location_f(gfx::PointF(kX, kY));
+  press.set_root_location_f(gfx::PointF(kX, kY));
 
   view_->OnTouchEvent(&press);
   EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
@@ -3429,11 +3429,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
 
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
 
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::PointF(30.f, 30.f), 0,
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
                        ui::EventTimeForNow());
 
   // Construct a move with a touch id which doesn't exist.
-  ui::TouchEvent invalid_move(ui::ET_TOUCH_MOVED, gfx::PointF(30.f, 30.f), 1,
+  ui::TouchEvent invalid_move(ui::ET_TOUCH_MOVED, gfx::Point(30, 30), 1,
                               ui::EventTimeForNow());
 
   // Valid press is handled asynchronously.
@@ -3475,7 +3475,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   sink_->ClearMessages();
 
   // Simulates the mouse wheel event with ctrl modifier applied.
-  ui::MouseWheelEvent event(gfx::Vector2d(1, 1), gfx::PointF(), gfx::PointF(),
+  ui::MouseWheelEvent event(gfx::Vector2d(1, 1), gfx::Point(), gfx::Point(),
                             ui::EventTimeForNow(), ui::EF_CONTROL_DOWN, 0);
   view_->OnMouseEvent(&event);
 
@@ -3493,7 +3493,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
       INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Simulates the mouse wheel event with no modifier applied.
-  event = ui::MouseWheelEvent(gfx::Vector2d(1, 1), gfx::PointF(), gfx::PointF(),
+  event = ui::MouseWheelEvent(gfx::Vector2d(1, 1), gfx::Point(), gfx::Point(),
                               ui::EventTimeForNow(), ui::EF_NONE, 0);
 
   view_->OnMouseEvent(&event);
@@ -3509,9 +3509,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
       INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Simulates the scroll event with ctrl modifier applied.
-  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::PointF(2.f, 2.f),
-                         ui::EventTimeForNow(), ui::EF_CONTROL_DOWN, 0, 5, 0, 5,
-                         2);
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(),
+                         ui::EF_CONTROL_DOWN, 0, 5, 0, 5, 2);
   view_->OnScrollEvent(&scroll);
 
   input_event = GetInputEventFromMessage(*sink_->GetMessageAt(0));
@@ -3528,14 +3527,14 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
   view_->Show();
   view_->UseFakeDispatcher();
 
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::PointF(30.f, 30.f), 0,
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
                         ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press1);
   SendTouchEventACK(blink::WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED, press1.unique_event_id());
 
-  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::PointF(20.f, 20.f), 1,
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(20, 20), 1,
                         ui::EventTimeForNow());
   view_->OnTouchEvent(&press2);
   SendTouchEventACK(blink::WebInputEvent::TouchStart,

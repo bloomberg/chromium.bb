@@ -57,10 +57,12 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo&) {
+  ui::MouseEvent mouse_event(ui::ET_MOUSEWHEEL, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   gfx::PointF location(web_wheel.x * device_scale_factor_,
                        web_wheel.y * device_scale_factor_);
-  ui::MouseEvent mouse_event(ui::ET_MOUSEWHEEL, location, location,
-                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  mouse_event.set_location_f(location);
+  mouse_event.set_root_location_f(location);
   ui::MouseWheelEvent wheel_event(
       mouse_event, web_wheel.deltaX, web_wheel.deltaY);
 
@@ -126,12 +128,14 @@ int WebMouseEventButtonToFlags(blink::WebMouseEvent::Button button) {
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) {
-  gfx::PointF location(web_mouse.x * device_scale_factor_,
-                       web_mouse.y * device_scale_factor_);
   ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type);
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
-  ui::MouseEvent mouse_event(event_type, location, location,
+  ui::MouseEvent mouse_event(event_type, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), flags, flags);
+  gfx::PointF location(web_mouse.x * device_scale_factor_,
+                       web_mouse.y * device_scale_factor_);
+  mouse_event.set_location_f(location);
+  mouse_event.set_root_location_f(location);
 
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());

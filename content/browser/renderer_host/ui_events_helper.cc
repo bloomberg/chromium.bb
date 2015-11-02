@@ -74,15 +74,11 @@ bool MakeUITouchEventsFromWebTouchEvents(
       location = point.position;
     else
       location = point.screenPosition;
-    ui::TouchEvent* uievent = new ui::TouchEvent(type,
-          location,
-          flags,
-          point.id,
-          timestamp,
-          point.radiusX,
-          point.radiusY,
-          point.rotationAngle,
-          point.force);
+    ui::TouchEvent* uievent = new ui::TouchEvent(
+        type, gfx::Point(), flags, point.id, timestamp, point.radiusX,
+        point.radiusY, point.rotationAngle, point.force);
+    uievent->set_location_f(location);
+    uievent->set_root_location_f(location);
     uievent->set_latency(touch_with_latency.latency);
     list->push_back(uievent);
   }

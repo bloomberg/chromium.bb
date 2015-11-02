@@ -29,13 +29,13 @@ void SetClientArea(mus::Window* window) {
 }
 
 mus::mojom::EventPtr CreatePointerDownEvent(const gfx::Point& location) {
-  const ui::TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::PointF(location), 1,
+  const ui::TouchEvent event(ui::ET_TOUCH_PRESSED, location, 1,
                              base::TimeDelta());
   return mus::mojom::Event::From(static_cast<const ui::Event&>(event));
 }
 
 mus::mojom::EventPtr CreatePointerMove(const gfx::Point& location) {
-  const ui::TouchEvent event(ui::ET_TOUCH_MOVED, gfx::PointF(location), 1,
+  const ui::TouchEvent event(ui::ET_TOUCH_MOVED, location, 1,
                              base::TimeDelta());
   return mus::mojom::Event::From(static_cast<const ui::Event&>(event));
 }

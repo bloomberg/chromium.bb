@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include <string>
 
-#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -85,10 +84,6 @@ class GFX_EXPORT Point {
   // vectors.
   bool operator<(const Point& rhs) const {
     return (y_ == rhs.y_) ? (x_ < rhs.x_) : (y_ < rhs.y_);
-  }
-
-  operator PointF() const {
-    return PointF(static_cast<float>(x()), static_cast<float>(y()));
   }
 
   // Returns a string representation of point.

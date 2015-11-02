@@ -66,7 +66,7 @@ void ScaleTouchEvent(TouchEvent* event, const gfx::SizeF& size) {
                      size.height() / touchscreen_size.height());
       double ratio = std::sqrt(size.GetArea() / touchscreen_size.GetArea());
 
-      event->set_location(location);
+      event->set_location_f(location);
       event->set_radius_x(event->pointer_details().radius_x() * ratio);
       event->set_radius_y(event->pointer_details().radius_y() * ratio);
       return;
@@ -177,7 +177,7 @@ void EgltestWindow::SetCursor(PlatformCursor cursor) {
 }
 
 void EgltestWindow::MoveCursorTo(const gfx::Point& location) {
-  event_factory_->WarpCursorTo(window_id_, location);
+  event_factory_->WarpCursorTo(window_id_, gfx::PointF(location));
 }
 
 void EgltestWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {

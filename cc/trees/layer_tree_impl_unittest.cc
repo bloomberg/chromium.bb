@@ -1636,7 +1636,7 @@ TEST_F(LayerTreeImplTest,
   EXPECT_EQ(host_impl().active_tree()->root_layer(),
             host_impl().active_tree()->PageScaleLayer());
 
-  test_point = gfx::Point(35, 35);
+  test_point = gfx::PointF(35.f, 35.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
@@ -1645,7 +1645,7 @@ TEST_F(LayerTreeImplTest,
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(12345, result_layer->id());
 
-  test_point = gfx::Point(64, 64);
+  test_point = gfx::PointF(64.f, 64.f);
   test_point =
       gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
   result_layer =
