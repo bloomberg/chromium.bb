@@ -63,6 +63,9 @@ struct CurrentTabInfo {
   wchar_t* url;
 };
 
+// Returns true if Chrome supports Metro-mode on this Windows version.
+BASE_EXPORT bool IsChromeMetroSupported();
+
 // Returns the handle to the metro dll loaded in the process. A NULL return
 // indicates that the metro dll was not loaded in the process.
 BASE_EXPORT HMODULE GetMetroModule();

@@ -5,9 +5,15 @@
 #include "base/win/metro.h"
 
 #include "base/strings/string_util.h"
+#include "base/win/windows_version.h"
 
 namespace base {
 namespace win {
+
+bool IsChromeMetroSupported() {
+  const Version win_version = GetVersion();
+  return win_version >= VERSION_WIN8 && win_version < VERSION_WIN10;
+}
 
 HMODULE GetMetroModule() {
   const HMODULE kUninitialized = reinterpret_cast<HMODULE>(1);

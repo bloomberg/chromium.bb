@@ -131,10 +131,10 @@ HWND CreateUACForegroundWindow() {
 }  // namespace
 
 bool InstallUtil::ShouldInstallMetroProperties() {
-  // Metro support in Chrome was dropped in Win10. Although Metro properties are
-  // only meaningful on Win8+, install them on earlier versions of the OS as
-  // well in order for easier transitions on OS upgrade to Win8+.
-  return base::win::GetVersion() < base::win::VERSION_WIN10;
+  // Install Metro properties on Windows versions that Chrome supports as well
+  // as on any version prior to Win8 to ease in-place upgrades to Win8.
+  return base::win::IsChromeMetroSupported() ||
+         base::win::GetVersion() < base::win::VERSION_WIN8;
 }
 
 base::string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {

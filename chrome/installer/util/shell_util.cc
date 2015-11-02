@@ -35,6 +35,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/values.h"
+#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
@@ -76,14 +77,6 @@ enum RegistrationConfirmationLevel {
 };
 
 const wchar_t kReinstallCommand[] = L"ReinstallCommand";
-
-// Returns true if Chrome Metro is supported on this version of Windows
-// (supported as of Win8; deprecated as of Win10).
-bool IsChromeMetroSupported() {
-  const base::win::Version win_version = base::win::GetVersion();
-  return win_version >= base::win::VERSION_WIN8 &&
-         win_version < base::win::VERSION_WIN10;
-}
 
 // Returns the current (or installed) browser's ProgId (e.g.
 // "ChromeHTML|suffix|").
@@ -343,7 +336,7 @@ class RegistryEntry {
     if (!app_info.delegate_clsid.empty()) {
       ScopedVector<RegistryEntry> delegate_execute_entries =
           GetChromeDelegateExecuteEntries(chrome_exe, app_info);
-      if (!IsChromeMetroSupported()) {
+      if (!base::win::IsChromeMetroSupported()) {
         // Remove the keys (not only their values) so that Windows will continue
         // to launch Chrome without a pesky association error.
         for (RegistryEntry* entry : delegate_execute_entries)
@@ -383,7 +376,7 @@ class RegistryEntry {
                             app_info.delegate_clsid));
       // If Metro is not supported, remove the DelegateExecute entry instead of
       // adding it.
-      if (!IsChromeMetroSupported())
+      if (!base::win::IsChromeMetroSupported())
         entries->back()->set_removal_flag(RemovalFlag::VALUE);
     }
 

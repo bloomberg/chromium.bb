@@ -161,8 +161,10 @@ bool RelaunchChromeHelper(const base::CommandLine& command_line,
   chrome_exe_command_line.SetProgram(
       chrome_exe.DirName().Append(installer::kChromeExe));
 
-  if ((base::win::GetVersion() < base::win::VERSION_WIN8 ||
-       base::win::GetVersion() >= base::win::VERSION_WIN10) &&
+  // Relaunch directly if Chrome doesn't support Metro-mode on this platform
+  // unless an explicit relaunch mode was specified (e.g. for the Ash shell on
+  // Win7).
+  if (!base::win::IsChromeMetroSupported() &&
       relaunch_mode != RELAUNCH_MODE_METRO &&
       relaunch_mode != RELAUNCH_MODE_DESKTOP) {
     return base::LaunchProcess(chrome_exe_command_line,

@@ -10,9 +10,11 @@
 #include <shlguid.h>
 
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
@@ -29,7 +31,6 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/win/dpi.h"
-#include "ui/gfx/win/metro_mode.h"
 #include "win8/delegate_execute/chrome_util.h"
 #include "win8/delegate_execute/delegate_execute_util.h"
 #include "win8/viewer/metro_viewer_constants.h"
@@ -486,7 +487,7 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     return launch_mode;
   }
 
-  if (!gfx::win::ShouldUseMetroMode()) {
+  if (!base::win::IsChromeMetroSupported()) {
     launch_mode = ECHUIM_DESKTOP;
     launch_mode_determined = true;
     return launch_mode;

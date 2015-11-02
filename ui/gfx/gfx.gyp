@@ -179,7 +179,6 @@
         'gfx_export.h',
         'gfx_paths.cc',
         'gfx_paths.h',
-        
         'harfbuzz_font_skia.cc',
         'harfbuzz_font_skia.h',
         'hud_font.cc',
@@ -311,8 +310,6 @@
         'win/dpi.h',
         'win/hwnd_util.cc',
         'win/hwnd_util.h',
-        'win/metro_mode.cc',
-        'win/metro_mode.h',
         'win/scoped_set_map_mode.h',
         'win/singleton_hwnd.cc',
         'win/singleton_hwnd.h',
