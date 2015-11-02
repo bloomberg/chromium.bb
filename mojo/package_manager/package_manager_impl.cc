@@ -140,8 +140,7 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
                                      &response)) {
     ContentHandlerConnection* connection =
         GetContentHandler(content_handler_identity, source);
-    connection->content_handler()->StartApplication(application_request->Pass(),
-                                                    response.Pass());
+    connection->StartApplication(application_request->Pass(), response.Pass());
     return connection->id();
   }
   return Shell::kInvalidContentHandlerID;

@@ -31,18 +31,21 @@ class ApplicationThread : public base::SimpleThread {
           core_services_application,
       const std::string& url,
       scoped_ptr<mojo::ApplicationDelegate> delegate,
-      mojo::InterfaceRequest<mojo::Application> request)
+      mojo::InterfaceRequest<mojo::Application> request,
+      const mojo::Callback<void()>& destruct_callback)
       : base::SimpleThread(url),
         core_services_application_(core_services_application),
         core_services_application_task_runner_(
             base::MessageLoop::current()->task_runner()),
         url_(url),
         delegate_(delegate.Pass()),
-        request_(request.Pass()) {
+        request_(request.Pass()),
+        destruct_callback_(destruct_callback) {
   }
 
   ~ApplicationThread() override {
     Join();
+    destruct_callback_.Run();
   }
 
   // Overridden from base::SimpleThread:
@@ -70,6 +73,7 @@ class ApplicationThread : public base::SimpleThread {
   std::string url_;
   scoped_ptr<mojo::ApplicationDelegate> delegate_;
   mojo::InterfaceRequest<mojo::Application> request_;
+  mojo::Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
 };
@@ -119,7 +123,8 @@ void CoreServicesApplicationDelegate::Create(
 
 void CoreServicesApplicationDelegate::StartApplication(
     mojo::InterfaceRequest<mojo::Application> request,
-    mojo::URLResponsePtr response) {
+    mojo::URLResponsePtr response,
+    const mojo::Callback<void()>& destruct_callback) {
   const std::string url = response->url;
 
   scoped_ptr<mojo::ApplicationDelegate> delegate;
@@ -148,7 +153,7 @@ void CoreServicesApplicationDelegate::StartApplication(
 
   scoped_ptr<ApplicationThread> thread(
       new ApplicationThread(weak_factory_.GetWeakPtr(), url, delegate.Pass(),
-                            request.Pass()));
+                            request.Pass(), destruct_callback));
   thread->Start();
   application_threads_.push_back(thread.Pass());
 }

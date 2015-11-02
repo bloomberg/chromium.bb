@@ -56,7 +56,8 @@ HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
     mojo::InterfaceRequest<mojo::Application> request,
     mojo::URLResponsePtr response,
     GlobalState* global_state,
-    scoped_ptr<mojo::AppRefCount> parent_app_refcount)
+    scoped_ptr<mojo::AppRefCount> parent_app_refcount,
+    const mojo::Callback<void()>& destruct_callback)
     : app_(this,
            request.Pass(),
            base::Bind(&HTMLDocumentApplicationDelegate::OnTerminate,
@@ -66,6 +67,7 @@ HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
       initial_response_(response.Pass()),
       global_state_(global_state),
       html_factory_(this),
+      destruct_callback_(destruct_callback),
       weak_factory_(this) {}
 
 HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
@@ -76,6 +78,7 @@ HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
   for (HTMLDocument* doc : documents2)
     doc->Destroy();
   DCHECK(documents2_.empty());
+  destruct_callback_.Run();
 }
 
 // Callback from the quit closure. We key off this rather than

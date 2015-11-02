@@ -75,9 +75,12 @@ class TestContentHandler : public ContentHandler, public ApplicationDelegate {
       : binding_(this, request.Pass()) {}
 
   // ContentHandler:
-  void StartApplication(InterfaceRequest<Application> application_request,
-                        URLResponsePtr response) override {
+  void StartApplication(
+      InterfaceRequest<Application> application_request,
+      URLResponsePtr response,
+      const Callback<void()>& destruct_callback) override {
     apps_.push_back(new ApplicationImpl(this, application_request.Pass()));
+    destruct_callback.Run();
   }
 
  private:

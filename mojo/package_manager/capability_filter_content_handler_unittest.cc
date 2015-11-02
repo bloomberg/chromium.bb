@@ -96,12 +96,15 @@ class TestContentHandler : public ApplicationDelegate,
   }
 
   // Overridden from ContentHandler:
-  void StartApplication(InterfaceRequest<Application> application,
-                        URLResponsePtr response) override {
+  void StartApplication(
+      InterfaceRequest<Application> application,
+      URLResponsePtr response,
+      const Callback<void()>& destruct_callback) override {
     scoped_ptr<ApplicationDelegate> delegate(new shell::test::TestApplication);
     embedded_apps_.push_back(
         new ApplicationImpl(delegate.get(), application.Pass()));
     embedded_app_delegates_.push_back(delegate.Pass());
+    destruct_callback.Run();
   }
 
   ApplicationImpl* app_;

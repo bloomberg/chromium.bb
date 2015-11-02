@@ -4,6 +4,7 @@
 
 #include "mojo/package_manager/content_handler_connection.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_to_application_params.h"
@@ -21,7 +22,8 @@ ContentHandlerConnection::ContentHandlerConnection(
     : connection_closed_callback_(connection_closed_callback),
       identity_(content_handler),
       connection_closed_(false),
-      id_(id) {
+      id_(id),
+      ref_count_(0) {
   ServiceProviderPtr services;
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
@@ -39,6 +41,16 @@ ContentHandlerConnection::ContentHandlerConnection(
       [this]() { CloseConnection(); });
 }
 
+void ContentHandlerConnection::StartApplication(
+    InterfaceRequest<Application> request,
+    URLResponsePtr response) {
+  content_handler_->StartApplication(
+      request.Pass(), response.Pass(),
+      base::Bind(&ContentHandlerConnection::ApplicationDestructed,
+                 base::Unretained(this)));
+  ref_count_++;
+}
+
 void ContentHandlerConnection::CloseConnection() {
   if (connection_closed_)
     return;
@@ -51,6 +63,11 @@ ContentHandlerConnection::~ContentHandlerConnection() {
   // If this DCHECK fails then something has tried to delete this object without
   // calling CloseConnection.
   DCHECK(connection_closed_);
+}
+
+void ContentHandlerConnection::ApplicationDestructed() {
+  if (!--ref_count_)
+    CloseConnection();
 }
 
 }  // namespace package_manager

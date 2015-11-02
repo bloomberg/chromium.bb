@@ -34,15 +34,19 @@ class ContentHandlerConnection {
                            uint32_t id,
                            const ClosedCallback& connection_closed_callback);
 
+  void StartApplication(InterfaceRequest<Application> request,
+                        URLResponsePtr response);
+
   // Closes the connection and destroys |this| object.
   void CloseConnection();
 
-  ContentHandler* content_handler() { return content_handler_.get(); }
   const shell::Identity& identity() const { return identity_; }
   uint32_t id() const { return id_; }
 
  private:
   ~ContentHandlerConnection();
+
+  void ApplicationDestructed();
 
   ClosedCallback connection_closed_callback_;
   shell::Identity identity_;
@@ -51,6 +55,7 @@ class ContentHandlerConnection {
   bool connection_closed_;
   // The id for this content handler.
   const uint32_t id_;
+  int ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerConnection);
 };

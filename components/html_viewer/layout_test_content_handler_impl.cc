@@ -52,14 +52,16 @@ LayoutTestContentHandlerImpl::LayoutTestContentHandlerImpl(
     : ContentHandlerImpl(global_state, app, request.Pass()),
       test_interfaces_(test_interfaces),
       test_delegate_(test_delegate),
-      web_widget_proxy_(nullptr) {}
+      web_widget_proxy_(nullptr),
+      app_refcount_(app->app_lifetime_helper()->CreateAppRefCount()) {}
 
 LayoutTestContentHandlerImpl::~LayoutTestContentHandlerImpl() {
 }
 
 void LayoutTestContentHandlerImpl::StartApplication(
     mojo::InterfaceRequest<mojo::Application> request,
-    mojo::URLResponsePtr response) {
+    mojo::URLResponsePtr response,
+    const mojo::Callback<void()>& destruct_callback) {
   test_interfaces_->SetTestIsRunning(true);
   test_interfaces_->ConfigureForTestWithURL(GURL(), false);
 
@@ -67,7 +69,8 @@ void LayoutTestContentHandlerImpl::StartApplication(
   HTMLDocumentApplicationDelegate* delegate =
       new HTMLDocumentApplicationDelegate(
           request.Pass(), response.Pass(), global_state(),
-          app()->app_lifetime_helper()->CreateAppRefCount());
+          app()->app_lifetime_helper()->CreateAppRefCount(),
+          destruct_callback);
 
   delegate->set_html_factory(this);
 }

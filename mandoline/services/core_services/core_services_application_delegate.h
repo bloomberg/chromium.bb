@@ -45,7 +45,8 @@ class CoreServicesApplicationDelegate
   // Overridden from mojo::ContentHandler:
   void StartApplication(
       mojo::InterfaceRequest<mojo::Application> request,
-      mojo::URLResponsePtr response) override;
+      mojo::URLResponsePtr response,
+      const mojo::Callback<void()>& destruct_callback) override;
 
   // Bindings for all of our connections.
   mojo::WeakBindingSet<ContentHandler> handler_bindings_;

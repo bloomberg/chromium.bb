@@ -51,10 +51,13 @@ class TestContentHandler : public ApplicationDelegate,
   }
 
   // Overridden from ContentHandler:
-  void StartApplication(InterfaceRequest<Application> application,
-                        URLResponsePtr response) override {
+  void StartApplication(
+      InterfaceRequest<Application> application,
+      URLResponsePtr response,
+      const Callback<void()>& destruct_callback) override {
     response_number_++;
     latest_response_ = response.Pass();
+    destruct_callback.Run();
 
     // Drop |application| request. This results in the application manager
     // dropping the ServiceProvider interface request provided by the client

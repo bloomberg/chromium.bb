@@ -31,12 +31,18 @@ class ApplicationThread : public base::PlatformThread::Delegate {
       const base::Callback<void(ApplicationThread*)>& termination_callback,
       ContentHandlerFactory::Delegate* handler_delegate,
       InterfaceRequest<Application> application_request,
-      URLResponsePtr response)
+      URLResponsePtr response,
+      const Callback<void()>& destruct_callback)
       : handler_thread_(handler_thread),
         termination_callback_(termination_callback),
         handler_delegate_(handler_delegate),
         application_request_(application_request.Pass()),
-        response_(response.Pass()) {}
+        response_(response.Pass()),
+        destruct_callback_(destruct_callback) {}
+
+  ~ApplicationThread() override {
+    destruct_callback_.Run();
+  }
 
  private:
   void ThreadMain() override {
@@ -51,6 +57,7 @@ class ApplicationThread : public base::PlatformThread::Delegate {
   ContentHandlerFactory::Delegate* handler_delegate_;
   InterfaceRequest<Application> application_request_;
   URLResponsePtr response_;
+  Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
 };
@@ -76,13 +83,16 @@ class ContentHandlerImpl : public ContentHandler {
 
  private:
   // Overridden from ContentHandler:
-  void StartApplication(InterfaceRequest<Application> application_request,
-                        URLResponsePtr response) override {
+  void StartApplication(
+      InterfaceRequest<Application> application_request,
+      URLResponsePtr response,
+      const Callback<void()>& destruct_callback) override {
     ApplicationThread* thread = new ApplicationThread(
         base::ThreadTaskRunnerHandle::Get(),
         base::Bind(&ContentHandlerImpl::OnThreadEnd,
                    weak_factory_.GetWeakPtr()),
-        delegate_, application_request.Pass(), response.Pass());
+        delegate_, application_request.Pass(), response.Pass(),
+        destruct_callback);
     base::PlatformThreadHandle handle;
     bool launched = base::PlatformThread::Create(0, thread, &handle);
     DCHECK(launched);

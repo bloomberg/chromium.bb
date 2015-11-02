@@ -509,13 +509,15 @@ class PDFViewerApplicationDelegate
  public:
   PDFViewerApplicationDelegate(
       mojo::InterfaceRequest<mojo::Application> request,
-      mojo::URLResponsePtr response)
+      mojo::URLResponsePtr response,
+      const mojo::Callback<void()>& destruct_callback)
       : app_(this,
              request.Pass(),
              base::Bind(&PDFViewerApplicationDelegate::OnTerminate,
                         base::Unretained(this))),
         doc_(nullptr),
-        is_destroying_(false) {
+        is_destroying_(false),
+        destruct_callback_(destruct_callback) {
     FetchPDF(response.Pass());
   }
 
@@ -525,6 +527,7 @@ class PDFViewerApplicationDelegate
       FPDF_CloseDocument(doc_);
     while (!pdf_views_.empty())
       pdf_views_.front()->Close();
+    destruct_callback_.Run();
   }
 
  private:
@@ -574,6 +577,7 @@ class PDFViewerApplicationDelegate
   std::vector<PDFView*> pdf_views_;
   FPDF_DOCUMENT doc_;
   bool is_destroying_;
+  mojo::Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFViewerApplicationDelegate);
 };
@@ -586,9 +590,12 @@ class ContentHandlerImpl : public mojo::ContentHandler {
 
  private:
   // ContentHandler:
-  void StartApplication(mojo::InterfaceRequest<mojo::Application> request,
-                        mojo::URLResponsePtr response) override {
-    new PDFViewerApplicationDelegate(request.Pass(), response.Pass());
+  void StartApplication(
+      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::URLResponsePtr response,
+      const mojo::Callback<void()>& destruct_callback) override {
+    new PDFViewerApplicationDelegate(
+        request.Pass(), response.Pass(), destruct_callback);
   }
 
   mojo::StrongBinding<mojo::ContentHandler> binding_;

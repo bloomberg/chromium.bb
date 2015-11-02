@@ -29,7 +29,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
       mojo::InterfaceRequest<mojo::Application> request,
       mojo::URLResponsePtr response,
       GlobalState* global_state,
-      scoped_ptr<mojo::AppRefCount> parent_app_refcount);
+      scoped_ptr<mojo::AppRefCount> parent_app_refcount,
+      const mojo::Callback<void()>& destruct_callback);
 
   void set_html_factory(HTMLFactory* factory) { html_factory_ = factory; }
   HTMLFactory* html_factory() { return html_factory_; }
@@ -75,6 +76,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
   std::set<HTMLDocument*> documents2_;
 
   HTMLFactory* html_factory_;
+
+  mojo::Callback<void()> destruct_callback_;
 
   base::WeakPtrFactory<HTMLDocumentApplicationDelegate> weak_factory_;
 
