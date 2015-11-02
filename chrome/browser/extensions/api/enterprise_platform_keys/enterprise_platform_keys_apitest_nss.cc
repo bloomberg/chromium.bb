@@ -17,13 +17,12 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
@@ -310,11 +309,10 @@ class EnterprisePlatformKeysTest
                NULL);
 
     // Set the policy and wait until the extension is installed.
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-        content::NotificationService::AllSources());
+    extensions::TestExtensionRegistryObserver observer(
+        extensions::ExtensionRegistry::Get(profile()));
     policy_provider_.UpdateChromePolicy(policy);
-    observer.Wait();
+    observer.WaitForExtensionWillBeInstalled();
   }
 
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
