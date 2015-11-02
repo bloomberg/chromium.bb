@@ -75,12 +75,15 @@ class BASE_EXPORT SharedMemoryHandle {
 #else
 class BASE_EXPORT SharedMemoryHandle {
  public:
+  // The values of these enums must not change, as they are used by the
+  // histogram OSX.SharedMemory.Mechanism.
   enum Type {
     // The SharedMemoryHandle is backed by a POSIX fd.
     POSIX,
     // The SharedMemoryHandle is backed by the Mach primitive "memory object".
     MACH,
   };
+  static const int TypeMax = 2;
 
   // The format that should be used to transmit |Type| over the wire.
   typedef int TypeWireFormat;
