@@ -11,10 +11,16 @@
 
 namespace media {
 
-// A trait class to help get the corresponding mojo type for a native type.
+// A trait struct to help get the corresponding mojo type for a native type.
+// By default the mojo type is the same as the native type. This works well for
+// primitive types like integers.
 template <typename T>
-class MojoTypeTrait {};
+struct MojoTypeTrait {
+  typedef T MojoType;
+  static MojoType DefaultValue() { return MojoType(); }
+};
 
+// Specialization for string.
 template <>
 struct MojoTypeTrait<std::string> {
   typedef mojo::String MojoType;

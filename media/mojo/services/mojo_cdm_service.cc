@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "media/base/cdm_config.h"
+#include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
@@ -17,8 +18,11 @@
 
 namespace media {
 
-using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
 using SimpleMojoCdmPromise = MojoCdmPromise<>;
+using CdmIdMojoCdmPromise = MojoCdmPromise<int>;
+using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
+
+int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
 
 MojoCdmService::MojoCdmService(
     base::WeakPtr<MojoCdmServiceContext> context,
@@ -49,11 +53,10 @@ void MojoCdmService::Initialize(
     const mojo::String& key_system,
     const mojo::String& security_origin,
     interfaces::CdmConfigPtr cdm_config,
-    int32_t cdm_id,
-    const mojo::Callback<void(interfaces::CdmPromiseResultPtr)>& callback) {
+    const mojo::Callback<void(interfaces::CdmPromiseResultPtr, int32_t)>&
+        callback) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
   DCHECK(!cdm_);
-  DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
 
   auto weak_this = weak_factory_.GetWeakPtr();
   cdm_factory_->Create(
@@ -64,8 +67,8 @@ void MojoCdmService::Initialize(
       base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),
       base::Bind(&MojoCdmService::OnSessionExpirationUpdate, weak_this),
       base::Bind(
-          &MojoCdmService::OnCdmCreated, weak_this, cdm_id,
-          base::Passed(make_scoped_ptr(new SimpleMojoCdmPromise(callback)))));
+          &MojoCdmService::OnCdmCreated, weak_this,
+          base::Passed(make_scoped_ptr(new CdmIdMojoCdmPromise(callback)))));
 }
 
 void MojoCdmService::SetServerCertificate(
@@ -136,8 +139,7 @@ CdmContext* MojoCdmService::GetCdmContext() {
   return cdm_->GetCdmContext();
 }
 
-void MojoCdmService::OnCdmCreated(int cdm_id,
-                                  scoped_ptr<SimpleMojoCdmPromise> promise,
+void MojoCdmService::OnCdmCreated(scoped_ptr<CdmIdMojoCdmPromise> promise,
                                   scoped_ptr<MediaKeys> cdm,
                                   const std::string& error_message) {
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
@@ -148,9 +150,9 @@ void MojoCdmService::OnCdmCreated(int cdm_id,
   }
 
   cdm_ = cdm.Pass();
-  cdm_id_ = cdm_id;
+  cdm_id_ = next_cdm_id_++;
   context_->RegisterCdm(cdm_id_, this);
-  promise->resolve();
+  promise->resolve(cdm_id_);
 }
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,

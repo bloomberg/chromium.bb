@@ -38,9 +38,8 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
   void Initialize(const mojo::String& key_system,
                   const mojo::String& security_origin,
                   interfaces::CdmConfigPtr cdm_config,
-                  int32_t cdm_id,
-                  const mojo::Callback<void(interfaces::CdmPromiseResultPtr)>&
-                      callback) final;
+                  const mojo::Callback<void(interfaces::CdmPromiseResultPtr,
+                                            int32_t)>& callback) final;
   void SetServerCertificate(
       mojo::Array<uint8_t> certificate_data,
       const mojo::Callback<void(interfaces::CdmPromiseResultPtr)>& callback)
@@ -76,8 +75,7 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
 
  private:
   // Callback for CdmFactory::Create().
-  void OnCdmCreated(int cdm_id,
-                    scoped_ptr<MojoCdmPromise<>> promise,
+  void OnCdmCreated(scoped_ptr<MojoCdmPromise<int>> promise,
                     scoped_ptr<MediaKeys> cdm,
                     const std::string& error_message);
 
@@ -96,6 +94,11 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
                             MediaKeys::Exception exception,
                             uint32_t system_code,
                             const std::string& error_message);
+
+  // CDM ID to be assigned to the next successfully initialized CDM. This ID is
+  // unique per process. It will be used to locate the CDM by the media players
+  // living in the same process.
+  static int next_cdm_id_;
 
   mojo::StrongBinding<interfaces::ContentDecryptionModule> binding_;
   base::WeakPtr<MojoCdmServiceContext> context_;

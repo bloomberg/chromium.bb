@@ -72,18 +72,20 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
 
   // MOCK_METHOD* doesn't support move only types. Work around this by having
   // an extra method.
-  MOCK_METHOD1(OnCdmInitializedInternal, void(bool result));
-  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result) {
-    OnCdmInitializedInternal(result->success);
+  MOCK_METHOD2(OnCdmInitializedInternal, void(bool result, int cdm_id));
+  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result, int cdm_id) {
+    OnCdmInitializedInternal(result->success, cdm_id);
   }
 
-  void InitializeCdm(const std::string& key_system, bool expected_result) {
-    EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result))
+  void InitializeCdm(const std::string& key_system,
+                     bool expected_result,
+                     int cdm_id) {
+    EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result, cdm_id))
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     cdm_->Initialize(
         key_system, kSecurityOrigin, interfaces::CdmConfig::From(CdmConfig()),
-        1, base::Bind(&MediaAppTest::OnCdmInitialized, base::Unretained(this)));
+        base::Bind(&MediaAppTest::OnCdmInitialized, base::Unretained(this)));
   }
 
   MOCK_METHOD1(OnRendererInitialized, void(bool));
@@ -132,12 +134,12 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
 // even when the loop is idle, we may still have pending events in the pipe.
 
 TEST_F(MediaAppTest, InitializeCdm_Success) {
-  InitializeCdm(kClearKey, true);
+  InitializeCdm(kClearKey, true, 1);
   run_loop_->Run();
 }
 
 TEST_F(MediaAppTest, InitializeCdm_InvalidKeySystem) {
-  InitializeCdm(kInvalidKeySystem, false);
+  InitializeCdm(kInvalidKeySystem, false, 0);
   run_loop_->Run();
 }
 

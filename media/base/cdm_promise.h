@@ -32,6 +32,7 @@ class MEDIA_EXPORT CdmPromise {
  public:
   enum ResolveParameterType {
     VOID_TYPE,
+    INT_TYPE,
     STRING_TYPE,
     KEY_IDS_VECTOR_TYPE
   };
@@ -63,6 +64,11 @@ struct CdmPromiseTraits {};
 template <>
 struct CdmPromiseTraits<> {
   static const CdmPromise::ResolveParameterType kType = CdmPromise::VOID_TYPE;
+};
+
+template <>
+struct CdmPromiseTraits<int> {
+  static const CdmPromise::ResolveParameterType kType = CdmPromise::INT_TYPE;
 };
 
 template <>

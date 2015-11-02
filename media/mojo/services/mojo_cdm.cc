@@ -23,8 +23,6 @@ static void RejectPromise(scoped_ptr<PromiseType> promise,
                   result->system_code, result->error_message);
 }
 
-int MojoCdm::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
-
 // static
 void MojoCdm::Create(
     const std::string& key_system,
@@ -59,8 +57,7 @@ MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : remote_cdm_(remote_cdm.Pass()),
       binding_(this),
-      // Safe because MojoCdm is always created on one thread.
-      cdm_id_(next_cdm_id_++),
+      cdm_id_(CdmContext::kInvalidCdmId),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       legacy_session_error_cb_(legacy_session_error_cb),
@@ -68,7 +65,6 @@ MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
       session_expiration_update_cb_(session_expiration_update_cb),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
-  DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id_);
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
   DCHECK(!legacy_session_error_cb_.is_null());
@@ -91,8 +87,8 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
   remote_cdm_->Initialize(
       key_system, security_origin.spec(),
-      interfaces::CdmConfig::From(cdm_config), cdm_id_,
-      base::Bind(&MojoCdm::OnPromiseResult<>, weak_factory_.GetWeakPtr(),
+      interfaces::CdmConfig::From(cdm_config),
+      base::Bind(&MojoCdm::OnCdmInitialized, weak_factory_.GetWeakPtr(),
                  base::Passed(&promise)));
 }
 
@@ -225,6 +221,20 @@ void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,
   DVLOG(2) << __FUNCTION__;
   session_expiration_update_cb_.Run(
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
+}
+
+void MojoCdm::OnCdmInitialized(scoped_ptr<CdmInitializedPromise> promise,
+                               interfaces::CdmPromiseResultPtr result,
+                               int cdm_id) {
+  DVLOG(2) << __FUNCTION__ << " cdm_id: " << cdm_id;
+  if (!result->success) {
+    RejectPromise(promise.Pass(), result.Pass());
+    return;
+  }
+
+  DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
+  cdm_id_ = cdm_id;
+  promise->resolve();
 }
 
 }  // namespace media

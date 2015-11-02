@@ -46,8 +46,10 @@ void MojoCdmPromise<T...>::resolve(const T&... result) {
   interfaces::CdmPromiseResultPtr cdm_promise_result(
       interfaces::CdmPromiseResult::New());
   cdm_promise_result->success = true;
-  callback_.Run(cdm_promise_result.Pass(),
-                MojoTypeTrait<T>::MojoType::From(result)...);
+  callback_.Run(
+      cdm_promise_result.Pass(),
+      mojo::TypeConverter<typename MojoTypeTrait<T>::MojoType, T>::Convert(
+          result)...);
   callback_.reset();
 }
 
@@ -62,6 +64,7 @@ void MojoCdmPromise<T...>::reject(MediaKeys::Exception exception,
 }
 
 template class MojoCdmPromise<>;
+template class MojoCdmPromise<int>;
 template class MojoCdmPromise<std::string>;
 
 }  // namespace media
