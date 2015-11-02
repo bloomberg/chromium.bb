@@ -333,7 +333,6 @@ LayoutUnit LayoutFlexibleBox::clientLogicalBottomAfterRepositioning()
 
 bool LayoutFlexibleBox::hasOrthogonalFlow(const LayoutBox& child) const
 {
-    // FIXME: If the child is a flexbox, then we need to check isHorizontalFlow.
     return isHorizontalFlow() != child.isHorizontalWritingMode();
 }
 
@@ -1433,7 +1432,7 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts)
             case ItemPositionEnd:
             case ItemPositionLeft:
             case ItemPositionRight:
-                // FIXME: File a bug about implementing that. The extended grammar
+                // FIXME: Implement these (https://crbug.com/507690). The extended grammar
                 // is not enabled by default so we shouldn't hit this codepath.
                 ASSERT_NOT_REACHED();
                 break;

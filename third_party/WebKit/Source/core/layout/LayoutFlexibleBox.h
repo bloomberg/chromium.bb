@@ -127,7 +127,6 @@ private:
     LayoutUnit crossAxisScrollbarExtent() const;
     LayoutUnit crossAxisScrollbarExtentForChild(const LayoutBox& child) const;
     LayoutPoint flowAwareLocationForChild(const LayoutBox& child) const;
-    // FIXME: Supporting layout deltas.
     void setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
     void adjustAlignmentForChild(LayoutBox& child, LayoutUnit);
     ItemPosition alignmentForChild(const LayoutBox& child) const;
