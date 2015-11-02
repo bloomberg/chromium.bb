@@ -52,7 +52,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
           ui_thread,
           invalidator,
           sync_prefs,
-          base::FilePath(FILE_PATH_LITERAL("test"))),
+          profile->GetPath().Append(base::FilePath(FILE_PATH_LITERAL("test")))),
       callback_(callback) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}

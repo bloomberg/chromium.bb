@@ -188,7 +188,8 @@ class SyncBackendHostTest : public testing::Test {
         invalidation::ProfileInvalidationProviderFactory::GetForProfile(
             profile_)
             ->GetInvalidationService(),
-        sync_prefs_->AsWeakPtr(), base::FilePath(kTestSyncDir)));
+        sync_prefs_->AsWeakPtr(),
+        profile_->GetPath().Append(base::FilePath(kTestSyncDir))));
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);

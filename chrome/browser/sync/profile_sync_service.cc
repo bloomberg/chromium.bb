@@ -693,7 +693,7 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   backend_.reset(
       sync_client_->GetSyncApiComponentFactory()->CreateSyncBackendHost(
           profile_->GetDebugName(), sync_client_.get(), invalidator,
-          sync_prefs_.AsWeakPtr(), sync_folder));
+          sync_prefs_.AsWeakPtr(), directory_path_));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might
