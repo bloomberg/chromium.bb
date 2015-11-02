@@ -18,6 +18,10 @@ class ManagedBookmarkService;
 }
 #endif
 
+namespace data_reduction_proxy {
+class DataReductionProxySettings;
+}
+
 namespace invalidation {
 class ProfileInvalidationProvider;
 }
@@ -79,6 +83,12 @@ class KeyedServiceProvider {
   virtual invalidation::ProfileInvalidationProvider*
   GetProfileInvalidationProviderForBrowserState(
       ChromeBrowserState* browser_state) = 0;
+
+  // Returns an instance of data_reduction_proxy::DataReductionProxySettings
+  // tied to |browser_state|.
+  virtual data_reduction_proxy::DataReductionProxySettings*
+  GetDataReductionProxySettingsForBrowserState(
+      ios::ChromeBrowserState* browser_state) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyedServiceProvider);

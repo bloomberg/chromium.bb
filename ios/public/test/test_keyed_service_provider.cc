@@ -107,4 +107,10 @@ TestKeyedServiceProvider::GetProfileInvalidationProviderForBrowserState(
   return nullptr;
 }
 
+data_reduction_proxy::DataReductionProxySettings*
+TestKeyedServiceProvider::GetDataReductionProxySettingsForBrowserState(
+    ios::ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
 }  // namespace ios
