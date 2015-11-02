@@ -1487,6 +1487,15 @@ crbug.com/521764 [ Win10 ] fast/loader/javascript-detached-frame-no-crash.html [
 crbug.com/521764 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/canvas-resize-reset.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] transitions/equivalent-background-image-no-transition.html [ Pass Timeout ]
 
+crbug.com/524432 [ XP ] svg/W3C-SVG-1.1-SE/types-dom-01-b.svg [ NeedsRebaseline ]
+crbug.com/524432 [ XP ] svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ NeedsRebaseline ]
+crbug.com/524432 [ XP ] svg/dom/css-transforms.xhtml [ NeedsRebaseline ]
+crbug.com/229428 [ XP ] tables/mozilla_expected_failures/bugs/bug89315.html [ NeedsRebaseline ]
+crbug.com/550430 fast/html/details-writing-mode.html [ Failure Pass ]
+crbug.com/550285 [ SnowLeopard ] virtual/syncpaint/compositing/repaint/newly-composited-on-scroll.html [ ImageOnlyFailure ]
+crbug.com/550285 [ SnowLeopard ] virtual/syncpaint/fast/repaint/background-image-paint-invalidation-large-abspos-div.html [ ImageOnlyFailure ]
+crbug.com/550285 [ SnowLeopard ] virtual/syncpaint/fast/repaint/repaint-during-scroll.html [ ImageOnlyFailure ]
+
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
