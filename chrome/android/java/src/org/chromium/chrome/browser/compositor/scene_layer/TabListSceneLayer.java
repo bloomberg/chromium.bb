@@ -90,8 +90,8 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getBorderCloseButtonAlpha() * decoration,
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, t.getStaticToViewBlend(),
                     t.getBorderScale(), t.getSaturation(), t.getBrightness(), t.showToolbar(),
-                    t.getToolbarBackgroundColor(), t.anonymizeToolbar(),
-                    t.getTextBoxBackgroundColor(), t.getToolbarAlpha(),
+                    t.getToolbarBackgroundColor(), t.anonymizeToolbar(), R.drawable.textbox,
+                    t.getTextBoxBackgroundColor(), t.getTextBoxAlpha(), t.getToolbarAlpha(),
                     t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(), true,
                     t.insetBorderVertical(), layerTitleCache,
                     tabContentManager, resourceManager);
@@ -131,7 +131,8 @@ public class TabListSceneLayer extends SceneLayer {
             float rotationY, float alpha, float borderAlpha, float contourAlpha, float shadowAlpha,
             float closeAlpha, float closeBtnWidth, float staticToViewBlend, float borderScale,
             float saturation, float brightness, boolean showToolbar, int toolbarBackgroundColor,
-            boolean anonymizeToolbar, int toolbarTextBoxBackgroundColor, float toolbarAlpha,
+            boolean anonymizeToolbar, int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
+            float toolbarTextBoxAlpha, float toolbarAlpha,
             float toolbarYOffset, float sideBorderScale, boolean attachContent,
             boolean insetVerticalBorder, LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager);

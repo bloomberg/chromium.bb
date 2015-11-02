@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentReadbackHandler;
@@ -684,6 +685,13 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public int getTopControlsBackgroundColor() {
         return mTabVisible == null ? Color.WHITE : mTabVisible.getThemeColor();
+    }
+
+    @Override
+    public float getTopControlsUrlBarAlpha() {
+        return mTabVisible == null
+                ? 1.f
+                : ColorUtils.getTextBoxAlphaForToolbarBackground(mTabVisible);
     }
 
     @Override

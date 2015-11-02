@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.util;
 
 import android.graphics.Color;
 
+import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tab.Tab;
+
 /**
  * Helper functions for working with colors.
  */
@@ -51,6 +54,18 @@ public class ColorUtils {
     public static int getTextBoxColorForToolbarBackground(int color) {
         if (shouldUseOpaqueTextboxBackground(color)) return Color.WHITE;
         return getColorWithOverlay(Color.WHITE, color, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
+    }
+
+    /**
+     * @return Alpha for the textbox given a Tab.
+     */
+    public static float getTextBoxAlphaForToolbarBackground(Tab tab) {
+        int color = tab.getThemeColor();
+        if (tab.getNativePage() instanceof NewTabPage) {
+            if (((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP()) return 0f;
+        }
+        return shouldUseOpaqueTextboxBackground(color)
+                ? 1f : LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
     }
 
     /**

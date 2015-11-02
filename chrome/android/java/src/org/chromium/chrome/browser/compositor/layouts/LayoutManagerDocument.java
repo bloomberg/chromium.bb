@@ -262,11 +262,13 @@ public class LayoutManagerDocument extends LayoutManager
 
         String url = tab.getUrl();
         boolean isNativePage = url != null && url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+        int themeColor = tab.getThemeColor();
         boolean canUseLiveTexture =
                 tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
         layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(), canUseLiveTexture,
-                tab.getThemeColor(),
-                ColorUtils.getTextBoxColorForToolbarBackground(tab.getThemeColor()));
+                themeColor,
+                ColorUtils.getTextBoxColorForToolbarBackground(themeColor),
+                ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
 
         mHost.requestRender();
     }

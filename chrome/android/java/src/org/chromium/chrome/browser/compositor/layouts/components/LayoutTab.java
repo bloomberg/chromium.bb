@@ -126,6 +126,8 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
 
     private int mTextBoxBackgroundColor = Color.WHITE;
 
+    private float mTextBoxAlpha = 1.0f;
+
     // End section --------------
 
     /**
@@ -208,10 +210,11 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      * @param canUseLiveTexture     Whether the tab can use a live texture when being displayed.
      */
     public void initFromHost(int backgroundColor, boolean shouldStall, boolean canUseLiveTexture,
-            int toolbarBackgroundColor, int textBoxBackgroundColor) {
+            int toolbarBackgroundColor, int textBoxBackgroundColor, float textBoxAlpha) {
         mBackgroundColor = backgroundColor;
         mToolbarBackgroundColor = toolbarBackgroundColor;
         mTextBoxBackgroundColor = textBoxBackgroundColor;
+        mTextBoxAlpha = textBoxAlpha;
         mShouldStall = shouldStall;
         mCanUseLiveTexture = canUseLiveTexture;
         mInitFromHostCalled = true;
@@ -882,6 +885,13 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      */
     public int getTextBoxBackgroundColor() {
         return mTextBoxBackgroundColor;
+    }
+
+    /**
+     * @return The alpha value of the textbox in the toolbar.
+     */
+    public float getTextBoxAlpha() {
+        return mTextBoxAlpha;
     }
 
     /**

@@ -96,7 +96,9 @@ void TabLayer::SetProperties(int id,
                              bool show_toolbar,
                              int toolbar_background_color,
                              bool anonymize_toolbar,
+                             int toolbar_textbox_resource_id,
                              int toolbar_textbox_background_color,
+                             float toolbar_textbox_alpha,
                              float toolbar_alpha,
                              float toolbar_y_offset,
                              float side_border_scale,
@@ -119,9 +121,6 @@ void TabLayer::SetProperties(int id,
   ui::ResourceManager::Resource* contour_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      contour_resource_id);
-  ui::ResourceManager::Resource* toolbar_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                     toolbar_resource_id);
   ui::ResourceManager::Resource* close_btn_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      close_button_resource_id);
@@ -175,24 +174,25 @@ void TabLayer::SetProperties(int id,
 
   const float close_btn_effective_width = close_btn_width * close_alpha;
 
+  //--------------------------------------------------------------------------
+  // Update Resource Ids For Layers That Impact Layout
+  //--------------------------------------------------------------------------
+
+  // TODO(kkimlabs): Tab switcher doesn't show the progress bar.
+  toolbar_layer_->PushResource(toolbar_resource_id,
+                               toolbar_background_color,
+                               anonymize_toolbar,
+                               toolbar_textbox_background_color,
+                               toolbar_textbox_resource_id,
+                               toolbar_textbox_alpha,
+                               false,
+                               1.f,
+                               false);
+  toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
   float toolbar_impact_height = 0;
-  if (toolbar_resource) {
-    //--------------------------------------------------------------------------
-    // Update Resource Ids For Layers That Impact Layout
-    //--------------------------------------------------------------------------
-
-    // TODO(kkimlabs): Tab switcher doesn't show the progress bar.
-    toolbar_layer_->PushResource(toolbar_resource,
-                                 toolbar_background_color,
-                                 anonymize_toolbar,
-                                 toolbar_textbox_background_color,
-                                 false,
-                                 1.f);
-    toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-    if (show_toolbar && !back_visible)
-      toolbar_impact_height = toolbar_resource->padding.height();
-  }
+  if (show_toolbar && !back_visible)
+    toolbar_impact_height = toolbar_layer_->layer()->bounds().height();
 
   //----------------------------------------------------------------------------
   // Compute Alpha and Visibility
@@ -543,7 +543,7 @@ TabLayer::TabLayer(bool incognito,
       resource_manager_(resource_manager),
       layer_title_cache_(layer_title_cache),
       layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
-      toolbar_layer_(ToolbarLayer::Create()),
+      toolbar_layer_(ToolbarLayer::Create(resource_manager)),
       title_(cc::Layer::Create(content::Compositor::LayerSettings())),
       content_(ContentLayer::Create(tab_content_manager)),
       padding_(

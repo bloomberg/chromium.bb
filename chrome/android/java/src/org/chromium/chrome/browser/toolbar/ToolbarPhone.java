@@ -462,9 +462,9 @@ public class ToolbarPhone extends ToolbarLayout
             }
         }
 
-        int leftViewBounds = getViewBoundsLeftOfLocationBar();
+        int leftViewBounds = getViewBoundsLeftOfLocationBar(mVisualState);
         if (!hasVisibleViewPriorToUrlBar) leftViewBounds += mToolbarSidePadding;
-        int rightViewBounds = getViewBoundsRightOfLocationBar();
+        int rightViewBounds = getViewBoundsRightOfLocationBar(mVisualState);
 
         if (!mPhoneLocationBar.hasVisibleViewsAfterUrlBarWhenUnfocused()) {
             // Add spacing between the end of the URL and the edge of the omnibox drawable.
@@ -545,10 +545,10 @@ public class ToolbarPhone extends ToolbarLayout
         return changed;
     }
 
-    private int getViewBoundsLeftOfLocationBar() {
+    private int getViewBoundsLeftOfLocationBar(VisualState visualState) {
         // Uses getMeasuredWidth()s instead of getLeft() because this is called in onMeasure
         // and the layout values have not yet been set.
-        if (mVisualState == VisualState.NEW_TAB_NORMAL) {
+        if (visualState == VisualState.NEW_TAB_NORMAL) {
             return 0;
         } else if (ApiCompatibilityUtils.isLayoutRtl(this)) {
             return Math.max(
@@ -559,10 +559,10 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private int getViewBoundsRightOfLocationBar() {
+    private int getViewBoundsRightOfLocationBar(VisualState visualState) {
         // Uses getMeasuredWidth()s instead of getRight() because this is called in onMeasure
         // and the layout values have not yet been set.
-        if (mVisualState == VisualState.NEW_TAB_NORMAL) {
+        if (visualState == VisualState.NEW_TAB_NORMAL) {
             return getMeasuredWidth();
         } else if (ApiCompatibilityUtils.isLayoutRtl(this)) {
             return getMeasuredWidth() - (mHomeButton.getVisibility() != GONE
@@ -613,39 +613,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         if (mLocationBarBackground != null
                 && (mPhoneLocationBar.getVisibility() == VISIBLE || mTextureCaptureMode)) {
-            // Calculate the visible boundaries of the left and right most child views
-            // of the location bar.
-            int leftViewPosition = getViewBoundsLeftOfLocationBar();
-            int rightViewPosition = getViewBoundsRightOfLocationBar();
-
-            leftViewPosition -= mUrlBackgroundPadding.left;
-            if (mUrlExpansionPercent != 0f) {
-                leftViewPosition *= (1f - mUrlExpansionPercent);
-                leftViewPosition -= mUrlBackgroundPadding.left * mUrlExpansionPercent;
-            }
-
-            rightViewPosition += mUrlBackgroundPadding.right;
-            if (mUrlExpansionPercent != 0f) {
-                rightViewPosition += ((getWidth() - rightViewPosition) * mUrlExpansionPercent);
-                rightViewPosition += mUrlBackgroundPadding.right * mUrlExpansionPercent;
-            }
-
-            // The bounds are set by the following:
-            // - The left most visible location bar child view.
-            // - The top of the viewport is aligned with the top of the location bar.
-            // - The right most visible location bar child view.
-            // - The bottom of the viewport is aligned with the bottom of the location bar.
-            // Additional padding can be applied for use during animations.
-            mUrlViewportBounds.set(
-                    leftViewPosition,
-                    0,
-                    rightViewPosition,
-                    (int) (mPhoneLocationBar.getMeasuredHeight()
-                            + (getHeight() - mPhoneLocationBar.getMeasuredHeight()
-                                    + mUrlBackgroundPadding.bottom + mUrlBackgroundPadding.top)
-                            * mUrlExpansionPercent));
-            mUrlViewportBounds.offset(0, (int) (mPhoneLocationBar.getY()
-                    - (mUrlBackgroundPadding.top * mUrlExpansionPercent)));
+            updateUrlViewportBounds(mUrlViewportBounds, mVisualState, false);
         }
 
         if (mTextureCaptureMode) {
@@ -686,6 +654,46 @@ public class ToolbarPhone extends ToolbarLayout
         mNtpSearchBoxScrollPercent = scrollPercentage;
         updateUrlExpansionPercent();
         updateUrlExpansionAnimation();
+    }
+
+    /**
+     * Calculate the bounds for UrlViewport and set them to out rect.
+     */
+    private void updateUrlViewportBounds(Rect out, VisualState visualState,
+            boolean ignoreTranslationY) {
+        // Calculate the visible boundaries of the left and right most child views
+        // of the location bar.
+        int leftViewPosition = getViewBoundsLeftOfLocationBar(visualState);
+        int rightViewPosition = getViewBoundsRightOfLocationBar(visualState);
+
+        leftViewPosition -= mUrlBackgroundPadding.left;
+        if (mUrlExpansionPercent != 0f) {
+            leftViewPosition *= (1f - mUrlExpansionPercent);
+            leftViewPosition -= mUrlBackgroundPadding.left * mUrlExpansionPercent;
+        }
+
+        rightViewPosition += mUrlBackgroundPadding.right;
+        if (mUrlExpansionPercent != 0f) {
+            rightViewPosition += ((getWidth() - rightViewPosition) * mUrlExpansionPercent);
+            rightViewPosition += mUrlBackgroundPadding.right * mUrlExpansionPercent;
+        }
+
+        // The bounds are set by the following:
+        // - The left most visible location bar child view.
+        // - The top of the viewport is aligned with the top of the location bar.
+        // - The right most visible location bar child view.
+        // - The bottom of the viewport is aligned with the bottom of the location bar.
+        // Additional padding can be applied for use during animations.
+        out.set(leftViewPosition,
+                0,
+                rightViewPosition,
+                (int) (mPhoneLocationBar.getMeasuredHeight()
+                        + (getHeight() - mPhoneLocationBar.getMeasuredHeight()
+                                + mUrlBackgroundPadding.bottom + mUrlBackgroundPadding.top)
+                        * mUrlExpansionPercent));
+        float yOffset = ignoreTranslationY ? mPhoneLocationBar.getTop() : mPhoneLocationBar.getY();
+
+        out.offset(0, (int) (yOffset - (mUrlBackgroundPadding.top * mUrlExpansionPercent)));
     }
 
     /**
@@ -1043,7 +1051,8 @@ public class ToolbarPhone extends ToolbarLayout
             }
             mLocationBarBackground.setAlpha(backgroundAlpha);
 
-            if (mPhoneLocationBar.getAlpha() > 0 || mForceDrawLocationBarBackground) {
+            if ((mPhoneLocationBar.getAlpha() > 0 || mForceDrawLocationBarBackground)
+                    && !mTextureCaptureMode) {
                 mLocationBarBackground.setBounds(
                         mUrlViewportBounds.left + mLocationBarBackgroundOffset.left,
                         mUrlViewportBounds.top + mLocationBarBackgroundOffset.top,
@@ -1062,8 +1071,9 @@ public class ToolbarPhone extends ToolbarLayout
             // is applied to increase the clip regions such that when the location bar converts
             // to the narrower collapsed layout that the visible content is the same.
             if (mUrlExpansionPercent != 1f) {
-                int leftDelta = mUnfocusedLocationBarLayoutLeft - getViewBoundsLeftOfLocationBar();
-                int rightDelta = getViewBoundsRightOfLocationBar()
+                int leftDelta = mUnfocusedLocationBarLayoutLeft
+                        - getViewBoundsLeftOfLocationBar(mVisualState);
+                int rightDelta = getViewBoundsRightOfLocationBar(mVisualState)
                         - mUnfocusedLocationBarLayoutLeft
                         - mUnfocusedLocationBarLayoutWidth;
                 float inversePercent = 1f - mUrlExpansionPercent;
@@ -1166,12 +1176,18 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public void getLocationBarContentRect(Rect outRect) {
-        if (isLocationBarShownInNTP() && !isFocused()) {
-            outRect.setEmpty();
-            return;
-        }
+        mLocationBarBackground.getPadding(outRect);
+        int paddingLeft = outRect.left;
+        int paddingTop = outRect.top;
+        int paddingRight = outRect.right;
+        int paddingBottom = outRect.bottom;
 
-        super.getLocationBarContentRect(outRect);
+        updateUrlViewportBounds(outRect, VisualState.NORMAL, true);
+
+        outRect.set(outRect.left + paddingLeft,
+                outRect.top + paddingTop,
+                outRect.right - paddingRight,
+                outRect.bottom - paddingBottom);
     }
 
     @Override

@@ -84,7 +84,6 @@ CompositorView::CompositorView(JNIEnv* env,
       tab_content_manager_(tab_content_manager),
       root_layer_(
           cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
-      toolbar_layer_(ToolbarLayer::Create()),
       scene_layer_(nullptr),
       current_surface_format_(0),
       content_width_(0),
@@ -96,6 +95,8 @@ CompositorView::CompositorView(JNIEnv* env,
   content::BrowserChildProcessObserver::Add(this);
   obj_.Reset(env, obj);
   compositor_.reset(content::Compositor::Create(this, window_android));
+
+  toolbar_layer_ = ToolbarLayer::Create(&(compositor_->GetResourceManager()));
 
   root_layer_->SetIsDrawable(true);
   root_layer_->SetBackgroundColor(SK_ColorWHITE);
@@ -249,26 +250,20 @@ void CompositorView::UpdateToolbarLayer(JNIEnv* env,
                                         jobject object,
                                         jint toolbar_resource_id,
                                         jint toolbar_background_color,
+                                        jint url_bar_resource_id,
+                                        jfloat url_bar_alpha,
                                         jfloat top_offset,
                                         jfloat brightness,
                                         bool visible,
                                         bool show_shadow) {
-  // Ensure the toolbar resource is available before making the layer visible.
-  ui::ResourceManager::Resource* resource =
-      compositor_->GetResourceManager().GetResource(
-          ui::ANDROID_RESOURCE_TYPE_DYNAMIC, toolbar_resource_id);
-  if (!resource)
-    visible = false;
-
   toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
   if (visible) {
     toolbar_layer_->layer()->SetPosition(gfx::PointF(0, top_offset));
-    toolbar_layer_->PushResource(resource, toolbar_background_color, false,
-                                 SK_ColorWHITE, false, brightness);
-
     // If we're at rest, hide the shadow.  The Android view should be drawing.
-    toolbar_layer_->layer()->SetMasksToBounds(top_offset >= 0.f
-                                              && !show_shadow);
+    bool clip_shadow = top_offset >= 0.f && !show_shadow;
+    toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
+                                 false, SK_ColorWHITE, url_bar_resource_id,
+                                 url_bar_alpha, false, brightness, clip_shadow);
   }
 }
 

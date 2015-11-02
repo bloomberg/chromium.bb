@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 
+#include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
@@ -15,8 +16,9 @@ namespace chrome {
 namespace android {
 
 // static
-scoped_refptr<ToolbarLayer> ToolbarLayer::Create() {
-  return make_scoped_refptr(new ToolbarLayer());
+scoped_refptr<ToolbarLayer> ToolbarLayer::Create(
+    ui::ResourceManager* resource_manager) {
+  return make_scoped_refptr(new ToolbarLayer(resource_manager));
 }
 
 scoped_refptr<cc::Layer> ToolbarLayer::layer() {
@@ -24,13 +26,23 @@ scoped_refptr<cc::Layer> ToolbarLayer::layer() {
 }
 
 void ToolbarLayer::PushResource(
-    ui::ResourceManager::Resource* resource,
+    int toolbar_resource_id,
     int toolbar_background_color,
     bool anonymize,
     int toolbar_textbox_background_color,
+    int url_bar_background_resource_id,
+    float url_bar_alpha,
     bool show_debug,
-    float brightness) {
-  DCHECK(resource);
+    float brightness,
+    bool clip_shadow) {
+  ui::ResourceManager::Resource* resource =
+      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
+                                     toolbar_resource_id);
+
+  // Ensure the toolbar resource is available before making the layer visible.
+  layer_->SetHideLayerAndSubtree(!resource);
+  if (!resource)
+    return;
 
   // This layer effectively draws over the space it takes for shadows.  Set the
   // bounds to the non-shadow size so that other things can properly line up.
@@ -45,8 +57,37 @@ void ToolbarLayer::PushResource(
   toolbar_background_layer_->SetPosition(resource->padding.origin());
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
+  bool url_bar_visible = (resource->aperture.width() != 0);
+  url_bar_background_layer_->SetHideLayerAndSubtree(!url_bar_visible);
+  if (url_bar_visible) {
+    ui::ResourceManager::Resource* url_bar_background_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                       url_bar_background_resource_id);
+    gfx::Size url_bar_size(
+        resource->aperture.width() + url_bar_background_resource->size.width()
+        - url_bar_background_resource->padding.width(),
+        resource->aperture.height() + url_bar_background_resource->size.height()
+        - url_bar_background_resource->padding.height());
+    gfx::Rect url_bar_border(
+        url_bar_background_resource->Border(url_bar_size));
+    gfx::PointF url_bar_position = gfx::PointF(
+        resource->aperture.x() - url_bar_background_resource->padding.x(),
+        resource->aperture.y() - url_bar_background_resource->padding.y());
+
+    url_bar_background_layer_->SetUIResourceId(
+        url_bar_background_resource->ui_resource->id());
+    url_bar_background_layer_->SetBorder(url_bar_border);
+    url_bar_background_layer_->SetAperture(
+        url_bar_background_resource->aperture);
+    url_bar_background_layer_->SetBounds(url_bar_size);
+    url_bar_background_layer_->SetPosition(url_bar_position);
+    url_bar_background_layer_->SetOpacity(url_bar_alpha);
+  }
+
   bitmap_layer_->SetUIResourceId(resource->ui_resource->id());
   bitmap_layer_->SetBounds(resource->size);
+
+  layer_->SetMasksToBounds(clip_shadow);
 
   anonymize_layer_->SetHideLayerAndSubtree(!anonymize);
   if (anonymize) {
@@ -105,10 +146,13 @@ void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
   }
 }
 
-ToolbarLayer::ToolbarLayer()
-    : layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
+    : resource_manager_(resource_manager),
+      layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
       toolbar_background_layer_(
           cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+      url_bar_background_layer_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
       bitmap_layer_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       progress_bar_layer_(
@@ -122,6 +166,10 @@ ToolbarLayer::ToolbarLayer()
       brightness_(1.f) {
   toolbar_background_layer_->SetIsDrawable(true);
   layer_->AddChild(toolbar_background_layer_);
+
+  url_bar_background_layer_->SetIsDrawable(true);
+  url_bar_background_layer_->SetFillCenter(true);
+  layer_->AddChild(url_bar_background_layer_);
 
   bitmap_layer_->SetIsDrawable(true);
   layer_->AddChild(bitmap_layer_);

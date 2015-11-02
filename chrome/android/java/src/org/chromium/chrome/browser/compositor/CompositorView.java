@@ -381,7 +381,8 @@ public class CompositorView
         }
 
         nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container,
-                mRenderHost.getTopControlsBackgroundColor(), offset,
+                mRenderHost.getTopControlsBackgroundColor(), R.drawable.textbox,
+                mRenderHost.getTopControlsUrlBarAlpha(), offset,
                 provider.getActiveLayout().getToolbarBrightness(),
                 useTexture, forceHideTopControlsAndroidView);
 
@@ -485,8 +486,8 @@ public class CompositorView
             float width, float height, float visibleXOffset, float visibleYOffset,
             float overdrawBottomHeight, float dpToPixel);
     private native void nativeUpdateToolbarLayer(long nativeCompositorView, int resourceId,
-            int toolbarBackgroundColor, float topOffset, float brightness, boolean visible,
-            boolean showShadow);
+            int toolbarBackgroundColor, int urlBarResourceId, float urlBarAlpha, float topOffset,
+            float brightness, boolean visible, boolean showShadow);
     private native void nativeUpdateProgressBar(
             long nativeCompositorView,
             int progressBarX,
