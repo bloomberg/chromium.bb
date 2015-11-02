@@ -667,6 +667,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'loadable_module':             'com.googlecode.gyp.xcode.bundle',
       'shared_library':              'com.apple.product-type.library.dynamic',
       'static_library':              'com.apple.product-type.library.static',
+      'mac_kernel_extension':        'com.apple.product-type.kernel-extension',
       'executable+bundle':           'com.apple.product-type.application',
       'loadable_module+bundle':      'com.apple.product-type.bundle',
       'loadable_module+xctest':      'com.apple.product-type.bundle.unit-test',
@@ -674,7 +675,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'executable+extension+bundle': 'com.apple.product-type.app-extension',
       'executable+watch+extension+bundle':
           'com.apple.product-type.watchkit-extension',
-      'executable+watch+bundle': 'com.apple.product-type.application.watchapp',
+      'executable+watch+bundle':
+          'com.apple.product-type.application.watchapp',
+      'mac_kernel_extension+bundle': 'com.apple.product-type.kernel-extension',
     }
 
     target_properties = {

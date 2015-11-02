@@ -1492,6 +1492,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'icns':        'image.icns',
         'java':        'sourcecode.java',
         'js':          'sourcecode.javascript',
+        'kext':        'wrapper.kext',
         'm':           'sourcecode.c.objc',
         'mm':          'sourcecode.cpp.objcpp',
         'nib':         'wrapper.nib',
@@ -2262,6 +2263,8 @@ class PBXNativeTarget(XCTarget):
                                                  '', '.xctest'],
     'com.googlecode.gyp.xcode.bundle':          ['compiled.mach-o.dylib',
                                                  '', '.so'],
+    'com.apple.product-type.kernel-extension':  ['wrapper.kext',
+                                                 '', '.kext'],
   }
 
   def __init__(self, properties=None, id=None, parent=None,
