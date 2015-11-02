@@ -273,20 +273,8 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 
   bool port_selected = stream_factory_->enable_port_selection();
   SSLInfo ssl_info;
-  if (!GetSSLInfo(&ssl_info) || !ssl_info.cert.get()) {
-    if (port_selected) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectSelectPortForHTTP",
-                                  round_trip_handshakes, 0, 3, 4);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTP",
-                                  round_trip_handshakes, 0, 3, 4);
-      if (require_confirmation_) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Net.QuicSession.ConnectRandomPortRequiringConfirmationForHTTP",
-            round_trip_handshakes, 0, 3, 4);
-      }
-    }
-  } else {
+  // QUIC supports only secure urls.
+  if (GetSSLInfo(&ssl_info) && ssl_info.cert.get()) {
     if (port_selected) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectSelectPortForHTTPS",
                                   round_trip_handshakes, 0, 3, 4);
