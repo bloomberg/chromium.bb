@@ -341,7 +341,7 @@ crbug.com/533448 fast/ruby/position-after.html [ NeedsRebaseline ]
 crbug.com/533448 fast/table/border-collapsing/002-vertical.html [ NeedsRebaseline ]
 crbug.com/533448 fast/table/border-collapsing/equal-precedence-resolution-vertical.html [ NeedsRebaseline ]
 crbug.com/533448 fast/text/emphasis-avoid-ruby.html [ NeedsRebaseline ]
-crbug.com/533448 [ Linux Lion Mavericks MountainLion Retina Win XP ] fast/text/emphasis-overlap.html [ NeedsRebaseline ]
+crbug.com/533448 [ Linux Lion Mavericks MountainLion Yosemite Retina Win XP ] fast/text/emphasis-overlap.html [ NeedsRebaseline ]
 crbug.com/533448 fast/text/emphasis.html [ NeedsRebaseline ]
 crbug.com/533448 [ Linux Mac XP Win7 ] fast/text/international/vertical-text-metrics-test.html [ NeedsRebaseline ]
 
