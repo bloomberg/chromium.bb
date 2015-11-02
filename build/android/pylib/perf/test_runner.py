@@ -350,6 +350,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     if self._options.min_battery_level:
       self._device_battery.ChargeDeviceToLevel(
           self._options.min_battery_level)
+    self.device.SetScreen(True)
 
     logging.info('%s : %s', test_name, cmd)
     start_time = time.time()
