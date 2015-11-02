@@ -15,12 +15,13 @@
 
 namespace gpu {
 
-class BindUniformLocationTest : public testing::Test {
+class BindUniformLocationTest : public testing::TestWithParam<bool> {
  protected:
   static const GLsizei kResolution = 4;
   void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kResolution, kResolution);
+    options.force_shader_name_hashing = GetParam();
     gl_.Initialize(options);
   }
 
@@ -29,7 +30,7 @@ class BindUniformLocationTest : public testing::Test {
   GLManager gl_;
 };
 
-TEST_F(BindUniformLocationTest, Basic) {
+TEST_P(BindUniformLocationTest, Basic) {
   ASSERT_TRUE(
       GLTestHelper::HasExtension("GL_CHROMIUM_bind_uniform_location"));
 
@@ -99,7 +100,7 @@ TEST_F(BindUniformLocationTest, Basic) {
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
-TEST_F(BindUniformLocationTest, ConflictsDetection) {
+TEST_P(BindUniformLocationTest, ConflictsDetection) {
   ASSERT_TRUE(
       GLTestHelper::HasExtension("GL_CHROMIUM_bind_uniform_location"));
 
@@ -140,7 +141,7 @@ TEST_F(BindUniformLocationTest, ConflictsDetection) {
   glGetProgramiv(program, GL_LINK_STATUS, &linked);
   EXPECT_EQ(0, linked);
 
-  // Bind u_colorB to location a, no conflicts, link should succeed.
+  // Bind u_colorB to location b, no conflicts, link should succeed.
   glBindUniformLocationCHROMIUM(program, color_b_location, "u_colorB");
   glLinkProgram(program);
   linked = 0;
@@ -150,7 +151,7 @@ TEST_F(BindUniformLocationTest, ConflictsDetection) {
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
-TEST_F(BindUniformLocationTest, Compositor) {
+TEST_P(BindUniformLocationTest, Compositor) {
   ASSERT_TRUE(
       GLTestHelper::HasExtension("GL_CHROMIUM_bind_uniform_location"));
 
@@ -193,7 +194,7 @@ TEST_F(BindUniformLocationTest, Compositor) {
       }
   );
 
-  int counter = 0;
+  int counter = 6;
   int matrix_location = counter++;
   int color_a_location = counter++;
   int color_b_location = counter++;
@@ -266,6 +267,10 @@ TEST_F(BindUniformLocationTest, Compositor) {
   GLTestHelper::CheckGLError("no errors", __LINE__);
 
 }
+
+INSTANTIATE_TEST_CASE_P(WithAndWithoutShaderNameMapping,
+                        BindUniformLocationTest,
+                        ::testing::Bool());
 
 }  // namespace gpu
 

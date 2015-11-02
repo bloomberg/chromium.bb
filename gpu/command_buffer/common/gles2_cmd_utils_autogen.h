@@ -50,6 +50,7 @@ static std::string GetStringMatrixMode(uint32_t value);
 static std::string GetStringPathCoordType(uint32_t value);
 static std::string GetStringPathCoverMode(uint32_t value);
 static std::string GetStringPathFillMode(uint32_t value);
+static std::string GetStringPathFragmentInputGenMode(uint32_t value);
 static std::string GetStringPathInstancedCoverMode(uint32_t value);
 static std::string GetStringPathNameType(uint32_t value);
 static std::string GetStringPathParameter(uint32_t value);

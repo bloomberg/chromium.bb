@@ -2425,6 +2425,27 @@ void GLES2TraceImplementation::StencilThenCoverStrokePathInstancedCHROMIUM(
       transformType, transformValues);
 }
 
+void GLES2TraceImplementation::BindFragmentInputLocationCHROMIUM(
+    GLuint program,
+    GLint location,
+    const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::BindFragmentInputLocationCHROMIUM");
+  gl_->BindFragmentInputLocationCHROMIUM(program, location, name);
+}
+
+void GLES2TraceImplementation::ProgramPathFragmentInputGenCHROMIUM(
+    GLuint program,
+    GLint location,
+    GLenum genMode,
+    GLint components,
+    const GLfloat* coeffs) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::ProgramPathFragmentInputGenCHROMIUM");
+  gl_->ProgramPathFragmentInputGenCHROMIUM(program, location, genMode,
+                                           components, coeffs);
+}
+
 GLenum GLES2TraceImplementation::GetGraphicsResetStatusKHR() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetGraphicsResetStatusKHR");
   return gl_->GetGraphicsResetStatusKHR();

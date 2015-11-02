@@ -114,7 +114,8 @@ GLManager::Options::Options()
       bind_generates_resource(false),
       lose_context_when_out_of_memory(false),
       context_lost_allowed(false),
-      context_type(gles2::CONTEXT_TYPE_OPENGLES2) {}
+      context_type(gles2::CONTEXT_TYPE_OPENGLES2),
+      force_shader_name_hashing(false) {}
 
 GLManager::GLManager()
     : sync_point_manager_(nullptr),
@@ -222,7 +223,9 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));
-
+  if (options.force_shader_name_hashing) {
+    decoder_->SetForceShaderNameHashingForTest(true);
+  }
   command_buffer_.reset(new CommandBufferService(
       decoder_->GetContextGroup()->transfer_buffer_manager()));
   ASSERT_TRUE(command_buffer_->Initialize())

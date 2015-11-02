@@ -24,6 +24,7 @@ class ProgramCache;
 class ProgramManager;
 class Shader;
 class ShaderManager;
+class FeatureInfo;
 
 // This is used to track which attributes a particular program needs
 // so we can verify at glDrawXXX time that every attribute is either disabled
@@ -60,6 +61,14 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     kUniformMatrix3x4f = 1 << 18,
     kUniformMatrix4x2f = 1 << 19,
     kUniformMatrix4x3f = 1 << 20,
+  };
+  struct FragmentInputInfo {
+    FragmentInputInfo(GLenum _type, GLuint _location)
+        : type(_type), location(_location) {}
+    FragmentInputInfo() : type(GL_NONE), location(0) {}
+    bool IsValid() const { return type != GL_NONE; }
+    GLenum type;
+    GLuint location;
   };
 
   struct UniformInfo {
@@ -103,6 +112,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   typedef std::vector<UniformInfo> UniformInfoVector;
   typedef std::vector<VertexAttrib> AttribInfoVector;
+  typedef std::vector<FragmentInputInfo> FragmentInputInfoVector;
   typedef std::vector<int> SamplerIndices;
   typedef std::map<std::string, GLint> LocationMap;
   typedef std::vector<std::string> StringVector;
@@ -151,6 +161,9 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // If the hashed name is not found, return NULL.
   const std::string* GetOriginalNameFromHashedName(
       const std::string& hashed_name) const;
+
+  const FragmentInputInfo* GetFragmentInputInfoByFakeLocation(
+      GLint fake_location) const;
 
   // Gets the fake location of a uniform by name.
   GLint GetUniformFakeLocation(const std::string& name) const;
@@ -231,6 +244,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Detects if the shader version combination is not valid.
   bool DetectShaderVersionMismatch() const;
 
+  // Sets fragment input-location binding from a
+  // glBindFragmentInputLocationCHROMIUM() call.
+  void SetFragmentInputLocationBinding(const std::string& name, GLint location);
+
   // Detects if there are attribute location conflicts from
   // glBindAttribLocation() calls.
   // We only consider the declared attributes in the program.
@@ -250,6 +267,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Return true if a varying is statically used in fragment shader, but it
   // is not declared in vertex shader.
   bool DetectVaryingsMismatch(std::string* conflicting_name) const;
+
+  // Detects if there are fragment input location conflicts from
+  // glBindFragmentInputLocationCHROMIUM() calls.
+  // We only consider the statically used fragment inputs in the program.
+  bool DetectFragmentInputLocationBindingConflicts() const;
 
   // Return true if any built-in invariant matching rules are broken as in
   // GLSL ES spec 1.00.17, section 4.6.4, Invariance and Linkage.
@@ -311,6 +333,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // Updates the program info after a successful link.
   void Update();
+  void UpdateFragmentInputs();
 
   // Process the program log, replacing the hashed names with original names.
   std::string ProcessLogInfo(const std::string& log);
@@ -361,6 +384,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     return (fake_location >> 16) & 0xFFFF;
   }
 
+  const FeatureInfo& feature_info() const;
+
   ProgramManager* manager_;
 
   int use_count_;
@@ -380,6 +405,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // The indices of the uniforms that are samplers.
   SamplerIndices sampler_indices_;
+
+  FragmentInputInfoVector fragment_input_infos_;
 
   // The program this Program is tracking.
   GLuint service_id_;
@@ -416,6 +443,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   std::vector<std::string> transform_feedback_varyings_;
 
   GLenum transform_feedback_buffer_mode_;
+
+  // Fragment input-location binding map from
+  // glBindFragmentInputLocationCHROMIUM() calls.
+  LocationMap bind_fragment_input_location_map_;
 };
 
 // Tracks the Programs.
@@ -425,7 +456,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 class GPU_EXPORT ProgramManager {
  public:
   explicit ProgramManager(ProgramCache* program_cache,
-                          uint32 max_varying_vectors);
+                          uint32 max_varying_vectors,
+                          FeatureInfo* feature_info);
   ~ProgramManager();
 
   // Must call before destruction.
@@ -494,8 +526,14 @@ class GPU_EXPORT ProgramManager {
 
   uint32 max_varying_vectors_;
 
+  scoped_refptr<FeatureInfo> feature_info_;
+
   DISALLOW_COPY_AND_ASSIGN(ProgramManager);
 };
+
+inline const FeatureInfo& Program::feature_info() const {
+  return *manager_->feature_info_.get();
+}
 
 }  // namespace gles2
 }  // namespace gpu

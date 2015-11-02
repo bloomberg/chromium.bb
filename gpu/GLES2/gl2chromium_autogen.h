@@ -367,6 +367,10 @@
   GLES2_GET_FUN(StencilThenCoverFillPathInstancedCHROMIUM)
 #define glStencilThenCoverStrokePathInstancedCHROMIUM \
   GLES2_GET_FUN(StencilThenCoverStrokePathInstancedCHROMIUM)
+#define glBindFragmentInputLocationCHROMIUM \
+  GLES2_GET_FUN(BindFragmentInputLocationCHROMIUM)
+#define glProgramPathFragmentInputGenCHROMIUM \
+  GLES2_GET_FUN(ProgramPathFragmentInputGenCHROMIUM)
 #define glGetGraphicsResetStatusKHR GLES2_GET_FUN(GetGraphicsResetStatusKHR)
 #define glBlendBarrierKHR GLES2_GET_FUN(BlendBarrierKHR)
 #define glApplyScreenSpaceAntialiasingCHROMIUM \

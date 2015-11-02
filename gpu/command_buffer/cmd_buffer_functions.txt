@@ -339,6 +339,9 @@ GL_APICALL void         GL_APIENTRY glCoverFillPathInstancedCHROMIUM (GLsizei nu
 GL_APICALL void         GL_APIENTRY glCoverStrokePathInstancedCHROMIUM (GLsizei numPaths, GLenum pathNameType, const GLvoid* paths, GLuint pathBase, GLenumPathInstancedCoverMode coverMode, GLenumPathTransformType transformType, const GLfloat* transformValues);
 GL_APICALL void         GL_APIENTRY glStencilThenCoverFillPathInstancedCHROMIUM (GLsizei numPaths, GLenum pathNameType, const GLvoid* paths, GLuint pathBase, GLenumPathFillMode fillMode, GLuint mask, GLenumPathInstancedCoverMode coverMode, GLenumPathTransformType transformType, const GLfloat* transformValues);
 GL_APICALL void         GL_APIENTRY glStencilThenCoverStrokePathInstancedCHROMIUM (GLsizei numPaths, GLenum pathNameType, const GLvoid* paths, GLuint pathBase, GLint reference, GLuint mask, GLenumPathInstancedCoverMode coverMode, GLenumPathTransformType transformType, const GLfloat* transformValues);
+GL_APICALL void         GL_APIENTRY glBindFragmentInputLocationCHROMIUM (GLidProgram program, GLint location, const char* name);
+GL_APICALL void         GL_APIENTRY glProgramPathFragmentInputGenCHROMIUM (GLidProgram program, GLint location, GLenumPathFragmentInputGenMode genMode, GLint components, const GLfloat* coeffs);
+
 
 // Extension KHR_robustness
 GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);

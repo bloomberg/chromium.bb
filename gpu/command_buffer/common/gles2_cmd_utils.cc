@@ -758,6 +758,20 @@ size_t GLES2Util::GetComponentCountForGLTransformType(uint32 type) {
       return 0;
   }
 }
+size_t GLES2Util::GetCoefficientCountForGLPathFragmentInputGenMode(
+    uint32_t gen_mode) {
+  switch (gen_mode) {
+    case GL_EYE_LINEAR_CHROMIUM:
+      return 4;
+    case GL_OBJECT_LINEAR_CHROMIUM:
+      return 3;
+    case GL_CONSTANT_CHROMIUM:
+      return 1;
+    case GL_NONE:
+    default:
+      return 0;
+  }
+}
 
 size_t GLES2Util::GetGLTypeSizeForPathCoordType(uint32 type) {
   switch (type) {
@@ -1116,42 +1130,28 @@ std::string GLES2Util::GetQualifiedEnumString(
   return GetStringEnum(value);
 }
 
-bool GLES2Util::ParseUniformName(
-    const std::string& name,
-    size_t* array_pos,
-    int* element_index,
-    bool* getting_array) {
-  if (name.empty())
-    return false;
-  bool getting_array_location = false;
-  size_t open_pos = std::string::npos;
+GLSLArrayName::GLSLArrayName(const std::string& name) : element_index_(-1) {
+  if (name.size() < 4)
+    return;
+  if (name[name.size() - 1] != ']')
+    return;
+
+  size_t open_pos = name.find_last_of('[');
+  if (open_pos >= name.size() - 2)
+    return;
+
   base::CheckedNumeric<int> index = 0;
-  if (name[name.size() - 1] == ']') {
-    if (name.size() < 3) {
-      return false;
-    }
-    open_pos = name.find_last_of('[');
-    if (open_pos == std::string::npos ||
-        open_pos >= name.size() - 2) {
-      return false;
-    }
-    size_t last = name.size() - 1;
-    for (size_t pos = open_pos + 1; pos < last; ++pos) {
-      int8 digit = name[pos] - '0';
-      if (digit < 0 || digit > 9) {
-        return false;
-      }
-      index = index * 10 + digit;
-    }
-    if (!index.IsValid()) {
-      return false;
-    }
-    getting_array_location = true;
+  size_t last = name.size() - 1;
+  for (size_t pos = open_pos + 1; pos < last; ++pos) {
+    int8 digit = name[pos] - '0';
+    if (digit < 0 || digit > 9)
+      return;
+    index = index * 10 + digit;
   }
-  *getting_array = getting_array_location;
-  *element_index = index.ValueOrDie();
-  *array_pos = open_pos;
-  return true;
+  if (!index.IsValid())
+    return;
+  element_index_ = index.ValueOrDie();
+  base_name_ = name.substr(0, open_pos);
 }
 
 size_t GLES2Util::CalcClearBufferivDataCount(int buffer) {

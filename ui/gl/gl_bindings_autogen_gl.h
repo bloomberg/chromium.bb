@@ -432,13 +432,34 @@ typedef void(GL_BINDING_CALL* glGetProgramInfoLogProc)(GLuint program,
                                                        GLsizei bufsize,
                                                        GLsizei* length,
                                                        char* infolog);
+typedef void(GL_BINDING_CALL* glGetProgramInterfaceivProc)(
+    GLuint program,
+    GLenum programInterface,
+    GLenum pname,
+    GLint* params);
 typedef void(GL_BINDING_CALL* glGetProgramivProc)(GLuint program,
                                                   GLenum pname,
                                                   GLint* params);
+typedef void(GL_BINDING_CALL* glGetProgramResourceivProc)(
+    GLuint program,
+    GLenum programInterface,
+    GLuint index,
+    GLsizei propCount,
+    const GLenum* props,
+    GLsizei bufSize,
+    GLsizei* length,
+    GLint* params);
 typedef GLint(GL_BINDING_CALL* glGetProgramResourceLocationProc)(
     GLuint program,
     GLenum programInterface,
     const char* name);
+typedef void(GL_BINDING_CALL* glGetProgramResourceNameProc)(
+    GLuint program,
+    GLenum programInterface,
+    GLuint index,
+    GLsizei bufSize,
+    GLsizei* length,
+    GLchar* name);
 typedef void(GL_BINDING_CALL* glGetQueryivProc)(GLenum target,
                                                 GLenum pname,
                                                 GLint* params);
@@ -612,6 +633,12 @@ typedef void(GL_BINDING_CALL* glProgramBinaryProc)(GLuint program,
 typedef void(GL_BINDING_CALL* glProgramParameteriProc)(GLuint program,
                                                        GLenum pname,
                                                        GLint value);
+typedef void(GL_BINDING_CALL* glProgramPathFragmentInputGenNVProc)(
+    GLuint program,
+    GLint location,
+    GLenum genMode,
+    GLint components,
+    const GLfloat* coeffs);
 typedef void(GL_BINDING_CALL* glPushGroupMarkerEXTProc)(GLsizei length,
                                                         const char* marker);
 typedef void(GL_BINDING_CALL* glQueryCounterProc)(GLuint id, GLenum target);
@@ -1010,6 +1037,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_instanced_arrays;
   bool b_GL_ARB_map_buffer_range;
   bool b_GL_ARB_occlusion_query;
+  bool b_GL_ARB_program_interface_query;
   bool b_GL_ARB_robustness;
   bool b_GL_ARB_sync;
   bool b_GL_ARB_texture_storage;
@@ -1187,8 +1215,11 @@ struct ProcsGL {
   glGetInternalformativProc glGetInternalformativFn;
   glGetProgramBinaryProc glGetProgramBinaryFn;
   glGetProgramInfoLogProc glGetProgramInfoLogFn;
+  glGetProgramInterfaceivProc glGetProgramInterfaceivFn;
   glGetProgramivProc glGetProgramivFn;
+  glGetProgramResourceivProc glGetProgramResourceivFn;
   glGetProgramResourceLocationProc glGetProgramResourceLocationFn;
+  glGetProgramResourceNameProc glGetProgramResourceNameFn;
   glGetQueryivProc glGetQueryivFn;
   glGetQueryObjecti64vProc glGetQueryObjecti64vFn;
   glGetQueryObjectivProc glGetQueryObjectivFn;
@@ -1255,6 +1286,7 @@ struct ProcsGL {
   glPopGroupMarkerEXTProc glPopGroupMarkerEXTFn;
   glProgramBinaryProc glProgramBinaryFn;
   glProgramParameteriProc glProgramParameteriFn;
+  glProgramPathFragmentInputGenNVProc glProgramPathFragmentInputGenNVFn;
   glPushGroupMarkerEXTProc glPushGroupMarkerEXTFn;
   glQueryCounterProc glQueryCounterFn;
   glReadBufferProc glReadBufferFn;
@@ -1734,12 +1766,30 @@ class GL_EXPORT GLApi {
                                      GLsizei bufsize,
                                      GLsizei* length,
                                      char* infolog) = 0;
+  virtual void glGetProgramInterfaceivFn(GLuint program,
+                                         GLenum programInterface,
+                                         GLenum pname,
+                                         GLint* params) = 0;
   virtual void glGetProgramivFn(GLuint program,
                                 GLenum pname,
                                 GLint* params) = 0;
+  virtual void glGetProgramResourceivFn(GLuint program,
+                                        GLenum programInterface,
+                                        GLuint index,
+                                        GLsizei propCount,
+                                        const GLenum* props,
+                                        GLsizei bufSize,
+                                        GLsizei* length,
+                                        GLint* params) = 0;
   virtual GLint glGetProgramResourceLocationFn(GLuint program,
                                                GLenum programInterface,
                                                const char* name) = 0;
+  virtual void glGetProgramResourceNameFn(GLuint program,
+                                          GLenum programInterface,
+                                          GLuint index,
+                                          GLsizei bufSize,
+                                          GLsizei* length,
+                                          GLchar* name) = 0;
   virtual void glGetQueryivFn(GLenum target, GLenum pname, GLint* params) = 0;
   virtual void glGetQueryObjecti64vFn(GLuint id,
                                       GLenum pname,
@@ -1889,6 +1939,11 @@ class GL_EXPORT GLApi {
   virtual void glProgramParameteriFn(GLuint program,
                                      GLenum pname,
                                      GLint value) = 0;
+  virtual void glProgramPathFragmentInputGenNVFn(GLuint program,
+                                                 GLint location,
+                                                 GLenum genMode,
+                                                 GLint components,
+                                                 const GLfloat* coeffs) = 0;
   virtual void glPushGroupMarkerEXTFn(GLsizei length, const char* marker) = 0;
   virtual void glQueryCounterFn(GLuint id, GLenum target) = 0;
   virtual void glReadBufferFn(GLenum src) = 0;
@@ -2418,9 +2473,15 @@ class GL_EXPORT GLApi {
   ::gfx::g_current_gl_context->glGetInternalformativFn
 #define glGetProgramBinary ::gfx::g_current_gl_context->glGetProgramBinaryFn
 #define glGetProgramInfoLog ::gfx::g_current_gl_context->glGetProgramInfoLogFn
+#define glGetProgramInterfaceiv \
+  ::gfx::g_current_gl_context->glGetProgramInterfaceivFn
 #define glGetProgramiv ::gfx::g_current_gl_context->glGetProgramivFn
+#define glGetProgramResourceiv \
+  ::gfx::g_current_gl_context->glGetProgramResourceivFn
 #define glGetProgramResourceLocation \
   ::gfx::g_current_gl_context->glGetProgramResourceLocationFn
+#define glGetProgramResourceName \
+  ::gfx::g_current_gl_context->glGetProgramResourceNameFn
 #define glGetQueryiv ::gfx::g_current_gl_context->glGetQueryivFn
 #define glGetQueryObjecti64v ::gfx::g_current_gl_context->glGetQueryObjecti64vFn
 #define glGetQueryObjectiv ::gfx::g_current_gl_context->glGetQueryObjectivFn
@@ -2504,6 +2565,8 @@ class GL_EXPORT GLApi {
 #define glPopGroupMarkerEXT ::gfx::g_current_gl_context->glPopGroupMarkerEXTFn
 #define glProgramBinary ::gfx::g_current_gl_context->glProgramBinaryFn
 #define glProgramParameteri ::gfx::g_current_gl_context->glProgramParameteriFn
+#define glProgramPathFragmentInputGenNV \
+  ::gfx::g_current_gl_context->glProgramPathFragmentInputGenNVFn
 #define glPushGroupMarkerEXT ::gfx::g_current_gl_context->glPushGroupMarkerEXTFn
 #define glQueryCounter ::gfx::g_current_gl_context->glQueryCounterFn
 #define glReadBuffer ::gfx::g_current_gl_context->glReadBufferFn

@@ -122,25 +122,20 @@ ProgramInfoManager::Program::GetUniformBlock(GLuint index) const {
 
 GLint ProgramInfoManager::Program::GetUniformLocation(
     const std::string& name) const {
-  bool getting_array_location = false;
-  size_t open_pos = std::string::npos;
-  int index = 0;
-  if (!GLES2Util::ParseUniformName(
-      name, &open_pos, &index, &getting_array_location)) {
-    return -1;
-  }
+  GLSLArrayName parsed_name(name);
+
   for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
     const UniformInfo& info = uniform_infos_[ii];
     if (info.name == name ||
         (info.is_array &&
          info.name.compare(0, info.name.size() - 3, name) == 0)) {
       return info.element_locations[0];
-    } else if (getting_array_location && info.is_array) {
+    } else if (parsed_name.IsArrayName() && info.is_array) {
       // Look for an array specification.
-      size_t open_pos_2 = info.name.find_last_of('[');
-      if (open_pos_2 == open_pos &&
-          name.compare(0, open_pos, info.name, 0, open_pos) == 0) {
-        if (index >= 0 && index < info.size) {
+      size_t open_pos = info.name.find_last_of('[');
+      if (info.name.compare(0, open_pos, parsed_name.base_name()) == 0) {
+        int index = parsed_name.element_index();
+        if (index < info.size) {
           return info.element_locations[index];
         }
       }

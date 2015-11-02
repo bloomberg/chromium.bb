@@ -490,10 +490,30 @@ static void GL_BINDING_CALL Mock_glGetProgramInfoLog(GLuint program,
                                                      GLsizei bufsize,
                                                      GLsizei* length,
                                                      char* infolog);
+static void GL_BINDING_CALL
+Mock_glGetProgramInterfaceiv(GLuint program,
+                             GLenum programInterface,
+                             GLenum pname,
+                             GLint* params);
 static GLint GL_BINDING_CALL
 Mock_glGetProgramResourceLocation(GLuint program,
                                   GLenum programInterface,
                                   const char* name);
+static void GL_BINDING_CALL
+Mock_glGetProgramResourceName(GLuint program,
+                              GLenum programInterface,
+                              GLuint index,
+                              GLsizei bufSize,
+                              GLsizei* length,
+                              GLchar* name);
+static void GL_BINDING_CALL Mock_glGetProgramResourceiv(GLuint program,
+                                                        GLenum programInterface,
+                                                        GLuint index,
+                                                        GLsizei propCount,
+                                                        const GLenum* props,
+                                                        GLsizei bufSize,
+                                                        GLsizei* length,
+                                                        GLint* params);
 static void GL_BINDING_CALL Mock_glGetProgramiv(GLuint program,
                                                 GLenum pname,
                                                 GLint* params);
@@ -707,6 +727,12 @@ static void GL_BINDING_CALL Mock_glProgramBinaryOES(GLuint program,
 static void GL_BINDING_CALL Mock_glProgramParameteri(GLuint program,
                                                      GLenum pname,
                                                      GLint value);
+static void GL_BINDING_CALL
+Mock_glProgramPathFragmentInputGenNV(GLuint program,
+                                     GLint location,
+                                     GLenum genMode,
+                                     GLint components,
+                                     const GLfloat* coeffs);
 static void GL_BINDING_CALL Mock_glPushGroupMarkerEXT(GLsizei length,
                                                       const char* marker);
 static void GL_BINDING_CALL Mock_glQueryCounter(GLuint id, GLenum target);

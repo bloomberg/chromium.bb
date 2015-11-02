@@ -161,6 +161,21 @@ TEST_P(GLES2DecoderTestDisabledExtensions, CHROMIUMPathRenderingDisabled) {
              0);
     EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
   }
+  {
+    cmds::BindFragmentInputLocationCHROMIUMBucket cmd;
+    const uint32 kBucketId = 123;
+    const GLint kLocation = 2;
+    const char* kName = "testing";
+    SetBucketAsCString(kBucketId, kName);
+    cmd.Init(client_program_id_, kLocation, kBucketId);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
+  {
+    cmds::ProgramPathFragmentInputGenCHROMIUM cmd;
+    const GLint kLocation = 2;
+    cmd.Init(client_program_id_, kLocation, 0, GL_NONE, 0, 0);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
 }
 
 class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
@@ -1609,6 +1624,41 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, InstancedInvalidSHMValues) {
         kPathCount, kPaths, paths, paths_shm_id, paths_shm_offset,
         transforms_shm_id, transforms_shm_offset);
   }
+}
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
+       BindFragmentInputLocationCHROMIUM) {
+  const uint32 kBucketId = 123;
+  const GLint kLocation = 2;
+  const char* kName = "testing";
+  const char* kBadName1 = "gl_testing";
+
+  SetBucketAsCString(kBucketId, kName);
+  cmds::BindFragmentInputLocationCHROMIUMBucket cmd;
+  cmd.Init(client_program_id_, kLocation, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  // Check negative location.
+  SetBucketAsCString(kBucketId, kName);
+  cmd.Init(client_program_id_, -1, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  // Check the highest location.
+  SetBucketAsCString(kBucketId, kName);
+  const GLint kMaxLocation = kMaxVaryingVectors * 4 - 1;
+  cmd.Init(client_program_id_, kMaxLocation, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  // Check too high location.
+  SetBucketAsCString(kBucketId, kName);
+  cmd.Init(client_program_id_, kMaxLocation + 1, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  // Check bad name "gl_...".
+  SetBucketAsCString(kBucketId, kBadName1);
+  cmd.Init(client_program_id_, kLocation, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h"

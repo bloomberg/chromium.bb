@@ -3102,6 +3102,30 @@ void StencilThenCoverStrokePathInstancedCHROMIUM(
   }
 }
 
+void BindFragmentInputLocationCHROMIUMBucket(GLuint program,
+                                             GLint location,
+                                             uint32_t name_bucket_id) {
+  gles2::cmds::BindFragmentInputLocationCHROMIUMBucket* c =
+      GetCmdSpace<gles2::cmds::BindFragmentInputLocationCHROMIUMBucket>();
+  if (c) {
+    c->Init(program, location, name_bucket_id);
+  }
+}
+
+void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
+                                         GLint location,
+                                         GLenum genMode,
+                                         GLint components,
+                                         uint32_t coeffs_shm_id,
+                                         uint32_t coeffs_shm_offset) {
+  gles2::cmds::ProgramPathFragmentInputGenCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::ProgramPathFragmentInputGenCHROMIUM>();
+  if (c) {
+    c->Init(program, location, genMode, components, coeffs_shm_id,
+            coeffs_shm_offset);
+  }
+}
+
 void BlendBarrierKHR() {
   gles2::cmds::BlendBarrierKHR* c = GetCmdSpace<gles2::cmds::BlendBarrierKHR>();
   if (c) {

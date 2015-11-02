@@ -50,6 +50,7 @@ ValueValidator<GLenum> matrix_mode;
 ValueValidator<GLenum> path_coord_type;
 ValueValidator<GLenum> path_cover_mode;
 ValueValidator<GLenum> path_fill_mode;
+ValueValidator<GLenum> path_fragment_input_gen_mode;
 ValueValidator<GLenum> path_instanced_cover_mode;
 ValueValidator<GLenum> path_name_type;
 ValueValidator<GLenum> path_parameter;

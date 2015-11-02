@@ -1621,6 +1621,15 @@ _NAMED_TYPE_INFO = {
       'GL_TRANSPOSE_AFFINE_3D_CHROMIUM',
     ],
   },
+  'PathFragmentInputGenMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NONE',
+      'GL_EYE_LINEAR_CHROMIUM',
+      'GL_OBJECT_LINEAR_CHROMIUM',
+      'GL_CONSTANT_CHROMIUM',
+    ],
+  },
   'ReadPixelType': {
     'type': 'GLenum',
     'valid': [
@@ -4296,6 +4305,20 @@ _FUNCTION_INFO = {
   'StencilThenCoverStrokePathInstancedCHROMIUM': {
     'type': 'Custom',
     'chromium': True,
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'BindFragmentInputLocationCHROMIUM': {
+    'type': 'GLchar',
+    'data_transfer_methods': ['bucket'],
+    'needs_size': True,
+    'gl_test_func': 'DoBindFragmentInputLocationCHROMIUM',
+    'extension': 'CHROMIUM_path_rendering',
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'ProgramPathFragmentInputGenCHROMIUM': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },

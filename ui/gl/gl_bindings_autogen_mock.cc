@@ -1299,6 +1299,15 @@ void GL_BINDING_CALL MockGLInterface::Mock_glGetProgramInfoLog(GLuint program,
   interface_->GetProgramInfoLog(program, bufsize, length, infolog);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glGetProgramInterfaceiv(GLuint program,
+                                              GLenum programInterface,
+                                              GLenum pname,
+                                              GLint* params) {
+  MakeFunctionUnique("glGetProgramInterfaceiv");
+  interface_->GetProgramInterfaceiv(program, programInterface, pname, params);
+}
+
 GLint GL_BINDING_CALL
 MockGLInterface::Mock_glGetProgramResourceLocation(GLuint program,
                                                    GLenum programInterface,
@@ -1306,6 +1315,32 @@ MockGLInterface::Mock_glGetProgramResourceLocation(GLuint program,
   MakeFunctionUnique("glGetProgramResourceLocation");
   return interface_->GetProgramResourceLocation(program, programInterface,
                                                 name);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glGetProgramResourceName(GLuint program,
+                                               GLenum programInterface,
+                                               GLuint index,
+                                               GLsizei bufSize,
+                                               GLsizei* length,
+                                               GLchar* name) {
+  MakeFunctionUnique("glGetProgramResourceName");
+  interface_->GetProgramResourceName(program, programInterface, index, bufSize,
+                                     length, name);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glGetProgramResourceiv(GLuint program,
+                                             GLenum programInterface,
+                                             GLuint index,
+                                             GLsizei propCount,
+                                             const GLenum* props,
+                                             GLsizei bufSize,
+                                             GLsizei* length,
+                                             GLint* params) {
+  MakeFunctionUnique("glGetProgramResourceiv");
+  interface_->GetProgramResourceiv(program, programInterface, index, propCount,
+                                   props, bufSize, length, params);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glGetProgramiv(GLuint program,
@@ -1901,6 +1936,17 @@ void GL_BINDING_CALL MockGLInterface::Mock_glProgramParameteri(GLuint program,
                                                                GLint value) {
   MakeFunctionUnique("glProgramParameteri");
   interface_->ProgramParameteri(program, pname, value);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glProgramPathFragmentInputGenNV(GLuint program,
+                                                      GLint location,
+                                                      GLenum genMode,
+                                                      GLint components,
+                                                      const GLfloat* coeffs) {
+  MakeFunctionUnique("glProgramPathFragmentInputGenNV");
+  interface_->ProgramPathFragmentInputGenNV(program, location, genMode,
+                                            components, coeffs);
 }
 
 void GL_BINDING_CALL
@@ -3134,8 +3180,14 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glGetProgramBinaryOES);
   if (strcmp(name, "glGetProgramInfoLog") == 0)
     return reinterpret_cast<void*>(Mock_glGetProgramInfoLog);
+  if (strcmp(name, "glGetProgramInterfaceiv") == 0)
+    return reinterpret_cast<void*>(Mock_glGetProgramInterfaceiv);
   if (strcmp(name, "glGetProgramResourceLocation") == 0)
     return reinterpret_cast<void*>(Mock_glGetProgramResourceLocation);
+  if (strcmp(name, "glGetProgramResourceName") == 0)
+    return reinterpret_cast<void*>(Mock_glGetProgramResourceName);
+  if (strcmp(name, "glGetProgramResourceiv") == 0)
+    return reinterpret_cast<void*>(Mock_glGetProgramResourceiv);
   if (strcmp(name, "glGetProgramiv") == 0)
     return reinterpret_cast<void*>(Mock_glGetProgramiv);
   if (strcmp(name, "glGetQueryObjecti64v") == 0)
@@ -3306,6 +3358,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glProgramBinaryOES);
   if (strcmp(name, "glProgramParameteri") == 0)
     return reinterpret_cast<void*>(Mock_glProgramParameteri);
+  if (strcmp(name, "glProgramPathFragmentInputGenNV") == 0)
+    return reinterpret_cast<void*>(Mock_glProgramPathFragmentInputGenNV);
   if (strcmp(name, "glPushGroupMarkerEXT") == 0)
     return reinterpret_cast<void*>(Mock_glPushGroupMarkerEXT);
   if (strcmp(name, "glQueryCounter") == 0)

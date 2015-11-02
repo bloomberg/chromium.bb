@@ -839,6 +839,14 @@ void StencilThenCoverStrokePathInstancedCHROMIUM(
     GLenum coverMode,
     GLenum transformType,
     const GLfloat* transformValues) override;
+void BindFragmentInputLocationCHROMIUM(GLuint program,
+                                       GLint location,
+                                       const char* name) override;
+void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
+                                         GLint location,
+                                         GLenum genMode,
+                                         GLint components,
+                                         const GLfloat* coeffs) override;
 GLenum GetGraphicsResetStatusKHR() override;
 void BlendBarrierKHR() override;
 void ApplyScreenSpaceAntialiasingCHROMIUM() override;

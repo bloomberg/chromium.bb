@@ -286,7 +286,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
   path_manager_.reset(new PathManager());
 
   program_manager_.reset(new ProgramManager(
-      program_cache_, max_varying_vectors_));
+      program_cache_, max_varying_vectors_, feature_info_.get()));
 
   if (!texture_manager_->Initialize()) {
     LOG(ERROR) << "Context::Group::Initialize failed because texture manager "

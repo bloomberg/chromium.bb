@@ -234,6 +234,9 @@
 #define GL_QUADRATIC_CURVE_TO_CHROMIUM 0x0A
 #define GL_CUBIC_CURVE_TO_CHROMIUM 0x0C
 #define GL_CONIC_CURVE_TO_CHROMIUM 0x1A
+#define GL_EYE_LINEAR_CHROMIUM 0x2400
+#define GL_OBJECT_LINEAR_CHROMIUM 0x2401
+#define GL_CONSTANT_CHROMIUM 0x8576
 #define GL_PATH_STROKE_WIDTH_CHROMIUM 0x9075
 #define GL_PATH_END_CAPS_CHROMIUM 0x9076
 #define GL_PATH_JOIN_STYLE_CHROMIUM 0x9079
@@ -312,6 +315,15 @@
 #define GL_R8_EXT 0x8229
 #define GL_RG8_EXT 0x822B
 #endif /* GL_EXT_texture_rg */
+
+// This is from NV_path_rendering, but the Mesa GL header is not up-to-date with
+// the most recent
+// version of the extension. This definition could be removed once glext.h
+// r27498 or later is
+// imported.
+#ifndef GL_FRAGMENT_INPUT_NV
+#define GL_FRAGMENT_INPUT_NV 0x936D
+#endif
 
 #define GL_GLEXT_PROTOTYPES 1
 

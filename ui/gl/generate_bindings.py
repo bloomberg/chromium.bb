@@ -584,11 +584,27 @@ GL_FUNCTIONS = [
   'arguments':
       'GLuint program, GLsizei bufsize, GLsizei* length, char* infolog', },
 { 'return_type': 'void',
+  'versions': [{'name': 'glGetProgramInterfaceiv',
+                'extensions': ['GL_ARB_program_interface_query']}],
+  'arguments': 'GLuint program, GLenum programInterface, GLenum pname, '
+  'GLint* params'},
+{ 'return_type': 'void',
   'names': ['glGetProgramiv'],
   'arguments': 'GLuint program, GLenum pname, GLint* params', },
+{ 'return_type': 'void',
+  'versions': [{'name': 'glGetProgramResourceiv',
+                'extensions': ['GL_ARB_program_interface_query']}],
+  'arguments': 'GLuint program, GLenum programInterface, GLuint index, '
+  'GLsizei propCount, const GLenum* props, GLsizei bufSize, '
+  'GLsizei* length, GLint* params'},
 { 'return_type': 'GLint',
   'names': ['glGetProgramResourceLocation'],
   'arguments': 'GLuint program, GLenum programInterface, const char* name', },
+{ 'return_type': 'void',
+  'versions': [{'name': 'glGetProgramResourceName',
+                'extensions': ['GL_ARB_program_interface_query']}],
+  'arguments': 'GLuint program, GLenum programInterface, GLuint index, '
+  'GLsizei bufSize, GLsizei* length, GLchar* name'},
 { 'return_type': 'void',
   'versions': [{ 'name': 'glGetQueryiv' },
                { 'name': 'glGetQueryivARB' },
@@ -843,6 +859,11 @@ GL_FUNCTIONS = [
   'versions': [{ 'name': 'glProgramParameteri',
                  'extensions': ['GL_ARB_get_program_binary'] }],
   'arguments': 'GLuint program, GLenum pname, GLint value' },
+{ 'return_type': 'void',
+  'names': ['glProgramPathFragmentInputGenNV'],
+  'arguments': 'GLuint program, GLint location, GLenum genMode, '
+  'GLint components, const GLfloat* coeffs',
+  'is_optional': True, },
 { 'return_type': 'void',
   'names': ['glPushGroupMarkerEXT'],
   'arguments': 'GLsizei length, const char* marker', },

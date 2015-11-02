@@ -454,6 +454,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x300E, "GL_CONTEXT_LOST",
     },
     {
+        0x2400, "GL_EYE_LINEAR_CHROMIUM",
+    },
+    {
         0x90a3, "GL_SQUARE_CHROMIUM",
     },
     {
@@ -1316,6 +1319,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
         0x8A39, "GL_UNIFORM_NAME_LENGTH",
+    },
+    {
+        0x8576, "GL_CONSTANT_CHROMIUM",
     },
     {
         0x8E2C, "GL_DEPTH_COMPONENT16_NONLINEAR_NV",
@@ -2911,6 +2917,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x00008000, "GL_COVERAGE_BUFFER_BIT_NV",
     },
     {
+        0x2401, "GL_OBJECT_LINEAR_CHROMIUM",
+    },
+    {
         0x1506, "GL_XOR_NV",
     },
     {
@@ -4052,6 +4061,17 @@ std::string GLES2Util::GetStringPathFillMode(uint32_t value) {
       {GL_INVERT, "GL_INVERT"},
       {GL_COUNT_UP_CHROMIUM, "GL_COUNT_UP_CHROMIUM"},
       {GL_COUNT_DOWN_CHROMIUM, "GL_COUNT_DOWN_CHROMIUM"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringPathFragmentInputGenMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_NONE, "GL_NONE"},
+      {GL_EYE_LINEAR_CHROMIUM, "GL_EYE_LINEAR_CHROMIUM"},
+      {GL_OBJECT_LINEAR_CHROMIUM, "GL_OBJECT_LINEAR_CHROMIUM"},
+      {GL_CONSTANT_CHROMIUM, "GL_CONSTANT_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

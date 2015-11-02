@@ -1665,9 +1665,9 @@ void GLES2DecoderTestBase::SetupShader(
                 AttachShader(program_service_id, fragment_shader_service_id))
         .Times(1)
         .RetiresOnSaturation();
-    TestHelper::SetupShader(
-        gl_.get(), attribs, num_attribs, uniforms, num_uniforms,
-        program_service_id);
+    TestHelper::SetupShaderExpectations(gl_.get(), group_->feature_info(),
+                                        attribs, num_attribs, uniforms,
+                                        num_uniforms, program_service_id);
   }
 
   DoCreateShader(

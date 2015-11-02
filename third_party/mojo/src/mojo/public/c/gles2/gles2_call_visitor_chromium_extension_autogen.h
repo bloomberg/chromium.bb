@@ -538,6 +538,18 @@ VISIT_GL_CALL(StencilThenCoverStrokePathInstancedCHROMIUM,
                coverMode,
                transformType,
                transformValues))
+VISIT_GL_CALL(BindFragmentInputLocationCHROMIUM,
+              void,
+              (GLuint program, GLint location, const char* name),
+              (program, location, name))
+VISIT_GL_CALL(ProgramPathFragmentInputGenCHROMIUM,
+              void,
+              (GLuint program,
+               GLint location,
+               GLenum genMode,
+               GLint components,
+               const GLfloat* coeffs),
+              (program, location, genMode, components, coeffs))
 VISIT_GL_CALL(GetGraphicsResetStatusKHR, GLenum, (), ())
 VISIT_GL_CALL(BlendBarrierKHR, void, (), ())
 VISIT_GL_CALL(ApplyScreenSpaceAntialiasingCHROMIUM, void, (), ())

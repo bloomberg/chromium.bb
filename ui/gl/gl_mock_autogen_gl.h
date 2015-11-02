@@ -364,9 +364,28 @@ MOCK_METHOD5(GetProgramBinary,
 MOCK_METHOD4(
     GetProgramInfoLog,
     void(GLuint program, GLsizei bufsize, GLsizei* length, char* infolog));
+MOCK_METHOD4(
+    GetProgramInterfaceiv,
+    void(GLuint program, GLenum programInterface, GLenum pname, GLint* params));
 MOCK_METHOD3(GetProgramiv, void(GLuint program, GLenum pname, GLint* params));
+MOCK_METHOD8(GetProgramResourceiv,
+             void(GLuint program,
+                  GLenum programInterface,
+                  GLuint index,
+                  GLsizei propCount,
+                  const GLenum* props,
+                  GLsizei bufSize,
+                  GLsizei* length,
+                  GLint* params));
 MOCK_METHOD3(GetProgramResourceLocation,
              GLint(GLuint program, GLenum programInterface, const char* name));
+MOCK_METHOD6(GetProgramResourceName,
+             void(GLuint program,
+                  GLenum programInterface,
+                  GLuint index,
+                  GLsizei bufSize,
+                  GLsizei* length,
+                  GLchar* name));
 MOCK_METHOD3(GetQueryiv, void(GLenum target, GLenum pname, GLint* params));
 MOCK_METHOD3(GetQueryObjecti64v,
              void(GLuint id, GLenum pname, GLint64* params));
@@ -499,6 +518,12 @@ MOCK_METHOD4(ProgramBinary,
                   GLsizei length));
 MOCK_METHOD3(ProgramParameteri,
              void(GLuint program, GLenum pname, GLint value));
+MOCK_METHOD5(ProgramPathFragmentInputGenNV,
+             void(GLuint program,
+                  GLint location,
+                  GLenum genMode,
+                  GLint components,
+                  const GLfloat* coeffs));
 MOCK_METHOD2(PushGroupMarkerEXT, void(GLsizei length, const char* marker));
 MOCK_METHOD2(QueryCounter, void(GLuint id, GLenum target));
 MOCK_METHOD1(ReadBuffer, void(GLenum src));

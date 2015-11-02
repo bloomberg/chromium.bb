@@ -176,6 +176,9 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
         glStencilThenCoverFillPathInstancedCHROMIUM;
     functions->fStencilThenCoverStrokePathInstanced =
         glStencilThenCoverStrokePathInstancedCHROMIUM;
+    functions->fProgramPathFragmentInputGen =
+        glProgramPathFragmentInputGenCHROMIUM;
+    functions->fBindFragmentInputLocation = glBindFragmentInputLocationCHROMIUM;
   }
 
   return interface;

@@ -15146,6 +15146,129 @@ static_assert(offsetof(StencilThenCoverStrokePathInstancedCHROMIUM,
               "offset of StencilThenCoverStrokePathInstancedCHROMIUM "
               "transformValues_shm_offset should be 44");
 
+struct BindFragmentInputLocationCHROMIUMBucket {
+  typedef BindFragmentInputLocationCHROMIUMBucket ValueType;
+  static const CommandId kCmdId = kBindFragmentInputLocationCHROMIUMBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program, GLint _location, uint32_t _name_bucket_id) {
+    SetHeader();
+    program = _program;
+    location = _location;
+    name_bucket_id = _name_bucket_id;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            GLint _location,
+            uint32_t _name_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_program, _location, _name_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  int32_t location;
+  uint32_t name_bucket_id;
+};
+
+static_assert(sizeof(BindFragmentInputLocationCHROMIUMBucket) == 16,
+              "size of BindFragmentInputLocationCHROMIUMBucket should be 16");
+static_assert(
+    offsetof(BindFragmentInputLocationCHROMIUMBucket, header) == 0,
+    "offset of BindFragmentInputLocationCHROMIUMBucket header should be 0");
+static_assert(
+    offsetof(BindFragmentInputLocationCHROMIUMBucket, program) == 4,
+    "offset of BindFragmentInputLocationCHROMIUMBucket program should be 4");
+static_assert(
+    offsetof(BindFragmentInputLocationCHROMIUMBucket, location) == 8,
+    "offset of BindFragmentInputLocationCHROMIUMBucket location should be 8");
+static_assert(offsetof(BindFragmentInputLocationCHROMIUMBucket,
+                       name_bucket_id) == 12,
+              "offset of BindFragmentInputLocationCHROMIUMBucket "
+              "name_bucket_id should be 12");
+
+struct ProgramPathFragmentInputGenCHROMIUM {
+  typedef ProgramPathFragmentInputGenCHROMIUM ValueType;
+  static const CommandId kCmdId = kProgramPathFragmentInputGenCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            GLint _location,
+            GLenum _genMode,
+            GLint _components,
+            uint32_t _coeffs_shm_id,
+            uint32_t _coeffs_shm_offset) {
+    SetHeader();
+    program = _program;
+    location = _location;
+    genMode = _genMode;
+    components = _components;
+    coeffs_shm_id = _coeffs_shm_id;
+    coeffs_shm_offset = _coeffs_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            GLint _location,
+            GLenum _genMode,
+            GLint _components,
+            uint32_t _coeffs_shm_id,
+            uint32_t _coeffs_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_program, _location, _genMode,
+                                       _components, _coeffs_shm_id,
+                                       _coeffs_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  int32_t location;
+  uint32_t genMode;
+  int32_t components;
+  uint32_t coeffs_shm_id;
+  uint32_t coeffs_shm_offset;
+};
+
+static_assert(sizeof(ProgramPathFragmentInputGenCHROMIUM) == 28,
+              "size of ProgramPathFragmentInputGenCHROMIUM should be 28");
+static_assert(
+    offsetof(ProgramPathFragmentInputGenCHROMIUM, header) == 0,
+    "offset of ProgramPathFragmentInputGenCHROMIUM header should be 0");
+static_assert(
+    offsetof(ProgramPathFragmentInputGenCHROMIUM, program) == 4,
+    "offset of ProgramPathFragmentInputGenCHROMIUM program should be 4");
+static_assert(
+    offsetof(ProgramPathFragmentInputGenCHROMIUM, location) == 8,
+    "offset of ProgramPathFragmentInputGenCHROMIUM location should be 8");
+static_assert(
+    offsetof(ProgramPathFragmentInputGenCHROMIUM, genMode) == 12,
+    "offset of ProgramPathFragmentInputGenCHROMIUM genMode should be 12");
+static_assert(
+    offsetof(ProgramPathFragmentInputGenCHROMIUM, components) == 16,
+    "offset of ProgramPathFragmentInputGenCHROMIUM components should be 16");
+static_assert(
+    offsetof(ProgramPathFragmentInputGenCHROMIUM, coeffs_shm_id) == 20,
+    "offset of ProgramPathFragmentInputGenCHROMIUM coeffs_shm_id should be 20");
+static_assert(offsetof(ProgramPathFragmentInputGenCHROMIUM,
+                       coeffs_shm_offset) == 24,
+              "offset of ProgramPathFragmentInputGenCHROMIUM coeffs_shm_offset "
+              "should be 24");
+
 struct BlendBarrierKHR {
   typedef BlendBarrierKHR ValueType;
   static const CommandId kCmdId = kBlendBarrierKHR;

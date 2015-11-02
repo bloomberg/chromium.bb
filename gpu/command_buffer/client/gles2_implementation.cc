@@ -6290,6 +6290,63 @@ void GLES2Implementation::StencilThenCoverStrokePathInstancedCHROMIUM(
   CheckGLError();
 }
 
+void GLES2Implementation::BindFragmentInputLocationCHROMIUM(GLuint program,
+                                                            GLint location,
+                                                            const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glBindFragmentInputLocationCHROMIUM(" << program
+                     << ", " << location << ", " << name << ")");
+  SetBucketAsString(kResultBucketId, name);
+  helper_->BindFragmentInputLocationCHROMIUMBucket(program, location,
+                                                   kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+  CheckGLError();
+}
+
+void GLES2Implementation::ProgramPathFragmentInputGenCHROMIUM(
+    GLuint program,
+    GLint location,
+    GLenum gen_mode,
+    GLint components,
+    const GLfloat* coeffs) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glProgramPathFragmentInputGenCHROMIUM(" << program
+                     << ", " << gen_mode << ", " << components << ", " << coeffs
+                     << ")");
+
+  uint32 coeffs_per_component =
+      GLES2Util::GetCoefficientCountForGLPathFragmentInputGenMode(gen_mode);
+
+  if (components <= 0 || components > 4 || gen_mode == GL_NONE ||
+      coeffs_per_component == 0 || location == -1) {
+    helper_->ProgramPathFragmentInputGenCHROMIUM(program, location, gen_mode,
+                                                 components, 0, 0);
+  } else {
+    // The multiplication below will not overflow.
+    DCHECK(coeffs_per_component > 0 && coeffs_per_component <= 4);
+    DCHECK(components > 0 && components <= 4);
+    uint32 coeffs_size = sizeof(GLfloat) * coeffs_per_component * components;
+
+    ScopedTransferBufferPtr buffer(coeffs_size, helper_, transfer_buffer_);
+    if (!buffer.valid() || buffer.size() < coeffs_size) {
+      SetGLError(GL_OUT_OF_MEMORY, "glProgramPathFragmentInputGenCHROMIUM",
+                 "no room in transfer buffer");
+      return;
+    }
+
+    DCHECK(coeffs_size > 0);
+    unsigned char* addr = static_cast<unsigned char*>(buffer.address());
+    memcpy(addr, coeffs, coeffs_size);
+
+    helper_->ProgramPathFragmentInputGenCHROMIUM(program, location, gen_mode,
+                                                 components, buffer.shm_id(),
+                                                 buffer.offset());
+  }
+  CheckGLError();
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

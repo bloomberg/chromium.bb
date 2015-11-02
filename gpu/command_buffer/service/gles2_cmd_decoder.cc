@@ -892,6 +892,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void SetWaitFenceSyncCallback(const WaitFenceSyncCallback& callback) override;
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
+  void SetForceShaderNameHashingForTest(bool force) override;
   void ProcessFinishedAsyncTransfers();
 
   bool GetServiceTextureId(uint32 client_texture_id,
@@ -1287,8 +1288,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode);
 
   // Creates a Program for the given program.
-  Program* CreateProgram(
-      GLuint client_id, GLuint service_id) {
+  Program* CreateProgram(GLuint client_id, GLuint service_id) {
     return program_manager()->CreateProgram(client_id, service_id);
   }
 
@@ -2113,6 +2113,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void ProcessPendingReadPixels(bool did_finish);
   void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
 
+  void DoBindFragmentInputLocationCHROMIUM(GLuint program_id,
+                                           GLint location,
+                                           const char* name);
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -2306,6 +2309,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[kNumCommands - kStartPoint];
+
+  bool force_shader_name_hashing_for_test;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -2800,7 +2805,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       gpu_debug_commands_(false),
       validation_texture_(0),
       validation_fbo_multisample_(0),
-      validation_fbo_(0) {
+      validation_fbo_(0),
+      force_shader_name_hashing_for_test(false) {
   DCHECK(group);
 }
 
@@ -3469,8 +3475,9 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       break;
   }
 
-  if ((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&
-      features().enable_shader_name_hashing)
+  if (((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&
+       features().enable_shader_name_hashing) ||
+      force_shader_name_hashing_for_test)
     resources.HashFunction = &CityHash64;
   else
     resources.HashFunction = NULL;
@@ -4923,6 +4930,10 @@ void GLES2DecoderImpl::RestoreAllAttributes() const {
 
 void GLES2DecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
   state_.SetIgnoreCachedStateForTest(ignore);
+}
+
+void GLES2DecoderImpl::SetForceShaderNameHashingForTest(bool force) {
+  force_shader_name_hashing_for_test = force;
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {
@@ -15429,6 +15440,163 @@ GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
   glStencilThenCoverStrokePathInstancedNV(
       num_paths, GL_UNSIGNED_INT, paths.path_names(), 0, reference, mask,
       cover_mode, transform_type, transforms);
+  return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoBindFragmentInputLocationCHROMIUM(GLuint program_id,
+                                                           GLint location,
+                                                           const char* name) {
+  static const char kFunctionName[] = "glBindFragmentInputLocationCHROMIUM";
+  Program* program = GetProgram(program_id);
+  if (!program || program->IsDeleted()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "invalid program");
+    return;
+  }
+  if (!StringIsValidForGLES(name)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "invalid character");
+    return;
+  }
+  if (ProgramManager::IsInvalidPrefix(name, strlen(name))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "reserved prefix");
+    return;
+  }
+  if (location < 0 ||
+      static_cast<uint32>(location) >= group_->max_varying_vectors() * 4) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
+                       "location out of range");
+    return;
+  }
+
+  program->SetFragmentInputLocationBinding(name, location);
+}
+
+error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::BindFragmentInputLocationCHROMIUMBucket& c =
+      *static_cast<const gles2::cmds::BindFragmentInputLocationCHROMIUMBucket*>(
+          cmd_data);
+  if (!features().chromium_path_rendering) {
+    return error::kUnknownCommand;
+  }
+
+  GLuint program = static_cast<GLuint>(c.program);
+  GLint location = static_cast<GLint>(c.location);
+  Bucket* bucket = GetBucket(c.name_bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string name_str;
+  if (!bucket->GetAsString(&name_str)) {
+    return error::kInvalidArguments;
+  }
+  DoBindFragmentInputLocationCHROMIUM(program, location, name_str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleProgramPathFragmentInputGenCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glProgramPathFragmentInputGenCHROMIUM";
+  const gles2::cmds::ProgramPathFragmentInputGenCHROMIUM& c =
+      *static_cast<const gles2::cmds::ProgramPathFragmentInputGenCHROMIUM*>(
+          cmd_data);
+  if (!features().chromium_path_rendering) {
+    return error::kUnknownCommand;
+  }
+
+  GLint program_id = static_cast<GLint>(c.program);
+
+  Program* program = GetProgram(program_id);
+  if (!program || !program->IsValid() || program->IsDeleted()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "invalid program");
+    return error::kNoError;
+  }
+
+  GLenum gen_mode = static_cast<GLint>(c.genMode);
+  if (!validators_->path_fragment_input_gen_mode.IsValid(gen_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, gen_mode, "genMode");
+    return error::kNoError;
+  }
+
+  GLint components = static_cast<GLint>(c.components);
+  if (components < 0 || components > 4) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
+                       "components out of range");
+    return error::kNoError;
+  }
+
+  if ((components != 0 && gen_mode == GL_NONE) ||
+      (components == 0 && gen_mode != GL_NONE)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
+                       "components and genMode do not match");
+    return error::kNoError;
+  }
+
+  GLint location = static_cast<GLint>(c.location);
+  if (location == -1) {
+    return error::kNoError;
+  }
+
+  const Program::FragmentInputInfo* fragment_input_info =
+      program->GetFragmentInputInfoByFakeLocation(location);
+  if (!fragment_input_info) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "unknown location");
+    return error::kNoError;
+  }
+  GLint real_location = fragment_input_info->location;
+
+  const GLfloat* coeffs = NULL;
+
+  if (components > 0) {
+    GLint components_needed = -1;
+
+    switch (fragment_input_info->type) {
+      case GL_FLOAT:
+        components_needed = 1;
+        break;
+      case GL_FLOAT_VEC2:
+        components_needed = 2;
+        break;
+      case GL_FLOAT_VEC3:
+        components_needed = 3;
+        break;
+      case GL_FLOAT_VEC4:
+        components_needed = 4;
+        break;
+      default:
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                           "fragment input type is not single-precision "
+                           "floating-point scalar or vector");
+        return error::kNoError;
+    }
+
+    if (components_needed != components) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                         "components does not match fragment input type");
+      return error::kNoError;
+    }
+    uint32 coeffs_per_component =
+        GLES2Util::GetCoefficientCountForGLPathFragmentInputGenMode(gen_mode);
+    // The multiplication below will not overflow.
+    DCHECK(coeffs_per_component > 0 && coeffs_per_component <= 4);
+    DCHECK(components > 0 && components <= 4);
+    uint32 coeffs_size = sizeof(GLfloat) * coeffs_per_component * components;
+
+    uint32 coeffs_shm_id = static_cast<uint32>(c.coeffs_shm_id);
+    uint32 coeffs_shm_offset = static_cast<uint32>(c.coeffs_shm_offset);
+
+    if (coeffs_shm_id != 0 || coeffs_shm_offset != 0) {
+      coeffs = GetSharedMemoryAs<const GLfloat*>(
+          coeffs_shm_id, coeffs_shm_offset, coeffs_size);
+    }
+
+    if (!coeffs) {
+      return error::kOutOfBounds;
+    }
+  }
+  glProgramPathFragmentInputGenNV(program->service_id(), real_location,
+                                  gen_mode, components, coeffs);
   return error::kNoError;
 }
 

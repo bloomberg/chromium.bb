@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.29",
+  "version": "8.30",
   "entries": [
     {
       "id": 1,
@@ -1430,14 +1430,14 @@ LONG_STRING_CONST(
     {
       "id": 123,
       "cr_bugs": [344330],
-      "description": "NVIDIA drivers before 337 lack features in NV_path_rendering and related extensions to implement driver level path rendering.",
+      "description": "NVIDIA drivers before 346 lack features in NV_path_rendering and related extensions to implement driver level path rendering.",
       "vendor_id": "0x10de",
       "os": {
         "type": "linux"
       },
       "driver_version": {
         "op": "<",
-        "value": "337"
+        "value": "346"
       },
       "features": [
         "disable_gl_path_rendering"

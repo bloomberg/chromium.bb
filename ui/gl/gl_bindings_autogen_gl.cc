@@ -214,9 +214,12 @@ void DriverGL::InitializeStaticBindings() {
   fn.glGetProgramBinaryFn = 0;
   fn.glGetProgramInfoLogFn = reinterpret_cast<glGetProgramInfoLogProc>(
       GetGLProcAddress("glGetProgramInfoLog"));
+  fn.glGetProgramInterfaceivFn = 0;
   fn.glGetProgramivFn =
       reinterpret_cast<glGetProgramivProc>(GetGLProcAddress("glGetProgramiv"));
+  fn.glGetProgramResourceivFn = 0;
   fn.glGetProgramResourceLocationFn = 0;
+  fn.glGetProgramResourceNameFn = 0;
   fn.glGetQueryivFn = 0;
   fn.glGetQueryObjecti64vFn = 0;
   fn.glGetQueryObjectivFn = 0;
@@ -306,6 +309,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glPopGroupMarkerEXTFn = 0;
   fn.glProgramBinaryFn = 0;
   fn.glProgramParameteriFn = 0;
+  fn.glProgramPathFragmentInputGenNVFn = 0;
   fn.glPushGroupMarkerEXTFn = 0;
   fn.glQueryCounterFn = 0;
   fn.glReadBufferFn = 0;
@@ -489,6 +493,8 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       extensions.find("GL_ARB_map_buffer_range ") != std::string::npos;
   ext.b_GL_ARB_occlusion_query =
       extensions.find("GL_ARB_occlusion_query ") != std::string::npos;
+  ext.b_GL_ARB_program_interface_query =
+      extensions.find("GL_ARB_program_interface_query ") != std::string::npos;
   ext.b_GL_ARB_robustness =
       extensions.find("GL_ARB_robustness ") != std::string::npos;
   ext.b_GL_ARB_sync = extensions.find("GL_ARB_sync ") != std::string::npos;
@@ -1221,11 +1227,34 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         GetGLProcAddress("glGetProgramBinaryOES"));
   }
 
+  debug_fn.glGetProgramInterfaceivFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
+      ext.b_GL_ARB_program_interface_query) {
+    fn.glGetProgramInterfaceivFn =
+        reinterpret_cast<glGetProgramInterfaceivProc>(
+            GetGLProcAddress("glGetProgramInterfaceiv"));
+  }
+
+  debug_fn.glGetProgramResourceivFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
+      ext.b_GL_ARB_program_interface_query) {
+    fn.glGetProgramResourceivFn = reinterpret_cast<glGetProgramResourceivProc>(
+        GetGLProcAddress("glGetProgramResourceiv"));
+  }
+
   debug_fn.glGetProgramResourceLocationFn = 0;
   if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
     fn.glGetProgramResourceLocationFn =
         reinterpret_cast<glGetProgramResourceLocationProc>(
             GetGLProcAddress("glGetProgramResourceLocation"));
+  }
+
+  debug_fn.glGetProgramResourceNameFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u) ||
+      ext.b_GL_ARB_program_interface_query) {
+    fn.glGetProgramResourceNameFn =
+        reinterpret_cast<glGetProgramResourceNameProc>(
+            GetGLProcAddress("glGetProgramResourceName"));
   }
 
   debug_fn.glGetQueryivFn = 0;
@@ -1560,6 +1589,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
       ext.b_GL_ARB_get_program_binary) {
     fn.glProgramParameteriFn = reinterpret_cast<glProgramParameteriProc>(
         GetGLProcAddress("glProgramParameteri"));
+  }
+
+  debug_fn.glProgramPathFragmentInputGenNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glProgramPathFragmentInputGenNVFn =
+        reinterpret_cast<glProgramPathFragmentInputGenNVProc>(
+            GetGLProcAddress("glProgramPathFragmentInputGenNV"));
   }
 
   debug_fn.glPushGroupMarkerEXTFn = 0;
@@ -3256,6 +3292,20 @@ static void GL_BINDING_CALL Debug_glGetProgramInfoLog(GLuint program,
   g_driver_gl.debug_fn.glGetProgramInfoLogFn(program, bufsize, length, infolog);
 }
 
+static void GL_BINDING_CALL
+Debug_glGetProgramInterfaceiv(GLuint program,
+                              GLenum programInterface,
+                              GLenum pname,
+                              GLint* params) {
+  GL_SERVICE_LOG("glGetProgramInterfaceiv"
+                 << "(" << program << ", "
+                 << GLEnums::GetStringEnum(programInterface) << ", "
+                 << GLEnums::GetStringEnum(pname) << ", "
+                 << static_cast<const void*>(params) << ")");
+  g_driver_gl.debug_fn.glGetProgramInterfaceivFn(program, programInterface,
+                                                 pname, params);
+}
+
 static void GL_BINDING_CALL Debug_glGetProgramiv(GLuint program,
                                                  GLenum pname,
                                                  GLint* params) {
@@ -3263,6 +3313,26 @@ static void GL_BINDING_CALL Debug_glGetProgramiv(GLuint program,
                  << "(" << program << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
   g_driver_gl.debug_fn.glGetProgramivFn(program, pname, params);
+}
+
+static void GL_BINDING_CALL
+Debug_glGetProgramResourceiv(GLuint program,
+                             GLenum programInterface,
+                             GLuint index,
+                             GLsizei propCount,
+                             const GLenum* props,
+                             GLsizei bufSize,
+                             GLsizei* length,
+                             GLint* params) {
+  GL_SERVICE_LOG("glGetProgramResourceiv"
+                 << "(" << program << ", "
+                 << GLEnums::GetStringEnum(programInterface) << ", " << index
+                 << ", " << propCount << ", " << static_cast<const void*>(props)
+                 << ", " << bufSize << ", " << static_cast<const void*>(length)
+                 << ", " << static_cast<const void*>(params) << ")");
+  g_driver_gl.debug_fn.glGetProgramResourceivFn(program, programInterface,
+                                                index, propCount, props,
+                                                bufSize, length, params);
 }
 
 static GLint GL_BINDING_CALL
@@ -3277,6 +3347,22 @@ Debug_glGetProgramResourceLocation(GLuint program,
       program, programInterface, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
+}
+
+static void GL_BINDING_CALL
+Debug_glGetProgramResourceName(GLuint program,
+                               GLenum programInterface,
+                               GLuint index,
+                               GLsizei bufSize,
+                               GLsizei* length,
+                               GLchar* name) {
+  GL_SERVICE_LOG("glGetProgramResourceName"
+                 << "(" << program << ", "
+                 << GLEnums::GetStringEnum(programInterface) << ", " << index
+                 << ", " << bufSize << ", " << static_cast<const void*>(length)
+                 << ", " << static_cast<const void*>(name) << ")");
+  g_driver_gl.debug_fn.glGetProgramResourceNameFn(program, programInterface,
+                                                  index, bufSize, length, name);
 }
 
 static void GL_BINDING_CALL Debug_glGetQueryiv(GLenum target,
@@ -3894,6 +3980,20 @@ static void GL_BINDING_CALL Debug_glProgramParameteri(GLuint program,
                  << "(" << program << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << value << ")");
   g_driver_gl.debug_fn.glProgramParameteriFn(program, pname, value);
+}
+
+static void GL_BINDING_CALL
+Debug_glProgramPathFragmentInputGenNV(GLuint program,
+                                      GLint location,
+                                      GLenum genMode,
+                                      GLint components,
+                                      const GLfloat* coeffs) {
+  GL_SERVICE_LOG("glProgramPathFragmentInputGenNV"
+                 << "(" << program << ", " << location << ", "
+                 << GLEnums::GetStringEnum(genMode) << ", " << components
+                 << ", " << static_cast<const void*>(coeffs) << ")");
+  g_driver_gl.debug_fn.glProgramPathFragmentInputGenNVFn(
+      program, location, genMode, components, coeffs);
 }
 
 static void GL_BINDING_CALL Debug_glPushGroupMarkerEXT(GLsizei length,
@@ -5533,13 +5633,25 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetProgramInfoLogFn = fn.glGetProgramInfoLogFn;
     fn.glGetProgramInfoLogFn = Debug_glGetProgramInfoLog;
   }
+  if (!debug_fn.glGetProgramInterfaceivFn) {
+    debug_fn.glGetProgramInterfaceivFn = fn.glGetProgramInterfaceivFn;
+    fn.glGetProgramInterfaceivFn = Debug_glGetProgramInterfaceiv;
+  }
   if (!debug_fn.glGetProgramivFn) {
     debug_fn.glGetProgramivFn = fn.glGetProgramivFn;
     fn.glGetProgramivFn = Debug_glGetProgramiv;
   }
+  if (!debug_fn.glGetProgramResourceivFn) {
+    debug_fn.glGetProgramResourceivFn = fn.glGetProgramResourceivFn;
+    fn.glGetProgramResourceivFn = Debug_glGetProgramResourceiv;
+  }
   if (!debug_fn.glGetProgramResourceLocationFn) {
     debug_fn.glGetProgramResourceLocationFn = fn.glGetProgramResourceLocationFn;
     fn.glGetProgramResourceLocationFn = Debug_glGetProgramResourceLocation;
+  }
+  if (!debug_fn.glGetProgramResourceNameFn) {
+    debug_fn.glGetProgramResourceNameFn = fn.glGetProgramResourceNameFn;
+    fn.glGetProgramResourceNameFn = Debug_glGetProgramResourceName;
   }
   if (!debug_fn.glGetQueryivFn) {
     debug_fn.glGetQueryivFn = fn.glGetQueryivFn;
@@ -5809,6 +5921,12 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glProgramParameteriFn) {
     debug_fn.glProgramParameteriFn = fn.glProgramParameteriFn;
     fn.glProgramParameteriFn = Debug_glProgramParameteri;
+  }
+  if (!debug_fn.glProgramPathFragmentInputGenNVFn) {
+    debug_fn.glProgramPathFragmentInputGenNVFn =
+        fn.glProgramPathFragmentInputGenNVFn;
+    fn.glProgramPathFragmentInputGenNVFn =
+        Debug_glProgramPathFragmentInputGenNV;
   }
   if (!debug_fn.glPushGroupMarkerEXTFn) {
     debug_fn.glPushGroupMarkerEXTFn = fn.glPushGroupMarkerEXTFn;
@@ -7044,8 +7162,29 @@ void GLApiBase::glGetProgramInfoLogFn(GLuint program,
   driver_->fn.glGetProgramInfoLogFn(program, bufsize, length, infolog);
 }
 
+void GLApiBase::glGetProgramInterfaceivFn(GLuint program,
+                                          GLenum programInterface,
+                                          GLenum pname,
+                                          GLint* params) {
+  driver_->fn.glGetProgramInterfaceivFn(program, programInterface, pname,
+                                        params);
+}
+
 void GLApiBase::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   driver_->fn.glGetProgramivFn(program, pname, params);
+}
+
+void GLApiBase::glGetProgramResourceivFn(GLuint program,
+                                         GLenum programInterface,
+                                         GLuint index,
+                                         GLsizei propCount,
+                                         const GLenum* props,
+                                         GLsizei bufSize,
+                                         GLsizei* length,
+                                         GLint* params) {
+  driver_->fn.glGetProgramResourceivFn(program, programInterface, index,
+                                       propCount, props, bufSize, length,
+                                       params);
 }
 
 GLint GLApiBase::glGetProgramResourceLocationFn(GLuint program,
@@ -7053,6 +7192,16 @@ GLint GLApiBase::glGetProgramResourceLocationFn(GLuint program,
                                                 const char* name) {
   return driver_->fn.glGetProgramResourceLocationFn(program, programInterface,
                                                     name);
+}
+
+void GLApiBase::glGetProgramResourceNameFn(GLuint program,
+                                           GLenum programInterface,
+                                           GLuint index,
+                                           GLsizei bufSize,
+                                           GLsizei* length,
+                                           GLchar* name) {
+  driver_->fn.glGetProgramResourceNameFn(program, programInterface, index,
+                                         bufSize, length, name);
 }
 
 void GLApiBase::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
@@ -7402,6 +7551,15 @@ void GLApiBase::glProgramParameteriFn(GLuint program,
                                       GLenum pname,
                                       GLint value) {
   driver_->fn.glProgramParameteriFn(program, pname, value);
+}
+
+void GLApiBase::glProgramPathFragmentInputGenNVFn(GLuint program,
+                                                  GLint location,
+                                                  GLenum genMode,
+                                                  GLint components,
+                                                  const GLfloat* coeffs) {
+  driver_->fn.glProgramPathFragmentInputGenNVFn(program, location, genMode,
+                                                components, coeffs);
 }
 
 void GLApiBase::glPushGroupMarkerEXTFn(GLsizei length, const char* marker) {
@@ -9016,9 +9174,30 @@ void TraceGLApi::glGetProgramInfoLogFn(GLuint program,
   gl_api_->glGetProgramInfoLogFn(program, bufsize, length, infolog);
 }
 
+void TraceGLApi::glGetProgramInterfaceivFn(GLuint program,
+                                           GLenum programInterface,
+                                           GLenum pname,
+                                           GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetProgramInterfaceiv")
+  gl_api_->glGetProgramInterfaceivFn(program, programInterface, pname, params);
+}
+
 void TraceGLApi::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetProgramiv")
   gl_api_->glGetProgramivFn(program, pname, params);
+}
+
+void TraceGLApi::glGetProgramResourceivFn(GLuint program,
+                                          GLenum programInterface,
+                                          GLuint index,
+                                          GLsizei propCount,
+                                          const GLenum* props,
+                                          GLsizei bufSize,
+                                          GLsizei* length,
+                                          GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetProgramResourceiv")
+  gl_api_->glGetProgramResourceivFn(program, programInterface, index, propCount,
+                                    props, bufSize, length, params);
 }
 
 GLint TraceGLApi::glGetProgramResourceLocationFn(GLuint program,
@@ -9028,6 +9207,17 @@ GLint TraceGLApi::glGetProgramResourceLocationFn(GLuint program,
                                 "TraceGLAPI::glGetProgramResourceLocation")
   return gl_api_->glGetProgramResourceLocationFn(program, programInterface,
                                                  name);
+}
+
+void TraceGLApi::glGetProgramResourceNameFn(GLuint program,
+                                            GLenum programInterface,
+                                            GLuint index,
+                                            GLsizei bufSize,
+                                            GLsizei* length,
+                                            GLchar* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetProgramResourceName")
+  gl_api_->glGetProgramResourceNameFn(program, programInterface, index, bufSize,
+                                      length, name);
 }
 
 void TraceGLApi::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
@@ -9449,6 +9639,17 @@ void TraceGLApi::glProgramParameteriFn(GLuint program,
                                        GLint value) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glProgramParameteri")
   gl_api_->glProgramParameteriFn(program, pname, value);
+}
+
+void TraceGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
+                                                   GLint location,
+                                                   GLenum genMode,
+                                                   GLint components,
+                                                   const GLfloat* coeffs) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glProgramPathFragmentInputGenNV")
+  gl_api_->glProgramPathFragmentInputGenNVFn(program, location, genMode,
+                                             components, coeffs);
 }
 
 void TraceGLApi::glPushGroupMarkerEXTFn(GLsizei length, const char* marker) {
@@ -11299,11 +11500,35 @@ void NoContextGLApi::glGetProgramInfoLogFn(GLuint program,
       << "Trying to call glGetProgramInfoLog() without current GL context";
 }
 
+void NoContextGLApi::glGetProgramInterfaceivFn(GLuint program,
+                                               GLenum programInterface,
+                                               GLenum pname,
+                                               GLint* params) {
+  NOTREACHED()
+      << "Trying to call glGetProgramInterfaceiv() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glGetProgramInterfaceiv() without current GL context";
+}
+
 void NoContextGLApi::glGetProgramivFn(GLuint program,
                                       GLenum pname,
                                       GLint* params) {
   NOTREACHED() << "Trying to call glGetProgramiv() without current GL context";
   LOG(ERROR) << "Trying to call glGetProgramiv() without current GL context";
+}
+
+void NoContextGLApi::glGetProgramResourceivFn(GLuint program,
+                                              GLenum programInterface,
+                                              GLuint index,
+                                              GLsizei propCount,
+                                              const GLenum* props,
+                                              GLsizei bufSize,
+                                              GLsizei* length,
+                                              GLint* params) {
+  NOTREACHED()
+      << "Trying to call glGetProgramResourceiv() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glGetProgramResourceiv() without current GL context";
 }
 
 GLint NoContextGLApi::glGetProgramResourceLocationFn(GLuint program,
@@ -11314,6 +11539,18 @@ GLint NoContextGLApi::glGetProgramResourceLocationFn(GLuint program,
   LOG(ERROR) << "Trying to call glGetProgramResourceLocation() without current "
                 "GL context";
   return 0;
+}
+
+void NoContextGLApi::glGetProgramResourceNameFn(GLuint program,
+                                                GLenum programInterface,
+                                                GLuint index,
+                                                GLsizei bufSize,
+                                                GLsizei* length,
+                                                GLchar* name) {
+  NOTREACHED()
+      << "Trying to call glGetProgramResourceName() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glGetProgramResourceName() without current GL context";
 }
 
 void NoContextGLApi::glGetQueryivFn(GLenum target,
@@ -11834,6 +12071,17 @@ void NoContextGLApi::glProgramParameteriFn(GLuint program,
       << "Trying to call glProgramParameteri() without current GL context";
   LOG(ERROR)
       << "Trying to call glProgramParameteri() without current GL context";
+}
+
+void NoContextGLApi::glProgramPathFragmentInputGenNVFn(GLuint program,
+                                                       GLint location,
+                                                       GLenum genMode,
+                                                       GLint components,
+                                                       const GLfloat* coeffs) {
+  NOTREACHED() << "Trying to call glProgramPathFragmentInputGenNV() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glProgramPathFragmentInputGenNV() without "
+                "current GL context";
 }
 
 void NoContextGLApi::glPushGroupMarkerEXTFn(GLsizei length,

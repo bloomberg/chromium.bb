@@ -1871,6 +1871,21 @@ void MojoGLES2Impl::StencilThenCoverStrokePathInstancedCHROMIUM(
       numPaths, pathNameType, paths, pathBase, reference, mask, coverMode,
       transformType, transformValues);
 }
+void MojoGLES2Impl::BindFragmentInputLocationCHROMIUM(GLuint program,
+                                                      GLint location,
+                                                      const char* name) {
+  MojoGLES2MakeCurrent(context_);
+  glBindFragmentInputLocationCHROMIUM(program, location, name);
+}
+void MojoGLES2Impl::ProgramPathFragmentInputGenCHROMIUM(GLuint program,
+                                                        GLint location,
+                                                        GLenum genMode,
+                                                        GLint components,
+                                                        const GLfloat* coeffs) {
+  MojoGLES2MakeCurrent(context_);
+  glProgramPathFragmentInputGenCHROMIUM(program, location, genMode, components,
+                                        coeffs);
+}
 GLenum MojoGLES2Impl::GetGraphicsResetStatusKHR() {
   MojoGLES2MakeCurrent(context_);
   return glGetGraphicsResetStatusKHR();

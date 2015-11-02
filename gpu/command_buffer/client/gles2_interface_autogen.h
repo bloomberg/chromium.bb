@@ -867,6 +867,14 @@ virtual void StencilThenCoverStrokePathInstancedCHROMIUM(
     GLenum coverMode,
     GLenum transformType,
     const GLfloat* transformValues) = 0;
+virtual void BindFragmentInputLocationCHROMIUM(GLuint program,
+                                               GLint location,
+                                               const char* name) = 0;
+virtual void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
+                                                 GLint location,
+                                                 GLenum genMode,
+                                                 GLint components,
+                                                 const GLfloat* coeffs) = 0;
 virtual GLenum GetGraphicsResetStatusKHR() = 0;
 virtual void BlendBarrierKHR() = 0;
 virtual void ApplyScreenSpaceAntialiasingCHROMIUM() = 0;

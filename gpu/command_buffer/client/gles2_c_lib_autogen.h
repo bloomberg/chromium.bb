@@ -1669,6 +1669,21 @@ void GL_APIENTRY GLES2StencilThenCoverStrokePathInstancedCHROMIUM(
       numPaths, pathNameType, paths, pathBase, reference, mask, coverMode,
       transformType, transformValues);
 }
+void GL_APIENTRY GLES2BindFragmentInputLocationCHROMIUM(GLuint program,
+                                                        GLint location,
+                                                        const char* name) {
+  gles2::GetGLContext()->BindFragmentInputLocationCHROMIUM(program, location,
+                                                           name);
+}
+void GL_APIENTRY
+GLES2ProgramPathFragmentInputGenCHROMIUM(GLuint program,
+                                         GLint location,
+                                         GLenum genMode,
+                                         GLint components,
+                                         const GLfloat* coeffs) {
+  gles2::GetGLContext()->ProgramPathFragmentInputGenCHROMIUM(
+      program, location, genMode, components, coeffs);
+}
 GLenum GL_APIENTRY GLES2GetGraphicsResetStatusKHR() {
   return gles2::GetGLContext()->GetGraphicsResetStatusKHR();
 }
@@ -2939,6 +2954,16 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glStencilThenCoverStrokePathInstancedCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glStencilThenCoverStrokePathInstancedCHROMIUM),
+    },
+    {
+        "glBindFragmentInputLocationCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glBindFragmentInputLocationCHROMIUM),
+    },
+    {
+        "glProgramPathFragmentInputGenCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glProgramPathFragmentInputGenCHROMIUM),
     },
     {
         "glGetGraphicsResetStatusKHR",

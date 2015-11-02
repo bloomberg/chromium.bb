@@ -899,6 +899,17 @@ glStencilThenCoverStrokePathInstancedCHROMIUM(GLsizei numPaths,
                                               GLenum coverMode,
                                               GLenum transformType,
                                               const GLfloat* transformValues);
+GL_APICALL void GL_APIENTRY
+glBindFragmentInputLocationCHROMIUM(GLuint program,
+                                    GLint location,
+                                    const char* name);
+GL_APICALL void GL_APIENTRY
+glProgramPathFragmentInputGenCHROMIUM(GLuint program,
+                                      GLint location,
+                                      GLenum genMode,
+                                      GLint components,
+                                      const GLfloat* coeffs);
+
 #endif
 
 typedef void(GL_APIENTRYP PFNGLMATRIXLOADFCHROMIUMPROC)(GLenum matrixMode,
@@ -1000,6 +1011,16 @@ typedef void(GL_APIENTRYP PFNGLSTENCILTHENCOVERSTROKEPATHINSTANCEDCHROMIUMPROC)(
     GLenum coverMode,
     GLenum transformType,
     const GLfloat* transformValues);
+typedef void(GL_APIENTRYP PFNGLBINDFRAGMENTINPUTLOCATIONCHROMIUMPROC)(
+    GLuint program,
+    GLint location,
+    const char* name);
+typedef void(GL_APIENTRYP PFNGLPROGRAMPATHFRAGMENTINPUTGENCHROMIUMPROC)(
+    GLuint program,
+    GLint location,
+    GLenum genMode,
+    GLint components,
+    const GLfloat* coeffs);
 
 #ifndef GL_CLOSE_PATH_CHROMIUM
 #define GL_CLOSE_PATH_CHROMIUM 0x00
@@ -1033,6 +1054,15 @@ typedef void(GL_APIENTRYP PFNGLSTENCILTHENCOVERSTROKEPATHINSTANCEDCHROMIUMPROC)(
 #endif
 #ifndef GL_FLAT_CHROMIUM
 #define GL_FLAT_CHROMIUM 0x1D00
+#endif
+#ifndef GL_EYE_LINEAR_CHROMIUM
+#define GL_EYE_LINEAR_CHROMIUM 0x2400
+#endif
+#ifndef GL_OBJECT_LINEAR_CHROMIUM
+#define GL_OBJECT_LINEAR_CHROMIUM 0x2401
+#endif
+#ifndef GL_CONSTANT_CHROMIUM
+#define GL_CONSTANT_CHROMIUM 0x8576
 #endif
 #ifndef GL_PATH_STROKE_WIDTH_CHROMIUM
 #define GL_PATH_STROKE_WIDTH_CHROMIUM 0x9075

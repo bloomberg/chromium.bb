@@ -18,6 +18,7 @@ namespace gles2 {
 struct DisallowedFeatures;
 class Buffer;
 class BufferManager;
+class FeatureInfo;
 class MockErrorState;
 class Shader;
 class TextureRef;
@@ -73,6 +74,15 @@ class TestHelper {
     const char* good_name;
   };
 
+  struct VaryingInfo {
+    const char* name;
+    GLint size;
+    GLenum type;
+    GLint fake_location;
+    GLint real_location;
+    GLint desired_location;
+  };
+
   static void SetupContextGroupInitExpectations(
       ::gfx::MockGLInterface* gl,
       const DisallowedFeatures& disallowed_features,
@@ -99,16 +109,34 @@ class TestHelper {
   static void SetupExpectationsForClearingUniforms(
       ::gfx::MockGLInterface* gl, UniformInfo* uniforms, size_t num_uniforms);
 
-  static void SetupShader(
+  static void SetupShaderExpectations(::gfx::MockGLInterface* gl,
+                                      const FeatureInfo* feature_info,
+                                      AttribInfo* attribs,
+                                      size_t num_attribs,
+                                      UniformInfo* uniforms,
+                                      size_t num_uniforms,
+                                      GLuint service_id);
+
+  static void SetupShaderExpectationsWithVaryings(
       ::gfx::MockGLInterface* gl,
-      AttribInfo* attribs, size_t num_attribs,
-      UniformInfo* uniforms, size_t num_uniforms,
+      const FeatureInfo* feature_info,
+      AttribInfo* attribs,
+      size_t num_attribs,
+      UniformInfo* uniforms,
+      size_t num_uniforms,
+      VaryingInfo* varyings,
+      size_t num_varyings,
       GLuint service_id);
 
   static void SetupProgramSuccessExpectations(::gfx::MockGLInterface* gl,
-      AttribInfo* attribs, size_t num_attribs,
-      UniformInfo* uniforms, size_t num_uniforms,
-      GLuint service_id);
+                                              const FeatureInfo* feature_info,
+                                              AttribInfo* attribs,
+                                              size_t num_attribs,
+                                              UniformInfo* uniforms,
+                                              size_t num_uniforms,
+                                              VaryingInfo* varyings,
+                                              size_t num_varyings,
+                                              GLuint service_id);
 
   static void DoBufferData(
       ::gfx::MockGLInterface* gl, MockErrorState* error_state,

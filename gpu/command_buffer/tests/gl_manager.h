@@ -68,6 +68,8 @@ class GLManager : private GpuControl {
     // Whether or not it's ok to lose the context.
     bool context_lost_allowed;
     gles2::ContextType context_type;
+    // Force shader name hashing for all context types.
+    bool force_shader_name_hashing;
   };
   GLManager();
   ~GLManager() override;

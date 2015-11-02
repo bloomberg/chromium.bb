@@ -424,6 +424,11 @@ static const GLenum valid_path_fill_mode_table[] = {
     GL_INVERT, GL_COUNT_UP_CHROMIUM, GL_COUNT_DOWN_CHROMIUM,
 };
 
+static const GLenum valid_path_fragment_input_gen_mode_table[] = {
+    GL_NONE, GL_EYE_LINEAR_CHROMIUM, GL_OBJECT_LINEAR_CHROMIUM,
+    GL_CONSTANT_CHROMIUM,
+};
+
 static const GLenum valid_path_instanced_cover_mode_table[] = {
     GL_CONVEX_HULL_CHROMIUM, GL_BOUNDING_BOX_CHROMIUM,
     GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM,
@@ -1032,6 +1037,9 @@ Validators::Validators()
                       arraysize(valid_path_cover_mode_table)),
       path_fill_mode(valid_path_fill_mode_table,
                      arraysize(valid_path_fill_mode_table)),
+      path_fragment_input_gen_mode(
+          valid_path_fragment_input_gen_mode_table,
+          arraysize(valid_path_fragment_input_gen_mode_table)),
       path_instanced_cover_mode(
           valid_path_instanced_cover_mode_table,
           arraysize(valid_path_instanced_cover_mode_table)),

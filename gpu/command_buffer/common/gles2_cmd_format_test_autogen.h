@@ -5211,6 +5211,41 @@ TEST_F(GLES2FormatTest, StencilThenCoverStrokePathInstancedCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, BindFragmentInputLocationCHROMIUMBucket) {
+  cmds::BindFragmentInputLocationCHROMIUMBucket& cmd =
+      *GetBufferAs<cmds::BindFragmentInputLocationCHROMIUMBucket>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLint>(12), static_cast<uint32_t>(13));
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::BindFragmentInputLocationCHROMIUMBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.location);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.name_bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, ProgramPathFragmentInputGenCHROMIUM) {
+  cmds::ProgramPathFragmentInputGenCHROMIUM& cmd =
+      *GetBufferAs<cmds::ProgramPathFragmentInputGenCHROMIUM>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLint>(12),
+              static_cast<GLenum>(13), static_cast<GLint>(14),
+              static_cast<uint32_t>(15), static_cast<uint32_t>(16));
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::ProgramPathFragmentInputGenCHROMIUM::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.location);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.genMode);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.components);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.coeffs_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.coeffs_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, BlendBarrierKHR) {
   cmds::BlendBarrierKHR& cmd = *GetBufferAs<cmds::BlendBarrierKHR>();
   void* next_cmd = cmd.Set(&cmd);

@@ -362,47 +362,44 @@ TEST_F(GLES2UtilTest, GetChannelsForCompressedFormat) {
       GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
 }
 
-namespace {
-
-void CheckParseUniformName(
-    const char* name,
-    bool expected_success,
-    size_t expected_array_pos,
-    int expected_index,
-    bool expected_getting_array) {
-  int index = 1234;
-  size_t array_pos = 1244;
-  bool getting_array = false;
-  bool success = GLES2Util::ParseUniformName(
-      name, &array_pos, &index, &getting_array);
-  EXPECT_EQ(expected_success, success);
-  if (success) {
-    EXPECT_EQ(expected_array_pos, array_pos);
-    EXPECT_EQ(expected_index, index);
-    EXPECT_EQ(expected_getting_array, getting_array);
+TEST_F(GLES2UtilTest, GLSLArrayNameParsingNotArray) {
+  const char* kNotArrayNames[] = {
+      "u_name",     "u_name[]",    "u_name]", "u_name[0a]",
+      "u_name[a0]", "u_name[0a0]", "[3]",     ""};
+  for (auto name : kNotArrayNames) {
+    GLSLArrayName parsed_name(name);
+    EXPECT_FALSE(parsed_name.IsArrayName());
   }
 }
 
-}  // anonymous namespace
-
-TEST_F(GLES2UtilTest, ParseUniformName) {
-  CheckParseUniformName("u_name", true, std::string::npos, 0, false);
-  CheckParseUniformName("u_name[]", false, std::string::npos, 0, false);
-  CheckParseUniformName("u_name]", false, std::string::npos, 0, false);
-  CheckParseUniformName("u_name[0a]", false, std::string::npos, 0, false);
-  CheckParseUniformName("u_name[a0]", false, std::string::npos, 0, false);
-  CheckParseUniformName("u_name[0a0]", false, std::string::npos, 0, false);
-  CheckParseUniformName("u_name[0]", true, 6u, 0, true);
-  CheckParseUniformName("u_name[2]", true, 6u, 2, true);
-  CheckParseUniformName("u_name[02]", true, 6u, 2, true);
-  CheckParseUniformName("u_name[20]", true, 6u, 20, true);
-  CheckParseUniformName("u_name[020]", true, 6u, 20, true);
-  CheckParseUniformName("u_name[0][0]", true, 9u, 0, true);
-  CheckParseUniformName("u_name[3][2]", true, 9u, 2, true);
-  CheckParseUniformName("u_name[03][02]", true, 10u, 2, true);
-  CheckParseUniformName("u_name[30][20]", true, 10u, 20, true);
-  CheckParseUniformName("u_name[030][020]", true, 11u, 20, true);
-  CheckParseUniformName("", false, std::string::npos, 0, false);
+TEST_F(GLES2UtilTest, GLSLArrayNameParsing) {
+  struct {
+    const char* name;
+    const char* base_name;
+    int element_index;
+  } testcases[] = {{"u_name[0]", "u_name", 0},
+                   {"u_name[2]", "u_name", 2},
+                   {
+                       "u_name[02]", "u_name", 2,
+                   },
+                   {
+                       "u_name[20]", "u_name", 20,
+                   },
+                   {"u_name[020]", "u_name", 20},
+                   {"u_name[0][0]", "u_name[0]", 0},
+                   {"u_name[3][2]", "u_name[3]", 2},
+                   {"u_name[03][02]", "u_name[03]", 2},
+                   {"u_name[30][20]", "u_name[30]", 20},
+                   {"u_name[030][020]", "u_name[030]", 20}};
+  for (auto& testcase : testcases) {
+    GLSLArrayName parsed_name(testcase.name);
+    EXPECT_TRUE(parsed_name.IsArrayName());
+    if (!parsed_name.IsArrayName()) {
+      continue;
+    }
+    EXPECT_EQ(testcase.base_name, parsed_name.base_name());
+    EXPECT_EQ(testcase.element_index, parsed_name.element_index());
+  }
 }
 
 }  // namespace gles2

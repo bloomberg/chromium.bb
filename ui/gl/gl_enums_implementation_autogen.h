@@ -454,6 +454,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x300E, "GL_CONTEXT_LOST",
     },
     {
+        0x2400, "GL_EYE_LINEAR_CHROMIUM",
+    },
+    {
         0x90a3, "GL_SQUARE_CHROMIUM",
     },
     {
@@ -1319,6 +1322,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x8A39, "GL_UNIFORM_NAME_LENGTH",
+    },
+    {
+        0x8576, "GL_CONSTANT_CHROMIUM",
     },
     {
         0x8E2C, "GL_DEPTH_COMPONENT16_NONLINEAR_NV",
@@ -2912,6 +2918,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x00008000, "GL_COVERAGE_BUFFER_BIT_NV",
+    },
+    {
+        0x2401, "GL_OBJECT_LINEAR_CHROMIUM",
     },
     {
         0x1506, "GL_XOR_NV",

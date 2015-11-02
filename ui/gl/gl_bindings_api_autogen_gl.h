@@ -368,10 +368,28 @@ void glGetProgramInfoLogFn(GLuint program,
                            GLsizei bufsize,
                            GLsizei* length,
                            char* infolog) override;
+void glGetProgramInterfaceivFn(GLuint program,
+                               GLenum programInterface,
+                               GLenum pname,
+                               GLint* params) override;
 void glGetProgramivFn(GLuint program, GLenum pname, GLint* params) override;
+void glGetProgramResourceivFn(GLuint program,
+                              GLenum programInterface,
+                              GLuint index,
+                              GLsizei propCount,
+                              const GLenum* props,
+                              GLsizei bufSize,
+                              GLsizei* length,
+                              GLint* params) override;
 GLint glGetProgramResourceLocationFn(GLuint program,
                                      GLenum programInterface,
                                      const char* name) override;
+void glGetProgramResourceNameFn(GLuint program,
+                                GLenum programInterface,
+                                GLuint index,
+                                GLsizei bufSize,
+                                GLsizei* length,
+                                GLchar* name) override;
 void glGetQueryivFn(GLenum target, GLenum pname, GLint* params) override;
 void glGetQueryObjecti64vFn(GLuint id, GLenum pname, GLint64* params) override;
 void glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) override;
@@ -503,6 +521,11 @@ void glProgramBinaryFn(GLuint program,
                        const GLvoid* binary,
                        GLsizei length) override;
 void glProgramParameteriFn(GLuint program, GLenum pname, GLint value) override;
+void glProgramPathFragmentInputGenNVFn(GLuint program,
+                                       GLint location,
+                                       GLenum genMode,
+                                       GLint components,
+                                       const GLfloat* coeffs) override;
 void glPushGroupMarkerEXTFn(GLsizei length, const char* marker) override;
 void glQueryCounterFn(GLuint id, GLenum target) override;
 void glReadBufferFn(GLenum src) override;

@@ -1138,6 +1138,16 @@ void GLES2InterfaceStub::StencilThenCoverStrokePathInstancedCHROMIUM(
     GLenum /* coverMode */,
     GLenum /* transformType */,
     const GLfloat* /* transformValues */) {}
+void GLES2InterfaceStub::BindFragmentInputLocationCHROMIUM(
+    GLuint /* program */,
+    GLint /* location */,
+    const char* /* name */) {}
+void GLES2InterfaceStub::ProgramPathFragmentInputGenCHROMIUM(
+    GLuint /* program */,
+    GLint /* location */,
+    GLenum /* genMode */,
+    GLint /* components */,
+    const GLfloat* /* coeffs */) {}
 GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
   return 0;
 }
