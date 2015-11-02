@@ -1537,7 +1537,7 @@ DEFINE_TRACE(StyleResolver)
     visitor->trace(m_siblingRuleSet);
     visitor->trace(m_uncommonAttributeRuleSet);
     visitor->trace(m_watchedSelectorsRules);
-    visitor->trace(m_treeBoundaryCrossingRules);
+    visitor->trace(m_treeBoundaryCrossingScopes);
     visitor->trace(m_styleResourceLoader);
     visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);
