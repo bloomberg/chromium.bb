@@ -137,6 +137,8 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
+<translation id="5626352146162055517"><ph name="SITE" /> 通常會使用加密方式保護您的資訊。目前當 Chrome 嘗試連線到 <ph name="SITE" /> 時，該網站會傳回異常且錯誤的憑證。
+這可能是因為有攻擊者試圖偽裝成 <ph name="SITE" />，或是 Wi-Fi 登入畫面造成連線中斷。請放心，Chrome 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>

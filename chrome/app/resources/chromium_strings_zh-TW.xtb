@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
 <translation id="2910007522516064972">關於 Chromium(&amp;C)</translation>
 <translation id="2966088006374919794">Chromium 需要啟用外部應用程式才能處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> 通常會使用加密方式保護您的資訊。目前當 Chromium 嘗試連線到 <ph name="SITE" /> 時，該網站會傳回異常且錯誤的憑證。
+這可能是因為有攻擊者試圖偽裝成 <ph name="SITE" />，或是 Wi-Fi 登入畫面造成連線中斷。請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
 <translation id="3046695367536568084">您必須登入 Chromium 才能使用應用程式。在登入狀態下，Chromium 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
 <translation id="3068515742935458733">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美</translation>

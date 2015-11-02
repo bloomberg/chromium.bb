@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Прегледајте картице са другим недавним апликацијама на екрану Преглед на телефону.</translation>
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. од <ph name="TOTAL_RESULTS" /> резултата</translation>
+<translation id="2095887075102408547">Када укључите ову функцију, Chrome користи Google сервере да би компримовао странице које посећујете пре него што их преузме. Google неће оптимизовати нити видети странице којима приступате помоћу приватних веза (HTTPS) или на картицама Без архивирања.</translation>
 <translation id="2100273922101894616">Аутоматско пријављивање</translation>
 <translation id="2126426811489709554">Омогућава Chrome</translation>
 <translation id="213279576345780926">Затворили сте картицу <ph name="TAB_TITLE" /></translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Приступа се аудио и видео улазу</translation>
 <translation id="3102119246920354026">Кеш</translation>
 <translation id="3137521801621304719">Изађи из режима без архивирања</translation>
-<translation id="3158619413803296679">Изабери обележивач</translation>
 <translation id="3190152372525844641">Укључите дозволе за Chrome у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сачуваних података</translation>
 <translation id="3207960819495026254">Обележено</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Обележите ову страницу</translation>
 <translation id="326254929494722411">Још увек нисте подесили Google налог на овом уређају</translation>
 <translation id="3269093882174072735">Учитај слику</translation>
+<translation id="3278850099957560514">Уштедите новац на подацима тако што ћете помоћу Google-а оптимизовати странице које посећујете. Google неће оптимизовати нити видети странице којима приступате помоћу приватних веза (HTTPS) или на картицама Без архивирања.</translation>
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
 <translation id="3287852534598822456">Обележивач више не постоји. Освежите.</translation>
 <translation id="3303414029551471755">Желите ли да наставите са преузимањем садржаја?</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">Сепија</translation>
 <translation id="4059119910594077751">Додирните дугме Назад да бисте изашли из режима целог екрана.</translation>
 <translation id="4062305924942672200">Правне информације</translation>
-<translation id="4084682180776658562">Обележивач</translation>
 <translation id="4089831646916293264">Ова функција може да омета приступ премијум услугама за пренос података које пружа мобилни оператер.</translation>
 <translation id="4099578267706723511">Побољшајте Chrome слањем статистике коришћења и извештаја о отказивању Google-у.</translation>
 <translation id="411254640334432676">Преузимање није успело.</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">Затвори картице без архив.</translation>
 <translation id="5556459405103347317">Учитај поново</translation>
 <translation id="5565871407246142825">Кредитне картице</translation>
+<translation id="5578795271662203820">Потражи ову слику на <ph name="SEARCH_ENGINE" />-у</translation>
 <translation id="5595485650161345191">Измена адресе</translation>
 <translation id="5596627076506792578">Још опција</translation>
 <translation id="5626134646977739690">Име:</translation>
@@ -461,6 +462,7 @@
 <translation id="7765158879357617694">Премести</translation>
 <translation id="7767746238359002192">Посетите страницу да бисте је сачували офлајн</translation>
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
+<translation id="7784213092572143271">Страница је сачувана</translation>
 <translation id="7788788617745289808">Chrome-у је потребан приступ за камеру да би га делио са овим сајтом.</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, хвала</translation>
@@ -541,6 +543,7 @@
 <translation id="885701979325669005">Складишни простор</translation>
 <translation id="886510833909353412">Шифруј све помоћу приступне фразе</translation>
 <translation id="8872441722924401214">Изаберите сертификат за потврду аутентичности</translation>
+<translation id="8891135217544884558">URL-ови у околини</translation>
 <translation id="8901170036886848654">Није пронађен ниједан обележивач</translation>
 <translation id="8909135823018751308">Дели...</translation>
 <translation id="8912362522468806198">Google налога</translation>

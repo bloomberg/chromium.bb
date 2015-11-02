@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Xem các tab của bạn với các ứng dụng gần đây khác trên màn hình Tổng quan của điện thoại.</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Khi bạn bật tính năng này, Chrome sẽ sử dụng máy chủ Google để nén các trang mà bạn truy cập trước khi tải trang xuống. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng kết nối riêng tư (HTTPS) hoặc trong tab ẩn danh.</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
 <translation id="2126426811489709554">Được hỗ trợ bởi Chrome</translation>
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Đang truy cập thiết bị đầu vào video và âm thanh</translation>
 <translation id="3102119246920354026">Bộ nhớ cache</translation>
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
-<translation id="3158619413803296679">Chọn dấu trang</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> dữ liệu được lưu trữ</translation>
 <translation id="3207960819495026254">Đã được đánh dấu trang</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
 <translation id="326254929494722411">Bạn chưa thiết lập tài khoản Google trên thiết bị này</translation>
 <translation id="3269093882174072735">Tải hình ảnh</translation>
+<translation id="3278850099957560514">Dùng ít dữ liệu hơn bằng cách sử dụng Google để tối ưu hóa các trang bạn truy cập. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng kết nối riêng tư (HTTPS) hoặc trong tab ẩn danh.</translation>
 <translation id="3282568296779691940">Đăng nhập Chrome</translation>
 <translation id="3287852534598822456">Dấu trang không còn tồn tại. Vui lòng làm mới.</translation>
 <translation id="3303414029551471755">Tiếp tục tải xuống nội dung?</translation>
@@ -187,7 +188,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
 <translation id="4059119910594077751">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
-<translation id="4084682180776658562">Dấu trang</translation>
 <translation id="4089831646916293264">Tính năng này có thể ảnh hưởng đến quyền truy cập vào các dịch vụ dữ liệu cao cấp được nhà cung cấp dịch vụ của bạn cung cấp.</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="411254640334432676">Tải xuống không thành công.</translation>
@@ -293,6 +293,7 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5530766185686772672">Đóng tab ẩn danh</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5565871407246142825">Thẻ tín dụng</translation>
+<translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
 <translation id="5626134646977739690">Tên:</translation>
@@ -461,6 +462,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7767746238359002192">Truy cập trang để lưu bản sao ngoại tuyến</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
+<translation id="7784213092572143271">Đã lưu trang</translation>
 <translation id="7788788617745289808">Chrome cần quyền truy cập máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
@@ -541,6 +543,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="885701979325669005">Dung lượng</translation>
 <translation id="886510833909353412">Mã hóa tất cả bằng cụm mật khẩu</translation>
 <translation id="8872441722924401214">Chọn chứng chỉ để xác thực</translation>
+<translation id="8891135217544884558">URL lân cận</translation>
 <translation id="8901170036886848654">Không tìm thấy dấu trang</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>

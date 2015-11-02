@@ -193,6 +193,7 @@
 <translation id="7823564328645135659">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
 <translation id="785750925697875037">Просмотр мобильного аккаунта</translation>
 <translation id="7864539943188674973">Отключить Bluetooth</translation>
+<translation id="7893838033650689677">Включить Wi-Fi</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7957227661277029961">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено. Рекомендуем использовать оригинальное зарядное устройство.</translation>
 <translation id="7982789257301363584">Сеть</translation>

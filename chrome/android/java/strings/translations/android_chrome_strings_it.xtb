@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Visualizza le tue schede insieme ad altre app recenti nella schermata Panoramica del telefono.</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Quando questa funzione è attiva, Chrome utilizza i server di Google per comprimere le pagine che visiti prima di scaricarle. Le pagine visitate utilizzando connessioni private (HTTPS) o in schede di navigazione in incognito non vengono ottimizzate o viste da Google.</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="2126426811489709554">Con tecnologia Chrome</translation>
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Accesso all'input audio e video in corso</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
-<translation id="3158619413803296679">Scegli un Preferito</translation>
 <translation id="3190152372525844641">Abilita le autorizzazioni per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> di dati memorizzati</translation>
 <translation id="3207960819495026254">Aggiunto ai Preferiti</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
 <translation id="326254929494722411">Non hai ancora configurato un account Google sul dispositivo</translation>
 <translation id="3269093882174072735">Carica immagine</translation>
+<translation id="3278850099957560514">Consuma meno dati utilizzando Google per ottimizzare le pagine che visiti. Le pagine visitate utilizzando connessioni private (HTTPS) o in schede di navigazione in incognito non vengono ottimizzate o viste da Google.</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3287852534598822456">Il Preferito non esiste più. Aggiorna.</translation>
 <translation id="3303414029551471755">Procedere al download dei contenuti?</translation>
@@ -187,7 +188,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4056223980640387499">Seppia</translation>
 <translation id="4059119910594077751">Tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="4062305924942672200">Informazioni legali</translation>
-<translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="4089831646916293264">Questa funzione potrebbe interferire con l'accesso ai servizi di dati premium forniti dal tuo operatore.</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="411254640334432676">Download non riuscito.</translation>
@@ -293,6 +293,7 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5530766185686772672">Chiudi schede in incognito</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5565871407246142825">Carte di credito</translation>
+<translation id="5578795271662203820">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Modifica indirizzo</translation>
 <translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="5626134646977739690">Nome:</translation>
@@ -461,6 +462,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="7767746238359002192">Visita la pagina da salvare offline</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
+<translation id="7784213092572143271">Pagina salvata</translation>
 <translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="780301667611848630">No grazie</translation>
@@ -541,6 +543,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="885701979325669005">Memoria</translation>
 <translation id="886510833909353412">Cripta tutto con passphrase</translation>
 <translation id="8872441722924401214">Scegli certificato per l'autenticazione</translation>
+<translation id="8891135217544884558">URL vicini</translation>
 <translation id="8901170036886848654">Nessun Preferito trovato</translation>
 <translation id="8909135823018751308">Condividi…</translation>
 <translation id="8912362522468806198">Google Account</translation>

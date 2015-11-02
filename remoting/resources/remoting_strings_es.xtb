@@ -148,6 +148,7 @@ Chromoting</translation>
 <translation id="4573676252416618192">Host de Escritorio
 remoto de Chrome</translation>
 <translation id="4619978527973181021">Aceptar e instalar</translation>
+<translation id="4647791084836149355">Mostrar vista de Cardboard</translation>
 <translation id="4703799847237267011">Ha finalizado tu sesión en Chromoting.</translation>
 <translation id="4736223761657662401">Historial de conexiones</translation>
 <translation id="4741792197137897469">Error de autenticación. Vuelve a iniciar sesión en Chrome.</translation>
@@ -206,6 +207,7 @@ remoto de Chrome</translation>
 <translation id="6284412385303060032">Se ha cerrado el host que se ejecuta en la pantalla de inicio de sesión de la consola para poder admitir el modo de cortina. Para ello, se ha cambiado a un host que se ejecuta en una sesión específica de usuario.</translation>
 <translation id="629730747756840877">Cuenta</translation>
 <translation id="6304318647555713317">Cliente</translation>
+<translation id="6324708100353784493">Has habilitado el modo de integración de Google Cardboard. Para utilizar este modo, introduce el dispositivo en un visor que admita Google Cardboard.</translation>
 <translation id="6381670701864002291">Otro problema.</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
 <translation id="6441316101718669559">La integración del escritorio no se admite en esta plataforma. Puedes seguir utilizando la aplicación, pero la experiencia de usuario se verá afectada.</translation>

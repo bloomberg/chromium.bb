@@ -148,6 +148,7 @@
 <translation id="4573676252416618192">Chrome 遠端
 桌面主機</translation>
 <translation id="4619978527973181021">接受並安裝</translation>
+<translation id="4647791084836149355">顯示 Cardboard 畫面</translation>
 <translation id="4703799847237267011">您的 Chromoting 工作階段已結束。</translation>
 <translation id="4736223761657662401">連線紀錄</translation>
 <translation id="4741792197137897469">驗證失敗，請重新登入 Chrome。</translation>
@@ -206,6 +207,7 @@
 <translation id="6284412385303060032">在控制台登入畫面執行的主機已關閉。這樣才能切換成在個別使用者工作階段中執行的主機，以支援帷幕模式。</translation>
 <translation id="629730747756840877">帳戶</translation>
 <translation id="6304318647555713317">用戶端</translation>
+<translation id="6324708100353784493">您已啟用 Google Cardboard 整合模式。如要使用這個模式，請將您的裝置插入與 Google Cardboard 相容的檢視器。</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="6441316101718669559">這個平台不支援桌面整合。您仍然可以使用該應用程式，但使用者體驗可能不如預期。</translation>

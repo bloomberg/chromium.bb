@@ -84,6 +84,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
+<translation id="1445397020763995734">Kontotyp zur Aushandlung der HTTP-Authentifizierung</translation>
 <translation id="1454846751303307294">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript untersagt ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="1464848559468748897">Steuert das Nutzerverhalten in einer Sitzung mit mehreren Profilen auf Geräten mit <ph name="PRODUCT_OS_NAME" />
 
@@ -149,6 +150,11 @@
       Ist diese Richtlinie nicht konfiguriert, werden keine Nutzungsbedingungen angezeigt.
 
       In der Richtlinie muss eine URL angegeben werden, von der <ph name="PRODUCT_OS_NAME" /> die Nutzungsbedingungen herunterladen kann. Die Nutzungsbedingungen müssen als unformatierter Text mit dem MIME-Typ "text/plain" vorliegen. Markups sind nicht zulässig.</translation>
+<translation id="1757339646969878244">Konfigurieren Sie die Optionen für den Remote-Zugriff im Chrome Remote Desktop-Host.
+
+Der Chrome Remote Desktop-Host ist ein nativer Dienst, der auf dem Zielgerät ausgeführt wird, auf das ein Nutzer über die Chrome Remote Desktop-Anwendung zugreifen kann. Der native Dienst wird separat vom Browser <ph name="PRODUCT_NAME" /> gepackt und ausgeführt.
+
+Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installiert ist.</translation>
 <translation id="1757688868319862958">Ermöglicht <ph name="PRODUCT_NAME" /> die Ausführung von Plug-ins, für die eine Autorisierung erforderlich ist. Wenn Sie diese Einstellung aktivieren, werden nicht veraltete Plug-ins immer ausgeführt. Ist diese Einstellung deaktiviert oder nicht eingerichtet, müssen die Nutzer der Ausführung der Plug-ins zustimmen, die eine Autorisierung benötigen. Diese Plug-ins können ein Sicherheitsrisiko darstellen.</translation>
 <translation id="1803646570632580723">Liste der in der Übersicht angezeigten Apps ansehen</translation>
 <translation id="1808715480127969042">Cookies auf diesen Websites blockieren</translation>
@@ -208,6 +214,11 @@
 <translation id="2006530844219044261">Energieverwaltung</translation>
 <translation id="201557587962247231">Häufigkeit von Uploads mit Berichten zum Gerätestatus</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
+<translation id="206623763829450685">Gibt an, welche HTTP-Authentifizierungsschemas von <ph name="PRODUCT_NAME" /> unterstützt werden.
+
+          Mögliche Werte sind "basic", "digest", "ntlm" und "negotiate". Trennen Sie mehrere Werte durch Kommas.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, kommen alle vier Schemas zum Einsatz.</translation>
 <translation id="2067011586099792101">Zugriff auf Websites außerhalb von Inhaltspaketen blockieren</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="2077273864382355561">Verzögerung für die Bildschirmabschaltung im Akkubetrieb</translation>
@@ -516,6 +527,38 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Einstellung aktiviert ist, werden alle Seiten der Captive-Portal-Authentifizierung – also alle Webseiten ab der Anmeldeseite, bis <ph name="PRODUCT_NAME" /> eine funktionierende Internetverbindung erkennt – in einem separaten Fenster angezeigt und alle Richtlinieneinstellungen und -beschränkungen für den aktuellen Nutzer ignoriert.
 
       Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden alle Seiten der Captive-Portal-Authentifizierung auf einem regulären neuen Browsertab angezeigt und es kommen die Proxy-Einstellungen des aktuellen Nutzers zum Einsatz.</translation>
+<translation id="3001569025430882724">Überschreibt die Regeln von <ph name="PRODUCT_NAME" /> zur Auswahl des Standarddruckers.
+
+      Diese Richtlinie legt die Regeln für die Auswahl des Standarddruckers in <ph name="PRODUCT_NAME" /> fest. Diese Auswahl erfolgt, wenn in einem Profil zum ersten Mal die Druckfunktion genutzt wird.
+
+      Wenn diese Richtlinie konfiguriert ist, sucht <ph name="PRODUCT_NAME" /> einen passenden Drucker, der alle angegebenen Merkmale aufweist, und wählt diesen als Standarddrucker aus. Der erste Drucker, der die Richtlinie erfüllt, wird ausgewählt. Falls keine eindeutige Übereinstimmung gefunden wird, kann jeder übereinstimmende Drucker ausgewählt werden. Das hängt von der Reihenfolge ab, in der die Drucker gefunden werden.
+
+      Wenn diese Richtlinie nicht konfiguriert wurde oder kein passender Drucker innerhalb des Zeitlimits gefunden wird, wird als Standarddrucker der integrierte PDF-Drucker oder – falls dieser nicht verfügbar ist – gar kein Drucker ausgewählt.
+
+      Der Wert wird als JSON-Objekt gemäß des folgenden Schemas geparst:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Suche nach dem passenden Drucker auf eine bestimmte Reihe von Druckern beschränken?",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regulärer Ausdruck für Drucker-ID",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulärer Ausdruck für den angezeigten Namen des Druckers",
+            "type": "string"
+          }
+        }
+      }
+
+      Die mit Google Cloud Print verbundenen Drucker werden als "cloud" bezeichnet. Die anderen Drucker werden als "local" klassifiziert.
+      Wird ein Feld ausgelassen, bedeutet das, alle Werte stimmen überein. Beispiel: Wenn Sie keinen Wert für die Konnektivität angeben, wird die Erkennung sämtlicher Druckertypen, "local" und "cloud", über die Druckvorschau gestartet.
+      Die Muster für reguläre Ausdrücke müssen der JavaScript-RegExp-Syntax folgen und die Groß-/Kleinschreibung ist zu beachten.</translation>
 <translation id="3021409116652377124">Plug-in-Suchfunktion deaktivieren</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
@@ -540,6 +583,38 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
 <translation id="3153348162326497318">Ermöglicht Ihnen zu bestimmen, welche Erweiterungen Nutzer nicht installieren dürfen. Bereits installierte Erweiterungen werden entfernt, wenn sie auf die schwarze Liste gesetzt werden. Der Wert "*" in einer schwarzen Liste bedeutet, dass alle Erweiterungen auf die schwarze Liste gesetzt sind. Ausnahmen bilden lediglich solche, die ausdrücklich in der Whitelist geführt sind. Wenn die Richtlinie nicht konfiguriert ist, so ist es dem Nutzer gestattet, beliebige Erweiterungen in <ph name="PRODUCT_NAME" /> zu installieren.</translation>
 <translation id="316778957754360075">Diese Einstellung wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet. Zur Einrichtung einer Sammlung mit Erweiterungen oder Apps, die von der Organisation gehostet wird, empfehlen wir, die Host-Website der CRX-Pakete in "ExtensionInstallSources" einzufügen und auf einer Webseite direkte Downloadlinks zu den Paketen bereitzustellen. Ein Launcher für diese Webseite kann mithilfe der Richtlinie "ExtensionInstallForcelist" erstellt werden.</translation>
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />
+
+          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von bestehenden auf Erweiterungen bezogenen Richtlinien geregelt werden. Diese Richtlinie überschreibt ältere Richtlinien, wenn beide konfiguriert sind.
+
+          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "*" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine Standardkonfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
+
+          Bei der Konfiguration für jede Erweiterung (oder Erweiterungen mit der gleichen Update-URL) handelt es sich um ein weiteres Wörterbuch, das die im Folgenden genannten Felder enthalten kann:
+
+          "installation_mode": Verweist auf eine Zeichenfolge, die den Installationsmodus für die Erweiterung angibt. Folgende Zeichenfolgen sind gültig:
+          * "allowed": Lässt die Installation der Erweiterung durch den Nutzer zu. Dies ist das Standardverhalten.
+          * "blocked": Blockiert die Installation der Erweiterung.
+          * "force_installed": Die Erweiterung wird automatisch installiert und kann nicht vom Nutzer entfernt werden.
+          * "normal_installed": Die Erweiterung wird automatisch installiert, kann aber vom Nutzer deaktiviert werden.
+
+          Das Feld "installation_mode" kann auch für mehrere Erweiterungen konfiguriert werden, einschließlich der Erweiterung "*" (als Standardeinstellungen) und Erweiterungen mit der gleichen Update-URL. In diesem Fall können nur die Werte "allowed" und "blocked" verwendet werden
+
+          Wenn der Modus "force_installed" oder "normal_installed" festgelegt ist, muss auch "update_url" konfiguriert werden. Die in dieser Richtlinie festgelegte Update-URL wird nur für die Erstinstallation verwendet. Bei späteren Aktualisierungen der Erweiterungen wird die im Manifest der Erweiterung angegebene Update-URL verwendet. Die Update-URL muss wie oben erwähnt auf ein XML-Dokument zur Aktualisierung eines Manifests verweisen.
+
+          "blocked_permissions": Verweist auf eine Liste mit Zeichenfolgen, in denen die Berechtigungen für blockierte APIs für die Erweiterung angegeben sind. Die Namen der Berechtigungen sind identisch mit den im Manifest angegebenen Zeichenfolgen der Berechtigung, wie unter <ph name="LINK_TO_EXTENSION_DOC3" /> erläutert. Diese Einstellung kann auch für die Erweiterung "*" konfiguriert werden. Wenn die Erweiterung eine Berechtigung erfordert, die auf der Blockierungsliste steht, kann sie nicht geladen werden. Wenn sie eine blockierte Berechtigung als optionale Anforderung enthält, wird sie normal behandelt, allerdings werden Anforderungen in Konflikt stehender Berechtigungen automatisch zur Laufzeit abgelehnt.
+
+          "allowed_permissions": Ähnlich wie "blocked_permissions", nur werden einige Berechtigungen explizit zugelassen, die möglicherweise von der globalen Liste der blockierten Berechtigungen blockiert werden und daher nicht für die Erweiterung "*" konfiguriert werden können. Mit dieser Einstellung erhalten Erweiterungen jedoch nicht automatisch gewährte Berechtigungen.
+
+          "minimum_version_required": Verweist auf eine Versionszeichenfolge. Das Format der Versionszeichenfolge ist mit dem im Manifest der Erweiterung verwendeten Format identisch, wie unter <ph name="LINK_TO_EXTENSION_DOC4" /> erläutert. Eine Erweiterung mit einer älteren Version als der angegebenen Mindestversion wird deaktiviert. Dies gilt auch für Erweiterungen, deren Installation erzwungen wurde.
+
+          Die folgenden Einstellungen können nur für die "*"-Standardkonfiguration verwendet werden:
+
+          "install_sources": Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe https://developer.chrome.com/extensions/match_patterns). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer ihn ganz einfach über diese URL installieren. Sowohl der Speicherort der CRX-Datei als auch die Seite, über die der Download gestartet wird (der Referrer), müssen durch diese Muster zugelassen sein.
+
+          "allowed_types": Mit dieser Einstellung werden die zulässigen Typen von Erweiterungen/Apps, die in <ph name="PRODUCT_NAME" /> installiert werden können, auf die weiße Liste gesetzt.  Der Wert besteht aus einer Liste mit folgenden Zeichenfolgen: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu den Erweiterungen in <ph name="PRODUCT_NAME" />.
+
+          Diese Richtlinie ist noch nicht einsatzbereit. Verwenden Sie sie daher bitte nicht.
+          </translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
 <translation id="3206731874112238027">Druckvorschau deaktivieren (eingestellt)</translation>
 <translation id="3213821784736959823">Legt fest, ob der integrierte DNS-Client von <ph name="PRODUCT_NAME" /> verwendet werden soll.
@@ -715,9 +790,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 <translation id="402759845255257575">Ausführung von JavaScript für keine Website zulassen</translation>
 <translation id="4027608872760987929">Standardsuchmaschine aktivieren</translation>
 <translation id="4039085364173654945">Bestimmt, ob untergeordnete Inhalte von Drittanbietern auf einer Seite in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen. In der Regel ist dies zur Abwehr gegen Phishing deaktiviert. Wenn die Richtlinie nicht konfiguriert ist, so ist die Einstellung standardmäßig deaktiviert, sodass untergeordnete Inhalte von Drittanbietern nicht in einem HTTP-Basic-Authentifizierungs-Pop-up erscheinen dürfen.</translation>
-<translation id="4043912146394966243"> Die Verbindungstypen, die für Betriebssystemaktualisierungen zulässig sind. Betriebssystemaktualisierungen beanspruchen die Verbindung aufgrund ihrer Größe potenziell stark und können zusätzliche Kosten verursachen. Deshalb sind sie für als kostenintensiv geltende Verbindungstypen standardmäßig nicht aktiviert. Dazu gehören derzeit beispielsweise WiMax, Bluetooth und Mobilfunkverbindungen.
-
-      Zu den erkannten Verbindungstypkennungen gehören "ethernet", "wifi", "wimax", "bluetooth" und "cellular".</translation>
 <translation id="4052765007567912447">Bestimmt, ob Nutzer Passwörter im Passwortmanager in Klartext abrufen können. Wenn Sie diese Einstellung deaktivieren, können sich Nutzer Passwörter im Passwortmanagerfenster nicht in Klartext anzeigen lassen. Sollten Sie sie aktivieren oder nicht konfigurieren, so können Nutzer ihre Passwörter im Passwortmanager in Klartext einsehen.</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
 <translation id="4088589230932595924">Inkognitomodus erzwungen</translation>
@@ -766,8 +838,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 oder höher</translation>
 <translation id="4325690621216251241">Schaltfläche "Abmelden" zur Taskleiste hinzufügen</translation>
-<translation id="4337944790873898250">Wenn für diese Richtlinie "true" festgelegt ist, maximiert <ph name="PRODUCT_NAME" /> beim ersten Start das erste angezeigte Fenster, ohne Ausnahme.
-      Wird für die Richtlinie auf "false" festgelegt oder wird sie nicht konfiguriert, entscheidet eine Heuristik auf Grundlage der Bildschirmgröße darüber, ob das erste angezeigte Fenster maximiert wird.</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="4372704773119750918">Nutzer in Unternehmen dürfen keine Mehrfachprofile verwenden (weder als primärer, noch als sekundärer Nutzer)</translation>
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
@@ -779,6 +849,14 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 
       Wird diese Richtlinie konfiguriert, kann der Nutzer sie nicht ändern und die App-Verknüpfung wird entweder immer oder nie angezeigt.</translation>
 <translation id="443665821428652897">Websitedaten beim Schließen des Browsers löschen (veraltet)</translation>
+<translation id="4439336120285389675">Mit dieser Richtlinie kann eine Liste mit eingestellten Webplattformfunktionen festgelegt werden, die vorübergehend wieder aktiviert werden sollen.
+
+      Mit der Richtlinie haben Administratoren die Möglichkeit, eingestellte Webplattformfunktionen für einen begrenzten Zeitraum wieder zu aktivieren. Die Funktionen werden durch ein String-Tag identifiziert und die Funktionen, die den Tags in der Liste entsprechen, die durch diese Richtlinie festgelegt wurde, werden wieder aktiviert.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, die Liste leer ist oder mit keinem unterstützten String-Tag übereinstimmt, bleiben alle eingestellten Webplattformfunktionen deaktiviert.
+
+      Die Richtlinie selbst wird zwar auf den genannten Plattformen unterstützt, die damit aktivierten Funktionen sind aber möglicherweise nicht auf allen Plattformen verfügbar. Nicht alle eingestellten Webplattformfunktionen können wieder aktiviert werden. Nur die nachfolgend ausdrücklich aufgeführten Funktionen können für einen begrenzten Zeitraum wieder aktiviert werden. Der Zeitraum variiert je nach Funktion. Das allgemeine Format des String-Tags lautet [Name der veralteten Funktion]_EffectiveUntil[jjjjmmtt]. Weitere Informationen zu Änderungen an den Webplattformfunktionen erhalten Sie unter http://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Sperre aktivieren, wenn das Gerät inaktiv ist oder angehalten wird</translation>
 <translation id="4445684791305970001">Deaktiviert die Entwickler-Tools und die JavaScript-Konsole. Wenn Sie diese Einstellung aktivieren, besteht kein Zugriff mehr auf die Entwickler-Tools, sodass Website-Elemente nicht mehr überprüft werden können. Jegliche Tastenkombinationen und Menü- und Kontextmenüeinträge zum Öffnen der Entwickler-Tools oder der JavaScript-Konsole werden deaktiviert. Ist diese Option deaktiviert oder nicht konfiguriert, so können die Entwickler-Tools und die JavaScript-Konsole verwendet werden.</translation>
 <translation id="4467952432486360968">Drittanbieter-Cookies blockieren</translation>
@@ -1026,32 +1104,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Ist die Richtlinie nicht festgelegt, wird der Nutzer nicht automatisch angemeldet.</translation>
 <translation id="5535973522252703021">Weiße Liste für Kerberos-Bevollmächtigungs-Server</translation>
-<translation id="553658564206262718">Einstellungen der Energieverwaltung bei Inaktivität des Nutzers konfigurieren
-
-          Mit dieser Richtlinie können Sie mehrere Einstellungen zur Energieverwaltungsstrategie bei Inaktivität des Nutzers festlegen.
-
-          Es gibt vier Aktionen:
-          * Der Bildschirm wird gedimmt, wenn der Nutzer für die unter |ScreenDim| angegebene Zeitdauer inaktiv ist.
-          * Der Bildschirm wird ausgeschaltet, wenn der Nutzer für die unter |ScreenOff| angegebene Zeitdauer inaktiv ist.
-          * Ein Warndialog erscheint, wenn der Nutzer für die unter |IdleWarning| angegebene Zeitdauer inaktiv ist. Mit dem Dialog wird der Nutzer darauf hingewiesen, dass als Nächstes die für die Inaktivität festgelegte Aktion ausgeführt wird.
-          * Die unter |IdleAction| angegebene Aktion wird ausgeführt, wenn der Nutzer für die unter |Idle| angegebene Zeitdauer inaktiv ist.
-
-          Die Verzögerungen müssen in Millisekunden angegeben werden und größer als null sein, um die oben jeweils angegebenen Aktionen auszulösen. Falls die Verzögerung auf null gesetzt wird, wird die entsprechende Aktion durch <ph name="PRODUCT_OS_NAME" /> nicht ausgeführt.
-
-          Wenn kein Wert für die Verzögerungen angegeben ist, wird ein Standardwert festgelegt.
-
-          Hinweis: Der Wert für |ScreenDim| muss mit dem Wert für |ScreenOff| identisch oder niedriger sein. Die Werte für |ScreenOff| und |IdleWarning| müssen mit dem Wert für |Idle| identisch oder niedriger sein. Falls Ihre Angaben darüber liegen, werden die Werte automatisch angepasst.
-
-          Für |IdleAction| sind folgende Aktionen möglich:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Wenn |IdleAction| nicht festgelegt wird, wird die Standardaktion |Suspend| ausgeführt.
-
-          Es können außerdem spezifische Einstellungen für den Netz- und Akkubetrieb vorgenommen werden.
-          </translation>
 <translation id="5560039246134246593">Hiermit fügen Sie beim Abrufen des Varianten-Seeds in <ph name="PRODUCT_NAME" /> einen Parameter hinzu.
 
       Ist die Richtlinie konfiguriert, wird der Abfrageparameter "restrict" zu der URL hinzugefügt, über die der Varianten-Seed abgerufen wird. Den Wert des Parameters legen Sie in dieser Richtlinie fest.
@@ -1090,11 +1142,17 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Wenn diese Richtlinie nicht festgelegt oder auf "false" gesetzt ist, verwendet <ph name="PRODUCT_NAME" /> die vorhandenen Online-Einstellungen zur Widerrufsprüfung.</translation>
 <translation id="5732972008943405952">AutoFill-Formulardaten bei erster Ausführung aus Standardbrowser importieren</translation>
+<translation id="5751004203256768694">Legt den Kontotyp der Konten der Android-Authentifizierungs-App fest, die die Authentifizierung durch Aushandeln über HTTP (z. B. die Kerberos-Authentifizierung) unterstützt. Diese Informationen sollten vom Anbieter der Authentifizierungs-App bereitgestellt werden. Weitere Informationen finden Sie unter https://goo.gl/hajyfN.
+
+          Ist keine Einstellung vorhanden, wird die HTTP-Authentifizierung durch Aushandeln unter Android deaktiviert.</translation>
 <translation id="5761030451068906335">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5770738360657678870">Entwicklerkanal (möglicherweise nicht stabil)</translation>
 <translation id="5774856474228476867">Such-URL der Standardsuchmaschine</translation>
 <translation id="5776485039795852974">Nachfragen, wenn eine Website Desktop-Benachrichtigungen anzeigen will</translation>
+<translation id="5781412041848781654">Gibt an, welche GSSAPI-Bibliothek für die HTTP-Authentifizierung verwendet werden soll. Sie können entweder nur den Namen einer Bibliothek oder einen vollständigen Pfad angeben.
+
+          Wenn diese Einstellung nicht festgelegt ist, verwendet <ph name="PRODUCT_NAME" /> einen Standardnamen für die Bibliothek.</translation>
 <translation id="5781806558783210276">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe die Inaktivität im Akkubetrieb erfolgt.
 
           Wenn diese Richtlinie festgelegt ist, wird damit angegeben, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> in den Inaktivitätsmodus wechselt. Dieser kann gesondert konfiguriert werden.
@@ -1197,6 +1255,12 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Der Richtlinienwert muss in Millisekunden angegeben werden und wird automatisch auf einen Wert unter der Inaktivitätsverzögerung reduziert.</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6145799962557135888">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
+<translation id="6151775819333710697">
+          Wenn diese Einstellung aktiviert ist, können Nutzer <ph name="PRODUCT_NAME" /> dazu anweisen, sich Passwörter zu merken und das nächste Mal, wenn sie sich in einer Website anmelden möchten, zur Verfügung zu stellen.
+
+Wenn diese Einstellung deaktiviert ist, können Nutzer keine neuen Passwörter speichern. Sie können jedoch möglicherweise zuvor gespeicherte Passwörter weiterhin verwenden.
+
+Ist diese Richtlinie aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben. Sollte diese Richtlinie nicht konfiguriert sein, so ist das Speichern von Passwörtern zulässig, kann jedoch vom Nutzer deaktiviert werden.</translation>
 <translation id="6155936611791017817">Standardstatus für den großen Cursor auf der Anmeldeseite festlegen</translation>
 <translation id="6157537876488211233">Kommagetrennte Liste der Proxy-Umgehungsregeln</translation>
 <translation id="6158324314836466367">Unternehmens-Web-Store-Name (veraltet)</translation>
@@ -1256,12 +1320,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Suchanfrage mithilfe der GET-Methode gesendet.
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="6365608006609079612">
-          Wenn diese Einstellung aktiviert ist, können Nutzer <ph name="PRODUCT_NAME" /> dazu anweisen, sich Passwörter zu merken und das nächste Mal, wenn sie sich in einer Website anmelden möchten, zur Verfügung zu stellen.
-
-Wenn diese Einstellung deaktiviert ist, können Nutzer keine neuen Passwörter speichern. Sie können jedoch möglicherweise zuvor gespeicherte Passwörter weiterhin verwenden.
-
-Ist diese Richtlinie aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben. Sollte diese Richtlinie nicht konfiguriert sein, so ist das Speichern von Passwörtern zulässig, kann jedoch vom Nutzer deaktiviert werden.</translation>
 <translation id="6367755442345892511">Ob der Release-Kanal vom Nutzer konfiguriert werden kann</translation>
 <translation id="6368011194414932347">Startseiten-URL konfigurieren</translation>
 <translation id="6368403635025849609">JavaScript auf diesen Websites zulassen</translation>
@@ -1314,14 +1372,32 @@ Ist diese Richtlinie aktiviert oder deaktiviert, können Nutzer sie in <ph name=
 
           Wird diese Richtlinie nicht konfiguriert, ist die Bildschirmtastatur beim erstmaligen Aufrufen der Anmeldeseite deaktiviert. Nutzer können die Bildschirmtastatur jederzeit aktivieren oder deaktivieren, wobei ihr Status auf der Anmeldeseite bei einem Nutzerwechsel erhalten bleibt.</translation>
 <translation id="6598235178374410284">Nutzer-Avatarbild</translation>
-<translation id="6633160536638196468">Mit dieser Richtlinie kann eine Liste mit eingestellten Webplattformfunktionen festgelegt werden, die vorübergehend wieder aktiviert werden sollen.
+<translation id="6636268606788232221">Einstellungen der Energieverwaltung bei Inaktivität des Nutzers konfigurieren
 
-      Mit der Richtlinie haben Administratoren die Möglichkeit, eingestellte Webplattformfunktionen für einen begrenzten Zeitraum wieder zu aktivieren. Die Funktionen werden durch ein String-Tag identifiziert und die Funktionen, die den Tags in der Liste entsprechen, die durch diese Richtlinie festgelegt wurde, werden wieder aktiviert.
+          Mit dieser Richtlinie können Sie mehrere Einstellungen zur Energieverwaltungsstrategie bei Inaktivität des Nutzers festlegen.
 
-      Wenn diese Richtlinie nicht konfiguriert ist, die Liste leer ist oder mit keinem unterstützten String-Tag übereinstimmt, bleiben alle eingestellten Webplattformfunktionen deaktiviert.
+          Es gibt vier Aktionen:
+          * Der Bildschirm wird gedimmt, wenn der Nutzer für die unter |ScreenDim| angegebene Zeitdauer inaktiv ist.
+          * Der Bildschirm wird ausgeschaltet, wenn der Nutzer für die unter |ScreenOff| angegebene Zeitdauer inaktiv ist.
+          * Ein Warndialog erscheint, wenn der Nutzer für die unter |IdleWarning| angegebene Zeitdauer inaktiv ist. Mit dem Dialog wird der Nutzer darauf hingewiesen, dass als Nächstes die für die Inaktivität festgelegte Aktion ausgeführt wird.
+          * Die unter |IdleAction| angegebene Aktion wird ausgeführt, wenn der Nutzer für die unter |Idle| angegebene Zeitdauer inaktiv ist.
 
-      Die Richtlinie selbst wird zwar auf den genannten Plattformen unterstützt, die damit aktivierten Funktionen sind aber möglicherweise nicht auf allen Plattformen verfügbar. Nicht alle eingestellten Webplattformfunktionen können wieder aktiviert werden. Nur die nachfolgend ausdrücklich aufgeführten Funktionen können für einen begrenzten Zeitraum wieder aktiviert werden. Der Zeitraum variiert je nach Funktion. Das allgemeine Format des String-Tags lautet [Name der veralteten Funktion]_EffectiveUntil[jjjjmmtt]. Weitere Informationen zu Änderungen an den Webplattformfunktionen erhalten Sie unter http://bit.ly/blinkintents.
-      </translation>
+          Die Verzögerungen müssen in Millisekunden angegeben werden und größer als null sein, um die oben jeweils angegebenen Aktionen auszulösen. Falls die Verzögerung auf null gesetzt wird, wird die entsprechende Aktion durch <ph name="PRODUCT_OS_NAME" /> nicht ausgeführt.
+
+          Wenn kein Wert für die Verzögerungen angegeben ist, wird ein Standardwert festgelegt.
+
+          Hinweis: Der Wert für |ScreenDim| muss mit dem Wert für |ScreenOff| identisch oder niedriger sein. Die Werte für |ScreenOff| und |IdleWarning| müssen mit dem Wert für |Idle| identisch oder niedriger sein. Falls Ihre Angaben darüber liegen, werden die Werte automatisch angepasst.
+
+          Für |IdleAction| sind folgende Aktionen möglich:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Wenn |IdleAction| nicht festgelegt wird, wird die Standardaktion |Suspend| ausgeführt.
+
+          Es können außerdem spezifische Einstellungen für den Netz- und Akkubetrieb vorgenommen werden.
+          </translation>
 <translation id="6641981670621198190">Unterstützung für 3D-Grafik-APIs deaktivieren</translation>
 <translation id="6647965994887675196">Wurde "true" festgelegt, können betreute Nutzer erstellt und verwendet werden.
 
@@ -1540,6 +1616,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="7443616896860707393">Ursprungsübergreifende HTTP-Basic-Authentifizierungsabfragen</translation>
 <translation id="7468416082528382842">Windows-Registrierungspfad:</translation>
 <translation id="7469554574977894907">Suchvorschläge aktivieren</translation>
+<translation id="7485481791539008776">Regeln zur Auswahl des Standarddruckers</translation>
 <translation id="749556411189861380">Meldet die Betriebssystem- und Firmwareversion von registrierten Geräten
 
       Wird diese Einstellung nicht konfiguriert oder auf "True" gesetzt, melden registrierte Geräte in regelmäßigen Abständen ihre Betriebssystem- und Firmwareversion. Wird für diese Einstellung "False" festgelegt, werden keine Informationen zur Version gemeldet.</translation>
@@ -1591,7 +1668,26 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
           Ist diese Einstellung deaktiviert oder nicht festgelegt, wird die Zwei-Faktor-Authentifizierung nicht aktiviert und das Standardverfahren zur Eingabe einer nutzerdefinierten PIN wird verwendet.</translation>
 <translation id="7750991880413385988">"Neuer Tab"-Seite öffnen</translation>
+<translation id="7761526206824804472">Legt ein oder mehrere empfohlene Gebietsschemas für eine öffentliche Sitzung fest. Die Nutzer können sich dann ganz einfach für eines entscheiden.
+
+      Vor dem Beginn einer öffentlichen Sitzung kann der Nutzer ein Gebietsschema und ein Tastaturlayout auswählen. Standardmäßig werden alle von <ph name="PRODUCT_OS_NAME" /> unterstützten Gebietsschemas in alphabetischer Reihenfolge aufgeführt. Mithilfe dieser Richtlinie können Sie eine Reihe empfohlener Gebietsschemas an den Anfang der Liste verschieben.
+
+      Ist diese Richtlinie nicht konfiguriert, wird das Gebietsschema der aktuellen Benutzeroberfläche vorab ausgewählt.
+
+      Ist diese Richtlinie konfiguriert, werden die empfohlenen Gebietsschemas an den Anfang der Liste verschoben und visuell von allen anderen Gebietsschemas getrennt. Die empfohlenen Gebietsschemas werden in der Reihenfolge ihres Vorkommens in der Richtlinie aufgelistet. Das erste empfohlene Gebietsschema wird vorab ausgewählt.
+
+      Wenn mehrere empfohlene Gebietsschemas vorhanden sind, wird angenommen, dass die Nutzer zwischen diesen Gebietsschemas auswählen möchten. Die Auswahl des Gebietsschemas und des Tastaturlayouts wird beim Starten einer öffentlichen Sitzung gut sichtbar angeboten. Andernfalls wird davon ausgegangen, dass die meisten Nutzer das vorab ausgewählte Gebietsschema verwenden möchten. In diesem Fall wird die Auswahl des Gebietsschemas und des Tastaturlayouts beim Start einer öffentlichen Sitzung weniger gut sichtbar angeboten.
+
+      Wenn diese Richtlinie konfiguriert und die automatische Anmeldung aktiviert ist (siehe Richtlinien "|DeviceLocalAccountAutoLoginId|" und "|DeviceLocalAccountAutoLoginDelay|"), werden in der automatisch gestarteten öffentlichen Sitzung das erste empfohlene Gebietsschema und das am besten dazu passende Tastaturlayout verwendet.
+
+      Das vorab ausgewählte Tastaturlayout ist immer das am besten zum vorab ausgewählten Gebietsschema passende Layout.
+
+      Diese Richtlinie kann nur gemäß der Empfehlung konfiguriert werden. Mithilfe dieser Richtlinie können Sie eine Reihe empfohlener Gebietsschemas an den Anfang verschieben, Nutzer haben jedoch immer die Möglichkeit, ein beliebiges von <ph name="PRODUCT_OS_NAME" /> unterstütztes Gebietsschema für ihre Sitzung auszuwählen.
+      </translation>
 <translation id="7763311235717725977">Ermöglicht Ihnen festzulegen, ob Websites Bilder anzeigen dürfen. Das Anzeigen von Bildern kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowImages" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
+<translation id="7763479091692861127"> Die Verbindungstypen, die für Betriebssystemaktualisierungen zulässig sind. Betriebssystemaktualisierungen beanspruchen die Verbindung aufgrund ihrer Größe potenziell stark und können zusätzliche Kosten verursachen. Deshalb sind sie für als kostenintensiv geltende Verbindungstypen standardmäßig nicht aktiviert. Dazu gehören derzeit beispielsweise WiMax, Bluetooth und Mobilfunkverbindungen.
+
+      Zu den erkannten Verbindungstypkennungen gehören "ethernet", "wifi", "wimax", "bluetooth" und "cellular".</translation>
 <translation id="7766336524667238790">Durch diese Richtlinie werden Informationen zur aktiven Kiosksitzung gesendet, etwa
       Anwendungs-ID und -version.
 
@@ -1635,38 +1731,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="7953256619080733119">Manuell festgelegte Ausnahme-Hosts für verwalteten Nutzer</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Diese Richtlinie wird nicht mehr unterstützt. Sie aktiviert beim Verbinden zu einem Remote-Client den Einsatz von STUN und Relay-Servern. Wenn diese Einstellung aktiviert wird, kann dieser Computer Remote-Hostcomputer finden und eine Verbindung herstellen, selbst wenn sie sich hinter einer Firewall befinden. Sollte die Einstellung deaktiviert sein und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, dann kann dieser Computer nur Verbindungen zu Hostcomputern innerhalb des lokalen Netzwerks aufbauen.</translation>
-<translation id="8002229853067655250">Konfiguriert Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />
-
-          Mit dieser Richtlinie werden verschiedene Einstellungen gesteuert, darunter Einstellungen, die von bestehenden auf Erweiterungen bezogenen Richtlinien geregelt werden. Diese Richtlinie überschreibt ältere Richtlinien, wenn beide konfiguriert sind.
-
-          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID "*" festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine Standardkonfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
-
-          Bei der Konfiguration für jede Erweiterung (oder Erweiterungen mit der gleichen Update-URL) handelt es sich um ein weiteres Wörterbuch, das die im Folgenden genannten Felder enthalten kann:
-
-          "installation_mode": Verweist auf eine Zeichenfolge, die den Installationsmodus für die Erweiterung angibt. Folgende Zeichenfolgen sind gültig:
-          * "allowed": Lässt die Installation der Erweiterung durch den Nutzer zu. Dies ist das Standardverhalten.
-          * "blocked": Blockiert die Installation der Erweiterung.
-          * "force_installed": Die Erweiterung wird automatisch installiert und kann nicht vom Nutzer entfernt werden.
-          * "normal_installed": Die Erweiterung wird automatisch installiert, kann aber vom Nutzer deaktiviert werden.
-
-          Das Feld "installation_mode" kann auch für mehrere Erweiterungen konfiguriert werden, einschließlich der Erweiterung "*" (als Standardeinstellungen) und Erweiterungen mit der gleichen Update-URL. In diesem Fall können nur die Werte "allowed" und "blocked" verwendet werden
-
-          Wenn der Modus "force_installed" oder "normal_installed" festgelegt ist, muss auch "update_url" konfiguriert werden. Die in dieser Richtlinie festgelegte Update-URL wird nur für die Erstinstallation verwendet. Bei späteren Aktualisierungen der Erweiterungen wird die im Manifest der Erweiterung angegebene Update-URL verwendet. Die Update-URL muss wie oben erwähnt auf ein XML-Dokument zur Aktualisierung eines Manifests verweisen.
-
-          "blocked_permissions": Verweist auf eine Liste mit Zeichenfolgen, in denen die Berechtigungen für blockierte APIs für die Erweiterung angegeben sind. Die Namen der Berechtigungen sind identisch mit den im Manifest angegebenen Zeichenfolgen der Berechtigung, wie unter <ph name="LINK_TO_EXTENSION_DOC3" /> erläutert. Diese Einstellung kann auch für die Erweiterung "*" konfiguriert werden. Wenn die Erweiterung eine Berechtigung erfordert, die auf der Blockierungsliste steht, kann sie nicht geladen werden. Wenn sie eine blockierte Berechtigung als optionale Anforderung enthält, wird sie normal behandelt, allerdings werden Anforderungen in Konflikt stehender Berechtigungen automatisch zur Laufzeit abgelehnt.
-
-          "allowed_permissions": Ähnlich wie "blocked_permissions", nur werden einige Berechtigungen explizit zugelassen, die möglicherweise von der globalen Liste der blockierten Berechtigungen blockiert werden und daher nicht für die Erweiterung "*" konfiguriert werden können. Mit dieser Einstellung erhalten Erweiterungen jedoch nicht automatisch gewährte Berechtigungen.
-
-          "minimum_version_required": Verweist auf eine Versionszeichenfolge. Das Format der Versionszeichenfolge ist mit dem im Manifest der Erweiterung verwendeten Format identisch, wie unter <ph name="LINK_TO_EXTENSION_DOC4" /> erläutert. Eine Erweiterung mit einer älteren Version als der angegebenen Mindestversion wird deaktiviert. Dies gilt auch für Erweiterungen, deren Installation erzwungen wurde.
-
-          Die folgenden Einstellungen können nur für die "*"-Standardkonfiguration verwendet werden:
-
-          "install_sources": Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe https://developer.chrome.com/extensions/match_patterns). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer ihn ganz einfach über diese URL installieren. Sowohl der Speicherort der CRX-Datei als auch die Seite, über die der Download gestartet wird (der Referrer), müssen durch diese Muster zugelassen sein.
-
-          "allowed_types": Mit dieser Einstellung werden die zulässigen Typen von Erweiterungen/Apps, die in <ph name="PRODUCT_NAME" /> installiert werden können, auf die weiße Liste gesetzt.  Der Wert besteht aus einer Liste mit folgenden Zeichenfolgen: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu den Erweiterungen in <ph name="PRODUCT_NAME" />.
-
-          Diese Richtlinie ist noch nicht einsatzbereit. Verwenden Sie sie daher bitte nicht.
-          </translation>
 <translation id="8044493735196713914">Startmodus von Geräten melden</translation>
 <translation id="8059164285174960932">URL, unter der Remotezugriff-Clients ihr Authentifizierungs-Token abrufen sollten</translation>
 <translation id="8071636581296916773">Ermöglicht den Einsatz von Relayservern, wenn Remote-Clients versuchen, eine Verbindung zu diesem Computer herzustellen
@@ -1729,18 +1793,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="8197918588508433925">Mit dieser Richtlinie wird festgelegt, welche Erweiterungen zum Zweck der Remote-Bestätigung die Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() verwenden dürfen. Damit eine Erweiterung die API verwenden darf, muss sie zu dieser Liste hinzugefügt werden.
 
 Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgelegt wurde, treten beim API-Aufruf Fehler auf und ein Fehlercode wird angezeigt.</translation>
-<translation id="8211174979203781791">Mit dieser Richtlinie können Sie die Standard-Startseiten-URL in <ph name="PRODUCT_NAME" /> konfigurieren und verhindern, dass diese von Nutzern geändert wird.
-
-          Bei der Startseite handelt es sich um die Seite, die über die Schaltfläche "Startseite" geöffnet wird. Die Seiten, die beim Starten geöffnet werden, werden über die "RestoreOnStartup"-Richtlinien festgelegt.
-
-          Für den Startseitentyp kann entweder eine angegebene URL oder die "Neuer Tab"-Seite festgelegt werden. Wenn Sie sich für die "Neuer Tab"-Seite entscheiden, wird diese Richtlinie nicht angewendet.
-
-          Wenn Sie diese Einstellung aktivieren, können Nutzer ihre Startseiten-URL in <ph name="PRODUCT_NAME" /> nicht ändern, jedoch weiterhin die "Neuer Tab"-Seite als Startseite festlegen.
-
-          Ist diese Richtlinie nicht konfiguriert, können die Nutzer selbst eine Startseite wählen, sofern "HomepageIsNewTabPage" ebenfalls nicht konfiguriert ist.
-
-          Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die nicht mit
-          einer Active Directory-Domain verbunden sind.</translation>
 <translation id="8244525275280476362">Maximale Abrufverzögerung nach der Außerkraftsetzung einer Richtlinie</translation>
 <translation id="8256688113167012935">Gibt an, welchen Kontonamen <ph name="PRODUCT_OS_NAME" /> für das entsprechende lokale Gerätekonto auf der Anmeldeseite anzeigt.
 
@@ -1908,6 +1960,7 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
 <translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME" />-Gerät. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
+<translation id="9098553063150791878">Richtlinien für die HTTP-Authentifizierung</translation>
 <translation id="9104138886225968319">Durch diese Richtlinie werden Kontrolltaktsignale an den Verwaltungsserver gesendet,
       damit er erkennt, wenn das Gerät offline ist.
 

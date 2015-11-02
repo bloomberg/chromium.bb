@@ -100,6 +100,7 @@
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
+<translation id="1445397020763995734">Account type for HTTP Negotiate authentication</translation>
 <translation id="1454846751303307294">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -167,6 +168,15 @@
       If this policy is not set, no Terms of Service are shown.
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME" /> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
+<translation id="1757339646969878244">Configure remote access options in Chrome Remote Desktop host.
+
+      Chrome Remote Desktop host is a native service that runs on the target
+      machine that a user can connect to using Chrome Remote Desktop
+      application.  The native service is packaged and executed separately from
+      the <ph name="PRODUCT_NAME" /> browser.
+
+      These policies are ignored unless the
+      Chrome Remote Desktop host is installed.</translation>
 <translation id="1757688868319862958">Allows <ph name="PRODUCT_NAME" /> to run plug-ins that require authorisation. If you enable this setting, plug-ins that are not outdated always run. If this setting is disabled or not set, users will be asked for permission to run plug-ins that require authorisation. These are plug-ins that can compromise security.</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
@@ -239,6 +249,11 @@
 <translation id="2006530844219044261">Power management</translation>
 <translation id="201557587962247231">Frequency of device status report uploads</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
+<translation id="206623763829450685">Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME" />.
+
+          Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
+
+          If this policy is left unset, all four schemes will be used.</translation>
 <translation id="2067011586099792101">Block access to sites outside of content packs</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2077273864382355561">Screen off delay when running on battery power</translation>
@@ -580,6 +595,38 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you enable this setting, any captive portal authentication pages (i.e. all web pages starting from captive portal sign in page until <ph name="PRODUCT_NAME" /> detects successful Internet connection) will be displayed in a separate window ignoring all policy settings and restrictions for the current user.
 
       If you disable this setting or leave it unset, any captive portal authentication pages will be shown in a (regular) new browser tab, using the current user's proxy settings.</translation>
+<translation id="3001569025430882724">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
+
+      This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME" /> which happens the first time the print function is used with a profile.
+
+      When this policy is set, <ph name="PRODUCT_NAME" /> will attempt to find a printer matching all of the specified attributes and select it as default printer. The first printer found matching the policy is selected, in case of non-unique match any matching printer can be selected, depending on the order printers are discovered.
+
+      If this policy is not set or matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected, when PDF printer is not available.
+
+      The value is parsed as JSON object, conforming to the following schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printers connected to Google Cloud Print are considered "cloud", the rest of the printers are classified as "local".
+      Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
+      Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensitive.</translation>
 <translation id="3021409116652377124">Disable plug-in finder</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
@@ -610,6 +657,38 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left unset, the user can install any extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Configures extension management settings for <ph name="PRODUCT_NAME" />.
+
+          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
+
+          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID "*", which will apply to all extensions that don't have a customised configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          The configuration for each extension (or extensions with same update URL) is another dictionary that can contain the fields documented below.
+
+          "installation_mode": maps to a string indicating the installation mode for the extension. The valid strings are:
+          * "allowed": allows the extension to be installed by the user. This is the default behaviour.
+          * "blocked": blocks installation of the extension.
+          * "force_installed": the extension is automatically installed and can't be removed by the user.
+          * "normal_installed": the extension is automatically installed but can be disabled by the user.
+
+          The "installation_mode" can also be configured for multiple extensions as well, including the "*" extension (as default settings) and extensions with same update URL. Only the "allowed" and "blocked" values can be used in this case.
+
+          If the mode is set to "force_installed" or "normal_installed" then an "update_url" must be configured too. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest. The update URL should point to an Update Manifest XML document as mentioned above.
+
+          "blocked_permissions": maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3" />. This setting also can be configured for "*" extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
+
+          "allowed_permissions": similar to "blocked_permissions", but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for "*" extension. Note that this setting doesn't give granted permissions to extensions automatically.
+
+          "minimum_version_required": maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4" />. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
+
+          The following settings can be used only for the default "*" configuration:
+
+          "install_sources": Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
+
+          "allowed_types": This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
+
+          This policy isn't ready for usage yet, please don't use it.
+          </translation>
 <translation id="3205825995289802549">Maximise the first browser window on first run</translation>
 <translation id="3206731874112238027">Disable Print Preview (deprecated)</translation>
 <translation id="3213821784736959823">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
@@ -818,9 +897,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4039085364173654945">Controls whether third-party sub-content on a page is allowed to pop up an HTTP Basic Auth dialogue box.
 
           Typically this is disabled as a phishing defence. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialogue box.</translation>
-<translation id="4043912146394966243"> The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
-
-      The recognised connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".</translation>
 <translation id="4052765007567912447">Controls whether the user may show passwords in clear text in the password manager.
 
           If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
@@ -873,8 +949,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
-<translation id="4337944790873898250">If this policy is set to true, <ph name="PRODUCT_NAME" /> will unconditionally maximise the the first window shown on first run.
-      If this policy is set to false or not configured, a heuristic will decide whether to maximise the first window shown, based on the screen size.</translation>
 <translation id="436581050240847513">Report device network interfaces</translation>
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
@@ -886,6 +960,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is configured then the user can't change it, and the apps shortcut is always shown or never shown.</translation>
 <translation id="443665821428652897">Clear site data on browser shutdown (deprecated)</translation>
+<translation id="4439336120285389675">Specify a list of deprecated web platform features to re-enable temporarily.
+
+      This policy gives administrators the ability to re-enable deprecated web platform features for a limited time. Features are identified by a string tag and the features corresponding to the tags included in the list specified by this policy will get re-enabled.
+
+      If this policy is left not set or the list is empty or does not match one of the supported string tags, all deprecated web platform features will remain disabled.
+
+      While the policy itself is supported on the above platforms, the feature that it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at https://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Enable lock when the device become idle or suspended</translation>
 <translation id="4445684791305970001">Disables the Developer Tools and the JavaScript console.
 
@@ -1185,32 +1267,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is unset, there will be no auto-login.</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
-<translation id="553658564206262718">Configure power management settings when the user becomes idle.
-
-          This policy controls multiple settings for the power management strategy when the user becomes idle.
-
-          There are four types of action:
-          * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
-          * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
-          * A warning dialogue will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken.
-          * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
-
-          For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME" /> will not take the corresponding action.
-
-          For each of the above delays, when the length of time is unset, a default value will be used.
-
-          Note that |ScreenDim| values will be clamped to be less than or equal to |ScreenOff|, |ScreenOff| and |IdleWarning| will be clamped to be less than or equal to |Idle|.
-
-          |IdleAction| can be one of four possible actions:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          When the |IdleAction| is unset, the default action is taken, which is suspend.
-
-          There are also separate settings for AC power and battery.
-          </translation>
 <translation id="5560039246134246593">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_NAME" />.
 
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
@@ -1249,6 +1305,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set or it is set to false then <ph name="PRODUCT_NAME" /> will use the existing online revocation checking settings.</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
+<translation id="5751004203256768694">Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the authentication app. For more details see https://goo.gl/hajyfN.
+
+          If no setting is provided, HTTP Negotiate authentication is disabled on Android.</translation>
 <translation id="5761030451068906335">Configures the proxy settings for <ph name="PRODUCT_NAME" />.
 
       This policy isn't ready for usage yet, please don't use it.</translation>
@@ -1256,6 +1315,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="5774856474228476867">Default search provider search URL</translation>
 <translation id="5776485039795852974">Ask every time a site wants to show desktop notifications</translation>
+<translation id="5781412041848781654">Specifies which GSSAPI library to use for HTTP authentication. You can set either just a library name or a full path.
+
+          If no setting is provided, <ph name="PRODUCT_NAME" /> will fall back to using a default library name.</translation>
 <translation id="5781806558783210276">Specifies the length of time without user input after which the idle action is taken when running on battery power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> takes the idle action, which can be configured separately.
@@ -1368,6 +1430,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="6151775819333710697">
+          If this setting is enabled, users can get<ph name="PRODUCT_NAME" /> to memorise passwords
+          and provide them automatically the next time they log in to a site.
+
+          If this settings is disabled, users cannot save new passwords but they
+          may still use passwords that have been saved previously.
+
+          If this policy is enabled or disabled, users cannot change or override
+          it in <ph name="PRODUCT_NAME" />. If this
+          policy is unset, password saving is allowed (but can be turned off by
+          the user).</translation>
 <translation id="6155936611791017817">Set default state of the large cursor on the login screen</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>
@@ -1427,17 +1500,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           This policy is optional. If not set, search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="6365608006609079612">
-          If this setting is enabled, users can get<ph name="PRODUCT_NAME" /> to memorise passwords
-          and provide them automatically the next time they log in to a site.
-
-          If this settings is disabled, users cannot save new passwords but they
-          may still use passwords that have been saved previously.
-
-          If this policy is enabled or disabled, users cannot change or override
-          it in <ph name="PRODUCT_NAME" />. If this
-          policy is unset, password saving is allowed (but can be turned off by
-          the user).</translation>
 <translation id="6367755442345892511">Whether the release channel should be configurable by the user</translation>
 <translation id="6368011194414932347">Configure the home page URL</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
@@ -1513,14 +1575,32 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset, the on-screen keyboard is disabled when the login screen is first shown. Users can enable or disable the on-screen keyboard any time and its status on the login screen is persisted between users.</translation>
 <translation id="6598235178374410284">User avatar image</translation>
-<translation id="6633160536638196468">Specify a list of deprecated web platform features to re-enable temporarily.
+<translation id="6636268606788232221">Configure power management settings when the user becomes idle.
 
-      This policy gives administrators the ability to re-enable deprecated web platform features for a limited time. Features are identified by a string tag and the features corresponding to the tags included in the list specified by this policy will get re-enabled.
+          This policy controls multiple settings for the power management strategy when the user becomes idle.
 
-      If this policy is left not set or the list is empty or does not match one of the supported string tags, all deprecated web platform features will remain disabled.
+          There are four types of action:
+          * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
+          * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
+          * A warning dialogue will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken.
+          * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
 
-      While the policy itself is supported on the above platforms, the feature that it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at https://bit.ly/blinkintents.
-      </translation>
+          For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME" /> will not take the corresponding action.
+
+          For each of the above delays, when the length of time is unset, a default value will be used.
+
+          Note that |ScreenDim| values will be clamped to be less than or equal to |ScreenOff|, |ScreenOff| and |IdleWarning| will be clamped to be less than or equal to |Idle|.
+
+          |IdleAction| can be one of four possible actions:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          When the |IdleAction| is unset, the default action is taken, which is suspend.
+
+          There are also separate settings for AC power and battery.
+          </translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
 <translation id="6647965994887675196">If set to true, supervised users can be created and used.
 
@@ -1780,6 +1860,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
 <translation id="7468416082528382842">Windows registry location:</translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
+<translation id="7485481791539008776">Default printer selection rules</translation>
 <translation id="749556411189861380">Report OS and firmware version of enrolled devices.
 
       If this setting is not set or set to True, enrolled devices will report the OS and firmware version periodically. If this setting is set to False, version info will not be reported.</translation>
@@ -1837,9 +1918,28 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled or not set, then two-factor will not be enabled and the default behaviour of having a user-defined PIN will be used.</translation>
 <translation id="7750991880413385988">Open New Tab Page</translation>
+<translation id="7761526206824804472">Sets one or more recommended locales for a public session, allowing users to easily choose one of these locales.
+
+      The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME" /> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
+
+      If this policy is not set, the current UI locale will be pre-selected.
+
+      If this policy is set, the recommended locales will be moved to the top of the list and will be visually separated from all other locales. The recommended locales will be listed in the order in which they appear in the policy. The first recommended locale will be pre-selected.
+
+      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a public session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a public session.
+
+      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started public session will use the first recommended locale and the most popular keyboard layout matching this locale.
+
+      The pre-selected keyboard layout will always be the most popular layout matching the pre-selected locale.
+
+      This policy can only be set as recommended. You can use this policy to move a set of recommended locales to the top but users are always allowed to choose any locale supported by <ph name="PRODUCT_OS_NAME" /> for their session.
+      </translation>
 <translation id="7763311235717725977">Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'AllowImages' will be used and the user will be able to change it.</translation>
+<translation id="7763479091692861127"> The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
+
+      The recognised connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".</translation>
 <translation id="7766336524667238790">Report information about the active kiosk session, such as
       application ID and version.
 
@@ -1892,38 +1992,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
-<translation id="8002229853067655250">Configures extension management settings for <ph name="PRODUCT_NAME" />.
-
-          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
-
-          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID "*", which will apply to all extensions that don't have a customised configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          The configuration for each extension (or extensions with same update URL) is another dictionary that can contain the fields documented below.
-
-          "installation_mode": maps to a string indicating the installation mode for the extension. The valid strings are:
-          * "allowed": allows the extension to be installed by the user. This is the default behaviour.
-          * "blocked": blocks installation of the extension.
-          * "force_installed": the extension is automatically installed and can't be removed by the user.
-          * "normal_installed": the extension is automatically installed but can be disabled by the user.
-
-          The "installation_mode" can also be configured for multiple extensions as well, including the "*" extension (as default settings) and extensions with same update URL. Only the "allowed" and "blocked" values can be used in this case.
-
-          If the mode is set to "force_installed" or "normal_installed" then an "update_url" must be configured too. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest. The update URL should point to an Update Manifest XML document as mentioned above.
-
-          "blocked_permissions": maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3" />. This setting also can be configured for "*" extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
-
-          "allowed_permissions": similar to "blocked_permissions", but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for "*" extension. Note that this setting doesn't give granted permissions to extensions automatically.
-
-          "minimum_version_required": maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4" />. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
-
-          The following settings can be used only for the default "*" configuration:
-
-          "install_sources": Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
-
-          "allowed_types": This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
-
-          This policy isn't ready for usage yet, please don't use it.
-          </translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
 <translation id="8071636581296916773">Enables usage of relay servers when remote clients are trying to establish a connection to this machine.
@@ -1994,18 +2062,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8197918588508433925">This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
-<translation id="8211174979203781791">Configures the default home page URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
-
-          The home page is the page opened by the Home button. The pages that open on startup are controlled by the RestoreOnStartup policies.
-
-          The home page type can either be set to a URL that you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy does not take effect.
-
-          If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME" />, but they can still can choose the New Tab Page as their home page.
-
-          Leaving this policy not set will allow the user to choose his home page on his own if HomepageIsNewTabPage is not set too.
-
-          This policy is not available on Windows instances that are not joined
-          to an Active Directory domain.</translation>
 <translation id="8244525275280476362">Maximum fetch delay after a policy invalidation</translation>
 <translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME" /> shows on the login screen for the corresponding device-local account.
 
@@ -2190,6 +2246,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
+<translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9104138886225968319">Send monitoring heartbeats to the management server, to allow
       the server to detect if the device is offline.
 

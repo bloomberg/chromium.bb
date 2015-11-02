@@ -148,6 +148,7 @@ Chromoting</translation>
 <translation id="4573676252416618192">Hôte Bureau à distance
 Google Chrome</translation>
 <translation id="4619978527973181021">Accepter et installer</translation>
+<translation id="4647791084836149355">Afficher la vue Cardboard</translation>
 <translation id="4703799847237267011">La session Google Chromoting est terminée.</translation>
 <translation id="4736223761657662401">Historique des connexions</translation>
 <translation id="4741792197137897469">Échec de l'authentification. Veuillez vous connecter de nouveau à Chrome.</translation>
@@ -206,6 +207,7 @@ Google Chrome</translation>
 <translation id="6284412385303060032">L'exécution de l'hôte sur l'écran de connexion de la console s'est arrêtée pour accepter le mode Rideau en passant à une exécution d'hôte dans une session propre à l'utilisateur.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6304318647555713317">Client</translation>
+<translation id="6324708100353784493">Vous avez activé le mode d'intégration de Google Cardboard. Pour utiliser ce mode, insérez votre appareil dans une visionneuse compatible avec Google Cardboard.</translation>
 <translation id="6381670701864002291">Autre</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="6441316101718669559">L'intégration du Bureau est impossible sur cette plate-forme. Vous pouvez toujours utiliser l'application, mais avec une expérience utilisateur de moindre qualité.</translation>

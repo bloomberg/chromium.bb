@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">휴대전화의 최근 사용 화면에서 최근에 사용한 기타 앱이 포함된 탭을 확인할 수 있습니다.</translation>
 <translation id="2079545284768500474">실행 취소</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
+<translation id="2095887075102408547">이 기능을 사용 설정하면 Chrome은 Google 서버를 이용해 방문한 페이지를 압축한 후 다운로드합니다. 비공개 연결(HTTPS)이나 시크릿 탭을 통해 액세스한 페이지는 Google에서 최적화하거나 볼 수 없습니다.</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="2126426811489709554">Chrome에서 실행 중</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> 닫음</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
 <translation id="3102119246920354026">캐시</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
-<translation id="3158619413803296679">북마크 선택</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="3198916472715691905">저장 데이터 <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">북마크됨</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">페이지 북마크</translation>
 <translation id="326254929494722411">아직 이 기기에 Google 계정을 설정하지 않았습니다.</translation>
 <translation id="3269093882174072735">이미지 로드</translation>
+<translation id="3278850099957560514">Google을 사용하여 방문한 페이지를 최적화함으로써 데이터 사용량을 줄일 수 있습니다. 비공개 연결(HTTPS)이나 시크릿 탭을 통해 액세스한 페이지는 Google에서 최적화하거나 볼 수 없습니다.</translation>
 <translation id="3282568296779691940">Chrome에 로그인</translation>
 <translation id="3287852534598822456">북마크가 더 이상 존재하지 않습니다. 새로고침하시기 바랍니다.</translation>
 <translation id="3303414029551471755">콘텐츠를 다운로드하시겠습니까?</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">세피아</translation>
 <translation id="4059119910594077751">전체화면을 종료하려면 뒤로 버튼을 터치하세요.</translation>
 <translation id="4062305924942672200">법적 정보</translation>
-<translation id="4084682180776658562">북마크</translation>
 <translation id="4089831646916293264">이 기능을 사용하면 이동통신사에서 제공하는 프리미엄 데이터 서비스에 액세스하는 데 문제가 생길 수 있습니다.</translation>
 <translation id="4099578267706723511">사용 통계와 오류 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
 <translation id="411254640334432676">다운로드에 실패했습니다.</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">시크릿 탭 닫기</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5565871407246142825">신용카드</translation>
+<translation id="5578795271662203820"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
 <translation id="5595485650161345191">주소 수정</translation>
 <translation id="5596627076506792578">옵션 더보기</translation>
 <translation id="5626134646977739690">이름:</translation>
@@ -461,6 +462,7 @@
 <translation id="7765158879357617694">이동</translation>
 <translation id="7767746238359002192">오프라인으로 저장할 페이지 방문</translation>
 <translation id="7772032839648071052">암호 확인</translation>
+<translation id="7784213092572143271">페이지 저장됨</translation>
 <translation id="7788788617745289808">이 사이트에 공유하려면 Chrome에 카메라 액세스 권한이 있어야 합니다.</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
@@ -541,6 +543,7 @@
 <translation id="885701979325669005">저장소</translation>
 <translation id="886510833909353412">암호로 모두 암호화</translation>
 <translation id="8872441722924401214">인증에 사용할 인증서 선택</translation>
+<translation id="8891135217544884558">주변 URL</translation>
 <translation id="8901170036886848654">북마크가 없습니다.</translation>
 <translation id="8909135823018751308">공유…</translation>
 <translation id="8912362522468806198">Google 계정</translation>

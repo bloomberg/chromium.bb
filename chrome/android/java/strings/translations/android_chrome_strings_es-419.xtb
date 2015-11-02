@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Permite ver las pestañas con otras aplicaciones recientes en la pantalla Recientes del teléfono.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Cuando se active esta función, Chrome usará los servidores de Google para comprimir las páginas que visitas antes de descargarlas. Google no optimizará ni verá las páginas a las que accediste a través de conexiones privadas (HTTPS) o pestañas de incógnito.</translation>
 <translation id="2100273922101894616">Acceso automático</translation>
 <translation id="2126426811489709554">Con tecnología de Chrome</translation>
 <translation id="213279576345780926">Pestaña <ph name="TAB_TITLE" /> cerrada</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Accediendo a la entrada de video y de audio</translation>
 <translation id="3102119246920354026">Caché</translation>
 <translation id="3137521801621304719">Salir del modo de navegación de incógnito</translation>
-<translation id="3158619413803296679">Elegir un marcador</translation>
 <translation id="3190152372525844641">Activa los permisos para Chrome en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Datos almacenados: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">Agregada a marcadores</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Agregar esta página a Marcadores</translation>
 <translation id="326254929494722411">No configuraste ninguna cuenta de Google en el dispositivo.</translation>
 <translation id="3269093882174072735">Cargar imagen</translation>
+<translation id="3278850099957560514">Gasta menos datos al usar a Google para optimizar las páginas que visitas. Google no optimizará ni verá las páginas a las que accediste a través de conexiones privadas (HTTPS) o pestañas de incógnito.</translation>
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="3287852534598822456">El marcador ya no existe. Actualiza la página.</translation>
 <translation id="3303414029551471755">¿Deseas descargar el contenido?</translation>
@@ -187,7 +188,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Toca el botón "Atrás" para salir de la pantalla completa.</translation>
 <translation id="4062305924942672200">Información legal</translation>
-<translation id="4084682180776658562">Marcador</translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos de alta calidad brindados por el proveedor.</translation>
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="411254640334432676">Se produjo un error durante la descarga.</translation>
@@ -294,6 +294,7 @@ Abre Chrome en la computadora, accede al menú y selecciona "Acceder a Chrome…
 <translation id="5530766185686772672">Cerrar pest. de incógnito</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
+<translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
 <translation id="5626134646977739690">Nombre:</translation>
@@ -462,6 +463,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7767746238359002192">Visita la página para guardarla sin conexión</translation>
 <translation id="7772032839648071052">Confirmar frase de contraseña</translation>
+<translation id="7784213092572143271">Página guardada</translation>
 <translation id="7788788617745289808">Chrome necesita acceso a la cámara para compartirla con este sitio.</translation>
 <translation id="7791543448312431591">Agregar</translation>
 <translation id="780301667611848630">No, gracias</translation>
@@ -542,6 +544,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="886510833909353412">Encriptar todos los datos con una frase de contraseña</translation>
 <translation id="8872441722924401214">Seleccionar certificado para autenticación</translation>
+<translation id="8891135217544884558">URL cercanas</translation>
 <translation id="8901170036886848654">No se encontraron marcadores</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">Cuenta de Google</translation>

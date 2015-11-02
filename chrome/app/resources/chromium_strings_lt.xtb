@@ -61,6 +61,8 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2886012850691518054">Pasirenkama: padėkite tobulinti „Chromium“ automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="2910007522516064972">Apie &amp;„Chromium“</translation>
 <translation id="2966088006374919794">„Chromium“ reikia paleisti išorinę programą, skirtą „<ph name="SCHEME" />“ nuorodoms tvarkyti. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus
+ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="3032787606318309379">Pridedama prie „Chromium“...</translation>
 <translation id="3046695367536568084">Jei norite naudoti programas, turite būti prisijungę prie „Chromium“. Tada „Chromium“ galės sinchronizuoti jūsų programas, žymes, istoriją, slaptažodžius ir kitus nustatymus įrenginiuose.</translation>
 <translation id="3068515742935458733">Padėkite tobulinti „Chromium“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>

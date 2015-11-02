@@ -84,6 +84,7 @@
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
+<translation id="1445397020763995734">Rodzaj konta na potrzeby negocjowanego uwierzytelniania HTTP</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="1464848559468748897">Kontroluje zachowanie użytkownika w sesji wieloprofilowej na urządzeniach z <ph name="PRODUCT_OS_NAME" />.
 
@@ -151,6 +152,15 @@
       Jeśli ta zasada nie jest ustawiona, Warunki korzystania z usługi nie są pokazywane.
 
       Zasada powinna określać URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać Warunki korzystania z usługi. Dokument ten musi mieć postać zwykłego tekstu (MIME) bez żadnych znaczników.</translation>
+<translation id="1757339646969878244">Konfigurowanie opcji zdalnego dostępu w hoście Pulpitu zdalnego Chrome.
+
+      Host Pulpitu zdalnego Chrome to natywna usługa działająca na maszynie
+      docelowej, z którą użytkownik może połączyć się za pomocą aplikacji
+      Pulpit zdalny Chrome. Usługa natywna jest rozpowszechniana i uruchamiana
+      niezależnie od przeglądarki <ph name="PRODUCT_NAME" />.
+
+      Te zasady są ignorowane, jeśli host Pulpitu zdalnego Chrome
+      nie jest zainstalowany.</translation>
 <translation id="1757688868319862958">Zezwala na uruchamianie w przeglądarce <ph name="PRODUCT_NAME" /> wtyczek wymagających autoryzacji. W przypadku włączenia tego ustawienia aktualne wtyczki są zawsze uruchamiane. Jeśli ustawienie jest wyłączone lub nie jest skonfigurowane, użytkownikom są wyświetlane monity o udzielenie pozwolenia na uruchomienie wtyczek wymagających autoryzacji. Wtyczki te mogą naruszyć bezpieczeństwo danych.</translation>
 <translation id="1803646570632580723">Lista przypiętych aplikacji pokazywanych w programie uruchamiającym</translation>
 <translation id="1808715480127969042">Blokuj pliki cookie w tych witrynach</translation>
@@ -202,6 +212,11 @@
 <translation id="2006530844219044261">Zarządzanie energią</translation>
 <translation id="201557587962247231">Częstotliwość pobierania raportów o stanie urządzenia</translation>
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
+<translation id="206623763829450685">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />.
+
+          Możliwe wartości to „basic”, „digest”, „NTLM” i „negotiate”. Poszczególne wartości należy rozdzielić przecinkami.
+
+          Jeśli ta zasada nie zostanie skonfigurowana, będą używane wszystkie cztery schematy.</translation>
 <translation id="2067011586099792101">Blokuj dostęp do witryn spoza pakietów treści</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2077273864382355561">Opóźnienie wyłączenia ekranu przy zasilaniu z baterii</translation>
@@ -513,6 +528,38 @@
       Jeśli włączysz to ustawienie, wszystkie strony uwierzytelniania portalu przechwytującego (czyli wszystkie strony internetowe wyświetlane od momentu pojawienia się strony logowania portalu przechwytującego do momentu, gdy <ph name="PRODUCT_NAME" /> wykryje nawiązanie połączenia z internetem) będą wyświetlać się w osobnym oknie, ignorując wszelkie ustawienia zasad i ograniczeń dla bieżącego użytkownika.
 
       Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, wszystkie strony uwierzytelniania portalu przechwytującego będą wyświetlać się w nowej karcie przeglądarki, używając ustawień serwera proxy dla bieżącego użytkownika.</translation>
+<translation id="3001569025430882724">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
+
+      Ta zasada określa reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />. Przeglądarka dokonuje wyboru, gdy użytkownik profilu po raz pierwszy użyje funkcji drukowania.
+
+      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> spróbuje znaleźć drukarkę odpowiadającą wszystkim określonym atrybutom, a następnie wybierze ją jako domyślną. Wybierana jest pierwsza znaleziona drukarka, która odpowiada atrybutom zasady. Jeśli przeglądarka znajdzie kilka równoważnych wyników, wybrana może być dowolna spełniająca wymogi drukarka – znaczenie ma tutaj kolejność ich wykrywania.
+
+      W przypadku braku ustawień lub jeśli w ciągu określonego czasu oczekiwania przeglądarka nie znajdzie drukarki spełniającej wymogi, domyślnie wybierana jest wbudowana drukarka PDF, a jeśli nie jest ona dostępna, drukarka nie jest wybierana.
+
+      Wartość jest przetwarzana w postaci obiektu JSON zgodnie z tym schematem:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Drukarki połączone z Google Cloud Print określane są jako „cloud” (w chmurze), a pozostałe – jako „local” (lokalne).
+      Pominięcie któregoś pola oznacza, że brane są pod uwagę wszystkie wartości, np. jeśli nie określisz typu połączenia, funkcja podglądu wydruku zacznie wykrywać wszystkie rodzaje drukarek – lokalne i w chmurze.
+      Forma wyrażeń regularnych musi odpowiadać składni JavaScript RegExp. Przy znajdowaniu wyników znaczenie ma też wielkość liter.</translation>
 <translation id="3021409116652377124">Wyłącz znajdowanie wtyczek</translation>
 <translation id="3030000825273123558">Włącz raportowanie statystyk</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
@@ -537,6 +584,38 @@
 <translation id="3153348162326497318">Pozwala określić rozszerzenia, których użytkownicy NIE mogą instalować. Zainstalowane rozszerzenia zostaną usunięte w przypadku umieszczenia ich na tej liście. Wartość „*” na liście blokad oznacza, że zablokowane są wszystkie rozszerzenia, które nie znajdują się na liście dozwolonych rozszerzeń. Jeśli zasada ta nie zostanie skonfigurowana, użytkownicy mogą instalować dowolne rozszerzenia w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">To ustawienie zostało wycofane w <ph name="PRODUCT_NAME" /> w wersji 29. Zalecany sposób konfigurowania kolekcji rozszerzeń lub aplikacji udostępnianych przez organizację polega na tym, że witrynę z pakietami CRX umieszcza się w zasadzie ExtensionInstallSources, a na stronie internetowej udostępnia się bezpośrednie linki do pakietów do pobrania. Program uruchamiający tę stronę internetową można utworzyć, korzystając z zasady ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Konfiguruje ustawienia zarządzania rozszerzeniami w <ph name="PRODUCT_NAME" />.
+
+          Ta zasada zarządza wieloma ustawieniami, w tym ustawieniami objętymi istniejącymi zasadami dotyczącymi rozszerzeń. Zastępuje wszelkie poprzednie zasady, jeśli są skonfigurowane.
+
+          Zasada mapuje identyfikator rozszerzenia lub adres URL aktualizacji w jego konfiguracji. Identyfikator rozszerzenia pozwala stosować daną konfigurację tylko do wskazanego rozszerzenia. W konfiguracji domyślnej występuje identyfikator „*” i konfiguracja ta jest stosowana w przypadku wszystkich rozszerzeń, dla których zasada nie określa konfiguracji niestandardowych. W przypadku adresu URL aktualizowania konfiguracja jest stosowana do wszystkich rozszerzeń, w których pliku manifestu podany jest dany adres URL rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC1" />).
+
+          Konfiguracje dla poszczególnych rozszerzeń (lub rozszerzeń z tym samym adresem URL aktualizowania) stanowią kolejny słownik, który może zawierać te pola:
+
+          „installation_mode”: mapuje ciąg wskazujący tryb instalowania rozszerzenia. Poprawne ciągi to:
+          * „allowed”: pozwala na instalowanie rozszerzenia przez użytkownika. Jest to działanie domyślne.
+          * „blocked”: blokuje możliwość instalowania rozszerzenia przez użytkownika.
+          * „force_installed”: rozszerzenie jest instalowane automatycznie, a użytkownik nie może go usunąć.
+          * „normal_installed”: rozszerzenie jest instalowane automatycznie, ale użytkownik może je wyłączyć.
+
+          Ustawienie „installation_mode” można skonfigurować również dla wielu rozszerzeń, w tym dla rozszerzenia „*” (jako ustawienia domyślne) oraz rozszerzeń z tym samym adresem URL aktualizacji. W takim przypadku dostępne są tylko wartości „allowed” i „blocked”.
+
+          Jeśli wybierzesz tryb „force_installed” lub „normal_installed”, musisz skonfigurować również „update_url”. Pamiętaj, że adres URL aktualizowania ustawiony w tej zasadzie jest stosowany tylko przy instalacji początkowej, a kolejne aktualizacje rozszerzenia wykorzystują adres URL podany w pliku manifestu. Adres URL aktualizacji powinien wskazywać na plik XML z dokumentem manifestu aktualizacji, jak wyżej.
+
+          „blocked_permissions”: mapuje listę ciągów wskazujących zablokowane uprawnienia API w przypadku danego rozszerzenia. Nazwy uprawnień są identyczne z nazwami ciągów uprawnień podanych w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC3" />). To ustawienie można również skonfigurować dla rozszerzenia „*”. Załadowanie rozszerzenia wymagającego uprawnień, które znajdują się na czarnej liście, nie będzie możliwe. Jeśli zablokowane uprawnienia stanowią wymaganie opcjonalne, rozszerzenie będzie traktowane normalnie, ale żądanie uprawnień powodujących konflikt zostanie odrzucone przy uruchomieniu.
+
+          „allowed_permissions”: działa podobnie jak „blocked_permissions”, ale odnosi się do konkretnych uprawnień z listy zablokowanych, więc nie można skonfigurować rozszerzenia „*”. Pamiętaj, że to ustawienie nie powoduje automatycznego przyznawania uprawnień rozszerzeniom.
+
+          „minimum_version_required”: mapuje ciąg wersji. Format ciągu wersji jest taki sam jak w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC4" />). Rozszerzenie w wersji starszej niż podana wersja minimalna jest wyłączane. Zasada wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana.
+
+          Tych ustawień możesz użyć tylko w przypadku domyślnej konfiguracji „*”:
+
+         „install_sources”: każda pozycja na liście to wzorzec dopasowania rozszerzenia (więcej informacji znajdziesz na https://developer.chrome.com/extensions/match_patterns). Użytkownicy mogą łatwo instalować elementy z każdego adresu URL, który pasuje do pozycji na liście. Wzorce muszą zezwalać na dostęp zarówno do lokalizacji pliku *.crx, jak i strony, na której rozpoczyna się pobieranie (strony odsyłającej).
+
+          „allowed_types”: tworzy białą listę typów rozszerzeń lub aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME" />. Wartość jest listą ciągów znaków z tego zestawu: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach znajdziesz w dokumentacji rozszerzeń <ph name="PRODUCT_NAME" />.
+
+          Ta zasada nie jest jeszcze gotowa i nie można jej używać.
+          </translation>
 <translation id="3205825995289802549">Zmaksymalizuj pierwsze okno wyświetlone przy pierwszym uruchomieniu przeglądarki</translation>
 <translation id="3206731874112238027">Wyłącz podgląd wydruku (wycofane)</translation>
 <translation id="3213821784736959823">Określa, czy w <ph name="PRODUCT_NAME" /> jest używany wbudowany klient DNS.
@@ -718,9 +797,6 @@
 <translation id="4039085364173654945">Określa, czy umieszczona na stronie treść dodatkowa innej firmy może wyświetlać okno dialogowe z podstawowym uwierzytelnianiem HTTP. 
 
 Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku nieskonfigurowania zasady ustawienie jest wyłączone i treść dodatkowa innej firmy nie może wyświetlać okna dialogowego z podstawowym uwierzytelnianiem HTTP.</translation>
-<translation id="4043912146394966243"> Typy połączeń, które mogą być używane do aktualizowania systemu operacyjnego. Z powodu swojego rozmiaru aktualizacje te silnie wykorzystują połączenie, co może skutkować dodatkowymi kosztami. Dlatego domyślnie są wyłączone w przypadku połączeń uznanych za „kosztowne”, czyli aktualnie dla WiMax, Bluetooth i komórek.
-
-      Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>
 <translation id="4052765007567912447">Pozwala określić, czy użytkownik może wyświetlać tekst haseł w menedżerze haseł. Jeśli wyłączysz to ustawienie, w oknie menedżera haseł nie będzie można wyświetlać tekstu przechowywanych haseł. W przypadku włączenia lub nieskonfigurowania tej zasady użytkownicy będą mogli wyświetlać tekst haseł w menedżerze haseł.</translation>
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
@@ -769,8 +845,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
-<translation id="4337944790873898250">Jeśli ta zasada jest włączona, <ph name="PRODUCT_NAME" /> bezwarunkowo zmaksymalizuje pierwsze okno wyświetlone przy pierwszym uruchomieniu.
-      Jeśli zasada jest wyłączona lub nieskonfigurowana, algorytm heurystyczny zdecyduje, czy zmaksymalizować pierwsze wyświetlone okno, biorąc pod uwagę rozmiar ekranu.</translation>
 <translation id="436581050240847513">Raportuj interfejsy sieciowe urządzeń</translation>
 <translation id="4372704773119750918">Nie zezwalaj użytkownikom firmowym na korzystanie z trybu wieloprofilowego (jako użytkownik główny ani dodatkowy)</translation>
 <translation id="4377599627073874279">Zezwalaj na wyświetlanie wszelkich grafik we wszystkich witrynach</translation>
@@ -782,6 +856,14 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada jest skonfigurowana, użytkownik nie może jej zmienić, a skróty aplikacji zawsze są lub nie są pokazywane.</translation>
 <translation id="443665821428652897">Wyczyść dane witryn w momencie zamknięcia przeglądarki (wycofana)</translation>
+<translation id="4439336120285389675">Określ listę wycofanych funkcji, które chcesz tymczasowo włączyć na platformach internetowych.
+
+      Zasada ta pozwala administratorom ponownie włączyć na określony czas wycofane funkcje platform internetowych. Funkcje są wskazywane przez tagi z ciągiem tekstowym. Te, które odpowiadają tagom wymienionym na liście w tej zasadzie, zostaną ponownie włączone.
+
+      Jeśli nie ustawisz tej zasady albo lista jest pusta lub nie zawiera obsługiwanych tagów z ciągiem znaków, wszystkie wycofane funkcje platform internetowych pozostaną wyłączone.
+
+      Mimo że zasada działa na tych platformach, włączana przez nią funkcja może być dostępna tylko na niektórych z nich. Nie wszystkie wycofane funkcje platform internetowych można ponownie włączyć. Zasada pozwala włączyć tylko te wymienione poniżej – na określony czas, który różni się w zależności od funkcji. Ogólny format tagu z ciągiem znaków to [NazwaWycofanejFunkcji]_EffectiveUntil[rrrrmmdd]. Przyczyny zmian funkcji platform internetowych możesz w razie potrzeby znaleźć na https://bit.ly/blinkintents
+      </translation>
 <translation id="4442582539341804154">Włącz blokadę w przypadku bezczynności lub zawieszenia działania urządzenia</translation>
 <translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
@@ -1029,32 +1111,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada jest nieustawiona, automatyczne logowanie nie działa.</translation>
 <translation id="5535973522252703021">Biała lista serwerów przekazywania poświadczeń w protokole Kerberos</translation>
-<translation id="553658564206262718">Skonfiguruj ustawienia zarządzania energią, gdy użytkownik jest nieaktywny.
-
-          Ta zasada określa szereg ustawień strategii zarządzania energią, gdy użytkownik jest nieaktywny.
-
-          Możliwe są cztery typy działań:
-          * Ekran zostanie przyciemniony, gdy użytkownik pozostaje nieaktywny przez czas określony przez |ScreenDim|.
-          * Ekran zostanie wyłączony, gdy użytkownik pozostanie nieaktywny przez czas określony przez |ScreenOff|.
-          * Jeśli użytkownik pozostanie nieaktywny przez czas określony przez |IdleWarning|, wyświetli się ostrzeżenie z informacją o działaniu, które zostanie podjęte.
-          * Jeśli użytkownik pozostaje nieaktywny przez czas określony przez |Idle|, zostanie podjęte działanie określone przez |IdleAction|.
-
-          Dla każdego z działań powyżej należy określić opóźnienie w milisekundach. Musi być ono większe od zera, by wywołać odpowiednie działanie. Jeśli opóźnienie jest ustawione na zero, <ph name="PRODUCT_OS_NAME" /> nie podejmie wskazanego działania.
-
-          Jeśli nie zostanie określona wartość opóźnienia dla tych działań, zostanie użyta wartość domyślna.
-
-          Pamiętaj, że wartość |ScreenDim| zostanie zmniejszona tak, by była mniejsza lub równa wartości |ScreenOff|. |ScreenOff| i |IdleWarning| zostaną zmniejszone tak, by nie przekraczały wartości |Idle|.
-
-          |IdleAction| może przyjąć wartość jednego z czterech możliwych działań:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Jeśli wartość |IdleAction| nie zostanie określona, zostanie podjęte działanie domyślne, którym jest wstrzymanie pracy.
-
-          Ustawienia dla zasilania sieciowego i bateryjnego są oddzielne.
-          </translation>
 <translation id="5560039246134246593">Dodaj parametr do pobierania odmian w <ph name="PRODUCT_NAME" />.
 
       Ustawienie tej zasady powoduje dodanie parametru „restrict” do URL-a używanego do pobierania odmiany. Wartość parametru będzie taka sama jak wartość określona w tej zasadzie.
@@ -1093,11 +1149,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, <ph name="PRODUCT_NAME" /> będzie korzystać z istniejących ustawień sprawdzania online, czy certyfikaty nie zostały unieważnione.</translation>
 <translation id="5732972008943405952">Importuj dane autouzupełniania formularzy z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
+<translation id="5751004203256768694">Określa rodzaj konta w przypadku kont z aplikacji uwierzytelniającej na Androida, które obsługuje negocjowane uwierzytelnianie HTTP (np. uwierzytelnianie Kerberos). Tę informację powinien udostępnić dostawca aplikacji uwierzytelniającej. Więcej informacji znajdziesz na https://goo.gl/hajyfN.
+
+          W przypadku braku ustawień negocjowane uwierzytelnianie HTTP w Androidzie jest wyłączone.</translation>
 <translation id="5761030451068906335">Konfiguruje ustawienia serwera proxy w <ph name="PRODUCT_NAME" />. Zasada nie jest jeszcze gotowa, więc nie należy jej używać.</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Wersja deweloperska (może być niestabilna)</translation>
 <translation id="5774856474228476867">Adres URL wyszukiwarki od domyślnego dostawcy wyszukiwania</translation>
 <translation id="5776485039795852974">Pytaj za każdym razem, gdy witryna chce pokazywać powiadomienia na pulpicie</translation>
+<translation id="5781412041848781654">Pozwala określić bibliotekę GSSAPI, która ma być używana do uwierzytelniania HTTP. Możesz określić samą nazwę biblioteki lub pełną ścieżkę.
+
+          W przypadku braku ustawień w przeglądarce <ph name="PRODUCT_NAME" /> w zastępstwie używana jest domyślna nazwa biblioteki.</translation>
 <translation id="5781806558783210276">Określa, po jakim czasie nieaktywności użytkownika wykonywane jest działanie związane z bezczynnością przy zasilaniu z baterii.
 
           Jeśli ta zasada jest ustawiona, określa czas, przez który użytkownik musi pozostać nieaktywny, zanim <ph name="PRODUCT_OS_NAME" /> wykona działanie związane z bezczynnością (można skonfigurować je osobno).
@@ -1200,6 +1262,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość dla tej zasady należy określić w milisekundach. Wartości są zmniejszane tak, by były mniejsze niż opóźnienie nieaktywności.</translation>
 <translation id="6114416803310251055">przestarzała</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="6151775819333710697">
+          Jeśli to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> może zapamiętywać hasła użytkowników i podpowiadać
+          je automatycznie przy następnym logowaniu się na stronie.
+
+          Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą zapisywać nowych haseł,
+          ale mogą używać haseł zapisanych wcześniej.
+
+          Włączenia ani wyłączenia tej zasady użytkownicy nie mogą zmienić ani zastąpić
+          w <ph name="PRODUCT_NAME" />. Jeśli ta
+          zasada nie jest ustawiona, zapisywanie haseł jest dozwolone (ale
+          użytkownik może je wyłączyć).</translation>
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>
 <translation id="6157537876488211233">Lista rozdzielonych przecinkami reguł omijania serwera proxy</translation>
 <translation id="6158324314836466367">Nazwa firmowego sklepu internetowego (wycofana)</translation>
@@ -1259,17 +1332,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwań są wysyłane przy użyciu metody GET.
 
           Ta zasada jest uwzględniana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
-<translation id="6365608006609079612">
-          Jeśli to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> może zapamiętywać hasła użytkowników i podpowiadać
-          je automatycznie przy następnym logowaniu się na stronie.
-
-          Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą zapisywać nowych haseł,
-          ale mogą używać haseł zapisanych wcześniej.
-
-          Włączenia ani wyłączenia tej zasady użytkownicy nie mogą zmienić ani zastąpić
-          w <ph name="PRODUCT_NAME" />. Jeśli ta
-          zasada nie jest ustawiona, zapisywanie haseł jest dozwolone (ale
-          użytkownik może je wyłączyć).</translation>
 <translation id="6367755442345892511">Czy użytkownik ma mieć możliwość skonfigurowania kanału wersji</translation>
 <translation id="6368011194414932347">Konfiguruj adres URL strony startowej</translation>
 <translation id="6368403635025849609">Zezwalaj na wykonywanie kodu JavaScript w tych witrynach</translation>
@@ -1322,14 +1384,32 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli nie skonfigurujesz tej zasady, klawiatura ekranowa będzie wyłączona po pierwszym wyświetleniu ekranu logowania. Użytkownicy będą mogli ją włączyć i wyłączyć w każdej chwili i jej stan na tym ekranie będzie utrzymywany między użytkownikami.</translation>
 <translation id="6598235178374410284">Obraz awatara użytkownika</translation>
-<translation id="6633160536638196468">Określ listę wycofanych funkcji, które chcesz tymczasowo włączyć na platformach internetowych.
+<translation id="6636268606788232221">Skonfiguruj ustawienia zarządzania energią, gdy użytkownik jest nieaktywny.
 
-      Zasada ta pozwala administratorom ponownie włączyć na określony czas wycofane funkcje platform internetowych. Funkcje są wskazywane przez tagi z ciągiem tekstowym. Te, które odpowiadają tagom wymienionym na liście w tej zasadzie, zostaną ponownie włączone.
+          Ta zasada określa szereg ustawień strategii zarządzania energią, gdy użytkownik jest nieaktywny.
 
-      Jeśli nie ustawisz tej zasady albo lista jest pusta lub nie zawiera obsługiwanych tagów z ciągiem znaków, wszystkie wycofane funkcje platform internetowych pozostaną wyłączone.
+          Możliwe są cztery typy działań:
+          * Ekran zostanie przyciemniony, gdy użytkownik pozostaje nieaktywny przez czas określony przez |ScreenDim|.
+          * Ekran zostanie wyłączony, gdy użytkownik pozostanie nieaktywny przez czas określony przez |ScreenOff|.
+          * Jeśli użytkownik pozostanie nieaktywny przez czas określony przez |IdleWarning|, wyświetli się ostrzeżenie z informacją o działaniu, które zostanie podjęte.
+          * Jeśli użytkownik pozostaje nieaktywny przez czas określony przez |Idle|, zostanie podjęte działanie określone przez |IdleAction|.
 
-      Mimo że zasada działa na tych platformach, włączana przez nią funkcja może być dostępna tylko na niektórych z nich. Nie wszystkie wycofane funkcje platform internetowych można ponownie włączyć. Zasada pozwala włączyć tylko te wymienione poniżej – na określony czas, który różni się w zależności od funkcji. Ogólny format tagu z ciągiem znaków to [NazwaWycofanejFunkcji]_EffectiveUntil[rrrrmmdd]. Przyczyny zmian funkcji platform internetowych możesz w razie potrzeby znaleźć na https://bit.ly/blinkintents
-      </translation>
+          Dla każdego z działań powyżej należy określić opóźnienie w milisekundach. Musi być ono większe od zera, by wywołać odpowiednie działanie. Jeśli opóźnienie jest ustawione na zero, <ph name="PRODUCT_OS_NAME" /> nie podejmie wskazanego działania.
+
+          Jeśli nie zostanie określona wartość opóźnienia dla tych działań, zostanie użyta wartość domyślna.
+
+          Pamiętaj, że wartość |ScreenDim| zostanie zmniejszona tak, by była mniejsza lub równa wartości |ScreenOff|. |ScreenOff| i |IdleWarning| zostaną zmniejszone tak, by nie przekraczały wartości |Idle|.
+
+          |IdleAction| może przyjąć wartość jednego z czterech możliwych działań:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Jeśli wartość |IdleAction| nie zostanie określona, zostanie podjęte działanie domyślne, którym jest wstrzymanie pracy.
+
+          Ustawienia dla zasilania sieciowego i bateryjnego są oddzielne.
+          </translation>
 <translation id="6641981670621198190">Wyłącz obsługę interfejsów API grafiki 3D</translation>
 <translation id="6647965994887675196">Jeśli ta zasada ma wartość „prawda”, można tworzyć użytkowników nadzorowanych i logować się jako oni.
 
@@ -1540,6 +1620,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
 <translation id="7468416082528382842">Lokalizacja w rejestrze systemu Windows:</translation>
 <translation id="7469554574977894907">Włącz propozycje wyszukiwania</translation>
+<translation id="7485481791539008776">Reguły wybierania domyślnej drukarki</translation>
 <translation id="749556411189861380">Zgłasza wersję systemu operacyjnego i oprogramowania układowego zarejestrowanych urządzeń.
 
       Jeśli ta zasada nie jest określona lub ma wartość Prawda, zarejestrowane urządzenia okresowo zgłaszają wersję systemu operacyjnego i oprogramowania układowego. Jeśli ta zasada ma wartość Fałsz, informacje o wersji nie są przesyłane.</translation>
@@ -1591,7 +1672,26 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, uwierzytelnianie dwuskładnikowe nie będzie włączone i stosowane będzie działanie domyślne – korzystanie z PIN-u zdefiniowanego przez użytkownika.</translation>
 <translation id="7750991880413385988">Otwórz stronę nowej karty</translation>
+<translation id="7761526206824804472">Ustawia co najmniej jeden zalecany język na potrzeby sesji publicznych, ułatwiając użytkownikom wybieranie spośród ustawionych języków.
+
+      Użytkownik może wybrać język i układ klawiatury przed rozpoczęciem sesji publicznej. Domyślnie wszystkie języki obsługiwane w <ph name="PRODUCT_OS_NAME" /> są wymienione w kolejności alfabetycznej. Za pomocą tej zasady możesz przenieść zalecane języki na początek listy.
+
+      Jeśli nie ustawisz tej zasady, wstępnie wybrany będzie bieżący język interfejsu.
+
+      Jeśli ustawisz tę zasadę, zalecane języki zostaną przeniesione na początek listy i oddzielone od pozostałych. Kolejność zalecanych języków będzie taka jak w zapisie zasady. Wstępnie wybrany będzie pierwszy zalecany język z listy.
+
+      Jeśli ustawionych jest więcej zalecanych języków, zakłada się, że użytkownicy będą wybierać spośród nich. W takim wypadku przy rozpoczynaniu sesji publicznej wyraźnie dostępna będzie możliwość wyboru języka i układu klawiatury. W przeciwnym razie zakłada się, że większość użytkowników chce korzystać ze wstępnie wybranego języka. Możliwość wyboru języka i klawiatury będzie mniej wyeksponowana przy rozpoczynaniu sesji publicznej.
+
+      Gdy ustawisz tę zasadę i włączysz automatyczne logowanie (zapoznaj się z zasadami |DeviceLocalAccountAutoLoginId| oraz |DeviceLocalAccountAutoLoginDelay|), w automatycznie rozpoczynanych sesjach publicznych będzie używany pierwszy zalecany język i najpopularniejszy układ klawiatury, który do niego pasuje.
+
+      Wstępnie wybrany układ klawiatury zawsze odpowiada najpopularniejszemu układowi dla wstępnie wybranego języka.
+
+      Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji publicznej dowolny język obsługiwany w <ph name="PRODUCT_OS_NAME" />.
+      </translation>
 <translation id="7763311235717725977">Pozwala określić, czy witryny mogą wyświetlać obrazy. Pokazywanie obrazów może być włączone lub wyłączone dla wszystkich witryn. Jeśli ta zasada nie będzie skonfigurowana, zostanie użyta zasada „AllowImages” i użytkownik będzie mógł zmienić to ustawienie.</translation>
+<translation id="7763479091692861127"> Typy połączeń, które mogą być używane do aktualizowania systemu operacyjnego. Z powodu swojego rozmiaru aktualizacje te silnie wykorzystują połączenie, co może skutkować dodatkowymi kosztami. Dlatego domyślnie są wyłączone w przypadku połączeń uznanych za „kosztowne”, czyli aktualnie dla WiMax, Bluetooth i komórek.
+
+      Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>
 <translation id="7766336524667238790">Przesyłaj informacje o aktywnej sesji publicznej, np.
       dotyczące identyfikatora i wersji aplikacji.
 
@@ -1635,38 +1735,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>
-<translation id="8002229853067655250">Konfiguruje ustawienia zarządzania rozszerzeniami w <ph name="PRODUCT_NAME" />.
-
-          Ta zasada zarządza wieloma ustawieniami, w tym ustawieniami objętymi istniejącymi zasadami dotyczącymi rozszerzeń. Zastępuje wszelkie poprzednie zasady, jeśli są skonfigurowane.
-
-          Zasada mapuje identyfikator rozszerzenia lub adres URL aktualizacji w jego konfiguracji. Identyfikator rozszerzenia pozwala stosować daną konfigurację tylko do wskazanego rozszerzenia. W konfiguracji domyślnej występuje identyfikator „*” i konfiguracja ta jest stosowana w przypadku wszystkich rozszerzeń, dla których zasada nie określa konfiguracji niestandardowych. W przypadku adresu URL aktualizowania konfiguracja jest stosowana do wszystkich rozszerzeń, w których pliku manifestu podany jest dany adres URL rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC1" />).
-
-          Konfiguracje dla poszczególnych rozszerzeń (lub rozszerzeń z tym samym adresem URL aktualizowania) stanowią kolejny słownik, który może zawierać te pola:
-
-          „installation_mode”: mapuje ciąg wskazujący tryb instalowania rozszerzenia. Poprawne ciągi to:
-          * „allowed”: pozwala na instalowanie rozszerzenia przez użytkownika. Jest to działanie domyślne.
-          * „blocked”: blokuje możliwość instalowania rozszerzenia przez użytkownika.
-          * „force_installed”: rozszerzenie jest instalowane automatycznie, a użytkownik nie może go usunąć.
-          * „normal_installed”: rozszerzenie jest instalowane automatycznie, ale użytkownik może je wyłączyć.
-
-          Ustawienie „installation_mode” można skonfigurować również dla wielu rozszerzeń, w tym dla rozszerzenia „*” (jako ustawienia domyślne) oraz rozszerzeń z tym samym adresem URL aktualizacji. W takim przypadku dostępne są tylko wartości „allowed” i „blocked”.
-
-          Jeśli wybierzesz tryb „force_installed” lub „normal_installed”, musisz skonfigurować również „update_url”. Pamiętaj, że adres URL aktualizowania ustawiony w tej zasadzie jest stosowany tylko przy instalacji początkowej, a kolejne aktualizacje rozszerzenia wykorzystują adres URL podany w pliku manifestu. Adres URL aktualizacji powinien wskazywać na plik XML z dokumentem manifestu aktualizacji, jak wyżej.
-
-          „blocked_permissions”: mapuje listę ciągów wskazujących zablokowane uprawnienia API w przypadku danego rozszerzenia. Nazwy uprawnień są identyczne z nazwami ciągów uprawnień podanych w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC3" />). To ustawienie można również skonfigurować dla rozszerzenia „*”. Załadowanie rozszerzenia wymagającego uprawnień, które znajdują się na czarnej liście, nie będzie możliwe. Jeśli zablokowane uprawnienia stanowią wymaganie opcjonalne, rozszerzenie będzie traktowane normalnie, ale żądanie uprawnień powodujących konflikt zostanie odrzucone przy uruchomieniu.
-
-          „allowed_permissions”: działa podobnie jak „blocked_permissions”, ale odnosi się do konkretnych uprawnień z listy zablokowanych, więc nie można skonfigurować rozszerzenia „*”. Pamiętaj, że to ustawienie nie powoduje automatycznego przyznawania uprawnień rozszerzeniom.
-
-          „minimum_version_required”: mapuje ciąg wersji. Format ciągu wersji jest taki sam jak w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC4" />). Rozszerzenie w wersji starszej niż podana wersja minimalna jest wyłączane. Zasada wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana.
-
-          Tych ustawień możesz użyć tylko w przypadku domyślnej konfiguracji „*”:
-
-         „install_sources”: każda pozycja na liście to wzorzec dopasowania rozszerzenia (więcej informacji znajdziesz na https://developer.chrome.com/extensions/match_patterns). Użytkownicy mogą łatwo instalować elementy z każdego adresu URL, który pasuje do pozycji na liście. Wzorce muszą zezwalać na dostęp zarówno do lokalizacji pliku *.crx, jak i strony, na której rozpoczyna się pobieranie (strony odsyłającej).
-
-          „allowed_types”: tworzy białą listę typów rozszerzeń lub aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME" />. Wartość jest listą ciągów znaków z tego zestawu: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach znajdziesz w dokumentacji rozszerzeń <ph name="PRODUCT_NAME" />.
-
-          Ta zasada nie jest jeszcze gotowa i nie można jej używać.
-          </translation>
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="8059164285174960932">Adres URL, dla którego klienty dostępu zdalnego powinny uzyskać token uwierzytelniania</translation>
 <translation id="8071636581296916773">Pozwala korzystać z serwerów przekazujących, gdy klienty zdalne próbują nawiązać połączenie z tym komputerem.
@@ -1729,18 +1797,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8197918588508433925">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją  chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys do zdalnego poświadczania. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście, lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
-<translation id="8211174979203781791">Pozwala skonfigurować domyślny adres URL strony startowej w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę.
-
-          Strona startowa wyświetla się po kliknięciu przycisku strony startowej. Strony, które otwierają się po uruchomieniu przeglądarki, są określane przez zasady RestoreOnStartup.
-
-          Jako typ strony startowej możesz wybrać podany w tym ustawieniu adres URL albo stronę Nowa karta. Po wybraniu strony Nowa karta ta zasada jest ignorowana.
-
-          Jeśli ta zasada jest włączona, użytkownicy nie mogą zmienić adresu URL strony startowej w <ph name="PRODUCT_NAME" />, ale nadal mogą wybrać stronę Nowa karta jako stronę startową.
-
-          Jeśli zasada pozostanie nieustawiona, użytkownicy będą mogli sami wybrać stronę startową, o ile nie jest też skonfigurowana zasada HomepageIsNewTabPage.
-
-          Ta zasada jest niedostępna w systemach Windows,
-          które nie są dołączone do domeny Active Directory.</translation>
 <translation id="8244525275280476362">Maksymalne opóźnienie pobrania po unieważnieniu zasady</translation>
 <translation id="8256688113167012935">Określa nazwę konta, którą <ph name="PRODUCT_OS_NAME" /> pokazuje na ekranie logowania dla danego lokalnego konta na urządzeniu.
 
@@ -1902,6 +1958,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
+<translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
 <translation id="9104138886225968319">Wysyłaj pakiety podtrzymujące do serwera zarządzania,
       by mógł on sprawdzić, czy urządzenie jest offline.
 

@@ -148,6 +148,7 @@ Host</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
 <translation id="4619978527973181021">Accept and install</translation>
+<translation id="4647791084836149355">Show Cardboard view</translation>
 <translation id="4703799847237267011">Your Chromoting session has ended.</translation>
 <translation id="4736223761657662401">Connection History</translation>
 <translation id="4741792197137897469">Authentication failed. Please sign in to Chrome again.</translation>
@@ -206,6 +207,7 @@ Desktop Host</translation>
 <translation id="6284412385303060032">Host running at the console logic screen has shut down to support curtain mode by switching to a host running in a user-specific session.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
+<translation id="6324708100353784493">You have enabled Google Cardboard integration mode. To use this mode, insert your device into a Google Cardboard-compatible viewer.</translation>
 <translation id="6381670701864002291">Something else.</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
 <translation id="6441316101718669559">Desktop integration is not supported on this platform. You can still use the application, but the user experience will be degraded.</translation>

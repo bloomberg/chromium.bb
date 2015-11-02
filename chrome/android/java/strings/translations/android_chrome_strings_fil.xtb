@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Tingnan ang iyong mga tab sa iba pang mga kamakailang app sa screen ng Pangkalahatang-ideya ng iyong telepono.</translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="2082238445998314030">Resulta <ph name="RESULT_NUMBER" /> sa <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Kapag naka-on ang feature na ito, gagamitin ng Chrome ang mga server ng Google upang i-compress ang mga page na bibisitahin mo bago i-download ang mga ito. Ang mga page na ina-access gamit ang mga pribadong koneksyon (HTTPS) o sa mga tab na Incognito ay hindi mao-optimize o makikita ng Google.</translation>
 <translation id="2100273922101894616">Awtomatikong Mag-sign in</translation>
 <translation id="2126426811489709554">Pinapagana ng Chrome</translation>
 <translation id="213279576345780926">Isinarang <ph name="TAB_TITLE" /></translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Ina-access ang input ng audio at video</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
-<translation id="3158619413803296679">Pumili ng bookmark</translation>
 <translation id="3190152372525844641">I-on ang mga pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ang nakaimbak na data</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">I-bookmark ang page na ito</translation>
 <translation id="326254929494722411">Hindi ka pa nakapag-set up ng Google Account sa device na ito</translation>
 <translation id="3269093882174072735">I-load ang larawan</translation>
+<translation id="3278850099957560514">Gumamit ng mas kaunting data sa pamamagitan ng paggamit sa Google upang i-optimize ang mga page na binibisita mo. Ang mga page na ina-access gamit ang mga pribadong koneksyon (HTTPS) o sa mga tab na Incognito ay hindi mao-optimize o makikita ng Google.</translation>
 <translation id="3282568296779691940">Mag-sign in sa Chrome</translation>
 <translation id="3287852534598822456">Wala na ang bookmark. Mangyaring i-refresh.</translation>
 <translation id="3303414029551471755">Magpatuloy na i-download ang content?</translation>
@@ -187,7 +188,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Pindutin ang button na bumalik upang lumabas sa fullscreen.</translation>
 <translation id="4062305924942672200">Impormasyong legal</translation>
-<translation id="4084682180776658562">Bookmark</translation>
 <translation id="4089831646916293264">Maaaring makasagabal ang feature na ito sa pag-access ng mga premium na data service mula sa iyong carrier.</translation>
 <translation id="4099578267706723511">Tulungang mapahusay ang Chrome sa pamamagitan ng pagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash.</translation>
 <translation id="411254640334432676">Hindi na-download.</translation>
@@ -293,6 +293,7 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="5530766185686772672">Isara ang mga tab na incognito</translation>
 <translation id="5556459405103347317">I-reload</translation>
 <translation id="5565871407246142825">Mga credit card</translation>
+<translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE" /> ang larawan</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
 <translation id="5596627076506792578">Higit pang opsyon</translation>
 <translation id="5626134646977739690">Pangalan:</translation>
@@ -461,6 +462,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7765158879357617694">Ilipat</translation>
 <translation id="7767746238359002192">Bisitahin ang page upang i-save offline</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
+<translation id="7784213092572143271">Na-save na ang page</translation>
 <translation id="7788788617745289808">Kailangan ng Chrome ng access sa camera upang maibahagi ito sa site na ito.</translation>
 <translation id="7791543448312431591">Magdagdag</translation>
 <translation id="780301667611848630">Hindi salamat</translation>

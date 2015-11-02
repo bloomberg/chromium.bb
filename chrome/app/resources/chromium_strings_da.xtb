@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende forbrugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium skal starte en ekstern applikation for at håndtere <ph name="SCHEME" />-links. Det link, der er anmodet om, er <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige
+og forkerte loginoplysninger. Dette kan skyldes, at en hacker har forsøgt at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="3032787606318309379">Føjer til Chromium...</translation>
 <translation id="3046695367536568084">Du skal være logget ind på Chromium, før du kan bruge apps. Det gør det muligt for Chromium at synkronisere dine apps, bogmærker, historik, adgangskoder og andre indstillinger på alle enheder.</translation>
 <translation id="3068515742935458733">Hjælp med at gøre Chromium bedre ved at sende fejlrapporter og <ph name="UMA_LINK" /> til Google</translation>

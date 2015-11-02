@@ -140,6 +140,8 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
+<translation id="5626352146162055517"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chrome cố gắng kết nối với <ph name="SITE" /> lần này, trang web gửi lại thông tin đăng nhập
+  không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chrome đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="568643307450491754">Tìm dấu trang của bạn trong menu Chrome hoặc trên thanh dấu trang.</translation>
 <translation id="573759479754913123">Giới thiệu về Chrome OS</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>

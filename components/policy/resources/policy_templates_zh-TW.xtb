@@ -86,6 +86,7 @@
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
+<translation id="1445397020763995734">HTTP Negotiate 驗證模式的帳戶類型</translation>
 <translation id="1454846751303307294">允許您設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="1464848559468748897">針對使用者在 <ph name="PRODUCT_OS_NAME" /> 裝置多重設定檔工作階段中的行為進行控制。
 
@@ -151,6 +152,15 @@
       如果您未指定這項政策，系統就不會顯示任何《服務條款》。
 
       您需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
+<translation id="1757339646969878244">設定 Chrome 遠端桌面主機的遠端存取選項。
+
+      Chrome 遠端桌面主機是在目標裝置上運作的原生服務，
+      使用者可以使用 Chrome 遠端桌面應用程式連線至該主機。
+      這項原生服務屬於封裝形式，在執行時是與 <ph name="PRODUCT_NAME" /> 瀏覽器
+      分開執行。
+
+      如果未安裝 Chrome 遠端桌面主機，
+      系統將會忽略這些政策。</translation>
 <translation id="1757688868319862958">允許 <ph name="PRODUCT_NAME" /> 執行需要驗證的外掛程式。如果您啟用這項設定，系統會繼續執行版本過舊的外掛程式。如果停用或略過這項設定，使用者則必須具備相關權限，才能執行需要驗證的外掛程式。這些外掛程式可能造成系統出現安全性漏洞。</translation>
 <translation id="1803646570632580723">要顯示在啟動器中的固定應用程式清單</translation>
 <translation id="1808715480127969042">封鎖這些網站的 Cookie</translation>
@@ -210,6 +220,11 @@
 <translation id="2006530844219044261">電源管理</translation>
 <translation id="201557587962247231">裝置狀態報告上傳頻率</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
+<translation id="206623763829450685">指定 <ph name="PRODUCT_NAME" /> 支援的 HTTP 驗證機制。
+
+          可用的值為「basic」、「digest」、「ntlm」和「negotiate」。如果指定多個值，請以半形逗號分隔。
+
+          如果未設定這項政策，系統將全部採用以上 4 種機制。</translation>
 <translation id="2067011586099792101">禁止存取內容套件以外的網站</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2077273864382355561">在電池供電環境下執行時的螢幕關閉延遲時間</translation>
@@ -513,6 +528,38 @@
       如果您啟用這項設定，所有監控式入口網站驗證網頁 (亦即 <ph name="PRODUCT_NAME" /> 偵測到成功的網際網路連線之前，所有從監控式入口網站登入網頁起始的網頁) 都會另外顯示在新視窗中 (忽略目前使用者的所有政策設定和限制)。
 
       如果您停用這項設定或不予設定，則所有監控式入口網站驗證網頁都會顯示在一般的瀏覽器新分頁中 (套用目前使用者的 Proxy 設定)。</translation>
+<translation id="3001569025430882724">覆寫 <ph name="PRODUCT_NAME" /> 預設印表機選取規則。
+
+      這項政策可讓您決定在 <ph name="PRODUCT_NAME" /> 中首次透過設定檔使用列印功能時選取印表機的規則。
+
+      如果設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試尋找符合所有指定屬性的印表機，並選取該印表機做為預設印表機。採用非唯一比對機制時，凡是相符的印表機皆可供選取 (取決於找到的順序)，因此一旦找到符合政策的印表機，系統就會直接選取。
+
+      如果未設定這項政策，或是在逾時期間找不到相符的印表機，系統會以內建的 PDF 印表機做為預設印表機，或者不選取任何印表機 (如果沒有 PDF 印表機的話)。
+
+      系統會以 JSON 物件形式剖析政策值，架構如下：
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "是否僅限在特定的印表機範圍內搜尋相符的印表機。",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "用於比對印表機 ID 的規則運算式。",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "用於比對印表機顯示名稱的規則運算式。",
+            "type": "string"
+          }
+        }
+      }
+
+      已連上 Google 雲端列印服務的印表機屬於「cloud」類型，其他印表機則是「local」類型。
+      省略欄位表示不對值設限。舉例來說，如果未指定連線，系統會在執行列印預覽作業時尋找所有類型的印表機 (包括 local 和 cloud)。
+      規則運算式模式必須符合 JavaScript RegExp 語法，且比對機制需區分大小寫。</translation>
 <translation id="3021409116652377124">停用外掛程式尋找工具</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
 <translation id="3034580675120919256">允許您設定是否要讓網站執行 JavaScript。您可以允許或禁止所有網站執行 JavaScript。如果未設定這項政策，系統會使用「AllowJavaScript」，不過使用者可以變更設定。</translation>
@@ -537,6 +584,38 @@
 <translation id="3153348162326497318">允許您指定使用者不得安裝的擴充功能。如果已安裝的擴充功能在黑名單中，就會遭到移除。星號「*」代表排除所有的擴充功能，除非您特別將部分擴充功能列入許可清單。如果未設定這項政策，使用者即可在「<ph name="PRODUCT_NAME" />」中安裝任何擴充功能。</translation>
 <translation id="316778957754360075">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 移除這項設定。如要設定機構代管的擴充功能/應用程式集合，建議您將代管 CRX 封裝檔的網站加入 ExtensionInstallSources 中，並在網頁上提供該封裝檔的直接下載連結。您可以透過 ExtensionInstallForcelist 政策建立該網頁專用的啟動器。</translation>
 <translation id="3185009703220253572">自第 <ph name="SINCE_VERSION" /> 版起</translation>
+<translation id="318812033927804102">配置 <ph name="PRODUCT_NAME" /> 的擴充功能管理設定。
+
+          這項政策可控制多項設定 (包括由任何現有的擴充功能相關政策控制的設定)，效力優先於任何先前設定的既有政策。
+
+          這項政策可為擴充功能 ID 或更新網址與其設定建立對應關係。有了擴充功能 ID，系統就只會將設定套用到指定的擴充功能。您可以針對特殊的 ID「*」指定預設設定，讓沒有透過這項政策指定自訂設定的擴充功能全部套用預設設定。此外，系統會比對這個擴充功能的資訊清單提供的更新網址，將設定套用到所有更新網址相符的擴充功能 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。
+
+          每個擴充功能 (或更新網址相同的擴充功能) 的設定也會記錄以下列載的這些欄位。
+
+          「installation_mode」：對應到指示擴充功能安裝模式的字串。有效的字串如下：
+          *「allowed」：允許使用者安裝這個擴充功能 (這是預設的行為)。
+          *「blocked」：禁止這個安裝擴充功能。
+          *「force_installed」：自動安裝這個擴充功能，且使用者無法移除。
+          *「normal_installed」：自動安裝這個擴充功能，但使用者可以停用。
+
+          您也可以為多個擴充功能設定「installation_mode」，包括「*」擴充功能 (做為預設設定) 和更新網址相同的擴充功能。在這種情況下，只能使用「allowed」和「blocked」這兩個值。
+
+          如果將模式設為「force_installed」或「normal_installed」，則必須一併設定「update_url」。請注意，系統只會在初次安裝擴充功能時使用您在這項政策中設定的更新網址，後需更新擴充功能時則會使用擴充功能的資訊清單指示的更新網址。更新網址應指向前述更新資訊清單 XML 檔案。
+
+          「blocked_permissions」：對應到字串清單，指示擴充功能的封鎖的 API 權限。權限名稱與擴充功能資訊清單宣告的權限字串相同 (如 <ph name="LINK_TO_EXTENSION_DOC3" /> 所述)。您也可以針對「*」擴充功能配置這項設定。如果擴充功能要求封鎖清單中的權限，則無法載入。如果擴充功能含有封鎖的權限，但屬於選擇性要求，系統會以一般方式進行處理。不過，一旦要求的權限發生衝突，系統會自動在執行階段拒絕要求。
+
+          「allowed_permissions」：與「blocked_permissions」相似，但明確允許部分可能遭到全域封鎖權限清單封鎖的權限，因此可以針對「*」擴充功能進行設定。請注意，這項設定不會自動將權限授予擴充功能。
+
+          「minimum_version_required」：對應到版本字串。版本字串的格式與擴充功能資訊清單中使用的格式相同 (如 <ph name="LINK_TO_EXTENSION_DOC4" /> 所述)。如果擴充功能的版本比指定的最低版本更舊，便會遭到停用。這項設定也適用於強制安裝的擴充功能。
+
+          下列設定僅適用於預設的「*」設定：
+
+          「install_sources」：這份清單中的每個項目都是擴充功能樣式比對模式 (請參閱 https://developer.chrome.com/extensions/match_patterns)。使用者可以透過任何與這份清單中的項目相符的網址輕鬆安裝各種項目。*.crx 檔案的位置和下載來源網頁 (亦即參照網址) 都必須與這些模式相符。
+
+          「allowed_types」：這項設定會將可以在 <ph name="PRODUCT_NAME" /> 中安裝的擴充功能/應用程式類型加入許可清單。設定值為字串清單，系統接受的字串如下：「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」。如要進一步瞭解這些類型，請參閱 <ph name="PRODUCT_NAME" /> 擴充功能說明文件。
+
+          這項政策目前尚未開放使用，請勿直接使用。
+          </translation>
 <translation id="3205825995289802549">首次執行時將第一個瀏覽器視窗最大化</translation>
 <translation id="3206731874112238027">停用列印預覽 (已淘汰)</translation>
 <translation id="3213821784736959823">控制是否要在 <ph name="PRODUCT_NAME" /> 中使用內建 DNS 用戶端。
@@ -703,9 +782,6 @@
 <translation id="402759845255257575">不允許任何網站執行 JavaScript</translation>
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
-<translation id="4043912146394966243"> 允許用來進行作業系統更新的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，同時也可能讓使用者必須支付額外費用，因此當使用者使用較昂貴的連線類型 (目前包括 WiMax、藍牙和行動網路) 時，預設情況並不允許進行作業系統更新。
-
-      系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
 <translation id="4052765007567912447">控制使用者是否要在密碼管理員中以清楚文字顯示密碼。如果您停用這項設定，密碼管理員就不會允許在密碼管理員視窗中以清楚文字顯示儲存的密碼。如果您啟用或未設定這項政策，使用者即可在密碼管理員中查看到清楚的密碼文字。</translation>
 <translation id="4056910949759281379">停用 SPDY 通訊協定</translation>
 <translation id="4088589230932595924">強制使用無痕模式</translation>
@@ -754,8 +830,6 @@
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
-<translation id="4337944790873898250">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會在首次執行時一律將第一個顯示的視窗最大化。
-      如果將這項政策設為 False 或未設定，啟發式演算法會根據螢幕尺寸，決定是否將顯示的第一個視窗最大化。</translation>
 <translation id="436581050240847513">回報裝置網路介面</translation>
 <translation id="4372704773119750918">不允許企業使用者使用多重設定檔 (主要或次要)</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
@@ -767,6 +841,14 @@
 
       如果設定這項政策，使用者無法變更，且應用程式捷徑會一律顯示或不顯示。</translation>
 <translation id="443665821428652897">瀏覽器關閉時清除網站資料 (已淘汰)</translation>
+<translation id="4439336120285389675">指定要暫時重新啟用的已淘汰網路平台功能清單。
+
+      這項政策可讓管理員在限定時間內重新啟用已淘汰的網路平台功能。系統會使用字串標記辨識功能，並根據這項政策在清單中指定的標記重新啟用對應的功能。
+
+      如未設定這項政策、清單沒有任何內容，或是不符合支援的字串標記，已淘汰的網路平台功能將全部維持停用狀態。
+
+      雖然以上平台支援政策本身，但這些平台不一定全部支援透過政策啟用的功能。部分已淘汰的網路平台功能無法重新啟用，只有下方明確列出者可在限定時間內啟用，啟用時限則視功能而異。字串標記的通用格式是 &lt;已淘汰的功能名稱&gt;_EffectiveUntil&lt;yyyymmdd&gt;。如需參考資訊，請前往 https://bit.ly/blinkintents 查看網路平台功能變更的意義。
+      </translation>
 <translation id="4442582539341804154">裝置閒置或暫停時啟用鎖定</translation>
 <translation id="4445684791305970001">停用「開發人員工具」和 JavaScript 控制台。如果您啟用這項設定，系統就無法存取「開發人員工具」且無法查看網站元素。此外，也會停用任何用來開啟「開發人員工具」和 JavaScript 控制台的鍵盤快速鍵、選單或內容選單項目。如果您停用或未設定這個選項，使用者即可使用「開發人員工具」和 JavaScript 控制台。</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
@@ -1014,32 +1096,6 @@
 
       如果未設定這項政策，系統不會進行自動登入。</translation>
 <translation id="5535973522252703021">Kerberos 委派伺服器許可清單</translation>
-<translation id="553658564206262718">設置使用者進入閒置狀態時的電源管理設定。
-
-          這項政策是控制各項電源管理策略設定，讓系統在使用者進入閒置狀態時執行相對應的動作。
-
-          執行的動作可分以下 4 種：
-          * 當使用者處於閒置狀態達到 |ScreenDim| 所指定的時間後，螢幕會變暗。
-          * 當使用者處於閒置狀態達到 |ScreenOff| 所指定的時間後，螢幕會關閉。
-          * 當使用者處於閒置狀態達到 |IdleWarning| 所指定的時間後，系統會顯示警告訊息對話方塊，通知即將執行閒置動作。
-          * 當使用者處於閒置狀態達到 |Idle| 所指定的時間後，系統會執行 |IdleAction| 所指定的動作。
-
-          指定以上任一動作的延遲時間均需以毫秒為單位，且必須設為大於 0 的值，才能觸發相應動作。在延遲時間值設為 0 的情況下，<ph name="PRODUCT_OS_NAME" /> 不會執行相應動作。
-
-          如果未設定上述各項延遲時間值，則系統會使用預設值。
-
-          請注意，|ScreenDim| 的值必須小於或等於 |ScreenOff| 的值，|ScreenOff| 和 |IdleWarning| 的值則必須小於或等於 |Idle| 的值。
-
-          |IdleAction| 可指定以下 4 種動作：
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          如果未設定 |IdleAction|，系統會採取預設動作，將裝置暫停。
-
-          此外，您也可以另行設置 AC 電源和電池的相關設定。
-          </translation>
 <translation id="5560039246134246593">在 <ph name="PRODUCT_NAME" /> 中擷取變異版本種子時新增參數。
 
       如果指定這項政策，系統在連結變異版本種子的擷取網址時，會加入「restrict」這個查詢參數。參數值即為這項政策中指定的值。
@@ -1078,6 +1134,9 @@
 
       如未設定這項政策，或是設定為 False，<ph name="PRODUCT_NAME" /> 將會套用目前的線上撤銷檢查設定。</translation>
 <translation id="5732972008943405952">首次執行時從預設瀏覽器匯入自動填入表單資料</translation>
+<translation id="5751004203256768694">指定支援 HTTP Negotiate 驗證模式 (例如 Kerberos 驗證) 的 Android 驗證應用程式所提供的帳戶類型。驗證應用程式的供應商應提供這項資訊。詳情請參閱 https://goo.gl/hajyfN。
+
+          如未設定這項政策，系統會在 Android 裝置上停用 HTTP Negotiate 驗證機制。</translation>
 <translation id="5761030451068906335">調整 <ph name="PRODUCT_NAME" /> 的 Proxy 設定。
 
       這項政策尚未準備完成，請勿使用。</translation>
@@ -1085,6 +1144,9 @@
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="5774856474228476867">預設搜尋引擎搜尋網址</translation>
 <translation id="5776485039795852974">每當網站要顯示桌面通知時詢問我</translation>
+<translation id="5781412041848781654">指定用於 HTTP 驗證機制的 GSSAPI 程式庫。您可以僅設定程式庫名稱，也可以設定完整路徑。
+
+           如未設定這項政策，<ph name="PRODUCT_NAME" /> 會改用預設程式庫名稱。</translation>
 <translation id="5781806558783210276">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後採取動作。
 
           如果您設定這項政策，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME" /> 才會採取閒置動作 (可另行設定)。
@@ -1186,6 +1248,17 @@
           指定政策值時需以毫秒為單位。該值必須小於閒置延遲時間值。</translation>
 <translation id="6114416803310251055">淘汰的</translation>
 <translation id="6145799962557135888">允許您設定網址模式清單，指定可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
+<translation id="6151775819333710697">
+          啟用這項設定後，使用者即可讓 <ph name="PRODUCT_NAME" /> 記住密碼，
+          並且在使用者下次登入網站時自動提供密碼。
+
+          停用這項設定後，使用者將無法儲存新密碼，
+          但仍可使用先前儲存的密碼。
+
+          啟用或停用這項設定後，使用者將無法
+          在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
+          如果未設定這項政策，系統就會允許儲存密碼 (但使用者可以關閉
+          密碼儲存功能)。</translation>
 <translation id="6155936611791017817">設定大型游標在登入畫面的預設狀態</translation>
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
 <translation id="6158324314836466367">企業線上應用程式商店名稱 (已不適用)</translation>
@@ -1245,17 +1318,6 @@
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法傳送搜尋要求。
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
-<translation id="6365608006609079612">
-          啟用這項設定後，使用者即可讓 <ph name="PRODUCT_NAME" /> 記住密碼，
-          並且在使用者下次登入網站時自動提供密碼。
-
-          停用這項設定後，使用者將無法儲存新密碼，
-          但仍可使用先前儲存的密碼。
-
-          啟用或停用這項設定後，使用者將無法
-          在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
-          如果未設定這項政策，系統就會允許儲存密碼 (但使用者可以關閉
-          密碼儲存功能)。</translation>
 <translation id="6367755442345892511">是否允許使用者設定發佈頻道</translation>
 <translation id="6368011194414932347">設定首頁網址</translation>
 <translation id="6368403635025849609">允許這些網站的 JavaScript</translation>
@@ -1308,14 +1370,32 @@
 
           如未設定這項政策，那麼登入畫面最初顯示時就會停用螢幕小鍵盤。使用者隨時可以啟用或停用螢幕小鍵盤，這項功能在登入畫面中的狀態，會在不同使用者之間持續下去。</translation>
 <translation id="6598235178374410284">使用者顯示圖片</translation>
-<translation id="6633160536638196468">指定要暫時重新啟用的已淘汰網路平台功能清單。
+<translation id="6636268606788232221">設置使用者進入閒置狀態時的電源管理設定。
 
-      這項政策可讓管理員在限定時間內重新啟用已淘汰的網路平台功能。系統會使用字串標記辨識功能，並根據這項政策在清單中指定的標記重新啟用對應的功能。
+          這項政策是控制各項電源管理策略設定，讓系統在使用者進入閒置狀態時執行相對應的動作。
 
-      如未設定這項政策、清單沒有任何內容，或是不符合支援的字串標記，已淘汰的網路平台功能將全部維持停用狀態。
+          執行的動作可分以下 4 種：
+          * 當使用者處於閒置狀態達到 |ScreenDim| 所指定的時間後，螢幕會變暗。
+          * 當使用者處於閒置狀態達到 |ScreenOff| 所指定的時間後，螢幕會關閉。
+          * 當使用者處於閒置狀態達到 |IdleWarning| 所指定的時間後，系統會顯示警告訊息對話方塊，通知即將執行閒置動作。
+          * 當使用者處於閒置狀態達到 |Idle| 所指定的時間後，系統會執行 |IdleAction| 所指定的動作。
 
-      雖然以上平台支援政策本身，但這些平台不一定全部支援透過政策啟用的功能。部分已淘汰的網路平台功能無法重新啟用，只有下方明確列出者可在限定時間內啟用，啟用時限則視功能而異。字串標記的通用格式是 &lt;已淘汰的功能名稱&gt;_EffectiveUntil&lt;yyyymmdd&gt;。如需參考資訊，請前往 https://bit.ly/blinkintents 查看網路平台功能變更的意義。
-      </translation>
+          指定以上任一動作的延遲時間均需以毫秒為單位，且必須設為大於 0 的值，才能觸發相應動作。在延遲時間值設為 0 的情況下，<ph name="PRODUCT_OS_NAME" /> 不會執行相應動作。
+
+          如果未設定上述各項延遲時間值，則系統會使用預設值。
+
+          請注意，|ScreenDim| 的值必須小於或等於 |ScreenOff| 的值，|ScreenOff| 和 |IdleWarning| 的值則必須小於或等於 |Idle| 的值。
+
+          |IdleAction| 可指定以下 4 種動作：
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          如果未設定 |IdleAction|，系統會採取預設動作，將裝置暫停。
+
+          此外，您也可以另行設置 AC 電源和電池的相關設定。
+          </translation>
 <translation id="6641981670621198190">停止支援 3D 圖形 API</translation>
 <translation id="6647965994887675196">如果設為 True，即可建立並使用受監督的使用者。
 
@@ -1533,6 +1613,7 @@
 <translation id="7443616896860707393">跨原始來源的 HTTP 基本驗證提示</translation>
 <translation id="7468416082528382842">Windows 登錄位置：</translation>
 <translation id="7469554574977894907">啟用搜尋建議</translation>
+<translation id="7485481791539008776">預設印表機選取規則</translation>
 <translation id="749556411189861380">回報註冊裝置的作業系統和韌體版本。
 
       如果這項政策未設定或設為 True，註冊的裝置會定期回報作業系統和韌體版本。如果設為 False，則不會回報版本資訊。</translation>
@@ -1584,7 +1665,26 @@
 
           如果您停用這項設定或並未進行設置，系統就不會啟用雙重驗證機制，而預設行為則會改採用輸入使用者定義的 PIN。</translation>
 <translation id="7750991880413385988">開啟新分頁</translation>
+<translation id="7761526206824804472">為公開工作階段設定一個或多個建議的語言代碼，方便讓使用者從中選擇自己偏好的設定。
+
+      使用者可以在啟動公開工作階段前選擇語言代碼和鍵盤配置。在預設狀態下，系統會依英文字母順序列出 <ph name="PRODUCT_OS_NAME" /> 支援的所有語言代碼。這項政策可讓您將一些建議的語言代碼移至清單頂端。
+
+      如果未設定這項政策，系統會預先選取目前的使用者介面語言代碼。
+
+      如果設定這項政策，建議的語言代碼會顯示在清單頂端，與其他所有語言代碼明顯區隔。系統會根據您在這項政策中指定的順序列出這些建議的語言代碼，並預先選取第一個語言代碼。
+
+      如果有多個建議的語言代碼，系統會假設使用者將從中擇一使用。啟動公開工作階段時，系統會以醒目方式顯示選取的語言代碼和鍵盤配置。否則，系統會假設使用者將使用預先選取的語言代碼，並於公開工作階段啟動時以較不醒目的方式顯示選取的語言代碼和鍵盤配置。
+
+      如果在自動登入功能已啟用的情況下設定這項政策 (請參閱 |DeviceLocalAccountAutoLoginId| 和 |DeviceLocalAccountAutoLoginDelay| 政策)，自動啟動的公開工作階段會使用第一個建議的語言代碼，以及與該語言代碼相符的最常用鍵盤配置。
+
+      預先選取的鍵盤配置一律是與預先選取的語言代碼相符的最常用配置。
+
+      這項政策只能設為建議性質。您可以使用這項政策讓一些建議的語言代碼顯示在頂端，但使用者一律可以為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
+      </translation>
 <translation id="7763311235717725977">允許您設定是否要讓網站顯示圖片。您可以允許或禁止所有網站顯示圖片。如果未設定這項政策，系統會使用「AllowImages」，不過使用者可以變更設定。</translation>
+<translation id="7763479091692861127"> 允許用來進行作業系統更新的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，同時也可能讓使用者必須支付額外費用，因此當使用者使用較昂貴的連線類型 (目前包括 WiMax、藍牙和行動網路) 時，預設情況並不允許進行作業系統更新。
+
+      系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
 <translation id="7766336524667238790">回報執行中資訊站工作階段的相關資訊，例如
       應用程式 ID 和版本。
 
@@ -1626,38 +1726,6 @@
 <translation id="7953256619080733119">管理化環境下使用者手動建立的例外主機</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
-<translation id="8002229853067655250">配置 <ph name="PRODUCT_NAME" /> 的擴充功能管理設定。
-
-          這項政策可控制多項設定 (包括由任何現有的擴充功能相關政策控制的設定)，效力優先於任何先前設定的既有政策。
-
-          這項政策可為擴充功能 ID 或更新網址與其設定建立對應關係。有了擴充功能 ID，系統就只會將設定套用到指定的擴充功能。您可以針對特殊的 ID「*」指定預設設定，讓沒有透過這項政策指定自訂設定的擴充功能全部套用預設設定。此外，系統會比對這個擴充功能的資訊清單提供的更新網址，將設定套用到所有更新網址相符的擴充功能 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。
-
-          每個擴充功能 (或更新網址相同的擴充功能) 的設定也會記錄以下列載的這些欄位。
-
-          「installation_mode」：對應到指示擴充功能安裝模式的字串。有效的字串如下：
-          *「allowed」：允許使用者安裝這個擴充功能 (這是預設的行為)。
-          *「blocked」：禁止這個安裝擴充功能。
-          *「force_installed」：自動安裝這個擴充功能，且使用者無法移除。
-          *「normal_installed」：自動安裝這個擴充功能，但使用者可以停用。
-
-          您也可以為多個擴充功能設定「installation_mode」，包括「*」擴充功能 (做為預設設定) 和更新網址相同的擴充功能。在這種情況下，只能使用「allowed」和「blocked」這兩個值。
-
-          如果將模式設為「force_installed」或「normal_installed」，則必須一併設定「update_url」。請注意，系統只會在初次安裝擴充功能時使用您在這項政策中設定的更新網址，後需更新擴充功能時則會使用擴充功能的資訊清單指示的更新網址。更新網址應指向前述更新資訊清單 XML 檔案。
-
-          「blocked_permissions」：對應到字串清單，指示擴充功能的封鎖的 API 權限。權限名稱與擴充功能資訊清單宣告的權限字串相同 (如 <ph name="LINK_TO_EXTENSION_DOC3" /> 所述)。您也可以針對「*」擴充功能配置這項設定。如果擴充功能要求封鎖清單中的權限，則無法載入。如果擴充功能含有封鎖的權限，但屬於選擇性要求，系統會以一般方式進行處理。不過，一旦要求的權限發生衝突，系統會自動在執行階段拒絕要求。
-
-          「allowed_permissions」：與「blocked_permissions」相似，但明確允許部分可能遭到全域封鎖權限清單封鎖的權限，因此可以針對「*」擴充功能進行設定。請注意，這項設定不會自動將權限授予擴充功能。
-
-          「minimum_version_required」：對應到版本字串。版本字串的格式與擴充功能資訊清單中使用的格式相同 (如 <ph name="LINK_TO_EXTENSION_DOC4" /> 所述)。如果擴充功能的版本比指定的最低版本更舊，便會遭到停用。這項設定也適用於強制安裝的擴充功能。
-
-          下列設定僅適用於預設的「*」設定：
-
-          「install_sources」：這份清單中的每個項目都是擴充功能樣式比對模式 (請參閱 https://developer.chrome.com/extensions/match_patterns)。使用者可以透過任何與這份清單中的項目相符的網址輕鬆安裝各種項目。*.crx 檔案的位置和下載來源網頁 (亦即參照網址) 都必須與這些模式相符。
-
-          「allowed_types」：這項設定會將可以在 <ph name="PRODUCT_NAME" /> 中安裝的擴充功能/應用程式類型加入許可清單。設定值為字串清單，系統接受的字串如下：「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」。如要進一步瞭解這些類型，請參閱 <ph name="PRODUCT_NAME" /> 擴充功能說明文件。
-
-          這項政策目前尚未開放使用，請勿直接使用。
-          </translation>
 <translation id="8044493735196713914">回報裝置啟動模式</translation>
 <translation id="8059164285174960932">遠端存取用戶端取得驗證憑證的來源網址</translation>
 <translation id="8071636581296916773">遠端用戶端嘗試與這台電腦建立連線時，啟用轉送伺服器。
@@ -1720,17 +1788,6 @@
 <translation id="8197918588508433925">這項政策可指定允許透過 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 進行遠端證明的擴充功能。使用方法是將擴充功能經由 API 加入清單中。
 
           如果清單中並無擴充功能，或是尚未設定清單，則會導致無法呼叫 API，並顯示錯誤代碼。</translation>
-<translation id="8211174979203781791">設定 <ph name="PRODUCT_NAME" /> 的預設首頁網址，並且禁止使用者變更。
-
-          首頁是指使用者按下首頁按鈕後開啟的頁面，而啟動時開啟的頁面則是由 RestoreOnStartup 政策控制。
-
-          首頁類型可以設為您在這裡指定的網址，也可以設為 [新分頁]。如果選取 [新分頁]，這項政策將不會生效。
-
-          如果您啟用這項設定，使用者就無法自行變更 <ph name="PRODUCT_NAME" /> 的首頁網址，但仍能選擇以「新分頁」做為個人首頁。
-
-          如未設定這項政策，使用者將可自行選擇首頁 (如果也沒有設定 HomepageIsNewTabPage 政策的話)。
-
-          這項政策不適用於未加入 Active Directory 網域的 Windows 執行個體。</translation>
 <translation id="8244525275280476362">政策失效後的最大擷取延遲</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME" /> 在登入畫面上顯示的帳戶名稱，以表示相對應的裝置本機帳戶。
 
@@ -1897,6 +1954,7 @@
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
+<translation id="9098553063150791878">HTTP 驗證政策</translation>
 <translation id="9104138886225968319">將監控流量訊號傳送到管理伺服器，
       伺服器即可偵測裝置是否處於離線狀態。
 

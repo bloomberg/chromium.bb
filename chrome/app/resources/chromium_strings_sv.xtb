@@ -61,6 +61,8 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> använder normalt kryptering (SSL) för att skydda din information. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga
+och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="3032787606318309379">Lägger till i Chromium ...</translation>
 <translation id="3046695367536568084">Du måste vara inloggad i Chromium för att kunna använda appar. När du är inloggad kan du synkronisera appar, bokmärken, historik, lösenord och andra inställningar mellan dina enheter.</translation>
 <translation id="3068515742935458733">Hjälp oss att göra Chromium bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google</translation>

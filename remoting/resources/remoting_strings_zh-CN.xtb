@@ -148,6 +148,7 @@
 <translation id="4573676252416618192">Chrome 远程
 桌面主机</translation>
 <translation id="4619978527973181021">接受并安装</translation>
+<translation id="4647791084836149355">显示 Cardboard 视图</translation>
 <translation id="4703799847237267011">您的 Chrome 远程访问会话已结束。</translation>
 <translation id="4736223761657662401">连接历史记录</translation>
 <translation id="4741792197137897469">身份验证失败。请重新登录 Chrome。</translation>
@@ -206,6 +207,7 @@
 <translation id="6284412385303060032">在控制台逻辑屏幕运行的主机已关闭。这是为了切换到在用户特定会话中运行的主机，以便为 Curtain 模式提供支持。</translation>
 <translation id="629730747756840877">帐户</translation>
 <translation id="6304318647555713317">客户端</translation>
+<translation id="6324708100353784493">您已启用 Google Cardboard 集成模式。要使用此模式，请将您的设备插入一个支持 Google Cardboard 的查看器。</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
 <translation id="6441316101718669559">该平台不支持桌面集成。您仍可以使用该应用，但用户体验将会受到影响。</translation>

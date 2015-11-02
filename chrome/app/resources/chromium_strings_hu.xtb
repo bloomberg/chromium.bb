@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">Opcionális: Segítsen a Chromium fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak.</translation>
 <translation id="2910007522516064972">A &amp;Chromium névjegye</translation>
 <translation id="2966088006374919794">A Chromiumnak külső alkalmazást kell indítania a(z) <ph name="SCHEME" /> linkek kezeléséhez. A kért link: <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor most a Chromium csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan
+és helytelen hitelesítőadatokat küldött vissza. Vagy egy támadó próbálja meg magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő szakította meg a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="3032787606318309379">Hozzáadás a Chromiumhoz...</translation>
 <translation id="3046695367536568084">Alkalmazások használatához be kell jelentkeznie a Chromiumba. A Chromium így szinkronizálni tudja alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait az eszközök között.</translation>
 <translation id="3068515742935458733">Segítse a Chromium fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK" /></translation>

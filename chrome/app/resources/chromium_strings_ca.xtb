@@ -59,6 +59,7 @@
 <translation id="2886012850691518054">Opcional: ajudeu a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="2910007522516064972">Quant a &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">Normalment, al lloc web <ph name="SITE" /> es fa servir l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="3032787606318309379">S'està afegint a Chromium...</translation>
 <translation id="3046695367536568084">Heu de tenir la sessió iniciada a Chromium per poder utilitzar aplicacions. D'aquesta manera, Chromium podrà sincronitzar les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres paràmetres amb la resta de dispositius.</translation>
 <translation id="3068515742935458733">Ajudeu a millorar Chromium; envieu informes d'error i <ph name="UMA_LINK" /> a Google.</translation>

@@ -168,6 +168,15 @@
       Ak toto pravidlo nastavené nie je, Zmluvné podmienky sa nezobrazia.
 
       Toto pravidlo byť malo byť nastavené ako webová adresa, z ktorej systém <ph name="PRODUCT_OS_NAME" /> môže Zmluvné podmienky stiahnuť. Zmluvné podmienky musia byť uložené vo formáte čistého textu, zobrazované ako typ MIME „text/plain“. Nie sú povolené žiadne značky.</translation>
+<translation id="1757339646969878244">Konfigurácia možností vzdialeného prístupu v hostiteľovi Vzdialenej plochy Chrome.
+
+      Hostiteľ Vzdialenej plochy Chrome je natívna služba spustená na cieľovom
+      zariadení, ku ktorému sa môže používateľ prihlásiť, aby mohol používať
+      aplikáciu Vzdialená plocha Chrome. Táto natívna služba je súčasťou
+      samostatného balíka a spúšťa sa oddelene od prehliadača <ph name="PRODUCT_NAME" />.
+
+      Tieto pravidlá sa ignorujú a neplatí to iba v prípade, že máte
+      nainštalovaného hostiteľa Vzdialenej plochy Chrome.</translation>
 <translation id="1757688868319862958">Povolí produktu <ph name="PRODUCT_NAME" /> spustiť doplnky, ktoré vyžadujú autorizáciu. Ak toto nastavenie povolíte, budú doplnky, ktoré nie sú zastarané, nepretržite spustené. Ak je toto nastavenie zakázané alebo nie je nastavené, používatelia budú požiadaní, aby povolili spustenie doplnkov, ktoré vyžadujú autorizáciu. Ide o doplnky, ktoré môžu ohroziť bezpečnosť.</translation>
 <translation id="1803646570632580723">Zoznam pripnutých aplikácií, ktoré sa zobrazujú v spúšťači</translation>
 <translation id="1808715480127969042">Blokovať súbory cookie na týchto webových stránkach</translation>
@@ -619,7 +628,7 @@
 
       Tlačiarne pripojené do služby Google Cloud Print sa považujú za tlačiarne v cloude, zvyšné tlačiarne sú označené ako miestne.
       Ak vynecháte určité pole, budú mu zodpovedať všetky príslušné hodnoty. Ak napríklad nešpecifikujete pripojenie, nástroj Print Preview spustí hľadanie všetkých druhov tlačiarní – miestnych aj v cloude.
-      Vzory bežných výrazov musia zodpovedať syntaxi JavaScript RegExp a vo všetkých zodpovedajúcich výrazov sa rozlišujú veľké a malé písmená.</translation>
+      Vzory bežných výrazov musia zodpovedať syntaxi JavaScript RegExp a vo všetkých zodpovedajúcich výrazoch sa rozlišujú veľké a malé písmená.</translation>
 <translation id="3021409116652377124">Zakázať nástroj na hľadanie doplnkov</translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
 <translation id="3034580675120919256">Umožní nastaviť, či môžu webové stránky spúšťať kód JavaScript. Spúšťanie kódu JavaScript sa dá pre všetky webové stránky buď umožniť, alebo naopak zamietnuť.
@@ -650,6 +659,38 @@
           Ak toto pravidlo ponecháte nenastavené, používateľ bude môcť do prehliadača <ph name="PRODUCT_NAME" /> inštalovať ľubovoľné rozšírenia.</translation>
 <translation id="316778957754360075">Toto nastavenie sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29. Odporúčaným spôsobom na nastavenie zbierok rozšírení/aplikácií hostených organizáciou je zahrnúť stránky hostiace balíky CRX do zoznamu ExtensionInstallSources a vložiť na webovú stránku priame odkazy na balíky. Spúšťač pre danú webovú stránku je možné vytvoriť pomocou pravidla ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzie <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Konfiguruje nastavenia správy pre prehliadač <ph name="PRODUCT_NAME" />.
+
+          Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
+
+          Toto pravidlo namapuje identifikátor rozšírenia alebo webovú adresu aktualizácie na svoju konfiguráciu. Keď bude mať k dispozícii identifikátor rozšírenia, konfigurácia sa použije iba pre ním určené rozšírenie. Pre špeciálny identifikátor „*“ môžete nastaviť predvolenú konfiguráciu, ktorá sa použije pre všetky rozšírenia, pre ktoré ste v rámci tohto pravidla nenastavili vlastnú konfiguráciu. Keď bude mať k dispozícii webovú adresu aktualizácie, konfigurácia sa použije pre všetky rozšírenia s presnou webovou adresou aktualizácie stanovenou v manifeste tohto rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurácia pre jednotlivé rozšírenia (alebo rozšírenia s rovnakou webovou adresou aktualizácie) je ďalší slovník, ktorý môže obsahovať polia uvedené nižšie.
+
+          „installation_mode“: spustí mapovanie na reťazec označujúci režim inštalácie daného rozšírenia. Medzi platné reťazce patria:
+          * „allowed“: umožňuje používateľovi nainštalovať rozšírenie. Ide o predvolené správanie.
+          * „blocked“: zablokuje inštaláciu rozšírenia.
+          * "force_installed": rozšírenie sa automaticky nainštaluje a používateľ ho nebude môcť odstrániť.
+          * "normal_installed": rozšírenie sa automaticky nainštaluje, ale používateľ ho bude môcť zakázať.
+
+          Režim „installation_mode“ môžete nakonfigurovať aj pre viacero rozšírení, ako aj pre rozšírenie „*“ (ako predvolené nastavenie) a rozšírenia s rovnakou webovou adresou aktualizácie. V tomto prípade môžete použiť iba hodnoty „allowed“ a „blocked“.
+
+         Ak režim nastavíte na hodnotu „force_installed“ alebo „normal_installed“, musíte nakonfigurovať aj hodnotu „update_url“. Upozorňujeme, že webová adresa aktualizácie nastavená v rámci tohto pravidla sa použije iba pri prvej inštalácii. Následné aktualizácie rozšírenia budú používať webovú adresu aktualizácie uvedenú v manifeste daného rozšírenia. Webová adresa aktualizácie by mala odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené vyššie.
+
+          "blocked_permissions": spustí mapovanie na zoznam reťazcov označujúci blokované povolenia rozhrania API pre dané rozšírenie. Názvy povolení sú rovnaké ako reťazce povolení uvedené v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC3" />. Toto nastavenie môžete nakonfigurovať aj pre rozšírenie „*“. Ak rozšírenie vyžaduje povolenie, ktoré sa nachádza v zozname blokovaných položiek, toto povolenie sa nenačíta. Ak ako nepovinnú požiadavku obsahuje blokované povolenie, bude spracované bežným spôsobom. Ak však vyžiada povolenia, ktoré sú v konflikte, budú automaticky zakázané pri spustení.
+
+          „allowed_permissions“: je rovnaké nastavenie ako „blocked_permissions“, ale na rozdiel od neho explicitne povolí niektoré povolenia, ktoré môžu byť blokované globálnym zoznamom blokovaných povolení, a preto ho nie je možné nakonfigurovať pre rozšírenie „*“. Uvedomte si, že toto nastavenie neudeľuje rozšíreniam povolenia automaticky.
+
+          "minimum_version_required": spustí mapovanie na reťazec verzie. Formát reťazca verzie je rovnaký ako ten, ktorý bol použitý v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC4" />. Rozšírenia so staršou verziou ako stanovená minimálna verzia budú zakázané. Platí to aj pre rozšírenia, ktorých inštalácia bola vynútená.
+
+          Nasledujúce nastavenie môžete použiť iba pre predvolenú konfiguráciu „*“:
+
+          „install_sources“: všetky položky v tomto zozname sú vzory zodpovedajúce typu rozšírenia (ďalšie informácie si môžete prečítať na adrese https://developer.chrome.com/extensions/match_patterns). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru *.crx a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
+
+          „allowed_types“: toto nastavenie pridá na bielu listinu povolené typy rozšírenia/aplikácií, ktoré je možné nainštalovať v prehliadači <ph name="PRODUCT_NAME" />. Táto hodnota je zoznam reťazcov, z ktorých každý by mal byť jeden z nasledujúcich: „extension“, „theme“, „user_script“, „hosted_app“, „legacy_packaged_app“, „platform_app“. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
+
+          Toto pravidlo ešte nie je pripravené na používanie, preto ho radšej nepoužívajte.
+          </translation>
 <translation id="3205825995289802549">Maximalizovať prvé okno prehliadača pri prvom spustení</translation>
 <translation id="3206731874112238027">Zakázať ukážku pred tlačou (zastarané)</translation>
 <translation id="3213821784736959823">Ovláda, či sa v prehliadači <ph name="PRODUCT_NAME" /> používa vstavaný klient DNS.
@@ -838,9 +879,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
 <translation id="4039085364173654945">Kontroluje, či má vnorený obsah tretej strany na stránke povolenie zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.
 
           Táto funkcia je zvyčajne zakázaná kvôli ochrane pred phishingom (neoprávneným získavaním údajov). Ak toto pravidlo nie je nastavené, je zakázané a vnorenému obsahu tretej strany sa nepovolí zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.</translation>
-<translation id="4043912146394966243"> Typy pripojení, ktoré je možné používať na aktualizáciu operačného systému. Aktualizácie operačného systému môžu vzhľadom na objem dát významne zaťažovať pripojenie a môžu tak zvýšiť vaše poplatky. Predvolene preto nie sú povolené pre typy pripojení, ktoré sú považované za finančne nákladné, ako sú momentálne pripojenia WiMax, Bluetooth a mobilné pripojenie.
-
-      Medzi uznávané identifikátory typov pripojení patria "ethernet", "wifi", "wimax", "bluetooth" a "cellular".</translation>
 <translation id="4052765007567912447">Určuje, či môžu používatelia zobraziť heslá v správcovi hesiel formou čitateľného textu.
 
           Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť uložené heslá formou čitateľného textu.
@@ -893,8 +931,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 alebo novší</translation>
 <translation id="4325690621216251241">Pridať do oblasti oznámení tlačidlo odhlásenia</translation>
-<translation id="4337944790873898250">Ak je toto pravidlo nastavené na možnosť True, prehliadač <ph name="PRODUCT_NAME" /> sa vždy pokúsi pri prvom spustení maximalizovať prvé okno.
-      Ak je toto pravidlo nastavené na možnosť False alebo nie je nastavené vôbec, heuristický postup rozhodne na základe veľkosti obrazovky, či sa prvé zobrazené okno maximalizuje.</translation>
 <translation id="436581050240847513">Hlásiť sieťové rozhrania zariadenia</translation>
 <translation id="4372704773119750918">Nepovoliť podnikovému používateľovi byť súčasťou viacnásobného profilu (primárneho ani sekundárneho)</translation>
 <translation id="4377599627073874279">Povoliť všetkým stránkam zobrazovať obrázky</translation>
@@ -906,6 +942,14 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie pro
 
       Ak je toto pravidlo nakonfigurované, nemôže ho používateľ zmeniť a skratka aplikácií sa zobrazí buď vždy, alebo nikdy.</translation>
 <translation id="443665821428652897">Po vypnutí prehliadača vymazať údaje stránok (zastarané)</translation>
+<translation id="4439336120285389675">Určuje zoznam zastaraných funkcií webovej platformy, ktoré budú znova dočasne povolené.
+
+      Toto pravidlo umožňuje správcom na obmedzený čas znova povoliť zastarané funkcie webovej platformy. Funkcie sú identifikované podľa značky reťazca a ak budú zodpovedať značkám zahrnutým v tomto pravidle, budú znova povolené.
+
+      Ak toto pravidlo nenastavíte alebo ak je zoznam prázdny alebo nezodpovedá niektorej z podporovaných značiek reťazcov, zostanú všetky zastarané funkcie webovej platformy zakázané.
+
+      Zatiaľ čo samotné pravidlo podporujú platformy uvedené vyššie, funkcie, ktoré povoľuje, môžu byť k dispozícii na menšom množstve platforiem. Niektoré zastarané funkcie webovej platformy nie je možné znova povoliť. Je možné povoliť iba tie funkcie, ktoré sú výslovne uvedené nižšie (na obmedzený čas, ktorý sa líši podľa funkcie). Všeobecný formát značky reťazca je [NázovZastaranejFunkcie]_EffectiveUntil[rrrrmmdd]. Dôvody na zmenu funkcií webovej platformy nájdete na adrese https://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Povoliť zámok, ak je zariadenie nečinné alebo pozastavené</translation>
 <translation id="4445684791305970001">Zakáže Nástroje pre vývojárov a konzolu JavaScript.
 
@@ -1203,32 +1247,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak pravidlo nastavené nie je, automatické prihlásenie nenastane.</translation>
 <translation id="5535973522252703021">Zoznam povolených serverov delegovania protokolu Kerberos</translation>
-<translation id="553658564206262718">Nastavte správu spotreby energie, keď je používateľ nečinný.
-
-          Toto pravidlo ovláda viaceré nastavenia pre stratégiu správy spotreby energie, keď je používateľ nečinný.
-
-          Môžete nastaviť štyri typy akcií:
-          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |ScreenDim|, obrazovka sa stlmí.
-          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |ScreenOff|, obrazovka sa vypne.
-          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |IdleWarning|, zobrazí sa dialógové okno s upozornením, že sa použije akcia nastavená pre prípad nečinnosti.
-          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |Idle|, použije sa akcia nastavená v možnosti |IdleAction|.
-
-          Hodnoty oneskorení sa pre všetky akcie uvedené vyššie zadávajú v milisekundách. Príslušná akcia sa spustí len vtedy, keď bude nastavená hodnota väčšia ako nula. Ak je hodnota oneskorenia nastavená na nulu, systém <ph name="PRODUCT_OS_NAME" /> príslušnú akciu nevykoná.
-
-          Ak nenastavíte časové obdobia pre oneskorenia vyššie, použije sa predvolená hodnota.
-
-          Upozorňujeme, že hodnoty v nastavení |ScreenDim| budú usmernené tak, aby boli menšie alebo rovné hodnote v nastavení |ScreenOff|. Hodnoty v nastaveniach |ScreenOff| a |IdleWarning| budú usmernené tak, aby boli menšie alebo rovné hodnote v nastavení |Idle|.
-
-          V rámci možnosti |IdleAction| môžete nastaviť jednu zo štyroch možných akcií:
-          * |Suspend| – pozastaviť;
-          * |Logout| – odhlásiť;
-          * |Shutdown| – vypnúť;
-          * |DoNothing| – nevykonať žiadnu akciu.
-
-          Ak možnosť |IdleAction| nenastavíte, použije sa predvolená akcia, t.j. pozastaviť.
-
-          K dispozícii sú aj samostatné nastavenia pre použitie napájacieho zdroja alebo batérie.
-          </translation>
 <translation id="5560039246134246593">Pridá parameter k načítaniu počiatočnej hodnoty variácie v prehliadači <ph name="PRODUCT_NAME" />.
 
       Ak je pravidlo stanovené, pridá sa k webovej adrese parameter dopytu s názvom „obmedziť“, ktorý sa použije na načítanie počiatočnej hodnoty variácie. Hodnota parametra bude predstavovať hodnotu stanovenú v tomto pravidle.
@@ -1267,7 +1285,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto pravidlo nie je nastavené alebo ak je nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> použije existujúce nastavenia kontroly odvolania online.</translation>
 <translation id="5732972008943405952">Importovať údaje automatického dopĺňania formulárov z predvoleného prehliadača pri prvom spustení</translation>
-<translation id="5751004203256768694">Určí typ účtov poskytnutých aplikáciou pre Android na overenie totožnosti, ktorá podporuje overenie HTTP Negotiate (napr. overenie totožnosti Kerberos). Tieto informácie by ste mali mať k dispozícii od poskytovateľa danej aplikácie na overenie totožnosti. Ďalšie podrobnosti získate na adrese https://goo.gl/hajyfN.
+<translation id="5751004203256768694">Určí typ účtov poskytnutých aplikáciou pre Android na overenie totožnosti, ktorá podporuje HTTP Negotiate (napr. overenie totožnosti Kerberos). Tieto informácie by ste mali mať k dispozícii od poskytovateľa danej aplikácie na overenie totožnosti. Ďalšie podrobnosti získate na adrese https://goo.gl/hajyfN.
 
           Ak neposkytnete žiadne nastavenie, overenie HTTP Negotiate bude v systéme Android zakázané.</translation>
 <translation id="5761030451068906335">Nakonfiguruje nastavenia servera proxy pre prehliadač <ph name="PRODUCT_NAME" />. Toto pravidlo ešte nie je pripravené na používanie, preto ho radšej nepoužívajte.</translation>
@@ -1389,6 +1407,17 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="6145799962557135888">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu spúšťať kód JavaScript.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
+<translation id="6151775819333710697">
+          Ak povolíte toto nastavenie, <ph name="PRODUCT_NAME" /> si môže zapamätať heslá používateľov
+          a poskytnúť ich automaticky pri ďalšom prihlásení na stránkach.
+
+          Ak toto nastavenie zakážete, používatelia nebudú môcť ukladať nové
+          heslá, ale budú môcť naďalej používať predtým uložené heslá.
+
+          Ak toto pravidlo povolíte alebo zakážete, používatelia ho nebudú môcť
+          v službe <ph name="PRODUCT_NAME" /> zmeniť ani prepísať. Ak toto pravidlo
+          nenastavíte, ukladanie hesiel bude povolené (ale používatelia ho
+          môžu vypnúť).</translation>
 <translation id="6155936611791017817">Nastaviť predvolený stav veľkého kurzora na prihlasovacej obrazovke</translation>
 <translation id="6157537876488211233">Zoznam pravidiel vynechania servera proxy oddelených čiarkami</translation>
 <translation id="6158324314836466367">Názov Internetového obchodu pre podniky (podpora je ukončená)</translation>
@@ -1452,17 +1481,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie sa odošle pomocou metódy GET.
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
-<translation id="6365608006609079612">
-          Ak povolíte toto nastavenie, <ph name="PRODUCT_NAME" /> si môže zapamätať heslá používateľov
-          a poskytnúť ich automaticky pri ďalšom prihlásení na stránkach.
-
-          Ak toto nastavenie zakážete, používatelia nebudú môcť ukladať nové
-          heslá, ale budú môcť naďalej používať predtým uložené heslá.
-
-          Ak toto pravidlo povolíte alebo zakážete, používatelia ho nebudú môcť
-          v službe <ph name="PRODUCT_NAME" /> zmeniť ani prepísať. Ak toto pravidlo
-          nenastavíte, ukladanie hesiel bude povolené (ale používatelia ho
-          môžu vypnúť).</translation>
 <translation id="6367755442345892511">Či má byť kanál na vydávanie nových verzií konfigurovateľný používateľom</translation>
 <translation id="6368011194414932347">Konfigurovať webovú adresu domovskej stránky</translation>
 <translation id="6368403635025849609">Povoliť jazyk JavaScript na týchto stránkach</translation>
@@ -1537,31 +1555,33 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak toto pravidlo nastavíte, používatelia ho budú môcť dočasne prepísať aktiváciou alebo deaktiváciou klávesnice na obrazovke. Voľba používateľa však nebude trvalá a po opätovnom zobrazení prihlasovacej obrazovky alebo nečinnosti používateľa na prihlasovacej obrazovke počas jednej minúty sa obnoví pôvodné nastavenie.
 
           Ak toto pravidlo nenastavíte, bude pri prvom zobrazení prihlasovacej obrazovky klávesnica na obrazovke deaktivovaná. Používatelia budú môcť klávesnicu na obrazovke kedykoľvek aktivovať alebo deaktivovať a zvolený stav na prihlasovacej obrazovke pretrvá aj u iných používateľov.</translation>
-<translation id="6571885270348124154">Nastaví jedno alebo viac odporúčaných miestnych nastavení pre verejnú reláciu a umožní používateľom poľahky z nich niektoré vybrať.
-
-      Používateľ si môže vybrať miestne nastavenie a rozloženie klávesnice ešte pred spustením verejnej relácie. Predvolene sú všetky miestne nastavenia, ktoré <ph name="PRODUCT_OS_NAME" /> podporuje, uvedené v abecednom poradí. Pomocou tohto pravidla môžete presunúť skupinu odporúčaných miestnych nastavení na začiatok zoznamu.
-
-      Ak toto pravidlo nenastavíte, vopred sa vyberie aktuálne miestne nastavenie používateľského rozhrania.
-
-      Ak toto pravidlo nastavíte, odporúčané miestne nastavenia budú presunuté na začiatok daného zoznamu a budú vizuálne oddelené od ostatných miestnych nastavení. Odporúčané miestne nastavenia budú uvedené v poradí, v akom sa nachádzajú v danom pravidle. Prvé odporúčané miestne nastavenie bude vopred vybrané.
-
-      Ak existuje viac ako jedno odporúčané miestne nastavenie, potom sa predpokladá, že používatelia si budú chcieť vybrať z týchto miestnych nastavení. Pri spúšťaní verejnej relácie sa zobrazí neprehliadnuteľná výzva na výber miestneho nastavenia a rozloženia klávesnice. V opačnom prípade sa predpokladá, že väčšina používateľov bude chcieť použiť vopred vybraté miestne nastavenie. Pri spúšťaní verejnej relácie sa zobrazí menej výrazná výzva na výber miestneho nastavenia a rozloženia klávesnice.
-
-      Keď toto pravidlo nastavíte a povolíte automatické prihlasovanie (pozrite si pravidlá |DeviceLocalAccountAutoLoginId| a |DeviceLocalAccountAutoLoginDelay|), automaticky spustená verejná relácia použije prvé odporúčané miestne nastavenie a jemu zodpovedajúce najobľúbenejšie rozloženie klávesnice.
-
-      Vopred vybrané bude vždy to najobľúbenejšie rozloženie klávesnice zodpovedajúce vopred vybranému miestnemu nastaveniu..
-
-      Toto pravidlo môžete nastaviť iba ako odporúčané. Pomocou tohto pravidla môžete presúvať skupinu odporúčaných miestnych nastavení na začiatok, ale používatelia si budú môcť pre svoju reláciu vždy vybrať ľubovoľné miestne nastavenie, ktoré <ph name="PRODUCT_OS_NAME" /> podporuje.
-      </translation>
 <translation id="6598235178374410284">Obrázok avatara používateľa</translation>
-<translation id="6633160536638196468">Určuje zoznam zastaraných funkcií webovej platformy, ktoré budú znova dočasne povolené.
+<translation id="6636268606788232221">Nastavte správu spotreby energie, keď je používateľ nečinný.
 
-      Toto pravidlo umožňuje správcom na obmedzený čas znova povoliť zastarané funkcie webovej platformy. Funkcie sú identifikované podľa značky reťazca a ak budú zodpovedať značkám zahrnutým v tomto pravidle, budú znova povolené.
+          Toto pravidlo ovláda viaceré nastavenia pre stratégiu správy spotreby energie, keď je používateľ nečinný.
 
-      Ak toto pravidlo nenastavíte alebo ak je zoznam prázdny alebo nezodpovedá niektorej z podporovaných značiek reťazcov, zostanú všetky zastarané funkcie webovej platformy zakázané.
+          Môžete nastaviť štyri typy akcií:
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |ScreenDim|, obrazovka sa stlmí.
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |ScreenOff|, obrazovka sa vypne.
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |IdleWarning|, zobrazí sa dialógové okno s upozornením, že sa použije akcia nastavená pre prípad nečinnosti.
+          * Ak bude používateľ nečinný počas časového obdobia uvedeného v nastavení |Idle|, použije sa akcia nastavená v možnosti |IdleAction|.
 
-      Zatiaľ čo samotné pravidlo podporujú platformy uvedené vyššie, funkcie, ktoré povoľuje, môžu byť k dispozícii na menšom množstve platforiem. Niektoré zastarané funkcie webovej platformy nie je možné znova povoliť. Je možné povoliť iba tie funkcie, ktoré sú výslovne uvedené nižšie (na obmedzený čas, ktorý sa líši podľa funkcie). Všeobecný formát značky reťazca je [NázovZastaranejFunkcie]_EffectiveUntil[rrrrmmdd]. Dôvody na zmenu funkcií webovej platformy nájdete na adrese https://bit.ly/blinkintents.
-      </translation>
+          Hodnoty oneskorení sa pre všetky akcie uvedené vyššie zadávajú v milisekundách. Príslušná akcia sa spustí len vtedy, keď bude nastavená hodnota väčšia ako nula. Ak je hodnota oneskorenia nastavená na nulu, systém <ph name="PRODUCT_OS_NAME" /> príslušnú akciu nevykoná.
+
+          Ak nenastavíte časové obdobia pre oneskorenia vyššie, použije sa predvolená hodnota.
+
+          Upozorňujeme, že hodnoty v nastavení |ScreenDim| budú usmernené tak, aby boli menšie alebo rovné hodnote v nastavení |ScreenOff|. Hodnoty v nastaveniach |ScreenOff| a |IdleWarning| budú usmernené tak, aby boli menšie alebo rovné hodnote v nastavení |Idle|.
+
+          V rámci možnosti |IdleAction| môžete nastaviť jednu zo štyroch možných akcií:
+          * |Suspend| – pozastaviť;
+          * |Logout| – odhlásiť;
+          * |Shutdown| – vypnúť;
+          * |DoNothing| – nevykonať žiadnu akciu.
+
+          Ak možnosť |IdleAction| nenastavíte, použije sa predvolená akcia, t.j. pozastaviť.
+
+          K dispozícii sú aj samostatné nastavenia pre použitie napájacieho zdroja alebo batérie.
+          </translation>
 <translation id="6641981670621198190">Zakázať podporu rozhrania API pre grafiku 3D</translation>
 <translation id="6647965994887675196">Ak toto pravidlo nastavíte na hodnotu true, bude možné vytvárať a používať kontrolovaných používateľov.
 
@@ -1873,9 +1893,28 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak je toto nastavenie zakázané alebo nie je nastavené, dvojfázové overenie totožnosti nebude povolené a namiesto neho bude použitá predvolená možnosť – používateľom zadaný kód PIN.</translation>
 <translation id="7750991880413385988">Otvoriť stránku Nová karta</translation>
+<translation id="7761526206824804472">Nastaví jedno alebo viac odporúčaných miestnych nastavení pre verejnú reláciu a umožní používateľom poľahky z nich niektoré vybrať.
+
+      Používateľ si môže vybrať miestne nastavenie a rozloženie klávesnice ešte pred spustením verejnej relácie. Predvolene sú všetky miestne nastavenia, ktoré <ph name="PRODUCT_OS_NAME" /> podporuje, uvedené v abecednom poradí. Pomocou tohto pravidla môžete presunúť skupinu odporúčaných miestnych nastavení na začiatok zoznamu.
+
+      Ak toto pravidlo nenastavíte, vopred sa vyberie aktuálne miestne nastavenie používateľského rozhrania.
+
+      Ak toto pravidlo nastavíte, odporúčané miestne nastavenia budú presunuté na začiatok daného zoznamu a budú vizuálne oddelené od ostatných miestnych nastavení. Odporúčané miestne nastavenia budú uvedené v poradí, v akom sa nachádzajú v danom pravidle. Prvé odporúčané miestne nastavenie bude vopred vybrané.
+
+      Ak existuje viac ako jedno odporúčané miestne nastavenie, potom sa predpokladá, že používatelia si budú chcieť vybrať z týchto miestnych nastavení. Pri spúšťaní verejnej relácie sa zobrazí neprehliadnuteľná výzva na výber miestneho nastavenia a rozloženia klávesnice. V opačnom prípade sa predpokladá, že väčšina používateľov bude chcieť použiť vopred vybraté miestne nastavenie. Pri spúšťaní verejnej relácie sa zobrazí menej výrazná výzva na výber miestneho nastavenia a rozloženia klávesnice.
+
+      Keď toto pravidlo nastavíte a povolíte automatické prihlasovanie (pozrite si pravidlá |DeviceLocalAccountAutoLoginId| a |DeviceLocalAccountAutoLoginDelay|), automaticky spustená verejná relácia použije prvé odporúčané miestne nastavenie a jemu zodpovedajúce najobľúbenejšie rozloženie klávesnice.
+
+      Vopred vybrané bude vždy to najobľúbenejšie rozloženie klávesnice zodpovedajúce vopred vybranému miestnemu nastaveniu.
+
+      Toto pravidlo môžete nastaviť iba ako odporúčané. Pomocou tohto pravidla môžete presúvať skupinu odporúčaných miestnych nastavení na začiatok, ale používatelia si budú môcť pre svoju reláciu vždy vybrať ľubovoľné miestne nastavenie, ktoré <ph name="PRODUCT_OS_NAME" /> podporuje.
+      </translation>
 <translation id="7763311235717725977">Umožňuje vám nastaviť, či môžu webové stránky zobrazovať obrázky. Zobrazovanie obrázkov môže byť buď pre všetky webové stránky umožnené, alebo pre všetky webové stránky zamietnuté.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo „AllowImages“ a používateľ ho bude môcť zmeniť.</translation>
+<translation id="7763479091692861127"> Typy pripojení, ktoré je možné používať na aktualizáciu operačného systému. Aktualizácie operačného systému môžu vzhľadom na objem dát významne zaťažovať pripojenie a môžu tak zvýšiť vaše poplatky. Predvolene preto nie sú povolené pre typy pripojení, ktoré sú považované za finančne nákladné, ako sú momentálne pripojenia WiMax, Bluetooth a mobilné pripojenie.
+
+      Medzi uznávané identifikátory typov pripojení patria "ethernet", "wifi", "wimax", "bluetooth" a "cellular".</translation>
 <translation id="7766336524667238790">Nahlasuje informácie o aktívnej relácii režimu verejného terminálu, ako sú
       identifikátor a verzia aplikácie.
 
@@ -1927,38 +1966,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Ak je toto nastavenie povolené, môžete tento počítač vyhľadať a pripojiť sa k počítačom vzdialeného hostiteľa aj v prípade, ak sú oddelené bránou firewall.
 
           Ak je toto nastavenie zakázané a brána firewall filtruje odchádzajúce pripojenia cez protokol UDP, môže sa tento počítač pripojiť len k počítačom hostiteľa v rámci miestnej siete.</translation>
-<translation id="8002229853067655250">Konfiguruje nastavenia správy pre prehliadač <ph name="PRODUCT_NAME" />.
-
-          Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
-
-          Toto pravidlo namapuje identifikátor rozšírenia alebo webovú adresu aktualizácie na svoju konfiguráciu. Keď bude mať k dispozícii identifikátor rozšírenia, konfigurácia sa použije iba pre ním určené rozšírenie. Pre špeciálny identifikátor „*“ môžete nastaviť predvolenú konfiguráciu, ktorá sa použije pre všetky rozšírenia, pre ktoré ste v rámci tohto pravidla nenastavili vlastnú konfiguráciu. Keď bude mať k dispozícii webovú adresu aktualizácie, konfigurácia sa použije pre všetky rozšírenia s presnou webovou adresou aktualizácie stanovenou v manifeste tohto rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurácia pre jednotlivé rozšírenia (alebo rozšírenia s rovnakou webovou adresou aktualizácie) je ďalší slovník, ktorý môže obsahovať polia uvedené nižšie.
-
-          „installation_mode“: spustí mapovanie na reťazec označujúci režim inštalácie daného rozšírenia. Medzi platné reťazce patria:
-          * „allowed“: umožňuje používateľovi nainštalovať rozšírenie. Ide o predvolené správanie.
-          * „blocked“: zablokuje inštaláciu rozšírenia.
-          * "force_installed": rozšírenie sa automaticky nainštaluje a používateľ ho nebude môcť odstrániť.
-          * "normal_installed": rozšírenie sa automaticky nainštaluje, ale používateľ ho bude môcť zakázať.
-
-          Režim „installation_mode“ môžete nakonfigurovať aj pre viacero rozšírení, ako aj pre rozšírenie „*“ (ako predvolené nastavenie) a rozšírenia s rovnakou webovou adresou aktualizácie. V tomto prípade môžete použiť iba hodnoty „allowed“ a „blocked“.
-
-         Ak režim nastavíte na hodnotu „force_installed“ alebo „normal_installed“, musíte nakonfigurovať aj hodnotu „update_url“. Upozorňujeme, že webová adresa aktualizácie nastavená v rámci tohto pravidla sa použije iba pri prvej inštalácii. Následné aktualizácie rozšírenia budú používať webovú adresu aktualizácie uvedenú v manifeste daného rozšírenia. Webová adresa aktualizácie by mala odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené vyššie.
-
-          "blocked_permissions": spustí mapovanie na zoznam reťazcov označujúci blokované povolenia rozhrania API pre dané rozšírenie. Názvy povolení sú rovnaké ako reťazce povolení uvedené v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC3" />. Toto nastavenie môžete nakonfigurovať aj pre rozšírenie „*“. Ak rozšírenie vyžaduje povolenie, ktoré sa nachádza v zozname blokovaných položiek, toto povolenie sa nenačíta. Ak ako nepovinnú požiadavku obsahuje blokované povolenie, bude spracované bežným spôsobom. Ak však vyžiada povolenia, ktoré sú v konflikte, budú automaticky zakázané pri spustení.
-
-          „allowed_permissions“: je rovnaké nastavenie ako „blocked_permissions“, ale na rozdiel od neho explicitne povolí niektoré povolenia, ktoré môžu byť blokované globálnym zoznamom blokovaných povolení, a preto ho nie je možné nakonfigurovať pre rozšírenie „*“. Uvedomte si, že toto nastavenie neudeľuje rozšíreniam povolenia automaticky.
-
-          "minimum_version_required": spustí mapovanie na reťazec verzie. Formát reťazca verzie je rovnaký ako ten, ktorý bol použitý v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC4" />. Rozšírenia so staršou verziou ako stanovená minimálna verzia budú zakázané. Platí to aj pre rozšírenia, ktorých inštalácia bola vynútená.
-
-          Nasledujúce nastavenie môžete použiť iba pre predvolenú konfiguráciu „*“:
-
-          „install_sources“: všetky položky v tomto zozname sú vzory zodpovedajúce typu rozšírenia (ďalšie informácie si môžete prečítať na adrese https://developer.chrome.com/extensions/match_patterns). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru *.crx a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
-
-          „allowed_types“: toto nastavenie pridá na bielu listinu povolené typy rozšírenia/aplikácií, ktoré je možné nainštalovať v prehliadači <ph name="PRODUCT_NAME" />. Táto hodnota je zoznam reťazcov, z ktorých každý by mal byť jeden z nasledujúcich: „extension“, „theme“, „user_script“, „hosted_app“, „legacy_packaged_app“, „platform_app“. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
-
-          Toto pravidlo ešte nie je pripravené na používanie, preto ho radšej nepoužívajte.
-          </translation>
 <translation id="8044493735196713914">Hlásiť režim spustenia zariadenia</translation>
 <translation id="8059164285174960932">Webová adresa, kde by klienti vzdialeného prístupu mali získať token na overenie totožnosti</translation>
 <translation id="8071636581296916773">Povoľuje použitie serverov typu relay, keď sa vzdialení klienti pokúšajú nadviazať spojenie s týmto počítačom.
@@ -2029,18 +2036,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8197918588508433925">Toto pravidlo určuje, pre ktoré rozšírenia bude povolené vzdialené prihlásenie pomocou metódy chrome.enterprise.platformKeysPrivate.challengeUserKey() rozhrania Enterprise Platform Keys API. Aby mohli rozšírenia používať toto rozhranie API, musia byť pridané do tohto zoznamu.
 
           Ak sa rozšírenie na zozname nenachádza alebo zoznam nie je vytvorený, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
-<translation id="8211174979203781791">Konfiguruje predvolenú webovú adresu domovskej stránky prehliadača <ph name="PRODUCT_NAME" /> a zabraňuje používateľom jej úpravu.
-
-          Domovská stránka je stránka, ktorá sa zobrazí po kliknutí na tlačidlo Domovská stránka. Stránky, ktoré sa otvoria po spustení, sú ovládané pravidlami RestoreOnStartup.
-
-          Typ domovskej stránky môže byť nastavený buď na tu uvedenú webovú adresu, alebo na stránku na novej karte. Ak vyberiete stránku na novej karte, toto pravidlo sa neuplatní.
-
-          Ak toto nastavenie povolíte, používatelia nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť webovú adresu domovskej stránky, budú však stále môcť nastaviť svoju domovskú stránku na stránku na novej karte.
-
-          Ak ponecháte toto pravidlo nenastavené, umožní to používateľovi zvoliť si domovskú stránku samostatne v prípade, že nie je nastavené ani pravidlo HomepageIsNewTabPage.
-
-          Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú pripojené
-          k doméne Active Directory.</translation>
 <translation id="8244525275280476362">Maximálne oneskorenie načítania po zrušení platnosti pravidla</translation>
 <translation id="8256688113167012935">Ovláda názov účtu, ktorý systém <ph name="PRODUCT_OS_NAME" /> zobrazí na obrazovke prihlásenia pre zodpovedajúci miestny účet na zariadení.
 

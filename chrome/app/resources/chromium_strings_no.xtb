@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium må starte et eksternt program for å håndtere <ph name="SCHEME" />-linker. Den påkrevde linken er <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig
+og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før noen data ble utvekslet.</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
 <translation id="3046695367536568084">Du må være logget på Chromium for å bruke apper. På denne måten kan Chromium synkronisere appene, bokmerkene og passordene dine, samt loggen din og andre innstillinger, på alle enheter.</translation>
 <translation id="3068515742935458733">Bidra til å gjøre Chromium bedre ved å sende programstopprapporter og <ph name="UMA_LINK" /> til Google</translation>

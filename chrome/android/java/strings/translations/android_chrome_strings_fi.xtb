@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Näet välilehdet ja viimeksi käytetyt sovellukset puhelimen Viimeisimmät-näkymässä.</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="2082238445998314030">Tulos <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Kun tämä toiminto on käytössä, Chrome pakkaa lukemasi sivut Googlen palvelimilla ennen niiden lataamista. Suojattuja yhteyksiä (HTTPS) käyttäviä tai incognito-välilehdillä avattuja sivuja ei optimoida eikä Google näe niitä.</translation>
 <translation id="2100273922101894616">Automaattinen kirjautuminen</translation>
 <translation id="2126426811489709554">Palvelun tarjoaa Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> suljettiin</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Ääni- ja videotuloa käytetään</translation>
 <translation id="3102119246920354026">Välimuisti</translation>
 <translation id="3137521801621304719">Poistu incognito-tilasta</translation>
-<translation id="3158619413803296679">Valitse kirjanmerkki</translation>
 <translation id="3190152372525844641">Ota käyttöoikeudet käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tallennettua tietoa</translation>
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
 <translation id="326254929494722411">Et ole vielä määrittänyt Google-tiliä tällä laitteella.</translation>
 <translation id="3269093882174072735">Lataa kuva</translation>
+<translation id="3278850099957560514">Säästä tiedonsiirrossa antamalla Googlen optimoida käyttämäsi sivut. Suojattuja yhteyksiä (HTTPS) käyttäviä tai incognito-välilehdillä avattuja sivuja ei optimoida eikä Google näe niitä.</translation>
 <translation id="3282568296779691940">Kirjaudu Chromeen</translation>
 <translation id="3287852534598822456">Kirjanmerkkiä ei enää ole. Päivitä.</translation>
 <translation id="3303414029551471755">Jatketaanko sisällön lataamiseen?</translation>
@@ -187,7 +188,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4056223980640387499">Seepia</translation>
 <translation id="4059119910594077751">Poistu koko näytön tilasta koskettamalla Takaisin-painiketta.</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
-<translation id="4084682180776658562">Kirjanmerkki</translation>
 <translation id="4089831646916293264">Tämä ominaisuus voi häiritä operaattorisi tarjoamien premium-tietopalveluiden käyttöä.</translation>
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="411254640334432676">Lataus epäonnistui.</translation>
@@ -293,6 +293,7 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5530766185686772672">Sulje incognito-välilehdet</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5565871407246142825">Luottokortit</translation>
+<translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
 <translation id="5596627076506792578">Lisäasetukset</translation>
 <translation id="5626134646977739690">Nimi:</translation>
@@ -461,6 +462,7 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="7765158879357617694">Siirrä</translation>
 <translation id="7767746238359002192">Siirry sivulle tallentaaksesi offline-version.</translation>
 <translation id="7772032839648071052">Vahvista tunnuslause</translation>
+<translation id="7784213092572143271">Sivu tallennettiin</translation>
 <translation id="7788788617745289808">Chrome tarvitsee kameran käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
@@ -541,6 +543,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="885701979325669005">Tallennus</translation>
 <translation id="886510833909353412">Salaa kaikki tunnuslauseella.</translation>
 <translation id="8872441722924401214">Valitse todennuksen varmenne</translation>
+<translation id="8891135217544884558">Läheiset URL-osoitteet</translation>
 <translation id="8901170036886848654">Kirjanmerkkejä ei löytynyt.</translation>
 <translation id="8909135823018751308">Jaa…</translation>
 <translation id="8912362522468806198">Google-tilisi avulla</translation>

@@ -59,6 +59,7 @@
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
 <translation id="2910007522516064972">Despre &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necesită lansarea unei aplicații externe pentru a gestiona linkuri <ph name="SCHEME" />. Linkul solicitat este <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">Site-ul <ph name="SITE" /> utilizează în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="3032787606318309379">Se adaugă la Chromium...</translation>
 <translation id="3046695367536568084">Trebuie să vă conectați la Chromium pentru a folosi aplicațiile. Astfel, Chromium vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="3068515742935458733">Contribuie la îmbunătățirea proiectului Chromium trimițând rapoarte de eroare și <ph name="UMA_LINK" /> la Google</translation>

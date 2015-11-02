@@ -59,6 +59,7 @@
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
 <translation id="2966088006374919794">Chromium 必须启动外部应用才能处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> 通常使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站返回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
 <translation id="3046695367536568084">您需要先登录Chromium，再使用各项应用。这样，Chromium就可以在各个设备上同步您的应用、书签、历史记录、密码和其他设置。</translation>
 <translation id="3068515742935458733">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Chromium。</translation>

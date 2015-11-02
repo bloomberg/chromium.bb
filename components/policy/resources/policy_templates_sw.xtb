@@ -163,6 +163,12 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
       Iwapo sera hii haitawekwa, sheria na masharti hayataonyeshwa.
 
       Sera itawekwa kwenye URL ambapo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua Sheria na masharti. Lazima Sheria na Masharti yawe maandishi matupu, yawe kama maandishi ya kuandika/matupu ya MIME. Markup hairuhusiwi.</translation>
+<translation id="1757339646969878244">Sanidi chaguo za idhini ya kufikia kwa mbali katika seva pangishi ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali.
+
+      Seva pangishi ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali ni huduma ya ndani inayotumika kwenye mashine lengwa ambayo mtumiaji anaweza kuunganisha kwayo kwa kutumia Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali.  Huduma ya ndani inarembeshwa na kutekelezwa tofauti na kivinajri cha <ph name="PRODUCT_NAME" />.
+
+      Sera hizi hupuuzwa isipokuwa
+      seva pangishi ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali iwe imesakinishwa.</translation>
 <translation id="1757688868319862958">Inaruhusu <ph name="PRODUCT_NAME" /> kuendesha programu jalizi ambazo zinahitaji idhinisho.
 
       Ukiwezesha mpangilio huu, programu jalizi ambazo hazichachina kiwa wakati zinaendesha.
@@ -240,7 +246,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2006530844219044261">Usimamizi wa nishati</translation>
 <translation id="201557587962247231">Idadi ya upakiaji wa ripoti ya hali ya kifaa</translation>
 <translation id="2030905906517501646">Nenomsingi la mtoa huduma chaguo-msingi wa utafutaji</translation>
-<translation id="206623763829450685">Hubainisha mipango ipi ya uthibitishaji wa HTTP inayotumia <ph name="PRODUCT_NAME" />.
+<translation id="206623763829450685">Hubainisha mipango ya uthibitishaji wa HTTP inayotumia na <ph name="PRODUCT_NAME" />.
 
           Thamani zinazowezekana ni 'basic', 'digest', 'ntlm' na 'negotiate'. Tenganisha thamani anuwai kwa koma.
 
@@ -583,11 +589,11 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 
       Sera hii huamua sheria za kuchagua printa chaguo-msingi katika <ph name="PRODUCT_NAME" /> ambayo inatendeka mara ya kwanza chaguo la kukotoa la kuchapisha linapotumika pamoja na wasifu.
 
-      Sera hii ikiwekwa, <ph name="PRODUCT_NAME" /> itajaribu kutafuta printa inayolingana na vipengele vyote vilivyobainishwa, na kuichagua kama printa chaguo-msingi. Printa ya kwanza kupatikana inayolingana na sera huchaguliwa, katika hali ambayo hakuna kulingana kwa kipekee printa yoyote inayolingana inaweza kuchaguliwa, kutegemea mpangilio ambao printa zinagunduliwa.
+      Sera hii ikiwekwa, <ph name="PRODUCT_NAME" /> itajaribu kutafuta printa inayolingana na vipengele vyote vilivyobainishwa, na kuichagua kuwa printa chaguo-msingi. Printa ya kwanza kupatikana inayolingana na sera huchaguliwa, katika hali ambayo hakuna kulingana kwa kipekee printa yoyote inayolingana inaweza kuchaguliwa, kutegemea mpangilio ambao printa zinagunduliwa.
 
      Sera hii isipowekwa au printa inayolingana isipopatikana ndani ya muda uliowekwa, printa inarudi kwenye chaguo-msingi la awali la printa ya PDF iliyojengwa ndani au hakuna printa iliyochaguliwa, wakati printa ya PDF haipatikani.
 
-      Thamani huchanganuliwa kama kifaa cha JSON, ikizingatia mpangilio ufuatao:
+      Thamani huchanganuliwa kama kijenzi cha JSON, ikizingatia mpangilio ufuatao:
       {
         "type": "object",
         "properties": {
@@ -608,7 +614,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
         }
       }
 
-      Printa zilizounganishwa kwenye Google Cloud Print zinachukuliwa kuwa "wingu", nyingine zote zinatambuliwa kama "ndani".
+      Printa zilizounganishwa kwenye Google Cloud Print zinachukuliwa kuwa "wingu", nyingine zote zinatambuliwa kuwa za "ndani".
       Kuacha sehemu kunamaanisha kwamba thamani zote zinalingana, kwa mfano, kukosa kubainisha muunganisho kutasababisha kipengele cha Onyesho la Kuchungulia la Printa kuanzisha ugunduzi wa aina zote za printa, za ndani ya wingu.
       Ruwaza za kilinganishi lazima zizingatie sintaksia ya JavaScript RegExp na milingano inaathiriwa na herufi kubwa na ndogo.</translation>
 <translation id="3021409116652377124">Lemaza kipataji cha programu jalizi</translation>
@@ -641,6 +647,38 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
           Ikiwa sera hii itasalia kama haijawekwa mtumiaji anaweza kusakinisha kiendelezi chochote katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Mpangilio huu hautumiki kutoka toleo la 29 la<ph name="PRODUCT_NAME" />. Njia iliyopendekezwa ya kuanzisha kiendelezi cha shirika kilichopangishwa/makusanyo ya programu ni pamoja na kujumuisha tovuti inayopangisha CRX katika ExtensionInstallSources na kuweka viungo vya kupakua vifungu hivyo moja kwa moja kwenye ukurasa wa wavuti. Kizinduzi cha ukurasa huo wa wavuti kinaweza kuundwa kutumia sera ya ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">kuanzia toleo la <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Husanidi mipangilio ya kudhibiti kiendelezi cha <ph name="PRODUCT_NAME" />.
+
+          Sera hii inadhibiti mipangilio mingi, ikiwa ni pamoja na mipangilio inayodhibitiwa na sera zozote zilizopo zinazohusu viendelezi. Sera hii itabatilisha sera zozote za zilizopitwa na wakati kama zote zimewekwa.
+
+          Sera hii huweka Kitambulisho cha kiendelezi au URL ya sasisho kwenye usanidi wake. Ukiwa na Kitambulisho cha kiendelezi, usanidi utatumika kwenye kiendelezi kilichobainishwa pekee. Usanidi chaguo-msingi unaweza kuwekwa kwa Kitambulisho "*" cha pekee, ambacho kitatumika kwenye viendelezi vyote ambavyo havijawekwa usanidi wa kawaida katika sera hii. Ukiwa na URL ya sasisho, usanidi utawekwa kwenye viendelezi vyote kwa kutumia URL iliyoelezwa katika faili ya maelezo ya kiendelezi hiki, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Usanidi wa kila kiendelezi (au viendelezi vyenye URL sawa) ni kamusi nyingine iliyo na sehemu zilizoonyeshwa hapa.
+
+          "installation_mode": huweka kwenye mfuatano kuonyesha hali ya kusakinisha kiendelezi. Mifuatano sahihi:
+          * "allowed": huruhusu kiendelezi kisakinishwe na mtumiaji. Hii ndiyo tabia chaguo-msingi.
+          * "blocked": huzuia kusakinisha viendelezi.
+          * "force_installed": kiendelezi husakinishwa kiotomatiki na hakiwezi kuondolewa na mtumiaji.
+          * "normal_installed": kiendelezi husakinishwa lakini kinaweza kuzimwa na mtumiaji.
+
+          "installation_mode" inaweza pia kusanidiwa vile vile kwa viendelezi vingi, ikiwa ni pamoja na "*" kiendelezi (kama mifuatano chaguo-msingi) na viendelezi vyenye URL sawa ya sasisho. Ni thamani "zilizoruhusiwa" na "zilizozuiwa" pekee ndizo zinazoweza kutumiwa katika hali hii.
+
+         Hali ikiwekwa kuwa "force_installed" au "normal_installed" basi lazima "update_url" isanidiwe pia. Kumbuka kwamba URL ya sasisho inatumika kwa usakinishi wa awali pekee; sasisho za viendelezi zinazofuta zitatumia URL ya sasisho iliyoonyeshwa katika faili ya maelezo ya kiendelezi. Lazima URL ya sasisho ionyeshe hati Faili ya Maelezo ya XML ya Sasisho kama ilivyotajwa hapo juu.
+
+          "blocked_permissions": huweka kwenye orodha ya mifuatano inayoonyesha ruhusa za API zilizozuiwa kwa kiendelezi. Majina ya ruhusa ni sawa na mifutano ya ruhusa iliyotajwa katika faili ya maelezo ya kiendelezi kama ilivyoelezwa kwenye <ph name="LINK_TO_EXTENSION_DOC3" />. Mipangilio hii pia inaweza kusanidiwa kwa "*" kiendelezi. Ikiwa kiendelezi kinahitaji ruhusa iliyo kwenye orodha ambayo haijaidhinishwa, hakitaruhusiwa kupakia. Ikiwa kina ruhusa iliyozuiwa kama hitaji la hiari, kitashughulikiwa kwa njia ya kawaida, lakini ombi la ruhusa zinazokinzana litakataliwa kiotomatiki wakati wa kutekeleza.
+
+          "allowed_permissions": sawa na "blocked_permissions", lakini badala ya kukubali baadhi ya ruhusa amabazo zinaweza kuzuiwa na orodha ya ulimwengu ya ruhusa zilizozuiwa, kwa hivyo haiwezi kusanidiwa kwa kiendelezi cha "*". Kumbuka kwamba mipangilio hii haitoi ruhusa za viendelezi kiotomatiki.
+
+          "minimum_version_required": huweka kwenye mfuatano wa toleo. Muundo wa toleo la mfuatano wa toleo ni sawa na ule unaotumika katika faili ya maelezo ya kiendelezi, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC4" />. Kiendelezi chenye toleo la zamani kuliko toleo la chini lililobainishwa kitazimwa. Hii inatumika vilevile kwenye viendelezi vya kusakinisha kwa lazima pia.
+
+          Mipangilio ifuatayo inaweza kutumika kwa usanidi chaguo-msingi "*" pekee:
+
+          "install_sources": Kila kipengee katika orodha hii ni ruwaza inayolingana na mtindo wa kiendelezi (angalia https://developer.chrome.com/extensions/match_patterns). Watumiaji wataweza kusakinisha vipengee kwa urahisi kutoka kwenye URL yoyote inayolingana na kipengee katika orodha hii. Eneo la faili ya *.crx na ukurasa ambapo kipakuliwa kilianzishiwa (yaani kielekezi) lazima vikubaliwe na ruwaza hizi.
+
+          "allowed_types": Mipangilio hii inadhinisha aina zinazoruhusiwa za kiendelezi/programu ambazo zinaweza kusakinishwa katika <ph name="PRODUCT_NAME" />.  Thamani ni orodha ya mifuatano, ambayo kila moja inapaswa kuwa mojawapo ya zifuatazo: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Angalia hati ya viendelezi vya <ph name="PRODUCT_NAME" /> kwa maelezo zaidi kuhusu aina hizi.
+
+          Sera hii bado haipo tayari kutumiwa, tafadhali usiitumie.
+          </translation>
 <translation id="3205825995289802549">Tanua dirisha la kwanza la kivinjari unapofungua mara ya kwanza</translation>
 <translation id="3206731874112238027">Zima Kipengee cha Onyesho la Kuchungulia la Printa (imeacha kuendesha huduma)</translation>
 <translation id="3213821784736959823">Hudhibiti iwapo DNS teja ya kijenzi cha ndani inatumika katika <ph name="PRODUCT_NAME" />.
@@ -845,9 +883,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="4039085364173654945">Hudhibiti iwapo maudhui madogo ya wengine kwenye ukurasa yanaruhusiwa kuibukiza kisanduku kidadisi cha HTTP Basic Auth.
 
           Kwa kawaida hii inalemazwa kama ulinzi wa uhadaaji. Ikiwa sera hii haijawekwa, hii italemazwa na maudhui madogo ya wengine hayataruhusiwa kuibukiza kisanduku kidadisi cha HTTP Basic Auth.</translation>
-<translation id="4043912146394966243"> Aina za miunganisho zinazoruhusiwa kutumia sasisho za Mfumo wa Uendeshaji. Sasisho za Mfumo wa Uendeshaji zinaweza kuweka vichujo vizito kwenye muunganisho kwa sababu ya ukubwa wavyo na huenda vikasababisha gharama ya ziada. Kwa hivyo, haviwashwi kwa chaguo-msingi kwa aina za miunganisho zinazoonekana kuwa ghali, zinazojumuisha WiMax, Bluetooth na Simu ya Mkononi kwa wakati huu.
-
-      Vitambulisho vinavyotambuliwa vya aina vya muunganisho ni "ethaneti", "wifi", "wimax", "bluetooth"  na "simu ya mkononi".</translation>
 <translation id="4052765007567912447">Inadhibiti ikiwa mtumiaji anaweza kuonyesha nenosiri katika maandishi yaliyo wazi ndani ya kidhibiti cha nenosiri.
 
           Ukilemaza mpangilio huu, kidhibiti cha nenosiri hakiruhusu kuonyesha manenosiri yaliyohifadhiwa katika maandishi yaliyo wazi ndani ya dirisha la kidhibiti cha nenosiri.
@@ -899,8 +934,6 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
           Sera hii inatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 au ya karibuni zaidi</translation>
 <translation id="4325690621216251241">Ongeza kitufe cha kuondoka kwenye chano la mfumo</translation>
-<translation id="4337944790873898250">Sera hii ikiwekwa kuwa ndivyo, <ph name="PRODUCT_NAME" /> itatanua dirisha la kwanza linaloonekana inapofungua mara ya kwanza bila masharti.
-      Sera hii ikiwekwa kuwa sivyo au isiposanidiwa, mtumiaji ataamua iwapo atanue dirisha la kwanza linaloonekana, kulingana na ukubwa wa skrini.</translation>
 <translation id="436581050240847513">Ripoti violesura vya mtandao wa kifaa</translation>
 <translation id="4372704773119750918">Usiruhusu mtumiaji wa biashara kuwa sehemu ya wasifu nyingi (ya msingi au ya pili)</translation>
 <translation id="4377599627073874279">Ruhusu tovuti zote kuonyesha picha zote</translation>
@@ -912,6 +945,14 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 
       Ikiwa sera hii itasanidiwa basi mtumiaji hawezi kuibadilisha, na njia ya mkato ya programu kuonyeshwa au kutoonyeshwa kila mara.</translation>
 <translation id="443665821428652897">Futa data ya tovuti kwenye uzimaji wa kivinjari (imepingwa)</translation>
+<translation id="4439336120285389675">Bainisha orodha ya vipengele vilivyoacha kuendesha huduma vya mbinu ya wavuti ili kuwasha tena kwa muda.
+
+      Sera hii inawapa wasimamizi uwezo wa kuwasha tena vipengele vilivyoacha kuendesha huduma vya mbinu ya wavuti kwa muda mfupi. Vipengele vinatambuliwa kwa lebo ya mfuatano na vipengele vinavyolingana na lebo vilivyojumuishwa katika orodha iliyobainishwa na sera hii vitawashwa tena.
+
+      Ikiwa sera hii itaachwa bila kuwekwa, au orodha ikiwa tupu au hailingani na mojawapo ya lebo za mifuatano, vipengele vyote vilivyoacha kuendesha huduma vya mbinu ya wavuti vitasalia vikiwa vimezimwa.
+
+     Ingawa sera yenyewe inaweza kutumiwa kwenye mbinu zilizo hapo juu, kipengele inachokiwasha kinaweza kupatikana kwenye mbinu chache. Si vipengele vyote vilivyoacha kuendesha huduma vya Mbinu ya Wavuti vinaweza kuwashwa tena. Vilivyoorodheshwa hapa chini pekee ndivyo vinavyoweza kuwashwa tena kwa muda mfupi, muda huo ni tofauti kwa kila kipengele. Muundo wa jumla wa lebo ya mfuatano utakuwa [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Kama rejeleo, unaweza kupata lengo la yaliyochangia mabadiliko ya kipengele cha Mbinu ya Wavuti https://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Wawezesha kufunga wakati kifaa kinapokuwa hakifanyi kitu au kimesimamishwa</translation>
 <translation id="4445684791305970001">Inalemaza Zana za Msanidi Programu na kiweko cha JavaScript.
 
@@ -1203,32 +1244,6 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
 
       Endapo sera hii haijawekwa, hakutakuwa na kuingia kiotomatiki.</translation>
 <translation id="5535973522252703021">Orodha iliyoidhinishwa ya ukaumu wa seva ya Kerberos</translation>
-<translation id="553658564206262718">Sanidi mipangilio ya kusimamia nishati mtumiaji anapokuwa hafanyi kitu.
-
-         Sera hii hudhibiti mipangilio mingi ya mkakati wa kusimamia nishati mtumiaji anapokuwa hafanyi kitu.
-
-         Kuna hatua za aina nne:
-        * Mwanga wa skrini utapunguzwa iwapo mtumiaji atakuwa hafanyi kitu kwa muda uliyobainishwa na |ScreenDim|.
-        * Skrini itazimwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |ScreenOff|.
-        * Kidirisha cha ilani kitaonyeshwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |IdleWarning|, kumwambia mtumiaji kuwa hatua ya kutofanya kitu imekaribia kuchukuliwa.
-         * Hatua iliyobainishwa na |IdleAction| itachukuliwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |Idle|.
-
-           Kwa kila moja ya vitendo vya hapo juu, lazima ucheleweshaji ubainishwe katika milisekunde, na unahitaji kuwekwa kwa thamani kubwa kuliko sifuri ili kusababisha kitendo sambamba. Iwapo ucheleweshaji umewekwa kuwa sifuri, <ph name="PRODUCT_OS_NAME" /> haitachukua kitendo sambamba.
-
-             Kwa kila moja ya ucheleweshaji wa hapo juu, urefu wa muda unapoondolewa, thamani chaguo-msingi itatumika.
-
-             Kumbuka kwamba thamani za |ScreenDim| zitawekwa kuwa chini ya ama sawa na |ScreenOff|, |ScreenOff| na |IdleWarning| itawekwa kuwa chini ya au sawa na |Idle|.
-
-             |IdleAction| inaweza kuwa moja ya vitendo vinne:
-            * |Suspend|
-            * |Logout|
-            * |Shutdown|
-            * |DoNothing|
-           
-           Wakati |IdleAction| inapoondolewa, hatua chaguo-msingi huchukuliwa, ambayo ni kusimamisha.
-
-            Pia kuna mipangilio tofauti ya nishati ya AC na betri.
-          </translation>
 <translation id="5560039246134246593">Ongeza kigezo kwa uletaji wa mbegu Tofauti katika <ph name="PRODUCT_NAME" />.
 
       Ikibainishwa, itaongeza kigezo cha hoja kinachoitwa 'kizuizi' kwa URL inayotumika kuleta mbegu Tofauti. Thamani ya kigezo itakuwa thamani iliyobainishwa katika sera hii.
@@ -1389,6 +1404,16 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6145799962557135888">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo zinaruhusiwa kuendesha JavaScript.
 
           Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguo-msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultJavaScriptSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
+<translation id="6151775819333710697">
+          Mipangilio hii ikiwashwa, watumiaji wanaweza kuifanya <ph name="PRODUCT_NAME" /> ikumbuke na
+          kuyatoa manenosiri kiotomatiki wakati mwingine wanapoingia katika wavuti.
+
+         Mipangilio hii ikizimwa, watumiaji hawawezi kuhifadhi manenosiri mapya lakini bado wanaweza
+         kutumia yale ambayo tayari yamehifadhiwa.
+
+         Sera hii ikiwashwa au kuzimwa, watumiaji hawawezi kubadilisha au 
+          kuifuta katika <ph name="PRODUCT_NAME" />. Sera hii
+          ikiondolewa, inaruhusu kuhifadhi nenosiri (lakini inaweza kuzimwa na mtumiaji).</translation>
 <translation id="6155936611791017817">Weka hali chaguo-msingi ya kishale kikubwa kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="6157537876488211233">Orodha iliyotenganishwa kwa koma ya kanuni za ukwepaji wa proksi</translation>
 <translation id="6158324314836466367">Jina la biashara la duka la wavuti (limeacha kuendesha huduma)</translation>
@@ -1452,16 +1477,6 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
           Sera hii ni ya hiari. Isipowekwa, ombi la utafutaji litatumwa kutumia mbinu ya GET.
 
           Sera hii inatumika endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
-<translation id="6365608006609079612">
-          Mipangilio hii ikiwashwa, watumiaji wanaweza kuifanya <ph name="PRODUCT_NAME" /> ikumbuke na
-          kuyatoa manenosiri kiotomatiki wakati mwingine wanapoingia katika wavuti.
-
-         Mipangilio hii ikizimwa, watumiaji hawawezi kuhifadhi manenosiri mapya lakini bado wanaweza
-         kutumia yale ambayo tayari yamehifadhiwa.
-
-         Sera hii ikiwashwa au kuzimwa, watumiaji hawawezi kubadilisha au 
-          kuifuta katika <ph name="PRODUCT_NAME" />. Sera hii
-          ikiondolewa, inaruhusu kuhifadhi nenosiri (lakini inaweza kuzimwa na mtumiaji).</translation>
 <translation id="6367755442345892511">Ikiwa kituo cha kutoa kinastahili kusanidiwa na mtumiaji.</translation>
 <translation id="6368011194414932347">Sanidi URL ya ukurasa wa kwanza</translation>
 <translation id="6368403635025849609">Ruhusu JavaScript kwenye tovuti hizi</translation>
@@ -1536,31 +1551,33 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
           Ukiweka sera hii, watumiaji wanaweza kuibatilisha kwa muda kwa kuwasha au kuzima kibodi ya skrini. Hata hivyo, chaguo la watumiaji halidumu na chaguo-msingi hurejeshwa kila wakati skrini ya kuingia katika akaunti inapoonyeshwa upya au mtumiaji anapokuwa hafanyi kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja.
 
           Sera hii isipowekwa, kibodi ya skrini inawashwa skrini ya kuingia katika akaunti inapoonyeshwa mara ya kwanza. Watumiaji wanaweza wakazima au kuwasha kibodi ya skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inadumu kati ya watumiaji.</translation>
-<translation id="6571885270348124154">Huweka lugha moja au zaidi zilizopendekezwa kwa vipindi vya umma, hivyo kuwaruhusu watumiaji kuchagua kwa urahisi mojawapo ya lugha hizi.
-
-      Mtumiaji anaweza kuchagua lugha na mpangilio wa kibodi kabla ya kuanza kipindi cha umma. Kwa chaguo-msingi, lugha zote zinazotumika kwenye <ph name="PRODUCT_OS_NAME" /> zimeorodheshwa kwa mpangilio wa alfabeti. Unaweza kutumia sera hii kuhamisha seti ya lugha zilizoorodheshwa hadi upande wa juu wa orodha.
-
-      Sera hii isipowekwa, kiolesura cha lugha ya sasa kitachaguliwa awali.
-
-      Sera hii ikiwekwa, lugha zilizopendekezwa zitahamishwa hadi upande wa juu wa orodha na itatenganishwa na lugha nyingine zote. Lugha zinazopendekezwa zitaorodheshwa katika mpangilio ambao zinaonekana katika sera. Lugha ya kwanza iliyopendekezwa itachaguliwa awali.
-
-      Ikiwa kuna lugha zaidi ya moja iliyopendekezwa, inachukuliwa kwamba watumiaji wangependa kuchagua kati ya lugha hizi. Uteuzi wa lugha na mpangilio wa kibodi utatolewa sana wakati wa kuanza kipindi cha umma. Vinginevyo, inachukukiwa kwamba watumiaji wengi wangependa kutumia lugha hizi zilizochaguliwa awali. Uteuzi wa lugha na mpangilio wa kibodi hautatolewa sana wakati wa kuanza kipindi cha umma.
-
-       Sera hii inapowekwa na kipengee cha kuingia katika akaunti kiotomatiki kuwashwa (angalia sera za |DeviceLocalAccountAutoLoginId| na |DeviceLocalAccountAutoLoginDelay|), kipindi cha umma kilichoanzishwa kiotomatiki kitatumia lugha ya kwanza iliyopendekezwa na mpangilio wa kibodi maarufu sana unaolingana na lugha hii.
-
-      Kila wakati mpangilio wa kibodi uliochaguliwa awali utakuwa mpangilio maarufu unaolingana na lugha iliyochaguliwa awali.
-
-      Sera hii inaweza tu kuwekwa kama ilivyopendekezwa. Unaweza kutumia sera hii kuhamisha seti ya lugha zilizopendekezwa hadi upande wa juu lakini watumiaji wanaruhusiwa kuchagua lugha inayotumika kwenye <ph name="PRODUCT_OS_NAME" /> kwa kipindi chao wakati wowote.
-      </translation>
 <translation id="6598235178374410284">Picha ya ishara ya mtumiaji</translation>
-<translation id="6633160536638196468">Bainisha orodha ya vipengele vilivyoacha kuendesha huduma vya mbinu ya wavuti ili kuwasha tena kwa muda.
+<translation id="6636268606788232221">Sanidi mipangilio ya kusimamia nishati mtumiaji anapokuwa hafanyi kitu.
 
-      Sera hii inawapa wasimamizi uwezo wa kuwasha tena vipengele vilivyoacha kuendesha huduma vya mbinu ya wavuti kwa muda mfupi. Vipengele vinatambuliwa kwa lebo ya mfuatano na vipengele vinavyolingana na lebo vilivyojumuishwa katika orodha iliyobainishwa na sera hii vitawashwa tena.
+         Sera hii hudhibiti mipangilio mingi ya mkakati wa kusimamia nishati mtumiaji anapokuwa hafanyi kitu.
 
-      Ikiwa sera hii itaachwa bila kuwekwa, au orodha ikiwa tupu au hailingani na mojawapo ya lebo za mifuatano, vipengele vyote vilivyoacha kuendesha huduma vya mbinu ya wavuti vitasalia vikiwa vimezimwa.
+         Kuna hatua za aina nne:
+        * Mwanga wa skrini utapunguzwa iwapo mtumiaji atakuwa hafanyi kitu kwa muda uliyobainishwa na |ScreenDim|.
+        * Skrini itazimwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |ScreenOff|.
+        * Kidirisha cha ilani kitaonyeshwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |IdleWarning|, kumwambia mtumiaji kuwa hatua ya kutofanya kitu imekaribia kuchukuliwa.
+         * Hatua iliyobainishwa na |IdleAction| itachukuliwa iwapo mtumiaji atasalia bila kufanya kitu kwa muda uliobainishwa na |Idle|.
 
-     Ingawa sera yenyewe inaweza kutumiwa kwenye mbinu zilizo hapo juu, kipengele inachokiwasha kinaweza kupatikana kwenye mbinu chache. Si vipengele vyote vilivyoacha kuendesha huduma vya Mbinu ya Wavuti vinaweza kuwashwa tena. Vilivyoorodheshwa hapa chini pekee ndivyo vinavyoweza kuwashwa tena kwa muda mfupi, muda huo ni tofauti kwa kila kipengele. Muundo wa jumla wa lebo ya mfuatano utakuwa [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Kama rejeleo, unaweza kupata lengo la yaliyochangia mabadiliko ya kipengele cha Mbinu ya Wavuti https://bit.ly/blinkintents.
-      </translation>
+           Kwa kila moja ya vitendo vya hapo juu, lazima ucheleweshaji ubainishwe katika milisekunde, na unahitaji kuwekwa kwa thamani kubwa kuliko sifuri ili kusababisha kitendo sambamba. Iwapo ucheleweshaji umewekwa kuwa sifuri, <ph name="PRODUCT_OS_NAME" /> haitachukua kitendo sambamba.
+
+             Kwa kila moja ya ucheleweshaji wa hapo juu, urefu wa muda unapoondolewa, thamani chaguo-msingi itatumika.
+
+             Kumbuka kwamba thamani za |ScreenDim| zitawekwa kuwa chini ya ama sawa na |ScreenOff|, |ScreenOff| na |IdleWarning| itawekwa kuwa chini ya au sawa na |Idle|.
+
+             |IdleAction| inaweza kuwa moja ya vitendo vinne:
+            * |Suspend|
+            * |Logout|
+            * |Shutdown|
+            * |DoNothing|
+           
+           Wakati |IdleAction| inapoondolewa, hatua chaguo-msingi huchukuliwa, ambayo ni kusimamisha.
+
+            Pia kuna mipangilio tofauti ya nishati ya AC na betri.
+          </translation>
 <translation id="6641981670621198190">Lemaza uhimili wa API za michoro ya 3D</translation>
 <translation id="6647965994887675196">Ikiwekwa kuwa kweli, akaunti za watumiaji wanaosimamiwa zitaweza kufunguliwa na kutumiwa.
 
@@ -1868,9 +1885,28 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Ikiwa mpangilio huu utalemazwa au hautawekwa, basi sababu mbili hazitawezeshwa na tabia ya chaguo-msingo kuwa na PIN iliyofafanuliwa na mtumiaji itatumiwa.</translation>
 <translation id="7750991880413385988">Fungua Ukurasa Mpya wa Kichupo</translation>
+<translation id="7761526206824804472">Huweka lugha moja au zaidi zilizopendekezwa kwa vipindi vya umma, hivyo kuwaruhusu watumiaji kuchagua kwa urahisi mojawapo ya lugha hizi.
+
+      Mtumiaji anaweza kuchagua lugha na mpangilio wa kibodi kabla ya kuanza kipindi cha umma. Kwa chaguo-msingi, lugha zote zinazotumika kwenye <ph name="PRODUCT_OS_NAME" /> zimeorodheshwa kwa mpangilio wa alfabeti. Unaweza kutumia sera hii kuhamisha seti ya lugha zilizoorodheshwa hadi upande wa juu wa orodha.
+
+      Sera hii isipowekwa, kiolesura cha lugha ya sasa kitachaguliwa awali.
+
+      Sera hii ikiwekwa, lugha zilizopendekezwa zitahamishwa hadi upande wa juu wa orodha na itatenganishwa na lugha nyingine zote. Lugha zinazopendekezwa zitaorodheshwa katika mpangilio ambao zinaonekana katika sera. Lugha ya kwanza iliyopendekezwa itachaguliwa awali.
+
+      Ikiwa kuna lugha zaidi ya moja iliyopendekezwa, inachukuliwa kwamba watumiaji wangependa kuchagua kati ya lugha hizi. Uteuzi wa lugha na mpangilio wa kibodi utatolewa sana wakati wa kuanza kipindi cha umma. Vinginevyo, inachukuliwa kwamba watumiaji wengi wangependa kutumia lugha hizi zilizochaguliwa awali. Uteuzi wa lugha na mpangilio wa kibodi hautatolewa sana wakati wa kuanza kipindi cha umma.
+
+       Sera hii inapowekwa na kipengee cha kuingia katika akaunti kiotomatiki kuwashwa (angalia sera za |DeviceLocalAccountAutoLoginId| na |DeviceLocalAccountAutoLoginDelay|), kipindi cha umma kilichoanzishwa kiotomatiki kitatumia lugha ya kwanza iliyopendekezwa na mpangilio wa kibodi maarufu sana unaolingana na lugha hii.
+
+      Kila wakati, mpangilio wa kibodi uliochaguliwa awali utakuwa mpangilio maarufu unaolingana na lugha iliyochaguliwa awali.
+
+      Sera hii inaweza tu kuwekwa kama ilivyopendekezwa. Unaweza kutumia sera hii kuhamisha seti ya lugha zilizopendekezwa hadi upande wa juu lakini watumiaji wanaruhusiwa kuchagua lugha inayotumika kwenye <ph name="PRODUCT_OS_NAME" /> kwa kipindi chao wakati wowote.
+      </translation>
 <translation id="7763311235717725977">Inakuruhusu kuweka iwapo tovuti zinaruhusiwa kuonyesha picha. Kuonyesha picha kunaweza kuwa kwa tovuti zote au kukataliwa kwa tovuti zote.
 
           Ikiwa sera hii itasalia kama haijawekwa, 'AllowImages' zitatumiwa na mtumiaji ataweza kuibadilisha.</translation>
+<translation id="7763479091692861127"> Aina za miunganisho zinazoruhusiwa kutumia sasisho za Mfumo wa Uendeshaji. Sasisho za Mfumo wa Uendeshaji zinaweza kuweka vichujo vizito kwenye muunganisho kwa sababu ya ukubwa wavyo na huenda vikasababisha gharama ya ziada. Kwa hivyo, haviwashwi kwa chaguo-msingi kwa aina za miunganisho zinazoonekana kuwa ghali, zinazojumuisha WiMax, Bluetooth na Simu ya Mkononi kwa wakati huu.
+
+      Vitambulisho vinavyotambuliwa vya aina vya muunganisho ni "ethaneti", "wifi", "wimax", "bluetooth"  na "simu ya mkononi".</translation>
 <translation id="7766336524667238790">Ripoti maelezo kuhusu kipindi cha skrini nzima kinachoendelea, kama vile
       Kitambulisho cha programu na toleo.
 
@@ -1920,38 +1956,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
           Ikiwa mpangilio huu umewezeshwa, hivyo basi mashine yanaweza kutambua na kuunganisha kwenye mpangishaji wa mbali hata ikiwa yametengamnishwa kwa ngome.
 
           Ikiwa mpangilio huu umelemazwa na miunganisho ya UDP inayoondoka imechujwa kwa ngome, hivyo basi mashine haya yanaweza tu kuunganisha kwenye mashine ya mpangishaji katika mtandao wa karibu.</translation>
-<translation id="8002229853067655250">Husanidi mipangilio ya kudhibiti kiendelezi cha <ph name="PRODUCT_NAME" />.
-
-          Sera hii inadhibiti mipangilio mingi, ikiwa ni pamoja na mipangilio inayodhibitiwa na sera zozote zilizopo zinazohusu viendelezi. Sera hii itabatilisha sera zozote za zilizopitwa na wakati kama zote zimewekwa.
-
-          Sera hii huweka Kitambulisho cha kiendelezi au URL ya sasisho kwenye usanidi wake. Ukiwa na Kitambulisho cha kiendelezi, usanidi utatumika kwenye kiendelezi kilichobainishwa pekee. Usanidi chaguo-msingi unaweza kuwekwa kwa Kitambulisho "*" cha pekee, ambacho kitatumika kwenye viendelezi vyote ambavyo havijawekwa usanidi wa kawaida katika sera hii. Ukiwa na URL ya sasisho, usanidi utawekwa kwenye viendelezi vyote kwa kutumia URL iliyoelezwa katika faili ya maelezo ya kiendelezi hiki, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Usanidi wa kila kiendelezi (au viendelezi vyenye URL sawa) ni kamusi nyingine iliyo na sehemu zilizoonyeshwa hapa.
-
-          "installation_mode": huweka kwenye mfuatano kuonyesha hali ya kusakinisha kiendelezi. Mifuatano sahihi:
-          * "allowed": huruhusu kiendelezi kisakinishwe na mtumiaji. Hii ndiyo tabia chaguo-msingi.
-          * "blocked": huzuia kusakinisha viendelezi.
-          * "force_installed": kiendelezi husakinishwa kiotomatiki na hakiwezi kuondolewa na mtumiaji.
-          * "normal_installed": kiendelezi husakinishwa lakini kinaweza kuzimwa na mtumiaji.
-
-          "installation_mode" inaweza pia kusanidiwa vile vile kwa viendelezi vingi, ikiwa ni pamoja na "*" kiendelezi (kama mifuatano chaguo-msingi) na viendelezi vyenye URL sawa ya sasisho. Ni thamani "zilizoruhusiwa" na "zilizozuiwa" pekee ndizo zinazoweza kutumiwa katika hali hii.
-
-         Hali ikiwekwa kuwa "force_installed" au "normal_installed" basi lazima "update_url" isanidiwe pia. Kumbuka kwamba URL ya sasisho inatumika kwa usakinishi wa awali pekee; sasisho za viendelezi zinazofuta zitatumia URL ya sasisho iliyoonyeshwa katika faili ya maelezo ya kiendelezi. Lazima URL ya sasisho ionyeshe hati Faili ya Maelezo ya XML ya Sasisho kama ilivyotajwa hapo juu.
-
-          "blocked_permissions": huweka kwenye orodha ya mifuatano inayoonyesha ruhusa za API zilizozuiwa kwa kiendelezi. Majina ya ruhusa ni sawa na mifutano ya ruhusa iliyotajwa katika faili ya maelezo ya kiendelezi kama ilivyoelezwa kwenye <ph name="LINK_TO_EXTENSION_DOC3" />. Mipangilio hii pia inaweza kusanidiwa kwa "*" kiendelezi. Ikiwa kiendelezi kinahitaji ruhusa iliyo kwenye orodha ambayo haijaidhinishwa, hakitaruhusiwa kupakia. Ikiwa kina ruhusa iliyozuiwa kama hitaji la hiari, kitashughulikiwa kwa njia ya kawaida, lakini ombi la ruhusa zinazokinzana litakataliwa kiotomatiki wakati wa kutekeleza.
-
-          "allowed_permissions": sawa na "blocked_permissions", lakini badala ya kukubali baadhi ya ruhusa amabazo zinaweza kuzuiwa na orodha ya ulimwengu ya ruhusa zilizozuiwa, kwa hivyo haiwezi kusanidiwa kwa kiendelezi cha "*". Kumbuka kwamba mipangilio hii haitoi ruhusa za viendelezi kiotomatiki.
-
-          "minimum_version_required": huweka kwenye mfuatano wa toleo. Muundo wa toleo la mfuatano wa toleo ni sawa na ule unaotumika katika faili ya maelezo ya kiendelezi, kama ilivyoelezwa katika <ph name="LINK_TO_EXTENSION_DOC4" />. Kiendelezi chenye toleo la zamani kuliko toleo la chini lililobainishwa kitazimwa. Hii inatumika vilevile kwenye viendelezi vya kusakinisha kwa lazima pia.
-
-          Mipangilio ifuatayo inaweza kutumika kwa usanidi chaguo-msingi "*" pekee:
-
-          "install_sources": Kila kipengee katika orodha hii ni ruwaza inayolingana na mtindo wa kiendelezi (angalia https://developer.chrome.com/extensions/match_patterns). Watumiaji wataweza kusakinisha vipengee kwa urahisi kutoka kwenye URL yoyote inayolingana na kipengee katika orodha hii. Eneo la faili ya *.crx na ukurasa ambapo kipakuliwa kilianzishiwa (yaani kielekezi) lazima vikubaliwe na ruwaza hizi.
-
-          "allowed_types": Mipangilio hii inadhinisha aina zinazoruhusiwa za kiendelezi/programu ambazo zinaweza kusakinishwa katika <ph name="PRODUCT_NAME" />.  Thamani ni orodha ya mifuatano, ambayo kila moja inapaswa kuwa mojawapo ya zifuatazo: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Angalia hati ya viendelezi vya <ph name="PRODUCT_NAME" /> kwa maelezo zaidi kuhusu aina hizi.
-
-          Sera hii bado haipo tayari kutumiwa, tafadhali usiitumie.
-          </translation>
 <translation id="8044493735196713914">Ripoti modi ya kuwasha kifaa</translation>
 <translation id="8059164285174960932">URL ambapo seva teja za ufikiaji wa mbali zinapaswa kupata tokeni za uthibitishaji</translation>
 <translation id="8071636581296916773">Inawasha matumizi ya seva za relei seva teja za mbali zinapojaribu kutambua muunganisho wa mashini hii.
@@ -2018,17 +2022,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8197918588508433925">Sera hii inabainisha viendelezi vilivyoruhusiwa ili kutumia Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() kwa uthibitishaji wa mbali. Lazima viendelezi viongezwe kwenye orodha hii ili kutumia API.
 
           Iwapo kiendelezi hakipo kwenye orodha, au orodha haijawekwa, upigaji simu katika API utashindwa kwa msimbo wa hitilafu.</translation>
-<translation id="8211174979203781791">Husanidi URL ya ukurasa wa kwanza ya chaguo-msingi katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kuibadilisha.
-
-         Ukurasa wa kwanza ni ukurasa unaofunguliwa na kitufe cha Mwanzo. Kurasa zinazofunguka mwanzoni zinadhibitiwa na sera za RestoreOnStartup.
-
-          Aina ya ukurasa wa kwanza inaweza kuwekwa kwenye URL unayobainisha hapa au kuwekwa kwenye Ukurasa Mpya wa Kichupo. Ukichagua Ukurasa Mpya wa Kichupo, basi sera hii haifanyi kazi.
-
-          Ukiwasha mipangilio hii, watumiaji hawawezi kubadilisha URL ya ukurasa wao wa kwanza katika <ph name="PRODUCT_NAME" />, lakini bado wanaweza kuchagua Ukurasa Mpya wa Kichupo kama ukurasa wao wa kwanza.
-
-          Kuiacha sera hii bila kuwekwa kutamruhusu mtumiaji kuchagua ukurasa huu wa kwanza mwenyewe iwapo HomepageIsNewTabPage haijawekwa pia.
-
-          Sera hii haipatikani kwenye matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="8244525275280476362">Upeo wa juu wa ucheleweshaji wa kuleta baada ya kutothibitisha sera</translation>
 <translation id="8256688113167012935">Hudhibiti jina la akaunti <ph name="PRODUCT_OS_NAME" /> inayoonekana kwenye skrini ya kuingia kwa ajili ya akaunti ya kifaa cha karibu nawe inayolingana.
 

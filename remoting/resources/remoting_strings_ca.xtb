@@ -148,6 +148,7 @@ Host</translation>
 <translation id="4573676252416618192">Amfitrió de l'escriptori
 remot de Chrome</translation>
 <translation id="4619978527973181021">Accepta i instal·la</translation>
+<translation id="4647791084836149355">Mostra la visualització de Cardboard</translation>
 <translation id="4703799847237267011">La vostra sessió de Chromoting ha finalitzat.</translation>
 <translation id="4736223761657662401">Historial de connexions</translation>
 <translation id="4741792197137897469">L'autenticació ha fallat. Torneu a iniciar la sessió a Chrome.</translation>
@@ -206,6 +207,7 @@ remot de Chrome</translation>
 <translation id="6284412385303060032">L'amfitrió que s'executa a la pantalla d'inici de la consola s'ha aturat per admetre el mode Curtain, i fa servir un amfitrió que s'executa en una sessió específica de l'usuari.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6304318647555713317">Client</translation>
+<translation id="6324708100353784493">Heu activat el mode d'integració amb Google Cardboard. Per utilitzar-lo, inseriu el vostre dispositiu en un visor compatible amb Google Cardboard.</translation>
 <translation id="6381670701864002291">Altres motius.</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
 <translation id="6441316101718669559">Aquesta plataforma no admet la integració de l'escriptori. Podeu continuar utilitzant l'aplicació, però l'experiència de l'usuari no serà tan bona.</translation>

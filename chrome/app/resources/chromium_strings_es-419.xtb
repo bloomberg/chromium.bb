@@ -59,6 +59,7 @@
 <translation id="2886012850691518054">Opcional: Ayúdanos a mejorar Chromium enviando estadísticas de uso e informes de errores a Google de manera automática.</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para utilizar vínculos <ph name="SCHEME" />. El vínculo solicitado es <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chromium intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco usuales. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chromium detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes acceder a Chromium. De este modo, Chromium puede sincronizar las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración en los dispositivos.</translation>
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Chromium.</translation>

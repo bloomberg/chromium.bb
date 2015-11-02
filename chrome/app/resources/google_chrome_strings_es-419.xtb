@@ -135,6 +135,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
+<translation id="5626352146162055517"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chrome intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco usuales. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chrome detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="573759479754913123">Acerca de Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necesita acceder al almacenamiento para descargar archivos.</translation>

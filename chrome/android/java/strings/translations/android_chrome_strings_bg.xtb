@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Виждайте разделите си с други скорошни приложения на екрана за общ преглед на телефона си.</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Когато тази функция е включена, Chrome ще използва сървърите на Google, за да компресира посещаваните от вас страници преди изтеглянето им. Няма да оптимизираме, нито ще виждаме страниците, отваряни през частни връзки (HTTPS) или в раздели в режим „инкогнито“.</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="2126426811489709554">Предоставено от Chrome</translation>
 <translation id="213279576345780926">Затворихте „<ph name="TAB_TITLE" />“</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Осъществява се достъп до аудио- и видеовхода</translation>
 <translation id="3102119246920354026">Кеш</translation>
 <translation id="3137521801621304719">Напускане на режима „инкогнито“</translation>
-<translation id="3158619413803296679">Избиране на отметка</translation>
 <translation id="3190152372525844641">Включете разрешенията за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">С отметка</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Запазване на отметка към тази страница</translation>
 <translation id="326254929494722411">Още не сте настроили профил в Google на това устройство</translation>
 <translation id="3269093882174072735">Зареждане на изображението</translation>
+<translation id="3278850099957560514">Намалете разходите за данни, като използвате Google за оптимизиране на посещаваните от вас страници. Няма да оптимизираме, нито ще виждаме страниците, отваряни през частни връзки (HTTPS) или в раздели в режим „инкогнито“.</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3287852534598822456">Отметката вече не съществува. Моля, опреснете.</translation>
 <translation id="3303414029551471755">Искате ли да продължите с изтеглянето на съдържанието?</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4059119910594077751">Докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
 <translation id="4062305924942672200">Правна информация</translation>
-<translation id="4084682180776658562">Отметка</translation>
 <translation id="4089831646916293264">Тази функция може да възпрепятства достъпа до предоставените от оператора ви платени услуги за данни.</translation>
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="411254640334432676">Изтеглянето не бе успешно.</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">Раздели „инкогнито“: Затв.</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5565871407246142825">Кредитни карти</translation>
+<translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
 <translation id="5626134646977739690">Име:</translation>
@@ -461,6 +462,7 @@
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7767746238359002192">Посетете страницата, за да я запазите офлайн</translation>
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
+<translation id="7784213092572143271">Страницата е запазена</translation>
 <translation id="7788788617745289808">Chrome се нуждае от достъп до камерата, за да я сподели с този сайт.</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
@@ -541,6 +543,7 @@
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="886510833909353412">Шифроване на всичко с пропуск</translation>
 <translation id="8872441722924401214">Изберете сертификат за удостоверяване</translation>
+<translation id="8891135217544884558">URL адреси в близост</translation>
 <translation id="8901170036886848654">Няма намерени отметки</translation>
 <translation id="8909135823018751308">Споделяне…</translation>
 <translation id="8912362522468806198">Профил в Google</translation>

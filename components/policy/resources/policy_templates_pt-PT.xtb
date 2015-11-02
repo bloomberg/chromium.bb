@@ -159,6 +159,15 @@
       Se esta política não estiver definida, os Termos de Utilização não serão apresentados.
 
       Esta política deve estar definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> possa transferir os Termos de Utilização. Os Termos de Utilização devem estar no formato de texto simples, com o tipo de MIME texto/simples. Não é permitida qualquer marcação.</translation>
+<translation id="1757339646969878244">Configure as opções de acesso remoto no anfitrião do Ambiente de Trabalho Remoto do Chrome.
+
+      O anfitrião do Ambiente de Trabalho Remoto do Chrome é um serviço nativo executado no
+      computador de destino ao qual um utilizador se pode associar ao utilizar a aplicação Ambiente de Trabalho Remoto
+      do Chrome. O serviço nativo é comprimido e executado em separado a partir
+      do navegador <ph name="PRODUCT_NAME" />.
+
+      Estas políticas são ignoradas, exceto se o
+      anfitrião do Ambiente de Trabalho Remoto do Chrome estiver instalado.</translation>
 <translation id="1757688868319862958">Permite ao <ph name="PRODUCT_NAME" /> executar plug-ins que requerem autorização. Se ativar esta definição, os plug-ins que não estão desatualizados são sempre executados. Se esta definição estiver desativada ou não estiver definida, será pedida permissão aos utilizadores para executar plug-ins que requerem autorização. Estes são plug-ins que podem comprometer a segurança.</translation>
 <translation id="1803646570632580723">Lista de aplicações fixadas a mostrar no iniciador</translation>
 <translation id="1808715480127969042">Bloquear cookies nestes sites</translation>
@@ -586,6 +595,38 @@
 <translation id="3153348162326497318">Permite especificar as extensões que NÃO podem ser instaladas pelos utilizadores. Se constarem da lista negra, as extensões já instaladas serão removidas. Um valor de lista negra "*" significa que todas as extensões constam da lista negra, a menos que estejam expressamente indicadas na lista de autorizações. Se esta política não for definida, o utilizador pode instalar qualquer extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Esta definição foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />. A forma recomendada de configurar coleções de extensões/aplicações alojadas na entidade é incluir no alojamento do site os pacotes CRX em ExtensionInstallSources e colocar links de transferência diretos para os pacotes numa página Web. Pode ser criado um iniciador para essa página Web utilizando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Configura definições de gestão de extensões para o <ph name="PRODUCT_NAME" />.
+
+          Esta política controla várias definições, incluindo definições controladas por quaisquer políticas existentes relativas a extensões. Além disso, substitui todas as políticas antigas, caso estejam ambas definidas.
+
+          Esta política mapeia um ID de extensão ou um URL de atualização para a respetiva configuração. Com um ID de extensão, a configuração é aplicada apenas à extensão especificada. É possível definir uma configuração predefinida para o ID especial "*", que se irá aplicar a todas as extensões que não tenham uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões com o URL de atualização exato indicado no manifesto desta extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          A configuração de cada extensão (ou extensões com o mesmo URL de atualização) é outro dicionário que pode conter os campos documentados abaixo.
+
+          "installation_mode": mapeia para uma string que indica o modo de instalação para a extensão. As strings válidas são:
+          * "allowed": permite que a extensão seja instalada pelo utilizador. Este é o comportamento predefinido.
+          * "blocked": bloqueia a instalação da extensão.
+          * "force_installed": a extensão é instalada automaticamente e o utilizador não a pode remover.
+          * "normal_installed": a extensão é instalada automaticamente, mas o utilizador pode desativá-la.
+
+          Também é possível configurar o "installation_mode" para várias extensões, incluindo a extensão "*" (como predefinições) e extensões com o mesmo URL de atualização. Neste caso, só é possível utilizar os valores "allowed" e "blocked".
+
+          Se o modo estiver definido como "force_installed" ou "normal_installed", também é necessário configurar um "update_url". Tenha em atenção que o URL de atualização definido nesta política é utilizado apenas para a instalação inicial; as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. O URL de atualização deve indicar um documento XML de Manifesto de atualização, conforme supramencionado.
+
+          "blocked_permissions": mapeia para uma lista de strings que indicam as autorizações de API bloqueadas para a extensão. Os nomes das autorizações são os mesmos que as strings de autorização declaradas no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC3" />. Também é possível configurar esta definição para a extensão "*". Se a extensão necessitar de uma autorização que faz parte da lista de bloqueio, o carregamento não é permitido. Se incluir uma autorização bloqueada como requisito opcional, esta é processada normalmente. No entanto, a solicitação de autorizações em conflito é recusada automaticamente no tempo de execução.
+
+          "allowed_permissions": é semelhante a "blocked_permissions", porém, permite explicitamente algumas autorizações que podem estar bloqueadas na lista global de autorizações bloqueadas e que, por isso, não podem ser configuradas para a extensão "*". Tenha em atenção que esta definição não concede autorizações a extensões automaticamente.
+
+          "minimum_version_required": mapeia para uma string de versão. O formato da string de versão é igual ao utilizado no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC4" />. As extensões com uma versão mais antiga do que a versão mínima especificada são desativadas. Isto também se aplica a extensões de instalação forçada.
+
+          As seguintes definições apenas podem ser utilizadas para a configuração "*" predefinida:
+
+          "install_sources": cada item nesta lista é um padrão de correspondência ao estilo de extensão (consulte https://developer.chrome.com/extensions/match_patterns). Os utilizadores podem instalar itens facilmente a partir de qualquer URL que corresponda a um item nesta lista. Tanto a localização do ficheiro *.crx como a página a partir da qual foi iniciada a transferência (ou seja, o referenciador) têm de estar autorizadas por estes padrões.
+
+          "allowed_types": esta definição acidiona à lista de autorizações os tipos permitidos de extensões/aplicações que podem ser instalados no <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, em que cada uma deve ser um dos seguintes tipos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulte a documentação de extensões do <ph name="PRODUCT_NAME" /> para obter mais informações sobre estes tipos.
+
+          Esta política ainda não está pronta para utilização, pelo que não a deve utilizar.
+          </translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3206731874112238027">Desativar a pré-visualização de impressão (descontinuado)</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS incorporado é utilizado no <ph name="PRODUCT_NAME" />.
@@ -763,9 +804,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="402759845255257575">Não permitir que os sites executem JavaScript</translation>
 <translation id="4027608872760987929">Ativar o fornecedor de pesquisas personalizado</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros numa página tem permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP. Normalmente, esta definição está desativada como uma defesa contra phishing. Se esta política não for definida, a definição será desativada e o subconteúdo de terceiros não terá permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP.</translation>
-<translation id="4043912146394966243"> Os tipos de ligação permitidos para utilização em atualizações do SO. As atualizações do SO podem sobrecarregar a ligação devido ao seu tamanho, o que pode implicar custos adicionais. Por conseguinte, por predefinição, não estão ativadas para tipos de ligação considerados caros, nomeadamente WiMax, Bluetooth e Celular.
-
-      Os identificadores dos tipos de ligação reconhecidos são "ethernet", "wifi", "wimax", "bluetooth" e "celular".</translation>
 <translation id="4052765007567912447">Controla se o utilizador pode visualizar palavras-passe em texto normal no gestor de palavras-passe. Se desativar esta definição, o gestor de palavras-passe não permite a apresentação de palavras-passe guardadas em texto normal na respetiva janela. Se ativar ou não definir esta política, os utilizadores podem ver as suas palavras-passe em texto normal no gestor de palavras-passe.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo de navegação anónima forçado</translation>
@@ -814,8 +852,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4325690621216251241">Adicionar um botão para terminar sessão ao tabuleiro do sistema</translation>
-<translation id="4337944790873898250">Se esta política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> maximiza incondicionalmente a primeira janela mostrada na primeira execução.
-      Se esta política for definida como falsa ou não for configurada, uma heurística decide se maximiza a primeira janela mostrada, consoante o tamanho do ecrã.</translation>
 <translation id="436581050240847513">Comunicar interfaces de rede do dispositivo</translation>
 <translation id="4372704773119750918">Não permitir que o utilizador empresarial faça parte do multiperfil (principal ou secundário)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites mostrem todas as imagens</translation>
@@ -827,6 +863,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política estiver configurada, o utilizador não a pode alterar e o atalho de aplicações é sempre mostrado ou nunca é mostrado.</translation>
 <translation id="443665821428652897">Limpar dados do site ao encerrar o navegador (eliminado)</translation>
+<translation id="4439336120285389675">Especifica uma lista de funcionalidades de plataformas Web descontinuadas a reativar temporariamente.
+
+      Esta política concede aos administradores a capacidade de reativar funcionalidades de plataformas Web descontinuadas por um tempo limitado. As funcionalidades estão identificadas por uma etiqueta de string e as funcionalidades que correspondem às etiquetas incluídas na lista especificadas por esta política são reativadas.
+
+      Se esta política não estiver definida ou se a lista estiver vazia ou não corresponder a uma das etiquetas de string suportadas, todas as funcionalidades de plataformas Web descontinuadas permanecem desativadas.
+
+      Embora a política em si seja suportada nas plataformas acima, a funcionalidade que está a ativar pode estar disponível em menos plataformas. Nem todas as funcionalidades de plataformas Web descontinuadas podem ser reativadas. Apenas podem ser reativadas por um período limitado de tempo as que estão indicadas explicitamente na lista abaixo, o que difere consoante a funcionalidade. O formato geral da etiqueta de string é [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Como referência, pode encontrar a intenção por detrás das alterações às funcionalidades de plataformas Web em https://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo fica inativo ou entra em suspensão.</translation>
 <translation id="4445684791305970001">Desativa as Ferramentas do Programador e a Consola de JavaScript. Se ativar esta definição, não será possível aceder às Ferramentas do Programador e os elementos de Web sites deixarão de ser inspecionados. Todos os atalhos de teclado e entradas de menu ou de menu de contexto para abrir as Ferramentas do Programador ou a Consola de JavaScript serão desativados. Se desativar ou não definir esta opção, permitirá que o utilizador use as Ferramentas do Programador e a Consola de JavaScript.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
@@ -1074,32 +1118,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não estiver definida, o início de sessão automático não irá ocorrer.</translation>
 <translation id="5535973522252703021">Lista de permissões do servidor de delegação do Kerberos</translation>
-<translation id="553658564206262718">Configure definições de gestão de energia quando o utilizador fica inativo.
-
-          Esta política controla várias definições para a estratégia de gestão de energia quando o utilizador fica inativo.
-
-          Existem quatro tipos de ação:
-          * O ecrã ficará com a luz reduzida se o utilizador continuar inativo durante o período especificado por |ReduzirLuzEcrã|.
-          * O ecrã será desligado se o utilizador continuar inativo durante o período especificado por |EcrãDesligado|.
-          * Será apresentada uma caixa de diálogo de aviso se o utilizador continuar inativo durante o período especificado por |AvisoInatividade|, informando o utilizador que a ação de inatividade está prestes a ser efetuada.
-          * A ação especificada por |AçãoInatividade| será efetuada se o utilizador continuar inativo durante o período especificado em |Inativo|.
-
-          Para cada uma das ações mencionadas acima, deve especificar o tempo de atraso em milissegundos e tem de definir para um valor superior a zero para acionar a ação correspondente. Se o tempo de atraso estiver definido como zero, o <ph name="PRODUCT_OS_NAME" /> não efetuará a ação correspondente.
-
-          Para cada um dos tempos de atraso mencionados acima, quando o período de tempo não estiver definido, será utilizado um valor predefinido.
-
-          Tenha em conta que os valores de |ReduzirLuzEcrã| estarão afixados para serem inferiores ou iguais a |EcrãDesligado|, |EcrãDesligado| e |AvisoInatividade| estarão afixados para serem inferiores ou iguais a |Inativo|.
-
-          |AçãoInatividade| pode ser uma das quatro ações possíveis:
-          * |Suspender|
-          * |TerminarSessão|
-          * |Encerrar|
-          * |NãoFazerNada|
-
-          Quando a ação |AçãoInatividade| não está definida, é efetuada a ação predefinida, que é a suspensão.
-
-          Existem também definições em separado para a corrente alternada e a  bateria.
-          </translation>
 <translation id="5560039246134246593">Adiciona um parâmetro à obtenção da semente Variações em <ph name="PRODUCT_NAME" />.
 
       Se estiver especificada, irá adicionar um parâmetro de consulta denominado "restrito" ao URL utilizado para obter a semente Variações. O valor do parâmetro será o valor especificado nesta política.
@@ -1251,6 +1269,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Deve especificar o valor da política em milissegundos. Os valores estão afixados para serem inferiores ao período de atraso de inatividade.</translation>
 <translation id="6114416803310251055">obsoleta</translation>
 <translation id="6145799962557135888">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a executar JavaScript. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultJavaScriptSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
+<translation id="6151775819333710697">
+          Se esta definição estiver ativada, os utilizadores podem fazer com que o <ph name="PRODUCT_NAME" /> memorize palavra-passe
+          e as forneça automaticamente da próxima vez que iniciarem sessão num site.
+
+          Se esta definição estiver desativada, os utilizadores não podem guardar palavras-passe mas
+          podem continuar a utilizar as palavras-passe guardadas anteriormente.
+
+          Se esta política estiver ativada ou desativada, os utilizadores não a podem alterar ou substituir
+          no <ph name="PRODUCT_NAME" />. Se esta
+          política não estiver definida, é permitido guardar palavras-passe (mas o utilizador pode
+          desativar essa definição).</translation>
 <translation id="6155936611791017817">Definir o estado predefinido do cursor grande no ecrã de início de sessão</translation>
 <translation id="6157537876488211233">Lista separada por vírgulas das regras para ignorar o proxy</translation>
 <translation id="6158324314836466367">Nome da Web store da empresa (descontinuado)</translation>
@@ -1310,17 +1339,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política é opcional. Se não for definida, será enviado um pedido de pesquisa através do método GET.
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
-<translation id="6365608006609079612">
-          Se esta definição estiver ativada, os utilizadores podem fazer com que o <ph name="PRODUCT_NAME" /> memorize palavra-passe
-          e as forneça automaticamente da próxima vez que iniciarem sessão num site.
-
-          Se esta definição estiver desativada, os utilizadores não podem guardar palavras-passe mas
-          podem continuar a utilizar as palavras-passe guardadas anteriormente.
-
-          Se esta política estiver ativada ou desativada, os utilizadores não a podem alterar ou substituir
-          no <ph name="PRODUCT_NAME" />. Se esta
-          política não estiver definida, é permitido guardar palavras-passe (mas o utilizador pode
-          desativar essa definição).</translation>
 <translation id="6367755442345892511">Se o canal de lançamento deve ou não ser passível de configuração pelo utilizador</translation>
 <translation id="6368011194414932347">Configurar o URL da página inicial</translation>
 <translation id="6368403635025849609">Permitir JavaScript nestes sites</translation>
@@ -1372,31 +1390,33 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se definir esta política, os utilizadores podem substituí-la temporariamente através da ativação ou da desativação do teclado no ecrã. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for apresentado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
           Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
-<translation id="6571885270348124154">Define um ou mais locais recomendados para uma sessão pública e permite aos utilizadores escolher facilmente um desses locais.
-
-      O utilizador pode escolher um local e um esquema de teclado antes de iniciar uma sessão pública. Por predefinição, todos os locais suportados pelo <ph name="PRODUCT_OS_NAME" /> estão listados por ordem alfabética. Pode utilizar esta política para mover um conjunto de locais recomendados para a parte superior da lista.
-
-      Se esta política não estiver definida, é pré-selecionado o local da IU atual.
-
-      Se esta política estiver definida, os locais recomendados são movidos para a parte superior da lista e são separados visualmente de todos os outros locais. Os locais recomendados são apresentados pela ordem em que aparecem na política. É pré-selecionado o primeiro local recomendado.
-
-      Se existir mais do que um local recomendado, pressupõe-se que os utilizadores pretendem selecionar entre esses locais. A seleção do local e do esquema de teclado é oferecida com destaque ao iniciar uma sessão pública. Caso contrário, pressupõe-se que a maioria dos utilizadores pretende utilizar o local pré-selecionado. A seleção do local e do esquema de teclado é oferecida com menos destaque ao iniciar uma sessão pública.
-
-      Quando esta política está definida e o início de sessão automático está ativado (consulte as políticas |DeviceLocalAccountAutoLoginId| e |DeviceLocalAccountAutoLoginDelay|), a sessão pública iniciada automaticamente utiliza o primeiro local recomendado e o esquema de teclado mais comum correspondente a esse local.
-
-      O esquema de teclado pré-selecionado é sempre o esquema mais comum correspondente ao local pré-selecionado.
-
-      Esta política apenas pode ser definida como recomendada. Pode utilizá-la para mover um conjunto de locais recomendados para a parte superior, mas os utilizadores podem sempre escolher qualquer local suportado pelo <ph name="PRODUCT_OS_NAME" /> para a respetiva sessão.
-      </translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
-<translation id="6633160536638196468">Especifica uma lista de funcionalidades de plataformas Web descontinuadas a reativar temporariamente.
+<translation id="6636268606788232221">Configure definições de gestão de energia quando o utilizador fica inativo.
 
-      Esta política concede aos administradores a capacidade de reativar funcionalidades de plataformas Web descontinuadas por um tempo limitado. As funcionalidades estão identificadas por uma etiqueta de string e as funcionalidades que correspondem às etiquetas incluídas na lista especificadas por esta política são reativadas.
+          Esta política controla várias definições para a estratégia de gestão de energia quando o utilizador fica inativo.
 
-      Se esta política não estiver definida ou se a lista estiver vazia ou não corresponder a uma das etiquetas de string suportadas, todas as funcionalidades de plataformas Web descontinuadas permanecem desativadas.
+          Existem quatro tipos de ação:
+          * O ecrã ficará com a luz reduzida se o utilizador continuar inativo durante o período especificado por |ReduzirLuzEcrã|.
+          * O ecrã será desligado se o utilizador continuar inativo durante o período especificado por |EcrãDesligado|.
+          * Será apresentada uma caixa de diálogo de aviso se o utilizador continuar inativo durante o período especificado por |AvisoInatividade|, informando o utilizador que a ação de inatividade está prestes a ser efetuada.
+          * A ação especificada por |AçãoInatividade| será efetuada se o utilizador continuar inativo durante o período especificado em |Inativo|.
 
-      Embora a política em si seja suportada nas plataformas acima, a funcionalidade que está a ativar pode estar disponível em menos plataformas. Nem todas as funcionalidades de plataformas Web descontinuadas podem ser reativadas. Apenas podem ser reativadas por um período limitado de tempo as que estão indicadas explicitamente na lista abaixo, o que difere consoante a funcionalidade. O formato geral da etiqueta de string é [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Como referência, pode encontrar a intenção por detrás das alterações às funcionalidades de plataformas Web em https://bit.ly/blinkintents.
-      </translation>
+          Para cada uma das ações mencionadas acima, deve especificar o tempo de atraso em milissegundos e tem de definir para um valor superior a zero para acionar a ação correspondente. Se o tempo de atraso estiver definido como zero, o <ph name="PRODUCT_OS_NAME" /> não efetuará a ação correspondente.
+
+          Para cada um dos tempos de atraso mencionados acima, quando o período de tempo não estiver definido, será utilizado um valor predefinido.
+
+          Tenha em conta que os valores de |ReduzirLuzEcrã| estarão afixados para serem inferiores ou iguais a |EcrãDesligado|, |EcrãDesligado| e |AvisoInatividade| estarão afixados para serem inferiores ou iguais a |Inativo|.
+
+          |AçãoInatividade| pode ser uma das quatro ações possíveis:
+          * |Suspender|
+          * |TerminarSessão|
+          * |Encerrar|
+          * |NãoFazerNada|
+
+          Quando a ação |AçãoInatividade| não está definida, é efetuada a ação predefinida, que é a suspensão.
+
+          Existem também definições em separado para a corrente alternada e a  bateria.
+          </translation>
 <translation id="6641981670621198190">Desativar o suporte para APIs de gráficos 3D</translation>
 <translation id="6647965994887675196">Se definido como "true", é possível criar e utilizar utilizadores supervisionados.
 
@@ -1669,7 +1689,26 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta definição estiver desativada ou não estiver definida, a autenticação de dois fatores não será ativada e será utilizado o comportamento predefinido de utilização de um PIN definido pelo utilizador.</translation>
 <translation id="7750991880413385988">Abrir página novo separador</translation>
+<translation id="7761526206824804472">Define um ou mais locais recomendados para uma sessão pública e permite aos utilizadores escolher facilmente um desses locais.
+
+      O utilizador pode escolher um local e um esquema de teclado antes de iniciar uma sessão pública. Por predefinição, todos os locais suportados pelo <ph name="PRODUCT_OS_NAME" /> estão listados por ordem alfabética. Pode utilizar esta política para mover um conjunto de locais recomendados para a parte superior da lista.
+
+      Se esta política não estiver definida, é pré-selecionado o local da IU atual.
+
+      Se esta política estiver definida, os locais recomendados são movidos para a parte superior da lista e são separados visualmente de todos os outros locais. Os locais recomendados são apresentados pela ordem em que aparecem na política. É pré-selecionado o primeiro local recomendado.
+
+      Se existir mais do que um local recomendado, pressupõe-se que os utilizadores pretendem selecionar entre esses locais. A seleção do local e do esquema de teclado é oferecida com destaque ao iniciar uma sessão pública. Caso contrário, pressupõe-se que a maioria dos utilizadores pretende utilizar o local pré-selecionado. A seleção do local e do esquema de teclado é oferecida com menos destaque ao iniciar uma sessão pública.
+
+      Quando esta política está definida e o início de sessão automático está ativado (consulte as políticas |DeviceLocalAccountAutoLoginId| e |DeviceLocalAccountAutoLoginDelay|), a sessão pública iniciada automaticamente utiliza o primeiro local recomendado e o esquema de teclado mais comum correspondente a esse local.
+
+      O esquema de teclado pré-selecionado é sempre o esquema mais comum correspondente ao local pré-selecionado.
+
+      Esta política apenas pode ser definida como recomendada. Pode utilizá-la para mover um conjunto de locais recomendados para a parte superior, mas os utilizadores podem sempre escolher qualquer local suportado pelo <ph name="PRODUCT_OS_NAME" /> para a respetiva sessão.
+      </translation>
 <translation id="7763311235717725977">Permite definir se os Web sites estão ou não autorizados a apresentar imagens. A apresentação de imagens pode ser autorizada para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "AllowImages" e o utilizador poderá alterá-la.</translation>
+<translation id="7763479091692861127"> Os tipos de ligação permitidos para utilização em atualizações do SO. As atualizações do SO podem sobrecarregar a ligação devido ao seu tamanho, o que pode implicar custos adicionais. Por conseguinte, por predefinição, não estão ativadas para tipos de ligação considerados caros, nomeadamente WiMax, Bluetooth e Celular.
+
+      Os identificadores dos tipos de ligação reconhecidos são "ethernet", "wifi", "wimax", "bluetooth" e "celular".</translation>
 <translation id="7766336524667238790">Comunica informações acerca da sessão ativa do quiosque, como
       o ID e a versão da aplicação.
 
@@ -1713,38 +1752,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7953256619080733119">Anfitriões de exceção no manual do utilizador gerido</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>
-<translation id="8002229853067655250">Configura definições de gestão de extensões para o <ph name="PRODUCT_NAME" />.
-
-          Esta política controla várias definições, incluindo definições controladas por quaisquer políticas existentes relativas a extensões. Além disso, substitui todas as políticas antigas, caso estejam ambas definidas.
-
-          Esta política mapeia um ID de extensão ou um URL de atualização para a respetiva configuração. Com um ID de extensão, a configuração é aplicada apenas à extensão especificada. É possível definir uma configuração predefinida para o ID especial "*", que se irá aplicar a todas as extensões que não tenham uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões com o URL de atualização exato indicado no manifesto desta extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          A configuração de cada extensão (ou extensões com o mesmo URL de atualização) é outro dicionário que pode conter os campos documentados abaixo.
-
-          "installation_mode": mapeia para uma string que indica o modo de instalação para a extensão. As strings válidas são:
-          * "allowed": permite que a extensão seja instalada pelo utilizador. Este é o comportamento predefinido.
-          * "blocked": bloqueia a instalação da extensão.
-          * "force_installed": a extensão é instalada automaticamente e o utilizador não a pode remover.
-          * "normal_installed": a extensão é instalada automaticamente, mas o utilizador pode desativá-la.
-
-          Também é possível configurar o "installation_mode" para várias extensões, incluindo a extensão "*" (como predefinições) e extensões com o mesmo URL de atualização. Neste caso, só é possível utilizar os valores "allowed" e "blocked".
-
-          Se o modo estiver definido como "force_installed" ou "normal_installed", também é necessário configurar um "update_url". Tenha em atenção que o URL de atualização definido nesta política é utilizado apenas para a instalação inicial; as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. O URL de atualização deve indicar um documento XML de Manifesto de atualização, conforme supramencionado.
-
-          "blocked_permissions": mapeia para uma lista de strings que indicam as autorizações de API bloqueadas para a extensão. Os nomes das autorizações são os mesmos que as strings de autorização declaradas no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC3" />. Também é possível configurar esta definição para a extensão "*". Se a extensão necessitar de uma autorização que faz parte da lista de bloqueio, o carregamento não é permitido. Se incluir uma autorização bloqueada como requisito opcional, esta é processada normalmente. No entanto, a solicitação de autorizações em conflito é recusada automaticamente no tempo de execução.
-
-          "allowed_permissions": é semelhante a "blocked_permissions", porém, permite explicitamente algumas autorizações que podem estar bloqueadas na lista global de autorizações bloqueadas e que, por isso, não podem ser configuradas para a extensão "*". Tenha em atenção que esta definição não concede autorizações a extensões automaticamente.
-
-          "minimum_version_required": mapeia para uma string de versão. O formato da string de versão é igual ao utilizado no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC4" />. As extensões com uma versão mais antiga do que a versão mínima especificada são desativadas. Isto também se aplica a extensões de instalação forçada.
-
-          As seguintes definições apenas podem ser utilizadas para a configuração "*" predefinida:
-
-          "install_sources": cada item nesta lista é um padrão de correspondência ao estilo de extensão (consulte https://developer.chrome.com/extensions/match_patterns). Os utilizadores podem instalar itens facilmente a partir de qualquer URL que corresponda a um item nesta lista. Tanto a localização do ficheiro *.crx como a página a partir da qual foi iniciada a transferência (ou seja, o referenciador) têm de estar autorizadas por estes padrões.
-
-          "allowed_types": esta definição acidiona à lista de autorizações os tipos permitidos de extensões/aplicações que podem ser instalados no <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, em que cada uma deve ser um dos seguintes tipos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulte a documentação de extensões do <ph name="PRODUCT_NAME" /> para obter mais informações sobre estes tipos.
-
-          Esta política ainda não está pronta para utilização, pelo que não a deve utilizar.
-          </translation>
 <translation id="8044493735196713914">Comunicar modo de arranque do aparelho</translation>
 <translation id="8059164285174960932">URL onde os clientes de acesso remoto devem obter o respetivo símbolo de autenticação</translation>
 <translation id="8071636581296916773">Ativa a utilização de servidores de retransmissão quando existirem clientes remotos a tentar estabelecer ligação a esta máquina.
@@ -1807,18 +1814,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8197918588508433925">Esta política especifica as extensões com a permissão para utilizar a API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() para a comprovação remota. As extensões têm de ser adicionadas a esta lista para poderem utilizar a API.
 
           Se uma extensão não estiver na lista ou a lista não estiver definida, a chamada para a API falhará e resultará num código de erro.</translation>
-<translation id="8211174979203781791">Configura o URL da página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede que os utilizadores o alterem.
-
-          A página inicial é a página aberta pelo botão Página inicial. As páginas que se abrem no arranque são controladas pelas políticas RestoreOnStartup.
-
-          O tipo de página inicial pode ser definido para um URL que especificar aqui ou definido para a página Novo separador. Se selecionar a página Novo separador, esta política não tem efeito.
-
-          Se ativar esta definição, os utilizadores não podem alterar o URL da respetiva página inicial no <ph name="PRODUCT_NAME" />, mas podem escolher a página Novo separador como página inicial.
-
-          Deixar esta política por definir permite ao utilizador escolher esta página inicial se HomepageIsNewTabPage também não estiver definida.
-
-          Esta política não está disponível em instâncias do Windows que não estejam associadas
-          a um domínio do Active Directory.</translation>
 <translation id="8244525275280476362">Atraso máximo na obtenção após a invalidação de uma política</translation>
 <translation id="8256688113167012935">Controla o nome da conta mostrado pelo <ph name="PRODUCT_OS_NAME" /> no ecrã de início de sessão para a conta local do dispositivo correspondente.
 

@@ -135,6 +135,8 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="5563479599352954471">Keresés egyetlen érintéssel</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Tudjon meg többet a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt.</translation>
+<translation id="5626352146162055517">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor most a Chrome csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan
+és helytelen hitelesítőadatokat küldött vissza. Ez olyankor fordulhat elő, amikor egy támadó próbálja meg magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő szakította meg a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chrome még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="568643307450491754">Könyvjelzőit megtalálhatja a Chrome menüben vagy a könyvjelzősávon.</translation>
 <translation id="573759479754913123">A Chrome OS névjegye</translation>
 <translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>

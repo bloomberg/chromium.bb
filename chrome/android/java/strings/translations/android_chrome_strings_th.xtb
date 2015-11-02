@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">ดูแท็บด้วยแอปล่าสุดอื่นๆ บนหน้าจอภาพรวมของโทรศัพท์</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
+<translation id="2095887075102408547">เมื่อเปิดคุณลักษณะนี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2126426811489709554">สนับสนุนโดย Chrome</translation>
 <translation id="213279576345780926">ปิด <ph name="TAB_TITLE" /> แล้ว</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">กำลังเข้าถึงอินพุตเสียงและวิดีโอ</translation>
 <translation id="3102119246920354026">แคช</translation>
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
-<translation id="3158619413803296679">เลือกบุ๊กมาร์ก</translation>
 <translation id="3190152372525844641">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">บุ๊กมาร์กหน้านี้</translation>
 <translation id="326254929494722411">คุณยังไม่ได้ตั้งค่าบัญชี Google ในอุปกรณ์นี้</translation>
 <translation id="3269093882174072735">โหลดภาพ</translation>
+<translation id="3278850099957560514">ประหยัดข้อมูลโดยใช้ Google เพื่อเพิ่มประสิทธิภาพหน้าที่คุณเข้าชม Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="3287852534598822456">ไม่มีบุ๊กมาร์กแล้ว โปรดรีเฟรช</translation>
 <translation id="3303414029551471755">ต้องการดำเนินการดาวน์โหลดเนื้อหานี้ไหม</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">ซีเปีย</translation>
 <translation id="4059119910594077751">แตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="4062305924942672200">ข้อมูลทางกฎหมาย</translation>
-<translation id="4084682180776658562">บุ๊กมาร์ก</translation>
 <translation id="4089831646916293264">คุณลักษณะนี้อาจรบกวนการเข้าถึงบริการข้อมูลพรีเมียมที่ผู้ให้บริการของคุณจัดหาให้</translation>
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
 <translation id="411254640334432676">การดาวน์โหลดล้มเหลว</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">ปิดแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5565871407246142825">บัตรเครดิต</translation>
+<translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
 <translation id="5596627076506792578">ตัวเลือกเพิ่มเติม</translation>
 <translation id="5626134646977739690">ชื่อ:</translation>
@@ -461,6 +462,7 @@
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7767746238359002192">ไปที่หน้าเพื่อบันทึกแบบออฟไลน์</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
+<translation id="7784213092572143271">บันทึกหน้าแล้ว</translation>
 <translation id="7788788617745289808">Chrome ต้องการเข้าถึงกล้องเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
@@ -541,6 +543,7 @@
 <translation id="885701979325669005">พื้นที่เก็บข้อมูล</translation>
 <translation id="886510833909353412">เข้ารหัสทั้งหมดด้วยรหัสผ่าน</translation>
 <translation id="8872441722924401214">เลือกใบรับรองสำหรับการตรวจสอบสิทธิ์</translation>
+<translation id="8891135217544884558">URL ใกล้เคียง</translation>
 <translation id="8901170036886848654">ไม่พบบุ๊กมาร์ก</translation>
 <translation id="8909135823018751308">แชร์…</translation>
 <translation id="8912362522468806198">บัญชี Google</translation>

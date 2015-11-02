@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium cần chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> lần này, trang web gửi lại thông tin đăng nhập
+không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="3032787606318309379">Đang thêm vào Chromium...</translation>
 <translation id="3046695367536568084">Bạn cần đăng nhập vào Chromium để sử dụng ứng dụng. Điều này cho phép Chromium đồng bộ hóa ứng dụng, dấu trang, lịch sử, mật khẩu và cài đặt khác trên các thiết bị.</translation>
 <translation id="3068515742935458733">Giúp cải thiện Chromium bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>

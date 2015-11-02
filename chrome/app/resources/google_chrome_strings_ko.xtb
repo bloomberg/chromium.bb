@@ -143,6 +143,8 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5563479599352954471">터치 한 번으로 검색</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
+<translation id="5626352146162055517"><ph name="SITE" />에서는 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. Chrome에서 이번에 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서
+비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 이는 공격자가 <ph name="SITE" />인 것처럼 가장하려고 하거나 Wi-Fi 로그인 화면이 연결을 방해했기 때문일 수 있습니다. 데이터 교환이 이뤄지기 전에 Chrome에서 연결을 중단했기 때문에 사용자 정보는 안전합니다.</translation>
 <translation id="568643307450491754">Chrome 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>

@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Lihat tab dengan aplikasi baru-baru ini lainnya di layar Ikhtisar ponsel.</translation>
 <translation id="2079545284768500474">Batalkan</translation>
 <translation id="2082238445998314030">Hasil <ph name="RESULT_NUMBER" /> dari <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Saat fitur ini diaktifkan, Chrome akan menggunakan server Google untuk mengompresi laman yang Anda kunjungi sebelum mengunduhnya. Laman yang diakses menggunakan sambungan pribadi (HTTPS) atau tab Penyamaran tidak akan dioptimalkan maupun dilihat oleh Google.</translation>
 <translation id="2100273922101894616">Masuk Otomatis</translation>
 <translation id="2126426811489709554">Diberdayakan oleh Chrome</translation>
 <translation id="213279576345780926">Menutup <ph name="TAB_TITLE" /></translation>
@@ -115,7 +116,7 @@
 <translation id="2748463065602559597">Anda sedang melihat laman Google Chrome yang aman.</translation>
 <translation id="2770465223704140727">Hapus dari daftar</translation>
 <translation id="278029852808208386">Tidak ditemukan perangkat bluetooth. <ph name="BEGIN_LINK" />Telusuri lagi<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Sambungan lambat terdeteksi.</translation>
+<translation id="2816165854387457183">Sambungan lambat.</translation>
 <translation id="2842985007712546952">Folder induk</translation>
 <translation id="2870560284913253234">Situs</translation>
 <translation id="2873598956318269337">{NUM_URLS,plural, =1{1 URL di sekitar}other{# URL di sekitar}}</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Mengakses masukan audio dan video</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3137521801621304719">Tutup mode penyamaran</translation>
-<translation id="3158619413803296679">Pilih bookmark</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data tersimpan</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Bookmark laman ini</translation>
 <translation id="326254929494722411">Anda belum menyiapkan Akun Google di perangkat ini</translation>
 <translation id="3269093882174072735">Muat gambar</translation>
+<translation id="3278850099957560514">Hemat data dengan menggunakan Google guna mengoptimalkan laman yang Anda kunjungi. Laman yang diakses menggunakan sambungan pribadi (HTTPS) atau tab Penyamaran tidak akan dioptimalkan maupun dilihat oleh Google.</translation>
 <translation id="3282568296779691940">Masuk ke Chrome</translation>
 <translation id="3287852534598822456">Bookmark sudah tidak ada. Segarkan.</translation>
 <translation id="3303414029551471755">Lanjutkan untuk mengunduh konten?</translation>
@@ -187,7 +188,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Sentuh tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
-<translation id="4084682180776658562">Bookmark</translation>
 <translation id="4089831646916293264">Fitur ini dapat mengganggu akses ke layanan data premium yang disediakan oleh operator Anda.</translation>
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
 <translation id="411254640334432676">Unduhan gagal.</translation>
@@ -293,6 +293,7 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5530766185686772672">Tutup tab penyamaran</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5565871407246142825">Kartu kredit</translation>
+<translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE" /> untuk gambar ini</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5596627076506792578">Opsi lainnya</translation>
 <translation id="5626134646977739690">Nama:</translation>
@@ -387,7 +388,7 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="666981079809192359">Notifikasi Privasi Chrome</translation>
 <translation id="6697251040310467641">Laman disimpan untuk offline</translation>
 <translation id="6698801883190606802">Kelola data yang disinkronkan</translation>
-<translation id="6699351163704950317">Semua laman yang tersimpan</translation>
+<translation id="6699351163704950317">Semua laman tersimpan</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6720988912937197322">Laman tersimpan tidak tersedia offline</translation>
 <translation id="6738867403308150051">Mengunduh…</translation>
@@ -461,6 +462,7 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="7765158879357617694">Pindahkan</translation>
 <translation id="7767746238359002192">Kunjungi laman guna menyimpan untuk offline</translation>
 <translation id="7772032839648071052">Konfirmasi frasa sandi</translation>
+<translation id="7784213092572143271">Laman disimpan</translation>
 <translation id="7788788617745289808">Chrome memerlukan akses kamera untuk berbagi dengan situs ini.</translation>
 <translation id="7791543448312431591">Tambahkan</translation>
 <translation id="780301667611848630">Lain kali</translation>
@@ -541,6 +543,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="885701979325669005">Penyimpanan</translation>
 <translation id="886510833909353412">Enkripsi semua dengan frasa sandi</translation>
 <translation id="8872441722924401214">Pilih sertifikat untuk autentikasi</translation>
+<translation id="8891135217544884558">URL di sekitar</translation>
 <translation id="8901170036886848654">Tidak ditemukan bookmark</translation>
 <translation id="8909135823018751308">Bagikan...</translation>
 <translation id="8912362522468806198">Akun Google</translation>

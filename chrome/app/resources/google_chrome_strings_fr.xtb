@@ -143,6 +143,8 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5563479599352954471">Rechercher en un clic</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
+<translation id="5626352146162055517">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chrome
+  au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un attaquant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="568643307450491754">Retrouvez vos favoris dans le menu Chrome ou dans la barre de favoris.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>

@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">برگه‌ها را همراه سایر برنامه‌های اخیرتان در صفحه نمای کلی تلفنتان ببینید.</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">‏وقتی این قابلیت روشن است، Chrome از سرورهای Google استفاده می‌کند تا صفحاتی را که بازدید می‌کنید قبل از دانلود آن‌ها فشرده کند. Google صفحه‌هایی را که از طریق اتصالات خصوصی (HTTPS) یا برگه‌های حالت ناشناس به آن‌ها می‌روید بهینه‌سازی یا مشاهده نمی‌کند.</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
 <translation id="2126426811489709554">‏ارائه توسط Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> بسته شد</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدیویی</translation>
 <translation id="3102119246920354026">حافظه پنهان</translation>
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
-<translation id="3158619413803296679">انتخاب نشانک</translation>
 <translation id="3190152372525844641">‏مجوزهای Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> داده‌های ذخیره شده</translation>
 <translation id="3207960819495026254">نشانک‌گذاری شده</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
 <translation id="326254929494722411">‏هنوز در این دستگاه یک حساب Google تنظیم نکرده‌اید</translation>
 <translation id="3269093882174072735">بارگیری تصویر</translation>
+<translation id="3278850099957560514">‏با استفاده از Google صفحه‌هایی را که بازدید می‌کنید بهینه کنید تا هزینه کمتری برای داده صرف کنید. Google صفحه‌هایی را که از طریق اتصالات خصوصی (HTTPS) یا برگه‌های حالت ناشناس به آن‌ها می‌روید بهینه‌سازی یا مشاهده نمی‌کند.</translation>
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
 <translation id="3287852534598822456">نشانک دیگر وجود ندارد. لطفاً بازخوانی کنید.</translation>
 <translation id="3303414029551471755">ادامه می‌دهید و محتوا را دانلود می‌کنید؟</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="4059119910594077751">برای خروج از حالت تمام صفحه، دکمه برگشت را لمس کنید.</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
-<translation id="4084682180776658562">نشانک</translation>
 <translation id="4089831646916293264">ممکن است این قابلیت با دسترسی به خدمات داده‌های برتر ارائه شده توسط شرکت مخابراتی شما تداخل داشته باشد.</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="411254640334432676">دانلود نشد.</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">بستن برگه‌های ناشناس</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5565871407246142825">کارت‌های اعتباری</translation>
+<translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5626134646977739690">نام:</translation>
@@ -460,6 +461,7 @@
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7767746238359002192">برای ذخیره آفلاین از صفحه بازدید کنید</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
+<translation id="7784213092572143271">صفحه ذخیره شد</translation>
 <translation id="7788788617745289808">‏Chrome باید به دوربین دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه سپاسگزارم</translation>
@@ -540,6 +542,7 @@
 <translation id="885701979325669005">فضای ذخیره‌سازی</translation>
 <translation id="886510833909353412">رمزگذاری همه با عبارت عبور</translation>
 <translation id="8872441722924401214">انتخاب گواهی برای احراز هویت</translation>
+<translation id="8891135217544884558">نشانی‌های وب نزدیک</translation>
 <translation id="8901170036886848654">نشانکی پیدا نشد</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="8912362522468806198">‏حساب Google</translation>

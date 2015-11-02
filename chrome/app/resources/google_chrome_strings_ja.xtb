@@ -135,6 +135,8 @@
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
+<translation id="5626352146162055517"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる
+誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chrome によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
 <translation id="573759479754913123">Chrome OS について</translation>
 <translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>

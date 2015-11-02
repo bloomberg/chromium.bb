@@ -143,6 +143,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="5563479599352954471">Iskanje z enim dotikom</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran.</translation>
+<translation id="5626352146162055517">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chrome tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to poslalo nazaj nenavadne in nepravilne poverilnice. Do tega lahko pride, ko se napadalec izdaja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, ker je Chrome povezavo ustavil, preden je prišlo do izmenjave podatkov.</translation>
 <translation id="568643307450491754">Poiščite svoje zaznamke v meniju Chroma ali v vrstici z zaznamki.</translation>
 <translation id="573759479754913123">O sistemu Chrome OS</translation>
 <translation id="5749068826913805084">Chrome potrebuje za prenos datotek dostop do shrambe.</translation>

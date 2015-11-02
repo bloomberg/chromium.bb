@@ -101,6 +101,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
+<translation id="1445397020763995734">Kontotyp för HTTP Negotiate-autentisering</translation>
 <translation id="1454846751303307294">Policyn gör att du kan ställa in en lista med webbadressmönster som anger webbplatser som inte får köra JavaScript.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
@@ -168,6 +169,15 @@
       Om policyn inte ställs in visas inga användarvillkor.
 
       Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME" /> kan ladda ned användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
+<translation id="1757339646969878244">Konfigurera alternativ för fjärråtkomst i värden för Chrome Remote Desktop.
+
+      Värden för Chrome Remote Desktop är en inbyggd tjänst som körs på målenheten
+      och som en användare kan ansluta till via appen Chrome Remote Desktop.
+      Den inbyggda tjänsten paketeras och körs åtskilt från
+      webbläsaren <ph name="PRODUCT_NAME" />.
+
+      Dessa principer ignoreras om värden
+      för Chrome Remote Desktop inte har installerats.</translation>
 <translation id="1757688868319862958">Tillåter att <ph name="PRODUCT_NAME" /> kör pluginprogram som kräver auktorisering.
 
       Om du aktiverar den här inställningen kan pluginprogram som inte är föråldrade alltid köras.
@@ -244,6 +254,11 @@
 <translation id="2006530844219044261">Energibesparing (DPMS)</translation>
 <translation id="201557587962247231">Frekvens för antal uppladdningar av statusrapport för enhet</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
+<translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
+
+          Möjliga värden är basic, digest, ntlm och negotiate. Avgränsa värdena med komma.
+
+          Om principen inte anges används alla fyra.</translation>
 <translation id="2067011586099792101">Blockera åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="2077273864382355561">Skärmavstängningstid när enheten drivs av batteriet</translation>
@@ -585,6 +600,38 @@
       Om du aktiverar inställningen kommer autentiseringssidor för en infångstportal (dvs. alla webbsidor som startar från en inloggningssida för en infångstportal tills <ph name="PRODUCT_NAME" /> kan identifiera en lyckad internetanslutning) att visas i ett separat fönster och ignorera alla policyinställningar och begränsningar för den aktuella användaren.
 
       Om du inaktiverar inställningen eller inte anger den kommer autentiseringssidor för infångstportaler att visas på en (vanlig) ny flik i webbläsaren med den aktuella användarens proxyinställningar.</translation>
+<translation id="3001569025430882724">Åsidosätter skrivarens standardurvalsregler för <ph name="PRODUCT_NAME" />.
+
+      Genom denna princip fastställs reglerna för valet av standardskrivare i <ph name="PRODUCT_NAME" />, vilket sker första gången som utskriftsfunktionen används av en profil.
+
+      När den här principen är inställd försöker <ph name="PRODUCT_NAME" /> hitta en skrivare som uppfyller alla de angivna attributen och välja denna som standardskrivare. Den första skrivare som hittas och överensstämmer med principen är den som väljs. Om matchningen inte är unik väljs en skrivare ut som uppfyller attributen efter den ordning i vilken skrivarna hittades.
+
+      Om denna princip inte ställs in eller om ingen skrivare som uppfyller attributen hittas innan tidsfristen löper ut ställs den inbyggda PDF-skrivaren in som standardskrivare. Om en PDF-skrivare inte finns tillgänglig väljs ingen skrivare.
+
+      Värdet analyseras som ett JSON-objekt enligt följande schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Huruvida sökningen efter en skrivare som uppfyller attributen ska begränsas till en specifik uppsättning av skrivare.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Reguljärt uttryck som ska överensstämma med skrivar-id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Reguljärt uttryck som ska överensstämma med skrivarens visningsnamn.",
+            "type": "string"
+          }
+        }
+      }
+
+      Skrivare som är anslutna till Google Cloud Print betraktas som moln medan övriga skrivare klassificeras som lokala.
+      Om ett fält utelämnas innebär det att alla värden överensstämmer. Om till exempel anslutningen inte anges hittar förhandsgranskningen alla typer av skrivare, såväl lokala skrivare som sådana i moln.
+      Reguljära uttryck måste följa JavaScript RegExp-syntaxen. Träffar är skiftlägeskänsliga.</translation>
 <translation id="3021409116652377124">Inaktivera plugin-sökaren</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
 <translation id="3034580675120919256">Policyn gör att du kan ange om webbplatser får köra JavaScript. Du kan tillåta JavaScript på alla webbplatser eller blockera JavaScript på alla webbplatser.
@@ -615,6 +662,38 @@
           Om policyn inte ställs in kan användaren installera alla tillägg i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME" /> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta nedladdningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Konfigurerar inställningar för tilläggshantering för <ph name="PRODUCT_NAME" />.
+
+          Policyn styr flera inställningar, bland annat inställningar som styrs av befintliga tilläggsrelaterade policyer. Policyn åsidosätter alla äldre policyer om båda är angivna.
+
+          Policyn mappar ett tilläggs-id eller en uppdateringsadress till dess konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. En standardkonfiguration kan anges för det särskilda id:t *, som tillämpas på alla tillägg som inte har en anpassad konfiguration i den här policyn. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg med den exakta uppdateringsadressen som angetts i manifestet för tillägget, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurationen för varje tillägg (eller tillägg med samma uppdateringsadress) är en annan ordlista som kan innehålla fälten nedan.
+
+          ”installation_mode”: mappar till en sträng som anger installationsläget för tillägget. De giltiga strängarna är:
+          * ”allowed”: tillåter att användaren installerar tillägget. Detta är standardbeteendet.
+          * ”blocked”: blockerar installationen av tillägget.
+          * ”force_installed”: tillägget installeras automatiskt och kan inte tas bort av användaren.
+          * ”normal_installed”: tillägget installeras automatiskt, men kan inte inaktiveras av användaren.
+
+          ”installation_mode” kan även konfigureras för flera tillägg, bland annat tillägget * (som standardinställningar) och tillägg med samma uppdateringsadress. Endast värdena ”allowed” och ”blocked” kan användas i detta fall.
+
+          Om läget är inställt på ”force_installed” eller ”normal_installed” måste även en ”update_url” konfigureras. Tänk på att uppdateringsadressen som anges i den här policyn endast används för den första installationen. Vid senare uppdateringar av tillägget används uppdateringsadressen som anges i tilläggets manifest. Uppdateringsadressen ska peka på ett Update Manifest-dokument i XML-format så som nämnts ovan.
+
+          ”blocked_permissions”: mappar till en lista med strängar som anger de blockerade API-behörigheterna för tillägget. Namnen på behörigheterna är desamma som behörighetssträngarna som deklarerats i manifestet för tillägget som beskrivs på <ph name="LINK_TO_EXTENSION_DOC3" />. Inställningen kan även konfigureras för tillägget *. Om tillägget kräver en behörighet som finns med på blockeringslistan läses den inte in. Om det innehåller en blockerad behörighet som inte är obligatoriskt hanteras det som vanligt, men begäran om motstridiga behörigheter nekas automatiskt vid körning.
+
+          ”allowed_permissions”: liknar ”blocked_permissions”, men tillåter uttryckligen vissa behörigheter som kan vara blockerade av en global lista över blockerade behörigheter och kan därmed inte konfigureras för tillägget *. Tänk på att den här inställningen inte automatiskt tilldelar tilläggen beviljade behörigheter.
+
+          ”minimum_version_required”: mappar till en versionssträng. Formatet för versionssträngen är detsamma som det som används i tilläggets manifest, som beskrivs på <ph name="LINK_TO_EXTENSION_DOC4" />. Ett tillägg med en version som är äldre än den angivna lägsta versionen kommer att inaktiveras. Detta gäller även för tillägg som måste installeras.
+
+          Följande inställningar kan endast användas för standardkonfigurationen *:
+
+          ”install_sources”: Varje objekt i listan motsvarar en matchning i form av ett tillägg (mer information finns på https://developer.chrome.com/extensions/match_patterns). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan. Både platsen för *.crx-filen och sidan där nedladdningen påbörjades (dvs. hänvisningsadressen) måste tillåtas av dessa mönster.
+
+          ”allowed_types”: Den här inställningen godkänner de tillåtna typerna med tillägg/appar som kan installeras i <ph name="PRODUCT_NAME" />.  Värdet är en lista med strängar som alla ska vara något av följande: ”extension”, ”theme”, ”user_script”, ”hosted_app”, ”legacy_packaged_app”, ”platform_app”. Mer information om dessa typer finns i dokumentationen för tillägget <ph name="PRODUCT_NAME" />.
+
+          Policyn är inte klar för användning än, så använd den inte.
+          </translation>
 <translation id="3205825995289802549">Maximera det först visade fönstret första gången som webbläsaren körs</translation>
 <translation id="3206731874112238027">Inaktivera förhandsgranskning av utskrift (har fasats ut)</translation>
 <translation id="3213821784736959823">Styr huruvida den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME" />.
@@ -823,9 +902,6 @@
 <translation id="4039085364173654945">Policyn styr om underordnat innehåll från tredje part på en sida får öppna en dialogruta för HTTP Basic Auth.
 
           Policyn är normalt inaktiverad som skydd mot lösenordsfiske. Om policyn inte anges är inställningen inaktiverad och underordnat innehåll från tredje part får inte öppna en dialogruta för HTTP Basic Auth.</translation>
-<translation id="4043912146394966243"> De typer av anslutningar som är tillåtna att använda uppdateringar av operativsystem. Uppdateringar av operativsystem belastar anslutningen hårt på grund av dess storlek och kan medföra extra kostnader. Därför är de inte aktiverade som standard för anslutningstyper som anses vara dyra. Det gäller bland annat WiMax, Bluetooth och Cellular.
-
-      Identifierarna för giltiga anslutningstyper är ”ethernet”, ”wifi”, ”wimax”, ”bluetooth” och ”cellular”.</translation>
 <translation id="4052765007567912447">Policyn avgör om användare får visa lösenord i lösenordshanteraren.
 
           Om du inaktiverar inställningen går det inte att visa sparade lösenord som vanlig text i lösenordshanteraren.
@@ -878,8 +954,6 @@
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
-<translation id="4337944790873898250">Om principen är inställd på sant kommer <ph name="PRODUCT_NAME" /> ovillkorligen första gången den körs att maximera det först visade fönstret.
-      Om principen är inställd på falskt eller inte konfigurerad kommer en heuristisk metod att användas för att avgöra om det först visade fönstret ska maximeras utifrån skärmstorleken.</translation>
 <translation id="436581050240847513">Rapporteringsgränssnitt för nätverk med enheter</translation>
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
@@ -891,6 +965,14 @@
 
       Om principen har konfigurerats kan användaren inte ändra den, utan genvägen Appar kommer antingen alltid att visas eller aldrig att visas.</translation>
 <translation id="443665821428652897">Ta bort webbplatsdata när webbläsaren avslutas</translation>
+<translation id="4439336120285389675">Ange en lista över utfasade webbplattformsfunktioner som ska kunna återaktiveras tillfälligt.
+
+      Med den här policyn får administratörer möjlighet att återaktivera webbplattformsfunktioner som har fasats ut under en begränsad tid. Funktionerna identifieras med hjälp av en strängtagg och de funktioner som motsvarar taggarna och ingår i listan som har angetts via den här policyn återaktiveras.
+
+      Om denna policy inte aktiveras eller om listan är tom eller saknar motsvarighet till de strängtaggar som stöds förblir samtliga webbplattformsfunktioner inaktiverade.
+
+      Även om själva policyn stöds av plattformarna ovan kanske inte den återaktiverade funktionen stöds av alla dessa plattformar. Det är inte alla utfasade webbplattformsfunktioner som kan återaktiveras. Endast de funktioner som uttryckligen tas upp i listan nedan kan återaktiveras under en begränsad tid som varierar mellan olika funktioner. Strängtaggens allmänna format är [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. För information om ändringarna av webbplattformsfunktioner hänvisar vi till http://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Aktivera lås när enheten är i viloläge eller vänteläge</translation>
 <translation id="4445684791305970001">Policyn inaktiverar utvecklarverktygen och JavaScript-konsolen.
 
@@ -1189,32 +1271,6 @@
 
       Om policyn inte har angetts sker ingen automatisk inloggning.</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
-<translation id="553658564206262718">Konfigurera energisparinställningarna när användaren är inaktiv.
-
-          Den här policyn styr flera energisparinställningar när användaren är inaktiv.
-
-          Det finns fyra typer av åtgärder:
-          * Skärmen tonas ned om användaren är inaktiv under så lång tid som anges av |ScreenDim|.
-          * Skärmen stängs av om användaren är inaktiv under så lång tid som anges av |ScreenOff|.
-          * En varning om att angiven åtgärd vid inaktivitet kommer att vidtas visas i en dialogruta om användaren är inaktiv under så lång tid som anges av |IdleWarning|.
-          * Åtgärden som anges av |IdleAction| genomförs om användaren är inaktiv under så lång tid som anges av |Idle|.
-
-          För var och en av ovanstående åtgärder ska fördröjningen anges i millisekunder och den måste ha ett värde högre än noll för att motsvarande åtgärd ska vidtas. Om fördröjningen har ställts in på noll vidtas inte motsvarande åtgärd av <ph name="PRODUCT_OS_NAME" />.
-
-          För var och en av ovanstående fördröjningar används ett standardvärde när tidslängden inte har angetts.
-
-          Observera att |ScreenDim|-värdena kommer att skäras ned för att vara mindre än eller lika med |ScreenOff|, |ScreenOff| och |IdleWarning| skäras ned för att vara mindre än eller lika med |Idle|.
-
-          |IdleAction| kan vara en av fyra möjliga åtgärder:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          När |IdleAction| inte har angetts vidtas standardåtgärden, dvs. viloläget startas.
-
-          Det finns även separata ström- och batteriinställningar.
-          </translation>
 <translation id="5560039246134246593">Lägg till en parameter vid hämtningen av startvärdet för Variations i <ph name="PRODUCT_NAME" />.
 
       Om den anges läggs en frågeparameter som kallas "restrict" till i webbadressen som används för att hämta startvärdet för Variations. Värdet för parametern kommer att vara det värde som anges i policyn.
@@ -1253,11 +1309,17 @@
 
       Om ingen inställning görs för principen eller om den har värdet falskt använder <ph name="PRODUCT_NAME" /> de befintliga inställningarna för kontroller för återkallning online.</translation>
 <translation id="5732972008943405952">Importera formuläruppgifter för Autofyll från standardwebbläsaren första gången den körs</translation>
+<translation id="5751004203256768694">Anger kontotypen för konton som tillhandahålls av Androids autentiseringsapp som har stöd för autentisering av HTTP Negotiate (t.ex. Kerberos-autentisering). Informationen ska vara tillgänglig från leverantören av autentiseringsappen. Mer information finns på https://goo.gl/hajyfN.
+
+          Om inställningen inte anges är HTTP Negotiate-autentisering inaktiverat på Android.</translation>
 <translation id="5761030451068906335">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" />. Använd inte policyn. Den är inte redo ännu.</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="5774856474228476867">Sökadress för standardsökleverantör</translation>
 <translation id="5776485039795852974">Fråga varje gång en webbplats försöker visa aviseringar på skrivbordet</translation>
+<translation id="5781412041848781654">Anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg.
+
+          Om ingen inställning anges använder <ph name="PRODUCT_NAME" /> ett standardbiblioteksnamn.</translation>
 <translation id="5781806558783210276">Anger efter hur lång tid utan åtgärd från användaren som inaktivitietsåtgärden vidtas när enheten drivs av batteriet.
 
           När den här policyn är inställd anger den hur länge användaren måste vara inaktiv innan inaktivitetsåtgärden vidtas av <ph name="PRODUCT_OS_NAME" />. Inaktivitetsåtgärden kan ställas in separat.
@@ -1370,6 +1432,17 @@
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
+<translation id="6151775819333710697">
+          Om den här inställningen har aktiverats kan användarna spara lösenord i <ph name="PRODUCT_NAME" /> och låta
+          dem fyllas i automatiskt nästa gång de loggar in på en webbplats.
+
+          Om inställningen har inaktiverats kan användarna inte spara lösenord, men de
+          kan fortfarande använda lösenord som har sparats sedan tidigare.
+
+          Om den här principen har aktiverats eller inaktiverats kan användarna inte 
+          ändra eller åsidosätta detta i <ph name="PRODUCT_NAME" />. Om principen
+          inte anges går det att spara lösenord (men användaren kan stänga av
+          detta).</translation>
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
@@ -1433,17 +1506,6 @@
           Policyn är valfri. Om den inte anges skickas sökförfrågningar via GET-metoden.
 
           Policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="6365608006609079612">
-          Om den här inställningen har aktiverats kan användarna spara lösenord i <ph name="PRODUCT_NAME" /> och låta
-          dem fyllas i automatiskt nästa gång de loggar in på en webbplats.
-
-          Om inställningen har inaktiverats kan användarna inte spara lösenord, men de
-          kan fortfarande använda lösenord som har sparats sedan tidigare.
-
-          Om den här principen har aktiverats eller inaktiverats kan användarna inte 
-          ändra eller åsidosätta detta i <ph name="PRODUCT_NAME" />. Om principen
-          inte anges går det att spara lösenord (men användaren kan stänga av
-          detta).</translation>
 <translation id="6367755442345892511">Anger om lanseringskanalen ska kunna konfigureras av användaren</translation>
 <translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
@@ -1519,14 +1581,32 @@
 
           Om policyn inte ställs in är skärmtangentbordet inaktiverat när inloggningsskärmen visas första gången. Användaren kan aktivera eller inaktivera skärmtangentbordet när som helst och dess status på inloggningsskärmen sparas för användaren.</translation>
 <translation id="6598235178374410284">Användarens avatarbild</translation>
-<translation id="6633160536638196468">Ange en lista över utfasade webbplattformsfunktioner som ska kunna återaktiveras tillfälligt.
+<translation id="6636268606788232221">Konfigurera energisparinställningarna när användaren är inaktiv.
 
-      Med den här policyn får administratörer möjlighet att återaktivera webbplattformsfunktioner som har fasats ut under en begränsad tid. Funktionerna identifieras med hjälp av en strängtagg och de funktioner som motsvarar taggarna och ingår i listan som har angetts via den här policyn återaktiveras.
+          Den här policyn styr flera energisparinställningar när användaren är inaktiv.
 
-      Om denna policy inte aktiveras eller om listan är tom eller saknar motsvarighet till de strängtaggar som stöds förblir samtliga webbplattformsfunktioner inaktiverade.
+          Det finns fyra typer av åtgärder:
+          * Skärmen tonas ned om användaren är inaktiv under så lång tid som anges av |ScreenDim|.
+          * Skärmen stängs av om användaren är inaktiv under så lång tid som anges av |ScreenOff|.
+          * En varning om att angiven åtgärd vid inaktivitet kommer att vidtas visas i en dialogruta om användaren är inaktiv under så lång tid som anges av |IdleWarning|.
+          * Åtgärden som anges av |IdleAction| genomförs om användaren är inaktiv under så lång tid som anges av |Idle|.
 
-      Även om själva policyn stöds av plattformarna ovan kanske inte den återaktiverade funktionen stöds av alla dessa plattformar. Det är inte alla utfasade webbplattformsfunktioner som kan återaktiveras. Endast de funktioner som uttryckligen tas upp i listan nedan kan återaktiveras under en begränsad tid som varierar mellan olika funktioner. Strängtaggens allmänna format är [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. För information om ändringarna av webbplattformsfunktioner hänvisar vi till http://bit.ly/blinkintents.
-      </translation>
+          För var och en av ovanstående åtgärder ska fördröjningen anges i millisekunder och den måste ha ett värde högre än noll för att motsvarande åtgärd ska vidtas. Om fördröjningen har ställts in på noll vidtas inte motsvarande åtgärd av <ph name="PRODUCT_OS_NAME" />.
+
+          För var och en av ovanstående fördröjningar används ett standardvärde när tidslängden inte har angetts.
+
+          Observera att |ScreenDim|-värdena kommer att skäras ned för att vara mindre än eller lika med |ScreenOff|, |ScreenOff| och |IdleWarning| skäras ned för att vara mindre än eller lika med |Idle|.
+
+          |IdleAction| kan vara en av fyra möjliga åtgärder:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          När |IdleAction| inte har angetts vidtas standardåtgärden, dvs. viloläget startas.
+
+          Det finns även separata ström- och batteriinställningar.
+          </translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
 <translation id="6647965994887675196">Om "true" anges kan övervakade användare skapas och användas.
 
@@ -1784,6 +1864,7 @@
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
 <translation id="7468416082528382842">Windows-registerplats:</translation>
 <translation id="7469554574977894907">Aktivera sökförslag</translation>
+<translation id="7485481791539008776">Skrivarens standardurvalsregler</translation>
 <translation id="749556411189861380">Rapportera versionsinformation om operativsystem och fast programvara på registrerade enheter.
 
       Om ingen inställning görs eller om principen anges som True kommer versionsinformation om operativsystemet och den fasta programvaran regelbundet att skickas från registrerade enheter. Om principen anges som False kommer versionsinformationen inte att skickas.</translation>
@@ -1841,9 +1922,28 @@
 
           Om inställningen inaktiveras eller inte anges så kommer tvåstegsverifiering inte att aktiveras och standardfunktionen med en användardefinierad PIN-kod kommer att användas.</translation>
 <translation id="7750991880413385988">Öppna sidan Ny flik</translation>
+<translation id="7761526206824804472">Anger en eller flera rekommenderade språkkoder för en offentlig session så att användare enkelt kan använda någon av dessa språkkoder.
+
+      Användaren kan välja en språkkod och en tangentbordslayout innan en offentlig session startas. Som standard anges alla språkkoder som stöds av <ph name="PRODUCT_OS_NAME" /> i alfabetisk ordning. Du kan använda den här principen för att flytta flera rekommenderade språkkoder högst upp i listan.
+
+      Om principen inte är inställd kommer den aktuella språkkoden för gränssnittet att vara förvald.
+
+      Om principen är inställd kommer de rekommenderade språkkoderna att flyttas högst upp i listan och separeras visuellt från alla andra språkkoder. De rekommenderade språkkoderna anges i den ordning de visas i principen. Den första rekommenderade språkkoden är förvald.
+
+      Om det finns mer än en rekommenderad språkkod antas användarna kunna välja mellan dessa. Valet av språkkod och tangentbordslayout erbjuds på ett framträdande sätt när en offentlig session startas. I annat fall antas att de flesta användare använder den förvalda språkkoden. Valet av språkkod och tangentbordslayout erbjuds inte på ett lika framträdande sätt när en offentlig session startas.
+
+      När den här principen är inställd och automatisk inloggning aktiverad (mer information finns i principerna |DeviceLocalAccountAutoLoginId| och |DeviceLocalAccountAutoLoginDelay|) används den första rekommenderade språkkoden och den populäraste tangentbordslayouten som matchar språkkoden i den offentliga sessionen som startade automatiskt.
+
+      Den förvalda tangentbordslayouten är alltid den populäraste layouten som överensstämmer med den förvalda språkkoden.
+
+      Den här principen kan endast ställas in som rekommenderad. Du kan använda principen för att flytta flera rekommenderade språkkoder högst upp, men användare kan alltid välja en språkkod som stöds av <ph name="PRODUCT_OS_NAME" /> för sessionen.
+      </translation>
 <translation id="7763311235717725977">Policyn gör att du kan ställa in om webbplatser får visa bilder. Bildvisning kan tillåtas för alla webbplatser eller nekas för alla webbplatser.
 
           Om du inte ställer in policyn används AllowImages och inställningen kan ändras av användaren.</translation>
+<translation id="7763479091692861127"> De typer av anslutningar som är tillåtna att använda uppdateringar av operativsystem. Uppdateringar av operativsystem belastar anslutningen hårt på grund av dess storlek och kan medföra extra kostnader. Därför är de inte aktiverade som standard för anslutningstyper som anses vara dyra. Det gäller bland annat WiMax, Bluetooth och Cellular.
+
+      Identifierarna för giltiga anslutningstyper är ”ethernet”, ”wifi”, ”wimax”, ”bluetooth” och ”cellular”.</translation>
 <translation id="7766336524667238790">Rapporterar information om den aktiva kiosksessionen, bland annat
       app-id och appversion.
 
@@ -1895,38 +1995,6 @@
           Om inställningen är aktiverad kan datorn identifiera och ansluta till fjärrvärdenheter även om det finns en brandvägg mellan dem.
 
           Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen kan den här datorn bara ansluta till värddatorer inom det lokala nätverket.</translation>
-<translation id="8002229853067655250">Konfigurerar inställningar för tilläggshantering för <ph name="PRODUCT_NAME" />.
-
-          Policyn styr flera inställningar, bland annat inställningar som styrs av befintliga tilläggsrelaterade policyer. Policyn åsidosätter alla äldre policyer om båda är angivna.
-
-          Policyn mappar ett tilläggs-id eller en uppdateringsadress till dess konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. En standardkonfiguration kan anges för det särskilda id:t *, som tillämpas på alla tillägg som inte har en anpassad konfiguration i den här policyn. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg med den exakta uppdateringsadressen som angetts i manifestet för tillägget, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Konfigurationen för varje tillägg (eller tillägg med samma uppdateringsadress) är en annan ordlista som kan innehålla fälten nedan.
-
-          ”installation_mode”: mappar till en sträng som anger installationsläget för tillägget. De giltiga strängarna är:
-          * ”allowed”: tillåter att användaren installerar tillägget. Detta är standardbeteendet.
-          * ”blocked”: blockerar installationen av tillägget.
-          * ”force_installed”: tillägget installeras automatiskt och kan inte tas bort av användaren.
-          * ”normal_installed”: tillägget installeras automatiskt, men kan inte inaktiveras av användaren.
-
-          ”installation_mode” kan även konfigureras för flera tillägg, bland annat tillägget * (som standardinställningar) och tillägg med samma uppdateringsadress. Endast värdena ”allowed” och ”blocked” kan användas i detta fall.
-
-          Om läget är inställt på ”force_installed” eller ”normal_installed” måste även en ”update_url” konfigureras. Tänk på att uppdateringsadressen som anges i den här policyn endast används för den första installationen. Vid senare uppdateringar av tillägget används uppdateringsadressen som anges i tilläggets manifest. Uppdateringsadressen ska peka på ett Update Manifest-dokument i XML-format så som nämnts ovan.
-
-          ”blocked_permissions”: mappar till en lista med strängar som anger de blockerade API-behörigheterna för tillägget. Namnen på behörigheterna är desamma som behörighetssträngarna som deklarerats i manifestet för tillägget som beskrivs på <ph name="LINK_TO_EXTENSION_DOC3" />. Inställningen kan även konfigureras för tillägget *. Om tillägget kräver en behörighet som finns med på blockeringslistan läses den inte in. Om det innehåller en blockerad behörighet som inte är obligatoriskt hanteras det som vanligt, men begäran om motstridiga behörigheter nekas automatiskt vid körning.
-
-          ”allowed_permissions”: liknar ”blocked_permissions”, men tillåter uttryckligen vissa behörigheter som kan vara blockerade av en global lista över blockerade behörigheter och kan därmed inte konfigureras för tillägget *. Tänk på att den här inställningen inte automatiskt tilldelar tilläggen beviljade behörigheter.
-
-          ”minimum_version_required”: mappar till en versionssträng. Formatet för versionssträngen är detsamma som det som används i tilläggets manifest, som beskrivs på <ph name="LINK_TO_EXTENSION_DOC4" />. Ett tillägg med en version som är äldre än den angivna lägsta versionen kommer att inaktiveras. Detta gäller även för tillägg som måste installeras.
-
-          Följande inställningar kan endast användas för standardkonfigurationen *:
-
-          ”install_sources”: Varje objekt i listan motsvarar en matchning i form av ett tillägg (mer information finns på https://developer.chrome.com/extensions/match_patterns). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan. Både platsen för *.crx-filen och sidan där nedladdningen påbörjades (dvs. hänvisningsadressen) måste tillåtas av dessa mönster.
-
-          ”allowed_types”: Den här inställningen godkänner de tillåtna typerna med tillägg/appar som kan installeras i <ph name="PRODUCT_NAME" />.  Värdet är en lista med strängar som alla ska vara något av följande: ”extension”, ”theme”, ”user_script”, ”hosted_app”, ”legacy_packaged_app”, ”platform_app”. Mer information om dessa typer finns i dokumentationen för tillägget <ph name="PRODUCT_NAME" />.
-
-          Policyn är inte klar för användning än, så använd den inte.
-          </translation>
 <translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
 <translation id="8059164285174960932">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken</translation>
 <translation id="8071636581296916773">Reläserveranvändning aktiveras när fjärrklienter försöker etablera en anslutning till datorn.
@@ -1997,18 +2065,6 @@
 <translation id="8197918588508433925">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
-<translation id="8211174979203781791">Konfigurerar adressen för standardstartsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
-
-          Startsidan är sidan som du öppnar med knappen Startsida. Sidorna som öppnas vid programstart styrs av principen RestoreOnStartup.
-
-          Startsidan kan antingen vara en webbadress som du anger här eller sidan Ny flik. Om du väljer sidan Ny flik ignoreras den här principen.
-
-          Om du aktiverar den här inställningen kan användarna inte ändra sin startsidesadress i <ph name="PRODUCT_NAME" />, men de kan välja sidan Ny flik som startsida.
-
-          Om inget värde anges för principen kan användaren själv välja sin startsida, förutsatt att HomepageIsNewTabPage inte heller är inställt.
-
-          Denna princip är inte tillgänglig på Windows-instanser som inte är anslutna
-          till en Active Directory-domän.</translation>
 <translation id="8244525275280476362">Längsta fördröjning av hämtning efter en ogiltigförklarad policy</translation>
 <translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME" /> visas på inloggningssidan för motsvarande lokala konto på enheten.
 
@@ -2200,6 +2256,7 @@
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
+<translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
 <translation id="9104138886225968319">Skicka övervakningspulser till hanteringsservern så att denna kan identifiera om enheten är offline.
 
       Om principen är inställd på sant kommer övervakningspulser att skickas. Om

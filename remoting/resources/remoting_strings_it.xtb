@@ -148,6 +148,7 @@ Chromoting</translation>
 <translation id="4573676252416618192">Host Chrome
 Remote Desktop</translation>
 <translation id="4619978527973181021">Accetta e installa</translation>
+<translation id="4647791084836149355">Mostra visualizzazione Cardboard</translation>
 <translation id="4703799847237267011">La sessione Chromoting è terminata.</translation>
 <translation id="4736223761657662401">Cronologia connessioni</translation>
 <translation id="4741792197137897469">Autenticazione non riuscita. Accedi di nuovo a Chrome.</translation>
@@ -206,6 +207,7 @@ Remote Desktop</translation>
 <translation id="6284412385303060032">L'esecuzione dell'host nella schermata di accesso alla console si è interrotta per supportare la modalità Curtain, pertanto l'host viene ora eseguito in una sessione specifica dell'utente.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
+<translation id="6324708100353784493">Hai attivato la modalità di integrazione Google Cardboard. Per utilizzare questa modalità, inserisci il dispositivo in un visore compatibile con Google Cardboard.</translation>
 <translation id="6381670701864002291">Qualcos'altro.</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
 <translation id="6441316101718669559">L'integrazione desktop non è supportata su questa piattaforma. Puoi comunque utilizzare l'applicazione, ma l'esperienza utente sarà peggiore.</translation>

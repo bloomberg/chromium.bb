@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">በስልክዎ የአጠቃላይ ዕይታ ማያ ገጽ ላይ ከሌሎች የቅርብ ጊዜ መተግበሪያዎች ጋር የእርስዎን ትሮች ይመልከቱ።</translation>
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="2082238445998314030">ውጤት <ph name="RESULT_NUMBER" /> ከ<ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">ይህ ባህሪ ሲበራ Chrome የጎበኟቸውን ገጾች ከማውረዱ በፊት ለማመቅ የGoogle አገልጋዮችን ይጠቀማል። ግላዊ ግንኙነቶችን (ኤችቲቲፒኤስ) ወይም ማንነት የማያሳውቁ ትሮችን በመጠቀም የተደረሰባቸው ገጾች አይተቡም ወይም በGoogle አይታይም።</translation>
 <translation id="2100273922101894616">በራስ-ግባ</translation>
 <translation id="2126426811489709554">በChrome የጎለበተ</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> ተዘግቷል</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">የኦዲዮ እና የቪዲዮ ግብዓትን በመድረስ ላይ</translation>
 <translation id="3102119246920354026">መሸጎጫ</translation>
 <translation id="3137521801621304719">ከማንነት የማያሳውቅ ሁነታ ይውጡ</translation>
-<translation id="3158619413803296679">ዕልባት ይምረጡ</translation>
 <translation id="3190152372525844641">በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ፍቃዶችን ለChrome ያብሩ።</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> የተከማቸ ውሂብ</translation>
 <translation id="3207960819495026254">ዕልባት ተደርጎበታል</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
 <translation id="326254929494722411">የGoogle መለያ በዚህ መሣሪያ ላይ ገና አላዋቀሩም</translation>
 <translation id="3269093882174072735">ምስል ጫን</translation>
+<translation id="3278850099957560514">የጎበኟቸውን ገጾች ለማትባት Googleን በመጠቀም ያነሰ ውሂብ ያውጡ። ግላዊ ግንኙነቶችን (ኤችቲቲፒኤስ) ወይም ማንነት የማያሳውቁ ትሮችን በመጠቀም የተደረሰባቸው ገጾች አይተቡም ወይም በGoogle አይታይም።</translation>
 <translation id="3282568296779691940">Chrome ውስጥ ይግቡ</translation>
 <translation id="3287852534598822456">ዕልባት ከአሁን በኋላ የለም። እባክዎ ያድሱ።</translation>
 <translation id="3303414029551471755">ይዘቱን ማውረድ ይቀጥል?</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">ቀይ ቡናማ</translation>
 <translation id="4059119910594077751">ከሙሉ ማያ ገፅ ለመውጣት የተመለስ አዝራሩን ይንኩ።</translation>
 <translation id="4062305924942672200">የህግ መረጃ</translation>
-<translation id="4084682180776658562">ዕልባት</translation>
 <translation id="4089831646916293264">ይህ ባህሪ በእርስዎ አገልግሎት አቅራቢ በሚቀርቡ ዋና የውሂብ አገልግሎቶች ላይ ጣልቃ ሊገባ ይችላል።</translation>
 <translation id="4099578267706723511">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ።</translation>
 <translation id="411254640334432676">ማውረድ አልተሳካም።</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">ማንነት የማያሳውቁ ትሮችን ዝጋ</translation>
 <translation id="5556459405103347317">ዳግም ጫን</translation>
 <translation id="5565871407246142825">ክሬዲት ካርዶች</translation>
+<translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE" /> ላይ ይፈልጉት</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
 <translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
 <translation id="5626134646977739690">ስም፦</translation>
@@ -461,6 +462,7 @@
 <translation id="7765158879357617694">ውሰድ</translation>
 <translation id="7767746238359002192">ከመስመር ውጭ ለማስቀመጥ ገጽ ይጎብኙ</translation>
 <translation id="7772032839648071052">የይለፍ ሐረግ ያረጋግጡ</translation>
+<translation id="7784213092572143271">ገጽ ተቀምጧል</translation>
 <translation id="7788788617745289808">Chrome እሱን ለዚህ ጣቢያ ለማጋራት የካሜራ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="7791543448312431591">አክል</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
@@ -541,6 +543,7 @@
 <translation id="885701979325669005">ማከማቻ</translation>
 <translation id="886510833909353412">ሁሉንም በይለፍ ሐረግ አመስጥር</translation>
 <translation id="8872441722924401214">የማረጋገጫ የእውቅና ማረጋገጫ ይምረጡ</translation>
+<translation id="8891135217544884558">አቅራቢያ ያሉ ዩአርኤሎች</translation>
 <translation id="8901170036886848654">ምንም ዕልባቶች አልተገኙም</translation>
 <translation id="8909135823018751308">አጋራ…</translation>
 <translation id="8912362522468806198">የGoogle መለያ</translation>

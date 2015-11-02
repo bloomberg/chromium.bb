@@ -59,6 +59,7 @@
 <translation id="2886012850691518054">Opcjonalnie: pomóż nam udoskonalać Chromium, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="2910007522516064972">&amp;Chromium – informacje</translation>
 <translation id="2966088006374919794">Chromium musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME" />. Żądany link to <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, strona odesłała nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy osoba atakująca podszywa się pod <ph name="SITE" /> albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="3032787606318309379">Dodawanie do Chromium...</translation>
 <translation id="3046695367536568084">Jeśli chcesz korzystać z aplikacji, musisz zalogować się w Chromium, by Twoje aplikacje, zakładki, historia, hasła i inne ustawienia były synchronizowane między urządzeniami.</translation>
 <translation id="3068515742935458733">Pomóż nam ulepszyć Chromium, przesyłając do Google raporty o awariach i <ph name="UMA_LINK" /></translation>

@@ -61,6 +61,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
 <translation id="2966088006374919794">Chromium mora zagnati zunanji program za obdelavo povezav <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to poslalo nazaj nenavadne in nepravilne poverilnice. Do tega lahko pride, ko se napadalec izdaja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, ker je Chromium povezavo ustavil, preden je prišlo do izmenjave podatkov.</translation>
 <translation id="3032787606318309379">Dodajanje v Chromium ...</translation>
 <translation id="3046695367536568084">Če želite uporabljati aplikacije, morate biti prijavljeni v Chromium. Ko se prijavite, lahko Chromium sinhronizira aplikacije, zaznamke, zgodovino in druge nastavitve v različnih napravah.</translation>
 <translation id="3068515742935458733">Pomagajte izboljšati Chromium – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK" />.</translation>

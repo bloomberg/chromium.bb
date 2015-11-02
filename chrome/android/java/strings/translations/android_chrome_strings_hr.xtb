@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Prikažite kartice s ostalim nedavnim aplikacijama na zaslonu Pregled na telefonu.</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> od <ph name="TOTAL_RESULTS" /> rezultata</translation>
+<translation id="2095887075102408547">Kada je ta značajka uključena, Chrome će upotrebljavati Googleove poslužitelje kako bi komprimirao posjećene stranice prije preuzimanja. Google neće optimizirati niti vidjeti stranice kojima se pristupa privatnim vezama (HTTPS) ili na anonimnim karticama.</translation>
 <translation id="2100273922101894616">Automatska prijava</translation>
 <translation id="2126426811489709554">Omogućuje Chrome</translation>
 <translation id="213279576345780926">Zatvorena je kartica <ph name="TAB_TITLE" /></translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Pristupanje audio i videoulazu</translation>
 <translation id="3102119246920354026">Predmemorija</translation>
 <translation id="3137521801621304719">Izlaz iz anonimnog načina</translation>
-<translation id="3158619413803296679">Odaberite oznaku</translation>
 <translation id="3190152372525844641">Uključite dopuštenja za Chrome u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Pohranjeni podaci: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">Označeno</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Označi ovu stranicu</translation>
 <translation id="326254929494722411">Još niste postavili Google račun na ovom uređaju</translation>
 <translation id="3269093882174072735">Učitaj sliku</translation>
+<translation id="3278850099957560514">Google može optimizirati stranice koje posjećujete kako biste smanjili promet podataka. Google neće optimizirati niti vidjeti stranice kojima se pristupa privatnim vezama (HTTPS) ili na anonimnim karticama.</translation>
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3287852534598822456">Oznaka više ne postoji. Osvježite.</translation>
 <translation id="3303414029551471755">Želite li nastaviti s preuzimanjem sadržaja?</translation>
@@ -187,7 +188,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4056223980640387499">Sepija</translation>
 <translation id="4059119910594077751">Dodirnite gumb Natrag za izlaz iz punog zaslona.</translation>
 <translation id="4062305924942672200">Pravne informacije</translation>
-<translation id="4084682180776658562">Oznaka</translation>
 <translation id="4089831646916293264">Ta značajka može ometati pristup premium podatkovnim uslugama koje pruža vaš mobilni operater.</translation>
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
 <translation id="411254640334432676">Preuzimanje nije uspjelo.</translation>
@@ -293,6 +293,7 @@ Samo otvorite Chrome na računalu, otvorite izbornik i odaberite "Prijava na Chr
 <translation id="5530766185686772672">Zatvori anonimne kartice</translation>
 <translation id="5556459405103347317">Ponovno učitaj</translation>
 <translation id="5565871407246142825">Kreditne kartice</translation>
+<translation id="5578795271662203820">Potraži sliku na usluzi <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
 <translation id="5596627076506792578">Više opcija</translation>
 <translation id="5626134646977739690">Naziv:</translation>
@@ -461,6 +462,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7765158879357617694">Pomakni</translation>
 <translation id="7767746238359002192">Posjetite stranicu da biste je spremili za izvanmrežnu upotrebu</translation>
 <translation id="7772032839648071052">Potvrdi zaporku</translation>
+<translation id="7784213092572143271">Stranica je spremljena</translation>
 <translation id="7788788617745289808">Chrome treba imati pristup kameri da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
@@ -541,6 +543,7 @@ Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzet
 <translation id="885701979325669005">Prostor za pohranu</translation>
 <translation id="886510833909353412">Kriptiraj sve zaporkom</translation>
 <translation id="8872441722924401214">Odabir certifikata za autentifikaciju</translation>
+<translation id="8891135217544884558">URL-ovi u blizini</translation>
 <translation id="8901170036886848654">Nije pronađena nijedna oznaka</translation>
 <translation id="8909135823018751308">Dijeljenje…</translation>
 <translation id="8912362522468806198">Google Račun</translation>

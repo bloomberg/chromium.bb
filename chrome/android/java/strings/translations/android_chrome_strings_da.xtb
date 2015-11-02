@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Se dine faner med andre nye apps på oversigtsskærmen på din telefon.</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Når denne funktion er aktiveret, anvender Chrome Googles servere til at komprimere de sider, du besøger, før de downloades. Google optimerer og viser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
 <translation id="2100273922101894616">Automatisk login</translation>
 <translation id="2126426811489709554">Leveret af Chrome</translation>
 <translation id="213279576345780926">Lukkede <ph name="TAB_TITLE" /></translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
-<translation id="3158619413803296679">Vælg et bogmærke</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
 <translation id="3207960819495026254">Bogmærket</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Tilføj denne side som bogmærke</translation>
 <translation id="326254929494722411">Du har endnu ikke oprettet en Google-konto på denne enhed</translation>
 <translation id="3269093882174072735">Indlæs billede</translation>
+<translation id="3278850099957560514">Brug færre penge på data ved at bruge Google til at optimere de sider, du besøger. Google optimerer og viser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
 <translation id="3282568296779691940">Log ind på Chrome</translation>
 <translation id="3287852534598822456">Bogmærket eksisterer ikke længere. Opdater.</translation>
 <translation id="3303414029551471755">Vil du fortsætte og downloade indholdet?</translation>
@@ -187,7 +188,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
-<translation id="4084682180776658562">Bogmærke</translation>
 <translation id="4089831646916293264">Denne funktion kan forstyrre adgangen til eksklusive datatjenester, der leveres af dit mobilselskab.</translation>
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="411254640334432676">Download mislykkedes.</translation>
@@ -293,6 +293,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind p�
 <translation id="5530766185686772672">Luk inkognitofaner</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
+<translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere valgmuligheder</translation>
 <translation id="5626134646977739690">Navn:</translation>
@@ -461,6 +462,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7765158879357617694">Flyt</translation>
 <translation id="7767746238359002192">Gå til siden for at gemme den offline</translation>
 <translation id="7772032839648071052">Bekræft adgangssætning</translation>
+<translation id="7784213092572143271">Siden er gemt</translation>
 <translation id="7788788617745289808">Chrome skal have adgang til kameraet for at kunne dele det med dette website.</translation>
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="780301667611848630">Nej tak</translation>
@@ -541,6 +543,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="885701979325669005">Lagerplads</translation>
 <translation id="886510833909353412">Kryptér alle med en adgangssætning</translation>
 <translation id="8872441722924401214">Vælg certifikat til godkendelse</translation>
+<translation id="8891135217544884558">Webadresser i nærheden</translation>
 <translation id="8901170036886848654">Der blev ikke fundet nogen bogmærker</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>

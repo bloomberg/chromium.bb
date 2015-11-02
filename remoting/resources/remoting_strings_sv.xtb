@@ -148,6 +148,7 @@ Host</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
 <translation id="4619978527973181021">Godkänn och installera</translation>
+<translation id="4647791084836149355">Visa Cardboard-vy</translation>
 <translation id="4703799847237267011">Chromoting-sessionen har avslutats.</translation>
 <translation id="4736223761657662401">Anslutningshistorik</translation>
 <translation id="4741792197137897469">Autentiseringen misslyckades. Logga in i Chrome igen.</translation>
@@ -206,6 +207,7 @@ Desktop Host</translation>
 <translation id="6284412385303060032">Värden som kördes på konsolens inloggningsskärm har avslutats för att stödja Curtain Mode genom att byta till en värd som körs i en användarspecifik session.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
+<translation id="6324708100353784493">Du har aktiverat läget för Google Cardboard-integrering. Anslut enheten till ett Google Cardboard-kompatibelt visningsprogram om du vill använda det här läget.</translation>
 <translation id="6381670701864002291">Något annat.</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
 <translation id="6441316101718669559">Integrering med skrivbordet stöds inte på den här plattformen. Du kan använda appen ändå, men användarupplevelsen försämras.</translation>

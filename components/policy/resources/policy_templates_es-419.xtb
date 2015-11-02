@@ -85,6 +85,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o dirección URL del servidor proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
+<translation id="1445397020763995734">Tipo de cuenta para la autenticación HTTP Negotiate</translation>
 <translation id="1454846751303307294">Te permite configurar una lista de patrones de URL que especifican los sitios a los que no se les permite ejecutar JavaScript. Si esta política no se configura, se usará el valor predeterminado global para todos los sitios, ya sea de la política "DefaultJavaScriptSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="1464848559468748897">Controla el comportamiento del usuario durante una sesión de perfiles múltiples en dispositivos con <ph name="PRODUCT_OS_NAME" />.
 
@@ -150,6 +151,11 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si no se establece esta política, no se mostrarán las Condiciones del servicio.
 
       La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
+<translation id="1757339646969878244">Configurar las opciones de acceso remoto en el host del Escritorio remoto de Chrome
+
+      El host del Escritorio remoto de Chrome es un servicio nativo que se ejecuta en la máquina de destino a la que un usuario puede conectarse para utilizar la aplicación Escritorio remoto de Chrome. El servicio nativo se empaqueta y se ejecuta en forma separada del navegador <ph name="PRODUCT_NAME" />.
+
+      Ignora estas políticas a menos que el host del Escritorio remoto de Chrome esté instalado.</translation>
 <translation id="1757688868319862958">Permite que <ph name="PRODUCT_NAME" /> ejecute complementos que requieran autorización. Si habilitas esta opción, se ejecutarán siempre los complementos actualizados. Si no se habilita o no se configura esta opción, se solicitará permiso a los usuarios para ejecutar complementos que requieran autorización (complementos que pueden comprometer la seguridad).</translation>
 <translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
@@ -209,6 +215,11 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="201557587962247231">Frecuencia de cargas del informe de estado del dispositivo</translation>
 <translation id="2030905906517501646">Palabra clave del proveedor de búsqueda predeterminado</translation>
+<translation id="206623763829450685">Especifica qué esquemas de autenticación de HTTP son compatibles con <ph name="PRODUCT_NAME" />.
+
+          Los valores posibles son "basic", "digest", "ntlm" y "negotiate". Cuando haya más de un valor, sepáralos con comas.
+
+          Si esta política no se configura, se usarán los cuatro esquemas.</translation>
 <translation id="2067011586099792101">Bloquea el acceso a sitios fuera de los paquetes de contenido.</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Demora de pantalla apagada con batería</translation>
@@ -510,6 +521,38 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si se habilita esta configuración, se mostrarán las páginas de autenticación de portales cautivos (es decir, todas las páginas web desde la página de acceso del portal cautivo hasta que <ph name="PRODUCT_NAME" /> detecte una conexión a Internet exitosa) en una ventana separada; además, se ignorarán todos los ajustes de configuración de la política y las restricciones para el usuario actual.
 
       Si se inhabilita esta configuración o se deja sin establecer, las páginas de autenticación de portales cautivos se mostrarán en una pestaña nueva del navegador (normal), con la configuración de proxy del usuario actual.</translation>
+<translation id="3001569025430882724">Anula las normas de selección de la impresora predeterminada de <ph name="PRODUCT_NAME" />.
+
+      Esta política determina las normas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" />, acción que ocurre la primera vez que la función para imprimir se utiliza con un perfil.
+
+      Cuando esta política se establece, <ph name="PRODUCT_NAME" /> intentará encontrar una impresora que coincida con todos los atributos especificados y la seleccionará como impresora predeterminada. La primera impresora que coincida con la política se selecciona; en el caso de que haya más de una coincidencia, se puede seleccionar cualquier impresora que coincida, según el orden en que se descubran las impresoras.
+
+      Si esta política no se establece o no se encuentra una impresora que coincida durante el tiempo de espera, la opción predeterminada es la de una impresora de PDF integrada o no se selecciona una impresora, cuando la impresora de PDF no está disponible.
+
+      El valor se analiza como un objeto JSON, conforme al siguiente esquema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Las impresoras conectadas a Google Cloud Print se consideran "cloud", mientras que el resto de las impresoras se clasifican como "local".
+      Omitir un campo significa que todos los valores coinciden; por ejemplo, si no se especifica la conectividad, la vista previa de impresión iniciará el descubrimiento de todo tipo de impresoras, ya sean de tipo "local" o "cloud".
+      Los patrones de expresiones regulares deben seguir la sintaxis RegExp de JavaScript, y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="3021409116652377124">Inhabilitar el buscador de complemento</translation>
 <translation id="3030000825273123558">Activar los informes estadísticos</translation>
 <translation id="3034580675120919256">Te permite configurar si los sitios web pueden ejecutar JavaScript. La ejecución de JavaScript puede permitirse para todos los sitios web o denegarse para todos los sitios web. Si esta política no se configura, se usará "AllowJavaScript" y el usuario podrá cambiarla.</translation>
@@ -534,6 +577,38 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3153348162326497318">Te permite especificar qué extensiones NO pueden instalar los usuarios. Las extensiones ya instaladas se eliminarán si están en la lista negra. Un valor "*" en la lista negra indica que todas las extensiones figuran en la lista negra a menos que aparezcan explícitamente en la lista blanca. Si esta política no se configura, el usuario puede instalar cualquier extensión en <ph name="PRODUCT_NAME" /> .</translation>
 <translation id="316778957754360075">Esta opción se eliminó a partir de la versión 29 de <ph name="PRODUCT_NAME" />. La forma recomendada de configurar colecciones de aplicaciones o extensiones alojadas por una organización es incluir el sitio que aloja los paquetes CRX en la política ExtensionInstallSources y colocar vínculos de descarga directa a los paquetes en una página web. Se puede crear un selector para esa página web con la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Permite ajustar la configuración de administración de extensiones de <ph name="PRODUCT_NAME" />.
+
+          Esta política controla varios ajustes de configuración, incluidos aquellos controlados por políticas relacionadas con extensiones existentes. Esta política anulará todas las políticas heredadas si se establecen ambas.
+
+          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará a la extensión especificada únicamente. Es posible establecer una configuración predeterminada para el ID especial "*", que se aplicará a todas las extensiones que no tengan una configuración personalizada en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta establecida en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          La configuración de cada extensión (o extensiones con la misma URL de actualización) es otro diccionario que puede contener los campos documentados a continuación.
+
+          "installation_mode": se asigna a una cadena que indica el modo de instalación de la extensión. Las cadenas válidas son:
+          * "allowed": permite que el usuario instale la extensión. Este es el comportamiento predeterminado.
+          * "blocked": bloquea la instalación de la extensión.
+          * "force_installed": la extensión se instala automáticamente y el usuario no puede eliminarla.
+          * "normal_installed": la extensión se instala automáticamente, pero el usuario puede inhabilitarla.
+
+          También se puede configurar "installation_mode" para varias extensiones, incluida la extensión "*" (como configuración predeterminada) y para extensiones con la misma URL de actualización. En este caso, solo se pueden usar los valores "allowed" y "blocked".
+
+          Si el modo se establece en "force_installed" o "normal_installed", se debe configurar también "update_url". Se debe tener en cuenta que la URL de actualización establecida en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el manifiesto de la extensión. La URL de actualización debería apuntar a un documento XML de manifiesto de actualización, como se mencionó más arriba.
+
+          "blocked_permissions": se asigna a una lista de cadenas que indican los permisos de API bloqueados para la extensión. Los nombres de los permisos son iguales que las cadenas de permisos declaradas en el manifiesto de la extensión, como se describió en <ph name="LINK_TO_EXTENSION_DOC3" />. Este ajuste también se puede configurar para la extensión "*". Si la extensión requiere un permiso incluido en la lista de bloqueo, no se podrá cargar. Si contiene un permiso bloqueado como requisito opcional, se tratará de forma normal, pero la solicitud de permisos en conflicto se rechazará automáticamente en el tiempo de ejecución.
+
+          "allowed_permissions": es similar a "blocked_permissions" pero, en su lugar, permite, explícitamente, algunos permisos que podrían bloquearse con la lista de permisos bloqueados globales, por lo que no se puede configurar para la extensión "*". Se debe tener en cuenta que esta configuración no da permisos otorgados a extensiones automáticamente.
+
+          "minimum_version_required": se asigna a una cadena de versión. El formato de la cadena de versión es igual al que se usa en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC4" />. Las extensiones con una versión anterior a la versión mínima especificada se inhabilitarán. Esto se aplica también a las extensiones instaladas a la fuerza.
+
+          La siguiente configuración se puede usar únicamente para la configuración de "*" predeterminada:
+
+          "install_sources": cada elemento de la lista es un patrón que coincide con el estilo de la extensiones (se puede consultar https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente los elementos desde cualquier URL que coincida con un elemento de esta lista. Estos patrones deberán permitir tanto la ubicación del archivo *.crx como la página desde donde se inicia la descarga (es decir, la URL de referencia).
+
+          "allowed_types": esta configuración incluye en la lista blanca los tipos de extensión/aplicaciones permitidos que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de cadenas, cada una de las cuales debe ser una de las siguientes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, se puede consultar la documentación de extensiones de <ph name="PRODUCT_NAME" />.
+
+          Esta política todavía no está lista para usarse; se solicita que no se use.
+          </translation>
 <translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
 <translation id="3206731874112238027">Inhabilitar vista previa de impresión (dejó de estar disponible)</translation>
 <translation id="3213821784736959823">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
@@ -708,9 +783,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="402759845255257575">No permitir que los sitios ejecuten JavaScript.</translation>
 <translation id="4027608872760987929">Habilitar el proveedor de búsqueda predeterminado</translation>
 <translation id="4039085364173654945">Controla si se permite que el subcontenido de terceros en una página muestre cuadros de diálogo emergentes de autenticación básica de HTTP. Normalmente, esto se inhabilita a modo defensa contra la suplantación de identidad. Si esta política no se configura, se inhabilita esta opción y no se permite que el subcontenido de terceros muestre cuadros de diálogo emergentes de autenticación básica de HTTP.</translation>
-<translation id="4043912146394966243"> Los tipos de conexiones que se pueden utilizar para las actualizaciones del SO. Estas actualizaciones pueden constituir una carga para la conexión debido a su tamaño y podrían implicar costos adicionales. Por lo tanto, están inhabilitadas de forma predeterminada para los tipos de conexión que se consideran caros, que por el momento incluyen WiMax, Bluetooth y Celular.
-
-      Los identificadores de tipos de conexión reconocidos son "ethernet", "wifi", "wimax", "bluetooth" y "celular".</translation>
 <translation id="4052765007567912447">Controla si el usuario puede mostrar contraseñas no cifradas en el administrador de contraseñas. Si se inhabilita esta configuración, el administrador de contraseñas no permitirá mostrar las contraseñas no cifradas en la ventana del administrador de contraseñas. Si se habilita esta política o si no se configura, los usuarios podrán ver sus contraseñas no cifradas en el administrador de contraseñas.</translation>
 <translation id="4056910949759281379">Inhabilitar el protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo incógnito forzado</translation>
@@ -759,8 +831,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
 <translation id="4325690621216251241">Agregar un botón para cerrar sesión en la bandeja del sistema</translation>
-<translation id="4337944790873898250">Si esta política se establece en true, <ph name="PRODUCT_NAME" /> maximizará incondicionalmente la primera ventana que se muestre en la primera ejecución.
-      Si esta política se establece en false o no se configura, un método heurístico decidirá si se maximizará la primera ventana que se muestra, en función del tamaño de la pantalla.</translation>
 <translation id="436581050240847513">Informar interfaces de red del dispositivo</translation>
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir a todos los sitios que muestren todas las imágenes</translation>
@@ -772,6 +842,14 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si esta política se configura, el usuario no podrá modificarla y el acceso directo a las aplicaciones permanecerá visible u oculto, según la configuración.</translation>
 <translation id="443665821428652897">Borrar los datos del sitio al cerrar el navegador (en desuso)</translation>
+<translation id="4439336120285389675">Especificar una lista de funciones de Web Platform que ya no están disponibles para volver a habilitarlas temporalmente
+
+      Esta política brinda a los administradores la posibilidad de volver a habilitar por un tiempo limitado funciones de Web Platform que dejaron de estar disponibles. Las funciones se identifican con una etiqueta de cadena y las que se correspondan con las etiquetas incluidas en la lista especificada por esta política se volverán a habilitar.
+
+      Si esta política no se establece o si la lista está vacía o no coincide con una de las etiquetas de cadena admitidas, todas las funciones de Web Platform que dejaron de estar disponibles permanecerán inhabilitadas.
+
+      Si bien la política se admite en plataformas posteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform que dejaron de estar disponibles se pueden volver a habilitar; solo las que se indican explícitamente a continuación y durante un período limitado que varía según cada función. El formato general de la etiqueta de cadena será [NombreDeFunciónNoDisponible]_EffectiveUntil[aaaammdd]. Como referencia, se puede encontrar el propósito de los cambios de la función de Web Platform en https://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
 <translation id="4445684791305970001">Inhabilita las herramientas del programador y la consola de JavaScript. Si se habilita esta configuración, no se podrá acceder a las herramientas del programador y los elementos del sitio web ya no se podrán inspeccionar. Se inhabilitarán todos los accesos directos del teclado y todas las entradas de menú o de menú contextual para abrir las herramientas del programador o la consola de JavaScript. Si se inhabilita o no se configura esta opción, el usuario podrá usar las herramientas del programador y la consola de JavaScript.</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
@@ -1018,32 +1096,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si no se establece esta política, no habrá acceso automático.</translation>
 <translation id="5535973522252703021">Lista blanca de servidores de delegación de Kerberos</translation>
-<translation id="553658564206262718">Configura la administración de energía cuando el usuario está inactivo.
-
-          Esta política controla distintas configuraciones de la estrategia de administración de energía cuando el usuario está inactivo.
-
-          Existen cuatro tipos de acción:
-          * El brillo de la pantalla se atenuará cuando el usuario permanezca inactivo durante el tiempo indicado en |ScreenDim|.
-          * La pantalla se apagará cuando el usuario permanezca inactivo durante el tiempo indicado en |ScreenOff|.
-          * Aparecerá un cuadro de diálogo de advertencia cuando el usuario permanezca inactivo durante el tiempo indicado en |IdleWarning| para avisarle que se está a punto de proceder a la acción correspondiente al entrar en modo de inactividad.
-          * Se procederá a la acción especificada en |IdleAction| cuando el usuario permanezca inactivo durante el tiempo indicado en |Idle|.
-
-          Para las acciones anteriores, el tiempo de demora debe establecerse en milisegundos, y el valor debe ser mayor que cero para activar la acción correspondiente. Si la demora se establece en cero, <ph name="PRODUCT_OS_NAME" /> no realizará la acción correspondiente.
-
-          Si no se establece una duración específica para cada uno de los tiempos de demora anteriores, se utilizará un valor predeterminado.
-
-          Los valores de |ScreenDim| se fijarán para ser, como máximo, iguales a |ScreenOff|, y |ScreenOff| y |IdleWarning| se fijarán para ser, como máximo, iguales a |Idle|.
-
-          |IdleAction| puede representar una de cuatro acciones posibles:
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Si no se establece |IdleAction|, se realiza la acción predeterminada, es decir, entrar en modo de suspensión.
-
-          También existen opciones de configuración diferentes para la CA y la batería.
-          </translation>
 <translation id="5560039246134246593">Agrega un parámetro a la obtención del valor de inicialización de las variaciones en <ph name="PRODUCT_NAME" />.
 
       Si se especifica, agregará un parámetro de consulta llamado "restringir" a la URL que se utiliza para obtener el valor de inicialización de las variaciones. El valor del parámetro será el valor especificado en esta política.
@@ -1082,11 +1134,17 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si no se establece esta política o si se establece en false, <ph name="PRODUCT_NAME" /> utilizará la configuración para comprobar la revocación en línea actual.</translation>
 <translation id="5732972008943405952">Importar el formulario de Autocompletar del navegador predeterminado en la primera ejecución</translation>
+<translation id="5751004203256768694">Especifica el tipo de cuenta compatible para negociar la autenticación HTTP (p. ej., autenticación de Kerberos) de las cuentas que proporciona la app de autenticación de Android. El proveedor de la app de autenticación debe tener esta información disponible. Para obtener más detalles, se puede consultar https://goo.gl/hajyfN.
+
+          Si no se proporciona ninguna configuración, la autenticación HTTP Negotiate se inhabilita en Android.</translation>
 <translation id="5761030451068906335">Permite establecer los parámetros de configuración de proxy de <ph name="PRODUCT_NAME" />. Esta política aún no está lista para su uso, así que no debes utilizarla.</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">Dirección URL de búsqueda de proveedores de búsqueda predeterminada</translation>
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio.</translation>
+<translation id="5781412041848781654">Especifica qué biblioteca de GSSAPI se usará para la autenticación HTTP. Se puede establecer simplemente un nombre de biblioteca o una ruta de acceso completa.
+
+          Si no se ofrece ninguna configuración, <ph name="PRODUCT_NAME" /> recurrirá a un nombre de biblioteca predeterminado.</translation>
 <translation id="5781806558783210276">Especifica el período de tiempo sin intervención del usuario después de que se tome la medida de inactividad si se usa alimentación de la batería.
 
           Si se establece esta política, se especifica el período de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> tome la medida de inactividad, que se puede configurar por separado.
@@ -1188,6 +1246,15 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           El valor de la política debe establecerse en milisegundos. Los valores se fijan para ser menores que la demora del tiempo de inactividad.</translation>
 <translation id="6114416803310251055">en desuso</translation>
 <translation id="6145799962557135888">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar JavaScript. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultJavaScriptSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
+<translation id="6151775819333710697">
+          Si está habilitada esta configuración, los usuarios pueden hacer que <ph name="PRODUCT_NAME" /> memorice contraseñas
+y se las proporcione automáticamente la próxima vez que inicien sesión en un sitio.
+Si está inhabilitada esta configuración, los usuarios no pueden guardar contraseñas nuevas, pero
+pueden usar las contraseñas que hayan guardado anteriormente.
+Si esta política está habilitada o inhabilitada, los usuarios no pueden cambiarla ni anularla
+en <ph name="PRODUCT_NAME" />. Si esta
+política no está establecida, se permite el guardado de contraseñas (pero el usuario puede
+desactivarlo).</translation>
 <translation id="6155936611791017817">Establece el estado predeterminado del cursor grande en la pantalla de acceso.</translation>
 <translation id="6157537876488211233">Lista separada por comas de las normas de omisión de proxy</translation>
 <translation id="6158324314836466367">Indica el nombre de la tienda web de la empresa (en desuso).</translation>
@@ -1247,15 +1314,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Esta política es opcional. Si no se establece, la solicitud de búsqueda se enviará mediante el método GET.
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
-<translation id="6365608006609079612">
-          Si está habilitada esta configuración, los usuarios pueden hacer que <ph name="PRODUCT_NAME" /> memorice contraseñas
-y se las proporcione automáticamente la próxima vez que inicien sesión en un sitio.
-Si está inhabilitada esta configuración, los usuarios no pueden guardar contraseñas nuevas, pero
-pueden usar las contraseñas que hayan guardado anteriormente.
-Si esta política está habilitada o inhabilitada, los usuarios no pueden cambiarla ni anularla
-en <ph name="PRODUCT_NAME" />. Si esta
-política no está establecida, se permite el guardado de contraseñas (pero el usuario puede
-desactivarlo).</translation>
 <translation id="6367755442345892511">Configuración del canal de versiones por parte del usuario</translation>
 <translation id="6368011194414932347">Configurar la dirección URL de la página principal</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
@@ -1306,14 +1364,32 @@ desactivarlo).</translation>
 
           Si no se establece esta política, el teclado en pantalla se inhabilita la primera vez que aparece la pantalla de acceso. Los usuarios pueden habilitarlo o inhabilitarlo en cualquier momento, y esta selección persiste en el resto de los usuarios.</translation>
 <translation id="6598235178374410284">Imagen de avatar del usuario</translation>
-<translation id="6633160536638196468">Especificar una lista de funciones de Web Platform que ya no están disponibles para volver a habilitarlas temporalmente
+<translation id="6636268606788232221">Configura la administración de energía cuando el usuario está inactivo.
 
-      Esta política brinda a los administradores la posibilidad de volver a habilitar por un tiempo limitado funciones de Web Platform que dejaron de estar disponibles. Las funciones se identifican con una etiqueta de cadena y las que se correspondan con las etiquetas incluidas en la lista especificada por esta política se volverán a habilitar.
+          Esta política controla distintas configuraciones de la estrategia de administración de energía cuando el usuario está inactivo.
 
-      Si esta política no se establece o si la lista está vacía o no coincide con una de las etiquetas de cadena admitidas, todas las funciones de Web Platform que dejaron de estar disponibles permanecerán inhabilitadas.
+          Existen cuatro tipos de acción:
+          * El brillo de la pantalla se atenuará cuando el usuario permanezca inactivo durante el tiempo indicado en |ScreenDim|.
+          * La pantalla se apagará cuando el usuario permanezca inactivo durante el tiempo indicado en |ScreenOff|.
+          * Aparecerá un cuadro de diálogo de advertencia cuando el usuario permanezca inactivo durante el tiempo indicado en |IdleWarning| para avisarle que se está a punto de proceder a la acción correspondiente al entrar en modo de inactividad.
+          * Se procederá a la acción especificada en |IdleAction| cuando el usuario permanezca inactivo durante el tiempo indicado en |Idle|.
 
-      Si bien la política se admite en plataformas posteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform que dejaron de estar disponibles se pueden volver a habilitar; solo las que se indican explícitamente a continuación y durante un período limitado que varía según cada función. El formato general de la etiqueta de cadena será [NombreDeFunciónNoDisponible]_EffectiveUntil[aaaammdd]. Como referencia, se puede encontrar el propósito de los cambios de la función de Web Platform en https://bit.ly/blinkintents.
-      </translation>
+          Para las acciones anteriores, el tiempo de demora debe establecerse en milisegundos, y el valor debe ser mayor que cero para activar la acción correspondiente. Si la demora se establece en cero, <ph name="PRODUCT_OS_NAME" /> no realizará la acción correspondiente.
+
+          Si no se establece una duración específica para cada uno de los tiempos de demora anteriores, se utilizará un valor predeterminado.
+
+          Los valores de |ScreenDim| se fijarán para ser, como máximo, iguales a |ScreenOff|, y |ScreenOff| y |IdleWarning| se fijarán para ser, como máximo, iguales a |Idle|.
+
+          |IdleAction| puede representar una de cuatro acciones posibles:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Si no se establece |IdleAction|, se realiza la acción predeterminada, es decir, entrar en modo de suspensión.
+
+          También existen opciones de configuración diferentes para la CA y la batería.
+          </translation>
 <translation id="6641981670621198190">Inhabilitar la admisión de API gráficas en 3D</translation>
 <translation id="6647965994887675196">Si está configurada en verdadero, pueden crearse y utilizarse usuarios supervisados.
 
@@ -1536,6 +1612,7 @@ desactivarlo).</translation>
 <translation id="7443616896860707393">Avisos de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="7468416082528382842">Ubicación del registro de Windows:</translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
+<translation id="7485481791539008776">Normas de selección de la impresora predeterminada</translation>
 <translation id="749556411189861380">Informa sobre la versión del firmware y del sistema operativo de los dispositivos registrados.
 
       Si esta política no se establece o se establece en "True", los dispositivos registrados informarán periódicamente sobre la versión del firmware y del sistema operativo. Si esta política se establece en "False", no se indicará ninguna información sobre la versión.</translation>
@@ -1587,7 +1664,26 @@ desactivarlo).</translation>
 
           Si esta configuración está inhabilitada o no está establecida, no se habilitarán los dos factores y se utilizará el comportamiento predeterminado de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
+<translation id="7761526206824804472">Establece una o más configuraciones regionales para una sesión pública y permite que los usuarios elijan fácilmente una de estas configuraciones regionales.
+
+      El usuario puede elegir una configuración regional y un diseño de teclado antes de empezar una sesión pública. De forma predeterminada, todas las configuraciones regionales admitidas por <ph name="PRODUCT_OS_NAME" /> figuran en una lista ordenada alfabéticamente. Puedes utilizar esta política para colocar un conjunto de configuraciones regionales recomendadas en la parte superior de la lista.
+
+      Si esta política no se establece, la configuración regional actual de la interfaz del usuario se preseleccionará.
+
+      Si esta política se establece, las configuraciones regionales recomendadas se ubicarán en la parte superior de la lista y se separarán visualmente de las demás. Las configuraciones regionales recomendadas se ubicarán en la lista en el orden en el que aparecen en la política. La primera configuración regional recomendada se preseleccionará.
+
+      Si hay más de una configuración regional recomendada, se supone que los usuarios querrán seleccionar una entre estas configuraciones regionales. La selección de diseño de teclado y de configuración regional se ofrecerá de forma visible cuando se inicie una sesión pública. De lo contrario, se supone que la mayoría de los usuarios querrán utilizar la configuración regional preseleccionada. La selección de diseño de teclado y de configuración regional se ofrecerá de forma menos visible cuando se inicie una sesión pública.
+
+      Cuando esta política se establece y el acceso automático está habilitado (consulta las políticas |DeviceLocalAccountAutoLoginId| y |DeviceLocalAccountAutoLoginDelay|), la sesión pública que comenzó automáticamente utilizará la primera configuración regional recomendada y el diseño de teclado más popular que coincida con ella.
+
+      El diseño de teclado preseleccionado siempre será el más popular que coincida con la configuración regional preseleccionada.
+
+      Esta política solo se puede establecer como recomendada. Puedes utilizar esta política para colocar un conjunto de configuraciones regionales recomendadas en la parte superior, pero los usuarios pueden elegir cualquier configuración regional entre las que admite <ph name="PRODUCT_OS_NAME" /> para su sesión.
+      </translation>
 <translation id="7763311235717725977">Te permite configurar si los sitios web pueden mostrar imágenes. La visualización de imágenes se puede permitir o denegar para todos los sitios web. Si esta política no se configura, se usará "AllowImages" y el usuario podrá cambiarlo.</translation>
+<translation id="7763479091692861127"> Los tipos de conexiones que se pueden utilizar para las actualizaciones del SO. Estas actualizaciones pueden constituir una carga para la conexión debido a su tamaño y podrían implicar costos adicionales. Por lo tanto, están inhabilitadas de forma predeterminada para los tipos de conexión que se consideran caros, que por el momento incluyen WiMax, Bluetooth y Celular.
+
+      Los identificadores de tipos de conexión reconocidos son "ethernet", "wifi", "wimax", "bluetooth" y "celular".</translation>
 <translation id="7766336524667238790">Informa datos sobre la sesión de kiosco activa, como el ID de aplicación y la versión.
 
       Si la política se establece en false, no se informarán los datos de la sesión. Si se establece en true o no se establece, se informarán los datos de la sesión.</translation>
@@ -1627,38 +1723,6 @@ desactivarlo).</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Esta política ya no es compatible. Habilita el uso de servidores STUN y de retransmisión cuando se establece una conexión con un cliente remoto. Si se habilita esta configuración, esta máquina podrá descubrir y conectarse a máquinas host remotas, incluso si están separadas por un firewall. Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta máquina solo se conectará a máquinas host dentro de la red local.</translation>
-<translation id="8002229853067655250">Permite ajustar la configuración de administración de extensiones de <ph name="PRODUCT_NAME" />.
-
-          Esta política controla varios ajustes de configuración, incluidos aquellos controlados por políticas relacionadas con extensiones existentes. Esta política anulará todas las políticas heredadas si se establecen ambas.
-
-          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará a la extensión especificada únicamente. Es posible establecer una configuración predeterminada para el ID especial "*", que se aplicará a todas las extensiones que no tengan una configuración personalizada en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta establecida en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configuración de cada extensión (o extensiones con la misma URL de actualización) es otro diccionario que puede contener los campos documentados a continuación.
-
-          "installation_mode": se asigna a una cadena que indica el modo de instalación de la extensión. Las cadenas válidas son:
-          * "allowed": permite que el usuario instale la extensión. Este es el comportamiento predeterminado.
-          * "blocked": bloquea la instalación de la extensión.
-          * "force_installed": la extensión se instala automáticamente y el usuario no puede eliminarla.
-          * "normal_installed": la extensión se instala automáticamente, pero el usuario puede inhabilitarla.
-
-          También se puede configurar "installation_mode" para varias extensiones, incluida la extensión "*" (como configuración predeterminada) y para extensiones con la misma URL de actualización. En este caso, solo se pueden usar los valores "allowed" y "blocked".
-
-          Si el modo se establece en "force_installed" o "normal_installed", se debe configurar también "update_url". Se debe tener en cuenta que la URL de actualización establecida en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión usarán la URL de actualización indicada en el manifiesto de la extensión. La URL de actualización debería apuntar a un documento XML de manifiesto de actualización, como se mencionó más arriba.
-
-          "blocked_permissions": se asigna a una lista de cadenas que indican los permisos de API bloqueados para la extensión. Los nombres de los permisos son iguales que las cadenas de permisos declaradas en el manifiesto de la extensión, como se describió en <ph name="LINK_TO_EXTENSION_DOC3" />. Este ajuste también se puede configurar para la extensión "*". Si la extensión requiere un permiso incluido en la lista de bloqueo, no se podrá cargar. Si contiene un permiso bloqueado como requisito opcional, se tratará de forma normal, pero la solicitud de permisos en conflicto se rechazará automáticamente en el tiempo de ejecución.
-
-          "allowed_permissions": es similar a "blocked_permissions" pero, en su lugar, permite, explícitamente, algunos permisos que podrían bloquearse con la lista de permisos bloqueados globales, por lo que no se puede configurar para la extensión "*". Se debe tener en cuenta que esta configuración no da permisos otorgados a extensiones automáticamente.
-
-          "minimum_version_required": se asigna a una cadena de versión. El formato de la cadena de versión es igual al que se usa en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC4" />. Las extensiones con una versión anterior a la versión mínima especificada se inhabilitarán. Esto se aplica también a las extensiones instaladas a la fuerza.
-
-          La siguiente configuración se puede usar únicamente para la configuración de "*" predeterminada:
-
-          "install_sources": cada elemento de la lista es un patrón que coincide con el estilo de la extensiones (se puede consultar https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente los elementos desde cualquier URL que coincida con un elemento de esta lista. Estos patrones deberán permitir tanto la ubicación del archivo *.crx como la página desde donde se inicia la descarga (es decir, la URL de referencia).
-
-          "allowed_types": esta configuración incluye en la lista blanca los tipos de extensión/aplicaciones permitidos que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de cadenas, cada una de las cuales debe ser una de las siguientes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, se puede consultar la documentación de extensiones de <ph name="PRODUCT_NAME" />.
-
-          Esta política todavía no está lista para usarse; se solicita que no se use.
-          </translation>
 <translation id="8044493735196713914">Modo de notificación de inicio de dispositivo</translation>
 <translation id="8059164285174960932">URL donde los clientes de acceso remoto deben obtener el token de autenticación</translation>
 <translation id="8071636581296916773">Habilita el uso de servidores de retransmisión cuando los clientes remotos intentan establecer una conexión con esta computadora.
@@ -1721,17 +1785,6 @@ desactivarlo).</translation>
 <translation id="8197918588508433925">Esta política especifica las extensiones que tienen permitido usar la API de claves de plataforma empresarial chrome.enterprise.platformKeysPrivate.challengeUserKey() para la atestación remota. Las extensiones deben agregarse a esta lista para que puedan usar la API.
 
           Si una extensión no está en la lista o si la lista no está establecida, la llamada a la API fallará y se mostrará un código de error.</translation>
-<translation id="8211174979203781791">Configura la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios la modifiquen.
-
-          La página principal es la página que se abre con el botón Página principal. Las páginas que se abren al inicio se controlan a través de las políticas RestoreOnStartup.
-
-          El tipo de página principal puede configurarse como una URL que se especifica aquí o establecerse en la página Nueva pestaña. Si se selecciona la página Nueva pestaña, esta política no se aplica.
-
-          Si se habilita esta configuración, los usuarios no pueden cambiar la URL de la página principal en <ph name="PRODUCT_NAME" />, pero pueden elegir la página Nueva pestaña como página principal.
-
-          Si esta política no se establece, el usuario puede elegir la página principal si tampoco se establece HomepageIsNewTabPage.
-
-          Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de Active Directory.</translation>
 <translation id="8244525275280476362">Demora de recuperación máxima después de invalidar una política</translation>
 <translation id="8256688113167012935">Controla el nombre de cuenta <ph name="PRODUCT_OS_NAME" /> que aparece en la pantalla de acceso de la cuenta local del dispositivo que corresponda.
 
@@ -1896,6 +1949,7 @@ desactivarlo).</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> por usuario. La configuración de red es una cadena escrita en formato JSON, como la define el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Especificar si la actividad de video afecta a la administración de energía</translation>
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>
+<translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
 <translation id="9104138886225968319">Envía señales de monitoreo al servidor de administración para permitir que el servidor detecte si el dispositivo está sin conexión.
 
       Si esta política se establece en true, se enviarán señales de monitoreo. Si se establece en false o no se configura, no se enviarán señales.</translation>

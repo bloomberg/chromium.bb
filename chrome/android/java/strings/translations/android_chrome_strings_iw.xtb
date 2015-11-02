@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">הצג את הכרטיסיות עם האפליקציות האחרונות שבהן השתמשת במסך הסקירה של הטלפון.</translation>
 <translation id="2079545284768500474">בטל</translation>
 <translation id="2082238445998314030">תוצאה <ph name="RESULT_NUMBER" /> מתוך <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">‏כשהתכונה הזו פועלת, Chrome ישתמש בשרתי Google כדי לדחוס דפים שבהם אתה מבקר לפני שהוא מוריד אותם. Google לא תראה או תבצע אופטימיזציה של דפים שהגישה אליהם בוצעה דרך קישורים פרטיים (HTTPS) או בכרטיסיות גלישה בסתר.</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2126426811489709554">‏מבוסס על Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> נסגר</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">גישה לקלט אודיו ווידאו</translation>
 <translation id="3102119246920354026">קובץ שמור</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
-<translation id="3158619413803296679">בחר סימניה</translation>
 <translation id="3190152372525844641">‏הפעל הרשאות בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">נתונים מאוחסנים בנפח <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">מסומן בסימניה</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">הוסף את הדף לסימניות</translation>
 <translation id="326254929494722411">‏עדיין לא הגדרת חשבון Google במכשיר הזה</translation>
 <translation id="3269093882174072735">טען תמונה</translation>
+<translation id="3278850099957560514">‏צמצם את ההוצאה על שימוש בנתונים על ידי שימוש ב-Google כדי לבצע אופטימיזציה לדפים שבהם אתה מבקר. Google לא תראה או תבצע אופטימיזציה של דפים שהגישה אליהם בוצעה דרך קישורים פרטיים (HTTPS) או בכרטיסיות גלישה בסתר.</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="3287852534598822456">הסימנייה כבר לא קיימת. נדרש רענון.</translation>
 <translation id="3303414029551471755">האם להוריד את התוכן?</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">חום-ספיה</translation>
 <translation id="4059119910594077751">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
-<translation id="4084682180776658562">סימניה</translation>
 <translation id="4089831646916293264">התכונה הזו עשויה להפריע לגישה אל שירותי נתונים בתשלום הניתנים על ידי הספק שלך.</translation>
 <translation id="4099578267706723511">‏עזור לשפר את Chrome על ידי שליחה של סטטיסטיקת שימוש ודוחות קריסה אל Google.</translation>
 <translation id="411254640334432676">ההורדה נכשלה.</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
 <translation id="5556459405103347317">טען שוב</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
+<translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">ערוך כתובת</translation>
 <translation id="5596627076506792578">אפשרויות נוספות</translation>
 <translation id="5626134646977739690">שם:</translation>
@@ -461,6 +462,7 @@
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7767746238359002192">בקר בעמוד כדי לשמור באופן לא מקוון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
+<translation id="7784213092572143271">הדף נשמר</translation>
 <translation id="7788788617745289808">‏Chrome זקוק לגישה למצלמה כדי לשתף אותה עם האתר הזה.</translation>
 <translation id="7791543448312431591">הוסף</translation>
 <translation id="780301667611848630">לא תודה</translation>
@@ -539,6 +541,7 @@
 <translation id="885701979325669005">אחסון</translation>
 <translation id="886510833909353412">הצפן הכל באמצעות ביטוי סיסמה</translation>
 <translation id="8872441722924401214">בחירת אישור לאימות</translation>
+<translation id="8891135217544884558">כתובות אתרים בקרבת מקום</translation>
 <translation id="8901170036886848654">לא נמצאו סימניות</translation>
 <translation id="8909135823018751308">שתף…</translation>
 <translation id="8912362522468806198">‏חשבון Google</translation>

@@ -72,6 +72,7 @@
 <translation id="2077711166702792587">Переглядайте вкладки та нещодавно відкриті додатки на екрані огляду свого телефона.</translation>
 <translation id="2079545284768500474">Скасувати</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2095887075102408547">Якщо ввімкнути цю функцію, Chrome використовуватиме сервери Google, щоб стискати сторінки перед завантаженням. Однак це не стосується сторінок, відкритих під час конфіденційного з’єднання (HTTPS) або в режимі анонімного перегляду.</translation>
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="2126426811489709554">Технології Chrome</translation>
 <translation id="213279576345780926">Вкладку "<ph name="TAB_TITLE" />" закрито</translation>
@@ -138,7 +139,6 @@
 <translation id="3090193911106258841">Отримання доступу до аудіо- й відеовходу</translation>
 <translation id="3102119246920354026">Кеш</translation>
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
-<translation id="3158619413803296679">Вибрати закладку</translation>
 <translation id="3190152372525844641">Увімкніть дозволи для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> збережених даних</translation>
 <translation id="3207960819495026254">Створено закладку</translation>
@@ -148,6 +148,7 @@
 <translation id="3254409185687681395">Додати цю сторінку до закладок</translation>
 <translation id="326254929494722411">Ви ще не налаштували обліковий запис Google на цьому пристрої</translation>
 <translation id="3269093882174072735">Завантажити зображення</translation>
+<translation id="3278850099957560514">Google оптимізує сторінки, які ви відвідуєте, щоб заощаджувати трафік. Однак це не стосується сторінок, відкритих під час конфіденційного з’єднання (HTTPS) або в режимі анонімного перегляду.</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3287852534598822456">Закладки більше немає. Оновіть сторінку.</translation>
 <translation id="3303414029551471755">Завантажити вміст?</translation>
@@ -187,7 +188,6 @@
 <translation id="4056223980640387499">Сепія</translation>
 <translation id="4059119910594077751">Щоб вийти з повноекранного режиму, торкніться кнопки "Назад".</translation>
 <translation id="4062305924942672200">Правова інформація</translation>
-<translation id="4084682180776658562">Закладка</translation>
 <translation id="4089831646916293264">Ця функція може перешкоджати доступу до платних служб передавання даних, які надаються вашим оператором.</translation>
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
 <translation id="411254640334432676">Не завантажено.</translation>
@@ -293,6 +293,7 @@
 <translation id="5530766185686772672">Закрити анонімні вкладки</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5565871407246142825">Кредитні картки</translation>
+<translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
 <translation id="5596627076506792578">Інші опції</translation>
 <translation id="5626134646977739690">Ім'я:</translation>
@@ -461,6 +462,7 @@
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7767746238359002192">Відкрийте сторінку, щоб зберегти її для перегляду в режимі офлайн</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
+<translation id="7784213092572143271">Сторінку збережено</translation>
 <translation id="7788788617745289808">Chrome потрібен доступ до камери, щоб дозволити цьому сайту використовувати її.</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
@@ -541,6 +543,7 @@
 <translation id="885701979325669005">Обсяг пам’яті</translation>
 <translation id="886510833909353412">Шифрувати все парольною фразою</translation>
 <translation id="8872441722924401214">Виберіть сертифікат для автентифікації</translation>
+<translation id="8891135217544884558">URL-адреси з пристроїв поблизу</translation>
 <translation id="8901170036886848654">Немає закладок</translation>
 <translation id="8909135823018751308">Надіслати…</translation>
 <translation id="8912362522468806198">Обліковий запис Google</translation>

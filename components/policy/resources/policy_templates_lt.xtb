@@ -101,6 +101,7 @@
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1427655258943162134">Tarpinio serverio adresas arba URL</translation>
 <translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
+<translation id="1445397020763995734">HTTP suderinimo autentifikavimo paskyros tipas</translation>
 <translation id="1454846751303307294">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama paleisti „JavaScript“, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -168,6 +169,15 @@
       Jei ši politika nenustatyta, rodomos paslaugų teikimo sąlygos.
 
       Politika turėtų būti nustatyta į URL, kuriuo „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti paslaugų teikimo sąlygas. Paslaugų teikimo sąlygas turi sudaryti paprastasis tekstas, pateiktas kaip MIME tipo tekstas / paprastasis tekstas. Neleidžiamas joks žymėjimas.</translation>
+<translation id="1757339646969878244">Konfigūruojama nuotolinė prieiga „Chrome“ nuotolinio kompiuterio valdymo priegloboje.
+
+      „Chrome“ nuotolinio kompiuterio valdymo priegloba yra savoji paslauga, vykdoma tiksliniame
+      įrenginyje, prie kurio naudotojas gali prisijungti naudodamas „Chrome“ nuotolinio kompiuterio valdymo
+      programą. Savoji paslauga yra supakuota ir įforminta atskirai nuo
+      „<ph name="PRODUCT_NAME" />“ naršyklės.
+
+      Šios politikos nepaisoma, nebent įdiegta
+      „Chrome“ nuotolinio kompiuterio valdymo priegloba.</translation>
 <translation id="1757688868319862958">„<ph name="PRODUCT_NAME" />“ leidžiama paleisti papildinius, kuriuos naudojant reikalinga prieigos teisė. Jei įgalinsite šį nustatymą, visada bus paleidžiami nepasenę papildiniai. Jei šis nustatymas neleidžiamas arba nenustatytas, naudotojų bus prašoma suteikti leidimą paleisti papildinius, kuriuos naudojant reikalinga prieigos teisė. Šiais papildiniais gali būti pažeista sauga.</translation>
 <translation id="1803646570632580723">Paleidimo priemonėje prisegtų rodomų programų sąrašas</translation>
 <translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
@@ -240,6 +250,11 @@
 <translation id="2006530844219044261">Maitinimo valdymas</translation>
 <translation id="201557587962247231">Įrenginio būsenos ataskaitų įkėlimo dažnis</translation>
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
+<translation id="206623763829450685">Nurodoma, kurios HTTP autentifikavimo schemos palaikomos „<ph name="PRODUCT_NAME" />“.
+
+          Galimos vertės: „basic“, „digest“, „ntlm“ ir „negotiate“. Kelias vertes atskirkite kableliais.
+
+          Nenustačius šios politikos, bus naudojamos visos keturios schemos.</translation>
 <translation id="2067011586099792101">Blokuoti prieigą prie svetainių, nesančių turinio paketuose</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2077273864382355561">Ekrano išjungimo delsa, kai naudojama akumuliatoriaus energija</translation>
@@ -581,6 +596,38 @@
       Jei įgalinsite šį nustatymą, visi fiksuotojo portalo autentifikavimo puslapiai (pvz., visi tinklalapiai nuo fiksuotojo portalo prisijungimo puslapio iki tada, kai „<ph name="PRODUCT_NAME" />“ aptinka, kad sėkmingai prisijungta prie interneto), bus rodomi atskirame lange ir bus nepaisoma visų dabartinio naudotojo politikos nustatymų bei apribojimų.
 
       Jei išjungsite šį nustatymą arba paliksite jį nenustatytą, fiksuotojo portalo autentifikavimo puslapiai bus rodomi (įprastame) naujame naršyklės skirtuke naudojant dabartinio naudotojo tarpinio serverio nustatymus.</translation>
+<translation id="3001569025430882724">Pakeičiamos „<ph name="PRODUCT_NAME" />“ numatytojo spausdintuvo pasirinkimo taisyklės.
+
+      Pagal šią politiką nustatomos numatytojo spausdintuvo pasirinkimo sistemoje „<ph name="PRODUCT_NAME" />“ taisyklės, kurios taikomos pirmą kartą profilyje naudojant spausdinimo funkciją.
+
+      Nustačius šią politiką, „<ph name="PRODUCT_NAME" />“ bando surasti spausdintuvą, atitinkantį visus nurodytus atributus, ir pasirinkti jį kaip numatytąjį spausdintuvą. Pasirenkamas pirmas rastas politiką atitinkantis spausdintuvas, o jei nėra unikalios atitikties, gali būti pasirinktas bet kuris atitinkantis spausdintuvas, atsižvelgiant į spausdintuvų aptikimo tvarką.
+
+      Jei ši politika nenustatyta arba nepavyksta rasti atitinkamo spausdintuvo, kol baigiasi skirtasis laikas, pagal numatytuosius spausdintuvo nustatymus naudojamas integruotas PDF spausdintuvas arba, jei PDF spausdintuvas nepasiekiamas, nepasirenkamas joks spausdintuvas.
+
+      Vertė analizuojama kaip JSON objektas pagal nurodytą schemą:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Ar apriboti atitinkamo spausdintuvo paiešką naudojant konkretų spausdintuvų rinkinį.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Spausdintuvo ID atitinkantis reguliarusis reiškinys.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Spausdintuvo rodomą pavadinimą atitinkantis reguliarusis reiškinys.",
+            "type": "string"
+          }
+        }
+      }
+
+      Prie „Google“ spausdinimo iš debesies prijungti spausdintuvai laikomi „debesies“ spausdintuvais, o kiti priskiriami „vietinių“ spausdintuvų kategorijai.
+      Praleidus lauką nurodoma, kad atitinka visos vertės, pvz., nenurodžius ryšio funkcija „Spaudinio peržiūra“ inicijuos visų tipų spausdintuvų (vietinių ir debesies) aptikimą.
+      Reguliariojo reiškinio šablonai turi atitikti „JavaScript“ sintaksę „RegExp“. Be to, skiriamos atitikčių didžiosios ir mažosios raidės.</translation>
 <translation id="3021409116652377124">Neleisti papildinių ieškiklio</translation>
 <translation id="3030000825273123558">Įgalinti metrikos ataskaitų teikimą</translation>
 <translation id="3034580675120919256">Leidžiama nustatyti, ar svetainėse leidžiama paleisti „JavaScript“. Gali būti leidžiama arba draudžiama paleisti „JavaScript“ visose svetainėse.
@@ -611,6 +658,38 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Nenustačius šios politikos, naudotojas (-a) gali įdiegti bet kurį plėtinį „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="316778957754360075">Šis nustatymas nebenaudojamas 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose. Rekomenduojamas būdas nustatyti organizacijos valdomą plėtinių / programų rinkinius yra įtraukti svetaines priglobiančius CRX paketus į politiką „ExtensionInstallSources“ ir nuorodas įdėti tiesiogiai į tinklalapio paketus. Tam tinklalapiui skirtą paleidimo priemonę galima sukurti naudojant politiką „ExtensionInstallForcelist“.</translation>
 <translation id="3185009703220253572">nuo <ph name="SINCE_VERSION" /> versijos</translation>
+<translation id="318812033927804102">Konfigūruojami „<ph name="PRODUCT_NAME" />“ plėtinių valdymo nustatymai.
+
+          Ši politika valdo kelis nustatymus, įskaitant bet kokios esamos su plėtiniais susijusios politikos valdomus nustatymus. Ši politika pakeis bet kokią seną politiką, jei abi nustatytos.
+
+          Ši politika susieja plėtinio ID ar naujinio URL su konfigūracija. Naudojant plėtinio ID konfigūracija bus taikoma tik nurodytam plėtiniui. Specialiam ID „*“ galima nustatyti numatytąją konfigūraciją, kuri bus taikoma visiems plėtiniams, kurių tinkinta konfigūracija nenustatyta šioje politikoje. Naudojant naujinio URL konfigūracija bus taikoma visiems plėtiniams su tiksliu naujinio URL, nurodytu šio plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Kiekvieno plėtinio (ar plėtinių su tuo pačiu naujinio URL) konfigūracija sudaro kitą žodyną, į kurį gali būti įtraukti toliau dokumentuojami laukai.
+
+          „installation_mode“ (diegimo režimas): susieja su eilute, nurodančia plėtinio diegimo režimą. Galiojančios eilutės yra šios:
+          * „allowed“ (leidžiama): leidžiama naudotojui įdiegti plėtinį. Tai numatytoji elgsena.
+          * „blocked“ (užblokuota): užblokuoja plėtinio diegimą.
+          * „force_installed“ (priverstinai įdiegta): plėtinys automatiškai įdiegiamas ir naudotojas negali jo pašalinti.
+          * „normal_installed“ (įprastai įdiegta): plėtinys automatiškai įdiegiamas, bet naudotojas gali jį išjungti.
+
+          Be to, „installation_mode“ taip pat galima konfigūruoti keliems plėtiniams, įskaitant plėtinį „*“ (kaip numatytieji nustatymai) ir plėtinius su tuo pačiu naujinio URL. Šiuo atveju galima naudoti tik vertes „allowed“ ir „blocked“.
+
+          Jei režimas nustatytas į „force_installed“ arba „normal_installed“, taip pat reikia sukonfigūruoti „update_url“. Atminkite, kad šioje politikoje nustatytas naujinio URL naudojamas tik diegiant pirmą kartą; vėlesniems plėtinio naujiniams bus naudojamas plėtinio apraše nurodytas naujinio URL. Naujinio URL turėtų nukreipti į naujinio aprašo XML dokumentą, kaip nurodyta anksčiau.
+
+          „blocked_permissions“ (užblokuoti leidimai): susieja su eilučių, nurodančių plėtinio užblokuotus API leidimus, sąrašu. Leidimų pavadinimai tokie pat kaip leidimų eilutės, pateiktos plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC3" />. Be to, šį nustatymą galima sukonfigūruoti plėtiniui „*“. Jei plėtiniui reikalingas leidimas, kuris įtrauktas į užblokuotų leidimų sąrašą, jo neleidžiama įkelti. Jei užblokuotas leidimas nurodomas kaip pasirenkamas reikalavimas, jis apdorojamas įprastai, bet vykdant nesuderinamų leidimų užklausos bus automatiškai atmestos.
+
+          „allowed_permissions“ (leidžiami leidimai): panašu į „blocked_permissions“, bet aiškiai leidžiami keli leidimai, kurie gali būti užblokuoti bendrųjų užblokuotų leidimų sąraše, todėl negalima konfigūruoti plėtiniui „*“. Atminkite, kad nustačius šį nustatymą plėtiniams leidimai nėra automatiškai suteikiami.
+
+          „minimum_version_required“ (minimali reikalinga versija): susiejama su versijos eilute. Versijos eilutės formatas toks pat, kaip naudojamas plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC4" />. Plėtinys, kurio versija senesnė nei nurodyta minimali versija, bus išjungtas. Tai taip pat taikoma priverstinai įdiegtiems plėtiniams.
+
+          Nurodytą nustatymą galima naudoti tik numatytajai „*“ konfigūracijai:
+
+          „install_sources“ (diegimo šaltiniai): kiekvienas elementas šiame sąraše yra plėtinio stiliaus atitikties šablonas (žr. https://developer.chrome.com/extensions/match_patterns). Naudotojai galės lengvai įdiegti elementus iš bet kurio URL, kuris atitinka elementą šiame sąraše. Failo *.crx vieta ir puslapis, iš kurio pradedamas atsisiuntimas (t. y. persiuntimo URL), turi būti leidžiami šiuose šablonuose.
+
+          „allowed_types“ (leidžiami tipai): nustačius šį nustatymą leidžiami plėtinio / programų, kuriuos galima įdiegti „<ph name="PRODUCT_NAME" />“, tipai įtraukiami į baltąjį sąrašą. Vertė – tai eilučių, kurių kiekviena turi būti vienos iš šių verčių: „extension“, „theme“, „user_script“, „hosted_app“, „legacy_packaged_app“, „platform_app“, sąrašas. Jei reikia daugiau informacijos apie šiuos tipus, žr. „<ph name="PRODUCT_NAME" />“ plėtinių dokumentus.
+
+          Ši politika dar neparuošta naudoti, todėl jos nenaudokite.
+          </translation>
 <translation id="3205825995289802549">Pirmo naršyklės lango padidinimas pirmą kartą paleidus programą</translation>
 <translation id="3206731874112238027">Spaudinio peržiūros išjungimas (nebenaudojama)</translation>
 <translation id="3213821784736959823">Valdoma, ar integruota DNS kliento programa naudojama „<ph name="PRODUCT_NAME" />“.
@@ -818,9 +897,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="4039085364173654945">Valdoma, ar trečiosios šalies papildomas turinys puslapyje gali būti pateiktas iššokančiajame HTTP pagrindinės prieigos teisės dialogo lange.
 
           Įprastai tai neleidžiama siekiant apsisaugoti nuo sukčiavimo. Nenustačius šios politikos, tai neleidžiama ir trečiosios šalies papildomo turinio neleidžiama pateikti iššokančiajame HTTP pagrindinės prieigos teisės dialogo lange.</translation>
-<translation id="4043912146394966243"> Ryšių, leidžiamų naudoti OS naujiniams, tipai. OS naujiniai potencialiai apsunkina ryšį dėl savo dydžio, todėl gali būti taikomi papildomi mokesčiai. Taigi pagal numatytuosius nustatymus jie nėra įgalinti brangiais laikomiems ryšių tipams, įskaitant šiuo metu naudojamus „WiMax“, „Bluetooth“ ir „Cellular“.
-
-      Atpažįstami ryšio tipo identifikatoriai yra „ethernet“, „wifi“, „wimax“, „bluetooth“ ir „cellular“.</translation>
 <translation id="4052765007567912447">Valdoma, ar naudotojas (-a) gali rodyti aiškiai parašytus slaptažodžius slaptažodžių tvarkytuvėje.
 
           Jei neleisite šio nustatymo, slaptažodžių tvarkytuvės lange nebus leidžiama rodyti aiškiai parašytų išsaugotų slaptažodžių.
@@ -873,8 +949,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="4320376026953250541">„Microsoft Windows XP“ SP2 arba naujesnė versija</translation>
 <translation id="4325690621216251241">Pridėti atsijungimo mygtuką prie sistemos dėklo</translation>
-<translation id="4337944790873898250">Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_NAME" />“ besąlygiškai padidins pirmą langą, rodomą pirmą kartą paleidus programą.
-      Jei ši politika nustatyta į „false“ arba yra nesukonfigūruota, euristika nuspręs, ar bus padidintas pirmas rodomas langas, atsižvelgdama į ekrano dydį.</translation>
 <translation id="436581050240847513">Pateikti įrenginio tinklo sąsajų ataskaitą</translation>
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
@@ -886,6 +960,14 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei ši politika sukonfigūruota, naudotojas negali jos pakeisti, o programų spartusis klavišas visada rodomas arba niekada nerodomas.</translation>
 <translation id="443665821428652897">Išvalyti svetainės duomenis uždarant naršyklę (nebenaudojama)</translation>
+<translation id="4439336120285389675">Nurodomas nebenaudojamų žiniatinklio platformos funkcijų, kurios bus laikinai įgalintos, sąrašas.
+
+      Naudodami šią politiką administratoriai gali iš naujo laikinai įgalinti nebenaudojamas žiniatinklio platformos funkcijas. Funkcijos nurodomos pateikus eilutės žymą, o funkcijos, atitinkančios žymas šios politikos nurodytame sąraše, bus įgalintos iš naujo.
+
+      Jei ši politika nenustatyta arba sąrašas yra tuščias ar neatitinka vienos iš palaikomų eilutės žymų, visos nebenaudojamos žiniatinklio platformos funkcijos liks išjungtos.
+
+      Politika palaikoma anksčiau nurodytose platformose, tačiau įgalinama funkcija gali būti pasiekiama mažiau platformų. Ne visas nebenaudojamas žiniatinklio platformos funkcijas galima įgalinti. Tik šiame sąraše pateiktas funkcijas galima laikinai (atsižvelgiant į funkciją) įgalinti. Bendra eilutės žymos forma [NebeteikiamosFunkcijosPavadinimas]_GaliojaIki[yyyymmdd]. Informacijos apie žiniatinklio platformos funkcijos pakeitimus galite gauti apsilankę adresu https://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Įgalinti užraktą, kai įrenginys nenaudojamas arba laikinai sustabdytas</translation>
 <translation id="4445684791305970001">Neleidžiami kūrėjo įrankiai ir „JavaScript“ pultas.
 
@@ -1183,32 +1265,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei ši politika nenustatyta, nebus automatiškai prijungiama.</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
-<translation id="553658564206262718">Maitinimo valdymo nustatymų, kai naudotojas tampa neaktyvus, konfigūravimas.
-
-          Ši politika valdo kelis maitinimo valdymo strategijos, kai naudotojas tampa neaktyvus, nustatymus.
-
-          Galimi keturių tipų veiksmai:
-          * Ekranas bus pritemdytas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenDim|“.
-          * Ekranas bus išjungtas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenOff|“.
-          * Jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|IdleWarning|“, bus pateiktas dialogo langas, kuriame nurodoma, kad netrukus bus atliekamas neaktyvumo veiksmas.
-          * Veiksmas, nurodytas kaip „|IdleAction|“, bus atliktas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|Idle|“.
-
-          Kiekvieno anksčiau nurodyto veiksmo delsos laikotarpis turėtų būti nurodytas milisekundėmis ir turi būti nustatytas į didesnę nei nulis vertę, kad būtų suaktyvintas atitinkamas veiksmas. Jei delsos laikotarpis nustatytas į nulį, „<ph name="PRODUCT_OS_NAME" />“ neatliks atitinkamo veiksmo.
-
-          Jei laikotarpis nenustatytas, bus naudojama numatytoji vertė. Tai taikoma kiekvienam anksčiau nurodytam delsos laikotarpiui.
-
-          Atminkite, kad „|ScreenDim|“ vertės bus apribotos, kad būtų mažesnės arba lygios „|ScreenOff|“ ir „|ScreenOff|“ vertėms, o „|IdleWarning|“ vertė bus apribota, kad būtų mažesnė arba lygi „|Idle|“ vertei.
-
-          „|IdleAction|“ gali būti vienas iš keturių galimų veiksmų:
-          * „|Suspend|“
-          * „|Logout|“
-          * „|Shutdown|“
-          * „|DoNothing|“
-
-          Kai „|IdleAction|“ vertė nenustatyta, atliekamas numatytasis veiksmas – laikinai sustabdyti.
-
-          Kintamosios srovės ir akumuliatoriaus maitinimo nustatymai pasirenkami atskirai.
-          </translation>
 <translation id="5560039246134246593">Pridėkite variantų pirminės reikšmės pateikimo apribojimą „<ph name="PRODUCT_NAME" />“.
 
       Jei jis nurodytas, prie pateikiant variantų pirminę reikšmę naudojamo URL bus pridėtas URL parametras „restrict“. Parametro vertė bus šioje politikoje nustatyta vertė.
@@ -1247,6 +1303,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei ši politika nenustatyta arba nustatyta kaip „false“, „<ph name="PRODUCT_NAME" />“ naudoja esamus panaikinimo tikrinimo prisijungus nustatymus.</translation>
 <translation id="5732972008943405952">Automatinio pildymo formų duomenų importavimas iš numatytosios naršyklės paleidus pirmą kartą</translation>
+<translation id="5751004203256768694">Nurodo paskyrų, pateiktų „Android“ autentifikavimo programos, palaikančios HTTP suderinimo autentifikavimą (t. y. „Kerberos“ autentifikavimą), paskyros tipą. Šią informaciją turėtų pateikti autentifikavimo programos teikėjas. Daugiau išsamios informacijos žr. https://goo.gl/hajyfN.
+
+          Jei nepateikiamas joks nustatymas, HTTP suderinimo autentifikavimas išjungiamas sistemoje „Android“.</translation>
 <translation id="5761030451068906335">Bus sukonfigūruoti įgaliotojo serverio nustatymai, skirti „<ph name="PRODUCT_NAME" />“.
 
       Ši politika dar neparuošta naudoti; nenaudokite jos.</translation>
@@ -1254,6 +1313,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="5770738360657678870">Kuriamas kanalas (gali būti nestabilus)</translation>
 <translation id="5774856474228476867">Numatytojo paieškos teikėjo paieškos URL</translation>
 <translation id="5776485039795852974">Paklausti kaskart, kai svetainėje norima rodyti darbalaukio pranešimus</translation>
+<translation id="5781412041848781654">Nurodoma, kurią GSSAPI biblioteką reikia naudoti, nustatant HTTP autentifikavimą. Galima nustatyti vien tik bibliotekos pavadinimą arba visą kelią.
+
+          Jei nepateikiamas joks nustatymas, „<ph name="PRODUCT_NAME" />“ naudoja atsarginį numatytąjį bibliotekos pavadinimą.</translation>
 <translation id="5781806558783210276">Nurodoma laiko trukmė be naudotojo įvesties, po kurios neveikos veiksmai atliekami, kai naudojama akumuliatoriaus energija.
 
           Kai ši politika yra nustatyta, ji nurodo laiko trukmę, kurią naudotojas turi neatlikti jokių veiksmų, kad „<ph name="PRODUCT_OS_NAME" />“ imtųsi veiksmų dėl neveikos. Šiuos veiksmus galite sukonfigūruoti atskirai.
@@ -1365,6 +1427,17 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="6145799962557135888">Leidžiama nurodyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti „JavaScript“, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
+<translation id="6151775819333710697">
+          Įgalinus šį nustatymą, naudotojai gali nustatyti, kad „<ph name="PRODUCT_NAME" />“ įsimintų slaptažodžius
+          ir pateiktų juos automatiškai kitą kartą prisijungiant prie svetainės.
+
+          Jei neleisite šio nustatymo, naudotojai negalės išsaugoti naujų slaptažodžių, bet
+          vis tiek galės naudoti anksčiau išsaugotus slaptažodžius.
+
+          Jei įgalinsite šią politiką arba jos neleisite, naudotojai negalės jos pakeisti ar perrašyti
+          naudodami „<ph name="PRODUCT_NAME" />“. Nenustačius
+          šios politikos, slaptažodžių saugojimo funkcija leidžiama (bet naudotojas ją gali
+          išjungti).</translation>
 <translation id="6155936611791017817">Nustatyti numatytąją didelio žymeklio prisijungimo ekrane būklę</translation>
 <translation id="6157537876488211233">Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas</translation>
 <translation id="6158324314836466367">Įmonės internetinės parduotuvės pavadinimas (nebenaudojama)</translation>
@@ -1428,17 +1501,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Ši politika pasirenkama. Jei nenustatyta, paieškos užklausa siunčiama naudojant GET metodą.
 
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
-<translation id="6365608006609079612">
-          Įgalinus šį nustatymą, naudotojai gali nustatyti, kad „<ph name="PRODUCT_NAME" />“ įsimintų slaptažodžius
-          ir pateiktų juos automatiškai kitą kartą prisijungiant prie svetainės.
-
-          Jei neleisite šio nustatymo, naudotojai negalės išsaugoti naujų slaptažodžių, bet
-          vis tiek galės naudoti anksčiau išsaugotus slaptažodžius.
-
-          Jei įgalinsite šią politiką arba jos neleisite, naudotojai negalės jos pakeisti ar perrašyti
-          naudodami „<ph name="PRODUCT_NAME" />“. Nenustačius
-          šios politikos, slaptažodžių saugojimo funkcija leidžiama (bet naudotojas ją gali
-          išjungti).</translation>
 <translation id="6367755442345892511">Ar naudotojui (-ai) turėtų būti leidžiama konfigūruoti paleidimo kanalą</translation>
 <translation id="6368011194414932347">Konfigūruoti pagrindinio puslapio URL</translation>
 <translation id="6368403635025849609">Leisti „JavaScript“ šiose svetainėse</translation>
@@ -1514,14 +1576,32 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei ši politika nenustatyta, ekrano klaviatūra išjungiama, kai prisijungimo ekranas parodomas pirmą kartą. Naudotojai gali įgalinti arba išjungti ekrano klaviatūrą bet kuriuo metu. Ekrano klaviatūros būsena prisijungimo ekrane yra nuolatinė visiems naudotojams.</translation>
 <translation id="6598235178374410284">Naudotojo pseudoportreto vaizdas</translation>
-<translation id="6633160536638196468">Nurodomas nebenaudojamų žiniatinklio platformos funkcijų, kurios bus laikinai įgalintos, sąrašas.
+<translation id="6636268606788232221">Maitinimo valdymo nustatymų, kai naudotojas tampa neaktyvus, konfigūravimas.
 
-      Naudodami šią politiką administratoriai gali iš naujo laikinai įgalinti nebenaudojamas žiniatinklio platformos funkcijas. Funkcijos nurodomos pateikus eilutės žymą, o funkcijos, atitinkančios žymas šios politikos nurodytame sąraše, bus įgalintos iš naujo.
+          Ši politika valdo kelis maitinimo valdymo strategijos, kai naudotojas tampa neaktyvus, nustatymus.
 
-      Jei ši politika nenustatyta arba sąrašas yra tuščias ar neatitinka vienos iš palaikomų eilutės žymų, visos nebenaudojamos žiniatinklio platformos funkcijos liks išjungtos.
+          Galimi keturių tipų veiksmai:
+          * Ekranas bus pritemdytas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenDim|“.
+          * Ekranas bus išjungtas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|ScreenOff|“.
+          * Jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|IdleWarning|“, bus pateiktas dialogo langas, kuriame nurodoma, kad netrukus bus atliekamas neaktyvumo veiksmas.
+          * Veiksmas, nurodytas kaip „|IdleAction|“, bus atliktas, jei naudotojas išliks neaktyvus laikotarpį, nurodytą kaip „|Idle|“.
 
-      Politika palaikoma anksčiau nurodytose platformose, tačiau įgalinama funkcija gali būti pasiekiama mažiau platformų. Ne visas nebenaudojamas žiniatinklio platformos funkcijas galima įgalinti. Tik šiame sąraše pateiktas funkcijas galima laikinai (atsižvelgiant į funkciją) įgalinti. Bendra eilutės žymos forma [NebeteikiamosFunkcijosPavadinimas]_GaliojaIki[yyyymmdd]. Informacijos apie žiniatinklio platformos funkcijos pakeitimus galite gauti apsilankę adresu https://bit.ly/blinkintents.
-      </translation>
+          Kiekvieno anksčiau nurodyto veiksmo delsos laikotarpis turėtų būti nurodytas milisekundėmis ir turi būti nustatytas į didesnę nei nulis vertę, kad būtų suaktyvintas atitinkamas veiksmas. Jei delsos laikotarpis nustatytas į nulį, „<ph name="PRODUCT_OS_NAME" />“ neatliks atitinkamo veiksmo.
+
+          Jei laikotarpis nenustatytas, bus naudojama numatytoji vertė. Tai taikoma kiekvienam anksčiau nurodytam delsos laikotarpiui.
+
+          Atminkite, kad „|ScreenDim|“ vertės bus apribotos, kad būtų mažesnės arba lygios „|ScreenOff|“ ir „|ScreenOff|“ vertėms, o „|IdleWarning|“ vertė bus apribota, kad būtų mažesnė arba lygi „|Idle|“ vertei.
+
+          „|IdleAction|“ gali būti vienas iš keturių galimų veiksmų:
+          * „|Suspend|“
+          * „|Logout|“
+          * „|Shutdown|“
+          * „|DoNothing|“
+
+          Kai „|IdleAction|“ vertė nenustatyta, atliekamas numatytasis veiksmas – laikinai sustabdyti.
+
+          Kintamosios srovės ir akumuliatoriaus maitinimo nustatymai pasirenkami atskirai.
+          </translation>
 <translation id="6641981670621198190">Neleisti palaikyti trimatės grafikos API</translation>
 <translation id="6647965994887675196">Jei ši politika galioja, galima sukurti ir naudoti prižiūrimus naudotojus.
 
@@ -1781,6 +1861,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7443616896860707393">Mišrios kilmės HTTP pagrindinio autentifikavimo raginimai</translation>
 <translation id="7468416082528382842">„Windows“ registro vieta:</translation>
 <translation id="7469554574977894907">Įgalinti paieškos pasiūlymus</translation>
+<translation id="7485481791539008776">Numatytojo spausdintuvo pasirinkimo taisyklės</translation>
 <translation id="749556411189861380">Pateikti užregistruotų įrenginių OS ir programinės aparatinės įrangos versiją.
 
       Jei šis nustatymas nenustatytas arba nustatytas kaip „True“, užregistruoti įrenginiai periodiškai pateiks OS ir programinės aparatinės įrangos versiją. Jei nustatymas nustatytas kaip „False“, versijos informacija nebus pateikta.</translation>
@@ -1838,9 +1919,28 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei šis nustatymas neleidžiamas arba nenustatytas, dviejų veiksnių funkcija neįgalinama ir naudojama numatytoji naudotojo (-os) nurodyto PIN kodo funkcija.</translation>
 <translation id="7750991880413385988">Naujo skirtuko puslapio atidarymas</translation>
+<translation id="7761526206824804472">Nustatoma mažiausiai viena rekomenduojama viešų sesijų lokalė, leidžiant naudotojams lengvai pasirinkti vieną iš šių lokalių.
+
+      Naudotojas gali pasirinkti lokalę ir klaviatūros išdėstymą prieš pradėdamas viešą sesiją. Pagal numatytuosius nustatymus visos „<ph name="PRODUCT_OS_NAME" />“ palaikomos lokalės išdėstytos abėcėlės tvarka. Galite naudoti šią politiką, kad perkeltumėte rekomenduojamų lokalių rinkinį į sąrašo viršų.
+
+      Nenustačius šios politikos bus iš anksto pasirinkta dabartinė NS lokalė.
+
+      Nustačius šią politiką rekomenduojamos lokalės bus perkeltos į sąrašo viršų ir vizualiai atskirtos nuo visų kitų lokalių. Rekomenduojamos lokalės bus pateiktos ta tvarka, kuria rodomos politikoje. Pirmoji rekomenduojama lokalė bus iš anksto pasirinkta.
+
+      Jei yra kelios rekomenduojamos lokalės, daroma prielaida, kad naudotojai norės pasirinkti iš šių lokalių. Pradedant viešą sesiją bus aiškiai siūloma pasirinkti lokalę ir klaviatūros išdėstymą. Priešingu atveju manoma, kad dauguma naudotojų norės naudoti iš anksto pasirinktą lokalę. Pradedant viešą sesiją nebus taip aiškiai siūloma pasirinkti lokalės ir klaviatūros išdėstymo.
+
+      Nustačius šią politiką ir įgalinus automatinį prisijungimą (žr. politiką |DeviceLocalAccountAutoLoginId| ir |DeviceLocalAccountAutoLoginDelay|), automatiškai pradėtose viešose sesijose bus naudojama pirmoji rekomenduojama lokalė ir populiariausias šią lokalę atitinkantis klaviatūros išdėstymas.
+
+      Visada iš anksto bus pasirenkamas iš anksto pasirinktą lokalę atitinkantis populiariausias klaviatūros išdėstymas.
+
+      Šią politiką galima nustatyti tik kaip rekomenduojamą. Galite naudoti šią politiką, kad perkeltumėte rekomenduojamų lokalių rinkinį į viršų, bet naudotojams visada leidžiama sesijai pasirinkti bet kurią „<ph name="PRODUCT_OS_NAME" />“ palaikomą lokalę.
+      </translation>
 <translation id="7763311235717725977">Leidžiama nustatyti, ar svetainėse galima pateikti vaizdų. Vaizdų pateikimas gali būti leidžiamas arba neleidžiamas visose svetainėse.
 
           Nenustačius šios politikos, bus naudojama „Leisti vaizdus“ ir naudotojas (-a) galės tai pakeisti.</translation>
+<translation id="7763479091692861127"> Ryšių, leidžiamų naudoti OS naujiniams, tipai. OS naujiniai potencialiai apsunkina ryšį dėl savo dydžio, todėl gali būti taikomi papildomi mokesčiai. Taigi pagal numatytuosius nustatymus jie nėra įgalinti brangiais laikomiems ryšių tipams, įskaitant šiuo metu naudojamus „WiMax“, „Bluetooth“ ir „Cellular“.
+
+      Atpažįstami ryšio tipo identifikatoriai yra „ethernet“, „wifi“, „wimax“, „bluetooth“ ir „cellular“.</translation>
 <translation id="7766336524667238790">Pateikiama informacija apie aktyvią viešojo terminalo sesiją, pvz.,
       programos ID ir versija.
 
@@ -1892,38 +1992,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei šis nustatymas įgalintas, šis įrenginys gali rasti nuotolinės prieglobos įrenginius ir prie jų prisijungti, net jei jos atskirtos taikant užkardą.
 
            Jei šis nustatymas neleidžiamas ir išeinantys UDP ryšiai filtruojami taikant užkardą, šis įrenginys gali prisijungti tik prie prieglobos įrenginių vietiniame tinkle.</translation>
-<translation id="8002229853067655250">Konfigūruojami „<ph name="PRODUCT_NAME" />“ plėtinių valdymo nustatymai.
-
-          Ši politika valdo kelis nustatymus, įskaitant bet kokios esamos su plėtiniais susijusios politikos valdomus nustatymus. Ši politika pakeis bet kokią seną politiką, jei abi nustatytos.
-
-          Ši politika susieja plėtinio ID ar naujinio URL su konfigūracija. Naudojant plėtinio ID konfigūracija bus taikoma tik nurodytam plėtiniui. Specialiam ID „*“ galima nustatyti numatytąją konfigūraciją, kuri bus taikoma visiems plėtiniams, kurių tinkinta konfigūracija nenustatyta šioje politikoje. Naudojant naujinio URL konfigūracija bus taikoma visiems plėtiniams su tiksliu naujinio URL, nurodytu šio plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Kiekvieno plėtinio (ar plėtinių su tuo pačiu naujinio URL) konfigūracija sudaro kitą žodyną, į kurį gali būti įtraukti toliau dokumentuojami laukai.
-
-          „installation_mode“ (diegimo režimas): susieja su eilute, nurodančia plėtinio diegimo režimą. Galiojančios eilutės yra šios:
-          * „allowed“ (leidžiama): leidžiama naudotojui įdiegti plėtinį. Tai numatytoji elgsena.
-          * „blocked“ (užblokuota): užblokuoja plėtinio diegimą.
-          * „force_installed“ (priverstinai įdiegta): plėtinys automatiškai įdiegiamas ir naudotojas negali jo pašalinti.
-          * „normal_installed“ (įprastai įdiegta): plėtinys automatiškai įdiegiamas, bet naudotojas gali jį išjungti.
-
-          Be to, „installation_mode“ taip pat galima konfigūruoti keliems plėtiniams, įskaitant plėtinį „*“ (kaip numatytieji nustatymai) ir plėtinius su tuo pačiu naujinio URL. Šiuo atveju galima naudoti tik vertes „allowed“ ir „blocked“.
-
-          Jei režimas nustatytas į „force_installed“ arba „normal_installed“, taip pat reikia sukonfigūruoti „update_url“. Atminkite, kad šioje politikoje nustatytas naujinio URL naudojamas tik diegiant pirmą kartą; vėlesniems plėtinio naujiniams bus naudojamas plėtinio apraše nurodytas naujinio URL. Naujinio URL turėtų nukreipti į naujinio aprašo XML dokumentą, kaip nurodyta anksčiau.
-
-          „blocked_permissions“ (užblokuoti leidimai): susieja su eilučių, nurodančių plėtinio užblokuotus API leidimus, sąrašu. Leidimų pavadinimai tokie pat kaip leidimų eilutės, pateiktos plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC3" />. Be to, šį nustatymą galima sukonfigūruoti plėtiniui „*“. Jei plėtiniui reikalingas leidimas, kuris įtrauktas į užblokuotų leidimų sąrašą, jo neleidžiama įkelti. Jei užblokuotas leidimas nurodomas kaip pasirenkamas reikalavimas, jis apdorojamas įprastai, bet vykdant nesuderinamų leidimų užklausos bus automatiškai atmestos.
-
-          „allowed_permissions“ (leidžiami leidimai): panašu į „blocked_permissions“, bet aiškiai leidžiami keli leidimai, kurie gali būti užblokuoti bendrųjų užblokuotų leidimų sąraše, todėl negalima konfigūruoti plėtiniui „*“. Atminkite, kad nustačius šį nustatymą plėtiniams leidimai nėra automatiškai suteikiami.
-
-          „minimum_version_required“ (minimali reikalinga versija): susiejama su versijos eilute. Versijos eilutės formatas toks pat, kaip naudojamas plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC4" />. Plėtinys, kurio versija senesnė nei nurodyta minimali versija, bus išjungtas. Tai taip pat taikoma priverstinai įdiegtiems plėtiniams.
-
-          Nurodytą nustatymą galima naudoti tik numatytajai „*“ konfigūracijai:
-
-          „install_sources“ (diegimo šaltiniai): kiekvienas elementas šiame sąraše yra plėtinio stiliaus atitikties šablonas (žr. https://developer.chrome.com/extensions/match_patterns). Naudotojai galės lengvai įdiegti elementus iš bet kurio URL, kuris atitinka elementą šiame sąraše. Failo *.crx vieta ir puslapis, iš kurio pradedamas atsisiuntimas (t. y. persiuntimo URL), turi būti leidžiami šiuose šablonuose.
-
-          „allowed_types“ (leidžiami tipai): nustačius šį nustatymą leidžiami plėtinio / programų, kuriuos galima įdiegti „<ph name="PRODUCT_NAME" />“, tipai įtraukiami į baltąjį sąrašą. Vertė – tai eilučių, kurių kiekviena turi būti vienos iš šių verčių: „extension“, „theme“, „user_script“, „hosted_app“, „legacy_packaged_app“, „platform_app“, sąrašas. Jei reikia daugiau informacijos apie šiuos tipus, žr. „<ph name="PRODUCT_NAME" />“ plėtinių dokumentus.
-
-          Ši politika dar neparuošta naudoti, todėl jos nenaudokite.
-          </translation>
 <translation id="8044493735196713914">Pranešti įrenginio operacinės sistemos paleidimo būseną</translation>
 <translation id="8059164285174960932">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą</translation>
 <translation id="8071636581296916773">Įgalinamas perdavimo serverių naudojimas, kai nuotolinės programos bando užmegzti ryšį su šiuo įrenginiu.
@@ -1994,18 +2062,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="8197918588508433925">Šioje politikoje nustatomi plėtiniai, kuriems leidžiama naudoti įmonės platformos raktų API „chrome.enterprise.platformKeysPrivate.challengeUserKey()“ patvirtinant nuotoliniu būdu. Plėtiniai turi būti pridėti prie šio sąrašo, kad galėtų naudoti API.
 
 Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įvyks klaida ir bus pateiktas jos kodas.</translation>
-<translation id="8211174979203781791">Konfigūruojamas numatytasis pagrindinio puslapio URL sistemoje „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama jo pakeisti.
-
-          Pagrindinis puslapis – tai puslapis, kuris atidaromas spustelėjus pagrindinio puslapio mygtuką. Kurie puslapiai atidaromi paleidžiant nustatoma atsižvelgiant į politiką „RestoreOnStartup“.
-
-          Pagrindinio puslapio tipas gali būti nustatytas į čia nurodytą URL arba kaip naujo skirtuko puslapis. Jei pasirinksite naujo skirtuko puslapį, ši politika neįsigalios.
-
-          Jei įgalinsite šį nustatymą, naudotojai negalės pakeisti pagrindinio puslapio URL sistemoje „<ph name="PRODUCT_NAME" />“, bet vis tiek galės pasirinkti naujo skirtuko puslapį kaip pagrindinį puslapį.
-
-          Nenustačius šios politikos naudotojas galės pats pasirinkti pagrindinį puslapį, jei taip pat nebus nustatyta politika „HomepageIsNewTabPage“.
-
-          Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti
-          su aktyvaus katalogo domenu.</translation>
 <translation id="8244525275280476362">Maksimali gavimo delsa atšaukus politiką</translation>
 <translation id="8256688113167012935">Valdomas paskyros pavadinimas, kurį „<ph name="PRODUCT_OS_NAME" />“ rodo atitinkamo įrenginio vietinės paskyros prisijungimo ekrane.
 
@@ -2196,6 +2252,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Nurodykite, ar vaizdo įrašo veikla paveikia energijos valdymą</translation>
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
+<translation id="9098553063150791878">HTTP autentifikavimo politika</translation>
 <translation id="9104138886225968319">Siunčiami stebėjimo kontroliniai signalai į valdymo serverį, kad serveryje būtų galima
       aptikti, ar įrenginys prijungtas prie interneto.
 

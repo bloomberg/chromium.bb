@@ -59,6 +59,8 @@
 <translation id="2886012850691518054">‏אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="2910007522516064972">‏מידע על &amp;Chromium‏</translation>
 <translation id="2966088006374919794">‏Chromium צריך להפעיל יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME" />. הקישור הנדרש הוא <ph name="PROTOLINK" />.</translation>
+<translation id="3017978164171051358">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים
+חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="3032787606318309379">‏הוספה ל-Chromium</translation>
 <translation id="3046695367536568084">‏עליך להיות מחובר ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בין מכשירים שונים.</translation>
 <translation id="3068515742935458733">‏עזור לשפר את Chromium על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>

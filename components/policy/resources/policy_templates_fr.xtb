@@ -101,6 +101,7 @@ Pour voir plus d'options et des exemples détaillés, accédez à l'adresse :
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
+<translation id="1445397020763995734">Type de compte pour l'authentification HTTP "Negotiate"</translation>
 <translation id="1454846751303307294">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -169,6 +170,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas définie, les conditions d'utilisation ne sont pas présentées à l'utilisateur.
 
       La règle doit être définie sur une URL à partir de laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger les conditions d'utilisation. Ces conditions doivent être en texte brut, et proposées au format texte/brut au type MIME. Aucun balisage n'est autorisé.</translation>
+<translation id="1757339646969878244">Configurez les options d'accès à distance dans l'hôte Bureau à distance Chrome.
+
+      L'hôte Bureau à distance Chrome est un service natif exécuté sur la
+      machine cible à laquelle un utilisateur peut se connecter à l'aide de l'application
+      Bureau à distance Chrome. Le service natif est mis en package et s'exécute indépendamment
+      du navigateur <ph name="PRODUCT_NAME" />.
+
+      Ces règles sont ignorées sauf si
+      l'hôte Bureau à distance Chrome est installé.</translation>
 <translation id="1757688868319862958">Permet à <ph name="PRODUCT_NAME" /> d'exécuter les plug-ins qui nécessitent une autorisation. Si vous activez ce paramètre, les plug-ins non obsolètes sont toujours exécutés. Si ce paramètre est désactivé ou n'est pas configuré, les utilisateurs doivent donner leur permission pour l'exécution des plug-ins qui nécessitent une autorisation. Ceux-ci présentent un risque de sécurité.</translation>
 <translation id="1803646570632580723">Liste des applications épinglées à afficher dans le lanceur d'applications</translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
@@ -241,6 +251,11 @@ Pour plus d'options et obtenir des exemples détaillés, accédez au site :
 <translation id="2006530844219044261">Gestion de l'alimentation</translation>
 <translation id="201557587962247231">Fréquence d'importation des rapports sur l'état de l'appareil</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
+<translation id="206623763829450685">Indique les modèles d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME" />.
+
+          Les valeurs possibles sont "basic", "digest", "ntlm" et "negotiate". Si vous spécifiez plusieurs valeurs, séparez-les par une virgule.
+
+          Si cette règle n'est pas définie, les quatre modèles seront utilisés.</translation>
 <translation id="2067011586099792101">Bloquer l'accès aux sites en dehors des packs de contenu</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2077273864382355561">Délai d'arrêt de l'écran (batterie)</translation>
@@ -583,6 +598,38 @@ Pour plus d'exemples détaillés, accédez à l'adresse :
       Si vous activez cette règle, toutes les pages d'authentification du portail captif (c'est-à-dire toutes les pages Web à partir de la page de connexion jusqu'à ce que <ph name="PRODUCT_NAME" /> détecte une connexion Internet réussie) s'afficheront dans une fenêtre distincte, sans tenir compte des règles et des restrictions en place pour l'utilisateur actuel.
 
       Si vous désactivez cette règle ou si elle n'est pas configurée, toutes les pages d'authentification du portail captif s'afficheront sous un nouvel onglet normal, conformément aux paramètres de proxy de l'utilisateur actuel.</translation>
+<translation id="3001569025430882724">Remplace les instructions de sélection de l'imprimante par défaut pour <ph name="PRODUCT_NAME" />.
+
+      Cette règle détermine les instructions de sélection de l'imprimante par défaut dans <ph name="PRODUCT_NAME" />, la première fois que la fonction d'impression est utilisée avec un profil donné.
+
+      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaiera de trouver une imprimante correspondant à tous les attributs spécifiés et en fera l'imprimante par défaut. La première imprimante retenue d'après ces critères sera sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles sera sélectionnée (selon l'ordre dans lequel elles auront été découvertes).
+
+      Si cette règle n'est pas définie ou si aucune imprimante n'est retenue dans le délai imparti, l'imprimante par défaut est l'imprimante PDF intégrée à l'outil. Si l'imprimante PDF n'est pas disponible, aucune imprimante n'est sélectionnée.
+
+      La valeur est analysée en tant qu'objet JSON, conformément au schéma suivant :
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Pour limiter ou ne pas limiter la recherche d'une imprimante correspondant aux critères spécifiés à un groupe d'imprimantes spécifique",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Expression régulière correspondant à l'ID de l'imprimante",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expression régulière correspondant au nom à afficher de l'imprimante",
+            "type": "string"
+          }
+        }
+      }
+
+      Les imprimantes connectées à Google Cloud Print sont considérées comme étant de type "cloud", et les autres sont de type "local".
+      Si vous ne renseignez pas un champ, cela signifie que toutes les valeurs seront prises en compte. Par exemple, si vous ne spécifiez pas de connectivité, l'aperçu avant impression proposera toutes sortes d'imprimantes, à la fois de type "local" et "cloud".
+      Les schémas d'expressions régulières doivent suivre la syntaxe JavaScript RegExp, et les résultats sont sensibles à la casse.</translation>
 <translation id="3021409116652377124">Désactiver l'outil de recherche de plug-ins</translation>
 <translation id="3030000825273123558">Activer la génération de rapports sur les statistiques</translation>
 <translation id="3034580675120919256">Permet de définir si les sites Web sont autorisés à exécuter JavaScript. L'exécution de JavaScript peut être soit autorisée pour tous les sites, soit refusée pour tous les sites. 
@@ -613,6 +660,38 @@ La valeur "*" en liste noire signifie que toutes les extensions sont sur la list
 Si cette règle n'est pas configurée, l'utilisateur peut installer n'importe quelle extension dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Ce paramètre a été supprimé à partir de la version 29 de <ph name="PRODUCT_NAME" />. Pour configurer des collections d'extensions et d'applications hébergées par l'organisation, il est recommandé d'inclure le site hébergeant les packages CRX dans ExtensionInstallSources et d'insérer des liens directs de téléchargement dans les packages sur une page Web. Il est possible de créer un lanceur d'applications pour cette page à l'aide de la règle ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION" /></translation>
+<translation id="318812033927804102">Configure les paramètres de gestion d'extension pour <ph name="PRODUCT_NAME" />.
+
+          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles associées à une extension. Le cas échéant, elle remplace les anciennes règles.
+
+          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial "*", lequel s'applique à toutes les extensions dépourvues d'une configuration personnalisée dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          La configuration de chaque extension (ou des extensions ayant la même URL de mise à jour) constitue un autre dictionnaire pouvant contenir les champs documentés ci-dessous.
+
+          "installation_mode" : mappe vers une chaîne qui indique le mode d'installation de l'extension. Les chaînes valides sont les suivantes :
+          * "allowed" : permet l'installation de l'extension par l'utilisateur. Il s'agit du comportement par défaut.
+          * "blocked" : bloque l'installation de l'extension.
+          * "force_installed" : l'extension est installée automatiquement et ne peut pas être supprimée par l'utilisateur.
+          * "normal_installed" : l'extension est installée automatiquement, mais elle peut être désactivée par l'utilisateur.
+
+          Le champ "installation_mode" peut également être configuré pour plusieurs extensions, dont l'extension "*" (comme paramètre par défaut) et les extensions ayant la même URL de mise à jour. Dans ce cas, seules les valeurs "allowed" et "blocked" peuvent être utilisées.
+
+          Si le mode est défini sur "force_installed" ou "normal_installed", une URL de mise à jour ("update_url") doit également être configurée. Notez que l'URL de mise à jour définie dans cette règle est seulement utilisée pour l'installation initiale ; les mises à jour ultérieures de l'extension utiliseront l'URL qui est indiquée dans le fichier manifeste de l'extension. L'URL de mise à jour doit toujours pointer vers un document XML "Update Manifest", comme indiqué ci-dessus.
+
+          "blocked_permissions" : mappe vers une liste de chaînes indiquant les autorisations d'API bloquées pour l'extension. Les noms des autorisations sont identiques aux chaînes d'autorisations déclarées dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC3" />. Ce paramètre peut également être configuré pour l'extension "*". Si l'extension nécessite une autorisation qui figure sur la liste de blocage, son chargement n'est pas autorisé. Si elle contient une autorisation bloquée en tant qu'exigence facultative, elle est traitée normalement, mais les autorisations en conflit seront refusées automatiquement au moment de l'exécution.
+
+          "allowed_permissions" : semblable à "blocked_permissions", mais autorise explicitement certaines autorisations qui sont peut-être bloquées par une liste de blocage globale ; la configuration étant donc impossible pour l'extension "*". Notez que ce paramètre n'accorde pas automatiquement d'autorisations aux extensions.
+
+          "minimum_version_required" : mappe vers une chaîne de version. Le format de cette chaîne de version est identique à celui utilisé dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC4" />. Une extension présentant une version plus ancienne que la version minimale spécifiée sera désactivée. Cela s'applique également aux extensions de type "force-installed".
+
+          Les paramètres suivants ne peuvent être utilisés que pour la configuration "*" par défaut :
+
+          "install_sources" : chaque élément de cette liste est un schéma de correspondance de style extension (voir https://developer.chrome.com/extensions/match_patterns). Les utilisateurs pourront facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier *.crx et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces schémas.
+
+          "allowed_types" : ce paramètre ajoute à la liste blanche les types d'extensions ou d'applications qui peuvent être installés dans <ph name="PRODUCT_NAME" />. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Pour obtenir davantage d'informations sur ces types, veuillez consulter la documentation relative aux extensions de <ph name="PRODUCT_NAME" />.
+
+          Cette règle n'est pas encore prête. Vous êtes donc invité à ne pas l'utiliser pour le moment.
+          </translation>
 <translation id="3205825995289802549">Agrandir la première fenêtre du navigateur à la première exécution</translation>
 <translation id="3206731874112238027">Désactiver l'aperçu avant impression (abandonné)</translation>
 <translation id="3213821784736959823">Définit si le client DNS intégré est utilisé dans <ph name="PRODUCT_NAME" />.
@@ -820,9 +899,6 @@ Si cette règle n'est pas configurée, les cookies tiers sont activés, mais l'u
 <translation id="4039085364173654945">Contrôle si un sous-contenu tiers sur une page est autorisé à ouvrir une boîte de dialogue d'authentification de base HTTP ( Basic Auth) dans une fenêtre pop-up. 
 
 Cette option est habituellement désactivée dans le cadre de la protection contre le phishing. Si cette règle n'est pas configurée, cette option est désactivée et le sous-contenu tiers n'est pas autorisé à afficher une boîte de dialogue d'authentification de base HTTP.</translation>
-<translation id="4043912146394966243"> Types de connexions autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et impliquent parfois des frais supplémentaires. C'est pourquoi elles ne sont pas activées par défaut pour les types de connexion jugés onéreux, tels que WiMax, Bluetooth et Cellulaire.
-
-      Les identifiants des types de connexion reconnus sont "ethernet", "wifi", "wimax", "bluetooth" et "cellular".</translation>
 <translation id="4052765007567912447">Contrôle si l'utilisateur peut afficher les mots de passe en texte clair dans le gestionnaire de mots de passe. 
 
 Si vous désactivez ce paramètre, le gestionnaire de mots de passe ne permet pas d'afficher les mots de passe stockés en texte clair dans la fenêtre du gestionnaire de mots de passe. 
@@ -875,8 +951,6 @@ Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs p
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou version ultérieure</translation>
 <translation id="4325690621216251241">Ajouter un bouton de déconnexion dans la barre d'état système</translation>
-<translation id="4337944790873898250">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> agrandira automatiquement la première fenêtre affichée lors de la première exécution.
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, une règle heuristique déterminera si la première fenêtre affichée doit être agrandie en fonction de la taille d'écran.</translation>
 <translation id="436581050240847513">Générer un rapport sur les interfaces réseau de l'appareil</translation>
 <translation id="4372704773119750918">Ne pas autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils, que ce soit en tant qu'utilisateur principal ou secondaire</translation>
 <translation id="4377599627073874279">Autoriser tous les sites à afficher toutes les images</translation>
@@ -888,6 +962,14 @@ Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs p
 
       Si cette règle est définie, l'utilisateur ne peut pas la modifier, et le raccourci des applications est soit toujours visible, soit toujours masqué.</translation>
 <translation id="443665821428652897">Effacer les données de sites à la fermeture du navigateur (obsolète)</translation>
+<translation id="4439336120285389675">Répertorier les fonctionnalités abandonnées de la plate-forme en ligne à réactiver provisoirement.
+
+      Cette règle permet aux administrateurs de réactiver des fonctionnalités abandonnées de la plate-forme en ligne pendant une durée limitée. Ces fonctionnalités sont identifiées par une balise de chaîne. Les fonctionnalités correspondant aux balises incluses dans la liste renvoyée par cette règle sont réactivées.
+
+      Si cette règle n'est pas définie ou si la liste est vide, toutes les fonctionnalités abandonnées de la plate-forme en ligne restent désactivées.
+
+      Bien que la règle elle-même soit compatible avec les plates-formes citées, la fonctionnalité qu'elle active peut n'être disponible que sur un nombre plus restreint de plates-formes. Les fonctionnalités abandonnées de la plate-forme en ligne ne peuvent pas toutes être réactivées. Seules celles qui sont énumérées ci-dessous peuvent l'être pendant une durée limitée, qui varie selon la fonctionnalité. Le format général de la balise de chaîne est [FonctionnalitéAbandonnée]_EffectiveUntil[aaaammjj]. Pour information, vous pouvez découvrir les raisons pour lesquelles des motivations ont été apportées aux fonctionnalités des plates-formes en ligne en consultant la page https://bit.ly/blinkintents.
+      </translation>
 <translation id="4442582539341804154">Activer le verrouillage lorsque l'appareil est inactif ou en veille</translation>
 <translation id="4445684791305970001">Désactive les outils de développement et la console JavaScript. 
 
@@ -1189,32 +1271,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle n'est pas définie, aucune connexion automatique n'a lieu.</translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
-<translation id="553658564206262718">Configurer les paramètres de gestion de l'alimentation lorsque l'utilisateur est inactif
-
-          Cette règle contrôle plusieurs paramètres pour la stratégie de gestion de l'alimentation lorsque l'utilisateur est inactif.
-
-          Quatre types d'actions sont disponibles :
-          * La luminosité de l'écran s'atténue si l'utilisateur est inactif pendant la période définie par le paramètre |ScreenDim|.
-          * L'écran s'éteint si l'utilisateur est inactif pendant la période définie par la paramètre |ScreenOff|.
-          * Une boîte de dialogue d'avertissement s'affiche lorsque l'utilisateur est inactif pendant la période définie par le paramètre |IdleWarning|, afin de le prévenir d'une action imminente résultant de son inactivité.
-          * L'action définie par le paramètre |IdleAction| s'applique si l'utilisateur est inactif pendant la période définie par le paramètre |Idle|.
-
-          Pour déclencher chacune des actions mentionnées ci-dessus, le délai doit être défini en millisecondes et être supérieur à zéro. Si le délai est défini sur zéro, l'action correspondante n'est pas effectuée par <ph name="PRODUCT_OS_NAME" />.
-
-          Pour tous les délais ci-dessus, une valeur par défaut est utilisée si la durée n'est pas définie.
-
-          Sachez que la valeur |ScreenDim| doit être inférieure ou égale à la valeur |ScreenOff], et que les valeurs |ScreenOff| et |IdleWarning| doivent être inférieures ou égales à la valeur |Idle|.
-
-          Le paramètre |IdleAction| peut être défini sur l'une des quatre actions suivantes :
-          * |Suspend|
-          * |Logout|
-          * |Shutdown|
-          * |DoNothing|
-
-          Lorsque la valeur |IdleAction| n'est pas définie, l'action par défaut, à savoir l'arrêt du système, s'applique.
-
-          Il est possible de définir des paramètres différents selon que l'appareil est branché sur une prise de courant alternatif ou qu'il fonctionne sur batterie.
-          </translation>
 <translation id="5560039246134246593">Permet d'ajouter un paramètre à la récupération de la valeur de départ des variantes dans <ph name="PRODUCT_NAME" />.
 
       Si cette règle est spécifiée, un paramètre de requête "restrict" est ajouté à l'URL utilisée pour récupérer la valeur de départ des variantes. La valeur de ce paramètre correspond à la valeur définie dans cette règle.
@@ -1253,11 +1309,17 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", les paramètres de vérification en ligne de la révocation sont utilisés dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5732972008943405952">Importer les données de saisie automatique du navigateur par défaut à la première exécution</translation>
+<translation id="5751004203256768694">Indique le type des comptes fournis par l'application d'authentification Android compatible avec l'authentification HTTP "Negotiate" (authentification Kerberos, par exemple). Ces informations devraient être disponibles auprès du fournisseur de l'application d'authentification. Pour en savoir plus, consultez le site https://goo.gl/hajyfN.
+
+          Si aucun paramètre n'est fourni, l'authentification HTTP "Negotiate" est désactivée sur Android.</translation>
 <translation id="5761030451068906335">Configurer les paramètres de proxy pour <ph name="PRODUCT_NAME" />. Cette règle n'est pas encore prête, veuillez donc ne pas l'utiliser pour le moment.</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="5774856474228476867">URL de recherche du moteur de recherche par défaut</translation>
 <translation id="5776485039795852974">Demander confirmation chaque fois qu'un site veut afficher des notifications sur le bureau</translation>
+<translation id="5781412041848781654">Indique la bibliothèque GSSAPI à utiliser pour l'authentification HTTP. Vous pouvez indiquer uniquement le nom de la bibliothèque ou son chemin d'accès complet.
+
+          Si vous ne fournissez aucun paramètre, <ph name="PRODUCT_NAME" /> utilisera un nom de bibliothèque par défaut.</translation>
 <translation id="5781806558783210276">Indiquer le délai d'inactivité au terme duquel l'action d'inactivité est appliquée en cas d'utilisation de la batterie
 
                       Lorsque cette règle est définie, elle indique le délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> applique l'action d'inactivité, configurable séparément.
@@ -1369,6 +1431,16 @@ Si cette règle n'est pas configurée, le moteur de rendu par défaut est utilis
 <translation id="6145799962557135888">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
+<translation id="6151775819333710697">
+          Si ce paramètre est activé, <ph name="PRODUCT_NAME" /> peut mémoriser les mots de passe
+          et les renseigner automatiquement la prochaine fois que les utilisateurs se connectent à un site.
+
+          Si ce paramètre est désactivé, les utilisateurs ne peuvent pas enregistrer           de nouveaux mots de passe, mais ils peuvent toujours utiliser des mots de passe préalablement enregistrés.
+
+          Si cette règle est activée ou désactivée, les utilisateurs ne peuvent pas la modifier ni l'ignorer
+          dans <ph name="PRODUCT_NAME" />. Si cette règle
+          n'est pas définie, l'enregistrement des mots de passe est autorisé (mais peut être désactivé par
+          l'utilisateur).</translation>
 <translation id="6155936611791017817">Définir l'état par défaut du grand curseur sur l'écran de connexion</translation>
 <translation id="6157537876488211233">Liste de règles de contournement de proxy séparées par des virgules</translation>
 <translation id="6158324314836466367">Nom de boutique en ligne d'entreprise (abandonné)</translation>
@@ -1432,16 +1504,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
           Cette règle est facultative. Si elle n'est pas définie, la requête de recherche sera envoyée à l'aide la méthode GET.
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
-<translation id="6365608006609079612">
-          Si ce paramètre est activé, <ph name="PRODUCT_NAME" /> peut mémoriser les mots de passe
-          et les renseigner automatiquement la prochaine fois que les utilisateurs se connectent à un site.
-
-          Si ce paramètre est désactivé, les utilisateurs ne peuvent pas enregistrer           de nouveaux mots de passe, mais ils peuvent toujours utiliser des mots de passe préalablement enregistrés.
-
-          Si cette règle est activée ou désactivée, les utilisateurs ne peuvent pas la modifier ni l'ignorer
-          dans <ph name="PRODUCT_NAME" />. Si cette règle
-          n'est pas définie, l'enregistrement des mots de passe est autorisé (mais peut être désactivé par
-          l'utilisateur).</translation>
 <translation id="6367755442345892511">Autoriser ou verrouiller la configuration de la version par l'utilisateur</translation>
 <translation id="6368011194414932347">Configurer l'URL de la page d'accueil</translation>
 <translation id="6368403635025849609">Autoriser JavaScript sur ces sites</translation>
@@ -1517,14 +1579,32 @@ Si cette règle n'est pas configurée, les utilisateurs sont autorisés à séle
 
           Si vous ne définissez pas cette règle, le clavier à l'écran est désactivé la première fois que l'écran de connexion s'affiche. Les utilisateurs peuvent activer ou désactiver à tout moment le clavier à l'écran, et son état est permanent d'un utilisateur à l'autre sur le même écran de connexion.</translation>
 <translation id="6598235178374410284">Avatar de l'utilisateur</translation>
-<translation id="6633160536638196468">Répertorier les fonctionnalités abandonnées de la plate-forme en ligne à réactiver provisoirement.
+<translation id="6636268606788232221">Configurer les paramètres de gestion de l'alimentation lorsque l'utilisateur est inactif
 
-      Cette règle permet aux administrateurs de réactiver des fonctionnalités abandonnées de la plate-forme en ligne pendant une durée limitée. Ces fonctionnalités sont identifiées par une balise de chaîne. Les fonctionnalités correspondant aux balises incluses dans la liste renvoyée par cette règle sont réactivées.
+          Cette règle contrôle plusieurs paramètres pour la stratégie de gestion de l'alimentation lorsque l'utilisateur est inactif.
 
-      Si cette règle n'est pas définie ou si la liste est vide, toutes les fonctionnalités abandonnées de la plate-forme en ligne restent désactivées.
+          Quatre types d'actions sont disponibles :
+          * La luminosité de l'écran s'atténue si l'utilisateur est inactif pendant la période définie par le paramètre |ScreenDim|.
+          * L'écran s'éteint si l'utilisateur est inactif pendant la période définie par la paramètre |ScreenOff|.
+          * Une boîte de dialogue d'avertissement s'affiche lorsque l'utilisateur est inactif pendant la période définie par le paramètre |IdleWarning|, afin de le prévenir d'une action imminente résultant de son inactivité.
+          * L'action définie par le paramètre |IdleAction| s'applique si l'utilisateur est inactif pendant la période définie par le paramètre |Idle|.
 
-      Bien que la règle elle-même soit compatible avec les plates-formes citées, la fonctionnalité qu'elle active peut n'être disponible que sur un nombre plus restreint de plates-formes. Les fonctionnalités abandonnées de la plate-forme en ligne ne peuvent pas toutes être réactivées. Seules celles qui sont énumérées ci-dessous peuvent l'être pendant une durée limitée, qui varie selon la fonctionnalité. Le format général de la balise de chaîne est [FonctionnalitéAbandonnée]_EffectiveUntil[aaaammjj]. Pour information, vous pouvez découvrir les raisons pour lesquelles des motivations ont été apportées aux fonctionnalités des plates-formes en ligne en consultant la page https://bit.ly/blinkintents.
-      </translation>
+          Pour déclencher chacune des actions mentionnées ci-dessus, le délai doit être défini en millisecondes et être supérieur à zéro. Si le délai est défini sur zéro, l'action correspondante n'est pas effectuée par <ph name="PRODUCT_OS_NAME" />.
+
+          Pour tous les délais ci-dessus, une valeur par défaut est utilisée si la durée n'est pas définie.
+
+          Sachez que la valeur |ScreenDim| doit être inférieure ou égale à la valeur |ScreenOff], et que les valeurs |ScreenOff| et |IdleWarning| doivent être inférieures ou égales à la valeur |Idle|.
+
+          Le paramètre |IdleAction| peut être défini sur l'une des quatre actions suivantes :
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Lorsque la valeur |IdleAction| n'est pas définie, l'action par défaut, à savoir l'arrêt du système, s'applique.
+
+          Il est possible de définir des paramètres différents selon que l'appareil est branché sur une prise de courant alternatif ou qu'il fonctionne sur batterie.
+          </translation>
 <translation id="6641981670621198190">Désactiver la prise en charge des API 3D graphics</translation>
 <translation id="6647965994887675196">Si cette règle est associée à la valeur "true", vous pouvez créer et utiliser des comptes utilisateur supervisés.
 
@@ -1777,6 +1857,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7443616896860707393">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
 <translation id="7468416082528382842">Emplacement dans le registre Windows :</translation>
 <translation id="7469554574977894907">Activer les suggestions de recherche</translation>
+<translation id="7485481791539008776">Instructions de sélection de l'imprimante par défaut</translation>
 <translation id="749556411189861380">Indiquer la version du système d'exploitation et du micrologiciel des appareils inscrits.
 
       Si ce paramètre n'est pas défini, ou s'il est défini sur "True", la version du système d'exploitation et celle du micrologiciel sont régulièrement communiquées par les appareils inscrits. Si ce paramètre est défini sur "False", ces informations ne sont pas transmises.</translation>
@@ -1835,9 +1916,28 @@ au maximum si un utilisateur se sert de l'appareil.
 
           En cas de désactivation ou de non-configuration de ce paramètre, l'authentification forte n'est pas activée. Un code d'accès défini par l'utilisateur est alors demandé.</translation>
 <translation id="7750991880413385988">Ouvrir la page Nouvel onglet</translation>
+<translation id="7761526206824804472">Définit une ou plusieurs langues recommandées pour une session publique, permettant ainsi aux utilisateurs de choisir facilement l'une de ces langues.
+
+      Les utilisateurs peuvent choisir une langue et une disposition de clavier avant de démarrer une session publique. Par défaut, toutes les langues compatibles avec <ph name="PRODUCT_OS_NAME" /> sont répertoriées dans l'ordre alphabétique. Vous pouvez utiliser cette règle pour placer un ensemble de langues recommandées en haut de la liste.
+
+      Si cette règle n'est pas définie, la langue actuelle de l'interface utilisateur sera présélectionnée.
+
+      Si cette règle est définie, les langues recommandées seront placées en haut de la liste et seront visuellement distinctes des autres langues. Les langues recommandées seront classées selon l'ordre dans lequel elles apparaissent dans la règle. La première langue recommandée sera présélectionnée.
+
+      Si plusieurs langues recommandées sont définies, nous partons du principe que les utilisateurs voudront sélectionner la langue de leur choix. Au moment de démarrer une session publique, ces utilisateurs pourront ainsi sélectionner une langue et une disposition de clavier (ces options seront mises en avant sur la page). Dans le cas contraire, nous partons du principe que la plupart des utilisateurs voudront utiliser la langue présélectionnée. Ainsi, au moment de démarrer une session publique, les options permettant de sélectionner une langue et une disposition de clavier seront mises en retrait.
+
+      Une fois cette règle définie et la connexion automatique activée (reportez-vous aux règles |DeviceLocalAccountAutoLoginId| et |DeviceLocalAccountAutoLoginDelay|), la première langue recommandée ainsi que la disposition de clavier la plus populaire pour cette langue seront utilisées pour la session publique démarrée de manière automatique.
+
+      La disposition de clavier présélectionnée sera toujours la plus populaire pour la langue présélectionnée.
+
+      Cette règle permet uniquement de définir des langues recommandées. Vous pouvez l'utiliser pour placer un ensemble de langues recommandées en haut de la liste, mais les utilisateurs auront toujours la possibilité de choisir n'importe quelle langue compatible avec <ph name="PRODUCT_OS_NAME" /> pour leur session.
+      </translation>
 <translation id="7763311235717725977">Permet de déterminer si les sites Web sont autorisés à afficher les images. L'affichage des images peut être soit autorisé, soit refusé pour tous les sites. 
 
 Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et l'utilisateur est  en mesure de la modifier.</translation>
+<translation id="7763479091692861127"> Types de connexions autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et impliquent parfois des frais supplémentaires. C'est pourquoi elles ne sont pas activées par défaut pour les types de connexion jugés onéreux, tels que WiMax, Bluetooth et Cellulaire.
+
+      Les identifiants des types de connexion reconnus sont "ethernet", "wifi", "wimax", "bluetooth" et "cellular".</translation>
 <translation id="7766336524667238790">Transmettre des informations sur la session kiosque active,
       telles que l'ID et la version de l'application.
 
@@ -1890,38 +1990,6 @@ Permet l'utilisation de serveurs STUN et relais lors de la connexion à un clien
 Si ce paramètre est activé, cette machine peut découvrir et se connecter à des machines hôte distantes, même si elles sont séparées par un pare-feu. 
 
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
-<translation id="8002229853067655250">Configure les paramètres de gestion d'extension pour <ph name="PRODUCT_NAME" />.
-
-          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles associées à une extension. Le cas échéant, elle remplace les anciennes règles.
-
-          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial "*", lequel s'applique à toutes les extensions dépourvues d'une configuration personnalisée dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          La configuration de chaque extension (ou des extensions ayant la même URL de mise à jour) constitue un autre dictionnaire pouvant contenir les champs documentés ci-dessous.
-
-          "installation_mode" : mappe vers une chaîne qui indique le mode d'installation de l'extension. Les chaînes valides sont les suivantes :
-          * "allowed" : permet l'installation de l'extension par l'utilisateur. Il s'agit du comportement par défaut.
-          * "blocked" : bloque l'installation de l'extension.
-          * "force_installed" : l'extension est installée automatiquement et ne peut pas être supprimée par l'utilisateur.
-          * "normal_installed" : l'extension est installée automatiquement, mais elle peut être désactivée par l'utilisateur.
-
-          Le champ "installation_mode" peut également être configuré pour plusieurs extensions, dont l'extension "*" (comme paramètre par défaut) et les extensions ayant la même URL de mise à jour. Dans ce cas, seules les valeurs "allowed" et "blocked" peuvent être utilisées.
-
-          Si le mode est défini sur "force_installed" ou "normal_installed", une URL de mise à jour ("update_url") doit également être configurée. Notez que l'URL de mise à jour définie dans cette règle est seulement utilisée pour l'installation initiale ; les mises à jour ultérieures de l'extension utiliseront l'URL qui est indiquée dans le fichier manifeste de l'extension. L'URL de mise à jour doit toujours pointer vers un document XML "Update Manifest", comme indiqué ci-dessus.
-
-          "blocked_permissions" : mappe vers une liste de chaînes indiquant les autorisations d'API bloquées pour l'extension. Les noms des autorisations sont identiques aux chaînes d'autorisations déclarées dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC3" />. Ce paramètre peut également être configuré pour l'extension "*". Si l'extension nécessite une autorisation qui figure sur la liste de blocage, son chargement n'est pas autorisé. Si elle contient une autorisation bloquée en tant qu'exigence facultative, elle est traitée normalement, mais les autorisations en conflit seront refusées automatiquement au moment de l'exécution.
-
-          "allowed_permissions" : semblable à "blocked_permissions", mais autorise explicitement certaines autorisations qui sont peut-être bloquées par une liste de blocage globale ; la configuration étant donc impossible pour l'extension "*". Notez que ce paramètre n'accorde pas automatiquement d'autorisations aux extensions.
-
-          "minimum_version_required" : mappe vers une chaîne de version. Le format de cette chaîne de version est identique à celui utilisé dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC4" />. Une extension présentant une version plus ancienne que la version minimale spécifiée sera désactivée. Cela s'applique également aux extensions de type "force-installed".
-
-          Les paramètres suivants ne peuvent être utilisés que pour la configuration "*" par défaut :
-
-          "install_sources" : chaque élément de cette liste est un schéma de correspondance de style extension (voir https://developer.chrome.com/extensions/match_patterns). Les utilisateurs pourront facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier *.crx et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces schémas.
-
-          "allowed_types" : ce paramètre ajoute à la liste blanche les types d'extensions ou d'applications qui peuvent être installés dans <ph name="PRODUCT_NAME" />. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Pour obtenir davantage d'informations sur ces types, veuillez consulter la documentation relative aux extensions de <ph name="PRODUCT_NAME" />.
-
-          Cette règle n'est pas encore prête. Vous êtes donc invité à ne pas l'utiliser pour le moment.
-          </translation>
 <translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
 <translation id="8059164285174960932">URL où les clients d'accès à distance doivent obtenir leur jeton d'authentification</translation>
 <translation id="8071636581296916773">Permet l'utilisation de serveurs de relais lorsque les clients distants tentent d'établir une connexion avec ce poste.
@@ -1992,17 +2060,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8197918588508433925">Cette règle définit les extensions autorisées à utiliser l'API Enterprise Platform Keys "chrome.enterprise.platformKeysPrivate.challengeUserKey()" pour l'attestation à distance. Pour pouvoir utiliser l'API, les extensions doivent être ajoutées à cette liste.
 
           Si une extension ne figure pas dans la liste, ou si la liste n'est pas définie, l'appel vers l'API échoue, et un code d'erreur est renvoyé.</translation>
-<translation id="8211174979203781791">Configure l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de la modifier.
-
-      La page d'accueil est la page ouverte par le bouton "Accueil". Les pages qui s'ouvrent au démarrage sont contrôlées par les règles RestoreOnStartup.
-
-      Vous pouvez définir la page d'accueil sur une URL spécifique que vous indiquez ici ou sur la page Nouvel onglet. Si vous sélectionnez la page Nouvel onglet, ces règles sont ignorées.
-
-      Si vous activez ce paramètre, les utilisateurs ne peuvent pas modifier l'URL de leur page d'accueil dans <ph name="PRODUCT_NAME" />. Toutefois, ils peuvent sélectionner la page Nouvel onglet en tant que page d'accueil.
-
-      Si vous ne définissez pas cette règle, l'utilisateur est libre de sélectionner une page d'accueil sous réserve que HomepageIsNewTabPage ne soit pas configuré.
-
-      Cette règle n'est pas disponible sur les instances de Windows qui ne sont pas associées à un domaine Active Directory.</translation>
 <translation id="8244525275280476362">Délai maximal de récupération après le rejet d'une règle</translation>
 <translation id="8256688113167012935">Définit quel nom de compte s'affiche sur l'écran de connexion de <ph name="PRODUCT_OS_NAME" /> pour le compte local de l'appareil correspondant.
 
@@ -2193,6 +2250,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
+<translation id="9098553063150791878">Règles pour l'authentification HTTP</translation>
 <translation id="9104138886225968319">Transmettre des pulsations de contrôle au serveur de gestion, afin de
       lui permettre de détecter si l'appareil est hors connexion.
 
