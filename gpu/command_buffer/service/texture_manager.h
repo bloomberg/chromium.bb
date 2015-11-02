@@ -466,14 +466,12 @@ class GPU_EXPORT Texture {
 
   // Whether mip levels have changed and should be reverified.
   bool texture_mips_dirty_;
-  bool texture_mips_complete_;
 
   // Whether or not this texture is "cube complete"
   bool cube_complete_;
 
   // Whether any level 0 faces have changed and should be reverified.
   bool texture_level0_dirty_;
-  bool texture_level0_complete_;
 
   // Whether or not this texture is non-power-of-two
   bool npot_;

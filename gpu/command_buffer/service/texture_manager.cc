@@ -328,10 +328,8 @@ Texture::Texture(GLuint service_id)
       max_level_set_(-1),
       texture_complete_(false),
       texture_mips_dirty_(false),
-      texture_mips_complete_(false),
       cube_complete_(false),
       texture_level0_dirty_(false),
-      texture_level0_complete_(false),
       npot_(false),
       has_been_bound_(false),
       framebuffer_attachment_count_(0),
@@ -1085,8 +1083,8 @@ void Texture::Update(const FeatureInfo* feature_info) {
     texture_complete_ = false;
   }
 
+  bool texture_level0_complete = true;
   if (cube_complete_ && texture_level0_dirty_) {
-    texture_level0_complete_ = true;
     for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
       const Texture::LevelInfo& level0 = face_infos_[ii].level_infos[0];
       if (!TextureFaceComplete(first_level,
@@ -1098,18 +1096,17 @@ void Texture::Update(const FeatureInfo* feature_info) {
                                level0.depth,
                                level0.format,
                                level0.type)) {
-        texture_level0_complete_ = false;
+        texture_level0_complete = false;
         break;
       }
     }
     texture_level0_dirty_ = false;
   }
-  cube_complete_ &= texture_level0_complete_;
+  cube_complete_ &= texture_level0_complete;
 
+  bool texture_mips_complete = true;
   if (texture_complete_ && texture_mips_dirty_) {
-    texture_mips_complete_ = true;
-    for (size_t ii = 0;
-         ii < face_infos_.size() && texture_mips_complete_;
+    for (size_t ii = 0; ii < face_infos_.size() && texture_mips_complete;
          ++ii) {
       const Texture::FaceInfo& face_info = face_infos_[ii];
       const Texture::LevelInfo& level0 = face_info.level_infos[0];
@@ -1124,14 +1121,14 @@ void Texture::Update(const FeatureInfo* feature_info) {
                                 level_info.depth,
                                 level_info.format,
                                 level_info.type)) {
-          texture_mips_complete_ = false;
+          texture_mips_complete = false;
           break;
         }
       }
     }
     texture_mips_dirty_ = false;
   }
-  texture_complete_ &= texture_mips_complete_;
+  texture_complete_ &= texture_mips_complete;
 }
 
 bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
