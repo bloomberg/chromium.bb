@@ -12,6 +12,10 @@
 #include "net/base/net_module.h"
 #include "net/log/net_log.h"
 
+#if defined(USE_X11)
+#include "ui/base/ime/input_method_initializer.h"
+#endif
+
 namespace blimp {
 namespace engine {
 
@@ -19,6 +23,13 @@ BlimpBrowserMainParts::BlimpBrowserMainParts(
     const content::MainFunctionParams& parameters) {}
 
 BlimpBrowserMainParts::~BlimpBrowserMainParts() {}
+
+void BlimpBrowserMainParts::PreEarlyInitialization() {
+#if defined(USE_X11)
+  // TODO(haibinlu): Rename the method below. crbug/548330.
+  ui::InitializeInputMethodForTesting();
+#endif
+}
 
 void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new net::NetLog());

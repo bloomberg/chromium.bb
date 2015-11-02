@@ -15,8 +15,6 @@ shared_library("blimp_client") {
     "compositor/blimp_context_provider.h",
     "compositor/blimp_output_surface.cc",
     "compositor/blimp_output_surface.h",
-    "compositor/blimp_task_graph_runner.cc",
-    "compositor/blimp_task_graph_runner.h",
     "compositor/test/dummy_layer_driver.cc",
     "compositor/test/dummy_layer_driver.h",
   ]

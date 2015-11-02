@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/common/main_function_params.h"
 
 namespace net {
 class NetLog;
@@ -29,6 +30,7 @@ class BlimpBrowserMainParts : public content::BrowserMainParts {
   ~BlimpBrowserMainParts() override;
 
   // content::BrowserMainParts implementation.
+  void PreEarlyInitialization() override;
   void PreMainMessageLoopRun() override;
   void PostMainMessageLoopRun() override;
 

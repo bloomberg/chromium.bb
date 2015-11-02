@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/compositor/blimp_task_graph_runner.h"
+#include "blimp/common/compositor/blimp_task_graph_runner.h"
 
 namespace blimp {
 
 BlimpTaskGraphRunner::BlimpTaskGraphRunner()
     : worker_thread_(
           this,
-          "CompositorTileWorker1",
+          "BlimpCompositorWorker",
           base::SimpleThread::Options(base::ThreadPriority::BACKGROUND)) {
   worker_thread_.Start();
 }

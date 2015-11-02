@@ -31,6 +31,8 @@ source_set("browser") {
     "//content/public/utility",
     "//net",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/resources",
+    "//ui/wm",
   ]
 }

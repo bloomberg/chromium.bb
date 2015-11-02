@@ -7,7 +7,9 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/control.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
+#include "blimp/engine/ui/blimp_layout_manager.h"
 #include "blimp/engine/ui/blimp_screen.h"
+#include "blimp/engine/ui/blimp_ui_context_factory.h"
 #include "blimp/net/blimp_connection.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -15,9 +17,37 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/wm/core/base_focus_rules.h"
+#include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/focus_controller.h"
+
+#if !defined(USE_X11)
+#include "blimp/engine/ui/blimp_window_tree_host.h"
+#endif
 
 namespace blimp {
 namespace engine {
+namespace {
+
+// Focus rules that support activating an child window.
+class FocusRulesImpl : public wm::BaseFocusRules {
+ public:
+  FocusRulesImpl() {}
+  ~FocusRulesImpl() override {}
+
+  bool SupportsChildActivation(aura::Window* window) const override {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
+};
+
+}  // namespace
 
 BlimpEngineSession::BlimpEngineSession(
     scoped_ptr<BlimpBrowserContext> browser_context)
@@ -28,6 +58,32 @@ BlimpEngineSession::~BlimpEngineSession() {}
 void BlimpEngineSession::Initialize() {
   DCHECK(!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+
+#if defined(USE_X11)
+  window_tree_host_.reset(aura::WindowTreeHost::Create(
+      gfx::Rect(screen_->GetPrimaryDisplay().size())));
+#else
+  context_factory_.reset(new BlimpUiContextFactory());
+  aura::Env::GetInstance()->set_context_factory(context_factory_.get());
+  window_tree_host_.reset(new BlimpWindowTreeHost());
+#endif
+
+  window_tree_host_->InitHost();
+  window_tree_host_->window()->SetLayoutManager(
+      new BlimpLayoutManager(window_tree_host_->window()));
+  focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
+  aura::client::SetFocusClient(window_tree_host_->window(),
+                               focus_client_.get());
+  aura::client::SetActivationClient(window_tree_host_->window(),
+                                    focus_client_.get());
+  capture_client_.reset(
+      new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+
+#if defined(USE_X11)
+  window_tree_host_->Show();
+#endif
+
+  window_tree_host_->SetBounds(gfx::Rect(screen_->GetPrimaryDisplay().size()));
 }
 
 void BlimpEngineSession::AttachClientConnection(
@@ -35,7 +91,7 @@ void BlimpEngineSession::AttachClientConnection(
   DCHECK(client_connection);
   client_connection_ = client_connection.Pass();
 
-  // TODO(haibinlu): remove this once we can use client connection to send in
+  // TODO(haibinlu): Remove this once we can use client connection to send in
   // a navigation message.
   BlimpMessage message;
   message.set_type(BlimpMessage::CONTROL);
@@ -48,12 +104,8 @@ void BlimpEngineSession::AttachClientConnection(
 }
 
 void BlimpEngineSession::CreateWebContents(const int target_tab_id) {
-  if (web_contents_) {
-    // only one web_contents is supported for blimp 0.5
-    NOTIMPLEMENTED();
-    return;
-  }
-
+  // TODO(haibinlu): Support more than one active WebContents (crbug/547231).
+  DCHECK(!web_contents_);
   content::WebContents::CreateParams create_params(browser_context_.get(),
                                                    nullptr);
   scoped_ptr<content::WebContents> new_contents =
@@ -104,11 +156,11 @@ content::WebContents* BlimpEngineSession::OpenURLFromTab(
     const content::OpenURLParams& params) {
   // CURRENT_TAB is the only one we implement for now.
   if (params.disposition != CURRENT_TAB) {
-    // TODO(haibinlu): handle other disposition properly.
     NOTIMPLEMENTED();
     return nullptr;
   }
-  // TOOD(haibinlu): add helper method to get LoadURLParams from OpenURLParams.
+
+  // TODO(haibinlu): Add helper method to get LoadURLParams from OpenURLParams.
   content::NavigationController::LoadURLParams load_url_params(params.url);
   load_url_params.source_site_instance = params.source_site_instance;
   load_url_params.referrer = params.referrer;
@@ -119,8 +171,9 @@ content::WebContents* BlimpEngineSession::OpenURLFromTab(
       params.should_replace_current_entry;
 
   if (params.transferred_global_request_id != content::GlobalRequestID()) {
-    // The navigation as being transferred from one RVH to another.
-    // Copies the request ID of the old request.
+    // If transferred_global_request_id is set, then
+    // the navigation is being transferred from one RenderViewHost to another.
+    // Preserve the request-id and renderer-initiated flag.
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
     load_url_params.transferred_global_request_id =
         params.transferred_global_request_id;
@@ -151,6 +204,12 @@ void BlimpEngineSession::PlatformSetContents(
     scoped_ptr<content::WebContents> new_contents) {
   new_contents->SetDelegate(this);
   web_contents_ = new_contents.Pass();
+
+  aura::Window* parent = window_tree_host_->window();
+  aura::Window* content = web_contents_->GetNativeView();
+  if (!parent->Contains(content))
+    parent->AddChild(content);
+  content->Show();
 }
 
 }  // namespace engine

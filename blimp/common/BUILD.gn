@@ -13,6 +13,8 @@ component("blimp_common") {
     "blimp_common_export.h",
     "compositor/blimp_layer_tree_settings.cc",
     "compositor/blimp_layer_tree_settings.h",
+    "compositor/blimp_task_graph_runner.cc",
+    "compositor/blimp_task_graph_runner.h",
   ]
 
   defines = [ "BLIMP_COMMON_IMPLEMENTATION=1" ]

@@ -1,10 +1,17 @@
 include_rules = [
   "+base",
+  "+cc",
   "-chrome",
   "+components/web_cache/renderer",
   "+content/public",
   "+net",
+  "+third_party/khronos/GLES2/gl2.h",
+  "+ui/aura",
   "+ui/base",
-  "+ui/resources",
+  "+ui/compositor",
+  "+ui/events",
   "+ui/gfx",
+  "+ui/platform_window",
+  "+ui/resources",
+  "+ui/wm",
 ]

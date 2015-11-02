@@ -4,6 +4,8 @@
 
 #include "blimp/engine/browser/blimp_permission_manager.h"
 
+#include <vector>
+
 #include "base/callback.h"
 #include "content/public/browser/permission_type.h"
 
@@ -32,6 +34,8 @@ int BlimpPermissionManager::RequestPermissions(
     bool user_gesture,
     const base::Callback<void(const std::vector<content::PermissionStatus>&)>&
         callback) {
+  callback.Run(std::vector<content::PermissionStatus>(
+      permission.size(), content::PermissionStatus::PERMISSION_STATUS_DENIED));
   return kNoPendingOperation;
 }
 

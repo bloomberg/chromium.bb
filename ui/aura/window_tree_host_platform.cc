@@ -32,9 +32,7 @@ WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
-    : widget_(gfx::kNullAcceleratedWidget),
-      current_cursor_(ui::kCursorNull),
-      has_capture_(false) {
+    : WindowTreeHostPlatform() {
 #if defined(USE_OZONE)
   window_ =
       ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
@@ -45,6 +43,16 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
 #else
   NOTIMPLEMENTED();
 #endif
+}
+
+WindowTreeHostPlatform::WindowTreeHostPlatform()
+    : widget_(gfx::kNullAcceleratedWidget),
+      current_cursor_(ui::kCursorNull),
+      has_capture_(false) {}
+
+void WindowTreeHostPlatform::SetPlatformWindow(
+    scoped_ptr<ui::PlatformWindow> window) {
+  window_ = window.Pass();
 }
 
 WindowTreeHostPlatform::~WindowTreeHostPlatform() {

@@ -11,9 +11,22 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace aura {
+class WindowTreeHost;
+
+namespace client {
+class DefaultCaptureClient;
+class WindowTreeClient;
+}  // namespace client
+}  // namespace aura
+
 namespace content {
 class BrowserContext;
 class WebContents;
+}
+
+namespace wm {
+class FocusController;
 }
 
 namespace blimp {
@@ -24,7 +37,10 @@ class BlimpMessage;
 namespace engine {
 
 class BlimpBrowserContext;
+class BlimpFocusClient;
 class BlimpScreen;
+class BlimpUiContextFactory;
+class BlimpWindowTreeHost;
 
 class BlimpEngineSession : public BlimpMessageReceiver,
                            public content::WebContentsDelegate {
@@ -70,11 +86,26 @@ class BlimpEngineSession : public BlimpMessageReceiver,
   scoped_ptr<BlimpBrowserContext> browser_context_;
   scoped_ptr<BlimpScreen> screen_;
 
+  // Context factory for compositor.
+  scoped_ptr<BlimpUiContextFactory> context_factory_;
+
+  // Represents the (currently single) browser window into which tab(s) will
+  // be rendered.
+  scoped_ptr<aura::WindowTreeHost> window_tree_host_;
+
+  // Used to apply standard focus conventions to the windows in the
+  // WindowTreeHost hierarchy.
+  scoped_ptr<wm::FocusController> focus_client_;
+
+  // Used to manage input capture.
+  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+
   // Only one web_contents is supported for blimp 0.5
   scoped_ptr<content::WebContents> web_contents_;
 
   // Currently attached client connection.
   scoped_ptr<BlimpConnection> client_connection_;
+
   DISALLOW_COPY_AND_ASSIGN(BlimpEngineSession);
 };
 

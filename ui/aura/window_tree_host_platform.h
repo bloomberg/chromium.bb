@@ -39,6 +39,8 @@ class AURA_EXPORT WindowTreeHostPlatform
   void OnCursorVisibilityChangedNative(bool show) override;
 
  protected:
+  WindowTreeHostPlatform();
+  void SetPlatformWindow(scoped_ptr<ui::PlatformWindow> window);
   ui::PlatformWindow* platform_window() { return window_.get(); }
 
  private:
