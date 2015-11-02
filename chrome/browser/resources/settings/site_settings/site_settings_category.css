@@ -5,3 +5,11 @@
 :host {
   display: block;
 }
+
+settings-site-list {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+settings-site-list:last-of-type {
+  border-bottom: none;
+}

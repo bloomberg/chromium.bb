@@ -116,6 +116,38 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["browser.clear_data.time_period"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.cookies"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.fullscreen"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.geolocation"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.javascript"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.media_stream_camera"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.media_stream_mic"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.notifications"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.default_content_setting_values.popups"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["profile.content_settings.exceptions.cookies"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.fullscreen"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.geolocation"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.javascript"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.media_stream_camera"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.media_stream_mic"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.notifications"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)["profile.content_settings.exceptions.popups"] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
 
   // Web content settings.
   (*s_whitelist)["webkit.webprefs.default_font_size"] =

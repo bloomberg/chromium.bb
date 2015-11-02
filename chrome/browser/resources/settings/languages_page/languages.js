@@ -192,6 +192,8 @@ var preferredLanguagesPrefName = cr.isChromeOS ?
 Polymer({
   is: 'settings-languages-singleton',
 
+  behaviors: [PrefsBehavior],
+
   properties: {
     /**
      * @type {LanguagesModel|undefined}
@@ -308,15 +310,15 @@ Polymer({
   getEnabledLanguages_: function(translateTarget) {
     assert(CrSettingsPrefs.isInitialized);
 
-    var pref = this.getPref_(preferredLanguagesPrefName);
+    var pref = this.getPref(preferredLanguagesPrefName);
     var enabledLanguageCodes = pref.value.split(',');
     var enabledLanguages = /** @type {!Array<!LanguageInfo>} */ [];
 
-    var spellCheckPref = this.getPref_('spellcheck.dictionaries');
+    var spellCheckPref = this.getPref('spellcheck.dictionaries');
     var spellCheckMap = this.makeMapFromArray_(/** @type {!Array<string>} */(
         spellCheckPref.value));
 
-    var translateBlockedPref = this.getPref_('translate_blocked_languages');
+    var translateBlockedPref = this.getPref('translate_blocked_languages');
     var translateBlockedMap = this.makeMapFromArray_(
         /** @type {!Array<string>} */(translateBlockedPref.value));
 
@@ -379,7 +381,7 @@ Polymer({
       return;
 
     var spellCheckMap = this.makeMapFromArray_(/** @type {!Array<string>} */(
-        this.getPref_('spellcheck.dictionaries').value));
+        this.getPref('spellcheck.dictionaries').value));
     for (var i = 0; i < this.languages.enabledLanguages.length; i++) {
       var languageCode = this.languages.enabledLanguages[i].language.code;
       this.set('languages.enabledLanguages.' + i + '.state.spellCheckEnabled',
@@ -391,7 +393,7 @@ Polymer({
     if (!this.initialized_)
       return;
 
-    var translateBlockedPref = this.getPref_('translate_blocked_languages');
+    var translateBlockedPref = this.getPref('translate_blocked_languages');
     var translateBlockedMap = this.makeMapFromArray_(
         /** @type {!Array<string>} */(translateBlockedPref.value));
 
@@ -405,36 +407,13 @@ Polymer({
   },
 
   /**
-   * Gets the pref at the given key. Asserts if the pref is not found.
-   * @param {string} key
-   * @return {!chrome.settingsPrivate.PrefObject}
-   */
-  getPref_: function(key) {
-    var pref = /** @type {!chrome.settingsPrivate.PrefObject} */(
-        this.get(key, this.prefs));
-    assert(typeof pref != 'undefined', 'Pref is missing: ' + key);
-    return pref;
-  },
-
-  /**
-   * Sets the value of the pref at the given key. Asserts if the pref is not
-   * found.
-   * @param {string} key
-   * @param {*} value
-   */
-  setPrefValue_: function(key, value) {
-    this.getPref_(key);
-    this.set('prefs.' + key + '.value', value);
-  },
-
-  /**
    * Deletes the given item from the pref at the given key if the item is found.
    * Asserts if the pref itself is not found or is not an Array type.
    * @param {string} key
    * @param {*} item
    */
   deletePrefItem_: function(key, item) {
-    assert(this.getPref_(key).type == chrome.settingsPrivate.PrefType.LIST);
+    assert(this.getPref(key).type == chrome.settingsPrivate.PrefType.LIST);
     this.arrayDelete('prefs.' + key + '.value', item);
   },
 
@@ -463,7 +442,7 @@ Polymer({
    * @private
    */
   getProspectiveUILanguage: function() {
-    return /** @type {string} */(this.getPref_('intl.app_locale').value) ||
+    return /** @type {string} */(this.getPref('intl.app_locale').value) ||
         navigator.language;
   },
 
@@ -476,7 +455,7 @@ Polymer({
       return;
 
     var languageCodes =
-        this.getPref_(preferredLanguagesPrefName).value.split(',');
+        this.getPref(preferredLanguagesPrefName).value.split(',');
     if (languageCodes.indexOf(languageCode) > -1)
       return;
     languageCodes.push(languageCode);
@@ -497,7 +476,7 @@ Polymer({
 
     // Cannot disable the only enabled language.
     var languageCodes =
-        this.getPref_(preferredLanguagesPrefName).value.split(',');
+        this.getPref(preferredLanguagesPrefName).value.split(',');
     assert(languageCodes.length > 1);
 
     // Remove the language from spell check.
@@ -536,7 +515,7 @@ Polymer({
    */
   disableTranslateLanguage: function(languageCode) {
     languageCode = this.convertLanguageCodeForTranslate(languageCode);
-    if (this.getPref_('translate_blocked_languages').value
+    if (this.getPref('translate_blocked_languages').value
             .indexOf(languageCode) == -1) {
       this.push('prefs.translate_blocked_languages.value', languageCode);
     }
@@ -552,7 +531,7 @@ Polymer({
       return;
 
     if (enable) {
-      var spellCheckPref = this.getPref_('spellcheck.dictionaries');
+      var spellCheckPref = this.getPref('spellcheck.dictionaries');
       if (spellCheckPref.value.indexOf(languageCode) == -1)
         this.push('prefs.spellcheck.dictionaries.value', languageCode);
     } else {

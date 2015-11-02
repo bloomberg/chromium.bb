@@ -425,11 +425,17 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALL_SITES" desc="Label for the all sites site settings.">
     All sites
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CAMERA" desc="Label for the camera site settings.">
+    Camera
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies site settings.">
     Cookies
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION" desc="Label for the location site settings.">
     Location
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MIC" desc="Label for the microphone site settings.">
+    Microphone
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS" desc="Label for notifications sites site settings.">
     Notifications
@@ -452,8 +458,28 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST" desc="Label for ask first option in site settings.">
     Ask first
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING" desc="Label for location option in site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED" desc="The 'ask first' label in site settings -- a recommended setting for some categories, such as when sites want to use Full Screen.">
+    Ask first (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING" desc="The 'ask before accessing' label in site settings -- a recommended setting for some categories, such as when sites want to access geolocation information.">
     Ask before accessing (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING" desc="The 'ask before sending' label in site settings -- a recommended setting for some categories, such as when sites want to send push notifications.">
+    Ask before sending (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW_SITES" desc="The 'allow cookies' label in site settings -- the recommended setting for when sites want to read/write cookie information.">
+    Allow sites to save and read cookie data (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOWED" desc="A generic Allowed label to show in Site Settings when Allow is NOT the recommended option.">
+    Allowed
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOWED_RECOMMENDED" desc="A generic Allowed label to show in Site Settings when Allow is the recommended option.">
+    Allowed (recommended)
+  </message>  <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCKED" desc="A generic Blocked label to show in Site Settings when Blocked is NOT the recommended option.">
+    Blocked
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCKED_RECOMMENDED" desc="A generic Blocked label to show in Site Settings when Blocked is the recommended option.">
+    Blocked (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW" desc="Label for allow sites in site settings.">
     Allow
@@ -469,6 +495,15 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_URL" desc="Label for site URL text entry in site settings.">
     Site URL
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW_MENU" desc="Label for the menu item to allow permission for a particular site.">
+    Allow
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_MENU" desc="Label for the menu item to block permission for a particular site.">
+    Block
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_MENU" desc="Label for the menu item to reset the permission for a particular site (make it ask you again next time).">
+    Reset to ask
   </message>
 
   <!-- Sign-in Page -->

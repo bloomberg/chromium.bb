@@ -1,0 +1,56 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="chrome://md-settings/prefs/prefs_behavior.html">
+<link rel="import" href="chrome://md-settings/prefs/prefs_types.html">
+<link rel="import" href="chrome://md-settings/site_settings/constants.html">
+<link rel="import" href="chrome://md-settings/site_settings/site_settings_behavior.html">
+
+<dom-module id="settings-site-list">
+  <link rel="import" type="css" href="../settings_page/settings_page.css">
+  <link rel="import" type="css" href="site_list.css">
+  <template>
+    <paper-submenu id="category" hidden on-paper-submenu-open="onToggle_"
+        on-paper-submenu-close="onToggle_">
+      <paper-item class="menu-trigger">
+        <div class="site-header horizontal layout">
+          <div class="flex"
+              >[[computeSiteListHeader_(sites_, categoryEnabled)]]</div>
+          <iron-icon id="icon" icon="icons:expand-more"></iron-icon>
+        </div>
+      </paper-item>
+      <paper-menu class="menu-content">
+        <template is="dom-repeat" items="{{sites_}}">
+          <div class="site-list horizontal layout center">
+            <iron-icon icon="[[computeSiteIcon_(item.url)]]"
+                item-icon></iron-icon>
+            <div class="flex"><paper-item
+                 on-tap="onOriginTap_">[[item.url]]</paper-item></div>
+            <paper-menu-button>
+              <paper-icon-button icon="menu"
+                  class="dropdown-trigger"></paper-icon-button>
+              <paper-menu id="actionMenu" class="dropdown-content"
+                  on-iron-select="onActionMenuIronSelect_">
+                <paper-item value="[[actions_.ALLOW]]"
+                    hidden="[[!showAllowAction_]]"
+                    >[[i18n_.allowAction]]</paper-item>
+                <paper-item value="[[actions_.BLOCK]]"
+                    hidden="[[!showBlockAction_]]"
+                    >[[i18n_.blockAction]]</paper-item>
+                <paper-item value="[[actions_.RESET]]"
+                    >[[i18n_.resetAction]]</paper-item>
+              </paper-menu>
+            </paper-menu-button>
+          </div>
+        </template>
+      </paper-menu>
+    </paper-submenu>
+  </template>
+  <script src="site_list.js"></script>
+</dom-module>

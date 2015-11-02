@@ -470,10 +470,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SITE_SETTINGS);
   html_source->AddLocalizedString("siteSettingsAllSites",
                                   IDS_SETTINGS_SITE_SETTINGS_ALL_SITES);
+  html_source->AddLocalizedString("siteSettingsCamera",
+                                  IDS_SETTINGS_SITE_SETTINGS_CAMERA);
   html_source->AddLocalizedString("siteSettingsCookies",
                                   IDS_SETTINGS_SITE_SETTINGS_COOKIES);
   html_source->AddLocalizedString("siteSettingsLocation",
                                   IDS_SETTINGS_SITE_SETTINGS_LOCATION);
+  html_source->AddLocalizedString("siteSettingsMic",
+                                  IDS_SETTINGS_SITE_SETTINGS_MIC);
   html_source->AddLocalizedString("siteSettingsNotifications",
                                   IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS);
   html_source->AddLocalizedString("siteSettingsImages",
@@ -489,18 +493,44 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("siteSettingsAskFirst",
                                   IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST);
   html_source->AddLocalizedString(
+      "siteSettingsAskFirstRecommended",
+      IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED);
+  html_source->AddLocalizedString(
       "siteSettingsAskBeforeAccessing",
       IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING);
+  html_source->AddLocalizedString(
+      "siteSettingsAskBeforeSending",
+      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING);
+  html_source->AddLocalizedString(
+      "siteSettingsCookiesAllowed",
+      IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW_SITES);
   html_source->AddLocalizedString("siteSettingsAllow",
                                   IDS_SETTINGS_SITE_SETTINGS_ALLOW);
   html_source->AddLocalizedString("siteSettingsBlock",
                                   IDS_SETTINGS_SITE_SETTINGS_BLOCK);
+  html_source->AddLocalizedString("siteSettingsAllowed",
+                                  IDS_SETTINGS_SITE_SETTINGS_ALLOWED);
+  html_source->AddLocalizedString(
+      "siteSettingsAllowedRecommended",
+      IDS_SETTINGS_SITE_SETTINGS_ALLOWED_RECOMMENDED);
+  html_source->AddLocalizedString("siteSettingsBlocked",
+                                  IDS_SETTINGS_SITE_SETTINGS_BLOCKED);
+  html_source->AddLocalizedString(
+      "siteSettingsBlockedRecommended",
+      IDS_SETTINGS_SITE_SETTINGS_BLOCKED_RECOMMENDED);
   html_source->AddLocalizedString("siteSettingsExceptions",
                                   IDS_SETTINGS_SITE_SETTINGS_EXCEPTIONS);
   html_source->AddLocalizedString("siteSettingsAddSite",
                                   IDS_SETTINGS_SITE_SETTINGS_ADD_SITE);
   html_source->AddLocalizedString("siteSettingsSiteUrl",
                                   IDS_SETTINGS_SITE_SETTINGS_SITE_URL);
+
+  html_source->AddLocalizedString("siteSettingsActionAllow",
+                                  IDS_SETTINGS_SITE_SETTINGS_ALLOW_MENU);
+  html_source->AddLocalizedString("siteSettingsActionBlock",
+                                  IDS_SETTINGS_SITE_SETTINGS_BLOCK_MENU);
+  html_source->AddLocalizedString("siteSettingsActionReset",
+                                  IDS_SETTINGS_SITE_SETTINGS_RESET_MENU);
 }
 
 void AddSyncStrings(content::WebUIDataSource* html_source) {

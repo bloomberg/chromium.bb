@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/languages_page/languages_page.html">
-<link rel="import" href="chrome://md-settings/location_page/location_page.html">
 <link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
 <link rel="import" href="chrome://md-settings/reset_page/reset_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
+<link rel="import" href="chrome://md-settings/site_settings/constants.html">
+<link rel="import" href="chrome://md-settings/site_settings/site_settings_category.html">
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
@@ -23,9 +24,10 @@
 </if>
     <settings-section i18n-values="page-title:siteSettingsLocation"
         current-route="[[currentRoute]]" section="location">
-      <settings-location-page prefs="{{prefs}}">
-      </settings-location-page>
-    </settings-section>
+      <site-settings-category id="locationCategory" prefs="{{prefs}}"
+        current-route="{{currentRoute}}">
+      </site-settings-category>
+    </cr-settings-section>
 
     <settings-section i18n-values="page-title:privacyPageTitle"
         current-route="[[currentRoute]]" section="privacy">

@@ -38,4 +38,9 @@ Polymer({
       notify: true,
     },
   },
+
+  ready: function() {
+    this.$.locationCategory.category =
+        settings.ContentSettingsTypes.GEOLOCATION;
+  },
 });
