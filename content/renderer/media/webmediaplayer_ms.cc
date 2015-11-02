@@ -101,8 +101,8 @@ void WebMediaPlayerMS::load(LoadType load_type,
   // once Blink-side changes land.
   DCHECK_NE(load_type, LoadTypeMediaSource);
 
-  compositor_.reset(
-      new WebMediaPlayerMSCompositor(compositor_task_runner_, url));
+  compositor_.reset(new WebMediaPlayerMSCompositor(compositor_task_runner_, url,
+                                                   AsWeakPtr()));
 
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -168,7 +168,7 @@ void WebMediaPlayerMS::pause() {
     video_frame_provider_->Pause();
 
   compositor_->StopRendering();
-  compositor_->ReplaceCurrentFrameWithACopy(&video_renderer_);
+  compositor_->ReplaceCurrentFrameWithACopy();
 
   if (!paused_) {
     if (audio_renderer_.get())
@@ -442,5 +442,14 @@ void WebMediaPlayerMS::SetReadyState(WebMediaPlayer::ReadyState state) {
   ready_state_ = state;
   // Always notify to ensure client has the latest value.
   get_client()->readyStateChanged();
+}
+
+media::SkCanvasVideoRenderer* WebMediaPlayerMS::GetSkCanvasVideoRenderer() {
+  return &video_renderer_;
+}
+
+void WebMediaPlayerMS::ResetCanvasCache() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  video_renderer_.ResetCache();
 }
 }  // namespace content

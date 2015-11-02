@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // Test fails under MSan
 // Flaky everywhere else: http://crbug.com/523152
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_RenderVideoTrackInMultipleTagsAndPause) {
+                       RenderVideoTrackInMultipleTagsAndPause) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));

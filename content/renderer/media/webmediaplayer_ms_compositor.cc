@@ -8,6 +8,7 @@
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/blink/context_provider_web_context.h"
+#include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
@@ -92,14 +93,18 @@ scoped_refptr<media::VideoFrame> CopyFrameToI420(
 
 WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-    const blink::WebURL& url)
+    const blink::WebURL& url,
+    const base::WeakPtr<WebMediaPlayerMS>& player)
     : compositor_task_runner_(compositor_task_runner),
+      player_(player),
       video_frame_provider_client_(nullptr),
       current_frame_used_by_compositor_(false),
       last_render_length_(base::TimeDelta::FromSecondsD(1.0 / 60.0)),
       total_frame_count_(0),
       dropped_frame_count_(0),
       stopped_(true) {
+  main_message_loop_ = base::MessageLoop::current();
+
   const blink::WebMediaStream web_stream(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
@@ -300,18 +305,18 @@ void WebMediaPlayerMSCompositor::StopRenderingInternal() {
     video_frame_provider_client_->StopRendering();
 }
 
-void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy(
-    media::SkCanvasVideoRenderer* renderer) {
+void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(current_frame_lock_);
-  if (!current_frame_.get())
+  if (!current_frame_.get() || !player_)
     return;
 
   // Copy the frame so that rendering can show the last received frame.
   // The original frame must not be referenced when the player is paused since
   // there might be a finite number of available buffers. E.g, video that
   // originates from a video camera.
-  current_frame_ = CopyFrameToI420(current_frame_, renderer);
+  current_frame_ =
+      CopyFrameToI420(current_frame_, player_->GetSkCanvasVideoRenderer());
 }
 
 bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(
@@ -363,5 +368,7 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
     ++dropped_frame_count_;
   current_frame_used_by_compositor_ = false;
   current_frame_ = frame;
+  main_message_loop_->PostTask(
+      FROM_HERE, base::Bind(&WebMediaPlayerMS::ResetCanvasCache, player_));
 }
 }

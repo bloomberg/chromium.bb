@@ -299,6 +299,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
                                   SkXfermode::Mode mode,
                                   VideoRotation video_rotation,
                                   const Context3D& context_3d) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (alpha == 0) {
     return;
   }
@@ -576,6 +577,7 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
 }
 
 void SkCanvasVideoRenderer::ResetCache() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Clear cached values.
   last_image_ = nullptr;
   last_timestamp_ = kNoTimestamp();

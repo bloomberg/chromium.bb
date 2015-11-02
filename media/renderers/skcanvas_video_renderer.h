@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/media_export.h"
@@ -74,15 +75,22 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
- private:
+  // In general, We hold the most recently painted frame to increase the
+  // performance for the case that the same frame needs to be painted
+  // repeatedly. Call this function if you are sure the most recent frame will
+  // never be painted again, so we can release the resource.
   void ResetCache();
 
+ private:
   // Last image used to draw to the canvas.
   skia::RefPtr<SkImage> last_image_;
   // Timestamp of the videoframe used to generate |last_image_|.
   base::TimeDelta last_timestamp_ = media::kNoTimestamp();
   // If |last_image_| is not used for a while, it's deleted to save memory.
   base::DelayTimer last_image_deleting_timer_;
+
+  // Used for DCHECKs to ensure method calls executed in the correct thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRenderer);
 };

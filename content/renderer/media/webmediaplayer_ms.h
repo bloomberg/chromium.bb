@@ -102,6 +102,8 @@ class WebMediaPlayerMS
              const blink::WebRect& rect,
              unsigned char alpha,
              SkXfermode::Mode mode) override;
+  media::SkCanvasVideoRenderer* GetSkCanvasVideoRenderer();
+  void ResetCanvasCache();
 
   // True if the loaded media has a playable video/audio track.
   bool hasVideo() const override;

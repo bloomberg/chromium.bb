@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/layers/video_frame_provider.h"
@@ -31,6 +33,7 @@ class VideoRendererAlgorithm;
 }
 
 namespace content {
+class WebMediaPlayerMS;
 
 // This class is designed to handle the work load on compositor thread for
 // WebMediaPlayerMS. It will be instantiated on the main thread, but destroyed
@@ -46,7 +49,8 @@ class WebMediaPlayerMSCompositor : public cc::VideoFrameProvider {
   // This |url| represents the media stream we are rendering.
   WebMediaPlayerMSCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const blink::WebURL& url);
+      const blink::WebURL& url,
+      const base::WeakPtr<WebMediaPlayerMS>& player);
   ~WebMediaPlayerMSCompositor() override;
 
   void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame);
@@ -68,7 +72,7 @@ class WebMediaPlayerMSCompositor : public cc::VideoFrameProvider {
 
   void StartRendering();
   void StopRendering();
-  void ReplaceCurrentFrameWithACopy(media::SkCanvasVideoRenderer* renderer);
+  void ReplaceCurrentFrameWithACopy();
 
  private:
   bool MapTimestampsToRenderTimeTicks(
@@ -88,6 +92,9 @@ class WebMediaPlayerMSCompositor : public cc::VideoFrameProvider {
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  base::MessageLoop* main_message_loop_;
+
+  base::WeakPtr<WebMediaPlayerMS> player_;
 
   size_t serial_;
 
