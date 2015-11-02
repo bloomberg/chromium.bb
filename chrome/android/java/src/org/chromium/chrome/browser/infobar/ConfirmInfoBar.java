@@ -166,7 +166,7 @@ public class ConfirmInfoBar extends InfoBar {
                     dialogText.setText(deniedStringId);
 
                     AlertDialog.Builder builder =
-                            new AlertDialog.Builder(getContext(), R.style.AlertDialogTheme)
+                            new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
                             .setView(view)
                             .setPositiveButton(R.string.infobar_update_permissions_button_text,
                                     new DialogInterface.OnClickListener() {
