@@ -3,10 +3,12 @@
  * found in the LICENSE file.
  *
  * Exported function:
- *  - assertAttributeInterpolation({property, from, to}, [{at: fraction, is: value}])
+ *  - assertAttributeInterpolation({property, from, to, [fromComposite], [toComposite], [underlying]}, [{at: fraction, is: value}])
  *        Constructs a test case for each fraction that asserts the expected value
- *        equals the value produced by interpolation between from and to using
+ *        equals the value produced by interpolation between from and to composited
+ *        onto underlying by fromComposite and toComposite respectively using
  *        SMIL and Web Animations.
+ *        SMIL will only be tested with equal fromComposite and toComposite values.
 */
 'use strict';
 (() => {
@@ -183,7 +185,7 @@
       attributeName = 'orientAngle';
     }
 
-    var result;
+    var result = null;
     if (attributeName === 'd')
       result = element.getAttribute('d');
     else if (attributeName === 'points')
@@ -191,7 +193,7 @@
     else
       result = element[attributeName].animVal;
 
-    if (!result) {
+    if (result === null) {
       if (attributeName === 'pathLength')
         return '0';
       if (attributeName === 'preserveAlpha')
@@ -245,7 +247,7 @@
     }
   }
 
-  function createAnimateElement(attributeName, from, to)
+  function createAnimateElement(attributeName, from, to, composite)
   {
     var animateElement;
     if (attributeName.toLowerCase().includes('transform')) {
@@ -281,18 +283,24 @@
     animateElement.setAttribute('begin', '0');
     animateElement.setAttribute('dur', '1');
     animateElement.setAttribute('fill', 'freeze');
+    animateElement.setAttribute('additive', composite === 'add' ? 'sum' : composite);
     return animateElement;
   }
 
   function createTestTarget(method, description, container, params, expectation) {
     var target = createTarget(container);
+    if (params.underlying) {
+      target.setAttribute(params.property, params.underlying);
+    }
+
     var expected = createTarget(container);
     setAttributeValue(expected, params.property, expectation.is);
 
     target.interpolate = function() {
       switch (method) {
       case 'SMIL':
-        var animateElement = createAnimateElement(params.property, params.from, params.to);
+        console.assert(params.fromComposite === params.toComposite);
+        var animateElement = createAnimateElement(params.property, params.from, params.to, params.fromComposite);
         if (animateElement) {
           target.appendChild(animateElement);
           target.container.pauseAnimations();
@@ -307,8 +315,14 @@
         // Replace 'transform' with 'svgTransform', etc. This avoids collisions with CSS properties or the Web Animations API (offset).
         var prefixedProperty = 'svg' + params.property[0].toUpperCase() + params.property.slice(1);
         target.animate([
-          {[prefixedProperty]: params.from},
-          {[prefixedProperty]: params.to},
+          {
+            [prefixedProperty]: params.from,
+            composite: params.fromComposite,
+          },
+          {
+            [prefixedProperty]: params.to,
+            composite: params.toComposite,
+          },
         ], {
           fill: 'forwards',
           duration: 1,
@@ -337,13 +351,17 @@
     var targets = [];
     for (var interpolationTest of interpolationTests) {
       var params = interpolationTest.params;
-      var description = `Interpolate attribute <${params.property}> from [${params.from}] to [${params.to}]`;
-      var expectations = interpolationTest.expectations;
+      params.fromComposite = params.fromComposite || 'replace';
+      params.toComposite = params.toComposite || 'replace';
+      var description = `Interpolate attribute <${params.property}> from ${params.fromComposite} [${params.from}] to ${params.toComposite} [${params.to}]`;
 
       for (var method of ['SMIL', 'Web Animations']) {
+        if (method === 'SMIL' && params.fromComposite !== params.toComposite) {
+          continue;
+        }
         createElement('pre', container).textContent = `${method}: ${description}`;
         var smilContainer = createElement('div', container);
-        for (var expectation of expectations) {
+        for (var expectation of interpolationTest.expectations) {
           if (method === 'SMIL' && (expectation.at < 0 || expectation.at > 1)) {
             continue;
           }

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../svg-attribute-interpolation/resources/interpolation-test.js"></script>
+<template id="target-template">
+<svg height="10"><stop class="target"/></svg>
+</template>
+<body></body>
+<script>
+assertAttributeInterpolation({
+  property: 'offset',
+  underlying: 0.5,
+  from: -0.5,
+  fromComposite: 'add',
+  to: 1,
+  toComposite: 'add',
+}, [
+  {at: -0.5, is: -0.75},
+  {at: 0, is: 0},
+  {at: 0.25, is: 0.375},
+  {at: 0.5, is: 0.75},
+  {at: 0.75, is: 1.125},
+  {at: 1, is: 1.5},
+  {at: 1.5, is: 2.25}
+]);
+</script>
