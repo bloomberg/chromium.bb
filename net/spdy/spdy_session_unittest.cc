@@ -398,6 +398,62 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreams) {
   EXPECT_FALSE(session_);
 }
 
+// Regression test for https://crbug.com/547130.
+TEST_P(SpdySessionTest, GoAwayWithActiveAndCreatedStream) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(0));
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(*goaway, 2),
+  };
+
+  // No |req2|, because the second stream will never get activated.
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, MEDIUM, true));
+  MockWrite writes[] = {
+      CreateMockWrite(*req1, 0),
+  };
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+  CreateInsecureSpdySession();
+
+  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+
+  base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+  scoped_ptr<SpdyHeaderBlock> headers1(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
+  spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+
+  // Active stream 1.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, spdy_stream1->stream_id());
+  EXPECT_TRUE(session_->IsStreamActive(1));
+
+  // Create stream corresponding to the next request.
+  base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
+
+  EXPECT_EQ(0u, spdy_stream2->stream_id());
+
+  // Read and process the GOAWAY frame before the second stream could be
+  // activated.
+  data.CompleteRead();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(session_);
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
 // Have a session receive two GOAWAY frames, with the last one causing
 // the last active stream to be closed. The session should then be
 // closed after the second GOAWAY frame.

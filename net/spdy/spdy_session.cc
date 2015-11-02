@@ -1307,11 +1307,11 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
   }
 
   DeleteStream(owned_stream.Pass(), status);
-  MaybeFinishGoingAway();
 
   // If there are no active streams and the socket pool is stalled, close the
   // session to free up a socket slot.
-  if (active_streams_.empty() && connection_->IsPoolStalled()) {
+  if (active_streams_.empty() && created_streams_.empty() &&
+      connection_->IsPoolStalled()) {
     DoDrainSession(ERR_CONNECTION_CLOSED, "Closing idle connection.");
   }
 }
@@ -1708,10 +1708,12 @@ void SpdySession::StartGoingAway(SpdyStreamId last_good_stream_id,
   write_queue_.RemovePendingWritesForStreamsAfter(last_good_stream_id);
 
   DcheckGoingAway();
+  MaybeFinishGoingAway();
 }
 
 void SpdySession::MaybeFinishGoingAway() {
-  if (active_streams_.empty() && availability_state_ == STATE_GOING_AWAY) {
+  if (active_streams_.empty() && created_streams_.empty() &&
+      availability_state_ == STATE_GOING_AWAY) {
     DoDrainSession(OK, "Finished going away");
   }
 }
