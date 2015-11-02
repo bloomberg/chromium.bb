@@ -545,7 +545,7 @@ QuicStreamFactory::QuicStreamFactory(
     CertPolicyEnforcer* cert_policy_enforcer,
     ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
-    const SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+    SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock,
@@ -1270,8 +1270,9 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   // ownership to QuicChromiumClientSession.
   scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher;
   if (socket_performance_watcher_factory_) {
-    socket_performance_watcher = socket_performance_watcher_factory_
-                                     ->CreateUDPSocketPerformanceWatcher();
+    socket_performance_watcher =
+        socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
+            SocketPerformanceWatcherFactory::PROTOCOL_QUIC);
   }
 
   *session = new QuicChromiumClientSession(

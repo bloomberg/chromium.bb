@@ -159,10 +159,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
       int32_t* kbps) const;
 
   // SocketPerformanceWatcherFactory implementation:
-  scoped_ptr<SocketPerformanceWatcher> CreateTCPSocketPerformanceWatcher()
-      const override;
-  scoped_ptr<SocketPerformanceWatcher> CreateUDPSocketPerformanceWatcher()
-      const override;
+  scoped_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
+      const Protocol protocol) override;
+  void OnUpdatedRTTAvailable(const Protocol protocol,
+                             const base::TimeDelta& rtt) override;
 
   // Adds |rtt_observer| to the list of round trip time observers. Must be
   // called on the IO thread.

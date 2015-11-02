@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/base/socket_performance_watcher_factory.h"
 
 namespace base {
 class TimeDelta;
@@ -18,18 +19,28 @@ namespace net {
 // socket statistics.
 class NET_EXPORT_PRIVATE SocketPerformanceWatcher {
  public:
-  virtual ~SocketPerformanceWatcher() {}
+  // |socket_performance_watcher_factory| is the factory that constructed
+  // |this| watcher.
+  SocketPerformanceWatcher(
+      const SocketPerformanceWatcherFactory::Protocol protocol,
+      SocketPerformanceWatcherFactory* socket_performance_watcher_factory);
+
+  virtual ~SocketPerformanceWatcher();
 
   // Called when updated transport layer RTT information is available. This
   // must be the transport layer RTT from this device to the remote transport
-  // layer endpoint. If the request goes through a HTTP proxy, it should
-  // provide the RTT to the proxy.
-  virtual void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) = 0;
-
- protected:
-  SocketPerformanceWatcher() {}
+  // layer endpoint. This method is called immediately after the observation is
+  // made, hence no timestamp.
+  void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) const;
 
  private:
+  // Transport layer protocol used by the socket that |this| is watching.
+  const SocketPerformanceWatcherFactory::Protocol protocol_;
+
+  // |socket_performance_watcher_factory_| is the factory that created
+  // |this| watcher.
+  SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(SocketPerformanceWatcher);
 };
 

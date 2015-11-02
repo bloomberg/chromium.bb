@@ -508,6 +508,7 @@
       'base/sdch_observer.h',
       'base/sdch_problem_code_list.h',
       'base/sdch_problem_codes.h',
+      'base/socket_performance_watcher.cc',
       'base/socket_performance_watcher.h',
       'base/socket_performance_watcher_factory.h',
       'base/static_cookie_policy.cc',

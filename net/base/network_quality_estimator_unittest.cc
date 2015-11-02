@@ -1058,6 +1058,26 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
     EXPECT_LE(0, (observation.timestamp - then).InMilliseconds());
     EXPECT_EQ(NetworkQualityEstimator::URL_REQUEST, observation.source);
   }
+
+  // Verify that observations from TCP and QUIC are passed on to the observers.
+  base::TimeDelta tcp_rtt(base::TimeDelta::FromMilliseconds(1));
+  base::TimeDelta quic_rtt(base::TimeDelta::FromMilliseconds(2));
+
+  scoped_ptr<SocketPerformanceWatcher> tcp_watcher =
+      estimator.CreateSocketPerformanceWatcher(
+          SocketPerformanceWatcherFactory::PROTOCOL_TCP);
+  scoped_ptr<SocketPerformanceWatcher> quic_watcher =
+      estimator.CreateSocketPerformanceWatcher(
+          SocketPerformanceWatcherFactory::PROTOCOL_QUIC);
+  tcp_watcher->OnUpdatedRTTAvailable(tcp_rtt);
+  quic_watcher->OnUpdatedRTTAvailable(quic_rtt);
+
+  EXPECT_EQ(4U, rtt_observer.observations().size());
+  EXPECT_EQ(2U, throughput_observer.observations().size());
+
+  EXPECT_EQ(tcp_rtt.InMilliseconds(), rtt_observer.observations().at(2).rtt_ms);
+  EXPECT_EQ(quic_rtt.InMilliseconds(),
+            rtt_observer.observations().at(3).rtt_ms);
 }
 
 }  // namespace net
