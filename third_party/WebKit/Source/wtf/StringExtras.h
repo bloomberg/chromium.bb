@@ -26,15 +26,11 @@
 #ifndef WTF_StringExtras_h
 #define WTF_StringExtras_h
 
-#if OS(POSIX)
-#define HAVE_STRINGS_H 1
-#endif
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-#if HAVE(STRINGS_H)
+#if OS(POSIX)
 #include <strings.h>
 #endif
 
