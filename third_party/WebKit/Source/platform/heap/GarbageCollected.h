@@ -120,6 +120,7 @@ struct IsGarbageCollectedType {
 // Note that this is only enabled for Member<B>. For Member<A> which we can
 // compute the object header addr statically, this dynamic dispatch is not used.
 class PLATFORM_EXPORT GarbageCollectedMixin {
+    IS_GARBAGE_COLLECTED_TYPE();
 public:
     typedef int IsGarbageCollectedMixinMarker;
     virtual void adjustAndMark(Visitor*) const = 0;

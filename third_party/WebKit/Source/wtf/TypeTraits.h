@@ -27,6 +27,8 @@
 
 namespace WTF {
 
+template<typename T> class RawPtr;
+
 // The following are provided in this file:
 //
 //   IsInteger<T>::value
@@ -362,6 +364,35 @@ private:
     template <typename U> static NoType checkMarker(...);
 public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+};
+
+template<typename T>
+class IsGarbageCollectedType {
+    typedef char YesType;
+    typedef struct NoType {
+        char padding[8];
+    } NoType;
+
+    template <typename U> static YesType checkGarbageCollectedType(typename U::IsGarbageCollectedTypeMarker*);
+    template <typename U> static NoType checkGarbageCollectedType(...);
+public:
+    static const bool value = (sizeof(YesType) == sizeof(checkGarbageCollectedType<T>(nullptr)));
+};
+
+template<typename T>
+class IsPointerToGarbageCollectedType {
+public:
+    static const bool value = false;
+};
+template<typename T>
+class IsPointerToGarbageCollectedType<T*> {
+public:
+    static const bool value = IsGarbageCollectedType<T>::value;
+};
+template<typename T>
+class IsPointerToGarbageCollectedType<RawPtr<T>> {
+public:
+    static const bool value = IsGarbageCollectedType<T>::value;
 };
 
 } // namespace WTF

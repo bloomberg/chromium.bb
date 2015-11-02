@@ -635,6 +635,8 @@ public:
 #if ENABLE(OILPAN)
         static_assert(Allocator::isGarbageCollected || !IsAllowOnlyInlineAllocation<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Vector");
 #endif
+        static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into an off-heap Vector.  Use HeapVector<Member<T>> instead.");
+
         ANNOTATE_NEW_BUFFER(begin(), capacity(), 0);
         m_size = 0;
     }
@@ -646,6 +648,8 @@ public:
 #if ENABLE(OILPAN)
         static_assert(Allocator::isGarbageCollected || !IsAllowOnlyInlineAllocation<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Vector");
 #endif
+        static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into an off-heap Vector.  Use HeapVector<Member<T>> instead.");
+
         ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
         m_size = size;
         TypeOperations::initialize(begin(), end());

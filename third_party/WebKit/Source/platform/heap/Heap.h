@@ -324,6 +324,7 @@ public:
 };
 
 template<typename T> class GarbageCollected {
+    IS_GARBAGE_COLLECTED_TYPE();
     WTF_MAKE_NONCOPYABLE(GarbageCollected);
 
     // For now direct allocation of arrays on the heap is not allowed.

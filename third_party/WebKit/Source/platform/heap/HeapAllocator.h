@@ -299,47 +299,51 @@ void HeapHashTableBacking<Table>::finalize(void* pointer)
     }
 }
 
-// FIXME: These should just be template aliases:
-//
-// template<typename T, size_t inlineCapacity = 0>
-// using HeapVector = Vector<T, inlineCapacity, HeapAllocator>;
-//
-// as soon as all the compilers we care about support that.
-// MSVC supports it only in MSVC 2013.
 template<
     typename KeyArg,
     typename MappedArg,
     typename HashArg = typename DefaultHash<KeyArg>::Hash,
     typename KeyTraitsArg = HashTraits<KeyArg>,
     typename MappedTraitsArg = HashTraits<MappedArg>>
-class HeapHashMap : public HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, HeapAllocator> { };
+class HeapHashMap : public HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, HeapAllocator> {
+    IS_GARBAGE_COLLECTED_TYPE();
+};
 
 template<
     typename ValueArg,
     typename HashArg = typename DefaultHash<ValueArg>::Hash,
     typename TraitsArg = HashTraits<ValueArg>>
-class HeapHashSet : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> { };
+class HeapHashSet : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
+    IS_GARBAGE_COLLECTED_TYPE();
+};
 
 template<
     typename ValueArg,
     typename HashArg = typename DefaultHash<ValueArg>::Hash,
     typename TraitsArg = HashTraits<ValueArg>>
-class HeapLinkedHashSet : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> { };
+class HeapLinkedHashSet : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
+    IS_GARBAGE_COLLECTED_TYPE();
+};
 
 template<
     typename ValueArg,
     size_t inlineCapacity = 0, // The inlineCapacity is just a dummy to match ListHashSet (off-heap).
     typename HashArg = typename DefaultHash<ValueArg>::Hash>
-class HeapListHashSet : public ListHashSet<ValueArg, inlineCapacity, HashArg, HeapListHashSetAllocator<ValueArg, inlineCapacity>> { };
+class HeapListHashSet : public ListHashSet<ValueArg, inlineCapacity, HashArg, HeapListHashSetAllocator<ValueArg, inlineCapacity>> {
+    IS_GARBAGE_COLLECTED_TYPE();
+};
 
 template<
     typename Value,
     typename HashFunctions = typename DefaultHash<Value>::Hash,
     typename Traits = HashTraits<Value>>
-class HeapHashCountedSet : public HashCountedSet<Value, HashFunctions, Traits, HeapAllocator> { };
+class HeapHashCountedSet : public HashCountedSet<Value, HashFunctions, Traits, HeapAllocator> {
+    IS_GARBAGE_COLLECTED_TYPE();
+};
 
 template<typename T, size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
+    IS_GARBAGE_COLLECTED_TYPE();
 public:
     HeapVector() { }
 
@@ -360,6 +364,7 @@ public:
 
 template<typename T, size_t inlineCapacity = 0>
 class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
+    IS_GARBAGE_COLLECTED_TYPE();
 public:
     HeapDeque() { }
 

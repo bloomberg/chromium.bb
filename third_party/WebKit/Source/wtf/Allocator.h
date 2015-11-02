@@ -59,6 +59,11 @@ namespace WTF {
         void* operator new(size_t, void*) = delete;             \
     public:
 
+#define IS_GARBAGE_COLLECTED_TYPE()                 \
+    public:                                         \
+        using IsGarbageCollectedTypeMarker = int;   \
+    private:
+
 #if COMPILER(CLANG)
 #define STACK_ALLOCATED()                                       \
     private:                                                    \

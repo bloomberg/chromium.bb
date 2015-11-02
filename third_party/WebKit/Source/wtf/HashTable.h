@@ -599,6 +599,7 @@ inline HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     , m_stats(adoptPtr(new Stats))
 #endif
 {
+    static_assert(Allocator::isGarbageCollected || (!IsPointerToGarbageCollectedType<Key>::value && !IsPointerToGarbageCollectedType<Value>::value), "Cannot put raw pointers to garbage-collected classes into an off-heap collection.");
 }
 
 inline unsigned doubleHash(unsigned key)

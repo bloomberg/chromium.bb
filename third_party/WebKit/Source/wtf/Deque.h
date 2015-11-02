@@ -214,7 +214,7 @@ public:
 
     bool operator==(const Iterator& other) const { return Base::isEqual(other); }
     bool operator!=(const Iterator& other) const { return !Base::isEqual(other); }
-    
+
     Iterator& operator++() { Base::increment(); return *this; }
     // postfix ++ intentionally omitted
     Iterator& operator--() { Base::decrement(); return *this; }
@@ -230,6 +230,7 @@ inline Deque<T, inlineCapacity, Allocator>::Deque()
 #if ENABLE(OILPAN)
     static_assert(Allocator::isGarbageCollected || !IsAllowOnlyInlineAllocation<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Deque");
 #endif
+    static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into a Deque. Use HeapDeque<Member<T>> instead.");
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
