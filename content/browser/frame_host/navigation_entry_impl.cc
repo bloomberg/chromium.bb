@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/common/navigation_params.h"
+#include "content/common/page_state_serialization.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -179,6 +181,17 @@ const base::string16& NavigationEntryImpl::GetTitle() const {
 
 void NavigationEntryImpl::SetPageState(const PageState& state) {
   frame_tree_->frame_entry->set_page_state(state);
+
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // Also get the root ISN and DSN out of the PageState.
+    ExplodedPageState exploded_state;
+    if (!DecodePageState(state.ToEncodedData(), &exploded_state))
+      return;
+    frame_tree_->frame_entry->set_item_sequence_number(
+        exploded_state.top.item_sequence_number);
+    frame_tree_->frame_entry->set_document_sequence_number(
+        exploded_state.top.document_sequence_number);
+  }
 }
 
 const PageState& NavigationEntryImpl::GetPageState() const {

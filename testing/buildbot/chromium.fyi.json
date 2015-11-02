@@ -5247,7 +5247,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest"
+          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:RenderFrameHostManagerTest.Restore*"
         ],
         "test": "content_browsertests"
       },
@@ -5278,7 +5278,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest"
+          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:RenderFrameHostManagerTest.Restore*"
         ],
         "test": "content_browsertests"
       },

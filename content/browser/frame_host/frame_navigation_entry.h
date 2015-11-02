@@ -58,14 +58,11 @@ class CONTENT_EXPORT FrameNavigationEntry
   // The item sequence number identifies each stop in the back/forward history
   // and is globally unique.  The document sequence number increments for each
   // new document and is also globally unique.  In-page navigations get a new
-  // item sequence number but the same document sequence number.
-  void set_item_sequence_number(int64 item_sequence_number) {
-    item_sequence_number_ = item_sequence_number;
-  }
+  // item sequence number but the same document sequence number.  These numbers
+  // should not change once assigned.
+  void set_item_sequence_number(int64 item_sequence_number);
   int64 item_sequence_number() const { return item_sequence_number_; }
-  void set_document_sequence_number(int64 document_sequence_number) {
-    document_sequence_number_ = document_sequence_number;
-  }
+  void set_document_sequence_number(int64 document_sequence_number);
   int64 document_sequence_number() const { return document_sequence_number_; }
 
   // The SiteInstance responsible for rendering this frame.  All frames sharing

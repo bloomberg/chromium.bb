@@ -1475,6 +1475,14 @@ void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void RenderViewImpl::SendUpdateState() {
+  // Don't send state updates when using subframe FrameNavigationEntries until
+  // PageState and HistoryController have been updated.  For now, the current
+  // entry's root WebHistoryItem sometimes points to data for a subframe (e.g.,
+  // after a subframe back/forward).
+  // TODO(creis): Fix this in https://crbug.com/545219.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
   HistoryEntry* entry = history_controller_->GetCurrentEntry();
   if (!entry)
     return;

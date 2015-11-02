@@ -50,4 +50,20 @@ void FrameNavigationEntry::UpdateEntry(int64 item_sequence_number,
   page_state_ = page_state;
 }
 
+void FrameNavigationEntry::set_item_sequence_number(
+    int64 item_sequence_number) {
+  // Once assigned, the item sequence number shouldn't change.
+  DCHECK(item_sequence_number_ == -1 ||
+         item_sequence_number_ == item_sequence_number);
+  item_sequence_number_ = item_sequence_number;
+}
+
+void FrameNavigationEntry::set_document_sequence_number(
+    int64 document_sequence_number) {
+  // Once assigned, the document sequence number shouldn't change.
+  DCHECK(document_sequence_number_ == -1 ||
+         document_sequence_number_ == document_sequence_number);
+  document_sequence_number_ = document_sequence_number;
+}
+
 }  // namespace content

@@ -1840,13 +1840,11 @@ void NavigationControllerImpl::FindFramesToNavigate(
 
   // Schedule a load in this frame if the new item isn't for the same item
   // sequence number in the same SiteInstance.
+  // TODO(creis): Handle null SiteInstances during session restore.
   if (!old_item ||
       new_item->item_sequence_number() != old_item->item_sequence_number() ||
       new_item->site_instance() != old_item->site_instance()) {
-    // TODO(creis): Restore item and document sequence numbers so that they
-    // can't be -1 here.  See https://crbug.com/545219.
     if (old_item &&
-        new_item->document_sequence_number() != -1 &&
         new_item->document_sequence_number() ==
             old_item->document_sequence_number()) {
       same_document_loads->push_back(std::make_pair(frame, new_item));
