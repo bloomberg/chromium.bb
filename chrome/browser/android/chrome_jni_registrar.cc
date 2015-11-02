@@ -69,6 +69,7 @@
 #include "chrome/browser/android/rappor/rappor_service_bridge.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
 #include "chrome/browser/android/rlz/revenue_stats.h"
+#include "chrome/browser/android/sessions/session_tab_helper_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/account_tracker_service_android.h"
@@ -315,6 +316,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SavePasswordInfoBar", SavePasswordInfoBar::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
     {"ServiceTabLauncher", service_tab_launcher::RegisterServiceTabLauncherJni},
+    {"SessionTabHelper", RegisterSessionTabHelper},
     {"SigninManager", SigninManagerAndroid::Register},
     {"SingleTabModel", RegisterSingleTabModel},
     {"SpellCheckerSessionBridge", SpellCheckerSessionBridge::RegisterJNI},
