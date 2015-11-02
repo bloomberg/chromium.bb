@@ -28,6 +28,9 @@ class FontFile : public Resource {
   // Returns true if the required interface is available.
   static bool IsAvailable();
 
+  // Returns true if this interface is supported for Windows.
+  bool IsSupportedForWindows();
+
   bool GetFontTable(uint32_t table, void* output, uint32_t* output_length);
 };
 

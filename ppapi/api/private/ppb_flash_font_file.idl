@@ -7,8 +7,11 @@
  * This file contains the <code>PPB_Flash_FontFile</code> interface.
  */
 
+[generate_thunk]
+
 label Chrome {
-  M24 = 0.1
+  M24 = 0.1,
+  M48 = 0.2
 };
 
 interface PPB_Flash_FontFile {
@@ -36,5 +39,12 @@ interface PPB_Flash_FontFile {
       [in] uint32_t table,
       [out] mem_t output,
       [out] uint32_t output_length);
+
+  /**
+   * Returns whether <code>PPB_Flash_FontFile</code> is supported on Windows.
+   */
+  [version=0.2]
+  PP_Bool IsSupportedForWindows();
+
 };
 
