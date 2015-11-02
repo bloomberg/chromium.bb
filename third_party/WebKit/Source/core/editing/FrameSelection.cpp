@@ -662,6 +662,8 @@ static bool isTextFormControl(const VisibleSelection& selection)
 
 LayoutBlock* FrameSelection::caretLayoutObject() const
 {
+    if (!isNonOrphanedCaret(selection()))
+        return nullptr;
     return CaretBase::caretLayoutObject(selection().start().anchorNode());
 }
 
