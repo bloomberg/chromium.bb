@@ -679,9 +679,11 @@ String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObject
     HeapHashSet<Member<const AXObject>> visited;
     AXRelatedObjectVector relatedObjects;
     String text = textAlternative(false, false, visited, nameFrom, &relatedObjects, nullptr);
-    nameObjects->clear();
-    for (size_t i = 0; i < relatedObjects.size(); i++)
-        nameObjects->append(relatedObjects[i]->object);
+    if (nameObjects) {
+        nameObjects->clear();
+        for (size_t i = 0; i < relatedObjects.size(); i++)
+            nameObjects->append(relatedObjects[i]->object);
+    }
     return text;
 }
 

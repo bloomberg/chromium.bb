@@ -11,7 +11,7 @@ test(function(t){
 
     // Get the AXObject for the label indirectly, even though it's display:none.
     // Ensure that it's valid.
-    var axLabel = axButton.titleUIElement();
+    var axLabel = axButton.deprecatedTitleUIElement();
     assert_equals(axLabel.isValid, true);
     assert_equals(axLabel.deprecatedDescription, 'AXDescription: AriaLabel');
 
@@ -21,7 +21,7 @@ test(function(t){
 
     // Ensure that the previous AXObject we had for the label is now invalid, but if
     // we fetch an AXObject for it, we get a new valid object.
-    var axLabel2 = axButton.titleUIElement();
+    var axLabel2 = axButton.deprecatedTitleUIElement();
     assert_equals(axLabel.isValid, false);
     assert_equals(axLabel2.isValid, true);
     assert_equals(axLabel2.deprecatedDescription, 'AXDescription: AriaLabel');
@@ -32,7 +32,7 @@ test(function(t){
 
     // Check once more: the second AXObject is now invalid, but if we fetch
     // an AXObject for the label a third time, we get a valid object again.
-    var axLabel3 = axButton.titleUIElement();
+    var axLabel3 = axButton.deprecatedTitleUIElement();
     assert_equals(axLabel.isValid, false);
     assert_equals(axLabel2.isValid, false);
     assert_equals(axLabel3.isValid, true);

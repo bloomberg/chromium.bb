@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<style>
+.hideAllContainers .container {
+    display: none;
+}
+</style>
+
+<div class="container">
+    <input id="text1" type="text" placeholder="Placeholder">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput1 = accessibilityController.accessibleElementById("text1");
+    assert_equals(axTextInput1.name, "Placeholder");
+    assert_equals(axTextInput1.nameFrom, "placeholder");
+    assert_equals(axTextInput1.description, "");
+    assert_equals(axTextInput1.descriptionFrom, "");
+}, "Text input uses placeholder as accessible name if that's the only accessible text.");
+</script>
+
+<div class="container">
+    <input id="text2" type="text" aria-label="Label" placeholder="Placeholder">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput2 = accessibilityController.accessibleElementById("text2");
+    assert_equals(axTextInput2.name, "Label");
+    assert_equals(axTextInput2.nameFrom, "attribute");
+    assert_equals(axTextInput2.description, "Placeholder");
+    assert_equals(axTextInput2.descriptionFrom, "placeholder");
+}, "Text input uses placeholder as accessible description if it wasn't used as the accessible name.");
+</script>
+
+<div class="container">
+    <input id="text3" type="text" aria-label="Label" placeholder="Placeholder" aria-describedby="describedby3">
+    <div id="describedby3">DescribedBy</div>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput3 = accessibilityController.accessibleElementById("text3");
+    assert_equals(axTextInput3.name, "Label");
+    assert_equals(axTextInput3.nameFrom, "attribute");
+    assert_equals(axTextInput3.description, "DescribedBy");
+    assert_equals(axTextInput3.descriptionFrom, "relatedElement");
+}, "aria-describedby overrides placeholder as the accessible description.");
+</script>
+
+<div class="container">
+    <input id="text4" type="text" title="Title">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput4 = accessibilityController.accessibleElementById("text4");
+    assert_equals(axTextInput4.name, "Title");
+    assert_equals(axTextInput4.nameFrom, "title");
+    assert_equals(axTextInput4.description, "");
+    assert_equals(axTextInput4.descriptionFrom, "");
+}, "Text input uses title as accessible name if that's the only accessible text.");
+</script>
+
+<div class="container">
+    <input id="text5" type="text" aria-label="Label" title="Title">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput5 = accessibilityController.accessibleElementById("text5");
+    assert_equals(axTextInput5.name, "Label");
+    assert_equals(axTextInput5.nameFrom, "attribute");
+    assert_equals(axTextInput5.description, "Title");
+    assert_equals(axTextInput5.descriptionFrom, "attribute");
+}, "Text input uses title as accessible description if it wasn't used as the accessible name.");
+</script>
+
+<div class="container">
+    <input id="text6" type="text" aria-label="Label" title="Title" aria-describedby="describedby6">
+    <div id="describedby6">DescribedBy</div>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput6 = accessibilityController.accessibleElementById("text6");
+    assert_equals(axTextInput6.name, "Label");
+    assert_equals(axTextInput6.nameFrom, "attribute");
+    assert_equals(axTextInput6.description, "DescribedBy");
+    assert_equals(axTextInput6.descriptionFrom, "relatedElement");
+}, "aria-describedby overrides title as the accessible description.");
+</script>
+
+<div class="container">
+    <input id="text7" type="text" aria-label="Label" title="Title" placeholder="Placeholder">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput7 = accessibilityController.accessibleElementById("text7");
+    assert_equals(axTextInput7.name, "Label");
+    assert_equals(axTextInput7.nameFrom, "attribute");
+    assert_equals(axTextInput7.description, "Placeholder");
+    assert_equals(axTextInput7.descriptionFrom, "placeholder");
+}, "placeholder overrides title as the accessible description.");
+</script>
+
+<script>
+if (window.testRunner)
+    document.body.className = "hideAllContainers";
+</script>

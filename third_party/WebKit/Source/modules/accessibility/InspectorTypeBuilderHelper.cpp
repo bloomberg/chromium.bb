@@ -186,11 +186,14 @@ AXValueSourceType::Enum valueSourceType(AXNameFrom nameFrom)
 {
     switch (nameFrom) {
     case AXNameFromAttribute:
+    case AXNameFromTitle:
+    case AXNameFromValue:
         return AXValueSourceType::Attribute;
     case AXNameFromContents:
         return AXValueSourceType::Contents;
     case AXNameFromPlaceholder:
         return AXValueSourceType::Placeholder;
+    case AXNameFromCaption:
     case AXNameFromRelatedElement:
         return AXValueSourceType::RelatedElement;
     default:

@@ -35,7 +35,7 @@ test(function(t) {
 test(function(t) {
     var axSummary2 = accessibilityController.accessibleElementById("summary2");
     assert_equals(axSummary2.name, "summary2-title");
-    assert_equals(axSummary2.nameFrom, "attribute");
+    assert_equals(axSummary2.nameFrom, "title");
 }, "Summary with title and no contents");
 </script>
 
@@ -51,7 +51,7 @@ test(function(t) {
     var axSummary3 = accessibilityController.accessibleElementById("summary3");
     assert_equals(axSummary3.name, "summary3-contents");
     assert_equals(axSummary3.nameFrom, "contents");
-}, "Summary with title and no contents");
+}, "Summary with title and contents");
 </script>
 
 <div class="container">
@@ -66,7 +66,7 @@ test(function(t) {
     var axSummary4 = accessibilityController.accessibleElementById("summary4");
     assert_equals(axSummary4.name, "summary4-aria-label");
     assert_equals(axSummary4.nameFrom, "attribute");
-}, "Summary with title and no contents");
+}, "Summary with title, aria-label, and contents");
 </script>
 
 <div class="container">
@@ -82,7 +82,7 @@ test(function(t) {
     var axSummary5 = accessibilityController.accessibleElementById("summary5");
     assert_equals(axSummary5.name, "summary5-aria-labelledby");
     assert_equals(axSummary5.nameFrom, "relatedElement");
-}, "Summary with title and no contents");
+}, "Summary with title, aria-label, aria-labelledby, and contents");
 </script>
 
 <script>

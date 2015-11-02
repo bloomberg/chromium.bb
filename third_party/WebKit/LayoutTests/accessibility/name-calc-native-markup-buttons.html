@@ -86,7 +86,7 @@ test(function(t) {
 test(function(t) {
     var axButton7 = accessibilityController.accessibleElementById("button7");
     assert_equals(axButton7.name, "button7-title");
-    assert_equals(axButton7.nameFrom, "attribute");
+    assert_equals(axButton7.nameFrom, "title");
 }, "Button with title only");
 </script>
 
@@ -110,7 +110,7 @@ test(function(t) {
 test(function(t) {
     var axButton9 = accessibilityController.accessibleElementById("button9");
     assert_equals(axButton9.name, "button9-title");
-    assert_equals(axButton9.nameFrom, "attribute");
+    assert_equals(axButton9.nameFrom, "title");
 }, "Button with title and img content with no alt");
 </script>
 

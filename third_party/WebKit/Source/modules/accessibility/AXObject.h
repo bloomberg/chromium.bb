@@ -319,9 +319,12 @@ enum TextUnderElementMode {
 enum AXNameFrom {
     AXNameFromUninitialized = -1,
     AXNameFromAttribute = 0,
+    AXNameFromCaption,
     AXNameFromContents,
     AXNameFromPlaceholder,
     AXNameFromRelatedElement,
+    AXNameFromValue,
+    AXNameFromTitle,
 };
 
 // The potential native HTML-based text (name, description or placeholder) sources for an element.
@@ -339,8 +342,11 @@ enum AXTextFromNativeHTML {
 // because on some platforms this determines how the accessible description
 // is exposed.
 enum AXDescriptionFrom {
+    AXDescriptionFromUninitialized = -1,
+    AXDescriptionFromAttribute = 0,
+    AXDescriptionFromContents,
     AXDescriptionFromPlaceholder,
-    AXDescriptionFromRelatedElement
+    AXDescriptionFromRelatedElement,
 };
 
 enum AXIgnoredReason {
@@ -422,6 +428,36 @@ public:
     }
 
     explicit NameSource(bool superseded)
+        : superseded(superseded)
+        , attribute(QualifiedName::null())
+    {
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(relatedObjects);
+    }
+};
+
+class DescriptionSource {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+public:
+    String text;
+    bool superseded = false;
+    bool invalid = false;
+    AXDescriptionFrom type = AXDescriptionFromUninitialized;
+    const QualifiedName& attribute;
+    AtomicString attributeValue;
+    AXTextFromNativeHTML nativeSource = AXTextFromNativeHTMLUninitialized;
+    AXRelatedObjectVector relatedObjects;
+
+    DescriptionSource(bool superseded, const QualifiedName& attr)
+        : superseded(superseded)
+        , attribute(attr)
+    {
+    }
+
+    explicit DescriptionSource(bool superseded)
         : superseded(superseded)
         , attribute(QualifiedName::null())
     {
@@ -658,11 +694,15 @@ public:
     // for the name, indicating which were used.
     virtual String name(NameSources*) const;
 
+    typedef HeapVector<DescriptionSource> DescriptionSources;
     // Takes the result of nameFrom from calling |name|, above, and retrieves the
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
     // derive the description, if any.
-    virtual String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) { return String(); }
+    virtual String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const { return String(); }
+
+    // Same as above, but returns a list of all potential sources for the description, indicating which were used.
+    virtual String description(AXNameFrom, AXDescriptionFrom&, DescriptionSources*, AXRelatedObjectVector*) const { return String(); }
 
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
@@ -942,5 +982,6 @@ private:
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::IgnoredReason);
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NameSource);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource);
 
 #endif // AXObject_h

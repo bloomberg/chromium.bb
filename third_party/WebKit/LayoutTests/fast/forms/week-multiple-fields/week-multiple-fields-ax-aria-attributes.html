@@ -11,7 +11,7 @@ description('This test checks aria-help attribute of fields in multiple fields w
 function focusedFieldValueDescription()
 {
     var element = accessibilityController.focusedElement;
-    return element.helpText + ', ' +  element.valueDescription + ', ' + element.minValue + ', ' + element.maxValue;
+    return element.deprecatedHelpText + ', ' +  element.valueDescription + ', ' + element.minValue + ', ' + element.maxValue;
 }
 
 var testInput = document.getElementById('test');

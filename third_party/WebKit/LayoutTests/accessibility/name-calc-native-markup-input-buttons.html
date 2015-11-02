@@ -27,7 +27,7 @@ test(function(t) {
 test(function(t) {
     var axButtonInput2 = accessibilityController.accessibleElementById("button2");
     assert_equals(axButtonInput2.name, "button-value2");
-    assert_equals(axButtonInput2.nameFrom, "attribute");
+    assert_equals(axButtonInput2.nameFrom, "value");
 }, "Input button with value");
 </script>
 
@@ -39,7 +39,7 @@ test(function(t) {
 test(function(t) {
     var axButtonInput3 = accessibilityController.accessibleElementById("button3");
     assert_equals(axButtonInput3.name, "button-value3");
-    assert_equals(axButtonInput3.nameFrom, "attribute");
+    assert_equals(axButtonInput3.nameFrom, "value");
 }, "Input button with value and title");
 </script>
 
@@ -51,7 +51,7 @@ test(function(t) {
 test(function(t) {
     var axButtonInput4 = accessibilityController.accessibleElementById("button4");
     assert_equals(axButtonInput4.name, "button-title4");
-    assert_equals(axButtonInput4.nameFrom, "attribute");
+    assert_equals(axButtonInput4.nameFrom, "title");
 }, "Input button with title only");
 </script>
 
@@ -140,7 +140,7 @@ test(function(t) {
 test(function(t) {
     var axSubmitButton2 = accessibilityController.accessibleElementById("submit2");
     assert_equals(axSubmitButton2.name, "submit-value2");
-    assert_equals(axSubmitButton2.nameFrom, "attribute");
+    assert_equals(axSubmitButton2.nameFrom, "value");
 }, "Submit button with value");
 </script>
 

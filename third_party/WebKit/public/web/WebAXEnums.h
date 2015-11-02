@@ -281,17 +281,23 @@ enum WebAXTextStyle {
 enum WebAXNameFrom {
     WebAXNameFromUninitialized = -1,
     WebAXNameFromAttribute = 0,
+    WebAXNameFromCaption,
     WebAXNameFromContents,
     WebAXNameFromPlaceholder,
     WebAXNameFromRelatedElement,
+    WebAXNameFromValue,
+    WebAXNameFromTitle,
 };
 
 // The source of the accessible description of an element. This is needed
 // because on some platforms this determines how the accessible description
 // is exposed.
 enum WebAXDescriptionFrom {
+    WebAXDescriptionFromUninitialized = -1,
+    WebAXDescriptionFromAttribute = 0,
+    WebAXDescriptionFromContents,
     WebAXDescriptionFromPlaceholder,
-    WebAXDescriptionFromRelatedElement
+    WebAXDescriptionFromRelatedElement,
 };
 
 } // namespace blink

@@ -158,6 +158,7 @@ String AXNodeObject::ariaAccessibilityDescription() const
 
 void AXNodeObject::ariaLabelledbyElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const
 {
+    // Try both spellings, but prefer aria-labelledby, which is the official spec.
     elementsFromAttribute(elements, aria_labelledbyAttr);
     if (!elements.size())
         elementsFromAttribute(elements, aria_labeledbyAttr);
@@ -1959,7 +1960,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     }
 
     // Step 2H from: http://www.w3.org/TR/accname-aam-1.1
-    nameFrom = AXNameFromAttribute;
+    nameFrom = AXNameFromTitle;
     if (nameSources) {
         nameSources->append(NameSource(foundTextAlternative, titleAttr));
         nameSources->last().type = nameFrom;
@@ -2046,6 +2047,14 @@ String AXNodeObject::textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjec
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     ariaLabelledbyElements(elements);
+    return textFromElements(true, visited, elements, relatedObjects);
+}
+
+String AXNodeObject::textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const
+{
+    AXObjectSet visited;
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    elementsFromAttribute(elements, aria_describedbyAttr);
     return textFromElements(true, visited, elements, relatedObjects);
 }
 
@@ -2616,7 +2625,7 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
     // 5.2 input type="button", input type="submit" and input type="reset"
     if (inputElement && inputElement->isTextButton()) {
         // value attribue
-        nameFrom = AXNameFromAttribute;
+        nameFrom = AXNameFromValue;
         if (nameSources) {
             nameSources->append(NameSource(*foundTextAlternative, valueAttr));
             nameSources->last().type = nameFrom;
@@ -2781,7 +2790,7 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         HTMLTableElement* tableElement = toHTMLTableElement(node());
 
         // caption
-        nameFrom = AXNameFromRelatedElement;
+        nameFrom = AXNameFromCaption;
         if (nameSources) {
             nameSources->append(NameSource(*foundTextAlternative));
             nameSources->last().type = nameFrom;
@@ -2832,6 +2841,199 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
     }
 
     return textAlternative;
+}
+
+String AXNodeObject::description(AXNameFrom nameFrom, AXDescriptionFrom& descriptionFrom, AXObjectVector* descriptionObjects) const
+{
+    AXRelatedObjectVector relatedObjects;
+    String result = description(nameFrom, descriptionFrom, nullptr, &relatedObjects);
+    if (descriptionObjects) {
+        descriptionObjects->clear();
+        for (size_t i = 0; i < relatedObjects.size(); i++)
+            descriptionObjects->append(relatedObjects[i]->object);
+    }
+    return result;
+}
+
+// Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+String AXNodeObject::description(AXNameFrom nameFrom, AXDescriptionFrom& descriptionFrom, DescriptionSources* descriptionSources, AXRelatedObjectVector* relatedObjects) const
+{
+    // If descriptionSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+    if (descriptionSources)
+        ASSERT(relatedObjects);
+
+    if (!node())
+        return String();
+
+    String description;
+    bool foundDescription = false;
+
+    descriptionFrom = AXDescriptionFromRelatedElement;
+    if (descriptionSources) {
+        descriptionSources->append(DescriptionSource(foundDescription, aria_describedbyAttr));
+        descriptionSources->last().type = descriptionFrom;
+    }
+
+    // aria-describedby overrides any other accessible description, from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+    const AtomicString& ariaDescribedby = getAttribute(aria_describedbyAttr);
+    if (!ariaDescribedby.isNull()) {
+        if (descriptionSources)
+            descriptionSources->last().attributeValue = ariaDescribedby;
+
+        description = textFromAriaDescribedby(relatedObjects);
+
+        if (!description.isNull()) {
+            if (descriptionSources) {
+                DescriptionSource& source = descriptionSources->last();
+                source.type = descriptionFrom;
+                source.relatedObjects = *relatedObjects;
+                source.text = description;
+                foundDescription = true;
+            } else {
+                return description;
+            }
+        } else if (descriptionSources) {
+            descriptionSources->last().invalid = true;
+        }
+    }
+
+    HTMLElement* htmlElement = nullptr;
+    if (node()->isHTMLElement())
+        htmlElement = toHTMLElement(node());
+
+    // placeholder, 5.1.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+    if (nameFrom != AXNameFromPlaceholder && htmlElement && htmlElement->isTextFormControl()) {
+        descriptionFrom = AXDescriptionFromPlaceholder;
+        if (descriptionSources) {
+            descriptionSources->append(DescriptionSource(foundDescription, placeholderAttr));
+            DescriptionSource& source = descriptionSources->last();
+            source.type = descriptionFrom;
+        }
+        HTMLElement* element = toHTMLElement(node());
+        const AtomicString& placeholder = element->fastGetAttribute(placeholderAttr);
+        if (!placeholder.isEmpty()) {
+            description = placeholder;
+            if (descriptionSources) {
+                DescriptionSource& source = descriptionSources->last();
+                source.text = description;
+                source.attributeValue = placeholder;
+                foundDescription = true;
+            } else {
+                return description;
+            }
+        }
+    }
+
+    const HTMLInputElement* inputElement = nullptr;
+    if (isHTMLInputElement(node()))
+        inputElement = toHTMLInputElement(node());
+
+    // value, 5.2.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+    if (nameFrom != AXNameFromValue && inputElement && inputElement->isTextButton()) {
+        descriptionFrom = AXDescriptionFromAttribute;
+        if (descriptionSources) {
+            descriptionSources->append(DescriptionSource(foundDescription, valueAttr));
+            descriptionSources->last().type = descriptionFrom;
+        }
+        String value = inputElement->value();
+        if (!value.isNull()) {
+            description = value;
+            if (descriptionSources) {
+                DescriptionSource& source = descriptionSources->last();
+                source.text = description;
+                foundDescription = true;
+            } else {
+                return description;
+            }
+        }
+    }
+
+    // table caption, 5.9.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+    if (nameFrom != AXNameFromCaption && isHTMLTableElement(node())) {
+        HTMLTableElement* tableElement = toHTMLTableElement(node());
+
+        descriptionFrom = AXDescriptionFromRelatedElement;
+        if (descriptionSources) {
+            descriptionSources->append(DescriptionSource(foundDescription));
+            descriptionSources->last().type = descriptionFrom;
+            descriptionSources->last().nativeSource = AXTextFromNativeHTMLTableCaption;
+        }
+        HTMLTableCaptionElement* caption = tableElement->caption();
+        if (caption) {
+            AXObject* captionAXObject = axObjectCache().getOrCreate(caption);
+            if (captionAXObject) {
+                AXObjectSet visited;
+                description = recursiveTextAlternative(*captionAXObject, false, visited);
+                if (relatedObjects)
+                    relatedObjects->append(new NameSourceRelatedObject(captionAXObject, description));
+
+                if (descriptionSources) {
+                    DescriptionSource& source = descriptionSources->last();
+                    source.relatedObjects = *relatedObjects;
+                    source.text = description;
+                    foundDescription = true;
+                } else {
+                    return description;
+                }
+            }
+        }
+    }
+
+    // summary, 5.6.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+    if (nameFrom != AXNameFromContents && isHTMLSummaryElement(node())) {
+        descriptionFrom = AXDescriptionFromContents;
+        if (descriptionSources) {
+            descriptionSources->append(DescriptionSource(foundDescription));
+            descriptionSources->last().type = descriptionFrom;
+        }
+
+        AXObjectSet visited;
+        description = textFromDescendants(visited);
+
+        if (!description.isEmpty()) {
+            if (descriptionSources) {
+                foundDescription = true;
+                descriptionSources->last().text = description;
+            } else {
+                return description;
+            }
+        }
+    }
+
+    // title attribute, from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+    if (nameFrom != AXNameFromTitle) {
+        descriptionFrom = AXDescriptionFromAttribute;
+        if (descriptionSources) {
+            descriptionSources->append(DescriptionSource(foundDescription, titleAttr));
+            descriptionSources->last().type = descriptionFrom;
+        }
+        const AtomicString& title = getAttribute(titleAttr);
+        if (!title.isEmpty()) {
+            description = title;
+            if (descriptionSources) {
+                foundDescription = true;
+                descriptionSources->last().text = description;
+            } else {
+                return description;
+            }
+        }
+    }
+
+    descriptionFrom = AXDescriptionFromUninitialized;
+
+    if (foundDescription) {
+        for (size_t i = 0; i < descriptionSources->size(); ++i) {
+            if (!(*descriptionSources)[i].text.isNull() && !(*descriptionSources)[i].superseded) {
+                DescriptionSource& descriptionSource = (*descriptionSources)[i];
+                descriptionFrom = descriptionSource.type;
+                if (!descriptionSource.relatedObjects.isEmpty())
+                    *relatedObjects = descriptionSource.relatedObjects;
+                return descriptionSource.text;
+            }
+        }
+    }
+
+    return String();
 }
 
 DEFINE_TRACE(AXNodeObject)

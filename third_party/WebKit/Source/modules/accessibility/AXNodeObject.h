@@ -172,6 +172,8 @@ protected:
 
     // New AX name calculation.
     String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
+    String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
+    String description(AXNameFrom, AXDescriptionFrom&, DescriptionSources*, AXRelatedObjectVector*) const override;
 
     // Location and click point in frame-relative coordinates.
     LayoutRect elementRect() const override;
@@ -222,6 +224,7 @@ private:
     String textFromDescendants(AXObjectSet& visited) const;
     String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const;
     String textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const;
+    String textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const;
     String nativeTextAlternative(AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;

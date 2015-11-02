@@ -175,6 +175,11 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int NameElementCount();
   v8::Local<v8::Object> NameElementAtIndex(unsigned index);
 
+  std::string Description();
+  std::string DescriptionFrom();
+  int DescriptionElementCount();
+  v8::Local<v8::Object> DescriptionElementAtIndex(unsigned index);
+
   blink::WebAXObject accessibility_object_;
   Factory* factory_;
 
