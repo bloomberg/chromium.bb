@@ -68,6 +68,7 @@ defaultsessionstart
 devicelight
 devicemotion
 deviceorientation
+deviceorientationabsolute
 dischargingtimechange
 disconnect
 display

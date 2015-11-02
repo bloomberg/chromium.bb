@@ -88,6 +88,7 @@ PASS oldChildWindow.ondblclick is newChildWindow.ondblclick
 PASS oldChildWindow.ondevicelight is newChildWindow.ondevicelight
 PASS oldChildWindow.ondevicemotion is newChildWindow.ondevicemotion
 PASS oldChildWindow.ondeviceorientation is newChildWindow.ondeviceorientation
+PASS oldChildWindow.ondeviceorientationabsolute is newChildWindow.ondeviceorientationabsolute
 PASS oldChildWindow.ondrag is newChildWindow.ondrag
 PASS oldChildWindow.ondragend is newChildWindow.ondragend
 PASS oldChildWindow.ondragenter is newChildWindow.ondragenter

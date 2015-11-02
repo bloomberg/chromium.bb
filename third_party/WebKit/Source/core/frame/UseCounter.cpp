@@ -890,6 +890,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case DeviceOrientationInsecureOrigin:
         return "The deviceorientation event is deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
+    case DeviceOrientationAbsoluteInsecureOrigin:
+        return "The deviceorientationabsolute event is deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
     case GeolocationInsecureOrigin:
         return "getCurrentPosition() and watchPosition() are deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 

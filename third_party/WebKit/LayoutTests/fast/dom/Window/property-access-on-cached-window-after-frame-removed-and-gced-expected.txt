@@ -88,6 +88,7 @@ PASS childWindow.ondblclick is null
 PASS childWindow.ondevicelight is null
 PASS childWindow.ondevicemotion is null
 PASS childWindow.ondeviceorientation is null
+PASS childWindow.ondeviceorientationabsolute is null
 PASS childWindow.ondrag is null
 PASS childWindow.ondragend is null
 PASS childWindow.ondragenter is null

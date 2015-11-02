@@ -12,9 +12,10 @@
 namespace blink {
 
 class DeviceOrientationData;
+class DeviceOrientationDispatcher;
 class Event;
 
-class MODULES_EXPORT DeviceOrientationController final : public DeviceSingleWindowEventController, public WillBeHeapSupplement<Document> {
+class MODULES_EXPORT DeviceOrientationController : public DeviceSingleWindowEventController, public WillBeHeapSupplement<Document> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 public:
     ~DeviceOrientationController() override;
@@ -31,9 +32,12 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-private:
+protected:
     explicit DeviceOrientationController(Document&);
 
+    virtual DeviceOrientationDispatcher& dispatcherInstance() const;
+
+private:
     // Inherited from DeviceEventControllerBase.
     void registerWithDispatcher() override;
     void unregisterWithDispatcher() override;

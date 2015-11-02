@@ -1,4 +1,4 @@
-Tests basic operation of the deviceorientation event using mock data.
+Tests basic operation of deviceorientationabsolute event using mock data.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

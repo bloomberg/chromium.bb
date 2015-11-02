@@ -54,6 +54,7 @@
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 #include "modules/device_light/DeviceLightController.h"
 #include "modules/device_orientation/DeviceMotionController.h"
+#include "modules/device_orientation/DeviceOrientationAbsoluteController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
@@ -139,6 +140,8 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
         if (document) {
             DeviceMotionController::from(*document);
             DeviceOrientationController::from(*document);
+            if (RuntimeEnabledFeatures::deviceOrientationAbsoluteEnabled())
+                DeviceOrientationAbsoluteController::from(*document);
             if (RuntimeEnabledFeatures::deviceLightEnabled())
                 DeviceLightController::from(*document);
             NavigatorGamepad::from(*document);

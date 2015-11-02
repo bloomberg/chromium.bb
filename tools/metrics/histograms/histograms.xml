@@ -61121,6 +61121,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="982" label="ExternalIsSearchProviderInstalled"/>
   <int value="983" label="V8Permissions_RequestAll_Method"/>
   <int value="984" label="BluetoothDeviceInstanceId"/>
+  <int value="985" label="HTMLLabelElementFormIDLAttribute"/>
+  <int value="986" label="HTMLLabelElementFormContentAttribute"/>
+  <int value="987" label="DeviceOrientationAbsoluteInsecureOrigin"/>
+  <int value="988" label="DeviceOrientationAbsoluteSecureOrigin"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

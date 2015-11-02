@@ -859,6 +859,8 @@ public:
         BluetoothDeviceInstanceId = 984,
         HTMLLabelElementFormIDLAttribute = 985,
         HTMLLabelElementFormContentAttribute = 986,
+        DeviceOrientationAbsoluteInsecureOrigin = 987,
+        DeviceOrientationAbsoluteSecureOrigin = 988,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

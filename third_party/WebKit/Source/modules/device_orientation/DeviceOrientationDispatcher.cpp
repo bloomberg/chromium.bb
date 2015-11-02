@@ -37,13 +37,17 @@
 
 namespace blink {
 
-DeviceOrientationDispatcher& DeviceOrientationDispatcher::instance()
+DeviceOrientationDispatcher& DeviceOrientationDispatcher::instance(bool absolute)
 {
-    DEFINE_STATIC_LOCAL(Persistent<DeviceOrientationDispatcher>, deviceOrientationDispatcher, (new DeviceOrientationDispatcher()));
+    if (absolute) {
+        DEFINE_STATIC_LOCAL(Persistent<DeviceOrientationDispatcher>, deviceOrientationAbsoluteDispatcher, (new DeviceOrientationDispatcher(absolute)));
+        return *deviceOrientationAbsoluteDispatcher;
+    }
+    DEFINE_STATIC_LOCAL(Persistent<DeviceOrientationDispatcher>, deviceOrientationDispatcher, (new DeviceOrientationDispatcher(absolute)));
     return *deviceOrientationDispatcher;
 }
 
-DeviceOrientationDispatcher::DeviceOrientationDispatcher()
+DeviceOrientationDispatcher::DeviceOrientationDispatcher(bool absolute) : m_absolute(absolute)
 {
 }
 
@@ -59,12 +63,12 @@ DEFINE_TRACE(DeviceOrientationDispatcher)
 
 void DeviceOrientationDispatcher::startListening()
 {
-    Platform::current()->startListening(WebPlatformEventTypeDeviceOrientation, this);
+    Platform::current()->startListening(getWebPlatformEventType(), this);
 }
 
 void DeviceOrientationDispatcher::stopListening()
 {
-    Platform::current()->stopListening(WebPlatformEventTypeDeviceOrientation);
+    Platform::current()->stopListening(getWebPlatformEventType());
     m_lastDeviceOrientationData.clear();
 }
 
@@ -77,6 +81,11 @@ void DeviceOrientationDispatcher::didChangeDeviceOrientation(const WebDeviceOrie
 DeviceOrientationData* DeviceOrientationDispatcher::latestDeviceOrientationData()
 {
     return m_lastDeviceOrientationData.get();
+}
+
+WebPlatformEventType DeviceOrientationDispatcher::getWebPlatformEventType() const
+{
+    return (m_absolute) ? WebPlatformEventTypeDeviceOrientationAbsolute : WebPlatformEventTypeDeviceOrientation;
 }
 
 } // namespace blink

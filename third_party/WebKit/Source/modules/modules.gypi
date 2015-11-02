@@ -899,6 +899,8 @@
       'device_orientation/DeviceMotionDispatcher.h',
       'device_orientation/DeviceMotionEvent.cpp',
       'device_orientation/DeviceMotionEvent.h',
+      'device_orientation/DeviceOrientationAbsoluteController.cpp',
+      'device_orientation/DeviceOrientationAbsoluteController.h',
       'device_orientation/DeviceOrientationController.cpp',
       'device_orientation/DeviceOrientationController.h',
       'device_orientation/DeviceOrientationData.cpp',

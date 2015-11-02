@@ -15,6 +15,7 @@ DeviceInertialSensorService::DeviceInertialSensorService()
     : num_light_readers_(0),
       num_motion_readers_(0),
       num_orientation_readers_(0),
+      num_orientation_absolute_readers_(0),
       is_shutdown_(false) {
 }
 

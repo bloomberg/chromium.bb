@@ -6557,6 +6557,7 @@ interface webkitURL
     attribute ondevicelight
     attribute ondevicemotion
     attribute ondeviceorientation
+    attribute ondeviceorientationabsolute
     attribute ondrag
     attribute ondragend
     attribute ondragenter

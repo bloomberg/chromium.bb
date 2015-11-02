@@ -6,4 +6,5 @@
     ImplementedAs=DOMWindowDeviceOrientation
 ] partial interface Window {
     attribute EventHandler ondeviceorientation;
+    [RuntimeEnabled=DeviceOrientationAbsolute] attribute EventHandler ondeviceorientationabsolute;
 };
