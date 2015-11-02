@@ -54,6 +54,14 @@ Background = function() {
   this.whitelist_ = ['chromevox_next_test'];
 
   /**
+   * Regular expression for blacklisting classic.
+   * @type {RegExp}
+   * @private
+   */
+  this.classicBlacklistRegExp_ = Background.globsToRegExp_(
+      chrome.runtime.getManifest()['content_scripts'][0]['exclude_globs']);
+
+  /**
    * @type {cursors.Range}
    * @private
    */
@@ -712,32 +720,28 @@ Background.prototype = {
    */
   shouldEnableClassicForUrl_: function(url) {
     return this.mode_ != ChromeVoxMode.FORCE_NEXT &&
-        !this.isWhitelistedForCompat_(url) &&
+        !this.isBlacklistedForClassic_(url) &&
         !this.isWhitelistedForNext_(url);
   },
 
   /**
+   * @param {string} url
    * @return {boolean}
    * @private
    */
-  isWhitelistedForCompat_: function(url) {
-    return url.indexOf('chrome://md-settings') != -1 ||
-          url.indexOf('chrome://downloads') != -1 ||
-          url.indexOf('chrome://oobe/login') != -1 ||
-          url.indexOf(
-              'https://accounts.google.com/embedded/setup/chromeos') === 0 ||
-          url === '';
+  isBlacklistedForClassic_: function(url) {
+    return url === '' || this.classicBlacklistRegExp_.test(url);
   },
 
   /**
-   * @private
    * @param {string} url
    * @return {boolean} Whether the given |url| is whitelisted.
+   * @private
    */
   isWhitelistedForNext_: function(url) {
     return this.whitelist_.some(function(item) {
       return url.indexOf(item) != -1;
-    }.bind(this));
+    });
   },
 
   /**
@@ -748,10 +752,10 @@ Background.prototype = {
   setupChromeVoxVariants_: function(url) {
     var mode = this.mode_;
     if (mode != ChromeVoxMode.FORCE_NEXT) {
-      if (this.isWhitelistedForCompat_(url))
-        mode = ChromeVoxMode.COMPAT;
-      else if (this.isWhitelistedForNext_(url))
+      if (this.isWhitelistedForNext_(url))
         mode = ChromeVoxMode.NEXT;
+      else if (this.isBlacklistedForClassic_(url))
+        mode = ChromeVoxMode.COMPAT;
       else
         mode = ChromeVoxMode.CLASSIC;
     }
@@ -854,6 +858,21 @@ Background.prototype = {
               cvox.ChromeVox.tts);
     }
   }
+};
+
+/**
+ * Converts a list of globs, as used in the extension manifest, to a regular
+ * expression that matches if and only if any of the globs in the list matches.
+ * @param {!Array<string>} globs
+ * @return {!RegExp}
+ * @private
+ */
+Background.globsToRegExp_ = function(globs) {
+  return new RegExp('^(' + globs.map(function(glob) {
+    return glob.replace(/[.+^$(){}|[\]\\]/g, '\\$&')
+        .replace(/\*/g, '.*')
+        .replace(/\?/g, '.');
+  }).join('|') + ')$');
 };
 
 /** @type {Background} */

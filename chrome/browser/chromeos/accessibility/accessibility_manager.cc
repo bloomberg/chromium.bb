@@ -225,6 +225,11 @@ void InjectChromeVoxContentScript(
       RenderViewHost::FromID(render_process_id, render_view_id);
   if (!render_view_host)
     return;
+  const content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(render_view_host);
+  GURL content_url;
+  if (web_contents)
+    content_url = web_contents->GetLastCommittedURL();
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(extension_service->profile())
           ->enabled_extensions()
@@ -244,6 +249,8 @@ void InjectChromeVoxContentScript(
       extensions::ContentScriptsInfo::GetContentScripts(extension);
   for (size_t i = 0; i < content_scripts.size(); i++) {
     const extensions::UserScript& script = content_scripts[i];
+    if (web_contents && !script.MatchesURL(content_url))
+      continue;
     for (size_t j = 0; j < script.js_scripts().size(); ++j) {
       const extensions::UserScript::File& file = script.js_scripts()[j];
       extensions::ExtensionResource resource = extension->GetResource(

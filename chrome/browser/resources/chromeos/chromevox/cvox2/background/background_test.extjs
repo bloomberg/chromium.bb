@@ -452,7 +452,8 @@ TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
     var togglerFromBackground = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion');
 
     // The command came from a content script.
-    var togglerFromContent = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion', true);
+    var togglerFromContent = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion',
+                                         true);
 
     mockFeedback.call(togglerFromBackground)
         .expectSpeech('classic')   
@@ -462,4 +463,14 @@ TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
         .expectSpeech('classic');
     mockFeedback.replay();
   });
+});
+
+SYNC_TEST_F('BackgroundTest', 'GlobsToRegExp', function() {
+  assertEquals('/^()$/', Background.globsToRegExp_([]).toString());
+  assertEquals(
+      '/^(http:\\/\\/host\\/path\\+here)$/',
+      Background.globsToRegExp_(['http://host/path+here']).toString());
+  assertEquals(
+      '/^(url1.*|u.l2|.*url3)$/',
+      Background.globsToRegExp_(['url1*', 'u?l2', '*url3']).toString());
 });
