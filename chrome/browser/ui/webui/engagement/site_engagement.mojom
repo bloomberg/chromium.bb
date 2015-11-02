@@ -4,7 +4,7 @@
 
 struct SiteEngagementInfo {
   string origin;
-  int32 score;
+  double score;
 };
 
 interface SiteEngagementUIHandler {

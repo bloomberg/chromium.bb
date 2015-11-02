@@ -17,7 +17,11 @@ define('main', [
         siteEngagementMojom.SiteEngagementUIHandler);
 
     // Populate engagement table.
-    uiHandler.getSiteEngagementInfo().then(response => {
+    uiHandler.getSiteEngagementInfo().then(function(response) {
+      // Round each score to 2 decimal places.
+      response.info.forEach(function(x) {
+        x.score = Number(Math.round(x.score * 100) / 100);
+      });
       $('engagement-table').engagementInfo = response.info;
     });
   };

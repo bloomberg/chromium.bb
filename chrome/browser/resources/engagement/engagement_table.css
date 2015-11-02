@@ -13,8 +13,24 @@ table th {
 
 table th {
   background: rgb(224, 236, 255);
+  cursor: pointer;
+  padding-bottom: 4px;
+  padding-top: 4px;
+  white-space: nowrap;
 }
 
 .origin-cell {
   min-width: 500px;
+}
+
+table tr:hover {
+  background: rgb(255, 255, 187);
+}
+
+.sort-column::after {
+  content: '▲';
+}
+
+:host([sort-reverse]) .sort-column::after {
+  content: '▼';
 }

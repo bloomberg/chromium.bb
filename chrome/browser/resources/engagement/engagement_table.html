@@ -6,12 +6,18 @@
     <table>
       <thead>
         <tr>
-          <th>Origin</th>
-          <th>Points</th>
+          <th on-tap="handleSortColumnTap" sort-key="origin">
+            Origin
+          </th>
+          <th on-tap="handleSortColumnTap" sort-key="score" class="sort-column">
+            Points
+          </th>
         </tr>
       </thead>
       <tbody>
-        <template is="dom-repeat" items="{{engagementInfo}}" as="info">
+        <template id="engagement-table-items" is="dom-repeat"
+                  items="{{engagementInfo}}" as="info"
+                  sort="[[getTableSortFunction_(sortKey_, sortReverse)]]">
           <tr>
             <td class="origin-cell">{{info.origin}}</td>
             <td>{{info.score}}</td>

@@ -37,7 +37,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
 
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
 
-    for (const std::pair<GURL, int>& info : service->GetScoreMap()) {
+    for (const std::pair<GURL, double>& info : service->GetScoreMap()) {
       SiteEngagementInfoPtr origin_info(SiteEngagementInfo::New());
       origin_info->origin = mojo::String::From(info.first);
       origin_info->score = info.second;
