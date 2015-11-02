@@ -296,6 +296,7 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
 void GraphicsLayer::paint(GraphicsContext& context, const IntRect* clip)
 {
     ASSERT(clip || RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
+    ASSERT(drawsContent());
 
     if (!m_client)
         return;
@@ -873,6 +874,9 @@ void GraphicsLayer::setDrawsContent(bool drawsContent)
 
     m_drawsContent = drawsContent;
     updateLayerIsDrawable();
+
+    if (!drawsContent && m_paintController)
+        m_paintController.clear();
 }
 
 void GraphicsLayer::setContentsVisible(bool contentsVisible)

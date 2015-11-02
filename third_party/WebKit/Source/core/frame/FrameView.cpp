@@ -2487,8 +2487,10 @@ void FrameView::synchronizedPaint()
     if (GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking()) {
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             // TODO(wangxianzhu,chrishtr): What about the extra graphics layers for overflow control, virtual viewport, etc?
-            GraphicsContext context(*rootGraphicsLayer->paintController());
-            rootGraphicsLayer->paint(context, nullptr);
+            if (rootGraphicsLayer->drawsContent()) {
+                GraphicsContext context(*rootGraphicsLayer->paintController());
+                rootGraphicsLayer->paint(context, nullptr);
+            }
         } else {
             // Find the real root GraphicsLayer because we also need to paint layers not under the root graphics layer of
             // the LayoutView, e.g. scrollbar layers created by PaintLayerCompositor and VisualViewport.
@@ -2508,9 +2510,14 @@ void FrameView::synchronizedPaint()
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 {
-    ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    ASSERT(graphicsLayer->paintController());
-    GraphicsContext context(*graphicsLayer->paintController());
+    if (graphicsLayer->drawsContent()) {
+        ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        ASSERT(graphicsLayer->paintController());
+
+        GraphicsContext context(*graphicsLayer->paintController());
+        graphicsLayer->paint(context, nullptr);
+        graphicsLayer->paintController()->commitNewDisplayItems();
+    }
 
     if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
         synchronizedPaintRecursively(maskLayer);
@@ -2518,10 +2525,6 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
         synchronizedPaintRecursively(contentsClippingMaskLayer);
     if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
         synchronizedPaintRecursively(replicaLayer);
-
-    // TODO(chrishtr): fix unit tests to not inject one-off interest rects.
-    graphicsLayer->paint(context, nullptr);
-    graphicsLayer->paintController()->commitNewDisplayItems();
 
     for (auto& child : graphicsLayer->children())
         synchronizedPaintRecursively(child);
