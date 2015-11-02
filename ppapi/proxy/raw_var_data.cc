@@ -299,7 +299,7 @@ void BasicRawVarData::Write(
       m->WriteInt(var_.value.as_int);
       break;
     case PP_VARTYPE_DOUBLE:
-      IPC::ParamTraits<double>::Write(m, var_.value.as_double);
+      IPC::WriteParam(m, var_.value.as_double);
       break;
     case PP_VARTYPE_OBJECT:
       m->WriteInt64(var_.value.as_id);
@@ -333,7 +333,7 @@ bool BasicRawVarData::Read(PP_VarType type,
         return false;
       break;
     case PP_VARTYPE_DOUBLE:
-      if (!IPC::ParamTraits<double>::Read(m, iter, &result.value.as_double))
+      if (!IPC::ReadParam(m, iter, &result.value.as_double))
         return false;
       break;
     case PP_VARTYPE_OBJECT:
@@ -512,8 +512,7 @@ bool ArrayBufferRawVarData::Read(PP_VarType type,
         return false;
       break;
     case ARRAY_BUFFER_SHMEM_PLUGIN:
-      if (!IPC::ParamTraits<SerializedHandle>::Read(
-              m, iter, &plugin_shm_handle_)) {
+      if (!IPC::ReadParam(m, iter, &plugin_shm_handle_)) {
         return false;
       }
       break;
@@ -720,7 +719,7 @@ void ResourceRawVarData::Write(IPC::Message* m,
   m->WriteInt(pending_browser_host_id_);
   m->WriteBool(creation_message_);
   if (creation_message_)
-    IPC::ParamTraits<IPC::Message>::Write(m, *creation_message_);
+    IPC::WriteParam(m, *creation_message_);
 }
 
 bool ResourceRawVarData::Read(PP_VarType type,
@@ -739,7 +738,7 @@ bool ResourceRawVarData::Read(PP_VarType type,
     return false;
   if (has_creation_message) {
     creation_message_.reset(new IPC::Message());
-    if (!IPC::ParamTraits<IPC::Message>::Read(m, iter, creation_message_.get()))
+    if (!IPC::ReadParam(m, iter, creation_message_.get()))
       return false;
   } else {
     creation_message_.reset();

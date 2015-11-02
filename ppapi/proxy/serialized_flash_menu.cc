@@ -50,8 +50,8 @@ void WriteMenuItem(IPC::Message* m, const PP_Flash_MenuItem* menu_item) {
   m->WriteUInt32(type);
   m->WriteString(menu_item->name ? menu_item->name : "");
   m->WriteInt(menu_item->id);
-  IPC::ParamTraits<PP_Bool>::Write(m, menu_item->enabled);
-  IPC::ParamTraits<PP_Bool>::Write(m, menu_item->checked);
+  IPC::WriteParam(m, menu_item->enabled);
+  IPC::WriteParam(m, menu_item->checked);
   if (type == PP_FLASH_MENUITEM_TYPE_SUBMENU)
     WriteMenu(m, menu_item->submenu);
 }
@@ -96,9 +96,9 @@ bool ReadMenuItem(int depth,
   menu_item->name[name.size()] = 0;
   if (!iter->ReadInt(&menu_item->id))
     return false;
-  if (!IPC::ParamTraits<PP_Bool>::Read(m, iter, &menu_item->enabled))
+  if (!IPC::ReadParam(m, iter, &menu_item->enabled))
     return false;
-  if (!IPC::ParamTraits<PP_Bool>::Read(m, iter, &menu_item->checked))
+  if (!IPC::ReadParam(m, iter, &menu_item->checked))
     return false;
   if (type == PP_FLASH_MENUITEM_TYPE_SUBMENU) {
     menu_item->submenu = ReadMenu(depth, m, iter);

@@ -76,7 +76,7 @@ void WriteVectorWithoutCopy(Message* m, const std::vector<T>& p) {
 
 // static
 void ParamTraits<PP_Bool>::Write(Message* m, const param_type& p) {
-  ParamTraits<bool>::Write(m, PP_ToBool(p));
+  WriteParam(m, PP_ToBool(p));
 }
 
 // static
@@ -87,7 +87,7 @@ bool ParamTraits<PP_Bool>::Read(const Message* m,
   // which ParamTraits<bool> does for us. We don't want to deserialize "2" into
   // a PP_Bool, for example.
   bool result = false;
-  if (!ParamTraits<bool>::Read(m, iter, &result))
+  if (!ReadParam(m, iter, &result))
     return false;
   *r = PP_FromBool(result);
   return true;
@@ -183,8 +183,8 @@ void ParamTraits<PP_NetAddress_Private>::Log(const param_type& p,
 // static
 void ParamTraits<ppapi::HostResource>::Write(Message* m,
                                              const param_type& p) {
-  ParamTraits<PP_Instance>::Write(m, p.instance());
-  ParamTraits<PP_Resource>::Write(m, p.host_resource());
+  WriteParam(m, p.instance());
+  WriteParam(m, p.host_resource());
 }
 
 // static
@@ -193,8 +193,7 @@ bool ParamTraits<ppapi::HostResource>::Read(const Message* m,
                                             param_type* r) {
   PP_Instance instance;
   PP_Resource resource;
-  if (!ParamTraits<PP_Instance>::Read(m, iter, &instance) ||
-      !ParamTraits<PP_Resource>::Read(m, iter, &resource))
+  if (!ReadParam(m, iter, &instance) || !ReadParam(m, iter, &resource))
     return false;
   r->SetHostResource(instance, resource);
   return true;
@@ -251,7 +250,7 @@ void ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Log(
 
 void ParamTraits<ppapi::PpapiPermissions>::Write(Message* m,
                                                  const param_type& p) {
-  ParamTraits<uint32_t>::Write(m, p.GetBits());
+  WriteParam(m, p.GetBits());
 }
 
 // static
@@ -259,7 +258,7 @@ bool ParamTraits<ppapi::PpapiPermissions>::Read(const Message* m,
                                                 base::PickleIterator* iter,
                                                 param_type* r) {
   uint32_t bits;
-  if (!ParamTraits<uint32_t>::Read(m, iter, &bits))
+  if (!ReadParam(m, iter, &bits))
     return false;
   *r = ppapi::PpapiPermissions(bits);
   return true;
@@ -278,11 +277,11 @@ void ParamTraits<ppapi::proxy::SerializedHandle>::Write(Message* m,
   ppapi::proxy::SerializedHandle::WriteHeader(p.header(), m);
   switch (p.type()) {
     case ppapi::proxy::SerializedHandle::SHARED_MEMORY:
-      ParamTraits<base::SharedMemoryHandle>::Write(m, p.shmem());
+      WriteParam(m, p.shmem());
       break;
     case ppapi::proxy::SerializedHandle::SOCKET:
     case ppapi::proxy::SerializedHandle::FILE:
-      ParamTraits<IPC::PlatformFileForTransit>::Write(m, p.descriptor());
+      WriteParam(m, p.descriptor());
       break;
     case ppapi::proxy::SerializedHandle::INVALID:
       break;
@@ -301,7 +300,7 @@ bool ParamTraits<ppapi::proxy::SerializedHandle>::Read(
   switch (header.type) {
     case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
       base::SharedMemoryHandle handle;
-      if (ParamTraits<base::SharedMemoryHandle>::Read(m, iter, &handle)) {
+      if (ReadParam(m, iter, &handle)) {
         r->set_shmem(handle, header.size);
         return true;
       }
@@ -309,7 +308,7 @@ bool ParamTraits<ppapi::proxy::SerializedHandle>::Read(
     }
     case ppapi::proxy::SerializedHandle::SOCKET: {
       IPC::PlatformFileForTransit socket;
-      if (ParamTraits<IPC::PlatformFileForTransit>::Read(m, iter, &socket)) {
+      if (ReadParam(m, iter, &socket)) {
         r->set_socket(socket);
         return true;
       }
@@ -317,7 +316,7 @@ bool ParamTraits<ppapi::proxy::SerializedHandle>::Read(
     }
     case ppapi::proxy::SerializedHandle::FILE: {
       IPC::PlatformFileForTransit desc;
-      if (ParamTraits<IPC::PlatformFileForTransit>::Read(m, iter, &desc)) {
+      if (ReadParam(m, iter, &desc)) {
         r->set_file_handle(desc, header.open_flags, header.file_io);
         return true;
       }
@@ -341,12 +340,12 @@ void ParamTraits<ppapi::proxy::SerializedHandle>::Log(const param_type& p,
 void ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<PP_Instance>::Write(m, p.instance);
-  ParamTraits<ppapi::HostResource>::Write(m, p.resource);
-  ParamTraits<int64_t>::Write(m, p.bytes_sent);
-  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_sent);
-  ParamTraits<int64_t>::Write(m, p.bytes_received);
-  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_received);
+  WriteParam(m, p.instance);
+  WriteParam(m, p.resource);
+  WriteParam(m, p.bytes_sent);
+  WriteParam(m, p.total_bytes_to_be_sent);
+  WriteParam(m, p.bytes_received);
+  WriteParam(m, p.total_bytes_to_be_received);
 }
 
 // static
@@ -354,13 +353,11 @@ bool ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Read(
     const Message* m,
     base::PickleIterator* iter,
     param_type* r) {
-  return
-      ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
-      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->bytes_sent) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_sent) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->bytes_received) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_received);
+  return ReadParam(m, iter, &r->instance) && ReadParam(m, iter, &r->resource) &&
+         ReadParam(m, iter, &r->bytes_sent) &&
+         ReadParam(m, iter, &r->total_bytes_to_be_sent) &&
+         ReadParam(m, iter, &r->bytes_received) &&
+         ReadParam(m, iter, &r->total_bytes_to_be_received);
 }
 
 // static
@@ -375,24 +372,24 @@ void ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Log(
 void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<PP_Instance>::Write(m, p.instance);
-  ParamTraits<ppapi::HostResource>::Write(m, p.image_data);
-  ParamTraits<ppapi::proxy::SerializedFontDescription>::Write(m, p.font_desc);
-  ParamTraits<uint32_t>::Write(m, p.color);
-  ParamTraits<PP_Point>::Write(m, p.position);
-  ParamTraits<PP_Rect>::Write(m, p.clip);
-  ParamTraits<float>::Write(m, p.transformation[0][0]);
-  ParamTraits<float>::Write(m, p.transformation[0][1]);
-  ParamTraits<float>::Write(m, p.transformation[0][2]);
-  ParamTraits<float>::Write(m, p.transformation[1][0]);
-  ParamTraits<float>::Write(m, p.transformation[1][1]);
-  ParamTraits<float>::Write(m, p.transformation[1][2]);
-  ParamTraits<float>::Write(m, p.transformation[2][0]);
-  ParamTraits<float>::Write(m, p.transformation[2][1]);
-  ParamTraits<float>::Write(m, p.transformation[2][2]);
-  ParamTraits<PP_Bool>::Write(m, p.allow_subpixel_aa);
-  ParamTraits<std::vector<uint16_t> >::Write(m, p.glyph_indices);
-  ParamTraits<std::vector<PP_Point> >::Write(m, p.glyph_advances);
+  WriteParam(m, p.instance);
+  WriteParam(m, p.image_data);
+  WriteParam(m, p.font_desc);
+  WriteParam(m, p.color);
+  WriteParam(m, p.position);
+  WriteParam(m, p.clip);
+  WriteParam(m, p.transformation[0][0]);
+  WriteParam(m, p.transformation[0][1]);
+  WriteParam(m, p.transformation[0][2]);
+  WriteParam(m, p.transformation[1][0]);
+  WriteParam(m, p.transformation[1][1]);
+  WriteParam(m, p.transformation[1][2]);
+  WriteParam(m, p.transformation[2][0]);
+  WriteParam(m, p.transformation[2][1]);
+  WriteParam(m, p.transformation[2][2]);
+  WriteParam(m, p.allow_subpixel_aa);
+  WriteParam(m, p.glyph_indices);
+  WriteParam(m, p.glyph_advances);
 }
 
 // static
@@ -400,27 +397,23 @@ bool ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Read(
     const Message* m,
     base::PickleIterator* iter,
     param_type* r) {
-  return
-      ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
-      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->image_data) &&
-      ParamTraits<ppapi::proxy::SerializedFontDescription>::Read(m, iter,
-                                                              &r->font_desc) &&
-      ParamTraits<uint32_t>::Read(m, iter, &r->color) &&
-      ParamTraits<PP_Point>::Read(m, iter, &r->position) &&
-      ParamTraits<PP_Rect>::Read(m, iter, &r->clip) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[0][0]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[0][1]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[0][2]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[1][0]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[1][1]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[1][2]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[2][0]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[2][1]) &&
-      ParamTraits<float>::Read(m, iter, &r->transformation[2][2]) &&
-      ParamTraits<PP_Bool>::Read(m, iter, &r->allow_subpixel_aa) &&
-      ParamTraits<std::vector<uint16_t> >::Read(m, iter, &r->glyph_indices) &&
-      ParamTraits<std::vector<PP_Point> >::Read(m, iter, &r->glyph_advances) &&
-      r->glyph_indices.size() == r->glyph_advances.size();
+  return ReadParam(m, iter, &r->instance) &&
+         ReadParam(m, iter, &r->image_data) &&
+         ReadParam(m, iter, &r->font_desc) && ReadParam(m, iter, &r->color) &&
+         ReadParam(m, iter, &r->position) && ReadParam(m, iter, &r->clip) &&
+         ReadParam(m, iter, &r->transformation[0][0]) &&
+         ReadParam(m, iter, &r->transformation[0][1]) &&
+         ReadParam(m, iter, &r->transformation[0][2]) &&
+         ReadParam(m, iter, &r->transformation[1][0]) &&
+         ReadParam(m, iter, &r->transformation[1][1]) &&
+         ReadParam(m, iter, &r->transformation[1][2]) &&
+         ReadParam(m, iter, &r->transformation[2][0]) &&
+         ReadParam(m, iter, &r->transformation[2][1]) &&
+         ReadParam(m, iter, &r->transformation[2][2]) &&
+         ReadParam(m, iter, &r->allow_subpixel_aa) &&
+         ReadParam(m, iter, &r->glyph_indices) &&
+         ReadParam(m, iter, &r->glyph_advances) &&
+         r->glyph_indices.size() == r->glyph_advances.size();
 }
 
 // static
@@ -434,8 +427,8 @@ void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Log(
 // static
 void ParamTraits<ppapi::proxy::SerializedDirEntry>::Write(Message* m,
                                                           const param_type& p) {
-  ParamTraits<std::string>::Write(m, p.name);
-  ParamTraits<bool>::Write(m, p.is_dir);
+  WriteParam(m, p.name);
+  WriteParam(m, p.is_dir);
 }
 
 // static
@@ -443,8 +436,7 @@ bool ParamTraits<ppapi::proxy::SerializedDirEntry>::Read(
     const Message* m,
     base::PickleIterator* iter,
     param_type* r) {
-  return ParamTraits<std::string>::Read(m, iter, &r->name) &&
-         ParamTraits<bool>::Read(m, iter, &r->is_dir);
+  return ReadParam(m, iter, &r->name) && ReadParam(m, iter, &r->is_dir);
 }
 
 // static
@@ -458,14 +450,14 @@ void ParamTraits<ppapi::proxy::SerializedDirEntry>::Log(const param_type& p,
 void ParamTraits<ppapi::proxy::SerializedFontDescription>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<std::string>::Write(m, p.face);
-  ParamTraits<int32_t>::Write(m, p.family);
-  ParamTraits<uint32_t>::Write(m, p.size);
-  ParamTraits<int32_t>::Write(m, p.weight);
-  ParamTraits<PP_Bool>::Write(m, p.italic);
-  ParamTraits<PP_Bool>::Write(m, p.small_caps);
-  ParamTraits<int32_t>::Write(m, p.letter_spacing);
-  ParamTraits<int32_t>::Write(m, p.word_spacing);
+  WriteParam(m, p.face);
+  WriteParam(m, p.family);
+  WriteParam(m, p.size);
+  WriteParam(m, p.weight);
+  WriteParam(m, p.italic);
+  WriteParam(m, p.small_caps);
+  WriteParam(m, p.letter_spacing);
+  WriteParam(m, p.word_spacing);
 }
 
 // static
@@ -473,15 +465,11 @@ bool ParamTraits<ppapi::proxy::SerializedFontDescription>::Read(
     const Message* m,
     base::PickleIterator* iter,
     param_type* r) {
-  return
-      ParamTraits<std::string>::Read(m, iter, &r->face) &&
-      ParamTraits<int32_t>::Read(m, iter, &r->family) &&
-      ParamTraits<uint32_t>::Read(m, iter, &r->size) &&
-      ParamTraits<int32_t>::Read(m, iter, &r->weight) &&
-      ParamTraits<PP_Bool>::Read(m, iter, &r->italic) &&
-      ParamTraits<PP_Bool>::Read(m, iter, &r->small_caps) &&
-      ParamTraits<int32_t>::Read(m, iter, &r->letter_spacing) &&
-      ParamTraits<int32_t>::Read(m, iter, &r->word_spacing);
+  return ReadParam(m, iter, &r->face) && ReadParam(m, iter, &r->family) &&
+         ReadParam(m, iter, &r->size) && ReadParam(m, iter, &r->weight) &&
+         ReadParam(m, iter, &r->italic) && ReadParam(m, iter, &r->small_caps) &&
+         ReadParam(m, iter, &r->letter_spacing) &&
+         ReadParam(m, iter, &r->word_spacing);
 }
 
 // static
@@ -497,12 +485,12 @@ void ParamTraits<ppapi::proxy::SerializedFontDescription>::Log(
 void ParamTraits<ppapi::proxy::SerializedTrueTypeFontDesc>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<std::string>::Write(m, p.family);
-  ParamTraits<PP_TrueTypeFontFamily_Dev>::Write(m, p.generic_family);
-  ParamTraits<PP_TrueTypeFontStyle_Dev>::Write(m, p.style);
-  ParamTraits<PP_TrueTypeFontWeight_Dev>::Write(m, p.weight);
-  ParamTraits<PP_TrueTypeFontWidth_Dev>::Write(m, p.width);
-  ParamTraits<PP_TrueTypeFontCharset_Dev>::Write(m, p.charset);
+  WriteParam(m, p.family);
+  WriteParam(m, p.generic_family);
+  WriteParam(m, p.style);
+  WriteParam(m, p.weight);
+  WriteParam(m, p.width);
+  WriteParam(m, p.charset);
 }
 
 // static
@@ -510,14 +498,10 @@ bool ParamTraits<ppapi::proxy::SerializedTrueTypeFontDesc>::Read(
     const Message* m,
     base::PickleIterator* iter,
     param_type* r) {
-  return
-      ParamTraits<std::string>::Read(m, iter, &r->family) &&
-      ParamTraits<PP_TrueTypeFontFamily_Dev>::Read(m, iter,
-                                                   &r->generic_family) &&
-      ParamTraits<PP_TrueTypeFontStyle_Dev>::Read(m, iter, &r->style) &&
-      ParamTraits<PP_TrueTypeFontWeight_Dev>::Read(m, iter, &r->weight) &&
-      ParamTraits<PP_TrueTypeFontWidth_Dev>::Read(m, iter, &r->width) &&
-      ParamTraits<PP_TrueTypeFontCharset_Dev>::Read(m, iter, &r->charset);
+  return ReadParam(m, iter, &r->family) &&
+         ReadParam(m, iter, &r->generic_family) &&
+         ReadParam(m, iter, &r->style) && ReadParam(m, iter, &r->weight) &&
+         ReadParam(m, iter, &r->width) && ReadParam(m, iter, &r->charset);
 }
 
 // static
@@ -591,7 +575,7 @@ void ParamTraits<ppapi::proxy::SerializedFlashMenu>::Log(const param_type& p,
 void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<base::ListValue>::Write(m, p.values_);
+  WriteParam(m, p.values_);
 }
 
 // static
@@ -599,7 +583,7 @@ bool ParamTraits<ppapi::PPB_X509Certificate_Fields>::Read(
     const Message* m,
     base::PickleIterator* iter,
     param_type* r) {
-  return ParamTraits<base::ListValue>::Read(m, iter, &(r->values_));
+  return ReadParam(m, iter, &(r->values_));
 }
 
 // static
@@ -613,7 +597,7 @@ void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Log(const param_type& p,
 void ParamTraits<ppapi::SocketOptionData>::Write(Message* m,
                                                  const param_type& p) {
   ppapi::SocketOptionData::Type type = p.GetType();
-  ParamTraits<int32_t>::Write(m, static_cast<int32_t>(type));
+  WriteParam(m, static_cast<int32_t>(type));
   switch (type) {
     case ppapi::SocketOptionData::TYPE_INVALID: {
       break;
@@ -625,7 +609,7 @@ void ParamTraits<ppapi::SocketOptionData>::Write(Message* m,
       static_cast<void>(result);
       DCHECK(result);
 
-      ParamTraits<bool>::Write(m, out_value);
+      WriteParam(m, out_value);
       break;
     }
     case ppapi::SocketOptionData::TYPE_INT32: {
@@ -635,7 +619,7 @@ void ParamTraits<ppapi::SocketOptionData>::Write(Message* m,
       static_cast<void>(result);
       DCHECK(result);
 
-      ParamTraits<int32_t>::Write(m, out_value);
+      WriteParam(m, out_value);
       break;
     }
     // No default so the compiler will warn on new types.
@@ -648,7 +632,7 @@ bool ParamTraits<ppapi::SocketOptionData>::Read(const Message* m,
                                                 param_type* r) {
   *r = ppapi::SocketOptionData();
   int32_t type = 0;
-  if (!ParamTraits<int32_t>::Read(m, iter, &type))
+  if (!ReadParam(m, iter, &type))
     return false;
   if (type != ppapi::SocketOptionData::TYPE_INVALID &&
       type != ppapi::SocketOptionData::TYPE_BOOL &&
@@ -661,14 +645,14 @@ bool ParamTraits<ppapi::SocketOptionData>::Read(const Message* m,
     }
     case ppapi::SocketOptionData::TYPE_BOOL: {
       bool value = false;
-      if (!ParamTraits<bool>::Read(m, iter, &value))
+      if (!ReadParam(m, iter, &value))
         return false;
       r->SetBool(value);
       return true;
     }
     case ppapi::SocketOptionData::TYPE_INT32: {
       int32_t value = 0;
-      if (!ParamTraits<int32_t>::Read(m, iter, &value))
+      if (!ReadParam(m, iter, &value))
         return false;
       r->SetInt32(value);
       return true;
@@ -690,7 +674,7 @@ void ParamTraits<ppapi::CompositorLayerData::Transform>::Write(
     Message* m,
     const param_type& p) {
   for (size_t i = 0; i < arraysize(p.matrix); i++)
-    ParamTraits<float>::Write(m, p.matrix[i]);
+    WriteParam(m, p.matrix[i]);
 }
 
 // static
@@ -699,7 +683,7 @@ bool ParamTraits<ppapi::CompositorLayerData::Transform>::Read(
     base::PickleIterator* iter,
     param_type* r) {
   for (size_t i = 0; i < arraysize(r->matrix);i++) {
-    if (!ParamTraits<float>::Read(m, iter, &r->matrix[i]))
+    if (!ReadParam(m, iter, &r->matrix[i]))
       return false;
   }
   return true;

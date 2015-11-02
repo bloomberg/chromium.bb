@@ -51,27 +51,25 @@ bool ResourceMessageParams::Deserialize(const IPC::Message* msg,
 }
 
 void ResourceMessageParams::WriteHeader(IPC::Message* msg) const {
-  IPC::ParamTraits<PP_Resource>::Write(msg, pp_resource_);
-  IPC::ParamTraits<int32_t>::Write(msg, sequence_);
+  IPC::WriteParam(msg, pp_resource_);
+  IPC::WriteParam(msg, sequence_);
 }
 
 void ResourceMessageParams::WriteHandles(IPC::Message* msg) const {
-  IPC::ParamTraits<std::vector<SerializedHandle> >::Write(msg,
-                                                          handles_->data());
+  IPC::WriteParam(msg, handles_->data());
 }
 
 bool ResourceMessageParams::ReadHeader(const IPC::Message* msg,
                                        base::PickleIterator* iter) {
   DCHECK(handles_->data().empty());
   handles_->set_should_close(true);
-  return IPC::ParamTraits<PP_Resource>::Read(msg, iter, &pp_resource_) &&
-         IPC::ParamTraits<int32_t>::Read(msg, iter, &sequence_);
+  return IPC::ReadParam(msg, iter, &pp_resource_) &&
+         IPC::ReadParam(msg, iter, &sequence_);
 }
 
 bool ResourceMessageParams::ReadHandles(const IPC::Message* msg,
                                         base::PickleIterator* iter) {
-  return IPC::ParamTraits<std::vector<SerializedHandle> >::Read(
-             msg, iter, &handles_->data());
+  return IPC::ReadParam(msg, iter, &handles_->data());
 }
 
 void ResourceMessageParams::ConsumeHandles() const {
@@ -155,14 +153,14 @@ ResourceMessageCallParams::~ResourceMessageCallParams() {
 
 void ResourceMessageCallParams::Serialize(IPC::Message* msg) const {
   ResourceMessageParams::Serialize(msg);
-  IPC::ParamTraits<bool>::Write(msg, has_callback_);
+  IPC::WriteParam(msg, has_callback_);
 }
 
 bool ResourceMessageCallParams::Deserialize(const IPC::Message* msg,
                                             base::PickleIterator* iter) {
   if (!ResourceMessageParams::Deserialize(msg, iter))
     return false;
-  return IPC::ParamTraits<bool>::Read(msg, iter, &has_callback_);
+  return IPC::ReadParam(msg, iter, &has_callback_);
 }
 
 ResourceMessageReplyParams::ResourceMessageReplyParams()
@@ -190,14 +188,13 @@ void ResourceMessageReplyParams::Serialize(IPC::Message* msg) const {
 
 bool ResourceMessageReplyParams::Deserialize(const IPC::Message* msg,
                                              base::PickleIterator* iter) {
-  return (ReadHeader(msg, iter) &&
-          IPC::ParamTraits<int32_t>::Read(msg, iter, &result_) &&
+  return (ReadHeader(msg, iter) && IPC::ReadParam(msg, iter, &result_) &&
           ReadHandles(msg, iter));
 }
 
 void ResourceMessageReplyParams::WriteReplyHeader(IPC::Message* msg) const {
   WriteHeader(msg);
-  IPC::ParamTraits<int32_t>::Write(msg, result_);
+  IPC::WriteParam(msg, result_);
 }
 
 }  // namespace proxy
