@@ -233,8 +233,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // go over capacity depending on how the file is muxed.
   bool StreamsHaveAvailableCapacity();
 
-  // Returns true if the maximum allowed memory usage has been reached.
-  bool IsMaxMemoryUsageReached() const;
+  // Updates |stream_memory_usage_| to the memory usage in bytes of all
+  // FFmpegDemuxerStreams.  Returns the current memory usage.
+  int64_t UpdateMemoryUsage();
 
   // Signal all FFmpegDemuxerStreams that the stream has ended.
   void StreamHasEnded();
@@ -322,6 +323,10 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   scoped_ptr<FFmpegGlue> glue_;
 
   const EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
+
+  // Last stream size as calculated by UpdateMemoryUsage().
+  mutable base::Lock stream_memory_usage_lock_;
+  int64_t stream_memory_usage_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
