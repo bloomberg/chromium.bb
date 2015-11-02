@@ -2118,16 +2118,6 @@ void SpdySession::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
   it->second.stream->OnPaddingConsumed(len);
 }
 
-SpdyHeadersHandlerInterface* SpdySession::OnHeaderFrameStart(
-    SpdyStreamId stream_id) {
-  LOG(FATAL);
-  return nullptr;
-}
-
-void SpdySession::OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) {
-  LOG(FATAL);
-}
-
 void SpdySession::OnSettings(bool clear_persisted) {
   CHECK(in_io_loop_);
 

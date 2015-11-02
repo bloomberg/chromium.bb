@@ -244,18 +244,6 @@ void SpdySM::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
           << ", [" << len << "])";
 }
 
-SpdyHeadersHandlerInterface* SpdySM::OnHeaderFrameStart(
-    SpdyStreamId stream_id) {
-  LOG(FATAL) << ACCEPTOR_CLIENT_IDENT
-             << "SpdySM::OnHeaderFrameStart() not implemented.";
-  return nullptr;
-}
-
-void SpdySM::OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) {
-  LOG(FATAL) << ACCEPTOR_CLIENT_IDENT
-             << "SpdySM::OnHeaderFrameEnd() not implemented.";
-}
-
 void SpdySM::OnSynStream(SpdyStreamId stream_id,
                          SpdyStreamId associated_stream_id,
                          SpdyPriority priority,
