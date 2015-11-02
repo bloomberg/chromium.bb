@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.chromoting.cardboard.DesktopActivity;
@@ -40,8 +42,10 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
      * Preference used for displaying an interestitial dialog only when the user first accesses the
      * Cardboard function.
      */
-    private static final String PREFERENCE_CARDBOARD_DIALOG_SEEN =
-            "cardboard_dialog_seen";
+    private static final String PREFERENCE_CARDBOARD_DIALOG_SEEN = "cardboard_dialog_seen";
+
+    /** The amount of time to wait to hide the Actionbar after user input is seen. */
+    private static final int ACTIONBAR_AUTO_HIDE_DELAY_MS = 3000;
 
     /** The surface that displays the remote host's desktop feed. */
     private DesktopView mRemoteHostDesktop;
@@ -51,9 +55,14 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
 
     private ActivityLifecycleListener mActivityLifecycleListener;
 
-    // Flag to indicate whether the current activity is going to switch to Cardboard
-    // desktop activity.
+    /** Flag to indicate whether the current activity is switching to Cardboard desktop activity. */
     private boolean mSwitchToCardboardDesktopActivity;
+
+    /** Indicates whether a Soft Input UI (such as a keyboard) is visible. */
+    private boolean mSoftInputVisible = false;
+
+    /** Holds the scheduled task object which will be called to hide the ActionBar. */
+    private Runnable mActionBarAutoHideTask;
 
     /** Called when the activity is first created. */
     @Override
@@ -75,12 +84,32 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         // set the description for accessibility/screen readers.
         getSupportActionBar().setHomeActionContentDescription(R.string.disconnect_myself_button);
 
+        // The action bar is already shown when the activity is started however calling the
+        // function below will set our preferred system UI flags which will adjust the layout
+        // size of the canvas and we can avoid an initial resize event.
+        showActionBar();
+
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(this);
 
-        mActivityLifecycleListener = CapabilityManager.getInstance()
-            .onActivityAcceptingListener(this, Capabilities.CAST_CAPABILITY);
+        mActivityLifecycleListener = CapabilityManager.getInstance().onActivityAcceptingListener(
+                this, Capabilities.CAST_CAPABILITY);
         mActivityLifecycleListener.onActivityCreated(this, savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            attachKeyboardVisibilityListener();
+
+            // Only create an Autohide task if the system supports immersive fullscreen mode.  Older
+            // versions of the OS benefit less from this functionality and we don't want to change
+            // the experience for them.
+            mActionBarAutoHideTask = new Runnable() {
+                public void run() {
+                    hideActionBar();
+                }
+            };
+        } else {
+            mRemoteHostDesktop.setFitsSystemWindows(true);
+        }
     }
 
     @Override
@@ -98,6 +127,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         if (!mSwitchToCardboardDesktopActivity) {
             JniInterface.enableVideoChannel(false);
         }
+        stopActionBarAutoHideTimer();
     }
 
     @Override
@@ -105,6 +135,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         super.onResume();
         mActivityLifecycleListener.onActivityResumed(this);
         JniInterface.enableVideoChannel(true);
+        startActionBarAutoHideTimer();
     }
 
     @Override
@@ -138,9 +169,31 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         MenuItem item = menu.findItem(R.id.actionbar_cardboard);
         item.setVisible(enableCardboard);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // We don't need to show a hide ActionBar button if immersive fullscreen is supported.
+            menu.findItem(R.id.actionbar_hide).setVisible(false);
+        }
+
         ChromotingUtil.tintMenuIcons(this, menu);
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    // Posts a deplayed task to hide the ActionBar.  If an existing task has already been scheduled,
+    // then the previous task is removed and the new one scheduled, effectively resetting the timer.
+    private void startActionBarAutoHideTimer() {
+        if (mActionBarAutoHideTask != null) {
+            stopActionBarAutoHideTimer();
+            getWindow().getDecorView().postDelayed(
+                    mActionBarAutoHideTask, ACTIONBAR_AUTO_HIDE_DELAY_MS);
+        }
+    }
+
+    // Clear all existing delayed tasks to prevent the ActionBar from being hidden.
+    private void stopActionBarAutoHideTimer() {
+        if (mActionBarAutoHideTask != null) {
+            getWindow().getDecorView().removeCallbacks(mActionBarAutoHideTask);
+        }
     }
 
     /** Called whenever the visibility of the system status bar or navigation bar changes. */
@@ -154,7 +207,7 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         // IMMERSIVE_STICKY mode is used, the system clears this flag (leaving the FULLSCREEN flag
         // set) when the user swipes the edge to reveal the bars temporarily. When this happens,
         // the action-bar should remain hidden.
-        int fullscreenFlags = getSystemUiFlags();
+        int fullscreenFlags = getFullscreenFlags();
         if ((visibility & fullscreenFlags) != 0) {
             hideActionBarWithoutSystemUi();
         } else {
@@ -163,10 +216,21 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
     }
 
     @SuppressLint("InlinedApi")
-    private int getSystemUiFlags() {
+    private static int getFullscreenFlags() {
         int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             flags |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+        return flags;
+    }
+
+    @SuppressLint("InlinedApi")
+    private static int getImmersiveLayoutFlags() {
+        int flags = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            flags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+            flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
         }
         return flags;
     }
@@ -175,13 +239,21 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         // Request exit from any fullscreen mode. The action-bar controls will be shown in response
         // to the SystemUiVisibility notification. The visibility of the action-bar should be tied
         // to the fullscreen state of the system, so there's no need to explicitly show it here.
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+        int flags = View.SYSTEM_UI_FLAG_VISIBLE | getImmersiveLayoutFlags();
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
+        // The OS will not call onSystemUiVisibilityChange() if the keyboard is visible which means
+        // our ActionBar will not be visible until then.  This check allows us to work around this
+        // issue and still allow the system to show the ActionBar normally with the soft keyboard.
+        if (mSoftInputVisible) {
+            showActionBarWithoutSystemUi();
+        }
     }
 
     /** Shows the action bar without changing SystemUiVisibility. */
     private void showActionBarWithoutSystemUi() {
         getSupportActionBar().show();
+        startActionBarAutoHideTimer();
     }
 
     @SuppressLint("InlinedApi")
@@ -192,11 +264,10 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         // The controls will be hidden in response to the SystemUiVisibility notification.
         // This helps ensure that the visibility of the controls is synchronized with the
         // fullscreen state.
-        View decorView = getWindow().getDecorView();
 
         // LOW_PROFILE gives the status and navigation bars a "lights-out" appearance.
         // FULLSCREEN hides the status bar on supported devices (4.1 and above).
-        int flags = getSystemUiFlags();
+        int flags = getFullscreenFlags();
 
         // HIDE_NAVIGATION hides the navigation bar. However, if the user touches the screen, the
         // event is not seen by the application and instead the navigation bar is re-shown.
@@ -204,15 +275,26 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         // keeping the navigation controls hidden. This flag was introduced in 4.4, later than
         // HIDE_NAVIGATION, and so a runtime check is needed before setting either of these flags.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE);
+            flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            flags |= View.SYSTEM_UI_FLAG_IMMERSIVE;
+            flags |= getImmersiveLayoutFlags();
         }
 
-        decorView.setSystemUiVisibility(flags);
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
+        // The OS will not call onSystemUiVisibilityChange() until the keyboard has been dismissed
+        // which means our ActionBar will still be visible.  This check allows us to work around
+        // this issue when the keyboard is visible and the user wants additional space on the screen
+        // and still allow the system to hide the ActionBar normally when no keyboard is present.
+        if (mSoftInputVisible) {
+            hideActionBarWithoutSystemUi();
+        }
     }
 
     /** Hides the action bar without changing SystemUiVisibility. */
     private void hideActionBarWithoutSystemUi() {
         getSupportActionBar().hide();
+        stopActionBarAutoHideTimer();
     }
 
     /** Called whenever an action bar button is pressed. */
@@ -221,6 +303,9 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         int id = item.getItemId();
 
         mActivityLifecycleListener.onActivityOptionsItemSelected(this, item);
+
+        // Whenever a user selects an option from the ActionBar, reset the auto-hide timer.
+        startActionBarAutoHideTimer();
 
         if (id == R.id.actionbar_cardboard) {
             onCardboardItemSelected();
@@ -257,6 +342,42 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void attachKeyboardVisibilityListener() {
+        View keyboardVisibilityDetector = findViewById(R.id.resize_detector);
+        keyboardVisibilityDetector.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            // Tracks the maximum 'bottom' value seen during layout changes.  This value represents
+            // the top of the SystemUI displayed at the bottom of the screen.
+            // Note: This value is a screen coordinate so a larger value means lower on the screen.
+            private int mMaxBottomValue;
+
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // As the activity is started, a number of layout changes will flow through.  If
+                // this is a fresh start, then we will see one layout change which will represent
+                // the steady state of the UI and will include an accurate 'bottom' value.  If we
+                // are transitioning from another activity/orientation, then there may be several
+                // layout change events as the view is updated (i.e. the OSK might have been
+                // displayed previously but is being dismissed).  Therefore we want to track the
+                // largest value we have seen and use it to determine if a new system UI (such as
+                // the OSK) is being displayed.
+                if (mMaxBottomValue < bottom) {
+                    mMaxBottomValue = bottom;
+                    return;
+                }
+
+                // If the delta between lowest bound we have seen (should be a systemUI such as
+                // the navigation bar) and the current bound does not match, then we have a form
+                // of soft input displayed.  Note that the size of a soft input device can change
+                // when the input method is changed so we want to send updates to the image canvas
+                // whenever they occur.
+                mSoftInputVisible = (bottom < mMaxBottomValue);
+                mRemoteHostDesktop.onSoftInputMethodVisibilityChanged(
+                        mSoftInputVisible, new Rect(left, top, right, bottom));
+            }
+        });
     }
 
     private void onCardboardItemSelected() {

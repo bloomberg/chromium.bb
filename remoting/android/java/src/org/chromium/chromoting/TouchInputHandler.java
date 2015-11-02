@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting;
 
+import android.graphics.Rect;
 import android.view.MotionEvent;
 
 /**
@@ -36,6 +37,15 @@ public interface TouchInputHandler {
      * method returns.
      */
     void onHostSizeChanged(int width, int height);
+
+    /**
+     * Called when the visibility of the soft input method has changed.
+     * The innerBounds parameter describes the amount of space used by SystemUI along each edge of
+     * the screen.  The status bar is typically shown along the top, soft input UI is generally
+     * shown at the bottom.  The navigation bar is shown along the bottom for tablets and along the
+     * right side for phones in landscape mode (it shown at the bottom in portrait mode).
+     */
+    void onSoftInputMethodVisibilityChanged(boolean inputMethodVisible, Rect innerBounds);
 
     /**
      * Whilst an animation is in progress, this method is called repeatedly until the animation is

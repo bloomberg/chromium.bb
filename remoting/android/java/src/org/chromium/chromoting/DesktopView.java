@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.RadialGradient;
+import android.graphics.Rect;
 import android.graphics.Shader;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -137,6 +138,11 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
     public void setDesktop(Desktop desktop) {
         mDesktop = desktop;
+    }
+
+    /** See {@link TouchInputHandler#onSoftInputMethodVisibilityChanged} for API details. */
+    public void onSoftInputMethodVisibilityChanged(boolean inputMethodVisible, Rect bounds) {
+        mInputHandler.onSoftInputMethodVisibilityChanged(inputMethodVisible, bounds);
     }
 
     /** Request repainting of the desktop view. */

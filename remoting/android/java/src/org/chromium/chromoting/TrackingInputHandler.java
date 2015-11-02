@@ -7,6 +7,8 @@ package org.chromium.chromoting;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -79,6 +81,18 @@ public class TrackingInputHandler implements TouchInputHandler {
      */
     private boolean mSwipeCompleted = false;
 
+    /**
+     * Represents the amount of vertical space in pixels used by the soft input device and
+     * accompanying system UI.
+     */
+    private int mInputMethodOffsetY = 0;
+
+    /**
+     * Represents the amount of horizontal space in pixels used by the soft input device and
+     * accompanying system UI.
+     */
+    private int mInputMethodOffsetX = 0;
+
     public TrackingInputHandler(DesktopViewInterface viewer, Context context,
                                 RenderData renderData) {
         mViewer = viewer;
@@ -130,14 +144,17 @@ public class TrackingInputHandler implements TouchInputHandler {
      */
     private void repositionImage() {
         synchronized (mRenderData) {
+            float adjustedScreenWidth = mRenderData.screenWidth - mInputMethodOffsetX;
+            float adjustedScreenHeight = mRenderData.screenHeight - mInputMethodOffsetY;
+
             // Get the current cursor position in screen coordinates.
             float[] cursorScreen = {mCursorPosition.x, mCursorPosition.y};
             mRenderData.transform.mapPoints(cursorScreen);
 
             // Translate so the cursor is displayed in the middle of the screen.
             mRenderData.transform.postTranslate(
-                    (float) mRenderData.screenWidth / 2 - cursorScreen[0],
-                    (float) mRenderData.screenHeight / 2 - cursorScreen[1]);
+                    (float) adjustedScreenWidth / 2 - cursorScreen[0],
+                    (float) adjustedScreenHeight / 2 - cursorScreen[1]);
 
             // Now the cursor is displayed in the middle of the screen, see if the image can be
             // panned so that more of it is visible. The primary goal is to show as much of the
@@ -145,17 +162,17 @@ public class TrackingInputHandler implements TouchInputHandler {
 
             // Get the coordinates of the desktop rectangle (top-left/bottom-right corners) in
             // screen coordinates. Order is: left, top, right, bottom.
-            float[] rectScreen = {0, 0, mRenderData.imageWidth, mRenderData.imageHeight};
-            mRenderData.transform.mapPoints(rectScreen);
+            RectF rectScreen = new RectF(0, 0, mRenderData.imageWidth, mRenderData.imageHeight);
+            mRenderData.transform.mapRect(rectScreen);
 
-            float leftDelta = rectScreen[0];
-            float rightDelta = rectScreen[2] - mRenderData.screenWidth;
-            float topDelta = rectScreen[1];
-            float bottomDelta = rectScreen[3] - mRenderData.screenHeight;
+            float leftDelta = rectScreen.left;
+            float rightDelta = rectScreen.right - mRenderData.screenWidth + mInputMethodOffsetX;
+            float topDelta = rectScreen.top;
+            float bottomDelta = rectScreen.bottom - mRenderData.screenHeight + mInputMethodOffsetY;
             float xAdjust = 0;
             float yAdjust = 0;
 
-            if (rectScreen[2] - rectScreen[0] < mRenderData.screenWidth) {
+            if (rectScreen.right - rectScreen.left < adjustedScreenWidth) {
                 // Image is narrower than the screen, so center it.
                 xAdjust = -(rightDelta + leftDelta) / 2;
             } else if (leftDelta > 0 && rightDelta > 0) {
@@ -167,7 +184,7 @@ public class TrackingInputHandler implements TouchInputHandler {
             }
 
             // Apply similar logic for yAdjust.
-            if (rectScreen[3] - rectScreen[1] < mRenderData.screenHeight) {
+            if (rectScreen.bottom - rectScreen.top < adjustedScreenHeight) {
                 yAdjust = -(bottomDelta + topDelta) / 2;
             } else if (topDelta > 0 && bottomDelta > 0) {
                 yAdjust = -Math.min(topDelta, bottomDelta);
@@ -285,6 +302,21 @@ public class TrackingInputHandler implements TouchInputHandler {
     @Override
     public void onHostSizeChanged(int width, int height) {
         moveCursor((float) width / 2, (float) height / 2);
+        repositionImageWithZoom();
+    }
+
+    @Override
+    public void onSoftInputMethodVisibilityChanged(boolean inputMethodVisible, Rect bounds) {
+        synchronized (mRenderData) {
+            if (inputMethodVisible) {
+                mInputMethodOffsetY = mRenderData.screenHeight - bounds.bottom;
+                mInputMethodOffsetX = mRenderData.screenWidth - bounds.right;
+            } else {
+                mInputMethodOffsetY = 0;
+                mInputMethodOffsetX = 0;
+            }
+        }
+
         repositionImageWithZoom();
     }
 
