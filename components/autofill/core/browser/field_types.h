@@ -144,10 +144,15 @@ enum ServerFieldType {
   USERNAME = 86,
   USERNAME_AND_EMAIL_ADDRESS = 87,
 
+  // Field types related to new password fields on change password forms.
+  NEW_PASSWORD = 88,
+  PROBABLY_NEW_PASSWORD = 89,
+  NOT_NEW_PASSWORD = 90,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
 
-  MAX_VALID_FIELD_TYPE = 88,
+  MAX_VALID_FIELD_TYPE = 91,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.

@@ -219,6 +219,9 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {
        state_ == password_manager::ui::PENDING_PASSWORD_STATE)) {
     update_password_submission_event_ =
         GetUpdateDismissalReason(NO_INTERACTION);
+    if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
+        manage_passwords_ui_controller)
+      manage_passwords_ui_controller->OnNoInteractionOnUpdate();
   }
   if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
     LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
@@ -249,6 +252,9 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
 
 void ManagePasswordsBubbleModel::OnNopeUpdateClicked() {
   update_password_submission_event_ = GetUpdateDismissalReason(NOPE_CLICKED);
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  manage_passwords_ui_controller->OnNopeUpdateClicked();
 }
 
 void ManagePasswordsBubbleModel::OnUpdateClicked(

@@ -380,6 +380,20 @@ void ManagePasswordsUIController::OnBubbleShown() {
   should_pop_up_bubble_ = false;
 }
 
+void ManagePasswordsUIController::OnNopeUpdateClicked() {
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  DCHECK(form_manager);
+  form_manager->OnNopeUpdateClicked();
+}
+
+void ManagePasswordsUIController::OnNoInteractionOnUpdate() {
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  DCHECK(form_manager);
+  form_manager->OnNoInteractionOnUpdate();
+}
+
 void ManagePasswordsUIController::OnBubbleHidden() {
   // Avoid using |state()| which is overridden for some unit tests.
   if (state() == password_manager::ui::CREDENTIAL_REQUEST_STATE ||

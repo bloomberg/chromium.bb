@@ -136,7 +136,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Happens when the autocomplete dialog runs its callback when being closed.
   void RequestAutocompleteDialogClosed();
 
-  AutofillClient* client() const { return client_; }
+  AutofillClient* client() { return client_; }
+
+  AutofillDownloadManager* download_manager() {
+    return download_manager_.get();
+  }
 
   const std::string& app_locale() const { return app_locale_; }
 
@@ -174,33 +178,16 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnSetDataList(const std::vector<base::string16>& values,
                      const std::vector<base::string16>& labels);
 
-  // Try to label password fields and upload |form|. This differs from
-  // OnFormSubmitted() in a few ways.
-  //   - This function will only label the first <input type="password"> field
-  //     as |password_type|. Other fields will stay unlabeled, as they
-  //     should have been labeled during the upload for OnFormSubmitted().
-  //   - If the |username_field| attribute is nonempty, we will additionally
-  //     label the field with that name as the username field.
-  //   - This function does not assume that |form| is being uploaded during
-  //     the same browsing session as it was originally submitted (as we may
-  //     not have the necessary information to classify the form at that time)
-  //     so it bypasses the cache and doesn't log the same quality UMA metrics.
-  // |login_form_signature| may be empty. It is non-empty when the user fills
-  // and submits a login form using a generated password. In this case,
-  // |login_form_signature| should be set to the submitted form's signature.
-  // Note that in this case, |form.FormSignature()| gives the signature for the
-  // registration form on which the password was generated, rather than the
-  // submitted form's signature.
-  virtual bool UploadPasswordForm(const FormData& form,
-                                  const base::string16& username_field,
-                                  const ServerFieldType& pasword_type,
-                                  const std::string& login_form_signature);
-
   // Resets cache.
   virtual void Reset();
 
   // Returns the value of the AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
+
+  // Shared code to determine if |form| should be uploaded to the Autofill
+  // server. It verifies that uploading is allowed and |form| meets conditions
+  // to be uploadable.
+  bool ShouldUploadForm(const FormStructure& form);
 
  protected:
   // Test code should prefer to use this constructor.
@@ -362,9 +349,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // needed because IPC messages can arrive out of order.
   void UpdateInitialInteractionTimestamp(
       const base::TimeTicks& interaction_timestamp);
-
-  // Shared code to determine if |form| should be uploaded.
-  bool ShouldUploadForm(const FormStructure& form);
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // Dumps the cached forms to a file on disk.

@@ -125,6 +125,12 @@ class ManagePasswordsUIController
   // Called from the model when the bubble is hidden.
   void OnBubbleHidden();
 
+  // Called when the user chose not to update password.
+  void OnNopeUpdateClicked();
+
+  // Called when the user didn't interact with Update UI.
+  void OnNoInteractionOnUpdate();
+
   virtual password_manager::ui::State state() const;
 
   // True if a password is sitting around, waiting for a user to decide whether

@@ -223,6 +223,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // 'test@gmail.com' and 'test@googlemail.com', those will be wiped).
   void WipeStoreCopyIfOutdated();
 
+  // Called when the user chose not to update password.
+  void OnNopeUpdateClicked();
+
+  // Called when the user didn't interact with Update UI.
+  void OnNoInteractionOnUpdate();
+
  private:
   // ManagerAction - What does the manager do with this form? Either it
   // fills it, or it doesn't. If it doesn't fill it, that's either
@@ -351,8 +357,17 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // duplicates.
   void SanitizePossibleUsernames(autofill::PasswordForm* form);
 
-  // Helper function to delegate uploading to the AutofillManager. Returns true
-  // on success.
+  // Try to label password fields and upload |form_data|. This differs from
+  // AutofillManager::OnFormSubmitted() in a few ways.
+  //   - This function will only label the first <input type="password"> field
+  //     as |password_type|. Other fields will stay unlabeled, as they
+  //     should have been labeled during the upload for OnFormSubmitted().
+  //   - If the |username_field| attribute is nonempty, we will additionally
+  //     label the field with that name as the username field.
+  //   - This function does not assume that |form| is being uploaded during
+  //     the same browsing session as it was originally submitted (as we may
+  //     not have the necessary information to classify the form at that time)
+  //     so it bypasses the cache and doesn't log the same quality UMA metrics.
   // |login_form_signature| may be empty.  It is non-empty when the user fills
   // and submits a login form using a generated password. In this case,
   // |login_form_signature| should be set to the submitted form's signature.
@@ -363,6 +378,14 @@ class PasswordFormManager : public PasswordStoreConsumer {
                           const base::string16& username_field,
                           const autofill::ServerFieldType& password_type,
                           const std::string& login_form_signature);
+
+  // Try to label username, password and new password fields of |observed_form_|
+  // which is considered to be change password forms. Returns true on success.
+  // |password_type| should be equal to NEW_PASSWORD, PROBABLY_NEW_PASSWORD or
+  // NOT_NEW_PASSWORD. These values correspond to cases when the user conrirmed
+  // password update, did nothing or declined to update password respectively.
+  bool UploadChangePasswordForm(const autofill::ServerFieldType& password_type,
+                                const std::string& login_form_signature);
 
   // Create pending credentials from provisionally saved form and forms received
   // from password store.

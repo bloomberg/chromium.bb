@@ -802,6 +802,20 @@ bool AutofillManager::IsAutofillEnabled() const {
   return ::autofill::IsAutofillEnabled(client_->GetPrefs());
 }
 
+bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
+  if (!IsAutofillEnabled())
+    return false;
+
+  if (driver_->IsOffTheRecord())
+    return false;
+
+  // Disregard forms that we wouldn't ever autofill in the first place.
+  if (!form.ShouldBeParsed())
+    return false;
+
+  return true;
+}
+
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   scoped_ptr<CreditCard> imported_credit_card;
   if (!personal_data_->ImportFormData(submitted_form, &imported_credit_card))
@@ -891,59 +905,6 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
   download_manager_->StartUploadRequest(
       submitted_form, was_autofilled, non_empty_types,
       std::string() /* login_form_signature */);
-}
-
-bool AutofillManager::UploadPasswordForm(
-    const FormData& form,
-    const base::string16& username_field,
-    const ServerFieldType& password_type,
-    const std::string& login_form_signature) {
-  FormStructure form_structure(form);
-
-  if (!ShouldUploadForm(form_structure))
-    return false;
-
-  if (!form_structure.ShouldBeCrowdsourced())
-    return false;
-
-  // Find the first password field to label. If the provided username field name
-  // is not empty, then also find the first field with that name to label.
-  // We don't try to label anything else.
-  bool found_password_field = false;
-  bool found_username_field = username_field.empty();
-  for (size_t i = 0; i < form_structure.field_count(); ++i) {
-    AutofillField* field = form_structure.field(i);
-
-    ServerFieldTypeSet types;
-    if (!found_password_field && field->form_control_type == "password") {
-      types.insert(password_type);
-      found_password_field = true;
-    } else if (!found_username_field && field->name == username_field) {
-      types.insert(USERNAME);
-      found_username_field = true;
-    } else {
-      types.insert(UNKNOWN_TYPE);
-    }
-    field->set_possible_types(types);
-  }
-  DCHECK(found_password_field);
-
-  // Only the USERNAME type and one password field type should be present.
-  ServerFieldTypeSet available_field_types;
-  available_field_types.insert(password_type);
-  available_field_types.insert(USERNAME);
-
-  // Force uploading as these events are relatively rare and we want to make
-  // sure to receive them. It also makes testing easier if these requests
-  // always pass.
-  form_structure.set_upload_required(UPLOAD_REQUIRED);
-
-  if (!download_manager_)
-    return false;
-
-  return download_manager_->StartUploadRequest(
-      form_structure, false /* was_autofilled */, available_field_types,
-      login_form_signature);
 }
 
 void AutofillManager::Reset() {
@@ -1510,20 +1471,6 @@ void AutofillManager::UpdateInitialInteractionTimestamp(
       interaction_timestamp < initial_interaction_timestamp_) {
     initial_interaction_timestamp_ = interaction_timestamp;
   }
-}
-
-bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
-  if (!IsAutofillEnabled())
-    return false;
-
-  if (driver_->IsOffTheRecord())
-    return false;
-
-  // Disregard forms that we wouldn't ever autofill in the first place.
-  if (!form.ShouldBeParsed())
-    return false;
-
-  return true;
 }
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
