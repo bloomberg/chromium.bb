@@ -339,21 +339,14 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(Layout
     return adapter.result();
 }
 
-void LayoutMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+void LayoutMultiColumnFlowThread::layoutColumns(SubtreeLayoutScope& layoutScope)
 {
-    if (relayoutChildren)
-        layoutScope.setChildNeedsLayout(this);
+    // Since we ended up here, it means that the multicol container (our parent) needed
+    // layout. Since contents of the multicol container are diverted to the flow thread, the flow
+    // thread needs layout as well.
+    layoutScope.setChildNeedsLayout(this);
 
     m_needsColumnHeightsRecalculation = false;
-    if (!needsLayout()) {
-        // Just before the multicol container (our parent LayoutBlockFlow) finishes laying out, it
-        // will call recalculateColumnHeights() on us unconditionally, but we only want that method
-        // to do any work if we actually laid out the flow thread. Otherwise, the balancing
-        // machinery would kick in needlessly, and trigger additional layout passes. Furthermore, we
-        // actually depend on a proper flowthread layout pass in order to do balancing, since it's
-        // flowthread layout that sets up content runs.
-        return;
-    }
 
     m_blockOffsetInEnclosingFlowThread = enclosingFlowThread() ? multiColumnBlockFlow()->offsetFromLogicalTopOfFirstPage() : LayoutUnit();
 

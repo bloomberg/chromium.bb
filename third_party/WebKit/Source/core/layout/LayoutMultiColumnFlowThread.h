@@ -175,7 +175,7 @@ public:
 
     LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const final;
 
-    void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);
+    void layoutColumns(SubtreeLayoutScope&);
 
     bool isInInitialLayoutPass() const { return !m_inBalancingPass; }
 

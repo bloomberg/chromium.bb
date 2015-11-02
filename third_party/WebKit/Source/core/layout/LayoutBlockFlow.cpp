@@ -178,7 +178,7 @@ LayoutObject* LayoutBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren,
     if (!flowThread)
         return nullptr;
     setLogicalTopForChild(*flowThread, borderBefore() + paddingBefore());
-    flowThread->layoutColumns(relayoutChildren, layoutScope);
+    flowThread->layoutColumns(layoutScope);
     determineLogicalLeftPositionForChild(*flowThread);
     return flowThread;
 }
