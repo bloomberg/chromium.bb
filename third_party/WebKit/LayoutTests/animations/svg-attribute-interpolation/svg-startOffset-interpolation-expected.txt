@@ -1,40 +1,39 @@
 CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
-
-SVG SMIL:
-PASS: startOffset from [1] to [6] was [1] at 0
-PASS: startOffset from [1] to [6] was [2] at 0.2
-PASS: startOffset from [1] to [6] was [4] at 0.6
-PASS: startOffset from [1] to [6] was [6] at 1
-PASS: startOffset from [10in] to [770pt] was [720pt] at 0
-PASS: startOffset from [10in] to [770pt] was [730pt] at 0.2
-PASS: startOffset from [10in] to [770pt] was [750pt] at 0.6
-PASS: startOffset from [10in] to [770pt] was [770pt] at 1
-FAIL: startOffset from [25%] to [25em] was [35] at 0, expected [250] (parsed as [250])
-FAIL: startOffset from [25%] to [25em] was [278] at 0.2, expected [450] (parsed as [450])
-FAIL: startOffset from [25%] to [25em] was [764] at 0.6, expected [850] (parsed as [850])
-PASS: startOffset from [25%] to [25em] was [1250] at 1
-PASS: startOffset from [125] to [25ex] was [125] at 0
-PASS: startOffset from [125] to [25ex] was [25ex] at 1
-
-Web Animations API:
-PASS: startOffset from [1] to [6] was [-1] at -0.4
-PASS: startOffset from [1] to [6] was [1] at 0
-PASS: startOffset from [1] to [6] was [2] at 0.2
-PASS: startOffset from [1] to [6] was [4] at 0.6
-PASS: startOffset from [1] to [6] was [6] at 1
-PASS: startOffset from [1] to [6] was [8] at 1.4
-PASS: startOffset from [10in] to [770pt] was [700pt] at -0.4
-PASS: startOffset from [10in] to [770pt] was [720pt] at 0
-PASS: startOffset from [10in] to [770pt] was [730pt] at 0.2
-PASS: startOffset from [10in] to [770pt] was [750pt] at 0.6
-PASS: startOffset from [10in] to [770pt] was [770pt] at 1
-PASS: startOffset from [10in] to [770pt] was [790pt] at 1.4
-FAIL: startOffset from [25%] to [25em] was [-451] at -0.4, expected [-150] (parsed as [-150])
-FAIL: startOffset from [25%] to [25em] was [35] at 0, expected [250] (parsed as [250])
-FAIL: startOffset from [25%] to [25em] was [278] at 0.2, expected [450] (parsed as [450])
-FAIL: startOffset from [25%] to [25em] was [764] at 0.6, expected [850] (parsed as [850])
-PASS: startOffset from [25%] to [25em] was [1250] at 1
-FAIL: startOffset from [25%] to [25em] was [1736] at 1.4, expected [1650] (parsed as [1650])
-PASS: startOffset from [125] to [25ex] was [125] at 0
-PASS: startOffset from [125] to [25ex] was [25ex] at 1
+ This is a testharness.js-based test.
+PASS This test uses interpolation-test.js. 
+PASS SMIL: Interpolate attribute <startOffset> from [1] to [6] at (0) is [1] 
+PASS SMIL: Interpolate attribute <startOffset> from [1] to [6] at (0.2) is [2] 
+PASS SMIL: Interpolate attribute <startOffset> from [1] to [6] at (0.6) is [4] 
+PASS SMIL: Interpolate attribute <startOffset> from [1] to [6] at (1) is [6] 
+PASS Web Animations: Interpolate attribute <startOffset> from [1] to [6] at (-0.4) is [-1] 
+PASS Web Animations: Interpolate attribute <startOffset> from [1] to [6] at (0) is [1] 
+PASS Web Animations: Interpolate attribute <startOffset> from [1] to [6] at (0.2) is [2] 
+PASS Web Animations: Interpolate attribute <startOffset> from [1] to [6] at (0.6) is [4] 
+PASS Web Animations: Interpolate attribute <startOffset> from [1] to [6] at (1) is [6] 
+PASS Web Animations: Interpolate attribute <startOffset> from [1] to [6] at (1.4) is [8] 
+PASS SMIL: Interpolate attribute <startOffset> from [10in] to [770pt] at (0) is [720pt] 
+PASS SMIL: Interpolate attribute <startOffset> from [10in] to [770pt] at (0.2) is [730pt] 
+PASS SMIL: Interpolate attribute <startOffset> from [10in] to [770pt] at (0.6) is [750pt] 
+PASS SMIL: Interpolate attribute <startOffset> from [10in] to [770pt] at (1) is [770pt] 
+PASS Web Animations: Interpolate attribute <startOffset> from [10in] to [770pt] at (-0.4) is [700pt] 
+PASS Web Animations: Interpolate attribute <startOffset> from [10in] to [770pt] at (0) is [720pt] 
+PASS Web Animations: Interpolate attribute <startOffset> from [10in] to [770pt] at (0.2) is [730pt] 
+PASS Web Animations: Interpolate attribute <startOffset> from [10in] to [770pt] at (0.6) is [750pt] 
+PASS Web Animations: Interpolate attribute <startOffset> from [10in] to [770pt] at (1) is [770pt] 
+PASS Web Animations: Interpolate attribute <startOffset> from [10in] to [770pt] at (1.4) is [790pt] 
+FAIL SMIL: Interpolate attribute <startOffset> from [25%] to [25em] at (0) is [250] assert_equals: expected "250 " but got "35 "
+FAIL SMIL: Interpolate attribute <startOffset> from [25%] to [25em] at (0.2) is [450] assert_equals: expected "450 " but got "278 "
+FAIL SMIL: Interpolate attribute <startOffset> from [25%] to [25em] at (0.6) is [850] assert_equals: expected "850 " but got "764 "
+PASS SMIL: Interpolate attribute <startOffset> from [25%] to [25em] at (1) is [1250] 
+FAIL Web Animations: Interpolate attribute <startOffset> from [25%] to [25em] at (-0.4) is [-150] assert_equals: expected "- 150 " but got "- 451 "
+FAIL Web Animations: Interpolate attribute <startOffset> from [25%] to [25em] at (0) is [250] assert_equals: expected "250 " but got "35 "
+FAIL Web Animations: Interpolate attribute <startOffset> from [25%] to [25em] at (0.2) is [450] assert_equals: expected "450 " but got "278 "
+FAIL Web Animations: Interpolate attribute <startOffset> from [25%] to [25em] at (0.6) is [850] assert_equals: expected "850 " but got "764 "
+PASS Web Animations: Interpolate attribute <startOffset> from [25%] to [25em] at (1) is [1250] 
+FAIL Web Animations: Interpolate attribute <startOffset> from [25%] to [25em] at (1.4) is [1650] assert_equals: expected "1650 " but got "1736 "
+PASS SMIL: Interpolate attribute <startOffset> from [125] to [25ex] at (0) is [125] 
+PASS SMIL: Interpolate attribute <startOffset> from [125] to [25ex] at (1) is [25ex] 
+PASS Web Animations: Interpolate attribute <startOffset> from [125] to [25ex] at (0) is [125] 
+PASS Web Animations: Interpolate attribute <startOffset> from [125] to [25ex] at (1) is [25ex] 
+Harness: the test ran to completion.
 

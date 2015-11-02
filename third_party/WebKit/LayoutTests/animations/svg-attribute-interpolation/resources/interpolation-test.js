@@ -1,68 +1,23 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * Exported function:
+ *  - assertAttributeInterpolation({property, from, to}, [{at: fraction, is: value}])
+ *        Constructs a test case for each fraction that asserts the expected value
+ *        equals the value produced by interpolation between from and to using
+ *        SMIL and Web Animations.
+*/
 'use strict';
-(function() {
-  var testCount = 0;
-  var animationEventCount = 0;
+(() => {
+  var interpolationTests = [];
 
-  var durationSeconds = 0.001;
-  var iterationCount = 0.5;
-  var delaySeconds = 0;
-  var fragment = document.createDocumentFragment();
-  var fragmentAttachedListeners = [];
-  var style = document.createElement('style');
-  fragment.appendChild(style);
-
-  var smilTestsDiv = document.createElement('div');
-  smilTestsDiv.id = 'smil-tests';
-  smilTestsDiv.textContent = 'SVG SMIL:';
-  fragment.appendChild(smilTestsDiv);
-
-  var waTestsDiv = document.createElement('div');
-  waTestsDiv.id = 'web-animations-tests';
-  waTestsDiv.textContent = 'Web Animations API:';
-  fragment.appendChild(waTestsDiv);
-
-  var updateScheduled = false;
-  function maybeScheduleUpdate() {
-    if (updateScheduled) {
-      return;
+  function createElement(tagName, container) {
+    var element = document.createElement(tagName);
+    if (container) {
+      container.appendChild(element);
     }
-    updateScheduled = true;
-    setTimeout(function() {
-      updateScheduled = false;
-      document.body.appendChild(fragment);
-      requestAnimationFrame(function () {
-        fragmentAttachedListeners.forEach(function(listener) {listener();});
-      });
-    }, 0);
-  }
-
-  function smilResults() {
-    var result = '\nSVG SMIL:\n';
-    var targets = document.querySelectorAll('.target.smil');
-    for (var i = 0; i < targets.length; i++) {
-      result += targets[i].getResultString() + '\n';
-    }
-    return result;
-  }
-
-  function waResults() {
-    var result = '\nWeb Animations API:\n';
-    var targets = document.querySelectorAll('.target.web-animations');
-    for (var i = 0; i < targets.length; i++) {
-      result += targets[i].getResultString() + '\n';
-    }
-    return result;
-  }
-
-  function dumpResults() {
-    var results = document.createElement('pre');
-    results.id = 'results';
-    results.textContent = smilResults() + waResults();
-    document.body.appendChild(results);
+    return element;
   }
 
   // Constructs a timing function which produces 'y' at x = 0.5
@@ -83,52 +38,9 @@
     return 'cubic-bezier(0, ' + b + ', 1, ' + b + ')';
   }
 
-  function createTestContainer(description, className) {
-    var testContainer = document.createElement('div');
-    testContainer.setAttribute('description', description);
-    testContainer.classList.add('test');
-    if (className) {
-      testContainer.classList.add(className);
-    }
-    return testContainer;
-  }
-
-  function convertPropertyToCamelCase(property) {
-    return property.replace(/^-/, '').replace(/-\w/g, function(m) {return m[1].toUpperCase();});
-  }
-
-  function describeSMILTest(params) {
-    return '<animate /> ' + convertPropertyToCamelCase(params.property) + ': from [' + params.from + '] to [' + params.to + ']';
-  }
-
-  function describeWATest(params) {
-    return 'element.animate() ' + convertPropertyToCamelCase(params.property) + ': from [' + params.from + '] to [' + params.to + ']';
-  }
-
-  var nextTestId = 0;
   function assertAttributeInterpolation(params, expectations) {
-    var testId = 'test-' + ++nextTestId;
-    var nextCaseId = 0;
-
-    var smilTestContainer = createTestContainer(describeSMILTest(params), testId);
-    smilTestsDiv.appendChild(smilTestContainer);
-    expectations.forEach(function(expectation) {
-      if (expectation.at < 0 || expectation.at > 1)
-        return;
-      smilTestContainer.appendChild(makeInterpolationTest(
-          'smil', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
-    });
-
-    var waTestContainer = createTestContainer(describeWATest(params), testId);
-    waTestsDiv.appendChild(waTestContainer);
-    expectations.forEach(function(expectation) {
-      waTestContainer.appendChild(makeInterpolationTest(
-          'web-animations', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
-    });
-
-    maybeScheduleUpdate();
+    interpolationTests.push({params, expectations});
   }
-
 
   function roundNumbers(value) {
     return value.
@@ -150,8 +62,8 @@
         replace(/\s+/g, ' ');
   }
 
-  function createTargetContainer(id) {
-    var targetContainer = document.createElement('div');
+  function createTarget(container) {
+    var targetContainer = createElement('div');
     var template = document.querySelector('#target-template');
     if (template) {
       targetContainer.appendChild(template.content.cloneNode(true));
@@ -165,21 +77,20 @@
       // If the template contains just one element, use that rather than a wrapper div.
       if (targetContainer.children.length == 1 && targetContainer.childNodes.length == 1) {
         targetContainer = targetContainer.firstChild;
-        targetContainer.remove();
       }
+      container.appendChild(targetContainer);
     }
     var target = targetContainer.querySelector('.target') || targetContainer;
-    target.classList.add('target');
-    target.classList.add(id);
-    return targetContainer;
+    target.container = targetContainer;
+    return target;
   }
 
+  var anchor = createElement('a');
   function sanitizeUrls(value) {
     var matches = value.match(/url\([^\)]*\)/g);
     if (matches !== null) {
       for (var i = 0; i < matches.length; ++i) {
         var url = /url\(([^\)]*)\)/g.exec(matches[i])[1];
-        var anchor = document.createElement('a');
         anchor.href = url;
         anchor.pathname = '...' + anchor.pathname.substring(anchor.pathname.lastIndexOf('/'));
         value = value.replace(matches[i], 'url(' + anchor.href + ')');
@@ -254,7 +165,7 @@
   }
 
   function getAttributeValue(element, attributeName) {
-    if (animatedNumberOptionalNumberAttributes.indexOf(attributeName) !== -1)
+    if (animatedNumberOptionalNumberAttributes.includes(attributeName))
       return getAttributeValue(element, attributeName + 'X') + ', ' + getAttributeValue(element, attributeName + 'Y');
 
     // The attribute 'class' is exposed in IDL as 'className'
@@ -286,7 +197,7 @@
       if (attributeName === 'preserveAlpha')
         return 'false';
 
-      console.log('Unknown attribute, cannot get ' + element.className.baseVal + ' ' + attributeName);
+      console.error('Unknown attribute, cannot get ' + attributeName);
       return null;
     }
 
@@ -306,7 +217,7 @@
       result = serializeSVGTransformList(result);
 
     if (typeof result !== 'string' && typeof result !== 'number' && typeof result !== 'boolean') {
-      console.log('Attribute value has unexpected type: ' + result);
+      console.error('Attribute value has unexpected type: ' + result);
     }
 
     return String(result);
@@ -319,13 +230,8 @@
         && (attributeName !== 'in' || !element['in1'])
         && (attributeName !== 'orient' || !element['orientType'])
         && (animatedNumberOptionalNumberAttributes.indexOf(attributeName) === -1 || !element[attributeName + 'X'])) {
-      console.log('Unknown attribute, cannot set ' + element.className.baseVal + ' ' + attributeName);
+      console.error('Unknown attribute, cannot set ' + attributeName);
       return;
-    }
-
-    if (attributeName === 'class') {
-      // Preserve the existing classes as we use them to select elements.
-      expectation = element['className'].baseVal + ' ' + expectation;
     }
 
     if (attributeName.toLowerCase().indexOf('transform') === -1) {
@@ -339,196 +245,156 @@
     }
   }
 
-  function makeKeyframes(target, attributeName, params) {
-    // Replace 'transform' with 'svgTransform', etc. This avoids collisions with CSS properties or the Web Animations API (offset).
-    attributeName = 'svg' + attributeName[0].toUpperCase() + attributeName.slice(1);
-
-    var keyframes = [{}, {}];
-    if (attributeName === 'svgClass') {
-      // Preserve the existing classes as we use them to select elements.
-      keyframes[0][attributeName] = target['className'].baseVal + ' ' + params.from;
-      keyframes[1][attributeName] = target['className'].baseVal + ' ' + params.to;
-    } else {
-      keyframes[0][attributeName] = params.from;
-      keyframes[1][attributeName] = params.to;
-    }
-    return keyframes;
-  }
-
-  function appendAnimate(target, attributeName, from, to)
+  function createAnimateElement(attributeName, from, to)
   {
-    var animateElement = document.createElementNS(svgNamespace, 'animate');
-    animateElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
-    animateElement.setAttribute('attributeType', 'XML');
-    if (attributeName === 'class') {
-      // Preserve the existing classes as we use them to select elements.
-      animateElement.setAttribute('from', target['className'].baseVal + ' ' + from);
-      animateElement.setAttribute('to', target['className'].baseVal + ' ' + to);
-    } else {
-      animateElement.setAttribute('from', from);
-      animateElement.setAttribute('to', to);
-    }
-    animateElement.setAttribute('begin', '0');
-    animateElement.setAttribute('dur', '1');
-    animateElement.setAttribute('fill', 'freeze');
-    target.appendChild(animateElement);
-  }
+    var animateElement;
+    if (attributeName.toLowerCase().includes('transform')) {
+      from = from.split(')');
+      to = to.split(')');
+      // Discard empty string at end.
+      from.pop();
+      to.pop();
 
-  function appendAnimateTransform(target, attributeName, from, to)
-  {
-    var animateElement = document.createElementNS(svgNamespace, 'animate');
-    animateElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
-    animateElement.setAttribute('attributeType', 'XML');
-    if (attributeName === 'class') {
-      // Preserve the existing classes as we use them to select elements.
-      animateElement.setAttribute('from', target['className'].baseVal + ' ' + from);
-      animateElement.setAttribute('to', target['className'].baseVal + ' ' + to);
-    } else {
-      animateElement.setAttribute('from', from);
-      animateElement.setAttribute('to', to);
-    }
-    animateElement.setAttribute('begin', '0');
-    animateElement.setAttribute('dur', '1');
-    animateElement.setAttribute('fill', 'freeze');
-    target.appendChild(animateElement);
-  }
-
-  // Append animateTransform elements to parents of target.
-  function appendAnimateTransform(target, attributeName, from, to)
-  {
-    var currentElement = target;
-    var parents = [];
-    from = from.split(')');
-    to = to.split(')');
-    // Discard empty string at end.
-    from.pop();
-    to.pop();
-
-    // SMIL requires separate animateTransform elements for each transform in the list.
-    if (from.length !== 1 || to.length !== 1)
-      return;
-
-    from = from[0].split('(');
-    to = to[0].split('(');
-    if (from[0].trim() !== to[0].trim())
-        return;
-
-    var animateTransformElement = document.createElementNS(svgNamespace, 'animateTransform');
-    animateTransformElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
-    animateTransformElement.setAttribute('attributeType', 'XML');
-    animateTransformElement.setAttribute('type', from[0].trim());
-    animateTransformElement.setAttribute('from', from[1]);
-    animateTransformElement.setAttribute('to', to[1]);
-    animateTransformElement.setAttribute('begin', '0');
-    animateTransformElement.setAttribute('dur', '1');
-    animateTransformElement.setAttribute('fill', 'freeze');
-    target.appendChild(animateTransformElement);
-  }
-
-  function makeInterpolationTest(testType, fraction, testId, caseId, params, expectation) {
-    var attributeName = convertPropertyToCamelCase(params.property);
-
-    var targetContainer = createTargetContainer(caseId);
-    var target = targetContainer.querySelector('.target') || targetContainer;
-    target.classList.add(testType);
-    var replicaContainer, replica;
-    {
-      replicaContainer = createTargetContainer(caseId);
-      replica = replicaContainer.querySelector('.target') || replicaContainer;
-      replica.classList.add('replica');
-      setAttributeValue(replica, params.property, expectation);
-    }
-    target.testType = testType;
-    target.getResultString = function() {
-      var value = getAttributeValue(this, params.property);
-      var result = '';
-      var reason = '';
-      var property = convertPropertyToCamelCase(params.property);
-      {
-        var parsedExpectation = getAttributeValue(replica, params.property);
-        if (attributeName === 'class') {
-          parsedExpectation = parsedExpectation.replace('replica', testType);
-        }
-        // console.log('expected ' + parsedExpectation + ', actual ' + value);
-        var pass = normalizeValue(value) === normalizeValue(parsedExpectation);
-        result = pass ? 'PASS: ' : 'FAIL: ';
-        reason = pass ? '' : ', expected [' + expectation + ']' +
-            (expectation === parsedExpectation ? '' : ' (parsed as [' + sanitizeUrls(roundNumbers(parsedExpectation)) + '])');
-        value = pass ? expectation : sanitizeUrls(value);
+      // SMIL requires separate animateTransform elements for each transform in the list.
+      if (from.length !== 1 || to.length !== 1) {
+        return null;
       }
-      return result + property + ' from [' + params.from + '] to ' +
-          '[' + params.to + '] was [' + value + ']' +
-          ' at ' + fraction + reason;
+
+      from = from[0].split('(');
+      to = to[0].split('(');
+      if (from[0].trim() !== to[0].trim()) {
+        return null;
+      }
+
+      animateElement = document.createElementNS(svgNamespace, 'animateTransform');
+      animateElement.setAttribute('type', from[0].trim());
+      animateElement.setAttribute('from', from[1]);
+      animateElement.setAttribute('to', to[1]);
+    } else {
+      animateElement = document.createElementNS(svgNamespace, 'animate');
+      animateElement.setAttribute('from', from);
+      animateElement.setAttribute('to', to);
+    }
+
+    animateElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
+    animateElement.setAttribute('attributeType', 'XML');
+    animateElement.setAttribute('begin', '0');
+    animateElement.setAttribute('dur', '1');
+    animateElement.setAttribute('fill', 'freeze');
+    return animateElement;
+  }
+
+  function createTestTarget(method, description, container, params, expectation) {
+    var target = createTarget(container);
+    var expected = createTarget(container);
+    setAttributeValue(expected, params.property, expectation.is);
+
+    target.interpolate = function() {
+      switch (method) {
+      case 'SMIL':
+        var animateElement = createAnimateElement(params.property, params.from, params.to);
+        if (animateElement) {
+          target.appendChild(animateElement);
+          target.container.pauseAnimations();
+          target.container.setCurrentTime(expectation.at);
+        } else {
+          console.warn(`Unable to test SMIL from ${params.from} to ${params.to}`);
+          target.container.remove();
+          target.measure = function() {};
+        }
+        break;
+      case 'Web Animations':
+        // Replace 'transform' with 'svgTransform', etc. This avoids collisions with CSS properties or the Web Animations API (offset).
+        var prefixedProperty = 'svg' + params.property[0].toUpperCase() + params.property.slice(1);
+        target.animate([
+          {[prefixedProperty]: params.from},
+          {[prefixedProperty]: params.to},
+        ], {
+          fill: 'forwards',
+          duration: 1,
+          easing: createEasing(expectation.at),
+          delay: -0.5,
+          iterations: 0.5,
+        });
+        break;
+      default:
+        console.error('Unknown test method: ' + method);
+      }
     };
-    var easing = createEasing(fraction);
-    testCount++;
-    {
-      fragmentAttachedListeners.push(function() {
-        if (testType === 'smil') {
-          if (attributeName.toLowerCase().indexOf('transform') === -1)
-            appendAnimate(target, attributeName, params.from, params.to);
-          else
-            appendAnimateTransform(target, attributeName, params.from, params.to);
 
-          targetContainer.pauseAnimations();
-          targetContainer.setCurrentTime(fraction);
-        } else if (testType === 'web-animations' && target.animate) {
-          target.animate(makeKeyframes(target, attributeName, params), {
-              fill: 'forwards',
-              duration: 1,
-              easing: easing,
-              delay: -0.5,
-              iterations: 0.5,
-            });
+    target.measure = function() {
+      test(function() {
+        assert_equals(
+          normalizeValue(getAttributeValue(target, params.property)),
+          normalizeValue(getAttributeValue(expected, params.property)));
+      }, `${method}: ${description} at (${expectation.at}) is [${expectation.is}]`);
+    };
+
+    return target;
+  }
+
+  function createTestTargets(interpolationTests, container) {
+    var targets = [];
+    for (var interpolationTest of interpolationTests) {
+      var params = interpolationTest.params;
+      var description = `Interpolate attribute <${params.property}> from [${params.from}] to [${params.to}]`;
+      var expectations = interpolationTest.expectations;
+
+      for (var method of ['SMIL', 'Web Animations']) {
+        createElement('pre', container).textContent = `${method}: ${description}`;
+        var smilContainer = createElement('div', container);
+        for (var expectation of expectations) {
+          if (method === 'SMIL' && (expectation.at < 0 || expectation.at > 1)) {
+            continue;
+          }
+          targets.push(createTestTarget(method, description, smilContainer, params, expectation));
         }
-        animationEnded();
-      });
-    }
-    var testFragment = document.createDocumentFragment();
-    testFragment.appendChild(targetContainer);
-    testFragment.appendChild(replicaContainer);
-    testFragment.appendChild(document.createTextNode('\n'));
-    return testFragment;
-  }
-
-  var finished = false;
-  function finishTest() {
-    finished = true;
-    dumpResults();
-    if (window.testRunner) {
-      var results = document.querySelector('#results');
-      document.documentElement.textContent = '';
-      document.documentElement.appendChild(results);
-      testRunner.dumpAsText();
-
-      testRunner.notifyDone();
-    }
-  }
-
-  if (window.testRunner) {
-    testRunner.waitUntilDone();
-  }
-
-  function isLastAnimationEvent() {
-    return !finished && animationEventCount === testCount;
-  }
-
-  function animationEnded() {
-    animationEventCount++;
-    if (!isLastAnimationEvent()) {
-      return;
-    }
-    requestAnimationFrame(finishTest);
-  }
-
-  if (!window.testRunner) {
-    setTimeout(function() {
-      if (finished) {
-        return;
       }
-      finishTest();
-    }, 5000);
+    }
+    return targets;
   }
+
+  function runTests() {
+    return new Promise((resolve) => {
+      var container = createElement('div', document.body);
+      var targets = createTestTargets(interpolationTests, container);
+
+      requestAnimationFrame(() => {
+        for (var target of targets) {
+          target.interpolate();
+        }
+
+        requestAnimationFrame(() => {
+          for (var target of targets) {
+            target.measure();
+          }
+
+          if (window.testRunner) {
+            container.style.display = 'none';
+          }
+
+          resolve();
+        });
+      });
+    });
+  }
+
+  function loadScript(url) {
+    return new Promise(function(resolve) {
+      var script = createElement('script', document.head);
+      script.src = url;
+      script.onload = resolve;
+    });
+  }
+
+  loadScript('../../resources/testharness.js').then(() => {
+    return loadScript('../../resources/testharnessreport.js');
+  }).then(() => {
+    var asyncHandle = async_test('This test uses interpolation-test.js.')
+    requestAnimationFrame(() => {
+      runTests().then(() => asyncHandle.done());
+    });
+  });
 
   window.assertAttributeInterpolation = assertAttributeInterpolation;
 })();
