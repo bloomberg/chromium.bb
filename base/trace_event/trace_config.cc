@@ -54,6 +54,22 @@ const TraceConfig::MemoryDumpTriggerConfig kDefaultLightMemoryDumpTrigger = {
     250,  // periodic_interval_ms
     MemoryDumpLevelOfDetail::LIGHT};
 
+class ConvertableTraceConfigToTraceFormat
+    : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  explicit ConvertableTraceConfigToTraceFormat(const TraceConfig& trace_config)
+      : trace_config_(trace_config) {}
+  void AppendAsTraceFormat(std::string* out) const override {
+    out->append(trace_config_.ToString());
+  }
+
+ protected:
+  ~ConvertableTraceConfigToTraceFormat() override {}
+
+ private:
+  const TraceConfig trace_config_;
+};
+
 }  // namespace
 
 TraceConfig::TraceConfig() {
@@ -136,6 +152,11 @@ std::string TraceConfig::ToString() const {
   base::JSONWriter::Write(dict, &json);
 
   return json;
+}
+
+scoped_refptr<ConvertableToTraceFormat>
+TraceConfig::AsConvertableToTraceFormat() const {
+  return new ConvertableTraceConfigToTraceFormat(*this);
 }
 
 std::string TraceConfig::ToCategoryFilterString() const {

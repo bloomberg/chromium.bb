@@ -16,6 +16,8 @@
 namespace base {
 namespace trace_event {
 
+class ConvertableToTraceFormat;
+
 // Options determines how the trace buffer stores data.
 enum TraceRecordMode {
   // Record until the trace buffer is full.
@@ -148,6 +150,9 @@ class BASE_EXPORT TraceConfig {
   // Writes the string representation of the TraceConfig. The string is JSON
   // formatted.
   std::string ToString() const;
+
+  // Returns a scoped_refptr and wrap TraceConfig in ConvertableToTraceFormat
+  scoped_refptr<ConvertableToTraceFormat> AsConvertableToTraceFormat() const;
 
   // Write the string representation of the CategoryFilter part.
   std::string ToCategoryFilterString() const;

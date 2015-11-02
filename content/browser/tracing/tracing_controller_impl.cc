@@ -169,6 +169,8 @@ void TracingControllerImpl::OnEnableRecordingDone(
 
   TRACE_EVENT_API_ADD_METADATA_EVENT("IsTimeTicksHighResolution", "value",
                                      base::TimeTicks::IsHighResolution());
+  TRACE_EVENT_API_ADD_METADATA_EVENT("TraceConfig", "value",
+                                     trace_config.AsConvertableToTraceFormat());
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
