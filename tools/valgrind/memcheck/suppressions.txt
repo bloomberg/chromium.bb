@@ -3435,3 +3435,10 @@
    fun:_ZN7content21RenderProcessHostImpl4InitEv
    fun:_ZN7content22RenderFrameHostManager14InitRenderViewEPNS_18RenderViewHostImplEPNS_20RenderFrameProxyHostE
 }
+{
+   bug_550566
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19SequencedWorkerPool*
+   fun:_ZN4base12_GLOBAL__N_158SequencedTaskRunnerHandleTest_FromSequencedWorkerPool_Test8TestBody*
+}
