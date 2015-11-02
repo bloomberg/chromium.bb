@@ -29,7 +29,7 @@ namespace {
 
 // The maximum amount of time, in seconds, that the unlock manager can stay in
 // the 'waking up' state after resuming from sleep.
-const int kWakingUpDurationSecs = 5;
+const int kWakingUpDurationSecs = 15;
 
 // The limit, in seconds, on the elapsed time for an auth attempt. If an auth
 // attempt exceeds this limit, it will time out and be rejected. This is
