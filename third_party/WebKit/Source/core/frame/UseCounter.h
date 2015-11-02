@@ -858,6 +858,8 @@ public:
         ExternalIsSearchProviderInstalled = 982,
         V8Permissions_RequestAll_Method = 983,
         BluetoothDeviceInstanceId = 984,
+        HTMLLabelElementFormIDLAttribute = 985,
+        HTMLLabelElementFormContentAttribute = 986,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

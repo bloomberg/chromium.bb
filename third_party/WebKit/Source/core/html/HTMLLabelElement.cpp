@@ -33,6 +33,7 @@
 #include "core/editing/SelectionController.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/FormAssociatedElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
@@ -285,10 +286,12 @@ DEFINE_TRACE(HTMLLabelElement)
 
 void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const AtomicString& attributeValue)
 {
-    if (attributeName == formAttr)
+    if (attributeName == formAttr) {
         formAttributeChanged();
-    else
+        UseCounter::count(document(), UseCounter::HTMLLabelElementFormContentAttribute);
+    } else {
         HTMLElement::parseAttribute(attributeName, attributeValue);
+    }
 }
 
 } // namespace
