@@ -788,7 +788,13 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
 
     switch (event.type) {
     case WebInputEvent::GestureTap: {
+        // If there is a popup open, close it as the user is clicking on the page
+        // (outside of the popup). We also save it so we can prevent a tap on an
+        // element from immediately reopening the same popup.
+        RefPtr<WebPagePopupImpl> pagePopup = m_pagePopup;
         hidePopups();
+        ASSERT(!m_pagePopup);
+
         m_client->cancelScheduledContentIntents();
         if (detectContentOnTouch(targetedEvent)) {
             eventSwallowed = true;
@@ -833,6 +839,12 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         }
 
         eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(targetedEvent);
+
+        if (m_pagePopup && pagePopup && m_pagePopup->hasSamePopupClient(pagePopup.get())) {
+            // The tap triggered a page popup that is the same as the one we just closed.
+            // It needs to be closed.
+            cancelPagePopup();
+        }
         break;
     }
     case WebInputEvent::GestureTwoFingerTap:
