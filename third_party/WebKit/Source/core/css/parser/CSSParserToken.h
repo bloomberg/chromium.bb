@@ -109,9 +109,13 @@ public:
     CSSValueID id() const;
     CSSValueID functionId() const;
 
+    bool hasStringBacking() const;
+
     CSSPropertyID parseAsUnresolvedCSSPropertyID() const;
 
     void serialize(StringBuilder&) const;
+
+    CSSParserToken copyWithUpdatedString(const CSSParserString&) const;
 
 private:
     void initValueFromCSSParserString(const CSSParserString& value)

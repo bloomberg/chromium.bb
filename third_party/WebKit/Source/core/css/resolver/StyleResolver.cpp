@@ -61,6 +61,7 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/AnimatedStyleBuilder.h"
+#include "core/css/resolver/CSSVariableResolver.h"
 #include "core/css/resolver/MatchResult.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
@@ -1230,6 +1231,11 @@ static inline bool isPropertyInWhitelist(PropertyWhitelistType propertyWhitelist
 template <CSSPropertyPriority priority>
 void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
+    // The 'all' property doesn't apply to variables:
+    // https://drafts.csswg.org/css-variables/#defining-variables
+    if (priority == ResolveVariables)
+        return;
+
     unsigned startCSSProperty = CSSPropertyPriorityData<priority>::first();
     unsigned endCSSProperty = CSSPropertyPriorityData<priority>::last();
 
@@ -1367,6 +1373,14 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
             return;
         }
         applyInheritedOnly = true;
+    }
+
+    // TODO(leviw): We need the proper bit for tracking whether we need to do this work.
+    if (RuntimeEnabledFeatures::cssVariablesEnabled()) {
+        applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), false, applyInheritedOnly);
+        applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), true, applyInheritedOnly);
+        // TODO(leviw): stop recalculating every time
+        CSSVariableResolver::resolveVariableDefinitions(state.style()->variables());
     }
 
     // Now we have all of the matched rules in the appropriate order. Walk the rules and apply

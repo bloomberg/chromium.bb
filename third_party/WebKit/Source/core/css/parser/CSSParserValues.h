@@ -35,6 +35,7 @@ class QualifiedName;
 struct CSSParserFunction;
 struct CSSParserCalcFunction;
 class CSSParserValueList;
+class CSSVariableData;
 
 struct CSSParserValue {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -51,6 +52,7 @@ struct CSSParserValue {
             UChar32 start;
             UChar32 end;
         } m_unicodeRange;
+        CSSVariableData* variableData;
     };
     enum {
         Operator  = 0x100000,
@@ -111,6 +113,9 @@ public:
     void destroyAndClear();
 
 private:
+    void checkForVariableReferencesOrDestroyAndClear(const CSSParserTokenRange& originalRange);
+    void consumeVariableValue(const CSSParserTokenRange&);
+
     unsigned m_current;
     Vector<CSSParserValue, 4> m_values;
 };

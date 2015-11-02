@@ -28,6 +28,7 @@ namespace blink {
 
 enum CSSPropertyID {
     CSSPropertyInvalid = 0,
+    CSSPropertyVariable = 1,
 %(property_enums)s
 };
 
@@ -44,7 +45,7 @@ WTF::String getJSPropertyName(CSSPropertyID);
 
 inline CSSPropertyID convertToCSSPropertyID(int value)
 {
-    ASSERT((value >= firstCSSProperty && value <= lastCSSProperty) || value == CSSPropertyInvalid);
+    ASSERT((value >= firstCSSProperty && value <= lastCSSProperty) || value == CSSPropertyInvalid || value == CSSPropertyVariable);
     return static_cast<CSSPropertyID>(value);
 }
 

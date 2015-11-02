@@ -51,6 +51,7 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/HashTools.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
@@ -368,6 +369,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (m_valueList->size() != 1)
             return false;
         addExpandedPropertyForValue(propId, cssValuePool().createUnsetValue(), important);
+        return true;
+    }
+
+    if (RuntimeEnabledFeatures::cssVariablesEnabled() && value->id == CSSValueInternalVariableValue) {
+        // We don't expand the shorthand here because crazypants.
+        m_parsedProperties.append(CSSProperty(propId, CSSVariableReferenceValue::create(value->variableData), important, false, 0, m_implicitShorthand));
+        m_valueList->next();
         return true;
     }
 

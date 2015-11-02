@@ -129,6 +129,25 @@ CSSValueID CSSParserToken::functionId() const
     return static_cast<CSSValueID>(m_id);
 }
 
+bool CSSParserToken::hasStringBacking() const
+{
+    CSSParserTokenType tokenType = type();
+    return tokenType == IdentToken
+        || tokenType == FunctionToken
+        || tokenType == AtKeywordToken
+        || tokenType == HashToken
+        || tokenType == UrlToken
+        || tokenType == DimensionToken
+        || tokenType == StringToken;
+}
+
+CSSParserToken CSSParserToken::copyWithUpdatedString(const CSSParserString& parserString) const
+{
+    CSSParserToken copy(*this);
+    copy.initValueFromCSSParserString(parserString);
+    return copy;
+}
+
 void CSSParserToken::serialize(StringBuilder& builder) const
 {
     // This is currently only used for @supports CSSOM. To keep our implementation
