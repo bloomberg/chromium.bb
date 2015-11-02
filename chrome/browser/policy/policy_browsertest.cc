@@ -2436,12 +2436,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   EXPECT_EQ(url, enumerator2.urls()[0]);
 }
 
+// TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+#if !defined(USE_AURA)
 // http://crbug.com/241691 PolicyTest.TranslateEnabled is failing regularly.
 IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
-
   scoped_ptr<test::CldDataHarness> cld_data_scope =
       test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
   ASSERT_NO_FATAL_FAILURE(cld_data_scope->Init());
@@ -2519,6 +2517,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   language_observer2.Wait();
   EXPECT_EQ(0u, infobar_service->infobar_count());
 }
+#endif  // !defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   // Checks that URLs can be blacklisted, and that exceptions can be made to
