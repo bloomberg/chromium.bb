@@ -639,13 +639,13 @@ PaintLayer* LayoutObject::enclosingLayer() const
     return nullptr;
 }
 
-bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType)
+bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType, bool makeVisibleInVisualViewport)
 {
     LayoutBox* enclosingBox = this->enclosingBox();
     if (!enclosingBox)
         return false;
 
-    enclosingBox->scrollRectToVisible(rect, alignX, alignY, scrollType);
+    enclosingBox->scrollRectToVisible(rect, alignX, alignY, scrollType, makeVisibleInVisualViewport);
     return true;
 }
 
@@ -1232,7 +1232,7 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
         "info", jsonObjectForPaintInvalidationInfo(dirtyRect, paintInvalidationReasonToString(invalidationReason)));
 
     // This conditional handles situations where non-rooted (and hence non-composited) frames are
-    // painted, such as SVG images. 
+    // painted, such as SVG images.
     if (!paintInvalidationContainer.isPaintInvalidationContainer())
         invalidatePaintRectangleOnWindow(paintInvalidationContainer, enclosingIntRect(dirtyRect));
 
@@ -1254,7 +1254,7 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& d
 }
 
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
-{ 
+{
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason, paintInvalidationRect);
 
     if (PaintLayer* enclosingLayer = this->enclosingLayer())

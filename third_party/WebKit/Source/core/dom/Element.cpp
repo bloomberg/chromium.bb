@@ -475,12 +475,14 @@ void Element::scrollIntoView(bool alignToTop)
     if (!layoutObject())
         return;
 
+    bool makeVisibleInVisualViewport = !document().page()->settings().inertVisualViewport();
+
     LayoutRect bounds = boundingBox();
     // Align to the top / bottom and to the closest edge.
     if (alignToTop)
-        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways, ProgrammaticScroll, makeVisibleInVisualViewport);
     else
-        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignBottomAlways);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignBottomAlways, ProgrammaticScroll, makeVisibleInVisualViewport);
 }
 
 void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
@@ -490,11 +492,13 @@ void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
     if (!layoutObject())
         return;
 
+    bool makeVisibleInVisualViewport = !document().page()->settings().inertVisualViewport();
+
     LayoutRect bounds = boundingBox();
     if (centerIfNeeded)
-        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded, ProgrammaticScroll, makeVisibleInVisualViewport);
     else
-        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+        layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded, ProgrammaticScroll, makeVisibleInVisualViewport);
 }
 
 void Element::setDistributeScroll(ScrollStateCallback* scrollStateCallback, String nativeScrollBehavior)

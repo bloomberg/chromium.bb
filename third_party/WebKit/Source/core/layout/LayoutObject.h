@@ -266,7 +266,12 @@ public:
     PaintLayer* findNextLayer(PaintLayer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
 
     // Scrolling is a LayoutBox concept, however some code just cares about recursively scrolling our enclosing ScrollableArea(s).
-    bool scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX = ScrollAlignment::alignCenterIfNeeded, const ScrollAlignment& alignY = ScrollAlignment::alignCenterIfNeeded, ScrollType = ProgrammaticScroll);
+    bool scrollRectToVisible(
+        const LayoutRect&,
+        const ScrollAlignment& alignX = ScrollAlignment::alignCenterIfNeeded,
+        const ScrollAlignment& alignY = ScrollAlignment::alignCenterIfNeeded,
+        ScrollType = ProgrammaticScroll,
+        bool makeVisibleInVisualViewport = true);
 
     // Convenience function for getting to the nearest enclosing box of a LayoutObject.
     LayoutBox* enclosingBox() const;

@@ -503,7 +503,7 @@ static bool isDisallowedAutoscroll(HTMLFrameOwnerElement* ownerElement, FrameVie
     return false;
 }
 
-void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType)
+void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType, bool makeVisibleInVisualViewport)
 {
     ASSERT(scrollType == ProgrammaticScroll || scrollType == UserScroll);
     // Presumably the same issue as in setScrollTop. See crbug.com/343132.
@@ -526,8 +526,11 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
         if (FrameView* frameView = this->frameView()) {
             HTMLFrameOwnerElement* ownerElement = document().ownerElement();
             if (!isDisallowedAutoscroll(ownerElement, frameView)) {
-                frameView->scrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
-
+                if (makeVisibleInVisualViewport) {
+                    frameView->scrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+                } else {
+                    frameView->layoutViewportScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+                }
                 if (ownerElement && ownerElement->layoutObject()) {
                     if (frameView->safeToPropagateScrollToParent()) {
                         parentBox = ownerElement->layoutObject()->enclosingBox();
@@ -551,7 +554,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
         parentBox = enclosingScrollableBox();
 
     if (parentBox)
-        parentBox->scrollRectToVisible(newRect, alignX, alignY, scrollType);
+        parentBox->scrollRectToVisible(newRect, alignX, alignY, scrollType, makeVisibleInVisualViewport);
 }
 
 void LayoutBox::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const

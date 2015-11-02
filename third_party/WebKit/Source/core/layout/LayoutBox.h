@@ -425,7 +425,9 @@ public:
 
     void scrollToOffset(const DoubleSize&, ScrollBehavior = ScrollBehaviorInstant);
     void scrollByRecursively(const DoubleSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
-    void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType = ProgrammaticScroll);
+    // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
+    // if required to make the rect visible.
+    void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType = ProgrammaticScroll, bool makeVisibleInVisualViewport = true);
 
     LayoutRectOutsets marginBoxOutsets() const override { return m_marginBoxOutsets; }
     LayoutUnit marginTop() const override { return m_marginBoxOutsets.top(); }
