@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_handle.h"
 
 namespace base {
 
@@ -22,6 +23,26 @@ struct RUNTIME_FUNCTION {
 };
 using PRUNTIME_FUNCTION = RUNTIME_FUNCTION*;
 #endif  // !defined(_WIN64)
+
+// Traits class to adapt GenericScopedHandle for HMODULES.
+class ModuleHandleTraits : public win::HandleTraits {
+ public:
+  using Handle = HMODULE;
+
+  static bool BASE_EXPORT CloseHandle(HMODULE handle);
+  static bool BASE_EXPORT IsHandleValid(HMODULE handle);
+  static HMODULE BASE_EXPORT NullHandle();
+
+  BASE_EXPORT static const HMODULE kNonNullModuleForTesting;
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ModuleHandleTraits);
+};
+
+// HMODULE is not really a handle, and has reference count semantics, so the
+// standard VerifierTraits does not apply.
+using ScopedModuleHandle =
+    win::GenericScopedHandle<ModuleHandleTraits, win::DummyVerifierTraits>;
 
 // Instances of this class are expected to be created and destroyed for each
 // stack unwinding. This class is not used while the target thread is suspended,
@@ -40,6 +61,12 @@ class BASE_EXPORT Win32StackFrameUnwinder {
                                DWORD64 program_counter,
                                PRUNTIME_FUNCTION runtime_function,
                                CONTEXT* context) = 0;
+
+    // Returns the module containing |program_counter|. Can return null if the
+    // module has been unloaded.
+    virtual ScopedModuleHandle GetModuleForProgramCounter(
+        DWORD64 program_counter) = 0;
+
    protected:
     UnwindFunctions();
 
@@ -50,7 +77,10 @@ class BASE_EXPORT Win32StackFrameUnwinder {
   Win32StackFrameUnwinder();
   ~Win32StackFrameUnwinder();
 
-  bool TryUnwind(CONTEXT* context);
+  // Attempts to unwind the frame represented by the stack and instruction
+  // pointers in |context|. If successful, updates |context| and provides the
+  // module associated with the frame in |module|.
+  bool TryUnwind(CONTEXT* context, ScopedModuleHandle* module);
 
  private:
   // This function is for internal and test purposes only.

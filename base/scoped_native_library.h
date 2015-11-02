@@ -31,6 +31,8 @@ class BASE_EXPORT ScopedNativeLibrary {
   // Returns true if there's a valid library loaded.
   bool is_valid() const { return !!library_; }
 
+  NativeLibrary get() const { return library_; }
+
   void* GetFunctionPointer(const char* function_name) const;
 
   // Takes ownership of the given library handle. Any existing handle will

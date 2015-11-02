@@ -5,11 +5,15 @@
 #ifndef BASE_PROFILER_NATIVE_STACK_SAMPLER_H_
 #define BASE_PROFILER_NATIVE_STACK_SAMPLER_H_
 
+#include "base/base_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
+
+class NativeStackSamplerTestDelegate;
 
 // NativeStackSampler is an implementation detail of StackSamplingProfiler. It
 // abstracts the native implementation required to record a stack sample for a
@@ -20,7 +24,9 @@ class NativeStackSampler {
 
   // Creates a stack sampler that records samples for |thread_handle|. Returns
   // null if this platform does not support stack sampling.
-  static scoped_ptr<NativeStackSampler> Create(PlatformThreadId thread_id);
+  static scoped_ptr<NativeStackSampler> Create(
+      PlatformThreadId thread_id,
+      NativeStackSamplerTestDelegate* test_delegate);
 
   // The following functions are all called on the SamplingThread (not the
   // thread being sampled).
@@ -42,6 +48,23 @@ class NativeStackSampler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeStackSampler);
+};
+
+// NativeStackSamplerTestDelegate provides seams for test code to execute during
+// stack collection.
+class BASE_EXPORT NativeStackSamplerTestDelegate {
+ public:
+  virtual ~NativeStackSamplerTestDelegate();
+
+  // Called after copying the stack and resuming the target thread, but prior to
+  // walking the stack. Invoked on the SamplingThread.
+  virtual void OnPreStackWalk() = 0;
+
+ protected:
+  NativeStackSamplerTestDelegate();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerTestDelegate);
 };
 
 }  // namespace base

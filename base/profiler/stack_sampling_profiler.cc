@@ -217,10 +217,20 @@ StackSamplingProfiler::SamplingParams::SamplingParams()
       sampling_interval(TimeDelta::FromMilliseconds(100)) {
 }
 
-StackSamplingProfiler::StackSamplingProfiler(PlatformThreadId thread_id,
-                                             const SamplingParams& params,
-                                             const CompletedCallback& callback)
-    : thread_id_(thread_id), params_(params), completed_callback_(callback) {}
+StackSamplingProfiler::StackSamplingProfiler(
+    PlatformThreadId thread_id,
+    const SamplingParams& params,
+    const CompletedCallback& callback)
+    : StackSamplingProfiler(thread_id, params, callback, nullptr) {}
+
+StackSamplingProfiler::StackSamplingProfiler(
+    PlatformThreadId thread_id,
+    const SamplingParams& params,
+    const CompletedCallback& callback,
+    NativeStackSamplerTestDelegate* test_delegate)
+    : thread_id_(thread_id), params_(params), completed_callback_(callback),
+      test_delegate_(test_delegate) {
+}
 
 StackSamplingProfiler::~StackSamplingProfiler() {
   Stop();
@@ -242,7 +252,7 @@ void StackSamplingProfiler::Start() {
     return;
 
   scoped_ptr<NativeStackSampler> native_sampler =
-      NativeStackSampler::Create(thread_id_);
+      NativeStackSampler::Create(thread_id_, test_delegate_);
   if (!native_sampler)
     return;
 

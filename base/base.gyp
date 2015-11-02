@@ -768,6 +768,9 @@
           'sources': [
             'profiler/win32_stack_frame_unwinder_unittest.cc',
           ],
+          'dependencies': [
+            'base_profiler_test_support_library',
+          ],
         }],
         ['OS == "win"', {
           'sources!': [
@@ -1272,6 +1275,21 @@
           ],
         },
       ],
+    }],
+    ['OS == "win" and target_arch=="x64"', {
+      'targets': [
+        {
+          'target_name': 'base_profiler_test_support_library',
+          # Must be a shared library so that it can be unloaded during testing.
+          'type': 'shared_library',
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'profiler/test_support_library.cc',
+          ],
+        },
+      ]
     }],
     ['os_posix==1 and OS!="mac" and OS!="ios"', {
       'targets': [

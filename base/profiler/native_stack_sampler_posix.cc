@@ -7,7 +7,8 @@
 namespace base {
 
 scoped_ptr<NativeStackSampler> NativeStackSampler::Create(
-    PlatformThreadId thread_id) {
+    PlatformThreadId thread_id,
+    NativeStackSamplerTestDelegate* test_delegate) {
   return scoped_ptr<NativeStackSampler>();
 }
 

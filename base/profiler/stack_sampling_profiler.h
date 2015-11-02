@@ -20,6 +20,7 @@
 namespace base {
 
 class NativeStackSampler;
+class NativeStackSamplerTestDelegate;
 
 // StackSamplingProfiler periodically stops a thread to sample its stack, for
 // the purpose of collecting information about which code paths are
@@ -156,10 +157,15 @@ class BASE_EXPORT StackSamplingProfiler {
   // thread-safe callback implementation.
   using CompletedCallback = Callback<void(const CallStackProfiles&)>;
 
-  // Creates a profiler that sends completed profiles to |callback|.
+  // Creates a profiler that sends completed profiles to |callback|. The second
+  // constructor is for test purposes.
   StackSamplingProfiler(PlatformThreadId thread_id,
                         const SamplingParams& params,
                         const CompletedCallback& callback);
+  StackSamplingProfiler(PlatformThreadId thread_id,
+                        const SamplingParams& params,
+                        const CompletedCallback& callback,
+                        NativeStackSamplerTestDelegate* test_delegate);
   // Stops any profiling currently taking place before destroying the profiler.
   ~StackSamplingProfiler();
 
@@ -230,6 +236,9 @@ class BASE_EXPORT StackSamplingProfiler {
   PlatformThreadHandle sampling_thread_handle_;
 
   const CompletedCallback completed_callback_;
+
+  // Stored until it can be passed to the NativeStackSampler created in Start().
+  NativeStackSamplerTestDelegate* const test_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(StackSamplingProfiler);
 };

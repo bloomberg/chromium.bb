@@ -10,4 +10,8 @@ NativeStackSampler::NativeStackSampler() {}
 
 NativeStackSampler::~NativeStackSampler() {}
 
+NativeStackSamplerTestDelegate::~NativeStackSamplerTestDelegate() {}
+
+NativeStackSamplerTestDelegate::NativeStackSamplerTestDelegate() {}
+
 }  // namespace base

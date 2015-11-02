@@ -28,6 +28,8 @@ TEST(ScopedNativeLibrary, Basic) {
     FilePath path(GetNativeLibraryName(L"ddraw"));
     native_library = LoadNativeLibrary(path, NULL);
     ScopedNativeLibrary library(native_library);
+    EXPECT_TRUE(library.is_valid());
+    EXPECT_EQ(native_library, library.get());
     FARPROC test_function =
         reinterpret_cast<FARPROC>(library.GetFunctionPointer(kFunctionName));
     EXPECT_EQ(0, IsBadCodePtr(test_function));

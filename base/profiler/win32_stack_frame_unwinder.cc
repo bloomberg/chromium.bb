@@ -4,6 +4,8 @@
 
 #include "base/profiler/win32_stack_frame_unwinder.h"
 
+#include <windows.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -11,6 +13,27 @@
 namespace base {
 
 // Win32UnwindFunctions -------------------------------------------------------
+
+const HMODULE ModuleHandleTraits::kNonNullModuleForTesting =
+    reinterpret_cast<HMODULE>(static_cast<uintptr_t>(-1));
+
+// static
+bool ModuleHandleTraits::CloseHandle(HMODULE handle) {
+  if (handle == kNonNullModuleForTesting)
+    return true;
+
+  return ::FreeLibrary(handle) != 0;
+}
+
+// static
+bool ModuleHandleTraits::IsHandleValid(HMODULE handle) {
+  return handle != nullptr;
+}
+
+// static
+HMODULE ModuleHandleTraits::NullHandle() {
+  return nullptr;
+}
 
 namespace {
 
@@ -28,6 +51,9 @@ public:
                      DWORD64 program_counter,
                      PRUNTIME_FUNCTION runtime_function,
                      CONTEXT* context) override;
+
+  ScopedModuleHandle GetModuleForProgramCounter(
+      DWORD64 program_counter) override;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(Win32UnwindFunctions);
@@ -61,6 +87,20 @@ void Win32UnwindFunctions::VirtualUnwind(DWORD64 image_base,
 #else
   NOTREACHED();
 #endif
+}
+
+ScopedModuleHandle Win32UnwindFunctions::GetModuleForProgramCounter(
+    DWORD64 program_counter) {
+  HMODULE module_handle = nullptr;
+  // GetModuleHandleEx() increments the module reference count, which is then
+  // managed and ultimately decremented by ScopedModuleHandle.
+  if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                           reinterpret_cast<LPCTSTR>(program_counter),
+                           &module_handle)) {
+    const DWORD error = ::GetLastError();
+    DCHECK_EQ(ERROR_MOD_NOT_FOUND, static_cast<int>(error));
+  }
+  return ScopedModuleHandle(module_handle);
 }
 
 // LeafUnwindBlacklist --------------------------------------------------------
@@ -140,9 +180,20 @@ Win32StackFrameUnwinder::Win32StackFrameUnwinder()
 
 Win32StackFrameUnwinder::~Win32StackFrameUnwinder() {}
 
-bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context) {
+bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
+                                        ScopedModuleHandle* module) {
 #ifdef _WIN64
   CHECK(!at_top_frame_ || unwind_info_present_for_all_frames_);
+
+  ScopedModuleHandle frame_module =
+      unwind_functions_->GetModuleForProgramCounter(context->Rip);
+  // The module may have been unloaded since we recorded the stack. Note that if
+  // this check detects module as valid, it still could be a different module at
+  // the same instruction pointer address (i.e. if the module was unloaded and a
+  // different module loaded in overlapping memory). This should occur extremely
+  // rarely.
+  if (!frame_module.IsValid())
+    return false;
 
   ULONG64 image_base;
   // Try to look up unwind metadata for the current function.
@@ -229,6 +280,7 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context) {
     }
   }
 
+  module->Set(frame_module.Take());
   return true;
 #else
   NOTREACHED();

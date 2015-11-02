@@ -140,48 +140,20 @@ void RewritePointersToStackMemory(uintptr_t top, uintptr_t bottom,
 // Walks the stack represented by |context| from the current frame downwards,
 // recording the instruction pointers for each frame in |instruction_pointers|.
 int RecordStack(CONTEXT* context, int max_stack_size,
-                const void* instruction_pointers[]) {
+                const void* instruction_pointers[],
+                ScopedModuleHandle modules[]) {
 #ifdef _WIN64
   Win32StackFrameUnwinder frame_unwinder;
   int i = 0;
   for (; (i < max_stack_size) && context->Rip; ++i) {
     instruction_pointers[i] = reinterpret_cast<const void*>(context->Rip);
-    if (!frame_unwinder.TryUnwind(context))
+    if (!frame_unwinder.TryUnwind(context, &modules[i]))
       return i + 1;
   }
   return i;
 #else
   return 0;
 #endif
-}
-
-// Fills in |module_handles| corresponding to the pointers to code in
-// |addresses|. The module handles are returned with reference counts
-// incremented and should be freed with FreeModuleHandles. See note in
-// SuspendThreadAndRecordStack for why |addresses| and |module_handles| are
-// arrays.
-void FindModuleHandlesForAddresses(const void* const addresses[],
-                                   HMODULE module_handles[], int stack_depth) {
-  for (int i = 0; i < stack_depth; ++i) {
-    HMODULE module_handle = NULL;
-    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                          reinterpret_cast<LPCTSTR>(addresses[i]),
-                          &module_handle)) {
-      // HMODULE actually represents the base address of the module, so we can
-      // use it directly as an address.
-      DCHECK_LE(reinterpret_cast<const void*>(module_handle), addresses[i]);
-      module_handles[i] = module_handle;
-    }
-  }
-}
-
-// Frees the modules handles returned by FindModuleHandlesForAddresses. See note
-// in SuspendThreadAndRecordStack for why |module_handles| is an array.
-void FreeModuleHandles(int stack_depth, HMODULE module_handles[]) {
-  for (int i = 0; i < stack_depth; ++i) {
-    if (module_handles[i])
-      ::FreeLibrary(module_handles[i]);
-  }
 }
 
 // Gets the unique build ID for a module. Windows build IDs are created by a
@@ -300,7 +272,9 @@ int SuspendThreadAndRecordStack(HANDLE thread_handle,
                                 void* stack_copy_buffer,
                                 size_t stack_copy_buffer_size,
                                 int max_stack_size,
-                                const void* instruction_pointers[]) {
+                                const void* instruction_pointers[],
+                                ScopedModuleHandle modules[],
+                                NativeStackSamplerTestDelegate* test_delegate) {
   CONTEXT thread_context = {0};
   thread_context.ContextFlags = CONTEXT_FULL;
   // The stack bounds are saved to uintptr_ts for use outside
@@ -330,16 +304,21 @@ int SuspendThreadAndRecordStack(HANDLE thread_handle,
                 top - bottom);
   }
 
+  if (test_delegate)
+    test_delegate->OnPreStackWalk();
+
   RewritePointersToStackMemory(top, bottom, &thread_context, stack_copy_buffer);
 
-  return RecordStack(&thread_context, max_stack_size, instruction_pointers);
+  return RecordStack(&thread_context, max_stack_size, instruction_pointers,
+                     modules);
 }
 
 // NativeStackSamplerWin ------------------------------------------------------
 
 class NativeStackSamplerWin : public NativeStackSampler {
  public:
-  explicit NativeStackSamplerWin(win::ScopedHandle thread_handle);
+  NativeStackSamplerWin(win::ScopedHandle thread_handle,
+                        NativeStackSamplerTestDelegate* test_delegate);
   ~NativeStackSamplerWin() override;
 
   // StackSamplingProfiler::NativeStackSampler:
@@ -373,12 +352,14 @@ class NativeStackSamplerWin : public NativeStackSampler {
   // Copies the stack information represented by |instruction_pointers| into
   // |sample| and |modules|.
   void CopyToSample(const void* const instruction_pointers[],
-                    const HMODULE module_handles[],
+                    const ScopedModuleHandle module_handles[],
                     int stack_depth,
                     StackSamplingProfiler::Sample* sample,
                     std::vector<StackSamplingProfiler::Module>* modules);
 
   win::ScopedHandle thread_handle_;
+
+  NativeStackSamplerTestDelegate* const test_delegate_;
 
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
@@ -398,8 +379,10 @@ class NativeStackSamplerWin : public NativeStackSampler {
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
 };
 
-NativeStackSamplerWin::NativeStackSamplerWin(win::ScopedHandle thread_handle)
-    : thread_handle_(thread_handle.Take()),
+NativeStackSamplerWin::NativeStackSamplerWin(
+    win::ScopedHandle thread_handle,
+    NativeStackSamplerTestDelegate* test_delegate)
+    : thread_handle_(thread_handle.Take()), test_delegate_(test_delegate),
       thread_stack_base_address_(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase),
       stack_copy_buffer_(new unsigned char[kStackCopyBufferSize]) {
@@ -423,19 +406,18 @@ void NativeStackSamplerWin::RecordStackSample(
 
   const int max_stack_size = 64;
   const void* instruction_pointers[max_stack_size] = {0};
-  HMODULE module_handles[max_stack_size] = {0};
+  ScopedModuleHandle modules[max_stack_size];
 
   int stack_depth = SuspendThreadAndRecordStack(thread_handle_.Get(),
                                                 thread_stack_base_address_,
                                                 stack_copy_buffer_.get(),
                                                 kStackCopyBufferSize,
                                                 max_stack_size,
-                                                instruction_pointers);
-  FindModuleHandlesForAddresses(instruction_pointers, module_handles,
-                                stack_depth);
-  CopyToSample(instruction_pointers, module_handles, stack_depth, sample,
+                                                instruction_pointers,
+                                                modules,
+                                                test_delegate_);
+  CopyToSample(instruction_pointers, modules, stack_depth, sample,
                current_modules_);
-  FreeModuleHandles(stack_depth, module_handles);
 }
 
 void NativeStackSamplerWin::ProfileRecordingStopped() {
@@ -484,24 +466,25 @@ size_t NativeStackSamplerWin::GetModuleIndex(
 
 void NativeStackSamplerWin::CopyToSample(
     const void* const instruction_pointers[],
-    const HMODULE module_handles[],
+    const ScopedModuleHandle module_handles[],
     int stack_depth,
     StackSamplingProfiler::Sample* sample,
-    std::vector<StackSamplingProfiler::Module>* module) {
+    std::vector<StackSamplingProfiler::Module>* modules) {
   sample->clear();
   sample->reserve(stack_depth);
 
   for (int i = 0; i < stack_depth; ++i) {
     sample->push_back(StackSamplingProfiler::Frame(
         reinterpret_cast<uintptr_t>(instruction_pointers[i]),
-        GetModuleIndex(module_handles[i], module)));
+        GetModuleIndex(module_handles[i].Get(), modules)));
   }
 }
 
 }  // namespace
 
 scoped_ptr<NativeStackSampler> NativeStackSampler::Create(
-    PlatformThreadId thread_id) {
+    PlatformThreadId thread_id,
+    NativeStackSamplerTestDelegate* test_delegate) {
 #if _WIN64
   // Get the thread's handle.
   HANDLE thread_handle = ::OpenThread(
@@ -511,7 +494,8 @@ scoped_ptr<NativeStackSampler> NativeStackSampler::Create(
 
   if (thread_handle) {
     return scoped_ptr<NativeStackSampler>(new NativeStackSamplerWin(
-        win::ScopedHandle(thread_handle)));
+        win::ScopedHandle(thread_handle),
+        test_delegate));
   }
 #endif
   return scoped_ptr<NativeStackSampler>();

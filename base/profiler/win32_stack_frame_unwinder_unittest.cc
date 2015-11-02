@@ -23,6 +23,11 @@ class TestUnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
                      DWORD64 program_counter,
                      PRUNTIME_FUNCTION runtime_function,
                      CONTEXT* context) override;
+  ScopedModuleHandle GetModuleForProgramCounter(
+      DWORD64 program_counter) override;
+
+  // Instructs GetModuleForProgramCounter to return null on the next call.
+  void SetUnloadedModule();
 
   // These functions set whether the next frame will have a RUNTIME_FUNCTION,
   // and allow specification of a custom image_base.
@@ -48,6 +53,7 @@ class TestUnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
 
   static RUNTIME_FUNCTION* const kInvalidRuntimeFunction;
 
+  bool module_is_loaded_;
   DWORD64 expected_program_counter_;
   DWORD64 custom_image_base_;
   DWORD64 next_image_base_;
@@ -62,7 +68,8 @@ RUNTIME_FUNCTION* const TestUnwindFunctions::kInvalidRuntimeFunction =
     reinterpret_cast<RUNTIME_FUNCTION*>(static_cast<uintptr_t>(-1));
 
 TestUnwindFunctions::TestUnwindFunctions()
-    : expected_program_counter_(0),
+    : module_is_loaded_(true),
+      expected_program_counter_(0),
       custom_image_base_(0),
       next_image_base_(kImageBaseIncrement),
       expected_image_base_(0),
@@ -99,6 +106,19 @@ void TestUnwindFunctions::VirtualUnwind(DWORD64 image_base,
   // This function should only be called when LookupFunctionEntry returns
   // a RUNTIME_FUNCTION.
   EXPECT_EQ(&runtime_functions_.back(), runtime_function);
+}
+
+ScopedModuleHandle TestUnwindFunctions::GetModuleForProgramCounter(
+    DWORD64 program_counter) {
+  bool return_non_null_value = module_is_loaded_;
+  module_is_loaded_ = true;
+  return ScopedModuleHandle(return_non_null_value ?
+                            ModuleHandleTraits::kNonNullModuleForTesting :
+                            nullptr);
+}
+
+void TestUnwindFunctions::SetUnloadedModule() {
+  module_is_loaded_ = false;
 }
 
 void TestUnwindFunctions::SetHasRuntimeFunction(CONTEXT* context) {
@@ -184,15 +204,31 @@ Win32StackFrameUnwinderTest::CreateUnwinder() {
 TEST_F(Win32StackFrameUnwinderTest, FramesWithUnwindInfo) {
   scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
   CONTEXT context = {0};
+  ScopedModuleHandle module;
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context));
+  EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+  EXPECT_TRUE(module.IsValid());
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context));
+  module.Set(nullptr);
+  EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+  EXPECT_TRUE(module.IsValid());
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context));
+  module.Set(nullptr);
+  EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+  EXPECT_TRUE(module.IsValid());
+}
+
+// Checks that an instruction pointer in an unloaded module fails to unwind.
+TEST_F(Win32StackFrameUnwinderTest, UnloadedModule) {
+  scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
+  CONTEXT context = {0};
+  ScopedModuleHandle module;
+
+  unwind_functions_->SetUnloadedModule();
+  EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
 }
 
 // Checks that the CONTEXT's stack pointer gets popped when the top frame has no
@@ -200,19 +236,25 @@ TEST_F(Win32StackFrameUnwinderTest, FramesWithUnwindInfo) {
 TEST_F(Win32StackFrameUnwinderTest, FrameAtTopWithoutUnwindInfo) {
   scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
   CONTEXT context = {0};
+  ScopedModuleHandle module;
   const DWORD64 original_rsp = 128;
   context.Rsp = original_rsp;
 
   unwind_functions_->SetNoRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context));
+  EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
   EXPECT_EQ(original_rsp, context.Rip);
   EXPECT_EQ(original_rsp + 8, context.Rsp);
+  EXPECT_TRUE(module.IsValid());
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context));
+  module.Set(nullptr);
+  EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+  EXPECT_TRUE(module.IsValid());
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  EXPECT_TRUE(unwinder->TryUnwind(&context));
+  module.Set(nullptr);
+  EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+  EXPECT_TRUE(module.IsValid());
 }
 
 // Checks that a frame below the top of the stack with missing unwind info
@@ -223,13 +265,15 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     // First stack, with a bad function below the top of the stack.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     unwind_functions_->SetHasRuntimeFunction(&context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
 
     unwind_functions_->SetNoRuntimeFunction(
         image_base_for_module_with_bad_function,
         &context);
-    EXPECT_FALSE(unwinder->TryUnwind(&context));
+    EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
   }
 
   {
@@ -237,10 +281,11 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     // unwind info from the previously-seen module is blacklisted.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     unwind_functions_->SetNoRuntimeFunction(
         image_base_for_module_with_bad_function,
         &context);
-    EXPECT_FALSE(unwinder->TryUnwind(&context));
+    EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
   }
 
   {
@@ -251,18 +296,24 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     // module.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     unwind_functions_->SetHasRuntimeFunction(
         image_base_for_module_with_bad_function,
         &context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
 
     unwind_functions_->SetHasRuntimeFunction(&context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    module.Set(nullptr);
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
 
     unwind_functions_->SetHasRuntimeFunction(
         image_base_for_module_with_bad_function,
         &context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    module.Set(nullptr);
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
   }
 
   {
@@ -273,16 +324,22 @@ TEST_F(Win32StackFrameUnwinderTest, BlacklistedModule) {
     // previously-seen module.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     unwind_functions_->SetNoRuntimeFunction(&context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
 
     unwind_functions_->SetHasRuntimeFunction(&context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    module.Set(nullptr);
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
 
     unwind_functions_->SetHasRuntimeFunction(
         image_base_for_module_with_bad_function,
         &context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    module.Set(nullptr);
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
   }
 }
 
@@ -296,21 +353,25 @@ TEST_F(Win32StackFrameUnwinderTest, ModuleFromQuestionableFrameNotBlacklisted) {
     // First stack, with both the first and second frames missing unwind info.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     unwind_functions_->SetNoRuntimeFunction(&context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
 
     unwind_functions_->SetNoRuntimeFunction(image_base_for_questionable_module,
                                             &context);
-    EXPECT_FALSE(unwinder->TryUnwind(&context));
+    EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
   }
 
   {
     // Second stack; check that the questionable module was not blacklisted.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     unwind_functions_->SetNoRuntimeFunction(image_base_for_questionable_module,
                                             &context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
   }
 }
 
@@ -323,52 +384,57 @@ TEST_F(Win32StackFrameUnwinderTest, RuntimeFunctionSanityCheck) {
     // instruction pointer between the two.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     RUNTIME_FUNCTION runtime_function = {0};
     runtime_function.BeginAddress = 128;
     runtime_function.EndAddress = 512;
     unwind_functions_->SetHasRuntimeFunction(image_base_for_sanity_check,
                                              runtime_function, 256,
                                              &context);
-    EXPECT_TRUE(unwinder->TryUnwind(&context));
+    EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
+    EXPECT_TRUE(module.IsValid());
   }
 
   {
     // Test begin address greater than end address.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     RUNTIME_FUNCTION runtime_function = {0};
     runtime_function.BeginAddress = 512;
     runtime_function.EndAddress = 128;
     unwind_functions_->SetHasRuntimeFunction(image_base_for_sanity_check,
                                              runtime_function, 256,
                                              &context);
-    EXPECT_FALSE(unwinder->TryUnwind(&context));
+    EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
   }
 
   {
     // Test instruction pointer before begin address.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     RUNTIME_FUNCTION runtime_function = {0};
     runtime_function.BeginAddress = 128;
     runtime_function.EndAddress = 512;
     unwind_functions_->SetHasRuntimeFunction(image_base_for_sanity_check,
                                              runtime_function, 50,
                                              &context);
-    EXPECT_FALSE(unwinder->TryUnwind(&context));
+    EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
   }
 
   {
     // Test instruction pointer after end address.
     scoped_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
+    ScopedModuleHandle module;
     RUNTIME_FUNCTION runtime_function = {0};
     runtime_function.BeginAddress = 128;
     runtime_function.EndAddress = 512;
     unwind_functions_->SetHasRuntimeFunction(image_base_for_sanity_check,
                                              runtime_function, 600,
                                              &context);
-    EXPECT_FALSE(unwinder->TryUnwind(&context));
+    EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
   }
 }
 

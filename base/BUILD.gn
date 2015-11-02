@@ -1231,6 +1231,18 @@ if (is_win) {
       "//build/config/sanitizers:deps",
     ]
   }
+
+  if (target_cpu == "x64") {
+    # Must be a shared library so that it can be unloaded during testing.
+    shared_library("base_profiler_test_support_library") {
+      sources = [
+        "profiler/test_support_library.cc",
+      ]
+      deps = [
+        "//build/config/sanitizers:deps",
+      ]
+    }
+  }
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.
@@ -1572,8 +1584,9 @@ test("base_unittests") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
-  if (is_win) {
+  if (is_win && target_cpu == "x64") {
     sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
+    deps += [ ":base_profiler_test_support_library" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
