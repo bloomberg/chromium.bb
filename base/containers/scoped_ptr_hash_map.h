@@ -57,7 +57,7 @@ class ScopedPtrHashMap {
     std::pair<iterator, bool> result =
         data_.insert(std::make_pair(key, data.get()));
     if (result.second)
-      ignore_result(data.release());
+      ::ignore_result(data.release());
     return result;
   }
 

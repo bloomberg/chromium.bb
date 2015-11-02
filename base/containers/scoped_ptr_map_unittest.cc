@@ -16,6 +16,15 @@
 namespace base {
 namespace {
 
+namespace namespace_with_ignore_result {
+
+class Value {};
+
+template <typename T>
+void ignore_result(const T&) {}
+
+}  // namespace namespace_with_ignore_result
+
 // A ScopedDestroyer sets a Boolean to true upon destruction.
 class ScopedDestroyer {
  public:
@@ -250,6 +259,14 @@ TEST(ScopedPtrMapTest, Passed) {
   result.clear();
   EXPECT_TRUE(destroyed);
 };
+
+// Test that using a value type from a namespace containing an ignore_result
+// function compiles correctly.
+TEST(ScopedPtrMapTest, IgnoreResultCompile) {
+  ScopedPtrMap<int, scoped_ptr<namespace_with_ignore_result::Value>> scoped_map;
+  scoped_map.insert(1,
+                    make_scoped_ptr(new namespace_with_ignore_result::Value));
+}
 
 }  // namespace
 }  // namespace base

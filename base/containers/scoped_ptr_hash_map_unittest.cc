@@ -10,6 +10,15 @@
 namespace base {
 namespace {
 
+namespace namespace_with_ignore_result {
+
+class Value {};
+
+template <typename T>
+void ignore_result(const T&) {}
+
+}  // namespace namespace_with_ignore_result
+
 struct DeleteCounter {
  public:
   DeleteCounter() {}
@@ -79,6 +88,14 @@ TEST(ScopedPtrHashMapTest, CustomDeleter) {
   }
   EXPECT_EQ(3, DeleteCounter::delete_count());
   EXPECT_EQ(3, CountingDeleter::count());
+}
+
+// Test that using a value type from a namespace containing an ignore_result
+// function compiles correctly.
+TEST(ScopedPtrHashMapTest, IgnoreResultCompile) {
+  ScopedPtrHashMap<int, scoped_ptr<namespace_with_ignore_result::Value>>
+      scoped_map;
+  scoped_map.add(1, make_scoped_ptr(new namespace_with_ignore_result::Value));
 }
 
 }  // namespace

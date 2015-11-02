@@ -69,7 +69,7 @@ class ScopedPtrMap {
   std::pair<const_iterator, bool> insert(const Key& key, ScopedPtr val) {
     auto result = data_.insert(std::make_pair(key, val.get()));
     if (result.second)
-      ignore_result(val.release());
+      ::ignore_result(val.release());
     return result;
   }
 
