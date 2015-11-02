@@ -48,7 +48,6 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
     protected void onDestroy() {
         super.onDestroy();
         mBookmarkManager.destroy();
-        mSnackbarManager.dismissSnackbar(false);
     }
 
     @Override

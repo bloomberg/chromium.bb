@@ -58,7 +58,7 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
      * Dismisses the snackbar.
      */
     public void dismissLoFiBar() {
-        if (mSnackbarManager.isShowing()) mSnackbarManager.removeMatchingSnackbars(this);
+        if (mSnackbarManager.isShowing()) mSnackbarManager.dismissSnackbars(this);
     }
 
     /**
@@ -66,7 +66,7 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
      */
     @Override
     public void onAction(Object actionData) {
-        mSnackbarManager.dismissSnackbar(false);
+        mSnackbarManager.dismissSnackbars(this);
         mTab.reloadDisableLoFi();
         DataReductionProxySettings.getInstance().incrementLoFiUserRequestsForImages();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(

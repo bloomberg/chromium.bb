@@ -78,13 +78,13 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
             @Override
             public void tabClosureUndone(Tab tab) {
                 if (disableUndo()) return;
-                mSnackbarManager.removeMatchingSnackbars(UndoBarPopupController.this, tab.getId());
+                mSnackbarManager.dismissSnackbars(UndoBarPopupController.this, tab.getId());
             }
 
             @Override
             public void tabClosureCommitted(Tab tab) {
                 if (disableUndo()) return;
-                mSnackbarManager.removeMatchingSnackbars(UndoBarPopupController.this, tab.getId());
+                mSnackbarManager.dismissSnackbars(UndoBarPopupController.this, tab.getId());
             }
 
             @Override
@@ -96,7 +96,7 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
             @Override
             public void allTabsClosureCommitted() {
                 if (disableUndo()) return;
-                mSnackbarManager.removeMatchingSnackbars(UndoBarPopupController.this);
+                mSnackbarManager.dismissSnackbars(UndoBarPopupController.this);
             }
         };
     }

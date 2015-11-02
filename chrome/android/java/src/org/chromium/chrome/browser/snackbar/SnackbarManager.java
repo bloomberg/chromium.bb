@@ -15,6 +15,7 @@ import android.view.Window;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -95,7 +96,7 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
-            dismissSnackbar(true);
+            dismissAllSnackbars(true);
         }
     };
 
@@ -139,11 +140,17 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     }
 
     /**
-     * Dismisses snackbar, clears out all entries in stack and prevents future remove callbacks from
-     * happening. This method also unregisters this class from global layout notifications.
+     * Warning: Calling this method might cause cascading destroy loop, because you might trigger
+     * callbacks for other {@link SnackbarController}. This method is only meant to be used during
+     * {@link ChromeActivity}'s destruction routine. For other purposes, use
+     * {@link #dismissSnackbars(SnackbarController)} instead.
+     * <p>
+     * Dismisses all snackbars in stack. This will call
+     * {@link SnackbarController#onDismissNoAction(Object)} for every closing snackbar.
+     *
      * @param isTimeout Whether dismissal was triggered by timeout.
      */
-    public void dismissSnackbar(boolean isTimeout) {
+    public void dismissAllSnackbars(boolean isTimeout) {
         mUIThreadHandler.removeCallbacks(mHideRunnable);
 
         if (mPopup != null) {
@@ -165,11 +172,11 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     }
 
     /**
-     * Removes all snackbars that have a certain controller.
+     * Dismisses snackbars that are associated with the given {@link SnackbarController}.
      *
      * @param controller Only snackbars with this controller will be removed.
      */
-    public void removeMatchingSnackbars(SnackbarController controller) {
+    public void dismissSnackbars(SnackbarController controller) {
         boolean isFound = false;
         Snackbar[] snackbars = new Snackbar[mStack.size()];
         mStack.toArray(snackbars);
@@ -185,12 +192,12 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     }
 
     /**
-     * Removes all snackbars that have a certain controller and action data.
+     * Dismisses snackbars that have a certain controller and action data.
      *
      * @param controller Only snackbars with this controller will be removed.
      * @param actionData Only snackbars whose action data is equal to actionData will be removed.
      */
-    public void removeMatchingSnackbars(SnackbarController controller, Object actionData) {
+    public void dismissSnackbars(SnackbarController controller, Object actionData) {
         boolean isFound = false;
         for (Snackbar snackbar : mStack) {
             if (snackbar.getActionData() != null && snackbar.getActionData().equals(actionData)
@@ -209,7 +216,7 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
         controller.onDismissForEachType(false);
 
         if (mStack.isEmpty()) {
-            dismissSnackbar(false);
+            dismissAllSnackbars(false);
         } else {
             // Refresh the snackbar to let it show top of stack and have full timeout.
             showSnackbar(mStack.pop());
@@ -229,7 +236,7 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
         if (!mStack.isEmpty()) {
             showSnackbar(mStack.pop());
         } else {
-            dismissSnackbar(false);
+            dismissAllSnackbars(false);
         }
     }
 
