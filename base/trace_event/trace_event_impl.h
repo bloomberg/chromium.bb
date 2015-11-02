@@ -169,10 +169,10 @@ class BASE_EXPORT TraceEvent {
   const char* name_;
   scoped_refptr<base::RefCountedString> parameter_copy_storage_;
   int thread_id_;
-  char phase_;
   unsigned int flags_;
   unsigned long long bind_id_;
   unsigned char arg_types_[kTraceMaxNumArgs];
+  char phase_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEvent);
 };
