@@ -25,6 +25,7 @@ executable("mandoline") {
     "//mojo/package_manager",
     "//mojo/runner:lib",
     "//mojo/runner:register_local_aliases_fwd",
+    "//mojo/shell",
   ]
 
   data_deps = [

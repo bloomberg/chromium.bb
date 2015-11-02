@@ -208,10 +208,10 @@ bool Context::Init() {
   RegisterLocalAliases(package_manager_);
 
   scoped_ptr<shell::NativeRunnerFactory> runner_factory;
-  if (command_line.HasSwitch(switches::kEnableMultiprocess))
-    runner_factory.reset(new OutOfProcessNativeRunnerFactory(this));
-  else
+  if (command_line.HasSwitch(switches::kMojoSingleProcess))
     runner_factory.reset(new InProcessNativeRunnerFactory(this));
+  else
+    runner_factory.reset(new OutOfProcessNativeRunnerFactory(this));
   application_manager_.reset(new shell::ApplicationManager(
       make_scoped_ptr(package_manager_), runner_factory.Pass(),
       task_runners_->blocking_pool()));
