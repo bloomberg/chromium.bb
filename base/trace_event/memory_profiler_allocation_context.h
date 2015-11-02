@@ -49,7 +49,10 @@ class BASE_EXPORT AllocationStack {
       return;
 
     // Assert that pushes and pops are nested correctly.
-    DCHECK_EQ(frame, stack_.back());
+    // This DCHECK can be hit if some TRACE_EVENT macro is unbalanced
+    // (a TRACE_EVENT_END* call without a corresponding TRACE_EVENT_BEGIN).
+    DCHECK_EQ(frame, stack_.back())
+        << "Encountered an unmatched TRACE_EVENT_END";
 
     stack_.pop_back();
   }

@@ -479,8 +479,9 @@ void MemoryDumpManager::OnTraceLogEnabled() {
     // If heap profiling is enabled, the stack frame deduplicator will be in
     // use. Add a metadata event to write its frames.
     stack_frame_deduplicator = new StackFrameDeduplicator;
-    TRACE_EVENT_API_ADD_METADATA_EVENT("stackFrames", "stackFrames",
-                                       stack_frame_deduplicator);
+    TRACE_EVENT_API_ADD_METADATA_EVENT(
+        "stackFrames", "stackFrames",
+        scoped_refptr<ConvertableToTraceFormat>(stack_frame_deduplicator));
   }
 
   session_state_ = new MemoryDumpSessionState(stack_frame_deduplicator);
