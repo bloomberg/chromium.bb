@@ -20,6 +20,9 @@ const char kEnableMultiprocess[] = "enable-multiprocess";
 // Because otherwise we conflict with content.)
 const char kMojoNoSandbox[] = "no-sandbox";
 
+// Load apps in a single processes.
+const char kMojoSingleProcess[] = "single-process";
+
 // If set apps downloaded are saved in with a predictable filename, to help
 // remote debugging: when gdb is used through gdbserver, it needs to be able to
 // find locally any loaded library. For this, gdb use the filename of the
