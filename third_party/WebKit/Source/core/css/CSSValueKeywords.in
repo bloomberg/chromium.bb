@@ -412,7 +412,6 @@ embed
 fixed
 hand
 hide
-invert
 isolate
 isolate-override
 plaintext
@@ -993,6 +992,7 @@ polygon
 format
 
 // (-webkit-)filter
+invert
 grayscale
 sepia
 saturate

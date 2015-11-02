@@ -45,7 +45,6 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
-#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
@@ -781,19 +780,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitBoxOrdinalGroup:
         validPrimitive = validUnit(value, FInteger | FNonNeg) && value->fValue;
         break;
-    case CSSPropertyWebkitFilter:
-    case CSSPropertyBackdropFilter:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else {
-            RefPtrWillBeRawPtr<CSSValue> val = parseFilter();
-            if (val) {
-                addProperty(propId, val, important);
-                return true;
-            }
-            return false;
-        }
-        break;
     case CSSPropertyFlex: {
         ShorthandScope scope(this, propId);
         if (id == CSSValueNone) {
@@ -1225,6 +1211,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyZIndex:
     case CSSPropertyTextShadow:
     case CSSPropertyBoxShadow:
+    case CSSPropertyWebkitFilter:
+    case CSSPropertyBackdropFilter:
         validPrimitive = false;
         break;
 
@@ -3867,73 +3855,6 @@ bool CSSPropertyParser::parseColorFromValue(const CSSParserValue* value, RGBA32&
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSShadowValue> CSSPropertyParser::parseSingleShadow(CSSParserValueList* valueList, bool allowInset, bool allowSpread)
-{
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> style = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> color = nullptr;
-    WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, 4> lengths;
-
-    CSSParserValue* val = valueList->current();
-    if (!val)
-        return nullptr;
-    if (val->id == CSSValueInset) {
-        if (!allowInset)
-            return nullptr;
-        style = cssValuePool().createIdentifierValue(val->id);
-        val = valueList->next();
-        if (!val)
-            return nullptr;
-    }
-    if ((color = parseColor(val)))
-        val = valueList->next();
-
-    if (!val || !validUnit(val, FLength, HTMLStandardMode))
-        return nullptr;
-    lengths.append(createPrimitiveNumericValue(val));
-    val = valueList->next();
-
-    if (!val || !validUnit(val, FLength, HTMLStandardMode))
-        return nullptr;
-    lengths.append(createPrimitiveNumericValue(val));
-    val = valueList->next();
-
-    if (val && validUnit(val, FLength, HTMLStandardMode)) {
-        // Blur radius must be non-negative.
-        if (m_parsedCalculation ? m_parsedCalculation->isNegative() : !validUnit(val, FLength | FNonNeg, HTMLStandardMode)) {
-            m_parsedCalculation.release();
-            return nullptr;
-        }
-        lengths.append(createPrimitiveNumericValue(val));
-        val = valueList->next();
-        if (val && validUnit(val, FLength, HTMLStandardMode)) {
-            if (!allowSpread)
-                return nullptr;
-            lengths.append(createPrimitiveNumericValue(val));
-            val = valueList->next();
-        }
-    }
-
-    if (val) {
-        if (RefPtrWillBeRawPtr<CSSValue> colorValue = parseColor(val)) {
-            if (color)
-                return nullptr;
-            color = colorValue;
-            val = valueList->next();
-        }
-        if (val && val->id == CSSValueInset) {
-            if (!allowInset || style)
-                return nullptr;
-            style = cssValuePool().createIdentifierValue(val->id);
-            val = valueList->next();
-        }
-    }
-    unsigned lengthsSeen = lengths.size();
-    return CSSShadowValue::create(lengths.at(0), lengths.at(1),
-        lengthsSeen > 2 ? lengths.at(2) : nullptr,
-        lengthsSeen > 3 ? lengths.at(3) : nullptr,
-        style.release(), color.release());
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseReflect()
 {
     // box-reflect: <direction> <offset> <mask>
@@ -5406,124 +5327,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
     }
 
     return imageSet.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSFunctionValue> CSSPropertyParser::parseBuiltinFilterArguments(CSSParserValueList* args, CSSValueID filterType)
-{
-    RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = CSSFunctionValue::create(filterType);
-    ASSERT(args);
-
-    switch (filterType) {
-    case CSSValueGrayscale:
-    case CSSValueSepia:
-    case CSSValueSaturate:
-    case CSSValueInvert:
-    case CSSValueOpacity:
-    case CSSValueContrast: {
-        // One optional argument, 0-1 or 0%-100%, if missing use 100%.
-        if (args->size()) {
-            CSSParserValue* value = args->current();
-            // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-            if (value->unit() != CSSPrimitiveValue::UnitType::Percentage && !validUnit(value, FNumber | FNonNeg))
-                return nullptr;
-
-            double amount = value->fValue;
-            if (amount < 0)
-                return nullptr;
-
-            // Saturate and Contrast allow values over 100%.
-            if (filterType != CSSValueSaturate
-                && filterType != CSSValueContrast) {
-                double maxAllowed = value->unit() == CSSPrimitiveValue::UnitType::Percentage ? 100.0 : 1.0;
-                if (amount > maxAllowed)
-                    return nullptr;
-            }
-
-            filterValue->append(cssValuePool().createValue(amount, value->unit()));
-        }
-        break;
-    }
-    case CSSValueBrightness: {
-        // One optional argument, if missing use 100%.
-        if (args->size()) {
-            CSSParserValue* value = args->current();
-            // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-            if (value->unit() != CSSPrimitiveValue::UnitType::Percentage && !validUnit(value, FNumber))
-                return nullptr;
-
-            filterValue->append(cssValuePool().createValue(value->fValue, value->unit()));
-        }
-        break;
-    }
-    case CSSValueHueRotate: {
-        // hue-rotate() takes one optional angle.
-        if (args->size()) {
-            CSSParserValue* argument = args->current();
-            if (!validUnit(argument, FAngle, HTMLStandardMode))
-                return nullptr;
-
-            filterValue->append(createPrimitiveNumericValue(argument));
-        }
-        break;
-    }
-    case CSSValueBlur: {
-        // Blur takes a single length. Zero parameters are allowed.
-        if (args->size()) {
-            CSSParserValue* argument = args->current();
-            if (!validUnit(argument, FLength | FNonNeg, HTMLStandardMode))
-                return nullptr;
-
-            filterValue->append(createPrimitiveNumericValue(argument));
-        }
-        break;
-    }
-    case CSSValueDropShadow: {
-        // drop-shadow() takes a single shadow.
-        RefPtrWillBeRawPtr<CSSShadowValue> shadowValue = parseSingleShadow(args, false, true);
-        if (!shadowValue)
-            return nullptr;
-        filterValue->append(shadowValue.release());
-        break;
-    }
-    default:
-        return nullptr;
-    }
-    return filterValue.release();
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFilter()
-{
-    if (!m_valueList)
-        return nullptr;
-
-    // The filter is a list of functional primitives that specify individual operations.
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        if (value->m_unit != CSSParserValue::URI && (value->m_unit != CSSParserValue::Function || !value->function))
-            return nullptr;
-
-        // See if the specified primitive is one we understand.
-        if (value->m_unit == CSSParserValue::URI) {
-            RefPtrWillBeRawPtr<CSSFunctionValue> referenceFilterValue = CSSFunctionValue::create(CSSValueUrl);
-            referenceFilterValue->append(CSSSVGDocumentValue::create(value->string));
-            list->append(referenceFilterValue.release());
-        } else {
-            CSSValueID filterType = value->function->id;
-            unsigned maximumArgumentCount = filterType == CSSValueDropShadow ? 4 : 1;
-
-            CSSParserValueList* args = value->function->args.get();
-            if (!args || args->size() > maximumArgumentCount)
-                return nullptr;
-
-            RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = parseBuiltinFilterArguments(args, filterType);
-            if (!filterValue)
-                return nullptr;
-
-            list->append(filterValue);
-        }
-    }
-
-    return list.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()

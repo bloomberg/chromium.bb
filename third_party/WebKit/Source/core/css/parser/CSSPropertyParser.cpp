@@ -10,8 +10,10 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
+#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
@@ -331,7 +333,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParse
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == DimensionToken) {
@@ -344,6 +346,11 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRang
         default:
             return nullptr;
         }
+    }
+    if (token.type() == NumberToken) {
+        if (!shouldAcceptUnitlessValues(token.numericValue(), cssParserMode, UnitlessQuirk::Forbid))
+            return nullptr;
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Degrees);
     }
     CalcParser calcParser(range, ValueRangeAll);
     if (const CSSCalcValue* calculation = calcParser.value()) {
@@ -803,12 +810,12 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineHeight(CSSParserToke
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> consumeRotation(CSSParserTokenRange& range)
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeRotation(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
-    RefPtrWillBeRawPtr<CSSValue> rotation = consumeAngle(range);
+    RefPtrWillBeRawPtr<CSSValue> rotation = consumeAngle(range, cssParserMode);
     if (!rotation)
         return nullptr;
     list->append(rotation.release());
@@ -1415,6 +1422,71 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeShadow(CSSParserTokenRange& range
     return shadowValueList;
 }
 
+static PassRefPtrWillBeRawPtr<CSSFunctionValue> consumeFilterFunction(CSSParserTokenRange& range,  const CSSParserContext& context)
+{
+    CSSValueID filterType = range.peek().functionId();
+    if (filterType < CSSValueInvert || filterType > CSSValueDropShadow)
+        return nullptr;
+    CSSParserTokenRange args = consumeFunction(range);
+    RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = CSSFunctionValue::create(filterType);
+    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+
+    if (filterType == CSSValueDropShadow) {
+        parsedValue = parseSingleShadow(args, context, false, false);
+    } else {
+        // TODO(timloh): Add UseCounters for empty filter arguments.
+        if (args.atEnd())
+            return filterValue.release();
+        if (filterType == CSSValueBrightness) {
+            // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
+            parsedValue = consumePercent(args, ValueRangeAll);
+            if (!parsedValue)
+                parsedValue = consumeNumber(args, ValueRangeAll);
+        } else if (filterType == CSSValueHueRotate) {
+            parsedValue = consumeAngle(args, context.mode());
+        } else if (filterType == CSSValueBlur) {
+            parsedValue = consumeLength(args, HTMLStandardMode, ValueRangeNonNegative);
+        } else {
+            // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
+            parsedValue = consumePercent(args, ValueRangeNonNegative);
+            if (!parsedValue)
+                parsedValue = consumeNumber(args, ValueRangeNonNegative);
+            if (parsedValue && filterType != CSSValueSaturate && filterType != CSSValueContrast) {
+                double maxAllowed = toCSSPrimitiveValue(parsedValue.get())->isPercentage() ? 100.0 : 1.0;
+                if (toCSSPrimitiveValue(parsedValue.get())->getDoubleValue() > maxAllowed)
+                    return nullptr;
+            }
+        }
+    }
+    if (!parsedValue || !args.atEnd())
+        return nullptr;
+    filterValue->append(parsedValue.release());
+    return filterValue.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFilter(CSSParserTokenRange& range,  const CSSParserContext& context)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    do {
+        String url = consumeUrl(range);
+        RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = nullptr;
+        if (!url.isNull()) {
+            filterValue = CSSFunctionValue::create(CSSValueUrl);
+            filterValue->append(CSSSVGDocumentValue::create(url));
+        } else {
+            filterValue = consumeFilterFunction(range, context);
+            if (!filterValue)
+                return nullptr;
+        }
+        list->append(filterValue.release());
+    } while (!range.atEnd());
+
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -1448,7 +1520,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyLineHeight:
         return consumeLineHeight(m_range, m_context.mode());
     case CSSPropertyRotate:
-        return consumeRotation(m_range);
+        return consumeRotation(m_range, m_context.mode());
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
         return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
@@ -1522,6 +1594,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
     case CSSPropertyBoxShadow:
         return consumeShadow(m_range, m_context, property == CSSPropertyBoxShadow);
+    case CSSPropertyWebkitFilter:
+    case CSSPropertyBackdropFilter:
+        return consumeFilter(m_range, m_context);
     default:
         return nullptr;
     }
