@@ -542,7 +542,8 @@ IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Elements) {
   RunTestsInFile("material_elements_test.js", "test.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ToolbarManager) {
+// http://crbug.com/550015
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, DISABLED_ToolbarManager) {
   RunTestsInFile("toolbar_manager_test.js", "test.pdf");
 }
 
