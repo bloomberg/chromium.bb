@@ -104,8 +104,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
       JNIEnv* env,
       jobject caller,
       const jstring& instanceId,
-      jobject bluetooth_gatt_service_wrapper);  // Java Type:
-                                                // BluetoothGattServiceWrapper
+      jobject /* BluetoothGattServiceWrapper */ bluetooth_gatt_service_wrapper);
 
  protected:
   BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter);

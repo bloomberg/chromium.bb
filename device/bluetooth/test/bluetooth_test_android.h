@@ -38,6 +38,14 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void SimulateGattCharacteristic(BluetoothGattService* service,
                                   const std::string& uuid,
                                   int properties) override;
+  void SimulateGattCharacteristicRead(
+      BluetoothGattCharacteristic* characteristic,
+      const std::vector<uint8>& value) override;
+  void SimulateGattCharacteristicReadError(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattService::GattErrorCode) override;
+  void SimulateGattCharacteristicReadWillFailSynchronously(
+      BluetoothGattCharacteristic* characteristic) override;
 
   // Records that Java FakeBluetoothDevice connectGatt was called.
   void OnFakeBluetoothDeviceConnectGattCalled(JNIEnv* env, jobject caller);
@@ -47,6 +55,9 @@ class BluetoothTestAndroid : public BluetoothTestBase {
 
   // Records that Java FakeBluetoothGatt discoverServices was called.
   void OnFakeBluetoothGattDiscoverServices(JNIEnv* env, jobject caller);
+
+  // Records that Java FakeBluetoothGatt discoverServices was called.
+  void OnFakeBluetoothGattReadCharacteristic(JNIEnv* env, jobject caller);
 
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
 };

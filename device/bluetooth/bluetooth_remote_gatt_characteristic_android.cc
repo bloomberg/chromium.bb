@@ -5,8 +5,12 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
 #include "jni/ChromeBluetoothRemoteGattCharacteristic_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -18,24 +22,35 @@ scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>
 BluetoothRemoteGattCharacteristicAndroid::Create(
     const std::string& instanceId,
     jobject /* BluetoothGattCharacteristicWrapper */
-    bluetooth_gatt_characteristic_wrapper) {
+    bluetooth_gatt_characteristic_wrapper,
+    jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device) {
   scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> characteristic(
       new BluetoothRemoteGattCharacteristicAndroid(instanceId));
 
   characteristic->j_characteristic_.Reset(
       Java_ChromeBluetoothRemoteGattCharacteristic_create(
-          AttachCurrentThread(), bluetooth_gatt_characteristic_wrapper));
+          AttachCurrentThread(),
+          reinterpret_cast<intptr_t>(characteristic.get()),
+          bluetooth_gatt_characteristic_wrapper, chrome_bluetooth_device));
 
   return characteristic;
 }
 
 BluetoothRemoteGattCharacteristicAndroid::
-    ~BluetoothRemoteGattCharacteristicAndroid() {}
+    ~BluetoothRemoteGattCharacteristicAndroid() {
+  Java_ChromeBluetoothRemoteGattCharacteristic_onBluetoothRemoteGattCharacteristicAndroidDestruction(
+      AttachCurrentThread(), j_characteristic_.obj());
+}
 
 // static
 bool BluetoothRemoteGattCharacteristicAndroid::RegisterJNI(JNIEnv* env) {
   return RegisterNativesImpl(
       env);  // Generated in ChromeBluetoothRemoteGattCharacteristic_jni.h
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+BluetoothRemoteGattCharacteristicAndroid::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>(j_characteristic_);
 }
 
 std::string BluetoothRemoteGattCharacteristicAndroid::GetIdentifier() const {
@@ -54,7 +69,6 @@ bool BluetoothRemoteGattCharacteristicAndroid::IsLocal() const {
 
 const std::vector<uint8>& BluetoothRemoteGattCharacteristicAndroid::GetValue()
     const {
-  NOTIMPLEMENTED();
   return value_;
 }
 
@@ -115,7 +129,21 @@ void BluetoothRemoteGattCharacteristicAndroid::StartNotifySession(
 void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
+  if (read_pending_) {
+    error_callback.Run(BluetoothGattService::GATT_ERROR_IN_PROGRESS);
+  }
+
+  if (!Java_ChromeBluetoothRemoteGattCharacteristic_readRemoteCharacteristic(
+          AttachCurrentThread(), j_characteristic_.obj())) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
+  }
+
+  read_pending_ = true;
+  read_callback_ = callback;
+  read_error_callback_ = error_callback;
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
@@ -123,6 +151,28 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
+}
+
+void BluetoothRemoteGattCharacteristicAndroid::OnRead(JNIEnv* env,
+                                                      jobject jcaller,
+                                                      int32_t status,
+                                                      jbyteArray value) {
+  read_pending_ = false;
+
+  // Clear callbacks before calling to avoid reentrancy issues.
+  ValueCallback read_callback = read_callback_;
+  ErrorCallback read_error_callback = read_error_callback_;
+  read_callback_.Reset();
+  read_error_callback_.Reset();
+
+  if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
+      && !read_callback.is_null()) {
+    base::android::JavaByteArrayToByteVector(env, value, &value_);
+    read_callback.Run(value_);
+  } else if (!read_error_callback.is_null()) {
+    read_error_callback.Run(
+        BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
+  }
 }
 
 BluetoothRemoteGattCharacteristicAndroid::

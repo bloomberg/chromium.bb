@@ -226,15 +226,21 @@ class Wrappers {
      */
     static class BluetoothDeviceWrapper {
         private final BluetoothDevice mDevice;
+        private final HashMap<BluetoothGattCharacteristic, BluetoothGattCharacteristicWrapper>
+                mCharacteristicsToWrappers;
 
         public BluetoothDeviceWrapper(BluetoothDevice device) {
             mDevice = device;
+            mCharacteristicsToWrappers =
+                    new HashMap<BluetoothGattCharacteristic, BluetoothGattCharacteristicWrapper>();
         }
 
         public BluetoothGattWrapper connectGatt(
                 Context context, boolean autoConnect, BluetoothGattCallbackWrapper callback) {
-            return new BluetoothGattWrapper(mDevice.connectGatt(
-                    context, autoConnect, new ForwardBluetoothGattCallbackToWrapper(callback)));
+            return new BluetoothGattWrapper(
+                    mDevice.connectGatt(context, autoConnect,
+                            new ForwardBluetoothGattCallbackToWrapper(callback, this)),
+                    this);
         }
 
         public String getAddress() {
@@ -259,9 +265,11 @@ class Wrappers {
      */
     static class BluetoothGattWrapper {
         private final BluetoothGatt mGatt;
+        private final BluetoothDeviceWrapper mDeviceWrapper;
 
-        BluetoothGattWrapper(BluetoothGatt gatt) {
+        BluetoothGattWrapper(BluetoothGatt gatt, BluetoothDeviceWrapper deviceWrapper) {
             mGatt = gatt;
+            mDeviceWrapper = deviceWrapper;
         }
 
         public void disconnect() {
@@ -277,9 +285,13 @@ class Wrappers {
             ArrayList<BluetoothGattServiceWrapper> servicesWrapped =
                     new ArrayList<BluetoothGattServiceWrapper>(services.size());
             for (BluetoothGattService service : services) {
-                servicesWrapped.add(new BluetoothGattServiceWrapper(service));
+                servicesWrapped.add(new BluetoothGattServiceWrapper(service, mDeviceWrapper));
             }
             return servicesWrapped;
+        }
+
+        boolean readCharacteristic(BluetoothGattCharacteristicWrapper characteristic) {
+            return mGatt.readCharacteristic(characteristic.mCharacteristic);
         }
     }
 
@@ -293,9 +305,19 @@ class Wrappers {
      */
     static class ForwardBluetoothGattCallbackToWrapper extends BluetoothGattCallback {
         final BluetoothGattCallbackWrapper mWrapperCallback;
+        final BluetoothDeviceWrapper mDeviceWrapper;
 
-        ForwardBluetoothGattCallbackToWrapper(BluetoothGattCallbackWrapper wrapperCallback) {
+        ForwardBluetoothGattCallbackToWrapper(BluetoothGattCallbackWrapper wrapperCallback,
+                BluetoothDeviceWrapper deviceWrapper) {
             mWrapperCallback = wrapperCallback;
+            mDeviceWrapper = deviceWrapper;
+        }
+
+        @Override
+        public void onCharacteristicRead(
+                BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            mWrapperCallback.onCharacteristicRead(
+                    mDeviceWrapper.mCharacteristicsToWrappers.get(characteristic), status);
         }
 
         @Override
@@ -314,10 +336,14 @@ class Wrappers {
      * work on older SDK versions without having a dependency on the class not defined there.
      *
      * BluetoothGatt gatt parameters are omitted from methods as each call would
-     * need to wrap them in a BluetoothGattWrapper. Client code should cache the
-     * BluetoothGattWrapper provided on the initial BluetoothDeviceWrapper.connectGatt call.
+     * need to look up the correct BluetoothGattWrapper instance.
+     * Client code should cache the BluetoothGattWrapper provided if
+     * necessary from the initial BluetoothDeviceWrapper.connectGatt
+     * call.
      */
     abstract static class BluetoothGattCallbackWrapper {
+        public abstract void onCharacteristicRead(
+                BluetoothGattCharacteristicWrapper characteristic, int status);
         public abstract void onConnectionStateChange(int status, int newState);
         public abstract void onServicesDiscovered(int status);
     }
@@ -327,9 +353,12 @@ class Wrappers {
      */
     static class BluetoothGattServiceWrapper {
         private final BluetoothGattService mService;
+        private final BluetoothDeviceWrapper mDeviceWrapper;
 
-        public BluetoothGattServiceWrapper(BluetoothGattService service) {
+        public BluetoothGattServiceWrapper(
+                BluetoothGattService service, BluetoothDeviceWrapper deviceWrapper) {
             mService = service;
+            mDeviceWrapper = deviceWrapper;
         }
 
         public List<BluetoothGattCharacteristicWrapper> getCharacteristics() {
@@ -337,7 +366,14 @@ class Wrappers {
             ArrayList<BluetoothGattCharacteristicWrapper> characteristicsWrapped =
                     new ArrayList<BluetoothGattCharacteristicWrapper>(characteristics.size());
             for (BluetoothGattCharacteristic characteristic : characteristics) {
-                characteristicsWrapped.add(new BluetoothGattCharacteristicWrapper(characteristic));
+                BluetoothGattCharacteristicWrapper characteristicWrapper =
+                        mDeviceWrapper.mCharacteristicsToWrappers.get(characteristic);
+                if (characteristicWrapper == null) {
+                    characteristicWrapper = new BluetoothGattCharacteristicWrapper(characteristic);
+                    mDeviceWrapper.mCharacteristicsToWrappers.put(
+                            characteristic, characteristicWrapper);
+                }
+                characteristicsWrapped.add(characteristicWrapper);
             }
             return characteristicsWrapped;
         }
@@ -371,6 +407,10 @@ class Wrappers {
 
         public UUID getUuid() {
             return mCharacteristic.getUuid();
+        }
+
+        public byte[] getValue() {
+            return mCharacteristic.getValue();
         }
     }
 }

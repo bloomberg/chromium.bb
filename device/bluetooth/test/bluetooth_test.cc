@@ -64,6 +64,11 @@ void BluetoothTestBase::GattConnectionCallback(
   gatt_connections_.push_back(connection.release());
 }
 
+void BluetoothTestBase::ReadValueCallback(const std::vector<uint8>& value) {
+  ++callback_count_;
+  last_read_value_ = value;
+}
+
 void BluetoothTestBase::ErrorCallback() {
   ++error_callback_count_;
 }
@@ -72,6 +77,12 @@ void BluetoothTestBase::ConnectErrorCallback(
     enum BluetoothDevice::ConnectErrorCode error_code) {
   ++error_callback_count_;
   last_connect_error_code_ = error_code;
+}
+
+void BluetoothTestBase::GattErrorCallback(
+    BluetoothGattService::GattErrorCode error_code) {
+  ++error_callback_count_;
+  last_gatt_error_code_ = error_code;
 }
 
 base::Closure BluetoothTestBase::GetCallback() {
@@ -90,6 +101,12 @@ BluetoothTestBase::GetGattConnectionCallback() {
                     weak_factory_.GetWeakPtr());
 }
 
+BluetoothGattCharacteristic::ValueCallback
+BluetoothTestBase::GetReadValueCallback() {
+  return base::Bind(&BluetoothTestBase::ReadValueCallback,
+                    weak_factory_.GetWeakPtr());
+}
+
 BluetoothAdapter::ErrorCallback BluetoothTestBase::GetErrorCallback() {
   return base::Bind(&BluetoothTestBase::ErrorCallback,
                     weak_factory_.GetWeakPtr());
@@ -101,6 +118,12 @@ BluetoothTestBase::GetConnectErrorCallback() {
                     weak_factory_.GetWeakPtr());
 }
 
+base::Callback<void(BluetoothGattService::GattErrorCode)>
+BluetoothTestBase::GetGattErrorCallback() {
+  return base::Bind(&BluetoothTestBase::GattErrorCallback,
+                    weak_factory_.GetWeakPtr());
+}
+
 void BluetoothTestBase::ResetEventCounts() {
   last_connect_error_code_ = BluetoothDevice::ERROR_UNKNOWN;
   callback_count_ = 0;
@@ -108,6 +131,7 @@ void BluetoothTestBase::ResetEventCounts() {
   gatt_connection_attempts_ = 0;
   gatt_disconnection_attempts_ = 0;
   gatt_discovery_attempts_ = 0;
+  gatt_read_characteristic_attempts_ = 0;
 }
 
 }  // namespace device

@@ -11,7 +11,9 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -99,6 +101,21 @@ class BluetoothTestBase : public testing::Test {
                                           const std::string& uuid,
                                           int properties) {}
 
+  // Simulates a Characteristic Read operation succeeding, returning |value|.
+  virtual void SimulateGattCharacteristicRead(
+      BluetoothGattCharacteristic* characteristic,
+      const std::vector<uint8>& value) {}
+
+  // Simulates a Characteristic Read operation failing with a GattErrorCode.
+  virtual void SimulateGattCharacteristicReadError(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattService::GattErrorCode) {}
+
+  // Simulates a Characteristic Read operation failing synchronously for an
+  // unknown reason.
+  virtual void SimulateGattCharacteristicReadWillFailSynchronously(
+      BluetoothGattCharacteristic* characteristic) {}
+
   // Remove the device from the adapter and delete it.
   virtual void DeleteDevice(BluetoothDevice* device);
 
@@ -106,15 +123,20 @@ class BluetoothTestBase : public testing::Test {
   void Callback();
   void DiscoverySessionCallback(scoped_ptr<BluetoothDiscoverySession>);
   void GattConnectionCallback(scoped_ptr<BluetoothGattConnection>);
+  void ReadValueCallback(const std::vector<uint8>& value);
   void ErrorCallback();
   void ConnectErrorCallback(enum BluetoothDevice::ConnectErrorCode);
+  void GattErrorCallback(BluetoothGattService::GattErrorCode);
 
   // Accessors to get callbacks bound to this fixture:
   base::Closure GetCallback();
   BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback();
   BluetoothDevice::GattConnectionCallback GetGattConnectionCallback();
+  BluetoothGattCharacteristic::ValueCallback GetReadValueCallback();
   BluetoothAdapter::ErrorCallback GetErrorCallback();
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback();
+  base::Callback<void(BluetoothGattService::GattErrorCode)>
+  GetGattErrorCallback();
 
   // Reset all event count members to 0.
   void ResetEventCounts();
@@ -128,11 +150,14 @@ class BluetoothTestBase : public testing::Test {
   ScopedVector<BluetoothGattConnection> gatt_connections_;
   enum BluetoothDevice::ConnectErrorCode last_connect_error_code_ =
       BluetoothDevice::ERROR_UNKNOWN;
+  std::vector<uint8> last_read_value_;
+  BluetoothGattService::GattErrorCode last_gatt_error_code_;
   int callback_count_ = 0;
   int error_callback_count_ = 0;
   int gatt_connection_attempts_ = 0;
   int gatt_disconnection_attempts_ = 0;
   int gatt_discovery_attempts_ = 0;
+  int gatt_read_characteristic_attempts_ = 0;
   base::WeakPtrFactory<BluetoothTestBase> weak_factory_;
 };
 

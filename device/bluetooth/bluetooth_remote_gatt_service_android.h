@@ -35,9 +35,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
   static scoped_ptr<BluetoothRemoteGattServiceAndroid> Create(
       BluetoothAdapterAndroid* adapter,
       BluetoothDeviceAndroid* device,
-      jobject /* BluetoothRemoteGattServiceWrapper */
-      bluetooth_gatt_service_wrapper,
-      const std::string& instanceId);
+      jobject /* BluetoothGattServiceWrapper */ bluetooth_gatt_service_wrapper,
+      const std::string& instanceId,
+      jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device);
 
   ~BluetoothRemoteGattServiceAndroid() override;
 
@@ -46,6 +46,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
 
   // Returns the associated ChromeBluetoothRemoteGattService Java object.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  // Returns a BluetoothGattService::GattErrorCode from a given
+  // android.bluetooth.BluetoothGatt error code.
+  // |bluetooth_gatt_code| must not be 0 == GATT_SUCCESS.
+  static BluetoothGattService::GattErrorCode GetGattErrorCode(
+      int bluetooth_gatt_code);
+
+  // Returns an android.bluetooth.BluetoothGatt error code for a given
+  // BluetoothGattService::GattErrorCode value.
+  static int GetAndroidErrorCode(BluetoothGattService::GattErrorCode);
 
   // device::BluetoothGattService overrides.
   std::string GetIdentifier() const override;
@@ -74,7 +84,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
       jobject caller,
       const jstring& instanceId,
       jobject /* BluetoothGattCharacteristicWrapper */
-      bluetooth_gatt_characteristic_wrapper);
+      bluetooth_gatt_characteristic_wrapper,
+      jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device);
 
  private:
   BluetoothRemoteGattServiceAndroid(BluetoothAdapterAndroid* adapter,

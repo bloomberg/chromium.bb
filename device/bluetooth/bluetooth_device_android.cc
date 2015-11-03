@@ -233,9 +233,7 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
     JNIEnv* env,
     jobject caller,
     const jstring& instanceId,
-    jobject bluetooth_gatt_service_wrapper  // Java Type:
-                                            // BluetoothGattServiceWrapper
-    ) {
+    jobject /* BluetoothGattServiceWrapper */ bluetooth_gatt_service_wrapper) {
   std::string instanceIdString =
       base::android::ConvertJavaStringToUTF8(env, instanceId);
 
@@ -246,7 +244,7 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
       gatt_services_.set(instanceIdString,
                          BluetoothRemoteGattServiceAndroid::Create(
                              GetAdapter(), this, bluetooth_gatt_service_wrapper,
-                             instanceIdString));
+                             instanceIdString, j_device_.obj()));
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, GetAdapter()->GetObservers(),
                     GattServiceAdded(adapter_, this, service_iterator->second));

@@ -189,7 +189,7 @@ class Fakes {
         final FakeBluetoothAdapter mAdapter;
         private String mAddress;
         private String mName;
-        private final FakeBluetoothGatt mGatt;
+        final FakeBluetoothGatt mGatt;
         private Wrappers.BluetoothGattCallbackWrapper mGattCallback;
 
         public FakeBluetoothDevice(FakeBluetoothAdapter adapter, String address, String name) {
@@ -225,8 +225,8 @@ class Fakes {
                     Integer previousId = uuidsToInstanceIdMap.get(uuid);
                     int instanceId = (previousId == null) ? 0 : previousId + 1;
                     uuidsToInstanceIdMap.put(uuid, instanceId);
-                    fakeDevice.mGatt.mServices.add(
-                            new FakeBluetoothGattService(UUID.fromString(uuid), instanceId));
+                    fakeDevice.mGatt.mServices.add(new FakeBluetoothGattService(
+                            fakeDevice, UUID.fromString(uuid), instanceId));
                 }
             }
 
@@ -271,16 +271,18 @@ class Fakes {
     }
 
     /**
-     * Fakes android.bluetooth.BluetoothDevice.
+     * Fakes android.bluetooth.BluetoothGatt.
      */
     static class FakeBluetoothGatt extends Wrappers.BluetoothGattWrapper {
         final FakeBluetoothDevice mDevice;
         final ArrayList<Wrappers.BluetoothGattServiceWrapper> mServices;
+        boolean mReadCharacteristicWillSucceed;
 
         public FakeBluetoothGatt(FakeBluetoothDevice device) {
-            super(null);
+            super(null, null);
             mDevice = device;
             mServices = new ArrayList<Wrappers.BluetoothGattServiceWrapper>();
+            mReadCharacteristicWillSucceed = true;
         }
 
         @Override
@@ -297,18 +299,31 @@ class Fakes {
         public List<Wrappers.BluetoothGattServiceWrapper> getServices() {
             return mServices;
         }
+
+        @Override
+        boolean readCharacteristic(Wrappers.BluetoothGattCharacteristicWrapper characteristic) {
+            if (mReadCharacteristicWillSucceed) {
+                nativeOnFakeBluetoothGattReadCharacteristic(
+                        mDevice.mAdapter.mNativeBluetoothTestAndroid);
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     /**
      * Fakes android.bluetooth.BluetoothGattService.
      */
     static class FakeBluetoothGattService extends Wrappers.BluetoothGattServiceWrapper {
+        final FakeBluetoothDevice mDevice;
         final int mInstanceId;
         final UUID mUuid;
         final ArrayList<Wrappers.BluetoothGattCharacteristicWrapper> mCharacteristics;
 
-        public FakeBluetoothGattService(UUID uuid, int instanceId) {
-            super(null);
+        public FakeBluetoothGattService(FakeBluetoothDevice device, UUID uuid, int instanceId) {
+            super(null, null);
+            mDevice = device;
             mUuid = uuid;
             mInstanceId = instanceId;
             mCharacteristics = new ArrayList<Wrappers.BluetoothGattCharacteristicWrapper>();
@@ -329,7 +344,7 @@ class Fakes {
                     countOfDuplicateUUID++;
                 }
             }
-            fakeService.mCharacteristics.add(new FakeBluetoothGattCharacteristic(
+            fakeService.mCharacteristics.add(new FakeBluetoothGattCharacteristic(fakeService,
                     /* instanceId */ countOfDuplicateUUID, properties, uuid));
         }
 
@@ -357,16 +372,46 @@ class Fakes {
      */
     static class FakeBluetoothGattCharacteristic
             extends Wrappers.BluetoothGattCharacteristicWrapper {
+        final FakeBluetoothGattService mService;
         final int mInstanceId;
         final int mProperties;
         final UUID mUuid;
+        byte[] mValue;
 
-        public FakeBluetoothGattCharacteristic(int instanceId, int properties, UUID uuid) {
+        public FakeBluetoothGattCharacteristic(
+                FakeBluetoothGattService service, int instanceId, int properties, UUID uuid) {
             super(null);
+            mService = service;
             mInstanceId = instanceId;
             mProperties = properties;
             mUuid = uuid;
+            mValue = new byte[0];
         }
+
+        // Simulate a value being read from a characteristic.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void valueRead(ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic,
+                int status, byte[] value) {
+            FakeBluetoothGattCharacteristic fakeCharacteristic =
+                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+
+            fakeCharacteristic.mValue = value;
+            fakeCharacteristic.mService.mDevice.mGattCallback.onCharacteristicRead(
+                    fakeCharacteristic, status);
+        }
+
+        // Cause subsiquent value reads of a characteristic to fail synchronously.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void setReadCharacteristicWillSucceed(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic, boolean value) {
+            FakeBluetoothGattCharacteristic fakeCharacteristic =
+                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+
+            fakeCharacteristic.mService.mDevice.mGatt.mReadCharacteristicWillSucceed = value;
+        }
+
+        // -----------------------------------------------------------------------------------------
+        // Wrappers.BluetoothGattCharacteristicWrapper overrides:
 
         @Override
         public int getInstanceId() {
@@ -382,6 +427,11 @@ class Fakes {
         public UUID getUuid() {
             return mUuid;
         }
+
+        @Override
+        public byte[] getValue() {
+            return mValue;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -396,5 +446,9 @@ class Fakes {
 
     // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattDiscoverServices.
     private static native void nativeOnFakeBluetoothGattDiscoverServices(
+            long nativeBluetoothTestAndroid);
+
+    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattReadCharacteristic.
+    private static native void nativeOnFakeBluetoothGattReadCharacteristic(
             long nativeBluetoothTestAndroid);
 }

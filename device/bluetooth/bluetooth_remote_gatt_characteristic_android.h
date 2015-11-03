@@ -28,12 +28,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   static scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> Create(
       const std::string& instanceId,
       jobject /* BluetoothGattCharacteristicWrapper */
-      bluetooth_gatt_characteristic_wrapper);
+      bluetooth_gatt_characteristic_wrapper,
+      jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device);
 
   ~BluetoothRemoteGattCharacteristicAndroid() override;
 
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
+
+  // Returns the associated ChromeBluetoothRemoteGattCharacteristic Java object.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // BluetoothGattCharacteristic interface:
   std::string GetIdentifier() const override;
@@ -57,6 +61,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
 
+  // Callback after Read operation completes.
+  void OnRead(JNIEnv* env, jobject jcaller, int32_t status, jbyteArray value);
+
  private:
   BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId);
 
@@ -66,6 +73,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
 
   // Adapter unique instance ID.
   std::string instanceId_;
+
+  // ReadRemoteCharacteristic callbacks and pending state.
+  bool read_pending_ = false;
+  ValueCallback read_callback_;
+  ErrorCallback read_error_callback_;
 
   std::vector<uint8> value_;
 

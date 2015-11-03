@@ -19,24 +19,55 @@ import org.chromium.base.annotations.JNINamespace;
 final class ChromeBluetoothRemoteGattCharacteristic {
     private static final String TAG = "Bluetooth";
 
+    private long mNativeBluetoothRemoteGattCharacteristicAndroid;
     final Wrappers.BluetoothGattCharacteristicWrapper mCharacteristic;
+    final ChromeBluetoothDevice mChromeBluetoothDevice;
 
     private ChromeBluetoothRemoteGattCharacteristic(
-            Wrappers.BluetoothGattCharacteristicWrapper characteristicWrapper) {
+            long nativeBluetoothRemoteGattCharacteristicAndroid,
+            Wrappers.BluetoothGattCharacteristicWrapper characteristicWrapper,
+            ChromeBluetoothDevice chromeBluetoothDevice) {
+        mNativeBluetoothRemoteGattCharacteristicAndroid =
+                nativeBluetoothRemoteGattCharacteristicAndroid;
         mCharacteristic = characteristicWrapper;
+        mChromeBluetoothDevice = chromeBluetoothDevice;
+
+        mChromeBluetoothDevice.mWrapperToChromeCharacteristicsMap.put(characteristicWrapper, this);
+
         Log.v(TAG, "ChromeBluetoothRemoteGattCharacteristic created.");
+    }
+
+    /**
+     * Handles C++ object being destroyed.
+     */
+    @CalledByNative
+    private void onBluetoothRemoteGattCharacteristicAndroidDestruction() {
+        mNativeBluetoothRemoteGattCharacteristicAndroid = 0;
+        mChromeBluetoothDevice.mWrapperToChromeCharacteristicsMap.remove(mCharacteristic);
+    }
+
+    void onCharacteristicRead(int status) {
+        Log.i(TAG, "onCharacteristicRead status:%d==%s", status,
+                status == android.bluetooth.BluetoothGatt.GATT_SUCCESS ? "OK" : "Error");
+        if (mNativeBluetoothRemoteGattCharacteristicAndroid != 0) {
+            nativeOnRead(mNativeBluetoothRemoteGattCharacteristicAndroid, status,
+                    mCharacteristic.getValue());
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
     // BluetoothRemoteGattCharacteristicAndroid methods implemented in java:
 
     // Implements BluetoothRemoteGattCharacteristicAndroid::Create.
-    // 'Object' type must be used because inner class Wrappers.BluetoothGattCharacteristicWrapper
-    // reference is not handled by jni_generator.py JavaToJni. http://crbug.com/505554
+    // TODO(http://crbug.com/505554): Replace 'Object' with specific type when JNI fixed.
     @CalledByNative
-    private static ChromeBluetoothRemoteGattCharacteristic create(Object characteristicWrapper) {
+    private static ChromeBluetoothRemoteGattCharacteristic create(
+            long nativeBluetoothRemoteGattCharacteristicAndroid,
+            Object bluetoothGattCarachteristicWrapper, Object chromeBluetoothDevice) {
         return new ChromeBluetoothRemoteGattCharacteristic(
-                (Wrappers.BluetoothGattCharacteristicWrapper) characteristicWrapper);
+                nativeBluetoothRemoteGattCharacteristicAndroid,
+                (Wrappers.BluetoothGattCharacteristicWrapper) bluetoothGattCarachteristicWrapper,
+                (ChromeBluetoothDevice) chromeBluetoothDevice);
     }
 
     // Implements BluetoothRemoteGattCharacteristicAndroid::GetUUID.
@@ -51,4 +82,21 @@ final class ChromeBluetoothRemoteGattCharacteristic {
         // TODO(scheib): Must read Extended Properties Descriptor. crbug.com/548449
         return mCharacteristic.getProperties();
     }
+
+    // Implements BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic.
+    @CalledByNative
+    private boolean readRemoteCharacteristic() {
+        if (!mChromeBluetoothDevice.mBluetoothGatt.readCharacteristic(mCharacteristic)) {
+            Log.i(TAG, "readRemoteCharacteristic readCharacteristic failed.");
+            return false;
+        }
+        return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // BluetoothAdapterDevice C++ methods declared for access from java:
+
+    // Binds to BluetoothRemoteGattServiceAndroid::OnRead.
+    native void nativeOnRead(
+            long nativeBluetoothRemoteGattCharacteristicAndroid, int status, byte[] value);
 }

@@ -24,12 +24,15 @@ final class ChromeBluetoothRemoteGattService {
     private long mNativeBluetoothRemoteGattServiceAndroid;
     final Wrappers.BluetoothGattServiceWrapper mService;
     final String mInstanceId;
+    ChromeBluetoothDevice mChromeBluetoothDevice;
 
     private ChromeBluetoothRemoteGattService(long nativeBluetoothRemoteGattServiceAndroid,
-            Wrappers.BluetoothGattServiceWrapper serviceWrapper, String instanceId) {
+            Wrappers.BluetoothGattServiceWrapper serviceWrapper, String instanceId,
+            ChromeBluetoothDevice chromeBluetoothDevice) {
         mNativeBluetoothRemoteGattServiceAndroid = nativeBluetoothRemoteGattServiceAndroid;
         mService = serviceWrapper;
         mInstanceId = instanceId;
+        mChromeBluetoothDevice = chromeBluetoothDevice;
         Log.v(TAG, "ChromeBluetoothRemoteGattService created.");
     }
 
@@ -45,14 +48,14 @@ final class ChromeBluetoothRemoteGattService {
     // BluetoothRemoteGattServiceAndroid methods implemented in java:
 
     // Implements BluetoothRemoteGattServiceAndroid::Create.
-    // 'Object' type must be used because inner class Wrappers.BluetoothGattServiceWrapper reference
-    // is not handled by jni_generator.py JavaToJni. http://crbug.com/505554
+    // TODO(http://crbug.com/505554): Replace 'Object' with specific type when JNI fixed.
     @CalledByNative
     private static ChromeBluetoothRemoteGattService create(
-            long nativeBluetoothRemoteGattServiceAndroid, Object serviceWrapper,
-            String instanceId) {
+            long nativeBluetoothRemoteGattServiceAndroid, Object bluetoothGattServiceWrapper,
+            String instanceId, Object chromeBluetoothDevice) {
         return new ChromeBluetoothRemoteGattService(nativeBluetoothRemoteGattServiceAndroid,
-                (Wrappers.BluetoothGattServiceWrapper) serviceWrapper, instanceId);
+                (Wrappers.BluetoothGattServiceWrapper) bluetoothGattServiceWrapper, instanceId,
+                (ChromeBluetoothDevice) chromeBluetoothDevice);
     }
 
     // Implements BluetoothRemoteGattServiceAndroid::GetUUID.
@@ -72,18 +75,16 @@ final class ChromeBluetoothRemoteGattService {
             String characteristicInstanceId = mInstanceId + "/"
                     + characteristic.getUuid().toString() + "," + characteristic.getInstanceId();
             nativeCreateGattRemoteCharacteristic(mNativeBluetoothRemoteGattServiceAndroid,
-                    characteristicInstanceId, characteristic);
+                    characteristicInstanceId, characteristic, mChromeBluetoothDevice);
         }
     }
 
     // ---------------------------------------------------------------------------------------------
     // BluetoothAdapterDevice C++ methods declared for access from java:
+
     // Binds to BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic.
-    // 'Object' type must be used for |bluetoothGattCarachteristicWrapper| because inner class
-    // Wrappers.BluetoothGattCharacteristicWrapper reference is not handled by jni_generator.py
-    // JavaToJni.
-    // http://crbug.com/505554
+    // TODO(http://crbug.com/505554): Replace 'Object' with specific type when JNI fixed.
     private native void nativeCreateGattRemoteCharacteristic(
             long nativeBluetoothRemoteGattServiceAndroid, String instanceId,
-            Object bluetoothGattCarachteristicWrapper);
+            Object bluetoothGattCarachteristicWrapper, Object chromeBluetoothDevice);
 }

@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -34,6 +35,8 @@ final class ChromeBluetoothDevice {
     private HashSet<String> mUuidsFromScan;
     Wrappers.BluetoothGattWrapper mBluetoothGatt;
     private final BluetoothGattCallbackImpl mBluetoothGattCallbackImpl;
+    final HashMap<Wrappers.BluetoothGattCharacteristicWrapper,
+            ChromeBluetoothRemoteGattCharacteristic> mWrapperToChromeCharacteristicsMap;
 
     private ChromeBluetoothDevice(
             long nativeBluetoothDeviceAndroid, Wrappers.BluetoothDeviceWrapper deviceWrapper) {
@@ -41,6 +44,9 @@ final class ChromeBluetoothDevice {
         mDevice = deviceWrapper;
         mUuidsFromScan = new HashSet<String>();
         mBluetoothGattCallbackImpl = new BluetoothGattCallbackImpl();
+        mWrapperToChromeCharacteristicsMap =
+                new HashMap<Wrappers.BluetoothGattCharacteristicWrapper,
+                        ChromeBluetoothRemoteGattCharacteristic>();
         Log.v(TAG, "ChromeBluetoothDevice created.");
     }
 
@@ -172,6 +178,21 @@ final class ChromeBluetoothDevice {
                 }
             });
         }
+
+        @Override
+        public void onCharacteristicRead(
+                final Wrappers.BluetoothGattCharacteristicWrapper characteristic,
+                final int status) {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ChromeBluetoothRemoteGattCharacteristic
+                            chromeBluetoothRemoteGattCharacteristic =
+                                    mWrapperToChromeCharacteristicsMap.get(characteristic);
+                    chromeBluetoothRemoteGattCharacteristic.onCharacteristicRead(status);
+                }
+            });
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -182,9 +203,7 @@ final class ChromeBluetoothDevice {
             long nativeBluetoothDeviceAndroid, int status, boolean connected);
 
     // Binds to BluetoothDeviceAndroid::CreateGattRemoteService.
-    // 'Object' type must be used for |bluetoothGattServiceWrapper| because inner class
-    // Wrappers.BluetoothGattServiceWrapper reference is not handled by jni_generator.py JavaToJni.
-    // http://crbug.com/505554
+    // TODO(http://crbug.com/505554): Replace 'Object' with specific type when JNI fixed.
     private native void nativeCreateGattRemoteService(long nativeBluetoothDeviceAndroid,
             String instanceId, Object bluetoothGattServiceWrapper);
 
