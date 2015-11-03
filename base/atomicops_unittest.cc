@@ -89,6 +89,13 @@ static void TestCompareAndSwap() {
   EXPECT_EQ(1, value);
   EXPECT_EQ(0, prev);
 
+  // Verify that CAS will *not* change "value" if it doesn't match the
+  // expected  number. CAS will always return the actual value of the
+  // variable from before any change.
+  AtomicType fail = base::subtle::NoBarrier_CompareAndSwap(&value, 0, 2);
+  EXPECT_EQ(1, value);
+  EXPECT_EQ(1, fail);
+
   // Use test value that has non-zero bits in both halves, more for testing
   // 64-bit implementation on 32-bit platforms.
   const AtomicType k_test_val = (static_cast<uint64_t>(1) <<
