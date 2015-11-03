@@ -184,4 +184,86 @@ TEST_F(PaintPropertyTreeBuilderTest, RelativePositionInline)
     EXPECT_EQ(document().view()->scrollTranslation(), inlineBlockProperties->paintOffsetTranslation()->parent());
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, NestedOpacityEffect)
+{
+    setBodyInnerHTML(
+        "<div id='nodeWithoutOpacity'>"
+        "  <div id='childWithOpacity' style='opacity: 0.5'>"
+        "    <div id='grandChildWithoutOpacity'>"
+        "      <div id='greatGrandChildWithOpacity' style='opacity: 0.2'/>"
+        "    </div>"
+        "  </div"
+        "</div>");
+
+    LayoutObject& nodeWithoutOpacity = *document().getElementById("nodeWithoutOpacity")->layoutObject();
+    ObjectPaintProperties* nodeWithoutOpacityProperties = nodeWithoutOpacity.objectPaintProperties();
+    EXPECT_EQ(nullptr, nodeWithoutOpacityProperties);
+
+    LayoutObject& childWithOpacity = *document().getElementById("childWithOpacity")->layoutObject();
+    ObjectPaintProperties* childWithOpacityProperties = childWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.5f, childWithOpacityProperties->effect()->opacity());
+    // childWithOpacity is the root effect node.
+    EXPECT_EQ(nullptr, childWithOpacityProperties->effect()->parent());
+
+    LayoutObject& grandChildWithoutOpacity = *document().getElementById("grandChildWithoutOpacity")->layoutObject();
+    EXPECT_EQ(nullptr, grandChildWithoutOpacity.objectPaintProperties());
+
+    LayoutObject& greatGrandChildWithOpacity = *document().getElementById("greatGrandChildWithOpacity")->layoutObject();
+    ObjectPaintProperties* greatGrandChildWithOpacityProperties = greatGrandChildWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.2f, greatGrandChildWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(childWithOpacityProperties->effect(), greatGrandChildWithOpacityProperties->effect()->parent());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes)
+{
+    setBodyInnerHTML(
+        "<div id='nodeWithOpacity' style='opacity: 0.6'>"
+        "  <div id='childWithTransform' style='transform: translate3d(10px, 10px, 0px);'>"
+        "    <div id='grandChildWithOpacity' style='opacity: 0.4'/>"
+        "  </div"
+        "</div>");
+
+    LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
+    ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.6f, nodeWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(nullptr, nodeWithOpacityProperties->effect()->parent());
+    EXPECT_EQ(nullptr, nodeWithOpacityProperties->transform());
+
+    LayoutObject& childWithTransform = *document().getElementById("childWithTransform")->layoutObject();
+    ObjectPaintProperties* childWithTransformProperties = childWithTransform.objectPaintProperties();
+    EXPECT_EQ(nullptr, childWithTransformProperties->effect());
+    EXPECT_EQ(TransformationMatrix().translate(10, 10), childWithTransformProperties->transform()->matrix());
+
+    LayoutObject& grandChildWithOpacity = *document().getElementById("grandChildWithOpacity")->layoutObject();
+    ObjectPaintProperties* grandChildWithOpacityProperties = grandChildWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.4f, grandChildWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(nodeWithOpacityProperties->effect(), grandChildWithOpacityProperties->effect()->parent());
+    EXPECT_EQ(nullptr, grandChildWithOpacityProperties->transform());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext)
+{
+    setBodyInnerHTML(
+        "<div id='nodeWithOpacity' style='opacity: 0.6'>"
+        "  <div id='childWithStackingContext' style='position:absolute;'>"
+        "    <div id='grandChildWithOpacity' style='opacity: 0.4'/>"
+        "  </div"
+        "</div>");
+
+    LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
+    ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.6f, nodeWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(nullptr, nodeWithOpacityProperties->effect()->parent());
+    EXPECT_EQ(nullptr, nodeWithOpacityProperties->transform());
+
+    LayoutObject& childWithStackingContext = *document().getElementById("childWithStackingContext")->layoutObject();
+    EXPECT_EQ(nullptr, childWithStackingContext.objectPaintProperties());
+
+    LayoutObject& grandChildWithOpacity = *document().getElementById("grandChildWithOpacity")->layoutObject();
+    ObjectPaintProperties* grandChildWithOpacityProperties = grandChildWithOpacity.objectPaintProperties();
+    EXPECT_EQ(0.4f, grandChildWithOpacityProperties->effect()->opacity());
+    EXPECT_EQ(nodeWithOpacityProperties->effect(), grandChildWithOpacityProperties->effect()->parent());
+    EXPECT_EQ(nullptr, grandChildWithOpacityProperties->transform());
+}
+
 } // namespace blink

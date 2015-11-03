@@ -677,6 +677,7 @@
       'graphics/paint/DrawingDisplayItem.h',
       'graphics/paint/DrawingRecorder.cpp',
       'graphics/paint/DrawingRecorder.h',
+      'graphics/paint/EffectPaintPropertyNode.h',
       'graphics/paint/FilterDisplayItem.cpp',
       'graphics/paint/FilterDisplayItem.h',
       'graphics/paint/FixedPositionContainerDisplayItem.cpp',

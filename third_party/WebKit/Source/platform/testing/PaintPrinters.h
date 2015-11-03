@@ -12,6 +12,7 @@ namespace blink {
 struct PaintChunk;
 struct PaintProperties;
 class TransformPaintPropertyNode;
+class EffectPaintPropertyNode;
 
 // GTest print support for platform paint classes.
 //
@@ -27,6 +28,7 @@ class TransformPaintPropertyNode;
 void PrintTo(const PaintChunk&, std::ostream*);
 void PrintTo(const PaintProperties&, std::ostream*);
 void PrintTo(const TransformPaintPropertyNode&, std::ostream*);
+void PrintTo(const EffectPaintPropertyNode&, std::ostream*);
 
 } // namespace blink
 

@@ -5,6 +5,7 @@
 #ifndef PaintChunkProperties_h
 #define PaintChunkProperties_h
 
+#include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
 #include <iosfwd>
@@ -21,15 +22,17 @@ namespace blink {
 // This differs from |ObjectPaintProperties| because it only stores one property
 // for each type (e.g., either transform or perspective, but not both).
 struct PaintChunkProperties {
-    // TODO(pdr): Add clip, scroll, and effect properties.
+    // TODO(pdr): Add clip and scroll properties.
     RefPtr<TransformPaintPropertyNode> transform;
+    RefPtr<EffectPaintPropertyNode> effect;
 };
 
 // Equality is based only on the pointers and is not 'deep' which would require
 // crawling the entire property tree to compute.
 inline bool operator==(const PaintChunkProperties& a, const PaintChunkProperties& b)
 {
-    return a.transform.get() == b.transform.get();
+    return a.transform.get() == b.transform.get()
+        && a.effect.get() == b.effect.get();
 }
 
 inline bool operator!=(const PaintChunkProperties& a, const PaintChunkProperties& b)

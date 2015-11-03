@@ -19,7 +19,11 @@ namespace blink {
 // responsible for bookkeeping tree state in other order, for example, the most recent position
 // container seen.
 struct PaintPropertyTreeBuilderContext {
-    PaintPropertyTreeBuilderContext() : currentTransform(nullptr), transformForOutOfFlowPositioned(nullptr), transformForFixedPositioned(nullptr) { }
+    PaintPropertyTreeBuilderContext()
+        : currentTransform(nullptr)
+        , transformForOutOfFlowPositioned(nullptr)
+        , transformForFixedPositioned(nullptr)
+        , currentEffect(nullptr) { }
 
     // The combination of a transform and paint offset describes a linear space.
     // When a layout object recur to its children, the main context is expected to refer
@@ -38,6 +42,8 @@ struct PaintPropertyTreeBuilderContext {
 
     TransformPaintPropertyNode* transformForFixedPositioned;
     LayoutPoint paintOffsetForFixedPositioned;
+
+    EffectPaintPropertyNode* currentEffect;
 };
 
 void PaintPropertyTreeBuilder::buildPropertyTrees(FrameView& rootFrame)
@@ -145,6 +151,16 @@ static PassRefPtr<TransformPaintPropertyNode> createTransformIfNeeded(const Layo
     return newTransformNodeForTransform.release();
 }
 
+static PassRefPtr<EffectPaintPropertyNode> createEffectIfNeeded(const LayoutBoxModelObject& object, PaintPropertyTreeBuilderContext& context)
+{
+    const ComputedStyle& style = object.styleRef();
+    if (!object.isBox() || !style.hasOpacity())
+        return nullptr;
+    RefPtr<EffectPaintPropertyNode> newEffectNode = EffectPaintPropertyNode::create(style.opacity(), context.currentEffect);
+    context.currentEffect = newEffectNode.get();
+    return newEffectNode.release();
+}
+
 static FloatPoint perspectiveOrigin(const LayoutBox& box)
 {
     const ComputedStyle& style = box.styleRef();
@@ -164,7 +180,6 @@ static PassRefPtr<TransformPaintPropertyNode> createPerspectiveIfNeeded(const La
         TransformationMatrix().applyPerspective(style.perspective()),
         perspectiveOrigin(toLayoutBox(object)) + toLayoutSize(context.paintOffset), context.currentTransform);
     context.currentTransform = newTransformNodeForPerspective.get();
-
     return newTransformNodeForPerspective.release();
 }
 
@@ -209,14 +224,16 @@ void PaintPropertyTreeBuilder::walk(LayoutBoxModelObject& object, const PaintPro
     deriveBorderBoxFromContainerContext(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForPaintOffsetTranslation = createPaintOffsetTranslationIfNeeded(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForTransform = createTransformIfNeeded(object, localContext);
+    RefPtr<EffectPaintPropertyNode> newEffectNode = createEffectIfNeeded(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForPerspective = createPerspectiveIfNeeded(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollTranslation = createScrollTranslationIfNeeded(object, localContext);
     updateOutOfFlowContext(object, localContext);
 
-    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newTransformNodeForPerspective || newTransformNodeForScrollTranslation) {
+    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newEffectNode || newTransformNodeForPerspective || newTransformNodeForScrollTranslation) {
         OwnPtr<ObjectPaintProperties> updatedPaintProperties = ObjectPaintProperties::create(
             newTransformNodeForPaintOffsetTranslation.release(),
             newTransformNodeForTransform.release(),
+            newEffectNode.release(),
             newTransformNodeForPerspective.release(),
             newTransformNodeForScrollTranslation.release());
         object.setObjectPaintProperties(updatedPaintProperties.release());

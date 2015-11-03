@@ -39,4 +39,9 @@ void PrintTo(const TransformPaintPropertyNode& transformPaintProperty, std::ostr
     *os << ")";
 }
 
+void PrintTo(const EffectPaintPropertyNode& effect, std::ostream* os)
+{
+    *os << "EffectPaintPropertyNode(opacity=" << effect.opacity() << ")";
+}
+
 } // namespace blink

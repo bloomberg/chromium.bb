@@ -104,7 +104,48 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging)
         PaintChunk(3, 4, anotherTransform)));
 }
 
-TEST_F(PaintChunkerTest, BuildLinearChunksFromNestedTransforms)
+TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges)
+{
+    PaintChunker chunker;
+    chunker.updateCurrentPaintChunkProperties(rootPaintChunkProperties());
+    chunker.incrementDisplayItemIndex();
+
+    PaintChunkProperties simpleTransform;
+    simpleTransform.transform = TransformPaintPropertyNode::create(TransformationMatrix(0, 0, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
+    chunker.updateCurrentPaintChunkProperties(simpleTransform);
+    chunker.incrementDisplayItemIndex();
+    chunker.incrementDisplayItemIndex();
+
+    PaintChunkProperties simpleTransformAndEffect;
+    simpleTransformAndEffect.transform = simpleTransform.transform;
+    simpleTransformAndEffect.effect = EffectPaintPropertyNode::create(0.5f);
+    chunker.updateCurrentPaintChunkProperties(simpleTransformAndEffect);
+    chunker.incrementDisplayItemIndex();
+    chunker.incrementDisplayItemIndex();
+
+    PaintChunkProperties simpleTransformAndEffectWithUpdatedTransform;
+    simpleTransformAndEffectWithUpdatedTransform.transform = TransformPaintPropertyNode::create(TransformationMatrix(1, 1, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
+    simpleTransformAndEffectWithUpdatedTransform.effect = EffectPaintPropertyNode::create(simpleTransformAndEffect.effect->opacity());
+    chunker.updateCurrentPaintChunkProperties(simpleTransformAndEffectWithUpdatedTransform);
+    chunker.incrementDisplayItemIndex();
+    chunker.incrementDisplayItemIndex();
+
+    // Test that going back to a previous chunk property still creates a new chunk.
+    chunker.updateCurrentPaintChunkProperties(simpleTransformAndEffect);
+    chunker.incrementDisplayItemIndex();
+    chunker.incrementDisplayItemIndex();
+
+    Vector<PaintChunk> chunks = chunker.releasePaintChunks();
+
+    EXPECT_THAT(chunks, ElementsAre(
+        PaintChunk(0, 1, rootPaintChunkProperties()),
+        PaintChunk(1, 3, simpleTransform),
+        PaintChunk(3, 5, simpleTransformAndEffect),
+        PaintChunk(5, 7, simpleTransformAndEffectWithUpdatedTransform),
+        PaintChunk(7, 9, simpleTransformAndEffect)));
+}
+
+TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms)
 {
     // Test that "nested" transforms linearize using the following
     // sequence of transforms and display items:
@@ -152,8 +193,6 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems)
         PaintChunk(0, 1, rootPaintChunkProperties()),
         PaintChunk(1, 2, secondTransform)));
 }
-
-// TODO(pdr): Add more tests once we have more paint properties.
 
 } // namespace
 } // namespace blink

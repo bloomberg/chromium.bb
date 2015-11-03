@@ -6,6 +6,7 @@
 #include "platform/graphics/paint/PaintArtifactToSkCanvas.h"
 
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
@@ -32,10 +33,72 @@ void paintDisplayItemToSkCanvas(const DisplayItem& displayItem, SkCanvas* canvas
 
 } // namespace
 
+// Compute the list of nodes from 'a' to commonAncestor(a, b) and 'b' to
+// commonAncestor(a, b), exclusive.
+//
+// For the following tree:
+//   _root_
+//  |      |
+//  a      d
+//  |      |
+//  b      e
+//  |
+//  c
+// The common ancestor of 'c' and 'e' is 'root'. The paths would be:
+// path from c to commonAncestor(c,e) = [b,a]
+// path from e to commonAncestor(c,e) = [d]
+static void computePathsToCommonAncestor(const EffectPaintPropertyNode* a, const EffectPaintPropertyNode* b, Vector<const EffectPaintPropertyNode*>& aToCommonAncestor, Vector<const EffectPaintPropertyNode*>& bToCommonAncestor)
+{
+    // Calculate the path from a -> root.
+    const EffectPaintPropertyNode* current = a;
+    while (current) {
+        aToCommonAncestor.append(current);
+        current = current->parent();
+    }
+
+    // Calculate the path from b -> root.
+    current = b;
+    while (current) {
+        bToCommonAncestor.append(current);
+        current = current->parent();
+    }
+
+    // Pop nodes from root -> a and root -> b while the last node is equal so we
+    // are left with just the common ancestor path, not including the common
+    // ancestor itself.
+    while (aToCommonAncestor.size() && bToCommonAncestor.size() && aToCommonAncestor.last() == bToCommonAncestor.last()) {
+        aToCommonAncestor.removeLast();
+        bToCommonAncestor.removeLast();
+    }
+}
+
+static void applyEffectNodesToCanvas(const EffectPaintPropertyNode* previousEffect, const EffectPaintPropertyNode* currentEffect, SkCanvas* canvas)
+{
+    if (previousEffect == currentEffect)
+        return;
+
+    Vector<const EffectPaintPropertyNode*> effectsToUnapply;
+    Vector<const EffectPaintPropertyNode*> effectsToApply;
+    computePathsToCommonAncestor(previousEffect, currentEffect, effectsToUnapply, effectsToApply);
+
+    size_t popEffectCount = effectsToUnapply.size();
+    for (size_t popEffect = 0; popEffect < popEffectCount; popEffect++)
+        canvas->restore();
+
+    for (Vector<const EffectPaintPropertyNode*>::reverse_iterator it = effectsToApply.rbegin(); it != effectsToApply.rend(); ++it) {
+        const EffectPaintPropertyNode* node = *it;
+        ASSERT(node);
+        SkPaint layerPaint;
+        layerPaint.setAlpha(static_cast<unsigned char>(node->opacity() * 255));
+        canvas->saveLayer(nullptr, &layerPaint);
+    }
+}
+
 void paintArtifactToSkCanvas(const PaintArtifact& artifact, SkCanvas* canvas)
 {
     SkAutoCanvasRestore restore(canvas, true);
     const DisplayItemList& displayItems = artifact.displayItemList();
+    const EffectPaintPropertyNode* previousEffect = nullptr;
     for (const PaintChunk& chunk : artifact.paintChunks()) {
         // Compute the total transformation matrix for this chunk.
         TransformationMatrix matrix;
@@ -48,6 +111,14 @@ void paintArtifactToSkCanvas(const PaintArtifact& artifact, SkCanvas* canvas)
 
         // Set the canvas state to match the paint properties.
         canvas->setMatrix(TransformationMatrix::toSkMatrix44(matrix));
+
+        // Push and pop layers on the SkCanvas as necessary to implement the
+        // current effect.
+        // TODO(pdr): This will need to be revisited for non-opacity effects
+        // such as filters which require interleaving with transforms.
+        const EffectPaintPropertyNode* chunkEffect = chunk.properties.effect.get();
+        applyEffectNodesToCanvas(previousEffect, chunkEffect, canvas);
+        previousEffect = chunkEffect;
 
         // Draw the display items in the paint chunk.
         DisplayItemList::const_iterator begin = displayItems.begin() + chunk.beginIndex;

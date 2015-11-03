@@ -5,6 +5,7 @@
 #ifndef ObjectPaintProperties_h
 #define ObjectPaintProperties_h
 
+#include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -27,10 +28,11 @@ public:
     static PassOwnPtr<ObjectPaintProperties> create(
         PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
         PassRefPtr<TransformPaintPropertyNode> transform,
+        PassRefPtr<EffectPaintPropertyNode> effect,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation)
     {
-        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, perspective, scrollTranslation));
+        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, perspective, scrollTranslation));
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -44,19 +46,24 @@ public:
     const TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
     const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
+    const EffectPaintPropertyNode* effect() const { return m_effect.get(); }
+
 private:
     ObjectPaintProperties(
         PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
         PassRefPtr<TransformPaintPropertyNode> transform,
+        PassRefPtr<EffectPaintPropertyNode> effect,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation)
         : m_paintOffsetTranslation(paintOffsetTranslation)
         , m_transform(transform)
+        , m_effect(effect)
         , m_perspective(perspective)
         , m_scrollTranslation(scrollTranslation) { }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;
+    RefPtr<EffectPaintPropertyNode> m_effect;
     RefPtr<TransformPaintPropertyNode> m_perspective;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
 };
