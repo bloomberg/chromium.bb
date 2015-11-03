@@ -7,8 +7,8 @@ import("//mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("window_type_launcher") {
-  output_name = "window_type_launcher"
+executable("window_type_launcher") {
+  output_name = "window_type_launcher_exe"
   testonly = true
 
   sources = [
@@ -18,12 +18,18 @@ mojo_native_application("window_type_launcher") {
   ]
 
   deps = [
+    ":window_type_launcher_resources",
     "//base",
     "//mojo/application/public/cpp",
-    "//mojo/application/public/cpp:sources",
+    "//mojo/application/public/interfaces",
+    "//mojo/common:common_base",
     "//mojo/converters/geometry",
     "//mojo/converters/network",
+    "//mojo/message_pump",
+    "//mojo/runner/child:lib",
+    "//mojo/runner:init",
     "//skia",
+    "//third_party/mojo/src/mojo/edk/embedder",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/aura",
     "//ui/gfx",
@@ -32,9 +38,19 @@ mojo_native_application("window_type_launcher") {
     "//ui/views/mus",
   ]
 
-  resources = [ "$root_out_dir/views_mus_resources.pak" ]
-
   data_deps = [
     "//components/mus",
+  ]
+}
+
+copy("window_type_launcher_resources") {
+  sources = [
+    "$root_out_dir/views_mus_resources.pak",
+  ]
+  outputs = [
+    "$root_out_dir/window_type_launcher_exe_res/resources/views_mus_resources.pak",
+  ]
+  deps = [
+    "//ui/views/mus:resources",
   ]
 }

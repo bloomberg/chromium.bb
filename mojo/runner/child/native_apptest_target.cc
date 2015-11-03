@@ -29,34 +29,6 @@
 
 namespace {
 
-class EDKState : public mojo::embedder::ProcessDelegate {
- public:
-  EDKState() : io_thread_("io_thread") {
-    mojo::embedder::Init();
-
-    // Create and start our I/O thread.
-    base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
-    CHECK(io_thread_.StartWithOptions(io_thread_options));
-    io_runner_ = io_thread_.task_runner().get();
-    CHECK(io_runner_.get());
-
-    // TODO(vtl): This should be SLAVE, not NONE.
-    mojo::embedder::InitIPCSupport(mojo::embedder::ProcessType::NONE,
-                                   io_runner_, this, io_runner_,
-                                   mojo::embedder::ScopedPlatformHandle());
-  }
-  ~EDKState() override { mojo::embedder::ShutdownIPCSupport(); }
-
- private:
-  // mojo::embedder::ProcessDelegate:
-  void OnShutdownComplete() override {}
-
-  base::Thread io_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(EDKState);
-};
-
 class TargetApplicationDelegate
     : public mojo::ApplicationDelegate,
       public mojo::runner::test::TestNativeService,
@@ -91,6 +63,17 @@ class TargetApplicationDelegate
   DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);
 };
 
+class ProcessDelegate : public mojo::embedder::ProcessDelegate {
+ public:
+  ProcessDelegate() {}
+  ~ProcessDelegate() override {}
+
+ private:
+  void OnShutdownComplete() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
+};
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -108,7 +91,17 @@ int main(int argc, char** argv) {
 #endif
 
   {
-    EDKState edk;
+    mojo::embedder::Init();
+
+    ProcessDelegate process_delegate;
+    base::Thread io_thread("io_thread");
+    base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
+    CHECK(io_thread.StartWithOptions(io_thread_options));
+
+    mojo::embedder::InitIPCSupport(
+        mojo::embedder::ProcessType::NONE, io_thread.task_runner().get(),
+        &process_delegate, io_thread.task_runner().get(),
+        mojo::embedder::ScopedPlatformHandle());
 
     mojo::InterfaceRequest<mojo::Application> application_request;
     scoped_ptr<mojo::runner::RunnerConnection> connection(
@@ -122,6 +115,8 @@ int main(int argc, char** argv) {
     }
 
     connection.reset();
+
+    mojo::embedder::ShutdownIPCSupport();
   }
 
   return 0;

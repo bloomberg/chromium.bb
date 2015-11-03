@@ -2,11 +2,81 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
+#include "base/command_line.h"
+#include "base/debug/stack_trace.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/process/launch.h"
+#include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "components/mus/example/window_type_launcher/window_type_launcher.h"
-#include "mojo/application/public/cpp/application_runner.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/application/public/interfaces/application.mojom.h"
+#include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/runner/child/runner_connection.h"
+#include "mojo/runner/init.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 
-MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new WindowTypeLauncher);
-  return runner.Run(shell_handle);
+namespace {
+
+class ProcessDelegate : public mojo::embedder::ProcessDelegate {
+ public:
+  ProcessDelegate() {}
+  ~ProcessDelegate() override {}
+
+ private:
+  void OnShutdownComplete() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
+};
+
+}
+
+int main(int argc, char** argv) {
+  base::AtExitManager at_exit;
+  base::CommandLine::Init(argc, argv);
+
+  mojo::runner::InitializeLogging();
+  mojo::runner::WaitForDebuggerIfNecessary();
+
+#if !defined(OFFICIAL_BUILD)
+  base::debug::EnableInProcessStackDumping();
+#if defined(OS_WIN)
+  base::RouteStdioToConsole(false);
+#endif
+#endif
+
+  {
+    mojo::embedder::Init();
+
+    ProcessDelegate process_delegate;
+    base::Thread io_thread("io_thread");
+    base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
+    CHECK(io_thread.StartWithOptions(io_thread_options));
+
+    mojo::embedder::InitIPCSupport(mojo::embedder::ProcessType::NONE,
+                                   io_thread.task_runner().get(),
+                                   &process_delegate,
+                                   io_thread.task_runner().get(),
+                                   mojo::embedder::ScopedPlatformHandle());
+
+    mojo::InterfaceRequest<mojo::Application> application_request;
+    scoped_ptr<mojo::runner::RunnerConnection> connection(
+        mojo::runner::RunnerConnection::ConnectToRunner(&application_request));
+
+    WindowTypeLauncher delegate;
+    {
+      base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
+      mojo::ApplicationImpl impl(&delegate, application_request.Pass());
+      loop.Run();
+    }
+
+    connection.reset();
+
+    mojo::embedder::ShutdownIPCSupport();
+  }
+
+  return 0;
 }

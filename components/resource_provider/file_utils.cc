@@ -28,11 +28,18 @@ bool IsPathNameValid(const std::string& name) {
 }  // namespace
 
 base::FilePath GetPathForApplicationUrl(const GURL& application_url) {
-  if (application_url.scheme() != "mojo")
+  if (application_url.scheme() != "mojo" && application_url.scheme() != "exe")
     return base::FilePath();
 
   std::string path = application_url.path();
   base::TrimString(path, "/", &path);
+
+  // TODO(beng): I'm adding this because there is a collision between the
+  //             executable name in the exe dir and the resource package dir on
+  //             non-Windows systems. Arbitrary exes should probably load their
+  //             resources themselves rather than use resource provider.
+  if (application_url.SchemeIs("exe"))
+    path += "_res";
 
   if (!IsPathNameValid(path))
     return base::FilePath();

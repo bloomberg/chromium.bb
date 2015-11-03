@@ -47,7 +47,6 @@ source_set("mus") {
     "//mojo/converters/input_events",
     "//mojo/converters/network",
     "//mojo/converters/surfaces",
-    "//third_party/mojo/src/mojo/public/c/gles2",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/icu",
     "//ui/aura",

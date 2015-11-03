@@ -13,9 +13,6 @@ group("gles2") {
   public_deps = [
     ":headers",
   ]
-  deps = [
-    "../../platform/native:gles2",
-  ]
 }
 
 mojo_sdk_source_set("headers") {

@@ -96,10 +96,13 @@ template("mojo_native_application") {
 
       deps = rebase_path([
                            "mojo/public/c/system",
+                           "mojo/public/platform/native:gles2",
                            "mojo/public/platform/native:system",
                          ],
                          ".",
                          mojo_root)
+      deps += [ "//mojo/platform_handle" ]
+
       deps += mojo_deps
       if (defined(invoker.public_deps)) {
         public_deps = invoker.public_deps

@@ -23,6 +23,7 @@ group("example") {
     "//components/mus/example/views_examples",
     "//components/mus/example/window_type_launcher",
     "//components/mus/example/wm",
+    "//mojo/runner",
   ]
 }
 

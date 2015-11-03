@@ -329,6 +329,7 @@ test("html_viewer_unittests") {
     "//components/scheduler",
     "//gin",
     "//mojo/converters/input_events",
+    "//mojo/gles2",
     "//testing/gtest:gtest",
     "//third_party/mojo/src/mojo/edk/system",
     "//ui/base",

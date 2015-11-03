@@ -84,7 +84,7 @@ void PackageManagerImpl::FetchRequest(
   if (resolved_url.SchemeIsFile()) {
     // LocalFetcher uses the network service to infer MIME types from URLs.
     // Skip this for mojo URLs to avoid recursively loading the network service.
-    if (!network_service_ && !url.SchemeIs("mojo")) {
+    if (!network_service_ && !url.SchemeIs("mojo") && !url.SchemeIs("exe")) {
       shell::ConnectToService(application_manager_,
                               GURL("mojo:network_service"), &network_service_);
     }

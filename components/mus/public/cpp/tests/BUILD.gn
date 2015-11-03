@@ -48,6 +48,8 @@ test("mojo_view_manager_lib_unittests") {
     "//base/test:test_support",
     "//components/mus/public/cpp",
     "//mojo/application/public/cpp",
+    "//mojo/gles2",
+    "//mojo/runner:platform_handle",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/public/cpp/system",
     "//third_party/mojo/src/mojo/edk/system",

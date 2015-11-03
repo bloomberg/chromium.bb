@@ -134,6 +134,7 @@ test("window_manager_unittests") {
     "//mojo/converters/input_events",
     "//mojo/converters/transform",
     "//mojo/environment:chromium",
+    "//mojo/gles2",
     "//mojo/platform_handle",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
