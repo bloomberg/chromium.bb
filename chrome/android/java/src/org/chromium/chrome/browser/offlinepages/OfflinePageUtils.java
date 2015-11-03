@@ -88,7 +88,8 @@ public class OfflinePageUtils {
             // If an offline page is being visited, prompt that an offline copy is being shown.
             save = false;
         } else if (tab.getUserBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID
-                && !tab.hasOfflineCopy() && OfflinePageBridge.canSavePage(tab.getUrl())) {
+                && !tab.hasOfflineCopy() && !tab.isShowingErrorPage()
+                && OfflinePageBridge.canSavePage(tab.getUrl())) {
             // If a bookmarked page without offline copy is being visited and can be saved, offer to
             // save it.
             save = true;

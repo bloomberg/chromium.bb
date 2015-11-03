@@ -207,15 +207,17 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
      * @param title Title of the new bookmark.
      * @param url Url of the new bookmark
      * @param webContents A {@link WebContents} object.
+     * @param isShowingErrorPage Whether an error page is being shown.
      * @param callback The callback to be invoked when the bookmark is added.
      */
     public void addBookmarkAsync(BookmarkId parent, int index, String title, String url,
-                                 WebContents webContents, final AddBookmarkCallback callback) {
+                                 WebContents webContents, boolean isShowingErrorPage,
+                                 final AddBookmarkCallback callback) {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         final BookmarkId enhancedId = addBookmark(parent, index, title, url);
 
         // If there is no need to save offline page, return now.
-        if (mOfflinePageBridge == null) {
+        if (mOfflinePageBridge == null || isShowingErrorPage) {
             callback.onBookmarkAdded(enhancedId, AddBookmarkCallback.SKIPPED);
             return;
         }
