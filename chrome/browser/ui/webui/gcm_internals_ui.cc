@@ -15,12 +15,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_internals_constants.h"
+#include "components/gcm_driver/gcm_profile_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -155,8 +155,9 @@ void GcmInternalsUIMessageHandler::ReturnResults(
 
   device_info->SetBoolean(gcm_driver::kProfileServiceCreated,
                           profile_service != NULL);
-  device_info->SetBoolean(gcm_driver::kGcmEnabled,
-                          gcm::GCMProfileService::IsGCMEnabled(profile));
+  device_info->SetBoolean(
+      gcm_driver::kGcmEnabled,
+      gcm::GCMProfileService::IsGCMEnabled(profile->GetPrefs()));
   if (stats) {
     results.SetBoolean(gcm_driver::kIsRecording, stats->is_recording);
     device_info->SetBoolean(gcm_driver::kGcmClientCreated,

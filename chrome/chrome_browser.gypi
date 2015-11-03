@@ -2650,8 +2650,6 @@
       'browser/local_discovery/service_discovery_shared_client.h',
     ],
     'chrome_browser_services_sources': [
-      'browser/services/gcm/gcm_profile_service.cc',
-      'browser/services/gcm/gcm_profile_service.h',
       'browser/services/gcm/gcm_profile_service_factory.cc',
       'browser/services/gcm/gcm_profile_service_factory.h',
       'browser/services/gcm/instance_id/instance_id_profile_service.cc',

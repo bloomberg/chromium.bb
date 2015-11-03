@@ -2183,6 +2183,7 @@
         '../base/base.gyp:test_support_base',
         '../components/components_resources.gyp:components_resources',
         '../components/components.gyp:content_settings_core_test_support',
+        '../components/components.gyp:gcm_driver',
         '../components/components.gyp:password_manager_core_browser_test_support',
         '../components/components.gyp:syncable_prefs_test_support',
         '../components/components.gyp:ui_zoom_test_support',
@@ -2290,6 +2291,7 @@
           ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
+            '../components/components.gyp:gcm_driver',
           ],
         }, {  # Not Android.
           'sources': [ '<@(chrome_unit_tests_non_android_sources)' ],

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 
 namespace instance_id {
@@ -15,7 +15,7 @@ namespace instance_id {
 // static
 bool InstanceIDProfileService::IsInstanceIDEnabled(Profile* profile) {
   // Instance ID depends on GCM which has to been enabled.
-  if (!gcm::GCMProfileService::IsGCMEnabled(profile))
+  if (!gcm::GCMProfileService::IsGCMEnabled(profile->GetPrefs()))
     return false;
 
   return InstanceIDDriver::IsInstanceIDEnabled();

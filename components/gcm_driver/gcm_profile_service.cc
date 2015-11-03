@@ -2,38 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "components/gcm_driver/gcm_profile_service.h"
 
 #include <vector>
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/gcm_driver_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 #if defined(OS_ANDROID)
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/gcm_driver/gcm_driver_android.h"
-#include "content/public/browser/browser_thread.h"
 #else
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_account_tracker.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
-#include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -46,7 +38,9 @@ namespace gcm {
 // in. It ensures that account tracker is taking
 class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
  public:
-  IdentityObserver(Profile* profile, GCMDriver* driver);
+  IdentityObserver(ProfileIdentityProvider* identity_provider,
+                   net::URLRequestContextGetter* request_context,
+                   GCMDriver* driver);
   ~IdentityObserver() override;
 
   // IdentityProvider::Observer:
@@ -54,11 +48,10 @@ class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
   void OnActiveAccountLogout() override;
 
  private:
-  void StartAccountTracker();
+  void StartAccountTracker(net::URLRequestContextGetter* request_context);
 
-  Profile* profile_;
   GCMDriver* driver_;
-  scoped_ptr<IdentityProvider> identity_provider_;
+  IdentityProvider* identity_provider_;
   scoped_ptr<GCMAccountTracker> gcm_account_tracker_;
 
   // The account ID that this service is responsible for. Empty when the service
@@ -70,17 +63,17 @@ class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
   DISALLOW_COPY_AND_ASSIGN(IdentityObserver);
 };
 
-GCMProfileService::IdentityObserver::IdentityObserver(Profile* profile,
-                                                      GCMDriver* driver)
-    : profile_(profile), driver_(driver), weak_ptr_factory_(this) {
-  identity_provider_.reset(new ProfileIdentityProvider(
-      SigninManagerFactory::GetForProfile(profile),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
+GCMProfileService::IdentityObserver::IdentityObserver(
+    ProfileIdentityProvider* identity_provider,
+    net::URLRequestContextGetter* request_context,
+    GCMDriver* driver)
+    : driver_(driver),
+      identity_provider_(identity_provider),
+      weak_ptr_factory_(this) {
   identity_provider_->AddObserver(this);
 
   OnActiveAccountLogin();
-  StartAccountTracker();
+  StartAccountTracker(request_context);
 }
 
 GCMProfileService::IdentityObserver::~IdentityObserver() {
@@ -107,13 +100,13 @@ void GCMProfileService::IdentityObserver::OnActiveAccountLogout() {
   driver_->OnSignedOut();
 }
 
-void GCMProfileService::IdentityObserver::StartAccountTracker() {
+void GCMProfileService::IdentityObserver::StartAccountTracker(
+    net::URLRequestContextGetter* request_context) {
   if (gcm_account_tracker_)
     return;
 
   scoped_ptr<gaia::AccountTracker> gaia_account_tracker(
-      new gaia::AccountTracker(identity_provider_.get(),
-                               profile_->GetRequestContext()));
+      new gaia::AccountTracker(identity_provider_, request_context));
 
   gcm_account_tracker_.reset(
       new GCMAccountTracker(gaia_account_tracker.Pass(), driver_));
@@ -124,66 +117,47 @@ void GCMProfileService::IdentityObserver::StartAccountTracker() {
 #endif  // !defined(OS_ANDROID)
 
 // static
-bool GCMProfileService::IsGCMEnabled(Profile* profile) {
+bool GCMProfileService::IsGCMEnabled(PrefService* prefs) {
 #if defined(OS_ANDROID)
   return true;
 #else
-  return profile->GetPrefs()->GetBoolean(gcm::prefs::kGCMChannelStatus);
+  return prefs->GetBoolean(gcm::prefs::kGCMChannelStatus);
 #endif  // defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)
-GCMProfileService::GCMProfileService(Profile* profile)
-    : profile_(profile) {
-  DCHECK(!profile->IsOffTheRecord());
-
-  scoped_refptr<base::SequencedWorkerPool> worker_pool(
-      content::BrowserThread::GetBlockingPool());
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-
-  driver_.reset(new GCMDriverAndroid(
-      profile_->GetPath().Append(chrome::kGCMStoreDirname),
-      blocking_task_runner));
+GCMProfileService::GCMProfileService(
+    base::FilePath path,
+    scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
+  driver_.reset(new GCMDriverAndroid(path.Append(gcm_driver::kGCMStoreDirname),
+                                     blocking_task_runner));
 }
 #else
 GCMProfileService::GCMProfileService(
-    Profile* profile,
-    scoped_ptr<GCMClientFactory> gcm_client_factory)
-    : profile_(profile) {
-  DCHECK(!profile->IsOffTheRecord());
+    PrefService* prefs,
+    base::FilePath path,
+    net::URLRequestContextGetter* request_context,
+    version_info::Channel channel,
+    scoped_ptr<ProfileIdentityProvider> identity_provider,
+    scoped_ptr<GCMClientFactory> gcm_client_factory,
+    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
+    : request_context_(request_context),
+      profile_identity_provider_(identity_provider.Pass()) {
+  driver_ = CreateGCMDriverDesktop(gcm_client_factory.Pass(), prefs,
+                                   path.Append(gcm_driver::kGCMStoreDirname),
+                                   request_context_, channel, ui_task_runner,
+                                   io_task_runner, blocking_task_runner);
 
-  base::SequencedWorkerPool* worker_pool =
-      content::BrowserThread::GetBlockingPool();
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          worker_pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-
-  driver_ = CreateGCMDriverDesktop(
-      gcm_client_factory.Pass(),
-      profile_->GetPrefs(),
-      profile_->GetPath().Append(chrome::kGCMStoreDirname),
-      profile_->GetRequestContext(),
-      chrome::GetChannel(),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO),
-      blocking_task_runner);
-
-  identity_observer_.reset(new IdentityObserver(profile, driver_.get()));
+  identity_observer_.reset(new IdentityObserver(
+      profile_identity_provider_.get(), request_context_, driver_.get()));
 }
 #endif  // defined(OS_ANDROID)
 
-GCMProfileService::GCMProfileService()
-    : profile_(NULL) {
-}
+GCMProfileService::GCMProfileService() : request_context_(nullptr) {}
 
-GCMProfileService::~GCMProfileService() {
-}
+GCMProfileService::~GCMProfileService() {}
 
 void GCMProfileService::Shutdown() {
 #if !defined(OS_ANDROID)
@@ -195,11 +169,14 @@ void GCMProfileService::Shutdown() {
   }
 }
 
-void GCMProfileService::SetDriverForTesting(GCMDriver* driver) {
+void GCMProfileService::SetDriverForTesting(const base::Closure& login_callback,
+                                            GCMDriver* driver) {
   driver_.reset(driver);
 #if !defined(OS_ANDROID)
-  if (identity_observer_)
-    identity_observer_.reset(new IdentityObserver(profile_, driver));
+  if (identity_observer_) {
+    identity_observer_.reset(new IdentityObserver(
+        profile_identity_provider_.get(), request_context_, driver));
+  }
 #endif  // !defined(OS_ANDROID)
 }
 

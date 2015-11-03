@@ -1,6 +1,8 @@
 include_rules = [
   "+components/os_crypt",
+  "+components/keyed_service",
   "+components/pref_registry",
+  "+components/signin",
   "+components/sync_driver",
   "+components/timers",  # Only used for Chrome OS builds.
   "+components/version_info",

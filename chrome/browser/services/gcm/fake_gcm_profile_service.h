@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "components/gcm_driver/gcm_profile_service.h"
+
+class Profile;
 
 namespace content {
 class BrowserContext;
