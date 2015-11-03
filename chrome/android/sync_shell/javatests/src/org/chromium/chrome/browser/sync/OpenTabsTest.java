@@ -9,7 +9,10 @@ import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -109,7 +112,10 @@ public class OpenTabsTest extends SyncTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(TabModelUtils.closeCurrentTab(getActivity().getCurrentTabModel()));
+                TabModelSelector selector = FeatureUtilities.isDocumentMode(getActivity())
+                        ? ChromeApplication.getDocumentTabModelSelector()
+                        : getActivity().getTabModelSelector();
+                assertTrue(TabModelUtils.closeCurrentTab(selector.getCurrentModel()));
             }
         });
 
