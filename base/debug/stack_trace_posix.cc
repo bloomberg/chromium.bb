@@ -344,7 +344,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
     { " trp: ", context->uc_mcontext.gregs[REG_TRAPNO] },
     { " msk: ", context->uc_mcontext.gregs[REG_OLDMASK] },
     { " cr2: ", context->uc_mcontext.gregs[REG_CR2] },
-#endif
+#endif  // ARCH_CPU_32_BITS
   };
 
 #if ARCH_CPU_32_BITS
@@ -363,52 +363,13 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
       PrintToStderr("\n");
   }
   PrintToStderr("\n");
-#endif
-#elif defined(OS_MACOSX)
-  // TODO(shess): Port to 64-bit, and ARM architecture (32 and 64-bit).
-#if ARCH_CPU_X86_FAMILY && ARCH_CPU_32_BITS
-  ucontext_t* context = reinterpret_cast<ucontext_t*>(void_context);
-  size_t len;
-
-  // NOTE: Even |snprintf()| is not on the approved list for signal
-  // handlers, but buffered I/O is definitely not on the list due to
-  // potential for |malloc()|.
-  len = static_cast<size_t>(
-      snprintf(buf, sizeof(buf),
-               "ax: %x, bx: %x, cx: %x, dx: %x\n",
-               context->uc_mcontext->__ss.__eax,
-               context->uc_mcontext->__ss.__ebx,
-               context->uc_mcontext->__ss.__ecx,
-               context->uc_mcontext->__ss.__edx));
-  write(STDERR_FILENO, buf, std::min(len, sizeof(buf) - 1));
-
-  len = static_cast<size_t>(
-      snprintf(buf, sizeof(buf),
-               "di: %x, si: %x, bp: %x, sp: %x, ss: %x, flags: %x\n",
-               context->uc_mcontext->__ss.__edi,
-               context->uc_mcontext->__ss.__esi,
-               context->uc_mcontext->__ss.__ebp,
-               context->uc_mcontext->__ss.__esp,
-               context->uc_mcontext->__ss.__ss,
-               context->uc_mcontext->__ss.__eflags));
-  write(STDERR_FILENO, buf, std::min(len, sizeof(buf) - 1));
-
-  len = static_cast<size_t>(
-      snprintf(buf, sizeof(buf),
-               "ip: %x, cs: %x, ds: %x, es: %x, fs: %x, gs: %x\n",
-               context->uc_mcontext->__ss.__eip,
-               context->uc_mcontext->__ss.__cs,
-               context->uc_mcontext->__ss.__ds,
-               context->uc_mcontext->__ss.__es,
-               context->uc_mcontext->__ss.__fs,
-               context->uc_mcontext->__ss.__gs));
-  write(STDERR_FILENO, buf, std::min(len, sizeof(buf) - 1));
-#endif  // ARCH_CPU_32_BITS
-#endif  // defined(OS_MACOSX)
+#endif  // ARCH_CPU_X86_FAMILY
+#endif  // defined(OS_LINUX)
 
   PrintToStderr("[end of stack trace]\n");
 
-  _exit(1);
+  if (::signal(signal, SIG_DFL) == SIG_ERR)
+    _exit(1);
 }
 
 class PrintBacktraceOutputHandler : public BacktraceOutputHandler {
