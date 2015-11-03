@@ -1464,14 +1464,9 @@
               '<(PRODUCT_DIR)/icudtl.dat',
             ],
           }],
-          ['v8_use_external_startup_data==1', {
-            'components_browsertests_pak_input_resources': [
-              '<(PRODUCT_DIR)/natives_blob.bin',
-              '<(PRODUCT_DIR)/snapshot_blob.bin',
-            ],
-          }],
         ],
       },
+      'includes': ['../build/android/v8_external_startup_data_arch_suffix.gypi'],
       'targets': [
         {
           'target_name': 'components_browsertests_paks_copy',
@@ -1485,6 +1480,18 @@
               '<@(components_browsertests_pak_input_resources)',
             ],
             'clear': 1,
+            'conditions': [
+              ['v8_use_external_startup_data==1', {
+                'renaming_sources': [
+                  '<(PRODUCT_DIR)/natives_blob.bin',
+                  '<(PRODUCT_DIR)/snapshot_blob.bin',
+                ],
+                'renaming_destinations': [
+                  'natives_blob_<(arch_suffix).bin',
+                  'snapshot_blob_<(arch_suffix).bin',
+                ],
+              }],
+            ],
           },
           'includes': ['../build/android/copy_ex.gypi'],
         },
@@ -1524,8 +1531,8 @@
               }],
               ['v8_use_external_startup_data==1', {
                 'additional_input_paths': [
-                  '<(asset_location)/natives_blob.bin',
-                  '<(asset_location)/snapshot_blob.bin',
+                  '<(asset_location)/natives_blob_<(arch_suffix).bin',
+                  '<(asset_location)/snapshot_blob_<(arch_suffix).bin',
                 ],
               }],
             ],

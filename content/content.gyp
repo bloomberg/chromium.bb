@@ -638,9 +638,13 @@
             'conditions': [
               ['v8_use_external_startup_data==1', {
                 'dependencies': ['<(DEPTH)/v8/tools/gyp/v8.gyp:v8_external_snapshot'],
-                'src_files': [
+                'renaming_sources': [
                   '<(PRODUCT_DIR)/natives_blob.bin',
                   '<(PRODUCT_DIR)/snapshot_blob.bin',
+                ],
+                'renaming_destinations': [
+                  'natives_blob_<(arch_suffix).bin',
+                  'snapshot_blob_<(arch_suffix).bin',
                 ],
               }],
               ['icu_use_data_file_flag==1', {
@@ -653,6 +657,7 @@
           },
           'includes': [
             '../build/android/copy_ex.gypi',
+            '../build/android/v8_external_startup_data_arch_suffix.gypi',
           ],
         },
       ],

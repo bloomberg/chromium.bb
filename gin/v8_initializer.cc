@@ -53,8 +53,19 @@ base::PlatformFile g_snapshot_pf = kInvalidPlatformFile;
 base::MemoryMappedFile::Region g_natives_region;
 base::MemoryMappedFile::Region g_snapshot_region;
 
+#if defined(OS_ANDROID)
+#ifdef __LP64__
+const char kNativesFileName[] = "natives_blob_64.bin";
+const char kSnapshotFileName[] = "snapshot_blob_64.bin";
+#else
+const char kNativesFileName[] = "natives_blob_32.bin";
+const char kSnapshotFileName[] = "snapshot_blob_32.bin";
+#endif // __LP64__
+
+#else  // defined(OS_ANDROID)
 const char kNativesFileName[] = "natives_blob.bin";
 const char kSnapshotFileName[] = "snapshot_blob.bin";
+#endif  // defined(OS_ANDROID)
 
 void GetV8FilePath(const char* file_name, base::FilePath* path_out) {
 #if !defined(OS_MACOSX)

@@ -146,9 +146,13 @@
             ],
             'variables': {
               'dest_path': '<(asset_location)',
-              'src_files': [
+              'renaming_sources': [
                 '<(PRODUCT_DIR)/natives_blob.bin',
                 '<(PRODUCT_DIR)/snapshot_blob.bin',
+              ],
+              'renaming_destinations': [
+                'natives_blob_<(arch_suffix).bin',
+                'snapshot_blob_<(arch_suffix).bin',
               ],
               'clear': 1,
             },
@@ -161,13 +165,16 @@
             ['v8_use_external_startup_data==1', {
               'asset_location': '<(PRODUCT_DIR)/blink_heap_unittests_apk/assets',
               'additional_input_paths': [
-                '<(PRODUCT_DIR)/blink_heap_unittests_apk/assets/natives_blob.bin',
-                '<(PRODUCT_DIR)/blink_heap_unittests_apk/assets/snapshot_blob.bin',
+                '<(PRODUCT_DIR)/blink_heap_unittests_apk/assets/natives_blob_<(arch_suffix).bin',
+                '<(PRODUCT_DIR)/blink_heap_unittests_apk/assets/snapshot_blob_<(arch_suffix).bin',
               ],
             }],
           ],
         },
-        'includes': [ '../../../../build/apk_test.gypi' ],
+        'includes': [
+          '../../../../build/apk_test.gypi',
+          '../../../../build/android/v8_external_startup_data_arch_suffix.gypi',
+        ],
       },
       {
         'target_name': 'blink_platform_unittests_apk',

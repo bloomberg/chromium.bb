@@ -153,13 +153,16 @@
                     'conditions': [
                       ['v8_use_external_startup_data==1', {
                         'additional_input_paths': [
-                          '<(asset_location)/natives_blob.bin',
-                          '<(asset_location)/snapshot_blob.bin',
+                          '<(asset_location)/natives_blob_<(arch_suffix).bin',
+                          '<(asset_location)/snapshot_blob_<(arch_suffix).bin',
                         ],
                       }],
                     ],
                 },
-                'includes': [ '../../../../build/apk_test.gypi' ],
+                'includes': [
+                  '../../../../build/apk_test.gypi',
+                  '../../../../build/android/v8_external_startup_data_arch_suffix.gypi',
+                ],
             }],
         }],
         ['test_isolation_mode != "noop"', {

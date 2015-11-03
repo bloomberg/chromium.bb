@@ -296,15 +296,26 @@ def main(args):
                                         options.language_splits))
 
   input_paths = [ options.android_manifest ] + options.resource_zips
+
+  input_strings = []
+  input_strings.extend(package_command)
+
+  # The md5_check.py doesn't count file path in md5 intentionally,
+  # in order to repackage resources when assets' name changed, we need
+  # to put assets into input_strings, as we know the assets path isn't
+  # changed among each build if there is no asset change.
   if options.asset_dir and os.path.exists(options.asset_dir):
+    asset_paths = []
     for root, _, filenames in os.walk(options.asset_dir):
-      input_paths.extend(os.path.join(root, f) for f in filenames)
+      asset_paths.extend(os.path.join(root, f) for f in filenames)
+    input_paths.extend(asset_paths)
+    input_strings.extend(sorted(asset_paths))
 
   build_utils.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(package_command, options),
       options,
       input_paths=input_paths,
-      input_strings=package_command,
+      input_strings=input_strings,
       output_paths=output_paths)
 
 

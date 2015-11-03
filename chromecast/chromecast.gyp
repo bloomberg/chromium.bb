@@ -538,6 +538,7 @@
   # Targets for Android receiver.
   'conditions': [
     ['OS=="android"', {
+      'includes': ['../build/android/v8_external_startup_data_arch_suffix.gypi',],
       'variables': {
          'cast_shell_assets_path': '<(PRODUCT_DIR)/assets/cast_shell_apk',
       },
@@ -554,8 +555,14 @@
             'src_files': [
               '<(PRODUCT_DIR)/icudtl.dat',
               '<(PRODUCT_DIR)/assets/cast_shell.pak',
+            ],
+            'renaming_sources': [
               '<(PRODUCT_DIR)/natives_blob.bin',
               '<(PRODUCT_DIR)/snapshot_blob.bin',
+            ],
+            'renaming_destinations': [
+              'natives_blob_<(arch_suffix).bin',
+              'snapshot_blob_<(arch_suffix).bin',
             ],
             'clear': 1,
           },
@@ -665,8 +672,8 @@
             'additional_input_paths': [
                '<(asset_location)/cast_shell.pak',
                '<(asset_location)/icudtl.dat',
-               '<(asset_location)/natives_blob.bin',
-               '<(asset_location)/snapshot_blob.bin',
+               '<(asset_location)/natives_blob_<(arch_suffix).bin',
+               '<(asset_location)/snapshot_blob_<(arch_suffix).bin',
             ],
           },
           'includes': [ '../build/java_apk.gypi' ],
