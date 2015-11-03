@@ -660,8 +660,6 @@ system call NtCreateSection
 *!content::ChildThreadImpl::AllocateSharedMemory
 ...
 *!content::ChildSharedBitmapManager::AllocateSharedBitmap
-*!cc::ResourceProvider::CreateBitmap
-*!cc::ResourceProvider::Create*Resource
 
 HANDLE LEAK
 name=http://crbug.com/449989
