@@ -151,8 +151,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
     // RenderViewObserver:
     void OnDestruct() override;
-    void DidStartLoading() override;
-    void DidStopLoading() override;
     void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
 
    private:
@@ -174,8 +172,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   void WillSubmitForm(const blink::WebFormElement& form) override;
 
   // Legacy RenderViewObserver:
-  void DidStartLoading();
-  void DidStopLoading();
   void LegacyDidStartProvisionalLoad(blink::WebLocalFrame* frame);
 
   // RenderView IPC handlers:
@@ -268,9 +264,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // Records the username typed before suggestions preview.
   base::string16 username_query_prefix_;
-
-  // True indicates that all frames in a page have been rendered.
-  bool did_stop_loading_;
 
   // Contains server predictions for username, password and/or new password
   // fields for individual forms.

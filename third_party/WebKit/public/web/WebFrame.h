@@ -425,6 +425,9 @@ public:
     // Returns the number of registered unload listeners.
     virtual unsigned unloadListenerCount() const = 0;
 
+    // Will return true if between didStartLoading and didStopLoading notifications.
+    virtual bool isLoading() const;
+
 
     // Editing -------------------------------------------------------------
 

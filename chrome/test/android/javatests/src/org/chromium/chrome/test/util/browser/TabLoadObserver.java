@@ -44,12 +44,12 @@ public class TabLoadObserver extends EmptyTabObserver implements Criteria {
     }
 
     @Override
-    public void onLoadStarted(Tab tab) {
+    public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
         mTabLoadStarted = true;
     }
 
     @Override
-    public void onLoadStopped(Tab tab) {
+    public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
         mTabLoadStopped = true;
     }
 

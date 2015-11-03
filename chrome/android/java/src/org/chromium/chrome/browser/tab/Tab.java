@@ -1395,6 +1395,26 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * Called when a navigation begins and no navigation was in progress
+     * @param toDifferentDocument Whether this navigation will transition between
+     * documents (i.e., not a fragment navigation or JS History API call).
+     */
+    protected void onLoadStarted(boolean toDifferentDocument) {
+        if (toDifferentDocument) mIsLoading = true;
+        for (TabObserver observer : mObservers) observer.onLoadStarted(this, toDifferentDocument);
+    }
+
+    /**
+     * Called when a navigation completes and no other navigation is in progress.
+     */
+    protected void onLoadStopped() {
+        // mIsLoading should only be false if this is a same-document navigation.
+        boolean toDifferentDocument = mIsLoading;
+        mIsLoading = false;
+        for (TabObserver observer : mObservers) observer.onLoadStopped(this, toDifferentDocument);
+    }
+
+    /**
      * Called when a page has started loading.
      * @param validatedUrl URL being loaded.
      * @param showingErrorPage Whether an error page is being shown.
@@ -1403,7 +1423,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
 
         mIsShowingErrorPage = showingErrorPage;
-        mIsLoading = true;
 
         updateTitle();
         removeSadTabIfPresent();
@@ -1417,7 +1436,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Called when a page has finished loading.
      */
     protected void didFinishPageLoad() {
-        mIsLoading = false;
         mIsBeingRestored = false;
         mIsTabStateDirty = true;
         updateTitle();
@@ -1450,7 +1468,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void didFailPageLoad(int errorCode) {
         cancelEnableFullscreenLoadDelay();
-        mIsLoading = false;
         mIsBeingRestored = false;
         if (mTabUma != null) mTabUma.onLoadFailed(errorCode);
         for (TabObserver observer : mObservers) observer.onPageLoadFailed(this, errorCode);

@@ -282,6 +282,13 @@ WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement)
     return fromFrame(toHTMLFrameElementBase(element)->contentFrame());
 }
 
+bool WebFrame::isLoading() const
+{
+    if (Frame* frame = toCoreFrame(this))
+        return frame->isLoading();
+    return false;
+}
+
 WebFrame* WebFrame::fromFrame(Frame* frame)
 {
     if (!frame)

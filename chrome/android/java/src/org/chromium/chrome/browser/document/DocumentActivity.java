@@ -589,7 +589,7 @@ public class DocumentActivity extends ChromeActivity {
             }
 
             @Override
-            public void onLoadStopped(Tab tab) {
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 assert mDocumentTab == tab;
 
                 updateTaskDescription();

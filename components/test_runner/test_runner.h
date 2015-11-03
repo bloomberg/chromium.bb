@@ -105,7 +105,6 @@ class TestRunner : public WebTestRunner,
   bool shouldDumpResourceRequestCallbacks() const;
   bool shouldDumpResourceResponseMIMETypes() const;
   bool shouldDumpStatusCallbacks() const;
-  bool shouldDumpProgressFinishedCallback() const;
   bool shouldDumpSpellCheckCallbacks() const;
   bool shouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* httpHeadersToClear() const;
@@ -436,11 +435,6 @@ class TestRunner : public WebTestRunner,
   // It takes no arguments, and ignores any that may be present.
   void DumpWindowStatusChanges();
 
-  // This function sets a flag that tells the test_shell to print a line of
-  // descriptive text for the progress finished callback. It takes no
-  // arguments, and ignores any that may be present.
-  void DumpProgressFinishedCallback();
-
   // This function sets a flag that tells the test_shell to dump all
   // the lines of descriptive text about spellcheck execution.
   void DumpSpellCheckCallbacks();
@@ -769,10 +763,6 @@ class TestRunner : public WebTestRunner,
 
   // If true, the test_shell will dump all changes to window.status.
   bool dump_window_status_changes_;
-
-  // If true, the test_shell will output a descriptive line for the progress
-  // finished callback.
-  bool dump_progress_finished_callback_;
 
   // If true, the test_shell will output descriptive test for spellcheck
   // execution.

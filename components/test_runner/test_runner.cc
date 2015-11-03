@@ -246,7 +246,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAllowRunningOfInsecureContent(bool allowed);
   void DumpPermissionClientCallbacks();
   void DumpWindowStatusChanges();
-  void DumpProgressFinishedCallback();
   void DumpSpellCheckCallbacks();
   void DumpBackForwardList();
   void DumpSelectionRect();
@@ -505,8 +504,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpPermissionClientCallbacks)
       .SetMethod("dumpWindowStatusChanges",
                  &TestRunnerBindings::DumpWindowStatusChanges)
-      .SetMethod("dumpProgressFinishedCallback",
-                 &TestRunnerBindings::DumpProgressFinishedCallback)
       .SetMethod("dumpSpellCheckCallbacks",
                  &TestRunnerBindings::DumpSpellCheckCallbacks)
       .SetMethod("dumpBackForwardList",
@@ -1211,11 +1208,6 @@ void TestRunnerBindings::DumpWindowStatusChanges() {
     runner_->DumpWindowStatusChanges();
 }
 
-void TestRunnerBindings::DumpProgressFinishedCallback() {
-  if (runner_)
-    runner_->DumpProgressFinishedCallback();
-}
-
 void TestRunnerBindings::DumpSpellCheckCallbacks() {
   if (runner_)
     runner_->DumpSpellCheckCallbacks();
@@ -1720,7 +1712,6 @@ void TestRunner::Reset() {
   dump_resource_request_callbacks_ = false;
   dump_resource_response_mime_types_ = false;
   dump_window_status_changes_ = false;
-  dump_progress_finished_callback_ = false;
   dump_spell_check_callbacks_ = false;
   dump_back_forward_list_ = false;
   dump_selection_rect_ = false;
@@ -1893,10 +1884,6 @@ WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
 
 bool TestRunner::shouldDumpStatusCallbacks() const {
   return dump_window_status_changes_;
-}
-
-bool TestRunner::shouldDumpProgressFinishedCallback() const {
-  return dump_progress_finished_callback_;
 }
 
 bool TestRunner::shouldDumpSpellCheckCallbacks() const {
@@ -2744,10 +2731,6 @@ void TestRunner::DumpPermissionClientCallbacks() {
 
 void TestRunner::DumpWindowStatusChanges() {
   dump_window_status_changes_ = true;
-}
-
-void TestRunner::DumpProgressFinishedCallback() {
-  dump_progress_finished_callback_ = true;
 }
 
 void TestRunner::DumpSpellCheckCallbacks() {

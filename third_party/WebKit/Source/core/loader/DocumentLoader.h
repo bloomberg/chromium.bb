@@ -105,6 +105,10 @@ public:
     void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
 
     bool isCommittedButEmpty() const { return m_state == Committed; }
+
+    void setSentDidFinishLoad() { m_state = SentDidFinishLoad; }
+    bool sentDidFinishLoad() const { return m_state == SentDidFinishLoad; }
+
     NavigationType navigationType() const { return m_navigationType; }
     void setNavigationType(NavigationType navigationType) { m_navigationType = navigationType; }
 
@@ -232,7 +236,8 @@ private:
         Provisional,
         Committed,
         DataReceived,
-        MainResourceDone
+        MainResourceDone,
+        SentDidFinishLoad
     };
     State m_state;
 

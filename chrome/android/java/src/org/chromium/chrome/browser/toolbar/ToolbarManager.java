@@ -310,33 +310,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                updateButtonStatus();
-                updateTabLoadingState(true);
-                mLoadProgressSimulator.cancel();
-
                 if (NativePageFactory.isNativePageUrl(url, tab.isIncognito())) {
                     finishLoadProgress(false);
-                } else {
-                    mToolbar.startLoadProgress();
-                    setLoadProgress(0.0f);
                 }
-            }
-
-            @Override
-            public void onPageLoadFinished(Tab tab) {
-                Tab currentTab = mToolbarModel.getTab();
-                updateTabLoadingState(true);
-
-                // If we made some progress, fast-forward to complete, otherwise just dismiss any
-                // MINIMUM_LOAD_PROGRESS that had been set.
-                if (currentTab.getProgress() > MINIMUM_LOAD_PROGRESS) setLoadProgress(1.0f);
-                finishLoadProgress(true);
-            }
-
-            @Override
-            public void onPageLoadFailed(Tab tab, int errorCode) {
-                updateTabLoadingState(true);
-                finishLoadProgress(false);
             }
 
             @Override
@@ -360,6 +336,30 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 updateTabLoadingState(false);
                 updateButtonStatus();
                 finishLoadProgress(false);
+            }
+
+            @Override
+            public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
+                if (!toDifferentDocument) return;
+                updateButtonStatus();
+                updateTabLoadingState(true);
+                mLoadProgressSimulator.cancel();
+
+                mToolbar.startLoadProgress();
+                setLoadProgress(0.0f);
+            }
+
+            @Override
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
+                if (!toDifferentDocument) return;
+                updateTabLoadingState(true);
+
+                // If we made some progress, fast-forward to complete, otherwise just dismiss any
+                // MINIMUM_LOAD_PROGRESS that had been set.
+                if (tab.getProgress() > MINIMUM_LOAD_PROGRESS && tab.getProgress() < 1.0f) {
+                    setLoadProgress(1.0f);
+                }
+                finishLoadProgress(true);
             }
 
             @Override

@@ -173,14 +173,16 @@ public interface TabObserver {
      * staying in the same html document, {@link #onLoadStarted(Tab)} will be called, while
      * {@link #onPageLoadStarted(Tab, String)} will not.
      * @param tab The notifying {@link Tab}.
+     * @param toDifferentDocument Whether this navigation will transition between
+     * documents (i.e., not a fragment navigation or JS History API call).
      */
-    void onLoadStarted(Tab tab);
+    void onLoadStarted(Tab tab, boolean toDifferentDocument);
 
     /**
      * Called when the contents loading stops.
      * @param tab The notifying {@link Tab}.
      */
-    void onLoadStopped(Tab tab);
+    void onLoadStopped(Tab tab, boolean toDifferentDocument);
 
     /**
      * Called when the load progress of a {@link Tab} changes.

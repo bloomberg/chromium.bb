@@ -8297,4 +8297,36 @@ TEST_F(WebFrameTest, ImageDocumentLoadFinishTime)
     EXPECT_EQ(loader->timing().responseEnd(), resource->loadFinishTime());
 }
 
+class CallbackOrderingWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    CallbackOrderingWebFrameClient() : m_callbackCount(0) { }
+
+    void didStartLoading(bool toDifferentDocument) override
+    {
+        EXPECT_EQ(0, m_callbackCount++);
+        FrameTestHelpers::TestWebFrameClient::didStartLoading(toDifferentDocument);
+    }
+    void didStartProvisionalLoad(WebLocalFrame*, double) override { EXPECT_EQ(1, m_callbackCount++); }
+    void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) override { EXPECT_EQ(2, m_callbackCount++); }
+    void didFinishDocumentLoad(WebLocalFrame*, bool documentIsEmpty) override { EXPECT_EQ(3, m_callbackCount++); }
+    void didHandleOnloadEvents(WebLocalFrame*) override { EXPECT_EQ(4, m_callbackCount++); }
+    void didFinishLoad(WebLocalFrame*) override { EXPECT_EQ(5, m_callbackCount++); }
+    void didStopLoading() override
+    {
+        EXPECT_EQ(6, m_callbackCount++);
+        FrameTestHelpers::TestWebFrameClient::didStopLoading();
+    }
+
+private:
+    int m_callbackCount;
+};
+
+TEST_F(WebFrameTest, CallbackOrdering)
+{
+    registerMockedHttpURLLoad("foo.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    CallbackOrderingWebFrameClient client;
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true, &client);
+}
+
 } // namespace blink

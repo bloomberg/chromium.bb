@@ -971,11 +971,6 @@ void WebTestProxyBase::SetStatusText(const blink::WebString& text) {
       text.utf8().data() + "\n");
 }
 
-void WebTestProxyBase::DidStopLoading() {
-  if (test_interfaces_->GetTestRunner()->shouldDumpProgressFinishedCallback())
-    delegate_->PrintMessage("postProgressFinishedNotification\n");
-}
-
 void WebTestProxyBase::ShowContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
   test_interfaces_->GetEventSender()->SetContextMenuData(context_menu_data);

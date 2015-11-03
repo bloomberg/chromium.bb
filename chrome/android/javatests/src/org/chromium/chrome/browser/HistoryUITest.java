@@ -179,7 +179,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         final CallbackHelper loadCallback = new CallbackHelper();
         TabObserver observer = new EmptyTabObserver() {
             @Override
-            public void onLoadStopped(Tab tab) {
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 if (tab.getUrl().startsWith(HISTORY_URL)) {
                     loadCallback.notifyCalled();
                 }

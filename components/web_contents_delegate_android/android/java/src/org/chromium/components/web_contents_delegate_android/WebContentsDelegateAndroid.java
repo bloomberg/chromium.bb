@@ -53,7 +53,7 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void onLoadStarted() {
+    public void onLoadStarted(boolean toDifferentDocument) {
     }
 
     @CalledByNative

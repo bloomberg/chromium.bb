@@ -386,12 +386,16 @@ void WebNavigationTabObserver::DidFinishLoad(
   navigation_state_.SetNavigationCompleted(render_frame_host);
   if (!navigation_state_.CanSendEvents(render_frame_host))
     return;
-  DCHECK(navigation_state_.GetUrl(render_frame_host) == validated_url ||
-         (navigation_state_.GetUrl(render_frame_host) ==
-              GURL(content::kAboutSrcDocURL) &&
-          validated_url == GURL(url::kAboutBlankURL)))
-      << "validated URL is " << validated_url << " but we expected "
-      << navigation_state_.GetUrl(render_frame_host);
+
+  // A new navigation might have started before the old one completed.
+  // Ignore the old navigation completion in that case.
+  // srcdoc iframes will report a url of about:blank, still let it through.
+  if (navigation_state_.GetUrl(render_frame_host) != validated_url &&
+      (navigation_state_.GetUrl(render_frame_host) !=
+           GURL(content::kAboutSrcDocURL) ||
+       validated_url != GURL(url::kAboutBlankURL))) {
+    return;
+  }
 
   // The load might already have finished by the time we finished parsing. For
   // compatibility reasons, we artifically delay the load completed signal until

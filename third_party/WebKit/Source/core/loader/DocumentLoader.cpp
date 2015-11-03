@@ -292,19 +292,10 @@ void DocumentLoader::finishedLoading(double finishTime)
             commitData(0, 0);
     }
 
-    endWriting(m_writer.get());
-
-    if (!m_mainDocumentError.isNull())
-        return;
-    m_state = MainResourceDone;
-
-    // If the document specified an application cache manifest, it violates the author's intent if we store it in the memory cache
-    // and deny the appcache the chance to intercept it in the future, so remove from the memory cache.
-    if (m_frame) {
-        if (m_mainResource && m_frame->document()->hasAppCacheManifest())
-            memoryCache()->remove(m_mainResource.get());
-    }
     m_applicationCacheHost->finishedLoadingMainResource();
+    endWriting(m_writer.get());
+    if (m_state < MainResourceDone)
+        m_state = MainResourceDone;
     clearMainResourceHandle();
 }
 

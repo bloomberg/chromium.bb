@@ -268,11 +268,6 @@ class WebFrameTestProxy : public Base {
         source_frame, target_frame, target, event);
   }
 
-  virtual void didStopLoading() {
-    base_proxy_->DidStopLoading();
-    Base::didStopLoading();
-  }
-
   virtual void postAccessibilityEvent(const blink::WebAXObject& object,
                                       blink::WebAXEvent event) {
     base_proxy_->PostAccessibilityEvent(object, event);

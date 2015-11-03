@@ -254,12 +254,12 @@ public class LayoutManagerChrome
 
         mTabSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
-            public void onLoadStarted(Tab tab) {
+            public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
                 tabLoadStarted(tab.getId(), tab.isIncognito());
             }
 
             @Override
-            public void onLoadStopped(Tab tab) {
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 tabLoadFinished(tab.getId(), tab.isIncognito());
             }
 

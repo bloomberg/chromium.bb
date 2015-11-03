@@ -165,7 +165,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   blink::WebPlugin* CreatePlugin(blink::WebLocalFrame* frame,
                                  const blink::WebPluginParams& params);
   void SetStatusText(const blink::WebString& text);
-  void DidStopLoading();
   void ShowContextMenu(const blink::WebContextMenuData& data);
   blink::WebUserMediaClient* GetUserMediaClient();
   void PrintPage(blink::WebLocalFrame* frame);

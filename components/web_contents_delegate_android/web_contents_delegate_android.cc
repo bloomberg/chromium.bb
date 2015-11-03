@@ -177,10 +177,14 @@ void WebContentsDelegateAndroid::LoadingStateChanged(WebContents* source,
     return;
   bool has_stopped = source == NULL || !source->IsLoading();
 
-  if (has_stopped)
+  if (has_stopped) {
     Java_WebContentsDelegateAndroid_onLoadStopped(env, obj.obj());
-  else
-    Java_WebContentsDelegateAndroid_onLoadStarted(env, obj.obj());
+  } else {
+    Java_WebContentsDelegateAndroid_onLoadStarted(
+        env,
+        obj.obj(),
+        to_different_document);
+  }
 }
 
 void WebContentsDelegateAndroid::LoadProgressChanged(WebContents* source,

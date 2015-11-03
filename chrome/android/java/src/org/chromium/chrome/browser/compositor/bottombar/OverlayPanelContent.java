@@ -132,8 +132,8 @@ public class OverlayPanelContent {
 
         mWebContentsDelegate = new WebContentsDelegateAndroid() {
             @Override
-            public void onLoadStarted() {
-                super.onLoadStarted();
+            public void onLoadStarted(boolean toDifferentDocument) {
+                super.onLoadStarted(toDifferentDocument);
                 mProgressObserver.onProgressBarStarted();
             }
 

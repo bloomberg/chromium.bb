@@ -627,7 +627,6 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
       logging_state_active_(false),
       was_username_autofilled_(false),
       was_password_autofilled_(false),
-      did_stop_loading_(false),
       weak_ptr_factory_(this) {
   Send(new AutofillHostMsg_PasswordAutofillAgentConstructed(routing_id()));
 }
@@ -1050,9 +1049,16 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   }
 
   if (only_visible) {
-    Send(new AutofillHostMsg_PasswordFormsRendered(routing_id(),
-                                                   password_forms,
-                                                   did_stop_loading_));
+    bool is_last_load = true;
+    for (blink::WebFrame* frame = render_frame()->GetWebFrame()->top(); frame;
+         frame = frame->traverseNext(false)) {
+      if (frame != render_frame()->GetWebFrame() && frame->isLoading()) {
+        is_last_load = false;
+        break;
+      }
+    }
+    Send(new AutofillHostMsg_PasswordFormsRendered(routing_id(), password_forms,
+                                                   is_last_load));
   } else {
     Send(new AutofillHostMsg_PasswordFormsParsed(routing_id(), password_forms));
   }
@@ -1096,14 +1102,6 @@ void PasswordAutofillAgent::DidCommitProvisionalLoad(
   if (is_same_page_navigation) {
     OnSamePageNavigationCompleted();
   }
-}
-
-void PasswordAutofillAgent::DidStartLoading() {
-  did_stop_loading_ = false;
-}
-
-void PasswordAutofillAgent::DidStopLoading() {
-  did_stop_loading_ = true;
 }
 
 void PasswordAutofillAgent::FrameDetached() {
@@ -1522,14 +1520,6 @@ PasswordAutofillAgent::LegacyPasswordAutofillAgent::
 
 void PasswordAutofillAgent::LegacyPasswordAutofillAgent::OnDestruct() {
   // No op. Do not delete |this|.
-}
-
-void PasswordAutofillAgent::LegacyPasswordAutofillAgent::DidStartLoading() {
-  agent_->DidStartLoading();
-}
-
-void PasswordAutofillAgent::LegacyPasswordAutofillAgent::DidStopLoading() {
-  agent_->DidStopLoading();
 }
 
 void PasswordAutofillAgent::LegacyPasswordAutofillAgent::

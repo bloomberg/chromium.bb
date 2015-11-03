@@ -525,37 +525,34 @@ static bool shouldComplete(Document* document)
     return allDescendantsAreComplete(document->frame());
 }
 
-static bool shouldSendCompleteNotifications(LocalFrame* frame)
+static bool shouldSendFinishNotification(LocalFrame* frame)
 {
     // Don't send stop notifications for inital empty documents, since they don't generate start notifications.
     if (!frame->loader().stateMachine()->committedFirstRealDocumentLoad())
         return false;
 
-    // FIXME: We might have already sent stop notifications and be re-completing.
-    if (!frame->isLoading())
-        return false;
-
-    // The readystatechanged or load event may have disconnected this frame.
-    if (!frame->client())
-        return false;
-
-    // An event might have restarted a child frame.
-    if (!allDescendantsAreComplete(frame))
-        return false;
-
-    // An event might have restarted this frame by scheduling a new navigation.
-    if (frame->loader().provisionalDocumentLoader())
-        return false;
-
-    // A navigation is still scheduled in the embedder, so don't complete yet.
-    if (frame->loader().client()->hasPendingNavigation())
+    // Don't send didFinishLoad more than once per DocumentLoader.
+    if (frame->loader().documentLoader()->sentDidFinishLoad())
         return false;
 
     // We might have declined to run the load event due to an imminent content-initiated navigation.
     if (!frame->document()->loadEventFinished())
         return false;
 
+    // An event might have restarted a child frame.
+    if (!allDescendantsAreComplete(frame))
+        return false;
     return true;
+}
+
+static bool shouldSendCompleteNotification(LocalFrame* frame)
+{
+    // FIXME: We might have already sent stop notifications and be re-completing.
+    if (!frame->isLoading())
+        return false;
+    // Only send didStopLoading() if there are no navigations in progress at all,
+    // whether committed, provisional, or pending.
+    return frame->loader().documentLoader()->sentDidFinishLoad() && !frame->loader().provisionalDocumentLoader() && !frame->loader().client()->hasPendingNavigation();
 }
 
 void FrameLoader::checkCompleted()
@@ -574,7 +571,22 @@ void FrameLoader::checkCompleted()
     if (m_frame->view())
         m_frame->view()->handleLoadCompleted();
 
-    if (shouldSendCompleteNotifications(m_frame)) {
+    // The readystatechanged or load event may have disconnected this frame.
+    if (!m_frame->client())
+        return;
+
+    if (shouldSendFinishNotification(m_frame)) {
+        // Report mobile vs. desktop page statistics. This will only report on Android.
+        if (m_frame->isMainFrame())
+            m_frame->document()->viewportDescription().reportMobilePageStats(m_frame);
+        m_documentLoader->setSentDidFinishLoad();
+        client()->dispatchDidFinishLoad();
+        // Finishing the load can detach the frame when running layout tests.
+        if (!m_frame->client())
+            return;
+    }
+
+    if (shouldSendCompleteNotification(m_frame)) {
         m_progressTracker->progressCompleted();
         // Retry restoring scroll offset since finishing loading disables content
         // size clamping.
@@ -582,11 +594,6 @@ void FrameLoader::checkCompleted()
 
         m_loadType = FrameLoadTypeStandard;
         m_frame->localDOMWindow()->finishedLoading();
-
-        // Report mobile vs. desktop page statistics. This will only report on Android.
-        if (m_frame->isMainFrame())
-            m_frame->document()->viewportDescription().reportMobilePageStats(m_frame);
-        client()->dispatchDidFinishLoad();
     }
 
     Frame* parent = m_frame->tree().parent();
@@ -1220,6 +1227,7 @@ void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const Resour
         ASSERT(loader == m_documentLoader);
         if (m_frame->document()->parser())
             m_frame->document()->parser()->stopParsing();
+        m_documentLoader->setSentDidFinishLoad();
         if (!m_provisionalDocumentLoader && m_frame->isLoading()) {
             client()->dispatchDidFailLoad(error, historyCommitType);
             m_progressTracker->progressCompleted();

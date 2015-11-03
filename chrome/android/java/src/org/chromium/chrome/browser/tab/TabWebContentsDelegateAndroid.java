@@ -185,19 +185,13 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     }
 
     @Override
-    public void onLoadStarted() {
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onLoadStarted(mTab);
-        }
+    public void onLoadStarted(boolean toDifferentDocument) {
+        mTab.onLoadStarted(toDifferentDocument);
     }
 
     @Override
     public void onLoadStopped() {
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onLoadStopped(mTab);
-        }
+        mTab.onLoadStopped();
     }
 
     @Override
