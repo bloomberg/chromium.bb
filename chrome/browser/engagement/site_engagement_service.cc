@@ -16,6 +16,7 @@
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -31,7 +32,6 @@ namespace {
 bool g_updated_from_variations = false;
 
 // Keys used in the variations params.
-const char kEngagementParams[] = "SiteEngagement";
 const char kMaxPointsPerDayParam[] = "max_points_per_day";
 const char kNavigationPointsParam[] = "navigation_points";
 const char kUserInputPointsParam[] = "user_input_points";
@@ -111,15 +111,15 @@ const char* SiteEngagementScore::kLastEngagementTimeKey = "lastEngagementTime";
 
 void SiteEngagementScore::UpdateFromVariations() {
   std::string max_points_per_day_param = variations::GetVariationParamValue(
-      kEngagementParams, kMaxPointsPerDayParam);
+      SiteEngagementService::kEngagementParams, kMaxPointsPerDayParam);
   std::string navigation_points_param = variations::GetVariationParamValue(
-      kEngagementParams, kNavigationPointsParam);
+      SiteEngagementService::kEngagementParams, kNavigationPointsParam);
   std::string user_input_points_param = variations::GetVariationParamValue(
-      kEngagementParams, kUserInputPointsParam);
+      SiteEngagementService::kEngagementParams, kUserInputPointsParam);
   std::string decay_period_in_days_param = variations::GetVariationParamValue(
-      kEngagementParams, kDecayPeriodInDaysParam);
+      SiteEngagementService::kEngagementParams, kDecayPeriodInDaysParam);
   std::string decay_points_param = variations::GetVariationParamValue(
-      kEngagementParams, kDecayPointsParam);
+      SiteEngagementService::kEngagementParams, kDecayPointsParam);
 
   if (!max_points_per_day_param.empty() && !navigation_points_param.empty() &&
       !user_input_points_param.empty() && !decay_period_in_days_param.empty() &&
@@ -244,6 +244,8 @@ double SiteEngagementScore::DecayedScore() const {
   return std::max(0.0, decayed_score);
 }
 
+const char SiteEngagementService::kEngagementParams[] = "SiteEngagement";
+
 // static
 SiteEngagementService* SiteEngagementService::Get(Profile* profile) {
   return SiteEngagementServiceFactory::GetForProfile(profile);
@@ -251,16 +253,20 @@ SiteEngagementService* SiteEngagementService::Get(Profile* profile) {
 
 // static
 bool SiteEngagementService::IsEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kEngagementParams);
+  // If the engagement service or any of its dependencies are force-enabled,
+  // return true immediately.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSiteEngagementService)) {
+          switches::kEnableSiteEngagementService) ||
+      SiteEngagementEvictionPolicy::IsEnabled()) {
     return true;
   }
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSiteEngagementService)) {
     return false;
   }
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kEngagementParams);
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 

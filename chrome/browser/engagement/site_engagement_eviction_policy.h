@@ -21,6 +21,8 @@ class SiteEngagementScoreProvider;
 
 class SiteEngagementEvictionPolicy : public storage::QuotaEvictionPolicy {
  public:
+  static bool IsEnabled();
+
   explicit SiteEngagementEvictionPolicy(
       content::BrowserContext* browser_context);
   ~SiteEngagementEvictionPolicy() override;

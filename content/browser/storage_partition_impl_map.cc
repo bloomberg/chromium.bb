@@ -397,6 +397,10 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                                    partition_path);
   partitions_[partition_config] = partition;
 
+  partition->GetQuotaManager()->SetTemporaryStorageEvictionPolicy(
+      GetContentClient()->browser()->GetTemporaryStorageEvictionPolicy(
+          browser_context_));
+
   ChromeBlobStorageContext* blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context_);
   StreamContext* stream_context = StreamContext::GetFor(browser_context_);

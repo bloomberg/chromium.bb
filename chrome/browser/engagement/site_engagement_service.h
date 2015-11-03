@@ -123,6 +123,9 @@ class SiteEngagementScoreProvider {
 class SiteEngagementService : public KeyedService,
                               public SiteEngagementScoreProvider {
  public:
+  // The name of the site engagement variation field trial.
+  static const char kEngagementParams[];
+
   static SiteEngagementService* Get(Profile* profile);
 
   // Returns whether or not the SiteEngagementService is enabled.

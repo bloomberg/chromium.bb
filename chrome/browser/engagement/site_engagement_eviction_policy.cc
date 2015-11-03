@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_eviction_policy.h"
+
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -90,6 +95,19 @@ GURL GetSiteEngagementEvictionOriginOnUIThread(
 }
 
 }  // namespace
+
+// static
+bool SiteEngagementEvictionPolicy::IsEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSiteEngagementEvictionPolicy)) {
+    return true;
+  }
+
+  const std::string group_name = base::FieldTrialList::FindFullName(
+      SiteEngagementService::kEngagementParams);
+  return base::StartsWith(group_name, "StorageEvictionEnabled",
+                          base::CompareCase::SENSITIVE);
+}
 
 SiteEngagementEvictionPolicy::SiteEngagementEvictionPolicy(
     content::BrowserContext* browser_context)

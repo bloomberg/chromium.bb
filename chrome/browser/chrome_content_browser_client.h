@@ -173,6 +173,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       content::ResourceContext* context) override;
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
+  scoped_ptr<storage::QuotaEvictionPolicy> GetTemporaryStorageEvictionPolicy(
+      content::BrowserContext* context) override;
   void AllowCertificateError(
       int render_process_id,
       int render_frame_id,

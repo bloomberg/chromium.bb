@@ -41,6 +41,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -1928,6 +1929,14 @@ ChromeContentBrowserClient::OverrideRequestContextForURL(
 QuotaPermissionContext*
 ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();
+}
+
+scoped_ptr<storage::QuotaEvictionPolicy>
+ChromeContentBrowserClient::GetTemporaryStorageEvictionPolicy(
+    content::BrowserContext* context) {
+  return SiteEngagementEvictionPolicy::IsEnabled()
+             ? make_scoped_ptr(new SiteEngagementEvictionPolicy(context))
+             : nullptr;
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(

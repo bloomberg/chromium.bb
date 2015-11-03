@@ -151,6 +151,7 @@ extern const char kEnableSettingsWindow[];
 extern const char kDisableSettingsWindow[];
 extern const char kEnableSimplifiedFullscreenUI[];
 extern const char kDisableSimplifiedFullscreenUI[];
+extern const char kEnableSiteEngagementEvictionPolicy[];
 extern const char kEnableSiteEngagementService[];
 extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableTabAudioMuting[];

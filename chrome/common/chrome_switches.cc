@@ -532,6 +532,12 @@ const char kEnableSimplifiedFullscreenUI[]  = "enable-simplified-fullscreen-ui";
 const char kDisableSimplifiedFullscreenUI[] =
     "disable-simplified-fullscreen-ui";
 
+// Enable the Site Engagement Eviction Policy which evicts temporary storage
+// using the site engagement service. Implicitly enables the site engagement
+// service.
+const char kEnableSiteEngagementEvictionPolicy[] =
+    "enable-site-engagement-eviction-policy";
+
 // Enable the Site Engagement service, which records interaction with sites and
 // allocates certain resources accordingly.
 const char kEnableSiteEngagementService[]   = "enable-site-engagement-service";

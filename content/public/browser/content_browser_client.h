@@ -80,6 +80,7 @@ class SelectFilePolicy;
 namespace storage {
 class ExternalMountPoints;
 class FileSystemBackend;
+class QuotaEvictionPolicy;
 }
 
 namespace content {
@@ -444,6 +445,11 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext();
+
+  // Gives the embedder a chance to register a custom QuotaEvictionPolicy for
+  // temporary storage.
+  virtual scoped_ptr<storage::QuotaEvictionPolicy>
+  GetTemporaryStorageEvictionPolicy(BrowserContext* context);
 
   // Informs the embedder that a certificate error has occured.  If
   // |overridable| is true and if |strict_enforcement| is false, the user

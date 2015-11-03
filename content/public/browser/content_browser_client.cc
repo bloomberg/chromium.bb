@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/common/sandbox_type.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -213,6 +214,12 @@ bool ContentBrowserClient::AllowWebRTCIdentityCache(const GURL& url,
 
 QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
+}
+
+scoped_ptr<storage::QuotaEvictionPolicy>
+ContentBrowserClient::GetTemporaryStorageEvictionPolicy(
+    content::BrowserContext* context) {
+  return scoped_ptr<storage::QuotaEvictionPolicy>();
 }
 
 void ContentBrowserClient::SelectClientCertificate(
