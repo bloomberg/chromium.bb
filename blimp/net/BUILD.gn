@@ -10,12 +10,15 @@ component("blimp_net") {
     "blimp_message_dispatcher.h",
     "blimp_message_receiver.h",
     "blimp_net_export.h",
+    "blimp_transport.h",
     "common.cc",
     "common.h",
     "packet_reader.cc",
     "packet_reader.h",
     "packet_writer.cc",
     "packet_writer.h",
+    "tcp_client_transport.cc",
+    "tcp_client_transport.h",
   ]
 
   defines = [ "BLIMP_NET_IMPLEMENTATION=1" ]
