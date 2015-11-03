@@ -68,7 +68,8 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
       : audio_params_(audio_params),
         decoder_(nullptr),
         first_start_(true),
-        error_(false) {
+        error_(false),
+        weak_factory_(this) {
     thread_checker_.DetachFromThread();
   }
   ~Backend() override {}
@@ -174,6 +175,10 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
       OnPushBufferComplete(decoder_, MediaPipelineBackend::kBufferFailed);
   }
 
+  base::WeakPtr<CastAudioOutputStream::Backend> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   const ::media::AudioParameters audio_params_;
   scoped_ptr<MediaPipelineBackend> backend_;
@@ -184,6 +189,8 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
   bool error_;
   scoped_refptr<DecoderBufferBase> backend_buffer_;
   base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<CastAudioOutputStream::Backend> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
 
@@ -205,7 +212,9 @@ CastAudioOutputStream::CastAudioOutputStream(
           << audio_params_.AsHumanReadableString();
 }
 
-CastAudioOutputStream::~CastAudioOutputStream() {}
+CastAudioOutputStream::~CastAudioOutputStream() {
+  backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
+}
 
 bool CastAudioOutputStream::Open() {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
@@ -229,7 +238,7 @@ bool CastAudioOutputStream::Open() {
     bool success = false;
     base::WaitableEvent completion_event(false, false);
     backend_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Backend::Open, base::Unretained(backend_.get()),
+        FROM_HERE, base::Bind(&Backend::Open, backend_->GetWeakPtr(),
                               audio_manager_, &success, &completion_event));
     completion_event.Wait();
 
@@ -251,7 +260,7 @@ void CastAudioOutputStream::Close() {
 
   VLOG(1) << __FUNCTION__ << " : " << this;
   backend_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&Backend::Close, base::Unretained(backend_.get())),
+      FROM_HERE, base::Bind(&Backend::Close, backend_->GetWeakPtr()),
       base::Bind(&CastAudioOutputStream::OnClosed, base::Unretained(this)));
 }
 
@@ -261,7 +270,7 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
 
   source_callback_ = source_callback;
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Backend::Start, base::Unretained(backend_.get())));
+      FROM_HERE, base::Bind(&Backend::Start, backend_->GetWeakPtr()));
 
   next_push_time_ = base::TimeTicks::Now();
   if (!push_in_progress_) {
@@ -279,7 +288,7 @@ void CastAudioOutputStream::Stop() {
 
   source_callback_ = nullptr;
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Backend::Stop, base::Unretained(backend_.get())));
+      FROM_HERE, base::Bind(&Backend::Stop, backend_->GetWeakPtr()));
 }
 
 void CastAudioOutputStream::SetVolume(double volume) {
@@ -288,7 +297,7 @@ void CastAudioOutputStream::SetVolume(double volume) {
   volume_ = volume;
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Backend::SetVolume,
-                            base::Unretained(backend_.get()), volume));
+                            backend_->GetWeakPtr(), volume));
 }
 
 void CastAudioOutputStream::GetVolume(double* volume) {
@@ -334,7 +343,7 @@ void CastAudioOutputStream::PushBuffer() {
                  weak_factory_.GetWeakPtr()));
   backend_task_runner_->PostTask(FROM_HERE,
                                  base::Bind(&Backend::PushBuffer,
-                                            base::Unretained(backend_.get()),
+                                            backend_->GetWeakPtr(),
                                             decoder_buffer_,
                                             completion_cb));
 }

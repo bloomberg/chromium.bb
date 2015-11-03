@@ -58,6 +58,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 
   base::WeakPtrFactory<CastAudioOutputStream> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(CastAudioOutputStream);
 };
 
