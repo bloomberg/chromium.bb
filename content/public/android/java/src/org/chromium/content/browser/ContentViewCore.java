@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
+import android.app.assist.AssistStructure.ViewNode;
 import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -110,14 +111,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     // Used to avoid enabling zooming in / out if resulting zooming will
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
-
-    /**
-     * TODO(sgurun) remove these and use public API. crbug/512264
-     */
-    private static final int TEXT_STYLE_BOLD = 1 << 0;
-    private static final int TEXT_STYLE_ITALIC = 1 << 1;
-    private static final int TEXT_STYLE_UNDERLINE = 1 << 2;
-    private static final int TEXT_STYLE_STRIKE_THRU = 1 << 3;
 
     private static final ZoomControlsDelegate NO_OP_ZOOM_CONTROLS_DELEGATE =
             new ZoomControlsDelegate() {
@@ -3046,10 +3039,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 node.width, node.height);
         viewNode.setChildCount(node.children.size());
         if (node.hasStyle) {
-            int style = (node.bold ? TEXT_STYLE_BOLD : 0)
-                    | (node.italic ? TEXT_STYLE_ITALIC : 0)
-                    | (node.underline ? TEXT_STYLE_UNDERLINE : 0)
-                    | (node.lineThrough ? TEXT_STYLE_STRIKE_THRU : 0);
+            int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
+                    | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
+                    | (node.underline ? ViewNode.TEXT_STYLE_UNDERLINE : 0)
+                    | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
             viewNode.setTextStyle(node.textSize, node.color, node.bgcolor, style);
         }
         for (int i = 0; i < node.children.size(); i++) {
