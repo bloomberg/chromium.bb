@@ -126,6 +126,9 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // expires 5 seconds after calling Start().
   void CheckInputStartupSuccess();
 
+  // Uninitializes the audio unit if needed.
+  void CloseAudioUnit();
+
   // Verifies that Open(), Start(), Stop() and Close() are all called on the
   // creating thread which is the main browser thread (CrBrowserMain) on Mac.
   base::ThreadChecker thread_checker_;

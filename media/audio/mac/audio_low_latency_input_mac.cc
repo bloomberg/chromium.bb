@@ -149,7 +149,8 @@ bool AUAudioInputStream::Open() {
                                 1,          // input element 1
                                 &enableIO,  // enable
                                 sizeof(enableIO));
-  if (result) {
+  if (result != noErr) {
+    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -162,7 +163,8 @@ bool AUAudioInputStream::Open() {
                                 0,          // output element 0
                                 &enableIO,  // disable
                                 sizeof(enableIO));
-  if (result) {
+  if (result != noErr) {
+    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -175,7 +177,8 @@ bool AUAudioInputStream::Open() {
                                 0,
                                 &input_device_id_,
                                 sizeof(input_device_id_));
-  if (result) {
+  if (result != noErr) {
+    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -189,14 +192,17 @@ bool AUAudioInputStream::Open() {
                                 1,
                                 &format_,
                                 sizeof(format_));
-  if (result) {
+  if (result != noErr) {
+    CloseAudioUnit();
     HandleError(result);
     return false;
   }
 
-  if (!manager_->MaybeChangeBufferSize(
-          input_device_id_, audio_unit_, 1, number_of_frames_))
+  if (!manager_->MaybeChangeBufferSize(input_device_id_, audio_unit_, 1,
+                                       number_of_frames_)) {
+    CloseAudioUnit();
     return false;
+  }
 
   // Register the input procedure for the AUHAL.
   // This procedure will be called when the AUHAL has received new data
@@ -210,7 +216,8 @@ bool AUAudioInputStream::Open() {
                                 0,
                                 &callback,
                                 sizeof(callback));
-  if (result) {
+  if (result != noErr) {
+    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -219,7 +226,8 @@ bool AUAudioInputStream::Open() {
   // Allocates memory according to the maximum number of audio frames
   // it can produce in response to a single render call.
   result = AudioUnitInitialize(audio_unit_);
-  if (result) {
+  if (result != noErr) {
+    CloseAudioUnit();
     HandleError(result);
     return false;
   }
@@ -299,19 +307,7 @@ void AUAudioInputStream::Close() {
   if (started_) {
     Stop();
   }
-  if (audio_unit_) {
-    // Deallocate the audio unit’s resources.
-    OSStatus result = AudioUnitUninitialize(audio_unit_);
-    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-        << "AudioUnitUninitialize() failed.";
-
-    result = AudioComponentInstanceDispose(audio_unit_);
-    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-        << "AudioComponentInstanceDispose() failed.";
-
-    audio_unit_ = 0;
-  }
-
+  CloseAudioUnit();
   // Inform the audio manager that we have been closed. This can cause our
   // destruction.
   manager_->ReleaseInputStream(this);
@@ -773,6 +769,19 @@ void AUAudioInputStream::CheckInputStartupSuccess() {
       // HandleError with as suitable error code.
     }
   }
+}
+
+void AUAudioInputStream::CloseAudioUnit() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!audio_unit_)
+    return;
+  OSStatus result = AudioUnitUninitialize(audio_unit_);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "AudioUnitUninitialize() failed.";
+  result = AudioComponentInstanceDispose(audio_unit_);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "AudioComponentInstanceDispose() failed.";
+  audio_unit_ = 0;
 }
 
 }  // namespace media
