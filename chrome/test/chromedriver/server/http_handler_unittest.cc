@@ -172,3 +172,28 @@ TEST(MatchesCommandTest, Substitution) {
   ASSERT_TRUE(params.GetString("b", &param));
   ASSERT_EQ("3", param);
 }
+
+TEST(MatchesCommandTest, DecodeEscape) {
+  CommandMapping command(kPost, "path/:sessionId/attribute/:xyz",
+                         base::Bind(&DummyCommand, Status(kOk)));
+  std::string session_id;
+  base::DictionaryValue params;
+  ASSERT_TRUE(internal::MatchesCommand(
+      "post", "path/123/attribute/xyz%2Furl%7Ce%3A%40v",
+      command, &session_id, &params));
+  std::string param;
+  ASSERT_TRUE(params.GetString("xyz", &param));
+  ASSERT_EQ("xyz/url|e:@v", param);
+}
+
+TEST(MatchesCommandTest, DecodePercent) {
+  CommandMapping command(kPost, "path/:xyz",
+                         base::Bind(&DummyCommand, Status(kOk)));
+  std::string session_id;
+  base::DictionaryValue params;
+  ASSERT_TRUE(internal::MatchesCommand(
+      "post", "path/%40a%%b%%c%%%%", command, &session_id, &params));
+  std::string param;
+  ASSERT_TRUE(params.GetString("xyz", &param));
+  ASSERT_EQ("@a%b%c%%", param);
+}

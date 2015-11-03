@@ -28,6 +28,9 @@ class WebElement(object):
   def GetText(self):
     return self._Execute(Command.GET_ELEMENT_TEXT)
 
+  def GetAttribute(self,name):
+    return self._Execute(Command.GET_ELEMENT_ATTRIBUTE, {'name': name})
+
   def HoverOver(self):
     self._Execute(Command.HOVER_OVER_ELEMENT)
 

@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -29,6 +30,7 @@
 #include "chrome/test/chromedriver/version.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
+#include "url/url_util.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -756,10 +758,19 @@ bool MatchesCommand(const std::string& method,
       std::string name = command_path_parts[i];
       name.erase(0, 1);
       CHECK(name.length());
+      url::RawCanonOutputT<base::char16> output;
+      url::DecodeURLEscapeSequences(
+          path_parts[i].data(), path_parts[i].length(), &output);
+      std::string decoded = base::UTF16ToASCII(
+          base::string16(output.data(), output.length()));
+      // Due to crbug.com/533361, the url decoding libraries decodes all of the
+      // % escape sequences except for %%. We need to handle this case manually.
+      // So, replacing all the instances of "%%" with "%".
+      base::ReplaceSubstringsAfterOffset(&decoded, 0 , "%%" , "%");
       if (name == "sessionId")
-        *session_id = path_parts[i];
+        *session_id = decoded;
       else
-        params.SetString(name, path_parts[i]);
+        params.SetString(name, decoded);
     } else if (command_path_parts[i] != path_parts[i]) {
       return false;
     }

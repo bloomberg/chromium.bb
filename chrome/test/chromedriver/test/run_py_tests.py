@@ -526,6 +526,18 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     value = self._driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
+  def testGetElementAttribute(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/attribute_colon_test.html'))
+    elem = self._driver.FindElement("name", "phones")
+    self.assertEquals('3', elem.GetAttribute('size'))
+
+  def testGetElementSpecialCharAttribute(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/attribute_colon_test.html'))
+    elem = self._driver.FindElement("name", "phones")
+    self.assertEquals('colonvalue', elem.GetAttribute('ext:qtip'))
+
   def testGetCurrentUrl(self):
     url = self.GetHttpUrlForFile('/chromedriver/frame_test.html')
     self._driver.Load(url)
