@@ -45,7 +45,6 @@
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #endif
 #if defined(USE_LIBSECRET)
-#include "base/metrics/field_trial.h"
 #include "chrome/browser/password_manager/native_backend_libsecret.h"
 #endif
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
@@ -59,11 +58,6 @@ namespace {
 #if !defined(OS_CHROMEOS) && defined(USE_X11)
 const LocalProfileId kInvalidLocalProfileId =
     static_cast<LocalProfileId>(0);
-#endif
-
-#if defined(USE_LIBSECRET)
-const char kLibsecretFieldTrialName[] = "Libsecret";
-const char kLibsecretFieldTrialDisabledGroupName[] = "Disabled";
 #endif
 
 }  // namespace
@@ -224,16 +218,13 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
              used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY ||
              used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
 #if defined(USE_LIBSECRET)
-    if (base::FieldTrialList::FindFullName(kLibsecretFieldTrialName) !=
-        kLibsecretFieldTrialDisabledGroupName) {
-      VLOG(1) << "Trying libsecret for password storage.";
-      backend.reset(new NativeBackendLibsecret(id));
-      if (backend->Init()) {
-        VLOG(1) << "Using libsecret keyring for password storage.";
-        used_backend = LIBSECRET;
-      } else {
-        backend.reset();
-      }
+    VLOG(1) << "Trying libsecret for password storage.";
+    backend.reset(new NativeBackendLibsecret(id));
+    if (backend->Init()) {
+      VLOG(1) << "Using libsecret keyring for password storage.";
+      used_backend = LIBSECRET;
+    } else {
+      backend.reset();
     }
 #endif  // defined(USE_LIBSECRET)
     if (!backend.get()) {
