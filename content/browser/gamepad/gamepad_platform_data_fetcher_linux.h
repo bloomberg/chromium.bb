@@ -36,15 +36,21 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
   void EnumerateDevices();
   void ReadDeviceData(size_t index);
 
-  // File descriptors for the /dev/input/js* devices. -1 if not in use.
-  int device_fds_[blink::WebGamepads::itemsLengthCap];
+  struct PadState {
+    // File descriptor for the /dev/input/js* devices. -1 if not in use.
+    int device_fd;
 
-  // Functions to map from device data to standard layout, if available. May
-  // be null if no mapping is available.
-  GamepadStandardMappingFunction mappers_[blink::WebGamepads::itemsLengthCap];
+    // Functions to map from device data to standard layout, if available. May
+    // be null if no mapping is available.
+    GamepadStandardMappingFunction mapper;
 
-  // Data that's returned to the consumer.
-  blink::WebGamepads data_;
+    bool is_axes_ever_reset[blink::WebGamepad::axesLengthCap];
+    bool is_buttons_ever_reset[blink::WebGamepad::buttonsLengthCap];
+
+    // Data that's returned to the consumer.
+    blink::WebGamepad data;
+  };
+  PadState pad_state_[blink::WebGamepads::itemsLengthCap];
 
   scoped_ptr<UdevLinux> udev_;
 

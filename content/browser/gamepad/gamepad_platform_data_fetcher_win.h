@@ -85,6 +85,9 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
     PadConnectionStatus status;
     GamepadStandardMappingFunction mapper;
 
+    bool is_axes_ever_reset[blink::WebGamepad::axesLengthCap];
+    bool is_buttons_ever_reset[blink::WebGamepad::buttonsLengthCap];
+
     int xinput_index; // XInput-only
     HANDLE raw_input_handle;  // RawInput-only fields.
   };

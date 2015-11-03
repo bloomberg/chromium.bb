@@ -30,6 +30,8 @@ static const BYTE kDeviceSubTypeDrumKit = 8;
 static const BYTE kDeviceSubTypeGuitarBass = 11;
 static const BYTE kDeviceSubTypeArcadePad = 19;
 
+static const float kMinAxisResetValue = 0.1f;
+
 float NormalizeXInputAxis(SHORT value) {
   return ((value + 32768.f) / 32767.5f) - 1.f;
 }
@@ -55,8 +57,13 @@ const WebUChar* const GamepadSubTypeName(BYTE sub_type) {
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
     : xinput_dll_(base::FilePath(FILE_PATH_LITERAL("xinput1_3.dll"))),
       xinput_available_(GetXInputDllFunctions()) {
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
+  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     pad_state_[i].status = DISCONNECTED;
+    for (size_t j = 0; j < arraysize(pad_state_[i].is_axes_ever_reset); ++j)
+      pad_state_[i].is_axes_ever_reset[j] = false;
+    for (size_t j = 0; j < arraysize(pad_state_[i].is_buttons_ever_reset); ++j)
+      pad_state_[i].is_buttons_ever_reset[j] = false;
+  }
 
   raw_input_fetcher_.reset(new RawInputDataFetcher());
   raw_input_fetcher_->StartMonitor();
@@ -115,6 +122,12 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
       pad_state_[pad_index].xinput_index = i;
       pad_state_[pad_index].mapper = NULL;
     }
+    bool* axes_reset = pad_state_[pad_index].is_axes_ever_reset;
+    bool* buttons_reset = pad_state_[pad_index].is_buttons_ever_reset;
+    for (size_t j = 0; j < blink::WebGamepad::axesLengthCap; ++j)
+      axes_reset[j] = false;
+    for (size_t j = 0; j < blink::WebGamepad::buttonsLengthCap; ++j)
+      buttons_reset[j] = false;
   }
 
   if (raw_input_fetcher_->Available()) {
@@ -149,6 +162,12 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
       else
         pad.mapping[0] = 0;
 
+      bool* axes_reset = pad_state_[pad_index].is_axes_ever_reset;
+      bool* buttons_reset = pad_state_[pad_index].is_buttons_ever_reset;
+      for (size_t j = 0; j < blink::WebGamepad::axesLengthCap; ++j)
+        axes_reset[j] = false;
+      for (size_t j = 0; j < blink::WebGamepad::buttonsLengthCap; ++j)
+        buttons_reset[j] = false;
     }
   }
 }
@@ -175,6 +194,7 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
     EnumerateDevices(pads);
 
   pads->length = 0;
+
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     // We rely on device_changed and GetCapabilities to tell us that
     // something's been connected, but we will mark as disconnected if
@@ -232,24 +252,45 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(
   if (dwResult == ERROR_SUCCESS) {
     pad->timestamp = state.dwPacketNumber;
     pad->buttonsLength = 0;
-#define ADD(b) pad->buttons[pad->buttonsLength].pressed = \
-  (state.Gamepad.wButtons & (b)) != 0; \
-  pad->buttons[pad->buttonsLength++].value = \
-  ((state.Gamepad.wButtons & (b)) ? 1.f : 0.f);
+    WORD val = state.Gamepad.wButtons;
+#define ADD(b) if (!val) \
+    pad_state_[i].is_buttons_ever_reset[pad->buttonsLength] = true; \
+  if (pad_state_[i].is_buttons_ever_reset[pad->buttonsLength]) { \
+    pad->buttons[pad->buttonsLength].pressed = (val & (b)) != 0; \
+    pad->buttons[pad->buttonsLength++].value = ((val & (b)) ? 1.f : 0.f); \
+  } else { \
+    pad->buttons[pad->buttonsLength].pressed = false; \
+    pad->buttons[pad->buttonsLength++].value = 0.0; \
+  }
     ADD(XINPUT_GAMEPAD_A);
     ADD(XINPUT_GAMEPAD_B);
     ADD(XINPUT_GAMEPAD_X);
     ADD(XINPUT_GAMEPAD_Y);
     ADD(XINPUT_GAMEPAD_LEFT_SHOULDER);
     ADD(XINPUT_GAMEPAD_RIGHT_SHOULDER);
-    pad->buttons[pad->buttonsLength].pressed =
+    if (state.Gamepad.bLeftTrigger < XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+      pad_state_[i].is_buttons_ever_reset[pad->buttonsLength] = true;
+    if (pad_state_[i].is_buttons_ever_reset[pad->buttonsLength]) {
+      pad->buttons[pad->buttonsLength].pressed =
         state.Gamepad.bLeftTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-    pad->buttons[pad->buttonsLength++].value =
+      pad->buttons[pad->buttonsLength++].value =
         state.Gamepad.bLeftTrigger / 255.f;
-    pad->buttons[pad->buttonsLength].pressed =
+    } else {
+      pad->buttons[pad->buttonsLength].pressed = false;
+      pad->buttons[pad->buttonsLength++].value = 0.0;
+    }
+
+    if (state.Gamepad.bRightTrigger < XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+      pad_state_[i].is_buttons_ever_reset[pad->buttonsLength] = true;
+    if (pad_state_[i].is_buttons_ever_reset[pad->buttonsLength]) {
+      pad->buttons[pad->buttonsLength].pressed =
         state.Gamepad.bRightTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-    pad->buttons[pad->buttonsLength++].value =
+      pad->buttons[pad->buttonsLength++].value =
         state.Gamepad.bRightTrigger / 255.f;
+    } else {
+      pad->buttons[pad->buttonsLength].pressed = false;
+      pad->buttons[pad->buttonsLength++].value = 0.0;
+    }
     ADD(XINPUT_GAMEPAD_BACK);
     ADD(XINPUT_GAMEPAD_START);
     ADD(XINPUT_GAMEPAD_LEFT_THUMB);
@@ -260,11 +301,22 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(
     ADD(XINPUT_GAMEPAD_DPAD_RIGHT);
 #undef ADD
     pad->axesLength = 0;
+
+    float value = 0.0;
+#define ADD(a, factor) value = factor * NormalizeXInputAxis(a); \
+  if (fabs(value) < kMinAxisResetValue) \
+    pad_state_[i].is_axes_ever_reset[pad->axesLength] = true; \
+  if (pad_state_[i].is_axes_ever_reset[pad->axesLength]) \
+    pad->axes[pad->axesLength++] = value; \
+  else \
+    pad->axes[pad->axesLength++] = 0.0;
+
     // XInput are +up/+right, -down/-left, we want -up/-left.
-    pad->axes[pad->axesLength++] = NormalizeXInputAxis(state.Gamepad.sThumbLX);
-    pad->axes[pad->axesLength++] = -NormalizeXInputAxis(state.Gamepad.sThumbLY);
-    pad->axes[pad->axesLength++] = NormalizeXInputAxis(state.Gamepad.sThumbRX);
-    pad->axes[pad->axesLength++] = -NormalizeXInputAxis(state.Gamepad.sThumbRY);
+    ADD(state.Gamepad.sThumbLX, 1);
+    ADD(state.Gamepad.sThumbLY, -1);
+    ADD(state.Gamepad.sThumbRX, 1);
+    ADD(state.Gamepad.sThumbRY, -1);
+#undef ADD
   } else {
     pad->connected = false;
   }
@@ -287,12 +339,27 @@ void GamepadPlatformDataFetcherWin::GetRawInputPadData(
   raw_pad.axesLength =  gamepad->axes_length;
 
   for (unsigned int i = 0; i < raw_pad.buttonsLength; i++) {
-    raw_pad.buttons[i].pressed = gamepad->buttons[i];
-    raw_pad.buttons[i].value = gamepad->buttons[i] ? 1.0 : 0.0;
+    if (!gamepad->buttons[i])
+      pad_state_[index].is_buttons_ever_reset[i] = true;
+
+    if (pad_state_[index].is_buttons_ever_reset[i]) {
+      raw_pad.buttons[i].pressed = gamepad->buttons[i];
+      raw_pad.buttons[i].value = gamepad->buttons[i] ? 1.0 : 0.0;
+    } else {
+      raw_pad.buttons[i].pressed = false;
+      raw_pad.buttons[i].value = 0.0;
+    }
   }
 
-  for (unsigned int i = 0; i < raw_pad.axesLength; i++)
-    raw_pad.axes[i] = gamepad->axes[i].value;
+  for (unsigned int i = 0; i < raw_pad.axesLength; i++) {
+    if (fabs(gamepad->axes[i].value) < kMinAxisResetValue)
+      pad_state_[index].is_axes_ever_reset[i] = true;
+
+    if (pad_state_[index].is_axes_ever_reset[i])
+      raw_pad.axes[i] = gamepad->axes[i].value;
+    else
+      raw_pad.axes[i] = 0.0;
+  }
 
   // Copy to the current state to the output buffer, using the mapping
   // function, if there is one available.

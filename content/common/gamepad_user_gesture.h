@@ -11,8 +11,8 @@ class WebGamepads;
 
 namespace content {
 
-// Returns true if any of the gamepads have a button pressed that would be
-// considerd a user gesture for interaction.
+// Returns true if any of the gamepads have a button pressed or axis moved
+// that would be considered a user gesture for interaction.
 bool GamepadsHaveUserGesture(const blink::WebGamepads& gamepads);
 
 }  // namespace content

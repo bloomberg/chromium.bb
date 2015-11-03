@@ -4,25 +4,35 @@
 
 #include "content/common/gamepad_user_gesture.h"
 
+#include <math.h>
+
 #include <algorithm>
 
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
+namespace {
+// A big enough deadzone to detect accidental presses.
+const float kAxisMoveAmountThreshold = 0.5;
+}
+
 namespace content {
 
 bool GamepadsHaveUserGesture(const blink::WebGamepads& gamepads) {
-  for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; i++) {
+  for (unsigned int i = 0; i < blink::WebGamepads::itemsLengthCap; i++) {
     const blink::WebGamepad& pad = gamepads.items[i];
 
-    // If the device is physically connected, then check the primary 4 buttons
+    // If the device is physically connected, then check the buttons and axes
     // to see if there is currently an intentional user action.
     if (pad.connected) {
-      const unsigned kPrimaryInteractionButtons = 4;
-      unsigned buttons_to_check = std::min(pad.buttonsLength,
-                                           kPrimaryInteractionButtons);
-      for (unsigned button_index = 0; button_index < buttons_to_check;
+      for (unsigned int button_index = 0; button_index < pad.buttonsLength;
            button_index++) {
         if (pad.buttons[button_index].pressed)
+          return true;
+      }
+
+      for (unsigned int axes_index = 0; axes_index < pad.axesLength;
+           axes_index++) {
+        if (fabs(pad.axes[axes_index]) > kAxisMoveAmountThreshold)
           return true;
       }
     }

@@ -27,6 +27,7 @@ const char kInputSubsystem[] = "input";
 const char kUsbSubsystem[] = "usb";
 const char kUsbDeviceType[] = "usb_device";
 const float kMaxLinuxAxisValue = 32767.0;
+const float kMinAxisResetValue = 0.1;
 
 void CloseFileDescriptorIfValid(int fd) {
   if (fd >= 0)
@@ -69,9 +70,14 @@ using blink::WebGamepad;
 using blink::WebGamepads;
 
 GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
-  for (size_t i = 0; i < arraysize(device_fds_); ++i)
-    device_fds_[i] = -1;
-  memset(mappers_, 0, sizeof(mappers_));
+  for (size_t i = 0; i < arraysize(pad_state_); ++i) {
+    pad_state_[i].device_fd = -1;
+    pad_state_[i].mapper = 0;
+    for (size_t j = 0; j < arraysize(pad_state_[i].is_axes_ever_reset); ++j)
+      pad_state_[i].is_axes_ever_reset[j] = false;
+    for (size_t j = 0; j < arraysize(pad_state_[i].is_buttons_ever_reset); ++j)
+      pad_state_[i].is_buttons_ever_reset[j] = false;
+  }
 
   std::vector<UdevLinux::UdevMonitorFilter> filters;
   filters.push_back(UdevLinux::UdevMonitorFilter(kInputSubsystem, NULL));
@@ -85,29 +91,27 @@ GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
 
 GamepadPlatformDataFetcherLinux::~GamepadPlatformDataFetcherLinux() {
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
-    CloseFileDescriptorIfValid(device_fds_[i]);
+    CloseFileDescriptorIfValid(pad_state_[i].device_fd);
 }
 
 void GamepadPlatformDataFetcherLinux::GetGamepadData(WebGamepads* pads, bool) {
   TRACE_EVENT0("GAMEPAD", "GetGamepadData");
 
-  data_.length = WebGamepads::itemsLengthCap;
-
   // Update our internal state.
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (device_fds_[i] >= 0) {
+    if (pad_state_[i].device_fd >= 0) {
       ReadDeviceData(i);
     }
   }
 
   // Copy to the current state to the output buffer, using the mapping
   // function, if there is one available.
-  pads->length = data_.length;
+  pads->length = WebGamepads::itemsLengthCap;
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (mappers_[i])
-      mappers_[i](data_.items[i], &pads->items[i]);
+    if (pad_state_[i].mapper)
+      pad_state_[i].mapper(pad_state_[i].data, &pads->items[i]);
     else
-      pads->items[i] = data_.items[i];
+      pads->items[i] = pad_state_[i].data;
   }
 }
 
@@ -115,10 +119,12 @@ void GamepadPlatformDataFetcherLinux::GetGamepadData(WebGamepads* pads, bool) {
 void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
   int index;
   std::string node_path;
-  if (IsGamepad(dev, &index, &node_path)) {
-    int& device_fd = device_fds_[index];
-    WebGamepad& pad = data_.items[index];
-    GamepadStandardMappingFunction& mapper = mappers_[index];
+  if (IsGamepad(dev, &index, &node_path))  {
+    int& device_fd = pad_state_[index].device_fd;
+    WebGamepad& pad = pad_state_[index].data;
+    GamepadStandardMappingFunction& mapper = pad_state_[index].mapper;
+    bool* axes_reset = pad_state_[index].is_axes_ever_reset;
+    bool* buttons_reset = pad_state_[index].is_buttons_ever_reset;
 
     CloseFileDescriptorIfValid(device_fd);
 
@@ -203,6 +209,11 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
       pad.mapping[0] = 0;
     }
 
+    for (size_t j = 0; j < blink::WebGamepad::axesLengthCap; ++j)
+      axes_reset[j] = false;
+    for (size_t j = 0; j < blink::WebGamepad::buttonsLengthCap; ++j)
+      buttons_reset[j] = false;
+
     pad.connected = true;
   }
 }
@@ -242,8 +253,10 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
     return;
   }
 
-  const int& fd = device_fds_[index];
-  WebGamepad& pad = data_.items[index];
+  const int& fd = pad_state_[index].device_fd;
+  WebGamepad& pad = pad_state_[index].data;
+  bool* axes_reset = pad_state_[index].is_axes_ever_reset;
+  bool* buttons_reset = pad_state_[index].is_buttons_ever_reset;
   DCHECK_GE(fd, 0);
 
   js_event event;
@@ -252,14 +265,33 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
     if (event.type & JS_EVENT_AXIS) {
       if (item >= WebGamepad::axesLengthCap)
         continue;
-      pad.axes[item] = event.value / kMaxLinuxAxisValue;
+
+      float val = event.value / kMaxLinuxAxisValue;
+      if (fabs(val) < kMinAxisResetValue)
+        axes_reset[item] = true;
+
+      if (axes_reset[item])
+        pad.axes[item] = val;
+      else
+        pad.axes[item] = 0.0;
+
       if (item >= pad.axesLength)
         pad.axesLength = item + 1;
     } else if (event.type & JS_EVENT_BUTTON) {
       if (item >= WebGamepad::buttonsLengthCap)
         continue;
-      pad.buttons[item].pressed = event.value;
-      pad.buttons[item].value = event.value ? 1.0 : 0.0;
+
+      if (!event.value)
+        buttons_reset[item] = true;
+
+      if (buttons_reset[item]) {
+        pad.buttons[item].pressed = event.value;
+        pad.buttons[item].value = event.value ? 1.0 : 0.0;
+      } else {
+        pad.buttons[item].pressed = false;
+        pad.buttons[item].value = 0.0;
+      }
+
       if (item >= pad.buttonsLength)
         pad.buttonsLength = item + 1;
     }
