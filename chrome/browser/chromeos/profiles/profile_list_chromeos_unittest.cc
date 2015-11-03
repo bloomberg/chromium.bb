@@ -72,14 +72,15 @@ class ProfileListChromeOSTest : public testing::Test {
 
   void AddProfile(base::string16 name, bool log_in) {
     std::string email_string = base::UTF16ToASCII(name) + "@example.com";
+    const AccountId account_id(AccountId::FromUserEmail(email_string));
 
     // Add a user to the fake user manager.
-    GetFakeChromeUserManager()->AddUser(email_string);
+    GetFakeChromeUserManager()->AddUser(account_id);
     if (log_in)
-      GetFakeChromeUserManager()->LoginUser(email_string);
+      GetFakeChromeUserManager()->LoginUser(account_id);
 
     // Create a profile for the user.
-    manager()->CreateTestingProfile(email_string);
+    manager()->CreateTestingProfile(account_id.GetUserEmail());
   }
 
   AvatarMenu* GetAvatarMenu() {
@@ -99,7 +100,8 @@ class ProfileListChromeOSTest : public testing::Test {
 
   void ActiveUserChanged(const base::string16& name) {
     std::string email_string = base::UTF16ToASCII(name) + "@example.com";
-    GetFakeChromeUserManager()->SwitchActiveUser(email_string);
+    const AccountId account_id(AccountId::FromUserEmail(email_string));
+    GetFakeChromeUserManager()->SwitchActiveUser(account_id);
   }
 
   TestingProfileManager* manager() { return &manager_; }
@@ -167,7 +169,8 @@ TEST_F(ProfileListChromeOSTest, DontShowSupervisedUsers) {
       cache->GetUserDataDir().AppendASCII("p2"), supervised_name, std::string(),
       base::string16(), 0, "TEST_ID");
 
-  GetFakeChromeUserManager()->AddUser(base::UTF16ToASCII(supervised_name));
+  GetFakeChromeUserManager()->AddUser(
+      AccountId::FromUserEmail(base::UTF16ToASCII(supervised_name)));
 
   AvatarMenu* menu = GetAvatarMenu();
   ASSERT_EQ(1U, menu->GetNumberOfItems());
@@ -243,7 +246,8 @@ TEST_F(ProfileListChromeOSTest, ModifyingNameResortsCorrectly) {
   // Change name of the first profile, to trigger resorting of the profiles:
   // now the first menu item should be named "beta", and the second be "gamma".
   GetFakeChromeUserManager()->SaveUserDisplayName(
-      base::UTF16ToASCII(name1) + "@example.com", newname1);
+      AccountId::FromUserEmail(base::UTF16ToASCII(name1) + "@example.com"),
+      newname1);
   manager()->profile_info_cache()->SetNameOfProfileAtIndex(0, newname1);
   EXPECT_EQ(1, change_count());
 

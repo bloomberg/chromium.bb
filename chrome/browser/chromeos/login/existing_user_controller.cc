@@ -125,7 +125,8 @@ void RecordPasswordLoginEvent(const UserContext& user_context) {
   if (user_context.GetUserType() == user_manager::USER_TYPE_REGULAR &&
       user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE &&
       easy_unlock_service) {
-    easy_unlock_service->RecordPasswordLoginEvent(user_context.GetUserID());
+    easy_unlock_service->RecordPasswordLoginEvent(
+        user_context.GetAccountId().GetUserEmail());
   }
 }
 
@@ -355,7 +356,7 @@ void ExistingUserController::PerformLogin(
     LoginPerformer::AuthorizationMode auth_mode) {
   VLOG(1) << "Setting flow from PerformLogin";
   ChromeUserManager::Get()
-      ->GetUserFlow(user_context.GetUserID())
+      ->GetUserFlow(user_context.GetAccountId())
       ->SetHost(host_);
 
   BootTimesRecorder::Get()->RecordLoginAttempted();
@@ -368,7 +369,7 @@ void ExistingUserController::PerformLogin(
     login_performer_.reset(new ChromeLoginPerformer(this));
   }
 
-  if (gaia::ExtractDomainName(user_context.GetUserID()) ==
+  if (gaia::ExtractDomainName(user_context.GetAccountId().GetUserEmail()) ==
       chromeos::login::kSupervisedUserDomain) {
     login_performer_->LoginAsSupervisedUser(user_context);
   } else {
@@ -509,7 +510,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   PerformLoginFinishedActions(false /* don't start public session timer */);
 
   if (ChromeUserManager::Get()
-          ->GetUserFlow(last_login_attempt_username_)
+          ->GetUserFlow(last_login_attempt_account_id_)
           ->HandleLoginFailure(failure)) {
     return;
   }
@@ -524,15 +525,15 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();
-  } else if (last_login_attempt_username_ == chromeos::login::kGuestUserName) {
+  } else if (last_login_attempt_account_id_ == login::GuestAccountId()) {
     // Show no errors, just re-enable input.
     login_display_->ClearAndEnablePassword();
     StartPublicSessionAutoLoginTimer();
   } else {
     // Check networking after trying to login in case user is
     // cached locally or the local admin account.
-    bool is_known_user = user_manager::UserManager::Get()->IsKnownUser(
-        last_login_attempt_username_);
+    const bool is_known_user = user_manager::UserManager::Get()->IsKnownUser(
+        last_login_attempt_account_id_);
     if (!network_state_helper_->IsConnected()) {
       if (is_known_user)
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
@@ -557,7 +558,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
 
   // Reset user flow to default, so that special flow will not affect next
   // attempt.
-  ChromeUserManager::Get()->ResetUserFlow(last_login_attempt_username_);
+  ChromeUserManager::Get()->ResetUserFlow(last_login_attempt_account_id_);
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnAuthFailure(failure);
@@ -568,7 +569,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   // TODO(ginkage): Fix this case once crbug.com/469990 is ready.
   /*
     if (failure.reason() == AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME) {
-      RecordReauthReason(last_login_attempt_username_,
+      RecordReauthReason(last_login_attempt_account_id_,
                          ReauthReason::MISSING_CRYPTOHOME);
     }
   */
@@ -584,7 +585,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   auth_mode_ = login_performer_->auth_mode();
 
   ChromeUserManager::Get()
-      ->GetUserFlow(user_context.GetUserID())
+      ->GetUserFlow(user_context.GetAccountId())
       ->HandleLoginSuccess(user_context);
 
   StopPublicSessionAutoLoginTimer();
@@ -616,7 +617,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   // Update user's displayed email.
   if (!display_email_.empty()) {
     user_manager::UserManager::Get()->SaveUserDisplayEmail(
-        user_context.GetUserID(), display_email_);
+        user_context.GetAccountId(), display_email_);
     display_email_.clear();
   }
 }
@@ -632,8 +633,8 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   // Inform |auth_status_consumer_| about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550
   if (auth_status_consumer_) {
-    auth_status_consumer_->
-        OnAuthSuccess(UserContext(last_login_attempt_username_));
+    auth_status_consumer_->OnAuthSuccess(
+        UserContext(last_login_attempt_account_id_));
   }
 }
 
@@ -663,7 +664,7 @@ void ExistingUserController::OnPasswordChangeDetected() {
   }
 
   if (ChromeUserManager::Get()
-          ->GetUserFlow(last_login_attempt_username_)
+          ->GetUserFlow(last_login_attempt_account_id_)
           ->HandlePasswordChangeDetected()) {
     return;
   }
@@ -760,7 +761,7 @@ void ExistingUserController::LoginAsPublicSession(
   // If there is no public account with the given user ID, logging in is not
   // possible.
   const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
+      user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     PerformLoginFinishedActions(true /* start public session timer */);
     return;
@@ -773,11 +774,15 @@ void ExistingUserController::LoginAsPublicSession(
     // whether a list of recommended locales was set by policy. If so, use its
     // first entry. Otherwise, |locale| will remain blank, indicating that the
     // public session should use the current UI locale.
-    const policy::PolicyMap::Entry* entry = g_browser_process->platform_part()->
-        browser_policy_connector_chromeos()->
-            GetDeviceLocalAccountPolicyService()->
-                GetBrokerForUser(user_context.GetUserID())->core()->store()->
-                    policy_map().Get(policy::key::kSessionLocales);
+    const policy::PolicyMap::Entry* entry =
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetDeviceLocalAccountPolicyService()
+            ->GetBrokerForUser(user_context.GetAccountId().GetUserEmail())
+            ->core()
+            ->store()
+            ->policy_map()
+            .Get(policy::key::kSessionLocales);
     base::ListValue const* list = NULL;
     if (entry &&
         entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
@@ -843,7 +848,7 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
   }
 
   const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      public_session_auto_login_username_);
+      AccountId::FromUserEmail(public_session_auto_login_username_));
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     public_session_auto_login_username_.clear();
 
@@ -929,7 +934,7 @@ void ExistingUserController::ShowError(int error_id,
     if (num_login_attempts_ > 1) {
       const user_manager::User* user =
           user_manager::UserManager::Get()->FindUser(
-              last_login_attempt_username_);
+              last_login_attempt_account_id_);
       if (user && (user->GetType() == user_manager::USER_TYPE_SUPERVISED))
         error_id = IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_SUPERVISED;
     }
@@ -980,8 +985,8 @@ void ExistingUserController::PerformPreLoginActions(
   // Disable clicking on other windows and status tray.
   login_display_->SetUIEnabled(false);
 
-  if (last_login_attempt_username_ != user_context.GetUserID()) {
-    last_login_attempt_username_ = user_context.GetUserID();
+  if (last_login_attempt_account_id_ != user_context.GetAccountId()) {
+    last_login_attempt_account_id_ = user_context.GetAccountId();
     num_login_attempts_ = 0;
   }
 
@@ -1061,11 +1066,11 @@ void ExistingUserController::DoCompleteLogin(
   UserContext user_context = user_context_wo_device_id;
   std::string device_id =
       user_manager::UserManager::Get()->GetKnownUserDeviceId(
-          user_context.GetUserID());
+          user_context.GetAccountId());
   if (device_id.empty()) {
-    bool is_ephemeral =
-        ChromeUserManager::Get()->AreEphemeralUsersEnabled() &&
-        user_context.GetUserID() != ChromeUserManager::Get()->GetOwnerEmail();
+    bool is_ephemeral = ChromeUserManager::Get()->AreEphemeralUsersEnabled() &&
+                        user_context.GetAccountId() !=
+                            ChromeUserManager::Get()->GetOwnerAccountId();
     device_id = SigninClient::GenerateSigninScopedDeviceID(is_ephemeral);
   }
   user_context.SetDeviceId(device_id);
@@ -1073,7 +1078,7 @@ void ExistingUserController::DoCompleteLogin(
   const std::string& gaps_cookie = user_context.GetGAPSCookie();
   if (!gaps_cookie.empty()) {
     user_manager::UserManager::Get()->SetKnownUserGAPSCookie(
-        user_context.GetUserID(), gaps_cookie);
+        user_context.GetAccountId(), gaps_cookie);
   }
 
   PerformPreLoginActions(user_context);
@@ -1145,7 +1150,8 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   }
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
-    LoginAsKioskApp(user_context.GetUserID(), specifics.kiosk_diagnostic_mode);
+    LoginAsKioskApp(user_context.GetAccountId().GetUserEmail(),
+                    specifics.kiosk_diagnostic_mode);
     return;
   }
 
@@ -1176,7 +1182,7 @@ void ExistingUserController::OnBootstrapUserContextInitialized(
   // Setting a customized login user flow to perform additional initializations
   // for bootstrap after the user session is started.
   ChromeUserManager::Get()->SetUserFlow(
-      user_context.GetUserID(),
+      user_context.GetAccountId(),
       new BootstrapUserFlow(
           user_context,
           bootstrap_user_context_initializer_->random_key_used()));

@@ -29,46 +29,46 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   ~FakeChromeUserManager() override;
 
   // Create and add a kiosk app user.
-  void AddKioskAppUser(const std::string& kiosk_app_username);
+  void AddKioskAppUser(const AccountId& kiosk_app_account_id);
 
   // Create and add a public account user.
-  const user_manager::User* AddPublicAccountUser(const std::string& email);
+  const user_manager::User* AddPublicAccountUser(const AccountId& account_id);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
-  void LoginUser(const std::string& email);
+  void LoginUser(const AccountId& account_id);
 
   // UserManager overrides.
   user_manager::UserList GetUsersAllowedForMultiProfile() const override;
 
   // user_manager::FakeUserManager override.
-  const user_manager::User* AddUser(const std::string& email) override;
-  const user_manager::User* AddUserWithAffiliation(const std::string& email,
+  const user_manager::User* AddUser(const AccountId& account_id) override;
+  const user_manager::User* AddUserWithAffiliation(const AccountId& account_id,
                                                    bool is_affiliated) override;
 
   // UserManagerInterface implementation.
   BootstrapManager* GetBootstrapManager() override;
   MultiProfileUserController* GetMultiProfileUserController() override;
-  UserImageManager* GetUserImageManager(const std::string& user_id) override;
+  UserImageManager* GetUserImageManager(const AccountId& account_id) override;
   SupervisedUserManager* GetSupervisedUserManager() override;
-  void SetUserFlow(const std::string& email, UserFlow* flow) override;
+  void SetUserFlow(const AccountId& account_id, UserFlow* flow) override;
   UserFlow* GetCurrentUserFlow() const override;
-  UserFlow* GetUserFlow(const std::string& email) const override;
-  void ResetUserFlow(const std::string& email) override;
+  UserFlow* GetUserFlow(const AccountId& account_id) const override;
+  void ResetUserFlow(const AccountId& account_id) override;
   user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
       const override;
-  void SwitchActiveUser(const std::string& email) override;
-  const std::string& GetOwnerEmail() const override;
+  void SwitchActiveUser(const AccountId& account_id) override;
+  const AccountId& GetOwnerAccountId() const override;
   void SessionStarted() override;
-  void RemoveUser(const std::string& email,
+  void RemoveUser(const AccountId& account_id,
                   user_manager::RemoveUserDelegate* delegate) override;
-  bool FindKnownUserPrefs(const user_manager::UserID& user_id,
+  bool FindKnownUserPrefs(const AccountId& account_id,
                           const base::DictionaryValue** out_value) override;
-  void UpdateKnownUserPrefs(const user_manager::UserID& user_id,
+  void UpdateKnownUserPrefs(const AccountId& account_id,
                             const base::DictionaryValue& values,
                             bool clear) override;
 
-  void set_owner_email(const std::string& owner_email) {
-    owner_email_ = owner_email;
+  void set_owner_id(const AccountId& owner_account_id) {
+    owner_account_id_ = owner_account_id;
   }
 
   void set_bootstrap_manager(BootstrapManager* bootstrap_manager) {
@@ -85,15 +85,15 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
   UserFlow* GetDefaultUserFlow() const;
 
   scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
-  std::string owner_email_;
+  AccountId owner_account_id_ = EmptyAccountId();
 
   BootstrapManager* bootstrap_manager_;
   MultiProfileUserController* multi_profile_user_controller_;
 
-  typedef std::map<std::string, UserFlow*> FlowMap;
-
   // Lazy-initialized default flow.
   mutable scoped_ptr<UserFlow> default_flow_;
+
+  using FlowMap = std::map<AccountId, UserFlow*>;
 
   // Specific flows by user e-mail.
   // Keys should be canonicalized before access.

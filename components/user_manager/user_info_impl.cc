@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace user_manager {
 
@@ -27,8 +28,8 @@ std::string UserInfoImpl::GetEmail() const {
   return "stub-user@domain.com";
 }
 
-std::string UserInfoImpl::GetUserID() const {
-  return GetEmail();
+AccountId UserInfoImpl::GetAccountId() const {
+  return AccountId::FromUserEmail(GetEmail());
 }
 
 const gfx::ImageSkia& UserInfoImpl::GetImage() const {

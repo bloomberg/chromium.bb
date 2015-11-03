@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {
 
@@ -130,7 +131,8 @@ bool ChromeLoginPerformer::UseExtendedAuthenticatorForSupervisedUser(
     const UserContext& user_context) {
   SupervisedUserAuthentication* authentication =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
-  return authentication->GetPasswordSchema(user_context.GetUserID()) ==
+  return authentication->GetPasswordSchema(
+             user_context.GetAccountId().GetUserEmail()) ==
          SupervisedUserAuthentication::SCHEMA_SALT_HASHED;
 }
 
@@ -143,12 +145,15 @@ UserContext ChromeLoginPerformer::TransformSupervisedKey(
 
 void ChromeLoginPerformer::SetupSupervisedUserFlow(const std::string& user_id) {
   SupervisedUserLoginFlow* new_flow = new SupervisedUserLoginFlow(user_id);
-  new_flow->SetHost(ChromeUserManager::Get()->GetUserFlow(user_id)->host());
-  ChromeUserManager::Get()->SetUserFlow(user_id, new_flow);
+  new_flow->SetHost(ChromeUserManager::Get()
+                        ->GetUserFlow(AccountId::FromUserEmail(user_id))
+                        ->host());
+  ChromeUserManager::Get()->SetUserFlow(AccountId::FromUserEmail(user_id),
+                                        new_flow);
 }
 
 void ChromeLoginPerformer::SetupEasyUnlockUserFlow(const std::string& user_id) {
-  ChromeUserManager::Get()->SetUserFlow(user_id,
+  ChromeUserManager::Get()->SetUserFlow(AccountId::FromUserEmail(user_id),
                                         new EasyUnlockUserLoginFlow(user_id));
 }
 

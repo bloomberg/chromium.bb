@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/proximity_auth/screenlock_bridge.h"
-#include "components/user_manager/user_id.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -142,14 +142,13 @@ void UserSelectionScreen::FillUserDictionary(
     AuthType auth_type,
     const std::vector<std::string>* public_session_recommended_locales,
     base::DictionaryValue* user_dict) {
-  const user_manager::UserID user_id = user->email();
   const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   const bool is_legacy_supervised_user =
       user->GetType() == user_manager::USER_TYPE_SUPERVISED;
   const bool is_child_user = user->GetType() == user_manager::USER_TYPE_CHILD;
 
-  user_dict->SetString(kKeyUsername, user_id);
+  user_dict->SetString(kKeyUsername, user->GetAccountId().GetUserEmail());
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
   user_dict->SetBoolean(kKeyPublicAccount, is_public_session);
@@ -173,7 +172,8 @@ void UserSelectionScreen::FillUserDictionary(
 void UserSelectionScreen::FillKnownUserPrefs(user_manager::User* user,
                                              base::DictionaryValue* user_dict) {
   std::string gaia_id;
-  if (user_manager::UserManager::Get()->FindGaiaID(user->email(), &gaia_id)) {
+  if (user_manager::UserManager::Get()->FindGaiaID(user->GetAccountId(),
+                                                   &gaia_id)) {
     user_dict->SetString(kKeyGaiaID, gaia_id);
   }
 }
@@ -239,7 +239,7 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
   // At this point the reason for invalid token should be already set. If not,
   // this might be a leftover from an old version.
   if (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID)
-    RecordReauthReason(user->email(), ReauthReason::OTHER);
+    RecordReauthReason(user->GetAccountId(), ReauthReason::OTHER);
 
   return user->force_online_signin() ||
          (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) ||
@@ -404,7 +404,7 @@ void UserSelectionScreen::HandleGetUsers() {
   SendUserList();
 }
 
-void UserSelectionScreen::CheckUserStatus(const std::string& user_id) {
+void UserSelectionScreen::CheckUserStatus(const std::string& user_email) {
   // No checks on lock screen.
   if (ScreenLocker::default_screen_locker())
     return;
@@ -414,20 +414,21 @@ void UserSelectionScreen::CheckUserStatus(const std::string& user_id) {
         new TokenHandleUtil(user_manager::UserManager::Get()));
   }
 
-  if (token_handle_util_->HasToken(user_id)) {
+  const AccountId account_id = AccountId::FromUserEmail(user_email);
+  if (token_handle_util_->HasToken(account_id)) {
     token_handle_util_->CheckToken(
-        user_id, base::Bind(&UserSelectionScreen::OnUserStatusChecked,
-                            weak_factory_.GetWeakPtr()));
+        account_id, base::Bind(&UserSelectionScreen::OnUserStatusChecked,
+                               weak_factory_.GetWeakPtr()));
   }
 }
 
 void UserSelectionScreen::OnUserStatusChecked(
-    const user_manager::UserID& user_id,
+    const AccountId& account_id,
     TokenHandleUtil::TokenHandleStatus status) {
   if (status == TokenHandleUtil::INVALID) {
-    RecordReauthReason(user_id, ReauthReason::INVALID_TOKEN_HANDLE);
-    token_handle_util_->MarkHandleInvalid(user_id);
-    SetAuthType(user_id, ONLINE_SIGN_IN, base::string16());
+    RecordReauthReason(account_id, ReauthReason::INVALID_TOKEN_HANDLE);
+    token_handle_util_->MarkHandleInvalid(account_id);
+    SetAuthType(account_id.GetUserEmail(), ONLINE_SIGN_IN, base::string16());
   }
 }
 
@@ -498,7 +499,7 @@ void UserSelectionScreen::AttemptEasySignin(const std::string& user_id,
                                             const std::string& key_label) {
   DCHECK_EQ(GetScreenType(), SIGNIN_SCREEN);
 
-  UserContext user_context(user_id);
+  UserContext user_context(AccountId::FromUserEmail(user_id));
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_UNLOCK);
   user_context.SetKey(Key(secret));
   user_context.GetKey()->SetLabel(key_label);

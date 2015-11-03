@@ -111,20 +111,20 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
     return wallpaper_path;
   }
 
-  // Logs in |username|.
-  void LogIn(const std::string& username, const std::string& username_hash) {
-    user_manager::UserManager::Get()->UserLoggedIn(
-        username, username_hash, false);
+  // Logs in |account_id|.
+  void LogIn(const AccountId& account_id, const std::string& user_id_hash) {
+    user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
+                                                   false);
     WaitAsyncWallpaperLoadStarted();
   }
 
-  // Logs in |username| and sets it as child account.
-  void LogInAsChild(
-      const std::string& username, const std::string& username_hash) {
-    user_manager::UserManager::Get()->UserLoggedIn(
-        username, username_hash, false);
+  // Logs in |account_id| and sets it as child account.
+  void LogInAsChild(const AccountId& account_id,
+                    const std::string& user_id_hash) {
+    user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
+                                                   false);
     user_manager::User* user =
-        user_manager::UserManager::Get()->FindUserAndModify(username);
+        user_manager::UserManager::Get()->FindUserAndModify(account_id);
     user_manager::UserManager::Get()->ChangeUserChildStatus(
         user, true /* is_child */);
   }
@@ -169,7 +169,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        LoadCustomLargeWallpaperForLargeExternalScreen) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
       wallpaper::kSmallWallpaperSubDir, kTestUser1Hash, id);
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        PreventReloadingSameWallpaper) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   EXPECT_EQ(1, LoadedWallpapers());
   // Loads the same wallpaper before the initial one finished. It should be
   // prevented.
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        PRE_UseMigratedWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   // Old wallpaper migration code doesn't exist in codebase anymore. Modify user
   // wallpaper info directly to simulate the wallpaper migration. See
   // crosbug.com/38429 for details about why we modify wallpaper info this way.
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        UseMigratedWallpaperInfo) {
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // This test should finish normally. If timeout, it is probably because
   // migrated wallpaper is somehow not loaded. Bad things can happen if
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        PRE_UsePreMigrationWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   // Old wallpaper migration code doesn't exist in codebase anymore. So if
   // user's profile is not migrated, it is the same as no wallpaper info. To
   // simulate this, we remove user's wallpaper info here.
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        UsePreMigrationWallpaperInfo) {
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // This test should finish normally. If timeout, it is probably because chrome
   // can not handle pre migrated user profile (M21 profile or older).
@@ -374,7 +374,7 @@ class WallpaperManagerBrowserTestNoAnimation
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        PRE_UseMigratedWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   // Old wallpaper migration code doesn't exist in codebase anymore. Modify user
   // wallpaper info directly to simulate the wallpaper migration. See
   // crosbug.com/38429 for details about why we modify wallpaper info this way.
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        UseMigratedWallpaperInfo) {
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // This test should finish normally. If timeout, it is probably because
   // migrated wallpaper is somehow not loaded. Bad things can happen if
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        PRE_UsePreMigrationWallpaperInfo) {
   // New user log in, a default wallpaper is loaded.
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // Old wallpaper migration code doesn't exist in codebase anymore. So if
   // user's profile is not migrated, it is the same as no wallpaper info. To
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
                        UsePreMigrationWallpaperInfo) {
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // This test should finish normally. If timeout, it is probably because chrome
   // can not handle pre migrated user profile (M21 profile or older).
@@ -434,7 +434,7 @@ class WallpaperManagerBrowserTestCrashRestore
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
                        PRE_RestoreWallpaper) {
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
 }
 
@@ -469,7 +469,7 @@ class WallpaperManagerBrowserTestCacheUpdate
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
                        PRE_VerifyWallpaperCache) {
   // Add kTestUser1 to user list. kTestUser1 is the default login profile.
-  LogIn(kTestUser1, kTestUser1Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
 
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   EXPECT_TRUE(test_api->GetPathFromCache(kTestUser1, &original_path));
   EXPECT_FALSE(original_path.empty());
 
-  LogIn(kTestUser2, kTestUser2Hash);
+  LogIn(AccountId::FromUserEmail(kTestUser2), kTestUser2Hash);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // Login another user should not delete logged in user's wallpaper cache.
   // Note active user is still kTestUser1.
@@ -756,7 +756,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallGuestWallpaper) {
     return;
   CreateCmdlineWallpapers();
   user_manager::UserManager::Get()->UserLoggedIn(
-      chromeos::login::kGuestUserName, chromeos::login::kGuestUserName, false);
+      chromeos::login::GuestAccountId(), chromeos::login::kGuestUserName,
+      false);
   UpdateDisplay("800x600");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -771,7 +772,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
 
   CreateCmdlineWallpapers();
   user_manager::UserManager::Get()->UserLoggedIn(
-      chromeos::login::kGuestUserName, chromeos::login::kGuestUserName, false);
+      chromeos::login::GuestAccountId(), chromeos::login::kGuestUserName,
+      false);
   UpdateDisplay("1600x1200");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -784,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallChildWallpaper) {
   if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
     return;
   CreateCmdlineWallpapers();
-  LogInAsChild(kTestUser1, kTestUser1Hash);
+  LogInAsChild(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   UpdateDisplay("800x600");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -798,7 +800,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeChildWallpaper) {
     return;
 
   CreateCmdlineWallpapers();
-  LogInAsChild(kTestUser1, kTestUser1Hash);
+  LogInAsChild(AccountId::FromUserEmail(kTestUser1), kTestUser1Hash);
   UpdateDisplay("1600x1200");
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
@@ -813,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   UpdateDisplay("640x480");
   CreateCmdlineWallpapers();
   user_manager::UserManager::Get()->UserLoggedIn(
-      chromeos::login::kStubUser, "test_hash", false);
+      chromeos::login::StubAccountId(), "test_hash", false);
 
   WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
 

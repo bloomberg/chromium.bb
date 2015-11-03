@@ -171,7 +171,7 @@ void UserImageSyncObserver::UpdateLocalImageFromSynced() {
   if ((synced_index == local_index) || !IsIndexSupported(synced_index))
     return;
   UserImageManager* image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(user_->email());
+      ChromeUserManager::Get()->GetUserImageManager(user_->GetAccountId());
   if (synced_index == user_manager::User::USER_IMAGE_PROFILE) {
     image_manager->SaveUserImageFromProfileImage();
   } else {

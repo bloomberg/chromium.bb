@@ -6,13 +6,14 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {
 
 namespace {
 
 void UnregisterFlow(const std::string& user_id) {
-  ChromeUserManager::Get()->ResetUserFlow(user_id);
+  ChromeUserManager::Get()->ResetUserFlow(AccountId::FromUserEmail(user_id));
 }
 
 } // namespace

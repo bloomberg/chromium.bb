@@ -294,7 +294,7 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
 
   // Next button is now enabled.
   JSExpect("!$('supervised-user-creation-next-button').disabled");
-  UserContext user_context(kTestManager);
+  UserContext user_context(AccountId::FromUserEmail(kTestManager));
   user_context.SetGaiaID(GetGaiaIDForUserID(kTestManager));
   user_context.SetKey(Key(kTestManagerPassword));
   SetExpectedCredentials(user_context);
@@ -308,7 +308,8 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
 
   // OAuth token is valid.
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      kTestManager, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+      AccountId::FromUserEmail(kTestManager),
+      user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   base::RunLoop().RunUntilIdle();
 
   // Check the page have changed.

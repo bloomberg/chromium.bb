@@ -682,7 +682,8 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        SuccessfulConsumerManagementEnrollment) {
   management_mode_ = MANAGEMENT_MODE_CONSUMER_MANAGED;
   owner_key_util_->SetPrivateKey(device_policy_.GetNewSigningKey());
-  InitOwner(device_policy_.policy_data().username(), true);
+  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
+            true);
   FlushDeviceSettings();
 
   device_policy_.policy_data().set_management_mode(em::PolicyData::LOCAL_OWNER);

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/mock_user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,27 +34,26 @@ class MockUserManager : public ChromeUserManager {
                      user_manager::UserList(void));
   MOCK_CONST_METHOD0(GetLoggedInUsers, const user_manager::UserList&(void));
   MOCK_CONST_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));
-  MOCK_METHOD3(UserLoggedIn, void(
-      const std::string&, const std::string&, bool));
-  MOCK_METHOD1(SwitchActiveUser, void(const std::string& email));
+  MOCK_METHOD3(UserLoggedIn, void(const AccountId&, const std::string&, bool));
+  MOCK_METHOD1(SwitchActiveUser, void(const AccountId& account_id));
   MOCK_METHOD0(SessionStarted, void(void));
   MOCK_METHOD2(RemoveUser,
-               void(const std::string&, user_manager::RemoveUserDelegate*));
-  MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
-  MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
-  MOCK_CONST_METHOD1(FindUser, const user_manager::User*(const std::string&));
-  MOCK_METHOD1(FindUserAndModify, user_manager::User*(const std::string&));
+               void(const AccountId&, user_manager::RemoveUserDelegate*));
+  MOCK_METHOD1(RemoveUserFromList, void(const AccountId&));
+  MOCK_CONST_METHOD1(IsKnownUser, bool(const AccountId&));
+  MOCK_CONST_METHOD1(FindUser, const user_manager::User*(const AccountId&));
+  MOCK_METHOD1(FindUserAndModify, user_manager::User*(const AccountId&));
   MOCK_METHOD2(SaveUserOAuthStatus,
-               void(const std::string&, user_manager::User::OAuthTokenStatus));
-  MOCK_METHOD2(SaveForceOnlineSignin, void(const std::string&, bool));
-  MOCK_METHOD2(SaveUserDisplayName, void(const std::string&,
-                                         const base::string16&));
+               void(const AccountId&, user_manager::User::OAuthTokenStatus));
+  MOCK_METHOD2(SaveForceOnlineSignin, void(const AccountId&, bool));
+  MOCK_METHOD2(SaveUserDisplayName,
+               void(const AccountId&, const base::string16&));
   MOCK_METHOD2(UpdateUserAccountData,
-               void(const std::string&, const UserAccountData&));
-  MOCK_CONST_METHOD1(GetUserDisplayName, base::string16(const std::string&));
-  MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
-                                          const std::string&));
-  MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
+               void(const AccountId&, const UserAccountData&));
+  MOCK_CONST_METHOD1(GetUserDisplayName, base::string16(const AccountId&));
+  MOCK_METHOD2(SaveUserDisplayEmail,
+               void(const AccountId&, const std::string&));
+  MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const AccountId&));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNew, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNonCryptohomeDataEphemeral, bool(void));
@@ -66,8 +66,7 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD0(IsLoggedInAsKioskApp, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));
-  MOCK_CONST_METHOD1(IsUserNonCryptohomeDataEphemeral,
-                     bool(const std::string&));
+  MOCK_CONST_METHOD1(IsUserNonCryptohomeDataEphemeral, bool(const AccountId&));
   MOCK_METHOD1(AddObserver, void(UserManager::Observer*));
   MOCK_METHOD1(RemoveObserver, void(UserManager::Observer*));
   MOCK_METHOD1(AddSessionStateObserver,
@@ -82,31 +81,28 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD0(GetApplicationLocale, const std::string&(void));
   MOCK_CONST_METHOD0(GetLocalState, PrefService*(void));
   MOCK_CONST_METHOD2(HandleUserOAuthTokenStatusChange,
-                     void(const std::string&,
+                     void(const AccountId&,
                           user_manager::User::OAuthTokenStatus status));
   MOCK_CONST_METHOD0(IsEnterpriseManaged, bool(void));
-  MOCK_METHOD1(LoadPublicAccounts, void(std::set<std::string>*));
+  MOCK_METHOD1(LoadPublicAccounts, void(std::set<AccountId>*));
   MOCK_METHOD0(PerformPreUserListLoadingActions, void(void));
   MOCK_METHOD0(PerformPostUserListLoadingActions, void(void));
   MOCK_METHOD1(PerformPostUserLoggedInActions, void(bool));
-  MOCK_CONST_METHOD1(IsDemoApp, bool(const std::string&));
-  MOCK_CONST_METHOD1(IsKioskApp, bool(const std::string&));
-  MOCK_CONST_METHOD1(IsPublicAccountMarkedForRemoval, bool(const std::string&));
+  MOCK_CONST_METHOD1(IsDemoApp, bool(const AccountId&));
+  MOCK_CONST_METHOD1(IsKioskApp, bool(const AccountId&));
+  MOCK_CONST_METHOD1(IsPublicAccountMarkedForRemoval, bool(const AccountId&));
   MOCK_METHOD0(DemoAccountLoggedIn, void(void));
-  MOCK_METHOD1(KioskAppLoggedIn, void(const std::string&));
+  MOCK_METHOD1(KioskAppLoggedIn, void(const AccountId&));
   MOCK_METHOD1(PublicAccountUserLoggedIn, void(user_manager::User*));
-  MOCK_METHOD1(SupervisedUserLoggedIn, void(const std::string&));
-  MOCK_METHOD1(OnUserRemoved, void(const std::string&));
-  MOCK_METHOD2(SetUserAffiliation,
-               void(const std::string& user_id,
-                    const chromeos::AffiliationIDSet& user_affiliation_ids));
+  MOCK_METHOD1(SupervisedUserLoggedIn, void(const AccountId&));
+  MOCK_METHOD1(OnUserRemoved, void(const AccountId&));
 
   // You can't mock these functions easily because nobody can create
   // User objects but the ChromeUserManager and us.
   const user_manager::UserList& GetUsers() const override;
   const user_manager::User* GetLoggedInUser() const override;
   user_manager::UserList GetUnlockUsers() const override;
-  const std::string& GetOwnerEmail() const override;
+  const AccountId& GetOwnerAccountId() const override;
   user_manager::User* GetLoggedInUser() override;
   const user_manager::User* GetActiveUser() const override;
   user_manager::User* GetActiveUser() override;
@@ -115,35 +111,38 @@ class MockUserManager : public ChromeUserManager {
   // ChromeUserManager overrides:
   BootstrapManager* GetBootstrapManager() override;
   MultiProfileUserController* GetMultiProfileUserController() override;
-  UserImageManager* GetUserImageManager(const std::string& user_id) override;
+  UserImageManager* GetUserImageManager(const AccountId& account_id) override;
   SupervisedUserManager* GetSupervisedUserManager() override;
-  MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
-  MOCK_METHOD1(ResetUserFlow, void(const std::string&));
+  MOCK_METHOD2(SetUserFlow, void(const AccountId&, UserFlow*));
+  MOCK_METHOD1(ResetUserFlow, void(const AccountId&));
   UserFlow* GetCurrentUserFlow() const override;
-  UserFlow* GetUserFlow(const std::string&) const override;
+  UserFlow* GetUserFlow(const AccountId&) const override;
+  MOCK_METHOD2(SetUserAffiliation,
+               void(const std::string& user_id,
+                    const chromeos::AffiliationIDSet& user_affiliation_ids));
 
   bool ShouldReportUser(const std::string& user_id) const override;
 
   // Sets a new User instance. Users previously created by this MockUserManager
   // become invalid.
-  void SetActiveUser(const std::string& email);
+  void SetActiveUser(const AccountId& account_id);
 
   // Creates a new public session user. Users previously created by this
   // MockUserManager become invalid.
-  user_manager::User* CreatePublicAccountUser(const std::string& email);
+  user_manager::User* CreatePublicAccountUser(const AccountId& account_id);
 
   // Creates a new kiosk app user. Users previously created by this
   // MockUserManager become invalid.
-  user_manager::User* CreateKioskAppUser(const std::string& user_id);
+  user_manager::User* CreateKioskAppUser(const AccountId& account_id);
 
   // Adds a new User instance to the back of the user list. Users previously
   // created by this MockUserManager remain valid. The added User is not
   // affiliated with the domain, that owns the device.
-  void AddUser(const std::string& email);
+  void AddUser(const AccountId& account_id);
 
   // The same as AddUser, but allows specifying affiliation with the domain,
   // that owns the device.
-  void AddUserWithAffiliation(const std::string& email, bool is_affiliated);
+  void AddUserWithAffiliation(const AccountId& account_id, bool is_affiliated);
 
   // Clears the user list and the active user. Users previously created by this
   // MockUserManager become invalid.
@@ -153,6 +152,10 @@ class MockUserManager : public ChromeUserManager {
   scoped_ptr<MockUserImageManager> user_image_manager_;
   scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   user_manager::UserList user_list_;
+  // TODO (alemate): remove temporary_owner_account_id_ as soon as
+  // User::GetAccountId will
+  // return constant reference. crbug.com/546863
+  mutable AccountId temporary_owner_account_id_ = EmptyAccountId();
 };
 
 }  // namespace chromeos

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/window.h"
@@ -95,7 +96,7 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
   return model.Pass();
 }
 
-void OnAcceptTeleportWarning(const std::string& user_id,
+void OnAcceptTeleportWarning(const AccountId& account_id,
                              aura::Window* window_,
                              bool no_show_again) {
   PrefService* pref = ProfileManager::GetActiveUserProfile()->GetPrefs();
@@ -104,8 +105,8 @@ void OnAcceptTeleportWarning(const std::string& user_id,
   ash::MultiProfileUMA::RecordTeleportAction(
       ash::MultiProfileUMA::TELEPORT_WINDOW_CAPTION_MENU);
 
-  chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(window_,
-                                                                   user_id);
+  chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+      window_, account_id.GetUserEmail());
 }
 
 void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
@@ -114,14 +115,14 @@ void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
     case IDC_VISIT_DESKTOP_OF_LRU_USER_3: {
       // When running the multi user mode on Chrome OS, windows can "visit"
       // another user's desktop.
-      const std::string& user_id =
+      const AccountId account_id =
           ash::Shell::GetInstance()
               ->session_state_delegate()
               ->GetUserInfo(IDC_VISIT_DESKTOP_OF_LRU_USER_2 == command_id ? 1
                                                                           : 2)
-              ->GetUserID();
+              ->GetAccountId();
       base::Callback<void(bool)> on_accept =
-          base::Bind(&OnAcceptTeleportWarning, user_id, window);
+          base::Bind(&OnAcceptTeleportWarning, account_id, window);
 
       // Don't show warning dialog if any logged in user in multi-profiles
       // session dismissed it.

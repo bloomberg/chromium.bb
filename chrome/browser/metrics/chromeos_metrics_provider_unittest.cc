@@ -115,20 +115,20 @@ class ChromeOSMetricsProviderTest : public testing::Test {
 };
 
 TEST_F(ChromeOSMetricsProviderTest, MultiProfileUserCount) {
-  std::string user1("user1@example.com");
-  std::string user2("user2@example.com");
-  std::string user3("user3@example.com");
+  const AccountId account_id1(AccountId::FromUserEmail("user1@example.com"));
+  const AccountId account_id2(AccountId::FromUserEmail("user2@example.com"));
+  const AccountId account_id3(AccountId::FromUserEmail("user3@example.com"));
 
   // |scoped_enabler| takes over the lifetime of |user_manager|.
   chromeos::FakeChromeUserManager* user_manager =
       new chromeos::FakeChromeUserManager();
   chromeos::ScopedUserManagerEnabler scoped_enabler(user_manager);
-  user_manager->AddKioskAppUser(user1);
-  user_manager->AddKioskAppUser(user2);
-  user_manager->AddKioskAppUser(user3);
+  user_manager->AddKioskAppUser(account_id1);
+  user_manager->AddKioskAppUser(account_id2);
+  user_manager->AddKioskAppUser(account_id3);
 
-  user_manager->LoginUser(user1);
-  user_manager->LoginUser(user3);
+  user_manager->LoginUser(account_id1);
+  user_manager->LoginUser(account_id3);
 
   ChromeOSMetricsProvider provider;
   provider.OnDidCreateMetricsLog();
@@ -138,19 +138,19 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileUserCount) {
 }
 
 TEST_F(ChromeOSMetricsProviderTest, MultiProfileCountInvalidated) {
-  std::string user1("user1@example.com");
-  std::string user2("user2@example.com");
-  std::string user3("user3@example.com");
+  const AccountId account_id1(AccountId::FromUserEmail("user1@example.com"));
+  const AccountId account_id2(AccountId::FromUserEmail("user2@example.com"));
+  const AccountId account_id3(AccountId::FromUserEmail("user3@example.com"));
 
   // |scoped_enabler| takes over the lifetime of |user_manager|.
   chromeos::FakeChromeUserManager* user_manager =
       new chromeos::FakeChromeUserManager();
   chromeos::ScopedUserManagerEnabler scoped_enabler(user_manager);
-  user_manager->AddKioskAppUser(user1);
-  user_manager->AddKioskAppUser(user2);
-  user_manager->AddKioskAppUser(user3);
+  user_manager->AddKioskAppUser(account_id1);
+  user_manager->AddKioskAppUser(account_id2);
+  user_manager->AddKioskAppUser(account_id3);
 
-  user_manager->LoginUser(user1);
+  user_manager->LoginUser(account_id1);
 
   ChromeOSMetricsProvider provider;
   provider.OnDidCreateMetricsLog();
@@ -159,7 +159,7 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileCountInvalidated) {
   provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(1u, system_profile.multi_profile_user_count());
 
-  user_manager->LoginUser(user2);
+  user_manager->LoginUser(account_id2);
   provider.ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(0u, system_profile.multi_profile_user_count());
 }

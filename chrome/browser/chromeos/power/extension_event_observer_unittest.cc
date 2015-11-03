@@ -68,9 +68,11 @@ class ExtensionEventObserverTest : public ::testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
 
     const char kUserProfile[] = "profile1@example.com";
-    fake_user_manager_->AddUser(kUserProfile);
-    fake_user_manager_->LoginUser(kUserProfile);
-    profile_ = profile_manager_->CreateTestingProfile(kUserProfile);
+    const AccountId account_id(AccountId::FromUserEmail(kUserProfile));
+    fake_user_manager_->AddUser(account_id);
+    fake_user_manager_->LoginUser(account_id);
+    profile_ =
+        profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
 
     profile_manager_->SetLoggedIn(true);
   }

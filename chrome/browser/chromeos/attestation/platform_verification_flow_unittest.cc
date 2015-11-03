@@ -50,7 +50,7 @@ class FakeDelegate : public PlatformVerificationFlow::Delegate {
         is_permitted_by_user_(true),
         is_in_supported_mode_(true) {
     // Configure a user for the mock user manager.
-    mock_user_manager_.SetActiveUser(kTestEmail);
+    mock_user_manager_.SetActiveUser(AccountId::FromUserEmail(kTestEmail));
   }
   ~FakeDelegate() override {}
 

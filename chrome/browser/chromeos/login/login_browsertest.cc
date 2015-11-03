@@ -161,7 +161,7 @@ class LoginTest : public LoginManagerTest {
 
     StartGaiaAuthOffline();
 
-    UserContext user_context(kTestUser);
+    UserContext user_context(AccountId::FromUserEmail(kTestUser));
     user_context.SetGaiaID(kGaiaId);
     user_context.SetKey(Key(kPassword));
     SetExpectedCredentials(user_context);

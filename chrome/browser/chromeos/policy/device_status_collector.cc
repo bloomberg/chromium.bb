@@ -216,12 +216,12 @@ GetCurrentKioskDeviceLocalAccount(chromeos::CrosSettings* settings) {
     return scoped_ptr<policy::DeviceLocalAccount>();
   const user_manager::User* const user =
       user_manager::UserManager::Get()->GetActiveUser();
-  const std::string user_id = user->GetUserID();
   const std::vector<policy::DeviceLocalAccount> accounts =
       policy::GetDeviceLocalAccounts(settings);
 
   for (const auto& device_local_account : accounts) {
-    if (device_local_account.user_id == user_id) {
+    if (AccountId::FromUserEmail(device_local_account.user_id) ==
+        user->GetAccountId()) {
       return make_scoped_ptr(
           new policy::DeviceLocalAccount(device_local_account)).Pass();
     }

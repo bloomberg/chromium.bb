@@ -20,6 +20,7 @@
 #include "ash/system/user/user_view.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
@@ -112,13 +113,13 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
 }
 
 views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
-  std::string user_id = Shell::GetInstance()
-                            ->session_state_delegate()
-                            ->GetUserInfo(0)
-                            ->GetUserID();
+  const AccountId account_id = Shell::GetInstance()
+                                   ->session_state_delegate()
+                                   ->GetUserInfo(0)
+                                   ->GetAccountId();
   tray::UserAccountsDelegate* delegate =
       Shell::GetInstance()->system_tray_delegate()->GetUserAccountsDelegate(
-          user_id);
+          account_id.GetUserEmail());
   if (!delegate)
     return nullptr;
   return new tray::AccountsDetailedView(this, status, delegate);

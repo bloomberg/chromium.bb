@@ -70,7 +70,8 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
     user_manager_ = new FakeChromeUserManager();
     user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
-    user_manager_->AddUser(profile_->GetProfileUserName());
+    user_manager_->AddUser(
+        AccountId::FromUserEmail(profile_->GetProfileUserName()));
     file_system_provider_service_ = Service::Get(profile_);
     file_system_provider_service_->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));

@@ -57,14 +57,14 @@ class DeviceIDTest : public OobeBaseTest,
     OobeBaseTest::TearDownOnMainThread();
   }
 
-  std::string GetDeviceId(const std::string& user_id) {
-    return user_manager::UserManager::Get()->GetKnownUserDeviceId(user_id);
+  std::string GetDeviceId(const AccountId& account_id) {
+    return user_manager::UserManager::Get()->GetKnownUserDeviceId(account_id);
   }
 
-  std::string GetDeviceIdFromSigninClient(const std::string& user_id) {
+  std::string GetDeviceIdFromSigninClient(const AccountId& account_id) {
     return ChromeSigninClientFactory::GetForProfile(
                ProfileHelper::Get()->GetProfileByUser(
-                   user_manager::UserManager::Get()->FindUser(user_id)))
+                   user_manager::UserManager::Get()->FindUser(account_id)))
         ->GetSigninScopedDeviceId();
   }
 
@@ -76,11 +76,11 @@ class DeviceIDTest : public OobeBaseTest,
   // are the same.
   // If |refresh_token| is not empty, checks that device ID associated with the
   // |refresh_token| in GAIA is the same as ID saved on device.
-  void CheckDeviceIDIsConsistent(const std::string& user_id,
+  void CheckDeviceIDIsConsistent(const AccountId& account_id,
                                  const std::string& refresh_token) {
     const std::string device_id_in_signin_client =
-        GetDeviceIdFromSigninClient(user_id);
-    const std::string device_id_in_local_state = GetDeviceId(user_id);
+        GetDeviceIdFromSigninClient(account_id);
+    const std::string device_id_in_local_state = GetDeviceId(account_id);
 
     EXPECT_FALSE(device_id_in_signin_client.empty());
     EXPECT_EQ(device_id_in_signin_client, device_id_in_local_state);
@@ -122,8 +122,8 @@ class DeviceIDTest : public OobeBaseTest,
     WaitForSessionStart();
   }
 
-  void RemoveUser(const std::string& user_id) {
-    user_manager::UserManager::Get()->RemoveUser(user_id, this);
+  void RemoveUser(const AccountId& account_id) {
+    user_manager::UserManager::Get()->RemoveUser(account_id, this);
     user_removal_loop_.Run();
   }
 
@@ -176,34 +176,39 @@ class DeviceIDTest : public OobeBaseTest,
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_PRE_PRE_NewUsers) {
   SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken1,
                kFakeUserGaiaId);
-  CheckDeviceIDIsConsistent(kFakeUserEmail, kRefreshToken1);
+  CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kFakeUserEmail),
+                            kRefreshToken1);
 }
 
 // Authenticate the first user through GAIA and verify that device ID remains
 // the same.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_PRE_NewUsers) {
-  const std::string device_id = GetDeviceId(kFakeUserEmail);
+  const std::string device_id =
+      GetDeviceId(AccountId::FromUserEmail(kFakeUserEmail));
   EXPECT_FALSE(device_id.empty());
   EXPECT_EQ(device_id, GetDeviceIdFromGAIA(kRefreshToken1));
 
   SignInOnline(kFakeUserEmail, kFakeUserPassword, kRefreshToken2,
                kFakeUserGaiaId);
-  CheckDeviceIDIsConsistent(kFakeUserEmail, kRefreshToken2);
+  CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kFakeUserEmail),
+                            kRefreshToken2);
 
-  CHECK_EQ(device_id, GetDeviceId(kFakeUserEmail));
+  CHECK_EQ(device_id, GetDeviceId(AccountId::FromUserEmail(kFakeUserEmail)));
 }
 
 // Authenticate the first user offline and verify that device ID remains
 // the same.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_NewUsers) {
-  const std::string device_id = GetDeviceId(kFakeUserEmail);
+  const std::string device_id =
+      GetDeviceId(AccountId::FromUserEmail(kFakeUserEmail));
   EXPECT_FALSE(device_id.empty());
 
   SignInOffline(kFakeUserEmail, kFakeUserPassword);
-  CheckDeviceIDIsConsistent(kFakeUserEmail, kRefreshToken2);
+  CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kFakeUserEmail),
+                            kRefreshToken2);
 
   // Verify that device ID remained the same after offline auth.
-  CHECK_EQ(device_id, GetDeviceId(kFakeUserEmail));
+  CHECK_EQ(device_id, GetDeviceId(AccountId::FromUserEmail(kFakeUserEmail)));
 }
 
 // Add the second user.
@@ -212,23 +217,25 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_NewUsers) {
   JS().ExecuteAsync("chrome.send('showAddUser')");
   SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken1,
                kSecondUserGaiaId);
-  CheckDeviceIDIsConsistent(kSecondUserEmail, kSecondUserRefreshToken1);
+  CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kSecondUserEmail),
+                            kSecondUserRefreshToken1);
 }
 
 // Remove the second user.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_NewUsers) {
   WaitForSigninScreen();
-  RemoveUser(kSecondUserEmail);
+  RemoveUser(AccountId::FromUserEmail(kSecondUserEmail));
 }
 
 // Add the second user back. Verify that device ID has been changed.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, NewUsers) {
-  EXPECT_TRUE(GetDeviceId(kSecondUserEmail).empty());
+  EXPECT_TRUE(GetDeviceId(AccountId::FromUserEmail(kSecondUserEmail)).empty());
   SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken2,
                kSecondUserGaiaId);
-  CheckDeviceIDIsConsistent(kSecondUserEmail, kSecondUserRefreshToken2);
+  CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kSecondUserEmail),
+                            kSecondUserRefreshToken2);
   EXPECT_NE(GetDeviceIdFromGAIA(kSecondUserRefreshToken1),
-            GetDeviceId(kSecondUserEmail));
+            GetDeviceId(AccountId::FromUserEmail(kSecondUserEmail)));
 }
 
 // Set up a user that has a device ID stored in preference only.
@@ -242,20 +249,21 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_Migration) {
           ->GetProfileByUser(user_manager::UserManager::Get()->GetActiveUser())
           ->GetPrefs();
   prefs->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
-                   GetDeviceId(kFakeUserEmail));
+                   GetDeviceId(AccountId::FromUserEmail(kFakeUserEmail)));
 
   // Can't use SetKnownUserDeviceId here, because it forbids changing a device
   // ID.
   user_manager::UserManager::Get()->SetKnownUserStringPref(
-      kFakeUserEmail, "device_id", std::string());
+      AccountId::FromUserEmail(kFakeUserEmail), "device_id", std::string());
 }
 
 // Tests that after the first sign in the device ID has been moved to the Local
 // state.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, Migration) {
-  EXPECT_TRUE(GetDeviceId(kFakeUserEmail).empty());
+  EXPECT_TRUE(GetDeviceId(AccountId::FromUserEmail(kFakeUserEmail)).empty());
   SignInOffline(kFakeUserEmail, kFakeUserPassword);
-  CheckDeviceIDIsConsistent(kFakeUserEmail, kRefreshToken1);
+  CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kFakeUserEmail),
+                            kRefreshToken1);
 }
 
 // Set up a user that doesn't have a device ID.
@@ -273,16 +281,17 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_LegacyUsers) {
   // Can't use SetKnownUserDeviceId here, because it forbids changing a device
   // ID.
   user_manager::UserManager::Get()->SetKnownUserStringPref(
-      kFakeUserEmail, "device_id", std::string());
+      AccountId::FromUserEmail(kFakeUserEmail), "device_id", std::string());
 }
 
 // Tests that device ID has been generated after the first sign in.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, LegacyUsers) {
-  EXPECT_TRUE(GetDeviceId(kFakeUserEmail).empty());
+  EXPECT_TRUE(GetDeviceId(AccountId::FromUserEmail(kFakeUserEmail)).empty());
   SignInOffline(kFakeUserEmail, kFakeUserPassword);
   // Last param |auth_code| is empty, because we don't pass a device ID to GAIA
   // in this case.
-  CheckDeviceIDIsConsistent(kFakeUserEmail, std::string());
+  CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kFakeUserEmail),
+                            std::string());
 }
 
 }  // namespace chromeos

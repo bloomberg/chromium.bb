@@ -315,8 +315,8 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicySource::POLICY_SOURCE_OWNER;
     pref_object->policy_enforcement =
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
-    pref_object->policy_source_name.reset(
-        new std::string(user_manager::UserManager::Get()->GetOwnerEmail()));
+    pref_object->policy_source_name.reset(new std::string(
+        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail()));
     return pref_object.Pass();
   }
 #endif

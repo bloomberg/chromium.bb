@@ -968,11 +968,13 @@ void SAMLPolicyTest::SetUpOnMainThread() {
 
   // Pretend that the test users' OAuth tokens are valid.
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      kFirstSAMLUserEmail, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+      AccountId::FromUserEmail(kFirstSAMLUserEmail),
+      user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      kNonSAMLUserEmail, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
+      AccountId::FromUserEmail(kNonSAMLUserEmail),
+      user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      kDifferentDomainSAMLUserEmail,
+      AccountId::FromUserEmail(kDifferentDomainSAMLUserEmail),
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
   // Set up fake networks.

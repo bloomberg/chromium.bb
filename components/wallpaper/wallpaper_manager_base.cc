@@ -501,8 +501,8 @@ WallpaperManagerBase::~WallpaperManagerBase() {
 void WallpaperManagerBase::SetPolicyControlledWallpaper(
     const std::string& user_id,
     const user_manager::UserImage& user_image) {
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_id);
+  const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
+      AccountId::FromUserEmail(user_id));
   if (!user) {
     NOTREACHED() << "Unknown user.";
     return;
@@ -886,7 +886,7 @@ void WallpaperManagerBase::MoveCustomWallpapersSuccess(
     info.location = base::FilePath(user_id_hash).Append(info.location).value();
     bool is_persistent =
         !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-            user_id);
+            AccountId::FromUserEmail(user_id));
     SetUserWallpaperInfo(user_id, info, is_persistent);
   }
 }

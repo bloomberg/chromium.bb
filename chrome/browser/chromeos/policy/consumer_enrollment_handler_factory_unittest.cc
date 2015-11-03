@@ -44,9 +44,9 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
         make_scoped_ptr(fake_service_));
 
     // Set up FakeChromeUserManager.
-    fake_user_manager_->AddUser(kTestOwner);
-    fake_user_manager_->AddUser(kTestUser);
-    fake_user_manager_->set_owner_email(kTestOwner);
+    fake_user_manager_->AddUser(AccountId::FromUserEmail(kTestOwner));
+    fake_user_manager_->AddUser(AccountId::FromUserEmail(kTestUser));
+    fake_user_manager_->set_owner_id(AccountId::FromUserEmail(kTestOwner));
   }
 
   void SetUp() override {

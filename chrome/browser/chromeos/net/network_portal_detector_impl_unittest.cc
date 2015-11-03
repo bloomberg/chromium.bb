@@ -89,12 +89,14 @@ class NetworkPortalDetectorImplTest
     ASSERT_TRUE(test_profile_manager_.SetUp());
 
     // Add a user.
-    const char kTestUserName[] = "test-user@example.com";
-    user_manager->AddUser(kTestUserName);
-    user_manager->LoginUser(kTestUserName);
+    const AccountId test_account_id(
+        AccountId::FromUserEmail("test-user@example.com"));
+    user_manager->AddUser(test_account_id);
+    user_manager->LoginUser(test_account_id);
 
     // Create a profile for the user.
-    profile_ = test_profile_manager_.CreateTestingProfile(kTestUserName);
+    profile_ = test_profile_manager_.CreateTestingProfile(
+        test_account_id.GetUserEmail());
     test_profile_manager_.SetLoggedIn(true);
     EXPECT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
 

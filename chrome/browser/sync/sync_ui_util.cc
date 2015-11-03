@@ -35,6 +35,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -63,7 +64,7 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
     // On CrOS user email is sanitized and then passed to the signin manager.
     // Original email (containing dots) is stored as "display email".
     user_display_name = user_manager::UserManager::Get()->GetUserDisplayEmail(
-        user_display_name);
+        AccountId::FromUserEmail(user_display_name));
   }
 #endif  // defined(OS_CHROMEOS)
 

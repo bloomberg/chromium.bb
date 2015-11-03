@@ -79,16 +79,21 @@ class DisplayNotificationsTest : public InProcessBrowserTest {
 class SystemTrayDelegateChromeOSTest : public LoginManagerTest {
  protected:
   SystemTrayDelegateChromeOSTest()
-      : LoginManagerTest(false /* should_launch_browser */) {}
+      : LoginManagerTest(false /* should_launch_browser */),
+        account_id1_(AccountId::FromUserEmail(kUser1)),
+        account_id2_(AccountId::FromUserEmail(kUser2)) {}
 
   ~SystemTrayDelegateChromeOSTest() override {}
 
-  void SetupUserProfile(const std::string& user_name, bool use_24_hour_clock) {
+  void SetupUserProfile(const AccountId& account_id, bool use_24_hour_clock) {
     const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(user_name);
+        user_manager::UserManager::Get()->FindUser(account_id);
     Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
     profile->GetPrefs()->SetBoolean(prefs::kUse24HourClock, use_24_hour_clock);
   }
+
+  const AccountId account_id1_;
+  const AccountId account_id2_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateChromeOSTest);
@@ -96,25 +101,25 @@ class SystemTrayDelegateChromeOSTest : public LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest,
                        PRE_TestMultiProfile24HourClock) {
-  RegisterUser(kUser1);
-  RegisterUser(kUser2);
+  RegisterUser(account_id1_.GetUserEmail());
+  RegisterUser(account_id2_.GetUserEmail());
   StartupUtils::MarkOobeCompleted();
 }
 
 // Test that clock type is taken from user profile for current active user.
 IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest,
                        TestMultiProfile24HourClock) {
-  LoginUser(kUser1);
-  SetupUserProfile(kUser1, true /* Use_24_hour_clock. */);
+  LoginUser(account_id1_.GetUserEmail());
+  SetupUserProfile(account_id1_, true /* Use_24_hour_clock. */);
   CreateDefaultView();
   EXPECT_EQ(base::k24HourClock, GetHourType());
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(kUser2);
-  SetupUserProfile(kUser2, false /* Use_24_hour_clock. */);
+  AddUser(account_id2_.GetUserEmail());
+  SetupUserProfile(account_id2_, false /* Use_24_hour_clock. */);
   CreateDefaultView();
   EXPECT_EQ(base::k12HourClock, GetHourType());
-  user_manager::UserManager::Get()->SwitchActiveUser(kUser1);
+  user_manager::UserManager::Get()->SwitchActiveUser(account_id1_);
   CreateDefaultView();
   EXPECT_EQ(base::k24HourClock, GetHourType());
 }

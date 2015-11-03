@@ -721,7 +721,7 @@ void OwnerSettingsServiceChromeOS::OnPostKeypairLoadedActions() {
 
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile_);
-  user_id_ = user ? user->GetUserID() : std::string();
+  user_id_ = user ? user->GetAccountId().GetUserEmail() : std::string();
 
   const bool is_owner = IsOwner() || IsOwnerInTests(user_id_);
   if (is_owner && device_settings_service_)

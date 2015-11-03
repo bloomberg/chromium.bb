@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {
 
@@ -52,7 +53,7 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
 
   EasyUnlockTpmKeyManager* tpm_key_manager =
       EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
-          user_context.GetUserID());
+          user_context.GetAccountId().GetUserEmail());
   if (!tpm_key_manager) {
     LOG(ERROR) << "No TPM key manager.";
     callback.Run(false);
@@ -81,9 +82,9 @@ void EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent(
     const RefreshKeysCallback& callback) {
   EasyUnlockTpmKeyManager* tpm_key_manager =
       EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
-          user_context.GetUserID());
-  std::string tpm_public_key =
-      tpm_key_manager->GetPublicTpmKey(user_context.GetUserID());
+          user_context.GetAccountId().GetUserEmail());
+  const std::string tpm_public_key = tpm_key_manager->GetPublicTpmKey(
+      user_context.GetAccountId().GetUserEmail());
 
   EasyUnlockDeviceKeyDataList devices;
   if (!RemoteDeviceListToDeviceDataList(*remote_devices, &devices))

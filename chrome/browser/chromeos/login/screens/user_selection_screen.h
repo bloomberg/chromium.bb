@@ -17,9 +17,9 @@
 #include "chrome/browser/chromeos/login/ui/models/user_board_model.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_id.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
+class AccountId;
 class EasyUnlockService;
 
 namespace chromeos {
@@ -122,7 +122,7 @@ class UserSelectionScreen
   EasyUnlockService* GetEasyUnlockServiceForUser(
       const std::string& user_id) const;
 
-  void OnUserStatusChecked(const user_manager::UserID& user_id,
+  void OnUserStatusChecked(const AccountId& account_id,
                            TokenHandleUtil::TokenHandleStatus status);
 
   // Whether to show guest login.

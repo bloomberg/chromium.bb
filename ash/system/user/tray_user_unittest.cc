@@ -17,6 +17,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/events/test/event_generator.h"
@@ -272,10 +273,11 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   ClickUserItem(&generator, 1);
   const user_manager::UserInfo* active_user = delegate()->GetActiveUserInfo();
   const user_manager::UserInfo* second_user = delegate()->GetUserInfo(1);
-  EXPECT_EQ(active_user->GetUserID(), second_user->GetUserID());
+  EXPECT_EQ(active_user->GetAccountId(), second_user->GetAccountId());
   // Since the name is capitalized, the email should be different then the
   // user_id.
-  EXPECT_NE(active_user->GetUserID(), second_user->GetEmail());
+  EXPECT_NE(active_user->GetAccountId().GetUserEmail(),
+            second_user->GetEmail());
   tray()->CloseSystemBubble();
 }
 

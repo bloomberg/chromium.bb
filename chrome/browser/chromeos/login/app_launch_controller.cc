@@ -322,7 +322,7 @@ bool AppLaunchController::CanConfigureNetwork() {
     return true;
   }
 
-  return !user_manager::UserManager::Get()->GetOwnerEmail().empty();
+  return user_manager::UserManager::Get()->GetOwnerAccountId().is_valid();
 }
 
 bool AppLaunchController::NeedOwnerAuthToConfigureNetwork() {

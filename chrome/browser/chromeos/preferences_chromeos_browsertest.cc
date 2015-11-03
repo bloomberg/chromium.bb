@@ -41,9 +41,11 @@ const char* const kTestUsers[] = {"test-user1@gmail.com",
 class PreferencesTest : public LoginManagerTest {
  public:
   PreferencesTest()
-      : LoginManagerTest(true),
-        input_settings_(NULL),
-        keyboard_(NULL) {}
+      : LoginManagerTest(true), input_settings_(NULL), keyboard_(NULL) {
+    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
+      test_users_.push_back(AccountId::FromUserEmail(kTestUsers[i]));
+    }
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
@@ -58,7 +60,7 @@ class PreferencesTest : public LoginManagerTest {
     static_cast<input_method::InputMethodManagerImpl*>(
         input_method::InputMethodManager::Get())
         ->SetImeKeyboardForTesting(keyboard_);
-    CrosSettings::Get()->SetString(kDeviceOwner, kTestUsers[0]);
+    CrosSettings::Get()->SetString(kDeviceOwner, test_users_[0].GetUserEmail());
   }
 
   // Sets set of preferences in given |prefs|. Value of prefernece depends of
@@ -129,6 +131,8 @@ class PreferencesTest : public LoginManagerTest {
         chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
   }
 
+  std::vector<AccountId> test_users_;
+
  private:
   system::FakeInputDeviceSettings* input_settings_;
   input_method::FakeImeKeyboard* keyboard_;
@@ -137,8 +141,8 @@ class PreferencesTest : public LoginManagerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
+  RegisterUser(test_users_[0].GetUserEmail());
+  RegisterUser(test_users_[1].GetUserEmail());
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -147,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
 
   // Add first user and init its preferences. Check that corresponding
   // settings has been changed.
-  LoginUser(kTestUsers[0]);
-  const user_manager::User* user1 = user_manager->FindUser(kTestUsers[0]);
+  LoginUser(test_users_[0].GetUserEmail());
+  const user_manager::User* user1 = user_manager->FindUser(test_users_[0]);
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
   SetPrefs(prefs1, false);
@@ -159,9 +163,9 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
   DisableAnimations();
-  AddUser(kTestUsers[1]);
+  AddUser(test_users_[1].GetUserEmail());
   content::RunAllPendingInMessageLoop();
-  const user_manager::User* user2 = user_manager->FindUser(kTestUsers[1]);
+  const user_manager::User* user2 = user_manager->FindUser(test_users_[1]);
   EXPECT_TRUE(user2->is_active());
   PrefService* prefs2 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user2)->GetPrefs();
@@ -194,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
 
   // Check that changing non-owner prefs doesn't change corresponding local
   // state prefs and vice versa.
-  EXPECT_EQ(user_manager->GetOwnerEmail(), kTestUsers[0]);
+  EXPECT_EQ(user_manager->GetOwnerAccountId(), test_users_[0]);
   CheckLocalStateCorrespondsToPrefs(prefs1);
   prefs2->SetBoolean(prefs::kTapToClickEnabled,
                      !prefs1->GetBoolean(prefs::kTapToClickEnabled));
@@ -204,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   CheckLocalStateCorrespondsToPrefs(prefs1);
 
   // Switch user back.
-  user_manager->SwitchActiveUser(kTestUsers[0]);
+  user_manager->SwitchActiveUser(test_users_[0]);
   CheckSettingsCorrespondToPrefs(prefs1);
   CheckLocalStateCorrespondsToPrefs(prefs1);
 }

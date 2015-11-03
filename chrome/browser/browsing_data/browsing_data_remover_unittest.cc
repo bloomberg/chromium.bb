@@ -72,6 +72,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
+#include "components/signin/core/account_id/account_id.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -2018,7 +2019,8 @@ TEST_F(BrowsingDataRemoverTest, ContentProtectionPlatformKeysRemoval) {
   chromeos::ScopedTestCrosSettings test_cros_settings;
   chromeos::MockUserManager* mock_user_manager =
       new testing::NiceMock<chromeos::MockUserManager>();
-  mock_user_manager->SetActiveUser("test@example.com");
+  mock_user_manager->SetActiveUser(
+      AccountId::FromUserEmail("test@example.com"));
   chromeos::ScopedUserManagerEnabler user_manager_enabler(mock_user_manager);
 
   scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =

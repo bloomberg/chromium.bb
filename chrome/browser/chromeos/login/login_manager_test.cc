@@ -48,7 +48,8 @@ const char kTestUserinfoToken2[] = "fake-userinfo-token-2";
 const char kTestRefreshToken2[] = "fake-refresh-token-2";
 
 UserContext CreateUserContext(const std::string& user_id) {
-  UserContext user_context(user_id);
+  UserContext user_context(AccountId::FromUserEmailGaiaId(
+      user_id, LoginManagerTest::GetGaiaIDForUserID(user_id)));
   user_context.SetGaiaID(LoginManagerTest::GetGaiaIDForUserID(user_id));
   user_context.SetKey(Key("password"));
   if (user_id == LoginManagerTest::kEnterpriseUser1) {
@@ -168,7 +169,7 @@ bool LoginManagerTest::TryToLogin(const UserContext& user_context) {
     return false;
   if (const user_manager::User* active_user =
           user_manager::UserManager::Get()->GetActiveUser())
-    return active_user->email() == user_context.GetUserID();
+    return active_user->GetAccountId() == user_context.GetAccountId();
   return false;
 }
 
@@ -189,7 +190,7 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
   for (user_manager::UserList::const_iterator it = logged_users.begin();
        it != logged_users.end();
        ++it) {
-    if ((*it)->email() == user_context.GetUserID())
+    if ((*it)->GetAccountId() == user_context.GetAccountId())
       return true;
   }
   return false;
