@@ -213,6 +213,7 @@ public class AccountManagementFragment extends PreferenceFragment
         } else {
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN_CHILD_MESSAGE));
             signOutSwitch.setChecked(true);
+            signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue(getActivity()));
             signOutSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
