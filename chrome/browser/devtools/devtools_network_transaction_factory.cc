@@ -20,7 +20,6 @@ DevToolsNetworkTransactionFactory::DevToolsNetworkTransactionFactory(
     : controller_(controller),
       network_layer_(new net::HttpNetworkLayer(session)) {
   std::set<std::string> headers;
-  headers.insert(DevToolsNetworkTransaction::kDevToolsRequestInitiator);
   headers.insert(
       DevToolsNetworkTransaction::kDevToolsEmulateNetworkConditionsClientId);
   content::ServiceWorkerContext::AddExcludedHeadersForFetchEvent(headers);

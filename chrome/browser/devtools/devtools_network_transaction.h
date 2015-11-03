@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/devtools/devtools_network_interceptor.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/request_priority.h"
@@ -16,7 +17,6 @@
 #include "net/websockets/websocket_handshake_stream_base.h"
 
 class DevToolsNetworkController;
-class DevToolsNetworkInterceptor;
 class GURL;
 
 namespace net {
@@ -41,9 +41,10 @@ class DevToolsNetworkControllerHelper;
 // parameter is saved and replaced with proxy callback. Fail method should be
 // used to simulate network outage. It runs saved callback (if any) with
 // net::ERR_INTERNET_DISCONNECTED result value.
-class DevToolsNetworkTransaction : public net::HttpTransaction {
+class DevToolsNetworkTransaction
+    : public net::HttpTransaction,
+      public DevToolsNetworkInterceptor::Throttable {
  public:
-  static const char kDevToolsRequestInitiator[];
   static const char kDevToolsEmulateNetworkConditionsClientId[];
 
   DevToolsNetworkTransaction(
@@ -52,29 +53,22 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
 
   ~DevToolsNetworkTransaction() override;
 
-  const net::HttpRequestInfo* request() const { return request_; }
-
   // Checks if request contains DevTools specific headers. Found values are
   // remembered and corresponding keys are removed from headers.
   void ProcessRequest();
-
-  bool failed() const { return failed_; }
-
-  // Runs callback (if any) with net::ERR_INTERNET_DISCONNECTED result value.
-  void Fail();
-
-  int64_t throttled_byte_count() const { return throttled_byte_count_; }
-  void DecreaseThrottledByteCount(int64_t delta) {
-    throttled_byte_count_ -= delta;
-  }
-
-  const std::string& request_initiator() const { return request_initiator_; }
 
   const std::string& client_id() const {
     return client_id_;
   }
 
-  void FireThrottledCallback();
+  // DevToolsNetworkInterceptor::Throttable implementation.
+  bool HasStarted() override;
+  bool HasFailed() override;
+  void Fail() override;
+  int64_t ThrottledByteCount() override;
+  void Throttled(int64_t count) override;
+  void ThrottleFinished() override;
+  void GetSendEndTiming(base::TimeTicks* send_end) override;
 
   // HttpTransaction methods:
   int Start(const net::HttpRequestInfo* request,
@@ -132,9 +126,6 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
 
   // True if Fail was already invoked.
   bool failed_;
-
-  // Value of "X-DevTools-Request-Initiator" request header.
-  std::string request_initiator_;
 
   // Value of "X-DevTools-Emulate-Network-Conditions-Client-Id" request header.
   std::string client_id_;

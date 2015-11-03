@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 
 class DevToolsNetworkConditions;
-class DevToolsNetworkTransaction;
 
 namespace base {
 class TimeDelta;
@@ -25,8 +24,19 @@ class TimeTicks;
 // DevToolsNetworkInterceptor emulates network conditions for transactions with
 // specific client id.
 class DevToolsNetworkInterceptor {
-
  public:
+  class Throttable {
+   public:
+    virtual ~Throttable() {}
+    virtual bool HasStarted() = 0;
+    virtual bool HasFailed() = 0;
+    virtual void Fail() = 0;
+    virtual int64_t ThrottledByteCount() = 0;
+    virtual void Throttled(int64_t count) = 0;
+    virtual void ThrottleFinished() = 0;
+    virtual void GetSendEndTiming(base::TimeTicks* send_end) = 0;
+  };
+
   DevToolsNetworkInterceptor();
   virtual ~DevToolsNetworkInterceptor();
 
@@ -35,12 +45,12 @@ class DevToolsNetworkInterceptor {
   // Applies network emulation configuration.
   void UpdateConditions(scoped_ptr<DevToolsNetworkConditions> conditions);
 
-  void AddTransaction(DevToolsNetworkTransaction* transaction);
-  void RemoveTransaction(DevToolsNetworkTransaction* transaction);
+  void AddThrottable(Throttable* throttable);
+  void RemoveThrottable(Throttable* throttable);
 
-  bool ShouldFail(const DevToolsNetworkTransaction* transaction);
-  bool ShouldThrottle(const DevToolsNetworkTransaction* transaction);
-  void ThrottleTransaction(DevToolsNetworkTransaction* transaction, bool start);
+  bool ShouldFail();
+  bool ShouldThrottle();
+  void Throttle(Throttable* throttable, bool start);
 
   const DevToolsNetworkConditions* conditions() const {
     return conditions_.get();
@@ -49,23 +59,22 @@ class DevToolsNetworkInterceptor {
  private:
   scoped_ptr<DevToolsNetworkConditions> conditions_;
 
-  void UpdateThrottledTransactions(base::TimeTicks now);
-  void UpdateSuspendedTransactions(base::TimeTicks now);
+  void UpdateThrottled(base::TimeTicks now);
+  void UpdateSuspended(base::TimeTicks now);
   void ArmTimer(base::TimeTicks now);
   void OnTimer();
 
-  void FireThrottledCallback(DevToolsNetworkTransaction* transaction);
+  void FireThrottledCallback(Throttable* throttable);
 
-  typedef std::set<DevToolsNetworkTransaction*> Transactions;
-  Transactions transactions_;
+  typedef std::set<Throttable*> Throttables;
+  Throttables throttables_;
 
-  // Transactions suspended for a "latency" period.
-  typedef std::pair<DevToolsNetworkTransaction*, int64_t> SuspendedTransaction;
-  typedef std::vector<SuspendedTransaction> SuspendedTransactions;
-  SuspendedTransactions suspended_transactions_;
+  // Throttables suspended for a "latency" period.
+  typedef std::vector<std::pair<Throttable*, int64_t>> Suspended;
+  Suspended suspended_;
 
-  // Transactions waiting certain amount of transfer to be "accounted".
-  std::vector<DevToolsNetworkTransaction*> throttled_transactions_;
+  // Throttable waiting certain amount of transfer to be "accounted".
+  std::vector<Throttable*> throttled_;
 
   base::OneShotTimer timer_;
   base::TimeTicks offset_;

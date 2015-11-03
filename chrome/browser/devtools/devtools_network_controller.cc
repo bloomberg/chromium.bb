@@ -21,7 +21,7 @@ base::WeakPtr<DevToolsNetworkInterceptor>
 DevToolsNetworkController::GetInterceptor(
     DevToolsNetworkTransaction* transaction) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(transaction->request());
+  DCHECK(transaction->HasStarted());
 
   if (!interceptors_.size())
     return default_interceptor_->GetWeakPtr();

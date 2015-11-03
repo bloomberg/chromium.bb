@@ -6,17 +6,15 @@
 
 #include "chrome/browser/devtools/devtools_network_controller.h"
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_progress.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_request_info.h"
 #include "net/socket/connection_attempts.h"
 
-// Keep in sync with kDevToolsRequestInitiator and
-// kDevToolsEmulateNetworkConditionsClientId defined in
+// Keep in sync with kDevToolsEmulateNetworkConditionsClientId defined in
 // InspectorResourceAgent.cpp.
-const char DevToolsNetworkTransaction::kDevToolsRequestInitiator[] =
-    "X-DevTools-Request-Initiator";
 const char
     DevToolsNetworkTransaction::kDevToolsEmulateNetworkConditionsClientId[] =
         "X-DevTools-Emulate-Network-Conditions-Client-Id";
@@ -37,7 +35,29 @@ DevToolsNetworkTransaction::DevToolsNetworkTransaction(
 
 DevToolsNetworkTransaction::~DevToolsNetworkTransaction() {
   if (interceptor_)
-    interceptor_->RemoveTransaction(this);
+    interceptor_->RemoveThrottable(this);
+}
+
+bool DevToolsNetworkTransaction::HasStarted() {
+  return !!request_;
+}
+
+bool DevToolsNetworkTransaction::HasFailed() {
+  return failed_;
+}
+
+int64_t DevToolsNetworkTransaction::ThrottledByteCount() {
+  return throttled_byte_count_;
+}
+
+void DevToolsNetworkTransaction::Throttled(int64_t count) {
+  throttled_byte_count_ -= count;
+}
+
+void DevToolsNetworkTransaction::GetSendEndTiming(base::TimeTicks* send_end) {
+  net::LoadTimingInfo load_timing_info;
+  if (GetLoadTimingInfo(&load_timing_info))
+    *send_end = load_timing_info.send_end;
 }
 
 void DevToolsNetworkTransaction::Throttle(int result) {
@@ -49,7 +69,7 @@ void DevToolsNetworkTransaction::Throttle(int result) {
     throttled_byte_count_ += result;
 
   if (interceptor_)
-    interceptor_->ThrottleTransaction(this, callback_type_ == START);
+    interceptor_->Throttle(this, callback_type_ == START);
 }
 
 void DevToolsNetworkTransaction::OnCallback(int rv) {
@@ -57,7 +77,7 @@ void DevToolsNetworkTransaction::OnCallback(int rv) {
     return;
   DCHECK(!callback_.is_null());
   if (callback_type_ == START || callback_type_ == READ) {
-    if (interceptor_ && interceptor_->ShouldThrottle(this)) {
+    if (interceptor_ && interceptor_->ShouldThrottle()) {
       Throttle(rv);
       return;
     }
@@ -80,7 +100,7 @@ int DevToolsNetworkTransaction::SetupCallback(
     return result;
   }
 
-  if (!interceptor_ || !interceptor_->ShouldThrottle(this))
+  if (!interceptor_ || !interceptor_->ShouldThrottle())
     return result;
 
   // Only START and READ operation throttling is supported.
@@ -122,9 +142,9 @@ int DevToolsNetworkTransaction::Start(
   DCHECK(request);
   request_ = request;
   interceptor_ = controller_->GetInterceptor(this);
-  interceptor_->AddTransaction(this);
+  interceptor_->AddThrottable(this);
 
-  if (interceptor_->ShouldFail(this)) {
+  if (interceptor_->ShouldFail()) {
     failed_ = true;
     network_transaction_->SetBeforeNetworkStartCallback(
         BeforeNetworkStartCallback());
@@ -138,26 +158,14 @@ void DevToolsNetworkTransaction::ProcessRequest() {
   DCHECK(request_);
   bool has_devtools_client_id = request_->extra_headers.HasHeader(
       kDevToolsEmulateNetworkConditionsClientId);
-  bool has_devtools_request_initiator = request_->extra_headers.HasHeader(
-      kDevToolsRequestInitiator);
-  if (!has_devtools_client_id && !has_devtools_request_initiator)
+  if (!has_devtools_client_id)
     return;
 
   custom_request_.reset(new net::HttpRequestInfo(*request_));
-
-  if (has_devtools_client_id) {
-    custom_request_->extra_headers.GetHeader(
-        kDevToolsEmulateNetworkConditionsClientId, &client_id_);
-    custom_request_->extra_headers.RemoveHeader(
-        kDevToolsEmulateNetworkConditionsClientId);
-  }
-
-  if (has_devtools_request_initiator) {
-    custom_request_->extra_headers.GetHeader(
-        kDevToolsRequestInitiator, &request_initiator_);
-    custom_request_->extra_headers.RemoveHeader(kDevToolsRequestInitiator);
-  }
-
+  custom_request_->extra_headers.GetHeader(
+      kDevToolsEmulateNetworkConditionsClientId, &client_id_);
+  custom_request_->extra_headers.RemoveHeader(
+      kDevToolsEmulateNetworkConditionsClientId);
   request_ = custom_request_.get();
 }
 
@@ -282,7 +290,7 @@ const {
   network_transaction_->GetConnectionAttempts(out);
 }
 
-void DevToolsNetworkTransaction::FireThrottledCallback() {
+void DevToolsNetworkTransaction::ThrottleFinished() {
   DCHECK(!callback_.is_null());
   DCHECK(callback_type_ == READ || callback_type_ == START);
   net::CompletionCallback callback = callback_;
