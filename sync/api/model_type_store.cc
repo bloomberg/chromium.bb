@@ -4,13 +4,13 @@
 
 #include "sync/api/model_type_store.h"
 
-#include "base/logging.h"
+#include "sync/internal_api/public/model_type_store_impl.h"
 
 namespace syncer_v2 {
 
 // static
 void ModelTypeStore::CreateInMemoryStoreForTest(const InitCallback& callback) {
-  NOTIMPLEMENTED();
+  ModelTypeStoreImpl::CreateInMemoryStoreForTest(callback);
 }
 
 ModelTypeStore::~ModelTypeStore() {}
