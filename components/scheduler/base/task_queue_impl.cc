@@ -103,7 +103,7 @@ bool TaskQueueImpl::PostDelayedTaskAt(
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
     return false;
-  LazyNow lazy_now(any_thread().task_queue_manager);
+  LazyNow lazy_now(any_thread().task_queue_manager->tick_clock());
   return PostDelayedTaskLocked(&lazy_now, from_here, task, desired_run_time,
                                TaskType::NORMAL);
 }
@@ -116,7 +116,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
     return false;
-  LazyNow lazy_now(any_thread().task_queue_manager);
+  LazyNow lazy_now(any_thread().task_queue_manager->tick_clock());
   base::TimeTicks desired_run_time;
   if (delay > base::TimeDelta())
     desired_run_time = lazy_now.Now() + delay;
@@ -321,7 +321,7 @@ void TaskQueueImpl::PumpQueueLocked() {
   if (!any_thread().task_queue_manager)
     return;
 
-  LazyNow lazy_now(any_thread().task_queue_manager);
+  LazyNow lazy_now(any_thread().task_queue_manager->tick_clock());
   MoveReadyDelayedTasksToIncomingQueueLocked(&lazy_now);
 
   bool was_empty = main_thread_only().work_queue.empty();

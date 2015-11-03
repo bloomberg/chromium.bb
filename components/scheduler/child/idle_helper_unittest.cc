@@ -11,8 +11,8 @@
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/child/scheduler_helper.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_for_test.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,13 +126,16 @@ void EndIdlePeriodIdleTask(IdleHelper* idle_helper, base::TimeTicks deadline) {
   idle_helper->EndIdlePeriod();
 }
 
-scoped_refptr<SchedulerTaskRunnerDelegate> CreateTaskRunnerDelegate(
+scoped_refptr<SchedulerTqmDelegate> CreateTaskRunnerDelegate(
     base::MessageLoop* message_loop,
-    scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner) {
+    scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner,
+    scoped_ptr<TestTimeSource> test_time_source) {
   if (message_loop)
-    return SchedulerTaskRunnerDelegateImpl::Create(message_loop);
+    return SchedulerTqmDelegateImpl::Create(message_loop,
+                                            test_time_source.Pass());
 
-  return SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner);
+  return SchedulerTqmDelegateForTest::Create(mock_task_runner,
+                                             test_time_source.Pass());
 }
 
 };  // namespace
@@ -172,8 +175,10 @@ class BaseIdleHelperTest : public testing::Test {
                 ? nullptr
                 : new cc::OrderedSimpleTaskRunner(clock_.get(), false)),
         message_loop_(message_loop),
-        main_task_runner_(
-            CreateTaskRunnerDelegate(message_loop, mock_task_runner_)),
+        main_task_runner_(CreateTaskRunnerDelegate(
+            message_loop,
+            mock_task_runner_,
+            make_scoped_ptr(new TestTimeSource(clock_.get())))),
         scheduler_helper_(
             new SchedulerHelper(main_task_runner_,
                                 "test.idle",
@@ -185,10 +190,6 @@ class BaseIdleHelperTest : public testing::Test {
         default_task_runner_(scheduler_helper_->DefaultTaskRunner()),
         idle_task_runner_(idle_helper_->IdleTaskRunner()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
-    scheduler_helper_->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_.get())));
-    scheduler_helper_->GetTaskQueueManagerForTesting()->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_.get())));
   }
 
   ~BaseIdleHelperTest() override {}
@@ -274,7 +275,7 @@ class BaseIdleHelperTest : public testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_ptr<base::MessageLoop> message_loop_;
 
-  scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner_;
+  scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
   scoped_ptr<SchedulerHelper> scheduler_helper_;
   scoped_ptr<IdleHelperForTest> idle_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;

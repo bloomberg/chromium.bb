@@ -33,8 +33,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
       public SchedulerHelper::Observer,
       public RenderWidgetSignals::Observer {
  public:
-  RendererSchedulerImpl(
-      scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner);
+  RendererSchedulerImpl(scoped_refptr<SchedulerTqmDelegate> main_task_runner);
   ~RendererSchedulerImpl() override;
 
   // RendererScheduler implementation:
@@ -245,8 +244,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   // (the accessors) for the following data members.
 
   struct MainThreadOnly {
-    explicit MainThreadOnly(
-        const scoped_refptr<TaskQueue>& compositor_task_runner);
+    MainThreadOnly(const scoped_refptr<TaskQueue>& compositor_task_runner,
+                   base::TickClock* time_source);
     ~MainThreadOnly();
 
     TaskCostEstimator loading_task_cost_estimator;

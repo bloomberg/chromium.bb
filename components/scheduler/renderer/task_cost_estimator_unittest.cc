@@ -16,23 +16,26 @@ class TaskCostEstimatorTest : public testing::Test {
   TaskCostEstimatorTest() {}
   ~TaskCostEstimatorTest() override {}
 
-  void SetUp() override {}
+  void SetUp() override {
+    test_time_source_.reset(new TestTimeSource(&clock_));
+  }
 
   base::SimpleTestTickClock clock_;
+  scoped_ptr<TestTimeSource> test_time_source_;
 };
 
 class TaskCostEstimatorForTest : public TaskCostEstimator {
  public:
-  TaskCostEstimatorForTest(base::SimpleTestTickClock* clock,
+  TaskCostEstimatorForTest(TestTimeSource* test_time_source,
                            int sample_count,
                            double estimation_percentile)
-      : TaskCostEstimator(sample_count, estimation_percentile) {
-    SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock)));
-  }
+      : TaskCostEstimator(test_time_source,
+                          sample_count,
+                          estimation_percentile) {}
 };
 
 TEST_F(TaskCostEstimatorTest, BasicEstimation) {
-  TaskCostEstimatorForTest estimator(&clock_, 1, 100);
+  TaskCostEstimatorForTest estimator(test_time_source_.get(), 1, 100);
   base::PendingTask task(FROM_HERE, base::Closure());
 
   estimator.WillProcessTask(task);
@@ -44,7 +47,7 @@ TEST_F(TaskCostEstimatorTest, BasicEstimation) {
 }
 
 TEST_F(TaskCostEstimatorTest, Clear) {
-  TaskCostEstimatorForTest estimator(&clock_, 1, 100);
+  TaskCostEstimatorForTest estimator(test_time_source_.get(), 1, 100);
   base::PendingTask task(FROM_HERE, base::Closure());
 
   estimator.WillProcessTask(task);
@@ -57,7 +60,7 @@ TEST_F(TaskCostEstimatorTest, Clear) {
 }
 
 TEST_F(TaskCostEstimatorTest, NestedRunLoop) {
-  TaskCostEstimatorForTest estimator(&clock_, 1, 100);
+  TaskCostEstimatorForTest estimator(test_time_source_.get(), 1, 100);
   base::PendingTask task(FROM_HERE, base::Closure());
 
   // Make sure we ignore the tasks inside the nested run loop.

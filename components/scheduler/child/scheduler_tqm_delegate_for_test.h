@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_TASK_RUNNER_DELEGATE_FOR_TEST_H_
-#define CONTENT_RENDERER_SCHEDULER_TASK_RUNNER_DELEGATE_FOR_TEST_H_
+#ifndef CONTENT_RENDERER_SCHEDULER_TQM_DELEGATE_FOR_TEST_H_
+#define CONTENT_RENDERER_SCHEDULER_TQM_DELEGATE_FOR_TEST_H_
 
-#include "components/scheduler/child/scheduler_task_runner_delegate.h"
+#include "base/macros.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "components/scheduler/child/scheduler_tqm_delegate.h"
 
 namespace scheduler {
 
-class NestableTaskRunnerForTest;
+class TaskQueueManagerDelegateForTest;
 
-class SchedulerTaskRunnerDelegateForTest : public SchedulerTaskRunnerDelegate {
+class SchedulerTqmDelegateForTest : public SchedulerTqmDelegate {
  public:
-  static scoped_refptr<SchedulerTaskRunnerDelegateForTest> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  static scoped_refptr<SchedulerTqmDelegateForTest> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_ptr<base::TickClock> time_source);
 
-  // SchedulerTaskRunnerDelegate implementation
+  // SchedulerTqmDelegate implementation
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RestoreDefaultTaskRunner() override;
@@ -28,25 +31,28 @@ class SchedulerTaskRunnerDelegateForTest : public SchedulerTaskRunnerDelegate {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
+  base::TimeTicks NowTicks() override;
+  void OnNoMoreImmediateWork() override;
 
   base::SingleThreadTaskRunner* default_task_runner() const {
     return default_task_runner_.get();
   }
 
  protected:
-  ~SchedulerTaskRunnerDelegateForTest() override;
+  ~SchedulerTqmDelegateForTest() override;
 
  private:
-  explicit SchedulerTaskRunnerDelegateForTest(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  SchedulerTqmDelegateForTest(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_ptr<base::TickClock> time_source);
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
-  scoped_refptr<NestableTaskRunnerForTest> task_runner_;
+  scoped_refptr<TaskQueueManagerDelegateForTest> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulerTaskRunnerDelegateForTest);
+  DISALLOW_COPY_AND_ASSIGN(SchedulerTqmDelegateForTest);
 };
 
 }  // namespace scheduler
 
-#endif  // CONTENT_RENDERER_SCHEDULER_SCHEDULER_TASK_RUNNER_DELEGATE_FOR_TEST_H_
+#endif  // CONTENT_RENDERER_SCHEDULER_TQM_DELEGATE_FOR_TEST_H_

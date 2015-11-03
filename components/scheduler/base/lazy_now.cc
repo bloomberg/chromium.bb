@@ -4,6 +4,7 @@
 
 #include "components/scheduler/base/lazy_now.h"
 
+#include "base/time/tick_clock.h"
 #include "components/scheduler/base/task_queue_manager.h"
 
 namespace scheduler {
@@ -11,7 +12,7 @@ namespace internal {
 
 base::TimeTicks LazyNow::Now() {
   if (now_.is_null())
-    now_ = task_queue_manager_->Now();
+    now_ = tick_clock_->NowTicks();
   return now_;
 }
 

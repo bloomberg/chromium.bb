@@ -16,6 +16,7 @@ component("scheduler") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    ":common",
     "//base",
     "//cc:cc",
     "//third_party/WebKit/public:blink",
@@ -27,12 +28,19 @@ component("scheduler") {
   ]
 }
 
+# GYP version: components/scheduler.gypi:scheduler_common
+source_set("common") {
+  sources = rebase_path(scheduler_gypi_values.scheduler_common_sources,
+                        ".",
+                        "//components/scheduler")
+}
+
 source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "base/nestable_task_runner_for_test.cc",
-    "base/nestable_task_runner_for_test.h",
+    "base/task_queue_manager_delegate_for_test.cc",
+    "base/task_queue_manager_delegate_for_test.h",
     "base/task_queue_manager_unittest.cc",
     "base/task_queue_selector_unittest.cc",
     "base/task_queue_sets_unittest.cc",
@@ -42,9 +50,10 @@ source_set("unit_tests") {
     "base/test_time_source.h",
     "child/idle_helper_unittest.cc",
     "child/scheduler_helper_unittest.cc",
-    "child/scheduler_task_runner_delegate_for_test.cc",
-    "child/scheduler_task_runner_delegate_for_test.h",
-    "child/scheduler_task_runner_delegate_impl_unittest.cc",
+    "child/scheduler_tqm_delegate_for_test.cc",
+    "child/scheduler_tqm_delegate_for_test.h",
+    "child/scheduler_tqm_delegate_impl_unittest.cc",
+    "child/virtual_time_tqm_delegate_unittest.cc",
     "child/webthread_impl_for_worker_scheduler_unittest.cc",
     "child/worker_scheduler_impl_unittest.cc",
     "renderer/deadline_task_runner_unittest.cc",

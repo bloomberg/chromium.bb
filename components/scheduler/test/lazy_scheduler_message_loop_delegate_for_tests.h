@@ -6,7 +6,8 @@
 #define COMPONENTS_SCHEDULER_TEST_LAZY_SCHEDULER_MESSAGE_LOOP_DELEGATE_FOR_TESTS_H_
 
 #include "base/message_loop/message_loop.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate.h"
+#include "base/time/tick_clock.h"
+#include "components/scheduler/child/scheduler_tqm_delegate.h"
 
 namespace scheduler {
 
@@ -17,12 +18,11 @@ namespace scheduler {
 //
 // TODO(skyostil): Fix the relevant test suites and remove this class
 // (crbug.com/495659).
-class LazySchedulerMessageLoopDelegateForTests
-    : public SchedulerTaskRunnerDelegate {
+class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
  public:
   static scoped_refptr<LazySchedulerMessageLoopDelegateForTests> Create();
 
-  // SchedulerTaskRunnerDelegate implementation
+  // SchedulerTqmDelegate implementation
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RestoreDefaultTaskRunner() override;
@@ -34,6 +34,8 @@ class LazySchedulerMessageLoopDelegateForTests
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
+  base::TimeTicks NowTicks() override;
+  void OnNoMoreImmediateWork() override;
 
  private:
   LazySchedulerMessageLoopDelegateForTests();
@@ -48,6 +50,7 @@ class LazySchedulerMessageLoopDelegateForTests
   // A task runner which hasn't yet been overridden in the message loop.
   mutable scoped_refptr<base::SingleThreadTaskRunner> pending_task_runner_;
   mutable scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
+  scoped_ptr<base::TickClock> time_source_;
 
   DISALLOW_COPY_AND_ASSIGN(LazySchedulerMessageLoopDelegateForTests);
 };

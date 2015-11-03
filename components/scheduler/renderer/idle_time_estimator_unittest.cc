@@ -8,7 +8,7 @@
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/test_time_source.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_for_test.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,14 +18,13 @@ class IdleTimeEstimatorForTest : public IdleTimeEstimator {
  public:
   IdleTimeEstimatorForTest(
       const scoped_refptr<TaskQueue>& compositor_task_runner,
-      base::SimpleTestTickClock* clock,
+      TestTimeSource* test_time_source,
       int sample_count,
       double estimation_percentile)
       : IdleTimeEstimator(compositor_task_runner,
+                          test_time_source,
                           sample_count,
-                          estimation_percentile) {
-    SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock)));
-  }
+                          estimation_percentile) {}
 };
 
 class IdleTimeEstimatorTest : public testing::Test {
@@ -38,17 +37,18 @@ class IdleTimeEstimatorTest : public testing::Test {
   void SetUp() override {
     clock_.reset(new base::SimpleTestTickClock());
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
+    test_time_source_.reset(new TestTimeSource(clock_.get()));
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
-    main_task_runner_ =
-        SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner_);
+    main_task_runner_ = SchedulerTqmDelegateForTest::Create(
+        mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
     manager_ = make_scoped_ptr(new TaskQueueManager(
         main_task_runner_, "test.scheduler", "test.scheduler",
         "test.scheduler.debug"));
     compositor_task_runner_ =
         manager_->NewTaskQueue(TaskQueue::Spec("compositor_tq"));
-    estimator_.reset(new IdleTimeEstimatorForTest(compositor_task_runner_,
-                                                  clock_.get(), 10, 50));
+    estimator_.reset(new IdleTimeEstimatorForTest(
+        compositor_task_runner_, test_time_source_.get(), 10, 50));
   }
 
   void SimulateFrameWithOneCompositorTask(int compositor_time) {
@@ -84,8 +84,9 @@ class IdleTimeEstimatorTest : public testing::Test {
   }
 
   scoped_ptr<base::SimpleTestTickClock> clock_;
+  scoped_ptr<TestTimeSource> test_time_source_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner_;
+  scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
   scoped_ptr<TaskQueueManager> manager_;
   scoped_refptr<TaskQueue> compositor_task_runner_;
   scoped_ptr<IdleTimeEstimatorForTest> estimator_;

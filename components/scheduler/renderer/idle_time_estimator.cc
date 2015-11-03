@@ -10,11 +10,12 @@ namespace scheduler {
 
 IdleTimeEstimator::IdleTimeEstimator(
     const scoped_refptr<TaskQueue>& compositor_task_runner,
+    base::TickClock* time_source,
     int sample_count,
     double estimation_percentile)
     : compositor_task_runner_(compositor_task_runner),
       per_frame_compositor_task_runtime_(sample_count),
-      time_source_(new base::DefaultTickClock),
+      time_source_(time_source),
       estimation_percentile_(estimation_percentile),
       nesting_level_(0),
       did_commit_(false) {
@@ -46,11 +47,6 @@ void IdleTimeEstimator::Clear() {
   cumulative_compositor_runtime_ = base::TimeDelta();
   per_frame_compositor_task_runtime_.Clear();
   did_commit_ = false;
-}
-
-void IdleTimeEstimator::SetTimeSourceForTesting(
-    scoped_ptr<base::TickClock> time_source) {
-  time_source_ = time_source.Pass();
 }
 
 void IdleTimeEstimator::WillProcessTask(const base::PendingTask& pending_task) {

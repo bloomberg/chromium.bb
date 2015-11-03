@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/time/default_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace scheduler {
 
-TEST(SchedulerTaskRunnerDelegateImplTest, TestTaskRunnerOverriding) {
+TEST(SchedulerTqmDelegateImplTest, TestTaskRunnerOverriding) {
   base::MessageLoop loop;
   scoped_refptr<base::SingleThreadTaskRunner> original_runner(
       loop.task_runner());
   scoped_refptr<base::SingleThreadTaskRunner> custom_runner(
       new base::TestSimpleTaskRunner());
   {
-    scoped_refptr<SchedulerTaskRunnerDelegateImpl> delegate(
-        SchedulerTaskRunnerDelegateImpl::Create(&loop));
+    scoped_refptr<SchedulerTqmDelegateImpl> delegate(
+        SchedulerTqmDelegateImpl::Create(
+            &loop, make_scoped_ptr(new base::DefaultTickClock())));
     delegate->SetDefaultTaskRunner(custom_runner);
     DCHECK_EQ(custom_runner, loop.task_runner());
   }

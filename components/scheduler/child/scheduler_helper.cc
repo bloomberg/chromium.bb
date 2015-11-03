@@ -8,18 +8,18 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/base/task_queue_impl.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate.h"
+#include "components/scheduler/child/scheduler_tqm_delegate.h"
 
 namespace scheduler {
 
 SchedulerHelper::SchedulerHelper(
-    scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner,
+    scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
-    : main_task_runner_(main_task_runner),
+    : task_queue_manager_delegate_(task_queue_manager_delegate),
       task_queue_manager_(
-          new TaskQueueManager(main_task_runner,
+          new TaskQueueManager(task_queue_manager_delegate,
                                tracing_category,
                                disabled_by_default_tracing_category,
                                disabled_by_default_verbose_tracing_category)),
@@ -34,7 +34,6 @@ SchedulerHelper::SchedulerHelper(
               .SetShouldNotifyObservers(false))),
       default_task_runner_(NewTaskQueue(TaskQueue::Spec("default_tq")
                                             .SetShouldMonitorQuiescence(true))),
-      time_source_(new base::DefaultTickClock),
       observer_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
@@ -45,7 +44,8 @@ SchedulerHelper::SchedulerHelper(
 
   task_queue_manager_->SetWorkBatchSize(4);
 
-  main_task_runner_->SetDefaultTaskRunner(default_task_runner_.get());
+  task_queue_manager_delegate_->SetDefaultTaskRunner(
+      default_task_runner_.get());
 }
 
 SchedulerHelper::~SchedulerHelper() {
@@ -57,7 +57,7 @@ void SchedulerHelper::Shutdown() {
   if (task_queue_manager_)
     task_queue_manager_->SetObserver(nullptr);
   task_queue_manager_.reset();
-  main_task_runner_->RestoreDefaultTaskRunner();
+  task_queue_manager_delegate_->RestoreDefaultTaskRunner();
 }
 
 scoped_refptr<TaskQueue> SchedulerHelper::NewTaskQueue(
@@ -79,12 +79,6 @@ scoped_refptr<TaskQueue> SchedulerHelper::ControlAfterWakeUpTaskRunner() {
   return control_after_wakeup_task_runner_;
 }
 
-void SchedulerHelper::SetTimeSourceForTesting(
-    scoped_ptr<base::TickClock> time_source) {
-  CheckOnValidThread();
-  time_source_ = time_source.Pass();
-}
-
 void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   CheckOnValidThread();
   DCHECK(task_queue_manager_.get());
@@ -96,8 +90,8 @@ TaskQueueManager* SchedulerHelper::GetTaskQueueManagerForTesting() {
   return task_queue_manager_.get();
 }
 
-base::TimeTicks SchedulerHelper::Now() const {
-  return time_source_->NowTicks();
+base::TickClock* SchedulerHelper::tick_clock() const {
+  return task_queue_manager_->tick_clock();
 }
 
 base::TimeTicks SchedulerHelper::NextPendingDelayedTaskRunTime() const {

@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/threading/thread.h"
-#include "components/scheduler/base/nestable_task_runner_for_test.h"
+#include "base/time/default_tick_clock.h"
 #include "components/scheduler/base/task_queue_impl.h"
+#include "components/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/base/task_queue_sets.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +34,9 @@ class TaskQueueManagerPerfTest : public testing::Test {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        NestableTaskRunnerForTest::Create(message_loop_->task_runner()),
+        TaskQueueManagerDelegateForTest::Create(
+            message_loop_->task_runner(),
+            make_scoped_ptr(new base::DefaultTickClock())),
         "fake.category", "fake.category", "fake.category.debug"));
     for (size_t i = 0; i < num_queues; i++)
       queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));

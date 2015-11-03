@@ -7,27 +7,27 @@
 
 #include "base/time/time.h"
 
-namespace scheduler {
-class TaskQueueManager;
+namespace base {
+class TickClock;
+}
 
+namespace scheduler {
 namespace internal {
 
 // Now() is somewhat expensive so it makes sense not to call Now() unless we
 // really need to.
 class LazyNow {
  public:
-  explicit LazyNow(base::TimeTicks now)
-      : task_queue_manager_(nullptr), now_(now) {
+  explicit LazyNow(base::TimeTicks now) : tick_clock_(nullptr), now_(now) {
     DCHECK(!now.is_null());
   }
 
-  explicit LazyNow(TaskQueueManager* task_queue_manager)
-      : task_queue_manager_(task_queue_manager) {}
+  explicit LazyNow(base::TickClock* tick_clock) : tick_clock_(tick_clock) {}
 
   base::TimeTicks Now();
 
  private:
-  TaskQueueManager* task_queue_manager_;  // NOT OWNED
+  base::TickClock* tick_clock_;  // NOT OWNED
   base::TimeTicks now_;
 };
 

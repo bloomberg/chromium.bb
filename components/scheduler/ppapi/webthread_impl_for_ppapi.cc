@@ -7,8 +7,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/default_tick_clock.h"
 #include "components/scheduler/base/task_queue.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
@@ -17,8 +18,9 @@ namespace scheduler {
 
 WebThreadImplForPPAPI::WebThreadImplForPPAPI()
     : thread_id_(base::PlatformThread::CurrentId()),
-      task_runner_delegate_(SchedulerTaskRunnerDelegateImpl::Create(
-          base::MessageLoop::current())),
+      task_runner_delegate_(SchedulerTqmDelegateImpl::Create(
+          base::MessageLoop::current(),
+          make_scoped_ptr(new base::DefaultTickClock()))),
       worker_scheduler_(WorkerScheduler::Create(task_runner_delegate_)) {
   worker_scheduler_->Init();
   task_runner_ = worker_scheduler_->DefaultTaskRunner();

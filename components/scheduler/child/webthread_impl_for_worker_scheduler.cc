@@ -8,8 +8,9 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time/default_tick_clock.h"
 #include "components/scheduler/base/task_queue.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
@@ -43,8 +44,10 @@ WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
 
 void WebThreadImplForWorkerScheduler::InitOnThread(
     base::WaitableEvent* completion) {
-  task_runner_delegate_ =
-      SchedulerTaskRunnerDelegateImpl::Create(thread_->message_loop());
+  // TODO(alexclarke): Do we need to unify virtual time for workers and the
+  // main thread?
+  task_runner_delegate_ = SchedulerTqmDelegateImpl::Create(
+      thread_->message_loop(), make_scoped_ptr(new base::DefaultTickClock()));
   worker_scheduler_ = WorkerScheduler::Create(task_runner_delegate_);
   worker_scheduler_->Init();
   task_runner_ = worker_scheduler_->DefaultTaskRunner();

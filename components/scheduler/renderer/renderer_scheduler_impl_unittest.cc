@@ -9,8 +9,8 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/test_time_source.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_for_test.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -178,7 +178,7 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
   using RendererSchedulerImpl::OnIdlePeriodStarted;
 
   RendererSchedulerImplForTest(
-      scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner)
+      scoped_refptr<SchedulerTqmDelegate> main_task_runner)
       : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
 
   void UpdatePolicyLocked(UpdateType update_type) override {
@@ -236,13 +236,14 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void SetUp() override {
     if (message_loop_) {
-      main_task_runner_ =
-          SchedulerTaskRunnerDelegateImpl::Create(message_loop_.get());
+      main_task_runner_ = SchedulerTqmDelegateImpl::Create(
+          message_loop_.get(),
+          make_scoped_ptr(new TestTimeSource(clock_.get())));
     } else {
       mock_task_runner_ = make_scoped_refptr(
           new cc::OrderedSimpleTaskRunner(clock_.get(), false));
-      main_task_runner_ =
-          SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner_);
+      main_task_runner_ = SchedulerTqmDelegateForTest::Create(
+          mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
     }
     Initialize(
         make_scoped_ptr(new RendererSchedulerImplForTest(main_task_runner_)));
@@ -255,19 +256,6 @@ class RendererSchedulerImplTest : public testing::Test {
     loading_task_runner_ = scheduler_->LoadingTaskRunner();
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timer_task_runner_ = scheduler_->TimerTaskRunner();
-    scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_.get())));
-    scheduler_->GetSchedulerHelperForTesting()
-        ->GetTaskQueueManagerForTesting()
-        ->SetTimeSourceForTesting(
-            make_scoped_ptr(new TestTimeSource(clock_.get())));
-    scheduler_->GetLoadingTaskCostEstimatorForTesting()
-        ->SetTimeSourceForTesting(
-            make_scoped_ptr(new TestTimeSource(clock_.get())));
-    scheduler_->GetTimerTaskCostEstimatorForTesting()->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_.get())));
-    scheduler_->GetIdleTimeEstimatorForTesting()->SetTimeSourceForTesting(
-        make_scoped_ptr(new TestTimeSource(clock_.get())));
   }
 
   void TearDown() override {
@@ -486,7 +474,7 @@ class RendererSchedulerImplTest : public testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_ptr<base::MessageLoop> message_loop_;
 
-  scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner_;
+  scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
   scoped_ptr<RendererSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -1368,8 +1356,8 @@ class RendererSchedulerImplWithMockSchedulerTest
   void SetUp() override {
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
-    main_task_runner_ =
-        SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner_);
+    main_task_runner_ = SchedulerTqmDelegateForTest::Create(
+        mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
     mock_scheduler_ = new RendererSchedulerImplForTest(main_task_runner_);
     Initialize(make_scoped_ptr(mock_scheduler_));
   }

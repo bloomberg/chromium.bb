@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_SCHEDULER_HELPER_H_
 #define COMPONENTS_SCHEDULER_CHILD_SCHEDULER_HELPER_H_
 
+#include "base/time/tick_clock.h"
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/scheduler_export.h"
@@ -15,17 +16,18 @@ class TickClock;
 
 namespace scheduler {
 
-class SchedulerTaskRunnerDelegate;
+class SchedulerTqmDelegate;
 
 // Common scheduler functionality for default tasks.
 class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
  public:
   // Category strings must have application lifetime (statics or
   // literals). They may not include " chars.
-  SchedulerHelper(scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner,
-                  const char* tracing_category,
-                  const char* disabled_by_default_tracing_category,
-                  const char* disabled_by_default_verbose_tracing_category);
+  SchedulerHelper(
+      scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
+      const char* tracing_category,
+      const char* disabled_by_default_tracing_category,
+      const char* disabled_by_default_verbose_tracing_category);
   ~SchedulerHelper() override;
 
   // TaskQueueManager::Observer implementation:
@@ -81,12 +83,11 @@ class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void SetObserver(Observer* observer);
 
   // Accessor methods.
-  base::TimeTicks Now() const;
+  base::TickClock* tick_clock() const;
   base::TimeTicks NextPendingDelayedTaskRunTime() const;
   bool GetAndClearSystemIsQuiescentBit();
 
   // Test helpers.
-  void SetTimeSourceForTesting(scoped_ptr<base::TickClock> time_source);
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
   TaskQueueManager* GetTaskQueueManagerForTesting();
 
@@ -94,13 +95,11 @@ class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   friend class SchedulerHelperTest;
 
   base::ThreadChecker thread_checker_;
-  scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner_;
+  scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate_;
   scoped_ptr<TaskQueueManager> task_queue_manager_;
   scoped_refptr<TaskQueue> control_task_runner_;
   scoped_refptr<TaskQueue> control_after_wakeup_task_runner_;
   scoped_refptr<TaskQueue> default_task_runner_;
-
-  scoped_ptr<base::TickClock> time_source_;
 
   Observer* observer_;  // NOT OWNED
   const char* tracing_category_;

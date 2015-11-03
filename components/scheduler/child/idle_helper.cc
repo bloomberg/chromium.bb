@@ -139,7 +139,7 @@ void IdleHelper::EnableLongIdlePeriod() {
     return;
   }
 
-  base::TimeTicks now(helper_->Now());
+  base::TimeTicks now(helper_->tick_clock()->NowTicks());
   base::TimeDelta next_long_idle_period_delay;
   IdlePeriodState new_idle_period_state =
       ComputeNewLongIdlePeriodState(now, &next_long_idle_period_delay);
@@ -203,7 +203,7 @@ void IdleHelper::DidProcessTask(const base::PendingTask& pending_task) {
   if (IsInIdlePeriod(state_.idle_period_state()) &&
       state_.idle_period_state() !=
           IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED &&
-      helper_->Now() >= state_.idle_period_deadline()) {
+      helper_->tick_clock()->NowTicks() >= state_.idle_period_deadline()) {
     // If the idle period deadline has now been reached, either end the idle
     // period or trigger a new long-idle period.
     if (IsInLongIdlePeriod(state_.idle_period_state())) {
@@ -238,8 +238,9 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
     } else {
       // Otherwise ensure that we kick the scheduler at the right time to
       // initiate the next idle period.
-      next_long_idle_period_delay = std::max(
-          base::TimeDelta(), state_.idle_period_deadline() - helper_->Now());
+      next_long_idle_period_delay =
+          std::max(base::TimeDelta(), state_.idle_period_deadline() -
+                                          helper_->tick_clock()->NowTicks());
     }
     if (next_long_idle_period_delay == base::TimeDelta()) {
       EnableLongIdlePeriod();
@@ -358,7 +359,9 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
   if (is_tracing) {
-    base::TimeTicks now(optional_now.is_null() ? helper_->Now() : optional_now);
+    base::TimeTicks now(optional_now.is_null()
+                            ? helper_->tick_clock()->NowTicks()
+                            : optional_now);
     base::TraceTicks trace_now = base::TraceTicks::Now();
     idle_period_deadline_for_tracing_ = trace_now + (new_deadline - now);
     TraceEventIdlePeriodStateChange(

@@ -16,7 +16,7 @@ class WebScheduler;
 };
 
 namespace scheduler {
-class SchedulerTaskRunnerDelegate;
+class SchedulerTqmDelegate;
 class SingleThreadIdleTaskRunner;
 class WebSchedulerImpl;
 class WebTaskRunnerImpl;
@@ -43,7 +43,7 @@ class SCHEDULER_EXPORT WebThreadImplForPPAPI : public WebThreadBase {
       base::MessageLoop::TaskObserver* observer) override;
 
   blink::PlatformThreadId thread_id_;
-  scoped_refptr<SchedulerTaskRunnerDelegate> task_runner_delegate_;
+  scoped_refptr<SchedulerTqmDelegate> task_runner_delegate_;
   scoped_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   scoped_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;

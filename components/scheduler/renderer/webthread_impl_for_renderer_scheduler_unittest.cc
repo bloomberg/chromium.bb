@@ -7,7 +7,9 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "components/scheduler/base/test_time_source.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +36,10 @@ class MockTaskObserver : public blink::WebThread::TaskObserver {
 class WebThreadImplForRendererSchedulerTest : public testing::Test {
  public:
   WebThreadImplForRendererSchedulerTest()
-      : scheduler_(SchedulerTaskRunnerDelegateImpl::Create(&message_loop_)),
+      : clock_(new base::SimpleTestTickClock()),
+        scheduler_(SchedulerTqmDelegateImpl::Create(
+            &message_loop_,
+            make_scoped_ptr(new TestTimeSource(clock_.get())))),
         default_task_runner_(scheduler_.DefaultTaskRunner()),
         thread_(&scheduler_) {}
 
@@ -49,6 +54,7 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
+  scoped_ptr<base::SimpleTestTickClock> clock_;
   RendererSchedulerImpl scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   WebThreadImplForRendererScheduler thread_;

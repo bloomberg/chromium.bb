@@ -34,7 +34,7 @@ class LazyNow;
 class TaskQueueImpl;
 }  // namespace internal
 
-class NestableSingleThreadTaskRunner;
+class TaskQueueManagerDelegate;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -51,14 +51,13 @@ class NestableSingleThreadTaskRunner;
 class SCHEDULER_EXPORT TaskQueueManager
     : public internal::TaskQueueSelector::Observer {
  public:
-  // Create a task queue manager where |main_task_runner| identifies the thread
+  // Create a task queue manager where |delegate| identifies the thread
   // on which where the tasks are  eventually run. Category strings must have
   // application lifetime (statics or literals). They may not include " chars.
-  TaskQueueManager(
-      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
-      const char* tracing_category,
-      const char* disabled_by_default_tracing_category,
-      const char* disabled_by_default_verbose_tracing_category);
+  TaskQueueManager(scoped_refptr<TaskQueueManagerDelegate> delegate,
+                   const char* tracing_category,
+                   const char* disabled_by_default_tracing_category,
+                   const char* disabled_by_default_verbose_tracing_category);
   ~TaskQueueManager() override;
 
   // Returns the time of the next pending delayed task in any queue.  Ignores
@@ -77,8 +76,6 @@ class SCHEDULER_EXPORT TaskQueueManager
   // manager executes its tasks on.
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
   void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
-
-  void SetTimeSourceForTesting(scoped_ptr<base::TickClock> time_source);
 
   // Returns true if any task from a monitored task queue was was run since the
   // last call to GetAndClearSystemIsQuiescentBit.
@@ -102,6 +99,9 @@ class SCHEDULER_EXPORT TaskQueueManager
   // thread. If |observer| is null, then no callbacks will occur.
   // Note |observer| is expected to outlive the SchedulerHelper.
   void SetObserver(Observer* observer);
+
+  // Returns the TickClock used by the TaskQueueManager.
+  base::TickClock* tick_clock() const;
 
  private:
   friend class internal::LazyNow;
@@ -160,14 +160,9 @@ class SCHEDULER_EXPORT TaskQueueManager
       internal::TaskQueueImpl::Task* out_previous_task);
 
   bool RunsTasksOnCurrentThread() const;
-  bool PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task,
-                       base::TimeDelta delay);
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay);
-
-  base::TimeTicks Now() const;
 
   int GetNextSequenceNumber();
 
@@ -224,7 +219,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   base::debug::TaskAnnotator task_annotator_;
 
   base::ThreadChecker main_thread_checker_;
-  scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<TaskQueueManagerDelegate> delegate_;
   internal::TaskQueueSelector selector_;
 
   base::Closure decrement_pending_and_do_work_closure_;
@@ -237,8 +232,6 @@ class SCHEDULER_EXPORT TaskQueueManager
   int pending_dowork_count_;
 
   int work_batch_size_;
-
-  scoped_ptr<base::TickClock> time_source_;
 
   base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 

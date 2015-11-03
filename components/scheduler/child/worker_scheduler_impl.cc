@@ -8,12 +8,12 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/base/task_queue.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate.h"
+#include "components/scheduler/child/scheduler_tqm_delegate.h"
 
 namespace scheduler {
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
-    scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner)
+    scoped_refptr<SchedulerTqmDelegate> main_task_runner)
     : helper_(main_task_runner,
               "worker.scheduler",
               TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),

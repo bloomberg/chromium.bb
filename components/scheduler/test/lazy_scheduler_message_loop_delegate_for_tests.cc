@@ -4,6 +4,8 @@
 
 #include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 
+#include "base/time/default_tick_clock.h"
+
 namespace scheduler {
 
 // static
@@ -15,7 +17,8 @@ LazySchedulerMessageLoopDelegateForTests::Create() {
 LazySchedulerMessageLoopDelegateForTests::
     LazySchedulerMessageLoopDelegateForTests()
     : message_loop_(base::MessageLoop::current()),
-      thread_id_(base::PlatformThread::CurrentId()) {
+      thread_id_(base::PlatformThread::CurrentId()),
+      time_source_(make_scoped_ptr(new base::DefaultTickClock())) {
   if (message_loop_)
     original_task_runner_ = message_loop_->task_runner();
 }
@@ -81,5 +84,11 @@ bool LazySchedulerMessageLoopDelegateForTests::RunsTasksOnCurrentThread()
 bool LazySchedulerMessageLoopDelegateForTests::IsNested() const {
   return EnsureMessageLoop()->IsNested();
 }
+
+base::TimeTicks LazySchedulerMessageLoopDelegateForTests::NowTicks() {
+  return time_source_->NowTicks();
+}
+
+void LazySchedulerMessageLoopDelegateForTests::OnNoMoreImmediateWork() {}
 
 }  // namespace scheduler

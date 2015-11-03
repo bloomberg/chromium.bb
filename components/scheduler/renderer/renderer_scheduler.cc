@@ -4,10 +4,14 @@
 
 #include "components/scheduler/renderer/renderer_scheduler.h"
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
+#include "components/scheduler/child/virtual_time_tqm_delegate.h"
+#include "components/scheduler/common/scheduler_switches.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace scheduler {
@@ -30,8 +34,15 @@ scoped_ptr<RendererScheduler> RendererScheduler::Create() {
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"));
 
   base::MessageLoop* message_loop = base::MessageLoop::current();
-  return make_scoped_ptr(new RendererSchedulerImpl(
-      SchedulerTaskRunnerDelegateImpl::Create(message_loop)));
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableVirtualizedTime)) {
+    return make_scoped_ptr(new RendererSchedulerImpl(
+        VirtualTimeTqmDelegate::Create(message_loop, base::TimeTicks::Now())));
+  } else {
+    return make_scoped_ptr(
+        new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
+            message_loop, make_scoped_ptr(new base::DefaultTickClock()))));
+  }
 }
 
 // static

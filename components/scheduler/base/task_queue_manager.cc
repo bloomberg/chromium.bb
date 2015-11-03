@@ -8,10 +8,9 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/time/default_tick_clock.h"
 #include "components/scheduler/base/lazy_now.h"
-#include "components/scheduler/base/nestable_single_thread_task_runner.h"
 #include "components/scheduler/base/task_queue_impl.h"
+#include "components/scheduler/base/task_queue_manager_delegate.h"
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/base/task_queue_sets.h"
 
@@ -22,15 +21,14 @@ const int64_t kMaxTimeTicks = std::numeric_limits<int64>::max();
 namespace scheduler {
 
 TaskQueueManager::TaskQueueManager(
-    scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<TaskQueueManagerDelegate> delegate,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
-    : main_task_runner_(main_task_runner),
+    : delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
       pending_dowork_count_(0),
       work_batch_size_(1),
-      time_source_(new base::DefaultTickClock),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -39,7 +37,7 @@ TaskQueueManager::TaskQueueManager(
       observer_(nullptr),
       deletion_sentinel_(new DeletionSentinel()),
       weak_factory_(this) {
-  DCHECK(main_task_runner->RunsTasksOnCurrentThread());
+  DCHECK(delegate->RunsTasksOnCurrentThread());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(disabled_by_default_tracing_category,
                                      "TaskQueueManager", this);
   selector_.SetTaskQueueSelectorObserver(this);
@@ -173,7 +171,7 @@ void TaskQueueManager::UpdateWorkQueues(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "TaskQueueManager::UpdateWorkQueues");
-  internal::LazyNow lazy_now(this);
+  internal::LazyNow lazy_now(tick_clock());
 
   // Move any ready delayed tasks into the incomming queues.
   WakeupReadyDelayedQueues(&lazy_now);
@@ -194,19 +192,19 @@ void TaskQueueManager::UpdateWorkQueues(
 void TaskQueueManager::ScheduleDelayedWorkTask(
     scoped_refptr<internal::TaskQueueImpl> queue,
     base::TimeTicks delayed_run_time) {
-  internal::LazyNow lazy_now(this);
+  internal::LazyNow lazy_now(tick_clock());
   ScheduleDelayedWork(queue.get(), delayed_run_time, &lazy_now);
 }
 
 void TaskQueueManager::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                            base::TimeTicks delayed_run_time,
                                            internal::LazyNow* lazy_now) {
-  if (!main_task_runner_->BelongsToCurrentThread()) {
+  if (!delegate_->BelongsToCurrentThread()) {
     // NOTE posting a delayed task from a different thread is not expected to be
     // common. This pathway is less optimal than perhaps it could be because
     // it causes two main thread tasks to be run.  Should this assumption prove
     // to be false in future, we may need to revisit this.
-    main_task_runner_->PostTask(
+    delegate_->PostTask(
         FROM_HERE, base::Bind(&TaskQueueManager::ScheduleDelayedWorkTask,
                               weak_factory_.GetWeakPtr(),
                               scoped_refptr<internal::TaskQueueImpl>(queue),
@@ -214,13 +212,13 @@ void TaskQueueManager::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
     return;
   }
 
-  // Make sure there's one (and only one) task posted to |main_task_runner_|
+  // Make sure there's one (and only one) task posted to |delegate_|
   // to call |DelayedDoWork| at |delayed_run_time|.
   if (delayed_wakeup_multimap_.find(delayed_run_time) ==
       delayed_wakeup_multimap_.end()) {
     base::TimeDelta delay =
         std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
-    main_task_runner_->PostDelayedTask(FROM_HERE, do_work_closure_, delay);
+    delegate_->PostDelayedTask(FROM_HERE, do_work_closure_, delay);
   }
   delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));
 }
@@ -247,7 +245,7 @@ void TaskQueueManager::WakeupReadyDelayedQueues(internal::LazyNow* lazy_now) {
 }
 
 void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
-  bool on_main_thread = main_task_runner_->BelongsToCurrentThread();
+  bool on_main_thread = delegate_->BelongsToCurrentThread();
   if (on_main_thread) {
     // We only want one pending DoWork posted from the main thread, or we risk
     // an explosion of pending DoWorks which could starve out everything else.
@@ -255,10 +253,9 @@ void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
       return;
     }
     pending_dowork_count_++;
-    main_task_runner_->PostTask(FROM_HERE,
-                                decrement_pending_and_do_work_closure_);
+    delegate_->PostTask(FROM_HERE, decrement_pending_and_do_work_closure_);
   } else {
-    main_task_runner_->PostTask(FROM_HERE, do_work_closure_);
+    delegate_->PostTask(FROM_HERE, do_work_closure_);
   }
 }
 
@@ -269,7 +266,7 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
   }
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  if (!main_task_runner_->IsNested())
+  if (!delegate_->IsNested())
     queues_to_delete_.clear();
 
   // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
@@ -299,15 +296,19 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
 
     // Only run a single task per batch in nested run loops so that we can
     // properly exit the nested loop when someone calls RunLoop::Quit().
-    if (main_task_runner_->IsNested())
+    if (delegate_->IsNested())
       break;
   }
 
   // TODO(alexclarke): Consider refactoring the above loop to terminate only
   // when there's no more work left to be done, rather than posting a
   // continuation task.
-  if (!selector_.EnabledWorkQueuesEmpty())
+  if (!selector_.EnabledWorkQueuesEmpty()) {
     MaybePostDoWorkOnMainRunner();
+  } else {
+    // Tell the task runner we have no more work.
+    delegate_->OnNoMoreImmediateWork();
+  }
 }
 
 bool TaskQueueManager::SelectQueueToService(
@@ -335,13 +336,12 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   if (queue->GetQuiescenceMonitored())
     task_was_run_on_quiescence_monitored_queue_ = true;
 
-  if (!pending_task.nestable && main_task_runner_->IsNested()) {
+  if (!pending_task.nestable && delegate_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
     // TODO(skyostil): Figure out a way to not forget which task queue the
     // task is associated with. See http://crbug.com/522843.
-    main_task_runner_->PostNonNestableTask(pending_task.posted_from,
-                                           pending_task.task);
+    delegate_->PostNonNestableTask(pending_task.posted_from, pending_task.task);
     return ProcessTaskResult::DEFERRED;
   }
 
@@ -373,15 +373,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
 }
 
 bool TaskQueueManager::RunsTasksOnCurrentThread() const {
-  return main_task_runner_->RunsTasksOnCurrentThread();
-}
-
-bool TaskQueueManager::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
-  DCHECK_GE(delay, base::TimeDelta());
-  return main_task_runner_->PostDelayedTask(from_here, task, delay);
+  return delegate_->RunsTasksOnCurrentThread();
 }
 
 void TaskQueueManager::SetWorkBatchSize(int work_batch_size) {
@@ -402,20 +394,14 @@ void TaskQueueManager::RemoveTaskObserver(
   task_observers_.RemoveObserver(task_observer);
 }
 
-void TaskQueueManager::SetTimeSourceForTesting(
-    scoped_ptr<base::TickClock> time_source) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  time_source_ = time_source.Pass();
-}
-
 bool TaskQueueManager::GetAndClearSystemIsQuiescentBit() {
   bool task_was_run = task_was_run_on_quiescence_monitored_queue_;
   task_was_run_on_quiescence_monitored_queue_ = false;
   return !task_was_run;
 }
 
-base::TimeTicks TaskQueueManager::Now() const {
-  return time_source_->NowTicks();
+base::TickClock* TaskQueueManager::tick_clock() const {
+  return delegate_.get();
 }
 
 int TaskQueueManager::GetNextSequenceNumber() {
