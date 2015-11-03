@@ -89,6 +89,8 @@ class TestGypBase(TestCommon.TestCommon):
   _lib = TestCommon.lib_suffix
   dll_ = TestCommon.dll_prefix
   _dll = TestCommon.dll_suffix
+  module_ = TestCommon.module_prefix
+  _module = TestCommon.module_suffix
 
   # Constants to represent different targets.
   ALL = '__all__'
@@ -98,6 +100,7 @@ class TestGypBase(TestCommon.TestCommon):
   EXECUTABLE = '__executable__'
   STATIC_LIB = '__static_lib__'
   SHARED_LIB = '__shared_lib__'
+  LOADABLE_MODULE = '__loadable_module__'
 
   def __init__(self, gyp=None, *args, **kw):
     self.origin_cwd = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -361,6 +364,8 @@ class TestGypBase(TestCommon.TestCommon):
         name = self.lib_ + name + self._lib
       elif type == self.SHARED_LIB:
         name = self.dll_ + name + self._dll
+      elif type == self.LOADABLE_MODULE:
+        name = self.module_ + name + self._module
     return name
 
   def run_built_executable(self, name, *args, **kw):
