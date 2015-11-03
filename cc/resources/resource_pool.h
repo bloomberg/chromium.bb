@@ -116,6 +116,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   size_t total_memory_usage_bytes_;
   size_t total_resource_count_;
 
+  // Holds most recently used resources at the front of the queue.
   using ResourceDeque = ScopedPtrDeque<PoolResource>;
   ResourceDeque unused_resources_;
   ResourceDeque busy_resources_;
