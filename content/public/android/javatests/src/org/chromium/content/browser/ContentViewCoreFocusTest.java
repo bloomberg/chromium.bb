@@ -56,10 +56,10 @@ public class ContentViewCoreFocusTest extends ContentShellTestBase {
         // view loses its focus
         final ContentViewCore contentViewCore = getContentViewCore();
         final View view = contentViewCore.getContainerView();
-        final TestInputMethodManagerWrapper immw = new TestInputMethodManagerWrapper(getActivity());
         assertTrue(view.requestFocus());
 
-        contentViewCore.setInputMethodManagerWrapperForTest(immw);
+        final TestInputMethodManagerWrapper immw = new TestInputMethodManagerWrapper(getActivity());
+        contentViewCore.getImeAdapterForTest().setInputMethodManagerWrapperForTest(immw);
 
         immw.showSoftInput(view, 0, null);
         assertFalse(immw.isHidden());

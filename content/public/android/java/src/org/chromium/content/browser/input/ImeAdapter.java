@@ -91,11 +91,9 @@ public class ImeAdapter {
     private InputMethodManagerWrapper mInputMethodManagerWrapper;
     private AdapterInputConnection mInputConnection;
     private final ImeAdapterDelegate mViewEmbedder;
+
     private int mTextInputType = TextInputType.NONE;
     private int mTextInputFlags;
-
-    @VisibleForTesting
-    boolean mIsShowWithoutHideOutstanding = false;
 
     /**
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
@@ -123,7 +121,7 @@ public class ImeAdapter {
      * @param immw InputMethodManagerWrapper that should be used to call InputMethodManager.
      */
     @VisibleForTesting
-    public void setInputMethodManagerWrapper(InputMethodManagerWrapper immw) {
+    public void setInputMethodManagerWrapperForTest(InputMethodManagerWrapper immw) {
         mInputMethodManagerWrapper = immw;
     }
 
@@ -210,7 +208,7 @@ public class ImeAdapter {
         if (textInputType != TextInputType.NONE) {
             if (showIfNeeded) showSoftKeyboard();
         } else {
-            hideSoftKeyboard();
+            hideKeyboard();
         }
     }
 
@@ -234,8 +232,7 @@ public class ImeAdapter {
      * Show soft keyboard only if it is the current keyboard configuration.
      */
     public void showSoftKeyboard() {
-        Log.d(TAG, "showKeyboard");
-        mIsShowWithoutHideOutstanding = true;
+        Log.d(TAG, "showSoftKeyboard");
         mInputMethodManagerWrapper.showSoftInput(
                 mViewEmbedder.getAttachedView(), 0, mViewEmbedder.getNewShowKeyboardReceiver());
         if (mViewEmbedder.getAttachedView().getResources().getConfiguration().keyboard
@@ -244,14 +241,56 @@ public class ImeAdapter {
         }
     }
 
-    private void hideSoftKeyboard() {
-        Log.d(TAG, "hideSoftKeyboard");
-        mIsShowWithoutHideOutstanding = false;
+    /**
+     * Hide soft keyboard.
+     */
+    public void hideKeyboard() {
+        Log.d(TAG, "hideKeyboard");
         View view = mViewEmbedder.getAttachedView();
         if (mInputMethodManagerWrapper.isActive(view)) {
-            mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0,
-                    mViewEmbedder.getNewShowKeyboardReceiver());
+            // NOTE: we should not set ResultReceiver here. Otherwise, IMM will own ContentViewCore
+            // and ImeAdapter even after input method goes away and result gets received.
+            mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0, null);
         }
+        if (mTextInputType == TextInputType.NONE && mInputConnection != null) {
+            mInputConnection.restartInput();
+        }
+    }
+
+    /**
+     * Call this when keyboard configuration has changed.
+     */
+    public void onKeyboardConfigurationChanged() {
+        Log.d(TAG, "onKeyboardConfigurationChanged: mTextInputType [%d]", mTextInputType);
+        if (mTextInputType != TextInputType.NONE) {
+            mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
+            // By default, we show soft keyboard on keyboard changes. This is useful
+            // when the user switches from hardware keyboard to software keyboard.
+            // TODO(changwan): check if we can skip this for hardware keyboard configurations.
+            showSoftKeyboard();
+        }
+    }
+
+    /**
+     * Call this when view's focus has changed.
+     * @param gainFocus True if we're gaining focus.
+     */
+    public void onViewFocusChanged(boolean gainFocus) {
+        Log.d(TAG, "onViewFocusChanged: gainFocus [%b]", gainFocus);
+        if (!gainFocus) hideKeyboard();
+    }
+
+    /**
+     * @return Whether input can be shown on the current focus (e.g. on an input box
+     *         or on a contenteditable).
+     */
+    public boolean canCreateInputConnection() {
+        return mTextInputType != TextInputType.NONE;
+    }
+
+    @VisibleForTesting
+    public void setInputTypeForTest(int textInputType) {
+        mTextInputType = textInputType;
     }
 
     private static boolean isTextInputType(int type) {
@@ -400,7 +439,7 @@ public class ImeAdapter {
 
     @CalledByNative
     private void focusedNodeChanged(boolean isEditable) {
-        Log.d(TAG, "focusedNodeChanged");
+        Log.d(TAG, "focusedNodeChanged: isEditable [%b]", isEditable);
         if (mTextInputType != TextInputType.NONE && mInputConnection != null && isEditable) {
             mInputConnection.restartInput();
         }

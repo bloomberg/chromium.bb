@@ -36,8 +36,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         launchContentShellWithUrl("about:blank");
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
         mWrapper = new TestInputMethodManagerWrapper(getActivity());
-        ImeAdapterDelegate delegate = new TestImeAdapterDelegate();
-        mImeAdapter = new TestImeAdapter(mWrapper, delegate);
+        mImeAdapter = new TestImeAdapter(mWrapper, new TestImeAdapterDelegate());
         mEditable = Editable.Factory.getInstance().newEditable("");
         mConnection = new AdapterInputConnection(
                 getContentViewCore().getContainerView(), mImeAdapter, mEditable, new EditorInfo());
@@ -155,29 +154,6 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
             assertEquals("Composition start did not match", compositionStart,
                     state.compositionStart);
             assertEquals("Composition end did not match", compositionEnd, state.compositionEnd);
-        }
-    }
-
-    private static class TestImeAdapterDelegate implements ImeAdapterDelegate {
-        @Override
-        public void onImeEvent() {}
-
-        @Override
-        public void onKeyboardBoundsUnchanged() {}
-
-        @Override
-        public boolean performContextMenuAction(int id) {
-            return false;
-        }
-
-        @Override
-        public View getAttachedView() {
-            return null;
-        }
-
-        @Override
-        public ResultReceiver getNewShowKeyboardReceiver() {
-            return null;
         }
     }
 

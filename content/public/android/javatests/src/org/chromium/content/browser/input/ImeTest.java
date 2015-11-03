@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
@@ -34,6 +35,8 @@ import org.chromium.ui.base.ime.TextInputType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -73,7 +76,7 @@ public class ImeTest extends ContentShellTestBase {
         mWebContents = getWebContents();
 
         mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(mContentViewCore);
-        getImeAdapter().setInputMethodManagerWrapper(mInputMethodManagerWrapper);
+        getImeAdapter().setInputMethodManagerWrapperForTest(mInputMethodManagerWrapper);
         assertEquals(0, mInputMethodManagerWrapper.getShowSoftInputCounter());
         mConnectionFactory = new TestAdapterInputConnectionFactory();
         mContentViewCore.setAdapterInputConnectionFactory(mConnectionFactory);
@@ -122,7 +125,6 @@ public class ImeTest extends ContentShellTestBase {
 
         performGo(mCallbackContainer);
 
-        waitAndVerifyStatesAndCalls(1, "", 0, 0, -1, -1);
         assertWaitForKeyboardStatus(false);
     }
 
@@ -163,48 +165,41 @@ public class ImeTest extends ContentShellTestBase {
 
         DOMUtils.clickNode(this, mContentViewCore, "input_radio");
         assertWaitForKeyboardStatus(false);
-        waitAndVerifyStatesAndCalls(1, "", 0, 0, -1, -1);
 
         DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
 
-        // The initial values will not be correct here because we call showSoftInput()
-        // before updating selection range.
-        assertEquals(0, mInputMethodManagerWrapper.getEditorInfo().initialSelStart);
-        assertEquals(0, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
-
-        // The values will immediately be updated.
-        waitAndVerifyStatesAndCalls(2, "hello", 5, 5, -1, -1);
+        assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelStart);
+        assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
     }
 
     @SmallTest
     @Feature({"TextInput"})
     public void testShowAndHideSoftInput() throws Exception {
         focusElement("input_radio", false);
-        waitAndVerifyStatesAndCalls(0, "", 0, 0, -1, -1);
 
-        // hideSoftKeyboard().
-        waitForKeyboardStates(0, 1, 0, new Integer[] {});
+        // hideSoftKeyboard(), restartInput()
+        waitForKeyboardStates(0, 1, 1, new Integer[] {});
 
         // showSoftInput(), restartInput()
         focusElement("input_number1");
-        waitForKeyboardStates(1, 1, 1, new Integer[] {TextInputType.NUMBER});
+        waitForKeyboardStates(1, 1, 2, new Integer[] {TextInputType.NUMBER});
 
         focusElement("input_number2");
         // Hide should never be called here. Otherwise we will see a flicker. Restarted to
         // reset internal states to handle the new input form.
-        waitForKeyboardStates(2, 1, 2, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER});
+        waitForKeyboardStates(2, 1, 3, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER});
 
         focusElement("input_text");
         // showSoftInput() on input_text. restartInput() on input_number1 due to focus change,
         // and restartInput() on input_text later.
         // TODO(changwan): reduce unnecessary restart input.
-        waitForKeyboardStates(3, 1, 4, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
+        waitForKeyboardStates(3, 1, 5, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
                 TextInputType.NUMBER, TextInputType.TEXT});
 
         focusElement("input_radio", false);
-        // hideSoftInput().
-        waitForKeyboardStates(3, 2, 4, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
+        // hideSoftInput(), restartInput()
+        waitForKeyboardStates(3, 2, 6, new Integer[] {TextInputType.NUMBER, TextInputType.NUMBER,
                 TextInputType.NUMBER, TextInputType.TEXT});
     }
 
@@ -227,11 +222,21 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private String getKeyboardStates() {
-        int showCount = mInputMethodManagerWrapper.getShowSoftInputCounter();
-        int hideCount = mInputMethodManagerWrapper.getHideSoftInputCounter();
-        int restartCount = mInputMethodManagerWrapper.getRestartInputCounter();
-        Integer[] history = mConnectionFactory.getTextInputTypeHistory();
-        return stringifyKeyboardStates(showCount, hideCount, restartCount, history);
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    int showCount = mInputMethodManagerWrapper.getShowSoftInputCounter();
+                    int hideCount = mInputMethodManagerWrapper.getHideSoftInputCounter();
+                    int restartCount = mInputMethodManagerWrapper.getRestartInputCounter();
+                    Integer[] history = mConnectionFactory.getTextInputTypeHistory();
+                    return stringifyKeyboardStates(showCount, hideCount, restartCount, history);
+                }
+            });
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private String stringifyKeyboardStates(int show, int hide, int restart, Integer[] history) {
@@ -330,6 +335,58 @@ public class ImeTest extends ContentShellTestBase {
                 return newCount == mInputMethodManagerWrapper.getShowSoftInputCounter();
             }
         }));
+    }
+
+    private void attachPhysicalKeyboard() {
+        Configuration hardKeyboardConfig =
+                new Configuration(mContentViewCore.getContext().getResources().getConfiguration());
+        hardKeyboardConfig.keyboard = Configuration.KEYBOARD_QWERTY;
+        hardKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_YES;
+        hardKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
+        onConfigurationChanged(hardKeyboardConfig);
+    }
+
+    private void detachPhysicalKeyboard() {
+        Configuration softKeyboardConfig =
+                new Configuration(mContentViewCore.getContext().getResources().getConfiguration());
+        softKeyboardConfig.keyboard = Configuration.KEYBOARD_NOKEYS;
+        softKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_NO;
+        softKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
+        onConfigurationChanged(softKeyboardConfig);
+    }
+
+    private void onConfigurationChanged(final Configuration config) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.onConfigurationChanged(config);
+            }
+        });
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPhysicalKeyboard_AttachDetach() throws Exception {
+        attachPhysicalKeyboard();
+        // We still call showSoftKeyboard, which will be ignored by physical keyboard.
+        waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});
+        setComposingText("a", 1);
+        waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});
+        detachPhysicalKeyboard();
+        // Now we really show soft keyboard. We also call restartInput when configuration changes.
+        waitForKeyboardStates(2, 0, 2, new Integer[] {TextInputType.TEXT, TextInputType.TEXT});
+
+        // Reload the page, then the focus will be lost.
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getActiveShell().loadUrl(DATA_URL);
+            }
+        });
+
+        detachPhysicalKeyboard();
+        // We should not show soft keyboard here because focus has been lost.
+        waitForKeyboardStates(2, 1, 2, new Integer[] {TextInputType.TEXT, TextInputType.TEXT});
     }
 
     @SmallTest
@@ -432,7 +489,6 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyStatesAndCalls(1, "hello", 0, 5, -1, -1);
 
         unselect();
-        waitAndVerifyStatesAndCalls(2, "", 0, 0, -1, -1);
 
         assertWaitForKeyboardStatus(false);
     }

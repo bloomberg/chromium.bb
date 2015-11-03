@@ -530,10 +530,6 @@ public class AdapterInputConnection extends BaseInputConnection {
         return mImeAdapter.setComposingRegion(regionText, a, b);
     }
 
-    boolean isActive() {
-        return getInputMethodManagerWrapper().isActive(mInternalView);
-    }
-
     private InputMethodManagerWrapper getInputMethodManagerWrapper() {
         return mImeAdapter.getInputMethodManagerWrapper();
     }

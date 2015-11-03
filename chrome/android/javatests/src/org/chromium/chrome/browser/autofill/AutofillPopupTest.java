@@ -155,7 +155,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
         final ViewGroup view = viewCore.getContainerView();
         final TestInputMethodManagerWrapper immw =
                 new TestInputMethodManagerWrapper(viewCore);
-        viewCore.getImeAdapterForTest().setInputMethodManagerWrapper(immw);
+        viewCore.getImeAdapterForTest().setInputMethodManagerWrapperForTest(immw);
 
         // Add an Autofill profile.
         AutofillProfile profile = new AutofillProfile(

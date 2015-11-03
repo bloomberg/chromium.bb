@@ -12,6 +12,7 @@ import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.ui.base.ime.TextInputType;
 
 /**
  * Tests that when InputConnection is recreated, the text is still retained.
@@ -37,7 +38,7 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
         mContentViewCore = new ContentViewCore(getActivity());
         mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(mContentViewCore);
         mImeAdapter = new TestImeAdapter(mInputMethodManagerWrapper);
-        mImeAdapter.setInputMethodManagerWrapper(new TestInputMethodManagerWrapper(
+        mImeAdapter.setInputMethodManagerWrapperForTest(new TestInputMethodManagerWrapper(
                 mContentViewCore));
         mContentViewCore.setImeAdapterForTest(mImeAdapter);
         mContentViewCore.createContentViewAndroidDelegate();
@@ -53,6 +54,7 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
     public void testRecreateInputConnection() throws Exception {
         EditorInfo info = new EditorInfo();
 
+        mImeAdapter.setInputTypeForTest(TextInputType.TEXT);
         mContentViewCore.onCreateInputConnection(info);
         AdapterInputConnection adapter = mContentViewCore.getAdapterInputConnectionForTest();
         adapter.updateState("Is this text restored?", 0, 0, 0, 0, true);

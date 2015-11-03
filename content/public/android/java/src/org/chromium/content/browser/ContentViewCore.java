@@ -480,7 +480,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private ImeAdapter mImeAdapter;
     private ImeAdapter.AdapterInputConnectionFactory mAdapterInputConnectionFactory;
     private AdapterInputConnection mInputConnection;
-    private InputMethodManagerWrapper mInputMethodManagerWrapper;
 
     // Lazily created paste popup menu, triggered either via long press in an
     // editable region or from tapping the insertion handle.
@@ -624,10 +623,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     public ContentViewCore(Context context) {
         mContext = context;
-
         mAdapterInputConnectionFactory = new AdapterInputConnectionFactory();
-        mInputMethodManagerWrapper = new InputMethodManagerWrapper(mContext);
-
         mRenderCoordinates = new RenderCoordinates();
         mJoystickScrollProvider = new JoystickScrollProvider(this);
         float deviceScaleFactor = getContext().getResources().getDisplayMetrics().density;
@@ -646,7 +642,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mEditable = Editable.Factory.getInstance().newEditable("");
         Selection.setSelection(mEditable, 0);
         mContainerViewObservers = new ObserverList<ContainerViewObserver>();
-        mCurrentConfig = getContext().getResources().getConfiguration();
+        // Deep copy newConfig so that we can notice the difference.
+        mCurrentConfig = new Configuration(getContext().getResources().getConfiguration());
     }
 
     /**
@@ -730,17 +727,12 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     @VisibleForTesting
-    public void setInputMethodManagerWrapperForTest(InputMethodManagerWrapper immw) {
-        mInputMethodManagerWrapper = immw;
-    }
-
-    @VisibleForTesting
     public AdapterInputConnection getInputConnectionForTest() {
         return mInputConnection;
     }
 
     private ImeAdapter createImeAdapter() {
-        return new ImeAdapter(mInputMethodManagerWrapper,
+        return new ImeAdapter(new InputMethodManagerWrapper(mContext),
                 new ImeAdapter.ImeAdapterDelegate() {
                     @Override
                     public void onImeEvent() {
@@ -1548,6 +1540,18 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      * @see View#onCreateInputConnection(EditorInfo)
      */
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // Android View framework will check whether the user can compose text by calling this
+        // function at view attachment. Especially in the case of hardware keyboard, connection can
+        // be made regardless of whether we have called showSoftInput(), and therefore we need
+        // to check the availability ourselves here.
+        // If we return null here, hardware keyboard will not be connected through input connection,
+        // but key events will go through View#dispatchKeyEvent(), and the user won't get any
+        // recommendation from text composition, which is what we expect.
+        if (!mImeAdapter.canCreateInputConnection()) {
+            mInputConnection = null;
+            return null;
+        }
+
         if (!mImeAdapter.hasTextInputType()) {
             // Although onCheckIsTextEditor will return false in this case, the EditorInfo
             // is still used by the InputMethodService. Need to make sure the IME doesn't
@@ -1587,21 +1591,17 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             if (mCurrentConfig.keyboard != newConfig.keyboard
                     || mCurrentConfig.keyboardHidden != newConfig.keyboardHidden
                     || mCurrentConfig.hardKeyboardHidden != newConfig.hardKeyboardHidden) {
-                if (mNativeContentViewCore != 0) {
-                    mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
-                }
-                mInputMethodManagerWrapper.restartInput(mContainerView);
-                // By default, we show soft keyboard on keyboard changes. This is useful
-                // when the user transitions from hardware keyboard to software keyboard.
-                mImeAdapter.showSoftKeyboard();
+                mImeAdapter.onKeyboardConfigurationChanged();
             }
+            // Deep copy newConfig so that we can notice the difference.
+            mCurrentConfig = new Configuration(newConfig);
+
             mContainerViewInternals.super_onConfigurationChanged(newConfig);
 
             // To request layout has side effect, but it seems OK as it only happen in
             // onConfigurationChange and layout has to be changed in most case.
             mContainerView.requestLayout();
         } finally {
-            mCurrentConfig = newConfig;
             TraceEvent.end("ContentViewCore.onConfigurationChanged");
         }
     }
@@ -1678,10 +1678,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     public void onFocusChanged(boolean gainFocus) {
+        mImeAdapter.onViewFocusChanged(gainFocus);
+
         if (gainFocus) {
             restoreSelectionPopupsIfNecessary();
         } else {
-            hideImeIfNeeded();
             cancelRequestToScrollFocusedEditableNodeIntoView();
             if (mPreserveSelectionOnNextLossOfFocus) {
                 mPreserveSelectionOnNextLossOfFocus = false;
@@ -2387,20 +2388,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private void setTextHandlesTemporarilyHidden(boolean hide) {
         if (mNativeContentViewCore == 0) return;
         nativeSetTextHandlesTemporarilyHidden(mNativeContentViewCore, hide);
-    }
-
-    /**
-     * Hides the IME if the containerView is the active view for IME.
-     */
-    public void hideImeIfNeeded() {
-        // Hide input method window from the current view synchronously
-        // because ImeAdapter does so asynchronouly with a delay, and
-        // by the time when ImeAdapter dismisses the input, the
-        // containerView may have lost focus.
-        if (mInputMethodManagerWrapper.isActive(mContainerView)) {
-            mInputMethodManagerWrapper.hideSoftInputFromWindow(
-                    mContainerView.getWindowToken(), 0, null);
-        }
     }
 
     @SuppressWarnings("unused")

@@ -14,6 +14,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.input.ImeAdapter;
+import org.chromium.content.browser.input.TestImeAdapterDelegate;
+import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 /**
@@ -78,6 +81,9 @@ public class PopupZoomerTest extends ContentShellTestBase {
         mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
         mContentViewCore = new ContentViewCore(getActivity());
         mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
+        mContentViewCore.setImeAdapterForTest(new ImeAdapter(
+                new TestInputMethodManagerWrapper(mContentViewCore),
+                new TestImeAdapterDelegate()));
     }
 
     @SmallTest
