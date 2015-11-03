@@ -318,7 +318,8 @@ class ExternalVideoEncoder::VEAClientImpl
 
         const char kZeroEncodeDetails[] = "zero-encode-details";
         const std::string details = base::StringPrintf(
-            "%c/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,q=%zu,act=%c,ref=%d",
+            ("%c/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,q=%" PRIuS
+             ",act=%c,ref=%d"),
             codec_profile_ == media::VP8PROFILE_ANY ? 'V' : 'H',
             key_frame ? 'K' : 'D', encoded_frame->frame_id,
             encoded_frame->rtp_timestamp, request.target_bit_rate / 1000,
