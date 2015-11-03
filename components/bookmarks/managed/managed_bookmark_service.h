@@ -68,7 +68,7 @@ class ManagedBookmarkService : public KeyedService,
   void BookmarkModelChanged() override;
 
   // BookmarkModelObserver implementation.
-  void BookmarkModelLoaded(bookmarks::BookmarkModel* bookmark_model,
+  void BookmarkModelLoaded(BookmarkModel* bookmark_model,
                            bool ids_reassigned) override;
   void BookmarkModelBeingDeleted(BookmarkModel* bookmark_model) override;
 

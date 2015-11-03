@@ -38,7 +38,7 @@ class ManagedBookmarksTracker {
 
   // If |is_supervised| is true, this will track supervised bookmarks rather
   // than managed bookmarks.
-  ManagedBookmarksTracker(bookmarks::BookmarkModel* model,
+  ManagedBookmarksTracker(BookmarkModel* model,
                           PrefService* prefs,
                           bool is_supervised,
                           const GetManagementDomainCallback& callback);
@@ -51,13 +51,13 @@ class ManagedBookmarksTracker {
   // Loads the initial managed/supervised bookmarks in |list| into |folder|.
   // New nodes will be assigned IDs starting at |next_node_id|.
   // Returns the next node ID to use.
-  static int64 LoadInitial(bookmarks::BookmarkNode* folder,
+  static int64 LoadInitial(BookmarkNode* folder,
                            const base::ListValue* list,
                            int64 next_node_id);
 
   // Starts tracking the pref for updates to the managed/supervised bookmarks.
   // Should be called after loading the initial bookmarks.
-  void Init(bookmarks::BookmarkPermanentNode* managed_node);
+  void Init(BookmarkPermanentNode* managed_node);
 
   bool is_supervised() const { return is_supervised_; }
 
@@ -70,17 +70,16 @@ class ManagedBookmarksTracker {
 
   void ReloadManagedBookmarks();
 
-  void UpdateBookmarks(const bookmarks::BookmarkNode* folder,
-                       const base::ListValue* list);
+  void UpdateBookmarks(const BookmarkNode* folder, const base::ListValue* list);
   static bool LoadBookmark(const base::ListValue* list,
                            size_t index,
                            base::string16* title,
                            GURL* url,
                            const base::ListValue** children);
 
-  bookmarks::BookmarkModel* model_;
+  BookmarkModel* model_;
   const bool is_supervised_;
-  bookmarks::BookmarkPermanentNode* managed_node_;
+  BookmarkPermanentNode* managed_node_;
   PrefService* prefs_;
   PrefChangeRegistrar registrar_;
   GetManagementDomainCallback get_management_domain_callback_;

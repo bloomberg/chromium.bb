@@ -415,8 +415,8 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
     std::vector<const BookmarkNode*> url_matched_nodes;
     if (url.is_valid())
       model->GetNodesByURL(url, &url_matched_nodes);
-    bookmarks::VectorIterator iterator(&url_matched_nodes);
-    GetBookmarksMatchingPropertiesImpl<bookmarks::VectorIterator>(
+    VectorIterator iterator(&url_matched_nodes);
+    GetBookmarksMatchingPropertiesImpl<VectorIterator>(
         iterator, model, query, query_words, max_count, languages, nodes);
   } else {
     ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
