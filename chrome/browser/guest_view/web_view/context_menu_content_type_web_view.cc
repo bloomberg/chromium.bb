@@ -48,12 +48,18 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
       return true;
     case ITEM_GROUP_DEVELOPER:
       {
-      if (chrome::GetChannel() >= version_info::Channel::DEV) {
+        const extensions::Extension* embedder_extension = GetExtension();
+        if (chrome::GetChannel() >= version_info::Channel::DEV) {
           // Hide dev tools items in guests inside WebUI if we are not running
           // canary or tott.
           auto web_view_guest =
               extensions::WebViewGuest::FromWebContents(source_web_contents());
-          if (web_view_guest &&
+          // Note that this check might not be sufficient to hide dev tools
+          // items on OS_MACOSX if we start supporting <webview> inside
+          // component extensions.
+          // For a list of places where <webview>/GuestViews are supported, see:
+          // https://goo.gl/xfJkwp.
+          if (!embedder_extension && web_view_guest &&
                   web_view_guest->owner_web_contents()->GetWebUI()) {
               return false;
           }
@@ -63,10 +69,9 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
         // is fixed.
 #if !defined(OS_MACOSX)
         // Add dev tools for unpacked extensions.
-        const extensions::Extension* embedder_platform_app = GetExtension();
-        return !embedder_platform_app ||
+        return !embedder_extension ||
                extensions::Manifest::IsUnpackedLocation(
-                   embedder_platform_app->location()) ||
+                   embedder_extension->location()) ||
                base::CommandLine::ForCurrentProcess()->HasSwitch(
                    switches::kDebugPackedApps);
 #else

@@ -1674,6 +1674,19 @@ IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
             new_guest_web_contents->GetLastCommittedURL());
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuInspectElement) {
+  LoadAppWithGuest("web_view/context_menus/basic");
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  ASSERT_TRUE(guest_web_contents);
+
+  content::ContextMenuParams params;
+  TestRenderViewContextMenu menu(guest_web_contents->GetMainFrame(), params);
+  menu.Init();
+
+  // Expect "Inspect" to be shown as we are running webview in a chrome app.
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+}
+
 // This test executes the context menu command 'LanguageSettings' which will
 // load chrome://settings/languages in a browser window. This is a browser-
 // initiated operation and so we expect this to succeed if the embedder is

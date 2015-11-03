@@ -4,12 +4,15 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
+#include "content/public/common/context_menu_params.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 class WebUIWebViewBrowserTest : public WebUIBrowserTest {
@@ -162,3 +165,12 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptIncognito) {
       new base::StringValue(GetTestUrl("empty.html").spec())));
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ContextMenuInspectElement) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+  content::ContextMenuParams params;
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      params);
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+}
