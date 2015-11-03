@@ -35,7 +35,7 @@ class DrmDisplay {
   const std::vector<drmModeModeInfo>& modes() const { return modes_; }
 
   DisplaySnapshot_Params Update(HardwareDisplayControllerInfo* info,
-                                size_t display_index);
+                                size_t device_index);
 
   bool Configure(const drmModeModeInfo* mode, const gfx::Point& origin);
   bool GetHDCPState(HDCPState* state);

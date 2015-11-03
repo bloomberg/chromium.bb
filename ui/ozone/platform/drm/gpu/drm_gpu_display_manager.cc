@@ -70,8 +70,7 @@ std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
   std::vector<DisplaySnapshot_Params> params_list;
 
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
-  // Unique identifier used to create the display id.
-  size_t index = 0;
+  size_t device_index = 0;
   for (const auto& drm : devices) {
     ScopedVector<HardwareDisplayControllerInfo> display_infos =
         GetAvailableDisplayControllerInfos(drm->get_fd());
@@ -86,9 +85,10 @@ std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
       } else {
         displays_.push_back(new DrmDisplay(screen_manager_, drm));
       }
-
-      params_list.push_back(displays_.back()->Update(display_info, index++));
+      params_list.push_back(
+          displays_.back()->Update(display_info, device_index));
     }
+    device_index++;
   }
 
   NotifyScreenManager(displays_.get(), old_displays.get());

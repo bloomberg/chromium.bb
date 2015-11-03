@@ -150,13 +150,19 @@ bool IsAspectPreserving(int fd, drmModeConnector* connector) {
           "Full aspect");
 }
 
+int ConnectorIndex(int device_index, int display_index) {
+  DCHECK_LT(device_index, 16);
+  DCHECK_LT(display_index, 16);
+  return ((device_index << 4) + display_index) & 0xFF;
+}
+
 }  // namespace
 
 HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
     ScopedDrmConnectorPtr connector,
-    ScopedDrmCrtcPtr crtc)
-    : connector_(connector.Pass()), crtc_(crtc.Pass()) {
-}
+    ScopedDrmCrtcPtr crtc,
+    size_t index)
+    : connector_(connector.Pass()), crtc_(crtc.Pass()), index_(index) {}
 
 HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() {
 }
@@ -181,7 +187,7 @@ ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
 
     ScopedDrmCrtcPtr crtc(drmModeGetCrtc(fd, crtc_id));
     displays.push_back(
-        new HardwareDisplayControllerInfo(connector.Pass(), crtc.Pass()));
+        new HardwareDisplayControllerInfo(connector.Pass(), crtc.Pass(), i));
   }
 
   return displays.Pass();
@@ -209,10 +215,11 @@ DisplayMode_Params CreateDisplayModeParams(const drmModeModeInfo& mode) {
 DisplaySnapshot_Params CreateDisplaySnapshotParams(
     HardwareDisplayControllerInfo* info,
     int fd,
-    size_t display_index,
+    size_t device_index,
     const gfx::Point& origin) {
   DisplaySnapshot_Params params;
-  params.display_id = display_index;
+  int64 connector_index = ConnectorIndex(device_index, info->index());
+  params.display_id = connector_index;
   params.origin = origin;
   params.physical_size =
       gfx::Size(info->connector()->mmWidth, info->connector()->mmHeight);
@@ -228,9 +235,8 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
         static_cast<uint8_t*>(edid_blob->data),
         static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 
-    if (!GetDisplayIdFromEDID(edid, display_index, &params.display_id,
-                              &params.product_id))
-      params.display_id = display_index;
+    GetDisplayIdFromEDID(edid, connector_index, &params.display_id,
+                         &params.product_id);
 
     ParseOutputDeviceData(edid, nullptr, nullptr, &params.display_name, nullptr,
                           nullptr);

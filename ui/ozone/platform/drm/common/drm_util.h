@@ -20,19 +20,23 @@ class Point;
 namespace ui {
 
 // Representation of the information required to initialize and configure a
-// native display.
+// native display. |index| is the position of the connection and will be
+// used to generate a unique identifier for the display.
 class HardwareDisplayControllerInfo {
  public:
   HardwareDisplayControllerInfo(ScopedDrmConnectorPtr connector,
-                                ScopedDrmCrtcPtr crtc);
+                                ScopedDrmCrtcPtr crtc,
+                                size_t index);
   ~HardwareDisplayControllerInfo();
 
   drmModeConnector* connector() const { return connector_.get(); }
   drmModeCrtc* crtc() const { return crtc_.get(); }
+  size_t index() const { return index_; }
 
  private:
   ScopedDrmConnectorPtr connector_;
   ScopedDrmCrtcPtr crtc_;
+  size_t index_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayControllerInfo);
 };
@@ -47,13 +51,11 @@ bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
 DisplayMode_Params CreateDisplayModeParams(const drmModeModeInfo& mode);
 
 // |info| provides the DRM information related to the display, |fd| is the
-// connection to the DRM device and |index| provides a unique identifier for the
-// display. |index| will be used to generate the display id (it may be the id if
-// the monitor's EDID lacks the necessary identifiers).
+// connection to the DRM device.
 DisplaySnapshot_Params CreateDisplaySnapshotParams(
     HardwareDisplayControllerInfo* info,
     int fd,
-    size_t display_index,
+    size_t device_index,
     const gfx::Point& origin);
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format);

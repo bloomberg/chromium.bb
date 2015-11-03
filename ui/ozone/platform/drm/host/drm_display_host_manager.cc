@@ -141,7 +141,7 @@ DrmDisplayHostManager::DrmDisplayHostManager(
   for (size_t i = 0; i < display_infos.size(); ++i) {
     displays_.push_back(new DrmDisplayHost(
         proxy_, CreateDisplaySnapshotParams(display_infos[i],
-                                            primary_drm_device_handle_->fd(), i,
+                                            primary_drm_device_handle_->fd(), 0,
                                             gfx::Point()),
         true /* is_dummy */));
   }
