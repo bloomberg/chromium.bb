@@ -188,7 +188,6 @@ final class CronetUrlRequest implements UrlRequest {
                     }
                     if (!nativeAddRequestHeader(
                                 mUrlRequestAdapter, header.getKey(), header.getValue())) {
-                        destroyRequestAdapter(false);
                         throw new IllegalArgumentException(
                                 "Invalid header " + header.getKey() + "=" + header.getValue());
                     }
