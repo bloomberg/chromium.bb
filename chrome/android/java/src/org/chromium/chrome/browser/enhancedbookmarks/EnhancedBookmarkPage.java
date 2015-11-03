@@ -30,10 +30,6 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
     private final int mThemeColor;
     private EnhancedBookmarkManager mManager;
 
-    // For temporary debugging purposes.
-    // TODO(newt): delete this once http://crbug.com/540537 is fixed.
-    private Exception mDestroyStackTrace;
-
     /**
      * Create a new instance of an enhanced bookmark page.
      * @param activity The activity to get context and manage fragments.
@@ -106,13 +102,6 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
 
     @Override
     public void destroy() {
-        if (mDestroyStackTrace != null) {
-            throw new RuntimeException("EnhancedBookmarksPage was destroyed twice",
-                    mDestroyStackTrace);
-        } else {
-            mDestroyStackTrace = new RuntimeException(
-                    "Stack trace for first call to EnhancedBookmarksPage.destroy()");
-        }
         mManager.destroy();
         mManager = null;
     }

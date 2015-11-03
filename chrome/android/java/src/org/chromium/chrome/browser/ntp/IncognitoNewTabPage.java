@@ -34,10 +34,6 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
 
     private boolean mIsLoaded;
 
-    // For temporary debugging purposes.
-    // TODO(newt): delete this once http://crbug.com/540537 is fixed.
-    private Exception mDestroyStackTrace;
-
     private final IncognitoNewTabPageManager mIncognitoNewTabPageManager =
             new IncognitoNewTabPageManager() {
         @Override
@@ -91,14 +87,6 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
 
     @Override
     public void destroy() {
-        if (mDestroyStackTrace != null) {
-            throw new RuntimeException("IncognitoNewTabPage was destroyed twice",
-                    mDestroyStackTrace);
-        } else {
-            mDestroyStackTrace = new RuntimeException(
-                    "Stack trace for first call to IncognitoNewTabPage.destroy()");
-        }
-
         assert getView().getParent() == null : "Destroy called before removed from window";
     }
 

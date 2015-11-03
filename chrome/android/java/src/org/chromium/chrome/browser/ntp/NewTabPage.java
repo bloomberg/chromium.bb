@@ -105,10 +105,6 @@ public class NewTabPage
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
 
-    // For temporary debugging purposes.
-    // TODO(newt): delete this once http://crbug.com/540537 is fixed.
-    private Exception mDestroyStackTrace;
-
     /**
      * Allows clients to listen for updates to the scroll changes of the search box on the
      * NTP.
@@ -560,14 +556,6 @@ public class NewTabPage
 
     @Override
     public void destroy() {
-        if (mDestroyStackTrace != null) {
-            throw new RuntimeException("NewTabPage was destroyed twice",
-                    mDestroyStackTrace);
-        } else {
-            mDestroyStackTrace = new RuntimeException(
-                    "Stack trace for first call to NewTabPage.destroy()");
-        }
-
         assert !mIsDestroyed;
         assert getView().getParent() == null : "Destroy called before removed from window";
         if (mFaviconHelper != null) {
