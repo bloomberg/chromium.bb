@@ -24,6 +24,8 @@ import java.util.Set;
  * This class stores URLs and surfaces notifications to the user.
  */
 public class UrlManager {
+    public static final String REFERER_KEY = "referer";
+    public static final int NOTIFICATION_REFERER = 1;
     private static final String TAG = "PhysicalWeb";
     private static final String PREFS_NAME = "org.chromium.chrome.browser.physicalweb.URL_CACHE";
     private static final String PREFS_VERSION_KEY = "version";
@@ -112,6 +114,7 @@ public class UrlManager {
 
     private PendingIntent createListUrlsIntent() {
         Intent intent = new Intent(mContext, ListUrlsActivity.class);
+        intent.putExtra(REFERER_KEY, NOTIFICATION_REFERER);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
         return pendingIntent;
     }

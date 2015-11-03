@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.ListView;
 
@@ -25,6 +26,7 @@ public class ListUrlsActivity extends ListActivity {
     private static final String TAG = "PhysicalWeb";
     private NearbyUrlsAdapter mAdapter;
     private PwsClient mPwsClient;
+    private boolean mDisplayRecorded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,12 @@ public class ListUrlsActivity extends ListActivity {
         setListAdapter(mAdapter);
 
         mPwsClient = new PwsClient();
+        int referer = getIntent().getIntExtra(UrlManager.REFERER_KEY, 0);
+        if (savedInstanceState == null  // Ensure this is a newly-created activity
+                && referer == UrlManager.NOTIFICATION_REFERER) {
+            PhysicalWebUma.onNotificationPressed();
+        }
+        mDisplayRecorded = false;
     }
 
     @Override
@@ -42,9 +50,11 @@ public class ListUrlsActivity extends ListActivity {
         super.onResume();
         mAdapter.clear();
         Collection<String> urls = UrlManager.getInstance(this).getUrls();
+        final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
             public void onPwsResults(Collection<PwsResult> pwsResults) {
+                PhysicalWebUma.onPwsResponse(SystemClock.elapsedRealtime() - timestamp);
                 // filter out duplicate site URLs
                 Collection<String> siteUrls = new HashSet<>();
                 for (PwsResult pwsResult : pwsResults) {
@@ -60,6 +70,14 @@ public class ListUrlsActivity extends ListActivity {
                         }
                     }
                 }
+                // TODO(cco3): Right now we use a simple boolean to see if we've previously recorded
+                //             how many URLs we display, but in the future we need to switch to
+                //             something more sophisticated that recognizes when a "refresh" has
+                //             taken place and the displayed URLs are significantly different.
+                if (!mDisplayRecorded) {
+                    mDisplayRecorded = true;
+                    PhysicalWebUma.onUrlsDisplayed(mAdapter.getCount());
+                }
             }
         });
     }
@@ -73,6 +91,7 @@ public class ListUrlsActivity extends ListActivity {
      */
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        PhysicalWebUma.onUrlSelected();
         PwsResult pwsResult = mAdapter.getItem(position);
         Intent intent = createNavigateToUrlIntent(pwsResult);
         startActivity(intent);
