@@ -24,6 +24,7 @@ PrepPatterns = [
     ( '--no-finalize',   "env.set('DISABLE_FINALIZE', '1')"),
     ( '--no-strip-syms', "env.set('DISABLE_STRIP_SYMS', '1')"),
     ( '--compress',      "env.set('COMPRESS', '1')"),
+    ( '--strip-(all|debug|unneeded)', ""),
     ( '(-.*)',           driver_tools.UnrecognizedOption),
     ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
@@ -82,4 +83,7 @@ def get_help(unused_argv):
                             or may not be allowed by the PNaCl ABI checker.
   --compress                Run pnacl-compress on the generated pexe to minimize
                             pexe size.
+  --strip-all               Ignored for compatibility with 'strip'
+  --strip-debug
+  --strip-unneeded
 """ % script
