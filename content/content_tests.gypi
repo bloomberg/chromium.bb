@@ -281,7 +281,6 @@
       'test/browser_test_utils_browsertest.cc',
       'test/content_browser_test_test.cc',
       'test/webui_resource_browsertest.cc',
-
     ],
     'content_browsertests_android_sources': [
       'browser/accessibility/android_granularity_movement_browsertest.cc',
@@ -811,35 +810,6 @@
   },
   'targets': [
     {
-      # GN version: //content/test:layouttest_support
-      'target_name': 'layouttest_support_content',
-      'type': 'static_library',
-      'conditions': [
-        ['OS=="android"', {
-          'dependencies': [
-            'test_support_content_jni_headers',
-          ],
-        }],
-        ['OS!="ios"', {
-          # layouttest_support_content is not supported nor required on iOS.
-          'dependencies': [
-            'content.gyp:content_renderer',
-            'test_support_content',
-            '../components/test_runner/test_runner.gyp:test_runner',
-            '../skia/skia.gyp:skia',
-            '../ui/accessibility/accessibility.gyp:ax_gen',
-            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
-            '../v8/tools/gyp/v8.gyp:v8',
-          ],
-          'include_dirs': [
-            '..',
-            '<(SHARED_INTERMEDIATE_DIR)',
-          ],
-          'sources': [ '<@(layouttest_support_content_sources)' ]
-        }],
-      ],
-    },
-    {
       # GN version: //content/test:test_support
       'target_name': 'test_support_content',
       'type': 'static_library',
@@ -865,7 +835,6 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../url/url.gyp:url_lib',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
-        'content.gyp:content_app_both',
         'content.gyp:content_browser',
         'content.gyp:content_common',
       ],
@@ -894,16 +863,12 @@
             # implementation, and re-include what is used.
             ['exclude', '\\.(cc|mm)$'],
             ['include', '_ios\\.(cc|mm)$'],
-            ['include', '^public/test/content_test_suite_base\\.cc$'],
             ['include', '^public/test/mock_notification_observer\\.cc$'],
             ['include', '^public/test/mock_resource_context\\.cc$'],
-            ['include', '^public/test/test_browser_thread\\.cc$'],
-            ['include', '^public/test/test_browser_thread_bundle\\.cc$'],
             ['include', '^public/test/test_content_client_initializer\\.cc$'],
             ['include', '^public/test/test_notification_tracker\\.cc$'],
             ['include', '^public/test/test_utils\\.cc$'],
             ['include', '^public/test/unittest_test_suite\\.cc$'],
-            ['include', '^test/content_test_suite\\.cc$'],
             ['include', '^test/test_content_browser_client\\.cc$'],
             ['include', '^test/test_content_client\\.cc$'],
           ],
@@ -921,6 +886,7 @@
           ],
           'dependencies': [
             'content_test_mojo_bindings',
+            'content.gyp:content_app_both',
             'content.gyp:content_child',
             'content.gyp:content_common',
             'content.gyp:content_gpu',
@@ -1029,226 +995,6 @@
         }],
       ],
     },
-    {
-      # GN version: //content/test:content_unittests
-      'target_name': 'content_unittests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        'browser/background_sync/background_sync_proto.gyp:background_sync_proto',
-        'browser/cache_storage/cache_storage_proto.gyp:cache_storage_proto',
-        'browser/notifications/notification_proto.gyp:notification_proto',
-        'browser/service_worker/service_worker_proto.gyp:service_worker_proto',
-        'browser/speech/proto/speech_proto.gyp:speech_proto',
-        'content.gyp:content_browser',
-        'content.gyp:content_common',
-        'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
-        'test_support_content',
-        '../base/base.gyp:test_support_base',
-        '../crypto/crypto.gyp:crypto',
-        '../device/battery/battery.gyp:device_battery',
-        '../device/battery/battery.gyp:device_battery_mojo_bindings',
-        '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../net/net.gyp:net_extras',
-        '../net/net.gyp:net_test_support',
-        '../skia/skia.gyp:skia',
-        '../sql/sql.gyp:sql',
-        '../sql/sql.gyp:test_support_sql',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../third_party/re2/re2.gyp:re2',
-        '../ui/accessibility/accessibility.gyp:accessibility',
-        '../ui/base/ui_base.gyp:ui_base',
-        '../ui/events/events.gyp:blink',
-        '../ui/gfx/gfx.gyp:gfx',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
-        '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
-      ],
-      'include_dirs': [
-        '..',
-        '<(SHARED_INTERMEDIATE_DIR)',  # Needed by render_media_client_unittest.cc.
-      ],
-      'sources': [ '<@(content_unittests_sources)' ],
-      'conditions': [
-        ['OS == "ios"', {
-          'sources/': [
-            # iOS only needs a small portion of content; exclude all the
-            # implementation, and re-include what is used.
-            ['exclude', '\\.(cc|mm)$'],
-            ['include', '_ios\\.(cc|mm)$'],
-            ['include', '^browser/notification_service_impl_unittest\\.cc$'],
-            ['include', '^browser/web_contents/navigation_entry_impl_unittest\\.cc$'],
-            ['include', '^test/run_all_unittests\\.cc$'],
-          ],
-        }, {  # OS != "ios"
-          'dependencies': [
-            'content.gyp:content_browser',
-            'content.gyp:content_child',
-            'content.gyp:content_gpu',
-            'content.gyp:content_plugin',
-            'content.gyp:content_renderer',
-            'content.gyp:content_resources',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../cc/cc.gyp:cc',
-            '../cc/cc.gyp:cc_surfaces',
-            '../cc/cc_tests.gyp:cc_test_support',
-            '../gin/gin.gyp:gin',
-            '../gpu/gpu.gyp:gpu',
-            '../gpu/gpu.gyp:gpu_unittest_utils',
-            '../ipc/ipc.gyp:test_support_ipc',
-            '../media/media.gyp:media_test_support',
-            '../media/media.gyp:shared_memory_support',
-            '../storage/storage_browser.gyp:storage',
-            '../storage/storage_common.gyp:storage_common',
-            '../third_party/WebKit/public/blink.gyp:blink',
-            '../third_party/icu/icu.gyp:icui18n',
-            '../third_party/icu/icu.gyp:icuuc',
-            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../third_party/libjingle/libjingle.gyp:libjingle',
-            '../ui/gl/gl.gyp:gl',
-            '../ui/gl/gl.gyp:gl_test_support',
-          ],
-        }],
-        ['OS != "win"', {
-          'sources': [
-            'browser/file_descriptor_info_impl_unittest.cc',
-          ],
-        }],
-        ['OS == "mac"', {
-          'dependencies': [
-            '../third_party/ocmock/ocmock.gyp:ocmock',
-          ],
-        }],
-        ['enable_plugins==1', {
-          'sources': [ '<@(content_unittests_plugins_sources)' ],
-        }],
-        ['enable_webrtc==1', {
-          'sources': [ '<@(content_unittests_webrtc_sources)' ],
-          'dependencies': [
-            '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
-            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-            '../third_party/webrtc/modules/modules.gyp:video_capture_module',
-          ]
-        }],
-        ['enable_webrtc==1 and enable_plugins==1', {
-          'sources': [ '<@(content_unittests_plugin_webrtc_sources)' ],
-        }],
-        ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
-          'sources': [
-            'browser/media/capture/desktop_capture_device_unittest.cc',
-          ],
-          'dependencies': [
-            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-          ],
-        }],
-        ['enable_webrtc==1 and chromeos==1', {
-          'sources': [
-            'browser/media/capture/desktop_capture_device_aura_unittest.cc',
-          ],
-        }],
-        ['enable_web_speech==1', {
-          'sources': [ '<@(content_unittests_speech_sources)' ],
-        }],
-        ['OS=="linux" and use_dbus==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../dbus/dbus.gyp:dbus_test_support',
-          ],
-        }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-        ['OS=="win"', {
-          'dependencies': [
-            '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
-          ],
-        }],
-        ['OS=="mac"', {
-          # These flags are needed to run the test on Mac.
-          # Search for comments about "xcode_settings" in chrome_tests.gypi.
-          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-        }],
-        ['chromeos==1', {
-          'dependencies': [
-            '../chromeos/chromeos.gyp:chromeos',
-          ],
-          'sources!': [
-            'browser/geolocation/wifi_data_provider_linux_unittest.cc',
-          ],
-        }],
-        ['use_aura==1', {
-          'dependencies': [
-            '../ui/aura/aura.gyp:aura',
-            '../ui/aura_extra/aura_extra.gyp:aura_extra',
-            '../ui/wm/wm.gyp:wm',
-          ]
-        }],
-        ['use_aura==1 or toolkit_views==1', {
-          'dependencies': [
-            '../ui/events/events.gyp:events_test_support',
-          ],
-        }],
-        ['use_aura!=1 and OS!="mac"', {
-          'sources/': [
-            ['exclude', '^browser/compositor/'],
-          ],
-        }],
-        ['OS == "android"', {
-          'sources': [ '<@(content_unittests_android_sources)' ],
-          'sources!': [
-            'browser/geolocation/network_location_provider_unittest.cc',
-            'browser/geolocation/wifi_data_provider_common_unittest.cc',
-            'browser/power_usage_monitor_impl_unittest.cc',
-            'browser/renderer_host/begin_frame_observer_proxy_unittest.cc',
-            'browser/webui/url_data_manager_backend_unittest.cc',
-            'renderer/media/media_recorder_handler_unittest.cc',
-            'renderer/media/video_track_recorder_unittest.cc',
-          ],
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-          'dependencies!': [
-            '../device/battery/battery.gyp:device_battery',
-          ],
-        }],
-        ['OS != "android" and OS != "ios"', {
-          'dependencies': [
-            '../third_party/libvpx_new/libvpx.gyp:libvpx_new',
-          ],
-        }],
-        ['use_aura!=1 and OS!="android"', {
-          'sources!': [
-            'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
-          ],
-        }],
-        ['use_dbus==0', {
-          'sources!': [
-            'browser/geolocation/wifi_data_provider_linux_unittest.cc',
-          ],
-        }],
-        ['OS!="win" and OS!="mac"', {
-          'sources!': [
-            'common/plugin_list_unittest.cc',
-          ],
-        }],
-        ['use_ozone==1', {
-          'sources': [ '<@(content_unittests_ozone_sources)' ],
-          'dependencies': [
-            '../ui/ozone/ozone.gyp:ozone',
-            '../ui/ozone/ozone.gyp:ozone_base',
-          ],
-        }],
-        ['OS == "mac"', {
-          'sources': [ '<@(content_unittests_mac_sources)' ],
-          'dependencies': [
-            '../third_party/boringssl/boringssl.gyp:boringssl',
-          ],
-        }],
-      ],
-    },
   ],
   'conditions': [
     ['test_isolation_mode != "noop"', {
@@ -1317,6 +1063,236 @@
     }],
     ['OS!="ios"', {
       'targets': [
+        {
+          # GN version: //content/test:layouttest_support
+          'target_name': 'layouttest_support_content',
+          'type': 'static_library',
+          'dependencies': [
+            'content.gyp:content_renderer',
+            'test_support_content',
+            '../components/test_runner/test_runner.gyp:test_runner',
+            '../skia/skia.gyp:skia',
+            '../ui/accessibility/accessibility.gyp:ax_gen',
+            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
+            '../v8/tools/gyp/v8.gyp:v8',
+          ],
+          'include_dirs': [
+            '..',
+            '<(SHARED_INTERMEDIATE_DIR)',
+          ],
+          'sources': [ '<@(layouttest_support_content_sources)' ],
+          'conditions': [
+            ['OS=="android"', {
+              'dependencies': [
+                'test_support_content_jni_headers',
+              ],
+            }],
+          ],
+        },
+        {
+          # GN version: //content/test:content_unittests
+          'target_name': 'content_unittests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'browser/background_sync/background_sync_proto.gyp:background_sync_proto',
+            'browser/cache_storage/cache_storage_proto.gyp:cache_storage_proto',
+            'browser/notifications/notification_proto.gyp:notification_proto',
+            'browser/service_worker/service_worker_proto.gyp:service_worker_proto',
+            'browser/speech/proto/speech_proto.gyp:speech_proto',
+            'content.gyp:content_browser',
+            'content.gyp:content_child',
+            'content.gyp:content_common',
+            'content.gyp:content_gpu',
+            'content.gyp:content_plugin',
+            'content.gyp:content_renderer',
+            'content.gyp:content_resources',
+            'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
+            'test_support_content',
+            '../base/base.gyp:test_support_base',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../cc/cc.gyp:cc',
+            '../cc/cc.gyp:cc_surfaces',
+            '../cc/cc_tests.gyp:cc_test_support',
+            '../crypto/crypto.gyp:crypto',
+            '../device/battery/battery.gyp:device_battery',
+            '../device/battery/battery.gyp:device_battery_mojo_bindings',
+            '../gin/gin.gyp:gin',
+            '../gpu/gpu.gyp:gpu',
+            '../gpu/gpu.gyp:gpu_unittest_utils',
+            '../ipc/ipc.gyp:test_support_ipc',
+            '../media/media.gyp:media_test_support',
+            '../media/media.gyp:shared_memory_support',
+            '../mojo/mojo_base.gyp:mojo_environment_chromium',
+            '../net/net.gyp:net_extras',
+            '../net/net.gyp:net_test_support',
+            '../skia/skia.gyp:skia',
+            '../sql/sql.gyp:sql',
+            '../sql/sql.gyp:test_support_sql',
+            '../storage/storage_browser.gyp:storage',
+            '../storage/storage_common.gyp:storage_common',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
+            '../third_party/icu/icu.gyp:icui18n',
+            '../third_party/icu/icu.gyp:icuuc',
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/mojo/mojo_edk.gyp:mojo_common_test_support',
+            '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+            '../third_party/re2/re2.gyp:re2',
+            '../third_party/WebKit/public/blink.gyp:blink',
+            '../ui/accessibility/accessibility.gyp:accessibility',
+            '../ui/base/ui_base.gyp:ui_base',
+            '../ui/events/events.gyp:blink',
+            '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+            '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
+          ],
+          'include_dirs': [
+            '..',
+            '<(SHARED_INTERMEDIATE_DIR)',  # Needed by render_media_client_unittest.cc.
+          ],
+          'sources': [ '<@(content_unittests_sources)' ],
+          'conditions': [
+            ['OS != "win"', {
+              'sources': [
+                'browser/file_descriptor_info_impl_unittest.cc',
+              ],
+            }],
+            ['OS == "mac"', {
+              'dependencies': [
+                '../third_party/ocmock/ocmock.gyp:ocmock',
+              ],
+            }],
+            ['enable_plugins==1', {
+              'sources': [ '<@(content_unittests_plugins_sources)' ],
+            }],
+            ['enable_webrtc==1', {
+              'sources': [ '<@(content_unittests_webrtc_sources)' ],
+              'dependencies': [
+                '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+                '../third_party/libjingle/libjingle.gyp:libpeerconnection',
+                '../third_party/webrtc/modules/modules.gyp:video_capture_module',
+              ],
+            }],
+            ['enable_webrtc==1 and enable_plugins==1', {
+              'sources': [ '<@(content_unittests_plugin_webrtc_sources)' ],
+            }],
+            ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
+              'sources': [
+                'browser/media/capture/desktop_capture_device_unittest.cc',
+              ],
+              'dependencies': [
+                '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+              ],
+            }],
+            ['enable_webrtc==1 and chromeos==1', {
+              'sources': [
+                'browser/media/capture/desktop_capture_device_aura_unittest.cc',
+              ],
+            }],
+            ['enable_web_speech==1', {
+              'sources': [ '<@(content_unittests_speech_sources)' ],
+            }],
+            ['OS=="linux" and use_dbus==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:dbus',
+                '../dbus/dbus.gyp:dbus_test_support',
+              ],
+            }],
+            ['OS=="win" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+              ],
+            }],
+            ['OS=="mac"', {
+              # These flags are needed to run the test on Mac.
+              # Search for comments about "xcode_settings" in chrome_tests.gypi.
+              'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+            }],
+            ['chromeos==1', {
+              'dependencies': [
+                '../chromeos/chromeos.gyp:chromeos',
+              ],
+              'sources!': [
+                'browser/geolocation/wifi_data_provider_linux_unittest.cc',
+              ],
+            }],
+            ['use_aura==1', {
+              'dependencies': [
+                '../ui/aura/aura.gyp:aura',
+                '../ui/aura_extra/aura_extra.gyp:aura_extra',
+                '../ui/wm/wm.gyp:wm',
+              ],
+            }],
+            ['use_aura==1 or toolkit_views==1', {
+              'dependencies': [
+                '../ui/events/events.gyp:events_test_support',
+              ],
+            }],
+            ['use_aura!=1 and OS!="mac"', {
+              'sources/': [
+                ['exclude', '^browser/compositor/'],
+              ],
+            }],
+            ['OS == "android"', {
+              'sources': [ '<@(content_unittests_android_sources)' ],
+              'sources!': [
+                'browser/geolocation/network_location_provider_unittest.cc',
+                'browser/geolocation/wifi_data_provider_common_unittest.cc',
+                'browser/power_usage_monitor_impl_unittest.cc',
+                'browser/renderer_host/begin_frame_observer_proxy_unittest.cc',
+                'browser/webui/url_data_manager_backend_unittest.cc',
+                'renderer/media/media_recorder_handler_unittest.cc',
+                'renderer/media/video_track_recorder_unittest.cc',
+              ],
+              'dependencies': [
+                '../testing/android/native_test.gyp:native_test_native_code',
+              ],
+              'dependencies!': [
+                '../device/battery/battery.gyp:device_battery',
+              ],
+            }, {  # OS != "android"
+              'dependencies': [
+                '../third_party/libvpx_new/libvpx.gyp:libvpx_new',
+              ],
+            }],
+            ['use_aura!=1 and OS!="android"', {
+              'sources!': [
+                'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
+              ],
+            }],
+            ['use_dbus==0', {
+              'sources!': [
+                'browser/geolocation/wifi_data_provider_linux_unittest.cc',
+              ],
+            }],
+            ['OS!="win" and OS!="mac"', {
+              'sources!': [
+                'common/plugin_list_unittest.cc',
+              ],
+            }],
+            ['use_ozone==1', {
+              'sources': [ '<@(content_unittests_ozone_sources)' ],
+              'dependencies': [
+                '../ui/ozone/ozone.gyp:ozone',
+                '../ui/ozone/ozone.gyp:ozone_base',
+              ],
+            }],
+            ['OS == "mac"', {
+              'sources': [ '<@(content_unittests_mac_sources)' ],
+              'dependencies': [
+                '../third_party/boringssl/boringssl.gyp:boringssl',
+              ],
+            }],
+          ],
+        },
         {
           # GN version: //content/test:content_perftests
           'target_name': 'content_perftests',

@@ -7,9 +7,6 @@
       "app": "components_unittests"
     },
     {
-      "app": "content_unittests"
-    },
-    {
       "app": "crypto_unittests"
     },
     {
