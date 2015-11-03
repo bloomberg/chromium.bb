@@ -1043,6 +1043,9 @@ public:
     WebTaskRunner* loadingTaskRunner() const;
     WebTaskRunner* timerTaskRunner() const;
 
+    // TODO(bokan): Temporary to help track down crash in crbug.com/519752.
+    bool m_detachingDocumentLoader;
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
