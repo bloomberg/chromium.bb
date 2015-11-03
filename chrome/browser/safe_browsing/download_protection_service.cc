@@ -70,18 +70,16 @@ const char DownloadProtectionService::kDownloadRequestUrl[] =
 
 namespace {
 void RecordFileExtensionType(const base::FilePath& file) {
-  UMA_HISTOGRAM_ENUMERATION(
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
       "SBClientDownload.DownloadExtensions",
-      download_protection_util::GetSBClientDownloadExtensionValueForUMA(file),
-      download_protection_util::kSBClientDownloadExtensionsMax);
+      download_protection_util::GetSBClientDownloadExtensionValueForUMA(file));
 }
 
 void RecordArchivedArchiveFileExtensionType(const base::FilePath& file_name) {
-  UMA_HISTOGRAM_ENUMERATION(
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
       "SBClientDownload.ArchivedArchiveExtensions",
       download_protection_util::GetSBClientDownloadExtensionValueForUMA(
-          file_name),
-      download_protection_util::kSBClientDownloadExtensionsMax);
+          file_name));
 }
 
 // Enumerate for histogramming purposes.
