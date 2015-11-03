@@ -98,7 +98,14 @@ class ToolbarControllerTest : public CocoaProfileTest {
   }
 
   void TearDown() override {
-    bar_.reset();  // browser() must outlive the ToolbarController.
+    // Releasing ToolbarController doesn't actually free it at this point, since
+    // the NSViewController retains a reference to it from the nib loading.
+    // As browser() is released in the superclass TearDown, call
+    // -[ToolbarController browserWillBeDestroyed] to prevent a use after free
+    // issue on the |browser_| pointer in LocationBarViewMac when
+    // ToolbarController is actually freed (some time after this method is run).
+    [bar_ browserWillBeDestroyed];
+    bar_.reset();
     CocoaProfileTest::TearDown();
   }
 
@@ -346,6 +353,7 @@ TEST_F(ToolbarControllerTest, TranslateBubblePoint) {
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
   base::scoped_nsobject<HitView> view(
       [[HitView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);
+  NSView* toolbarView = [bar_ view];
   [bar_ setView:view];
   NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
                                       location:NSMakePoint(10,10)
@@ -371,6 +379,10 @@ TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
       [[ImageButtonCell alloc] init]);
   [button setCell:cell.get()];
   EXPECT_TRUE([bar_ hoverButtonForEvent:nil]);
+
+  // Restore the original view so that
+  // -[ToolbarController browserWillBeDestroyed] will run correctly.
+  [bar_ setView:toolbarView];
 }
 
 class BrowserRemovedObserver : public chrome::BrowserListObserver {
@@ -385,19 +397,5 @@ class BrowserRemovedObserver : public chrome::BrowserListObserver {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRemovedObserver);
 };
-
-// Test that ToolbarController can be destroyed after the Browser.
-// This can happen because the ToolbarController is retained by both the
-// BrowserWindowController and -[ToolbarController view], the latter of which is
-// autoreleased.
-TEST_F(ToolbarControllerTest, ToolbarDestroyedAfterBrowser) {
-  BrowserRemovedObserver observer;
-  // This is normally called by BrowserWindowController, but since |bar_| is not
-  // owned by one, call it here.
-  [bar_ browserWillBeDestroyed];
-  CloseBrowserWindow();
-  observer.WaitUntilBrowserRemoved();
-  // |bar_| is released in TearDown().
-}
 
 }  // namespace
