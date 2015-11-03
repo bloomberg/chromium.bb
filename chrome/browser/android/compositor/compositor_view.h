@@ -115,7 +115,7 @@ class CompositorView : public content::CompositorClient,
   void SetSceneLayer(JNIEnv* env, jobject object, jobject jscene_layer);
 
   // CompositorClient implementation:
-  void Layout() override;
+  void UpdateLayerTreeHost() override;
   void OnSwapBuffersCompleted(int pending_swap_buffers) override;
   ui::UIResourceProvider* GetUIResourceProvider();
 

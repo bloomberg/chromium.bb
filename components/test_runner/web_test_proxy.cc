@@ -581,7 +581,7 @@ void WebTestProxyBase::CopyImageAtAndCapturePixels(
 
 void WebTestProxyBase::CapturePixelsForPrinting(
     const base::Callback<void(const SkBitmap&)>& callback) {
-  web_widget_->layout();
+  web_widget_->updateAllLifecyclePhases();
 
   blink::WebSize page_size_in_pixels = web_widget_->size();
   blink::WebFrame* web_frame = GetWebView()->mainFrame();
@@ -762,10 +762,10 @@ void WebTestProxyBase::AnimateNow() {
     base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
     animate_scheduled_ = false;
     web_widget_->beginFrame(animate_time.InSecondsF());
-    web_widget_->layout();
+    web_widget_->updateAllLifecyclePhases();
     if (blink::WebPagePopup* popup = web_widget_->pagePopup()) {
       popup->beginFrame(animate_time.InSecondsF());
-      popup->layout();
+      popup->updateAllLifecyclePhases();
     }
   }
 }

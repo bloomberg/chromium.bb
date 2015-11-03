@@ -96,7 +96,7 @@ class TestHooks : public AnimationDelegate {
   virtual void BeginMainFrame(const BeginFrameArgs& args) {}
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}
-  virtual void Layout() {}
+  virtual void UpdateLayerTreeHost() {}
   virtual void DidInitializeOutputSurface() {}
   virtual void DidFailToInitializeOutputSurface() {}
   virtual void DidAddAnimation() {}

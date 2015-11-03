@@ -95,8 +95,8 @@ void WebLayerTreeViewImpl::BeginMainFrame(const cc::BeginFrameArgs& args) {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void WebLayerTreeViewImpl::Layout() {
-  widget_->layout();
+void WebLayerTreeViewImpl::UpdateLayerTreeHost() {
+  widget_->updateAllLifecyclePhases();
 }
 
 void WebLayerTreeViewImpl::ApplyViewportDeltas(

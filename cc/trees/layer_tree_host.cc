@@ -224,8 +224,8 @@ void LayerTreeHost::DidStopFlinging() {
   proxy_->MainThreadHasStoppedFlinging();
 }
 
-void LayerTreeHost::Layout() {
-  client_->Layout();
+void LayerTreeHost::RequestMainFrameUpdate() {
+  client_->UpdateLayerTreeHost();
 }
 
 // This function commits the LayerTreeHost to an impl tree. When modifying
@@ -681,7 +681,7 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
       return;
   }
 
-  Layout();
+  RequestMainFrameUpdate();
   UpdateLayers();
 }
 

@@ -860,8 +860,8 @@ void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {
   compositor_deps_->GetRendererScheduler()->BeginFrameNotExpectedSoon();
 }
 
-void RenderWidgetCompositor::Layout() {
-  widget_->webwidget()->layout();
+void RenderWidgetCompositor::UpdateLayerTreeHost() {
+  widget_->webwidget()->updateAllLifecyclePhases();
 
   if (temporary_copy_output_request_) {
     // For WebViewImpl, this will always have a root layer.  For other widgets,

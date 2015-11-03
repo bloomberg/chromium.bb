@@ -111,7 +111,7 @@ void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
   layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
-void WebLayerTreeViewImplForTesting::Layout() {
+void WebLayerTreeViewImplForTesting::UpdateLayerTreeHost() {
 }
 
 void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(

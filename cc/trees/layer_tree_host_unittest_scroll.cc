@@ -61,7 +61,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void Layout() override {
+  void UpdateLayerTreeHost() override {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     if (!layer_tree_host()->source_frame_number()) {
       EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());
@@ -534,7 +534,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     num_scrolls_++;
   }
 
-  void Layout() override {
+  void UpdateLayerTreeHost() override {
     EXPECT_VECTOR_EQ(gfx::Vector2d(),
                      expected_no_scroll_layer_->scroll_offset());
 
@@ -764,7 +764,7 @@ class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void Layout() override {
+  void UpdateLayerTreeHost() override {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     if (!layer_tree_host()->source_frame_number()) {
       EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());

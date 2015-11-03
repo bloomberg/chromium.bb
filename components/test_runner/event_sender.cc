@@ -1230,7 +1230,7 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
 
 void EventSender::MouseDown(int button_number, int modifiers) {
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   DCHECK_NE(-1, button_number);
 
@@ -1255,7 +1255,7 @@ void EventSender::MouseDown(int button_number, int modifiers) {
 
 void EventSender::MouseUp(int button_number, int modifiers) {
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   DCHECK_NE(-1, button_number);
 
@@ -1464,7 +1464,7 @@ void EventSender::KeyDown(const std::string& code_str,
   // EventSender.m forces a layout here, with at least one
   // test (fast/forms/focus-control-to-page.html) relying on this.
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   // In the browser, if a keyboard event corresponds to an editor command,
   // the command will be dispatched to the renderer just before dispatching
@@ -1513,7 +1513,7 @@ void EventSender::ClearKillRing() {}
 
 std::vector<std::string> EventSender::ContextClick() {
   if (force_layout_on_events_) {
-    view_->layout();
+    view_->updateAllLifecyclePhases();
   }
 
   UpdateClickCountForButton(WebMouseEvent::ButtonRight);
@@ -1692,7 +1692,7 @@ void EventSender::GestureFlingCancel() {
   event.timeStampSeconds = GetCurrentEventTimeSec();
 
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   HandleInputEventOnViewOrPopup(event);
 }
@@ -1728,7 +1728,7 @@ void EventSender::GestureFlingStart(float x,
   event.timeStampSeconds = GetCurrentEventTimeSec();
 
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   HandleInputEventOnViewOrPopup(event);
 }
@@ -1904,7 +1904,7 @@ void EventSender::ContinuousMouseScrollBy(gin::Arguments* args) {
 
 void EventSender::MouseMoveTo(gin::Arguments* args) {
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   double x;
   double y;
@@ -1940,7 +1940,7 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
 
 void EventSender::MouseLeave() {
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   WebMouseEvent event;
   InitMouseEvent(WebInputEvent::MouseLeave,
@@ -2021,7 +2021,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
   DCHECK_GT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap),
             touch_points_.size());
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   WebTouchEvent touch_event;
   touch_event.type = type;
@@ -2291,7 +2291,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   event.timeStampSeconds = GetCurrentEventTimeSec();
 
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   bool result = HandleInputEventOnViewOrPopup(event);
 
@@ -2331,7 +2331,7 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   // determined before we send events (as well as all the other methods
   // that send an event do).
   if (force_layout_on_events_)
-    view_->layout();
+    view_->updateAllLifecyclePhases();
 
   double horizontal;
   if (!args->GetNext(&horizontal)) {

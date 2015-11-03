@@ -95,7 +95,7 @@ class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void Layout() override {
+  void UpdateLayerTreeHost() override {
     // This shouldn't cause a second commit to happen.
     layer_tree_host()->SetNeedsCommit();
   }
@@ -141,7 +141,9 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void Layout() override { EXPECT_TRUE(CheckStep(MAIN_LAYOUT, &main_)); }
+  void UpdateLayerTreeHost() override {
+    EXPECT_TRUE(CheckStep(MAIN_LAYOUT, &main_));
+  }
 
   void DidCommit() override {
     EXPECT_TRUE(CheckStep(MAIN_COMMIT_COMPLETE, &main_));
@@ -188,7 +190,7 @@ class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void Layout() override {
+  void UpdateLayerTreeHost() override {
     // This shouldn't cause a second commit to happen.
     layer_tree_host()->SetNeedsUpdateLayers();
   }

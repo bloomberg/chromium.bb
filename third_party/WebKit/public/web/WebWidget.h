@@ -94,9 +94,10 @@ public:
     // paint, although the client can rate-limit these calls.
     virtual void beginFrame(double lastFrameTimeMonotonic) { }
 
-    // Called to layout the WebWidget. This MUST be called before Paint,
+    // Called to run through the entire set of document lifecycle phases needed
+    // to render a frame of the web widget. This MUST be called before Paint,
     // and it may result in calls to WebWidgetClient::didInvalidateRect.
-    virtual void layout() { }
+    virtual void updateAllLifecyclePhases() { }
 
     // Called to paint the rectangular region within the WebWidget
     // onto the specified canvas at (viewPort.x,viewPort.y). You MUST call

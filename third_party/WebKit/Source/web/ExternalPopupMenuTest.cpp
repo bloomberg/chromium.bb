@@ -139,7 +139,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportOffset)
     loadFrame("select_mid_screen.html");
 
     webView()->resize(WebSize(100, 100));
-    webView()->layout();
+    webView()->updateAllLifecyclePhases();
 
     HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
     LayoutMenuList* menuList = toLayoutMenuList(select->layoutObject());

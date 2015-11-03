@@ -1378,7 +1378,7 @@ void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>
     m_linkHighlights.clear();
 
     // LinkHighlight reads out layout and compositing state, so we need to make sure that's all up to date.
-    layout();
+    updateAllLifecyclePhases();
 
     for (size_t i = 0; i < highlightNodes.size(); ++i) {
         Node* node = highlightNodes[i];
@@ -1914,9 +1914,9 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
     PageWidgetDelegate::animate(*m_page, lastFrameTimeMonotonic);
 }
 
-void WebViewImpl::layout()
+void WebViewImpl::updateAllLifecyclePhases()
 {
-    TRACE_EVENT0("blink", "WebViewImpl::layout");
+    TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");
     if (!mainFrameImpl())
         return;
 
@@ -3338,7 +3338,7 @@ IntSize WebViewImpl::contentsSize() const
 
 WebSize WebViewImpl::contentsPreferredMinimumSize()
 {
-    layout();
+    updateAllLifecyclePhases();
 
     Document* document = m_page->mainFrame()->isLocalFrame() ? m_page->deprecatedLocalMainFrame()->document() : nullptr;
     if (!document || !document->layoutView() || !document->documentElement() || !document->documentElement()->layoutBox())
@@ -3827,7 +3827,7 @@ bool WebViewImpl::isTransparent() const
 
 void WebViewImpl::setBaseBackgroundColor(WebColor color)
 {
-    layout();
+    updateAllLifecyclePhases();
 
     if (m_baseBackgroundColor == color)
         return;

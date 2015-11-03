@@ -57,7 +57,7 @@ public:
 
         // OSX attaches main frame scrollbars to the VisualViewport so the VisualViewport layers need
         // to be initialized.
-        webViewImpl()->layout();
+        webViewImpl()->updateAllLifecyclePhases();
         webViewImpl()->setRootGraphicsLayer(
             webViewImpl()->mainFrameImpl()->frame()->view()->layoutView()->compositor()->rootGraphicsLayer());
     }
@@ -74,7 +74,7 @@ public:
 
     void forceFullCompositingUpdate()
     {
-        webViewImpl()->layout();
+        webViewImpl()->updateAllLifecyclePhases();
     }
 
     void registerMockedHttpURLLoad(const std::string& fileName)

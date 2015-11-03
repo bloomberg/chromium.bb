@@ -137,7 +137,7 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
@@ -167,7 +167,7 @@ TEST_F(WebPluginContainerTest, PluginDocumentPluginIsFocused)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
     ASSERT(webView);
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     WebDocument document = webView->mainFrame()->document();
     EXPECT_TRUE(document.isPluginDocument());
@@ -183,7 +183,7 @@ TEST_F(WebPluginContainerTest, PrintOnePage)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
     ASSERT(webView);
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
     WebFrame* frame = webView->mainFrame();
 
@@ -206,7 +206,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
     ASSERT(webView);
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
     WebFrame* frame = webView->mainFrame();
 
@@ -230,7 +230,7 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
@@ -262,7 +262,7 @@ TEST_F(WebPluginContainerTest, Copy)
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
@@ -283,7 +283,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
@@ -346,7 +346,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin)
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
@@ -388,7 +388,7 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest)
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     RefPtrWillBeRawPtr<WebPluginContainerImpl> pluginContainerImpl =
@@ -441,7 +441,7 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest)
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     RefPtrWillBeRawPtr<WebPluginContainerImpl> pluginContainerImpl =

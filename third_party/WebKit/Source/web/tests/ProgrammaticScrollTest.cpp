@@ -55,7 +55,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
     FrameLoader& loader = webViewImpl->mainFrameImpl()->frame()->loader();
@@ -84,7 +84,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "long_scroll.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
     FrameLoader& loader = webViewImpl->mainFrameImpl()->frame()->loader();

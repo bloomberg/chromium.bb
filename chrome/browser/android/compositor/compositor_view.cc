@@ -130,8 +130,9 @@ base::android::ScopedJavaLocalRef<jobject> CompositorView::GetResourceManager(
   return compositor_->GetResourceManager().GetJavaObject();
 }
 
-void CompositorView::Layout() {
+void CompositorView::UpdateLayerTreeHost() {
   JNIEnv* env = base::android::AttachCurrentThread();
+  // TODO(wkorman): Rename JNI interface to onCompositorUpdateLayerTreeHost.
   Java_CompositorView_onCompositorLayout(env, obj_.obj());
 }
 

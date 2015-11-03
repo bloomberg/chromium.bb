@@ -75,7 +75,7 @@ private:
     // WebWidget functions
     WebSize size() override;
     void beginFrame(double lastFrameTimeMonotonic) override;
-    void layout() override;
+    void updateAllLifecyclePhases() override;
     void willCloseLayerTreeView() override;
     void paint(WebCanvas*, const WebRect&) override;
     void resize(const WebSize&) override;

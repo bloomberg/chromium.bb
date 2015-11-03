@@ -572,10 +572,10 @@ CreateGpuProcessViewContext(
                                                 NULL));
 }
 
-void CompositorImpl::Layout() {
+void CompositorImpl::UpdateLayerTreeHost() {
   base::AutoReset<bool> auto_reset_ignore_schedule(&ignore_schedule_composite_,
                                                    true);
-  client_->Layout();
+  client_->UpdateLayerTreeHost();
 }
 
 void CompositorImpl::OnGpuChannelEstablished() {

@@ -57,7 +57,7 @@ protected:
             false /* enableJavascript */, nullptr /* webFrameClient */, nullptr /* webViewClient */,
             compositingMode == AcceleratedCompositing ? enableAcceleratedCompositing : disableAcceleratedCompositing);
         webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
-        webViewImpl()->layout();
+        webViewImpl()->updateAllLifecyclePhases();
         ASSERT_EQ(compositingMode == AcceleratedCompositing, webViewImpl()->isAcceleratedCompositingActive());
     }
 
@@ -110,7 +110,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing)
 
     OwnPtr<PageOverlay> pageOverlay = PageOverlay::create(webViewImpl(), new SolidColorOverlay(SK_ColorYELLOW));
     pageOverlay->update();
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     // Ideally, we would get results from the compositor that showed that this
     // page overlay actually winds up getting drawn on top of the rest.

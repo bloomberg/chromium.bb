@@ -135,7 +135,7 @@ TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "rgm_test.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     // We are going test everything twice. Once with FloatPoints and once with
     // FloatRects. This is because LayoutGeometryMap treats both slightly
@@ -171,7 +171,7 @@ TEST_F(LayoutGeometryMapTest, TransformedGeometryTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "rgm_transformed_test.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InitialDiv"), 0);
@@ -208,7 +208,7 @@ TEST_F(LayoutGeometryMapTest, FixedGeometryTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "rgm_fixed_position_test.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InitialDiv"), 0);
@@ -239,7 +239,7 @@ TEST_F(LayoutGeometryMapTest, IframeTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "rgm_iframe_test.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     LayoutGeometryMap rgm(TraverseDocumentBoundaries);
     LayoutGeometryMap rgmNoFrame;
@@ -302,7 +302,7 @@ TEST_F(LayoutGeometryMapTest, ColumnTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "rgm_column_test.html", true, 0, 0);
     webView->resize(WebSize(1000, 1000));
-    webView->layout();
+    webView->updateAllLifecyclePhases();
 
     // The document is 1000f wide (we resized to that size).
     // We have a 8px margin on either side of the document.

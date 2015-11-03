@@ -795,7 +795,7 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
-  layer_tree_host_->Layout();
+  layer_tree_host_->RequestMainFrameUpdate();
 
   // New commits requested inside UpdateLayers should be respected.
   commit_requested_ = false;

@@ -1032,7 +1032,7 @@ class DISABLED_LayerTreeHostTimelinesTestSetPotentiallyAnimatingOnLacDestruction
 
   void DidCommit() override { PostSetNeedsCommitToMainThread(); }
 
-  void Layout() override {
+  void UpdateLayerTreeHost() override {
     if (layer_tree_host()->source_frame_number() == 2) {
       // Destroy player.
       timeline_->DetachPlayer(player_.get());
@@ -1075,7 +1075,7 @@ class LayerTreeHostTimelinesTestRebuildPropertyTreesOnAnimationSetNeedsCommit
       PostSetNeedsCommitToMainThread();
   }
 
-  void Layout() override {
+  void UpdateLayerTreeHost() override {
     if (layer_tree_host()->source_frame_number() == 1) {
       EXPECT_FALSE(layer_tree_host()->property_trees()->needs_rebuild);
       AddAnimatedTransformToPlayer(player_child_.get(), 1.0, 5, 5);

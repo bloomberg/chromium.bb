@@ -87,7 +87,7 @@ SimDisplayItemList SimCompositor::beginFrame()
     m_lastFrameTimeMonotonic = monotonicallyIncreasingTime() + 0.016;
 
     m_webViewImpl->beginFrame(m_lastFrameTimeMonotonic);
-    m_webViewImpl->layout();
+    m_webViewImpl->updateAllLifecyclePhases();
 
     LocalFrame* root = m_webViewImpl->mainFrameImpl()->frame();
 

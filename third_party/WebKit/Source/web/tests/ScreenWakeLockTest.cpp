@@ -76,7 +76,7 @@ protected:
         blink::FrameTestHelpers::loadFrame(
             m_webViewHelper.webView()->mainFrame(),
             "http://example.com/foo.html");
-        m_webViewHelper.webViewImpl()->layout();
+        m_webViewHelper.webViewImpl()->updateAllLifecyclePhases();
     }
 
     blink::LocalFrame* frame()

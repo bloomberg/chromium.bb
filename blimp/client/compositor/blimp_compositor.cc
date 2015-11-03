@@ -99,7 +99,7 @@ void BlimpCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {}
 
 void BlimpCompositor::BeginMainFrameNotExpectedSoon() {}
 
-void BlimpCompositor::Layout() {}
+void BlimpCompositor::UpdateLayerTreeHost() {}
 
 void BlimpCompositor::ApplyViewportDeltas(
     const gfx::Vector2dF& inner_delta,

@@ -86,7 +86,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidBeginMainFrame() override {}
   void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
   void BeginMainFrameNotExpectedSoon() override {}
-  void Layout() override;
+  void UpdateLayerTreeHost() override;
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
@@ -181,7 +181,8 @@ class CONTENT_EXPORT CompositorImpl
   // a posted SwapBuffers().
   bool did_post_swapbuffers_;
 
-  // Used locally to inhibit ScheduleComposite() during Layout().
+  // Used locally to inhibit ScheduleComposite() during
+  // UpdateLayerTreeHost().
   bool ignore_schedule_composite_;
 
   // Whether we need to composite in general because of any invalidation or

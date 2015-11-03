@@ -372,7 +372,7 @@ void WebPagePopupImpl::willCloseLayerTreeView()
     m_layerTreeView = 0;
 }
 
-void WebPagePopupImpl::layout()
+void WebPagePopupImpl::updateAllLifecyclePhases()
 {
     if (!m_page)
         return;

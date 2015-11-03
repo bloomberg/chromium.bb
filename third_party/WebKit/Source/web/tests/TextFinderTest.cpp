@@ -47,7 +47,7 @@ void TextFinderTest::SetUp()
     m_webViewHelper.initialize();
     WebLocalFrameImpl& frameImpl = *m_webViewHelper.webViewImpl()->mainFrameImpl();
     frameImpl.viewImpl()->resize(WebSize(640, 480));
-    frameImpl.viewImpl()->layout();
+    frameImpl.viewImpl()->updateAllLifecyclePhases();
     m_document = PassRefPtrWillBeRawPtr<Document>(frameImpl.document());
     m_textFinder = &frameImpl.ensureTextFinder();
 }

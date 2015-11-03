@@ -393,7 +393,7 @@ static void SendDamagedRectsRecursive(ui::Layer* layer) {
     SendDamagedRectsRecursive(child);
 }
 
-void Compositor::Layout() {
+void Compositor::UpdateLayerTreeHost() {
   if (!root_layer())
     return;
   SendDamagedRectsRecursive(root_layer());

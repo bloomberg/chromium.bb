@@ -151,8 +151,10 @@ v8::Local<v8::Object> WebViewPlugin::v8ScriptableObject(v8::Isolate* isolate) {
   return delegate_->GetV8ScriptableObject(isolate);
 }
 
+// TODO(wkorman): Look into renaming this to something more in line with
+// either the Blink lifecycle or Compositor layer tree host nomenclature.
 void WebViewPlugin::layoutIfNeeded() {
-  web_view_->layout();
+  web_view_->updateAllLifecyclePhases();
 }
 
 void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {

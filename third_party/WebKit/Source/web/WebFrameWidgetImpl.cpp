@@ -252,9 +252,9 @@ void WebFrameWidgetImpl::beginFrame(double lastFrameTimeMonotonic)
     PageWidgetDelegate::animate(*page(), lastFrameTimeMonotonic);
 }
 
-void WebFrameWidgetImpl::layout()
+void WebFrameWidgetImpl::updateAllLifecyclePhases()
 {
-    TRACE_EVENT0("blink", "WebFrameWidgetImpl::layout");
+    TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
     if (!m_localRoot)
         return;
 

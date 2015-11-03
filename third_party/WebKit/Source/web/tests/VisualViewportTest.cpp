@@ -142,7 +142,7 @@ public:
 
     void forceFullCompositingUpdate()
     {
-        webViewImpl()->layout();
+        webViewImpl()->updateAllLifecyclePhases();
     }
 
     void registerMockedHttpURLLoad(const std::string& fileName)
@@ -437,7 +437,7 @@ TEST_P(ParameterizedVisualViewportTest, TestWebViewResizedBeforeAttachment)
     navigateTo("about:blank");
     forceFullCompositingUpdate();
     webViewImpl()->settings()->setAcceleratedCompositingEnabled(true);
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
     EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240), visualViewport.containerLayer()->size());
@@ -461,7 +461,7 @@ TEST_P(ParameterizedVisualViewportTest, TestVisibleRect)
     // Viewport is whole frame.
     IntSize size = IntSize(400, 200);
     webViewImpl()->resize(size);
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
     visualViewport.setSize(size);
 
     // Scale the viewport to 2X; size should not change.
@@ -661,7 +661,7 @@ TEST_P(ParameterizedVisualViewportTest, TestOffsetClampingWithResizeAndScale)
 
     // Resize both the viewport and the frame to be larger.
     webViewImpl()->resize(IntSize(640, 480));
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
     EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()), visualViewport.size());
     EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()), frame()->view()->frameRect().size());
     visualViewport.setLocation(FloatPoint(1000, 1000));
@@ -686,7 +686,7 @@ TEST_P(ParameterizedVisualViewportTest, TestFrameViewSizedToContent)
     navigateTo(m_baseURL + "200-by-300-viewport.html");
 
     webViewImpl()->resize(IntSize(600, 800));
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     // Note: the size is ceiled and should match the behavior in CC's LayerImpl::bounds().
     EXPECT_SIZE_EQ(IntSize(200, 267),
@@ -705,7 +705,7 @@ TEST_P(ParameterizedVisualViewportTest, TestFrameViewSizedToMinimumScale)
     navigateTo(m_baseURL + "200-by-300.html");
 
     webViewImpl()->resize(IntSize(100, 160));
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     EXPECT_SIZE_EQ(IntSize(100, 160),
         webViewImpl()->mainFrameImpl()->frameView()->frameRect().size());
@@ -722,7 +722,7 @@ TEST_P(ParameterizedVisualViewportTest, TestAttachingNewFrameSetsInnerScrollLaye
     // the smaller size on the second navigation.
     registerMockedHttpURLLoad("content-width-1000.html");
     navigateTo(m_baseURL + "content-width-1000.html");
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
     visualViewport.setScale(2);
@@ -756,7 +756,7 @@ TEST_P(ParameterizedVisualViewportTest, TestFrameViewSizedToViewportMetaMinimumS
     navigateTo(m_baseURL + "200-by-300-min-scale-2.html");
 
     webViewImpl()->resize(IntSize(100, 160));
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     EXPECT_SIZE_EQ(IntSize(50, 80),
         webViewImpl()->mainFrameImpl()->frameView()->frameRect().size());
@@ -817,7 +817,7 @@ TEST_P(ParameterizedVisualViewportTest, TestSavedToHistoryItem)
 {
     initializeWithDesktopSettings();
     webViewImpl()->resize(IntSize(200, 300));
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     registerMockedHttpURLLoad("200-by-300.html");
     navigateTo(m_baseURL + "200-by-300.html");
@@ -892,7 +892,7 @@ TEST_P(ParameterizedVisualViewportTest, TestNavigateToSmallerFrameViewHistoryIte
 {
     initializeWithAndroidSettings();
     webViewImpl()->resize(IntSize(400, 400));
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     registerMockedHttpURLLoad("content-width-1000.html");
     navigateTo(m_baseURL + "content-width-1000.html");
@@ -1429,7 +1429,7 @@ TEST_P(ParameterizedVisualViewportTest, ResizeVisualViewportStaysWithinOuterView
     webViewImpl()->resize(IntSize(100, 200));
 
     navigateTo("about:blank");
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     webViewImpl()->resizeVisualViewport(IntSize(100, 100));
 
@@ -1636,7 +1636,7 @@ TEST_P(ParameterizedVisualViewportTest, AccessibilityHitTestWhileZoomedIn)
     navigateTo(m_baseURL + "hit-test.html");
 
     webViewImpl()->resize(IntSize(500, 500));
-    webViewImpl()->layout();
+    webViewImpl()->updateAllLifecyclePhases();
 
     WebDocument webDoc = webViewImpl()->mainFrame()->document();
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();

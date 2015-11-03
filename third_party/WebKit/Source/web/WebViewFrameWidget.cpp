@@ -77,9 +77,9 @@ void WebViewFrameWidget::beginFrame(double lastFrameTimeMonotonic)
     return m_webView->beginFrame(lastFrameTimeMonotonic);
 }
 
-void WebViewFrameWidget::layout()
+void WebViewFrameWidget::updateAllLifecyclePhases()
 {
-    return m_webView->layout();
+    return m_webView->updateAllLifecyclePhases();
 }
 
 void WebViewFrameWidget::paint(WebCanvas* canvas, const WebRect& viewPort)

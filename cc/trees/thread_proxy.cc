@@ -669,7 +669,7 @@ void ThreadProxy::BeginMainFrame(
   if (begin_main_frame_state->evicted_ui_resources)
     layer_tree_host()->RecreateUIResources();
 
-  layer_tree_host()->Layout();
+  layer_tree_host()->RequestMainFrameUpdate();
   TRACE_EVENT_SYNTHETIC_DELAY_END("cc.BeginMainFrame");
 
   bool can_cancel_this_commit =

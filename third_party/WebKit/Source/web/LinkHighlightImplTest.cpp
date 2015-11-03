@@ -70,7 +70,7 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     WebGestureEvent touchEvent;
     touchEvent.type = WebInputEvent::GestureShowPress;
@@ -143,7 +143,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     WebGestureEvent touchEvent;
     touchEvent.type = WebInputEvent::GestureShowPress;
@@ -163,7 +163,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
     EXPECT_TRUE(highlightLayer->linkHighlight(0));
 
     touchNode->remove(IGNORE_EXCEPTION);
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
     ASSERT_EQ(0U, highlightLayer->numLinkHighlights());
 
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
@@ -183,7 +183,7 @@ TEST(LinkHighlightImplTest, multipleHighlights)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     WebGestureEvent touchEvent;
     touchEvent.x = 50;

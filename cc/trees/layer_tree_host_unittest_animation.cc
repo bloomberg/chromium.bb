@@ -490,7 +490,9 @@ class LayerTreeHostAnimationTestForceRedraw
       layer_tree_host()->SetNeedsAnimate();
   }
 
-  void Layout() override { layer_tree_host()->SetNextCommitForcesRedraw(); }
+  void UpdateLayerTreeHost() override {
+    layer_tree_host()->SetNextCommitForcesRedraw();
+  }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     if (++num_draw_layers_ == 2)

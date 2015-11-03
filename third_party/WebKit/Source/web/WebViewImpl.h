@@ -109,7 +109,7 @@ public:
 
     void beginFrame(double lastFrameTimeMonotonic) override;
 
-    void layout() override;
+    void updateAllLifecyclePhases() override;
     void paint(WebCanvas*, const WebRect&) override;
 #if OS(ANDROID)
     void paintCompositedDeprecated(WebCanvas*, const WebRect&) override;
@@ -377,8 +377,8 @@ public:
 
     // Indicates two things:
     //   1) This view may have a new layout now.
-    //   2) Calling layout() is a no-op.
-    // After calling WebWidget::layout(), expect to get this notification
+    //   2) Calling updateAllLifecyclePhases() is a no-op.
+    // After calling WebWidget::updateAllLifecyclePhases(), expect to get this notification
     // unless the view did not need a layout.
     void layoutUpdated(WebLocalFrameImpl*);
 

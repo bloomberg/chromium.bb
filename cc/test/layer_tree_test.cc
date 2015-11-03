@@ -602,7 +602,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->BeginMainFrame(args);
   }
 
-  void Layout() override { test_hooks_->Layout(); }
+  void UpdateLayerTreeHost() override {
+    test_hooks_->UpdateLayerTreeHost();
+  }
 
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,

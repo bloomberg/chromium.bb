@@ -107,7 +107,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     LocalDOMWindow* domWindow = document->domWindow();
@@ -248,7 +248,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     webViewImpl->setPageScaleFactor(2);
 
@@ -504,7 +504,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     webViewImpl->setPageScaleFactor(2);
     webViewImpl->setRootLayerTransform(WebSize(10, 20), 1.5);
@@ -657,7 +657,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
@@ -707,7 +707,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     webViewImpl->setPageScaleFactor(2);
 
@@ -802,7 +802,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
 
@@ -866,7 +866,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     FloatSize elasticOverscroll(10, -20);
     webViewImpl->applyViewportDeltas(WebFloatSize(), WebFloatSize(), elasticOverscroll, 1.0f, 0.0f);
@@ -905,7 +905,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
@@ -939,7 +939,7 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
-    webViewImpl->layout();
+    webViewImpl->updateAllLifecyclePhases();
 
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
 
