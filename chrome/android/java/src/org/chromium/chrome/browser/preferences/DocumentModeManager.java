@@ -227,7 +227,12 @@ public class DocumentModeManager {
         sharedPreferencesEditor.apply();
     }
 
-    private static boolean isDeviceTabbedModeByDefault() {
+    /**
+     * @return Whether Chrome should default to Tabbed mode despite Document mode being supported
+     *         at the platform level.  A device will default to Tabbed mode if accessing the
+     *         platform Overview screen is deemed too difficult to make Document mode user friendly.
+     */
+    public static boolean isDeviceTabbedModeByDefault() {
         String model = Build.MODEL.toUpperCase(Locale.US);
         for (String device : DEFAULT_TABBED_MODE_DEVICES) {
             if (model.contains(device)) return true;

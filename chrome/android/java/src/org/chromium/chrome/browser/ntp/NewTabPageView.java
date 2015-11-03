@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
+import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -61,28 +62,6 @@ public class NewTabPageView extends FrameLayout
 
     private static final int SHADOW_COLOR = 0x11000000;
     private static final long SNAP_SCROLL_DELAY_MS = 30;
-
-    // Taken from https://support.google.com/googleplay/answer/1727131?hl=en-GB
-    private static final String[] SUPPORTED_SAMSUNG_DEVICES = {
-        "sm-g920", // Galaxy S6
-        "sm-g925", // Galaxy S6 Edge
-        "404sc",   // Galaxy S6 Edge
-        "scv31",   // Galaxy S6 Edge
-        "sm-g890", // Galaxy S6 Active
-        "sm-g800", // Galaxy S5 mini
-        "sm-g860", // Galaxy S5 K Sport
-        "sm-g870", // Galaxy S5 Active
-        "sm-g900", // Galaxy S5
-        "sm-g901", // Galaxy S5 LTE-A
-        "sm-g906", // Galaxy S5
-        "scl23",   // Galaxy S5
-        "sm-n920", // Galaxy Note 5
-        "sm-n915", // Galaxy Note Edge
-        "scl24",   // Galaxy Note Edge
-        "sm-n916", // Galaxy Note 4
-        "sm-n910", // Galaxy Note 4
-        "sm-g850", // Galaxy Alpha
-    };
 
     private ViewGroup mContentView;
     private NewTabScrollView mScrollView;
@@ -333,13 +312,8 @@ public class NewTabPageView extends FrameLayout
     private int getTabsMovedIllustration() {
         switch (Build.MANUFACTURER.toLowerCase(Locale.US)) {
             case "samsung":
-                String model = Build.MODEL.toLowerCase(Locale.US);
-                for (String supportedModel : SUPPORTED_SAMSUNG_DEVICES) {
-                    if (model.contains(supportedModel)) {
-                        return R.drawable.tabs_moved_samsung;
-                    }
-                }
-                return 0;
+                if (DocumentModeManager.isDeviceTabbedModeByDefault()) return 0;
+                return R.drawable.tabs_moved_samsung;
             case "htc":
                 return R.drawable.tabs_moved_htc;
             default:
