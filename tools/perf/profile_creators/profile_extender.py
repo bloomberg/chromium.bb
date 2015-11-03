@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
+
 from telemetry.core import platform
 from telemetry.util import wpr_modes
 from telemetry.internal.browser import browser_finder
@@ -26,7 +28,7 @@ class ProfileExtender(object):
       then a new profile is created. Otherwise, the existing profile is
       appended on to.
     """
-    self._finder_options = finder_options
+    self._finder_options = copy.deepcopy(finder_options)
     # Since profile extenders are not supported on remote platforms,
     # this should be the same as target platform.
     self._os_name = platform.GetHostPlatform().GetOSName()
