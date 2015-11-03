@@ -2385,6 +2385,40 @@ TEST_F(LayerTreeHostImplTestScrollbarOpacity, Thinning) {
   RunTest(LayerTreeSettings::THINNING);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
+  LayerTreeSettings settings;
+  CreateHostImpl(settings, CreateOutputSurface());
+
+  gfx::Size inner_viewport_size(315, 200);
+  gfx::Size outer_viewport_size(300, 200);
+  gfx::Size content_size(1000, 1000);
+
+  const int horiz_id = 11;
+  const int child_clip_id = 14;
+  const int child_scroll_id = 15;
+
+  CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+  host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
+      inner_viewport_size);
+  host_impl_->active_tree()->OuterViewportContainerLayer()->SetBounds(
+      outer_viewport_size);
+  LayerImpl* root_scroll =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  scoped_ptr<SolidColorScrollbarLayerImpl> horiz_scrollbar =
+      SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), horiz_id,
+                                           HORIZONTAL, 5, 5, true, true);
+  scoped_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl_->active_tree(), child_scroll_id);
+  child->SetBounds(content_size);
+  scoped_ptr<LayerImpl> child_clip =
+      LayerImpl::Create(host_impl_->active_tree(), child_clip_id);
+  child->SetBounds(inner_viewport_size);
+
+  horiz_scrollbar->SetScrollLayerId(root_scroll->id());
+
+  EXPECT_EQ(300, horiz_scrollbar->clip_layer_length());
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   LayerTreeSettings settings;
   settings.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;

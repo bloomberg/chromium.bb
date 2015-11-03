@@ -1034,8 +1034,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
   void AfterTest() override {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostScrollTestScrollZeroMaxScrollOffset);
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollZeroMaxScrollOffset);
 
 class ThreadCheckingInputHandlerClient : public InputHandlerClient {
  public:

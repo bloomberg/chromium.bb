@@ -177,6 +177,7 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
   gfx::ScrollOffset current_offset = scroll_layer->CurrentScrollOffset();
   if (IsViewportLayerId(scroll_layer_id)) {
     current_offset += InnerViewportScrollLayer()->CurrentScrollOffset();
+    clip_size.SetToMin(OuterViewportContainerLayer()->BoundsForScrolling());
     clip_size.Scale(1 / current_page_scale_factor());
   }
 
