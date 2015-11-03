@@ -42,8 +42,11 @@ void StackFrameDepth::enableStackLimit()
 
     size_t stackSize = getUnderestimatedStackSize();
     if (stackSize) {
-        size_t stackBase = reinterpret_cast<size_t>(getStackStart());
-        s_stackFrameLimit = stackBase - stackSize + kStackRoomSize;
+        Address stackBase = reinterpret_cast<Address>(getStackStart());
+        RELEASE_ASSERT(stackSize > static_cast<const size_t>(kStackRoomSize));
+        size_t stackRoom = stackSize - kStackRoomSize;
+        RELEASE_ASSERT(stackBase > reinterpret_cast<Address>(stackRoom));
+        s_stackFrameLimit = reinterpret_cast<uintptr_t>(stackBase - stackRoom);
         return;
     }
 
