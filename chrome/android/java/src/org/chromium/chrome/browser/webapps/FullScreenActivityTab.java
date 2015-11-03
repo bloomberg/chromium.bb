@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -74,7 +73,7 @@ public class FullScreenActivityTab extends Tab {
 
     private void initializeFullScreenActivityTab(TabContentManager tabContentManager,
             boolean unfreeze, TopControlsVisibilityDelegate topControlsVisibilityDelegate) {
-        initialize(null, tabContentManager, new TabDelegateFactory(), false);
+        initialize(null, tabContentManager, new FullScreenDelegateFactory(), false);
         if (unfreeze) unfreezeContents();
         mObserver = createWebContentsObserver();
         mTopControlsVisibilityDelegate = topControlsVisibilityDelegate;
