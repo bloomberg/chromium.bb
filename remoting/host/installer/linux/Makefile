@@ -6,7 +6,9 @@
 # variables not defined here, such as DESTDIR.
 
 SRC_DIR = ../../../..
-BUILD_DIR = $(SRC_DIR)/out/Release
+ifndef BUILD_DIR
+  BUILD_DIR = $(SRC_DIR)/out/Release
+endif
 
 CRON_DIR = $(DESTDIR)/etc/cron.daily
 DOC_DIR = $(DESTDIR)/usr/share/doc/chrome-remote-desktop

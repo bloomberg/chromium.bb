@@ -40,7 +40,7 @@ usage() {
   echo "-h     this help message"
   echo "-p     just print the expected DEB filename that this will build."
   echo "-s     path to the top of the src tree."
-  echo "-o     path to write the DEB file to."
+  echo "-o     output directory path."
 }
 
 while getopts ":s:o:ph" OPTNAME
@@ -107,6 +107,10 @@ if [[ -n "$revision" ]]; then
   revision_text="(r$revision)"
 fi
 
+if [[ ! "$OUTPUT_PATH" ]]; then
+  OUTPUT_PATH="${SCRIPTDIR}/../../../../out/Release"
+fi
+
 echo "Building version $version_full $revision_text"
 
 # Create a fresh debian/changelog.
@@ -120,7 +124,7 @@ debchange --create \
   "New Debian package $revision_text"
 
 
-CRON_SCRIPT_DIR="${SCRIPTDIR}/../../../../out/Release/remoting/installer/cron"
+CRON_SCRIPT_DIR="${OUTPUT_PATH}/remoting/installer/cron"
 mkdir -p ${CRON_SCRIPT_DIR}
 process_template \
     "${SCRIPTDIR}/../../../../chrome/installer/linux/common/repo.cron" \
@@ -134,10 +138,8 @@ process_template \
 # but it seems that we don't currently, so this is the most expediant fix.
 SAVE_LDLP=$LD_LIBRARY_PATH
 unset LD_LIBRARY_PATH
-dpkg-buildpackage -b -us -uc
+BUILD_DIR=$OUTPUT_PATH dpkg-buildpackage -b -us -uc
 LD_LIBRARY_PATH=$SAVE_LDLP
 
-if [[ "$OUTPUT_PATH" ]]; then
-  mv ../${PACKAGE}_*.deb "$OUTPUT_PATH"/
-  mv ../${PACKAGE}_*.changes "$OUTPUT_PATH"/
-fi
+mv ../${PACKAGE}_*.deb "$OUTPUT_PATH"/
+mv ../${PACKAGE}_*.changes "$OUTPUT_PATH"/

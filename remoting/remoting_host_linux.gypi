@@ -8,7 +8,7 @@
 
       'variables': {
         'build_deb_script': 'host/installer/linux/build-deb.sh',
-        'deb_filename': 'host/installer/<!(["<(build_deb_script)", "-p", "-s", "<(DEPTH)"])',
+        'deb_filename': '<(PRODUCT_DIR)/<!(["<(build_deb_script)", "-p", "-s", "<(DEPTH)"])',
         'packaging_outputs': [
           '<(deb_filename)',
           '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
@@ -84,7 +84,11 @@
               'outputs': [
                 '<@(packaging_outputs)',
               ],
-              'action': [ '<(build_deb_script)', '-s', '<(DEPTH)' ],
+              'action': [
+                '<(build_deb_script)',
+                '-s', '<(DEPTH)',
+                '-o', '<(PRODUCT_DIR)'
+              ],
             },
           ],
         },
