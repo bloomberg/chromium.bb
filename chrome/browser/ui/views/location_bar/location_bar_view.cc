@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/layout_constants.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
@@ -116,11 +117,7 @@ int GetEditLeadingInternalSpace() {
 
 // static
 
-// TODO(jonross): Replace with lookup once Material Design asset has landed.
-// (https://crbug.com/495654)
-// Thickness of the edges of the omnibox background images, for normal and
-// popup windows.
-const int kNormalEdgeThickness = 2;
+// Thickness of the edges of the omnibox background images, for popup windows.
 const int kPopupEdgeThickness = 1;
 
 const char LocationBarView::kViewClassName[] = "LocationBarView";
@@ -164,6 +161,12 @@ LocationBarView::LocationBarView(Browser* browser,
 
   ui_zoom::ZoomEventManager::GetForBrowserContext(profile)
       ->AddZoomEventManagerObserver(this);
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    set_background(new BackgroundWith1PxBorder(
+        GetColor(SecurityStateModel::NONE, BACKGROUND),
+        SkColorSetARGB(0x4D, 0x00, 0x00, 0x00), is_popup_mode_));
+  }
 }
 
 LocationBarView::~LocationBarView() {
@@ -513,7 +516,8 @@ void LocationBarView::GetOmniboxPopupPositioningInfo(
 
   *popup_width = parent()->width();
   gfx::Rect location_bar_bounds(bounds());
-  location_bar_bounds.Inset(kNormalEdgeThickness, 0);
+  location_bar_bounds.Inset(GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS),
+                            0);
   *left_margin = location_bar_bounds.x();
   *right_margin = *popup_width - location_bar_bounds.right();
 }
@@ -885,10 +889,8 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
 }
 
 int LocationBarView::GetVerticalEdgeThickness() const {
-  // In Material Design vertical layout disregards the border.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return 0;
-  return is_popup_mode_ ? kPopupEdgeThickness : kNormalEdgeThickness;
+  return is_popup_mode_ ? kPopupEdgeThickness
+                        : GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS);
 }
 
 int LocationBarView::VerticalPadding() const {
@@ -1289,6 +1291,9 @@ void LocationBarView::OnFocus() {
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return;  // The background and border are painted by our Background.
+
   // Fill the location bar background color behind the border.  Parts of the
   // border images are meant to rest atop the toolbar background and parts atop
   // the omnibox background, so we can't just blindly fill our entire bounds.
@@ -1321,36 +1326,17 @@ void LocationBarView::PaintChildren(const ui::PaintContext& context) {
   if (show_focus_rect_ && HasFocus())
     recorder.canvas()->DrawFocusRect(omnibox_view_->bounds());
 
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return;  // The background and border are painted by our Background.
+
   // Maximized popup windows don't draw the horizontal edges.  We implement this
   // by simply expanding the paint area outside the view by the edge thickness.
   gfx::Rect border_rect(GetContentsBounds());
   if (is_popup_mode_ && (GetHorizontalEdgeThickness() == 0))
     border_rect.Inset(-kPopupEdgeThickness, 0);
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::Canvas* canvas = recorder.canvas();
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    const float scale = canvas->UndoDeviceScaleFactor();
-
-    SkPaint paint;
-    paint.setStyle(SkPaint::Style::kStroke_Style);
-    paint.setColor(SkColorSetARGB(0x40, 0x00, 0x00, 0x00));
-    paint.setStrokeWidth(1);
-    paint.setAntiAlias(true);
-
-    const float kOffset = 0.5f;
-    gfx::RectF border_rect_f(border_rect);
-    border_rect_f.Scale(scale);
-    gfx::InsetsF insets(kOffset, kOffset, kOffset, kOffset);
-    border_rect_f.Inset(insets);
-
-    const SkScalar kCornerRadius = SkDoubleToScalar(2.5f * scale);
-    canvas->sk_canvas()->drawRoundRect(gfx::RectFToSkRect(border_rect_f),
-                                       kCornerRadius, kCornerRadius, paint);
-  } else {
-    views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
-                                   border_rect);
-  }
+  views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
+                                 border_rect);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

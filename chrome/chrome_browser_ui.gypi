@@ -2253,6 +2253,8 @@
       'browser/ui/views/layout_constants.h',
       'browser/ui/views/load_complete_listener.cc',
       'browser/ui/views/load_complete_listener.h',
+      'browser/ui/views/location_bar/background_with_1_px_border.cc',
+      'browser/ui/views/location_bar/background_with_1_px_border.h',
       'browser/ui/views/location_bar/bubble_icon_view.cc',
       'browser/ui/views/location_bar/bubble_icon_view.h',
       'browser/ui/views/location_bar/content_setting_image_view.cc',

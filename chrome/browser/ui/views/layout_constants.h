@@ -18,6 +18,9 @@ enum LayoutConstant {
   // views.
   ICON_LABEL_VIEW_TRAILING_PADDING,
 
+  // The thickness of the location bar's border.
+  LOCATION_BAR_BORDER_THICKNESS,
+
   // The horizontal space between the edge and a bubble.
   LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING,
 
