@@ -38,4 +38,6 @@
         <item android:id="@+id/contextmenu_save_video"
             android:title="@string/contextmenu_save_video"/>
     </group>
+    <item android:id="@+id/menu_id_open_in_chrome"
+        android:title="@string/menu_open_in_chrome"/>
 </menu>

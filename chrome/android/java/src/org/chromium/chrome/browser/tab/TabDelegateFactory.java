@@ -44,7 +44,9 @@ public class TabDelegateFactory {
      * @return The {@link ContextMenuPopulator} to be used for this tab.
      */
     public ContextMenuPopulator createContextMenuPopulator(Tab tab, ChromeActivity activity) {
-        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab, activity));
+        return new ChromeContextMenuPopulator(
+                new TabContextMenuItemDelegate(tab, activity),
+                ChromeContextMenuPopulator.NORMAL_MODE);
     }
 
     /**

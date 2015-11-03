@@ -83,4 +83,11 @@ public interface ContextMenuItemDelegate {
     * @return page url.
     */
     String getPageUrl();
+
+    /**
+     * Called when a link should be opened in the main Chrome browser.
+     * @param linkUrl URL that should be opened.
+     * @param pageUrl URL of the current page.
+     */
+    void onOpenInChrome(String linkUrl, String pageUrl);
 }

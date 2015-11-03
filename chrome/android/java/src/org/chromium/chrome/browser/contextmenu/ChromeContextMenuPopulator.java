@@ -9,6 +9,7 @@ import android.net.MailTo;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -17,13 +18,50 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
+import java.util.Arrays;
+
 /**
  * A {@link ContextMenuPopulator} used for showing the default Chrome context menu.
  */
 public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+    public static final int NORMAL_MODE = 0;
+    public static final int CUSTOM_TAB_MODE = 1;
+    public static final int FULLSCREEN_TAB_MODE = 2;
+
+    private static final int[] NORMAL_MODE_WHITELIST = {
+            R.id.contextmenu_load_images,
+            R.id.contextmenu_open_in_new_tab,
+            R.id.contextmenu_open_in_incognito_tab,
+            R.id.contextmenu_copy_link_address,
+            R.id.contextmenu_copy_email_address,
+            R.id.contextmenu_copy_link_text,
+            R.id.contextmenu_save_link_as,
+            R.id.contextmenu_load_original_image,
+            R.id.contextmenu_save_image,
+            R.id.contextmenu_open_image,
+            R.id.contextmenu_search_by_image,
+            R.id.contextmenu_share_image,
+            R.id.contextmenu_save_video
+    };
+
+    private static final int[] CUSTOM_TAB_MODE_WHITELIST = {
+            R.id.contextmenu_copy_link_address,
+            R.id.contextmenu_copy_link_text,
+            R.id.contextmenu_save_link_as,
+            R.id.contextmenu_save_image,
+            R.id.contextmenu_open_image
+    };
+
+    private static final int[] FULLSCREEN_TAB_MODE_WHITELIST = {
+            R.id.contextmenu_copy_link_address,
+            R.id.contextmenu_copy_link_text,
+            R.id.menu_id_open_in_chrome
+    };
+
     private final ContextMenuItemDelegate mDelegate;
     private MenuInflater mMenuInflater;
     private static final String BLANK_URL = "about:blank";
+    private final int mMode;
 
     static class ContextMenuUma {
         // Note: these values must match the ContextMenuOption enum in histograms.xml.
@@ -70,8 +108,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * @param delegate The {@link ContextMenuItemDelegate} that will be notified with actions
      *                 to perform when menu items are selected.
      */
-    public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate) {
+    public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate, int mode) {
         mDelegate = delegate;
+        mMode = mode;
     }
 
     @Override
@@ -164,6 +203,25 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                                         .getDefaultSearchEngineTemplateUrl().getShortName()));
             }
         }
+
+        if (mMode == FULLSCREEN_TAB_MODE) {
+            removeUnsupportedItems(menu, FULLSCREEN_TAB_MODE_WHITELIST);
+        } else if (mMode == CUSTOM_TAB_MODE) {
+            removeUnsupportedItems(menu, CUSTOM_TAB_MODE_WHITELIST);
+        } else {
+            removeUnsupportedItems(menu, NORMAL_MODE_WHITELIST);
+        }
+    }
+
+    private void removeUnsupportedItems(ContextMenu menu, int[] whitelist) {
+        Arrays.sort(whitelist);
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (Arrays.binarySearch(whitelist, item.getItemId()) < 0) {
+                menu.removeItem(item.getItemId());
+                i--;
+            }
+        }
     }
 
     @Override
@@ -226,6 +284,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_share_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SHARE_IMAGE);
             helper.shareImage();
+        } else if (itemId == R.id.menu_id_open_in_chrome) {
+            mDelegate.onOpenInChrome(params.getLinkUrl(), params.getPageUrl());
         } else {
             assert false;
         }

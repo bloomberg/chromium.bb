@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.content.Intent;
+import android.net.Uri;
+
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -15,6 +20,7 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.PageTransition;
 
+import java.net.URI;
 import java.util.Locale;
 
 /**
@@ -96,6 +102,33 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         loadUrlParams.setTransitionType(PageTransition.LINK);
         loadUrlParams.setReferrer(referrer);
         mTab.loadUrl(loadUrlParams);
+    }
+
+    @Override
+    public void onOpenInChrome(String linkUrl, String pageUrl) {
+        Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
+        chromeIntent.setPackage(mActivity.getPackageName());
+        chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        boolean activityStarted = false;
+        if (pageUrl != null) {
+            try {
+                URI pageUri = URI.create(pageUrl);
+                if (UrlUtilities.isInternalScheme(pageUri)) {
+                    IntentHandler.startChromeLauncherActivityForTrustedIntent(
+                            chromeIntent, mActivity);
+                    activityStarted = true;
+                }
+            } catch (IllegalArgumentException ex) {
+                // Ignore the exception for creating the URI and launch the intent
+                // without the trusted intent extras.
+            }
+        }
+
+        if (!activityStarted) {
+            mActivity.startActivity(chromeIntent);
+            activityStarted = true;
+        }
     }
 
     /**

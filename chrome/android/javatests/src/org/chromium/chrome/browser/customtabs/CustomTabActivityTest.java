@@ -180,11 +180,22 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForImage() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 2;
+        final int expectedMenuSize = 5;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "logo");
         assertEquals(expectedMenuSize, menu.size());
+
+        assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_copy_link_text));
+        assertNotNull(menu.findItem(R.id.contextmenu_save_link_as));
         assertNotNull(menu.findItem(R.id.contextmenu_save_image));
         assertNotNull(menu.findItem(R.id.contextmenu_open_image));
+
+        assertTrue(menu.findItem(R.id.contextmenu_save_image).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_open_image).isVisible());
+
+        assertTrue(!menu.findItem(R.id.contextmenu_copy_link_address).isVisible());
+        assertTrue(!menu.findItem(R.id.contextmenu_copy_link_text).isVisible());
+        assertTrue(!menu.findItem(R.id.contextmenu_save_link_as).isVisible());
     }
 
     /**
@@ -194,13 +205,23 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForLink() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 3;
+        final int expectedMenuSize = 5;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(),
                 "aboutLink");
         assertEquals(expectedMenuSize, menu.size());
+
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_text));
         assertNotNull(menu.findItem(R.id.contextmenu_save_link_as));
+        assertNotNull(menu.findItem(R.id.contextmenu_save_image));
+        assertNotNull(menu.findItem(R.id.contextmenu_open_image));
+
+        assertTrue(menu.findItem(R.id.contextmenu_copy_link_address).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_copy_link_text).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_save_link_as).isVisible());
+
+        assertTrue(!menu.findItem(R.id.contextmenu_save_image).isVisible());
+        assertTrue(!menu.findItem(R.id.contextmenu_open_image).isVisible());
     }
 
     /**

@@ -5,25 +5,19 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.TransactionTooLargeException;
-import android.text.TextUtils;
-import android.view.ContextMenu;
-import android.view.Menu;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
-import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -186,35 +180,9 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
 
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab, ChromeActivity activity) {
-        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab, activity)) {
-            @Override
-            public void buildContextMenu(ContextMenu menu, Context context,
-                    ContextMenuParams params) {
-                String linkUrl = params.getLinkUrl();
-                if (linkUrl != null) linkUrl = linkUrl.trim();
-                if (!TextUtils.isEmpty(linkUrl)) {
-                    menu.add(Menu.NONE, org.chromium.chrome.R.id.contextmenu_copy_link_address,
-                            Menu.NONE, org.chromium.chrome.R.string.contextmenu_copy_link_address);
-                }
-
-                String linkText = params.getLinkText();
-                if (linkText != null) linkText = linkText.trim();
-                if (!TextUtils.isEmpty(linkText)  && !params.isImage()) {
-                    menu.add(Menu.NONE, org.chromium.chrome.R.id.contextmenu_copy_link_text,
-                            Menu.NONE, org.chromium.chrome.R.string.contextmenu_copy_link_text);
-                }
-                if (params.isImage()) {
-                    menu.add(Menu.NONE, R.id.contextmenu_save_image, Menu.NONE,
-                            R.string.contextmenu_save_image);
-                    menu.add(Menu.NONE, R.id.contextmenu_open_image, Menu.NONE,
-                            R.string.contextmenu_open_image);
-                } else if (UrlUtilities.isDownloadableScheme(params.getLinkUrl())) {
-                    // "Save link" is not shown for image.
-                    menu.add(Menu.NONE, R.id.contextmenu_save_link_as, Menu.NONE,
-                            R.string.contextmenu_save_link);
-                }
-            }
-        };
+        return new ChromeContextMenuPopulator(
+                new TabContextMenuItemDelegate(tab, activity),
+                ChromeContextMenuPopulator.CUSTOM_TAB_MODE);
     }
 
     /**
