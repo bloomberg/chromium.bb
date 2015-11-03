@@ -32,19 +32,17 @@ void ParamTraits<gpu::CommandBuffer::State> ::Write(Message* m,
                                                     const param_type& p) {
   WriteParam(m, p.get_offset);
   WriteParam(m, p.token);
-  WriteParam(m, static_cast<int32>(p.error));
+  WriteParam(m, p.error);
   WriteParam(m, p.generation);
 }
 
 bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
                                                    base::PickleIterator* iter,
                                                    param_type* p) {
-  int32 temp;
   if (ReadParam(m, iter, &p->get_offset) &&
       ReadParam(m, iter, &p->token) &&
-      ReadParam(m, iter, &temp) &&
+      ReadParam(m, iter, &p->error) &&
       ReadParam(m, iter, &p->generation)) {
-    p->error = static_cast<gpu::error::Error>(temp);
     return true;
   } else {
     return false;
@@ -58,40 +56,30 @@ void ParamTraits<gpu::CommandBuffer::State> ::Log(const param_type& p,
 
 void ParamTraits<gpu::SyncToken>::Write(Message* m, const param_type& p) {
   DCHECK(!p.HasData() || p.verified_flush());
-  const bool verified_flush = p.verified_flush();
-  const int namespace_id = static_cast<int>(p.namespace_id());
-  const uint64_t command_buffer_id = p.command_buffer_id();
-  const uint64_t release_count = p.release_count();
 
-  m->WriteBool(verified_flush);
-  m->WriteInt(namespace_id);
-  m->WriteUInt64(command_buffer_id);
-  m->WriteUInt64(release_count);
+  WriteParam(m, p.verified_flush());
+  WriteParam(m, p.namespace_id());
+  WriteParam(m, p.command_buffer_id());
+  WriteParam(m, p.release_count());
 }
 
 bool ParamTraits<gpu::SyncToken>::Read(const Message* m,
                                        base::PickleIterator* iter,
                                        param_type* p) {
   bool verified_flush = false;
-  if (!iter->ReadBool(&verified_flush))
-    return false;
-
-  int namespace_id = -1;
-  if (!iter->ReadInt(&namespace_id))
-    return false;
-
+  gpu::CommandBufferNamespace namespace_id =
+      gpu::CommandBufferNamespace::INVALID;
   uint64_t command_buffer_id = 0;
-  if (!iter->ReadUInt64(&command_buffer_id))
-    return false;
-
   uint64_t release_count = 0;
-  if (!iter->ReadUInt64(&release_count))
+
+  if (!ReadParam(m, iter, &verified_flush) ||
+      !ReadParam(m, iter, &namespace_id) ||
+      !ReadParam(m, iter, &command_buffer_id) ||
+      !ReadParam(m, iter, &release_count)) {
     return false;
+  }
 
-  p->Set(static_cast<gpu::CommandBufferNamespace>(namespace_id),
-         command_buffer_id,
-         release_count);
-
+  p->Set(namespace_id, command_buffer_id, release_count);
   if (p->HasData()) {
     if (!verified_flush)
       return false;

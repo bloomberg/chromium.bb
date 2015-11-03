@@ -4,12 +4,19 @@
 
 // Multiply-included message file, hence no include guard here.
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT GPU_EXPORT
+
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::Error, gpu::error::kErrorLast)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(
+    gpu::CommandBufferNamespace,
+    gpu::CommandBufferNamespace::INVALID,
+    gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES)
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities::ShaderPrecision)
   IPC_STRUCT_TRAITS_MEMBER(min_range)

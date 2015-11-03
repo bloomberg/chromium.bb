@@ -63,7 +63,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::SurfaceType,
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::SwapResult, gfx::SwapResult::SWAP_RESULT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
                           gpu::MemoryAllocation::CUTOFF_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::Error, gpu::error::kErrorLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
                           gpu::error::kContextLostReasonLast)
 IPC_ENUM_TRAITS_MAX_VALUE(media::JpegDecodeAccelerator::Error,
