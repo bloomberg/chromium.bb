@@ -2107,12 +2107,6 @@
             'renderer/media/mock_webrtc_logging_message_filter.h',
           ],
         }],
-        ['enable_wifi_bootstrapping', {
-          "sources" : [
-             'browser/local_discovery/wifi/mock_wifi_manager.cc',
-             'browser/local_discovery/wifi/mock_wifi_manager.h',
-          ],
-        }],
         ['enable_plugins==1', {
           'dependencies': [
             '../pdf/pdf.gyp:pdf',

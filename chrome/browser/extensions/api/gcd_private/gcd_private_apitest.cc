@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
-#include "chrome/browser/local_discovery/wifi/mock_wifi_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
@@ -327,48 +326,5 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, SendQuery) {
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "send_query.html"));
 }
 #endif  // ENABLE_MDNS
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-class GcdPrivateWithWifiAPITest : public GcdPrivateAPITest {
- public:
-  virtual void OnCreateWifiManager() {
-    wifi_manager_ = wifi_manager_factory_.GetLastCreatedWifiManager();
-
-    EXPECT_CALL(*wifi_manager_, Start());
-
-    EXPECT_CALL(*wifi_manager_,
-                RequestNetworkCredentialsInternal("SuccessNetwork"))
-        .WillOnce(Invoke(this, &GcdPrivateWithWifiAPITest::RespondToNetwork));
-
-    EXPECT_CALL(*wifi_manager_,
-                RequestNetworkCredentialsInternal("FailureNetwork"))
-        .WillOnce(Invoke(this, &GcdPrivateWithWifiAPITest::RespondToNetwork));
-  }
-
-  void RespondToNetwork(const std::string& network) {
-    bool success = (network == "SuccessNetwork");
-
-    wifi_manager_->CallRequestNetworkCredentialsCallback(
-        success, network, success ? "SuccessPass" : "");
-  }
-
- protected:
-  local_discovery::wifi::MockWifiManagerFactory wifi_manager_factory_;
-  local_discovery::wifi::MockWifiManager* wifi_manager_;
-};
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateWithWifiAPITest, WifiMessage) {
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "wifi_message.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateWithWifiAPITest, WifiPasswords) {
-  if (ExtensionSubtestsAreSkipped())
-    return;
-  EXPECT_CALL(wifi_manager_factory_, WifiManagerCreated())
-      .WillOnce(Invoke(this, &GcdPrivateWithWifiAPITest::OnCreateWifiManager));
-
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "wifi_password.html"));
-}
-#endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 }  // namespace

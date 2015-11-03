@@ -3048,17 +3048,6 @@
       'browser/media/webrtc_rtp_dump_writer.cc',
       'browser/media/webrtc_rtp_dump_writer.h',
     ],
-    'chrome_browser_wifi_bootstrapping_sources': [
-       'browser/local_discovery/wifi/credential_getter_win.cc',
-       'browser/local_discovery/wifi/credential_getter_win.h',
-       'browser/local_discovery/wifi/wifi_manager.cc',
-       'browser/local_discovery/wifi/wifi_manager.h',
-    ],
-    # Parts of wifi bootstrapping (above) used everywhere except chromeos.
-    'chrome_browser_wifi_bootstrapping_win_mac_sources': [
-       'browser/local_discovery/wifi/wifi_manager_nonchromeos.cc',
-       'browser/local_discovery/wifi/wifi_manager_nonchromeos.h',
-    ],
   },
   'targets': [
     {
@@ -3868,16 +3857,6 @@
             'browser/autofill/validation_rules_storage_factory.cc',
             'browser/autofill/validation_rules_storage_factory.h',
           ],
-        }],
-        [ 'enable_wifi_bootstrapping==1', {
-          'sources': [ '<@(chrome_browser_wifi_bootstrapping_sources)' ],
-          'conditions' : [
-            [ 'OS=="win" or OS=="mac"', {
-              'sources': [
-                '<@(chrome_browser_wifi_bootstrapping_win_mac_sources)',
-              ]
-            }]
-          ]
         }],
         [ 'enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [

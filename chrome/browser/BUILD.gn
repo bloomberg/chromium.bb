@@ -871,20 +871,6 @@ source_set("browser") {
       "autofill/validation_rules_storage_factory.h",
     ]
   }
-  if (enable_wifi_bootstrapping) {
-    sources +=
-        rebase_path(gypi_values.chrome_browser_wifi_bootstrapping_sources,
-                    ".",
-                    "//chrome")
-    if (is_win || is_mac) {
-      # TODO(brettw) as of this writing wifi bootstrapping is set on Windows
-      # and Mac, so this test is meaningless. Can we merge these lists?
-      sources += rebase_path(
-              gypi_values.chrome_browser_wifi_bootstrapping_win_mac_sources,
-              ".",
-              "//chrome")
-    }
-  }
   if (enable_media_router) {
     deps += [ "//chrome/browser/media/router" ]
   }
@@ -1224,13 +1210,6 @@ source_set("test_support") {
       "ui/app_list/test/chrome_app_list_test_support.h",
       "ui/app_list/test/test_app_list_controller_delegate.cc",
       "ui/app_list/test/test_app_list_controller_delegate.h",
-    ]
-  }
-
-  if (enable_wifi_bootstrapping) {
-    sources += [
-      "local_discovery/wifi/mock_wifi_manager.cc",
-      "local_discovery/wifi/mock_wifi_manager.h",
     ]
   }
 }

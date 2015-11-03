@@ -649,7 +649,6 @@
 
       'enable_mdns%' : 0,
       'enable_service_discovery%': 0,
-      'enable_wifi_bootstrapping%': 0,
       'enable_hangout_services_extension%': 0,
 
        # Enable the Syzygy optimization step.
@@ -1010,10 +1009,6 @@
           'enable_print_preview%': 0,
         }],
 
-        ['OS=="win" or OS=="mac"', {
-          'enable_wifi_bootstrapping%' : 1,
-        }],
-
         # Path to sas.dll, which provides the SendSAS function.
         # http://msdn.microsoft.com/en-us/library/windows/desktop/dd979761(v=vs.85).aspx
         ['target_arch=="x64"', {
@@ -1241,7 +1236,6 @@
     'native_memory_pressure_signals%': '<(native_memory_pressure_signals)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_service_discovery%' : '<(enable_service_discovery)',
-    'enable_wifi_bootstrapping%': '<(enable_wifi_bootstrapping)',
     'enable_hangout_services_extension%' : '<(enable_hangout_services_extension)',
     'proprietary_codecs%': '<(proprietary_codecs)',
     'use_goma%': '<(use_goma)',
@@ -2192,9 +2186,6 @@
       ['notifications==1', {
         'grit_defines': ['-D', 'enable_notifications'],
       }],
-      ['enable_wifi_bootstrapping==1', {
-        'grit_defines': ['-D', 'enable_wifi_bootstrapping'],
-      }],
       ['mac_views_browser==1', {
         'grit_defines': ['-D', 'mac_views_browser'],
       }],
@@ -3039,9 +3030,6 @@
       }],
       ['enable_service_discovery==1', {
         'defines' : [ 'ENABLE_SERVICE_DISCOVERY=1' ],
-      }],
-      ['enable_wifi_bootstrapping==1', {
-        'defines' : [ 'ENABLE_WIFI_BOOTSTRAPPING=1' ],
       }],
       ['enable_hangout_services_extension==1', {
         'defines': ['ENABLE_HANGOUT_SERVICES_EXTENSION=1'],

@@ -270,12 +270,6 @@ if (enable_notifications) {
     "enable_notifications",
   ]
 }
-if (enable_wifi_bootstrapping) {
-  grit_defines += [
-    "-D",
-    "enable_wifi_bootstrapping",
-  ]
-}
 if (enable_service_discovery) {
   grit_defines += [
     "-D",

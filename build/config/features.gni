@@ -182,8 +182,6 @@ enable_settings_app = enable_app_list && !is_chromeos
 
 enable_service_discovery = enable_mdns || is_mac
 
-enable_wifi_bootstrapping = is_win || is_mac
-
 # Image loader extension is enabled on ChromeOS only.
 enable_image_loader_extension = is_chromeos
 

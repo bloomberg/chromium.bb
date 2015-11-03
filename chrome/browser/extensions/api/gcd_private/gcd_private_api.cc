@@ -31,10 +31,6 @@
 #include "extensions/browser/event_router.h"
 #include "net/base/net_util.h"
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-#include "chrome/browser/local_discovery/wifi/wifi_manager.h"
-#endif
-
 namespace extensions {
 
 namespace gcd_private = api::gcd_private;
@@ -174,14 +170,6 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
                          const CreateSessionCallback& callback,
                          scoped_ptr<local_discovery::PrivetHTTPClient> client);
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  void OnWifiPassword(const SuccessCallback& callback,
-                      bool success,
-                      const std::string& ssid,
-                      const std::string& password);
-  void StartWifiIfNotStarted();
-#endif
-
   int num_device_listeners_;
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
@@ -198,9 +186,6 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
 
   content::BrowserContext* const browser_context_;
 
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  scoped_ptr<local_discovery::wifi::WifiManager> wifi_manager_;
-#endif
   PasswordMap wifi_passwords_;
 
   base::WeakPtrFactory<GcdPrivateAPIImpl> weak_ptr_factory_{this};
@@ -418,37 +403,8 @@ void GcdPrivateAPIImpl::SendMessage(int session_id,
 
 void GcdPrivateAPIImpl::RequestWifiPassword(const std::string& ssid,
                                             const SuccessCallback& callback) {
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  StartWifiIfNotStarted();
-  wifi_manager_->RequestNetworkCredentials(
-      ssid,
-      base::Bind(&GcdPrivateAPIImpl::OnWifiPassword,
-                 base::Unretained(this),
-                 callback));
-#else
   callback.Run(false);
-#endif
 }
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-void GcdPrivateAPIImpl::OnWifiPassword(const SuccessCallback& callback,
-                                       bool success,
-                                       const std::string& ssid,
-                                       const std::string& password) {
-  if (success)
-    wifi_passwords_[ssid] = password;
-
-  callback.Run(success);
-}
-
-void GcdPrivateAPIImpl::StartWifiIfNotStarted() {
-  if (!wifi_manager_) {
-    wifi_manager_ = local_discovery::wifi::WifiManager::Create();
-    wifi_manager_->Start();
-  }
-}
-
-#endif
 
 void GcdPrivateAPIImpl::RemoveSession(int session_id) {
   sessions_.erase(session_id);
@@ -462,14 +418,6 @@ void GcdPrivateAPIImpl::RemoveSessionDelayed(int session_id) {
 
 scoped_ptr<base::ListValue> GcdPrivateAPIImpl::GetPrefetchedSSIDList() {
   scoped_ptr<base::ListValue> retval(new base::ListValue);
-
-#if defined(ENABLE_WIFI_BOOTSTRAPPING)
-  for (PasswordMap::iterator i = wifi_passwords_.begin();
-       i != wifi_passwords_.end();
-       i++) {
-    retval->AppendString(i->first);
-  }
-#endif
 
   return retval.Pass();
 }
