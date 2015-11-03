@@ -39,7 +39,6 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
-#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/dtoa/utils.h"
 
@@ -90,13 +89,17 @@ struct decoder_error_mgr {
     jmp_buf setjmp_buffer;     // For handling catastropic errors
 };
 
+struct decoder_source_mgr {
+    struct jpeg_source_mgr pub; // "public" fields for IJG library
+    JPEGImageReader* decoder;
+};
+
 enum jstate {
     JPEG_HEADER,                 // Reading JFIF headers
     JPEG_START_DECOMPRESS,
     JPEG_DECOMPRESS_PROGRESSIVE, // Output progressive pixels
     JPEG_DECOMPRESS_SEQUENTIAL,  // Output sequential pixels
-    JPEG_DONE,
-    JPEG_ERROR
+    JPEG_DONE
 };
 
 enum yuv_subsampling {
@@ -115,14 +118,6 @@ void skip_input_data(j_decompress_ptr jd, long num_bytes);
 void term_source(j_decompress_ptr jd);
 void error_exit(j_common_ptr cinfo);
 void emit_message(j_common_ptr cinfo, int msg_level);
-
-// Implementation of a JPEG src object that understands our state machine
-struct decoder_source_mgr {
-    // public fields; must be first in this struct!
-    struct jpeg_source_mgr pub;
-
-    JPEGImageReader* decoder;
-};
 
 static unsigned readUint16(JOCTET* data, bool isBigEndian)
 {
@@ -320,22 +315,17 @@ public:
         // Allocate and initialize JPEG decompression object.
         jpeg_create_decompress(&m_info);
 
-        ASSERT(!m_info.src);
-        decoder_source_mgr* src = static_cast<decoder_source_mgr*>(WTF::Partitions::fastZeroedMalloc(sizeof(decoder_source_mgr)));
-        if (!src) {
-            m_state = JPEG_ERROR;
-            return;
-        }
-
-        m_info.src = reinterpret_cast_ptr<jpeg_source_mgr*>(src);
+        // Initialize source manager.
+        memset(&m_src, 0, sizeof(decoder_source_mgr));
+        m_info.src = reinterpret_cast_ptr<jpeg_source_mgr*>(&m_src);
 
         // Set up callback functions.
-        src->pub.init_source = init_source;
-        src->pub.fill_input_buffer = fill_input_buffer;
-        src->pub.skip_input_data = skip_input_data;
-        src->pub.resync_to_restart = jpeg_resync_to_restart;
-        src->pub.term_source = term_source;
-        src->decoder = this;
+        m_src.pub.init_source = init_source;
+        m_src.pub.fill_input_buffer = fill_input_buffer;
+        m_src.pub.skip_input_data = skip_input_data;
+        m_src.pub.resync_to_restart = jpeg_resync_to_restart;
+        m_src.pub.term_source = term_source;
+        m_src.decoder = this;
 
 #if USE(ICCJPEG)
         // Retain ICC color profile markers for color management.
@@ -352,11 +342,6 @@ public:
 
     void close()
     {
-        decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(m_info.src);
-        if (src)
-            WTF::Partitions::fastFree(src);
-        m_info.src = 0;
-
 #if USE(QCMSLIB)
         clearColorTransform();
 #endif
@@ -643,10 +628,6 @@ public:
         case JPEG_DONE:
             // Finish decompression.
             return jpeg_finish_decompress(&m_info);
-
-        case JPEG_ERROR:
-            // We can get here if the constructor failed.
-            return m_decoder->setFailed();
         }
 
         return true;
@@ -720,6 +701,7 @@ private:
 
     jpeg_decompress_struct m_info;
     decoder_error_mgr m_err;
+    decoder_source_mgr m_src;
     jstate m_state;
 
     JSAMPARRAY m_samples;
