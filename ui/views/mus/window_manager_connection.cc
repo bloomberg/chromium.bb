@@ -128,7 +128,8 @@ NativeWidget* WindowManagerConnection::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
   return new NativeWidgetMus(
       delegate, app_->shell(),
-      CreateWindow(std::map<std::string, std::vector<uint8_t>>()));
+      CreateWindow(std::map<std::string, std::vector<uint8_t>>()),
+      mus::mojom::SURFACE_TYPE_DEFAULT);
 }
 
 void WindowManagerConnection::OnBeforeWidgetInit(

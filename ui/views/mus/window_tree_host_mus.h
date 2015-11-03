@@ -30,7 +30,9 @@ class SurfaceContextFactory;
 class WindowTreeHostMus : public aura::WindowTreeHost,
                           public mus::WindowObserver {
  public:
-  WindowTreeHostMus(mojo::Shell* shell, mus::Window* window);
+  WindowTreeHostMus(mojo::Shell* shell,
+                    mus::Window* window,
+                    mus::mojom::SurfaceType surface_type);
   ~WindowTreeHostMus() override;
 
   mus::Window* mus_window() { return mus_window_; }

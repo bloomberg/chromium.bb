@@ -205,6 +205,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
                          mojo::Array<uint8_t> value,
                          const mojo::Callback<void(bool)>& callback) override;
   void RequestSurface(Id window_id,
+                      mojom::SurfaceType type,
                       mojo::InterfaceRequest<mojom::Surface> surface,
                       mojom::SurfaceClientPtr client) override;
   void Embed(Id transport_window_id,

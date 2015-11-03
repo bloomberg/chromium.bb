@@ -234,13 +234,13 @@ void Window::SetVisible(bool value) {
   LocalSetVisible(value);
 }
 
-scoped_ptr<WindowSurface> Window::RequestSurface() {
+scoped_ptr<WindowSurface> Window::RequestSurface(mojom::SurfaceType type) {
   mojom::SurfacePtr surface;
   mojom::SurfaceClientPtr client;
   mojo::InterfaceRequest<mojom::SurfaceClient> client_request =
       GetProxy(&client);
   static_cast<WindowTreeClientImpl*>(connection_)
-      ->RequestSurface(id_, GetProxy(&surface), client.Pass());
+      ->RequestSurface(id_, type, GetProxy(&surface), client.Pass());
   return make_scoped_ptr(
       new WindowSurface(surface.PassInterface(), client_request.Pass()));
 }

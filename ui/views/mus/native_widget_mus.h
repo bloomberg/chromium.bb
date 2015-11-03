@@ -43,7 +43,8 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                   mojo::Shell* shell,
-                  mus::Window* window);
+                  mus::Window* window,
+                  mus::mojom::SurfaceType surface_type);
   ~NativeWidgetMus() override;
 
  private:
@@ -166,6 +167,8 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   mojo::Shell* shell_;
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
+
+  const mus::mojom::SurfaceType surface_type_;
 
   mus::mojom::ShowState show_state_before_fullscreen_;
 

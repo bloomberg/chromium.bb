@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 
 namespace cc {
 class OutputSurface;
@@ -25,11 +26,13 @@ namespace views {
 // SurfaceBinding is responsible for managing the connections necessary to
 // bind a Window to the surfaces service.
 // Internally SurfaceBinding manages one connection (and related structures) per
-// ViewTreeConnection. That is, all Views from a particular ViewTreeConnection
-// share the same connection.
+// WindowTree. That is, all Windows from a particular WindowTree share the same
+// connection.
 class SurfaceBinding {
  public:
-  SurfaceBinding(mojo::Shell* shell, mus::Window* window);
+  SurfaceBinding(mojo::Shell* shell,
+                 mus::Window* window,
+                 mus::mojom::SurfaceType surface_type);
   ~SurfaceBinding();
 
   // Creates an OutputSurface that renders to the Window supplied to the
@@ -39,8 +42,8 @@ class SurfaceBinding {
  private:
   class PerConnectionState;
 
-  mojo::Shell* shell_;
   mus::Window* window_;
+  const mus::mojom::SurfaceType surface_type_;
   scoped_refptr<PerConnectionState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceBinding);

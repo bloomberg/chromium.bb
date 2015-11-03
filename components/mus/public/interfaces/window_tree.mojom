@@ -38,6 +38,19 @@ enum ErrorCode {
   ILLEGAL_ARGUMENT,
 };
 
+// Each Window has support for two surfaces. Generally the |DEFAULT| surface
+// is used. The |UNDERLAY| surface is useful if the owner of a window wants to
+// to Embed() another client and at the same time draw something under the
+// embedded apps representation.
+enum SurfaceType {
+  // Only the owner of a window may obtain this surface.
+  UNDERLAY,
+
+  // Only the embedded app may obtain this surface. If an app is not embedded
+  // in the Window than the owner may also render to this surface as well.
+  DEFAULT,
+};
+
 // Windows are identified by a uint32. The upper 16 bits are the connection id,
 // and the lower 16 the id assigned by the client.
 //
@@ -93,7 +106,10 @@ interface WindowTree {
                     array<uint8>? value) => (bool success);
 
   // Requests a Surface for a particular window.
-  RequestSurface(uint32 window_id, Surface& surface, SurfaceClient client);
+  RequestSurface(uint32 window_id,
+                 SurfaceType type,
+                 Surface& surface,
+                 SurfaceClient client);
 
   // Reparents a window.
   // This fails for any of the following reasons:

@@ -29,11 +29,14 @@ void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMus, public:
 
-WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell, mus::Window* window)
+WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell,
+                                     mus::Window* window,
+                                     mus::mojom::SurfaceType surface_type)
     : mus_window_(window) {
   mus_window_->AddObserver(this);
 
-  context_factory_.reset(new SurfaceContextFactory(shell, mus_window_));
+  context_factory_.reset(
+      new SurfaceContextFactory(shell, mus_window_, surface_type));
   // WindowTreeHost creates the compositor using the ContextFactory from
   // aura::Env. Install |context_factory_| there so that |context_factory_| is
   // picked up.
@@ -41,6 +44,7 @@ WindowTreeHostMus::WindowTreeHostMus(mojo::Shell* shell, mus::Window* window)
       aura::Env::GetInstance()->context_factory();
   aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   CreateCompositor();
+  compositor()->SetHostHasTransparentBackground(true);
   OnAcceleratedWidgetAvailable();
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
   DCHECK_EQ(context_factory_.get(), compositor()->context_factory());

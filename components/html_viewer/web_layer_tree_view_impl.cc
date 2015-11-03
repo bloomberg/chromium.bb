@@ -67,8 +67,9 @@ void WebLayerTreeViewImpl::Initialize(mus::mojom::GpuPtr gpu_service,
     gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
     scoped_refptr<cc::ContextProvider> context_provider(
         new mus::ContextProvider(cb.PassInterface().PassHandle()));
-    output_surface_.reset(
-        new mus::OutputSurface(context_provider, window_->RequestSurface()));
+    output_surface_.reset(new mus::OutputSurface(
+        context_provider,
+        window_->RequestSurface(mus::mojom::SURFACE_TYPE_DEFAULT)));
   }
   layer_tree_host_->SetVisible(window_->visible());
 }

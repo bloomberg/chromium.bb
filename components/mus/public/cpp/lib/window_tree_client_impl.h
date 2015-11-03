@@ -69,6 +69,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
              const mus::mojom::WindowTree::EmbedCallback& callback);
 
   void RequestSurface(Id window_id,
+                      mojom::SurfaceType type,
                       mojo::InterfaceRequest<mojom::Surface> surface,
                       mojom::SurfaceClientPtr client);
 

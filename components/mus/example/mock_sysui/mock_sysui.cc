@@ -30,7 +30,8 @@ class DesktopBackground : public views::WidgetDelegateView {
             ash::mojom::CONTAINER_USER_BACKGROUND);
     mus::Window* window =
         views::WindowManagerConnection::Get()->CreateWindow(properties);
-    params.native_widget = new views::NativeWidgetMus(widget, shell, window);
+    params.native_widget = new views::NativeWidgetMus(
+        widget, shell, window, mus::mojom::SURFACE_TYPE_DEFAULT);
     widget->Init(params);
     widget->Show();
   }
@@ -64,7 +65,8 @@ class Shelf : public views::WidgetDelegateView {
             ash::mojom::CONTAINER_USER_SHELF);
     mus::Window* window =
         views::WindowManagerConnection::Get()->CreateWindow(properties);
-    params.native_widget = new views::NativeWidgetMus(widget, shell, window);
+    params.native_widget = new views::NativeWidgetMus(
+        widget, shell, window, mus::mojom::SURFACE_TYPE_DEFAULT);
     widget->Init(params);
     widget->Show();
   }

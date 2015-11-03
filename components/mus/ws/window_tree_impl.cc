@@ -634,13 +634,15 @@ void WindowTreeImpl::SetWindowProperty(
 
 void WindowTreeImpl::RequestSurface(
     Id window_id,
+    mojom::SurfaceType type,
     mojo::InterfaceRequest<mojom::Surface> surface,
     mojom::SurfaceClientPtr client) {
   ServerWindow* window = GetWindow(WindowIdFromTransportId(window_id));
-  const bool success = window && access_policy_->CanSetWindowSurfaceId(window);
+  const bool success =
+      window && access_policy_->CanSetWindowSurface(window, type);
   if (!success)
     return;
-  window->Bind(surface.Pass(), client.Pass());
+  window->CreateSurface(type, surface.Pass(), client.Pass());
 }
 
 void WindowTreeImpl::SetWindowTextInputState(uint32_t window_id,

@@ -75,7 +75,7 @@ class BitmapUploader : public mus::mojom::SurfaceClient {
   }
 
   void Init(mojo::Shell* shell) {
-    surface_ = view_->RequestSurface();
+    surface_ = view_->RequestSurface(mus::mojom::SURFACE_TYPE_DEFAULT);
     surface_->BindToThread();
 
     mojo::ServiceProviderPtr gpu_service_provider;

@@ -74,7 +74,7 @@ class Window {
     return *viewport_metrics_;
   }
 
-  scoped_ptr<WindowSurface> RequestSurface();
+  scoped_ptr<WindowSurface> RequestSurface(mojom::SurfaceType type);
 
   // The template-ized versions of the following methods rely on the presence
   // of a mojo::TypeConverter<const std::vector<uint8_t>, T>.

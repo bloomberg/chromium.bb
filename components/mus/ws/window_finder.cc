@@ -8,6 +8,8 @@
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
+#include "components/mus/ws/server_window_surface.h"
+#include "components/mus/ws/server_window_surface_manager.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -46,6 +48,21 @@ gfx::Transform GetTransformToWindowNonSurface(ServerWindow* window) {
   return transform;
 }
 
+bool HitTestSurfaceOfType(cc::SurfaceId display_surface_id,
+                          ServerWindow* window,
+                          mus::mojom::SurfaceType surface_type,
+                          gfx::Transform* transform) {
+  *transform = gfx::Transform();
+  ServerWindowSurface* surface =
+      window->GetOrCreateSurfaceManager()->GetSurfaceByType(surface_type);
+  return surface &&
+         window->delegate()
+             ->GetSurfacesState()
+             ->hit_tester()
+             ->GetTransformToTargetSurface(display_surface_id, surface->id(),
+                                           transform);
+}
+
 }  // namespace
 
 ServerWindow* FindDeepestVisibleWindow(ServerWindow* root_window,
@@ -76,14 +93,14 @@ ServerWindow* FindDeepestVisibleWindow(ServerWindow* root_window,
 
 gfx::Transform GetTransformToWindow(cc::SurfaceId display_surface_id,
                                     ServerWindow* window) {
-  gfx::Transform transform;
-  if (!display_surface_id.is_null() &&
-      window->delegate()
-          ->GetSurfacesState()
-          ->hit_tester()
-          ->GetTransformToTargetSurface(display_surface_id,
-                                        window->surface()->id(), &transform)) {
-    return transform;
+  if (!display_surface_id.is_null()) {
+    gfx::Transform transform;
+    if (HitTestSurfaceOfType(display_surface_id, window,
+                             mus::mojom::SURFACE_TYPE_DEFAULT, &transform) ||
+        HitTestSurfaceOfType(display_surface_id, window,
+                             mus::mojom::SURFACE_TYPE_UNDERLAY, &transform)) {
+      return transform;
+    }
   }
 
   return GetTransformToWindowNonSurface(window);

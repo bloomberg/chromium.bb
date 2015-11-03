@@ -219,10 +219,11 @@ void WindowTreeClientImpl::Embed(
 
 void WindowTreeClientImpl::RequestSurface(
     Id window_id,
+    mojom::SurfaceType type,
     mojo::InterfaceRequest<mojom::Surface> surface,
     mojom::SurfaceClientPtr client) {
   DCHECK(tree_);
-  tree_->RequestSurface(window_id, surface.Pass(), client.Pass());
+  tree_->RequestSurface(window_id, type, surface.Pass(), client.Pass());
 }
 
 void WindowTreeClientImpl::AddWindow(Window* window) {

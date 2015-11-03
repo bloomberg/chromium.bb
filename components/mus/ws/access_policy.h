@@ -6,6 +6,7 @@
 #define COMPONENTS_MUS_WS_ACCESS_POLICY_H_
 
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
 
 namespace mus {
@@ -38,7 +39,8 @@ class AccessPolicy {
   virtual bool CanEmbed(const ServerWindow* window,
                         uint32_t policy_bitmask) const = 0;
   virtual bool CanChangeWindowVisibility(const ServerWindow* window) const = 0;
-  virtual bool CanSetWindowSurfaceId(const ServerWindow* window) const = 0;
+  virtual bool CanSetWindowSurface(const ServerWindow* window,
+                                   mojom::SurfaceType surface_type) const = 0;
   virtual bool CanSetWindowBounds(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowProperties(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowTextInputState(const ServerWindow* window) const = 0;

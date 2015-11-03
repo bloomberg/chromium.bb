@@ -16,6 +16,8 @@
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display_manager_factory.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/server_window_surface.h"
+#include "components/mus/ws/server_window_surface_manager.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -62,12 +64,15 @@ void DrawWindowTree(cc::RenderPass* pass,
   if (!window->visible())
     return;
 
-  ServerWindowSurface* surface = window->surface();
+  ServerWindowSurface* default_surface =
+      window->surface_manager() ? window->surface_manager()->GetDefaultSurface()
+                                : nullptr;
 
-  if (surface) {
+  if (default_surface) {
     // Accumulate referenced windows in each ServerWindow's CompositorFrame.
-    referenced_window_ids->insert(surface->referenced_window_ids().begin(),
-                                  surface->referenced_window_ids().end());
+    referenced_window_ids->insert(
+        default_surface->referenced_window_ids().begin(),
+        default_surface->referenced_window_ids().end());
   }
 
   const gfx::Rect absolute_bounds =
@@ -82,12 +87,20 @@ void DrawWindowTree(cc::RenderPass* pass,
 
   // If an ancestor has already referenced this window, then we do not need
   // to create a SurfaceDrawQuad for it.
-  if (referenced_window_ids->count(window->id()) || !surface)
+  const bool draw_default_surface =
+      default_surface && (referenced_window_ids->count(window->id()) == 0);
+
+  ServerWindowSurface* underlay_surface =
+      window->surface_manager()
+          ? window->surface_manager()->GetUnderlaySurface()
+          : nullptr;
+  if (!draw_default_surface && !underlay_surface)
     return;
+
+  const gfx::Rect bounds_at_origin(window->bounds().size());
 
   gfx::Transform quad_to_target_transform;
   quad_to_target_transform.Translate(absolute_bounds.x(), absolute_bounds.y());
-  gfx::Rect bounds_at_origin(window->bounds().size());
 
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   // TODO(fsamuel): These clipping and visible rects are incorrect. They need
@@ -98,9 +111,20 @@ void DrawWindowTree(cc::RenderPass* pass,
       bounds_at_origin /* clip_rect */, false /* is_clipped */,
       window->opacity(), SkXfermode::kSrc_Mode, 0 /* sorting-context_id */);
 
-  auto surface_quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  surface_quad->SetNew(sqs, bounds_at_origin /* rect */,
-                       bounds_at_origin /* visible_rect */, surface->id());
+  if (draw_default_surface) {
+    auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    quad->SetAll(sqs, bounds_at_origin /* rect */,
+                 gfx::Rect() /* opaque_rect */,
+                 bounds_at_origin /* visible_rect */, true /* needs_blending*/,
+                 default_surface->id());
+  }
+  if (underlay_surface) {
+    auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    quad->SetAll(sqs, bounds_at_origin /* rect */,
+                 gfx::Rect() /* opaque_rect */,
+                 bounds_at_origin /* visible_rect */, true /* needs_blending*/,
+                 underlay_surface->id());
+  }
 }
 
 }  // namespace

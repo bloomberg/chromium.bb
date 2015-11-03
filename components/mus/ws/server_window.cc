@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
+#include "components/mus/ws/server_window_surface_manager.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace mus {
@@ -50,9 +51,11 @@ void ServerWindow::RemoveObserver(ServerWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ServerWindow::Bind(mojo::InterfaceRequest<mojom::Surface> request,
-                        mojom::SurfaceClientPtr client) {
-  GetOrCreateSurface()->Bind(request.Pass(), client.Pass());
+void ServerWindow::CreateSurface(mojom::SurfaceType surface_type,
+                                 mojo::InterfaceRequest<mojom::Surface> request,
+                                 mojom::SurfaceClientPtr client) {
+  GetOrCreateSurfaceManager()->CreateSurface(surface_type, request.Pass(),
+                                             client.Pass());
 }
 
 void ServerWindow::Add(ServerWindow* child) {
@@ -248,10 +251,10 @@ bool ServerWindow::IsDrawn() const {
   return root == window;
 }
 
-ServerWindowSurface* ServerWindow::GetOrCreateSurface() {
-  if (!surface_)
-    surface_.reset(new ServerWindowSurface(this));
-  return surface_.get();
+ServerWindowSurfaceManager* ServerWindow::GetOrCreateSurfaceManager() {
+  if (!surface_manager_.get())
+    surface_manager_.reset(new ServerWindowSurfaceManager(this));
+  return surface_manager_.get();
 }
 
 #if !defined(NDEBUG)

@@ -94,7 +94,8 @@ NativeWidgetViewManager::NativeWidgetViewManager(
     mojo::Shell* shell,
     mus::Window* window)
     : NativeWidgetAura(delegate), window_(window) {
-  window_tree_host_.reset(new WindowTreeHostMus(shell, window_));
+  window_tree_host_.reset(
+      new WindowTreeHostMus(shell, window_, mus::mojom::SURFACE_TYPE_DEFAULT));
   window_tree_host_->InitHost();
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));

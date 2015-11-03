@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_MUS_WS_SERVER_WINDOW_SURFACE_H_
 #define COMPONENTS_MUS_WS_SERVER_WINDOW_SURFACE_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
 #include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -22,18 +25,19 @@ class SurfacesState;
 namespace ws {
 
 class ServerWindow;
+class ServerWindowSurfaceManager;
 
 // Server side representation of a WindowSurface.
 class ServerWindowSurface : public mojom::Surface,
                             public cc::SurfaceFactoryClient,
                             public mojo::CustomSurfaceConverter {
  public:
-  explicit ServerWindowSurface(ServerWindow* window);
+  ServerWindowSurface(ServerWindowSurfaceManager* manager,
+                      mojom::SurfaceType surface_type,
+                      mojo::InterfaceRequest<mojom::Surface> request,
+                      mojom::SurfaceClientPtr client);
 
   ~ServerWindowSurface() override;
-
-  void Bind(mojo::InterfaceRequest<Surface> request,
-            mojom::SurfaceClientPtr client);
 
   // mojom::Surface:
   void SubmitCompositorFrame(
@@ -49,6 +53,8 @@ class ServerWindowSurface : public mojom::Surface,
   const cc::SurfaceId& id() const { return surface_id_; }
 
  private:
+  ServerWindow* window();
+
   // Takes a mojom::CompositorFrame |input|, and converts it into a
   // cc::CompositorFrame. Along the way, this conversion ensures that a
   // CompositorFrame of this window can only refer to windows within its
@@ -68,18 +74,15 @@ class ServerWindowSurface : public mojom::Surface,
   void SetBeginFrameSource(cc::SurfaceId surface_id,
                            cc::BeginFrameSource* begin_frame_source) override;
 
-  // |window_| owns |this|.
-  ServerWindow* const window_;
+  ServerWindowSurfaceManager* manager_;  // Owns this.
+
+  const mojom::SurfaceType surface_type_;
 
   // The set of Windows referenced in the last submitted CompositorFrame.
   std::set<WindowId> referenced_window_ids_;
   gfx::Size last_submitted_frame_size_;
 
   cc::SurfaceId surface_id_;
-  // TODO(fsamuel): As an optimization, we may want to move SurfaceIdAllocator
-  // and SurfaceFactory to a separate class so that we don't keep destroying
-  // them and creating new ones on navigation.
-  cc::SurfaceIdAllocator surface_id_allocator_;
   cc::SurfaceFactory surface_factory_;
 
   mojom::SurfaceClientPtr client_;

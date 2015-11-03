@@ -25,6 +25,7 @@ namespace ws {
 
 class ServerWindowDelegate;
 class ServerWindowObserver;
+class ServerWindowSurfaceManager;
 
 // Server side representation of a window. Delegate is informed of interesting
 // events.
@@ -45,10 +46,10 @@ class ServerWindow {
   void AddObserver(ServerWindowObserver* observer);
   void RemoveObserver(ServerWindowObserver* observer);
 
-  // Binds the provided |request| to |this| object. If an interface is already
-  // bound to this ServerWindow then the old connection is closed first.
-  void Bind(mojo::InterfaceRequest<mojom::Surface> request,
-            mojom::SurfaceClientPtr client);
+  // Creates a new surface of the specified type, replacing the existing.
+  void CreateSurface(mojom::SurfaceType surface_type,
+                     mojo::InterfaceRequest<mojom::Surface> request,
+                     mojom::SurfaceClientPtr client);
 
   const WindowId& id() const { return id_; }
 
@@ -110,10 +111,10 @@ class ServerWindow {
   // visible.
   bool IsDrawn() const;
 
-  // Returns the surface associated with this window. If a surface has not
-  // yet been allocated for this window, then one is allocated upon invocation.
-  ServerWindowSurface* GetOrCreateSurface();
-  ServerWindowSurface* surface() { return surface_.get(); }
+  ServerWindowSurfaceManager* GetOrCreateSurfaceManager();
+  ServerWindowSurfaceManager* surface_manager() {
+    return surface_manager_.get();
+  }
 
   ServerWindowDelegate* delegate() { return delegate_; }
 
@@ -135,7 +136,7 @@ class ServerWindow {
   bool visible_;
   gfx::Rect bounds_;
   gfx::Rect client_area_;
-  scoped_ptr<ServerWindowSurface> surface_;
+  scoped_ptr<ServerWindowSurfaceManager> surface_manager_;
   float opacity_;
   gfx::Transform transform_;
   ui::TextInputState text_input_state_;

@@ -76,8 +76,12 @@ bool DefaultAccessPolicy::CanChangeWindowVisibility(
          delegate_->IsRootForAccessPolicy(window->id());
 }
 
-bool DefaultAccessPolicy::CanSetWindowSurfaceId(
-    const ServerWindow* window) const {
+bool DefaultAccessPolicy::CanSetWindowSurface(
+    const ServerWindow* window,
+    mojom::SurfaceType surface_type) const {
+  if (surface_type == mojom::SURFACE_TYPE_UNDERLAY)
+    return WasCreatedByThisConnection(window);
+
   // Once a window embeds another app, the embedder app is no longer able to
   // call SetWindowSurfaceId() - this ability is transferred to the embedded
   // app.

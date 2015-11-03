@@ -44,7 +44,9 @@ class SurfaceBinding::PerConnectionState
   static PerConnectionState* Get(mojo::Shell* shell,
                                  mus::WindowTreeConnection* connection);
 
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(mus::Window* window);
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+      mus::Window* window,
+      mus::mojom::SurfaceType type);
 
  private:
   typedef std::map<mus::WindowTreeConnection*, PerConnectionState*>
@@ -91,7 +93,9 @@ SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
 }
 
 scoped_ptr<cc::OutputSurface>
-SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::Window* window) {
+SurfaceBinding::PerConnectionState::CreateOutputSurface(
+    mus::Window* window,
+    mus::mojom::SurfaceType surface_type) {
   // TODO(sky): figure out lifetime here. Do I need to worry about the return
   // value outliving this?
   mus::mojom::CommandBufferPtr cb;
@@ -99,8 +103,8 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(mus::Window* window) {
 
   scoped_refptr<cc::ContextProvider> context_provider(
       new mus::ContextProvider(cb.PassInterface().PassHandle()));
-  return make_scoped_ptr(
-      new mus::OutputSurface(context_provider, window->RequestSurface()));
+  return make_scoped_ptr(new mus::OutputSurface(
+      context_provider, window->RequestSurface(surface_type)));
 }
 
 SurfaceBinding::PerConnectionState::PerConnectionState(
@@ -131,14 +135,17 @@ void SurfaceBinding::PerConnectionState::Init() {
 
 // SurfaceBinding --------------------------------------------------------------
 
-SurfaceBinding::SurfaceBinding(mojo::Shell* shell, mus::Window* window)
+SurfaceBinding::SurfaceBinding(mojo::Shell* shell,
+                               mus::Window* window,
+                               mus::mojom::SurfaceType surface_type)
     : window_(window),
+      surface_type_(surface_type),
       state_(PerConnectionState::Get(shell, window->connection())) {}
 
 SurfaceBinding::~SurfaceBinding() {}
 
 scoped_ptr<cc::OutputSurface> SurfaceBinding::CreateOutputSurface() {
-  return state_->CreateOutputSurface(window_);
+  return state_->CreateOutputSurface(window_, surface_type_);
 }
 
 }  // namespace views

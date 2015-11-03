@@ -68,10 +68,12 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
 
 NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                                  mojo::Shell* shell,
-                                 mus::Window* window)
+                                 mus::Window* window,
+                                 mus::mojom::SurfaceType surface_type)
     : window_(window),
       shell_(shell),
       native_widget_delegate_(delegate),
+      surface_type_(surface_type),
       show_state_before_fullscreen_(mus::mojom::SHOW_STATE_RESTORED),
       content_(new aura::Window(this)) {}
 NativeWidgetMus::~NativeWidgetMus() {}
@@ -92,7 +94,8 @@ void NativeWidgetMus::UpdateClientAreaInWindowManager() {
 // NativeWidgetMus, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
-  window_tree_host_.reset(new WindowTreeHostMus(shell_, window_));
+  window_tree_host_.reset(
+      new WindowTreeHostMus(shell_, window_, surface_type_));
   window_tree_host_->InitHost();
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
@@ -109,6 +112,9 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   content_->Init(ui::LAYER_TEXTURED);
+  content_->SetTransparent(true);
+  content_->SetFillsBoundsCompletely(false);
+
   window_tree_host_->window()->AddChild(content_);
   // TODO(beng): much else, see [Desktop]NativeWidgetAura.
 }

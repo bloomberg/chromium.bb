@@ -36,6 +36,8 @@ source_set("lib") {
     "server_window_observer.h",
     "server_window_surface.cc",
     "server_window_surface.h",
+    "server_window_surface_manager.cc",
+    "server_window_surface_manager.h",
     "window_coordinate_conversions.cc",
     "window_coordinate_conversions.h",
     "window_finder.cc",

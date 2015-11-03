@@ -35,7 +35,8 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanEmbed(const ServerWindow* window,
                 uint32_t policy_bitmask) const override;
   bool CanChangeWindowVisibility(const ServerWindow* window) const override;
-  bool CanSetWindowSurfaceId(const ServerWindow* window) const override;
+  bool CanSetWindowSurface(const ServerWindow* window,
+                           mus::mojom::SurfaceType surface_type) const override;
   bool CanSetWindowBounds(const ServerWindow* window) const override;
   bool CanSetWindowProperties(const ServerWindow* window) const override;
   bool CanSetWindowTextInputState(const ServerWindow* window) const override;
