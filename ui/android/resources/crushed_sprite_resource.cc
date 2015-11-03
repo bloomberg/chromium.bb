@@ -13,9 +13,11 @@ namespace ui {
 CrushedSpriteResource::CrushedSpriteResource(
     const SkBitmap& bitmap,
     const SrcDstRects& src_dst_rects,
-    gfx::Size sprite_size)
+    gfx::Size unscaled_sprite_size,
+    gfx::Size scaled_sprite_size)
     : src_dst_rects_(src_dst_rects),
-      sprite_size_(sprite_size) {
+      unscaled_sprite_size_(unscaled_sprite_size),
+      scaled_sprite_size_(scaled_sprite_size) {
   SetBitmap(bitmap);
 }
 
@@ -46,8 +48,12 @@ CrushedSpriteResource::GetRectanglesForFrame(int frame) {
   return src_dst_rects_[frame];
 }
 
-gfx::Size CrushedSpriteResource::GetSpriteSize() {
-  return sprite_size_;
+gfx::Size CrushedSpriteResource::GetUnscaledSpriteSize() {
+  return unscaled_sprite_size_;
+}
+
+gfx::Size CrushedSpriteResource::GetScaledSpriteSize() {
+  return scaled_sprite_size_;
 }
 
 int CrushedSpriteResource::GetFrameCount() {

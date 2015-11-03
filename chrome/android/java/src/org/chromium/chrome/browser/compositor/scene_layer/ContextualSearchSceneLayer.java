@@ -67,7 +67,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         ContextualSearchIconSpriteControl spriteControl = panel.getIconSpriteControl();
         boolean searchProviderIconSpriteVisible = spriteControl.isVisible();
         float searchProviderIconCompletionPercentage = spriteControl.getCompletionPercentage();
-        float searchProviderIconSpriteSize = spriteControl.getSizePx();
 
         float arrowIconOpacity = panel.getArrowIconOpacity();
         float arrowIconRotation = panel.getArrowIconRotation();
@@ -119,7 +118,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchBarShadowOpacity,
                 searchProviderIconSpriteVisible,
                 searchProviderIconCompletionPercentage,
-                searchProviderIconSpriteSize,
                 arrowIconOpacity,
                 arrowIconRotation,
                 closeIconOpacity,
@@ -188,7 +186,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             float searchBarShadowOpacity,
             boolean searchProviderIconSpriteVisible,
             float searchProviderIconCompletionPercentage,
-            float searchProviderIconSpriteSize,
             float arrowIconOpacity,
             float arrowIconRotation,
             float closeIconOpacity,

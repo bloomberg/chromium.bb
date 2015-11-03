@@ -30,8 +30,10 @@ public class CrushedSpriteResource implements Resource {
 
     private Bitmap mBitmap;
     private final Rect mBitmapSize = new Rect();
-    private int mSpriteWidth;
-    private int mSpriteHeight;
+    private float mScaledSpriteWidth;
+    private float mScaledSpriteHeight;
+    private int mUnscaledSpriteWidth;
+    private int mUnscaledSpriteHeight;
     private int[][] mRectangles;
 
     /**
@@ -90,17 +92,31 @@ public class CrushedSpriteResource implements Resource {
     }
 
     /**
+     * @return The scaled width of an individual sprite in px.
+     */
+    public float getScaledSpriteWidth() {
+        return mScaledSpriteWidth;
+    }
+
+    /**
+     * @return The scaled height of an individual sprite in px.
+     */
+    public float getScaledSpriteHeight() {
+        return mScaledSpriteHeight;
+    }
+
+    /**
      * @return The unscaled width of an individual sprite in px.
      */
-    public int getSpriteWidth() {
-        return mSpriteWidth;
+    public int getUnscaledSpriteWidth() {
+        return mUnscaledSpriteWidth;
     }
 
     /**
      * @return The unscaled height of an individual sprite in px.
      */
-    public int getSpriteHeight() {
-        return mSpriteHeight;
+    public int getUnscaledSpriteHeight() {
+        return mUnscaledSpriteHeight;
     }
 
     /**
@@ -121,12 +137,14 @@ public class CrushedSpriteResource implements Resource {
      * in this format:
      * {
      *   "apiVersion": <version number (string)>,
+     *   "scaledSpriteWidthDp": <scaled sprite width in dp (int)>,
+     *   "scaledSpriteHeightDp": <scaled sprite width in dp (int)>,
      *   "densities":
      *   [
      *     {
      *       "density": <density (int)>,
-     *       "width": <unscaled sprite width (int)>,
-     *       "height": <unscaled sprite height (int)>,
+     *       "width": <unscaled sprite width in px (int)>,
+     *       "height": <unscaled sprite height in px (int)>,
      *       "rectangles": [
      *         [<list of ints for frame 0>],
      *         [<list of ints for frame 1>],
@@ -135,8 +153,8 @@ public class CrushedSpriteResource implements Resource {
      *     },
      *     {
      *       "density": <density (int)>,
-     *       "width": <unscaled sprite width (int)>,
-     *       "height": <unscaled sprite height (int)>,
+     *       "width": <unscaled sprite width in px (int)>,
+     *       "height": <unscaled sprite height in px (int)>,
      *       "rectangles": [
      *         [<list of ints for frame 0>],
      *         [<list of ints for frame 1>],
@@ -165,6 +183,15 @@ public class CrushedSpriteResource implements Resource {
             assert name.equals("apiVersion");
             String version = reader.nextString();
             assert version.equals("1.0");
+
+            // Get scaled sprite dimensions.
+            float dpToPx = resources.getDisplayMetrics().density;
+            name = reader.nextName();
+            assert name.equals("scaledSpriteWidthDp");
+            mScaledSpriteWidth = reader.nextInt() * dpToPx;
+            name = reader.nextName();
+            assert name.equals("scaledSpriteHeightDp");
+            mScaledSpriteHeight = reader.nextInt() * dpToPx;
 
             // Parse array of densities.
             name = reader.nextName();
@@ -212,11 +239,11 @@ public class CrushedSpriteResource implements Resource {
 
         name = reader.nextName();
         assert name.equals("width");
-        mSpriteWidth = reader.nextInt();
+        mUnscaledSpriteWidth = reader.nextInt();
 
         name = reader.nextName();
         assert name.equals("height");
-        mSpriteHeight = reader.nextInt();
+        mUnscaledSpriteHeight = reader.nextInt();
 
         name = reader.nextName();
         assert name.equals("rectangles");

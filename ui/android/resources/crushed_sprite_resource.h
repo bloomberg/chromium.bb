@@ -38,10 +38,13 @@ class UI_ANDROID_EXPORT CrushedSpriteResource {
   // Creates a new CrushedSpriteResource. |bitmap_res_id| is the id for the
   // for the source bitmap, |java_bitmap| is the source bitmap for the crushed
   // sprite, |src_dst_rects| is a list of rectangles to draw for each frame, and
-  // |sprite_size| is the size of an individual sprite.
+  // |unscaled_sprite_size| is the size of an individual sprite unscaled. The
+  // sprite should be drawn at its unscaled size then scaled to
+  // |scaled_sprite_size|.
   CrushedSpriteResource(const SkBitmap& bitmap,
                         const SrcDstRects& src_dst_rects,
-                        gfx::Size sprite_size);
+                        gfx::Size unscaled_sprite_size,
+                        gfx::Size scaled_sprite_size);
   ~CrushedSpriteResource();
 
   // Sets the source bitmap.
@@ -59,8 +62,11 @@ class UI_ANDROID_EXPORT CrushedSpriteResource {
   // Returns a list of rectangles to be drawn for |frame|.
   FrameSrcDstRects GetRectanglesForFrame(int frame);
 
-  // Returns the size of an individual sprite.
-  gfx::Size GetSpriteSize();
+  // Returns the unscaled size of an individual sprite.
+  gfx::Size GetUnscaledSpriteSize();
+
+  // Returns the scaled size of an individual sprite.
+  gfx::Size GetScaledSpriteSize();
 
   // Returns the total number of frames in the sprite animation.
   int GetFrameCount();
@@ -69,7 +75,8 @@ class UI_ANDROID_EXPORT CrushedSpriteResource {
   SkBitmap bitmap_;
   scoped_ptr<cc::ScopedUIResource> last_frame_resource_;
   SrcDstRects src_dst_rects_;
-  gfx::Size sprite_size_;
+  gfx::Size unscaled_sprite_size_;
+  gfx::Size scaled_sprite_size_;
 
   DISALLOW_COPY_AND_ASSIGN(CrushedSpriteResource);
 };

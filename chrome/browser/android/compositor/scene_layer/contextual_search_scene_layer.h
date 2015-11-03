@@ -65,7 +65,6 @@ class ContextualSearchSceneLayer : public SceneLayer {
       jfloat search_bar_shadow_opacity,
       jboolean search_provider_icon_sprite_visible,
       jfloat search_provider_icon_sprite_completion_percentage,
-      jfloat search_provider_icon_sprite_size,
       jfloat arrow_icon_opacity,
       jfloat arrow_icon_rotation,
       jfloat close_icon_opacity,

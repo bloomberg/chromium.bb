@@ -140,8 +140,10 @@ void ResourceManagerImpl::OnCrushedSpriteResourceReady(
     jint bitmap_res_id,
     jobject bitmap,
     jobjectArray frame_rects,
-    jint sprite_width,
-    jint sprite_height) {
+    jint unscaled_sprite_width,
+    jint unscaled_sprite_height,
+    jfloat scaled_sprite_width,
+    jfloat scaled_sprite_height) {
 
   // Construct source and destination rectangles for each frame from
   // |frame_rects|.
@@ -156,7 +158,8 @@ void ResourceManagerImpl::OnCrushedSpriteResourceReady(
   CrushedSpriteResource* resource = new CrushedSpriteResource(
       skbitmap,
       src_dst_rects,
-      gfx::Size(sprite_width, sprite_height));
+      gfx::Size(unscaled_sprite_width, unscaled_sprite_height),
+      gfx::Size(scaled_sprite_width, scaled_sprite_height));
 
   if (crushed_sprite_resources_.Lookup(bitmap_res_id)) {
     crushed_sprite_resources_.Replace(bitmap_res_id, resource);

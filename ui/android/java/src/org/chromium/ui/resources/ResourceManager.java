@@ -129,7 +129,10 @@ public class ResourceManager implements ResourceLoaderCallback {
                 CrushedSpriteResource crushedResource = (CrushedSpriteResource) resource;
                 nativeOnCrushedSpriteResourceReady(mNativeResourceManagerPtr, resId,
                         crushedResource.getBitmap(), crushedResource.getFrameRectangles(),
-                        crushedResource.getSpriteWidth(), crushedResource.getSpriteHeight());
+                        crushedResource.getUnscaledSpriteWidth(),
+                        crushedResource.getUnscaledSpriteHeight(),
+                        crushedResource.getScaledSpriteWidth(),
+                        crushedResource.getScaledSpriteHeight());
             }
             return;
         }
@@ -197,7 +200,8 @@ public class ResourceManager implements ResourceLoaderCallback {
             int paddingBottom, int apertureLeft, int apertureTop, int apertureRight,
             int apertureBottom);
     private native void nativeOnCrushedSpriteResourceReady(long nativeResourceManagerImpl,
-            int bitmapResId, Bitmap bitmap, int[][] frameRects, int spriteWidth, int spriteHeight);
+            int bitmapResId, Bitmap bitmap, int[][] frameRects, int unscaledSpriteWidth,
+            int unscaledSpriteHeight, float scaledSpriteWidth, float scaledSpriteHeight);
     private native void nativeOnCrushedSpriteResourceReloaded(long nativeResourceManagerImpl,
             int bitmapResId, Bitmap bitmap);
 

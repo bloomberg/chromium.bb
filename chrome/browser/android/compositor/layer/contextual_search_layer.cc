@@ -79,7 +79,6 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_shadow_opacity,
     bool search_provider_icon_sprite_visible,
     float search_provider_icon_sprite_completion_percentage,
-    float search_provider_icon_sprite_size,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
     float close_icon_opacity,
@@ -312,7 +311,8 @@ void ContextualSearchLayer::SetProperties(
       // Positions the Search Provider Icon at the start of the Search Bar.
       float icon_x;
       if (is_rtl) {
-        icon_x = search_panel_width - search_provider_icon_sprite_size -
+        icon_x = search_panel_width -
+            search_provider_icon_sprite_->layer()->bounds().width() -
             search_bar_margin_side;
       } else {
         icon_x = search_bar_margin_side;
@@ -320,15 +320,9 @@ void ContextualSearchLayer::SetProperties(
 
       // Centers the Search Provider Icon vertically in the Search Bar.
       float icon_y = search_bar_top + search_bar_height / 2
-          - search_provider_icon_sprite_size / 2;
+          - search_provider_icon_sprite_->layer()->bounds().height() / 2;
       search_provider_icon_sprite_->layer()->SetPosition(
           gfx::PointF(icon_x, icon_y));
-
-      // Scales the layer to the correct size.
-      search_provider_icon_sprite_->layer()->SetBounds(
-          gfx::Size(search_provider_icon_sprite_size,
-                    search_provider_icon_sprite_size));
-
     } else {
       if (search_provider_icon_sprite_->layer().get() &&
           search_provider_icon_sprite_->layer()->parent()) {

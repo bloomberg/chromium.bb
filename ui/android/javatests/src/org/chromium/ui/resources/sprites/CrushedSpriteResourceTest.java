@@ -34,9 +34,12 @@ public class CrushedSpriteResourceTest extends InstrumentationTestCase {
             int[][] expectedRectangles = {{35, 30, 38, 165, 18, 12, 0, 70, 0, 146, 72, 2},
                     {}, {0, 0, 73, 0, 72, 72}};
             int[][] actualRectangles = crushedSpriteResource.getFrameRectangles();
+            float dpToPx = mockResources.getDisplayMetrics().density;
 
-            assertEquals(108, crushedSpriteResource.getSpriteWidth());
-            assertEquals(108, crushedSpriteResource.getSpriteHeight());
+            assertEquals(108, crushedSpriteResource.getUnscaledSpriteWidth());
+            assertEquals(108, crushedSpriteResource.getUnscaledSpriteHeight());
+            assertEquals(36 * dpToPx, crushedSpriteResource.getScaledSpriteWidth());
+            assertEquals(36 * dpToPx, crushedSpriteResource.getScaledSpriteHeight());
             assertEquals(expectedRectangles.length, actualRectangles.length);
             for (int i = 0; i < expectedRectangles.length; i++) {
                 assertEquals(expectedRectangles[i].length, actualRectangles[i].length);
@@ -61,37 +64,50 @@ public class CrushedSpriteResourceTest extends InstrumentationTestCase {
             }
         }
 
-        private static final String METADATA = "{\"apiVersion\": \"1.0\", \"densities\": ["
-                + "{"
-                + "     \"density\": 160,"
-                + "     \"width\": 36,"
-                + "     \"height\": 36,"
-                + "     \"rectangles\": ["
-                + "         [17, 14, 47, 69, 10, 8, 0, 34, 37, 0, 36, 2],"
-                + "         [],"
-                + "         [0, 0, 0, 0, 36, 36]"
+        @Override
+        public DisplayMetrics getDisplayMetrics() {
+            DisplayMetrics metrics = new DisplayMetrics();
+            metrics.density = 2;
+            return metrics;
+        }
+
+        private static final String METADATA =
+                "{"
+                + "\"apiVersion\": \"1.0\","
+                + "\"scaledSpriteWidthDp\": 36,"
+                + "\"scaledSpriteHeightDp\": 36,"
+                + "\"densities\":"
+                + "["
+                + "  {"
+                + "    \"density\": 160,"
+                + "    \"width\": 36,"
+                + "    \"height\": 36,"
+                + "    \"rectangles\": ["
+                + "       [17, 14, 47, 69, 10, 8, 0, 34, 37, 0, 36, 2],"
+                + "       [],"
+                + "       [0, 0, 0, 0, 36, 36]"
                 + "     ]"
-                + "},"
-                + "{"
-                + "     \"density\": 480,"
-                + "     \"width\": 108,"
-                + "     \"height\": 108,"
-                + "     \"rectangles\": ["
-                + "         [35, 30, 38, 165, 18, 12, 0, 70, 0, 146, 72, 2],"
-                + "         [],"
-                + "         [0, 0, 73, 0, 72, 72]"
+                + "  },"
+                + "  {"
+                + "    \"density\": 480,"
+                + "    \"width\": 108,"
+                + "    \"height\": 108,"
+                + "    \"rectangles\": ["
+                + "       [35, 30, 38, 165, 18, 12, 0, 70, 0, 146, 72, 2],"
+                + "       [],"
+                + "       [0, 0, 73, 0, 72, 72]"
                 + "     ]"
-                + "},"
-                + "{"
-                + "     \"density\": 640,"
-                + "     \"width\": 144,"
-                + "     \"height\": 144,"
-                + "     \"rectangles\": ["
-                + "         [71, 62, 820, 3, 34, 21, 0, 142, 725, 0, 144, 2],"
-                + "         [],"
-                + "         [0, 0, 145, 0, 144, 144]"
+                + "  },"
+                + "  {"
+                + "    \"density\": 640,"
+                + "    \"width\": 144,"
+                + "    \"height\": 144,"
+                + "    \"rectangles\": ["
+                + "       [71, 62, 820, 3, 34, 21, 0, 142, 725, 0, 144, 2],"
+                + "       [],"
+                + "       [0, 0, 145, 0, 144, 144]"
                 + "     ]"
-                + "}"
+                + "  }"
                 + "]}";
     }
 

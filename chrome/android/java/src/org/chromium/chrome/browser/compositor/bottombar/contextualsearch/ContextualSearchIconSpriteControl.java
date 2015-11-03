@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 
 /**
@@ -38,11 +37,6 @@ public class ContextualSearchIconSpriteControl implements
     private float mCompletionPercentage;
 
     /**
-     * The size to use for display of the search provider icon sprite in px.
-     */
-    private float mSizePx;
-
-    /**
      * The panel.
      */
     private ContextualSearchPanel mPanel;
@@ -54,7 +48,6 @@ public class ContextualSearchIconSpriteControl implements
      */
     public ContextualSearchIconSpriteControl(
             ContextualSearchPanel panel, Context context) {
-        mSizePx = context.getResources().getDimension(R.dimen.contextual_search_sprite_size);
         mPanel = panel;
     }
 
@@ -78,13 +71,6 @@ public class ContextualSearchIconSpriteControl implements
      */
     public float getCompletionPercentage() {
         return mCompletionPercentage;
-    }
-
-    /**
-     * @return The size to use for display of the search provider icon sprite in px.
-     */
-    public float getSizePx() {
-        return mSizePx;
     }
 
     /**

@@ -72,7 +72,6 @@ class ContextualSearchLayer : public Layer {
                      float search_bar_shadow_opacity,
                      bool search_provider_icon_sprite_visible,
                      float search_provider_icon_sprite_completion_percentage,
-                     float search_provider_icon_sprite_size,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
                      float close_icon_opacity,

@@ -1,5 +1,7 @@
 {
   "apiVersion": "1.0",
+  "scaledSpriteWidthDp": 36,
+  "scaledSpriteHeightDp": 36,
   "densities":
   [
     {

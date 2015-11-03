@@ -51,8 +51,8 @@ void CrushedSpriteLayer::DrawSpriteFrame(
 
     // Set up an SkCanvas backed by an SkBitmap to draw into.
     SkBitmap bitmap;
-    bitmap.allocN32Pixels(resource->GetSpriteSize().width(),
-                           resource->GetSpriteSize().height());
+    bitmap.allocN32Pixels(resource->GetUnscaledSpriteSize().width(),
+                          resource->GetUnscaledSpriteSize().height());
     skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(bitmap));
 
     // If this isn't the first or last frame, draw the previous frame(s).
@@ -76,6 +76,9 @@ void CrushedSpriteLayer::DrawSpriteFrame(
     // Set the bitmap on layer_.
     bitmap.setImmutable();
     layer_->SetBitmap(bitmap);
+
+    // Set bounds to scale the layer.
+    layer_->SetBounds(resource->GetScaledSpriteSize());
 
     // Evict the crushed sprite bitmap from memory if this is the last frame.
     if (sprite_frame == frame_count_ - 1) {
