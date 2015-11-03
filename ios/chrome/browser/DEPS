@@ -35,6 +35,7 @@ include_rules = [
   "+components/password_manager/core/browser",
   "+components/policy/core",
   "+components/pref_registry",
+  "+components/profile_metrics",
   "+components/proxy_config",
   "+components/rappor",
   "+components/rlz",

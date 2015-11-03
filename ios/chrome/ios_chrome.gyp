@@ -179,6 +179,8 @@
         'browser/browser_state/browser_state_keyed_service_factories.mm',
         'browser/browser_state/browser_state_otr_helper.cc',
         'browser/browser_state/browser_state_otr_helper.h',
+        'browser/browser_state_metrics/browser_state_metrics.cc',
+        'browser/browser_state_metrics/browser_state_metrics.h',
         'browser/browsing_data_change_listening.h',
         'browser/chrome_paths.h',
         'browser/chrome_paths.mm',
