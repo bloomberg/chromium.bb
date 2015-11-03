@@ -80230,6 +80230,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="4" label="N = 4"/>
   <suffix name="5" label="N = 5"/>
   <affected-histogram name="Omnibox.QueryTime"/>
+  <affected-histogram name="Omnibox.QueryTime2"/>
   <affected-histogram name="ShortcutsProvider.QueryIndexTime"/>
 </histogram_suffixes>
 
