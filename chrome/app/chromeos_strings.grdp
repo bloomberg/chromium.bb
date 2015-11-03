@@ -66,7 +66,7 @@ Press any key to continue exploring.
     Chrome cannot set wallpaper.
   </message>
   <message name="IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE" desc="The string displayed to user if the current wallpaper is set by a third party wallpaper app/extension.">
-    Current wallpaper is set by '<ph name="APP_NAME">$1</ph>'
+    The current wallpaper is set by '<ph name="APP_NAME">$1</ph>'. You may need to uninstall '<ph name="APP_NAME">$1</ph>' before selecting a different wallpaper.
   </message>
 
   <!-- File Manager -->

@@ -288,6 +288,9 @@ function WallpaperManager(dialogDom) {
     if (loadTimeData.valueExists('wallpaperAppName')) {
       $('wallpaper-set-by-message').textContent = loadTimeData.getStringF(
           'currentWallpaperSetByMessage', str('wallpaperAppName'));
+      $('wallpaper-grid').classList.add('small');
+    } else {
+      $('wallpaper-grid').classList.remove('small');
     }
 
     if (this.enableOnlineWallpaper_) {
@@ -547,6 +550,7 @@ function WallpaperManager(dialogDom) {
     this.currentWallpaper_ = currentWallpaperURL;
     // Hides the wallpaper set by message.
     $('wallpaper-set-by-message').textContent = '';
+    $('wallpaper-grid').classList.remove('small');
   };
 
   /**

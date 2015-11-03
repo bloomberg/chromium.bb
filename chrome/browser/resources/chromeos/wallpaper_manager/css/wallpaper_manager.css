@@ -143,7 +143,7 @@ body {
 #wallpaper-set-by-message {
   -webkit-padding-end: 5px;
   -webkit-padding-start: 15px;
-  height: 17px;
+  height: 30px;
 }
 
 #wallpaper-set-by-message:empty {
@@ -168,6 +168,10 @@ body {
 
 .image-picker .spacer {
   display: block;
+}
+
+.image-picker.small {
+  height: 275px;
 }
 
 .image-picker > * {
@@ -242,7 +246,6 @@ body {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   display: -webkit-box;
-  height: 40px;
   padding: 11px 15px 8px 15px;
 }
 
