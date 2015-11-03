@@ -29748,6 +29748,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.ProgressBarBreakPointUpdateCount"
+    units="break point updates">
+  <owner>kkimlabs@chromium.org</owner>
+  <summary>
+    The number of progress bar break point updates from page load started to
+    page load finished.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ProgressBarUpdateCount" units="frame updates">
+  <owner>kkimlabs@chromium.org</owner>
+  <summary>
+    The number of progress bar frame updates from page load started to page load
+    finished. If there is no animation, this matches
+    Omnibox.ProgressBarBreakPointUpdateCount. Note that there can be additional
+    updates after page load finished, animating to 100%, but this histogram
+    doesn't include them.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.ProviderTime" units="milliseconds">
   <obsolete>
     Deprecated 2015-06-12. Replaced by Omnibox.ProviderTime2.

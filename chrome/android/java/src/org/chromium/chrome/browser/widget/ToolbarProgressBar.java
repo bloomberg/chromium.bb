@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -22,6 +23,10 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     private static final String ANIMATION_FIELD_TRIAL_NAME = "ProgressBarAnimationAndroid";
+    private static final String PROGRESS_BAR_UPDATE_COUNT_HISTOGRAM =
+            "Omnibox.ProgressBarUpdateCount";
+    private static final String PROGRESS_BAR_BREAK_POINT_UPDATE_COUNT_HISTOGRAM =
+            "Omnibox.ProgressBarBreakPointUpdateCount";
 
     /**
      * Interface for progress bar animation interpolation logics.
@@ -48,7 +53,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     private boolean mIsStarted;
     private float mTargetProgress;
-    AnimationLogic mAnimationLogic;
+    private int mTargetProgressUpdateCount;
+    private AnimationLogic mAnimationLogic;
     private boolean mAnimationInitialized;
 
     private final Runnable mHideRunnable = new Runnable() {
@@ -125,6 +131,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      */
     public void start() {
         mIsStarted = true;
+        mTargetProgressUpdateCount = 0;
+        resetProgressUpdateCount();
         super.setProgress(0.0f);
         if (mAnimationLogic != null) mAnimationLogic.reset();
         removeCallbacks(mHideRunnable);
@@ -140,6 +148,11 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
         if (delayed) {
             updateVisibleProgress();
+            RecordHistogram.recordCount1000Histogram(PROGRESS_BAR_UPDATE_COUNT_HISTOGRAM,
+                    getProgressUpdateCount());
+            RecordHistogram.recordCount100Histogram(
+                    PROGRESS_BAR_BREAK_POINT_UPDATE_COUNT_HISTOGRAM,
+                    mTargetProgressUpdateCount);
         } else {
             removeCallbacks(mHideRunnable);
             animate().cancel();
@@ -190,7 +203,9 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     @Override
     public void setProgress(float progress) {
         assert mIsStarted;
+        if (mTargetProgress == progress) return;
 
+        mTargetProgressUpdateCount += 1;
         mTargetProgress = progress;
         updateVisibleProgress();
     }
