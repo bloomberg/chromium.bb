@@ -980,327 +980,6 @@ cr.define('cr.ui', function() {
     CanExecuteEvent: CanExecuteEvent
   };
 });
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-/**
- * @fileoverview Assertion support.
- */
-
-/**
- * Verify |condition| is truthy and return |condition| if so.
- * @template T
- * @param {T} condition A condition to check for truthiness.  Note that this
- *     may be used to test whether a value is defined or not, and we don't want
- *     to force a cast to Boolean.
- * @param {string=} opt_message A message to show on failure.
- * @return {T} A non-null |condition|.
- */
-function assert(condition, opt_message) {
-  'use strict';
-  if (!condition) {
-    var msg = 'Assertion failed';
-    if (opt_message)
-      msg = msg + ': ' + opt_message;
-    throw new Error(msg);
-  }
-  return condition;
-}
-
-/**
- * Call this from places in the code that should never be reached.
- *
- * For example, handling all the values of enum with a switch() like this:
- *
- *   function getValueFromEnum(enum) {
- *     switch (enum) {
- *       case ENUM_FIRST_OF_TWO:
- *         return first
- *       case ENUM_LAST_OF_TWO:
- *         return last;
- *     }
- *     assertNotReached();
- *     return document;
- *   }
- *
- * This code should only be hit in the case of serious programmer error or
- * unexpected input.
- *
- * @param {string=} opt_message A message to show when this is hit.
- */
-function assertNotReached(opt_message) {
-  throw new Error(opt_message || 'Unreachable code hit');
-}
-
-/**
- * @param {*} value The value to check.
- * @param {function(new: T, ...)} type A user-defined constructor.
- * @param {string=} opt_message A message to show when this is hit.
- * @return {T}
- * @template T
- */
-function assertInstanceof(value, type, opt_message) {
-  if (!(value instanceof type)) {
-    throw new Error(opt_message ||
-                    value + ' is not a[n] ' + (type.name || typeof type));
-  }
-  return value;
-};
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-/**
- * @fileoverview EventTracker is a simple class that manages the addition and
- * removal of DOM event listeners. In particular, it keeps track of all
- * listeners that have been added and makes it easy to remove some or all of
- * them without requiring all the information again. This is particularly handy
- * when the listener is a generated function such as a lambda or the result of
- * calling Function.bind.
- */
-
-/**
- * The type of the internal tracking entry. TODO(dbeam): move this back to
- * EventTracker.Entry when https://github.com/google/closure-compiler/issues/544
- * is fixed.
- * @typedef {{target: !EventTarget,
- *            eventType: string,
- *            listener: Function,
- *            capture: boolean}}
- */
-var EventTrackerEntry;
-
-/**
- * Create an EventTracker to track a set of events.
- * EventTracker instances are typically tied 1:1 with other objects or
- * DOM elements whose listeners should be removed when the object is disposed
- * or the corresponding elements are removed from the DOM.
- * @constructor
- */
-function EventTracker() {
-  /**
-   * @type {Array<EventTrackerEntry>}
-   * @private
-   */
-  this.listeners_ = [];
-}
-
-EventTracker.prototype = {
-  /**
-   * Add an event listener - replacement for EventTarget.addEventListener.
-   * @param {!EventTarget} target The DOM target to add a listener to.
-   * @param {string} eventType The type of event to subscribe to.
-   * @param {EventListener|Function} listener The listener to add.
-   * @param {boolean=} opt_capture Whether to invoke during the capture phase.
-   */
-  add: function(target, eventType, listener, opt_capture) {
-    var capture = !!opt_capture;
-    var h = {
-      target: target,
-      eventType: eventType,
-      listener: listener,
-      capture: capture,
-    };
-    this.listeners_.push(h);
-    target.addEventListener(eventType, listener, capture);
-  },
-
-  /**
-   * Remove any specified event listeners added with this EventTracker.
-   * @param {!EventTarget} target The DOM target to remove a listener from.
-   * @param {?string} eventType The type of event to remove.
-   */
-  remove: function(target, eventType) {
-    this.listeners_ = this.listeners_.filter(function(h) {
-      if (h.target == target && (!eventType || (h.eventType == eventType))) {
-        EventTracker.removeEventListener_(h);
-        return false;
-      }
-      return true;
-    });
-  },
-
-  /**
-   * Remove all event listeners added with this EventTracker.
-   */
-  removeAll: function() {
-    this.listeners_.forEach(EventTracker.removeEventListener_);
-    this.listeners_ = [];
-  }
-};
-
-/**
- * Remove a single event listener given it's tracking entry. It's up to the
- * caller to ensure the entry is removed from listeners_.
- * @param {EventTrackerEntry} h The entry describing the listener to remove.
- * @private
- */
-EventTracker.removeEventListener_ = function(h) {
-  h.target.removeEventListener(h.eventType, h.listener, h.capture);
-};
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-cr.define('cr.ui', function() {
-  /**
-   * A class to manage grid of focusable elements in a 2D grid. For example,
-   * given this grid:
-   *
-   *   focusable  [focused]  focusable  (row: 0, col: 1)
-   *   focusable  focusable  focusable
-   *   focusable  focusable  focusable
-   *
-   * Pressing the down arrow would result in the focus moving down 1 row and
-   * keeping the same column:
-   *
-   *   focusable  focusable  focusable
-   *   focusable  [focused]  focusable  (row: 1, col: 1)
-   *   focusable  focusable  focusable
-   *
-   * And pressing right or tab at this point would move the focus to:
-   *
-   *   focusable  focusable  focusable
-   *   focusable  focusable  [focused]  (row: 1, col: 2)
-   *   focusable  focusable  focusable
-   *
-   * @constructor
-   * @implements {cr.ui.FocusRow.Delegate}
-   */
-  function FocusGrid() {
-    /** @type {!Array<!cr.ui.FocusRow>} */
-    this.rows = [];
-  }
-
-  FocusGrid.prototype = {
-    /** @private {boolean} */
-    ignoreFocusChange_: false,
-
-    /** @override */
-    onFocus: function(row, e) {
-      if (this.ignoreFocusChange_)
-        this.ignoreFocusChange_ = false;
-      else
-        this.lastFocused_ = e.currentTarget;
-
-      this.rows.forEach(function(r) { r.makeActive(r == row); });
-    },
-
-    /** @override */
-    onKeydown: function(row, e) {
-      var rowIndex = this.rows.indexOf(row);
-      assert(rowIndex >= 0);
-
-      var newRow = -1;
-
-      if (e.keyIdentifier == 'Up')
-        newRow = rowIndex - 1;
-      else if (e.keyIdentifier == 'Down')
-        newRow = rowIndex + 1;
-      else if (e.keyIdentifier == 'PageUp')
-        newRow = 0;
-      else if (e.keyIdentifier == 'PageDown')
-        newRow = this.rows.length - 1;
-
-      var rowToFocus = this.rows[newRow];
-      if (rowToFocus) {
-        this.ignoreFocusChange_ = true;
-        rowToFocus.getEquivalentElement(this.lastFocused_).focus();
-        e.preventDefault();
-        return true;
-      }
-
-      return false;
-    },
-
-    /**
-     * Unregisters event handlers and removes all |this.rows|.
-     */
-    destroy: function() {
-      this.rows.forEach(function(row) { row.destroy(); });
-      this.rows.length = 0;
-    },
-
-    /**
-     * @param {Node} target A target item to find in this grid.
-     * @return {number} The row index. -1 if not found.
-     */
-    getRowIndexForTarget: function(target) {
-      for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].getElements().indexOf(target) >= 0)
-          return i;
-      }
-      return -1;
-    },
-
-    /**
-     * @param {Element} root An element to search for.
-     * @return {?cr.ui.FocusRow} The row with root of |root| or null.
-     */
-    getRowForRoot: function(root) {
-      for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].root == root)
-          return this.rows[i];
-      }
-      return null;
-    },
-
-    /**
-     * Adds |row| to the end of this list.
-     * @param {!cr.ui.FocusRow} row The row that needs to be added to this grid.
-     */
-    addRow: function(row) {
-      this.addRowBefore(row, null);
-    },
-
-    /**
-     * Adds |row| before |nextRow|. If |nextRow| is not in the list or it's
-     * null, |row| is added to the end.
-     * @param {!cr.ui.FocusRow} row The row that needs to be added to this grid.
-     * @param {cr.ui.FocusRow} nextRow The row that should follow |row|.
-     */
-    addRowBefore: function(row, nextRow) {
-      row.delegate = row.delegate || this;
-
-      var nextRowIndex = this.rows.indexOf(nextRow);
-      if (nextRowIndex == -1)
-        this.rows.push(row);
-      else
-        this.rows.splice(nextRowIndex, 0, row);
-    },
-
-    /**
-     * Removes a row from the focus row. No-op if row is not in the grid.
-     * @param {cr.ui.FocusRow} row The row that needs to be removed.
-     */
-    removeRow: function(row) {
-      var nextRowIndex = this.rows.indexOf(row);
-      if (nextRowIndex > -1)
-        this.rows.splice(nextRowIndex, 1);
-    },
-
-    /**
-     * Makes sure that at least one row is active. Should be called once, after
-     * adding all rows to FocusGrid.
-     */
-    ensureRowActive: function() {
-      if (this.rows.length == 0)
-        return;
-
-      for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].isActive())
-          return;
-      }
-
-      this.rows[0].makeActive(true);
-    },
-  };
-
-  return {
-    FocusGrid: FocusGrid,
-  };
-});
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -1765,6 +1444,73 @@ function elide(original, maxLength) {
     return original;
   return original.substring(0, maxLength - 1) + '\u2026';
 };
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Assertion support.
+ */
+
+/**
+ * Verify |condition| is truthy and return |condition| if so.
+ * @template T
+ * @param {T} condition A condition to check for truthiness.  Note that this
+ *     may be used to test whether a value is defined or not, and we don't want
+ *     to force a cast to Boolean.
+ * @param {string=} opt_message A message to show on failure.
+ * @return {T} A non-null |condition|.
+ */
+function assert(condition, opt_message) {
+  'use strict';
+  if (!condition) {
+    var msg = 'Assertion failed';
+    if (opt_message)
+      msg = msg + ': ' + opt_message;
+    throw new Error(msg);
+  }
+  return condition;
+}
+
+/**
+ * Call this from places in the code that should never be reached.
+ *
+ * For example, handling all the values of enum with a switch() like this:
+ *
+ *   function getValueFromEnum(enum) {
+ *     switch (enum) {
+ *       case ENUM_FIRST_OF_TWO:
+ *         return first
+ *       case ENUM_LAST_OF_TWO:
+ *         return last;
+ *     }
+ *     assertNotReached();
+ *     return document;
+ *   }
+ *
+ * This code should only be hit in the case of serious programmer error or
+ * unexpected input.
+ *
+ * @param {string=} opt_message A message to show when this is hit.
+ */
+function assertNotReached(opt_message) {
+  throw new Error(opt_message || 'Unreachable code hit');
+}
+
+/**
+ * @param {*} value The value to check.
+ * @param {function(new: T, ...)} type A user-defined constructor.
+ * @param {string=} opt_message A message to show when this is hit.
+ * @return {T}
+ * @template T
+ */
+function assertInstanceof(value, type, opt_message) {
+  if (!(value instanceof type)) {
+    throw new Error(opt_message ||
+                    value + ' is not a[n] ' + (type.name || typeof type));
+  }
+  return value;
+};
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -1901,344 +1647,6 @@ cr.define('downloads', function() {
     DangerType: DangerType,
     States: States,
   };
-});
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-cr.define('cr.ui', function() {
-  /**
-   * A class to manage focus between given horizontally arranged elements.
-   *
-   * Pressing left cycles backward and pressing right cycles forward in item
-   * order. Pressing Home goes to the beginning of the list and End goes to the
-   * end of the list.
-   *
-   * If an item in this row is focused, it'll stay active (accessible via tab).
-   * If no items in this row are focused, the row can stay active until focus
-   * changes to a node inside |this.boundary_|. If |boundary| isn't specified,
-   * any focus change deactivates the row.
-   *
-   * @param {!Element} root The root of this focus row. Focus classes are
-   *     applied to |root| and all added elements must live within |root|.
-   * @param {?Node} boundary Focus events are ignored outside of this node.
-   * @param {cr.ui.FocusRow.Delegate=} opt_delegate An optional event delegate.
-   * @constructor
-   */
-  function FocusRow(root, boundary, opt_delegate) {
-    /** @type {!Element} */
-    this.root = root;
-
-    /** @private {!Node} */
-    this.boundary_ = boundary || document;
-
-    /** @type {cr.ui.FocusRow.Delegate|undefined} */
-    this.delegate = opt_delegate;
-
-    /** @protected {!EventTracker} */
-    this.eventTracker = new EventTracker;
-  }
-
-  /** @interface */
-  FocusRow.Delegate = function() {};
-
-  FocusRow.Delegate.prototype = {
-    /**
-     * Called when a key is pressed while on a FocusRow's item. If true is
-     * returned, further processing is skipped.
-     * @param {!cr.ui.FocusRow} row The row that detected a keydown.
-     * @param {!Event} e
-     * @return {boolean} Whether the event was handled.
-     */
-    onKeydown: assertNotReached,
-
-    /**
-     * @param {!cr.ui.FocusRow} row
-     * @param {!Event} e
-     */
-    onFocus: assertNotReached,
-  };
-
-  /** @const {string} */
-  FocusRow.ACTIVE_CLASS = 'focus-row-active';
-
-  /**
-   * Whether it's possible that |element| can be focused.
-   * @param {Element} element
-   * @return {boolean} Whether the item is focusable.
-   */
-  FocusRow.isFocusable = function(element) {
-    if (!element || element.disabled)
-      return false;
-
-    // We don't check that element.tabIndex >= 0 here because inactive rows set
-    // a tabIndex of -1.
-
-    function isVisible(element) {
-      assertInstanceof(element, Element);
-
-      var style = window.getComputedStyle(element);
-      if (style.visibility == 'hidden' || style.display == 'none')
-        return false;
-
-      var parent = element.parentNode;
-      if (!parent)
-        return false;
-
-      if (parent == element.ownerDocument || parent instanceof DocumentFragment)
-        return true;
-
-      return isVisible(parent);
-    }
-
-    return isVisible(element);
-  };
-
-  FocusRow.prototype = {
-    /**
-     * Register a new type of focusable element (or add to an existing one).
-     *
-     * Example: an (X) button might be 'delete' or 'close'.
-     *
-     * When FocusRow is used within a FocusGrid, these types are used to
-     * determine equivalent controls when Up/Down are pressed to change rows.
-     *
-     * Another example: mutually exclusive controls that hide eachother on
-     * activation (i.e. Play/Pause) could use the same type (i.e. 'play-pause')
-     * to indicate they're equivalent.
-     *
-     * @param {string} type The type of element to track focus of.
-     * @param {string} query The selector of the element from this row's root.
-     * @return {boolean} Whether a new item was added.
-     */
-    addItem: function(type, query) {
-      assert(type);
-
-      var element = this.root.querySelector(query);
-      if (!element)
-        return false;
-
-      element.setAttribute('focus-type', type);
-      element.tabIndex = this.isActive() ? 0 : -1;
-
-      this.eventTracker.add(element, 'blur', this.onBlur_.bind(this));
-      this.eventTracker.add(element, 'focus', this.onFocus_.bind(this));
-      this.eventTracker.add(element, 'keydown', this.onKeydown_.bind(this));
-      this.eventTracker.add(element, 'mousedown',
-                             this.onMousedown_.bind(this));
-      return true;
-    },
-
-    /** Dereferences nodes and removes event handlers. */
-    destroy: function() {
-      this.eventTracker.removeAll();
-    },
-
-    /**
-     * @param {Element} sampleElement An element for to find an equivalent for.
-     * @return {!Element} An equivalent element to focus for |sampleElement|.
-     * @protected
-     */
-    getCustomEquivalent: function(sampleElement) {
-      return assert(this.getFirstFocusable());
-    },
-
-    /**
-     * @return {!Array<!Element>} All registered elements (regardless of
-     *     focusability).
-     */
-    getElements: function() {
-      var elements = this.root.querySelectorAll('[focus-type]');
-      return Array.prototype.slice.call(elements);
-    },
-
-    /**
-     * Find the element that best matches |sampleElement|.
-     * @param {!Element} sampleElement An element from a row of the same type
-     *     which previously held focus.
-     * @return {!Element} The element that best matches sampleElement.
-     */
-    getEquivalentElement: function(sampleElement) {
-      if (this.getFocusableElements().indexOf(sampleElement) >= 0)
-        return sampleElement;
-
-      var sampleFocusType = this.getTypeForElement(sampleElement);
-      if (sampleFocusType) {
-        var sameType = this.getFirstFocusable(sampleFocusType);
-        if (sameType)
-          return sameType;
-      }
-
-      return this.getCustomEquivalent(sampleElement);
-    },
-
-    /**
-     * @param {string=} opt_type An optional type to search for.
-     * @return {?Element} The first focusable element with |type|.
-     */
-    getFirstFocusable: function(opt_type) {
-      var filter = opt_type ? '="' + opt_type + '"' : '';
-      var elements = this.root.querySelectorAll('[focus-type' + filter + ']');
-      for (var i = 0; i < elements.length; ++i) {
-        if (cr.ui.FocusRow.isFocusable(elements[i]))
-          return elements[i];
-      }
-      return null;
-    },
-
-    /** @return {!Array<!Element>} Registered, focusable elements. */
-    getFocusableElements: function() {
-      return this.getElements().filter(cr.ui.FocusRow.isFocusable);
-    },
-
-    /**
-     * @param {!Element} element An element to determine a focus type for.
-     * @return {string} The focus type for |element| or '' if none.
-     */
-    getTypeForElement: function(element) {
-      return element.getAttribute('focus-type') || '';
-    },
-
-    /** @return {boolean} Whether this row is currently active. */
-    isActive: function() {
-      return this.root.classList.contains(FocusRow.ACTIVE_CLASS);
-    },
-
-    /**
-     * Enables/disables the tabIndex of the focusable elements in the FocusRow.
-     * tabIndex can be set properly.
-     * @param {boolean} active True if tab is allowed for this row.
-     */
-    makeActive: function(active) {
-      if (active == this.isActive())
-        return;
-
-      this.getElements().forEach(function(element) {
-        element.tabIndex = active ? 0 : -1;
-      });
-
-      this.root.classList.toggle(FocusRow.ACTIVE_CLASS, active);
-    },
-
-    /**
-     * @param {!Event} e
-     * @private
-     */
-    onBlur_: function(e) {
-      if (!this.boundary_.contains(/** @type {Node} */(e.relatedTarget)))
-        return;
-
-      if (this.getFocusableElements().indexOf(e.currentTarget) >= 0)
-        this.makeActive(false);
-    },
-
-    /**
-     * @param {!Event} e
-     * @private
-     */
-    onFocus_: function(e) {
-      if (this.delegate)
-        this.delegate.onFocus(this, e);
-    },
-
-    /**
-     * @param {!Event} e A mousedown event.
-     * @private
-     */
-    onMousedown_: function(e) {
-      // Only accept left mouse clicks.
-      if (e.button)
-        return;
-
-      // Allow the element under the mouse cursor to be focusable.
-      if (!e.currentTarget.disabled)
-        e.currentTarget.tabIndex = 0;
-    },
-
-    /**
-     * @param {Event} e The keydown event.
-     * @private
-     */
-    onKeydown_: function(e) {
-      var elements = this.getFocusableElements();
-      var elementIndex = elements.indexOf(e.currentTarget);
-      assert(elementIndex >= 0);
-
-      if (this.delegate && this.delegate.onKeydown(this, e))
-        return;
-
-      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
-        return;
-
-      var index = -1;
-
-      if (e.keyIdentifier == 'Left')
-        index = elementIndex + (isRTL() ? 1 : -1);
-      else if (e.keyIdentifier == 'Right')
-        index = elementIndex + (isRTL() ? -1 : 1);
-      else if (e.keyIdentifier == 'Home')
-        index = 0;
-      else if (e.keyIdentifier == 'End')
-        index = elements.length - 1;
-
-      var elementToFocus = elements[index];
-      if (elementToFocus) {
-        this.getEquivalentElement(elementToFocus).focus();
-        e.preventDefault();
-      }
-    },
-  };
-
-  return {
-    FocusRow: FocusRow,
-  };
-});
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-cr.define('downloads', function() {
-  /**
-   * @param {!Element} root
-   * @param {?Node} boundary
-   * @constructor
-   * @extends {cr.ui.FocusRow}
-   */
-  function FocusRow(root, boundary) {
-    cr.ui.FocusRow.call(this, root, boundary);
-    this.addItems();
-  }
-
-  FocusRow.prototype = {
-    __proto__: cr.ui.FocusRow.prototype,
-
-    addItems: function() {
-      this.destroy();
-
-      this.addItem('name-file-link',
-          'content.is-active:not(.show-progress):not(.dangerous) #name');
-      assert(this.addItem('name-file-link', '#file-link'));
-      assert(this.addItem('url', '#url'));
-      this.addItem('show-retry', '#show');
-      this.addItem('show-retry', '#retry');
-      this.addItem('pause-resume', '#pause');
-      this.addItem('pause-resume', '#resume');
-      this.addItem('cancel', '#cancel');
-      this.addItem('controlled-by', '#controlled-by a');
-      this.addItem('danger-remove-discard', '#discard');
-      this.addItem('restore-save', '#save');
-      this.addItem('danger-remove-discard', '#danger-remove');
-      this.addItem('restore-save', '#restore');
-      assert(this.addItem('remove', '#remove'));
-
-      // TODO(dbeam): it would be nice to do this asynchronously (so if multiple
-      // templates get rendered we only re-add once), but Manager#updateItem_()
-      // relies on the DOM being re-rendered synchronously.
-      this.eventTracker.add(this.root, 'dom-change', this.addItems.bind(this));
-    },
-  };
-
-  return {FocusRow: FocusRow};
 });
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -8957,8 +8365,7 @@ this.fire('dom-change');
 
       /**
        * The name of the variable to add to the binding scope with the index
-       * for the row.  If `sort` is provided, the index will reflect the
-       * sorted order (rather than the original array order).
+       * for the row.
        */
       indexAs: {
         type: String,
@@ -9171,8 +8578,7 @@ this.fire('dom-change');
      * The largest n-th value for an item such that it can be rendered in `_physicalStart`.
      */
     get _maxVirtualStart() {
-      return this._virtualCount < this._physicalCount ?
-          this._virtualCount : this._virtualCount - this._physicalCount;
+      return Math.max(0, this._virtualCount - this._physicalCount);
     },
 
     /**
@@ -9225,7 +8631,7 @@ this.fire('dom-change');
     },
 
     /**
-     * Gets the first visible item in the viewport.
+     * Gets the index of the first visible item in the viewport.
      *
      * @type {number}
      */
@@ -9503,7 +8909,7 @@ this.fire('dom-change');
       [].push.apply(this._physicalSizes, emptyArray);
 
       this._physicalCount = prevPhysicalCount + delta;
- 
+
       return true;
     },
 
@@ -9684,7 +9090,7 @@ this.fire('dom-change');
     /**
      * Executes a provided function per every physical index in `itemSet`
      * `itemSet` default value is equivalent to the entire set of physical indexes.
-     * 
+     *
      * @param {!function(number, number)} fn
      * @param {!Array<number>=} itemSet
      */
@@ -9826,7 +9232,7 @@ this.fire('dom-change');
 
     /**
      * Sets the scroll height, that's the height of the content,
-     * 
+     *
      * @param {boolean=} forceUpdate If true, updates the height no matter what.
      */
     _updateScrollerSize: function(forceUpdate) {
@@ -11919,9 +11325,9 @@ Polymer({
         },
 
         /**
-         * If true, the ripple will not generate a ripple effect 
+         * If true, the ripple will not generate a ripple effect
          * via pointer interaction.
-         * Calling ripple's imperative api like `simulatedRipple` will 
+         * Calling ripple's imperative api like `simulatedRipple` will
          * still generate the ripple effect.
          */
         noink: {
@@ -11993,10 +11399,10 @@ Polymer({
         }, 1);
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiDownAction: function(event) {
         if (!this.noink) {
@@ -12004,10 +11410,10 @@ Polymer({
         }
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
@@ -12023,10 +11429,10 @@ Polymer({
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiUpAction: function(event) {
         if (!this.noink) {
@@ -12034,10 +11440,10 @@ Polymer({
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       upAction: function(event) {
         if (this.holdDown) {
@@ -12143,14 +11549,14 @@ Polymer({
       }
     });
   })();
-/** 
-   * `Polymer.PaperRippleBehavior` dynamically implements a ripple 
+/**
+   * `Polymer.PaperRippleBehavior` dynamically implements a ripple
    * when the element has focus via pointer or keyboard.
    *
    * NOTE: This behavior is intended to be used in conjunction with and after
    * `Polymer.IronButtonState` and `Polymer.IronControlState`.
    *
-   * @polymerBehavior Polymer.PaperRippleBehavior 
+   * @polymerBehavior Polymer.PaperRippleBehavior
    */
   Polymer.PaperRippleBehavior = {
 
@@ -12162,11 +11568,18 @@ Polymer({
       noink: {
         type: Boolean,
         observer: '_noinkChanged'
+      },
+
+      /**
+       * @type {Element|undefined}
+       */
+      _rippleContainer: {
+        type: Object,
       }
     },
 
     /**
-     * Ensures a `<paper-ripple>` element is available when the element is 
+     * Ensures a `<paper-ripple>` element is available when the element is
      * focused.
      */
     _buttonStateChanged: function() {
@@ -12175,7 +11588,7 @@ Polymer({
       }
     },
 
-    /** 
+    /**
      * In addition to the functionality provided in `IronButtonState`, ensures
      * a ripple effect is created when the element is in a `pressed` state.
      */
@@ -12187,7 +11600,7 @@ Polymer({
     },
 
     /**
-     * Ensures this element contains a ripple effect. For startup efficiency 
+     * Ensures this element contains a ripple effect. For startup efficiency
      * the ripple effect is dynamically on demand when needed.
      * @param {!Event=} opt_triggeringEvent (optional) event that triggered the
      * ripple.
@@ -12200,11 +11613,13 @@ Polymer({
         if (rippleContainer) {
           Polymer.dom(rippleContainer).appendChild(this._ripple);
         }
-        var domContainer = rippleContainer === this.shadyRoot ? this : 
+        var domContainer = rippleContainer === this.shadyRoot ? this :
           rippleContainer;
-        if (opt_triggeringEvent &&
-            domContainer.contains(opt_triggeringEvent.target)) {
-          this._ripple.uiDownAction(opt_triggeringEvent);
+        if (opt_triggeringEvent) {
+          var target = opt_triggeringEvent.target;
+          if (domContainer.contains(/** @type {Node} */(target))) {
+            this._ripple.uiDownAction(opt_triggeringEvent);
+          }
         }
       }
     },
@@ -12212,7 +11627,7 @@ Polymer({
     /**
      * Returns the `<paper-ripple>` element used by this element to create
      * ripple effects. The element's ripple is created on demand, when
-     * necessary, and calling this method will force the 
+     * necessary, and calling this method will force the
      * ripple to be created.
      */
     getRipple: function() {
@@ -12231,10 +11646,11 @@ Polymer({
     /**
      * Create the element's ripple effect via creating a `<paper-ripple>`.
      * Override this method to customize the ripple element.
-     * @return {element} Returns a `<paper-ripple>` element.
+     * @return {!PaperRippleElement} Returns a `<paper-ripple>` element.
      */
     _createRipple: function() {
-      return document.createElement('paper-ripple');
+      return /** @type {!PaperRippleElement} */ (
+          document.createElement('paper-ripple'));
     },
 
     _noinkChanged: function(noink) {
@@ -12366,8 +11782,10 @@ Polymer({
     },
 
     /**
-     * In addition to `IronButtonState` behavior, when space key goes down, 
+     * In addition to `IronButtonState` behavior, when space key goes down,
      * create a ripple down effect.
+     *
+     * @param {!KeyboardEvent} event .
      */
     _spaceKeyDownHandler: function(event) {
       Polymer.IronButtonStateImpl._spaceKeyDownHandler.call(this, event);
@@ -12377,8 +11795,10 @@ Polymer({
     },
 
     /**
-     * In addition to `IronButtonState` behavior, when space key goes up, 
+     * In addition to `IronButtonState` behavior, when space key goes up,
      * create a ripple up effect.
+     *
+     * @param {!KeyboardEvent} event .
      */
     _spaceKeyUpHandler: function(event) {
       Polymer.IronButtonStateImpl._spaceKeyUpHandler.call(this, event);

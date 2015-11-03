@@ -73,9 +73,9 @@ paper-icon-button {
   --iron-icon-height: 20px;
   --iron-icon-width: 20px;
   --paper-icon-button: {
-    height: 20px;
+    height: 32px;
     padding: 6px;
-    width: 20px;
+    width: 32px;
   };
 }
 

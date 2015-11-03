@@ -1628,20 +1628,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
       }
-  
+
       :host(.has-scroller) {
         overflow: auto;
       }
-  
+
       :host(:not(.has-scroller)) {
         position: relative;
       }
-  
+
       #items {
         @apply(--iron-list-items-container);
         position: relative;
       }
-  
+
       #items > ::content > * {
         width: 100%;
         box-sizing: border-box;
@@ -2091,7 +2091,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="paper-ripple" assetpath="chrome://resources/polymer/v1_0/paper-ripple/">
 
   
-  
+
   <template>
     <style>
       :host {
@@ -2103,24 +2103,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         left: 0;
         right: 0;
         bottom: 0;
+
+        /* See PolymerElements/paper-behaviors/issues/34. On non-Chrome browsers,
+         * creating a node (with a position:absolute) in the middle of an event
+         * handler "interrupts" that event handler (which happens when the
+         * ripple is created on demand) */
+        pointer-events: none;
       }
-  
+
       :host([animating]) {
         /* This resolves a rendering issue in Chrome (as of 40) where the
            ripple is not properly clipped by its parent (which may have
            rounded corners). See: http://jsbin.com/temexa/4
-  
+
            Note: We only apply this style conditionally. Otherwise, the browser
            will create a new compositing layer for every ripple element on the
            page, and that would be bad. */
         -webkit-transform: translate(0, 0);
         transform: translate3d(0, 0, 0);
       }
-  
+
       :host([noink]) {
         pointer-events: none;
       }
-  
+
       #background,
       #waves,
       .wave-container,
@@ -2132,32 +2138,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 100%;
         height: 100%;
       }
-  
+
       #background,
       .wave {
         opacity: 0;
       }
-  
+
       #waves,
       .wave {
         overflow: hidden;
       }
-  
+
       .wave-container,
       .wave {
         border-radius: 50%;
       }
-  
+
       :host(.circle) #background,
       :host(.circle) #waves {
         border-radius: 50%;
       }
-  
+
       :host(.circle) .wave-container {
         overflow: hidden;
       }
     </style>
-    
+
     <div id="background"></div>
     <div id="waves"></div>
   </template>
@@ -2592,6 +2598,7 @@ paper-button {
   display: flex;
   flex: 1;
   flex-direction: column;
+  min-width: 0;  /* This allows #url to ellide correctly. */
   padding-bottom: 12px;
   padding-top: 16px;
 }
@@ -2668,6 +2675,7 @@ paper-button {
 #url {
   color: inherit;
   margin-top: 6px;
+  min-height: 0;
   overflow: hidden;
   text-decoration: none;
   text-overflow: ellipsis;
@@ -2764,8 +2772,29 @@ paper-button {
         padding: 0px 16px;
       }
 
-      :host > ::content > *:not(:first-child):not(:last-child) {
-        margin-right: 16px;
+      :host(.iron-selected) {
+        font-weight: var(--paper-item-selected-weight, bold);
+        @apply(--paper-item-selected);
+      }
+
+      :host([disabled]) {
+        color: var(--paper-item-disabled-color, --disabled-text-color);
+        @apply(--paper-item-disabled);
+      }
+
+      :host(:focus) {
+        position: relative;
+        outline: 0;
+        @apply(--paper-item-focused);
+      }
+
+      :host(:focus):before {
+        @apply(--layout-fit);
+        content: '';
+        background: currentColor;
+        opacity: var(--dark-divider-opacity);
+
+        @apply(--paper-item-focused-before);
       }
     </style>
   </template>
@@ -2969,8 +2998,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         user-select: none;
         cursor: pointer;
         z-index: 0;
+        line-height: 1;
+        
+        width: 40px;
+        height: 40px;
 
-        width: 24px;
+        /* Because of polymer/2558, this style has lower specificity than * */
+        box-sizing: border-box !important;
         @apply(--paper-icon-button);
       }
 
@@ -3253,9 +3287,9 @@ paper-icon-button {
   --iron-icon-height: 20px;
   --iron-icon-width: 20px;
   --paper-icon-button: {
-    height: 20px;
+    height: 32px;
     padding: 6px;
-    width: 20px;
+    width: 32px;
   };
 }
 
@@ -3264,9 +3298,9 @@ paper-icon-button {
   --iron-icon-width: 16px;
   --paper-icon-button: {
     -webkit-margin-end: -8px;
-    height: 16px;
+    height: 32px;
     padding: 8px;
-    width: 16px;
+    width: 32px;
   };
   position: absolute;
   right: 0;
@@ -3393,9 +3427,9 @@ paper-icon-button {
   --iron-icon-height: 20px;
   --iron-icon-width: 20px;
   --paper-icon-button: {
-    height: 20px;
+    height: 32px;
     padding: 6px;
-    width: 20px;
+    width: 32px;
   };
 }
 
