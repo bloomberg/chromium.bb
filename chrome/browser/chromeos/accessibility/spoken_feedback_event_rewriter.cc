@@ -58,6 +58,10 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
   const content::NativeWebKeyboardEvent web_event(key_event);
   rvh->GetWidget()->ForwardKeyboardEvent(web_event);
 
+  if ((key_event.key_code() >= ui::VKEY_F1) &&
+      (key_event.key_code() <= ui::VKEY_F12))
+    return false;
+
   return true;
 }
 
@@ -65,6 +69,11 @@ void SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   ui::KeyEvent key_event(*static_cast<ui::KeyEvent*>(event.os_event));
+
+  if ((key_event.key_code() >= ui::VKEY_F1) &&
+      (key_event.key_code() <= ui::VKEY_F12))
+    return;
+
   ui::EventProcessor* processor =
       ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
   bool dispatcher_destroyed = false;
