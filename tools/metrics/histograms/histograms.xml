@@ -42378,6 +42378,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ShortcutsProvider.DatabaseSize">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The number of entries in shortcuts backend's database when initialized,
+    which happens during profile load.
+  </summary>
+</histogram>
+
 <histogram name="ShortcutsProvider.QueryIndexTime" units="milliseconds">
   <owner>davidben@chromium.org</owner>
   <summary>

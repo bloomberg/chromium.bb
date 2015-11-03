@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/history/core/browser/history_service.h"
@@ -221,6 +222,8 @@ void ShortcutsBackend::InitCompleted() {
   temp_shortcuts_map_->swap(shortcuts_map_);
   temp_shortcuts_map_.reset(NULL);
   temp_guid_map_.reset(NULL);
+  UMA_HISTOGRAM_COUNTS_10000("ShortcutsProvider.DatabaseSize",
+                             shortcuts_map_.size());
   current_state_ = INITIALIZED;
   FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
                     OnShortcutsLoaded());
