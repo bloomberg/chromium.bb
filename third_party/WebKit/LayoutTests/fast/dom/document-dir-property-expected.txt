@@ -15,6 +15,9 @@ PASS document.dir is "rtl"
 Read document.documentElement.dir in body
 PASS document.documentElement.dir is "rtl"
 
+Read document.documentElement.getAttribute('dir') in body
+PASS document.documentElement.getAttribute('dir') is "rtl"
+
 Read document.body.dir in body
 PASS document.body.dir is ""
 
@@ -27,13 +30,22 @@ PASS document.documentElement.dir is "ltr"
 Read document.body.dir in body
 PASS document.body.dir is ""
 
+Read document.documentElement.getAttribute('dir') in body
+PASS document.documentElement.getAttribute('dir') is "ltr"
+
 Write non-canonical case document.dir in body
 PASS document.dir = 'RTL' did not throw exception.
 PASS document.dir is "rtl"
 
+Read document.documentElement.getAttribute('dir') in body
+PASS document.documentElement.getAttribute('dir') is "RTL"
+
 Write invalid document.dir in body
 PASS document.dir = 'WRONG' did not throw exception.
 PASS document.dir is ""
+
+Read document.documentElement.getAttribute('dir') in body
+PASS document.documentElement.getAttribute('dir') is "WRONG"
 
 Write non-canonical case document.body.dir in body
 PASS document.body.dir = 'RTL' did not throw exception.
@@ -42,6 +54,12 @@ PASS document.body.dir is "rtl"
 Write invalid document.body.dir in body
 PASS document.body.dir = 'WRONG' did not throw exception.
 PASS document.body.dir is ""
+
+Read document.dir in body
+PASS document.dir is ""
+
+Read document.documentElement.getAttribute('dir') in body
+PASS document.documentElement.getAttribute('dir') is "null"
 
 PASS successfullyParsed is true
 

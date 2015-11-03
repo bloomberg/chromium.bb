@@ -97,8 +97,7 @@ interface Document : Node {
 
     // DOM tree accessors
     [CustomElementCallbacks] attribute DOMString title;
-    // FIXME: dir should not have [TreatNullAs=NullString].
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString dir;
+    [CustomElementCallbacks] attribute DOMString dir;
     [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings, TypeChecking=Interface] attribute HTMLElement? body;
     readonly attribute HTMLHeadElement? head;
     [SameObject] readonly attribute HTMLCollection images;

@@ -28,6 +28,10 @@ debug("Read document.documentElement.dir in body");
 shouldBeEqualToString("document.documentElement.dir", "rtl");
 debug("");
 
+debug("Read document.documentElement.getAttribute('dir') in body");
+shouldBeEqualToString("document.documentElement.getAttribute('dir')", "rtl");
+debug("");
+
 debug("Read document.body.dir in body");
 shouldBeEqualToString("document.body.dir", "");
 debug("");
@@ -45,14 +49,26 @@ debug("Read document.body.dir in body");
 shouldBeEqualToString("document.body.dir", "");
 debug("");
 
+debug("Read document.documentElement.getAttribute('dir') in body");
+shouldBeEqualToString("document.documentElement.getAttribute('dir')", "ltr");
+debug("");
+
 debug("Write non-canonical case document.dir in body");
 shouldNotThrow("document.dir = 'RTL'");
 shouldBeEqualToString("document.dir", "rtl");
 debug("");
 
+debug("Read document.documentElement.getAttribute('dir') in body");
+shouldBeEqualToString("document.documentElement.getAttribute('dir')", "RTL");
+debug("");
+
 debug("Write invalid document.dir in body");
 shouldNotThrow("document.dir = 'WRONG'");
 shouldBeEqualToString("document.dir", "");
+debug("");
+
+debug("Read document.documentElement.getAttribute('dir') in body");
+shouldBeEqualToString("document.documentElement.getAttribute('dir')", "WRONG");
 debug("");
 
 debug("Write non-canonical case document.body.dir in body");
@@ -64,6 +80,16 @@ debug("Write invalid document.body.dir in body");
 shouldNotThrow("document.body.dir = 'WRONG'");
 shouldBeEqualToString("document.body.dir", "");
 debug("");
+
+document.dir = null;
+debug("Read document.dir in body");
+shouldBeEqualToString("document.dir", "");
+debug("");
+
+debug("Read document.documentElement.getAttribute('dir') in body");
+shouldBeEqualToString("document.documentElement.getAttribute('dir')", "null");
+debug("");
+
 </script>
 </body>
 </html>
