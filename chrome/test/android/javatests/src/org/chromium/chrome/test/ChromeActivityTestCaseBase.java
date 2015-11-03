@@ -355,25 +355,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * @param url The url of the page to load.
      */
     public void loadUrlInNewTab(final String url) throws InterruptedException {
-        // TODO(mariakhomenko): There is no current tab creator in document mode, will need
-        // additional logic here for Document tests.
-        if (FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
-            fail("Document mode not yet supported.");
-        }
-        try {
-            Tab tab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
-                @Override
-                public Tab call() throws Exception {
-                    return getActivity().getCurrentTabCreator()
-                            .launchUrl(url, TabLaunchType.FROM_LINK);
-                }
-            });
-
-            ChromeTabUtils.waitForTabPageLoaded(tab, url);
-            getInstrumentation().waitForIdleSync();
-        } catch (ExecutionException e) {
-            fail("Failed to create new tab");
-        }
+        loadUrlInNewTab(url, false);
     }
 
     /**
