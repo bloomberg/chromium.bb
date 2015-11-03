@@ -66,7 +66,7 @@ void ColumnBalancer::traverseSubtree(const LayoutBox& box)
         examineBoxAfterEntering(childBox);
         // Unless the child is unsplittable, or if the child establishes an inner multicol
         // container, we descend into its subtree for further examination.
-        if (!childBox.isUnsplittableForPagination()
+        if (childBox.paginationBreakability() != LayoutBox::ForbidBreaks
             && (!childBox.isLayoutBlockFlow() || !toLayoutBlockFlow(childBox).multiColumnFlowThread()))
             traverseSubtree(childBox);
         examineBoxBeforeLeaving(childBox);
@@ -216,10 +216,11 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
     // Look for breaks before the child box.
     bool isFirstAfterBreak = this->isFirstAfterBreak(flowThreadOffset());
     ASSERT(isFirstAfterBreak || !box.paginationStrut());
+    LayoutBox::PaginationBreakability breakability = box.paginationBreakability();
     if (isFirstAfterBreak && !box.hasForcedBreakBefore()) {
         // This box is first after a soft break.
         LayoutUnit strut = box.paginationStrut();
-        if (box.isUnsplittableForPagination()) {
+        if (breakability == LayoutBox::ForbidBreaks) {
             // Since we cannot break inside the box, just figure out how much more space we would
             // need to prevent it from being pushed to the next column.
             recordSpaceShortage(box.logicalHeight() - strut);
@@ -233,7 +234,7 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
         }
     }
 
-    if (!box.isUnsplittableForPagination()) {
+    if (breakability != LayoutBox::ForbidBreaks) {
         // See if this breakable box crosses column boundaries.
         LayoutUnit bottomInFlowThread = flowThreadOffset() + box.logicalHeight();
         if (isFirstAfterBreak || group().columnLogicalTopForOffset(flowThreadOffset()) != group().columnLogicalTopForOffset(bottomInFlowThread)) {
@@ -250,7 +251,7 @@ void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
 
 void MinimumSpaceShortageFinder::examineBoxBeforeLeaving(const LayoutBox& box)
 {
-    if (m_pendingStrut == LayoutUnit::min() || !box.isUnsplittableForPagination())
+    if (m_pendingStrut == LayoutUnit::min() || box.paginationBreakability() != LayoutBox::ForbidBreaks)
         return;
 
     // The previous break was before a breakable block. Here's the first piece of unbreakable

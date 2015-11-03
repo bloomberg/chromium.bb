@@ -94,7 +94,7 @@ LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, Layo
 
         // Disable pagination for objects we don't support. For now this includes overflow:scroll/auto, inline blocks and
         // writing mode roots.
-        if (layoutObject.isUnsplittableForPagination()) {
+        if (layoutObject.paginationBreakability() == LayoutBox::ForbidBreaks) {
             m_flowThread = nullptr;
             m_pageLogicalHeight = 0;
             m_isPaginated = false;

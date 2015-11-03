@@ -692,7 +692,14 @@ public:
     virtual bool isIntrinsicallyScrollable(ScrollbarOrientation orientation) const { return false; }
 
     bool hasUnsplittableScrollingOverflow() const;
-    bool isUnsplittableForPagination() const;
+
+    // Page / column breakability inside block-level objects.
+    enum PaginationBreakability {
+        AllowAnyBreaks, // No restrictions on breaking. May examine children to find possible break points.
+        ForbidBreaks, // Forbid breaks inside this object. Content cannot be split nicely into smaller pieces.
+        AvoidBreaks // Preferably avoid breaks. If not possible, examine children to find possible break points.
+    };
+    PaginationBreakability paginationBreakability() const;
 
     LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override;
 

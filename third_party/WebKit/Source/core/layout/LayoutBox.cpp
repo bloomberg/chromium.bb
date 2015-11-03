@@ -4406,12 +4406,21 @@ bool LayoutBox::hasUnsplittableScrollingOverflow() const
         || (!style()->logicalMinHeight().isIntrinsicOrAuto() && style()->logicalMinHeight().isPositive() && (!style()->logicalMinHeight().hasPercent() || percentageLogicalHeightIsResolvable()));
 }
 
-bool LayoutBox::isUnsplittableForPagination() const
+LayoutBox::PaginationBreakability LayoutBox::paginationBreakability() const
 {
-    return isReplaced()
+    if (isReplaced()
         || hasUnsplittableScrollingOverflow()
         || (parent() && isWritingModeRoot())
-        || (isOutOfFlowPositioned() && style()->position() == FixedPosition);
+        || (isOutOfFlowPositioned() && style()->position() == FixedPosition))
+        return ForbidBreaks;
+
+    bool checkColumnBreaks = flowThreadContainingBlock();
+    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight();
+    bool isUnsplittable = (checkColumnBreaks && style()->columnBreakInside() == PBAVOID)
+        || (checkPageBreaks && style()->pageBreakInside() == PBAVOID);
+    if (isUnsplittable)
+        return AvoidBreaks;
+    return AllowAnyBreaks;
 }
 
 LayoutUnit LayoutBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction, LinePositionMode /*linePositionMode*/) const

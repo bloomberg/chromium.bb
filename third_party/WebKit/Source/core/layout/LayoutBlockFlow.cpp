@@ -838,11 +838,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
 
 LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutUnit logicalOffset)
 {
-    bool checkColumnBreaks = flowThreadContainingBlock();
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight();
-    bool isUnsplittable = child.isUnsplittableForPagination() || (checkColumnBreaks && child.style()->columnBreakInside() == PBAVOID)
-        || (checkPageBreaks && child.style()->pageBreakInside() == PBAVOID);
-    if (!isUnsplittable)
+    if (child.paginationBreakability() == AllowAnyBreaks)
         return logicalOffset;
     LayoutUnit childLogicalHeight = logicalHeightForChild(child);
     // Floats' margins do not collapse with page or column boundaries.

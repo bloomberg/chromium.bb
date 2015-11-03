@@ -593,7 +593,7 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
         if (!ancestor->isLayoutBlockFlow())
             return false;
         const LayoutBlockFlow& ancestorBlockFlow = *toLayoutBlockFlow(ancestor);
-        if (ancestorBlockFlow.createsNewFormattingContext() || ancestorBlockFlow.isUnsplittableForPagination())
+        if (ancestorBlockFlow.createsNewFormattingContext() || ancestorBlockFlow.paginationBreakability() == ForbidBreaks)
             return false;
     }
     ASSERT_NOT_REACHED();
