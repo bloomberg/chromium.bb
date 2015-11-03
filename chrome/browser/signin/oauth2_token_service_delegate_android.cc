@@ -288,52 +288,52 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     jobject obj,
     jstring j_current_acc,
     jboolean j_force_notifications) {
-  std::string signed_in_account;
+  std::string signed_in_account_name;
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts from java";
   if (j_current_acc)
-    signed_in_account = ConvertJavaStringToUTF8(env, j_current_acc);
-  if (!signed_in_account.empty())
-    signed_in_account = gaia::CanonicalizeEmail(signed_in_account);
+    signed_in_account_name = ConvertJavaStringToUTF8(env, j_current_acc);
+  if (!signed_in_account_name.empty())
+    signed_in_account_name = gaia::CanonicalizeEmail(signed_in_account_name);
 
   // Clear any auth errors so that client can retry to get access tokens.
   errors_.clear();
 
-  ValidateAccounts(MapAccountNameToAccountId(signed_in_account),
+  ValidateAccounts(MapAccountNameToAccountId(signed_in_account_name),
                    j_force_notifications != JNI_FALSE);
 }
 
 void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
-    const std::string& signed_in_account,
+    const std::string& signed_in_account_id,
     bool force_notifications) {
-  std::vector<std::string> prev_stored_ids = GetAccounts();
+  std::vector<std::string> curr_ids;
+  for (const std::string& curr_name : GetSystemAccountNames()) {
+    std::string curr_id(MapAccountNameToAccountId(curr_name));
+    // TODO(knn): Convert to DCHECK after https://crbug.com/535211
+    CHECK(!curr_id.empty());
+    curr_ids.push_back(curr_id);
+  }
+
   std::vector<std::string> prev_ids;
-  std::vector<std::string> curr_ids = GetSystemAccountNames();
-  std::vector<std::string> refreshed_ids;
-  std::vector<std::string> revoked_ids;
-  bool account_validation_result = true;
-
-  for (size_t i = 0; i < curr_ids.size(); ++i)
-    curr_ids[i] = MapAccountNameToAccountId(curr_ids[i]);
-
-  for (size_t i = 0; i < prev_stored_ids.size(); ++i) {
-    if (ValidateAccountId(prev_stored_ids[i]))
-      prev_ids.push_back(prev_stored_ids[i]);
+  for (const std::string& prev_id : GetAccounts()) {
+    if (ValidateAccountId(prev_id))
+      prev_ids.push_back(prev_id);
   }
 
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
-           << " sigined_in_account=" << signed_in_account
+           << " sigined_in_account_id=" << signed_in_account_id
            << " prev_ids=" << prev_ids.size() << " curr_ids=" << curr_ids.size()
            << " force=" << (force_notifications ? "true" : "false");
 
-  account_validation_result =
-      ValidateAccounts(signed_in_account, prev_ids, curr_ids, refreshed_ids,
-                       revoked_ids, force_notifications);
+  std::vector<std::string> refreshed_ids;
+  std::vector<std::string> revoked_ids;
+  bool currently_signed_in =
+      ValidateAccounts(signed_in_account_id, prev_ids, curr_ids, &refreshed_ids,
+                       &revoked_ids, force_notifications);
 
   ScopedBatchChange batch(this);
-
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> java_accounts;
-  if (account_validation_result) {
+  if (currently_signed_in) {
     java_accounts = base::android::ToJavaArrayOfStrings(env, curr_ids);
   } else {
     java_accounts =
@@ -345,14 +345,10 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
   Java_OAuth2TokenService_saveStoredAccounts(
       env, base::android::GetApplicationContext(), java_accounts.obj());
 
-  for (std::vector<std::string>::iterator it = refreshed_ids.begin();
-       it != refreshed_ids.end(); it++) {
-    FireRefreshTokenAvailable(*it);
-  }
-  for (std::vector<std::string>::iterator it = revoked_ids.begin();
-       it != revoked_ids.end(); it++) {
-    FireRefreshTokenRevoked(*it);
-  }
+  for (const std::string& refreshed_id : refreshed_ids)
+    FireRefreshTokenAvailable(refreshed_id);
+  for (const std::string& revoked_id : revoked_ids)
+    FireRefreshTokenRevoked(revoked_id);
   if (fire_refresh_token_loaded_ == RT_WAIT_FOR_VALIDATION) {
     fire_refresh_token_loaded_ = RT_LOADED;
     FireRefreshTokensLoaded();
@@ -363,89 +359,78 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
   // Clear accounts no longer exist on device from AccountTrackerService.
   std::vector<AccountInfo> accounts_info =
       account_tracker_service_->GetAccounts();
-  for (auto info : accounts_info) {
-    auto it = curr_ids.begin();
-    for (; it != curr_ids.end(); ++it) {
-      if (*it == info.account_id)
-        break;
-    }
-    if (it == curr_ids.end())
+  for (const AccountInfo& info : accounts_info) {
+    if (std::find(curr_ids.begin(), curr_ids.end(), info.account_id) ==
+        curr_ids.end())
       account_tracker_service_->RemoveAccount(info.account_id);
   }
 
   // No need to wait for SigninManager to finish migration if not signed in.
   if (account_tracker_service_->GetMigrationState() ==
           AccountTrackerService::MIGRATION_IN_PROGRESS &&
-      signed_in_account.empty()) {
+      signed_in_account_id.empty()) {
     account_tracker_service_->SetMigrationDone();
   }
 }
 
 bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
-    const std::string& signed_in_account,
-    const std::vector<std::string>& prev_account_ids,
-    const std::vector<std::string>& curr_account_ids,
-    std::vector<std::string>& refreshed_ids,
-    std::vector<std::string>& revoked_ids,
+    const std::string& signed_in_id,
+    const std::vector<std::string>& prev_ids,
+    const std::vector<std::string>& curr_ids,
+    std::vector<std::string>* refreshed_ids,
+    std::vector<std::string>* revoked_ids,
     bool force_notifications) {
-  if (std::find(curr_account_ids.begin(), curr_account_ids.end(),
-                signed_in_account) != curr_account_ids.end()) {
-    // Test to see if an account is removed from the Android AccountManager.
-    // If so, invoke FireRefreshTokenRevoked to notify the reconcilor.
-    for (std::vector<std::string>::const_iterator it = prev_account_ids.begin();
-         it != prev_account_ids.end(); it++) {
-      if (*it == signed_in_account)
+  bool currently_signed_in = std::find(curr_ids.begin(), curr_ids.end(),
+                                       signed_in_id) != curr_ids.end();
+  if (currently_signed_in) {
+    // Revoke token for ids that have been removed from the device.
+    for (const std::string& prev_id : prev_ids) {
+      if (prev_id == signed_in_id)
         continue;
-
-      if (std::find(curr_account_ids.begin(), curr_account_ids.end(), *it) ==
-          curr_account_ids.end()) {
+      if (std::find(curr_ids.begin(), curr_ids.end(), prev_id) ==
+          curr_ids.end()) {
         DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
-                 << "revoked=" << *it;
-        revoked_ids.push_back(*it);
+                 << "revoked=" << prev_id;
+        revoked_ids->push_back(prev_id);
       }
     }
 
+    // Refresh token for new ids or all ids if |force_notifications|.
     if (force_notifications ||
-        std::find(prev_account_ids.begin(), prev_account_ids.end(),
-                  signed_in_account) == prev_account_ids.end()) {
+        std::find(prev_ids.begin(), prev_ids.end(), signed_in_id) ==
+            prev_ids.end()) {
       // Always fire the primary signed in account first.
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
-               << "refreshed=" << signed_in_account;
-      refreshed_ids.push_back(signed_in_account);
+               << "refreshed=" << signed_in_id;
+      refreshed_ids->push_back(signed_in_id);
     }
-
-    for (std::vector<std::string>::const_iterator it = curr_account_ids.begin();
-         it != curr_account_ids.end(); it++) {
-      if (*it != signed_in_account) {
-        if (force_notifications ||
-            std::find(prev_account_ids.begin(), prev_account_ids.end(), *it) ==
-                prev_account_ids.end()) {
-          DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
-                   << "refreshed=" << *it;
-          refreshed_ids.push_back(*it);
-        }
+    for (const std::string& curr_id : curr_ids) {
+      if (curr_id == signed_in_id)
+        continue;
+      if (force_notifications ||
+          std::find(prev_ids.begin(), prev_ids.end(), curr_id) ==
+              prev_ids.end()) {
+        DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
+                 << "refreshed=" << curr_id;
+        refreshed_ids->push_back(curr_id);
       }
     }
-    return true;
   } else {
-    // Currently signed in account does not any longer exist among accounts on
-    // system together with all other accounts.
-    if (std::find(prev_account_ids.begin(), prev_account_ids.end(),
-                  signed_in_account) != prev_account_ids.end()) {
+    if (std::find(prev_ids.begin(), prev_ids.end(), signed_in_id) !=
+        prev_ids.end()) {
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
-               << "revoked=" << signed_in_account;
-      revoked_ids.push_back(signed_in_account);
+               << "revoked=" << signed_in_id;
+      revoked_ids->push_back(signed_in_id);
     }
-    for (std::vector<std::string>::const_iterator it = prev_account_ids.begin();
-         it != prev_account_ids.end(); it++) {
-      if (*it == signed_in_account)
+    for (const std::string& prev_id : prev_ids) {
+      if (prev_id == signed_in_id)
         continue;
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
-               << "revoked=" << *it;
-      revoked_ids.push_back(*it);
+               << "revoked=" << prev_id;
+      revoked_ids->push_back(prev_id);
     }
-    return false;
   }
+  return currently_signed_in;
 }
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailableFromJava(
@@ -460,13 +445,18 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailableFromJava(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
     const std::string& account_id) {
+  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
+  CHECK(!account_id.empty());
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable id="
            << account_id;
+  std::string account_name = MapAccountIdToAccountName(account_id);
+  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
+  CHECK(!account_name.empty());
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> account_name =
-      ConvertUTF8ToJavaString(env, MapAccountIdToAccountName(account_id));
+  ScopedJavaLocalRef<jstring> j_account_name =
+      ConvertUTF8ToJavaString(env, account_name);
   Java_OAuth2TokenService_notifyRefreshTokenAvailable(env, java_ref_.obj(),
-                                                      account_name.obj());
+                                                      j_account_name.obj());
   OAuth2TokenServiceDelegate::FireRefreshTokenAvailable(account_id);
 }
 
@@ -482,17 +472,18 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevokedFromJava(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
     const std::string& account_id) {
+  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
+  CHECK(!account_id.empty());
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked id="
            << account_id;
-  JNIEnv* env = AttachCurrentThread();
   std::string account_name = MapAccountIdToAccountName(account_id);
-  // Do not crash in case of missed information.
-  if (!account_name.empty()) {
-    ScopedJavaLocalRef<jstring> account =
-        ConvertUTF8ToJavaString(env, account_name);
-    Java_OAuth2TokenService_notifyRefreshTokenRevoked(env, java_ref_.obj(),
-                                                      account.obj());
-  }
+  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
+  CHECK(!account_name.empty());
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_account_name =
+      ConvertUTF8ToJavaString(env, account_name);
+  Java_OAuth2TokenService_notifyRefreshTokenRevoked(env, java_ref_.obj(),
+                                                    j_account_name.obj());
   OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(account_id);
 }
 

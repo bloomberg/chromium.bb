@@ -300,7 +300,7 @@ public final class OAuth2TokenService
     }
 
     @CalledByNative
-    public void notifyRefreshTokenAvailable(String accountName) {
+    private void notifyRefreshTokenAvailable(String accountName) {
         assert accountName != null;
         Account account = AccountManagerHelper.createAccountFromName(accountName);
         for (OAuth2TokenServiceObserver observer : mObservers) {

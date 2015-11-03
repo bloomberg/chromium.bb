@@ -64,7 +64,7 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   // android account ids and check the token status of each.  If
   // |force_notifications| is true, TokenAvailable notifications will
   // be sent anyway, even if the account was already known.
-  void ValidateAccounts(const std::string& signed_in_account,
+  void ValidateAccounts(const std::string& signed_in_account_id,
                         bool force_notifications);
 
   // Triggers a notification to all observers of the OAuth2TokenService that a
@@ -130,15 +130,15 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
     RT_LOADED
   };
 
-  // Return whether |signed_in_account| is valid and we have access
-  // to all the tokens in |curr_account_ids|. If |force_notifications| is true,
+  // Return whether |signed_in_id| is valid and we have access
+  // to all the tokens in |curr_ids|. If |force_notifications| is true,
   // TokenAvailable notifications will be sent anyway, even if the account was
   // already known.
-  bool ValidateAccounts(const std::string& signed_in_account,
-                        const std::vector<std::string>& prev_account_ids,
-                        const std::vector<std::string>& curr_account_ids,
-                        std::vector<std::string>& refreshed_ids,
-                        std::vector<std::string>& revoked_ids,
+  bool ValidateAccounts(const std::string& signed_in_id,
+                        const std::vector<std::string>& prev_ids,
+                        const std::vector<std::string>& curr_ids,
+                        std::vector<std::string>* refreshed_ids,
+                        std::vector<std::string>* revoked_ids,
                         bool force_notifications);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
