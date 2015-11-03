@@ -142,6 +142,9 @@ Polymer({
    * @private
    */
   updateActionButtonText_: function() {
+    if (!this.issueActionTypeToButtonTextResource_)
+      return;
+
     var defaultText = '';
     var secondaryText = '';
     if (this.issue) {

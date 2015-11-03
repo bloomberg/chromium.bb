@@ -20,10 +20,12 @@
         tooltip="[[computeHeaderTooltip_(currentView_, headerTextTooltip)]]"
         hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
     </media-router-header>
-    <issue-banner id="issue-banner" issue="[[issue]]"
-        class$="[[computeIssueBannerClass_(issue)]]"
-        hidden$="[[computeIssueBannerHidden_(currentView_, issue)]]">
-    </issue-banner>
+    <template is="dom-if"
+        if="[[computeIssueBannerShown_(currentView_, issue)]]">
+      <issue-banner id="issue-banner" issue="[[issue]]"
+          class$="[[computeIssueBannerClass_(issue)]]">
+      </issue-banner>
+    </template>
     <paper-menu id="cast-mode-list"
         hidden$="[[computeCastModeHidden_(currentView_)]]">
       <template is="dom-repeat" id="defaultCastModeList"

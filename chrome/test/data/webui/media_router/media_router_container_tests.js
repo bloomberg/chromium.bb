@@ -68,15 +68,24 @@ cr.define('media_router_container', function() {
       };
 
       // Checks whether the elements specified in |elementIdList| are visible.
-      // Checks whether all other elements are hidden.
+      // Checks whether all other elements are not visible.
       var checkElementsVisibleWithId = function(elementIdList) {
         for (var i = 0; i < elementIdList.length; i++)
-          checkElementHidden(false, container.$[elementIdList[i]]);
+          checkElementVisibleWithId(true, elementIdList[i]);
 
         for (var j = 0; j < hiddenCheckElementIdList.length; j++) {
           if (elementIdList.indexOf(hiddenCheckElementIdList[j]) == -1)
-            checkElementHidden(true, container.$[hiddenCheckElementIdList[j]]);
+            checkElementVisibleWithId(false, hiddenCheckElementIdList[j]);
         }
+      };
+
+      // Checks the visibility of an element with |elementId| in |container|.
+      // An element is considered visible if it exists and its |hidden| property
+      // is |false|.
+      var checkElementVisibleWithId = function(visible, elementId) {
+        var element = container.$$('#' + elementId);
+        var elementVisible = !!element && !element.hidden;
+        assertEquals(visible, elementVisible);
       };
 
       // Checks whether |element| is hidden.
@@ -400,26 +409,45 @@ cr.define('media_router_container', function() {
                                     'sink-list']);
       });
 
+
       // Tests for expected visible UI when the view is ROUTE_DETAILS.
-      test('route details state visibility', function() {
+      test('route details visibility', function() {
         container.showRouteDetails_();
         checkElementsVisibleWithId(['device-missing',
                                     'route-details',
                                     'sink-list']);
+      });
+
+      // Tests for expected visible UI when the view is ROUTE_DETAILS, and there
+      // is a non-blocking issue.
+      test('route details visibility non blocking issue', function(done) {
+        container.showRouteDetails_();
 
         // Set a non-blocking issue. The issue should be shown.
         container.issue = fakeNonBlockingIssue;
-        checkElementsVisibleWithId(['device-missing',
-                                    'issue-banner',
-                                    'route-details',
-                                    'sink-list']);
+        setTimeout(function() {
+          checkElementsVisibleWithId(['device-missing',
+                                      'issue-banner',
+                                      'route-details',
+                                      'sink-list']);
+          done();
+        });
+      });
+
+      // Tests for expected visible UI when the view is ROUTE_DETAILS, and there
+      // is a blocking issue.
+      test('route details visibility with blocking issue', function(done) {
+        container.showRouteDetails_();
 
         // Set a blocking issue. The issue should be shown, and everything
         // else, hidden.
         container.issue = fakeBlockingIssue;
-        checkElementsVisibleWithId(['device-missing',
-                                    'issue-banner',
-                                    'sink-list']);
+        setTimeout(function() {
+          checkElementsVisibleWithId(['device-missing',
+                                      'issue-banner',
+                                      'sink-list']);
+          done();
+         });
       });
 
       // Tests for expected visible UI when the view is SINK_LIST.
@@ -435,18 +463,42 @@ cr.define('media_router_container', function() {
         checkElementsVisibleWithId(['container-header',
                                     'sink-list',
                                     'sink-list-view']);
+      });
+
+      // Tests for expected visible UI when the view is SINK_LIST, and there is
+      // a non blocking issue.
+      test('sink list visibilitynon blocking issue', function(done) {
+        container.showSinkList_();
+
+        // Set an non-empty sink list.
+        container.allSinks = fakeSinkList;
 
         // Set a non-blocking issue. The issue should be shown.
         container.issue = fakeNonBlockingIssue;
-        checkElementsVisibleWithId(['container-header',
-                                    'issue-banner',
-                                    'sink-list',
-                                    'sink-list-view']);
+        setTimeout(function() {
+          checkElementsVisibleWithId(['container-header',
+                                      'issue-banner',
+                                      'sink-list',
+                                      'sink-list-view']);
+          done();
+        });
+      });
+
+      // Tests for expected visible UI when the view is SINK_LIST, and there is
+      // a blocking issue.
+      test('sink list visibility blocking issue', function(done) {
+        container.showSinkList_();
+
+        // Set an non-empty sink list.
+        container.allSinks = fakeSinkList;
 
         // Set a blocking issue. The issue should be shown, and everything
         // else, hidden.
         container.issue = fakeBlockingIssue;
-        checkElementsVisibleWithId(['issue-banner', 'sink-list']);
+        setTimeout(function() {
+          checkElementsVisibleWithId(['issue-banner', 'sink-list']);
+          done();
+        });
       });
 
       // Tests that the sink list does not contain any sinks that are not

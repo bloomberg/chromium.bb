@@ -290,7 +290,7 @@ Polymer({
   computeHeaderHidden_: function(view, issue) {
     return view == media_router.MediaRouterView.ROUTE_DETAILS ||
         (view == media_router.MediaRouterView.SINK_LIST &&
-         issue && issue.isBlocking);
+         !!issue && issue.isBlocking);
   },
 
   /**
@@ -336,17 +336,17 @@ Polymer({
    * @private
    */
   computeIssueBannerClass_: function(issue) {
-    return issue && !issue.isBlocking ? 'non-blocking' : '';
+    return !!issue && !issue.isBlocking ? 'non-blocking' : '';
   },
 
   /**
    * @param {media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
-   * @return {boolean} Whether or not to hide the issue banner.
+   * @return {boolean} Whether or not to show the issue banner.
    * @private
    */
-  computeIssueBannerHidden_: function(view, issue) {
-    return !issue || view == media_router.MediaRouterView.CAST_MODE_LIST;
+  computeIssueBannerShown_: function(view, issue) {
+    return !!issue && view != media_router.MediaRouterView.CAST_MODE_LIST;
   },
 
   /**
@@ -370,7 +370,7 @@ Polymer({
    */
   computeRouteDetailsHidden_: function(view, issue) {
     return view != media_router.MediaRouterView.ROUTE_DETAILS ||
-        (issue && issue.isBlocking);
+        (!!issue && issue.isBlocking);
   },
 
   /**
@@ -476,7 +476,7 @@ Polymer({
    */
   computeSinkListViewHidden_: function(view, issue) {
     return view != media_router.MediaRouterView.SINK_LIST ||
-        (issue && issue.isBlocking);
+        (!!issue && issue.isBlocking);
   },
 
   /**
