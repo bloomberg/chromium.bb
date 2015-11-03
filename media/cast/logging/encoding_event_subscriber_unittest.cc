@@ -43,15 +43,12 @@ class EncodingEventSubscriberTest : public ::testing::Test {
   void Init(EventMediaType event_media_type) {
     DCHECK(!event_subscriber_);
     event_subscriber_.reset(new EncodingEventSubscriber(event_media_type, 10));
-    cast_environment_->Logging()->AddRawEventSubscriber(
-        event_subscriber_.get());
+    cast_environment_->logger()->Subscribe(event_subscriber_.get());
   }
 
   ~EncodingEventSubscriberTest() override {
-    if (event_subscriber_) {
-      cast_environment_->Logging()->RemoveRawEventSubscriber(
-          event_subscriber_.get());
-    }
+    if (event_subscriber_)
+      cast_environment_->logger()->Unsubscribe(event_subscriber_.get());
   }
 
   void GetEventsAndReset() {
@@ -79,20 +76,30 @@ TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
   int width = 320;
   int height = 180;
   for (int i = 0; i < 11; i++) {
-    cast_environment_->Logging()->InsertFrameEvent(now,
-                                                   FRAME_CAPTURE_BEGIN,
-                                                   VIDEO_EVENT,
-                                                   i * 100,
-                                                   /*frame_id*/ 0);
-    cast_environment_->Logging()->InsertCapturedVideoFrameEvent(now,
-                                                                i * 100,
-                                                                width,
-                                                                height);
-    cast_environment_->Logging()->InsertFrameEvent(now,
-                                                   FRAME_DECODED,
-                                                   VIDEO_EVENT,
-                                                   i * 100,
-                                                   /*frame_id*/ 0);
+    scoped_ptr<FrameEvent> capture_begin_event(new FrameEvent());
+    capture_begin_event->timestamp = now;
+    capture_begin_event->type = FRAME_CAPTURE_BEGIN;
+    capture_begin_event->media_type = VIDEO_EVENT;
+    capture_begin_event->rtp_timestamp = i * 100;
+    cast_environment_->logger()->DispatchFrameEvent(capture_begin_event.Pass());
+
+    scoped_ptr<FrameEvent> capture_end_event(new FrameEvent());
+    capture_end_event->timestamp = now;
+    capture_end_event->type = FRAME_CAPTURE_END;
+    capture_end_event->media_type = VIDEO_EVENT;
+    capture_end_event->rtp_timestamp = i * 100;
+    capture_end_event->width = width;
+    capture_end_event->height = height;
+    cast_environment_->logger()->DispatchFrameEvent(capture_end_event.Pass());
+
+    scoped_ptr<FrameEvent> decoded_event(new FrameEvent());
+    decoded_event->timestamp = now;
+    decoded_event->type = FRAME_DECODED;
+    decoded_event->media_type = VIDEO_EVENT;
+    decoded_event->rtp_timestamp = i * 100;
+    decoded_event->frame_id = 0;
+    cast_environment_->logger()->DispatchFrameEvent(decoded_event.Pass());
+
     width += 160;
     height += 90;
   }
@@ -119,14 +126,16 @@ TEST_F(EncodingEventSubscriberTest, PacketEventTruncating) {
 
   // Entry with RTP timestamp 0 should get dropped.
   for (int i = 0; i < 11; i++) {
-    cast_environment_->Logging()->InsertPacketEvent(now,
-                                                    PACKET_RECEIVED,
-                                                    AUDIO_EVENT,
-                                                    /*rtp_timestamp*/ i * 100,
-                                                    /*frame_id*/ 0,
-                                                    /*packet_id*/ i,
-                                                    /*max_packet_id*/ 10,
-                                                    /*size*/ 123);
+    scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+    receive_event->timestamp = now;
+    receive_event->type = PACKET_RECEIVED;
+    receive_event->media_type = AUDIO_EVENT;
+    receive_event->rtp_timestamp = i * 100;
+    receive_event->frame_id = 0;
+    receive_event->packet_id = i;
+    receive_event->max_packet_id = 10;
+    receive_event->size = 123;
+    cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
   }
 
   GetEventsAndReset();
@@ -141,18 +150,22 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
 
   base::TimeTicks now(testing_clock_->NowTicks());
   RtpTimestamp rtp_timestamp = 100;
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_DECODED,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp,
-                                                 /*frame_id*/ 0);
+  scoped_ptr<FrameEvent> video_event(new FrameEvent());
+  video_event->timestamp = now;
+  video_event->type = FRAME_DECODED;
+  video_event->media_type = VIDEO_EVENT;
+  video_event->rtp_timestamp = rtp_timestamp;
+  video_event->frame_id = 0;
+  cast_environment_->logger()->DispatchFrameEvent(video_event.Pass());
 
   // This is an AUDIO_EVENT and shouldn't be processed by the subscriber.
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_DECODED,
-                                                 AUDIO_EVENT,
-                                                 rtp_timestamp,
-                                                 /*frame_id*/ 0);
+  scoped_ptr<FrameEvent> audio_event(new FrameEvent());
+  audio_event->timestamp = now;
+  audio_event->type = FRAME_DECODED;
+  audio_event->media_type = AUDIO_EVENT;
+  audio_event->rtp_timestamp = rtp_timestamp;
+  audio_event->frame_id = 0;
+  cast_environment_->logger()->DispatchFrameEvent(audio_event.Pass());
 
   GetEventsAndReset();
 
@@ -174,10 +187,13 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
   Init(VIDEO_EVENT);
   base::TimeTicks now(testing_clock_->NowTicks());
   RtpTimestamp rtp_timestamp = 100;
-  cast_environment_->Logging()->InsertFrameEvent(now, FRAME_DECODED,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp,
-                                                 /*frame_id*/ 0);
+  scoped_ptr<FrameEvent> decode_event(new FrameEvent());
+  decode_event->timestamp = now;
+  decode_event->type = FRAME_DECODED;
+  decode_event->media_type = VIDEO_EVENT;
+  decode_event->rtp_timestamp = rtp_timestamp;
+  decode_event->frame_id = 0;
+  cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
 
   GetEventsAndReset();
 
@@ -207,9 +223,14 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
   base::TimeTicks now(testing_clock_->NowTicks());
   RtpTimestamp rtp_timestamp = 100;
   int delay_ms = 100;
-  cast_environment_->Logging()->InsertFrameEventWithDelay(
-      now, FRAME_PLAYOUT, AUDIO_EVENT, rtp_timestamp,
-      /*frame_id*/ 0, base::TimeDelta::FromMilliseconds(delay_ms));
+  scoped_ptr<FrameEvent> playout_event(new FrameEvent());
+  playout_event->timestamp = now;
+  playout_event->type = FRAME_PLAYOUT;
+  playout_event->media_type = AUDIO_EVENT;
+  playout_event->rtp_timestamp = rtp_timestamp;
+  playout_event->frame_id = 0;
+  playout_event->delay_delta = base::TimeDelta::FromMilliseconds(delay_ms);
+  cast_environment_->logger()->DispatchFrameEvent(playout_event.Pass());
 
   GetEventsAndReset();
 
@@ -241,10 +262,18 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   int target_bitrate = 1024;
   double encoder_cpu_utilization = 0.90;
   double idealized_bitrate_utilization = 0.42;
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      now, FRAME_ENCODED, VIDEO_EVENT, rtp_timestamp,
-      /*frame_id*/ 0, size, key_frame, target_bitrate,
-      encoder_cpu_utilization, idealized_bitrate_utilization);
+  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  encode_event->timestamp = now;
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = VIDEO_EVENT;
+  encode_event->rtp_timestamp = rtp_timestamp;
+  encode_event->frame_id = 0;
+  encode_event->size = size;
+  encode_event->key_frame = key_frame;
+  encode_event->target_bitrate = target_bitrate;
+  encode_event->encoder_cpu_utilization = encoder_cpu_utilization;
+  encode_event->idealized_bitrate_utilization = idealized_bitrate_utilization;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
   GetEventsAndReset();
 
@@ -276,22 +305,37 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   RtpTimestamp rtp_timestamp1 = 100;
   RtpTimestamp rtp_timestamp2 = 200;
   base::TimeTicks now1(testing_clock_->NowTicks());
-  cast_environment_->Logging()->InsertFrameEventWithDelay(
-      now1, FRAME_PLAYOUT, AUDIO_EVENT, rtp_timestamp1,
-      /*frame_id*/ 0, /*delay*/ base::TimeDelta::FromMilliseconds(100));
+  scoped_ptr<FrameEvent> playout_event(new FrameEvent());
+  playout_event->timestamp = now1;
+  playout_event->type = FRAME_PLAYOUT;
+  playout_event->media_type = AUDIO_EVENT;
+  playout_event->rtp_timestamp = rtp_timestamp1;
+  playout_event->frame_id = 0;
+  playout_event->delay_delta = base::TimeDelta::FromMilliseconds(100);
+  cast_environment_->logger()->DispatchFrameEvent(playout_event.Pass());
 
-  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      now2, FRAME_ENCODED, AUDIO_EVENT, rtp_timestamp2,
-      /*frame_id*/ 0, /*size*/ 123, /* key_frame - unused */ false,
-      /*target_bitrate - unused*/ 0,
-      0.44, 0.55);
+  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  encode_event->timestamp = now2;
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = AUDIO_EVENT;
+  encode_event->rtp_timestamp = rtp_timestamp2;
+  encode_event->frame_id = 0;
+  encode_event->size = 123;
+  encode_event->encoder_cpu_utilization = 0.44;
+  encode_event->idealized_bitrate_utilization = 0.55;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
-  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now3(testing_clock_->NowTicks());
-  cast_environment_->Logging()->InsertFrameEvent(
-      now3, FRAME_DECODED, AUDIO_EVENT, rtp_timestamp1, /*frame_id*/ 0);
+  scoped_ptr<FrameEvent> decode_event(new FrameEvent());
+  decode_event->timestamp = now3;
+  decode_event->type = FRAME_DECODED;
+  decode_event->media_type = AUDIO_EVENT;
+  decode_event->rtp_timestamp = rtp_timestamp1;
+  decode_event->frame_id = 0;
+  cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
 
   GetEventsAndReset();
 
@@ -338,10 +382,16 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
   RtpTimestamp rtp_timestamp = 100;
   int packet_id = 2;
   int size = 100;
-  cast_environment_->Logging()->InsertPacketEvent(
-      now, PACKET_RECEIVED, AUDIO_EVENT,
-      rtp_timestamp, /*frame_id*/ 0, packet_id,
-      /*max_packet_id*/ 10, size);
+  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  receive_event->timestamp = now;
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = AUDIO_EVENT;
+  receive_event->rtp_timestamp = rtp_timestamp;
+  receive_event->frame_id = 0;
+  receive_event->packet_id = packet_id;
+  receive_event->max_packet_id = 10;
+  receive_event->size = size;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
 
   GetEventsAndReset();
 
@@ -374,25 +424,29 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   RtpTimestamp rtp_timestamp = 100;
   int packet_id = 2;
   int size = 100;
-  cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  PACKET_SENT_TO_NETWORK,
-                                                  VIDEO_EVENT,
-                                                  rtp_timestamp,
-                                                  /*frame_id*/ 0,
-                                                  packet_id,
-                                                  /*max_packet_id*/ 10,
-                                                  size);
+  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  send_event->timestamp = now1;
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp;
+  send_event->frame_id = 0;
+  send_event->packet_id = packet_id;
+  send_event->max_packet_id = 10;
+  send_event->size = size;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
-  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
-  cast_environment_->Logging()->InsertPacketEvent(now2,
-                                                  PACKET_RETRANSMITTED,
-                                                  VIDEO_EVENT,
-                                                  rtp_timestamp,
-                                                  /*frame_id*/ 0,
-                                                  packet_id,
-                                                  /*max_packet_id*/ 10,
-                                                  size);
+  scoped_ptr<PacketEvent> retransmit_event(new PacketEvent());
+  retransmit_event->timestamp = now2;
+  retransmit_event->type = PACKET_RETRANSMITTED;
+  retransmit_event->media_type = VIDEO_EVENT;
+  retransmit_event->rtp_timestamp = rtp_timestamp;
+  retransmit_event->frame_id = 0;
+  retransmit_event->packet_id = packet_id;
+  retransmit_event->max_packet_id = 10;
+  retransmit_event->size = size;
+  cast_environment_->logger()->DispatchPacketEvent(retransmit_event.Pass());
 
   GetEventsAndReset();
 
@@ -425,25 +479,29 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   int packet_id_1 = 2;
   int packet_id_2 = 3;
   int size = 100;
-  cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  PACKET_SENT_TO_NETWORK,
-                                                  VIDEO_EVENT,
-                                                  rtp_timestamp,
-                                                  /*frame_id*/ 0,
-                                                  packet_id_1,
-                                                  /*max_packet_id*/ 10,
-                                                  size);
+  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  send_event->timestamp = now1;
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp;
+  send_event->frame_id = 0;
+  send_event->packet_id = packet_id_1;
+  send_event->max_packet_id = 10;
+  send_event->size = size;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
-  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
-  cast_environment_->Logging()->InsertPacketEvent(now2,
-                                                  PACKET_RETRANSMITTED,
-                                                  VIDEO_EVENT,
-                                                  rtp_timestamp,
-                                                  /*frame_id*/ 0,
-                                                  packet_id_2,
-                                                  /*max_packet_id*/ 10,
-                                                  size);
+  scoped_ptr<PacketEvent> retransmit_event(new PacketEvent());
+  retransmit_event->timestamp = now2;
+  retransmit_event->type = PACKET_RETRANSMITTED;
+  retransmit_event->media_type = VIDEO_EVENT;
+  retransmit_event->rtp_timestamp = rtp_timestamp;
+  retransmit_event->frame_id = 0;
+  retransmit_event->packet_id = packet_id_2;
+  retransmit_event->max_packet_id = 10;
+  retransmit_event->size = size;
+  cast_environment_->logger()->DispatchPacketEvent(retransmit_event.Pass());
 
   GetEventsAndReset();
 
@@ -482,25 +540,29 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   int packet_id_1 = 2;
   int packet_id_2 = 3;
   int size = 100;
-  cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  PACKET_SENT_TO_NETWORK,
-                                                  VIDEO_EVENT,
-                                                  rtp_timestamp_1,
-                                                  /*frame_id*/ 0,
-                                                  packet_id_1,
-                                                  /*max_packet_id*/ 10,
-                                                  size);
+  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  send_event->timestamp = now1;
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp_1;
+  send_event->frame_id = 0;
+  send_event->packet_id = packet_id_1;
+  send_event->max_packet_id = 10;
+  send_event->size = size;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
-  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
-  cast_environment_->Logging()->InsertPacketEvent(now2,
-                                                  PACKET_RETRANSMITTED,
-                                                  VIDEO_EVENT,
-                                                  rtp_timestamp_2,
-                                                  /*frame_id*/ 0,
-                                                  packet_id_2,
-                                                  /*max_packet_id*/ 10,
-                                                  size);
+  scoped_ptr<PacketEvent> retransmit_event(new PacketEvent());
+  retransmit_event->timestamp = now2;
+  retransmit_event->type = PACKET_RETRANSMITTED;
+  retransmit_event->media_type = VIDEO_EVENT;
+  retransmit_event->rtp_timestamp = rtp_timestamp_2;
+  retransmit_event->frame_id = 0;
+  retransmit_event->packet_id = packet_id_2;
+  retransmit_event->max_packet_id = 10;
+  retransmit_event->size = size;
+  cast_environment_->logger()->DispatchPacketEvent(retransmit_event.Pass());
 
   GetEventsAndReset();
 
@@ -544,16 +606,21 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
   RtpTimestamp rtp_timestamp = 12345;
   base::TimeTicks now(testing_clock_->NowTicks());
 
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_CAPTURE_BEGIN,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp,
-                                                 /*frame_id*/ 0);
+  scoped_ptr<FrameEvent> capture_begin_event(new FrameEvent());
+  capture_begin_event->timestamp = now;
+  capture_begin_event->type = FRAME_CAPTURE_BEGIN;
+  capture_begin_event->media_type = VIDEO_EVENT;
+  capture_begin_event->rtp_timestamp = rtp_timestamp;
+  cast_environment_->logger()->DispatchFrameEvent(capture_begin_event.Pass());
 
-  cast_environment_->Logging()->InsertCapturedVideoFrameEvent(
-      now,
-      rtp_timestamp + 30,
-      1280, 720);
+  scoped_ptr<FrameEvent> capture_end_event(new FrameEvent());
+  capture_end_event->timestamp = now;
+  capture_end_event->type = FRAME_CAPTURE_END;
+  capture_end_event->media_type = VIDEO_EVENT;
+  capture_end_event->rtp_timestamp = rtp_timestamp + 30;
+  capture_end_event->width = 1280;
+  capture_end_event->height = 720;
+  cast_environment_->logger()->DispatchFrameEvent(capture_end_event.Pass());
 
   GetEventsAndReset();
 
@@ -570,11 +637,13 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
 
   rtp_timestamp = 67890;
 
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_CAPTURE_BEGIN,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp,
-                                                 /*frame_id*/ 0);
+  capture_begin_event.reset(new FrameEvent());
+  capture_begin_event->timestamp = now;
+  capture_begin_event->type = FRAME_CAPTURE_BEGIN;
+  capture_begin_event->media_type = VIDEO_EVENT;
+  capture_begin_event->rtp_timestamp = rtp_timestamp;
+  cast_environment_->logger()->DispatchFrameEvent(capture_begin_event.Pass());
+
   GetEventsAndReset();
 
   EXPECT_EQ(rtp_timestamp, first_rtp_timestamp_);
@@ -585,17 +654,22 @@ TEST_F(EncodingEventSubscriberTest, RelativeRtpTimestampWrapAround) {
   RtpTimestamp rtp_timestamp = 0xffffffff - 20;
   base::TimeTicks now(testing_clock_->NowTicks());
 
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_CAPTURE_BEGIN,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp,
-                                                 /*frame_id*/ 0);
+  scoped_ptr<FrameEvent> capture_begin_event(new FrameEvent());
+  capture_begin_event->timestamp = now;
+  capture_begin_event->type = FRAME_CAPTURE_BEGIN;
+  capture_begin_event->media_type = VIDEO_EVENT;
+  capture_begin_event->rtp_timestamp = rtp_timestamp;
+  cast_environment_->logger()->DispatchFrameEvent(capture_begin_event.Pass());
 
   // RtpTimestamp has now wrapped around.
-  cast_environment_->Logging()->InsertCapturedVideoFrameEvent(
-      now,
-      rtp_timestamp + 30,
-      1280, 720);
+  scoped_ptr<FrameEvent> capture_end_event(new FrameEvent());
+  capture_end_event->timestamp = now;
+  capture_end_event->type = FRAME_CAPTURE_END;
+  capture_end_event->media_type = VIDEO_EVENT;
+  capture_end_event->rtp_timestamp = rtp_timestamp + 30;
+  capture_end_event->width = 1280;
+  capture_end_event->height = 720;
+  cast_environment_->logger()->DispatchFrameEvent(capture_end_event.Pass());
 
   GetEventsAndReset();
 
@@ -614,12 +688,15 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   Init(VIDEO_EVENT);
   RtpTimestamp rtp_timestamp = 100;
   for (int i = 0; i < kMaxEventsPerProto + 1; i++) {
-    cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
-                                                   FRAME_ACK_RECEIVED,
-                                                   VIDEO_EVENT,
-                                                   rtp_timestamp,
-                                                   /*frame_id*/ 0);
-    testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
+    scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+    ack_event->timestamp = testing_clock_->NowTicks();
+    ack_event->type = FRAME_ACK_RECEIVED;
+    ack_event->media_type = VIDEO_EVENT;
+    ack_event->rtp_timestamp = rtp_timestamp;
+    ack_event->frame_id = 0;
+    cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
+
+    task_runner_->Sleep(base::TimeDelta::FromMilliseconds(30));
   }
 
   GetEventsAndReset();
@@ -633,16 +710,18 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   EXPECT_EQ(kMaxEventsPerProto, frame_event->event_type_size());
 
   for (int i = 0; i < kMaxPacketsPerFrame + 1; i++) {
-    cast_environment_->Logging()->InsertPacketEvent(
-        testing_clock_->NowTicks(),
-        PACKET_SENT_TO_NETWORK,
-        VIDEO_EVENT,
-        rtp_timestamp,
-        /*frame_id*/ 0,
-        i,
-        kMaxPacketsPerFrame,
-        123);
-    testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
+    scoped_ptr<PacketEvent> send_event(new PacketEvent());
+    send_event->timestamp = testing_clock_->NowTicks();
+    send_event->type = PACKET_SENT_TO_NETWORK;
+    send_event->media_type = VIDEO_EVENT;
+    send_event->rtp_timestamp = rtp_timestamp;
+    send_event->frame_id = 0;
+    send_event->packet_id = i;
+    send_event->max_packet_id = kMaxPacketsPerFrame;
+    send_event->size = 123;
+    cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
+
+    task_runner_->Sleep(base::TimeDelta::FromMilliseconds(30));
   }
 
   GetEventsAndReset();
@@ -662,16 +741,18 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   EXPECT_EQ(1, packet_event->base_packet_event_size());
 
   for (int j = 0; j < kMaxEventsPerProto + 1; j++) {
-    cast_environment_->Logging()->InsertPacketEvent(
-        testing_clock_->NowTicks(),
-        PACKET_SENT_TO_NETWORK,
-        VIDEO_EVENT,
-        rtp_timestamp,
-        /*frame_id*/ 0,
-        0,
-        0,
-        123);
-    testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
+    scoped_ptr<PacketEvent> send_event(new PacketEvent());
+    send_event->timestamp = testing_clock_->NowTicks();
+    send_event->type = PACKET_SENT_TO_NETWORK;
+    send_event->media_type = VIDEO_EVENT;
+    send_event->rtp_timestamp = rtp_timestamp;
+    send_event->frame_id = 0;
+    send_event->packet_id = 0;
+    send_event->max_packet_id = 0;
+    send_event->size = 123;
+    cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
+
+    task_runner_->Sleep(base::TimeDelta::FromMilliseconds(30));
   }
 
   GetEventsAndReset();

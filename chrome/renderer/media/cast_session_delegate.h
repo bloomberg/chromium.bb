@@ -62,9 +62,6 @@ class CastSessionDelegateBase {
       media::cast::CastTransportStatus status);
 
   virtual void ReceivePacket(scoped_ptr<media::cast::Packet> packet) = 0;
-  virtual void LogRawEvents(
-      const std::vector<media::cast::PacketEvent>& packet_events,
-      const std::vector<media::cast::FrameEvent>& frame_events) = 0;
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
@@ -136,10 +133,6 @@ class CastSessionDelegate : public CastSessionDelegateBase {
 
  private:
   void ReceivePacket(scoped_ptr<media::cast::Packet> packet) override;
-  // Adds logs collected from transport on browser side.
-  void LogRawEvents(const std::vector<media::cast::PacketEvent>& packet_events,
-                    const std::vector<media::cast::FrameEvent>& frame_events)
-      override;
 
   scoped_ptr<media::cast::CastSender> cast_sender_;
 

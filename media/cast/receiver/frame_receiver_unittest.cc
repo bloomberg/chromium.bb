@@ -154,7 +154,7 @@ TEST_F(FrameReceiverTest, RejectsUnparsablePackets) {
   CreateFrameReceiverOfVideo();
 
   SimpleEventSubscriber event_subscriber;
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Subscribe(&event_subscriber);
 
   const bool success = receiver_->ProcessPacket(
       scoped_ptr<Packet>(new Packet(kPacketSize, 0xff)).Pass());
@@ -164,14 +164,14 @@ TEST_F(FrameReceiverTest, RejectsUnparsablePackets) {
   std::vector<FrameEvent> frame_events;
   event_subscriber.GetFrameEventsAndReset(&frame_events);
   EXPECT_TRUE(frame_events.empty());
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Unsubscribe(&event_subscriber);
 }
 
 TEST_F(FrameReceiverTest, ReceivesOneFrame) {
   CreateFrameReceiverOfAudio();
 
   SimpleEventSubscriber event_subscriber;
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Subscribe(&event_subscriber);
 
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
       .WillRepeatedly(testing::Return());
@@ -205,14 +205,14 @@ TEST_F(FrameReceiverTest, ReceivesOneFrame) {
   EXPECT_EQ(AUDIO_EVENT, frame_events.begin()->media_type);
   EXPECT_EQ(rtp_header_.frame_id, frame_events.begin()->frame_id);
   EXPECT_EQ(rtp_header_.rtp_timestamp, frame_events.begin()->rtp_timestamp);
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Unsubscribe(&event_subscriber);
 }
 
 TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   CreateFrameReceiverOfAudio();
 
   SimpleEventSubscriber event_subscriber;
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Subscribe(&event_subscriber);
 
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
       .WillRepeatedly(testing::Return());
@@ -308,14 +308,14 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
     EXPECT_EQ(frame_offset * rtp_advance_per_frame,
               frame_events[i].rtp_timestamp);
   }
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Unsubscribe(&event_subscriber);
 }
 
 TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   CreateFrameReceiverOfVideo();
 
   SimpleEventSubscriber event_subscriber;
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Subscribe(&event_subscriber);
 
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
       .WillRepeatedly(testing::Return());
@@ -414,7 +414,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
     EXPECT_EQ(frame_offset * rtp_advance_per_frame,
               frame_events[i].rtp_timestamp);
   }
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Unsubscribe(&event_subscriber);
 }
 
 }  // namespace cast

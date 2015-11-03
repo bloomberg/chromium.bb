@@ -8,8 +8,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/logging/logging_impl.h"
-#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtp/packet_storage.h"
 #include "media/cast/net/rtp/rtp_parser.h"
@@ -114,11 +112,8 @@ class RtpPacketizerTest : public ::testing::Test {
     config_.payload_type = kPayload;
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
-    pacer_.reset(new PacedSender(kTargetBurstSize,
-                                 kMaxBurstSize,
-                                 &testing_clock_,
-                                 &logging_,
-                                 transport_.get(),
+    pacer_.reset(new PacedSender(kTargetBurstSize, kMaxBurstSize,
+                                 &testing_clock_, nullptr, transport_.get(),
                                  task_runner_));
     pacer_->RegisterVideoSsrc(config_.ssrc);
     rtp_packetizer_.reset(new RtpPacketizer(
@@ -144,7 +139,6 @@ class RtpPacketizerTest : public ::testing::Test {
   PacketStorage packet_storage_;
   RtpPacketizerConfig config_;
   scoped_ptr<TestRtpPacketTransport> transport_;
-  LoggingImpl logging_;
   scoped_ptr<PacedSender> pacer_;
   scoped_ptr<RtpPacketizer> rtp_packetizer_;
 

@@ -25,15 +25,15 @@ class ReceiverTimeOffsetEstimatorImplTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_)) {
-    cast_environment_->Logging()->AddRawEventSubscriber(&estimator_);
+    cast_environment_->logger()->Subscribe(&estimator_);
   }
 
   ~ReceiverTimeOffsetEstimatorImplTest() override {
-    cast_environment_->Logging()->RemoveRawEventSubscriber(&estimator_);
+    cast_environment_->logger()->Unsubscribe(&estimator_);
   }
 
   void AdvanceClocks(base::TimeDelta time) {
-    sender_clock_->Advance(time);
+    task_runner_->Sleep(time);
     receiver_clock_.Advance(time);
   }
 
@@ -63,44 +63,62 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      sender_clock_->NowTicks(),
-      FRAME_ENCODED, VIDEO_EVENT,
-      rtp_timestamp,
-      frame_id,
-      1234,
-      true,
-      5678,
-      9.10,
-      11.12);
+  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  encode_event->timestamp = sender_clock_->NowTicks();
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = VIDEO_EVENT;
+  encode_event->rtp_timestamp = rtp_timestamp;
+  encode_event->frame_id = frame_id;
+  encode_event->size = 1234;
+  encode_event->key_frame = true;
+  encode_event->target_bitrate = 5678;
+  encode_event->encoder_cpu_utilization = 9.10;
+  encode_event->idealized_bitrate_utilization = 11.12;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      sender_clock_->NowTicks(),
-      PACKET_SENT_TO_NETWORK, VIDEO_EVENT,
-      rtp_timestamp,
-      frame_id,
-      56, 78, 1500);
+  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  send_event->timestamp = sender_clock_->NowTicks();
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp;
+  send_event->frame_id = frame_id;
+  send_event->packet_id = 56;
+  send_event->max_packet_id = 78;
+  send_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(10));
-  cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
-      rtp_timestamp, frame_id);
+  scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
+  ack_sent_event->timestamp = receiver_clock_.NowTicks();
+  ack_sent_event->type = FRAME_ACK_SENT;
+  ack_sent_event->media_type = VIDEO_EVENT;
+  ack_sent_event->rtp_timestamp = rtp_timestamp;
+  ack_sent_event->frame_id = frame_id;
+  cast_environment_->logger()->DispatchFrameEvent(ack_sent_event.Pass());
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      receiver_clock_.NowTicks(),
-      PACKET_RECEIVED, VIDEO_EVENT,
-      rtp_timestamp,
-      frame_id,
-      56, 78, 1500);
+  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  receive_event->timestamp = receiver_clock_.NowTicks();
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = VIDEO_EVENT;
+  receive_event->rtp_timestamp = rtp_timestamp;
+  receive_event->frame_id = frame_id;
+  receive_event->packet_id = 56;
+  receive_event->max_packet_id = 78;
+  receive_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
 
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(30));
-  cast_environment_->Logging()->InsertFrameEvent(
-      sender_clock_->NowTicks(), FRAME_ACK_RECEIVED, VIDEO_EVENT,
-      rtp_timestamp, frame_id);
+  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  ack_event->timestamp = sender_clock_->NowTicks();
+  ack_event->type = FRAME_ACK_RECEIVED;
+  ack_event->media_type = VIDEO_EVENT;
+  ack_event->rtp_timestamp = rtp_timestamp;
+  ack_event->frame_id = frame_id;
+  cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
@@ -112,7 +130,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
   EXPECT_LE(true_offset_ms, upper_bound_ms);
 }
 
-// Same scenario as above, but event C arrives before event B. It doens't mean
+// Same scenario as above, but event C arrives before event B. It doesn't mean
 // event C occurred before event B.
 TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   int64 true_offset_ms = 100;
@@ -128,23 +146,29 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      sender_clock_->NowTicks(),
-      FRAME_ENCODED, VIDEO_EVENT,
-      rtp_timestamp,
-      frame_id,
-      1234,
-      true,
-      5678,
-      9.10,
-      11.12);
+  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  encode_event->timestamp = sender_clock_->NowTicks();
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = VIDEO_EVENT;
+  encode_event->rtp_timestamp = rtp_timestamp;
+  encode_event->frame_id = frame_id;
+  encode_event->size = 1234;
+  encode_event->key_frame = true;
+  encode_event->target_bitrate = 5678;
+  encode_event->encoder_cpu_utilization = 9.10;
+  encode_event->idealized_bitrate_utilization = 11.12;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      sender_clock_->NowTicks(),
-      PACKET_SENT_TO_NETWORK, VIDEO_EVENT,
-      rtp_timestamp,
-      frame_id,
-      56, 78, 1500);
+  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  send_event->timestamp = sender_clock_->NowTicks();
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp;
+  send_event->frame_id = frame_id;
+  send_event->packet_id = 56;
+  send_event->max_packet_id = 78;
+  send_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
@@ -153,20 +177,34 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   AdvanceClocks(base::TimeDelta::FromMilliseconds(30));
   base::TimeTicks event_c_time = sender_clock_->NowTicks();
 
-  cast_environment_->Logging()->InsertFrameEvent(
-      event_c_time, FRAME_ACK_RECEIVED, VIDEO_EVENT, rtp_timestamp, frame_id);
+  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  ack_event->timestamp = event_c_time;
+  ack_event->type = FRAME_ACK_RECEIVED;
+  ack_event->media_type = VIDEO_EVENT;
+  ack_event->rtp_timestamp = rtp_timestamp;
+  ack_event->frame_id = frame_id;
+  cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
 
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      event_b_time,
-      PACKET_RECEIVED, VIDEO_EVENT,
-      rtp_timestamp,
-      frame_id,
-      56, 78, 1500);
+  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  receive_event->timestamp = event_b_time;
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = VIDEO_EVENT;
+  receive_event->rtp_timestamp = rtp_timestamp;
+  receive_event->frame_id = frame_id;
+  receive_event->packet_id = 56;
+  receive_event->max_packet_id = 78;
+  receive_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
 
-  cast_environment_->Logging()->InsertFrameEvent(
-      event_b_time, FRAME_ACK_SENT, VIDEO_EVENT, rtp_timestamp, frame_id);
+  scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
+  ack_sent_event->timestamp = event_b_time;
+  ack_sent_event->type = FRAME_ACK_SENT;
+  ack_sent_event->media_type = VIDEO_EVENT;
+  ack_sent_event->rtp_timestamp = rtp_timestamp;
+  ack_sent_event->frame_id = frame_id;
+  cast_environment_->logger()->DispatchFrameEvent(ack_sent_event.Pass());
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
@@ -198,111 +236,155 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   // Bound should end up at [95, 103]
   // Events times in chronological order: 20, 30 x2, 50, 55, 60, 77, 80, 110
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      sender_clock_->NowTicks(),
-      FRAME_ENCODED, VIDEO_EVENT,
-      rtp_timestamp_a,
-      frame_id_a,
-      1234,
-      true,
-      5678,
-      9.10,
-      11.12);
+  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  encode_event->timestamp = sender_clock_->NowTicks();
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = VIDEO_EVENT;
+  encode_event->rtp_timestamp = rtp_timestamp_a;
+  encode_event->frame_id = frame_id_a;
+  encode_event->size = 1234;
+  encode_event->key_frame = true;
+  encode_event->target_bitrate = 5678;
+  encode_event->encoder_cpu_utilization = 9.10;
+  encode_event->idealized_bitrate_utilization = 11.12;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      sender_clock_->NowTicks(),
-      PACKET_SENT_TO_NETWORK, VIDEO_EVENT,
-      rtp_timestamp_a,
-      frame_id_a,
-      56, 78, 1500);
+  scoped_ptr<PacketEvent> send_event(new PacketEvent());
+  send_event->timestamp = sender_clock_->NowTicks();
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp_a;
+  send_event->frame_id = frame_id_a;
+  send_event->packet_id = 56;
+  send_event->max_packet_id = 78;
+  send_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(10));
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      sender_clock_->NowTicks(),
-      FRAME_ENCODED, VIDEO_EVENT,
-      rtp_timestamp_b,
-      frame_id_b,
-      1234,
-      true,
-      5678,
-      9.10,
-      11.12);
+  encode_event.reset(new FrameEvent());
+  encode_event->timestamp = sender_clock_->NowTicks();
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = VIDEO_EVENT;
+  encode_event->rtp_timestamp = rtp_timestamp_b;
+  encode_event->frame_id = frame_id_b;
+  encode_event->size = 1234;
+  encode_event->key_frame = true;
+  encode_event->target_bitrate = 5678;
+  encode_event->encoder_cpu_utilization = 9.10;
+  encode_event->idealized_bitrate_utilization = 11.12;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      sender_clock_->NowTicks(),
-      PACKET_SENT_TO_NETWORK, VIDEO_EVENT,
-      rtp_timestamp_b,
-      frame_id_b,
-      56, 78, 1500);
+  send_event.reset(new PacketEvent());
+  send_event->timestamp = sender_clock_->NowTicks();
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp_b;
+  send_event->frame_id = frame_id_b;
+  send_event->packet_id = 56;
+  send_event->max_packet_id = 78;
+  send_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
-  cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
-      rtp_timestamp_a, frame_id_a);
+  scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
+  ack_sent_event->timestamp = receiver_clock_.NowTicks();
+  ack_sent_event->type = FRAME_ACK_SENT;
+  ack_sent_event->media_type = VIDEO_EVENT;
+  ack_sent_event->rtp_timestamp = rtp_timestamp_a;
+  ack_sent_event->frame_id = frame_id_a;
+  cast_environment_->logger()->DispatchFrameEvent(ack_sent_event.Pass());
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      receiver_clock_.NowTicks(),
-      PACKET_RECEIVED, VIDEO_EVENT,
-      rtp_timestamp_b,
-      frame_id_b,
-      56, 78, 1500);
+  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  receive_event->timestamp = receiver_clock_.NowTicks();
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = VIDEO_EVENT;
+  receive_event->rtp_timestamp = rtp_timestamp_b;
+  receive_event->frame_id = frame_id_b;
+  receive_event->packet_id = 56;
+  receive_event->max_packet_id = 78;
+  receive_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
 
-  cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
-      rtp_timestamp_b, frame_id_b);
+  ack_sent_event.reset(new FrameEvent());
+  ack_sent_event->timestamp = receiver_clock_.NowTicks();
+  ack_sent_event->type = FRAME_ACK_SENT;
+  ack_sent_event->media_type = VIDEO_EVENT;
+  ack_sent_event->rtp_timestamp = rtp_timestamp_b;
+  ack_sent_event->frame_id = frame_id_b;
+  cast_environment_->logger()->DispatchFrameEvent(ack_sent_event.Pass());
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(5));
-  cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                 FRAME_ACK_RECEIVED,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp_b,
-                                                 frame_id_b);
+  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  ack_event->timestamp = sender_clock_->NowTicks();
+  ack_event->type = FRAME_ACK_RECEIVED;
+  ack_event->media_type = VIDEO_EVENT;
+  ack_event->rtp_timestamp = rtp_timestamp_b;
+  ack_event->frame_id = frame_id_b;
+  cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(5));
-  cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                 FRAME_ACK_RECEIVED,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp_a,
-                                                 frame_id_a);
+  ack_event.reset(new FrameEvent());
+  ack_event->timestamp = sender_clock_->NowTicks();
+  ack_event->type = FRAME_ACK_RECEIVED;
+  ack_event->media_type = VIDEO_EVENT;
+  ack_event->rtp_timestamp = rtp_timestamp_a;
+  ack_event->frame_id = frame_id_a;
+  cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(17));
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      sender_clock_->NowTicks(),
-      FRAME_ENCODED, VIDEO_EVENT,
-      rtp_timestamp_c,
-      frame_id_c,
-      1234,
-      true,
-      5678,
-      9.10,
-      11.12);
+  encode_event.reset(new FrameEvent());
+  encode_event->timestamp = sender_clock_->NowTicks();
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = VIDEO_EVENT;
+  encode_event->rtp_timestamp = rtp_timestamp_c;
+  encode_event->frame_id = frame_id_c;
+  encode_event->size = 1234;
+  encode_event->key_frame = true;
+  encode_event->target_bitrate = 5678;
+  encode_event->encoder_cpu_utilization = 9.10;
+  encode_event->idealized_bitrate_utilization = 11.12;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
-  cast_environment_->Logging()->InsertPacketEvent(
-      sender_clock_->NowTicks(),
-      PACKET_SENT_TO_NETWORK, VIDEO_EVENT,
-      rtp_timestamp_c,
-      frame_id_c,
-      56, 78, 1500);
+  send_event.reset(new PacketEvent());
+  send_event->timestamp = sender_clock_->NowTicks();
+  send_event->type = PACKET_SENT_TO_NETWORK;
+  send_event->media_type = VIDEO_EVENT;
+  send_event->rtp_timestamp = rtp_timestamp_c;
+  send_event->frame_id = frame_id_c;
+  send_event->packet_id = 56;
+  send_event->max_packet_id = 78;
+  send_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(send_event.Pass());
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(3));
-  cast_environment_->Logging()->InsertPacketEvent(
-      receiver_clock_.NowTicks(),
-      PACKET_RECEIVED, VIDEO_EVENT,
-      rtp_timestamp_c,
-      frame_id_c,
-      56, 78, 1500);
+  receive_event.reset(new PacketEvent());
+  receive_event->timestamp = receiver_clock_.NowTicks();
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = VIDEO_EVENT;
+  receive_event->rtp_timestamp = rtp_timestamp_c;
+  receive_event->frame_id = frame_id_c;
+  receive_event->packet_id = 56;
+  receive_event->max_packet_id = 78;
+  receive_event->size = 1500;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
 
-  cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
-      rtp_timestamp_c, frame_id_c);
+  ack_sent_event.reset(new FrameEvent());
+  ack_sent_event->timestamp = receiver_clock_.NowTicks();
+  ack_sent_event->type = FRAME_ACK_SENT;
+  ack_sent_event->media_type = VIDEO_EVENT;
+  ack_sent_event->rtp_timestamp = rtp_timestamp_c;
+  ack_sent_event->frame_id = frame_id_c;
+  cast_environment_->logger()->DispatchFrameEvent(ack_sent_event.Pass());
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(30));
-  cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                 FRAME_ACK_RECEIVED,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp_c,
-                                                 frame_id_c);
+  ack_event.reset(new FrameEvent());
+  ack_event->timestamp = sender_clock_->NowTicks();
+  ack_event->type = FRAME_ACK_RECEIVED;
+  ack_event->media_type = VIDEO_EVENT;
+  ack_event->rtp_timestamp = rtp_timestamp_c;
+  ack_event->frame_id = frame_id_c;
+  cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
   int64 lower_bound_ms = lower_bound.InMilliseconds();

@@ -11,8 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "media/cast/logging/logging_defines.h"
-#include "media/cast/logging/logging_impl.h"
+#include "media/cast/logging/log_event_dispatcher.h"
 
 namespace media {
 namespace cast {
@@ -56,10 +55,8 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   // All of the media::cast implementation must use this TickClock.
   base::TickClock* Clock() const { return clock_.get(); }
 
-  // Logging is not thread safe. Its methods should always be called from the
-  // main thread.
-  // TODO(hubbe): Logging should be a thread-safe interface.
-  LoggingImpl* Logging() const { return logging_.get(); }
+  // Thread-safe log event dispatcher.
+  LogEventDispatcher* logger() { return &logger_; }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       ThreadId identifier) const;
@@ -76,7 +73,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy_;
   scoped_ptr<base::TickClock> clock_;
-  scoped_ptr<LoggingImpl> logging_;
+  LogEventDispatcher logger_;
 
  private:
   friend class base::RefCountedThreadSafe<CastEnvironment>;

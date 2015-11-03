@@ -13,12 +13,6 @@ CastReceiverSessionDelegate::CastReceiverSessionDelegate()
 }
 CastReceiverSessionDelegate::~CastReceiverSessionDelegate() {}
 
-void CastReceiverSessionDelegate::LogRawEvents(
-    const std::vector<media::cast::PacketEvent>& packet_events,
-    const std::vector<media::cast::FrameEvent>& frame_events) {
-  NOTREACHED();
-}
-
 void CastReceiverSessionDelegate::Start(
     const media::cast::FrameReceiverConfig& audio_config,
     const media::cast::FrameReceiverConfig& video_config,

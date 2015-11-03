@@ -25,11 +25,11 @@ class SimpleEventSubscriberTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_)) {
-    cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
+    cast_environment_->logger()->Subscribe(&event_subscriber_);
   }
 
   ~SimpleEventSubscriberTest() override {
-    cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
+    cast_environment_->logger()->Unsubscribe(&event_subscriber_);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -40,32 +40,58 @@ class SimpleEventSubscriberTest : public ::testing::Test {
 
 TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   // Log some frame events.
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      testing_clock_->NowTicks(), FRAME_ENCODED, AUDIO_EVENT,
-      /*rtp_timestamp*/ 100u, /*frame_id*/ 0u, /*frame_size*/ 123,
-      /*key_frame*/ false, 0, 0.01, 0.02);
-  cast_environment_->Logging()->InsertFrameEventWithDelay(
-      testing_clock_->NowTicks(), FRAME_PLAYOUT, AUDIO_EVENT,
-      /*rtp_timestamp*/ 100u,
-      /*frame_id*/ 0u, /*delay*/ base::TimeDelta::FromMilliseconds(100));
-  cast_environment_->Logging()->InsertFrameEvent(
-      testing_clock_->NowTicks(), FRAME_DECODED, AUDIO_EVENT,
-      /*rtp_timestamp*/ 200u,
-      /*frame_id*/ 0u);
+  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  encode_event->timestamp = testing_clock_->NowTicks();
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = AUDIO_EVENT;
+  encode_event->rtp_timestamp = 100u;
+  encode_event->frame_id = 0u;
+  encode_event->size = 1234;
+  encode_event->key_frame = true;
+  encode_event->target_bitrate = 128u;
+  encode_event->encoder_cpu_utilization = 0.01;
+  encode_event->idealized_bitrate_utilization = 0.02;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
+
+  scoped_ptr<FrameEvent> playout_event(new FrameEvent());
+  playout_event->timestamp = testing_clock_->NowTicks();
+  playout_event->type = FRAME_PLAYOUT;
+  playout_event->media_type = AUDIO_EVENT;
+  playout_event->rtp_timestamp = 100u;
+  playout_event->frame_id = 0u;
+  playout_event->delay_delta = base::TimeDelta::FromMilliseconds(100);
+  cast_environment_->logger()->DispatchFrameEvent(playout_event.Pass());
+
+  scoped_ptr<FrameEvent> decode_event(new FrameEvent());
+  decode_event->timestamp = testing_clock_->NowTicks();
+  decode_event->type = FRAME_DECODED;
+  decode_event->media_type = AUDIO_EVENT;
+  decode_event->rtp_timestamp = 200u;
+  decode_event->frame_id = 0u;
+  cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
 
   // Log some packet events.
-  cast_environment_->Logging()->InsertPacketEvent(
-      testing_clock_->NowTicks(), PACKET_RECEIVED, AUDIO_EVENT,
-      /*rtp_timestamp*/ 200u,
-      /*frame_id*/ 0u, /*packet_id*/ 1u, /*max_packet_id*/ 5u, /*size*/ 100u);
-  cast_environment_->Logging()->InsertPacketEvent(
-      testing_clock_->NowTicks(), FRAME_DECODED, VIDEO_EVENT,
-      /*rtp_timestamp*/ 200u, /*frame_id*/ 0u, /*packet_id*/ 1u,
-      /*max_packet_id*/ 5u, /*size*/ 100u);
-  cast_environment_->Logging()->InsertPacketEvent(
-      testing_clock_->NowTicks(), FRAME_DECODED, VIDEO_EVENT,
-      /*rtp_timestamp*/ 300u, /*frame_id*/ 0u, /*packet_id*/ 1u,
-      /*max_packet_id*/ 5u, /*size*/ 100u);
+  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  receive_event->timestamp = testing_clock_->NowTicks();
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = AUDIO_EVENT;
+  receive_event->rtp_timestamp = 200u;
+  receive_event->frame_id = 0u;
+  receive_event->packet_id = 1u;
+  receive_event->max_packet_id = 5u;
+  receive_event->size = 100u;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
+
+  receive_event.reset(new PacketEvent());
+  receive_event->timestamp = testing_clock_->NowTicks();
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = VIDEO_EVENT;
+  receive_event->rtp_timestamp = 200u;
+  receive_event->frame_id = 0u;
+  receive_event->packet_id = 1u;
+  receive_event->max_packet_id = 10u;
+  receive_event->size = 1024u;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
 
   std::vector<FrameEvent> frame_events;
   event_subscriber_.GetFrameEventsAndReset(&frame_events);
@@ -73,7 +99,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
 
   std::vector<PacketEvent> packet_events;
   event_subscriber_.GetPacketEventsAndReset(&packet_events);
-  EXPECT_EQ(3u, packet_events.size());
+  EXPECT_EQ(2u, packet_events.size());
 
   // Calling this function again should result in empty vector because no events
   // were logged since last call.

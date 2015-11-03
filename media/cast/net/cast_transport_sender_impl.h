@@ -25,6 +25,7 @@
 #define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
 
 #include <set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -35,7 +36,6 @@
 #include "base/time/time.h"
 #include "media/cast/common/transport_encryption_handler.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/pacing/paced_sender.h"
@@ -136,7 +136,7 @@ class CastTransportSenderImpl : public CastTransportSender {
                      const DedupInfo& dedup_info);
 
   // If |raw_events_callback_| is non-null, calls it with events collected
-  // by |event_subscriber_| since last call.
+  // in |recent_frame_events_| and |recent_packet_events_| since last call.
   void SendRawEvents();
 
   // Called when a packet is received.
@@ -155,7 +155,10 @@ class CastTransportSenderImpl : public CastTransportSender {
   CastTransportStatusCallback status_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
 
-  LoggingImpl logging_;
+  // FrameEvents and PacketEvents pending delivery via |raw_events_callback_|.
+  // Do not add elements to these when |raw_events_callback_.is_null()|.
+  std::vector<FrameEvent> recent_frame_events_;
+  std::vector<PacketEvent> recent_packet_events_;
 
   // Interface to a UDP socket.
   scoped_ptr<UdpTransport> transport_;
@@ -177,9 +180,6 @@ class CastTransportSenderImpl : public CastTransportSender {
   // the damage that could be caused by a compromised renderer process.
   TransportEncryptionHandler audio_encryptor_;
   TransportEncryptionHandler video_encryptor_;
-
-  // This is non-null iff |raw_events_callback_| is non-null.
-  scoped_ptr<SimpleEventSubscriber> event_subscriber_;
 
   BulkRawEventsCallback raw_events_callback_;
   base::TimeDelta raw_events_callback_interval_;

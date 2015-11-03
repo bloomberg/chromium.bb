@@ -142,7 +142,19 @@ void CastTransportSenderIPC::OnNotifyStatusChange(
 void CastTransportSenderIPC::OnRawEvents(
     const std::vector<media::cast::PacketEvent>& packet_events,
     const std::vector<media::cast::FrameEvent>& frame_events) {
-  raw_events_callback_.Run(packet_events, frame_events);
+  // Note: Casting away const to avoid having to copy all the data elements.  As
+  // the only consumer of this data in the IPC message, mutating the inputs
+  // should be acceptable.  Just nod and blame the interface we were given here.
+  scoped_ptr<std::vector<media::cast::FrameEvent>> taken_frame_events(
+      new std::vector<media::cast::FrameEvent>());
+  taken_frame_events->swap(
+      const_cast<std::vector<media::cast::FrameEvent>&>(frame_events));
+  scoped_ptr<std::vector<media::cast::PacketEvent>> taken_packet_events(
+      new std::vector<media::cast::PacketEvent>());
+  taken_packet_events->swap(
+      const_cast<std::vector<media::cast::PacketEvent>&>(packet_events));
+  raw_events_callback_.Run(taken_frame_events.Pass(),
+                           taken_packet_events.Pass());
 }
 
 void CastTransportSenderIPC::OnRtt(uint32 ssrc, base::TimeDelta rtt) {

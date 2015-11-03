@@ -19,9 +19,6 @@ class CastReceiverSessionDelegate : public CastSessionDelegateBase {
   ~CastReceiverSessionDelegate() override;
 
   void ReceivePacket(scoped_ptr<media::cast::Packet> packet) override;
-  void LogRawEvents(
-      const std::vector<media::cast::PacketEvent>& packet_events,
-      const std::vector<media::cast::FrameEvent>& frame_events) override;
 
   void Start(const media::cast::FrameReceiverConfig& audio_config,
              const media::cast::FrameReceiverConfig& video_config,

@@ -30,16 +30,6 @@ namespace {
 enum { MAX_H264_QUANTIZER = 51 };
 static const size_t kOutputBufferCount = 3;
 
-void LogFrameEncodedEvent(
-    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
-    base::TimeTicks event_time,
-    media::cast::RtpTimestamp rtp_timestamp,
-    uint32 frame_id) {
-  cast_environment->Logging()->InsertFrameEvent(
-      event_time, media::cast::FRAME_ENCODED, media::cast::VIDEO_EVENT,
-      rtp_timestamp, frame_id);
-}
-
 }  // namespace
 
 namespace media {
@@ -331,15 +321,8 @@ class ExternalVideoEncoder::VEAClientImpl
         base::debug::ClearCrashKey(kZeroEncodeDetails);
       }
 
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN,
-          FROM_HERE,
-          base::Bind(&LogFrameEncodedEvent,
-                     cast_environment_,
-                     cast_environment_->Clock()->NowTicks(),
-                     encoded_frame->rtp_timestamp,
-                     encoded_frame->frame_id));
-
+      encoded_frame->encode_completion_time =
+          cast_environment_->Clock()->NowTicks();
       cast_environment_->PostTask(
           CastEnvironment::MAIN,
           FROM_HERE,

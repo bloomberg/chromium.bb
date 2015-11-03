@@ -61,6 +61,15 @@ class VideoDecoder::ImplBase
     const scoped_refptr<VideoFrame> decoded_frame = Decode(
         encoded_frame->mutable_bytes(),
         static_cast<int>(encoded_frame->data.size()));
+
+    scoped_ptr<FrameEvent> decode_event(new FrameEvent());
+    decode_event->timestamp = cast_environment_->Clock()->NowTicks();
+    decode_event->type = FRAME_DECODED;
+    decode_event->media_type = VIDEO_EVENT;
+    decode_event->rtp_timestamp = encoded_frame->rtp_timestamp;
+    decode_event->frame_id = encoded_frame->frame_id;
+    cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
+
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
         FROM_HERE,

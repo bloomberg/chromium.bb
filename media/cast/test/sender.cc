@@ -70,37 +70,6 @@ void UpdateCastTransportStatus(
   VLOG(1) << "Transport status: " << status;
 }
 
-void LogRawEvents(
-    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
-    const std::vector<media::cast::PacketEvent>& packet_events,
-    const std::vector<media::cast::FrameEvent>& frame_events) {
-  VLOG(1) << "Got packet events from transport, size: " << packet_events.size();
-  for (std::vector<media::cast::PacketEvent>::const_iterator it =
-           packet_events.begin();
-       it != packet_events.end();
-       ++it) {
-    cast_environment->Logging()->InsertPacketEvent(it->timestamp,
-                                                   it->type,
-                                                   it->media_type,
-                                                   it->rtp_timestamp,
-                                                   it->frame_id,
-                                                   it->packet_id,
-                                                   it->max_packet_id,
-                                                   it->size);
-  }
-  VLOG(1) << "Got frame events from transport, size: " << frame_events.size();
-  for (std::vector<media::cast::FrameEvent>::const_iterator it =
-           frame_events.begin();
-       it != frame_events.end();
-       ++it) {
-    cast_environment->Logging()->InsertFrameEvent(it->timestamp,
-                                                  it->type,
-                                                  it->media_type,
-                                                  it->rtp_timestamp,
-                                                  it->frame_id);
-  }
-}
-
 void QuitLoopOnInitializationResult(media::cast::OperationalStatus result) {
   CHECK(result == media::cast::STATUS_INITIALIZED)
       << "Cast sender uninitialized";
@@ -146,10 +115,8 @@ void WriteLogsToFileAndDestroySubscribers(
     scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber,
     base::ScopedFILE video_log_file,
     base::ScopedFILE audio_log_file) {
-  cast_environment->Logging()->RemoveRawEventSubscriber(
-      video_event_subscriber.get());
-  cast_environment->Logging()->RemoveRawEventSubscriber(
-      audio_event_subscriber.get());
+  cast_environment->logger()->Unsubscribe(video_event_subscriber.get());
+  cast_environment->logger()->Unsubscribe(audio_event_subscriber.get());
 
   VLOG(0) << "Dumping logging data for video stream.";
   media::cast::proto::LogMetadata log_metadata;
@@ -175,22 +142,20 @@ void WriteLogsToFileAndDestroySubscribers(
 
 void WriteStatsAndDestroySubscribers(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
-    scoped_ptr<media::cast::StatsEventSubscriber> video_event_subscriber,
-    scoped_ptr<media::cast::StatsEventSubscriber> audio_event_subscriber,
+    scoped_ptr<media::cast::StatsEventSubscriber> video_stats_subscriber,
+    scoped_ptr<media::cast::StatsEventSubscriber> audio_stats_subscriber,
     scoped_ptr<media::cast::ReceiverTimeOffsetEstimatorImpl> estimator) {
-  cast_environment->Logging()->RemoveRawEventSubscriber(
-      video_event_subscriber.get());
-  cast_environment->Logging()->RemoveRawEventSubscriber(
-      audio_event_subscriber.get());
-  cast_environment->Logging()->RemoveRawEventSubscriber(estimator.get());
+  cast_environment->logger()->Unsubscribe(video_stats_subscriber.get());
+  cast_environment->logger()->Unsubscribe(audio_stats_subscriber.get());
+  cast_environment->logger()->Unsubscribe(estimator.get());
 
-  scoped_ptr<base::DictionaryValue> stats = video_event_subscriber->GetStats();
+  scoped_ptr<base::DictionaryValue> stats = video_stats_subscriber->GetStats();
   std::string json;
   base::JSONWriter::WriteWithOptions(
       *stats, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   VLOG(0) << "Video stats: " << json;
 
-  stats = audio_event_subscriber->GetStats();
+  stats = audio_stats_subscriber->GetStats();
   json.clear();
   base::JSONWriter::WriteWithOptions(
       *stats, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
@@ -272,16 +237,14 @@ int main(int argc, char** argv) {
   // CastTransportSender initialization.
   scoped_ptr<media::cast::CastTransportSender> transport_sender =
       media::cast::CastTransportSender::Create(
-          NULL,  // net log.
-          cast_environment->Clock(),
-          net::IPEndPoint(),
-          remote_endpoint,
+          nullptr,  // net log.
+          cast_environment->Clock(), net::IPEndPoint(), remote_endpoint,
           make_scoped_ptr(new base::DictionaryValue),  // options
           base::Bind(&UpdateCastTransportStatus),
-          base::Bind(&LogRawEvents, cast_environment),
+          base::Bind(&media::cast::LogEventDispatcher::DispatchBatchOfEvents,
+                     base::Unretained(cast_environment->logger())),
           base::TimeDelta::FromSeconds(1),
-          media::cast::PacketReceiverCallback(),
-          io_message_loop.task_runner());
+          media::cast::PacketReceiverCallback(), io_message_loop.task_runner());
 
   // Set up event subscribers.
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber;
@@ -294,15 +257,13 @@ int main(int argc, char** argv) {
       media::cast::VIDEO_EVENT, 10000));
   audio_event_subscriber.reset(new media::cast::EncodingEventSubscriber(
       media::cast::AUDIO_EVENT, 10000));
-  cast_environment->Logging()->AddRawEventSubscriber(
-      video_event_subscriber.get());
-  cast_environment->Logging()->AddRawEventSubscriber(
-      audio_event_subscriber.get());
+  cast_environment->logger()->Subscribe(video_event_subscriber.get());
+  cast_environment->logger()->Subscribe(audio_event_subscriber.get());
 
   // Subscribers for stats.
   scoped_ptr<media::cast::ReceiverTimeOffsetEstimatorImpl> offset_estimator(
       new media::cast::ReceiverTimeOffsetEstimatorImpl());
-  cast_environment->Logging()->AddRawEventSubscriber(offset_estimator.get());
+  cast_environment->logger()->Subscribe(offset_estimator.get());
   scoped_ptr<media::cast::StatsEventSubscriber> video_stats_subscriber(
       new media::cast::StatsEventSubscriber(media::cast::VIDEO_EVENT,
                                             cast_environment->Clock(),
@@ -311,10 +272,8 @@ int main(int argc, char** argv) {
       new media::cast::StatsEventSubscriber(media::cast::AUDIO_EVENT,
                                             cast_environment->Clock(),
                                             offset_estimator.get()));
-  cast_environment->Logging()->AddRawEventSubscriber(
-      video_stats_subscriber.get());
-  cast_environment->Logging()->AddRawEventSubscriber(
-      audio_stats_subscriber.get());
+  cast_environment->logger()->Subscribe(video_stats_subscriber.get());
+  cast_environment->logger()->Subscribe(audio_stats_subscriber.get());
 
   base::ScopedFILE video_log_file(fopen(video_log_file_name.c_str(), "w"));
   if (!video_log_file) {

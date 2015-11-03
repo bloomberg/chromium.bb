@@ -6,8 +6,6 @@
 
 #include "base/big_endian.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/logging/logging_impl.h"
-#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,6 +25,7 @@ static const size_t kNackSize = 105;
 static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const uint32 kVideoSsrc = 0x1234;
 static const uint32 kAudioSsrc = 0x5678;
+static const uint32 kFrameRtpTimestamp = 12345;
 
 class TestPacketSender : public PacketSender {
  public:
@@ -59,22 +58,14 @@ class TestPacketSender : public PacketSender {
 class PacedSenderTest : public ::testing::Test {
  protected:
   PacedSenderTest() {
-    logging_.AddRawEventSubscriber(&subscriber_);
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
-    paced_sender_.reset(new PacedSender(kTargetBurstSize,
-                                        kMaxBurstSize,
-                                        &testing_clock_,
-                                        &logging_,
-                                        &mock_transport_,
-                                        task_runner_));
+    paced_sender_.reset(new PacedSender(kTargetBurstSize, kMaxBurstSize,
+                                        &testing_clock_, &packet_events_,
+                                        &mock_transport_, task_runner_));
     paced_sender_->RegisterAudioSsrc(kAudioSsrc);
     paced_sender_->RegisterVideoSsrc(kVideoSsrc);
-  }
-
-  ~PacedSenderTest() override {
-    logging_.RemoveRawEventSubscriber(&subscriber_);
   }
 
   static void UpdateCastTransportStatus(CastTransportStatus status) {
@@ -98,12 +89,17 @@ class PacedSenderTest : public ::testing::Test {
 
       PacketRef packet(new base::RefCountedData<Packet>);
       packet->data.resize(packet_size, kValue);
-      // Write ssrc to packet so that it can be recognized as a
-      // "video frame" for logging purposes.
-      base::BigEndianWriter writer(
-          reinterpret_cast<char*>(&packet->data[8]), 4);
-      bool success = writer.WriteU32(audio ? kAudioSsrc : kVideoSsrc);
-      DCHECK(success);
+      // Fill-in packet header fields to test the header parsing (for populating
+      // the logging events).
+      base::BigEndianWriter writer(reinterpret_cast<char*>(&packet->data[0]),
+                                   packet_size);
+      bool success = writer.Skip(4);
+      success &= writer.WriteU32(kFrameRtpTimestamp);
+      success &= writer.WriteU32(audio ? kAudioSsrc : kVideoSsrc);
+      success &= writer.Skip(2);
+      success &= writer.WriteU16(i);
+      success &= writer.WriteU16(num_of_packets_in_frame - 1);
+      CHECK(success);
       packets.push_back(std::make_pair(key, packet));
     }
     return packets;
@@ -123,8 +119,7 @@ class PacedSenderTest : public ::testing::Test {
     return mock_transport_.expected_packet_size_.empty();
   }
 
-  LoggingImpl logging_;
-  SimpleEventSubscriber subscriber_;
+  std::vector<PacketEvent> packet_events_;
   base::SimpleTestTickClock testing_clock_;
   TestPacketSender mock_transport_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
@@ -154,6 +149,7 @@ TEST_F(PacedSenderTest, BasicPace) {
   SendPacketVector packets = CreateSendPacketVector(kSize1,
                                                     num_of_packets,
                                                     false);
+  const base::TimeTicks earliest_event_timestamp = testing_clock_.NowTicks();
 
   mock_transport_.AddExpectedSize(kSize1, 10);
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
@@ -177,20 +173,21 @@ TEST_F(PacedSenderTest, BasicPace) {
 
   // Check that we don't get any more packets.
   EXPECT_TRUE(RunUntilEmpty(3));
+  const base::TimeTicks latest_event_timestamp = testing_clock_.NowTicks();
 
-  std::vector<PacketEvent> packet_events;
-  subscriber_.GetPacketEventsAndReset(&packet_events);
-  EXPECT_EQ(num_of_packets, static_cast<int>(packet_events.size()));
-  int sent_to_network_event_count = 0;
-  for (std::vector<PacketEvent>::iterator it = packet_events.begin();
-       it != packet_events.end();
-       ++it) {
-    if (it->type == PACKET_SENT_TO_NETWORK)
-      sent_to_network_event_count++;
-    else
-      FAIL() << "Got unexpected event type " << CastLoggingToString(it->type);
+  // Check that packet logging events match expected values.
+  EXPECT_EQ(num_of_packets, static_cast<int>(packet_events_.size()));
+  uint16 expected_packet_id = 0;
+  for (const PacketEvent& e : packet_events_) {
+    ASSERT_LE(earliest_event_timestamp, e.timestamp);
+    ASSERT_GE(latest_event_timestamp, e.timestamp);
+    ASSERT_EQ(PACKET_SENT_TO_NETWORK, e.type);
+    ASSERT_EQ(VIDEO_EVENT, e.media_type);
+    ASSERT_EQ(kFrameRtpTimestamp, e.rtp_timestamp);
+    ASSERT_EQ(num_of_packets - 1, e.max_packet_id);
+    ASSERT_EQ(expected_packet_id++, e.packet_id);
+    ASSERT_EQ(kSize1, e.size);
   }
-  EXPECT_EQ(num_of_packets, sent_to_network_event_count);
 }
 
 TEST_F(PacedSenderTest, PaceWithNack) {
@@ -249,32 +246,28 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   // No more packets.
   EXPECT_TRUE(RunUntilEmpty(5));
 
-  std::vector<PacketEvent> packet_events;
-  subscriber_.GetPacketEventsAndReset(&packet_events);
   int expected_video_network_event_count = num_of_packets_in_frame;
   int expected_video_retransmitted_event_count = 2 * num_of_packets_in_nack;
   expected_video_retransmitted_event_count -= 2; // 2 packets deduped
   int expected_audio_network_event_count = num_of_packets_in_frame;
   EXPECT_EQ(expected_video_network_event_count +
-            expected_video_retransmitted_event_count +
-            expected_audio_network_event_count,
-            static_cast<int>(packet_events.size()));
+                expected_video_retransmitted_event_count +
+                expected_audio_network_event_count,
+            static_cast<int>(packet_events_.size()));
   int audio_network_event_count = 0;
   int video_network_event_count = 0;
   int video_retransmitted_event_count = 0;
-  for (std::vector<PacketEvent>::iterator it = packet_events.begin();
-       it != packet_events.end();
-       ++it) {
-    if (it->type == PACKET_SENT_TO_NETWORK) {
-      if (it->media_type == VIDEO_EVENT)
+  for (const PacketEvent& e : packet_events_) {
+    if (e.type == PACKET_SENT_TO_NETWORK) {
+      if (e.media_type == VIDEO_EVENT)
         video_network_event_count++;
       else
         audio_network_event_count++;
-    } else if (it->type == PACKET_RETRANSMITTED) {
-      if (it->media_type == VIDEO_EVENT)
+    } else if (e.type == PACKET_RETRANSMITTED) {
+      if (e.media_type == VIDEO_EVENT)
         video_retransmitted_event_count++;
     } else {
-      FAIL() << "Got unexpected event type " << CastLoggingToString(it->type);
+      FAIL() << "Got unexpected event type " << CastLoggingToString(e.type);
     }
   }
   EXPECT_EQ(expected_audio_network_event_count, audio_network_event_count);

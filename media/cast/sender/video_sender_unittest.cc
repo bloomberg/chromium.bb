@@ -386,7 +386,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   ASSERT_EQ(STATUS_INITIALIZED, operational_status_);
 
   SimpleEventSubscriber event_subscriber;
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Subscribe(&event_subscriber);
 
   int num_frames = 10;
   for (int i = 0; i < num_frames; i++) {
@@ -412,7 +412,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   EXPECT_EQ(VIDEO_EVENT, frame_events.rbegin()->media_type);
   EXPECT_EQ(num_frames - 1u, frame_events.rbegin()->frame_id);
 
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
+  cast_environment_->logger()->Unsubscribe(&event_subscriber);
 }
 
 TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {

@@ -32,8 +32,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       media::cast::CastTransportStatus result);
   void SendRawEvents(
       int32 channel_id,
-      const std::vector<media::cast::PacketEvent>& packet_events,
-      const std::vector<media::cast::FrameEvent>& frame_events);
+      scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
+      scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events);
   void SendRtt(int32 channel_id, uint32 ssrc, base::TimeDelta rtt);
   void SendCastMessage(int32 channel_id,
                        uint32 ssrc,

@@ -21,13 +21,13 @@ RawEventSubscriberBundleForStream::RawEventSubscriberBundleForStream(
       stats_subscriber_(
           is_audio ? AUDIO_EVENT : VIDEO_EVENT,
           cast_environment->Clock(), offset_estimator) {
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
-  cast_environment_->Logging()->AddRawEventSubscriber(&stats_subscriber_);
+  cast_environment_->logger()->Subscribe(&event_subscriber_);
+  cast_environment_->logger()->Subscribe(&stats_subscriber_);
 }
 
 RawEventSubscriberBundleForStream::~RawEventSubscriberBundleForStream() {
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&stats_subscriber_);
+  cast_environment_->logger()->Unsubscribe(&event_subscriber_);
+  cast_environment_->logger()->Unsubscribe(&stats_subscriber_);
 }
 
 EncodingEventSubscriber*
@@ -45,17 +45,14 @@ RawEventSubscriberBundle::RawEventSubscriberBundle(
     : cast_environment_(cast_environment) {}
 
 RawEventSubscriberBundle::~RawEventSubscriberBundle() {
-  if (receiver_offset_estimator_.get()) {
-    cast_environment_->Logging()->RemoveRawEventSubscriber(
-        receiver_offset_estimator_.get());
-  }
+  if (receiver_offset_estimator_.get())
+    cast_environment_->logger()->Unsubscribe(receiver_offset_estimator_.get());
 }
 
 void RawEventSubscriberBundle::AddEventSubscribers(bool is_audio) {
   if (!receiver_offset_estimator_.get()) {
     receiver_offset_estimator_.reset(new ReceiverTimeOffsetEstimatorImpl);
-    cast_environment_->Logging()->AddRawEventSubscriber(
-        receiver_offset_estimator_.get());
+    cast_environment_->logger()->Subscribe(receiver_offset_estimator_.get());
   }
   SubscribersMapByStream::iterator it = subscribers_.find(is_audio);
   if (it != subscribers_.end())
@@ -74,8 +71,7 @@ void RawEventSubscriberBundle::RemoveEventSubscribers(bool is_audio) {
 
   subscribers_.erase(it);
   if (subscribers_.empty()) {
-    cast_environment_->Logging()->RemoveRawEventSubscriber(
-        receiver_offset_estimator_.get());
+    cast_environment_->logger()->Unsubscribe(receiver_offset_estimator_.get());
     receiver_offset_estimator_.reset();
   }
 }

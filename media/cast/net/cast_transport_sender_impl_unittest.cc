@@ -66,8 +66,7 @@ class FakePacketSender : public PacketSender {
 
 class CastTransportSenderImplTest : public ::testing::Test {
  protected:
-  CastTransportSenderImplTest()
-      : num_times_callback_called_(0) {
+  CastTransportSenderImplTest() : num_times_logging_callback_called_(0) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
@@ -151,9 +150,9 @@ class CastTransportSenderImplTest : public ::testing::Test {
                                        RtcpRttCallback());
   }
 
-  void LogRawEvents(const std::vector<PacketEvent>& packet_events,
-                    const std::vector<FrameEvent>& frame_events) {
-    num_times_callback_called_++;
+  void LogRawEvents(scoped_ptr<std::vector<FrameEvent>> frame_events,
+                    scoped_ptr<std::vector<PacketEvent>> packet_events) {
+    num_times_logging_callback_called_++;
   }
 
   static void UpdateCastTransportStatus(CastTransportStatus status) {
@@ -163,31 +162,26 @@ class CastTransportSenderImplTest : public ::testing::Test {
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
   FakePacketSender transport_;
-  int num_times_callback_called_;
+  int num_times_logging_callback_called_;
 };
 
 TEST_F(CastTransportSenderImplTest, InitWithoutLogging) {
   InitWithoutLogging();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
-  EXPECT_EQ(0, num_times_callback_called_);
-}
-
-TEST_F(CastTransportSenderImplTest, InitWithLogging) {
-  InitWithLogging();
-  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
-  EXPECT_EQ(5, num_times_callback_called_);
+  EXPECT_EQ(0, num_times_logging_callback_called_);
 }
 
 TEST_F(CastTransportSenderImplTest, InitWithOptions) {
   InitWithOptions();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
-  EXPECT_EQ(0, num_times_callback_called_);
+  EXPECT_EQ(0, num_times_logging_callback_called_);
 }
 
 TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
-  InitWithoutLogging();
+  InitWithLogging();
   InitializeVideo();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
+  EXPECT_EQ(0, num_times_logging_callback_called_);
 
   // A fake frame that will be decomposed into 4 packets.
   EncodedFrame fake_frame;
@@ -199,6 +193,7 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
   transport_sender_->InsertFrame(kVideoSsrc, fake_frame);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(4, transport_.packets_sent());
+  EXPECT_EQ(1, num_times_logging_callback_called_);
 
   // Resend packet 0.
   MissingFramesAndPacketsMap missing_packets;
@@ -213,6 +208,7 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
       kVideoSsrc, missing_packets, true, dedup_info);
 
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(2, num_times_logging_callback_called_);
 
   RtcpCastMessage cast_message;
   cast_message.media_ssrc = kVideoSsrc;
@@ -223,6 +219,7 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
                                            cast_message);
   transport_.SetPaused(false);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(3, num_times_logging_callback_called_);
 
   // Resend one packet in the socket when unpaused.
   // Resend one more packet from NACK.
@@ -230,9 +227,10 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
 }
 
 TEST_F(CastTransportSenderImplTest, CancelRetransmits) {
-  InitWithoutLogging();
+  InitWithLogging();
   InitializeVideo();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
+  EXPECT_EQ(0, num_times_logging_callback_called_);
 
   // A fake frame that will be decomposed into 4 packets.
   EncodedFrame fake_frame;
@@ -244,6 +242,7 @@ TEST_F(CastTransportSenderImplTest, CancelRetransmits) {
   transport_sender_->InsertFrame(kVideoSsrc, fake_frame);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(4, transport_.packets_sent());
+  EXPECT_EQ(1, num_times_logging_callback_called_);
 
   // Resend all packets for frame 1.
   MissingFramesAndPacketsMap missing_packets;
@@ -256,21 +255,25 @@ TEST_F(CastTransportSenderImplTest, CancelRetransmits) {
       kVideoSsrc, missing_packets, true, dedup_info);
 
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(2, num_times_logging_callback_called_);
+
   std::vector<uint32> cancel_sending_frames;
   cancel_sending_frames.push_back(1);
   transport_sender_->CancelSendingFrames(kVideoSsrc,
                                          cancel_sending_frames);
   transport_.SetPaused(false);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(2, num_times_logging_callback_called_);
 
   // Resend one packet in the socket when unpaused.
   EXPECT_EQ(5, transport_.packets_sent());
 }
 
 TEST_F(CastTransportSenderImplTest, Kickstart) {
-  InitWithoutLogging();
+  InitWithLogging();
   InitializeVideo();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
+  EXPECT_EQ(0, num_times_logging_callback_called_);
 
   // A fake frame that will be decomposed into 4 packets.
   EncodedFrame fake_frame;
@@ -285,6 +288,7 @@ TEST_F(CastTransportSenderImplTest, Kickstart) {
   transport_.SetPaused(false);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(4, transport_.packets_sent());
+  EXPECT_EQ(1, num_times_logging_callback_called_);
 
   // Resend 2 packets for frame 1.
   MissingFramesAndPacketsMap missing_packets;
@@ -299,6 +303,7 @@ TEST_F(CastTransportSenderImplTest, Kickstart) {
   transport_sender_->ResendFrameForKickstart(kVideoSsrc, 1);
   transport_.SetPaused(false);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(2, num_times_logging_callback_called_);
 
   // Resend one packet in the socket when unpaused.
   // Two more retransmission packets sent.
@@ -306,10 +311,11 @@ TEST_F(CastTransportSenderImplTest, Kickstart) {
 }
 
 TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
-  InitWithoutLogging();
+  InitWithLogging();
   InitializeAudio();
   InitializeVideo();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
+  EXPECT_EQ(0, num_times_logging_callback_called_);
 
   // Send two audio frames.
   EncodedFrame fake_audio;
@@ -334,6 +340,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
                                            cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(2, transport_.packets_sent());
+  EXPECT_EQ(0, num_times_logging_callback_called_);  // Only 4 ms since last.
 
   // Send a fake video frame that will be decomposed into 4 packets.
   EncodedFrame fake_video;
@@ -343,6 +350,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
   transport_sender_->InsertFrame(kVideoSsrc, fake_video);
   task_runner_->RunTasks();
   EXPECT_EQ(6, transport_.packets_sent());
+  EXPECT_EQ(0, num_times_logging_callback_called_);  // Only 4 ms since last.
 
   // Retransmission is reject because audio is not acked yet.
   cast_message.media_ssrc = kVideoSsrc;
@@ -354,6 +362,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
                                            cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(6, transport_.packets_sent());
+  EXPECT_EQ(1, num_times_logging_callback_called_);
 
   // Ack the second audio frame.
   cast_message.media_ssrc = kAudioSsrc;
@@ -365,6 +374,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
                                            cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(6, transport_.packets_sent());
+  EXPECT_EQ(1, num_times_logging_callback_called_);  // Only 6 ms since last.
 
   // Retransmission of video packet now accepted.
   cast_message.media_ssrc = kVideoSsrc;
@@ -376,6 +386,10 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
                                            cast_message);
   task_runner_->RunTasks();
   EXPECT_EQ(7, transport_.packets_sent());
+  EXPECT_EQ(1, num_times_logging_callback_called_);  // Only 8 ms since last.
+
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
+  EXPECT_EQ(2, num_times_logging_callback_called_);
 }
 
 }  // namespace cast

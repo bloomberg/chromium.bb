@@ -26,8 +26,6 @@ namespace cast {
 static const size_t kTargetBurstSize = 10;
 static const size_t kMaxBurstSize = 20;
 
-class LoggingImpl;
-
 // Use std::pair for free comparison operators.
 // { capture_time, ssrc, packet_id }
 // The PacketKey is designed to meet two criteria:
@@ -79,13 +77,15 @@ class PacedSender : public PacedPacketSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<PacedSender> {
  public:
-  // The |external_transport| should only be used by the Cast receiver and for
+  // |recent_packet_events| is an externally-owned vector where PacedSender will
+  // add PacketEvents related to sending, retransmission, and rejection.  The
+  // |external_transport| should only be used by the Cast receiver and for
   // testing.
   PacedSender(
       size_t target_burst_size,  // Should normally be kTargetBurstSize.
       size_t max_burst_size,     // Should normally be kMaxBurstSize.
       base::TickClock* clock,
-      LoggingImpl* logging,
+      std::vector<PacketEvent>* recent_packet_events,
       PacketSender* external_transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
@@ -120,6 +120,9 @@ class PacedSender : public PacedPacketSender,
  private:
   // Actually sends the packets to the transport.
   void SendStoredPackets();
+
+  // Convenience method for building a PacketEvent and storing it in the
+  // externally-owned container of |recent_packet_events_|.
   void LogPacketEvent(const Packet& packet, CastLoggingEvent event);
 
   // Returns true if retransmission for packet indexed by |packet_key| is
@@ -163,9 +166,11 @@ class PacedSender : public PacedPacketSender,
   // Returns true if the packet should have a higher priority.
   bool IsHighPriority(const PacketKey& packet_key) const;
 
-  base::TickClock* const clock_;  // Not owned by this class.
-  LoggingImpl* const logging_;    // Not owned by this class.
-  PacketSender* transport_;       // Not owned by this class.
+  // These are externally-owned objects injected via the constructor.
+  base::TickClock* const clock_;
+  std::vector<PacketEvent>* const recent_packet_events_;
+  PacketSender* const transport_;
+
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
   uint32 audio_ssrc_;
   uint32 video_ssrc_;

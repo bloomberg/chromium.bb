@@ -79,8 +79,8 @@ void CastSessionDelegateBase::StartUDP(
                  base::Unretained(this)),
       base::Bind(&CastSessionDelegateBase::StatusNotificationCB,
                  base::Unretained(this), error_callback),
-      base::Bind(&CastSessionDelegateBase::LogRawEvents,
-                 base::Unretained(this))));
+      base::Bind(&media::cast::LogEventDispatcher::DispatchBatchOfEvents,
+                 base::Unretained(cast_environment_->logger()))));
 }
 
 void CastSessionDelegateBase::StatusNotificationCB(
@@ -312,45 +312,4 @@ void CastSessionDelegate::OnOperationalStatusChange(
 void CastSessionDelegate::ReceivePacket(
     scoped_ptr<media::cast::Packet> packet) {
   // Do nothing (frees packet)
-}
-
-void CastSessionDelegate::LogRawEvents(
-    const std::vector<media::cast::PacketEvent>& packet_events,
-    const std::vector<media::cast::FrameEvent>& frame_events) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-  for (std::vector<media::cast::PacketEvent>::const_iterator it =
-           packet_events.begin();
-       it != packet_events.end();
-       ++it) {
-    cast_environment_->Logging()->InsertPacketEvent(it->timestamp,
-                                                    it->type,
-                                                    it->media_type,
-                                                    it->rtp_timestamp,
-                                                    it->frame_id,
-                                                    it->packet_id,
-                                                    it->max_packet_id,
-                                                    it->size);
-  }
-  for (std::vector<media::cast::FrameEvent>::const_iterator it =
-           frame_events.begin();
-       it != frame_events.end();
-       ++it) {
-    if (it->type == media::cast::FRAME_PLAYOUT) {
-      cast_environment_->Logging()->InsertFrameEventWithDelay(
-          it->timestamp,
-          it->type,
-          it->media_type,
-          it->rtp_timestamp,
-          it->frame_id,
-          it->delay_delta);
-    } else {
-      cast_environment_->Logging()->InsertFrameEvent(
-          it->timestamp,
-          it->type,
-          it->media_type,
-          it->rtp_timestamp,
-          it->frame_id);
-    }
-  }
 }
