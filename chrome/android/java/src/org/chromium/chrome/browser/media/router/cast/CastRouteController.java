@@ -46,7 +46,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     private static final String TAG = "cr_MediaRouter";
 
     private static final String MEDIA_NAMESPACE = "urn:x-cast:com.google.cast.media";
-    private static final String RECEIVER_NAMESPACE = "urn:x-cast:com.google.cast.receiver";
+    private static final String GAMES_NAMESPACE = "urn:x-cast:com.google.cast.games";
+
     private static final String MEDIA_MESSAGE_TYPES[] = {
             "PLAY",
             "LOAD",
@@ -72,9 +73,6 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
     // Sequence number used when no sequence number is required or was initially passed.
     private static final int INVALID_SEQUENCE_NUMBER = -1;
-    // Sequence number use instead of no sequence number when a sequence number was expected from
-    // the client.
-    private static final int OPTIONAL_SEQUENCE_NUMBER = 0;
 
     // Map associating types that have a different names outside of the media namespace and inside.
     // In other words, some types are sent as MEDIA_FOO or FOO_MEDIA by the client by the Cast
@@ -100,22 +98,23 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             Log.d(TAG, "Received message from Cast device: namespace=\"" + namespace
                        + "\" message=\"" + message + "\"");
 
-            if (MEDIA_NAMESPACE.equals(namespace) || RECEIVER_NAMESPACE.equals(namespace)) {
-                int sequenceNumber = INVALID_SEQUENCE_NUMBER;
-                try {
-                    JSONObject jsonMessage = new JSONObject(message);
-                    int requestId = jsonMessage.getInt("requestId");
-                    if (mSession.mRequests.indexOfKey(requestId) >= 0) {
-                        sequenceNumber = mSession.mRequests.get(requestId);
-                        mSession.mRequests.delete(requestId);
-                    }
-                } catch (JSONException e) {
-                } finally {
-                    mSession.onMessage("v2_message", message, namespace, sequenceNumber);
+            int sequenceNumber = INVALID_SEQUENCE_NUMBER;
+            try {
+                JSONObject jsonMessage = new JSONObject(message);
+                int requestId = jsonMessage.getInt("requestId");
+                if (mSession.mRequests.indexOfKey(requestId) >= 0) {
+                    sequenceNumber = mSession.mRequests.get(requestId);
+                    mSession.mRequests.delete(requestId);
                 }
-            } else {
-                mSession.onAppMessage(namespace, message);
+            } catch (JSONException e) {
             }
+
+            if (MEDIA_NAMESPACE.equals(namespace)) {
+                mSession.onMediaMessage(message, sequenceNumber);
+                return;
+            }
+
+            mSession.onAppMessage(message, namespace, sequenceNumber);
         }
     }
 
@@ -203,8 +202,8 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         mHandler = new Handler();
 
         mMessageChannel = new CastMessagingChannel(this);
-        addNamespace(RECEIVER_NAMESPACE);
         addNamespace(MEDIA_NAMESPACE);
+        addNamespace(GAMES_NAMESPACE);
 
         final Context context = ApplicationStatus.getApplicationContext();
 
@@ -351,31 +350,31 @@ public class CastRouteController implements RouteController, MediaNotificationLi
 
 
     /**
-     * Sends the internal Cast message to the Cast clients on the page via the media router.
-     * @param type The type of the message (e.g. "new_session" or "v2_message")
-     * @param message The message itself (encoded JSON).
-     * @param namespace The namespace for the message.
+     * Forwards the media message to the page via the media router.
+     * @param message The media that's being send by the receiver.
+     * @param sequenceNumber The sequence number of the message this one is responding to.
      */
-    public void onMessage(String type, String message, String namespace, int sequenceNumber) {
-        if (MEDIA_NAMESPACE.equals(namespace) && mMediaPlayer != null) {
-            mMediaPlayer.onMessageReceived(mCastDevice, namespace, message);
+    public void onMediaMessage(String message, int sequenceNumber) {
+        if (mMediaPlayer != null) {
+            mMediaPlayer.onMessageReceived(mCastDevice, MEDIA_NAMESPACE, message);
         }
 
-        sendMessageToClients(type, message, sequenceNumber);
+        sendMessageToClients("v2_message", message, sequenceNumber);
     }
 
     /**
      * Forwards the application specific message to the page via the media router.
-     * @param namespace The application specific namespace this message belongs to.
      * @param message The message within the namespace that's being send by the receiver.
+     * @param namespace The application specific namespace this message belongs to.
+     * @param sequenceNumber The sequence number of the message this one is responding to.
      */
-    public void onAppMessage(String namespace, String message) {
+    public void onAppMessage(String message, String namespace, int sequenceNumber) {
         try {
             JSONObject jsonMessage = new JSONObject();
             jsonMessage.put("sessionId", mSessionId);
             jsonMessage.put("namespaceName", namespace);
             jsonMessage.put("message", message);
-            onMessage("app_message", jsonMessage.toString(), null, INVALID_SEQUENCE_NUMBER);
+            sendMessageToClients("app_message", jsonMessage.toString(), sequenceNumber);
         } catch (JSONException e) {
             Log.e(TAG, "Failed to create the message wrapper", e);
         }
@@ -391,7 +390,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        onMessage("remove_session", mSessionId, null, sequenceNumber);
+                        sendMessageToClients("remove_session", mSessionId, sequenceNumber);
 
                         // TODO(avayvod): handle a failure to stop the application.
                         // https://crbug.com/535577
@@ -447,6 +446,7 @@ public class CastRouteController implements RouteController, MediaNotificationLi
     }
 
     private boolean handleInternalMessage(String message, int callbackId) {
+        Log.d(TAG, "Received message from client: %s", message);
         boolean success = true;
         try {
             JSONObject jsonMessage = new JSONObject(message);
@@ -499,15 +499,12 @@ public class CastRouteController implements RouteController, MediaNotificationLi
             throws JSONException {
         assert "v2_message".equals(jsonMessage.getString("type"));
 
-        Log.d(TAG, "Received message from client: " + jsonMessage);
-
         String clientId = jsonMessage.getString("clientId");
         if (!mClients.contains(clientId)) return false;
 
         JSONObject jsonCastMessage = jsonMessage.getJSONObject("message");
         String messageType = jsonCastMessage.getString("type");
-        int sequenceNumber = jsonMessage.has("sequenceNumber")
-                ? jsonMessage.getInt("sequenceNumber") : OPTIONAL_SEQUENCE_NUMBER;
+        int sequenceNumber = jsonMessage.optInt("sequenceNumber", INVALID_SEQUENCE_NUMBER);
 
         if ("STOP".equals(messageType)) {
             stopApplication(sequenceNumber);
@@ -611,33 +608,43 @@ public class CastRouteController implements RouteController, MediaNotificationLi
         if (!mClients.contains(clientId)) return false;
 
         JSONObject jsonAppMessageWrapper = jsonMessage.getJSONObject("message");
+
+        JSONObject actualMessage = jsonAppMessageWrapper.getJSONObject("message");
+        if (actualMessage == null) return false;
+
         if (!mSessionId.equals(jsonAppMessageWrapper.getString("sessionId"))) return false;
 
         String namespaceName = jsonAppMessageWrapper.getString("namespaceName");
         if (namespaceName == null || namespaceName.isEmpty()) return false;
 
         if (!mNamespaces.contains(namespaceName)) addNamespace(namespaceName);
-        sendCastMessage(jsonAppMessageWrapper, namespaceName, INVALID_SEQUENCE_NUMBER);
 
-        return true;
+        int sequenceNumber = jsonMessage.optInt("sequenceNumber", INVALID_SEQUENCE_NUMBER);
+        return sendCastMessage(actualMessage, namespaceName, sequenceNumber);
     }
 
-    private boolean sendCastMessage(JSONObject message, String namespace, int sequenceNumber)
-            throws JSONException {
+    private boolean sendCastMessage(
+            JSONObject message,
+            final String namespace,
+            final int sequenceNumber) throws JSONException {
         if (isApiClientInvalid()) return false;
 
         removeNullFields(message);
 
-        // If for some reason, there is already a requestId different than 0, it
-        // is kept. Otherwise, one is generated and associated with the sequenceNumber
-        // passed by the client.
-        if (!message.has("requestId") || (message.getInt("requestId") == 0)) {
-            int requestId = CastRequestIdGenerator.getNextRequestId();
+        // Map the request id to a valid sequence number only.
+        if (sequenceNumber != INVALID_SEQUENCE_NUMBER) {
+            // If for some reason, there is already a requestId other than 0, it
+            // is kept. Otherwise, one is generated. In all cases it's associated with the
+            // sequenceNumber passed by the client.
+            int requestId = message.optInt("requestId", 0);
+            if (requestId == 0) {
+                requestId = CastRequestIdGenerator.getNextRequestId();
+                message.put("requestId", requestId);
+            }
             mRequests.append(requestId, sequenceNumber);
-            message.put("requestId", requestId);
         }
 
-        Log.d(TAG, "Sending message to Cast device: " + message);
+        Log.d(TAG, "Sending message to Cast device in namespace %s: %s", namespace, message);
 
         try {
             Cast.CastApi.sendMessage(mApiClient, namespace, message.toString())
@@ -649,7 +656,15 @@ public class CastRouteController implements RouteController, MediaNotificationLi
                                         // TODO(avayvod): should actually report back to the page.
                                         // See https://crbug.com/550445.
                                         Log.e(TAG, "Failed to send the message: " + result);
+                                        return;
                                     }
+
+                                    // Media commands wait for the media status update as a result.
+                                    if (MEDIA_NAMESPACE.equals(namespace)) return;
+
+                                    // App messages wait for the empty message with the sequence
+                                    // number.
+                                    sendMessageToClients("app_message", null, sequenceNumber);
                                 }
                             });
         } catch (Exception e) {
