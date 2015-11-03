@@ -129,7 +129,7 @@ void BluetoothRemoteGattCharacteristicAndroid::StartNotifySession(
 void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
-  if (read_pending_) {
+  if (read_pending_ || write_pending_) {
     error_callback.Run(BluetoothGattService::GATT_ERROR_IN_PROGRESS);
   }
 
@@ -139,6 +139,7 @@ void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
         FROM_HERE,
         base::Bind(error_callback,
                    BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
+    return;
   }
 
   read_pending_ = true;
@@ -150,7 +151,24 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
     const std::vector<uint8>& new_value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
+  if (read_pending_ || write_pending_) {
+    error_callback.Run(BluetoothGattService::GATT_ERROR_IN_PROGRESS);
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  if (!Java_ChromeBluetoothRemoteGattCharacteristic_writeRemoteCharacteristic(
+          env, j_characteristic_.obj(),
+          base::android::ToJavaByteArray(env, new_value).obj())) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(error_callback,
+                   BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
+    return;
+  }
+
+  write_pending_ = true;
+  write_callback_ = callback;
+  write_error_callback_ = error_callback;
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::OnRead(JNIEnv* env,
@@ -171,6 +189,26 @@ void BluetoothRemoteGattCharacteristicAndroid::OnRead(JNIEnv* env,
     read_callback.Run(value_);
   } else if (!read_error_callback.is_null()) {
     read_error_callback.Run(
+        BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
+  }
+}
+
+void BluetoothRemoteGattCharacteristicAndroid::OnWrite(JNIEnv* env,
+                                                       jobject jcaller,
+                                                       int32_t status) {
+  write_pending_ = false;
+
+  // Clear callbacks before calling to avoid reentrancy issues.
+  base::Closure write_callback = write_callback_;
+  ErrorCallback write_error_callback = write_error_callback_;
+  write_callback_.Reset();
+  write_error_callback_.Reset();
+
+  if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
+      && !write_callback.is_null()) {
+    write_callback.Run();
+  } else if (!write_error_callback.is_null()) {
+    write_error_callback.Run(
         BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
   }
 }

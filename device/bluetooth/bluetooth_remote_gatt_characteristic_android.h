@@ -64,6 +64,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   // Callback after Read operation completes.
   void OnRead(JNIEnv* env, jobject jcaller, int32_t status, jbyteArray value);
 
+  // Callback after Write operation completes.
+  void OnWrite(JNIEnv* env, jobject jcaller, int32_t status);
+
  private:
   BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId);
 
@@ -78,6 +81,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   bool read_pending_ = false;
   ValueCallback read_callback_;
   ErrorCallback read_error_callback_;
+
+  // WriteRemoteCharacteristic callbacks and pending state.
+  bool write_pending_ = false;
+  base::Closure write_callback_;
+  ErrorCallback write_error_callback_;
 
   std::vector<uint8> value_;
 

@@ -193,6 +193,21 @@ final class ChromeBluetoothDevice {
                 }
             });
         }
+
+        @Override
+        public void onCharacteristicWrite(
+                final Wrappers.BluetoothGattCharacteristicWrapper characteristic,
+                final int status) {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ChromeBluetoothRemoteGattCharacteristic
+                            chromeBluetoothRemoteGattCharacteristic =
+                                    mWrapperToChromeCharacteristicsMap.get(characteristic);
+                    chromeBluetoothRemoteGattCharacteristic.onCharacteristicWrite(status);
+                }
+            });
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

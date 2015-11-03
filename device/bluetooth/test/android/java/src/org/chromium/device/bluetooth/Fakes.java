@@ -276,13 +276,13 @@ class Fakes {
     static class FakeBluetoothGatt extends Wrappers.BluetoothGattWrapper {
         final FakeBluetoothDevice mDevice;
         final ArrayList<Wrappers.BluetoothGattServiceWrapper> mServices;
-        boolean mReadCharacteristicWillSucceed;
+        boolean mReadCharacteristicWillFailSynchronouslyOnce = false;
+        boolean mWriteCharacteristicWillFailSynchronouslyOnce = false;
 
         public FakeBluetoothGatt(FakeBluetoothDevice device) {
             super(null, null);
             mDevice = device;
             mServices = new ArrayList<Wrappers.BluetoothGattServiceWrapper>();
-            mReadCharacteristicWillSucceed = true;
         }
 
         @Override
@@ -302,13 +302,24 @@ class Fakes {
 
         @Override
         boolean readCharacteristic(Wrappers.BluetoothGattCharacteristicWrapper characteristic) {
-            if (mReadCharacteristicWillSucceed) {
-                nativeOnFakeBluetoothGattReadCharacteristic(
-                        mDevice.mAdapter.mNativeBluetoothTestAndroid);
-                return true;
-            } else {
+            if (mReadCharacteristicWillFailSynchronouslyOnce) {
+                mReadCharacteristicWillFailSynchronouslyOnce = false;
                 return false;
             }
+            nativeOnFakeBluetoothGattReadCharacteristic(
+                    mDevice.mAdapter.mNativeBluetoothTestAndroid);
+            return true;
+        }
+
+        @Override
+        boolean writeCharacteristic(Wrappers.BluetoothGattCharacteristicWrapper characteristic) {
+            if (mWriteCharacteristicWillFailSynchronouslyOnce) {
+                mWriteCharacteristicWillFailSynchronouslyOnce = false;
+                return false;
+            }
+            nativeOnFakeBluetoothGattWriteCharacteristic(
+                    mDevice.mAdapter.mNativeBluetoothTestAndroid, characteristic.getValue());
+            return true;
         }
     }
 
@@ -400,14 +411,37 @@ class Fakes {
                     fakeCharacteristic, status);
         }
 
-        // Cause subsiquent value reads of a characteristic to fail synchronously.
+        // Simulate a value being written to a characteristic.
         @CalledByNative("FakeBluetoothGattCharacteristic")
-        private static void setReadCharacteristicWillSucceed(
-                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic, boolean value) {
+        private static void valueWrite(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic, int status) {
             FakeBluetoothGattCharacteristic fakeCharacteristic =
                     (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
 
-            fakeCharacteristic.mService.mDevice.mGatt.mReadCharacteristicWillSucceed = value;
+            fakeCharacteristic.mService.mDevice.mGattCallback.onCharacteristicWrite(
+                    fakeCharacteristic, status);
+        }
+
+        // Cause subsequent value reads of a characteristic to fail synchronously.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void setReadCharacteristicWillFailSynchronouslyOnce(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
+            FakeBluetoothGattCharacteristic fakeCharacteristic =
+                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+
+            fakeCharacteristic.mService.mDevice.mGatt.mReadCharacteristicWillFailSynchronouslyOnce =
+                    true;
+        }
+
+        // Cause subsequent value writes of a characteristic to fail synchronously.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void setWriteCharacteristicWillFailSynchronouslyOnce(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
+            FakeBluetoothGattCharacteristic fakeCharacteristic =
+                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+
+            fakeCharacteristic.mService.mDevice.mGatt
+                    .mWriteCharacteristicWillFailSynchronouslyOnce = true;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -432,6 +466,12 @@ class Fakes {
         public byte[] getValue() {
             return mValue;
         }
+
+        @Override
+        public boolean setValue(byte[] value) {
+            mValue = value;
+            return true;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -451,4 +491,8 @@ class Fakes {
     // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattReadCharacteristic.
     private static native void nativeOnFakeBluetoothGattReadCharacteristic(
             long nativeBluetoothTestAndroid);
+
+    // Binds to BluetoothAdapterAndroid::OnFakeBluetoothGattWriteCharacteristic.
+    private static native void nativeOnFakeBluetoothGattWriteCharacteristic(
+            long nativeBluetoothTestAndroid, byte[] value);
 }

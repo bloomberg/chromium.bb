@@ -111,9 +111,23 @@ class BluetoothTestBase : public testing::Test {
       BluetoothGattCharacteristic* characteristic,
       BluetoothGattService::GattErrorCode) {}
 
-  // Simulates a Characteristic Read operation failing synchronously for an
+  // Simulates a Characteristic Read operation failing synchronously once for an
   // unknown reason.
-  virtual void SimulateGattCharacteristicReadWillFailSynchronously(
+  virtual void SimulateGattCharacteristicReadWillFailSynchronouslyOnce(
+      BluetoothGattCharacteristic* characteristic) {}
+
+  // Simulates a Characteristic Write operation succeeding, returning |value|.
+  virtual void SimulateGattCharacteristicWrite(
+      BluetoothGattCharacteristic* characteristic) {}
+
+  // Simulates a Characteristic Write operation failing with a GattErrorCode.
+  virtual void SimulateGattCharacteristicWriteError(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattService::GattErrorCode) {}
+
+  // Simulates a Characteristic Write operation failing synchronously once for
+  // an unknown reason.
+  virtual void SimulateGattCharacteristicWriteWillFailSynchronouslyOnce(
       BluetoothGattCharacteristic* characteristic) {}
 
   // Remove the device from the adapter and delete it.
@@ -151,6 +165,7 @@ class BluetoothTestBase : public testing::Test {
   enum BluetoothDevice::ConnectErrorCode last_connect_error_code_ =
       BluetoothDevice::ERROR_UNKNOWN;
   std::vector<uint8> last_read_value_;
+  std::vector<uint8> last_write_value_;
   BluetoothGattService::GattErrorCode last_gatt_error_code_;
   int callback_count_ = 0;
   int error_callback_count_ = 0;
@@ -158,6 +173,7 @@ class BluetoothTestBase : public testing::Test {
   int gatt_disconnection_attempts_ = 0;
   int gatt_discovery_attempts_ = 0;
   int gatt_read_characteristic_attempts_ = 0;
+  int gatt_write_characteristic_attempts_ = 0;
   base::WeakPtrFactory<BluetoothTestBase> weak_factory_;
 };
 

@@ -293,6 +293,10 @@ class Wrappers {
         boolean readCharacteristic(BluetoothGattCharacteristicWrapper characteristic) {
             return mGatt.readCharacteristic(characteristic.mCharacteristic);
         }
+
+        boolean writeCharacteristic(BluetoothGattCharacteristicWrapper characteristic) {
+            return mGatt.writeCharacteristic(characteristic.mCharacteristic);
+        }
     }
 
     /**
@@ -321,6 +325,13 @@ class Wrappers {
         }
 
         @Override
+        public void onCharacteristicWrite(
+                BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            mWrapperCallback.onCharacteristicWrite(
+                    mDeviceWrapper.mCharacteristicsToWrappers.get(characteristic), status);
+        }
+
+        @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             mWrapperCallback.onConnectionStateChange(status, newState);
         }
@@ -343,6 +354,8 @@ class Wrappers {
      */
     abstract static class BluetoothGattCallbackWrapper {
         public abstract void onCharacteristicRead(
+                BluetoothGattCharacteristicWrapper characteristic, int status);
+        public abstract void onCharacteristicWrite(
                 BluetoothGattCharacteristicWrapper characteristic, int status);
         public abstract void onConnectionStateChange(int status, int newState);
         public abstract void onServicesDiscovered(int status);
@@ -411,6 +424,10 @@ class Wrappers {
 
         public byte[] getValue() {
             return mCharacteristic.getValue();
+        }
+
+        public boolean setValue(byte[] value) {
+            return mCharacteristic.setValue(value);
         }
     }
 }

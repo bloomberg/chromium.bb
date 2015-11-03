@@ -55,6 +55,14 @@ final class ChromeBluetoothRemoteGattCharacteristic {
         }
     }
 
+    void onCharacteristicWrite(int status) {
+        Log.i(TAG, "onCharacteristicWrite status:%d==%s", status,
+                status == android.bluetooth.BluetoothGatt.GATT_SUCCESS ? "OK" : "Error");
+        if (mNativeBluetoothRemoteGattCharacteristicAndroid != 0) {
+            nativeOnWrite(mNativeBluetoothRemoteGattCharacteristicAndroid, status);
+        }
+    }
+
     // ---------------------------------------------------------------------------------------------
     // BluetoothRemoteGattCharacteristicAndroid methods implemented in java:
 
@@ -93,10 +101,27 @@ final class ChromeBluetoothRemoteGattCharacteristic {
         return true;
     }
 
+    // Implements BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic.
+    @CalledByNative
+    private boolean writeRemoteCharacteristic(byte[] value) {
+        if (!mCharacteristic.setValue(value)) {
+            Log.i(TAG, "writeRemoteCharacteristic setValue failed.");
+            return false;
+        }
+        if (!mChromeBluetoothDevice.mBluetoothGatt.writeCharacteristic(mCharacteristic)) {
+            Log.i(TAG, "writeRemoteCharacteristic writeCharacteristic failed.");
+            return false;
+        }
+        return true;
+    }
+
     // ---------------------------------------------------------------------------------------------
     // BluetoothAdapterDevice C++ methods declared for access from java:
 
     // Binds to BluetoothRemoteGattServiceAndroid::OnRead.
     native void nativeOnRead(
             long nativeBluetoothRemoteGattCharacteristicAndroid, int status, byte[] value);
+
+    // Binds to BluetoothRemoteGattServiceAndroid::OnWrite.
+    native void nativeOnWrite(long nativeBluetoothRemoteGattCharacteristicAndroid, int status);
 }
