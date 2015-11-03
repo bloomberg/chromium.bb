@@ -470,10 +470,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Experimental options provided at creation.
   webrtc::Config config;
-  if (goog_experimental_aec)
-    config.Set<webrtc::ExtendedFilter>(new webrtc::ExtendedFilter(true));
-  if (goog_experimental_ns)
-    config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
+  config.Set<webrtc::ExtendedFilter>(
+      new webrtc::ExtendedFilter(goog_experimental_aec));
+  config.Set<webrtc::ExperimentalNs>(
+      new webrtc::ExperimentalNs(goog_experimental_ns));
   if (IsDelayAgnosticAecEnabled())
     config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
   if (goog_beamforming) {

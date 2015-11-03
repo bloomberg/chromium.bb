@@ -64,7 +64,7 @@ struct {
   { MediaAudioConstraints::kGoogNoiseSuppression, true },
   { MediaAudioConstraints::kGoogHighpassFilter, true },
   { MediaAudioConstraints::kGoogTypingNoiseDetection, true },
-  { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, false },
+  { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, true },
   // Beamforming will only be enabled if we are also provided with a
   // multi-microphone geometry.
   { MediaAudioConstraints::kGoogBeamforming, true },
