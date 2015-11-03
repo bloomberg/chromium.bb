@@ -46,7 +46,8 @@ chrome.languageSettingsPrivate.SpellcheckDictionaryStatus;
  *   id: string,
  *   displayName: string,
  *   languageCodes: !Array<string>,
- *   enabled: boolean
+ *   enabled: (boolean|undefined),
+ *   hasOptionsPage: (boolean|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-InputMethod
  */
@@ -54,9 +55,8 @@ chrome.languageSettingsPrivate.InputMethod;
 
 /**
  * @typedef {{
- *   inputMethods: !Array<!chrome.languageSettingsPrivate.InputMethod>,
- *   componentExtensionIMEs: !Array<!chrome.languageSettingsPrivate.InputMethod>,
- *   thirdPartyExtensionIMEs: !Array<!chrome.languageSettingsPrivate.InputMethod>
+ *   componentExtensionImes: !Array<!chrome.languageSettingsPrivate.InputMethod>,
+ *   thirdPartyExtensionImes: !Array<!chrome.languageSettingsPrivate.InputMethod>
  * }}
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-InputMethodLists
  */
@@ -113,7 +113,7 @@ chrome.languageSettingsPrivate.removeSpellcheckWord = function(word) {};
 chrome.languageSettingsPrivate.getTranslateTargetLanguage = function(callback) {};
 
 /**
- * Gets all supported input methods, including IMEs. Chrome OS only.
+ * Gets all supported input methods, including third-party IMEs. Chrome OS only.
  * @param {function(!chrome.languageSettingsPrivate.InputMethodLists):void} callback
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getInputMethodLists
  */

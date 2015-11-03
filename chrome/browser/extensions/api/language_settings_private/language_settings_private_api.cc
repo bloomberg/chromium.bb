@@ -11,6 +11,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,9 +31,22 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+#endif
+
 namespace extensions {
 
 namespace language_settings_private = api::language_settings_private;
+
+#if defined(OS_CHROMEOS)
+using chromeos::input_method::InputMethodDescriptors;
+using chromeos::input_method::InputMethodManager;
+using chromeos::input_method::InputMethodUtil;
+#endif
 
 LanguageSettingsPrivateGetLanguageListFunction::
     LanguageSettingsPrivateGetLanguageListFunction() {
@@ -278,6 +292,42 @@ LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
           chrome_details_.GetProfile()->GetPrefs()))));
 }
 
+#if defined(OS_CHROMEOS)
+// Populates the vector of input methods using information in the list of
+// descriptors. Used for languageSettingsPrivate.getInputMethodLists().
+void PopulateInputMethodListFromDescriptors(
+    const InputMethodDescriptors& descriptors,
+    std::vector<linked_ptr<language_settings_private::InputMethod>>*
+        input_methods) {
+  InputMethodManager* manager = InputMethodManager::Get();
+  InputMethodUtil* util = manager->GetInputMethodUtil();
+  scoped_refptr<InputMethodManager::State> ime_state =
+      manager->GetActiveIMEState();
+  if (!ime_state.get())
+    return;
+
+  // Get the list of enabled IDs and convert to a set for membership testing.
+  const std::vector<std::string>& active_ids_list =
+      ime_state->GetActiveInputMethodIds();
+  const std::set<std::string> active_ids(
+      active_ids_list.begin(), active_ids_list.end());
+
+  for (const auto& descriptor : descriptors) {
+    linked_ptr<language_settings_private::InputMethod> input_method(
+        new language_settings_private::InputMethod());
+    input_method->id = descriptor.id();
+    input_method->display_name = util->GetLocalizedDisplayName(descriptor);
+    input_method->language_codes = descriptor.language_codes();
+    bool enabled = active_ids.find(input_method->id) != active_ids.end();
+    if (enabled)
+      input_method->enabled.reset(new bool(true));
+    if (descriptor.options_page_url().is_valid())
+      input_method->has_options_page.reset(new bool(true));
+    input_methods->push_back(input_method);
+  }
+}
+#endif
+
 LanguageSettingsPrivateGetInputMethodListsFunction::
     LanguageSettingsPrivateGetInputMethodListsFunction() {
 }
@@ -288,7 +338,31 @@ LanguageSettingsPrivateGetInputMethodListsFunction::
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetInputMethodListsFunction::Run() {
-  return RespondNow(OneArgument(new base::DictionaryValue()));
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+  return RespondNow(NoArguments());
+#else
+  language_settings_private::InputMethodLists input_method_lists;
+  InputMethodManager* manager = InputMethodManager::Get();
+
+  chromeos::ComponentExtensionIMEManager* component_extension_manager =
+      manager->GetComponentExtensionIMEManager();
+  PopulateInputMethodListFromDescriptors(
+      component_extension_manager->GetAllIMEAsInputMethodDescriptor(),
+      &input_method_lists.component_extension_imes);
+
+  scoped_refptr<InputMethodManager::State> ime_state =
+      manager->GetActiveIMEState();
+  if (ime_state.get()) {
+    InputMethodDescriptors ext_ime_descriptors;
+    ime_state->GetInputMethodExtensions(&ext_ime_descriptors);
+    PopulateInputMethodListFromDescriptors(
+        ext_ime_descriptors,
+        &input_method_lists.third_party_extension_imes);
+  }
+
+  return RespondNow(OneArgument(input_method_lists.ToValue()));
+#endif
 }
 
 LanguageSettingsPrivateAddInputMethodFunction::
