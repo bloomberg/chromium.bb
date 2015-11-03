@@ -35,7 +35,7 @@ void EnforceMaxPromptSize(const base::string16& in_string,
 #else
 // One-dimensional eliding.  Trust the window system to break the string
 // appropriately, but limit its overall length to something reasonable.
-const int kMessageTextMaxSize = 3000;
+const int kMessageTextMaxSize = 2000;
 const int kDefaultPromptMaxSize = 2000;
 void EnforceMaxTextSize(const base::string16& in_string,
                         base::string16* out_string) {
