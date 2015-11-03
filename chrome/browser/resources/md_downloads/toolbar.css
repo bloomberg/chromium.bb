@@ -8,7 +8,7 @@
   color: white;
   content-sizing: padding-box;
   display: flex;
-  height: 56px;
+  min-height: 56px;
 }
 
 #title h1 {
