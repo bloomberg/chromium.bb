@@ -32,6 +32,10 @@ class GnPrepareOut(cr.PrepareOut):
     gn_args += (' is_debug=%s' %
         ('true' if cr.context['CR_BUILDTYPE'] == 'Debug' else 'false'))
 
+    arch = cr.context.Find('CR_ENVSETUP_ARCH') or ''
+    if arch:
+      gn_args += ' target_cpu="%s"' % ('x86' if arch == 'ia32' else arch)
+
     # Detect goma.
     goma_binaries = cr.Host.SearchPath('gomacc', [
       '{GOMA_DIR}',
