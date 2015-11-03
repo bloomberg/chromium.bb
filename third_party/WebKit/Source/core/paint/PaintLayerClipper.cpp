@@ -183,10 +183,8 @@ LayoutRect PaintLayerClipper::childrenClipRect() const
     return LayoutRect(clippingRootLayer->layoutObject()->localToAbsoluteQuad(FloatQuad(FloatRect(foregroundRect.rect()))).enclosingBoundingBox());
 }
 
-LayoutRect PaintLayerClipper::localClipRect() const
+LayoutRect PaintLayerClipper::localClipRect(const PaintLayer* clippingRootLayer) const
 {
-    // FIXME: border-radius not accounted for.
-    PaintLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect;
     ClipRectsContext context(clippingRootLayer, PaintingClipRects);

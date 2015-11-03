@@ -2172,7 +2172,10 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
     if (layoutObject()->isLayoutFlowThread())
         return LayoutRect();
 
-    LayoutRect result = clipper().localClipRect();
+    // If there is a clip applied by an ancestor to this PaintLayer but below or equal to |ancestorLayer|,
+    // use that clip as the bounds rather than the recursive bounding boxes, since the latter may be larger than the
+    // actual size. See https://bugs.webkit.org/show_bug.cgi?id=80372 for examples.
+    LayoutRect result = clipper().localClipRect(ancestorLayer);
     // TODO(chrishtr): avoid converting to IntRect and back.
     if (result == LayoutRect(LayoutRect::infiniteIntRect())) {
         result = physicalBoundingBox(LayoutPoint());

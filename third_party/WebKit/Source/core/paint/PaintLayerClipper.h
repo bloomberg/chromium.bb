@@ -157,7 +157,9 @@ public:
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
 
     LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
-    LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
+
+    // Returns the background clip rect of the layer in the local coordinate space. Only looks for clips up to the given ancestor.
+    LayoutRect localClipRect(const PaintLayer* ancestorLayer) const;
 
     ClipRect backgroundClipRect(const ClipRectsContext&) const;
 
