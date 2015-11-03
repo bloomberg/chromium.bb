@@ -2122,6 +2122,12 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableWebNotificationCustomLayouts,
                                switches::kDisableWebNotificationCustomLayouts)},
 #endif  // defined(ENABLE_NOTIFICATIONS) && defined(OS_ANDROID)
+#if defined(OS_WIN)
+    {"enable-appcontainer", IDS_FLAGS_ENABLE_APPCONTAINER_NAME,
+     IDS_FLAGS_ENABLE_APPCONTAINER_DESCRIPTION, kOsWin,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppContainer,
+                               switches::kDisableAppContainer)},
+#endif  // defined(OS_WIN)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

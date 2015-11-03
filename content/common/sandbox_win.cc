@@ -13,6 +13,7 @@
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -540,6 +541,21 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
 }
 #endif
 
+bool IsAppContainerEnabled() {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return false;
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  const std::string appcontainer_group_name =
+      base::FieldTrialList::FindFullName("EnableAppContainer");
+  if (command_line.HasSwitch(switches::kDisableAppContainer))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableAppContainer))
+    return true;
+  return base::StartsWith(appcontainer_group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
 }  // namespace
 
 void SetJobLevel(const base::CommandLine& cmd_line,
@@ -566,13 +582,8 @@ void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
 }
 
 void AddAppContainerPolicy(sandbox::TargetPolicy* policy, const wchar_t* sid) {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kEnableAppContainer)) {
-      policy->SetLowBox(sid);
-    }
-  }
+  if (IsAppContainerEnabled())
+    policy->SetLowBox(sid);
 }
 
 bool AddWin32kLockdownPolicy(sandbox::TargetPolicy* policy) {

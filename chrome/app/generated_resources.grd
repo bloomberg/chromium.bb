@@ -6656,6 +6656,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_ALL" desc="Enable Win32k lockdown for all plugins">
           All plugins
         </message>
+        <message name="IDS_FLAGS_ENABLE_APPCONTAINER_NAME" desc="Name of the flag to enable AppContainer lockdown experiment.">
+          Enable AppContainer Lockdown.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_APPCONTAINER_DESCRIPTION" desc="Description of the flag to enable AppContainer lockdown experiment.">
+          Enables the use of an AppContainer on sandboxed processes to improve security.
+        </message>
       </if>
 
       <!-- WebRTC logs -->
