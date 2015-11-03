@@ -9,20 +9,17 @@ related files.
 
 import argparse
 import filecmp
+import json
 import logging
 import os
 import re
 import sys
-import yaml
 import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from devil.utils import cmd_helper
 
 
-_CONFIG_VERSION_NUMBER_KEY = 'version_number'
-_YAML_VERSION_NUMBER_PATTERN = re.compile(
-    r'(^\s*%s\s*:\s*)(\d+)(.*$)' % _CONFIG_VERSION_NUMBER_KEY, re.MULTILINE)
 _XML_VERSION_NUMBER_PATTERN = re.compile(
     r'<integer name="google_play_services_version">(\d+)<\/integer>')
 
@@ -35,6 +32,39 @@ class DefaultsRawHelpFormatter(argparse.ArgumentDefaultsHelpFormatter,
   text for the description.
   '''
   pass
+
+
+class ConfigParser(object):
+  '''Reads and writes the configuration files for play services related scripts
+
+  The configuration files are JSON files. Here is the data they are expected
+  to contain:
+
+   -  version_number
+      Number. Mirrors @integer/google_play_services_version from the library.
+      Example: 815000
+
+  '''
+  _VERSION_NUMBER_KEY = 'version_number'
+
+  def __init__(self, path):
+    self.path = path
+    self.data = {}
+
+    with open(path, 'r') as stream:
+      self.data = json.load(stream)
+
+  @property
+  def version_number(self):
+    return self.data[self._VERSION_NUMBER_KEY]
+
+  def UpdateVersionNumber(self, new_version_number):
+    '''Updates the version number and saves it in the configuration file. '''
+
+    with open(self.path, 'w') as stream:
+      self.data[self._VERSION_NUMBER_KEY] = new_version_number
+      json.dump(self.data, stream, sort_keys=True, indent=2)
+      stream.write(os.linesep)
 
 
 def FileEquals(expected_file, actual_file):
@@ -70,38 +100,6 @@ def GetVersionNumberFromLibraryResources(version_xml):
     raise AttributeError('A value for google_play_services_version was not '
                          'found in ' + version_xml)
   return int(match.group(1))
-
-
-def UpdateVersionNumber(config_file_path, new_version_number):
-  '''Updates the version number in the update/preprocess configuration file.'''
-
-  with open(config_file_path, 'r+') as stream:
-    config_content = stream.read()
-    # Implemented as string replacement instead of yaml parsing to preserve
-    # whitespace and comments.
-    updated = _YAML_VERSION_NUMBER_PATTERN.sub(
-        r'\g<1>%s\g<3>' % new_version_number, config_content)
-    stream.seek(0)
-    stream.write(updated)
-
-
-def GetVersionNumber(config_file_path):
-  '''
-  Returns the version number from an update/preprocess configuration file.
-  '''
-
-  return int(GetConfig(config_file_path)[_CONFIG_VERSION_NUMBER_KEY])
-
-
-def GetConfig(path):
-  '''
-  Returns the configuration from an an update/preprocess configuration file as
-  as dictionary.
-  '''
-
-  with open(path, 'r') as stream:
-    config = yaml.load(stream)
-  return config
 
 
 def MakeLocalCommit(repo_root, files_to_commit, message):

@@ -42,7 +42,7 @@ GMS_CLOUD_STORAGE = 'chrome-sdk-extras'
 # Path to the default configuration file. It exposes the currently installed
 # version of the library in a human readable way.
 CONFIG_DEFAULT_PATH = os.path.join(constants.DIR_SOURCE_ROOT, 'build',
-                                   'android', 'play_services', 'config.yaml')
+                                   'android', 'play_services', 'config.json')
 
 LICENSE_FILE_NAME = 'LICENSE'
 LIBRARY_FILE_NAME = 'google_play_services_library.zip'
@@ -123,7 +123,7 @@ def AddCommonArguments(parser):
                       help='name of the bucket where the files are stored',
                       default=GMS_CLOUD_STORAGE)
   parser.add_argument('--config',
-                      help='YAML Configuration file',
+                      help='JSON Configuration file',
                       default=CONFIG_DEFAULT_PATH)
   parser.add_argument('--dry-run',
                       action='store_true',
@@ -157,8 +157,9 @@ def Download(args):
     logging.debug('The Google Play services library is up to date.')
     return 0
 
+  config = utils.ConfigParser(args.config)
   bucket_path = _VerifyBucketPathFormat(args.bucket,
-                                        utils.GetVersionNumber(args.config),
+                                        config.version_number,
                                         args.dry_run)
 
   tmp_root = tempfile.mkdtemp()
@@ -245,13 +246,13 @@ def Upload(args):
     logging.error('The repo is dirty. Please commit or stash your changes.')
     return -1
 
-  old_version_number = utils.GetVersionNumber(args.config)
+  config = utils.ConfigParser(args.config)
 
   version_xml = os.path.join(paths.lib, 'res', 'values', 'version.xml')
   new_version_number = utils.GetVersionNumberFromLibraryResources(version_xml)
   logging.debug('comparing versions: new=%d, old=%s',
-                new_version_number, old_version_number)
-  if new_version_number <= old_version_number and not args.force:
+                new_version_number, config.version_number)
+  if new_version_number <= config.version_number and not args.force:
     logging.info('The checked in version of the library is already the latest '
                  'one. No update needed. Please rerun with --force to skip '
                  'this check.')
@@ -281,13 +282,13 @@ def Upload(args):
   finally:
     shutil.rmtree(tmp_root)
 
-  utils.UpdateVersionNumber(args.config, new_version_number)
+  config.UpdateVersionNumber(new_version_number)
 
   if not args.skip_git:
     commit_message = ('Update the Google Play services dependency to %s\n'
                       '\n') % new_version_number
     utils.MakeLocalCommit(constants.DIR_SOURCE_ROOT,
-                          [new_lib_zip_sha1, new_license_sha1, args.config],
+                          [new_lib_zip_sha1, new_license_sha1, config.path],
                           commit_message)
 
   return 0
