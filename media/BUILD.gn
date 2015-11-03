@@ -791,6 +791,7 @@ test("media_perftests") {
     "//testing/gtest",
     "//testing/perf",
     "//third_party/widevine/cdm:version_h",
+    "//third_party/libyuv",
     "//ui/gfx:test_support",
   ]
   if (is_android) {
