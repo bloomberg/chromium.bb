@@ -621,6 +621,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       use_dx11_(false),
       dx11_video_format_converter_media_type_needs_init_(true),
       gl_context_(gl_context),
+      using_angle_device_(false),
       weak_this_factory_(this) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
@@ -725,15 +726,12 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.Receive());
   RETURN_ON_HR_FAILURE(hr, "Direct3DCreate9Ex failed", false);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableD3D11)) {
-    base::win::ScopedComPtr<IDirect3DDevice9> angle_device =
-        QueryDeviceObjectFromANGLE<IDirect3DDevice9>(EGL_D3D9_DEVICE_ANGLE);
-    RETURN_ON_FAILURE(
-        angle_device.get(),
-        "Failed to query D3D9 device object from ANGLE",
-        false);
+  base::win::ScopedComPtr<IDirect3DDevice9> angle_device =
+      QueryDeviceObjectFromANGLE<IDirect3DDevice9>(EGL_D3D9_DEVICE_ANGLE);
+  if (angle_device.get())
+    using_angle_device_ = true;
 
+  if (using_angle_device_) {
     hr = d3d9_device_ex_.QueryFrom(angle_device.get());
     RETURN_ON_HR_FAILURE(hr,
         "QueryInterface for IDirect3DDevice9Ex from angle device failed",
@@ -793,6 +791,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
       "Failed to query DX11 device object from ANGLE",
       false);
 
+  using_angle_device_ = true;
   d3d11_device_ = angle_device;
   d3d11_device_->GetImmediateContext(d3d11_device_context_.Receive());
   RETURN_ON_FAILURE(
@@ -804,10 +803,9 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // context are synchronized across threads. We have multiple threads
   // accessing the context, the media foundation decoder threads and the
   // decoder thread via the video format conversion transform.
-  base::win::ScopedComPtr<ID3D10Multithread> multi_threaded;
-  hr = multi_threaded.QueryFrom(d3d11_device_context_.get());
+  hr = multi_threaded_.QueryFrom(d3d11_device_context_.get());
   RETURN_ON_HR_FAILURE(hr, "Failed to query ID3D10Multithread", false);
-  multi_threaded->SetMultithreadProtected(TRUE);
+  multi_threaded_->SetMultithreadProtected(TRUE);
 
   hr = d3d11_device_manager_->ResetDevice(d3d11_device_.get(),
                                           dx11_dev_manager_reset_token_);
@@ -1498,6 +1496,7 @@ void DXVAVideoDecodeAccelerator::StopOnError(
 void DXVAVideoDecodeAccelerator::Invalidate() {
   if (GetState() == kUninitialized)
     return;
+
   decoder_thread_.Stop();
   weak_this_factory_.InvalidateWeakPtrs();
   output_picture_buffers_.clear();
@@ -1854,6 +1853,20 @@ void DXVAVideoDecodeAccelerator::CopySurface(IDirect3DSurface9* src_surface,
   hr = query_->Issue(D3DISSUE_END);
   RETURN_ON_HR_FAILURE(hr, "Failed to issue END",);
 
+  // If we are sharing the ANGLE device we don't need to wait for the Flush to
+  // complete.
+  if (using_angle_device_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
+                   weak_this_factory_.GetWeakPtr(),
+                   src_surface,
+                   dest_surface,
+                   picture_buffer_id,
+                   input_buffer_id));
+    return;
+  }
+
   // Flush the decoder device to ensure that the decoded frame is copied to the
   // target surface.
   decoder_thread_task_runner_->PostDelayedTask(
@@ -2011,6 +2024,10 @@ void DXVAVideoDecodeAccelerator::CopyTexture(ID3D11Texture2D* src_texture,
 
   output_sample->AddBuffer(output_buffer.get());
 
+  // Lock the device here as we are accessing the destination texture created
+  // on the main thread.
+  multi_threaded_->Enter();
+
   DWORD status = 0;
   MFT_OUTPUT_DATA_BUFFER format_converter_output = {};
   format_converter_output.pSample = output_sample.get();
@@ -2023,6 +2040,8 @@ void DXVAVideoDecodeAccelerator::CopyTexture(ID3D11Texture2D* src_texture,
   d3d11_device_context_->Flush();
   d3d11_device_context_->End(d3d11_query_.get());
 
+  multi_threaded_->Leave();
+
   if (FAILED(hr)) {
     base::debug::Alias(&hr);
     // TODO(ananta)
@@ -2033,15 +2052,14 @@ void DXVAVideoDecodeAccelerator::CopyTexture(ID3D11Texture2D* src_texture,
         "Failed to convert output sample format.", PLATFORM_FAILURE,);
   }
 
-  decoder_thread_task_runner_->PostDelayedTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::FlushDecoder,
-                 base::Unretained(this), 0,
-                 reinterpret_cast<IDirect3DSurface9*>(NULL),
-                 reinterpret_cast<IDirect3DSurface9*>(NULL),
-                 picture_buffer_id, input_buffer_id),
-                 base::TimeDelta::FromMilliseconds(
-                    kFlushDecoderSurfaceTimeoutMs));
+      base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
+                 weak_this_factory_.GetWeakPtr(),
+                 nullptr,
+                 nullptr,
+                 picture_buffer_id,
+                 input_buffer_id));
 }
 
 void DXVAVideoDecodeAccelerator::FlushDecoder(
@@ -2065,22 +2083,12 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(
   // infinite loop.
   // Workaround is to have an upper limit of 4 on the number of iterations to
   // wait for the Flush to finish.
+  DCHECK(!use_dx11_);
+
   HRESULT hr = E_FAIL;
 
-  if (use_dx11_) {
-    BOOL query_data = 0;
-    hr = d3d11_device_context_->GetData(d3d11_query_.get(), &query_data,
-                                        sizeof(BOOL), 0);
-    if (FAILED(hr)) {
-      base::debug::Alias(&hr);
-      // TODO(ananta)
-      // Remove this CHECK when the change to use DX11 for H/W decoding
-      // stablizes.
-      CHECK(false);
-    }
-  } else {
-    hr = query_->GetData(NULL, 0, D3DGETDATA_FLUSH);
-  }
+  hr = query_->GetData(NULL, 0, D3DGETDATA_FLUSH);
+
   if ((hr == S_FALSE) && (++iterations < kMaxIterationsForD3DFlush)) {
     decoder_thread_task_runner_->PostDelayedTask(
         FROM_HERE,

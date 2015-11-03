@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -256,6 +257,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   base::win::ScopedComPtr<ID3D11Device > d3d11_device_;
   base::win::ScopedComPtr<IMFDXGIDeviceManager> d3d11_device_manager_;
   base::win::ScopedComPtr<ID3D11Query> d3d11_query_;
+  base::win::ScopedComPtr<ID3D10Multithread> multi_threaded_;
 
   // Ideally the reset token would be a stack variable which is used while
   // creating the device manager. However it seems that the device manager
@@ -363,11 +365,16 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // The GLContext to be used by the decoder.
   scoped_refptr<gfx::GLContext> gl_context_;
 
+  // Set to true if we are sharing ANGLE's device.
+  bool using_angle_device_;
+
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
 
   // Function pointer for the MFCreateDXGIDeviceManager API.
   static CreateDXGIDeviceManager create_dxgi_device_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(DXVAVideoDecodeAccelerator);
 };
 
 }  // namespace content
