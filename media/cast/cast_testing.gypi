@@ -76,6 +76,8 @@
       'sources': [
         '<(DEPTH)/media/base/run_all_unittests.cc',
         'logging/encoding_event_subscriber_unittest.cc',
+        'logging/logging_impl_unittest.cc',
+        'logging/logging_raw_unittest.cc',
         'logging/receiver_time_offset_estimator_impl_unittest.cc',
         'logging/serialize_deserialize_test.cc',
         'logging/simple_event_subscriber_unittest.cc',

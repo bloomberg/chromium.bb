@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/message_loop/message_loop.h"
+#include "media/cast/logging/logging_impl.h"
 
 namespace media {
 namespace cast {
@@ -44,11 +45,11 @@ PacedSender::PacedSender(
     size_t target_burst_size,
     size_t max_burst_size,
     base::TickClock* clock,
-    std::vector<PacketEvent>* recent_packet_events,
+    LoggingImpl* logging,
     PacketSender* transport,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner)
     : clock_(clock),
-      recent_packet_events_(recent_packet_events),
+      logging_(logging),
       transport_(transport),
       transport_task_runner_(transport_task_runner),
       audio_ssrc_(0),
@@ -61,7 +62,8 @@ PacedSender::PacedSender(
       current_burst_size_(0),
       state_(State_Unblocked),
       has_reached_upper_bound_once_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 PacedSender::~PacedSender() {}
 
@@ -318,37 +320,27 @@ void PacedSender::SendStoredPackets() {
   state_ = State_Unblocked;
 }
 
-void PacedSender::LogPacketEvent(const Packet& packet, CastLoggingEvent type) {
-  if (!recent_packet_events_)
-    return;
-
-  recent_packet_events_->push_back(PacketEvent());
-  PacketEvent& event = recent_packet_events_->back();
-
-  // Populate the new PacketEvent by parsing the wire-format |packet|.
-  //
-  // TODO(miu): This parsing logic belongs in RtpParser.
-  event.timestamp = clock_->NowTicks();
-  event.type = type;
-  base::BigEndianReader reader(reinterpret_cast<const char*>(&packet[0]),
-                               packet.size());
-  bool success = reader.Skip(4);
-  success &= reader.ReadU32(&event.rtp_timestamp);
+void PacedSender::LogPacketEvent(const Packet& packet, CastLoggingEvent event) {
+  // Get SSRC from packet and compare with the audio_ssrc / video_ssrc to see
+  // if the packet is audio or video.
+  DCHECK_GE(packet.size(), 12u);
+  base::BigEndianReader reader(reinterpret_cast<const char*>(&packet[8]), 4);
   uint32 ssrc;
-  success &= reader.ReadU32(&ssrc);
+  bool success = reader.ReadU32(&ssrc);
+  DCHECK(success);
+  bool is_audio;
   if (ssrc == audio_ssrc_) {
-    event.media_type = AUDIO_EVENT;
+    is_audio = true;
   } else if (ssrc == video_ssrc_) {
-    event.media_type = VIDEO_EVENT;
+    is_audio = false;
   } else {
     DVLOG(3) << "Got unknown ssrc " << ssrc << " when logging packet event";
     return;
   }
-  success &= reader.Skip(2);
-  success &= reader.ReadU16(&event.packet_id);
-  success &= reader.ReadU16(&event.max_packet_id);
-  event.size = packet.size();
-  DCHECK(success);
+
+  EventMediaType media_type = is_audio ? AUDIO_EVENT : VIDEO_EVENT;
+  logging_->InsertSinglePacketEvent(clock_->NowTicks(), event, media_type,
+      packet);
 }
 
 }  // namespace cast

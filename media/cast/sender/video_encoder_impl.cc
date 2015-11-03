@@ -45,7 +45,6 @@ void EncodeVideoFrameOnEncoderThread(
 
   scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
   encoder->Encode(video_frame, reference_time, encoded_frame.get());
-  encoded_frame->encode_completion_time = environment->Clock()->NowTicks();
   environment->PostTask(
       CastEnvironment::MAIN,
       FROM_HERE,

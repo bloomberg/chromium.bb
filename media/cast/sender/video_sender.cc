@@ -41,35 +41,26 @@ const int kTargetUtilizationPercentage = 75;
 
 // Extract capture begin/end timestamps from |video_frame|'s metadata and log
 // it.
-void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
+void LogVideoCaptureTimestamps(const CastEnvironment& cast_environment,
                                const media::VideoFrame& video_frame,
                                RtpTimestamp rtp_timestamp) {
-  scoped_ptr<FrameEvent> capture_begin_event(new FrameEvent());
-  capture_begin_event->type = FRAME_CAPTURE_BEGIN;
-  capture_begin_event->media_type = VIDEO_EVENT;
-  capture_begin_event->rtp_timestamp = rtp_timestamp;
-
-  scoped_ptr<FrameEvent> capture_end_event(new FrameEvent());
-  capture_end_event->type = FRAME_CAPTURE_END;
-  capture_end_event->media_type = VIDEO_EVENT;
-  capture_end_event->rtp_timestamp = rtp_timestamp;
-  capture_end_event->width = video_frame.visible_rect().width();
-  capture_end_event->height = video_frame.visible_rect().height();
-
+  base::TimeTicks capture_begin_time;
+  base::TimeTicks capture_end_time;
   if (!video_frame.metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-          &capture_begin_event->timestamp) ||
+          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_begin_time) ||
       !video_frame.metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_END_TIME,
-          &capture_end_event->timestamp)) {
+          media::VideoFrameMetadata::CAPTURE_END_TIME, &capture_end_time)) {
     // The frame capture timestamps were not provided by the video capture
     // source.  Simply log the events as happening right now.
-    capture_begin_event->timestamp = capture_end_event->timestamp =
-        cast_environment->Clock()->NowTicks();
+    capture_begin_time = capture_end_time =
+        cast_environment.Clock()->NowTicks();
   }
-
-  cast_environment->logger()->DispatchFrameEvent(capture_begin_event.Pass());
-  cast_environment->logger()->DispatchFrameEvent(capture_end_event.Pass());
+  cast_environment.Logging()->InsertFrameEvent(
+      capture_begin_time, FRAME_CAPTURE_BEGIN, VIDEO_EVENT, rtp_timestamp,
+      kFrameIdUnknown);
+  cast_environment.Logging()->InsertCapturedVideoFrameEvent(
+      capture_end_time, rtp_timestamp, video_frame.visible_rect().width(),
+      video_frame.visible_rect().height());
 }
 
 }  // namespace
@@ -151,8 +142,7 @@ void VideoSender::InsertRawVideoFrame(
 
   const RtpTimestamp rtp_timestamp =
       TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
-  LogVideoCaptureTimestamps(cast_environment_.get(), *video_frame,
-                            rtp_timestamp);
+  LogVideoCaptureTimestamps(*cast_environment_, *video_frame, rtp_timestamp);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT2(

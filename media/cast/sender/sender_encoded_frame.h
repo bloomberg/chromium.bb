@@ -5,7 +5,6 @@
 #ifndef MEDIA_CAST_SENDER_SENDER_ENCODED_FRAME_H_
 #define MEDIA_CAST_SENDER_SENDER_ENCODED_FRAME_H_
 
-#include "base/time/time.h"
 #include "media/cast/net/cast_transport_config.h"
 
 namespace media {
@@ -43,9 +42,6 @@ struct SenderEncodedFrame : public EncodedFrame {
   //
   // TODO(miu): Rename to idealized_bitrate_utilization.
   double lossy_utilization;
-
-  // The time at which the encode of the frame completed.
-  base::TimeTicks encode_completion_time;
 };
 
 }  // namespace cast
