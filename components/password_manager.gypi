@@ -227,6 +227,8 @@
         # Note: sources list duplicated in GN build.
         'password_manager/sync/browser/password_data_type_controller.cc',
         'password_manager/sync/browser/password_data_type_controller.h',
+        'password_manager/sync/browser/password_manager_setting_migrator_service.cc',
+        'password_manager/sync/browser/password_manager_setting_migrator_service.h',
         'password_manager/sync/browser/password_model_worker.cc',
         'password_manager/sync/browser/password_model_worker.h',
         'password_manager/sync/browser/password_sync_util.cc',

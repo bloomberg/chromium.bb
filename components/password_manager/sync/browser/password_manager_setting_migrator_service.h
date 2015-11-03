@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_
+#define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 
@@ -151,4 +151,4 @@ class PasswordManagerSettingMigratorService
 
 }  // namespace password_manager
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_

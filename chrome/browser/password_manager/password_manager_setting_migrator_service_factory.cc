@@ -4,12 +4,12 @@
 
 #include "chrome/browser/password_manager/password_manager_setting_migrator_service_factory.h"
 
-#include "chrome/browser/password_manager/password_manager_setting_migrator_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
 
 // static
 PasswordManagerSettingMigratorServiceFactory*

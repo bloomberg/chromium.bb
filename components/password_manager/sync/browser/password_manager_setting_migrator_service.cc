@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_manager_setting_migrator_service.h"
+#include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/password_manager_settings_migration_experiment.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/sync_driver/sync_service.h"
