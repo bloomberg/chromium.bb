@@ -17,10 +17,10 @@ gen_spec() {
   rm -f "${SPEC}"
   # Trunk packages need to install to a custom path so they don't conflict with
   # release channel packages.
-  local PACKAGE_FILENAME="${PACKAGE}"
+  local PACKAGE_FILENAME="${PACKAGE}-${CHANNEL}"
   if [ "$CHANNEL" != "stable" ]; then
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
-    PACKAGE_FILENAME="${PACKAGE}-${CHANNEL}"
+    local PACKAGE="${PACKAGE}-${CHANNEL}"
     local MENUNAME="${MENUNAME} (${CHANNEL})"
   fi
   process_template "${SCRIPTDIR}/chrome.spec.template" "${SPEC}"
