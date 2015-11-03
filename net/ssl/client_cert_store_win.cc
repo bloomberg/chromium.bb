@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "crypto/scoped_capi_types.h"
 #include "crypto/wincrypt_shim.h"
 #include "net/cert/x509_util.h"
 
@@ -145,13 +144,30 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
 
 ClientCertStoreWin::ClientCertStoreWin() {}
 
+ClientCertStoreWin::ClientCertStoreWin(HCERTSTORE cert_store) {
+  DCHECK(cert_store);
+  cert_store_.reset(cert_store);
+}
+
 ClientCertStoreWin::~ClientCertStoreWin() {}
 
 void ClientCertStoreWin::GetClientCerts(const SSLCertRequestInfo& request,
-                                         CertificateList* selected_certs,
-                                         const base::Closure& callback) {
-  // Client certificates of the user are in the "MY" system certificate store.
-  HCERTSTORE my_cert_store = CertOpenSystemStore(NULL, L"MY");
+                                        CertificateList* selected_certs,
+                                        const base::Closure& callback) {
+  if (cert_store_) {
+    // Use the existing client cert store. Note: Under some situations,
+    // it's possible for this to return certificates that aren't usable
+    // (see below).
+    GetClientCertsImpl(cert_store_, request, selected_certs);
+    callback.Run();
+    return;
+  }
+
+  // Always open a new instance of the "MY" store, to ensure that there
+  // are no previously cached certificates being reused after they're
+  // no longer available (some smartcard providers fail to update the "MY"
+  // store handles and instead interpose CertOpenSystemStore).
+  ScopedHCERTSTORE my_cert_store(CertOpenSystemStore(NULL, L"MY"));
   if (!my_cert_store) {
     PLOG(ERROR) << "Could not open the \"MY\" system certificate store: ";
     selected_certs->clear();
@@ -160,8 +176,7 @@ void ClientCertStoreWin::GetClientCerts(const SSLCertRequestInfo& request,
   }
 
   GetClientCertsImpl(my_cert_store, request, selected_certs);
-  if (!CertCloseStore(my_cert_store, CERT_CLOSE_STORE_CHECK_FLAG))
-    PLOG(ERROR) << "Could not close the \"MY\" system certificate store: ";
+
   callback.Run();
 }
 
@@ -169,11 +184,6 @@ bool ClientCertStoreWin::SelectClientCertsForTesting(
     const CertificateList& input_certs,
     const SSLCertRequestInfo& request,
     CertificateList* selected_certs) {
-  typedef crypto::ScopedCAPIHandle<
-      HCERTSTORE,
-      crypto::CAPIDestroyerWithFlags<HCERTSTORE,
-                                     CertCloseStore, 0> > ScopedHCERTSTORE;
-
   ScopedHCERTSTORE test_store(CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL, 0,
                                             NULL));
   if (!test_store)
