@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
@@ -30,6 +31,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -143,6 +146,29 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
   ash::MultiProfileUMA::RecordTeleportWindowType(window_type);
 }
 
+// This is used to monitor profile destruction.
+class MultiUserWindowManagerCrOSShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static MultiUserWindowManagerCrOSShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<
+        MultiUserWindowManagerCrOSShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<
+      MultiUserWindowManagerCrOSShutdownNotifierFactory>;
+
+  MultiUserWindowManagerCrOSShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "MultiUserWindowManagerChromeOS") {
+    DependsOn(SigninManagerFactory::GetInstance());
+  }
+  ~MultiUserWindowManagerCrOSShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerCrOSShutdownNotifierFactory);
+};
+
 }  // namespace
 
 namespace chrome {
@@ -191,7 +217,11 @@ class AnimationSetter {
 // window observer will take care of that.
 class AppObserver : public extensions::AppWindowRegistry::Observer {
  public:
-  explicit AppObserver(const std::string& user_id) : user_id_(user_id) {}
+  explicit AppObserver(
+      const std::string& user_id,
+      KeyedServiceShutdownNotifier::Subscription* shutdown_notification)
+      : user_id_(user_id),
+        profile_shutdown_notification_(shutdown_notification) {}
   ~AppObserver() override {}
 
   // AppWindowRegistry::Observer overrides:
@@ -204,6 +234,12 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
 
  private:
   std::string user_id_;
+
+  // This notification is triggered when the profile gets destroyed (during
+  // shutdown process).
+  // The callback (stored in notification) destroyes AppObserver object.
+  scoped_ptr<KeyedServiceShutdownNotifier::Subscription>
+      profile_shutdown_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(AppObserver);
 };
@@ -238,10 +274,7 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
     Profile* profile = multi_user_util::GetProfileFromUserID(
         app_observer_iterator->first);
     CHECK(profile) << "profile not found for:" << app_observer_iterator->first;
-    extensions::AppWindowRegistry::Get(profile)
-        ->RemoveObserver(app_observer_iterator->second);
-    delete app_observer_iterator->second;
-    user_id_to_app_observer_.erase(app_observer_iterator);
+    RemoveUser(app_observer_iterator->first, profile);
     app_observer_iterator = user_id_to_app_observer_.begin();
   }
 
@@ -373,7 +406,15 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
   if (user_id_to_app_observer_.find(user_id) != user_id_to_app_observer_.end())
     return;
 
-  user_id_to_app_observer_[user_id] = new AppObserver(user_id);
+  scoped_ptr<KeyedServiceShutdownNotifier::Subscription> notification =
+      MultiUserWindowManagerCrOSShutdownNotifierFactory::GetInstance()
+          ->Get(profile)
+          ->Subscribe(base::Bind(&MultiUserWindowManagerChromeOS::RemoveUser,
+                                 base::Unretained(this), user_id,
+                                 base::Unretained(profile)));
+
+  user_id_to_app_observer_[user_id] =
+      new AppObserver(user_id, notification.release());
   extensions::AppWindowRegistry::Get(profile)
       ->AddObserver(user_id_to_app_observer_[user_id]);
 
@@ -744,6 +785,22 @@ int MultiUserWindowManagerChromeOS::GetAdjustedAnimationTimeInMS(
     int default_time_in_ms) const {
   return animation_speed_ == ANIMATION_SPEED_NORMAL ? default_time_in_ms :
       (animation_speed_ == ANIMATION_SPEED_FAST ? 10 : 0);
+}
+
+void MultiUserWindowManagerChromeOS::RemoveUser(const std::string& user_id,
+                                                Profile* profile) {
+  UserIDToAppWindowObserver::iterator app_observer_iterator =
+      user_id_to_app_observer_.find(user_id);
+  DCHECK(app_observer_iterator != user_id_to_app_observer_.end())
+      << "User id '" << user_id << "', profile=" << profile
+      << " was not found.";
+  if (app_observer_iterator == user_id_to_app_observer_.end())
+    return;
+
+  extensions::AppWindowRegistry::Get(profile)
+      ->RemoveObserver(app_observer_iterator->second);
+  delete app_observer_iterator->second;
+  user_id_to_app_observer_.erase(app_observer_iterator);
 }
 
 }  // namespace chrome
