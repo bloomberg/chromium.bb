@@ -350,7 +350,6 @@ class SigninScreenHandler
   void HandleUnlockOnLoginSuccess();
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
-  void HandleUpdateOfflineLogin(bool offline_login_active);
   void HandleShowSupervisedUserCreationScreen();
   void HandleFocusPod(const std::string& user_id);
   void HandleHardlockPod(const std::string& user_id);
@@ -445,7 +444,6 @@ class SigninScreenHandler
   NetworkErrorModel* network_error_model_;
   CoreOobeActor* core_oobe_actor_;
 
-  bool offline_login_active_ = false;
   NetworkStateInformer::State last_network_state_ =
       NetworkStateInformer::UNKNOWN;
 

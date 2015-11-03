@@ -270,8 +270,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
           var idleDuration = Date.now() - self.mostRecentUserActivity_;
           if (idleDuration > IDLE_TIME_UNTIL_EXIT_OFFLINE_IN_MILLISECONDS) {
-            self.isLocal = false;
             self.monitorOfflineIdle(false);
+            Oobe.resetSigninUI(true);
           }
         }, IDLE_TIME_CHECK_FREQUENCY);
       }

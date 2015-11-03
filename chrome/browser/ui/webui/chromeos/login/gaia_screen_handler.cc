@@ -351,6 +351,8 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("toggleEasyBootstrap",
               &GaiaScreenHandler::HandleToggleEasyBootstrap);
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
+  AddCallback("updateOfflineLogin",
+              &GaiaScreenHandler::set_offline_login_is_active);
 }
 
 OobeUI::Screen GaiaScreenHandler::GetCurrentScreen() const {
@@ -370,7 +372,8 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
   const NetworkPortalDetector::CaptivePortalStatus previous_status =
       captive_portal_status_;
   captive_portal_status_ = state.status;
-  if (IsOnline(captive_portal_status_) == IsOnline(previous_status) ||
+  if (offline_login_is_active() ||
+      IsOnline(captive_portal_status_) == IsOnline(previous_status) ||
       disable_restrictive_proxy_check_for_test_ ||
       GetCurrentScreen() != OobeUI::SCREEN_GAIA_SIGNIN)
     return;

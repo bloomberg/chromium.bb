@@ -492,8 +492,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleUnlockOnLoginSuccess);
   AddCallback("showLoadingTimeoutError",
               &SigninScreenHandler::HandleShowLoadingTimeoutError);
-  AddCallback("updateOfflineLogin",
-              &SigninScreenHandler::HandleUpdateOfflineLogin);
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
   AddCallback("getPublicSessionKeyboardLayouts",
               &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
@@ -685,8 +683,10 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   const bool is_gaia_error =
       FrameError() != net::OK && FrameError() != net::ERR_NETWORK_CHANGED;
   const bool is_gaia_signin = IsGaiaVisible() || IsGaiaHiddenByError();
+  const bool offline_login_active =
+      gaia_screen_handler_->offline_login_is_active();
   const bool error_screen_should_overlay =
-      !offline_login_active_ && IsGaiaVisible();
+      !offline_login_active && IsGaiaVisible();
   const bool from_not_online_to_online_transition =
       is_online && last_network_state_ != NetworkStateInformer::ONLINE;
   last_network_state_ = state;
@@ -706,7 +706,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   }
 
   // Use the online login page if the user has not used the machine for awhile.
-  if (offline_login_active_)
+  if (offline_login_active)
     gaia_screen_handler_->MonitorOfflineIdle(is_online);
 
   // Reload frame if network state is changed from {!ONLINE} -> ONLINE state.
@@ -742,7 +742,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   }
 
   if ((!is_online || is_gaia_loading_timeout || is_gaia_error) &&
-      !offline_login_active_) {
+      !offline_login_active) {
     SetupAndShowOfflineMessage(state, reason);
   } else {
     HideOfflineMessage(state, reason);
@@ -1233,10 +1233,6 @@ void SigninScreenHandler::HandleUnlockOnLoginSuccess() {
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError() {
   UpdateState(NetworkError::ERROR_REASON_LOADING_TIMEOUT);
-}
-
-void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
-  offline_login_active_ = offline_login_active;
 }
 
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {

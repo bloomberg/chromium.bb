@@ -225,6 +225,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // into BaseScreenHandler.
   OobeUI::Screen GetCurrentScreen() const;
 
+  bool offline_login_is_active() const { return offline_login_is_active_; }
+  void set_offline_login_is_active(bool offline_login_is_active) {
+    offline_login_is_active_ = offline_login_is_active;
+  }
+
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
 
@@ -288,6 +293,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // TODO (antrim@): GaiaScreenHandler shouldn't communicate with
   // signin_screen_handler directly.
   SigninScreenHandler* signin_screen_handler_ = nullptr;
+
+  // True if offline GAIA is active.
+  bool offline_login_is_active_ = false;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 
