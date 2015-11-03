@@ -2438,18 +2438,14 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 updatePaintProperties();
 
-            if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && !m_frame->document()->printing()) {
+            if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && !m_frame->document()->printing())
                 synchronizedPaint();
-                if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-                    compositeForSlimmingPaintV2();
-            }
 
             if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
                 updateFrameTimingRequestsIfNeeded();
 
             ASSERT(!view->hasPendingSelection());
             ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
-                || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean)
                 || (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && lifecycle().state() == DocumentLifecycle::PaintClean));
         }
     }
@@ -2478,22 +2474,14 @@ void FrameView::synchronizedPaint()
     // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree,
     // or when the FrameView is the main frame view of a page overlay. The page overlay is in the layer tree of
     // the host page and will be painted during synchronized painting of the host page.
-    if (GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking()) {
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            // TODO(wangxianzhu,chrishtr): What about the extra graphics layers for overflow control, virtual viewport, etc?
-            if (rootGraphicsLayer->drawsContent()) {
-                GraphicsContext context(*rootGraphicsLayer->paintController());
-                rootGraphicsLayer->paint(context, nullptr);
-            }
-        } else {
-            // Find the real root GraphicsLayer because we also need to paint layers not under the root graphics layer of
-            // the LayoutView, e.g. scrollbar layers created by PaintLayerCompositor and VisualViewport.
-            // We could ask PaintLayerCompositor and VisualViewport for the real root GraphicsLayer, but the following loop
-            // has the least dependency to those things which might change for slimming paint v2.
-            while (GraphicsLayer* parent = rootGraphicsLayer->parent())
-                rootGraphicsLayer = parent;
-            synchronizedPaintRecursively(rootGraphicsLayer);
-        }
+    if (GraphicsLayer* rootGraphicsLayer = view->compositor()->rootGraphicsLayer()) {
+        // Find the real root GraphicsLayer because we also need to paint layers not under the root graphics layer of
+        // the LayoutView, e.g. scrollbar layers created by PaintLayerCompositor and VisualViewport.
+        // We could ask PaintLayerCompositor and VisualViewport for the real root GraphicsLayer, but the following loop
+        // has the least dependency to those things which might change for slimming paint v2.
+        while (GraphicsLayer* parent = rootGraphicsLayer->parent())
+            rootGraphicsLayer = parent;
+        synchronizedPaintRecursively(rootGraphicsLayer);
     }
 
     forAllNonThrottledFrameViews([](FrameView& frameView) {
@@ -2505,36 +2493,23 @@ void FrameView::synchronizedPaint()
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 {
     if (graphicsLayer->drawsContent()) {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
         ASSERT(graphicsLayer->paintController());
-
         GraphicsContext context(*graphicsLayer->paintController());
         graphicsLayer->paint(context, nullptr);
         graphicsLayer->paintController()->commitNewDisplayItems();
     }
 
-    if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
-        synchronizedPaintRecursively(maskLayer);
-    if (GraphicsLayer* contentsClippingMaskLayer = graphicsLayer->contentsClippingMaskLayer())
-        synchronizedPaintRecursively(contentsClippingMaskLayer);
-    if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
-        synchronizedPaintRecursively(replicaLayer);
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
+            synchronizedPaintRecursively(maskLayer);
+        if (GraphicsLayer* contentsClippingMaskLayer = graphicsLayer->contentsClippingMaskLayer())
+            synchronizedPaintRecursively(contentsClippingMaskLayer);
+        if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
+            synchronizedPaintRecursively(replicaLayer);
+    }
 
     for (auto& child : graphicsLayer->children())
         synchronizedPaintRecursively(child);
-}
-
-void FrameView::compositeForSlimmingPaintV2()
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
-
-    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2); });
-
-    if (GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking())
-        rootGraphicsLayer->paintController()->commitNewDisplayItems();
-
-    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean); });
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()

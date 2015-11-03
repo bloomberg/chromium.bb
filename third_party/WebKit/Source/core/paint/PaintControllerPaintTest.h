@@ -76,16 +76,11 @@ protected:
         }
     }
 
-    // TODO(who removes pre-v2 code): rename to composite().
     void commit()
     {
-        // For v1, only root graphics layer is supported.
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            document().view()->compositeForSlimmingPaintV2();
-        } else {
-            rootPaintController().commitNewDisplayItems();
-            document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
-        }
+        // Only root graphics layer is supported.
+        rootPaintController().commitNewDisplayItems();
+        document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
     }
 
 private:

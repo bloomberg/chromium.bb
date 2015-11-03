@@ -233,31 +233,11 @@ bool DocumentLifecycle::canAdvanceTo(State nextState) const
     case PaintClean:
         if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
             break;
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            if (nextState == InStyleRecalc)
-                return true;
-            if (nextState == InPreLayout)
-                return true;
-            if (nextState == InCompositingUpdate)
-                return true;
-        }
-        if (nextState == InCompositingForSlimmingPaintV2 && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            return true;
-        break;
-    case InCompositingForSlimmingPaintV2:
-        if (nextState == CompositingForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            return true;
-        break;
-    case CompositingForSlimmingPaintV2Clean:
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            return false;
         if (nextState == InStyleRecalc)
             return true;
         if (nextState == InPreLayout)
             return true;
         if (nextState == InCompositingUpdate)
-            return true;
-        if (nextState == CompositingForSlimmingPaintV2Clean)
             return true;
         break;
     case Stopping:
@@ -283,8 +263,7 @@ bool DocumentLifecycle::canRewindTo(State nextState) const
         || m_state == LayoutClean
         || m_state == CompositingClean
         || m_state == PaintInvalidationClean
-        || (m_state == PaintClean && RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        || (m_state == CompositingForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        || (m_state == PaintClean && RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
 }
 
 #endif
@@ -337,8 +316,6 @@ const char* DocumentLifecycle::stateAsDebugString(const State state)
         DEBUG_STRING_CASE(UpdatePaintPropertiesClean);
         DEBUG_STRING_CASE(InPaint);
         DEBUG_STRING_CASE(PaintClean);
-        DEBUG_STRING_CASE(InCompositingForSlimmingPaintV2);
-        DEBUG_STRING_CASE(CompositingForSlimmingPaintV2Clean);
         DEBUG_STRING_CASE(Stopping);
         DEBUG_STRING_CASE(Stopped);
         DEBUG_STRING_CASE(Disposed);

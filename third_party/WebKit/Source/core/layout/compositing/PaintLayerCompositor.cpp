@@ -875,10 +875,7 @@ void PaintLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidat
 {
 #if ENABLE(ASSERT)
     FrameView* view = m_layoutView.frameView();
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        ASSERT(lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean
-            || view->shouldThrottleRendering());
-    } else if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
         ASSERT(lifecycle().state() == DocumentLifecycle::PaintClean
             || (view && view->shouldThrottleRendering()));
     } else {

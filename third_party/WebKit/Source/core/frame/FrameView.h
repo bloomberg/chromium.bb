@@ -638,7 +638,6 @@ private:
     void updatePaintProperties();
     void synchronizedPaint();
     void synchronizedPaintRecursively(GraphicsLayer*);
-    void compositeForSlimmingPaintV2();
 
     void reset();
     void init();
