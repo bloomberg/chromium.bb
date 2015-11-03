@@ -2,12 +2,12 @@
 .\"     Title: git-drover
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 09/23/2015
+.\"      Date: 10/20/2015
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 4549a59
+.\"    Source: depot_tools 704d890
 .\"  Language: English
 .\"
-.TH "GIT\-DROVER" "1" "09/23/2015" "depot_tools 4549a59" "Chromium depot_tools Manual"
+.TH "GIT\-DROVER" "1" "10/20/2015" "depot_tools 704d890" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,14 +32,16 @@ git-drover \- Apply a commit from the trunk to a release branch, or from one rel
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIgit drover\fR \-\-branch <branch> \-\-cherry\-pick <commit>
+\fIgit drover\fR \-\-branch <branch>
+           (\-\-cherry\-pick <change> | \-\-continue [path_to_workdir] |
+            \-\-abort [path_to_workdir])
            [\-\-parent_checkout <path\-to\-existing\-checkout>]
            [\-\-verbose] [\-\-dry\-run]
 .fi
 .sp
 .SH "DESCRIPTION"
 .sp
-git drover applies a commit to a release branch\&. It creates a new workdir from an existing checkout to avoid downloading a new checkout without affecting the existing checkout\&. Creating a workdir requires symlinks so this does not work on Windows\&. See the EXAMPLE section for the equivalent sequence of commands to run\&.
+git drover applies a commit to a release branch\&. It creates a new workdir from an existing checkout to avoid downloading a new checkout without affecting the existing checkout\&.
 .sp
 git drover does not support reverts\&. See the EXAMPLE section for the equivalent sequence of commands to run\&.
 .SH "OPTIONS"
@@ -52,6 +54,16 @@ The branch to cherry\-pick the commit to\&.
 \-\-cherry\-pick <commit>
 .RS 4
 The commit to cherry\-pick\&.
+.RE
+.PP
+\-\-continue [path_to_workdir]
+.RS 4
+Continue a cherry\-pick that required manual resolution\&. The path to the drover workdir is optional\&. If unspecified, the current directory is used\&.
+.RE
+.PP
+\-\-abort [path_to_workdir]
+.RS 4
+Abort a cherry\-pick that required manual resolution and clean up its workdir\&. The path to the drover workdir is optional\&. If unspecified, the current directory is used\&.
 .RE
 .PP
 \-\-parent_checkout
@@ -89,7 +101,7 @@ Before working with branches, you must \fIgclient sync \-\-with_branch_heads\fR 
 .nf
 # Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit b5a049e34297f22a4ea63567b32e3290bb3f244c
+commit 9b111fcda69cb6bf8a38d1e77867c298d80ca9d1
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
@@ -98,16 +110,80 @@ CommitDate: Thu Apr 10 08:54:46 2014 +0000
     This change needs to go to branch 9999
 
 # Now do the \*(Aqdrover\*(Aq\&.
-\fB$ git drover \-\-branch 9999 \-\-cherry\-pick b5a049e34297f22a4ea63567b32e3290bb3f244c\fR
+\fB$ git drover \-\-branch 9999 \-\-cherry\-pick 9b111fcda69cb6bf8a38d1e77867c298d80ca9d1\fR
 Going to cherry\-pick
 """
-commit b5a049e34297f22a4ea63567b32e3290bb3f244c
+commit 9b111fcda69cb6bf8a38d1e77867c298d80ca9d1
 Author: some\&.committer <some\&.committer@chromium\&.org>
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change needs to go to branch 9999
 """
 to 9999\&. Continue (y/n)? y
+
+# A cl is uploaded to rietveld, where it can be reviewed before landing\&.
+
+About to land on 9999\&. Continue (y/n)? y
+# The cherry\-pick cl is landed on the branch 9999\&.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBMerge with Conflicts Example\fR
+.RS 4
+.sp
+
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
+\fB$ git log \-n 1 \-\-pretty=fuller\fR
+commit 89ce5bb7bdf7149754b94e4d9fc5413435e6680d
+Author:     some\&.committer <some\&.committer@chromium\&.org>
+AuthorDate: Thu Apr 10 08:54:46 2014 +0000
+Commit:     some\&.committer <some\&.committer@chromium\&.org>
+CommitDate: Thu Apr 10 08:54:46 2014 +0000
+
+    This change needs to go to branch 9999
+
+# Now do the \*(Aqdrover\*(Aq\&.
+\fB$ git drover \-\-branch 9999 \-\-cherry\-pick 89ce5bb7bdf7149754b94e4d9fc5413435e6680d\fR
+Going to cherry\-pick
+"""
+commit 89ce5bb7bdf7149754b94e4d9fc5413435e6680d
+Author: some\&.committer <some\&.committer@chromium\&.org>
+Date:   Thu Apr 10 08:54:46 2014 +0000
+
+    This change needs to go to branch 9999
+"""
+to 9999\&. Continue (y/n)? y
+
+Error: Patch failed to apply\&.
+
+A workdir for this cherry\-pick has been created in
+  /tmp/drover_9999
+
+To continue, resolve the conflicts there and run
+  git drover \-\-continue /tmp/drover_9999
+
+To abort this cherry\-pick run
+  git drover \-\-abort /tmp/drover_9999
+
+\fB$ pushd /tmp/drover_9999\fR
+# Manually resolve conflicts\&.
+\fB$ git add path/to/file_with_conflicts\fR
+\fB$ popd\fR
+\fB$ git drover \-\-continue /tmp/drover_9999\fR
 
 # A cl is uploaded to rietveld, where it can be reviewed before landing\&.
 
@@ -143,24 +219,24 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 
 # Here\*(Aqs the commit we want to revert\&.
 \fB$ git log \-n 1\fR
-commit 215689406a8ca5813412becc6258509be903db59
+commit d5efb50dcc76ea29ad30d1015fb291a9ba5fc0db
 Author: some\&.committer <some\&.committer@chromium\&.org>
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change is horribly broken\&.
 
 # Now do the revert\&.
-\fB$ git revert 215689406a8ca5813412becc6258509be903db59\fR
+\fB$ git revert d5efb50dcc76ea29ad30d1015fb291a9ba5fc0db\fR
 
 # That reverted the change and committed the revert\&.
 \fB$ git log \-n 1\fR
-commit 1efaf0e8b1c6c6afadfb37e15023b52b960ac2fd
+commit 1b6ccf84e2c13c6f6a2b69b29626aed8fa0ae24d
 Author: you <you@chromium\&.org>
 Date:   Thu Apr 10 09:11:36 2014 +0000
 
     Revert "This change is horribly broken\&."
 
-    This reverts commit 215689406a8ca5813412becc6258509be903db59\&.
+    This reverts commit d5efb50dcc76ea29ad30d1015fb291a9ba5fc0db\&.
 
 # As with old drover, reverts are generally OK to commit without LGTM\&.
 \fB$ git cl upload \-r some\&.committer@chromium\&.org \-\-send\-mail\fR
@@ -191,7 +267,7 @@ Date:   Thu Apr 10 09:11:36 2014 +0000
 
 # Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 640f962733bfd2b9c44539a0d65952643750957e
+commit 2655f8d9d48f18dbfed237c67b8c65134050b2e3
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
@@ -205,8 +281,8 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 
 # Now do the \*(Aqdrover\*(Aq\&.
 # IMPORTANT!!! Do Not leave off the \*(Aq\-x\*(Aq flag
-\fB$ git cherry\-pick \-x 640f962733bfd2b9c44539a0d65952643750957e\fR
-[drover_9999 5f1ae97] This change needs to go to branch 9999
+\fB$ git cherry\-pick \-x 2655f8d9d48f18dbfed237c67b8c65134050b2e3\fR
+[drover_9999 589e8ad] This change needs to go to branch 9999
  Author: some\&.committer <some\&.committer@chromium\&.org>
  Date: Thu Apr 10 08:54:46 2014 +0000
  1 file changed, 1 insertion(+)
@@ -215,7 +291,7 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 # That took the code authored by some\&.committer and committed it to
 # the branch by the person who drovered it (i\&.e\&. you)\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 5f1ae978a8d05c16d8ed812163b7aa927f028bf9
+commit 589e8adbb095944100d029724b4038094120f23b
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     you <you@chromium\&.org>
@@ -223,7 +299,7 @@ CommitDate: Thu Apr 10 09:11:36 2014 +0000
 
     This change needs to go to branch 9999
 
-    (cherry picked from commit 640f962733bfd2b9c44539a0d65952643750957e)
+    (cherry picked from commit 2655f8d9d48f18dbfed237c67b8c65134050b2e3)
 
 # Looks good\&. Ship it!
 \fB$ git cl upload\fR
