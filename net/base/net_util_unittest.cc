@@ -479,6 +479,8 @@ TEST(NetUtilTest, IsLocalhost) {
   EXPECT_TRUE(IsLocalhost("0:0:0:0:0:0:0:1"));
   EXPECT_TRUE(IsLocalhost("foo.localhost"));
   EXPECT_TRUE(IsLocalhost("foo.localhost."));
+  EXPECT_TRUE(IsLocalhost("foo.localhoST"));
+  EXPECT_TRUE(IsLocalhost("foo.localhoST."));
 
   EXPECT_FALSE(IsLocalhost("localhostx"));
   EXPECT_FALSE(IsLocalhost("localhost.x"));
@@ -496,6 +498,7 @@ TEST(NetUtilTest, IsLocalhost) {
   EXPECT_FALSE(IsLocalhost("0:0:0:0:0:0:0:0:1"));
   EXPECT_FALSE(IsLocalhost("foo.localhost.com"));
   EXPECT_FALSE(IsLocalhost("foo.localhoste"));
+  EXPECT_FALSE(IsLocalhost("foo.localhos"));
 }
 
 TEST(NetUtilTest, ResolveLocalHostname) {
@@ -554,16 +557,6 @@ TEST(NetUtilTest, ResolveLocalHostname) {
                                     &addresses));
   EXPECT_FALSE(
       ResolveLocalHostname("foo.localhoste", kLocalhostLookupPort, &addresses));
-}
-
-TEST(NetUtilTest, IsLocalhostTLD) {
-  EXPECT_TRUE(IsLocalhostTLD("foo.localhost"));
-  EXPECT_TRUE(IsLocalhostTLD("foo.localhoST"));
-  EXPECT_TRUE(IsLocalhostTLD("foo.localhost."));
-  EXPECT_TRUE(IsLocalhostTLD("foo.localhoST."));
-  EXPECT_FALSE(IsLocalhostTLD("foo.localhos"));
-  EXPECT_FALSE(IsLocalhostTLD("foo.localhost.com"));
-  EXPECT_FALSE(IsLocalhost("foo.localhoste"));
 }
 
 TEST(NetUtilTest, GoogleHost) {

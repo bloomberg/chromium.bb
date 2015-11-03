@@ -591,10 +591,6 @@ bool IsLocalhost(base::StringPiece host) {
   return false;
 }
 
-bool IsLocalhostTLD(base::StringPiece host) {
-  return IsNormalizedLocalhostTLD(NormalizeHostname(host));
-}
-
 bool HasGoogleHost(const GURL& url) {
   static const char* kGoogleHostSuffixes[] = {
       ".google.com",

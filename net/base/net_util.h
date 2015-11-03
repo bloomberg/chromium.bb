@@ -207,8 +207,6 @@ NET_EXPORT_PRIVATE bool ResolveLocalHostname(base::StringPiece host,
 // machine.
 NET_EXPORT_PRIVATE bool IsLocalhost(base::StringPiece host);
 
-NET_EXPORT_PRIVATE bool IsLocalhostTLD(base::StringPiece host);
-
 // Returns true if the url's host is a Google server. This should only be used
 // for histograms and shouldn't be used to affect behavior.
 NET_EXPORT_PRIVATE bool HasGoogleHost(const GURL& url);
