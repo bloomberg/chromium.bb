@@ -622,6 +622,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
       project_attributes['LastUpgradeCheck'] = upgrade_check_project_version
       project_attributes['LastTestingUpgradeCheck'] = \
           upgrade_check_project_version
+      project_attributes['LastSwiftUpdateCheck'] = \
+          upgrade_check_project_version
     pbxp.SetProperty('attributes', project_attributes)
 
     if project_version:
