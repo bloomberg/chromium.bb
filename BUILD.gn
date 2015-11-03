@@ -4,6 +4,10 @@
 
 import("//third_party/icu/config.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # Meta target that includes both icuuc and icui18n. Most targets want both.
 # You can depend on the individually if you need to.
 group("icu") {
@@ -518,6 +522,16 @@ component("icuuc") {
   if (is_win || icu_use_data_file) {
     sources += [ "source/stubdata/stubdata.c" ]
     defines += [ "U_ICUDATAENTRY_IN_COMMON" ]
+  }
+}
+
+if (is_android) {
+  android_assets("icu_assets") {
+    if (icu_use_data_file) {
+      sources = [ "$root_out_dir/icudtl.dat" ]
+      deps = [ ":icudata" ]
+      disable_compression = true
+    }
   }
 }
 
