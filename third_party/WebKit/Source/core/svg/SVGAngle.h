@@ -124,12 +124,7 @@ private:
     RefPtrWillBeMember<SVGMarkerOrientEnumeration> m_orientType;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGAngle> toSVGAngle(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGAngle::classType());
-    return static_pointer_cast<SVGAngle>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGAngle);
 
 } // namespace blink
 

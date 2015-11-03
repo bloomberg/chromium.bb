@@ -38,6 +38,7 @@
 #include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
+#include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGNumberInterpolationType.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/SVGValueInterpolationType.h"
@@ -318,6 +319,9 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(PropertyHandl
             || attribute == SVGNames::yChannelSelectorAttr
             || attribute == XLinkNames::hrefAttr) {
             // Use default SVGValueInterpolationType.
+            applicableTypes->append(new SVGValueInterpolationType(attribute));
+        } else if (attribute == SVGNames::orientAttr) {
+            applicableTypes->append(new SVGAngleInterpolationType(attribute));
         } else {
             fallbackToLegacy = true;
         }
@@ -554,10 +558,6 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     RefPtr<Interpolation> interpolation = nullptr;
     ASSERT(fromValue->type() == toValue->type());
     switch (fromValue->type()) {
-    case AnimatedAngle:
-        if (AngleSVGInterpolation::canCreateFrom(fromValue) && AngleSVGInterpolation::canCreateFrom(toValue))
-            return AngleSVGInterpolation::create(fromValue, toValue, attribute);
-        break;
     case AnimatedInteger:
         return IntegerSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedIntegerOptionalInteger: {
@@ -587,6 +587,7 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
         break;
 
     // Handled by SVGInterpolationTypes.
+    case AnimatedAngle:
     case AnimatedNumber:
         ASSERT_NOT_REACHED();
         // Fallthrough.

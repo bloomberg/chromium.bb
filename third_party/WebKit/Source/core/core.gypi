@@ -910,6 +910,8 @@
             'animation/PropertyHandle.h',
             'animation/RectSVGInterpolation.cpp',
             'animation/RectSVGInterpolation.h',
+            'animation/SVGAngleInterpolationType.cpp',
+            'animation/SVGAngleInterpolationType.h',
             'animation/SVGInterpolation.cpp',
             'animation/SVGInterpolation.h',
             'animation/SVGInterpolationType.cpp',
