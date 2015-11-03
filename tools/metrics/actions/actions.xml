@@ -8873,6 +8873,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="OfflinePages.ViewingOffline.EditButtonClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when a user clicks on the &quot;Edit&quot; button on a snackbar
+    that shown when viewing offline page with no network.
+  </description>
+</action>
+
+<action name="OfflinePages.ViewingOffline.EditButtonNotClicked">
+  <owner>jianli@chromium.org</owner>
+  <description>
+    Recorded when a snackbar shown when viewing an offline page with no network
+    is dismissed without &quot;Edit&quot; button being clicked.
+  </description>
+</action>
+
 <action name="Omnibox.ServerSuggestDelete.Failure">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -10984,6 +11000,16 @@ should be able to be added at any place in this file.
     A website requested a permission which was queued because an existing
     permission request was already visible.
   </description>
+</action>
+
+<action name="PhysicalWeb.NotificationPressed">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
+<action name="PhysicalWeb.UrlSelected">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
 </action>
 
 <action name="PlatformVerificationAccepted">

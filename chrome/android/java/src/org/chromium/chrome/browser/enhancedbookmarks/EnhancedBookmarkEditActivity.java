@@ -340,18 +340,28 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             return;
         }
 
-        String actionName = "OfflinePages.Edit.";
-        if (mOfflineButtonType == OfflineButtonType.SAVE) {
-            actionName += clicked ? "SaveButtonClicked" : "SaveButtonNotClicked";
-        } else if (mOfflineButtonType == OfflineButtonType.REMOVE) {
-            actionName += clicked ? "RemoveButtonClicked" : "RemoveButtonNotClicked";
-        } else if (mOfflineButtonType == OfflineButtonType.VISIT) {
-            actionName += clicked ? "VisitButtonClicked" : "VisitButtonNotClicked";
+        assert mOfflineButtonType == OfflineButtonType.SAVE
+                || mOfflineButtonType == OfflineButtonType.REMOVE
+                || mOfflineButtonType == OfflineButtonType.VISIT;
+
+        if (clicked) {
+            if (mOfflineButtonType == OfflineButtonType.SAVE) {
+                RecordUserAction.record("OfflinePages.Edit.SaveButtonClicked");
+            } else if (mOfflineButtonType == OfflineButtonType.REMOVE) {
+                RecordUserAction.record("OfflinePages.Edit.RemoveButtonClicked");
+            } else if (mOfflineButtonType == OfflineButtonType.VISIT) {
+                RecordUserAction.record("OfflinePages.Edit.VisitButtonClicked");
+            }
         } else {
-            assert false;
+            if (mOfflineButtonType == OfflineButtonType.SAVE) {
+                RecordUserAction.record("OfflinePages.Edit.SaveButtonNotClicked");
+            } else if (mOfflineButtonType == OfflineButtonType.REMOVE) {
+                RecordUserAction.record("OfflinePages.Edit.RemoveButtonNotClicked");
+            } else if (mOfflineButtonType == OfflineButtonType.VISIT) {
+                RecordUserAction.record("OfflinePages.Edit.VisitButtonNotClicked");
+            }
         }
 
-        RecordUserAction.record(actionName);
         mOfflineButtonType = OfflineButtonType.NONE;
     }
 }

@@ -14,10 +14,13 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -27,11 +30,11 @@ import org.chromium.ui.base.WindowAndroid.PermissionCallback;
  * A class holding static util functions for offline pages.
  */
 public class OfflinePageUtils {
-    private enum SnackbarButtonType {
-        NONE,
-        RELOAD,
-        SAVE,
-    };
+    /** Snackbar button types */
+    private static final int NO_BUTTON = 0;
+    private static final int RELOAD_BUTTON = 1;
+    private static final int SAVE_BUTTON = 2;
+    private static final int EDIT_BUTTON = 3;
 
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
 
@@ -84,6 +87,7 @@ public class OfflinePageUtils {
         }
 
         boolean save;
+        final long bookmarkId = tab.getUserBookmarkId();
         if (tab.isOfflinePage()) {
             // If an offline page is being visited, prompt that an offline copy is being shown.
             save = false;
@@ -104,11 +108,11 @@ public class OfflinePageUtils {
             tab.addObserver(new EmptyTabObserver() {
                 @Override
                 public void onShown(Tab visibleTab) {
-                    showOfflineSnackbar(activity, visibleTab.getId(), finalSave);
+                    showOfflineSnackbar(activity, visibleTab.getId(), finalSave, bookmarkId);
                 }
             });
         } else {
-            showOfflineSnackbar(activity, tab.getId(), save);
+            showOfflineSnackbar(activity, tab.getId(), save, bookmarkId);
         }
     }
 
@@ -141,25 +145,30 @@ public class OfflinePageUtils {
      * @param activity The activity owning the tab.
      * @param tabId The ID of current tab.
      * @param save Whether to offer saving the page.
+     * @param bookmarkId Bookmark ID related to the opened page.
      */
     private static void showOfflineSnackbar(
-            final ChromeActivity activity, final int tabId, boolean save) {
+            final ChromeActivity activity, final int tabId, boolean save, final long bookmarkId) {
         Context context = activity.getBaseContext();
 
         int snackbarTextId = -1;
         int actionTextId = -1;
-        SnackbarButtonType buttonType = SnackbarButtonType.NONE;
+        int buttonType = NO_BUTTON;
         if (save) {
-            buttonType = SnackbarButtonType.SAVE;
+            buttonType = SAVE_BUTTON;
             snackbarTextId = R.string.offline_pages_save_page_offline;
             actionTextId = R.string.save;
         } else {
             snackbarTextId = R.string.offline_pages_viewing_offline_page;
 
-            // Offer to reload the original page if there is network connection.
+            // Offer to reload the original page if there is network connection or edit if there is
+            // none.
             if (isConnected(context)) {
-                buttonType = SnackbarButtonType.RELOAD;
+                buttonType = RELOAD_BUTTON;
                 actionTextId = R.string.reload;
+            } else {
+                buttonType = EDIT_BUTTON;
+                actionTextId = R.string.enhanced_bookmark_item_edit;
             }
         }
 
@@ -170,16 +179,21 @@ public class OfflinePageUtils {
                 if (tab == null) {
                     return;
                 }
-                SnackbarButtonType buttonType = (SnackbarButtonType) actionData;
+                int buttonType = (int) actionData;
                 switch (buttonType) {
-                    case RELOAD:
+                    case RELOAD_BUTTON:
                         RecordUserAction.record("OfflinePages.ReloadButtonClicked");
                         tab.loadUrl(new LoadUrlParams(
                                 tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
                         break;
-                    case SAVE:
+                    case SAVE_BUTTON:
                         RecordUserAction.record("OfflinePages.SaveButtonClicked");
                         activity.saveBookmarkOffline(tab);
+                        break;
+                    case EDIT_BUTTON:
+                        RecordUserAction.record("OfflinePages.ViewingOffline.EditButtonClicked");
+                        EnhancedBookmarkUtils.startEditActivity(
+                                activity, new BookmarkId(bookmarkId, BookmarkType.NORMAL), null);
                         break;
                     default:
                         assert false;
@@ -190,16 +204,19 @@ public class OfflinePageUtils {
             @Override
             public void onDismissNoAction(Object actionData) {
                 if (actionData == null) return;
-                SnackbarButtonType buttonType = (SnackbarButtonType) actionData;
+                int buttonType = (int) actionData;
                 switch (buttonType) {
-                    case NONE:
+                    case NO_BUTTON:
                         // No recording is needed.
                         break;
-                    case RELOAD:
+                    case RELOAD_BUTTON:
                         RecordUserAction.record("OfflinePages.ReloadButtonNotClicked");
                         break;
-                    case SAVE:
+                    case SAVE_BUTTON:
                         RecordUserAction.record("OfflinePages.SaveButtonNotClicked");
+                        break;
+                    case EDIT_BUTTON:
+                        RecordUserAction.record("OfflinePages.ViewingOffline.EditButtonNotClicked");
                         break;
                     default:
                         assert false;
