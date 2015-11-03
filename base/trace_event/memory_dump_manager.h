@@ -9,6 +9,7 @@
 
 #include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
@@ -63,13 +64,19 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   //  - name: a friendly name (duplicates allowed). Used for debugging and
   //      run-time profiling of memory-infra internals. Must be a long-lived
   //      C string.
-  //  - task_runner: (optional) if non-null, all the calls to |mdp| will be
+  //  - task_runner: if non-null, all the calls to |mdp| will be
   //      issued on the given thread. Otherwise, |mdp| should be able to
   //      handle calls on arbitrary threads.
+  //  - options: extra optional arguments. See memory_dump_provider.h.
   void RegisterDumpProvider(
       MemoryDumpProvider* mdp,
       const char* name,
       const scoped_refptr<SingleThreadTaskRunner>& task_runner);
+  void RegisterDumpProvider(
+      MemoryDumpProvider* mdp,
+      const char* name,
+      const scoped_refptr<SingleThreadTaskRunner>& task_runner,
+      const MemoryDumpProvider::Options& options);
   void UnregisterDumpProvider(MemoryDumpProvider* mdp);
 
   // Requests a memory dump. The dump might happen or not depending on the
@@ -128,7 +135,8 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     MemoryDumpProviderInfo(
         MemoryDumpProvider* dump_provider,
         const char* name,
-        const scoped_refptr<SingleThreadTaskRunner>& task_runner);
+        const scoped_refptr<SingleThreadTaskRunner>& task_runner,
+        const MemoryDumpProvider::Options& options);
     ~MemoryDumpProviderInfo();
 
     // Define a total order based on the thread (i.e. |task_runner|) affinity,
@@ -137,7 +145,13 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
     MemoryDumpProvider* const dump_provider;
     const char* const name;
-    scoped_refptr<SingleThreadTaskRunner> task_runner;  // Optional.
+
+    // The task_runner affinity. Can be nullptr, in which case the dump provider
+    // will be invoked on |dump_thread_|.
+    scoped_refptr<SingleThreadTaskRunner> task_runner;
+
+    // The |options| arg passed to RegisterDumpProvider().
+    const MemoryDumpProvider::Options options;
 
     // For fail-safe logic (auto-disable failing MDPs). These fields are mutable
     // as can be safely changed without impacting the order within the set.
@@ -164,9 +178,14 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
         const scoped_refptr<SingleThreadTaskRunner>& dump_thread_task_runner);
     ~ProcessMemoryDumpAsyncState();
 
-    // The ProcessMemoryDump container, where each dump provider will dump its
-    // own MemoryAllocatorDump(s) upon the OnMemoryDump() call.
-    ProcessMemoryDump process_memory_dump;
+    // Gets or creates the memory dump container for the given target process.
+    ProcessMemoryDump* GetOrCreateMemoryDumpContainerForProcess(ProcessId pid);
+
+    // A map of ProcessId -> ProcessMemoryDump, one for each target process
+    // being dumped from the current process. Typically each process dumps only
+    // for itself, unless dump providers specify a different |target_process| in
+    // MemoryDumpProvider::Options.
+    ScopedPtrMap<ProcessId, scoped_ptr<ProcessMemoryDump>> process_dumps;
 
     // The arguments passed to the initial CreateProcessDump() request.
     const MemoryDumpRequestArgs req_args;
@@ -174,6 +193,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     // The |dump_providers_| iterator to the next dump provider that should be
     // invoked (or dump_providers_.end() if at the end of the sequence).
     MemoryDumpProviderInfoSet::iterator next_dump_provider;
+
+    // The trace-global session state.
+    scoped_refptr<MemoryDumpSessionState> session_state;
 
     // Callback passed to the initial call to CreateProcessDump().
     MemoryDumpCallback callback;

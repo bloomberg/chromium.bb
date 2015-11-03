@@ -182,11 +182,12 @@ void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
 void MemoryDumpManager::RegisterDumpProvider(
     MemoryDumpProvider* mdp,
     const char* name,
-    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner,
+    const MemoryDumpProvider::Options& options) {
   if (dumper_registrations_ignored_for_testing_)
     return;
 
-  MemoryDumpProviderInfo mdp_info(mdp, name, task_runner);
+  MemoryDumpProviderInfo mdp_info(mdp, name, task_runner, options);
   AutoLock lock(lock_);
   auto iter_new = dump_providers_.insert(mdp_info);
 
@@ -201,6 +202,13 @@ void MemoryDumpManager::RegisterDumpProvider(
 
   if (heap_profiling_enabled_)
     mdp->OnHeapProfilingEnabled(true);
+}
+
+void MemoryDumpManager::RegisterDumpProvider(
+    MemoryDumpProvider* mdp,
+    const char* name,
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
+  RegisterDumpProvider(mdp, name, task_runner, MemoryDumpProvider::Options());
 }
 
 void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
@@ -323,6 +331,11 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   const uint64_t dump_guid = pmd_async_state->req_args.dump_guid;
   const char* dump_provider_name = nullptr;
 
+  // Pid of the target process being dumped. Often kNullProcessId (= current
+  // process), non-zero when the coordinator process creates dumps on behalf
+  // of child processes (see crbug.com/461788).
+  ProcessId pid;
+
   // DO NOT put any LOG() statement in the locked sections, as in some contexts
   // (GPU process) LOG() ends up performing PostTask/IPCs.
   MemoryDumpProvider* mdp;
@@ -333,6 +346,7 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
     auto mdp_info = pmd_async_state->next_dump_provider;
     mdp = mdp_info->dump_provider;
     dump_provider_name = mdp_info->name;
+    pid = mdp_info->options.target_pid;
 
     // If the dump provider did not specify a thread affinity, dump on
     // |dump_thread_|.
@@ -382,8 +396,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "dump_provider.name", dump_provider_name);
     MemoryDumpArgs args = {pmd_async_state->req_args.level_of_detail};
-    dump_successful =
-        mdp->OnMemoryDump(args, &pmd_async_state->process_memory_dump);
+    ProcessMemoryDump* process_memory_dump =
+        pmd_async_state->GetOrCreateMemoryDumpContainerForProcess(pid);
+    dump_successful = mdp->OnMemoryDump(args, process_memory_dump);
   }
 
   {
@@ -433,20 +448,25 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
                          "MemoryDumpManager::FinalizeDumpAndAddToTrace",
                          TRACE_ID_MANGLE(dump_guid), TRACE_EVENT_FLAG_FLOW_IN);
 
-  TracedValue* traced_value = new TracedValue();
-  scoped_refptr<ConvertableToTraceFormat> event_value(traced_value);
-  pmd_async_state->process_memory_dump.AsValueInto(traced_value);
-  traced_value->SetString("level_of_detail",
-                          MemoryDumpLevelOfDetailToString(
-                              pmd_async_state->req_args.level_of_detail));
-  const char* const event_name =
-      MemoryDumpTypeToString(pmd_async_state->req_args.dump_type);
+  for (const auto& kv : pmd_async_state->process_dumps) {
+    ProcessId pid = kv.first;  // kNullProcessId for the current process.
+    ProcessMemoryDump* process_memory_dump = kv.second;
+    TracedValue* traced_value = new TracedValue();
+    scoped_refptr<ConvertableToTraceFormat> event_value(traced_value);
+    process_memory_dump->AsValueInto(traced_value);
+    traced_value->SetString("level_of_detail",
+                            MemoryDumpLevelOfDetailToString(
+                                pmd_async_state->req_args.level_of_detail));
+    const char* const event_name =
+        MemoryDumpTypeToString(pmd_async_state->req_args.dump_type);
 
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      TRACE_EVENT_PHASE_MEMORY_DUMP,
-      TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name, dump_guid,
-      kTraceEventNumArgs, kTraceEventArgNames, kTraceEventArgTypes,
-      nullptr /* arg_values */, &event_value, TRACE_EVENT_FLAG_HAS_ID);
+    TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
+        TRACE_EVENT_PHASE_MEMORY_DUMP,
+        TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name,
+        dump_guid, pid, kTraceEventNumArgs, kTraceEventArgNames,
+        kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
+        TRACE_EVENT_FLAG_HAS_ID);
+  }
 
   if (!pmd_async_state->callback.is_null()) {
     pmd_async_state->callback.Run(dump_guid, true /* success */);
@@ -577,10 +597,12 @@ uint64_t MemoryDumpManager::GetTracingProcessId() const {
 MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(
     MemoryDumpProvider* dump_provider,
     const char* name,
-    const scoped_refptr<SingleThreadTaskRunner>& task_runner)
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner,
+    const MemoryDumpProvider::Options& options)
     : dump_provider(dump_provider),
       name(name),
       task_runner(task_runner),
+      options(options),
       consecutive_failures(0),
       disabled(false),
       unregistered(false) {}
@@ -601,14 +623,24 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     const scoped_refptr<MemoryDumpSessionState>& session_state,
     MemoryDumpCallback callback,
     const scoped_refptr<SingleThreadTaskRunner>& dump_thread_task_runner)
-    : process_memory_dump(session_state),
-      req_args(req_args),
+    : req_args(req_args),
       next_dump_provider(next_dump_provider),
+      session_state(session_state),
       callback(callback),
       callback_task_runner(MessageLoop::current()->task_runner()),
       dump_thread_task_runner(dump_thread_task_runner) {}
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::~ProcessMemoryDumpAsyncState() {
+}
+
+ProcessMemoryDump* MemoryDumpManager::ProcessMemoryDumpAsyncState::
+    GetOrCreateMemoryDumpContainerForProcess(ProcessId pid) {
+  auto iter = process_dumps.find(pid);
+  if (iter == process_dumps.end()) {
+    scoped_ptr<ProcessMemoryDump> new_pmd(new ProcessMemoryDump(session_state));
+    iter = process_dumps.insert(pid, new_pmd.Pass()).first;
+  }
+  return iter->second;
 }
 
 }  // namespace trace_event
