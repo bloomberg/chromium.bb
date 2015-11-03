@@ -76,6 +76,8 @@
           'installer/util/legacy_firewall_manager_win.h',
           'installer/util/master_preferences_constants.cc',
           'installer/util/master_preferences_constants.h',
+          'installer/util/module_util_win.cc',
+          'installer/util/module_util_win.h',
           'installer/util/move_tree_work_item.cc',
           'installer/util/move_tree_work_item.h',
           'installer/util/non_updating_app_registration_data.cc',

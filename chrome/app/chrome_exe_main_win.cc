@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
-#include "chrome/app/client_util.h"
+#include "chrome/app/main_dll_loader_win.h"
 #include "chrome/browser/chrome_process_finder_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths_internal.h"

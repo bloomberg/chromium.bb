@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
-#include <shlwapi.h>
+#include <windows.h>  // NOLINT
+#include <shlwapi.h>  // NOLINT
+
+#include "chrome/app/main_dll_loader_win.h"
 
 #include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
-#include "base/file_version_info.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,13 +21,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"
-#include "chrome/app/client_util.h"
 #include "chrome/app/image_pre_reader_win.h"
 #include "chrome/app/kasko_client.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
@@ -38,6 +37,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/module_util_win.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/crash/content/app/breakpad_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -89,30 +89,12 @@ bool InMetroMode() {
 
 typedef int (*InitMetro)();
 
-// Returns the directory in which the currently running executable resides.
-base::FilePath GetExecutableDir() {
-  base::char16 path[MAX_PATH];
-  ::GetModuleFileNameW(nullptr, path, MAX_PATH);
-  return base::FilePath(path).DirName();
-}
-
 }  // namespace
-
-base::string16 GetCurrentModuleVersion() {
-  scoped_ptr<FileVersionInfo> file_version_info(
-      CREATE_FILE_VERSION_INFO_FOR_CURRENT_MODULE());
-  if (file_version_info.get()) {
-    base::string16 version_string(file_version_info->file_version());
-    if (Version(base::UTF16ToASCII(version_string)).IsValid())
-      return version_string;
-  }
-  return base::string16();
-}
 
 //=============================================================================
 
 MainDllLoader::MainDllLoader()
-  : dll_(nullptr), metro_mode_(InMetroMode()) {
+    : dll_(nullptr), metro_mode_(InMetroMode()) {
 }
 
 MainDllLoader::~MainDllLoader() {
@@ -140,23 +122,16 @@ HMODULE MainDllLoader::Load(base::string16* version, base::FilePath* module) {
 #endif
   }
 
+  *module = installer::GetModulePath(dll_name, version);
+  if (module->empty()) {
+    PLOG(ERROR) << "Cannot find module " << dll_name;
+    return nullptr;
+  }
   const bool pre_read = !metro_mode_;
-  base::FilePath module_dir = GetExecutableDir();
-  *module = module_dir.Append(dll_name);
   HMODULE dll = LoadModuleWithDirectory(*module, pre_read);
   if (!dll) {
-    base::string16 version_string(GetCurrentModuleVersion());
-    if (version_string.empty()) {
-      LOG(ERROR) << "No valid Chrome version found";
-      return nullptr;
-    }
-    *version = version_string;
-    *module = module_dir.Append(version_string).Append(dll_name);
-    dll = LoadModuleWithDirectory(*module, pre_read);
-    if (!dll) {
-      PLOG(ERROR) << "Failed to load Chrome DLL from " << module->value();
-      return nullptr;
-    }
+    PLOG(ERROR) << "Failed to load Chrome DLL from " << module->value();
+    return nullptr;
   }
 
   DCHECK(dll);

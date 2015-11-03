@@ -149,6 +149,8 @@ static_library("util") {
       "legacy_firewall_manager_win.h",
       "master_preferences_constants.cc",
       "master_preferences_constants.h",
+      "module_util_win.cc",
+      "module_util_win.h",
       "move_tree_work_item.cc",
       "move_tree_work_item.h",
       "non_updating_app_registration_data.cc",

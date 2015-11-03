@@ -67,8 +67,8 @@
         'app/chrome_watcher_client_win.h',
         'app/chrome_watcher_command_line_win.cc',
         'app/chrome_watcher_command_line_win.h',
-        'app/client_util.cc',
-        'app/client_util.h',
+        'app/main_dll_loader_win.cc',
+        'app/main_dll_loader_win.h',
         'app/kasko_client.cc',
         'app/kasko_client.h',
         'app/signature_validator_win.cc',
@@ -496,10 +496,6 @@
                   'app/version_assembly/version_assembly_manifest_action.gypi',
               ],
             },
-          ],
-        }, {  # 'OS!="win"
-          'sources!': [
-            'app/client_util.cc',
           ],
         }],
         ['OS=="win" and component=="shared_library"', {

@@ -2,24 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file defines utility functions that can report details about the
-// host operating environment.
+// This file defines a class to load the main DLL of a Chrome process.
 
-#ifndef CHROME_APP_CLIENT_UTIL_H_
-#define CHROME_APP_CLIENT_UTIL_H_
+#ifndef CHROME_APP_MAIN_DLL_LOADER_WIN_H_
+#define CHROME_APP_MAIN_DLL_LOADER_WIN_H_
 
-#include <windows.h>
+#include <windows.h>  // NOLINT
 
 #include <string>
+
+#include "base/files/file_path.h"
 #include "base/strings/string16.h"
-
-namespace sandbox {
-  struct SandboxInterfaceInfo;
-}
-
-// Returns the version in the current module's version resource or the empty
-// string if none found.
-base::string16 GetCurrentModuleVersion();
 
 // Implements the common aspects of loading the main dll for both chrome and
 // chromium scenarios, which are in charge of implementing two abstract
@@ -69,4 +62,4 @@ class MainDllLoader {
 // delete to free it.
 MainDllLoader* MakeMainDllLoader();
 
-#endif  // CHROME_APP_CLIENT_UTIL_H_
+#endif  // CHROME_APP_MAIN_DLL_LOADER_WIN_H_
