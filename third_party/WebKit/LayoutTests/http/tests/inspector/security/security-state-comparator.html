@@ -10,12 +10,12 @@ var initialize_SecurityTest = function()
 function test()
 {
     var ordering = [
-        SecurityAgent.SecurityState.Unknown,
         SecurityAgent.SecurityState.Info,
         SecurityAgent.SecurityState.Insecure,
         SecurityAgent.SecurityState.Neutral,
         SecurityAgent.SecurityState.Warning,
-        SecurityAgent.SecurityState.Secure
+        SecurityAgent.SecurityState.Secure,
+        SecurityAgent.SecurityState.Unknown
     ];
 
     InspectorTest.assertEquals(ordering.length, Object.keys(SecurityAgent.SecurityState).length);
