@@ -34,6 +34,8 @@ public class ContextualSearchFieldTrial {
     static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
     static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
 
+    static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS = "disable_extra_search_bar_animations";
+
     private static final int UNLIMITED_TAPS = -1;
     private static final int DEFAULT_TAP_RESOLVE_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
     private static final int DEFAULT_TAP_PREFETCH_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
@@ -191,6 +193,13 @@ public class ContextualSearchFieldTrial {
             sIsPeekPromoEnabled = getBooleanParam(PEEK_PROMO_ENABLED);
         }
         return sIsPeekPromoEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether extra search bar animations are disabled.
+     */
+    static boolean areExtraSearchBarAnimationsDisabled() {
+        return getBooleanParam(DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS);
     }
 
     /**
