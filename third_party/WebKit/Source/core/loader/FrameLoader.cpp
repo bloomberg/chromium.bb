@@ -1358,15 +1358,15 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
 
     m_frame->document()->cancelParsing();
 
-    // In certain circumstances on pages with multiple frames, stopAllLoaders() or firing readystatechanged
-    // might detach the current FrameLoader, in which case we should bail on this newly defunct load.
-    if (!m_frame->host())
-        return;
-
     if (m_provisionalDocumentLoader) {
         m_provisionalDocumentLoader->stopLoading();
         detachDocumentLoader(m_provisionalDocumentLoader);
     }
+
+    // beforeunload fired above, and detaching a DocumentLoader can fire
+    // events, which can detach this frame.
+    if (!m_frame->host())
+        return;
 
     m_provisionalDocumentLoader = client()->createDocumentLoader(m_frame, request, frameLoadRequest.substituteData().isValid() ? frameLoadRequest.substituteData() : defaultSubstituteDataForURL(request.url()));
     m_provisionalDocumentLoader->setNavigationType(navigationType);
