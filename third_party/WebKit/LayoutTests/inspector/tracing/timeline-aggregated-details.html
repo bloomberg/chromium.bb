@@ -3,6 +3,7 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../tracing-test.js"></script>
 <script>
+
 function test()
 {
     var sessionId = "6.23";
@@ -343,7 +344,7 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 251000,
+        "ts": 251000
     },
     {
         "args": {
@@ -361,7 +362,7 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 251100,
+        "ts": 251100
     },
     {
         "args": {
@@ -378,7 +379,7 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 251200,
+        "ts": 251200
     },
     {
         "args": {
@@ -395,7 +396,7 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 251300,
+        "ts": 251300
     },
     {
         "args": {
@@ -411,16 +412,16 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 251400,
+        "ts": 251400
     },
     {
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_b", "scriptId": 1 },
-                    { "functionName": "recursive_a", "scriptId": 1 },
-                    { "functionName": "recursive_b", "scriptId": 1 },
-                    { "functionName": "recursive_a", "scriptId": 1 }
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
                 ]
             }
         },
@@ -429,15 +430,15 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 253000,
+        "ts": 253000
     },
     {
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_a", "scriptId": 1 },
-                    { "functionName": "recursive_b", "scriptId": 1 },
-                    { "functionName": "recursive_a", "scriptId": 1 }
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
                 ]
             }
         },
@@ -446,14 +447,14 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 253008,
+        "ts": 253008
     },
     {
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_b", "scriptId": 1 },
-                    { "functionName": "recursive_a", "scriptId": 1 }
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
                 ]
             }
         },
@@ -462,13 +463,13 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 253012,
+        "ts": 253012
     },
     {
         "args": {
             "data": {
                 "stackTrace": [
-                    { "functionName": "recursive_a", "scriptId": 1 }
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
                 ]
             }
         },
@@ -477,52 +478,7 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 253014,
-    },
-    {
-        "args": {
-            "data": {
-                "stackTrace": [
-                ]
-            }
-        },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "JSSample",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 253015,
-    },
-    {
-        "args": {
-            "data": {
-                "stackTrace": [
-                    { "functionName": "recursive_b", "scriptId": 1 },
-                    { "functionName": "recursive_a", "scriptId": 1 }
-                ]
-            }
-        },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "JSSample",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 253100,
-    },
-    {
-        "args": {
-            "data": {
-                "stackTrace": [
-                    { "functionName": "recursive_a", "scriptId": 1 }
-                ]
-            }
-        },
-        "cat": "disabled-by-default-devtools.timeline",
-        "name": "JSSample",
-        "ph": "I",
-        "pid": 17851,
-        "tid": 23,
-        "ts": 253200,
+        "ts": 253014
     },
     {
         "args": {
@@ -536,7 +492,52 @@ function test()
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 253300,
+        "ts": 253015
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_b", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" },
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253100
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_a", "scriptId": 1, "url": "http://xyz.abc.com/rec.js" }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253200
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253300
     },
     {
         "args": {},
@@ -550,15 +551,42 @@ function test()
     }
     ];
 
-    var tracingTimelineModel = InspectorTest.tracingTimelineModel();
-    tracingTimelineModel.setEventsForTest(rawTraceEvents);
-    var events = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.mainThreadEvents());
-    events = events.mergeOrdered(tracingTimelineModel.mainThreadEvents(), WebInspector.TracingModel.Event.orderedCompareStartTime);
-    events.filter(function(e) { return e.duration; }).forEach(function(e) {
-        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + (e.args.data && e.args.data.functionName || ""));
-    });
+    var timeline = WebInspector.panels.timeline;
+    timeline._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, timelineRecorded, this);
+    timeline._model.setEventsForTest(rawTraceEvents);
 
-    InspectorTest.completeTest();
+    function timelineRecorded()
+    {
+        timeline.requestWindowTimes(0, Infinity);
+        for (var grouping in WebInspector.AggregatedTimelineTreeView.GroupBy) {
+            var groupingValue = WebInspector.AggregatedTimelineTreeView.GroupBy[grouping];
+            testProfileTree(WebInspector.TimelinePanel.DetailsTab.CallTree, groupingValue);
+            testProfileTree(WebInspector.TimelinePanel.DetailsTab.BottomUp, groupingValue);
+        }
+        InspectorTest.completeTest();
+    }
+
+    function testProfileTree(type, grouping)
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult(type + "  Group by: " + grouping);
+        timeline._detailsView.selectTab(type, true);
+        var callTree = timeline._detailsView._rangeDetailViews.get(type);
+        callTree._groupByCombobox.select(callTree._groupByCombobox.options().find((x) => x.value === grouping));
+        callTree._onGroupByChanged();
+        var rootNode = callTree.dataGrid.rootNode();
+        for (var node of rootNode.children)
+            printProfileTree(1, node._profileNode);
+    }
+
+    function printProfileTree(padding, node)
+    {
+        var name = node.name || (node.event.name === WebInspector.TimelineModel.RecordType.JSFrame
+            ? WebInspector.beautifyFunctionName(node.event.args["data"]["functionName"])
+            : WebInspector.TimelineUIUtils.eventTitle(node.event));
+        InspectorTest.addResult("  ".repeat(padding) + name + ": " + [node.selfTime, node.totalTime].map(function (t) { return t.toFixed(3); }).join("  "));
+        (node.children || new Map()).forEach(printProfileTree.bind(null, padding + 1));
+    }
 }
 
 </script>
