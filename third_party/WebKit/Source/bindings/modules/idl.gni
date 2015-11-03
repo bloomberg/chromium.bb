@@ -8,16 +8,12 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
 
-modules_definition_idl_files =
-  modules_dictionary_idl_files +
-  modules_idl_files
+modules_definition_idl_files = modules_dictionary_idl_files + modules_idl_files
 
 # Static IDL files
-modules_static_interface_idl_files =
-  modules_definition_idl_files
+modules_static_interface_idl_files = modules_definition_idl_files
 modules_static_dependency_idl_files =
-  modules_dependency_idl_files +
-  modules_testing_dependency_idl_files
+    modules_dependency_idl_files + modules_testing_dependency_idl_files
 
 # Static IDL files / Generated IDL files
 #
@@ -31,21 +27,18 @@ modules_static_dependency_idl_files =
 # Currently we keep the GYP/GN builds in sync for simplicity, but this can be
 # cleaned up once GYP is not used.
 modules_static_idl_files =
-  modules_static_interface_idl_files +
-  modules_static_dependency_idl_files
+    modules_static_interface_idl_files + modules_static_dependency_idl_files
 
 modules_generated_dependency_idl_files =
-  modules_core_global_constructors_generated_idl_files +
-  modules_global_constructors_generated_idl_files
+    modules_core_global_constructors_generated_idl_files +
+    modules_global_constructors_generated_idl_files
 
 # 'modules_dependency_idl_files' is already used in Source/modules, so avoid
 # collision
 modules_all_dependency_idl_files =
-  modules_static_dependency_idl_files +
-  modules_generated_dependency_idl_files
+    modules_static_dependency_idl_files + modules_generated_dependency_idl_files
 
 # Dependency IDL files: don't generate individual bindings, but do process
 # in IDL dependency computation, and count as build dependencies
 all_dependency_idl_files =
-  core_all_dependency_idl_files +
-  modules_all_dependency_idl_files
+    core_all_dependency_idl_files + modules_all_dependency_idl_files

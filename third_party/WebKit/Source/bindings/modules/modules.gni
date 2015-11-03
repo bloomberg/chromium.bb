@@ -22,16 +22,13 @@ modules_global_constructors_original_interfaces = [
 ]
 
 modules_core_global_constructors_generated_idl_files = []
-foreach (interface, modules_core_global_constructors_original_interfaces) {
-  modules_core_global_constructors_generated_idl_files += [
-    "$blink_modules_output_dir/${interface}CoreConstructors.idl"
-  ]
+foreach(interface, modules_core_global_constructors_original_interfaces) {
+  modules_core_global_constructors_generated_idl_files +=
+      [ "$blink_modules_output_dir/${interface}CoreConstructors.idl" ]
 }
 
 modules_global_constructors_generated_idl_files = []
-foreach (interface, modules_global_constructors_original_interfaces) {
-  modules_global_constructors_generated_idl_files += [
-    "$blink_modules_output_dir/${interface}ModulesConstructors.idl"
-  ]
+foreach(interface, modules_global_constructors_original_interfaces) {
+  modules_global_constructors_generated_idl_files +=
+      [ "$blink_modules_output_dir/${interface}ModulesConstructors.idl" ]
 }
-

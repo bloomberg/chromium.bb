@@ -16,8 +16,7 @@ core_global_constructors_original_interfaces = [
 ]
 
 core_global_constructors_generated_idl_files = []
-foreach (interface, core_global_constructors_original_interfaces) {
-  core_global_constructors_generated_idl_files += [
-    "$blink_core_output_dir/${interface}CoreConstructors.idl"
-  ]
+foreach(interface, core_global_constructors_original_interfaces) {
+  core_global_constructors_generated_idl_files +=
+      [ "$blink_core_output_dir/${interface}CoreConstructors.idl" ]
 }

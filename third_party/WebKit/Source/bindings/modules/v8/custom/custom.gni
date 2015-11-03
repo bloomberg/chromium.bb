@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 # Make the files absolute so they can be imported to anywhere.
-bindings_modules_v8_custom_files = get_path_info(
-  [
-    "V8CustomSQLStatementErrorCallback.cpp",
-    "V8DeviceMotionEventCustom.cpp",
-    "V8ServiceWorkerMessageEventCustom.cpp",
-  ],
-  "abspath")
+bindings_modules_v8_custom_files =
+    get_path_info([
+                    "V8CustomSQLStatementErrorCallback.cpp",
+                    "V8DeviceMotionEventCustom.cpp",
+                    "V8ServiceWorkerMessageEventCustom.cpp",
+                  ],
+                  "abspath")
