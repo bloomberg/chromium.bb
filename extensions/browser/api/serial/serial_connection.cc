@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
+#include "device/serial/buffer.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
 
@@ -141,51 +141,6 @@ device::serial::StopBits ConvertStopBitsToMojo(api::serial::StopBits input) {
   return device::serial::STOP_BITS_NONE;
 }
 
-class SendBuffer : public device::ReadOnlyBuffer {
- public:
-  SendBuffer(
-      const std::vector<char>& data,
-      const base::Callback<void(int, device::serial::SendError)>& callback)
-      : data_(data), callback_(callback) {}
-  ~SendBuffer() override {}
-  const char* GetData() override { return vector_as_array(&data_); }
-  uint32_t GetSize() override { return static_cast<uint32_t>(data_.size()); }
-  void Done(uint32_t bytes_read) override {
-    callback_.Run(bytes_read, device::serial::SEND_ERROR_NONE);
-  }
-  void DoneWithError(uint32_t bytes_read, int32_t error) override {
-    callback_.Run(bytes_read, static_cast<device::serial::SendError>(error));
-  }
-
- private:
-  const std::vector<char> data_;
-  const base::Callback<void(int, device::serial::SendError)> callback_;
-};
-
-class ReceiveBuffer : public device::WritableBuffer {
- public:
-  ReceiveBuffer(
-      scoped_refptr<net::IOBuffer> buffer,
-      uint32_t size,
-      const base::Callback<void(int, device::serial::ReceiveError)>& callback)
-      : buffer_(buffer), size_(size), callback_(callback) {}
-  ~ReceiveBuffer() override {}
-  char* GetData() override { return buffer_->data(); }
-  uint32_t GetSize() override { return size_; }
-  void Done(uint32_t bytes_written) override {
-    callback_.Run(bytes_written, device::serial::RECEIVE_ERROR_NONE);
-  }
-  void DoneWithError(uint32_t bytes_written, int32_t error) override {
-    callback_.Run(bytes_written,
-                  static_cast<device::serial::ReceiveError>(error));
-  }
-
- private:
-  scoped_refptr<net::IOBuffer> buffer_;
-  const uint32_t size_;
-  const base::Callback<void(int, device::serial::ReceiveError)> callback_;
-};
-
 }  // namespace
 
 static base::LazyInstance<
@@ -267,9 +222,8 @@ bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
     return false;
   receive_complete_ = callback;
   receive_buffer_ = new net::IOBuffer(buffer_size_);
-  io_handler_->Read(scoped_ptr<device::WritableBuffer>(new ReceiveBuffer(
-      receive_buffer_,
-      buffer_size_,
+  io_handler_->Read(make_scoped_ptr(new device::ReceiveBuffer(
+      receive_buffer_, buffer_size_,
       base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()))));
   receive_timeout_task_.reset();
   if (receive_timeout_ > 0) {
@@ -286,7 +240,7 @@ bool SerialConnection::Send(const std::vector<char>& data,
   if (!send_complete_.is_null())
     return false;
   send_complete_ = callback;
-  io_handler_->Write(scoped_ptr<device::ReadOnlyBuffer>(new SendBuffer(
+  io_handler_->Write(make_scoped_ptr(new device::SendBuffer(
       data, base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()))));
   send_timeout_task_.reset();
   if (send_timeout_ > 0) {
