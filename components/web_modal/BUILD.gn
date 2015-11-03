@@ -43,3 +43,21 @@ static_library("test_support") {
     "//ui/gfx/geometry",
   ]
 }
+
+if (!is_android && !is_ios) {
+  source_set("unit_tests") {
+    testonly = true
+
+    sources = [
+      "web_contents_modal_dialog_manager_unittest.cc",
+    ]
+
+    deps = [
+      ":test_support",
+      ":web_modal",
+      "//base",
+      "//content/test:test_support",
+      "//testing/gtest",
+    ]
+  }
+}
