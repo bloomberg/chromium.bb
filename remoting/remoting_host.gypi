@@ -95,6 +95,7 @@
               'sources!' : [
                 'host/clipboard_x11.cc',
                 'host/continue_window_linux.cc',
+                'host/curtain_mode_linux.cc',
                 'host/disconnect_window_linux.cc',
                 'host/linux/x_server_clipboard.cc',
                 'host/linux/x_server_clipboard.h',
@@ -419,14 +420,8 @@
             'VERSION=<(version_full)',
           ],
           'sources': [
-            'host/curtain_mode.h',
-            'host/curtain_mode_linux.cc',
-            'host/curtain_mode_mac.cc',
-            'host/curtain_mode_win.cc',
             'host/pam_authorization_factory_posix.cc',
             'host/pam_authorization_factory_posix.h',
-            'host/posix/signal_handler.cc',
-            'host/posix/signal_handler.h',
             'host/remoting_me2me_host.cc',
           ],
           'conditions': [

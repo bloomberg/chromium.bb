@@ -153,6 +153,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
       sources -= [
         "continue_window_linux.cc",
+        "curtain_mode_linux.cc",
         "disconnect_window_linux.cc",
       ]
     }
@@ -423,16 +424,11 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
   if (enable_me2me_host) {
     source_set("remoting_me2me_host_static") {
       sources = [
-        "curtain_mode.h",
-        "curtain_mode_linux.cc",
-        "curtain_mode_mac.cc",
-        "curtain_mode_win.cc",
         "pam_authorization_factory_posix.cc",
         "pam_authorization_factory_posix.h",
-        "posix/signal_handler.cc",
-        "posix/signal_handler.h",
         "remoting_me2me_host.cc",
       ]
+      defines = []
 
       configs += [ "//remoting:version" ]
 
@@ -460,6 +456,11 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       }
       if ((is_linux && !is_chromeos) || is_mac) {
         libs = [ "pam" ]
+      }
+
+      if (is_mac && is_official_build) {
+        sources += [ "internal/internal_mac-inl.h" ]
+        defines += [ "USE_REMOTING_MACOSX_INTERNAL" ]
       }
     }
 
