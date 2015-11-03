@@ -4,10 +4,19 @@
 
 #include "sync/api/model_type_store.h"
 
+#include "base/logging.h"
+
 namespace syncer_v2 {
 
-ModelTypeStore::ModelTypeStore() {}
+// static
+void ModelTypeStore::CreateInMemoryStoreForTest(const InitCallback& callback) {
+  NOTIMPLEMENTED();
+}
 
 ModelTypeStore::~ModelTypeStore() {}
 
-}  // namespace sync_v2
+ModelTypeStore::WriteBatch::WriteBatch() {}
+
+ModelTypeStore::WriteBatch::~WriteBatch() {}
+
+}  // namespace syncer_v2

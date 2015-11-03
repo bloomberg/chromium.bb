@@ -224,6 +224,8 @@
         'api/fake_sync_change_processor.h',
         'api/fake_syncable_service.cc',
         'api/fake_syncable_service.h',
+        'api/mock_model_type_store.cc',
+        'api/mock_model_type_store.h',
         'api/sync_change_processor_wrapper_for_test.cc',
         'api/sync_change_processor_wrapper_for_test.h',
         'api/sync_error_factory_mock.cc',
