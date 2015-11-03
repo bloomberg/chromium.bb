@@ -207,6 +207,10 @@ class CC_EXPORT SchedulerStateMachine {
   void SetNeedsBeginMainFrame();
   bool needs_begin_main_frame() const { return needs_begin_main_frame_; }
 
+  // Requests a single impl frame (after the current frame if there is one
+  // active).
+  void SetNeedsOneBeginImplFrame();
+
   // Call this only in response to receiving an ACTION_SEND_BEGIN_MAIN_FRAME
   // from NextAction.
   // Indicates that all painting is complete.
@@ -321,6 +325,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_animate_;
   bool needs_prepare_tiles_;
   bool needs_begin_main_frame_;
+  bool needs_one_begin_impl_frame_;
   bool visible_;
   bool resourceless_draw_;
   bool can_draw_;

@@ -172,6 +172,11 @@ void Scheduler::SetNeedsBeginMainFrame() {
   ProcessScheduledActions();
 }
 
+void Scheduler::SetNeedsOneBeginImplFrame() {
+  state_machine_.SetNeedsOneBeginImplFrame();
+  ProcessScheduledActions();
+}
+
 void Scheduler::SetNeedsRedraw() {
   state_machine_.SetNeedsRedraw();
   ProcessScheduledActions();

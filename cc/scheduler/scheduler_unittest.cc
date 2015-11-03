@@ -58,6 +58,7 @@ class FakeSchedulerClient : public SchedulerClient {
     states_.clear();
     animate_causes_redraw_ = false;
     animate_causes_animate_ = false;
+    will_begin_impl_frame_requests_one_begin_impl_frame_ = false;
     draw_will_happen_ = true;
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
@@ -88,6 +89,9 @@ class FakeSchedulerClient : public SchedulerClient {
     return ActionIndex(action) >= 0;
   }
 
+  void SetWillBeginImplFrameRequestsOneBeginImplFrame(bool request) {
+    will_begin_impl_frame_requests_one_begin_impl_frame_ = request;
+  }
   void SetAnimateCausesRedraw(bool animate_causes_redraw) {
     animate_causes_redraw_ = animate_causes_redraw;
   }
@@ -106,6 +110,8 @@ class FakeSchedulerClient : public SchedulerClient {
   // SchedulerClient implementation.
   void WillBeginImplFrame(const BeginFrameArgs& args) override {
     PushAction("WillBeginImplFrame");
+    if (will_begin_impl_frame_requests_one_begin_impl_frame_)
+      scheduler_->SetNeedsOneBeginImplFrame();
   }
   void DidFinishImplFrame() override {}
 
@@ -192,6 +198,7 @@ class FakeSchedulerClient : public SchedulerClient {
 
   bool animate_causes_redraw_;
   bool animate_causes_animate_;
+  bool will_begin_impl_frame_requests_one_begin_impl_frame_;
   bool draw_will_happen_;
   bool swap_will_happen_if_draw_happens_;
   bool automatic_swap_ack_;
@@ -3163,6 +3170,44 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
+}
+
+TEST_F(SchedulerTest, SetNeedsOneBeginImplFrame) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  EXPECT_FALSE(client_->needs_begin_frames());
+
+  // Request a frame, should kick the source.
+  scheduler_->SetNeedsOneBeginImplFrame();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // The incoming WillBeginImplFrame will request another one.
+  client_->SetWillBeginImplFrameRequestsOneBeginImplFrame(true);
+
+  // Next vsync, the first requested frame happens.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 1);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // We don't request another frame here.
+
+  // Next vsync, the second requested frame happens (the one requested inside
+  // the previous frame's begin impl frame step).
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 1);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // End that frame's deadline.
+  task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+
+  // Scheduler shuts down the source now that no begin frame is requested.
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
 }
 
 TEST_F(SchedulerTest, SynchronousCompositorCommit) {

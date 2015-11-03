@@ -84,6 +84,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetThrottleFrameProduction(bool throttle);
 
   void SetNeedsBeginMainFrame();
+  // Requests a single impl frame (after the current frame if there is one
+  // active).
+  void SetNeedsOneBeginImplFrame();
 
   void SetNeedsRedraw();
 

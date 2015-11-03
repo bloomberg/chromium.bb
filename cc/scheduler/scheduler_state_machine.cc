@@ -39,6 +39,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       needs_animate_(false),
       needs_prepare_tiles_(false),
       needs_begin_main_frame_(false),
+      needs_one_begin_impl_frame_(false),
       visible_(false),
       resourceless_draw_(false),
       can_draw_(false),
@@ -224,6 +225,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("needs_animate_", needs_animate_);
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
+  state->SetBoolean("needs_one_begin_impl_frame", needs_one_begin_impl_frame_);
   state->SetBoolean("visible", visible_);
   state->SetBoolean("can_draw", can_draw_);
   state->SetBoolean("resourceless_draw", resourceless_draw_);
@@ -743,7 +745,7 @@ bool SchedulerStateMachine::BeginFrameRequiredForAction() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
 
-  return needs_animate_ || needs_redraw_ ||
+  return needs_animate_ || needs_redraw_ || needs_one_begin_impl_frame_ ||
          (needs_begin_main_frame_ && !defer_commits_);
 }
 
@@ -799,6 +801,7 @@ void SchedulerStateMachine::OnBeginImplFrame() {
 
   last_commit_had_no_updates_ = false;
   did_request_swap_in_last_frame_ = false;
+  needs_one_begin_impl_frame_ = false;
 
   // Clear funnels for any actions we perform during the frame.
   animate_funnel_ = false;
@@ -939,7 +942,8 @@ void SchedulerStateMachine::SetNeedsAnimate() {
 }
 
 bool SchedulerStateMachine::OnlyImplSideUpdatesExpected() const {
-  bool has_impl_updates = needs_redraw_ || needs_animate_;
+  bool has_impl_updates =
+      needs_redraw_ || needs_animate_ || needs_one_begin_impl_frame_;
   bool main_updates_expected =
       needs_begin_main_frame_ ||
       begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE ||
@@ -1022,6 +1026,10 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
 
 void SchedulerStateMachine::SetNeedsBeginMainFrame() {
   needs_begin_main_frame_ = true;
+}
+
+void SchedulerStateMachine::SetNeedsOneBeginImplFrame() {
+  needs_one_begin_impl_frame_ = true;
 }
 
 void SchedulerStateMachine::NotifyReadyToCommit() {
