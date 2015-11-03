@@ -18,9 +18,9 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 /**
@@ -115,22 +115,24 @@ public class OfflinePageUtils {
     /**
      * Returns whether file access is allowed.
      *
-     * @param view The ContentViewCore to access the file system.
+     * @param windowAndroid The Android window used to access the file system.
      * @return true if allowed, or false otherwise.
      */
-    public static boolean hasFileAccessPermission(ContentViewCore view) {
-        return view.getWindowAndroid().hasPermission(permission.WRITE_EXTERNAL_STORAGE);
+    public static boolean hasFileAccessPermission(WindowAndroid windowAndroid) {
+        assert windowAndroid != null;
+        return windowAndroid.hasPermission(permission.WRITE_EXTERNAL_STORAGE);
     }
 
     /**
      * Called to prompt user with the file access permission.
      *
-     * @param view The ContentViewCore to access the file system.
+     * @param windowAndroid The Android window used to access the file system.
      * @param callback Callback for the permission request.
      */
     public static void requestFileAccessPermission(
-            ContentViewCore view, PermissionCallback callback) {
-        view.getWindowAndroid().requestPermissions(
+            WindowAndroid windowAndroid, PermissionCallback callback) {
+        assert windowAndroid != null;
+        windowAndroid.requestPermissions(
                 new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, callback);
     }
 

@@ -16,9 +16,10 @@ import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.components.offlinepages.SavePageResult;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 import java.util.ArrayList;
@@ -186,22 +187,22 @@ public final class OfflinePageBridge {
      *
      * @param webContents Contents of the page to save.
      * @param bookmarkId Id of the bookmark related to the offline page.
+     * @param windowAndroid The Android window used to access the file system.
      * @param callback Interface that contains a callback.
      * @see SavePageCallback
      */
     @VisibleForTesting
     public void savePage(final WebContents webContents, final BookmarkId bookmarkId,
-            final SavePageCallback callback) {
+            WindowAndroid windowAndroid, final SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         RecordHistogram.recordEnumeratedHistogram(
                 "OfflinePages.SavePage.FreeSpacePercentage", getFreeSpacePercentage(), 101);
         RecordHistogram.recordCustomCountHistogram(
                 "OfflinePages.SavePage.FreeSpaceMB", getFreeSpaceMB(), 1, 500000, 50);
 
-        ContentViewCore view = ContentViewCore.fromWebContents(webContents);
-        if (view == null) {
+        if (windowAndroid == null) {
             callback.onSavePageDone(SavePageResult.CONTENT_UNAVAILABLE, webContents.getUrl());
-        } else if (OfflinePageUtils.hasFileAccessPermission(view)) {
+        } else if (OfflinePageUtils.hasFileAccessPermission(windowAndroid)) {
             nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
         } else {
             PermissionCallback permissionCallback = new PermissionCallback() {
@@ -217,7 +218,7 @@ public final class OfflinePageBridge {
                 }
             };
 
-            OfflinePageUtils.requestFileAccessPermission(view, permissionCallback);
+            OfflinePageUtils.requestFileAccessPermission(windowAndroid, permissionCallback);
         }
     }
 
@@ -235,17 +236,37 @@ public final class OfflinePageBridge {
      * Deletes an offline page related to a specified bookmark.
      *
      * @param bookmarkId Bookmark ID for which the offline copy will be deleted.
+     * @param windowAndroid The Android window used to access the file system.
      * @param callback Interface that contains a callback.
      * @see DeletePageCallback
      */
     @VisibleForTesting
-    public void deletePage(BookmarkId bookmarkId, DeletePageCallback callback) {
+    public void deletePage(final BookmarkId bookmarkId, WindowAndroid windowAndroid,
+            final DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
+        assert windowAndroid != null;
         RecordHistogram.recordEnumeratedHistogram(
                 "OfflinePages.DeletePage.FreeSpacePercentage", getFreeSpacePercentage(), 101);
         RecordHistogram.recordCustomCountHistogram(
                 "OfflinePages.DeletePage.FreeSpaceMB", getFreeSpaceMB(), 1, 500000, 50);
-        nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
+
+        if (OfflinePageUtils.hasFileAccessPermission(windowAndroid)) {
+            nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
+        } else {
+            PermissionCallback permissionCallback = new PermissionCallback() {
+                @Override
+                public void onRequestPermissionsResult(String[] permission, int[] grantResults) {
+                    if (grantResults.length > 0
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
+                    } else {
+                        callback.onDeletePageDone(DeletePageResult.DEVICE_FAILURE);
+                    }
+                }
+            };
+
+            OfflinePageUtils.requestFileAccessPermission(windowAndroid, permissionCallback);
+        }
     }
 
     /**

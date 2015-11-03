@@ -29,9 +29,8 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.offlinepages.DeletePageResult;
-import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ActivityWindowAndroid;
 
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
@@ -62,6 +61,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     private OfflineButtonType mOfflineButtonType = OfflineButtonType.NONE;
     private OfflinePageModelObserver mOfflinePageModelObserver;
+    private ActivityWindowAndroid mActivityWindowAndroid;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -146,6 +146,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             findViewById(R.id.offline_page_group).setVisibility(View.VISIBLE);
             getIntent().setExtrasClassLoader(WebContents.class.getClassLoader());
             mWebContents = getIntent().getParcelableExtra(INTENT_WEB_CONTENTS);
+            mActivityWindowAndroid = new ActivityWindowAndroid(this, false);
             updateOfflineSection();
         }
 
@@ -200,6 +201,19 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     }
 
     @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        if (mActivityWindowAndroid != null) {
+            if (mActivityWindowAndroid.onRequestPermissionsResult(
+                    requestCode, permissions, grantResults)) {
+                return;
+            }
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
     protected void onStop() {
         if (mEnhancedBookmarksModel.doesBookmarkExist(mBookmarkId)) {
             final String title = mTitleEditText.getTrimmedText();
@@ -218,6 +232,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
         super.onStop();
     }
+
     @Override
     protected void onDestroy() {
         recordOfflineButtonAction(false);
@@ -265,13 +280,12 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             public void onClick(View v) {
                 recordOfflineButtonAction(true);
                 mEnhancedBookmarksModel.getOfflinePageBridge().deletePage(
-                        mBookmarkId, new DeletePageCallback() {
+                        mBookmarkId, mActivityWindowAndroid, new DeletePageCallback() {
                             @Override
                             public void onDeletePageDone(int deletePageResult) {
-                                if (deletePageResult == DeletePageResult.SUCCESS) {
-                                    updateOfflineSection();
-                                }
                                 // TODO(fgorski): Add snackbar upon failure.
+                                // Always update UI, as buttons might be disabled.
+                                updateOfflineSection();
                             }
                         });
                 button.setClickable(false);
@@ -286,14 +300,13 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             @Override
             public void onClick(View v) {
                 recordOfflineButtonAction(true);
-                mEnhancedBookmarksModel.getOfflinePageBridge().savePage(mWebContents, mBookmarkId,
-                        new SavePageCallback() {
+                mEnhancedBookmarksModel.getOfflinePageBridge().savePage(
+                        mWebContents, mBookmarkId, mActivityWindowAndroid, new SavePageCallback() {
                             @Override
                             public void onSavePageDone(int savePageResult, String url) {
-                                if (savePageResult == SavePageResult.SUCCESS) {
-                                    updateOfflineSection();
-                                }
                                 // TODO(fgorski): Add snackbar upon failure.
+                                // Always update UI, as buttons might be disabled.
+                                updateOfflineSection();
                             }
                         });
                 button.setClickable(false);
