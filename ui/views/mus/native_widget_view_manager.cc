@@ -93,7 +93,7 @@ NativeWidgetViewManager::NativeWidgetViewManager(
     views::internal::NativeWidgetDelegate* delegate,
     mojo::Shell* shell,
     mus::Window* window)
-    : NativeWidgetAura(delegate), window_(window), window_manager_(nullptr) {
+    : NativeWidgetAura(delegate), window_(window) {
   window_tree_host_.reset(new WindowTreeHostMus(shell, window_));
   window_tree_host_->InitHost();
 
@@ -129,35 +129,6 @@ void NativeWidgetViewManager::OnWindowVisibilityChanged(aura::Window* window,
   // NOTE: We could also update aura::Window's visibility when the View's
   // visibility changes, but this code isn't going to be around for very long so
   // I'm not bothering.
-}
-
-namespace {
-void WindowManagerCallback(mus::mojom::WindowManagerErrorCode error_code) {}
-}  // namespace
-
-void NativeWidgetViewManager::CenterWindow(const gfx::Size& size) {
-  if (!window_manager_)
-    return;
-  window_manager_->SetPreferredSize(window_->id(), mojo::Size::From(size),
-                                    base::Bind(&WindowManagerCallback));
-}
-
-void NativeWidgetViewManager::SetBounds(const gfx::Rect& bounds) {
-  NativeWidgetAura::SetBounds(bounds);
-  if (!window_manager_)
-    return;
-  window_manager_->SetBounds(window_->id(), mojo::Rect::From(bounds),
-                             base::Bind(&WindowManagerCallback));
-}
-
-void NativeWidgetViewManager::SetSize(const gfx::Size& size) {
-  NativeWidgetAura::SetSize(size);
-  if (!window_manager_)
-    return;
-  gfx::Rect bounds(window_->bounds().x(), window_->bounds().y(), size.width(),
-                   size.height());
-  window_manager_->SetBounds(window_->id(), mojo::Rect::From(bounds),
-                             base::Bind(&WindowManagerCallback));
 }
 
 }  // namespace views
