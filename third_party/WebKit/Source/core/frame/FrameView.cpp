@@ -255,13 +255,8 @@ void FrameView::init()
     m_size = LayoutSize();
 
     // Propagate the marginwidth/height and scrolling modes to the view.
-    // FIXME: Do we need to do this for OOPI?
-    Element* ownerElement = m_frame->deprecatedLocalOwner();
-    if (ownerElement && (isHTMLFrameElement(*ownerElement) || isHTMLIFrameElement(*ownerElement))) {
-        HTMLFrameElementBase* frameElt = toHTMLFrameElementBase(ownerElement);
-        if (frameElt->scrollingMode() == ScrollbarAlwaysOff)
-            setCanHaveScrollbars(false);
-    }
+    if (m_frame->owner() && m_frame->owner()->scrollingMode() == ScrollbarAlwaysOff)
+        setCanHaveScrollbars(false);
 }
 
 void FrameView::dispose()
@@ -581,11 +576,8 @@ void FrameView::calculateScrollbarModes(ScrollbarMode& hMode, ScrollbarMode& vMo
     }
 
     // Setting scrolling="no" on an iframe element disables scrolling.
-    // FIXME: Handle this for OOPI?
-    if (const HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner()) {
-        if (owner->scrollingMode() == ScrollbarAlwaysOff)
-            RETURN_SCROLLBAR_MODE(ScrollbarAlwaysOff);
-    }
+    if (m_frame->owner() && m_frame->owner()->scrollingMode() == ScrollbarAlwaysOff)
+        RETURN_SCROLLBAR_MODE(ScrollbarAlwaysOff);
 
     // Framesets can't scroll.
     Node* body = m_frame->document()->body();

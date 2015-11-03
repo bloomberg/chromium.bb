@@ -400,6 +400,7 @@
       "web/WebFrame.h",
       "web/WebFrameClient.h",
       "web/WebFrameLoadType.h",
+      "web/WebFrameOwnerProperties.h",
       "web/WebFrameWidget.h",
       "web/WebGeolocationClient.h",
       "web/WebGeolocationController.h",

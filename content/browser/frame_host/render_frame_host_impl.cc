@@ -15,7 +15,6 @@
 #include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -480,6 +479,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeSandboxFlags,
                         OnDidChangeSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
+                        OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation,
@@ -650,6 +651,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   params.parent_routing_id = parent_routing_id;
   params.previous_sibling_routing_id = previous_sibling_routing_id;
   params.replication_state = frame_tree_node()->current_replication_state();
+  params.frame_owner_properties = frame_tree_node()->frame_owner_properties();
 
   if (render_widget_host_) {
     params.widget_params.routing_id = render_widget_host_->GetRoutingID();
@@ -742,7 +744,8 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     int new_routing_id,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
-    blink::WebSandboxFlags sandbox_flags) {
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
   // It is possible that while a new RenderFrameHost was committed, the
   // RenderFrame corresponding to this host sent an IPC message to create a
   // frame and it is delivered after this host is swapped out.
@@ -750,9 +753,9 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT)
     return;
 
-  RenderFrameHostImpl* new_frame =
-      frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(),
-                            new_routing_id, scope, frame_name, sandbox_flags);
+  RenderFrameHostImpl* new_frame = frame_tree_->AddFrame(
+      frame_tree_node_, GetProcess()->GetID(), new_routing_id, scope,
+      frame_name, sandbox_flags, frame_owner_properties);
   if (!new_frame)
     return;
 
@@ -1317,23 +1320,30 @@ void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {
   render_view_host_->page_id_ = page_id;
 }
 
+FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
+    int32 child_frame_routing_id,
+    bad_message::BadMessageReason reason) {
+  FrameTreeNode* child = frame_tree_node()->frame_tree()->FindByRoutingID(
+      GetProcess()->GetID(), child_frame_routing_id);
+  // A race can result in |child| to be nullptr. Avoid killing the renderer in
+  // that case.
+  if (child && child->parent() != frame_tree_node()) {
+    bad_message::ReceivedBadMessage(GetProcess(), reason);
+    return nullptr;
+  }
+  return child;
+}
+
 void RenderFrameHostImpl::OnDidChangeSandboxFlags(
     int32 frame_routing_id,
     blink::WebSandboxFlags flags) {
-  FrameTree* frame_tree = frame_tree_node()->frame_tree();
-  FrameTreeNode* child =
-      frame_tree->FindByRoutingID(GetProcess()->GetID(), frame_routing_id);
-  if (!child)
-    return;
-
   // Ensure that a frame can only update sandbox flags for its immediate
   // children.  If this is not the case, the renderer is considered malicious
   // and is killed.
-  if (child->parent() != frame_tree_node()) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RFH_SANDBOX_FLAGS);
+  FrameTreeNode* child = FindAndVerifyChild(
+      frame_routing_id, bad_message::RFH_SANDBOX_FLAGS);
+  if (!child)
     return;
-  }
 
   child->set_sandbox_flags(flags);
 
@@ -1346,6 +1356,27 @@ void RenderFrameHostImpl::OnDidChangeSandboxFlags(
   if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
     child_rfh->Send(
         new FrameMsg_DidUpdateSandboxFlags(child_rfh->GetRoutingID(), flags));
+  }
+}
+
+void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
+    int32 frame_routing_id,
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+  FrameTreeNode* child = FindAndVerifyChild(
+      frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
+  if (!child)
+    return;
+
+  child->set_frame_owner_properties(frame_owner_properties);
+
+  // Notify the RenderFrame if it lives in a different process from its parent.
+  // These properties only affect the RenderFrame and live in its parent
+  // (HTMLFrameOwnerElement). Therefore, we do not need to notify this frame's
+  // proxies.
+  RenderFrameHost* child_rfh = child->current_frame_host();
+  if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
+    child_rfh->Send(new FrameMsg_SetFrameOwnerProperties(
+        child_rfh->GetRoutingID(), frame_owner_properties));
   }
 }
 

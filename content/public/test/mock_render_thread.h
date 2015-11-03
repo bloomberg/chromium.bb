@@ -25,6 +25,7 @@ class MessageReplyDeserializer;
 namespace blink {
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
+struct WebFrameOwnerProperties;
 }
 
 namespace content {
@@ -129,11 +130,13 @@ class MockRenderThread : public RenderThread {
                       ViewHostMsg_CreateWindow_Reply* reply);
 
   // The Frame expects to be returned a valid route_id different from its own.
-  void OnCreateChildFrame(int new_frame_routing_id,
-                          blink::WebTreeScopeType scope,
-                          const std::string& frame_name,
-                          blink::WebSandboxFlags sandbox_flags,
-                          int* new_render_frame_id);
+  void OnCreateChildFrame(
+      int new_frame_routing_id,
+      blink::WebTreeScopeType scope,
+      const std::string& frame_name,
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::WebFrameOwnerProperties& frame_owner_properties,
+      int* new_render_frame_id);
 
 #if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,

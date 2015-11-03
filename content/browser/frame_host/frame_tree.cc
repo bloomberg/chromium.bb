@@ -124,10 +124,10 @@ FrameTree::FrameTree(Navigator* navigator,
                               // document scope.
                               blink::WebTreeScopeType::Document,
                               std::string(),
-                              blink::WebSandboxFlags::None)),
+                              blink::WebSandboxFlags::None,
+                              blink::WebFrameOwnerProperties())),
       focused_frame_tree_node_id_(-1),
-      load_progress_(0.0) {
-}
+      load_progress_(0.0) {}
 
 FrameTree::~FrameTree() {
   delete root_;
@@ -194,12 +194,14 @@ void FrameTree::ForEach(
   }
 }
 
-RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
-                                         int process_id,
-                                         int new_routing_id,
-                                         blink::WebTreeScopeType scope,
-                                         const std::string& frame_name,
-                                         blink::WebSandboxFlags sandbox_flags) {
+RenderFrameHostImpl* FrameTree::AddFrame(
+    FrameTreeNode* parent,
+    int process_id,
+    int new_routing_id,
+    blink::WebTreeScopeType scope,
+    const std::string& frame_name,
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
   // A child frame always starts with an initial empty document, which means
   // it is in the same SiteInstance as the parent frame. Ensure that the process
   // which requested a child frame to be added is the same as the process of the
@@ -209,10 +211,10 @@ RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
   if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
     return nullptr;
 
-  scoped_ptr<FrameTreeNode> node(
-      new FrameTreeNode(this, parent->navigator(), render_frame_delegate_,
-                        render_view_delegate_, render_widget_delegate_,
-                        manager_delegate_, scope, frame_name, sandbox_flags));
+  scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
+      this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
+      render_widget_delegate_, manager_delegate_, scope, frame_name,
+      sandbox_flags, frame_owner_properties));
   FrameTreeNode* node_ptr = node.get();
   // AddChild is what creates the RenderFrameHost.
   parent->AddChild(node.Pass(), process_id, new_routing_id);

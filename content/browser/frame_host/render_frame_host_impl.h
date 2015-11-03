@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/ax_content_node_data.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -205,10 +207,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Init();
 
   int routing_id() const { return routing_id_; }
-  void OnCreateChildFrame(int new_routing_id,
-                          blink::WebTreeScopeType scope,
-                          const std::string& frame_name,
-                          blink::WebSandboxFlags sandbox_flags);
+  void OnCreateChildFrame(
+      int new_routing_id,
+      blink::WebTreeScopeType scope,
+      const std::string& frame_name,
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::WebFrameOwnerProperties& frame_owner_properties);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
@@ -543,6 +547,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidAssignPageId(int32 page_id);
   void OnDidChangeSandboxFlags(int32 frame_routing_id,
                                blink::WebSandboxFlags flags);
+  void OnDidChangeFrameOwnerProperties(
+      int32 frame_routing_id,
+      const blink::WebFrameOwnerProperties& frame_owner_properties);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
@@ -627,6 +634,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const content::CommonNavigationParams& common_params,
       const content::StartNavigationParams& start_params,
       const content::RequestNavigationParams& request_params);
+
+  // Returns the child FrameTreeNode if |child_frame_routing_id| is an
+  // immediate child of this FrameTreeNode.  |child_frame_routing_id| is
+  // considered untrusted, so the renderer process is killed if it refers to a
+  // FrameTreeNode that is not a child of this node.
+  FrameTreeNode* FindAndVerifyChild(
+      int32 child_frame_routing_id, bad_message::BadMessageReason reason);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

@@ -457,6 +457,10 @@ STATIC_ASSERT_MATCHING_ENUM(WebFontDescription::Weight900, FontWeight900);
 STATIC_ASSERT_MATCHING_ENUM(WebFontDescription::WeightNormal, FontWeightNormal);
 STATIC_ASSERT_MATCHING_ENUM(WebFontDescription::WeightBold, FontWeightBold);
 
+STATIC_ASSERT_MATCHING_ENUM(WebFrameOwnerProperties::ScrollingMode::Auto, ScrollbarAuto);
+STATIC_ASSERT_MATCHING_ENUM(WebFrameOwnerProperties::ScrollingMode::AlwaysOff, ScrollbarAlwaysOff);
+STATIC_ASSERT_MATCHING_ENUM(WebFrameOwnerProperties::ScrollingMode::AlwaysOn, ScrollbarAlwaysOn);
+
 STATIC_ASSERT_MATCHING_ENUM(WebIconURL::TypeInvalid, InvalidIcon);
 STATIC_ASSERT_MATCHING_ENUM(WebIconURL::TypeFavicon, Favicon);
 STATIC_ASSERT_MATCHING_ENUM(WebIconURL::TypeTouch, TouchIcon);

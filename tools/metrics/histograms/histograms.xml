@@ -53909,6 +53909,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="96" label="RDH_UNAUTHORIZED_HEADER_REQUEST"/>
   <int value="97" label="RDH_INVALID_URL"/>
   <int value="98" label="BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED"/>
+  <int value="99" label="RFH_OWNER_PROPERTY"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

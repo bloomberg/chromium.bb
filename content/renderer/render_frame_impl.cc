@@ -608,7 +608,8 @@ void RenderFrameImpl::CreateFrame(
     int previous_sibling_routing_id,
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
-    const FrameMsg_NewFrame_WidgetParams& widget_params) {
+    const FrameMsg_NewFrame_WidgetParams& widget_params,
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
   blink::WebLocalFrame* web_frame;
   RenderFrameImpl* render_frame;
   if (proxy_routing_id == MSG_ROUTING_NONE) {
@@ -631,7 +632,7 @@ void RenderFrameImpl::CreateFrame(
     web_frame = parent_web_frame->createLocalChild(
         replicated_state.scope, WebString::fromUTF8(replicated_state.name),
         replicated_state.sandbox_flags, render_frame,
-        previous_sibling_web_frame);
+        previous_sibling_web_frame, frame_owner_properties);
   } else {
     RenderFrameProxy* proxy =
         RenderFrameProxy::FromRoutingID(proxy_routing_id);
@@ -642,7 +643,7 @@ void RenderFrameImpl::CreateFrame(
     render_frame->proxy_routing_id_ = proxy_routing_id;
     web_frame->initializeToReplaceRemoteFrame(
         proxy->web_frame(), WebString::fromUTF8(replicated_state.name),
-        replicated_state.sandbox_flags);
+        replicated_state.sandbox_flags, frame_owner_properties);
   }
   render_frame->SetWebFrame(web_frame);
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->parent());
@@ -1173,6 +1174,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
+                        OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_ClearFocus, OnClearFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
@@ -1727,6 +1730,12 @@ void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
 
 void RenderFrameImpl::OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags) {
   frame_->setFrameOwnerSandboxFlags(flags);
+}
+
+void RenderFrameImpl::OnSetFrameOwnerProperties(
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+  DCHECK(frame_);
+  frame_->setFrameOwnerProperties(frame_owner_properties);
 }
 
 void RenderFrameImpl::OnClearFocus() {
@@ -2304,14 +2313,14 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
     const blink::WebString& name,
-    blink::WebSandboxFlags sandbox_flags) {
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frameOwnerProperties) {
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
   int child_routing_id = MSG_ROUTING_NONE;
   Send(new FrameHostMsg_CreateChildFrame(
-      routing_id_, scope,
-      base::UTF16ToUTF8(base::StringPiece16(name)), sandbox_flags,
-      &child_routing_id));
+      routing_id_, scope, base::UTF16ToUTF8(base::StringPiece16(name)),
+      sandbox_flags, frameOwnerProperties, &child_routing_id));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
@@ -2444,6 +2453,14 @@ void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
                                             blink::WebSandboxFlags flags) {
   Send(new FrameHostMsg_DidChangeSandboxFlags(
       routing_id_, GetRoutingIdForFrameOrProxy(child_frame), flags));
+}
+
+void RenderFrameImpl::didChangeFrameOwnerProperties(
+    blink::WebFrame* child_frame,
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+  Send(new FrameHostMsg_DidChangeFrameOwnerProperties(
+           routing_id_, GetRoutingIdForFrameOrProxy(child_frame),
+           frame_owner_properties));
 }
 
 void RenderFrameImpl::didMatchCSS(

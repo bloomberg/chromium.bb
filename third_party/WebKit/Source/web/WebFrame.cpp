@@ -16,6 +16,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebElement.h"
+#include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebSandboxFlags.h"
 #include "web/OpenedFrameTracker.h"
 #include "web/RemoteBridgeFrameOwner.h"

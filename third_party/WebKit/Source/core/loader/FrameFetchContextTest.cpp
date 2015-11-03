@@ -85,6 +85,9 @@ public:
     SandboxFlags sandboxFlags() const override { return SandboxNone; }
     void dispatchLoad() override { }
     void renderFallbackContent() override { }
+    ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
+    int marginWidth() const override { return -1; }
+    int marginHeight() const override { return -1; }
 };
 
 class FrameFetchContextTest : public ::testing::Test {

@@ -202,6 +202,7 @@
 #include "public/web/WebFindOptions.h"
 #include "public/web/WebFormElement.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebIconURL.h"
 #include "public/web/WebInputElement.h"
@@ -1747,7 +1748,8 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
     WebTreeScopeType scope = frame()->document() == ownerElement->treeScope()
         ? WebTreeScopeType::Document
         : WebTreeScopeType::Shadow;
-    WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags())));
+    WebFrameOwnerProperties ownerProperties(ownerElement->scrollingMode(), ownerElement->marginWidth(), ownerElement->marginHeight());
+    WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags()), ownerProperties));
     if (!webframeChild)
         return nullptr;
 
@@ -1987,22 +1989,28 @@ static void ensureFrameLoaderHasCommitted(FrameLoader& frameLoader)
     frameLoader.stateMachine()->advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
 }
 
-void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags)
+void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
     Frame* oldFrame = toCoreFrame(oldWebFrame);
     // Note: this *always* temporarily sets a frame owner, even for main frames!
     // When a core Frame is created with no owner, it attempts to set itself as
     // the main frame of the Page. However, this is a provisional frame, and may
     // disappear, so Page::m_mainFrame can't be updated just yet.
-    OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone);
+    OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone, WebFrameOwnerProperties());
     RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
     frame->setOwner(oldFrame->owner());
-    if (frame->owner() && !frame->owner()->isLocal())
-        toRemoteBridgeFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
     frame->tree().setName(name);
     setParent(oldWebFrame->parent());
     setOpener(oldWebFrame->opener());
     setCoreFrame(frame);
+
+    if (frame->owner() && !frame->owner()->isLocal()) {
+        toRemoteBridgeFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
+        // Since a remote frame doesn't get the notifications about frame owner
+        // property modifications, we need to sync up those properties here.
+        WebLocalFrameImpl::fromFrame(frame.get())->setFrameOwnerProperties(frameOwnerProperties);
+    }
+
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
@@ -2033,6 +2041,17 @@ void WebLocalFrameImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsC
 WebDevToolsAgent* WebLocalFrameImpl::devToolsAgent()
 {
     return m_devToolsAgent.get();
+}
+
+void WebLocalFrameImpl::setFrameOwnerProperties(const WebFrameOwnerProperties& frameOwnerProperties)
+{
+    // At the moment, this is only used to replicate frame owner properties
+    // for frames with a remote owner.
+    FrameOwner* owner = toCoreFrame(this)->owner();
+    ASSERT(owner);
+    toRemoteBridgeFrameOwner(owner)->setScrollingMode(frameOwnerProperties.scrollingMode);
+    toRemoteBridgeFrameOwner(owner)->setMarginWidth(frameOwnerProperties.marginWidth);
+    toRemoteBridgeFrameOwner(owner)->setMarginHeight(frameOwnerProperties.marginHeight);
 }
 
 void WebLocalFrameImpl::sendPings(const WebNode& contextNode, const WebURL& destinationURL)

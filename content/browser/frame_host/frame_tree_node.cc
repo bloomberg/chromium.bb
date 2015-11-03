@@ -67,15 +67,17 @@ FrameTreeNode* FrameTreeNode::GloballyFindByID(int frame_tree_node_id) {
   return it == nodes->end() ? nullptr : it->second;
 }
 
-FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
-                             Navigator* navigator,
-                             RenderFrameHostDelegate* render_frame_delegate,
-                             RenderViewHostDelegate* render_view_delegate,
-                             RenderWidgetHostDelegate* render_widget_delegate,
-                             RenderFrameHostManager::Delegate* manager_delegate,
-                             blink::WebTreeScopeType scope,
-                             const std::string& name,
-                             blink::WebSandboxFlags sandbox_flags)
+FrameTreeNode::FrameTreeNode(
+    FrameTree* frame_tree,
+    Navigator* navigator,
+    RenderFrameHostDelegate* render_frame_delegate,
+    RenderViewHostDelegate* render_view_delegate,
+    RenderWidgetHostDelegate* render_widget_delegate,
+    RenderFrameHostManager::Delegate* manager_delegate,
+    blink::WebTreeScopeType scope,
+    const std::string& name,
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties)
     : frame_tree_(frame_tree),
       navigator_(navigator),
       render_manager_(this,
@@ -92,6 +94,7 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       // Effective sandbox flags also need to be set, since initial sandbox
       // flags should apply to the initial empty document in the frame.
       effective_sandbox_flags_(sandbox_flags),
+      frame_owner_properties_(frame_owner_properties),
       loading_progress_(kLoadingProgressNotStarted) {
   std::pair<FrameTreeNodeIDMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(

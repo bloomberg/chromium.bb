@@ -6,6 +6,8 @@
 #define RemoteBridgeFrameOwner_h
 
 #include "core/frame/FrameOwner.h"
+#include "platform/scroll/ScrollTypes.h"
+#include "public/web/WebFrameOwnerProperties.h"
 #include "web/WebLocalFrameImpl.h"
 
 namespace blink {
@@ -18,9 +20,9 @@ namespace blink {
 class RemoteBridgeFrameOwner final : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteBridgeFrameOwner);
 public:
-    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
+    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
-        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame, flags));
+        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame, flags, frameOwnerProperties));
     }
 
     bool isLocal() const override
@@ -50,13 +52,24 @@ public:
         // TODO(dcheng): Implement.
     }
 
+    void setScrollingMode(WebFrameOwnerProperties::ScrollingMode);
+    void setMarginWidth(int marginWidth) { m_marginWidth = marginWidth; }
+    void setMarginHeight(int marginHeight) { m_marginHeight = marginHeight; }
+
+    ScrollbarMode scrollingMode() const override { return m_scrolling; }
+    int marginWidth() const override { return m_marginWidth; }
+    int marginHeight() const override { return m_marginHeight; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>, SandboxFlags);
+    RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>, SandboxFlags, const WebFrameOwnerProperties&);
 
     RefPtrWillBeMember<WebLocalFrameImpl> m_frame;
     SandboxFlags m_sandboxFlags;
+    ScrollbarMode m_scrolling;
+    int m_marginWidth;
+    int m_marginHeight;
 };
 
 DEFINE_TYPE_CASTS(RemoteBridgeFrameOwner, FrameOwner, owner, !owner->isLocal(), !owner.isLocal());

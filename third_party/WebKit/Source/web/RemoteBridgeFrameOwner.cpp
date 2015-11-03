@@ -9,9 +9,12 @@
 
 namespace blink {
 
-RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
+RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
     : m_frame(frame)
     , m_sandboxFlags(flags)
+    , m_scrolling(static_cast<ScrollbarMode>(frameOwnerProperties.scrollingMode))
+    , m_marginWidth(frameOwnerProperties.marginWidth)
+    , m_marginHeight(frameOwnerProperties.marginHeight)
 {
 }
 
@@ -19,6 +22,11 @@ DEFINE_TRACE(RemoteBridgeFrameOwner)
 {
     visitor->trace(m_frame);
     FrameOwner::trace(visitor);
+}
+
+void RemoteBridgeFrameOwner::setScrollingMode(WebFrameOwnerProperties::ScrollingMode mode)
+{
+    m_scrolling = static_cast<ScrollbarMode>(mode);
 }
 
 void RemoteBridgeFrameOwner::dispatchLoad()

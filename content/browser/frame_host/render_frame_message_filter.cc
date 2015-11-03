@@ -41,12 +41,14 @@ namespace {
 const int kPluginsRefreshThresholdInSeconds = 3;
 #endif
 
-void CreateChildFrameOnUI(int process_id,
-                          int parent_routing_id,
-                          blink::WebTreeScopeType scope,
-                          const std::string& frame_name,
-                          blink::WebSandboxFlags sandbox_flags,
-                          int new_routing_id) {
+void CreateChildFrameOnUI(
+    int process_id,
+    int parent_routing_id,
+    blink::WebTreeScopeType scope,
+    const std::string& frame_name,
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties,
+    int new_routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, parent_routing_id);
@@ -54,7 +56,8 @@ void CreateChildFrameOnUI(int process_id,
   // processing a subframe creation message.
   if (render_frame_host) {
     render_frame_host->OnCreateChildFrame(new_routing_id, scope, frame_name,
-                                          sandbox_flags);
+                                          sandbox_flags,
+                                          frame_owner_properties);
   }
 }
 
@@ -319,12 +322,14 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
     blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties,
     int* new_routing_id) {
   *new_routing_id = render_widget_helper_->GetNextRoutingID();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CreateChildFrameOnUI, render_process_id_, parent_routing_id,
-                 scope, frame_name, sandbox_flags, *new_routing_id));
+                 scope, frame_name, sandbox_flags, frame_owner_properties,
+                 *new_routing_id));
 }
 
 void RenderFrameMessageFilter::OnSetCookie(int render_frame_id,

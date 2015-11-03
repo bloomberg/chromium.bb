@@ -14,6 +14,7 @@
 #include "content/test/fake_compositor_dependencies.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace {
@@ -51,7 +52,8 @@ class RenderFrameImplTest : public RenderViewTest {
     RenderFrameImpl::CreateFrame(kSubframeRouteId, MSG_ROUTING_NONE,
                                  MSG_ROUTING_NONE, kFrameProxyRouteId,
                                  MSG_ROUTING_NONE, FrameReplicationState(),
-                                 &compositor_deps_, widget_params);
+                                 &compositor_deps_, widget_params,
+                                 blink::WebFrameOwnerProperties());
 
     frame_ = RenderFrameImpl::FromRoutingID(kSubframeRouteId);
     EXPECT_FALSE(frame_->is_main_frame_);

@@ -50,6 +50,7 @@ class Document;
 class DocumentLoader;
 class FetchRequest;
 class HTMLFormElement;
+class HTMLFrameElementBase;
 class HTMLFrameOwnerElement;
 class HTMLMediaElement;
 class HTMLPlugInElement;
@@ -194,6 +195,8 @@ public:
     virtual void didChangeName(const String&) { }
 
     virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) { }
+
+    virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) { }
 
     virtual void dispatchWillOpenWebSocket(WebSocketHandle*) { }
 

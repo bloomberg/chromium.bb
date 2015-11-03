@@ -58,6 +58,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -1575,6 +1576,70 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged
     // when pressed, the button changes its own text to "updatedValue"
     EXPECT_EQ(String("updatedValue"), element->innerText());
 }
+
+TEST_F(WebFrameTest, FrameOwnerPropertiesMargin)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->settings()->setJavaScriptEnabled(true);
+    view->setMainFrame(remoteClient.frame());
+    WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
+    root->setReplicatedOrigin(SecurityOrigin::createUnique());
+
+    WebFrameOwnerProperties properties;
+    properties.marginWidth = 11;
+    properties.marginHeight = 22;
+    FrameTestHelpers::TestWebFrameClient localFrameClient;
+    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, properties);
+
+    registerMockedHttpURLLoad("frame_owner_properties.html");
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "frame_owner_properties.html");
+
+    // Check if the LocalFrame has seen the marginwidth and marginheight
+    // properties.
+    Document* childDocument = toWebLocalFrameImpl(localFrame)->frame()->document();
+    EXPECT_EQ(11, childDocument->firstBodyElement()->getIntegralAttribute(HTMLNames::marginwidthAttr));
+    EXPECT_EQ(22, childDocument->firstBodyElement()->getIntegralAttribute(HTMLNames::marginheightAttr));
+
+    FrameView* frameView = toWebLocalFrameImpl(localFrame)->frameView();
+    // Expect scrollbars to be enabled by default.
+    EXPECT_NE(nullptr, frameView->horizontalScrollbar());
+    EXPECT_NE(nullptr, frameView->verticalScrollbar());
+
+    view->close();
+}
+
+TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->settings()->setJavaScriptEnabled(true);
+    view->setMainFrame(remoteClient.frame());
+    WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
+    root->setReplicatedOrigin(SecurityOrigin::createUnique());
+
+    WebFrameOwnerProperties properties;
+    // Turn off scrolling in the subframe.
+    properties.scrollingMode = WebFrameOwnerProperties::ScrollingMode::AlwaysOff;
+    FrameTestHelpers::TestWebFrameClient localFrameClient;
+    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, properties);
+
+    registerMockedHttpURLLoad("frame_owner_properties.html");
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "frame_owner_properties.html");
+
+    Document* childDocument = toWebLocalFrameImpl(localFrame)->frame()->document();
+    EXPECT_EQ(0, childDocument->firstBodyElement()->getIntegralAttribute(HTMLNames::marginwidthAttr));
+    EXPECT_EQ(0, childDocument->firstBodyElement()->getIntegralAttribute(HTMLNames::marginheightAttr));
+
+    FrameView* frameView = static_cast<WebLocalFrameImpl*>(localFrame)->frameView();
+    EXPECT_EQ(nullptr, frameView->horizontalScrollbar());
+    EXPECT_EQ(nullptr, frameView->verticalScrollbar());
+
+    view->close();
+}
+
 
 TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
 {
@@ -5869,7 +5934,7 @@ public:
     int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
     int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString&, WebSandboxFlags)
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString&, WebSandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
         ASSERT(m_childClient);
         m_childFrameCreationCount++;
@@ -6258,7 +6323,7 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
 public:
     FailCreateChildFrame() : m_callCount(0) { }
 
-    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, WebSandboxFlags sandboxFlags) override
+    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties) override
     {
         ++m_callCount;
         return 0;
@@ -6917,7 +6982,7 @@ TEST_P(ParameterizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(remoteClient.frame());
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr);
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
 
     // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
     RefPtrWillBePersistent<Frame> childCoreFrame = toCoreFrame(childFrame);
@@ -6952,7 +7017,7 @@ TEST_F(WebFrameSwapTest, SwapMainFrame)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
 
     // Finally, make sure an embedder triggered load in the local frame swapped
@@ -7028,7 +7093,7 @@ TEST_F(WebFrameSwapTest, SwapFirstChild)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifyFirstChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7067,7 +7132,7 @@ TEST_F(WebFrameSwapTest, SwapMiddleChild)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifyMiddleChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7103,7 +7168,7 @@ TEST_F(WebFrameSwapTest, SwapLastChild)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifyLastChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7148,7 +7213,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     swapAndVerifySubframeConsistency("remote->local", targetFrame, localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -7192,7 +7257,7 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     // Now check that remote -> local works too, since it goes through a different code path.
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
     v8::Local<v8::Value> localWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
         "document.querySelector('#frame2').contentWindow;"));
@@ -7226,7 +7291,7 @@ TEST_F(WebFrameSwapTest, SwapInitializesGlobal)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
     v8::Local<v8::Value> localWindowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource("saved.top"));
     EXPECT_TRUE(localWindowTop->IsObject());
@@ -7297,7 +7362,7 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
     remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
 
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr);
+    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
 
     v8::Local<v8::Value> window = childFrame->executeScriptAndReturnValue(WebScriptSource("window"));
@@ -7324,7 +7389,7 @@ TEST_F(WebFrameSwapTest, FrameElementInFramesWithRemoteParent)
     remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
 
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr);
+    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
 
     v8::Local<v8::Value> frameElement = childFrame->executeScriptAndReturnValue(WebScriptSource("window.frameElement"));
@@ -7372,7 +7437,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap)
 
     RemoteToLocalSwapWebFrameClient client(remoteFrame);
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(WebInitialCommitInChildFrame, client.historyCommitType());
 
@@ -7397,7 +7462,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap)
 
     RemoteToLocalSwapWebFrameClient client(remoteFrame);
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     localFrame->setCommittedFirstRealLoad();
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(WebStandardCommit, client.historyCommitType());
@@ -7535,7 +7600,7 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener)
     // Do a remote-to-local swap in the popup.
     FrameTestHelpers::TestWebFrameClient popupLocalClient;
     WebLocalFrame* popupLocalFrame = WebLocalFrame::create(WebTreeScopeType::Document, &popupLocalClient);
-    popupLocalFrame->initializeToReplaceRemoteFrame(popupRemoteFrame, "", WebSandboxFlags::None);
+    popupLocalFrame->initializeToReplaceRemoteFrame(popupRemoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     popupRemoteFrame->swap(popupLocalFrame);
 
     // The initial document created during the remote-to-local swap should have
@@ -7558,7 +7623,7 @@ TEST_F(WebFrameTest, SwapWithOpenerCycle)
     // Now swap in a local frame. It shouldn't crash.
     FrameTestHelpers::TestWebFrameClient localClient;
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &localClient);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteFrame->swap(localFrame);
 
     // And the opener cycle should still be preserved.
@@ -7595,7 +7660,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
 
     // If an iframe has a remote main frame, ensure the inital commit is correctly identified as WebInitialCommitInChildFrame.
     CommitTypeWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr);
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
     registerMockedHttpURLLoad("foo.html");
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "foo.html");
     EXPECT_EQ(WebInitialCommitInChildFrame, childFrameClient.historyCommitType());
@@ -7621,7 +7686,7 @@ TEST_P(ParameterizedWebFrameTest, FrameWidgetTest)
     view->setMainFrame(remoteClient.frame());
 
     FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr);
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
 
     GestureEventTestWebViewClient childViewClient;
     WebFrameWidget* widget = WebFrameWidget::create(&childViewClient, childFrame);
@@ -7841,10 +7906,10 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
 
-    WebLocalFrameScope secondFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr);
-    WebLocalFrameScope fourthFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame);
-    WebLocalFrameScope thirdFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame);
-    WebLocalFrameScope firstFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr);
+    WebLocalFrameScope secondFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties());
+    WebLocalFrameScope fourthFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties());
+    WebLocalFrameScope thirdFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties());
+    WebLocalFrameScope firstFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties());
 
     EXPECT_EQ(firstFrame, parent->firstChild());
     EXPECT_EQ(nullptr, firstFrame->previousSibling());
@@ -7879,7 +7944,7 @@ TEST_P(ParameterizedWebFrameTest, SendBeaconFromChildWithRemoteMainFrame)
     root->setReplicatedOrigin(SecurityOrigin::createUnique());
 
     FrameTestHelpers::TestWebFrameClient localFrameClient;
-    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr);
+    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, WebFrameOwnerProperties());
 
     // Finally, make sure an embedder triggered load in the local frame swapped
     // back in works.
@@ -7901,12 +7966,12 @@ TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFra
     remoteRoot->setReplicatedOrigin(SecurityOrigin::createUnique());
 
     FrameTestHelpers::TestWebFrameClient localFrameClient;
-    remoteRoot->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr);
+    remoteRoot->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, WebFrameOwnerProperties());
 
     // Do a remote-to-local swap of the top frame.
     FrameTestHelpers::TestWebFrameClient localClient;
     WebLocalFrame* localRoot = WebLocalFrame::create(WebTreeScopeType::Document, &localClient);
-    localRoot->initializeToReplaceRemoteFrame(remoteRoot, "", WebSandboxFlags::None);
+    localRoot->initializeToReplaceRemoteFrame(remoteRoot, "", WebSandboxFlags::None, WebFrameOwnerProperties());
     remoteRoot->swap(localRoot);
 
     // Load a page with a child frame in the new root to make sure this doesn't

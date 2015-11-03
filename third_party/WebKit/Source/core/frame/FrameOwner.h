@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
+#include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
@@ -27,6 +28,10 @@ public:
     // On load failure, a frame can ask its owner to render fallback content
     // which replaces the frame contents.
     virtual void renderFallbackContent() = 0;
+
+    virtual ScrollbarMode scrollingMode() const = 0;
+    virtual int marginWidth() const = 0;
+    virtual int marginHeight() const = 0;
 };
 
 } // namespace blink

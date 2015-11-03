@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
 #include "third_party/WebKit/public/web/WebPageSerializerClient.h"
@@ -160,14 +161,16 @@ class CONTENT_EXPORT RenderFrameImpl
   // the latter is MSG_ROUTING_NONE.  Note: This is called only when
   // RenderFrame is being created in response to IPC message from the browser
   // process. All other frame creation is driven through Blink and Create.
-  static void CreateFrame(int routing_id,
-                          int proxy_routing_id,
-                          int opener_routing_id,
-                          int parent_routing_id,
-                          int previous_sibling_routing_id,
-                          const FrameReplicationState& replicated_state,
-                          CompositorDependencies* compositor_deps,
-                          const FrameMsg_NewFrame_WidgetParams& params);
+  static void CreateFrame(
+      int routing_id,
+      int proxy_routing_id,
+      int opener_routing_id,
+      int parent_routing_id,
+      int previous_sibling_routing_id,
+      const FrameReplicationState& replicated_state,
+      CompositorDependencies* compositor_deps,
+      const FrameMsg_NewFrame_WidgetParams& params,
+      const blink::WebFrameOwnerProperties& frameOwner_properties);
 
   // Returns the RenderFrameImpl for the given routing ID.
   static RenderFrameImpl* FromRoutingID(int routing_id);
@@ -414,7 +417,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
-      blink::WebSandboxFlags sandboxFlags) override;
+      blink::WebSandboxFlags sandboxFlags,
+      const blink::WebFrameOwnerProperties& frameOwnerProperties) override;
   void didChangeOpener(blink::WebFrame* frame) override;
   void frameDetached(blink::WebFrame* frame, DetachType type) override;
   void frameFocused() override;
@@ -423,6 +427,9 @@ class CONTENT_EXPORT RenderFrameImpl
                      const blink::WebString& name) override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;
+  virtual void didChangeFrameOwnerProperties(
+      blink::WebFrame* child_frame,
+      const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void didMatchCSS(
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
@@ -727,6 +734,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSnapshotAccessibilityTree(int callback_id);
   void OnUpdateOpener(int opener_routing_id);
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
+  void OnSetFrameOwnerProperties(
+      const blink::WebFrameOwnerProperties& frame_owner_properties);
   void OnClearFocus();
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);

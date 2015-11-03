@@ -78,12 +78,14 @@ class CONTENT_EXPORT FrameTree {
   // match the process of the |parent| node.  Otherwise this method returns
   // nullptr.  Passing MSG_ROUTING_NONE for |new_routing_id| will allocate a new
   // routing ID for the new frame.
-  RenderFrameHostImpl* AddFrame(FrameTreeNode* parent,
-                                int process_id,
-                                int new_routing_id,
-                                blink::WebTreeScopeType scope,
-                                const std::string& frame_name,
-                                blink::WebSandboxFlags sandbox_flags);
+  RenderFrameHostImpl* AddFrame(
+      FrameTreeNode* parent,
+      int process_id,
+      int new_routing_id,
+      blink::WebTreeScopeType scope,
+      const std::string& frame_name,
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::WebFrameOwnerProperties& frame_owner_properties);
   void RemoveFrame(FrameTreeNode* child);
 
   // This method walks the entire frame tree and creates a RenderFrameProxyHost

@@ -210,8 +210,8 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
             owner->setWidget(frameView);
     }
 
-    if (HTMLFrameOwnerElement* owner = deprecatedLocalOwner())
-        view()->setCanHaveScrollbars(owner->scrollingMode() != ScrollbarAlwaysOff);
+    if (owner())
+        view()->setCanHaveScrollbars(owner()->scrollingMode() != ScrollbarAlwaysOff);
 }
 
 LocalFrame::~LocalFrame()

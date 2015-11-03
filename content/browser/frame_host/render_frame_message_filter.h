@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/cookies/canonical_cookie.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -58,11 +59,13 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
   ~RenderFrameMessageFilter() override;
 
-  void OnCreateChildFrame(int parent_routing_id,
-                          blink::WebTreeScopeType scope,
-                          const std::string& frame_name,
-                          blink::WebSandboxFlags sandbox_flags,
-                          int* new_render_frame_id);
+  void OnCreateChildFrame(
+      int parent_routing_id,
+      blink::WebTreeScopeType scope,
+      const std::string& frame_name,
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::WebFrameOwnerProperties& frame_owner_properties,
+      int* new_render_frame_id);
   void OnSetCookie(int render_frame_id,
                    const GURL& url,
                    const GURL& first_party_for_cookies,

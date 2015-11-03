@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -53,7 +54,8 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderFrameHostManager::Delegate* manager_delegate,
                 blink::WebTreeScopeType scope,
                 const std::string& name,
-                blink::WebSandboxFlags sandbox_flags);
+                blink::WebSandboxFlags sandbox_flags,
+                const blink::WebFrameOwnerProperties& frame_owner_properties);
 
   ~FrameTreeNode();
 
@@ -137,6 +139,15 @@ class CONTENT_EXPORT FrameTreeNode {
   // Transfer any pending sandbox flags into |effective_sandbox_flags_|, and
   // return true if the sandbox flags were changed.
   bool CommitPendingSandboxFlags();
+
+  const blink::WebFrameOwnerProperties& frame_owner_properties() {
+    return frame_owner_properties_;
+  }
+
+  void set_frame_owner_properties(
+      const blink::WebFrameOwnerProperties& frame_owner_properties) {
+    frame_owner_properties_ = frame_owner_properties;
+  }
 
   bool HasSameOrigin(const FrameTreeNode& node) const {
     return replication_state_.origin.IsSameOriginWith(
@@ -275,6 +286,14 @@ class CONTENT_EXPORT FrameTreeNode {
   // used.  |effective_sandbox_flags_| is updated with any pending sandbox
   // flags when a navigation for this frame commits.
   blink::WebSandboxFlags effective_sandbox_flags_;
+
+  // Tracks the scrolling and margin properties for this frame.  These
+  // properties affect the child renderer but are stored on its parent's
+  // frame element.  When this frame's parent dynamically updates these
+  // properties, we update them here too.
+  //
+  // Note that dynamic updates only take effect on the next frame navigation.
+  blink::WebFrameOwnerProperties frame_owner_properties_;
 
   // Used to track this node's loading progress (from 0 to 1).
   double loading_progress_;

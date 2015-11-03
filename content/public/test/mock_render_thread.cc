@@ -216,11 +216,13 @@ void MockRenderThread::OnCreateWindow(
 }
 
 // The Frame expects to be returned a valid route_id different from its own.
-void MockRenderThread::OnCreateChildFrame(int new_frame_routing_id,
-                                          blink::WebTreeScopeType scope,
-                                          const std::string& frame_name,
-                                          blink::WebSandboxFlags sandbox_flags,
-                                          int* new_render_frame_id) {
+void MockRenderThread::OnCreateChildFrame(
+    int new_frame_routing_id,
+    blink::WebTreeScopeType scope,
+    const std::string& frame_name,
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties,
+    int* new_render_frame_id) {
   *new_render_frame_id = new_frame_routing_id_++;
 }
 

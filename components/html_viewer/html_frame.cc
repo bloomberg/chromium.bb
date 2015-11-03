@@ -52,6 +52,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -190,7 +191,9 @@ HTMLFrame::HTMLFrame(CreateParams* params)
     CHECK(!parent_->IsLocal());
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createLocalChild(
         state_.tree_scope, state_.name, state_.sandbox_flags, this,
-        previous_web_frame);
+        previous_web_frame,
+        // TODO(lazyboy): Replicate WebFrameOwnerProperties where needed.
+        blink::WebFrameOwnerProperties());
     CreateLocalRootWebWidget(web_frame_->toWebLocalFrame());
   } else if (!parent_->IsLocal()) {
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createRemoteChild(
@@ -324,7 +327,8 @@ blink::WebFrame* HTMLFrame::createChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
     const blink::WebString& frame_name,
-    blink::WebSandboxFlags sandbox_flags) {
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
   DCHECK(IsLocal());  // Can't create children of remote frames.
   DCHECK_EQ(parent, web_frame_);
   DCHECK(window_);  // If we're local we have to have a window.
@@ -681,7 +685,9 @@ void HTMLFrame::SwapToLocal(
   blink::WebLocalFrame* local_web_frame =
       blink::WebLocalFrame::create(state_.tree_scope, this);
   local_web_frame->initializeToReplaceRemoteFrame(
-      web_frame_->toWebRemoteFrame(), state_.name, state_.sandbox_flags);
+      web_frame_->toWebRemoteFrame(), state_.name, state_.sandbox_flags,
+      // TODO(lazyboy): Figure out replicating WebFrameOwnerProperties.
+      blink::WebFrameOwnerProperties());
   // The swap() ends up calling to frameDetached() and deleting the old.
   web_frame_->swap(local_web_frame);
   web_frame_ = local_web_frame;

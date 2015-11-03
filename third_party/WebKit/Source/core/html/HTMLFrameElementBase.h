@@ -25,18 +25,17 @@
 #define HTMLFrameElementBase_h
 
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
 class HTMLFrameElementBase : public HTMLFrameOwnerElement {
 public:
-    ScrollbarMode scrollingMode() const final { return m_scrolling; }
-
-    int marginWidth() const { return m_marginWidth; }
-    int marginHeight() const { return m_marginHeight; }
-
     bool canContainRangeEndPoint() const final { return false; }
+
+    // FrameOwner overrides:
+    ScrollbarMode scrollingMode() const override { return m_scrollingMode; }
+    int marginWidth() const override { return m_marginWidth; }
+    int marginHeight() const override { return m_marginHeight; }
 
 protected:
     HTMLFrameElementBase(const QualifiedName&, Document&);
@@ -52,6 +51,10 @@ protected:
     // process. See http://crbug.com/339659.
     void defaultEventHandler(Event*) override;
 
+    void setScrollingMode(ScrollbarMode);
+    void setMarginWidth(int);
+    void setMarginHeight(int);
+
 private:
     bool supportsFocus() const final;
     void setFocus(bool) final;
@@ -66,13 +69,14 @@ private:
     void setNameAndOpenURL();
     void openURL(bool replaceCurrentItem = true);
 
-    AtomicString m_URL;
-    AtomicString m_frameName;
+    void frameOwnerPropertiesChanged();
 
-    ScrollbarMode m_scrolling;
-
+    ScrollbarMode m_scrollingMode;
     int m_marginWidth;
     int m_marginHeight;
+
+    AtomicString m_URL;
+    AtomicString m_frameName;
 };
 
 inline bool isHTMLFrameElementBase(const HTMLElement& element)

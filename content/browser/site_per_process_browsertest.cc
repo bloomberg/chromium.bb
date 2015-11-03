@@ -1844,6 +1844,181 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Verify that "scrolling" property on frame elements propagates to child frames
+// correctly.
+// Does not work on android since android has scrollbars overlayed.
+#if defined(OS_ANDROID)
+#define MAYBE_FrameOwnerPropertiesPropagationScrolling \
+        DISABLED_FrameOwnerPropertiesPropagationScrolling
+#else
+#define MAYBE_FrameOwnerPropertiesPropagationScrolling \
+        FrameOwnerPropertiesPropagationScrolling
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_FrameOwnerPropertiesPropagationScrolling) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_owner_properties_scrolling.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1u, root->child_count());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child = root->child_at(0);
+
+  // If the available client width within the iframe is smaller than the
+  // frame element's width, we assume there's a scrollbar.
+  // Also note that just comparing clientHeight and scrollHeight of the frame's
+  // document will not work.
+  auto has_scrollbar = [](RenderFrameHostImpl* rfh) {
+    int client_width;
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(rfh,
+        "window.domAutomationController.send(document.body.clientWidth);",
+        &client_width));
+    const int kFrameElementWidth = 200;
+    return client_width < kFrameElementWidth;
+  };
+
+  auto set_scrolling_property = [](RenderFrameHostImpl* parent_rfh,
+                                   const std::string& value) {
+    EXPECT_TRUE(ExecuteScript(
+        parent_rfh,
+        base::StringPrintf(
+            "document.getElementById('child-1').setAttribute("
+            "    'scrolling', '%s');", value.c_str())));
+  };
+
+  // Run the test over variety of parent/child cases.
+  GURL urls[] = {
+    // Remote to remote.
+    embedded_test_server()->GetURL("c.com", "/tall_page.html"),
+    // Remote to local.
+    embedded_test_server()->GetURL("a.com", "/tall_page.html"),
+    // Local to remote.
+    embedded_test_server()->GetURL("b.com", "/tall_page.html")
+  };
+  const std::string scrolling_values[] = {
+    "yes", "auto", "no"
+  };
+
+  for (size_t i = 0; i < arraysize(scrolling_values); ++i) {
+    bool expect_scrollbar = scrolling_values[i] != "no";
+    set_scrolling_property(root->current_frame_host(), scrolling_values[i]);
+    for (size_t j = 0; j < arraysize(urls); ++j) {
+      NavigateFrameToURL(child, urls[j]);
+
+      // TODO(alexmos): This can be removed once TestFrameNavigationObserver is
+      // fixed to use DidFinishLoad.
+      EXPECT_TRUE(WaitForRenderFrameReady(child->current_frame_host()));
+
+      EXPECT_EQ(expect_scrollbar, has_scrollbar(child->current_frame_host()));
+    }
+  }
+}
+
+// Verify that "marginwidth" and "marginheight" properties on frame elements
+// propagate to child frames correctly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameOwnerPropertiesPropagationMargin) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_owner_properties_margin.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1u, root->child_count());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child = root->child_at(0);
+
+  std::string margin_width;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child->current_frame_host(),
+      "window.domAutomationController.send("
+      "document.body.getAttribute('marginwidth'));",
+      &margin_width));
+  EXPECT_EQ("10", margin_width);
+
+  std::string margin_height;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child->current_frame_host(),
+      "window.domAutomationController.send("
+      "document.body.getAttribute('marginheight'));",
+      &margin_height));
+  EXPECT_EQ("50", margin_height);
+
+  // Run the test over variety of parent/child cases.
+  GURL urls[] = {
+    // Remote to remote.
+    embedded_test_server()->GetURL("c.com", "/title2.html"),
+    // Remote to local.
+    embedded_test_server()->GetURL("a.com", "/title1.html"),
+    // Local to remote.
+    embedded_test_server()->GetURL("b.com", "/title2.html")
+  };
+
+  int current_margin_width = 15;
+  int current_margin_height = 25;
+
+  // Before each navigation, we change the marginwidth and marginheight
+  // properties of the frame. We then check whether those properties are applied
+  // correctly after the navigation has completed.
+  for (size_t i = 0; i < arraysize(urls); ++i) {
+    // Change marginwidth and marginheight before navigating.
+    EXPECT_TRUE(ExecuteScript(
+        root->current_frame_host(),
+        base::StringPrintf(
+            "document.getElementById('child-1').setAttribute("
+            "    'marginwidth', '%d');", current_margin_width)));
+    EXPECT_TRUE(ExecuteScript(
+        root->current_frame_host(),
+        base::StringPrintf(
+            "document.getElementById('child-1').setAttribute("
+            "    'marginheight', '%d');", current_margin_height)));
+
+    NavigateFrameToURL(child, urls[i]);
+    // TODO(alexmos): This can be removed once TestFrameNavigationObserver is
+    // fixed to use DidFinishLoad.
+    EXPECT_TRUE(WaitForRenderFrameReady(child->current_frame_host()));
+
+    std::string actual_margin_width;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child->current_frame_host(),
+        "window.domAutomationController.send("
+        "document.body.getAttribute('marginwidth'));",
+        &actual_margin_width));
+    EXPECT_EQ(base::IntToString(current_margin_width), actual_margin_width);
+
+    std::string actual_margin_height;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child->current_frame_host(),
+        "window.domAutomationController.send("
+        "document.body.getAttribute('marginheight'));",
+        &actual_margin_height));
+    EXPECT_EQ(base::IntToString(current_margin_height), actual_margin_height);
+
+    current_margin_width += 5;
+    current_margin_height += 10;
+  }
+}
+
 // Verify origin replication with an A-embed-B-embed-C-embed-A hierarchy.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   GURL main_url(embedded_test_server()->GetURL(

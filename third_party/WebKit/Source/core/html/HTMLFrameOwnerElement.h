@@ -59,8 +59,6 @@ public:
 
     Document* getSVGDocument(ExceptionState&) const;
 
-    virtual ScrollbarMode scrollingMode() const { return ScrollbarAuto; }
-
     virtual bool loadedNonEmptyDocument() const { return false; }
     virtual void didLoadNonEmptyDocument() { }
 
@@ -83,6 +81,9 @@ public:
     void dispatchLoad() override;
     SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
     void renderFallbackContent() override { }
+    ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
+    int marginWidth() const override { return -1; }
+    int marginHeight() const override { return -1; }
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -80,6 +80,7 @@ struct WebConsoleMessage;
 struct WebFindOptions;
 struct WebFloatPoint;
 struct WebFloatRect;
+struct WebFrameOwnerProperties;
 struct WebPoint;
 struct WebPrintParams;
 struct WebRect;

@@ -44,6 +44,7 @@
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 using base::Time;
@@ -2026,7 +2027,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   // Prereq: add a subframe with an initial auto-subframe navigation.
   main_test_rfh()->OnCreateChildFrame(
       MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
-      blink::WebSandboxFlags::None);
+      blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostImpl* subframe =
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   const GURL subframe_url("http://foo1/subframe");
@@ -2106,7 +2107,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   // Add a subframe and navigate it.
   main_test_rfh()->OnCreateChildFrame(
       MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
-      blink::WebSandboxFlags::None);
+      blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostImpl* subframe =
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   const GURL url2("http://foo/2");
@@ -2151,7 +2152,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   // Add a second subframe and navigate.
   main_test_rfh()->OnCreateChildFrame(
       MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
-      blink::WebSandboxFlags::None);
+      blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostImpl* subframe2 =
       contents()->GetFrameTree()->root()->child_at(1)->current_frame_host();
   const GURL url3("http://foo/3");
@@ -2196,7 +2197,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   // Add a nested subframe and navigate.
   subframe->OnCreateChildFrame(MSG_ROUTING_NONE,
                                blink::WebTreeScopeType::Document, std::string(),
-                               blink::WebSandboxFlags::None);
+                               blink::WebSandboxFlags::None,
+                               blink::WebFrameOwnerProperties());
   RenderFrameHostImpl* subframe3 = contents()
                                        ->GetFrameTree()
                                        ->root()
@@ -2260,7 +2262,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   // Prereq: add a subframe with an initial auto-subframe navigation.
   main_test_rfh()->OnCreateChildFrame(
       MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
-      blink::WebSandboxFlags::None);
+      blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostImpl* subframe =
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   const GURL subframe_url("http://foo1/subframe");
@@ -3651,7 +3653,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   // Add and navigate a subframe that would normally count as in-page.
   main_test_rfh()->OnCreateChildFrame(
       MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
-      blink::WebSandboxFlags::None);
+      blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostImpl* subframe =
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   const GURL subframe_url("http://www.google.com/#");
@@ -3817,7 +3819,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   // automatically loaded. Auto subframes don't increment the page ID.
   main_test_rfh()->OnCreateChildFrame(
       MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
-      blink::WebSandboxFlags::None);
+      blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostImpl* subframe =
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   const GURL url1_sub("http://foo/subframe");

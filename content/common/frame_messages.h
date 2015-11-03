@@ -28,6 +28,7 @@
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
@@ -56,6 +57,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
                           blink::WebContextMenuData::InputFieldTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameOwnerProperties::ScrollingMode,
+                          blink::WebFrameOwnerProperties::ScrollingMode::Last)
 IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::Last)
@@ -114,6 +117,12 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
   IPC_STRUCT_TRAITS_MEMBER(link_followed)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebFrameOwnerProperties)
+  IPC_STRUCT_TRAITS_MEMBER(scrollingMode)
+  IPC_STRUCT_TRAITS_MEMBER(marginWidth)
+  IPC_STRUCT_TRAITS_MEMBER(marginHeight)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::TransitionElement)
@@ -359,6 +368,12 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_Params)
   // properties replicated from the process rendering the parent frame, such as
   // the new frame's sandbox flags.
   IPC_STRUCT_MEMBER(content::FrameReplicationState, replication_state)
+
+  // When the new frame has a parent, |frame_owner_properties| holds the
+  // properties of the HTMLFrameOwnerElement from the parent process.
+  // Note that unlike FrameReplicationState, this is not replicated for remote
+  // frames.
+  IPC_STRUCT_MEMBER(blink::WebFrameOwnerProperties, frame_owner_properties)
 
   // Specifies properties for a new RenderWidget that will be attached to the
   // new RenderFrame (if one is needed).
@@ -689,6 +704,9 @@ IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     std::vector<base::FilePath> /* paths of local copy */,
                     base::FilePath /* local directory path */)
 
+IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
+                    blink::WebFrameOwnerProperties /* frame_owner_properties */)
+
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
@@ -710,12 +728,14 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_AddMessageToConsole,
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message
 // sent when the frame is detached from the DOM.
-IPC_SYNC_MESSAGE_CONTROL4_1(FrameHostMsg_CreateChildFrame,
-                            int32 /* parent_routing_id */,
-                            blink::WebTreeScopeType /* scope */,
-                            std::string /* frame_name */,
-                            blink::WebSandboxFlags /* sandbox flags */,
-                            int32 /* new_routing_id */)
+IPC_SYNC_MESSAGE_CONTROL5_1(
+    FrameHostMsg_CreateChildFrame,
+    int32 /* parent_routing_id */,
+    blink::WebTreeScopeType /* scope */,
+    std::string /* frame_name */,
+    blink::WebSandboxFlags /* sandbox flags */,
+    blink::WebFrameOwnerProperties /* frame_owner_properties */,
+    int32 /* new_routing_id */)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
@@ -807,6 +827,12 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeSandboxFlags,
                     int32 /* subframe_routing_id */,
                     blink::WebSandboxFlags /* updated_flags */)
+
+// Notifies the browser that frame owner properties have changed for a subframe
+// of this frame.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeFrameOwnerProperties,
+                    int32 /* subframe_routing_id */,
+                    blink::WebFrameOwnerProperties /* frame_owner_properties */)
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes. Sent for top-level frames.
