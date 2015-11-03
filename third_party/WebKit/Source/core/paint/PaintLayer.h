@@ -691,7 +691,7 @@ private:
 
     void blockSelectionGapsBoundsChanged();
 
-    void markAncestorChainForNeedsRepaint();
+    void markCompositingContainerChainForNeedsRepaint();
 
     PaintLayerType m_layerType;
 

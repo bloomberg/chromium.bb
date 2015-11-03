@@ -478,7 +478,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childre
     Optional<SubsequenceRecorder> subsequenceRecorder;
     if (!paintingInfo.disableSubsequenceCache
         && !context->printing()
-        && m_paintLayer.isSelfPaintingLayer()
+        && m_paintLayer.stackingNode()->isStackingContext()
         && !(paintingInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
         && !(paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars))) {
         if (!m_paintLayer.needsRepaint()

@@ -2678,10 +2678,10 @@ void PaintLayer::setNeedsRepaint()
     m_needsRepaint = true;
 
     // Do this unconditionally to ensure container chain is marked when compositing status of the layer changes.
-    markAncestorChainForNeedsRepaint();
+    markCompositingContainerChainForNeedsRepaint();
 }
 
-void PaintLayer::markAncestorChainForNeedsRepaint()
+void PaintLayer::markCompositingContainerChainForNeedsRepaint()
 {
     // Need to access compositingState(). We've ensured correct flag setting when compositingState() changes.
     DisableCompositingQueryAsserts disabler;
@@ -2695,7 +2695,7 @@ void PaintLayer::markAncestorChainForNeedsRepaint()
             return;
         }
 
-        PaintLayer* container = layer->parent();
+        PaintLayer* container = layer->compositingContainer();
         if (!container) {
             LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
             if (!owner)
