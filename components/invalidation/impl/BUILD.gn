@@ -213,7 +213,7 @@ if (is_android) {
     ]
     DEPRECATED_java_in_dir = "android/javatests/src"
   }
-  junit_binary("junit_tests") {
+  junit_binary("components_invalidation_impl_junit_tests") {
     java_files = [ "android/junit/src/org/chromium/components/invalidation/PendingInvalidationTest.java" ]
     deps = [
       ":java",

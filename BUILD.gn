@@ -240,8 +240,14 @@ group("both_gn_and_gyp") {
   if (is_android) {
     deps += [
       "//base/android/linker:chromium_android_linker",
+      "//base:base_junit_tests",
       "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
+      "//components/invalidation/impl:components_invalidation_impl_junit_tests",
+      "//components/policy/android:components_policy_junit_tests",
+      "//content/public/android:content_junit_tests",
+      "//net/android:net_junit_tests",
+      "//testing/android/junit:junit_unittests",
       "//third_party/errorprone:chromium_errorprone",
       "//tools/android:android_tools",
       "//tools/android/heap_profiler:heap_profiler_unittests",
@@ -283,6 +289,7 @@ group("both_gn_and_gyp") {
     if (!is_chromecast) {
       deps += [
         "//android_webview:system_webview_apk",
+        "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",

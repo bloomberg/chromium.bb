@@ -233,8 +233,7 @@ junit_binary("chrome_junit_tests") {
     "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
     "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientConnectionHelperTest.java",
 
-    # TODO(mlamouri): add the requirements dependencies for this test.
-    #"junit/src/org/chromium/chrome/browser/invalidations/InvalidationControllerTest.java",
+    "junit/src/org/chromium/chrome/browser/invalidations/InvalidationControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/AbstractMediaRouteControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/MediaUrlResolverTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/RemoteVideoInfoTest.java",
@@ -251,8 +250,10 @@ junit_binary("chrome_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//components/invalidation/impl:java",
     "//sync:sync_java_test_support",
     "//sync/android:sync_java",
+    "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/junit:hamcrest",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
     google_play_services_library,

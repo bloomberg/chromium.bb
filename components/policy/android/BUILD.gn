@@ -28,3 +28,14 @@ generate_jni("jni_headers") {
   sources = _jni_sources
   jni_package = "policy"
 }
+
+junit_binary("components_policy_junit_tests") {
+  java_files = [
+    "junit/src/org/chromium/policy/AbstractAppRestrictionsProviderTest.java",
+    "junit/src/org/chromium/policy/CombinedPolicyProviderTest.java",
+  ]
+  deps = [
+    "//base:base_java",
+    ":policy_java",
+  ]
+}
