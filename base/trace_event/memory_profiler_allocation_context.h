@@ -142,9 +142,22 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
 // when heap profiling is enabled. To simplify memory management for
 // bookkeeping, this struct has a fixed size. All |const char*|s here
 // must have static lifetime.
+// TODO(ruuda): Make the default constructor private to avoid accidentally
+// constructing an instance and forgetting to initialize it. Only
+// |AllocationContextTracker| should be able to construct. (And tests.)
 struct BASE_EXPORT AllocationContext {
+  // A type ID is a number that is unique for every C++ type. A type ID is
+  // stored instead of the type name to avoid inflating the binary with type
+  // name strings. There is an out of band lookup table mapping IDs to the type
+  // names. A value of 0 means that the type is not known.
+  using TypeId = uint16_t;
+
   Backtrace backtrace;
+  TypeId type_id;
 };
+
+bool BASE_EXPORT operator==(const AllocationContext& lhs,
+                            const AllocationContext& rhs);
 
 // The allocation context tracker keeps track of thread-local context for heap
 // profiling. It includes a pseudo stack of trace events. On every allocation
@@ -205,6 +218,11 @@ namespace BASE_HASH_NAMESPACE {
 template <>
 struct hash<base::trace_event::Backtrace> {
   size_t operator()(const base::trace_event::Backtrace& backtrace) const;
+};
+
+template <>
+struct hash<base::trace_event::AllocationContext> {
+  size_t operator()(const base::trace_event::AllocationContext& context) const;
 };
 
 }  // BASE_HASH_NAMESPACE

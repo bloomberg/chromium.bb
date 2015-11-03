@@ -4,8 +4,8 @@
 
 #include "base/trace_event/memory_profiler_heap_dump_writer.h"
 
+#include <algorithm>
 #include <iterator>
-#include <numeric>
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -14,6 +14,8 @@
 
 namespace base {
 namespace trace_event {
+
+using TypeId = AllocationContext::TypeId;
 
 namespace {
 
@@ -24,8 +26,12 @@ bool PairSizeGt(const std::pair<T, size_t>& lhs,
 }
 
 template <typename T>
-size_t PairSizeAdd(size_t acc, const std::pair<T, size_t>& rhs) {
-  return acc + rhs.second;
+std::vector<std::pair<T, size_t>> SortDescending(
+    const hash_map<T, size_t>& grouped) {
+  std::vector<std::pair<T, size_t>> sorted;
+  std::copy(grouped.begin(), grouped.end(), std::back_inserter(sorted));
+  std::sort(sorted.begin(), sorted.end(), PairSizeGt<T>);
+  return sorted;
 }
 
 }  // namespace
@@ -38,38 +44,50 @@ HeapDumpWriter::~HeapDumpWriter() {}
 
 void HeapDumpWriter::InsertAllocation(const AllocationContext& context,
                                       size_t size) {
-  bytes_by_backtrace_[context.backtrace] += size;
+  bytes_by_context_[context] += size;
 }
 
 scoped_refptr<TracedValue> HeapDumpWriter::WriteHeapDump() {
-  // Sort the backtraces by size in descending order.
-  std::vector<std::pair<Backtrace, size_t>> sorted_by_backtrace;
+  // Group by backtrace and by type ID, and compute the total heap size while
+  // iterating anyway.
+  size_t total_size = 0;
+  hash_map<Backtrace, size_t> bytes_by_backtrace;
+  hash_map<TypeId, size_t> bytes_by_type;
 
-  std::copy(bytes_by_backtrace_.begin(), bytes_by_backtrace_.end(),
-            std::back_inserter(sorted_by_backtrace));
-  std::sort(sorted_by_backtrace.begin(), sorted_by_backtrace.end(),
-            PairSizeGt<Backtrace>);
+  for (auto context_size : bytes_by_context_) {
+    total_size += context_size.second;
+    bytes_by_backtrace[context_size.first.backtrace] += context_size.second;
+    bytes_by_type[context_size.first.type_id] += context_size.second;
+  }
+
+  // Sort the backtraces and type IDs by size.
+  auto sorted_bytes_by_backtrace = SortDescending(bytes_by_backtrace);
+  auto sorted_bytes_by_type = SortDescending(bytes_by_type);
 
   traced_value_->BeginArray("entries");
 
   // The global size, no column specified.
   {
-    size_t total_size =
-        std::accumulate(sorted_by_backtrace.begin(), sorted_by_backtrace.end(),
-                        size_t(0), PairSizeAdd<Backtrace>);
     traced_value_->BeginDictionary();
     WriteSize(total_size);
     traced_value_->EndDictionary();
   }
 
-  // Size per backtrace.
-  for (auto it = sorted_by_backtrace.begin();
-       it != sorted_by_backtrace.end(); it++) {
+  // Entries with the size per backtrace.
+  for (const auto& entry : sorted_bytes_by_backtrace) {
     traced_value_->BeginDictionary();
     // Insert a forward reference to the backtrace that will be written to the
     // |stackFrames| dictionary later on.
-    WriteStackFrameIndex(stack_frame_deduplicator_->Insert(it->first));
-    WriteSize(it->second);
+    WriteStackFrameIndex(stack_frame_deduplicator_->Insert(entry.first));
+    WriteSize(entry.second);
+    traced_value_->EndDictionary();
+  }
+
+  // Entries with the size per type.
+  for (const auto& entry : sorted_bytes_by_type) {
+    traced_value_->BeginDictionary();
+    WriteTypeId(entry.first);
+    WriteSize(entry.second);
     traced_value_->EndDictionary();
   }
 
@@ -88,6 +106,19 @@ void HeapDumpWriter::WriteStackFrameIndex(int index) {
     // dictionary, not an array.
     SStringPrintf(&buffer_, "%i", index);
     traced_value_->SetString("bt", buffer_);
+  }
+}
+
+void HeapDumpWriter::WriteTypeId(TypeId type_id) {
+  if (type_id == 0) {
+    // Type ID 0 represents "unknown type". Instead of writing it as "0" which
+    // could be mistaken for an actual type ID, an unknown type is represented
+    // by the empty string.
+    traced_value_->SetString("type", "");
+  } else {
+    // Format the type ID as a string.
+    SStringPrintf(&buffer_, "%i", type_id);
+    traced_value_->SetString("type", buffer_);
   }
 }
 

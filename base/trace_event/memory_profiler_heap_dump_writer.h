@@ -44,6 +44,9 @@ class BASE_EXPORT HeapDumpWriter {
   // dictionary.
   void WriteStackFrameIndex(int index);
 
+  // Writes a "type" key with the stringified type ID.
+  void WriteTypeId(AllocationContext::TypeId type_id);
+
   // Writes a "size" key with value |size| as a hexidecimal string to the traced
   // value.
   void WriteSize(size_t size);
@@ -55,8 +58,9 @@ class BASE_EXPORT HeapDumpWriter {
   // this heap dump writer instance.
   StackFrameDeduplicator* const stack_frame_deduplicator_;
 
-  // A map of backtrace to the number of bytes allocated for that backtrace.
-  hash_map<Backtrace, size_t> bytes_by_backtrace_;
+  // A map of allocation context to the number of bytes allocated for that
+  // context.
+  hash_map<AllocationContext, size_t> bytes_by_context_;
 
   // Buffer for converting integers into strings, that is re-used throughout the
   // dump.
