@@ -13,11 +13,18 @@
 
 class HistoryCounter: public BrowsingDataCounter {
  public:
-  // A special value indicating that the local counting result is zero, but some
-  // history entries exist in Sync.
-  // TODO(msramek): Change the callback signature so we can return a structured
-  // result instead of special int values.
-  static const BrowsingDataCounter::ResultInt kOnlySyncedHistory;
+  class HistoryResult : public FinishedResult {
+   public:
+    HistoryResult(const HistoryCounter* source,
+                  ResultInt value,
+                  bool has_synced_visits);
+    ~HistoryResult() override;
+
+    bool has_synced_visits() const { return has_synced_visits_; }
+
+   private:
+    bool has_synced_visits_;
+  };
 
   HistoryCounter();
   ~HistoryCounter() override;

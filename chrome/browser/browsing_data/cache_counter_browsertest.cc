@@ -129,11 +129,16 @@ class CacheCounterTest : public InProcessBrowserTest {
   }
 
   // Callback from the counter.
-  void CountingCallback(bool finished, BrowsingDataCounter::ResultInt count) {
+  void CountingCallback(scoped_ptr<BrowsingDataCounter::Result> result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    finished_ = finished;
-    result_ = count;
-    if (run_loop_ && finished)
+    finished_ = result->Finished();
+
+    if (finished_) {
+      result_ = static_cast<BrowsingDataCounter::FinishedResult*>(
+          result.get())->Value();
+    }
+
+    if (run_loop_ && finished_)
       run_loop_->Quit();
   }
 

@@ -28,18 +28,6 @@ HistoryCounter::HistoryCounter() : pref_name_(prefs::kDeleteBrowsingHistory),
 HistoryCounter::~HistoryCounter() {
 }
 
-// Note that the local counting done by |VisitDatabase::GetHistoryCount|
-// returns an int, which is at most a signed 64-bit number. On the other hand,
-// ResultInt is an unsigned 64-bit number, so the range 2^63..2^64-1 is unused
-// and we can use it to encode special values.
-// static
-const BrowsingDataCounter::ResultInt HistoryCounter::kOnlySyncedHistory =
-    std::numeric_limits<BrowsingDataCounter::ResultInt>::max();
-COMPILE_ASSERT(
-    std::numeric_limits<int>::digits <
-        std::numeric_limits<BrowsingDataCounter::ResultInt>::digits,
-    "BrowsingDataCounter::ResultInt must be wider than int.");
-
 const std::string& HistoryCounter::GetPrefName() const {
   return pref_name_;
 }
@@ -161,8 +149,17 @@ void HistoryCounter::MergeResults() {
   if (!local_counting_finished_ || !web_counting_finished_)
     return;
 
-  if (!local_result_ && has_synced_visits_)
-    ReportResult(kOnlySyncedHistory);
-  else
-    ReportResult(local_result_);
+  ReportResult(make_scoped_ptr(new HistoryResult(
+      this, local_result_, has_synced_visits_)));
+}
+
+HistoryCounter::HistoryResult::HistoryResult(
+    const HistoryCounter* source,
+    ResultInt value,
+    bool has_synced_visits)
+    : FinishedResult(source, value),
+      has_synced_visits_(has_synced_visits) {
+}
+
+HistoryCounter::HistoryResult::~HistoryResult() {
 }

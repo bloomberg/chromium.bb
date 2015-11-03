@@ -7682,18 +7682,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_DEL_BROWSING_HISTORY_COUNTER" desc="A counter showing how many items of browsing history the user has.">
         {COUNT, plural,
+         =0 {none}
          =1 {1 item}
          other {# items}}
       </message>
-      <message name="IDS_DEL_CACHE_COUNTER" desc="A counter showing how many kBs of cached data the user has.">
+      <message name="IDS_DEL_BROWSING_HISTORY_COUNTER_SYNCED" desc="A counter showing the user how many local items of browsing history they have, and informing them that more items might be synced. In the case when COUNT is zero, the counter only mentions existence of synced items.">
         {COUNT, plural,
-         =1 {1 kB}
-         other {# kB}}
+         =0 {at least 1 item on synced devices}
+         =1 {1 item (and more on synced devices)}
+         other {# items (and more on synced devices)}}
+      </message>
+      <message name="IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE" desc="A counter showing that the user has less than X megabytes of cache. The value X will be substituted.">
+        less than <ph name="UPPER_ESTIMATE">$1<ex>328 MB</ex></ph>
       </message>
       <message name="IDS_DEL_PASSWORDS_COUNTER" desc="A counter showing how many passwords the user has.">
         {COUNT, plural,
-         =1 {1 password}
-         other {# passwords}}
+         =0 {none}
+         other {#}}
       </message>
 
       <!-- Supervised User (Legacy and Accounts for Kids) Avatar Menu -->

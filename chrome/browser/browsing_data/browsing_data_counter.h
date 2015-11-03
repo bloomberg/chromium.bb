@@ -9,14 +9,52 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 
 class BrowsingDataCounter {
  public:
-  typedef uint64_t ResultInt;
-  typedef base::Callback<void(bool, ResultInt)> Callback;
+  typedef int64_t ResultInt;
+
+  // Base class of results returned by BrowsingDataCounter. When the computation
+  // has started, an instance is returned to represent a pending result.
+  class Result {
+   public:
+    explicit Result(const BrowsingDataCounter* source);
+    virtual ~Result();
+
+    const BrowsingDataCounter* source() const { return source_; }
+    virtual bool Finished() const;
+
+   private:
+    const BrowsingDataCounter* source_;
+
+    DISALLOW_COPY_AND_ASSIGN(Result);
+  };
+
+  // A subclass of Result returned when the computation has finished. The result
+  // value can be retrieved by calling |Value()|. Some BrowsingDataCounter
+  // subclasses might use a subclass of FinishedResult to provide more complex
+  // results.
+  class FinishedResult : public Result {
+   public:
+    FinishedResult(const BrowsingDataCounter* source, ResultInt value);
+    ~FinishedResult() override;
+
+    // Result:
+    bool Finished() const override;
+
+    ResultInt Value() const;
+
+   private:
+    ResultInt value_;
+
+    DISALLOW_COPY_AND_ASSIGN(FinishedResult);
+  };
+
+  typedef base::Callback<void(scoped_ptr<Result>)> Callback;
 
   BrowsingDataCounter();
   virtual ~BrowsingDataCounter();
@@ -38,8 +76,12 @@ class BrowsingDataCounter {
 
  protected:
   // Should be called from |Count| by any overriding class to indicate that
-  // counting is finished and report the |result|.
-  void ReportResult(ResultInt result);
+  // counting is finished and report |value| as the result.
+  void ReportResult(ResultInt value);
+
+  // A convenience overload of the previous method that allows subclasses to
+  // provide a custom |result|.
+  void ReportResult(scoped_ptr<Result> result);
 
   // Calculates the beginning of the counting period as |period_| before now.
   base::Time GetPeriodStart();

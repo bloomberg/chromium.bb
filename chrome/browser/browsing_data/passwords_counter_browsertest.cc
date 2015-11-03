@@ -87,10 +87,15 @@ class PasswordsCounterTest : public InProcessBrowserTest,
     return result_;
   }
 
-  void Callback(bool finished, BrowsingDataCounter::ResultInt count) {
-    finished_ = finished;
-    result_ = count;
-    if (run_loop_ && finished)
+  void Callback(scoped_ptr<BrowsingDataCounter::Result> result) {
+    finished_ = result->Finished();
+
+    if (finished_) {
+      result_ = static_cast<BrowsingDataCounter::FinishedResult*>(
+          result.get())->Value();
+    }
+
+    if (run_loop_ && finished_)
       run_loop_->Quit();
   }
 

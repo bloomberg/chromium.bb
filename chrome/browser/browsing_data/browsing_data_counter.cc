@@ -53,12 +53,50 @@ void BrowsingDataCounter::Restart() {
   if (!profile_->GetPrefs()->GetBoolean(GetPrefName()))
     return;
 
-  callback_.Run(false, 0u);
+  callback_.Run(make_scoped_ptr(new Result(this)));
 
   Count();
 }
 
 void BrowsingDataCounter::ReportResult(ResultInt value) {
   DCHECK(initialized_);
-  callback_.Run(true, value);
+  callback_.Run(make_scoped_ptr(new FinishedResult(this, value)));
+}
+
+void BrowsingDataCounter::ReportResult(scoped_ptr<Result> result) {
+  DCHECK(initialized_);
+  callback_.Run(result.Pass());
+}
+
+// BrowsingDataCounter::Result -------------------------------------------------
+
+BrowsingDataCounter::Result::Result(const BrowsingDataCounter* source)
+    : source_(source) {
+}
+
+BrowsingDataCounter::Result::~Result() {
+}
+
+bool BrowsingDataCounter::Result::Finished() const {
+  return false;
+}
+
+// BrowsingDataCounter::FinishedResult -----------------------------------------
+
+BrowsingDataCounter::FinishedResult::FinishedResult(
+    const BrowsingDataCounter* source, ResultInt value)
+    : Result(source),
+      value_(value) {
+}
+
+BrowsingDataCounter::FinishedResult::~FinishedResult() {
+}
+
+bool BrowsingDataCounter::FinishedResult::Finished() const {
+  return true;
+}
+
+BrowsingDataCounter::ResultInt
+    BrowsingDataCounter::FinishedResult::Value() const {
+  return value_;
 }

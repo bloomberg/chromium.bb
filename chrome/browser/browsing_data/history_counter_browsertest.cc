@@ -62,15 +62,28 @@ class HistoryCounterTest : public InProcessBrowserTest {
     run_loop_->Run();
   }
 
-  BrowsingDataCounter::ResultInt GetResult() {
+  BrowsingDataCounter::ResultInt GetLocalResult() {
     DCHECK(finished_);
-    return result_;
+    return local_result_;
   }
 
-  void Callback(bool finished, BrowsingDataCounter::ResultInt count) {
-    finished_ = finished;
-    result_ = count;
-    if (run_loop_ && finished)
+  bool HasSyncedVisits() {
+    DCHECK(finished_);
+    return has_synced_visits_;
+  }
+
+  void Callback(scoped_ptr<BrowsingDataCounter::Result> result) {
+    finished_ = result->Finished();
+
+    if (finished_) {
+      HistoryCounter::HistoryResult* history_result =
+          static_cast<HistoryCounter::HistoryResult*>(result.get());
+
+      local_result_ = history_result->Value();
+      has_synced_visits_ = history_result->has_synced_visits();
+    }
+
+    if (run_loop_ && finished_)
       run_loop_->Quit();
   }
 
@@ -80,7 +93,8 @@ class HistoryCounterTest : public InProcessBrowserTest {
   base::Time time_;
 
   bool finished_;
-  BrowsingDataCounter::ResultInt result_;
+  BrowsingDataCounter::ResultInt local_result_;
+  bool has_synced_visits_;
 };
 
 // Tests that the counter considers duplicate visits from the same day
@@ -114,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DuplicateVisits) {
   counter.Restart();
 
   WaitForCounting();
-  EXPECT_EQ(7u, GetResult());
+  EXPECT_EQ(7u, GetLocalResult());
 }
 
 // Tests that the counter starts counting automatically when the deletion
@@ -131,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PrefChanged) {
   SetHistoryDeletionPref(true);
 
   WaitForCounting();
-  EXPECT_EQ(2u, GetResult());
+  EXPECT_EQ(2u, GetLocalResult());
 }
 
 // Tests that the counter does not count history if the deletion
@@ -180,23 +194,23 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PeriodChanged) {
 
   SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
   WaitForCounting();
-  EXPECT_EQ(1u, GetResult());
+  EXPECT_EQ(1u, GetLocalResult());
 
   SetDeletionPeriodPref(BrowsingDataRemover::LAST_DAY);
   WaitForCounting();
-  EXPECT_EQ(1u, GetResult());
+  EXPECT_EQ(1u, GetLocalResult());
 
   SetDeletionPeriodPref(BrowsingDataRemover::LAST_WEEK);
   WaitForCounting();
-  EXPECT_EQ(5u, GetResult());
+  EXPECT_EQ(5u, GetLocalResult());
 
   SetDeletionPeriodPref(BrowsingDataRemover::FOUR_WEEKS);
   WaitForCounting();
-  EXPECT_EQ(8u, GetResult());
+  EXPECT_EQ(8u, GetLocalResult());
 
   SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
   WaitForCounting();
-  EXPECT_EQ(9u, GetResult());
+  EXPECT_EQ(9u, GetLocalResult());
 }
 
 class FakeWebHistoryService : public history::WebHistoryService {
@@ -338,14 +352,15 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
                base::Bind(&HistoryCounterTest::Callback,
                           base::Unretained(this)));
 
-  // No entries locally and no entries in Sync - the result should be zero.
+  // No entries locally and no entries in Sync.
   service->SetRequestOptions(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
-  EXPECT_EQ(0u, GetResult());
+  EXPECT_EQ(0u, GetLocalResult());
+  EXPECT_FALSE(HasSyncedVisits());
 
   // No entries locally. There are some entries in Sync, but they are out of the
-  // time range. The result should still be zero.
+  // time range.
   SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
   service->AddSyncedVisit(
       "www.google.com", GetCurrentTime() - base::TimeDelta::FromHours(2));
@@ -354,15 +369,16 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
   service->SetRequestOptions(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
-  EXPECT_EQ(0u, GetResult());
+  EXPECT_EQ(0u, GetLocalResult());
+  EXPECT_FALSE(HasSyncedVisits());
 
-  // No entries locally, but some entries in Sync - the result should be
-  // kOnlySyncedHistory.
+  // No entries locally, but some entries in Sync.
   service->AddSyncedVisit("www.google.com", GetCurrentTime());
   service->SetRequestOptions(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
-  EXPECT_EQ(HistoryCounter::kOnlySyncedHistory, GetResult());
+  EXPECT_EQ(0u, GetLocalResult());
+  EXPECT_TRUE(HasSyncedVisits());
 
   // To err on the safe side, if the server request fails, we assume that there
   // might be some items on the server.
@@ -370,30 +386,33 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, Synced) {
                              net::HTTP_INTERNAL_SERVER_ERROR);
   counter.Restart();
   WaitForCounting();
-  EXPECT_EQ(HistoryCounter::kOnlySyncedHistory, GetResult());
+  EXPECT_EQ(0u, GetLocalResult());
+  EXPECT_TRUE(HasSyncedVisits());
 
   // Same when the entire query fails.
   service->SetRequestOptions(false /* success */,
                              net::HTTP_INTERNAL_SERVER_ERROR);
   counter.Restart();
   WaitForCounting();
-  EXPECT_EQ(HistoryCounter::kOnlySyncedHistory, GetResult());
+  EXPECT_EQ(0u, GetLocalResult());
+  EXPECT_TRUE(HasSyncedVisits());
 
-  // If the local count is nonzero, the server result has no influence on the
-  // output, whether its nonempty...
+  // Nonzero local count, nonempty sync.
   AddVisit("https://www.google.com");
   AddVisit("https://www.chrome.com");
   service->SetRequestOptions(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
-  EXPECT_EQ(2u, GetResult());
+  EXPECT_EQ(2u, GetLocalResult());
+  EXPECT_TRUE(HasSyncedVisits());
 
-  // ...or empty.
+  // Nonzero local count, empty sync.
   service->ClearSyncedVisits();
   service->SetRequestOptions(true /* success */, net::HTTP_OK);
   counter.Restart();
   WaitForCounting();
-  EXPECT_EQ(2u, GetResult());
+  EXPECT_EQ(2u, GetLocalResult());
+  EXPECT_FALSE(HasSyncedVisits());
 }
 
 }  // namespace

@@ -47,18 +47,11 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // Updates UI when the pref to allow clearing history changes.
   virtual void OnBrowsingHistoryPrefChanged();
 
-  // Adds a |counter| for browsing data. Its output will be displayed
-  // in the dialog with the string |text_grd_id|.
-  void AddCounter(scoped_ptr<BrowsingDataCounter> counter, int text_grd_id);
+  // Adds a |counter| for browsing data.
+  void AddCounter(scoped_ptr<BrowsingDataCounter> counter);
 
-  // Updates the counter of the pref |pref_name| in the UI according
-  // to a callback from a |BrowsingDataCounter| that specifies whether
-  // the counting has |finished| and what the |count| is. The |count| will
-  // be substituted into the string with the ID |text_grd_id|.
-  void UpdateCounterText(const std::string& pref_name,
-                         int text_grd_id,
-                         bool finished,
-                         BrowsingDataCounter::ResultInt count);
+  // Updates a counter in the UI according to the |result|.
+  void UpdateCounterText(scoped_ptr<BrowsingDataCounter::Result> result);
 
   // Implementation of SyncServiceObserver. Updates the support string at the
   // bottom of the dialog.

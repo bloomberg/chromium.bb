@@ -40,15 +40,7 @@ void CacheCounter::OnCacheSizeCalculated(int64 result_bytes) {
   if (result_bytes < 0)
     return;
 
-  // The cache size on all three backends (blockfile, simple and memory) is
-  // limited to int32. We are adding together results from several cache
-  // backends, so the result should fit into 32+epsilon bits. Thus,
-  // |result_bytes| / 1024^2 should fit into an int.
-  static const int kBToMb = 1024 * 1024;
-  int result_mb = result_bytes / kBToMb;
-  if (result_bytes % kBToMb)
-    ++result_mb;
-  ReportResult(result_mb);
+  ReportResult(result_bytes);
 }
 
 bool CacheCounter::Pending() {
