@@ -18,6 +18,9 @@
         "test": "cc_unittests"
       },
       {
+        "test": "components_unittests"
+      },
+      {
         "test": "content_unittests"
       },
       {
@@ -31,6 +34,9 @@
       },
       {
         "test": "gl_unittests"
+      },
+      {
+        "test": "gpu_unittests"
       },
       {
         "test": "html_viewer_unittests"
@@ -109,6 +115,9 @@
       },
       {
         "test": "ui_touch_selection_unittests"
+      },
+      {
+        "test": "unit_tests"
       },
       {
         "test": "window_manager_unittests"
