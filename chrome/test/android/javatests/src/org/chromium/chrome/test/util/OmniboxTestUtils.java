@@ -70,9 +70,9 @@ public class OmniboxTestUtils {
         private String mAutocompleteText;
 
         public SuggestionsResultBuilder addGeneratedSuggestion(
-                OmniboxSuggestion.Type type, String text, String url) {
+                int type, String text, String url) {
             mSuggestions.add(new OmniboxSuggestion(
-                    type.nativeType(), 0, 0, text, null, null, null, "", url, url, false, false));
+                    type, false, 0, 0, text, null, null, null, "", url, url, false, false));
             return this;
         }
 

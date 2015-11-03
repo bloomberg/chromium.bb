@@ -28,7 +28,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout.OmniboxSuggestionsList;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.Type;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
@@ -316,23 +315,29 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("wiki")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_SUGGEST, "wikipedia", null)
-                                .addGeneratedSuggestion(Type.SEARCH_SUGGEST, "wiki", null)
-                                .addGeneratedSuggestion(Type.SEARCH_SUGGEST, "wikileaks", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
+                                        "wikipedia", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
+                                        "wiki", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
+                                        "wikileaks", null)
                                 .setAutocompleteText("pedia")),
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("onomatop")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_SUGGEST, "onomatopoeia", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
+                                        "onomatopoeia", null)
                                 .addGeneratedSuggestion(
-                                        Type.SEARCH_SUGGEST, "onomatopoeia foo", null)
+                                        OmniboxSuggestionType.SEARCH_SUGGEST,
+                                        "onomatopoeia foo", null)
                                 .setAutocompleteText("oeia")),
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("mispellled")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_SUGGEST, "misspelled", null)
-                                .addGeneratedSuggestion(
-                                        Type.SEARCH_SUGGEST, "misspelled words", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
+                                        "misspelled", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
+                                        "misspelled words", null)
                                 .setAutocompleteText(""))
         );
         checkAutocompleteText(suggestionsMap, "wiki", "wikipedia", 4, 9);
@@ -382,16 +387,22 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("test")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testing", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testing", null)
                                 .setAutocompleteText("ing"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testz", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testz", null)
                                 .setAutocompleteText("ing"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testblarg", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testblarg", null)
                                 .setAutocompleteText("ing")));
         checkAutocompleteText(suggestionsMap, "test", "testing", 4, 7);
     }
@@ -404,16 +415,22 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("test")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testing", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testing", null)
                                 .setAutocompleteText("i"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testz", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testz", null)
                                 .setAutocompleteText("in"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testblarg", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testblarg", null)
                                 .setAutocompleteText("ing for the win")));
         checkAutocompleteText(suggestionsMap, "test", "testing for the win", 4, 19);
     }
@@ -426,16 +443,22 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("test")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testing", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testing", null)
                                 .setAutocompleteText("ing is awesome"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testz", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testz", null)
                                 .setAutocompleteText("ing is hard"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "test", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "testblarg", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "test", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "testblarg", null)
                                 .setAutocompleteText("ingz")));
         checkAutocompleteText(suggestionsMap, "test", "testingz", 4, 8);
     }
@@ -659,19 +682,26 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("ل")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "للك", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "www.test.com", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "للكتا", null)),
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "للك", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "www.test.com", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "للكتا", null)),
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("للك")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "للكتاب", null)),
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "للكتاب", null)),
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor("f")
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "f", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "fa", null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "fac", null)));
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "f", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "fa", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        "fac", null)));
         final TestAutocompleteController controller = new TestAutocompleteController(
                 locationBar, locationBar, suggestionsMap);
 

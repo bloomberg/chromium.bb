@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.Type;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -208,16 +207,22 @@ public class QueryInOmniboxTest extends ChromeActivityTestCaseBase<ChromeActivit
                 new TestSuggestionResultsBuilder()
                         .setTextShownFor(suggestionFor)
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, term , null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, term + "ng", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        term , null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        term + "ng", null)
                                 .setAutocompleteText("ng is awesome"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, term, null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, term + "z", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        term, null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        term + "z", null)
                                 .setAutocompleteText("ng is hard"))
                         .addSuggestions(new SuggestionsResultBuilder()
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, term, null)
-                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, term + "blarg", null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        term, null)
+                                .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
+                                        term + "blarg", null)
                                 .setAutocompleteText("ngz")));
 
         final Object suggestionsProcessedSignal = new Object();

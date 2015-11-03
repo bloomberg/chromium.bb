@@ -230,11 +230,11 @@ public class AutocompleteController {
      *                                 modifying text in the omnibox and selecting a suggestion.
      * @param webContents The web contents for the tab where the selected suggestion will be shown.
      */
-    public void onSuggestionSelected(int selectedIndex, OmniboxSuggestion.Type type,
+    public void onSuggestionSelected(int selectedIndex, int type,
             String currentPageUrl, boolean isQueryInOmnibox, boolean focusedFromFakebox,
             long elapsedTimeSinceModified, WebContents webContents) {
         // Don't natively log voice suggestion results as we add them in Java.
-        if (type == OmniboxSuggestion.Type.VOICE_SUGGEST) return;
+        if (type == OmniboxSuggestionType.VOICE_SUGGEST) return;
         nativeOnSuggestionSelected(mNativeAutocompleteControllerAndroid, selectedIndex,
                 currentPageUrl, isQueryInOmnibox, focusedFromFakebox, elapsedTimeSinceModified,
                 webContents);
@@ -264,12 +264,12 @@ public class AutocompleteController {
     }
 
     @CalledByNative
-    private static OmniboxSuggestion buildOmniboxSuggestion(int nativeType, int relevance,
-            int transition, String text, String description, String answerContents,
+    private static OmniboxSuggestion buildOmniboxSuggestion(int nativeType, boolean isSearchType,
+            int relevance, int transition, String text, String description, String answerContents,
             String answerType, String fillIntoEdit, String url, String formattedUrl,
             boolean isStarred, boolean isDeletable) {
-        return new OmniboxSuggestion(nativeType, relevance, transition, text, description,
-                answerContents, answerType, fillIntoEdit, url, formattedUrl, isStarred,
+        return new OmniboxSuggestion(nativeType, isSearchType, relevance, transition, text,
+                description, answerContents, answerType, fillIntoEdit, url, formattedUrl, isStarred,
                 isDeletable);
     }
 

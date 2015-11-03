@@ -189,4 +189,19 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          # GN: //components/omnibox:autocomplete_match_type_javagen
+          'target_name': 'autocomplete_match_type_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'omnibox/browser/autocomplete_match_type.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+      ],
+    }],
+  ],
 }

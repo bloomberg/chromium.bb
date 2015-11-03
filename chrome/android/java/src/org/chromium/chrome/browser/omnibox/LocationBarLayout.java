@@ -74,7 +74,6 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.Type;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationSnackbarController;
@@ -450,7 +449,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             // up saving generated URLs as typed URLs, which would then pollute the subsequent
             // omnibox results. There is one special case where the suggestion text was pasted,
             // where we want the transition type to be LINK.
-            int transition = suggestionMatch.getType() == OmniboxSuggestion.Type.URL_WHAT_YOU_TYPED
+            int transition = suggestionMatch.getType() == OmniboxSuggestionType.URL_WHAT_YOU_TYPED
                     && mUrlBar.isPastedText() ? PageTransition.LINK
                             : suggestionMatch.getTransition();
 
@@ -1123,29 +1122,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     private static NavigationButtonType suggestionTypeToNavigationButtonType(
-            OmniboxSuggestion.Type suggestionType) {
-        switch (suggestionType) {
-            case NAVSUGGEST:
-            case HISTORY_URL:
-            case URL_WHAT_YOU_TYPED:
-            case HISTORY_TITLE:
-            case HISTORY_BODY:
-            case HISTORY_KEYWORD:
-                return NavigationButtonType.PAGE;
-            case SEARCH_WHAT_YOU_TYPED:
-            case SEARCH_HISTORY:
-            case SEARCH_SUGGEST:
-            case SEARCH_SUGGEST_ENTITY:
-            case SEARCH_SUGGEST_TAIL:
-            case SEARCH_SUGGEST_PERSONALIZED:
-            case SEARCH_SUGGEST_PROFILE:
-            case VOICE_SUGGEST:
-            case SEARCH_OTHER_ENGINE:
-            case OPEN_HISTORY_PAGE:
-                return NavigationButtonType.MAGNIFIER;
-            default:
-                assert false;
-                return NavigationButtonType.MAGNIFIER;
+            OmniboxSuggestion suggestion) {
+        if (suggestion.isUrlSuggestion()) {
+            return NavigationButtonType.PAGE;
+        } else {
+            return NavigationButtonType.MAGNIFIER;
         }
     }
 
@@ -1156,7 +1137,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (isTablet && !mSuggestionItems.isEmpty()) {
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
-                    mSuggestionItems.get(0).getSuggestion().getType());
+                    mSuggestionItems.get(0).getSuggestion());
         } else if (mQueryInTheOmnibox) {
             type = NavigationButtonType.MAGNIFIER;
         } else if (isTablet) {
@@ -1570,7 +1551,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 updatedUrl = TemplateUrlService.getInstance().replaceSearchTermsInUrl(
                         query, currentTab.getUrl());
             }
-        } else if (suggestion.getType() != Type.VOICE_SUGGEST) {
+        } else if (suggestion.getType() != OmniboxSuggestionType.VOICE_SUGGEST) {
             // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
             // for query in the omnibox and voice suggestions, but it's currently difficult to do.
             long elapsedTimeSinceInputChange = mNewOmniboxEditSessionTimestamp > 0
@@ -1808,7 +1789,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 // Determine whether the suggestions have changed. If not, save some time by not
                 // redrawing the suggestions UI.
                 if (suggestion.equals(newSuggestion)
-                        && suggestion.getType() != OmniboxSuggestion.Type.SEARCH_SUGGEST_TAIL) {
+                        && suggestion.getType() != OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
                     if (suggestionItem.getMatchedQuery().equals(userText)) {
                         continue;
                     } else if (!suggestion.getDisplayText().startsWith(userText)
@@ -2019,8 +2000,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mIgnoreURLBarModification = value;
     }
 
-    private void loadUrlFromOmniboxMatch(String url, int transition, int matchPosition,
-            OmniboxSuggestion.Type type) {
+    private void loadUrlFromOmniboxMatch(String url, int transition, int matchPosition, int type) {
         // loadUrl modifies AutocompleteController's state clearing the native
         // AutocompleteResults needed by onSuggestionsSelected. Therefore,
         // loadUrl should should be invoked last.

@@ -669,7 +669,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * @throws InterruptedException
      */
     protected OmniboxSuggestion findOmniboxSuggestion(String inputText, String displayText,
-            String url, OmniboxSuggestion.Type type) throws InterruptedException {
+            String url, int type) throws InterruptedException {
         long endTime = System.currentTimeMillis() + OMNIBOX_FIND_SUGGESTION_TIMEOUT_MS;
 
         // Multiple suggestion events may occur before the one we're interested in is received.
@@ -729,7 +729,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
                 for (int i = 0; i < count; i++) {
                     popupItem = (OmniboxResultItem) suggestionListView.getItemAtPosition(i);
                     suggestion = popupItem.getSuggestion();
-                    if (type != null && suggestion.getType() != type) {
+                    if (suggestion.getType() != type) {
                         continue;
                     }
                     if (displayText != null && !suggestion.getDisplayText().equals(displayText)) {

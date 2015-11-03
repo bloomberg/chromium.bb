@@ -64,6 +64,9 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::NAVSUGGEST_PERSONALIZED;
     case AutocompleteMatchType::CLIPBOARD:
       return OmniboxEventProto::Suggestion::CLIPBOARD;
+    case AutocompleteMatchType::VOICE_SUGGEST:
+      // VOICE_SUGGEST matches are only used in Java and are not logged,
+      // so we should never reach this case.
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::NUM_TYPES:
       break;

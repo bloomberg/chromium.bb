@@ -455,6 +455,7 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
   return Java_AutocompleteController_buildOmniboxSuggestion(
       env,
       match.type,
+      AutocompleteMatch::IsSearchType(match.type),
       match.relevance,
       match.transition,
       contents.obj(),

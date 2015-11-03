@@ -4,6 +4,10 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("browser") {
   sources = [
     "answers_cache.cc",
@@ -133,6 +137,18 @@ source_set("browser") {
     "//url",
     ":in_memory_url_index_cache_proto",
   ]
+}
+
+if (is_android) {
+  # GYP: //component/omnibox.gypi:autocomplete_match_type_java
+  java_cpp_enum("autocomplete_match_type_javagen") {
+    sources = [
+      "autocomplete_match_type.h",
+    ]
+    outputs = [
+      "org/chromium/chrome/browser/omnibox/OmniboxSuggestionType.java",
+    ]
+  }
 }
 
 proto_library("in_memory_url_index_cache_proto") {

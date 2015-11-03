@@ -31,7 +31,8 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
     }
 
     private static OmniboxSuggestion createDummySuggestion(String text) {
-        return new OmniboxSuggestion(OmniboxSuggestion.Type.SEARCH_SUGGEST.nativeType(),
+        return new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
+                true,
                 0,
                 1,
                 text,
@@ -77,7 +78,7 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
     }
 
     private static boolean assertSuggestionMatchesVoiceResult(OmniboxSuggestion a, VoiceResult b) {
-        return a.getType() == OmniboxSuggestion.Type.VOICE_SUGGEST && !a.isStarred()
+        return a.getType() == OmniboxSuggestionType.VOICE_SUGGEST && !a.isStarred()
                 && TextUtils.equals(a.getDisplayText(), b.getMatch());
     }
 

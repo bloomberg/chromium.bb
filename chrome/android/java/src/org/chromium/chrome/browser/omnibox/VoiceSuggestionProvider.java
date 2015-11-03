@@ -141,7 +141,8 @@ public class VoiceSuggestionProvider {
         String voiceUrl = TemplateUrlService.getInstance().getUrlForVoiceSearchQuery(
                 result.getMatch());
         suggestions.add(new OmniboxSuggestion(
-                OmniboxSuggestion.Type.VOICE_SUGGEST.nativeType(),
+                OmniboxSuggestionType.VOICE_SUGGEST,
+                true,
                 0,
                 1,
                 result.getMatch(),

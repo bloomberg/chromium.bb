@@ -190,6 +190,7 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
       IDR_OMNIBOX_CALCULATOR,     // CALCULATOR
       IDR_OMNIBOX_HTTP,           // CLIPBOARD
+      IDR_OMNIBOX_SEARCH,         // VOICE_SEARCH
   };
 #else
   static const int kIcons[] = {
@@ -213,6 +214,7 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
       IDR_OMNIBOX_CALCULATOR,     // CALCULATOR
       IDR_OMNIBOX_HTTP,           // CLIPBOARD
+      IDR_OMNIBOX_SEARCH,         // VOICE_SEARCH
   };
 #endif
   static_assert(arraysize(kIcons) == AutocompleteMatchType::NUM_TYPES,
@@ -244,6 +246,7 @@ gfx::VectorIconId AutocompleteMatch::TypeToVectorIcon(Type type) {
       gfx::VectorIconId::OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
       gfx::VectorIconId::OMNIBOX_CALCULATOR,     // CALCULATOR
       gfx::VectorIconId::OMNIBOX_HTTP,           // CLIPBOARD
+      gfx::VectorIconId::OMNIBOX_SEARCH,         // VOICE_SEARCH
   };
   static_assert(arraysize(kIcons) == AutocompleteMatchType::NUM_TYPES,
                 "icons array must have NUM_TYPES elements");
@@ -427,6 +430,7 @@ bool AutocompleteMatch::IsSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST ||
          type == AutocompleteMatchType::SEARCH_OTHER_ENGINE ||
          type == AutocompleteMatchType::CALCULATOR ||
+         type == AutocompleteMatchType::VOICE_SUGGEST ||
          IsSpecializedSearchType(type);
 }
 
