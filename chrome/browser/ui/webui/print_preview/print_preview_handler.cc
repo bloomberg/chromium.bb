@@ -58,7 +58,6 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/cloud_devices/common/printer_description.h"
-#include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/printing/common/print_messages.h"
@@ -1303,17 +1302,8 @@ void PrintPreviewHandler::SendInitialSettings(
   if (initiator && cmdline->HasSwitch(switches::kEnableDomDistiller) &&
       dom_distiller::url_utils::IsUrlDistillable(
           initiator->GetLastCommittedURL())) {
-    dom_distiller::IsDistillablePage(
-        initiator, false,
-        base::Bind(&PrintPreviewHandler::HandleIsPageDistillableResult,
-                   weak_factory_.GetWeakPtr()));
-  }
-}
-
-void PrintPreviewHandler::HandleIsPageDistillableResult(bool distillable) {
-  VLOG(1) << "Distillable page detection finished";
-  if (distillable)
     web_ui()->CallJavascriptFunction("detectDistillablePage");
+  }
 }
 
 void PrintPreviewHandler::ClosePreviewDialog() {

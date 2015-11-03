@@ -335,11 +335,6 @@ class PrintPreviewHandler
   //     error.
   void OnExtensionPrintResult(bool success, const std::string& status);
 
-  // Called when the DOM Distiller determines whether or not this page can
-  // be distilled.
-  // |distillable|: Whether or not this page can be distilled.
-  void HandleIsPageDistillableResult(bool distillable);
-
   // Register/unregister from notifications of changes done to the GAIA
   // cookie.
   void RegisterForGaiaCookieChanges();
