@@ -371,15 +371,10 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   }
 
-  SkPoint origin;
-  origin.set(SkIntToScalar(plugin_rect.x()), SkIntToScalar(plugin_rect.y()));
-
-  SkPoint pixel_origin = origin;
-
+  SkPoint pixel_origin(PointToSkPoint(plugin_rect.origin()));
   if (scale_ != 1.0f && scale_ > 0.0f) {
     canvas->scale(scale_, scale_);
-    pixel_origin.set(pixel_origin.x() * (1.0f / scale_),
-                     pixel_origin.y() * (1.0f / scale_));
+    pixel_origin.scale(1.0f / scale_);
   }
   canvas->drawBitmap(image, pixel_origin.x(), pixel_origin.y(), &paint);
 }

@@ -153,10 +153,8 @@ skia::RefPtr<SkShader> CreateFadeShader(const Rect& text_rect,
     colors.push_back(colors.back());
   }
 
-  SkPoint points[2];
-  points[0].iset(text_rect.x(), text_rect.y());
-  points[1].iset(text_rect.right(), text_rect.y());
-
+  const SkPoint points[2] = { PointToSkPoint(text_rect.origin()),
+                              PointToSkPoint(text_rect.top_right()) };
   return skia::AdoptRef(
       SkGradientShader::CreateLinear(&points[0], &colors[0], &positions[0],
                                      colors.size(), SkShader::kClamp_TileMode));

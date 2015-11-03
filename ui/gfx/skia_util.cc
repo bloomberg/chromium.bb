@@ -20,10 +20,22 @@
 
 namespace gfx {
 
+SkPoint PointToSkPoint(const Point& point) {
+  return SkPoint::Make(SkIntToScalar(point.x()), SkIntToScalar(point.y()));
+}
+
+SkIPoint PointToSkIPoint(const Point& point) {
+  return SkIPoint::Make(point.x(), point.y());
+}
+
+SkPoint PointFToSkPoint(const PointF& point) {
+  return SkPoint::Make(SkFloatToScalar(point.x()), SkFloatToScalar(point.y()));
+}
+
 SkRect RectToSkRect(const Rect& rect) {
-  SkRect r;
-  r.iset(rect.x(), rect.y(), rect.right(), rect.bottom());
-  return r;
+  return SkRect::MakeXYWH(
+      SkIntToScalar(rect.x()), SkIntToScalar(rect.y()),
+      SkIntToScalar(rect.width()), SkIntToScalar(rect.height()));
 }
 
 SkIRect RectToSkIRect(const Rect& rect) {
@@ -205,10 +217,10 @@ void ConvertSkiaToRGBA(const unsigned char* skia,
 }
 
 void QuadFToSkPoints(const gfx::QuadF& quad, SkPoint points[4]) {
-  points[0] = SkPoint::Make(quad.p1().x(), quad.p1().y());
-  points[1] = SkPoint::Make(quad.p2().x(), quad.p2().y());
-  points[2] = SkPoint::Make(quad.p3().x(), quad.p3().y());
-  points[3] = SkPoint::Make(quad.p4().x(), quad.p4().y());
+  points[0] = PointFToSkPoint(quad.p1());
+  points[1] = PointFToSkPoint(quad.p2());
+  points[2] = PointFToSkPoint(quad.p3());
+  points[3] = PointFToSkPoint(quad.p4());
 }
 
 }  // namespace gfx

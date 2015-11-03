@@ -705,8 +705,9 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
   const int kLightEnd = state == kPressed ? 1 : 0;
   const int kDarkEnd = !kLightEnd;
   SkPoint gradient_bounds[2];
-  gradient_bounds[kLightEnd].iset(rect.x(), rect.y());
-  gradient_bounds[kDarkEnd].iset(rect.x(), kBottom - 1);
+  gradient_bounds[kLightEnd] = gfx::PointToSkPoint(rect.origin());
+  gradient_bounds[kDarkEnd] =
+      gfx::PointToSkPoint(rect.bottom_left() - gfx::Vector2d(0, 1));
   SkColor colors[2];
   colors[0] = light_color;
   colors[1] = base_color;
