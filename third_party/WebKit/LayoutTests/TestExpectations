@@ -361,6 +361,8 @@ crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/530044 transforms/2d/transform-borderbox.html [ NeedsManualRebaseline ]
 
+crbug.com/549544 fast/block/skip-cleaning-up-anonymous-wrappers-when-subtree-being-destroyed.html [ NeedsRebaseline ]
+
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 

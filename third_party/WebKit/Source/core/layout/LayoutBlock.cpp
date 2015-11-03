@@ -625,8 +625,12 @@ void LayoutBlock::makeChildrenInlineIfPossible()
         // There are still block children in the container, so any anonymous wrappers are still needed.
         if (!child->isAnonymousBlock())
             return;
+        // If one of the children is being destroyed then it is unsafe to clean up anonymous wrappers as the
+        // entire branch may be being destroyed.
+        if (toLayoutBlock(child)->beingDestroyed())
+            return;
         // We can't remove anonymous wrappers if they contain continuations as this means there are block children present.
-        if (child->isLayoutBlock() && toLayoutBlock(child)->continuation())
+        if (toLayoutBlock(child)->continuation())
             return;
         // We are only interested in removing anonymous wrappers if there are inline siblings underneath them.
         if (!child->childrenInline())
