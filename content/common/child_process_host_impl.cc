@@ -25,6 +25,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/attachment_broker.h"
+#include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
@@ -84,6 +85,19 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 #if defined(OS_WIN)
   AddFilter(new FontCacheDispatcher());
 #endif
+
+#if USE_ATTACHMENT_BROKER
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // On Mac, the privileged AttachmentBroker needs a reference to the Mach port
+  // Provider, which is only available in the chrome/ module. The attachment
+  // broker must already be created.
+  DCHECK(IPC::AttachmentBroker::GetGlobal());
+#else
+  // Construct the privileged attachment broker early in the life cycle of a
+  // child process.
+  IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // USE_ATTACHMENT_BROKER
 }
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
