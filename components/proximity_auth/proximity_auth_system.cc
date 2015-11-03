@@ -81,7 +81,8 @@ void ProximityAuthSystem::OnSuspendDone() {
 void ProximityAuthSystem::ResumeAfterWakeUpTimeout() {
   PA_LOG(INFO) << "Resume after suspend";
   suspended_ = false;
-  OnFocusedUserChanged(ScreenlockBridge::Get()->focused_user_id());
+  if (ScreenlockBridge::Get()->IsLocked())
+    OnFocusedUserChanged(ScreenlockBridge::Get()->focused_user_id());
 }
 
 void ProximityAuthSystem::OnLifeCycleStateChanged(
