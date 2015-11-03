@@ -14,6 +14,9 @@
 (() => {
   var interpolationTests = [];
 
+  // Set to true to output rebaselined test expectations.
+  var rebaselineTests = false;
+
   function createElement(tagName, container) {
     var element = document.createElement(tagName);
     if (container) {
@@ -287,7 +290,7 @@
     return animateElement;
   }
 
-  function createTestTarget(method, description, container, params, expectation) {
+  function createTestTarget(method, description, container, params, expectation, rebaselineExpectation) {
     var target = createTarget(container);
     if (params.underlying) {
       target.setAttribute(params.property, params.underlying);
@@ -338,8 +341,14 @@
 
     target.measure = function() {
       test(function() {
+        var actualResult = getAttributeValue(target, params.property);
+        if (rebaselineExpectation) {
+          var roundResult = roundNumbers(actualResult);
+          rebaselineExpectation.textContent += `  {at: ${expectation.at}, is: '${roundResult}'},\n`;
+        }
+
         assert_equals(
-          normalizeValue(getAttributeValue(target, params.property)),
+          normalizeValue(actualResult),
           normalizeValue(getAttributeValue(expected, params.property)));
       }, `${method}: ${description} at (${expectation.at}) is [${expectation.is}]`);
     };
@@ -347,13 +356,29 @@
     return target;
   }
 
-  function createTestTargets(interpolationTests, container) {
+  function createTestTargets(interpolationTests, container, rebaselineContainer) {
     var targets = [];
     for (var interpolationTest of interpolationTests) {
       var params = interpolationTest.params;
       params.fromComposite = params.fromComposite || 'replace';
       params.toComposite = params.toComposite || 'replace';
       var description = `Interpolate attribute <${params.property}> from ${params.fromComposite} [${params.from}] to ${params.toComposite} [${params.to}]`;
+
+    if (rebaselineTests) {
+        var rebaseline = createElement('pre', rebaselineContainer);
+        rebaseline.appendChild(document.createTextNode(`\
+assertAttributeInterpolation({
+  property: '${params.property}',
+  underlying: '${params.underlying}',
+  from: '${params.from}',
+  fromComposite: '${params.fromComposite}',
+  to: '${params.to}',
+  toComposite: '${params.toComposite}',
+}, [\n`));
+        var rebaselineExpectation;
+        rebaseline.appendChild(rebaselineExpectation = document.createTextNode(''));
+        rebaseline.appendChild(document.createTextNode(']);\n\n'));
+      }
 
       for (var method of ['SMIL', 'Web Animations']) {
         if (method === 'SMIL' && params.fromComposite !== params.toComposite) {
@@ -365,7 +390,7 @@
           if (method === 'SMIL' && (expectation.at < 0 || expectation.at > 1)) {
             continue;
           }
-          targets.push(createTestTarget(method, description, smilContainer, params, expectation));
+          targets.push(createTestTarget(method, description, smilContainer, params, expectation, method === 'SMIL' ? null : rebaselineExpectation));
         }
       }
     }
@@ -375,7 +400,8 @@
   function runTests() {
     return new Promise((resolve) => {
       var container = createElement('div', document.body);
-      var targets = createTestTargets(interpolationTests, container);
+      var rebaselineContainer = createElement('pre', document.body);
+      var targets = createTestTargets(interpolationTests, container, rebaselineContainer);
 
       requestAnimationFrame(() => {
         for (var target of targets) {
