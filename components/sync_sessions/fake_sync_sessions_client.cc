@@ -12,6 +12,18 @@ namespace sync_sessions {
 FakeSyncSessionsClient::FakeSyncSessionsClient() {}
 FakeSyncSessionsClient::~FakeSyncSessionsClient() {}
 
+bookmarks::BookmarkModel* FakeSyncSessionsClient::GetBookmarkModel() {
+  return nullptr;
+}
+
+favicon::FaviconService* FakeSyncSessionsClient::GetFaviconService() {
+  return nullptr;
+}
+
+history::HistoryService* FakeSyncSessionsClient::GetHistoryService() {
+  return nullptr;
+}
+
 bool FakeSyncSessionsClient::ShouldSyncURL(const GURL& url) const {
   return url.is_valid();
 }

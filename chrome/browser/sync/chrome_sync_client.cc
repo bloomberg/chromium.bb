@@ -105,6 +105,20 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   ~SyncSessionsClientImpl() override {}
 
   // SyncSessionsClient implementation.
+  bookmarks::BookmarkModel* GetBookmarkModel() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return BookmarkModelFactory::GetForProfile(profile_);
+  }
+  favicon::FaviconService* GetFaviconService() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return FaviconServiceFactory::GetForProfile(
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  }
+  history::HistoryService* GetHistoryService() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return HistoryServiceFactory::GetForProfile(
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  }
   bool ShouldSyncURL(const GURL& url) const override {
     if (url == GURL(chrome::kChromeUIHistoryURL)) {
       // The history page is treated specially as we want it to trigger syncable

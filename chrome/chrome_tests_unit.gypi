@@ -1509,7 +1509,6 @@
       # GCMDriverAndroid is not yet implemented.
       'browser/services/gcm/gcm_profile_service_unittest.cc',
       'browser/sessions/persistent_tab_restore_service_unittest.cc',
-      'browser/sync/sessions/page_revisit_broadcaster_unittest.cc',
       'browser/sync/sessions/sessions_sync_manager_unittest.cc',
       'browser/sync/sync_ui_util_unittest.cc',  # Sync setup uses native ui.
       'browser/translate/translate_manager_render_view_host_unittest.cc',

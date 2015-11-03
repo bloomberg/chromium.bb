@@ -23,7 +23,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_driver/backup_rollback_controller.h"
@@ -39,8 +38,6 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service.h"
 #include "components/sync_driver/sync_stopped_reporter.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
@@ -64,6 +61,7 @@ class SyncTypePreferenceProvider;
 namespace browser_sync {
 class BackendMigrator;
 class FaviconCache;
+class SessionsSyncManager;
 class SyncedWindowDelegatesGetter;
 }  // namespace browser_sync
 
@@ -180,7 +178,6 @@ class ProfileSyncService : public sync_driver::SyncService,
                            public sync_driver::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public KeyedService,
-                           public content::NotificationObserver,
                            public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
                            public SigninManagerBase::Observer {
@@ -644,11 +641,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   friend class TestProfileSyncService;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
 
-  // Observe notifications.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Stops the sync engine. Does NOT set IsSyncRequested to false. Use
   // RequestStop for that. |data_fate| controls whether the local sync data is
   // deleted or kept when the engine shuts down.
@@ -698,6 +690,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   void NotifyObservers();
   void NotifySyncCycleCompleted();
+  void NotifyForeignSessionUpdated();
 
   void ClearStaleErrors();
 
@@ -988,8 +981,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // the user. This logic is only enabled on platforms that consume the
   // IsPassphrasePrompted sync preference.
   bool passphrase_prompt_triggered_by_version_;
-
-  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 

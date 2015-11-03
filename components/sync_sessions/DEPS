@@ -4,6 +4,7 @@ include_rules = [
   "+components/history/core/browser",
   "+components/sessions",
   "+components/sync_driver",
+  "+components/variations",
   "+sync",
   "+ui/base/page_transition_types.h",
   "+ui/gfx",

@@ -39,7 +39,6 @@
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/fake_data_type_controller.h"
-#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"

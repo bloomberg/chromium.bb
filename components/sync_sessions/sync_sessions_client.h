@@ -10,9 +10,21 @@
 
 class GURL;
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 namespace browser_sync {
 class LocalSessionEventRouter;
 class SyncedWindowDelegatesGetter;
+}
+
+namespace favicon {
+class FaviconService;
+}
+
+namespace history {
+class HistoryService;
 }
 
 namespace sync_sessions {
@@ -23,6 +35,11 @@ class SyncSessionsClient {
  public:
   SyncSessionsClient();
   virtual ~SyncSessionsClient();
+
+  // Getters for services that sessions depends on.
+  virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
+  virtual favicon::FaviconService* GetFaviconService() = 0;
+  virtual history::HistoryService* GetHistoryService() = 0;
 
   // Checks if the given url is considered interesting enough to sync. Most urls
   // are considered interesting. Examples of ones that are not are invalid urls,

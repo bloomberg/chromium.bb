@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
-#define CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
+#define COMPONENTS_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
 
 #include <map>
 #include <set>
@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/sessions/page_revisit_broadcaster.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_driver/device_info.h"
@@ -24,11 +24,9 @@
 #include "components/sync_driver/tab_node_pool.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"
+#include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 #include "components/sync_sessions/synced_session_tracker.h"
-#include "components/variations/variations_associated_data.h"
 #include "sync/api/syncable_service.h"
-
-class Profile;
 
 namespace syncer {
 class SyncErrorFactory;
@@ -36,6 +34,7 @@ class SyncErrorFactory;
 
 namespace sync_driver {
 class LocalDeviceInfoProvider;
+class SyncPrefs;
 }
 
 namespace sync_pb {
@@ -59,9 +58,11 @@ class SessionsSyncManager : public syncer::SyncableService,
                             public LocalSessionEventHandler {
  public:
   SessionsSyncManager(sync_sessions::SyncSessionsClient* sessions_client,
-                      Profile* profile,
+                      sync_driver::SyncPrefs* sync_prefs,
                       sync_driver::LocalDeviceInfoProvider* local_device,
-                      scoped_ptr<LocalSessionEventRouter> router);
+                      scoped_ptr<LocalSessionEventRouter> router,
+                      const base::Closure& sessions_updated_callback,
+                      const base::Closure& datatype_refresh_callback);
   ~SessionsSyncManager() override;
 
   // syncer::SyncableService implementation.
@@ -124,8 +125,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   class TabLink {
    public:
     TabLink(int tab_node_id, const SyncedTabDelegate* tab)
-      : tab_node_id_(tab_node_id),
-        tab_(tab) {}
+        : tab_node_id_(tab_node_id), tab_(tab) {}
 
     void set_tab(const SyncedTabDelegate* tab) { tab_ = tab; }
     void set_url(const GURL& url) { url_ = url; }
@@ -148,7 +148,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   };
 
   // Container for accessing local tab data by tab id.
-  typedef std::map<SessionID::id_type, linked_ptr<TabLink> > TabLinksMap;
+  typedef std::map<SessionID::id_type, linked_ptr<TabLink>> TabLinksMap;
 
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionHeader);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionWindow);
@@ -169,12 +169,10 @@ class SessionsSyncManager : public syncer::SyncableService,
                            CheckPrerenderedWebContentsSwap);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            AssociateWindowsDontReloadTabs);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
-                           SwappedOutOnRestore);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, SwappedOutOnRestore);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            ProcessRemoteDeleteOfLocalSession);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
-                           SetVariationIds);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, SetVariationIds);
 
   void InitializeCurrentMachineTag();
 
@@ -202,7 +200,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Helper method to load the favicon data from the tab specifics. If the
   // favicon is valid, stores the favicon data into the favicon cache.
   void RefreshFaviconVisitTimesFromForeignTab(
-      const sync_pb::SessionTab& tab, const base::Time& modification_time);
+      const sync_pb::SessionTab& tab,
+      const base::Time& modification_time);
 
   // Removes a foreign session from our internal bookkeeping.
   // Returns true if the session was found and deleted, false if no data was
@@ -226,11 +225,10 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Builds |session_window| from the session specifics window
   // provided and updates the SessionTracker with foreign session data created.
-  void BuildSyncedSessionFromSpecifics(
-      const std::string& session_tag,
-      const sync_pb::SessionWindow& specifics,
-      base::Time mtime,
-      sessions::SessionWindow* session_window);
+  void BuildSyncedSessionFromSpecifics(const std::string& session_tag,
+                                       const sync_pb::SessionWindow& specifics,
+                                       base::Time mtime,
+                                       sessions::SessionWindow* session_window);
 
   // Resync local window information. Updates the local sessions header node
   // with the status of open windows and the order of tabs they contain. Should
@@ -251,10 +249,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   // |change_output| *must* be provided as a link to the SyncChange pipeline
   // that exists in the caller's context. This function will append necessary
   // changes for processing later.
-  enum ReloadTabsOption {
-    RELOAD_TABS,
-    DONT_RELOAD_TABS
-  };
+  enum ReloadTabsOption { RELOAD_TABS, DONT_RELOAD_TABS };
   void AssociateWindows(ReloadTabsOption option,
                         const syncer::SyncDataList& restored_tabs,
                         syncer::SyncChangeList* change_output);
@@ -328,9 +323,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   // proves that we are still relevant.
   bool local_tab_pool_out_of_sync_;
 
-  sync_driver::SyncPrefs sync_prefs_;
-
-  Profile* const profile_;
+  sync_driver::SyncPrefs* sync_prefs_;
 
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
@@ -358,9 +351,15 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Owns revisiting instrumentation logic for page visit events.
   PageRevisitBroadcaster page_revisit_broadcaster_;
 
+  // Callback to inform interested observer that new sessions data has arrived.
+  base::Closure sessions_updated_callback_;
+
+  // Callback to inform sync that a sync data refresh is requested.
+  base::Closure datatype_refresh_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(SessionsSyncManager);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_SESSIONS_SYNC_MANAGER_H_

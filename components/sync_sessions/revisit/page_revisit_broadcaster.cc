@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sessions/page_revisit_broadcaster.h"
+#include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sync_sessions/revisit/bookmarks_by_url_provider_impl.h"
 #include "components/sync_sessions/revisit/bookmarks_page_revisit_observer.h"
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
 #include "components/sync_sessions/revisit/typed_url_page_revisit_observer.h"
+#include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 
 namespace browser_sync {
@@ -44,10 +44,8 @@ class SessionsSyncManagerWrapper
 }  // namespace
 
 PageRevisitBroadcaster::PageRevisitBroadcaster(
-    SessionsSyncManager* sessions,
-    sync_sessions::SyncSessionsClient* sessions_client,
-    history::HistoryService* history,
-    bookmarks::BookmarkModel* bookmarks)
+    SessionsSyncManager* manager,
+    sync_sessions::SyncSessionsClient* sessions_client)
     : sessions_client_(sessions_client) {
   const std::string group_name =
       base::FieldTrialList::FindFullName("PageRevisitInstrumentation");
@@ -55,15 +53,21 @@ PageRevisitBroadcaster::PageRevisitBroadcaster(
   if (shouldInstrument) {
     revisit_observers_.push_back(new sync_sessions::SessionsPageRevisitObserver(
         scoped_ptr<sync_sessions::ForeignSessionsProvider>(
-            new SessionsSyncManagerWrapper(sessions))));
+            new SessionsSyncManagerWrapper(manager))));
 
-    revisit_observers_.push_back(
-        new sync_sessions::TypedUrlPageRevisitObserver(history));
+    history::HistoryService* history = sessions_client_->GetHistoryService();
+    if (history) {
+      revisit_observers_.push_back(
+          new sync_sessions::TypedUrlPageRevisitObserver(history));
+    }
 
-    revisit_observers_.push_back(
-        new sync_sessions::BookmarksPageRevisitObserver(
-            scoped_ptr<sync_sessions::BookmarksByUrlProvider>(
-                new sync_sessions::BookmarksByUrlProviderImpl(bookmarks))));
+    bookmarks::BookmarkModel* bookmarks = sessions_client_->GetBookmarkModel();
+    if (bookmarks) {
+      revisit_observers_.push_back(
+          new sync_sessions::BookmarksPageRevisitObserver(
+              scoped_ptr<sync_sessions::BookmarksByUrlProvider>(
+                  new sync_sessions::BookmarksByUrlProviderImpl(bookmarks))));
+    }
   }
 }
 

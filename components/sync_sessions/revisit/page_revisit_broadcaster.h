@@ -2,21 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SESSIONS_PAGE_REVISIT_BROADCASTER_H_
-#define CHROME_BROWSER_SYNC_SESSIONS_PAGE_REVISIT_BROADCASTER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_REVISIT_BROADCASTER_H_
+#define COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_REVISIT_BROADCASTER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
-
-namespace bookmarks {
-class BookmarkModel;
-}  // namespace bookmarks
-
-namespace history {
-class HistoryService;
-}  // namespace history
 
 namespace sync_sessions {
 class SyncSessionsClient;
@@ -31,10 +24,8 @@ class SessionsSyncManager;
 // revisists.
 class PageRevisitBroadcaster {
  public:
-  PageRevisitBroadcaster(SessionsSyncManager* sessions,
-                         sync_sessions::SyncSessionsClient* sessions_client,
-                         history::HistoryService* history,
-                         bookmarks::BookmarkModel* bookmarks);
+  PageRevisitBroadcaster(SessionsSyncManager* manager,
+                         sync_sessions::SyncSessionsClient* sessions_client);
   ~PageRevisitBroadcaster();
 
   // Broadcasts to all observers the given page visit event. Should only be
@@ -42,7 +33,7 @@ class PageRevisitBroadcaster {
   void OnPageVisit(const GURL& url, const ui::PageTransition transition);
 
  private:
-  friend class PageRevisitBroadcasterTest;
+  friend class SyncPageRevisitBroadcasterTest;
 
   // We convert between enums here for a couple reasons. We don't want to force
   // observers to depend on ui/, and the high bit masks don't work for emitting
@@ -61,4 +52,4 @@ class PageRevisitBroadcaster {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SESSIONS_PAGE_REVISIT_BROADCASTER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_REVISIT_PAGE_REVISIT_BROADCASTER_H_

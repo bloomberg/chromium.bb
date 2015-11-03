@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
+#include "components/sync_sessions/sessions_sync_manager.h"
 
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
@@ -25,9 +24,6 @@
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -48,6 +44,26 @@ using syncer::SyncData;
 namespace browser_sync {
 
 namespace {
+
+class SessionNotificationObserver {
+ public:
+  SessionNotificationObserver()
+      : notified_of_update_(false), notified_of_refresh_(false) {}
+  void NotifyOfUpdate() { notified_of_update_ = true; }
+  void NotifyOfRefresh() { notified_of_refresh_ = true; }
+
+  bool notified_of_update() const { return notified_of_update_; }
+  bool notified_of_refresh() const { return notified_of_refresh_; }
+
+  void Reset() {
+    notified_of_update_ = false;
+    notified_of_refresh_ = false;
+  }
+
+ private:
+  bool notified_of_update_;
+  bool notified_of_refresh_;
+};
 
 class SyncedWindowDelegateOverride : public SyncedWindowDelegate {
  public:
@@ -266,14 +282,20 @@ class SessionsSyncManagerTest
         new browser_sync::NotificationServiceSessionsRouter(
             profile(), GetSyncSessionsClient(),
             syncer::SyncableService::StartSyncFlare()));
+    sync_prefs_.reset(new sync_driver::SyncPrefs(profile()->GetPrefs()));
     manager_.reset(new SessionsSyncManager(
-        GetSyncSessionsClient(), profile(), local_device_.get(),
-        scoped_ptr<LocalSessionEventRouter>(router)));
+        GetSyncSessionsClient(), sync_prefs_.get(), local_device_.get(),
+        scoped_ptr<LocalSessionEventRouter>(router),
+        base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
+                   base::Unretained(&observer_)),
+        base::Bind(&SessionNotificationObserver::NotifyOfRefresh,
+                   base::Unretained(&observer_))));
   }
 
   void TearDown() override {
     test_processor_ = NULL;
     helper()->Reset();
+    sync_prefs_.reset();
     manager_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
@@ -285,6 +307,7 @@ class SessionsSyncManagerTest
   SessionsSyncManager* manager() { return manager_.get(); }
   SessionSyncTestHelper* helper() { return &helper_; }
   LocalDeviceInfoProvider* local_device() { return local_device_.get(); }
+  SessionNotificationObserver* observer() { return &observer_; }
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,
                                   syncer::SyncChangeList* output) {
@@ -334,8 +357,12 @@ class SessionsSyncManagerTest
     return sync_client_->GetSyncSessionsClient();
   }
 
+  sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
+
  private:
   scoped_ptr<browser_sync::ChromeSyncClient> sync_client_;
+  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  SessionNotificationObserver observer_;
   scoped_ptr<SessionsSyncManager> manager_;
   SessionSyncTestHelper helper_;
   TestSyncProcessorStub* test_processor_;
@@ -822,8 +849,9 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
       syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   out.clear();
-  SessionsSyncManager manager2(GetSyncSessionsClient(), profile(),
-                               local_device(), NewDummyRouter());
+  SessionsSyncManager manager2(GetSyncSessionsClient(), sync_prefs(),
+                               local_device(), NewDummyRouter(),
+                               base::Closure(), base::Closure());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(
@@ -1412,8 +1440,9 @@ TEST_F(SessionsSyncManagerTest, SaveUnassociatedNodesForReassociation) {
       syncer::AttachmentServiceProxyForTest::Create()));
   syncer::SyncDataList in(&d, &d + 1);
   changes.clear();
-  SessionsSyncManager manager2(GetSyncSessionsClient(), profile(),
-                               local_device(), NewDummyRouter());
+  SessionsSyncManager manager2(GetSyncSessionsClient(), sync_prefs(),
+                               local_device(), NewDummyRouter(),
+                               base::Closure(), base::Closure());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
       syncer::SESSIONS, in,
       scoped_ptr<syncer::SyncChangeProcessor>(
@@ -1908,49 +1937,10 @@ TEST_F(SessionsSyncManagerTest, CheckPrerenderedWebContentsSwap) {
   ASSERT_EQ(19U, out.size());
 }
 
-namespace {
-class SessionNotificationObserver : public content::NotificationObserver {
- public:
-  SessionNotificationObserver() : notified_of_update_(false),
-                                  notified_of_refresh_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-                   content::NotificationService::AllSources());
-  }
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    switch (type) {
-      case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
-        notified_of_update_ = true;
-        break;
-      case chrome::NOTIFICATION_SYNC_REFRESH_LOCAL:
-        notified_of_refresh_ = true;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-  bool notified_of_update() const { return notified_of_update_; }
-  bool notified_of_refresh() const { return notified_of_refresh_; }
-  void Reset() {
-    notified_of_update_ = false;
-    notified_of_refresh_ = false;
-  }
- private:
-  content::NotificationRegistrar registrar_;
-  bool notified_of_update_;
-  bool notified_of_refresh_;
-};
-}  // namespace
-
 // Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent when processing
 // sync changes.
 TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
-  SessionNotificationObserver observer;
-  ASSERT_FALSE(observer.notified_of_update());
+  ASSERT_FALSE(observer()->notified_of_update());
   InitWithNoSyncData();
 
   SessionID::id_type n[] = {5};
@@ -1962,19 +1952,19 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
   syncer::SyncChangeList changes;
   changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_ADD));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
-  EXPECT_TRUE(observer.notified_of_update());
+  EXPECT_TRUE(observer()->notified_of_update());
 
   changes.clear();
-  observer.Reset();
+  observer()->Reset();
   AddTabsToChangeList(tabs1, SyncChange::ACTION_ADD, &changes);
   manager()->ProcessSyncChanges(FROM_HERE, changes);
-  EXPECT_TRUE(observer.notified_of_update());
+  EXPECT_TRUE(observer()->notified_of_update());
 
   changes.clear();
-  observer.Reset();
+  observer()->Reset();
   changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_DELETE));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
-  EXPECT_TRUE(observer.notified_of_update());
+  EXPECT_TRUE(observer()->notified_of_update());
 }
 
 // Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent when handling
@@ -1992,10 +1982,10 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
   changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_ADD));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
-  SessionNotificationObserver observer;
-  ASSERT_FALSE(observer.notified_of_update());
+  observer()->Reset();
+  ASSERT_FALSE(observer()->notified_of_update());
   manager()->DeleteForeignSession(tag);
-  ASSERT_TRUE(observer.notified_of_update());
+  ASSERT_TRUE(observer()->notified_of_update());
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -2003,13 +1993,12 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
 // This page only exists on mobile platforms today; desktop has a
 // search-enhanced NTP without other devices.
 TEST_F(SessionsSyncManagerTest, NotifiedOfRefresh) {
-  SessionNotificationObserver observer;
-  ASSERT_FALSE(observer.notified_of_refresh());
+  ASSERT_FALSE(observer()->notified_of_refresh());
   InitWithNoSyncData();
   AddTab(browser(), GURL("http://foo1"));
-  EXPECT_FALSE(observer.notified_of_refresh());
+  EXPECT_FALSE(observer()->notified_of_refresh());
   NavigateAndCommitActiveTab(GURL("chrome://newtab/#open_tabs"));
-  EXPECT_TRUE(observer.notified_of_refresh());
+  EXPECT_TRUE(observer()->notified_of_refresh());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 

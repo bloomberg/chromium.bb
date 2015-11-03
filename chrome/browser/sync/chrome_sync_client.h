@@ -26,10 +26,8 @@ class ChromeSyncClient : public sync_driver::SyncClient {
       scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory);
   ~ChromeSyncClient() override;
 
-  // Initializes the ChromeSyncClient internal state.
-  void Initialize(sync_driver::SyncService* sync_service) override;
-
   // SyncClient implementation.
+  void Initialize(sync_driver::SyncService* sync_service) override;
   sync_driver::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;

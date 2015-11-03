@@ -27,7 +27,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,13 +65,11 @@
 #include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"
 #include "components/sync_sessions/favicon_cache.h"
+#include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/sync_error.h"
@@ -183,7 +180,7 @@ void DeleteSyncDataFolder(const base::FilePath& directory_path) {
   }
 }
 
-}  // anonymous namespace
+}  // namespace
 
 bool ShouldShowActionOnUI(
     const syncer::SyncProtocolError& error) {
@@ -267,12 +264,14 @@ ProfileSyncService::ProfileSyncService(
               local_device_->GetSyncUserAgent(),
               profile_->GetRequestContext(),
               browser_sync::SyncStoppedReporter::ResultCallback()));
-
-  registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
-                 content::Source<Profile>(profile));
-  sessions_sync_manager_.reset(
-      new SessionsSyncManager(sync_client_->GetSyncSessionsClient(), profile,
-                              local_device_.get(), router.Pass()));
+  sessions_sync_manager_.reset(new SessionsSyncManager(
+      sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
+      router.Pass(),
+      base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ProfileSyncService::TriggerRefresh,
+                 weak_factory_.GetWeakPtr(),
+                 syncer::ModelTypeSet(syncer::SESSIONS))));
   device_info_sync_service_.reset(
       new DeviceInfoSyncService(local_device_.get()));
 
@@ -917,14 +916,6 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   sync_prefs_.SetCleanShutdown(true);
 }
 
-void ProfileSyncService::Observe(
-    int type, const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED, type);
-  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
-                    OnForeignSessionUpdated());
-}
-
 void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
   switch (data_fate) {
     case KEEP_DATA:
@@ -965,6 +956,11 @@ void ProfileSyncService::NotifyObservers() {
 void ProfileSyncService::NotifySyncCycleCompleted() {
   FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
                     OnSyncCycleCompleted());
+}
+
+void ProfileSyncService::NotifyForeignSessionUpdated() {
+  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
+                    OnForeignSessionUpdated());
 }
 
 void ProfileSyncService::ClearStaleErrors() {

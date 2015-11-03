@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"

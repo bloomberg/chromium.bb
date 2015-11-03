@@ -9,7 +9,7 @@
 
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/sessions/sessions_sync_manager.h"
+#include "components/sync_sessions/sessions_sync_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

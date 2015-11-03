@@ -17,6 +17,9 @@ class FakeSyncSessionsClient : public SyncSessionsClient {
   ~FakeSyncSessionsClient() override;
 
   // SyncSessionsClient:
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
+  favicon::FaviconService* GetFaviconService() override;
+  history::HistoryService* GetHistoryService() override;
   bool ShouldSyncURL(const GURL& url) const override;
   browser_sync::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
       override;
