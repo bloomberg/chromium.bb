@@ -48,7 +48,7 @@ void SoftwareOutputDeviceMac::CopyPreviousBufferDamage(
   IOSurfaceRef previous_io_surface = io_surfaces_[!current_index_].get();
 
   {
-    TRACE_EVENT0("browser", "IOSurfaceLock");
+    TRACE_EVENT0("browser", "IOSurfaceLock for software copy");
     IOReturn io_result = IOSurfaceLock(
         previous_io_surface, kIOSurfaceLockReadOnly | kIOSurfaceLockAvoidSync,
         nullptr);
@@ -108,7 +108,7 @@ SkCanvas* SoftwareOutputDeviceMac::BeginPaint(
     return nullptr;
 
   {
-    TRACE_EVENT0("browser", "IOSurfaceLock");
+    TRACE_EVENT0("browser", "IOSurfaceLock for software paint");
     IOReturn io_result = IOSurfaceLock(io_surfaces_[current_index_],
                                        kIOSurfaceLockAvoidSync, nullptr);
     if (io_result) {
@@ -140,9 +140,13 @@ void SoftwareOutputDeviceMac::EndPaint() {
   }
 
   canvas_ = nullptr;
-  ui::AcceleratedWidgetMacGotFrame(compositor_->widget(), 0,
-                                   io_surfaces_[current_index_], pixel_size_,
-                                   scale_factor_, nullptr, nullptr);
+  base::TimeTicks vsync_timebase;
+  base::TimeDelta vsync_interval;
+  ui::AcceleratedWidgetMacGotFrame(
+      compositor_->widget(), 0, io_surfaces_[current_index_], pixel_size_,
+      scale_factor_, &vsync_timebase, &vsync_interval);
+  if (!update_vsync_callback_.is_null())
+    update_vsync_callback_.Run(vsync_timebase, vsync_interval);
 
   current_index_ = !current_index_;
 }
@@ -153,5 +157,14 @@ void SoftwareOutputDeviceMac::DiscardBackbuffer() {
 }
 
 void SoftwareOutputDeviceMac::EnsureBackbuffer() {}
+
+gfx::VSyncProvider* SoftwareOutputDeviceMac::GetVSyncProvider() {
+  return this;
+}
+
+void SoftwareOutputDeviceMac::GetVSyncParameters(
+    const gfx::VSyncProvider::UpdateVSyncCallback& callback) {
+  update_vsync_callback_ = callback;
+}
 
 }  // namespace content

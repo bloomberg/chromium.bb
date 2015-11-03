@@ -10,6 +10,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "cc/output/software_output_device.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/vsync_provider.h"
 
 namespace gfx {
 class Canvas;
@@ -21,16 +22,24 @@ class Compositor;
 
 namespace content {
 
-class SoftwareOutputDeviceMac : public cc::SoftwareOutputDevice {
+class SoftwareOutputDeviceMac :
+    public cc::SoftwareOutputDevice,
+    public gfx::VSyncProvider {
  public:
   explicit SoftwareOutputDeviceMac(ui::Compositor* compositor);
   ~SoftwareOutputDeviceMac() override;
 
+  // cc::SoftwareOutputDevice implementation.
   void Resize(const gfx::Size& pixel_size, float scale_factor) override;
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
   void EndPaint() override;
   void DiscardBackbuffer() override;
   void EnsureBackbuffer() override;
+  gfx::VSyncProvider* GetVSyncProvider() override;
+
+  // gfx::VSyncProvider implementation.
+  void GetVSyncParameters(
+      const gfx::VSyncProvider::UpdateVSyncCallback& callback) override;
 
  private:
   bool EnsureBuffersExist();
@@ -54,6 +63,8 @@ class SoftwareOutputDeviceMac : public cc::SoftwareOutputDevice {
   // The SkCanvas wrapps the mapped current IOSurface. It is valid only between
   // BeginPaint and EndPaint.
   skia::RefPtr<SkCanvas> canvas_;
+
+  gfx::VSyncProvider::UpdateVSyncCallback update_vsync_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceMac);
 };

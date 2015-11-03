@@ -136,6 +136,8 @@ void AcceleratedWidgetMac::GotFrame(
     GotCAContextFrame(ca_context_id, pixel_size, scale_factor);
   else
     GotIOSurfaceFrame(io_surface, pixel_size, scale_factor);
+
+  view_->AcceleratedWidgetSwapCompleted();
 }
 
 void AcceleratedWidgetMac::GotCAContextFrame(CAContextID ca_context_id,
