@@ -2561,7 +2561,7 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(double platformTime, Exce
     return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(platformTime);
 }
 
-void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement, int32_t state)
+void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement, int state)
 {
     ASSERT(mediaElement);
     ASSERT(state >= HTMLMediaElement::NetworkState::NETWORK_EMPTY);

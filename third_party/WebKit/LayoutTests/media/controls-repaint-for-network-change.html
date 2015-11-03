@@ -18,12 +18,8 @@
 testRunner.waitUntilDone();
 
 var audios = document.querySelectorAll("audio");
-var src = findMediaFile("audio", "content/empty");
 
 runAfterLayoutAndPaint(function() {
-    window.internals.setMediaElementNetworkState(audios[0], 0);
-    window.internals.setMediaElementNetworkState(audios[1], 0);
-
     // These will cause the play buttons to become enabled, and should
     // also cause a repaint.
     window.internals.setMediaElementNetworkState(audios[1], 2);

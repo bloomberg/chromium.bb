@@ -396,7 +396,7 @@ public:
     // document time in seconds
     double monotonicTimeToZeroBasedDocumentTime(double, ExceptionState&);
 
-    void setMediaElementNetworkState(HTMLMediaElement*, int32_t state);
+    void setMediaElementNetworkState(HTMLMediaElement*, int state);
 
 private:
     explicit Internals(ScriptState*);
