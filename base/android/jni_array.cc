@@ -25,8 +25,9 @@ size_t SafeGetArrayLength(JNIEnv* env, JavaArrayType jarray) {
 
 }  // namespace
 
-ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
-    JNIEnv* env, const uint8* bytes, size_t len) {
+ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(JNIEnv* env,
+                                               const uint8_t* bytes,
+                                               size_t len) {
   jbyteArray byte_array = env->NewByteArray(len);
   CheckException(env);
   DCHECK(byte_array);
@@ -36,6 +37,12 @@ ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
   CheckException(env);
 
   return ScopedJavaLocalRef<jbyteArray>(env, byte_array);
+}
+
+ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
+    JNIEnv* env,
+    const std::vector<uint8_t>& bytes) {
+  return ToJavaByteArray(env, bytes.data(), bytes.size());
 }
 
 ScopedJavaLocalRef<jintArray> ToJavaIntArray(
@@ -56,8 +63,9 @@ ScopedJavaLocalRef<jintArray> ToJavaIntArray(
   return ToJavaIntArray(env, ints.data(), ints.size());
 }
 
-ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
-    JNIEnv* env, const int64* longs, size_t len) {
+ScopedJavaLocalRef<jlongArray> ToJavaLongArray(JNIEnv* env,
+                                               const int64_t* longs,
+                                               size_t len) {
   jlongArray long_array = env->NewLongArray(len);
   CheckException(env);
   DCHECK(long_array);
@@ -69,9 +77,10 @@ ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
   return ScopedJavaLocalRef<jlongArray>(env, long_array);
 }
 
-// Returns a new Java long array converted from the given int64 array.
+// Returns a new Java long array converted from the given int64_t array.
 BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
-    JNIEnv* env, const std::vector<int64>& longs) {
+    JNIEnv* env,
+    const std::vector<int64_t>& longs) {
   return ToJavaLongArray(env, longs.data(), longs.size());
 }
 
@@ -83,8 +92,8 @@ ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(
   CheckException(env);
 
   for (size_t i = 0; i < v.size(); ++i) {
-    ScopedJavaLocalRef<jbyteArray> byte_array = ToJavaByteArray(env,
-        reinterpret_cast<const uint8*>(v[i].data()), v[i].length());
+    ScopedJavaLocalRef<jbyteArray> byte_array = ToJavaByteArray(
+        env, reinterpret_cast<const uint8_t*>(v[i].data()), v[i].length());
     env->SetObjectArrayElement(joa, i, byte_array.obj());
   }
   return ScopedJavaLocalRef<jobjectArray>(env, joa);
@@ -150,7 +159,7 @@ void AppendJavaStringArrayToStringVector(JNIEnv* env,
 
 void AppendJavaByteArrayToByteVector(JNIEnv* env,
                                      jbyteArray byte_array,
-                                     std::vector<uint8>* out) {
+                                     std::vector<uint8_t>* out) {
   DCHECK(out);
   if (!byte_array)
     return;
@@ -165,7 +174,7 @@ void AppendJavaByteArrayToByteVector(JNIEnv* env,
 
 void JavaByteArrayToByteVector(JNIEnv* env,
                                jbyteArray byte_array,
-                               std::vector<uint8>* out) {
+                               std::vector<uint8_t>* out) {
   DCHECK(out);
   DCHECK(byte_array);
   out->clear();
@@ -187,7 +196,7 @@ void JavaIntArrayToIntVector(JNIEnv* env,
 
 void JavaLongArrayToInt64Vector(JNIEnv* env,
                                 jlongArray long_array,
-                                std::vector<int64>* out) {
+                                std::vector<int64_t>* out) {
   DCHECK(out);
   std::vector<jlong> temp;
   JavaLongArrayToLongVector(env, long_array, &temp);
