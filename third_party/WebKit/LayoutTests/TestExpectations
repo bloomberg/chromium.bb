@@ -1494,6 +1494,7 @@ crbug.com/550430 fast/html/details-writing-mode.html [ Failure Pass ]
 crbug.com/550285 [ SnowLeopard ] virtual/syncpaint/compositing/repaint/newly-composited-on-scroll.html [ Failure ]
 crbug.com/550285 [ SnowLeopard ] virtual/syncpaint/fast/repaint/background-image-paint-invalidation-large-abspos-div.html [ Failure ]
 crbug.com/550285 [ SnowLeopard ] virtual/syncpaint/fast/repaint/repaint-during-scroll.html [ Failure ]
+crbug.com/550285 [ XP ] virtual/syncpaint/fast/repaint/float-overflow-right.html [ Failure ]
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
