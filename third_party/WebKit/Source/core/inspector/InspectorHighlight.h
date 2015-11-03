@@ -35,6 +35,8 @@ public:
     bool showRulers;
     bool showExtensionLines;
     bool displayAsMaterial;
+
+    String selectorList;
 };
 
 class CORE_EXPORT InspectorHighlight {

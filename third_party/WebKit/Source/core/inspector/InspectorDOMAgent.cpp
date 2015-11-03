@@ -1157,6 +1157,9 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
     highlightConfig->eventTarget = parseConfigColor("eventTargetColor", highlightInspectorObject);
     highlightConfig->shape = parseConfigColor("shapeColor", highlightInspectorObject);
     highlightConfig->shapeMargin = parseConfigColor("shapeMarginColor", highlightInspectorObject);
+    String selectorList;
+    highlightInspectorObject->getString("selectorList", &selectorList);
+    highlightConfig->selectorList = selectorList;
 
     return highlightConfig.release();
 }

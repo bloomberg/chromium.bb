@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
 #include "core/dom/Node.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -411,6 +412,20 @@ void InspectorOverlay::drawNodeHighlight()
 {
     if (!m_highlightNode)
         return;
+
+    String selectors = m_nodeHighlightConfig.selectorList;
+    RefPtrWillBeRawPtr<StaticElementList> elements;
+    TrackExceptionState exceptionState;
+    if (selectors.length())
+        elements = m_highlightNode->ownerDocument()->querySelectorAll(AtomicString(selectors), exceptionState);
+    if (elements && !exceptionState.hadException()) {
+        for (unsigned i = 0; i < elements->length(); ++i) {
+            Element* element = elements->item(i);
+            InspectorHighlight highlight(element, m_nodeHighlightConfig, false);
+            RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
+            evaluateInOverlay("drawHighlight", highlightJSON.release());
+        }
+    }
 
     bool appendElementInfo = m_highlightNode->isElementNode() && !m_omitTooltip && m_nodeHighlightConfig.showInfo && m_highlightNode->layoutObject() && m_highlightNode->document().frame();
     InspectorHighlight highlight(m_highlightNode.get(), m_nodeHighlightConfig, appendElementInfo);
