@@ -25,6 +25,7 @@
 class GURL;
 namespace base {
 class SequencedTaskRunner;
+class Time;
 }
 namespace bookmarks {
 class BookmarkModel;
@@ -220,6 +221,7 @@ class OfflinePageModel : public KeyedService,
   // Steps for saving a page offline.
   void OnCreateArchiveDone(const GURL& requested_url,
                            int64 bookmark_id,
+                           const base::Time& start_time,
                            const SavePageCallback& callback,
                            OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult result,

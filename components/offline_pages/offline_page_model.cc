@@ -151,7 +151,7 @@ void OfflinePageModel::SavePage(const GURL& url,
   DCHECK(archiver.get());
   archiver->CreateArchive(base::Bind(&OfflinePageModel::OnCreateArchiveDone,
                                      weak_ptr_factory_.GetWeakPtr(), url,
-                                     bookmark_id, callback));
+                                     bookmark_id, base::Time::Now(), callback));
   pending_archivers_.push_back(archiver.Pass());
 }
 
@@ -308,6 +308,7 @@ OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
 
 void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
                                            int64 bookmark_id,
+                                           const base::Time& start_time,
                                            const SavePageCallback& callback,
                                            OfflinePageArchiver* archiver,
                                            ArchiverResult archiver_result,
@@ -331,7 +332,7 @@ void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
   }
 
   OfflinePageItem offline_page_item(url, bookmark_id, file_path, file_size,
-                                    base::Time::Now());
+                                    start_time);
   store_->AddOrUpdateOfflinePage(
       offline_page_item,
       base::Bind(&OfflinePageModel::OnAddOfflinePageDone,
@@ -347,6 +348,9 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
   if (success) {
     offline_pages_[offline_page.bookmark_id] = offline_page;
     result = SavePageResult::SUCCESS;
+    UMA_HISTOGRAM_TIMES(
+        "OfflinePages.SavePageTime",
+        base::Time::Now() - offline_page.creation_time);
     UMA_HISTOGRAM_MEMORY_KB(
         "OfflinePages.PageSize", offline_page.file_size / 1024);
   } else {

@@ -29554,6 +29554,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of saving an offline copy for a page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.SavePageTime" units="milliseconds">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The amount of time taken to save an offline copy for a page.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
