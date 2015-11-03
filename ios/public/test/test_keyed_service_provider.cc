@@ -107,6 +107,11 @@ TestKeyedServiceProvider::GetProfileInvalidationProviderForBrowserState(
   return nullptr;
 }
 
+KeyedServiceBaseFactory*
+TestKeyedServiceProvider::GetDataReductionProxySettingsFactory() {
+  return MissingServiceKeyedServiceFactory::GetInstance();
+}
+
 data_reduction_proxy::DataReductionProxySettings*
 TestKeyedServiceProvider::GetDataReductionProxySettingsForBrowserState(
     ios::ChromeBrowserState* browser_state) {

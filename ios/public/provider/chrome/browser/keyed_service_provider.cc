@@ -29,6 +29,7 @@ KeyedServiceProvider::~KeyedServiceProvider() {
 }
 
 void KeyedServiceProvider::AssertKeyedFactoriesBuilt() {
+  GetDataReductionProxySettingsFactory();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   GetManagedBookmarkServiceFactory();
 #endif

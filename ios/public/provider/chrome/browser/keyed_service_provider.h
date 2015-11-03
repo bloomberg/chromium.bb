@@ -84,6 +84,10 @@ class KeyedServiceProvider {
   GetProfileInvalidationProviderForBrowserState(
       ChromeBrowserState* browser_state) = 0;
 
+  // Returns the data_reduction_proxy::DataReductionProxySettings factory for
+  // dependencies.
+  virtual KeyedServiceBaseFactory* GetDataReductionProxySettingsFactory() = 0;
+
   // Returns an instance of data_reduction_proxy::DataReductionProxySettings
   // tied to |browser_state|.
   virtual data_reduction_proxy::DataReductionProxySettings*

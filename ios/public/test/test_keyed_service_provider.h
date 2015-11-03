@@ -30,6 +30,7 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   invalidation::ProfileInvalidationProvider*
   GetProfileInvalidationProviderForBrowserState(
       ios::ChromeBrowserState* browser_state) override;
+  KeyedServiceBaseFactory* GetDataReductionProxySettingsFactory() override;
   data_reduction_proxy::DataReductionProxySettings*
   GetDataReductionProxySettingsForBrowserState(
       ios::ChromeBrowserState* browser_state) override;
