@@ -158,7 +158,7 @@ class ReflectorImplTest : public testing::Test {
     cc::TextureMailbox mailbox;
     scoped_ptr<cc::SingleReleaseCallback> release;
     if (mirroring_layer_->PrepareTextureMailbox(&mailbox, &release, false)) {
-      release->Run(0, false);
+      release->Run(gpu::SyncToken(), false);
     }
     compositor_.reset();
     ui::TerminateContextFactoryForTests();

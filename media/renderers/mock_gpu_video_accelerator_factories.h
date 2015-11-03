@@ -39,7 +39,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
                     std::vector<gpu::Mailbox>* texture_mailboxes,
                     uint32 texture_target));
   MOCK_METHOD1(DeleteTexture, void(uint32 texture_id));
-  MOCK_METHOD1(WaitSyncPoint, void(uint32 sync_point));
+  MOCK_METHOD1(WaitSyncToken, void(const gpu::SyncToken& sync_token));
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(GetVideoDecodeAcceleratorSupportedProfiles,
                VideoDecodeAccelerator::SupportedProfiles());

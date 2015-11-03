@@ -137,8 +137,9 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                   const void* data,
                   GLenum usage) override;
 
-  void WaitSyncPointCHROMIUM(GLuint sync_point) override;
   GLuint InsertSyncPointCHROMIUM() override;
+
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 
   void BeginQueryEXT(GLenum target, GLuint id) override;
   void EndQueryEXT(GLenum target) override;

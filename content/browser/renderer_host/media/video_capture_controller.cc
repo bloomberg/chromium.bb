@@ -41,13 +41,13 @@ static const int kInfiniteRatio = 99999;
         name, \
         (height) ? ((width) * 100) / (height) : kInfiniteRatio);
 
-class SyncPointClientImpl : public VideoFrame::SyncPointClient {
+class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
-  explicit SyncPointClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
-  ~SyncPointClientImpl() override {}
+  explicit SyncTokenClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
+  ~SyncTokenClientImpl() override {}
   uint32 InsertSyncPoint() override { return gl_helper_->InsertSyncPoint(); }
-  void WaitSyncPoint(uint32 sync_point) override {
-    gl_helper_->WaitSyncPoint(sync_point);
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    gl_helper_->WaitSyncToken(sync_token);
   }
 
  private:
@@ -55,18 +55,18 @@ class SyncPointClientImpl : public VideoFrame::SyncPointClient {
 };
 
 void ReturnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                      uint32 sync_point) {
+                      const gpu::SyncToken& sync_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
   GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-  // UpdateReleaseSyncPoint() creates a new sync_point using |gl_helper|, so
-  // wait the given |sync_point| using |gl_helper|.
+  // UpdateReleaseSyncToken() creates a new sync_token using |gl_helper|, so
+  // wait the given |sync_token| using |gl_helper|.
   if (gl_helper) {
-    gl_helper->WaitSyncPoint(sync_point);
-    SyncPointClientImpl client(gl_helper);
-    video_frame->UpdateReleaseSyncPoint(&client);
+    gl_helper->WaitSyncToken(sync_token);
+    SyncTokenClientImpl client(gl_helper);
+    video_frame->UpdateReleaseSyncToken(&client);
   }
 #endif
 }
@@ -101,7 +101,7 @@ struct VideoCaptureController::ControllerClient {
   // Buffers that are currently known to this client.
   std::set<int> known_buffers;
 
-  // Buffers currently held by this client, and syncpoint callback to call when
+  // Buffers currently held by this client, and sync token callback to call when
   // they are returned from the client.
   typedef std::map<int, scoped_refptr<VideoFrame>> ActiveBufferMap;
   ActiveBufferMap active_buffers;
@@ -267,7 +267,7 @@ void VideoCaptureController::ReturnBuffer(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     double consumer_resource_utilization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -306,12 +306,11 @@ void VideoCaptureController::ReturnBuffer(
   buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
 
 #if defined(OS_ANDROID)
-  DCHECK_EQ(0u, sync_point);
+  DCHECK(!sync_token.HasData());
 #endif
-  if (sync_point)
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&ReturnVideoFrame, frame, sync_point));
+  if (sync_token.HasData())
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&ReturnVideoFrame, frame, sync_token));
 }
 
 const media::VideoCaptureFormat&

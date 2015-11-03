@@ -107,7 +107,7 @@ void CopyOutputFinishedForVideo(
 
   if (!cursor_bitmap.isNull())
     RenderCursorOnVideoFrame(target, cursor_bitmap, cursor_position);
-  release_callback->Run(0, false);
+  release_callback->Run(gpu::SyncToken(), false);
 
   // Only deliver the captured frame if the AuraWindowCaptureMachine has not
   // been stopped (i.e., the WeakPtr is still valid).
@@ -116,8 +116,8 @@ void CopyOutputFinishedForVideo(
 }
 
 void RunSingleReleaseCallback(scoped_ptr<cc::SingleReleaseCallback> cb,
-                              uint32 sync_point) {
-  cb->Run(sync_point, false);
+                              const gpu::SyncToken& sync_token) {
+  cb->Run(sync_token, false);
 }
 
 }  // namespace
@@ -335,8 +335,9 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
       return false;
     video_frame = media::VideoFrame::WrapNativeTexture(
         media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(texture_mailbox.mailbox(), texture_mailbox.target(),
-                           texture_mailbox.sync_point()),
+        gpu::MailboxHolder(texture_mailbox.mailbox(),
+                           texture_mailbox.sync_token(),
+                           texture_mailbox.target()),
         base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),
         result->size(), gfx::Rect(result->size()), result->size(),
         base::TimeDelta());
@@ -389,17 +390,11 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
   gfx::Point cursor_position_in_frame = UpdateCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
-      texture_mailbox.mailbox(),
-      texture_mailbox.sync_point(),
-      video_frame.get(),
-      region_in_frame.origin(),
-      base::Bind(&CopyOutputFinishedForVideo,
-                 weak_factory_.GetWeakPtr(),
-                 start_time,
-                 capture_frame_cb,
-                 video_frame,
-                 scaled_cursor_bitmap_,
-                 cursor_position_in_frame,
+      texture_mailbox.mailbox(), texture_mailbox.sync_token(),
+      video_frame.get(), region_in_frame.origin(),
+      base::Bind(&CopyOutputFinishedForVideo, weak_factory_.GetWeakPtr(),
+                 start_time, capture_frame_cb, video_frame,
+                 scaled_cursor_bitmap_, cursor_position_in_frame,
                  base::Passed(&release_callback)));
   return true;
 }

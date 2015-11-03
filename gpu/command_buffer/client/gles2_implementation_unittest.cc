@@ -3884,6 +3884,36 @@ TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUMErrors) {
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillRepeatedly(SetMemory(result.ptr, GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  // Empty sync tokens should be produce no error and be a nop.
+  ClearCommands();
+  gl_->WaitSyncTokenCHROMIUM(nullptr);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
+
+  // Invalid sync tokens should produce no error and be a nop.
+  ClearCommands();
+  gpu::SyncToken invalid_sync_token(CommandBufferNamespace::INVALID, 0, 0);
+  gl_->WaitSyncTokenCHROMIUM(invalid_sync_token.GetConstData());
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
+
+  // Unverified sync token should produce INVALID_OPERATION.
+  ClearCommands();
+  gpu::SyncToken unverified_sync_token(CommandBufferNamespace::GPU_IO, 0, 0);
+  EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(_))
+      .WillOnce(testing::Return(false));
+  gl_->WaitSyncTokenCHROMIUM(unverified_sync_token.GetConstData());
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+}
+
 TEST_F(GLES2ImplementationTest, IsEnabled) {
   // If we use a valid enum, its state is cached on client side, so no command
   // is actually generated, and this test will fail.

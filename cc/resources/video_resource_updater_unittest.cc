@@ -99,7 +99,7 @@ class VideoResourceUpdaterTest : public testing::Test {
         base::TimeDelta());        // timestamp
   }
 
-  static void ReleaseMailboxCB(unsigned sync_point) {}
+  static void ReleaseMailboxCB(const gpu::SyncToken& sync_token) {}
 
   scoped_refptr<media::VideoFrame> CreateTestRGBAHardwareVideoFrame() {
     const int kDimension = 10;
@@ -108,11 +108,11 @@ class VideoResourceUpdaterTest : public testing::Test {
     gpu::Mailbox mailbox;
     mailbox.name[0] = 51;
 
-    const unsigned sync_point = 7;
+    const gpu::SyncToken sync_token(7);
     const unsigned target = GL_TEXTURE_2D;
     return media::VideoFrame::WrapNativeTexture(
         media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(mailbox, target, sync_point),
+        gpu::MailboxHolder(mailbox, sync_token, target),
         base::Bind(&ReleaseMailboxCB),
         size,                // coded_size
         gfx::Rect(size),     // visible_rect
@@ -129,15 +129,15 @@ class VideoResourceUpdaterTest : public testing::Test {
     for (int i = 0; i < kPlanesNum; ++i) {
       mailbox[i].name[0] = 50 + 1;
     }
-    const unsigned sync_point = 7;
+    const gpu::SyncToken sync_token(7);
     const unsigned target = GL_TEXTURE_RECTANGLE_ARB;
     return media::VideoFrame::WrapYUV420NativeTextures(
-        gpu::MailboxHolder(mailbox[media::VideoFrame::kYPlane], target,
-                           sync_point),
-        gpu::MailboxHolder(mailbox[media::VideoFrame::kUPlane], target,
-                           sync_point),
-        gpu::MailboxHolder(mailbox[media::VideoFrame::kVPlane], target,
-                           sync_point),
+        gpu::MailboxHolder(mailbox[media::VideoFrame::kYPlane], sync_token,
+                           target),
+        gpu::MailboxHolder(mailbox[media::VideoFrame::kUPlane], sync_token,
+                           target),
+        gpu::MailboxHolder(mailbox[media::VideoFrame::kVPlane], sync_token,
+                           target),
         base::Bind(&ReleaseMailboxCB),
         size,                // coded_size
         gfx::Rect(size),     // visible_rect
@@ -184,7 +184,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResource) {
   // Simulate the ResourceProvider releasing the resources back to the video
   // updater.
   for (ReleaseCallbackImpl& release_callback : resources.release_callbacks)
-    release_callback.Run(0, false, nullptr);
+    release_callback.Run(gpu::SyncToken(), false, nullptr);
 
   // Allocate resources for the same frame.
   context3d_->ResetUploadCount();
@@ -250,7 +250,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
 
   // Simulate the ResourceProvider releasing the resource back to the video
   // updater.
-  resources.software_release_callback.Run(0, false, nullptr);
+  resources.software_release_callback.Run(gpu::SyncToken(), false, nullptr);
 
   // Allocate resources for the same frame.
   shared_bitmap_manager_->ResetAllocationCount();

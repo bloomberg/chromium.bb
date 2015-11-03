@@ -7,10 +7,14 @@
 
 #include "base/callback.h"
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace cc {
 class BlockingTaskRunner;
 
-typedef base::Callback<void(uint32 sync_point,
+typedef base::Callback<void(const gpu::SyncToken& sync_token,
                             bool is_lost,
                             BlockingTaskRunner* main_thread_task_runner)>
     ReleaseCallbackImpl;

@@ -69,30 +69,33 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
   return VideoFrameExternalResources::NONE;
 }
 
-class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
+class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
  public:
-  explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl,
-                               uint32 sync_point)
-      : gl_(gl), sync_point_(sync_point) {}
-  ~SyncPointClientImpl() override {}
+  SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl,
+                      const gpu::SyncToken& sync_token)
+      : gl_(gl), sync_token_(sync_token) {}
+  ~SyncTokenClientImpl() override {}
   uint32 InsertSyncPoint() override {
-    if (sync_point_)
-      return sync_point_;
+    if (sync_token_.HasData()) {
+      DCHECK_EQ(gpu::CommandBufferNamespace::OLD_SYNC_POINTS,
+                sync_token_.namespace_id());
+      return static_cast<uint32>(sync_token_.release_count());
+    }
     return gl_->InsertSyncPointCHROMIUM();
   }
-  void WaitSyncPoint(uint32 sync_point) override {
-    if (!sync_point)
-      return;
-    gl_->WaitSyncPointCHROMIUM(sync_point);
-    if (sync_point_) {
-      gl_->WaitSyncPointCHROMIUM(sync_point_);
-      sync_point_ = 0;
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    if (sync_token.HasData()) {
+      gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+      if (sync_token_.HasData()) {
+        gl_->WaitSyncTokenCHROMIUM(sync_token_.GetConstData());
+        sync_token_.Clear();
+      }
     }
   }
 
  private:
   gpu::gles2::GLES2Interface* gl_;
-  uint32 sync_point_;
+  gpu::SyncToken sync_token_;
 };
 
 }  // namespace
@@ -381,8 +384,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       SetPlaneResourceUniqueId(video_frame.get(), i, &plane_resource);
     }
 
-    external_resources.mailboxes.push_back(
-        TextureMailbox(plane_resource.mailbox, GL_TEXTURE_2D, 0));
+    external_resources.mailboxes.push_back(TextureMailbox(
+        plane_resource.mailbox, gpu::SyncToken(), GL_TEXTURE_2D));
     external_resources.release_callbacks.push_back(
         base::Bind(&RecycleResource, AsWeakPtr(), plane_resource.resource_id));
   }
@@ -395,19 +398,19 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 void VideoResourceUpdater::ReturnTexture(
     base::WeakPtr<VideoResourceUpdater> updater,
     const scoped_refptr<media::VideoFrame>& video_frame,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {
   // TODO(dshwang) this case should be forwarded to the decoder as lost
   // resource.
   if (lost_resource || !updater.get())
     return;
-  // Update the release sync point in |video_frame| with |sync_point|
-  // returned by the compositor and emit a WaitSyncPointCHROMIUM on
+  // Update the release sync point in |video_frame| with |sync_token|
+  // returned by the compositor and emit a WaitSyncTokenCHROMIUM on
   // |video_frame|'s previous sync point using the current GL context.
-  SyncPointClientImpl client(updater->context_provider_->ContextGL(),
-                             sync_point);
-  video_frame->UpdateReleaseSyncPoint(&client);
+  SyncTokenClientImpl client(updater->context_provider_->ContextGL(),
+                             sync_token);
+  video_frame->UpdateReleaseSyncToken(&client);
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -433,8 +436,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     if (mailbox_holder.mailbox.IsZero())
       break;
     external_resources.mailboxes.push_back(
-        TextureMailbox(mailbox_holder.mailbox, mailbox_holder.texture_target,
-                       mailbox_holder.sync_point, video_frame->coded_size(),
+        TextureMailbox(mailbox_holder.mailbox, mailbox_holder.sync_token,
+                       mailbox_holder.texture_target, video_frame->coded_size(),
                        video_frame->metadata()->IsTrue(
                            media::VideoFrameMetadata::ALLOW_OVERLAY)));
     external_resources.release_callbacks.push_back(
@@ -447,7 +450,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 void VideoResourceUpdater::RecycleResource(
     base::WeakPtr<VideoResourceUpdater> updater,
     ResourceId resource_id,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {
   if (!updater.get()) {
@@ -464,8 +467,9 @@ void VideoResourceUpdater::RecycleResource(
     return;
 
   ContextProvider* context_provider = updater->context_provider_;
-  if (context_provider && sync_point) {
-    context_provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point);
+  if (context_provider && sync_token.HasData()) {
+    context_provider->ContextGL()->WaitSyncTokenCHROMIUM(
+        sync_token.GetConstData());
   }
 
   if (lost_resource) {

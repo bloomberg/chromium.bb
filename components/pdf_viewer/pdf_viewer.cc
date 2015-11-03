@@ -159,7 +159,7 @@ class BitmapUploader : public mus::mojom::SurfaceClient {
       GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
       glGenMailboxCHROMIUM(mailbox);
       glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
-      GLuint sync_point = glInsertSyncPointCHROMIUM();
+      gpu::SyncToken sync_token(glInsertSyncPointCHROMIUM());
 
       mus::mojom::TransferableResourcePtr resource =
           mus::mojom::TransferableResource::New();
@@ -174,7 +174,8 @@ class BitmapUploader : public mus::mojom::SurfaceClient {
       for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
         mailbox_holder->mailbox->name.push_back(mailbox[i]);
       mailbox_holder->texture_target = GL_TEXTURE_2D;
-      mailbox_holder->sync_point = sync_point;
+      mailbox_holder->sync_token =
+          mus::mojom::SyncToken::From<gpu::SyncToken>(sync_token);
       resource->mailbox_holder = mailbox_holder.Pass();
       resource->is_repeated = false;
       resource->is_software = false;
@@ -285,7 +286,8 @@ class BitmapUploader : public mus::mojom::SurfaceClient {
     for (size_t i = 0; i < resources.size(); ++i) {
       mus::mojom::ReturnedResourcePtr resource = resources[i].Pass();
       DCHECK_EQ(1, resource->count);
-      glWaitSyncPointCHROMIUM(resource->sync_point);
+      glWaitSyncTokenCHROMIUM(
+          resource->sync_token.To<gpu::SyncToken>().GetConstData());
       uint32_t texture_id = resource_to_texture_id_map_[resource->id];
       DCHECK_NE(0u, texture_id);
       resource_to_texture_id_map_.erase(resource->id);

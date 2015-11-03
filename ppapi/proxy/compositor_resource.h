@@ -13,6 +13,10 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/ppb_compositor_api.h"
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace ppapi {
 namespace proxy {
 
@@ -44,11 +48,10 @@ class PPAPI_PROXY_EXPORT CompositorResource
 
   // IPC msg handlers:
   void OnPluginMsgCommitLayersReply(const ResourceMessageReplyParams& params);
-  void OnPluginMsgReleaseResource(
-      const ResourceMessageReplyParams& params,
-      int32_t id,
-      uint32_t sync_point,
-      bool is_lost);
+  void OnPluginMsgReleaseResource(const ResourceMessageReplyParams& params,
+                                  int32_t id,
+                                  const gpu::SyncToken& sync_token,
+                                  bool is_lost);
 
   void ResetLayersInternal(bool is_aborted);
 

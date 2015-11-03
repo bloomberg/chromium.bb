@@ -287,8 +287,7 @@ TEST(VideoLayerImplTest, Rotated270) {
   EXPECT_EQ(gfx::Point3F(0, 0, 0), p2);
 }
 
-void EmptyCallback(unsigned sync_point) {
-}
+void EmptyCallback(const gpu::SyncToken& sync_token) {}
 
 TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
   gfx::Size layer_size(1000, 1000);

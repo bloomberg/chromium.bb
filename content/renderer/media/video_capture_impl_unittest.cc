@@ -47,8 +47,9 @@ struct BufferReceivedTestArg {
 
 static const BufferReceivedTestArg kBufferFormats[] = {
     BufferReceivedTestArg(media::PIXEL_FORMAT_I420),
-    BufferReceivedTestArg(media::PIXEL_FORMAT_ARGB,
-                          gpu::MailboxHolder(gpu::Mailbox::Generate(), 0, 0))};
+    BufferReceivedTestArg(
+        media::PIXEL_FORMAT_ARGB,
+        gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 0))};
 
 class VideoCaptureImplTest
     : public ::testing::TestWithParam<BufferReceivedTestArg> {
@@ -98,7 +99,7 @@ class VideoCaptureImplTest
 
     void DeviceReceiveEmptyBuffer(int device_id,
                                   int buffer_id,
-                                  uint32 sync_point,
+                                  const gpu::SyncToken& release_sync_token,
                                   double consumer_resource_utilization) {
       received_buffer_count_++;
     }

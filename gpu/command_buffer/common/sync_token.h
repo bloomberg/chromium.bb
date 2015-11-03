@@ -29,6 +29,16 @@ struct GPU_EXPORT SyncToken {
         command_buffer_id_(0),
         release_count_(0) {}
 
+  // TODO(dyen): This is an intermediate conversion constructor while we
+  // are converting from the old sync point system. Remove once conversion
+  // is finished.
+  explicit SyncToken(uint32_t sync_point)
+      : verified_flush_(sync_point ? true : false),
+        namespace_id_(sync_point ? gpu::CommandBufferNamespace::OLD_SYNC_POINTS
+                                 : gpu::CommandBufferNamespace::INVALID),
+        command_buffer_id_(0),
+        release_count_(sync_point) {}
+
   SyncToken(CommandBufferNamespace namespace_id,
             uint64_t command_buffer_id,
             uint64_t release_count)
@@ -45,8 +55,19 @@ struct GPU_EXPORT SyncToken {
     release_count_ = release_count;
   }
 
+  void Clear() {
+    verified_flush_ = false;
+    namespace_id_ = CommandBufferNamespace::INVALID;
+    command_buffer_id_ = 0;
+    release_count_ = 0;
+  }
+
   void SetVerifyFlush() {
     verified_flush_ = true;
+  }
+
+  bool HasData() const {
+    return namespace_id_ != CommandBufferNamespace::INVALID;
   }
 
   int8_t* GetData() { return reinterpret_cast<int8_t*>(this); }
@@ -69,6 +90,15 @@ struct GPU_EXPORT SyncToken {
              ((command_buffer_id_ == other.command_buffer_id()) &&
               (release_count_ < other.release_count()))));
   }
+
+  bool operator==(const SyncToken& other) const {
+    return verified_flush_ == other.verified_flush() &&
+           namespace_id_ == other.namespace_id() &&
+           command_buffer_id_ == other.command_buffer_id() &&
+           release_count_ == other.release_count();
+  }
+
+  bool operator!=(const SyncToken& other) const { return !(*this == other); }
 
  private:
   bool verified_flush_;

@@ -243,14 +243,14 @@ void CopyFromCompositingSurfaceFinished(
   TRACE_EVENT0(
       "cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceFinished");
   bitmap_pixels_lock.reset();
-  uint32 sync_point = 0;
+  gpu::SyncToken sync_token;
   if (result) {
     GLHelper* gl_helper = GetPostReadbackGLHelper();
     if (gl_helper)
-      sync_point = gl_helper->InsertSyncPoint();
+      sync_token = gpu::SyncToken(gl_helper->InsertSyncPoint());
   }
-  bool lost_resource = sync_point == 0;
-  release_callback->Run(sync_point, lost_resource);
+  const bool lost_resource = !sync_token.HasData();
+  release_callback->Run(sync_token, lost_resource);
   UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
                       base::TimeTicks::Now() - start_time);
   ReadbackResponse response = result ? READBACK_SUCCESS : READBACK_FAILED;
@@ -1988,19 +1988,11 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox.mailbox(),
-      texture_mailbox.sync_point(),
-      result->size(),
-      gfx::Rect(result->size()),
-      output_size_in_pixel,
-      pixels,
-      color_type,
-      base::Bind(&CopyFromCompositingSurfaceFinished,
-                 callback,
-                 base::Passed(&release_callback),
-                 base::Passed(&bitmap),
-                 start_time,
-                 base::Passed(&bitmap_pixels_lock)),
+      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
+      gfx::Rect(result->size()), output_size_in_pixel, pixels, color_type,
+      base::Bind(&CopyFromCompositingSurfaceFinished, callback,
+                 base::Passed(&release_callback), base::Passed(&bitmap),
+                 start_time, base::Passed(&bitmap_pixels_lock)),
       GLHelper::SCALER_QUALITY_GOOD);
 }
 

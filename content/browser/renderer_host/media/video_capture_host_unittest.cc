@@ -151,7 +151,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   void ReturnReceivedDibs(int device_id)  {
     int handle = GetReceivedDib();
     while (handle) {
-      this->OnRendererFinishedWithBuffer(device_id, handle, 0, -1.0);
+      this->OnRendererFinishedWithBuffer(device_id, handle, gpu::SyncToken(),
+                                         -1.0);
       handle = GetReceivedDib();
     }
   }
@@ -231,7 +232,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     OnBufferFilled(params.device_id);
     if (return_buffers_) {
       VideoCaptureHost::OnRendererFinishedWithBuffer(
-          params.device_id, params.buffer_id, 0, -1.0);
+          params.device_id, params.buffer_id, gpu::SyncToken(), -1.0);
     }
   }
 

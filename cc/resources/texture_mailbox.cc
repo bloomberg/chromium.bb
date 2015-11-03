@@ -19,19 +19,19 @@ TextureMailbox::TextureMailbox(const gpu::MailboxHolder& mailbox_holder)
       nearest_neighbor_(false) {}
 
 TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
-                               uint32 target,
-                               uint32 sync_point)
-    : mailbox_holder_(mailbox, target, sync_point),
+                               const gpu::SyncToken& sync_token,
+                               uint32 target)
+    : mailbox_holder_(mailbox, sync_token, target),
       shared_bitmap_(NULL),
       is_overlay_candidate_(false),
       nearest_neighbor_(false) {}
 
 TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
+                               const gpu::SyncToken& sync_token,
                                uint32 target,
-                               uint32 sync_point,
                                const gfx::Size& size_in_pixels,
                                bool is_overlay_candidate)
-    : mailbox_holder_(mailbox, target, sync_point),
+    : mailbox_holder_(mailbox, sync_token, target),
       shared_bitmap_(nullptr),
       size_in_pixels_(size_in_pixels),
       is_overlay_candidate_(is_overlay_candidate),

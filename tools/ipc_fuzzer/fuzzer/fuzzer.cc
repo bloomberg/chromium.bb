@@ -1199,13 +1199,38 @@ struct FuzzTraits<gpu::Mailbox> {
 };
 
 template <>
+struct FuzzTraits<gpu::SyncToken> {
+  static bool Fuzz(gpu::SyncToken* p, Fuzzer* fuzzer) {
+    bool verified_flush = false;
+    gpu::CommandBufferNamespace namespace_id =
+        gpu::CommandBufferNamespace::INVALID;
+    uint64_t command_buffer_id = 0;
+    uint64_t release_count = 0;
+
+    if (!FuzzParam(&verified_flush, fuzzer))
+      return false;
+    if (!FuzzParam(&namespace_id, fuzzer))
+      return false;
+    if (!FuzzParam(&command_buffer_id, fuzzer))
+      return false;
+    if (!FuzzParam(&release_count, fuzzer))
+      return false;
+
+    p->Clear();
+    p->Set(namespace_id, command_buffer_id, release_count);
+    if (verified_flush)
+      p->SetVerifyFlush();
+  }
+};
+
+template <>
 struct FuzzTraits<gpu::MailboxHolder> {
   static bool Fuzz(gpu::MailboxHolder* p, Fuzzer* fuzzer) {
     if (!FuzzParam(&p->mailbox, fuzzer))
       return false;
-    if (!FuzzParam(&p->texture_target, fuzzer))
+    if (!FuzzParam(&p->sync_token, fuzzer))
       return false;
-    if (!FuzzParam(&p->sync_point, fuzzer))
+    if (!FuzzParam(&p->texture_target, fuzzer))
       return false;
     return true;
   }

@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -23,11 +24,12 @@ namespace gpu {
 struct GPU_EXPORT MailboxHolder {
   MailboxHolder();
   MailboxHolder(const gpu::Mailbox& mailbox,
-                uint32_t texture_target,
-                uint32_t sync_point);
+                const gpu::SyncToken& sync_token,
+                uint32_t texture_target);
+
   gpu::Mailbox mailbox;
+  gpu::SyncToken sync_token;
   uint32_t texture_target;
-  uint32_t sync_point;
 };
 
 }  // namespace gpu

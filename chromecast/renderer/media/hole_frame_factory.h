@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 
 namespace gfx {
 class Size;
@@ -36,9 +37,9 @@ class HoleFrameFactory {
  private:
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
   gpu::Mailbox mailbox_;
+  gpu::SyncToken sync_token_;
   GLuint texture_;
   GLuint image_id_;
-  GLuint sync_point_;
 
   DISALLOW_COPY_AND_ASSIGN(HoleFrameFactory);
 };

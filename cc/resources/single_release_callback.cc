@@ -19,10 +19,11 @@ SingleReleaseCallback::~SingleReleaseCallback() {
   DCHECK(callback_.is_null()) << "SingleReleaseCallback was never run.";
 }
 
-void SingleReleaseCallback::Run(uint32 sync_point, bool is_lost) {
+void SingleReleaseCallback::Run(const gpu::SyncToken& sync_token,
+                                bool is_lost) {
   DCHECK(!callback_.is_null())
       << "SingleReleaseCallback was run more than once.";
-  base::ResetAndReturn(&callback_).Run(sync_point, is_lost);
+  base::ResetAndReturn(&callback_).Run(sync_token, is_lost);
 }
 
 }  // namespace cc

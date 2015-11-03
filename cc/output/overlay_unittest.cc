@@ -53,10 +53,9 @@ const gfx::Transform kBothMirrorTransform =
 const gfx::Transform kSwapTransform =
     gfx::Transform(0, 1, 1, 0, 0, 0);  // x,y -> y,x.
 
-void MailboxReleased(unsigned sync_point,
+void MailboxReleased(const gpu::SyncToken& sync_token,
                      bool lost_resource,
-                     BlockingTaskRunner* main_thread_task_runner) {
-}
+                     BlockingTaskRunner* main_thread_task_runner) {}
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
@@ -206,10 +205,9 @@ scoped_ptr<RenderPass> CreateRenderPass() {
 ResourceId CreateResource(ResourceProvider* resource_provider,
                           const gfx::Size& size,
                           bool is_overlay_candidate) {
-  unsigned sync_point = 0;
   TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point, size,
-                     is_overlay_candidate);
+      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
+                     size, is_overlay_candidate);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
 

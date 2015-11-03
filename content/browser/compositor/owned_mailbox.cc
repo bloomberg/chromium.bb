@@ -22,14 +22,14 @@ OwnedMailbox::~OwnedMailbox() {
     Destroy();
 }
 
-void OwnedMailbox::UpdateSyncPoint(uint32 sync_point) {
-  if (sync_point)
-    mailbox_holder_.sync_point = sync_point;
+void OwnedMailbox::UpdateSyncToken(const gpu::SyncToken& sync_token) {
+  if (sync_token.HasData())
+    mailbox_holder_.sync_token = sync_token;
 }
 
 void OwnedMailbox::Destroy() {
   ImageTransportFactory::GetInstance()->RemoveObserver(this);
-  gl_helper_->WaitSyncPoint(mailbox_holder_.sync_point);
+  gl_helper_->WaitSyncToken(mailbox_holder_.sync_token);
   gl_helper_->DeleteTexture(texture_id_);
   texture_id_ = 0;
   mailbox_holder_ = gpu::MailboxHolder();

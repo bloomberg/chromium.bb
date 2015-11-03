@@ -119,7 +119,7 @@ IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
 IPC_MESSAGE_CONTROL4(VideoCaptureHostMsg_BufferReady,
                      int /* device_id */,
                      int /* buffer_id */,
-                     uint32 /* syncpoint */,
+                     gpu::SyncToken /* sync_token */,
                      double /* consumer_resource_utilization */)
 
 // Get the formats supported by a device referenced by |capture_session_id|.

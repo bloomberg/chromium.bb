@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -21,7 +22,7 @@ class CC_EXPORT GLFrameData {
   ~GLFrameData();
 
   gpu::Mailbox mailbox;
-  uint32 sync_point;
+  gpu::SyncToken sync_token;
   gfx::Size size;
   gfx::Rect sub_buffer_rect;
 };

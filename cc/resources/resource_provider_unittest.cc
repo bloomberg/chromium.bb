@@ -43,40 +43,44 @@ using testing::_;
 namespace cc {
 namespace {
 
-static void EmptyReleaseCallback(uint32 sync_point,
-                                 bool lost_resource,
-                                 BlockingTaskRunner* main_thread_task_runner) {
+MATCHER_P(MatchesSyncToken, sync_token, "") {
+  gpu::SyncToken other;
+  memcpy(&other, arg, sizeof(other));
+  return other == sync_token;
 }
 
+static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
+                                 bool lost_resource,
+                                 BlockingTaskRunner* main_thread_task_runner) {}
+
 static void ReleaseCallback(
-    uint32* release_sync_point,
+    gpu::SyncToken* release_sync_token,
     bool* release_lost_resource,
     BlockingTaskRunner** release_main_thread_task_runner,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {
-  *release_sync_point = sync_point;
+  *release_sync_token = sync_token;
   *release_lost_resource = lost_resource;
   *release_main_thread_task_runner = main_thread_task_runner;
 }
 
 static void SharedBitmapReleaseCallback(
     scoped_ptr<SharedBitmap> bitmap,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool lost_resource,
-    BlockingTaskRunner* main_thread_task_runner) {
-}
+    BlockingTaskRunner* main_thread_task_runner) {}
 
 static void ReleaseSharedBitmapCallback(
     scoped_ptr<SharedBitmap> shared_bitmap,
     bool* release_called,
-    uint32* release_sync_point,
+    gpu::SyncToken* release_sync_token,
     bool* lost_resource_result,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {
   *release_called = true;
-  *release_sync_point = sync_point;
+  *release_sync_token = sync_token;
   *lost_resource_result = lost_resource;
 }
 
@@ -96,7 +100,7 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
  public:
   MOCK_METHOD2(bindTexture, void(GLenum target, GLuint texture));
   MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
-  MOCK_METHOD1(waitSyncPoint, void(GLuint sync_point));
+  MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
   MOCK_METHOD0(insertSyncPoint, GLuint(void));
   MOCK_METHOD3(produceTextureDirectCHROMIUM,
                void(GLuint texture, GLenum target, const GLbyte* mailbox));
@@ -129,8 +133,10 @@ class ContextSharedData {
   }
 
   void ProduceTexture(const GLbyte* mailbox_name,
-                      uint32 sync_point,
+                      const gpu::SyncToken& sync_token,
                       scoped_refptr<TestTexture> texture) {
+    uint32_t sync_point = static_cast<uint32_t>(sync_token.release_count());
+
     unsigned mailbox = 0;
     memcpy(&mailbox, mailbox_name, sizeof(mailbox));
     ASSERT_TRUE(mailbox && mailbox < next_mailbox_);
@@ -140,7 +146,7 @@ class ContextSharedData {
   }
 
   scoped_refptr<TestTexture> ConsumeTexture(const GLbyte* mailbox_name,
-                                            uint32 sync_point) {
+                                            const gpu::SyncToken& sync_token) {
     unsigned mailbox = 0;
     memcpy(&mailbox, mailbox_name, sizeof(mailbox));
     DCHECK(mailbox && mailbox < next_mailbox_);
@@ -148,7 +154,7 @@ class ContextSharedData {
     // If the latest sync point the context has waited on is before the sync
     // point for when the mailbox was set, pretend we never saw that
     // ProduceTexture.
-    if (sync_point_for_mailbox_[mailbox] > sync_point) {
+    if (sync_point_for_mailbox_[mailbox] > sync_token.release_count()) {
       NOTREACHED();
       return scoped_refptr<TestTexture>();
     }
@@ -180,18 +186,27 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
              pending_produce_textures_.begin();
          it != pending_produce_textures_.end();
          ++it) {
-      shared_data_->ProduceTexture(
-          (*it)->mailbox, sync_point, (*it)->texture);
+      shared_data_->ProduceTexture((*it)->mailbox, gpu::SyncToken(sync_point),
+                                   (*it)->texture);
     }
     pending_produce_textures_.clear();
     return sync_point;
   }
 
-  void waitSyncPoint(GLuint sync_point) override {
-    last_waited_sync_point_ = std::max(sync_point, last_waited_sync_point_);
+  void waitSyncToken(const GLbyte* sync_token) override {
+    gpu::SyncToken sync_token_data;
+    if (sync_token)
+      memcpy(&sync_token_data, sync_token, sizeof(sync_token_data));
+
+    if (sync_token_data.release_count() >
+        last_waited_sync_token_.release_count()) {
+      last_waited_sync_token_ = sync_token_data;
+    }
   }
 
-  unsigned last_waited_sync_point() const { return last_waited_sync_point_; }
+  const gpu::SyncToken& last_waited_sync_token() const {
+    return last_waited_sync_token_;
+  }
 
   void texStorage2DEXT(GLenum target,
                        GLint levels,
@@ -277,7 +292,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     GLuint texture_id = createTexture();
     base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture =
-        shared_data_->ConsumeTexture(mailbox, last_waited_sync_point_);
+        shared_data_->ConsumeTexture(mailbox, last_waited_sync_token_);
     namespace_->textures.Replace(texture_id, texture);
     return texture_id;
   }
@@ -295,8 +310,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
 
  protected:
   explicit ResourceProviderContext(ContextSharedData* shared_data)
-      : shared_data_(shared_data),
-        last_waited_sync_point_(0) {}
+      : shared_data_(shared_data) {}
 
  private:
   void AllocateTexture(const gfx::Size& size, GLenum format) {
@@ -345,7 +359,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   };
   typedef ScopedPtrDeque<PendingProduceTexture> PendingProduceTextureList;
   ContextSharedData* shared_data_;
-  GLuint last_waited_sync_point_;
+  gpu::SyncToken last_waited_sync_token_;
   PendingProduceTextureList pending_produce_textures_;
 };
 
@@ -355,7 +369,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
                        const gfx::Size& size,
                        ResourceFormat format,
                        uint8_t* pixels) {
-  resource_provider->WaitSyncPointIfNeeded(id);
+  resource_provider->WaitSyncTokenIfNeeded(id);
   switch (resource_provider->default_resource_type()) {
     case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE: {
       ResourceProvider::ScopedReadLockGL lock_gl(resource_provider, id);
@@ -378,7 +392,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
 class ResourceProviderTest
     : public testing::TestWithParam<ResourceProvider::ResourceType> {
  public:
-  explicit ResourceProviderTest(bool child_needs_sync_point)
+  explicit ResourceProviderTest(bool child_needs_sync_token)
       : shared_data_(ContextSharedData::Create()),
         context3d_(NULL),
         child_context_(NULL),
@@ -397,7 +411,7 @@ class ResourceProviderTest
         scoped_ptr<ResourceProviderContext> child_context_owned =
             ResourceProviderContext::Create(shared_data_.get());
         child_context_ = child_context_owned.get();
-        if (child_needs_sync_point) {
+        if (child_needs_sync_token) {
           child_output_surface_ =
               FakeOutputSurface::Create3d(child_context_owned.Pass());
         } else {
@@ -450,26 +464,26 @@ class ResourceProviderTest
 
   ResourceProviderContext* context() { return context3d_; }
 
-  ResourceId CreateChildMailbox(uint32* release_sync_point,
+  ResourceId CreateChildMailbox(gpu::SyncToken* release_sync_token,
                                 bool* lost_resource,
                                 bool* release_called,
-                                uint32* sync_point) {
+                                gpu::SyncToken* sync_token) {
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
       unsigned texture = child_context_->createTexture();
       gpu::Mailbox gpu_mailbox;
       child_context_->genMailboxCHROMIUM(gpu_mailbox.name);
       child_context_->produceTextureDirectCHROMIUM(texture, GL_TEXTURE_2D,
                                                    gpu_mailbox.name);
-      *sync_point = child_context_->insertSyncPoint();
-      EXPECT_LT(0u, *sync_point);
+      *sync_token = gpu::SyncToken(child_context_->insertSyncPoint());
+      EXPECT_TRUE(sync_token->HasData());
 
       scoped_ptr<SharedBitmap> shared_bitmap;
       scoped_ptr<SingleReleaseCallbackImpl> callback =
           SingleReleaseCallbackImpl::Create(base::Bind(
               ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
-              release_called, release_sync_point, lost_resource));
+              release_called, release_sync_token, lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
-          TextureMailbox(gpu_mailbox, GL_TEXTURE_2D, *sync_point),
+          TextureMailbox(gpu_mailbox, *sync_token, GL_TEXTURE_2D),
           callback.Pass());
     } else {
       gfx::Size size(64, 64);
@@ -480,7 +494,7 @@ class ResourceProviderTest
       scoped_ptr<SingleReleaseCallbackImpl> callback =
           SingleReleaseCallbackImpl::Create(base::Bind(
               ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
-              release_called, release_sync_point, lost_resource));
+              release_called, release_sync_token, lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(shared_bitmap_ptr, size), callback.Pass());
     }
@@ -610,10 +624,10 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   child_context_->genMailboxCHROMIUM(external_mailbox.name);
   child_context_->produceTextureDirectCHROMIUM(
       external_texture_id, GL_TEXTURE_EXTERNAL_OES, external_mailbox.name);
-  const GLuint external_sync_point = child_context_->insertSyncPoint();
+  const gpu::SyncToken external_sync_token(child_context_->insertSyncPoint());
   ResourceId id4 = child_resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(external_mailbox, GL_TEXTURE_EXTERNAL_OES,
-                     external_sync_point),
+      TextureMailbox(external_mailbox, external_sync_token,
+                     GL_TEXTURE_EXTERNAL_OES),
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
   ReturnedResourceArray returned_to_child;
@@ -630,14 +644,14 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(4u, list.size());
-    EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
-    EXPECT_NE(0u, list[1].mailbox_holder.sync_point);
-    EXPECT_EQ(list[0].mailbox_holder.sync_point,
-              list[1].mailbox_holder.sync_point);
-    EXPECT_NE(0u, list[2].mailbox_holder.sync_point);
-    EXPECT_EQ(list[0].mailbox_holder.sync_point,
-              list[2].mailbox_holder.sync_point);
-    EXPECT_EQ(external_sync_point, list[3].mailbox_holder.sync_point);
+    EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
+    EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
+    EXPECT_EQ(list[0].mailbox_holder.sync_token,
+              list[1].mailbox_holder.sync_token);
+    EXPECT_TRUE(list[2].mailbox_holder.sync_token.HasData());
+    EXPECT_EQ(list[0].mailbox_holder.sync_token,
+              list[2].mailbox_holder.sync_token);
+    EXPECT_EQ(external_sync_token, list[3].mailbox_holder.sync_token);
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               list[0].mailbox_holder.texture_target);
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
@@ -651,15 +665,15 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id4));
     resource_provider_->ReceiveFromChild(child_id, list);
-    EXPECT_NE(list[0].mailbox_holder.sync_point,
-              context3d_->last_waited_sync_point());
+    EXPECT_NE(list[0].mailbox_holder.sync_token,
+              context3d_->last_waited_sync_token());
     {
-      resource_provider_->WaitSyncPointIfNeeded(list[0].id);
+      resource_provider_->WaitSyncTokenIfNeeded(list[0].id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               list[0].id);
     }
-    EXPECT_EQ(list[0].mailbox_holder.sync_point,
-              context3d_->last_waited_sync_point());
+    EXPECT_EQ(list[0].mailbox_holder.sync_token,
+              context3d_->last_waited_sync_token());
     ResourceProvider::ResourceIdSet resource_ids_to_receive;
     resource_ids_to_receive.insert(id1);
     resource_ids_to_receive.insert(id2);
@@ -732,10 +746,10 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(4u, returned_to_child.size());
-    EXPECT_NE(0u, returned_to_child[0].sync_point);
-    EXPECT_NE(0u, returned_to_child[1].sync_point);
-    EXPECT_NE(0u, returned_to_child[2].sync_point);
-    EXPECT_NE(0u, returned_to_child[3].sync_point);
+    EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
+    EXPECT_TRUE(returned_to_child[1].sync_token.HasData());
+    EXPECT_TRUE(returned_to_child[2].sync_token.HasData());
+    EXPECT_TRUE(returned_to_child[3].sync_token.HasData());
     EXPECT_FALSE(returned_to_child[0].lost);
     EXPECT_FALSE(returned_to_child[1].lost);
     EXPECT_FALSE(returned_to_child[2].lost);
@@ -749,7 +763,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id4));
 
   {
-    child_resource_provider_->WaitSyncPointIfNeeded(id1);
+    child_resource_provider_->WaitSyncTokenIfNeeded(id1);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id1);
     ASSERT_NE(0U, lock.texture_id());
@@ -758,7 +772,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_EQ(0, memcmp(data1, result, pixel_size));
   }
   {
-    child_resource_provider_->WaitSyncPointIfNeeded(id2);
+    child_resource_provider_->WaitSyncTokenIfNeeded(id2);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id2);
     ASSERT_NE(0U, lock.texture_id());
@@ -767,7 +781,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_EQ(0, memcmp(data2, result, pixel_size));
   }
   {
-    child_resource_provider_->WaitSyncPointIfNeeded(id3);
+    child_resource_provider_->WaitSyncTokenIfNeeded(id3);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id3);
     ASSERT_NE(0U, lock.texture_id());
@@ -788,10 +802,10 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_EQ(id2, list[1].id);
     EXPECT_EQ(id3, list[2].id);
     EXPECT_EQ(id4, list[3].id);
-    EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
-    EXPECT_NE(0u, list[1].mailbox_holder.sync_point);
-    EXPECT_NE(0u, list[2].mailbox_holder.sync_point);
-    EXPECT_NE(0u, list[3].mailbox_holder.sync_point);
+    EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
+    EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
+    EXPECT_TRUE(list[2].mailbox_holder.sync_token.HasData());
+    EXPECT_TRUE(list[3].mailbox_holder.sync_token.HasData());
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               list[0].mailbox_holder.texture_target);
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
@@ -821,24 +835,24 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_EQ(0u, resource_provider_->num_resources());
 
   ASSERT_EQ(4u, returned_to_child.size());
-  EXPECT_NE(0u, returned_to_child[0].sync_point);
-  EXPECT_NE(0u, returned_to_child[1].sync_point);
-  EXPECT_NE(0u, returned_to_child[2].sync_point);
-  EXPECT_NE(0u, returned_to_child[3].sync_point);
+  EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
+  EXPECT_TRUE(returned_to_child[1].sync_token.HasData());
+  EXPECT_TRUE(returned_to_child[2].sync_token.HasData());
+  EXPECT_TRUE(returned_to_child[3].sync_token.HasData());
   EXPECT_FALSE(returned_to_child[0].lost);
   EXPECT_FALSE(returned_to_child[1].lost);
   EXPECT_FALSE(returned_to_child[2].lost);
   EXPECT_FALSE(returned_to_child[3].lost);
 }
 
-class ResourceProviderTestNoSyncPoint : public ResourceProviderTest {
+class ResourceProviderTestNoSyncToken : public ResourceProviderTest {
  public:
-  ResourceProviderTestNoSyncPoint() : ResourceProviderTest(false) {
+  ResourceProviderTestNoSyncToken() : ResourceProviderTest(false) {
     EXPECT_EQ(ResourceProvider::RESOURCE_TYPE_GL_TEXTURE, GetParam());
   }
 };
 
-TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
+TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
@@ -866,16 +880,16 @@ TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
   child_context_->genMailboxCHROMIUM(external_mailbox.name);
   child_context_->produceTextureDirectCHROMIUM(
       external_texture_id, GL_TEXTURE_EXTERNAL_OES, external_mailbox.name);
-  const GLuint external_sync_point = child_context_->insertSyncPoint();
+  const gpu::SyncToken external_sync_token(child_context_->insertSyncPoint());
   ResourceId id3 = child_resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(external_mailbox, GL_TEXTURE_EXTERNAL_OES,
-                     external_sync_point),
+      TextureMailbox(external_mailbox, external_sync_token,
+                     GL_TEXTURE_EXTERNAL_OES),
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
   ReturnedResourceArray returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
-  resource_provider_->SetChildNeedsSyncPoints(child_id, false);
+  resource_provider_->SetChildNeedsSyncTokens(child_id, false);
   {
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -887,10 +901,10 @@ TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
                                                   &list);
     ASSERT_EQ(3u, list.size());
     // Standard resources shouldn't require creating and sending a sync point.
-    EXPECT_EQ(0u, list[0].mailbox_holder.sync_point);
-    EXPECT_EQ(0u, list[1].mailbox_holder.sync_point);
+    EXPECT_FALSE(list[0].mailbox_holder.sync_token.HasData());
+    EXPECT_FALSE(list[1].mailbox_holder.sync_token.HasData());
     // A given sync point should be passed through.
-    EXPECT_EQ(external_sync_point, list[2].mailbox_holder.sync_point);
+    EXPECT_EQ(external_sync_token, list[2].mailbox_holder.sync_token);
     resource_provider_->ReceiveFromChild(child_id, list);
 
     ResourceProvider::ResourceIdSet resource_ids_to_receive;
@@ -910,19 +924,19 @@ TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(3u, returned_to_child.size());
-    std::map<ResourceId, unsigned int> returned_sync_points;
+    std::map<ResourceId, gpu::SyncToken> returned_sync_tokens;
     for (const auto& returned : returned_to_child)
-      returned_sync_points[returned.id] = returned.sync_point;
+      returned_sync_tokens[returned.id] = returned.sync_token;
 
-    EXPECT_TRUE(returned_sync_points.find(id1) != returned_sync_points.end());
+    ASSERT_TRUE(returned_sync_tokens.find(id1) != returned_sync_tokens.end());
     // No new sync point should be created transferring back.
-    EXPECT_TRUE(returned_sync_points.find(id1) != returned_sync_points.end());
-    EXPECT_EQ(0u, returned_sync_points[id1]);
-    EXPECT_TRUE(returned_sync_points.find(id2) != returned_sync_points.end());
-    EXPECT_EQ(0u, returned_sync_points[id2]);
+    ASSERT_TRUE(returned_sync_tokens.find(id1) != returned_sync_tokens.end());
+    EXPECT_FALSE(returned_sync_tokens[id1].HasData());
+    ASSERT_TRUE(returned_sync_tokens.find(id2) != returned_sync_tokens.end());
+    EXPECT_FALSE(returned_sync_tokens[id2].HasData());
     // Original sync point given should be returned.
-    EXPECT_TRUE(returned_sync_points.find(id3) != returned_sync_points.end());
-    EXPECT_EQ(external_sync_point, returned_sync_points[id3]);
+    ASSERT_TRUE(returned_sync_tokens.find(id3) != returned_sync_tokens.end());
+    EXPECT_EQ(external_sync_token, returned_sync_tokens[id3]);
     EXPECT_FALSE(returned_to_child[0].lost);
     EXPECT_FALSE(returned_to_child[1].lost);
     EXPECT_FALSE(returned_to_child[2].lost);
@@ -935,7 +949,7 @@ TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
 
 INSTANTIATE_TEST_CASE_P(
     ResourceProviderTests,
-    ResourceProviderTestNoSyncPoint,
+    ResourceProviderTestNoSyncToken,
     ::testing::Values(ResourceProvider::RESOURCE_TYPE_GL_TEXTURE));
 
 TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
@@ -964,7 +978,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
 
     resource_provider_->ReceiveFromChild(child_id, list);
 
-    resource_provider_->WaitSyncPointIfNeeded(list[0].id);
+    resource_provider_->WaitSyncTokenIfNeeded(list[0].id);
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                             list[0].id);
 
@@ -977,7 +991,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
 
   {
-    child_resource_provider_->WaitSyncPointIfNeeded(id1);
+    child_resource_provider_->WaitSyncTokenIfNeeded(id1);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
                                             id1);
     child_resource_provider_->DeleteResource(id1);
@@ -1034,7 +1048,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   resource_provider_->SetReadLockFence(fence.get());
   {
     unsigned parent_id = list.front().id;
-    resource_provider_->WaitSyncPointIfNeeded(parent_id);
+    resource_provider_->WaitSyncTokenIfNeeded(parent_id);
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                             parent_id);
   }
@@ -1094,7 +1108,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = list[i].id;
-      resource_provider_->WaitSyncPointIfNeeded(parent_id);
+      resource_provider_->WaitSyncTokenIfNeeded(parent_id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               parent_id);
     }
@@ -1156,7 +1170,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = list[i].id;
-      resource_provider_->WaitSyncPointIfNeeded(parent_id);
+      resource_provider_->WaitSyncTokenIfNeeded(parent_id);
       ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
                                               parent_id);
     }
@@ -1213,9 +1227,9 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                   &list);
     ASSERT_EQ(3u, list.size());
-    EXPECT_EQ(0u, list[0].mailbox_holder.sync_point);
-    EXPECT_EQ(0u, list[1].mailbox_holder.sync_point);
-    EXPECT_EQ(0u, list[2].mailbox_holder.sync_point);
+    EXPECT_FALSE(list[0].mailbox_holder.sync_token.HasData());
+    EXPECT_FALSE(list[1].mailbox_holder.sync_token.HasData());
+    EXPECT_FALSE(list[2].mailbox_holder.sync_token.HasData());
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
@@ -1279,9 +1293,9 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
     ASSERT_EQ(3u, returned_to_child.size());
-    EXPECT_EQ(0u, returned_to_child[0].sync_point);
-    EXPECT_EQ(0u, returned_to_child[1].sync_point);
-    EXPECT_EQ(0u, returned_to_child[2].sync_point);
+    EXPECT_FALSE(returned_to_child[0].sync_token.HasData());
+    EXPECT_FALSE(returned_to_child[1].sync_token.HasData());
+    EXPECT_FALSE(returned_to_child[2].sync_token.HasData());
     std::set<ResourceId> expected_ids;
     expected_ids.insert(id1);
     expected_ids.insert(id2);
@@ -1348,9 +1362,9 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   EXPECT_EQ(0u, resource_provider_->num_resources());
 
   ASSERT_EQ(3u, returned_to_child.size());
-  EXPECT_EQ(0u, returned_to_child[0].sync_point);
-  EXPECT_EQ(0u, returned_to_child[1].sync_point);
-  EXPECT_EQ(0u, returned_to_child[2].sync_point);
+  EXPECT_FALSE(returned_to_child[0].sync_token.HasData());
+  EXPECT_FALSE(returned_to_child[1].sync_token.HasData());
+  EXPECT_FALSE(returned_to_child[2].sync_token.HasData());
   std::set<ResourceId> expected_ids;
   expected_ids.insert(id1);
   expected_ids.insert(id2);
@@ -1401,7 +1415,7 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
     child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
                                                  &list);
     ASSERT_EQ(1u, list.size());
-    EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
+    EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               list[0].mailbox_holder.texture_target);
     EXPECT_TRUE(child_resource_provider->InUseByConsumer(id1));
@@ -1502,8 +1516,8 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
                                                   &list);
     ASSERT_EQ(2u, list.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
-      EXPECT_NE(0u, list[1].mailbox_holder.sync_point);
+      EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
+      EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
     }
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
@@ -1535,8 +1549,8 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
 
     ASSERT_EQ(2u, list.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
-      EXPECT_NE(0u, list[1].mailbox_holder.sync_point);
+      EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
+      EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
     }
     EXPECT_TRUE(resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(resource_provider_->InUseByConsumer(id2));
@@ -1561,8 +1575,8 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
     EXPECT_EQ(0u, resource_provider_->num_resources());
     ASSERT_EQ(2u, returned_to_child.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_NE(0u, returned_to_child[0].sync_point);
-      EXPECT_NE(0u, returned_to_child[1].sync_point);
+      EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
+      EXPECT_TRUE(returned_to_child[1].sync_token.HasData());
     }
     EXPECT_FALSE(returned_to_child[0].lost);
     EXPECT_FALSE(returned_to_child[1].lost);
@@ -1598,8 +1612,8 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
                                                   &list);
     ASSERT_EQ(2u, list.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
-      EXPECT_NE(0u, list[1].mailbox_holder.sync_point);
+      EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
+      EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
     }
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
@@ -1631,8 +1645,8 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
 
     ASSERT_EQ(2u, list.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
-      EXPECT_NE(0u, list[1].mailbox_holder.sync_point);
+      EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
+      EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
     }
     EXPECT_TRUE(resource_provider_->InUseByConsumer(id1));
     EXPECT_TRUE(resource_provider_->InUseByConsumer(id2));
@@ -1666,7 +1680,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     EXPECT_EQ(1u, resource_provider_->num_resources());
     ASSERT_EQ(1u, returned_to_child.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_NE(0u, returned_to_child[0].sync_point);
+      EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
     }
     EXPECT_FALSE(returned_to_child[0].lost);
     returned_to_child.clear();
@@ -1676,7 +1690,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     resource_provider_ = nullptr;
     ASSERT_EQ(1u, returned_to_child.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_NE(0u, returned_to_child[0].sync_point);
+      EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
     }
     EXPECT_TRUE(returned_to_child[0].lost);
   }
@@ -1705,7 +1719,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
                                                   &list);
     ASSERT_EQ(1u, list.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
-      EXPECT_NE(0u, list[0].mailbox_holder.sync_point);
+      EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
     resource_provider_->ReceiveFromChild(child_id, list);
     ResourceProvider::ResourceIdSet resource_ids_to_receive;
@@ -1727,7 +1741,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
 
     ASSERT_EQ(1u, returned_to_child.size());
     if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
-      EXPECT_NE(0u, returned_to_child[0].sync_point);
+      EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
     child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
   }
   EXPECT_EQ(0u, child_resource_provider_->num_resources());
@@ -1950,7 +1964,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
 
       parent_resource_provider->ReceiveFromChild(child_id, list);
       {
-        parent_resource_provider->WaitSyncPointIfNeeded(list[0].id);
+        parent_resource_provider->WaitSyncTokenIfNeeded(list[0].id);
         ResourceProvider::ScopedReadLockGL lock(parent_resource_provider.get(),
                                                 list[0].id);
       }
@@ -2034,23 +2048,22 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   gpu::Mailbox mailbox;
   context()->genMailboxCHROMIUM(mailbox.name);
   context()->produceTextureDirectCHROMIUM(texture, GL_TEXTURE_2D, mailbox.name);
-  uint32 sync_point = context()->insertSyncPoint();
+  gpu::SyncToken sync_token(context()->insertSyncPoint());
 
-  // All the logic below assumes that the sync points are all positive.
-  EXPECT_LT(0u, sync_point);
+  // All the logic below assumes that the sync token releases are all positive.
+  EXPECT_LT(0u, sync_token.release_count());
 
-  uint32 release_sync_point = 0;
+  gpu::SyncToken release_sync_token;
   bool lost_resource = false;
   BlockingTaskRunner* main_thread_task_runner = NULL;
-  ReleaseCallbackImpl callback = base::Bind(ReleaseCallback,
-                                            &release_sync_point,
-                                            &lost_resource,
-                                            &main_thread_task_runner);
+  ReleaseCallbackImpl callback =
+      base::Bind(ReleaseCallback, &release_sync_token, &lost_resource,
+                 &main_thread_task_runner);
   ResourceId resource = resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
+      TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
       SingleReleaseCallbackImpl::Create(callback));
   EXPECT_EQ(1u, context()->NumTextures());
-  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(release_sync_token.HasData());
   {
     // Transfer the resource, expect the sync points to be consistent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2058,14 +2071,15 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     TransferableResourceArray list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
     ASSERT_EQ(1u, list.size());
-    EXPECT_LE(sync_point, list[0].mailbox_holder.sync_point);
+    EXPECT_LE(sync_token.release_count(),
+              list[0].mailbox_holder.sync_token.release_count());
     EXPECT_EQ(0,
               memcmp(mailbox.name,
                      list[0].mailbox_holder.mailbox.name,
                      sizeof(mailbox.name)));
-    EXPECT_EQ(0u, release_sync_point);
+    EXPECT_FALSE(release_sync_token.HasData());
 
-    context()->waitSyncPoint(list[0].mailbox_holder.sync_point);
+    context()->waitSyncToken(list[0].mailbox_holder.sync_token.GetConstData());
     unsigned other_texture =
         context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
@@ -2076,8 +2090,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     context()->produceTextureDirectCHROMIUM(other_texture, GL_TEXTURE_2D,
                                             mailbox.name);
     context()->deleteTexture(other_texture);
-    list[0].mailbox_holder.sync_point = context()->insertSyncPoint();
-    EXPECT_LT(0u, list[0].mailbox_holder.sync_point);
+    list[0].mailbox_holder.sync_token =
+        gpu::SyncToken(context()->insertSyncPoint());
 
     // Receive the resource, then delete it, expect the sync points to be
     // consistent.
@@ -2085,24 +2099,25 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     TransferableResource::ReturnResources(list, &returned);
     resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_EQ(1u, context()->NumTextures());
-    EXPECT_EQ(0u, release_sync_point);
+    EXPECT_FALSE(release_sync_token.HasData());
 
     resource_provider_->DeleteResource(resource);
-    EXPECT_LE(list[0].mailbox_holder.sync_point, release_sync_point);
+    EXPECT_LE(list[0].mailbox_holder.sync_token.release_count(),
+              release_sync_token.release_count());
     EXPECT_FALSE(lost_resource);
     EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
   }
 
   // We're going to do the same thing as above, but testing the case where we
   // delete the resource before we receive it back.
-  sync_point = release_sync_point;
-  EXPECT_LT(0u, sync_point);
-  release_sync_point = 0;
+  sync_token = release_sync_token;
+  EXPECT_LT(0u, sync_token.release_count());
+  release_sync_token.Clear();
   resource = resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
+      TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
       SingleReleaseCallbackImpl::Create(callback));
   EXPECT_EQ(1u, context()->NumTextures());
-  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(release_sync_token.HasData());
   {
     // Transfer the resource, expect the sync points to be consistent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2110,14 +2125,15 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     TransferableResourceArray list;
     resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
     ASSERT_EQ(1u, list.size());
-    EXPECT_LE(sync_point, list[0].mailbox_holder.sync_point);
+    EXPECT_LE(sync_token.release_count(),
+              list[0].mailbox_holder.sync_token.release_count());
     EXPECT_EQ(0,
               memcmp(mailbox.name,
                      list[0].mailbox_holder.mailbox.name,
                      sizeof(mailbox.name)));
-    EXPECT_EQ(0u, release_sync_point);
+    EXPECT_FALSE(release_sync_token.HasData());
 
-    context()->waitSyncPoint(list[0].mailbox_holder.sync_point);
+    context()->waitSyncToken(list[0].mailbox_holder.sync_token.GetConstData());
     unsigned other_texture =
         context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
@@ -2128,25 +2144,27 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     context()->produceTextureDirectCHROMIUM(other_texture, GL_TEXTURE_2D,
                                             mailbox.name);
     context()->deleteTexture(other_texture);
-    list[0].mailbox_holder.sync_point = context()->insertSyncPoint();
-    EXPECT_LT(0u, list[0].mailbox_holder.sync_point);
+    list[0].mailbox_holder.sync_token =
+        gpu::SyncToken(context()->insertSyncPoint());
+    EXPECT_LT(0u, list[0].mailbox_holder.sync_token.release_count());
 
     // Delete the resource, which shouldn't do anything.
     resource_provider_->DeleteResource(resource);
     EXPECT_EQ(1u, context()->NumTextures());
-    EXPECT_EQ(0u, release_sync_point);
+    EXPECT_FALSE(release_sync_token.HasData());
 
     // Then receive the resource which should release the mailbox, expect the
     // sync points to be consistent.
     ReturnedResourceArray returned;
     TransferableResource::ReturnResources(list, &returned);
     resource_provider_->ReceiveReturnsFromParent(returned);
-    EXPECT_LE(list[0].mailbox_holder.sync_point, release_sync_point);
+    EXPECT_LE(list[0].mailbox_holder.sync_token.release_count(),
+              release_sync_token.release_count());
     EXPECT_FALSE(lost_resource);
     EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
   }
 
-  context()->waitSyncPoint(release_sync_point);
+  context()->waitSyncToken(release_sync_token.GetConstData());
   texture =
       context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   context()->deleteTexture(texture);
@@ -2285,12 +2303,12 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
 }
 
 TEST_P(ResourceProviderTest, LostMailboxInParent) {
-  uint32 release_sync_point = 0;
+  gpu::SyncToken release_sync_token;
   bool lost_resource = false;
   bool release_called = false;
-  uint32 sync_point = 0;
-  ResourceId resource = CreateChildMailbox(&release_sync_point, &lost_resource,
-                                           &release_called, &sync_point);
+  gpu::SyncToken sync_token;
+  ResourceId resource = CreateChildMailbox(&release_sync_token, &lost_resource,
+                                           &release_called, &sync_token);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -2338,12 +2356,12 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
 }
 
 TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
-  uint32 release_sync_point = 0;
+  gpu::SyncToken release_sync_token;
   bool lost_resource = false;
   bool release_called = false;
-  uint32 sync_point = 0;
-  ResourceId resource = CreateChildMailbox(&release_sync_point, &lost_resource,
-                                           &release_called, &sync_point);
+  gpu::SyncToken sync_token;
+  ResourceId resource = CreateChildMailbox(&release_sync_token, &lost_resource,
+                                           &release_called, &sync_token);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -2408,32 +2426,32 @@ TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
 }
 
 TEST_P(ResourceProviderTest, Shutdown) {
-  uint32 release_sync_point = 0;
+  gpu::SyncToken release_sync_token;
   bool lost_resource = false;
   bool release_called = false;
-  uint32 sync_point = 0;
-  CreateChildMailbox(
-      &release_sync_point, &lost_resource, &release_called, &sync_point);
+  gpu::SyncToken sync_token;
+  CreateChildMailbox(&release_sync_token, &lost_resource, &release_called,
+                     &sync_token);
 
-  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(release_sync_token.HasData());
   EXPECT_FALSE(lost_resource);
 
   child_resource_provider_ = nullptr;
 
   if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-    EXPECT_LE(sync_point, release_sync_point);
+    EXPECT_LE(sync_token.release_count(), release_sync_token.release_count());
   }
   EXPECT_TRUE(release_called);
   EXPECT_FALSE(lost_resource);
 }
 
 TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
-  uint32 release_sync_point = 0;
+  gpu::SyncToken release_sync_token;
   bool lost_resource = false;
   bool release_called = false;
-  uint32 sync_point = 0;
-  ResourceId resource = CreateChildMailbox(&release_sync_point, &lost_resource,
-                                           &release_called, &sync_point);
+  gpu::SyncToken sync_token;
+  ResourceId resource = CreateChildMailbox(&release_sync_token, &lost_resource,
+                                           &release_called, &sync_token);
 
   // Transfer the resource, so we can't release it properly on shutdown.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -2442,13 +2460,13 @@ TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
   child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
                                                 &list);
 
-  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(release_sync_token.HasData());
   EXPECT_FALSE(lost_resource);
 
   child_resource_provider_ = nullptr;
 
   // Since the resource is in the parent, the child considers it lost.
-  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(release_sync_token.HasData());
   EXPECT_TRUE(lost_resource);
 }
 
@@ -2461,29 +2479,28 @@ TEST_P(ResourceProviderTest, LostContext) {
   gpu::Mailbox mailbox;
   context()->genMailboxCHROMIUM(mailbox.name);
   context()->produceTextureDirectCHROMIUM(texture, GL_TEXTURE_2D, mailbox.name);
-  uint32 sync_point = context()->insertSyncPoint();
+  gpu::SyncToken sync_token(context()->insertSyncPoint());
 
-  EXPECT_LT(0u, sync_point);
+  EXPECT_TRUE(sync_token.HasData());
 
-  uint32 release_sync_point = 0;
+  gpu::SyncToken release_sync_token;
   bool lost_resource = false;
   BlockingTaskRunner* main_thread_task_runner = NULL;
   scoped_ptr<SingleReleaseCallbackImpl> callback =
-      SingleReleaseCallbackImpl::Create(base::Bind(ReleaseCallback,
-                                                   &release_sync_point,
-                                                   &lost_resource,
-                                                   &main_thread_task_runner));
+      SingleReleaseCallbackImpl::Create(
+          base::Bind(ReleaseCallback, &release_sync_token, &lost_resource,
+                     &main_thread_task_runner));
   resource_provider_->CreateResourceFromTextureMailbox(
-      TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point), callback.Pass());
+      TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D), callback.Pass());
 
-  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(release_sync_token.HasData());
   EXPECT_FALSE(lost_resource);
   EXPECT_EQ(NULL, main_thread_task_runner);
 
   resource_provider_->DidLoseOutputSurface();
   resource_provider_ = nullptr;
 
-  EXPECT_LE(sync_point, release_sync_point);
+  EXPECT_LE(sync_token.release_count(), release_sync_token.release_count());
   EXPECT_TRUE(lost_resource);
   EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
 }
@@ -2732,14 +2749,13 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
       gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
       use_image_texture_targets_));
 
-  uint32 release_sync_point = 0;
+  gpu::SyncToken release_sync_token;
   bool lost_resource = false;
   BlockingTaskRunner* main_thread_task_runner = NULL;
   scoped_ptr<SingleReleaseCallbackImpl> callback =
-      SingleReleaseCallbackImpl::Create(base::Bind(&ReleaseCallback,
-                                                   &release_sync_point,
-                                                   &lost_resource,
-                                                   &main_thread_task_runner));
+      SingleReleaseCallbackImpl::Create(
+          base::Bind(&ReleaseCallback, &release_sync_token, &lost_resource,
+                     &main_thread_task_runner));
   TextureMailbox mailbox(shared_bitmap.get(), size);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
@@ -2755,7 +2771,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   }
 
   resource_provider->DeleteResource(id);
-  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(release_sync_token.HasData());
   EXPECT_FALSE(lost_resource);
   EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
 }
@@ -2782,27 +2798,26 @@ class ResourceProviderTestTextureMailboxGLFilters
         main_thread_task_runner, 0, 1, use_image_texture_targets_));
 
     unsigned texture_id = 1;
-    uint32 sync_point = 30;
+    gpu::SyncToken sync_token(30);
     unsigned target = GL_TEXTURE_2D;
 
     EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
-    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+    EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
     EXPECT_CALL(*context, insertSyncPoint()).Times(0);
     EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
     EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
 
     gpu::Mailbox gpu_mailbox;
     memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-    uint32 release_sync_point = 0;
+    gpu::SyncToken release_sync_token;
     bool lost_resource = false;
     BlockingTaskRunner* mailbox_task_runner = NULL;
     scoped_ptr<SingleReleaseCallbackImpl> callback =
-        SingleReleaseCallbackImpl::Create(base::Bind(&ReleaseCallback,
-                                                     &release_sync_point,
-                                                     &lost_resource,
-                                                     &mailbox_task_runner));
+        SingleReleaseCallbackImpl::Create(
+            base::Bind(&ReleaseCallback, &release_sync_token, &lost_resource,
+                       &mailbox_task_runner));
 
-    TextureMailbox mailbox(gpu_mailbox, target, sync_point);
+    TextureMailbox mailbox(gpu_mailbox, sync_token, target);
     mailbox.set_nearest_neighbor(mailbox_nearest_neighbor);
 
     ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
@@ -2812,9 +2827,9 @@ class ResourceProviderTestTextureMailboxGLFilters
     Mock::VerifyAndClearExpectations(context);
 
     {
-      // Mailbox sync point WaitSyncPoint before using the texture.
-      EXPECT_CALL(*context, waitSyncPoint(sync_point));
-      resource_provider->WaitSyncPointIfNeeded(id);
+      // Mailbox sync point WaitSyncToken before using the texture.
+      EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
+      resource_provider->WaitSyncTokenIfNeeded(id);
       Mock::VerifyAndClearExpectations(context);
 
       EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(target, _))
@@ -2843,12 +2858,12 @@ class ResourceProviderTestTextureMailboxGLFilters
       EXPECT_CALL(*context, insertSyncPoint());
       EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
 
-      EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+      EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
       EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
     }
 
     resource_provider->DeleteResource(id);
-    EXPECT_EQ(0u, release_sync_point);
+    EXPECT_FALSE(release_sync_token.HasData());
     EXPECT_FALSE(lost_resource);
     EXPECT_EQ(main_thread_task_runner, mailbox_task_runner);
   }
@@ -2925,11 +2940,11 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
       gpu_memory_buffer_manager_.get(), NULL, 0, 1,
       use_image_texture_targets_));
 
-  uint32 sync_point = 30;
+  gpu::SyncToken sync_token(30);
   unsigned target = GL_TEXTURE_EXTERNAL_OES;
 
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
-  EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+  EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
   EXPECT_CALL(*context, insertSyncPoint()).Times(0);
   EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
   EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
@@ -2939,7 +2954,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   scoped_ptr<SingleReleaseCallbackImpl> callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
 
-  TextureMailbox mailbox(gpu_mailbox, target, sync_point);
+  TextureMailbox mailbox(gpu_mailbox, sync_token, target);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
       mailbox, callback.Pass());
@@ -2948,9 +2963,9 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   Mock::VerifyAndClearExpectations(context);
 
   {
-    // Mailbox sync point WaitSyncPoint before using the texture.
-    EXPECT_CALL(*context, waitSyncPoint(sync_point));
-    resource_provider->WaitSyncPointIfNeeded(id);
+    // Mailbox sync point WaitSyncToken before using the texture.
+    EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
+    resource_provider->WaitSyncTokenIfNeeded(id);
     Mock::VerifyAndClearExpectations(context);
 
     unsigned texture_id = 1;
@@ -2970,13 +2985,13 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
     EXPECT_CALL(*context, insertSyncPoint());
     EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
 
-    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+    EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
     EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
   }
 }
 
 TEST_P(ResourceProviderTest,
-       TextureMailbox_WaitSyncPointIfNeeded_WithSyncPoint) {
+       TextureMailbox_WaitSyncTokenIfNeeded_WithSyncToken) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
@@ -2995,11 +3010,11 @@ TEST_P(ResourceProviderTest,
       gpu_memory_buffer_manager_.get(), NULL, 0, 1,
       use_image_texture_targets_));
 
-  uint32 sync_point = 30;
+  gpu::SyncToken sync_token(30);
   unsigned target = GL_TEXTURE_2D;
 
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
-  EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+  EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
   EXPECT_CALL(*context, insertSyncPoint()).Times(0);
   EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
   EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
@@ -3009,7 +3024,7 @@ TEST_P(ResourceProviderTest,
   scoped_ptr<SingleReleaseCallbackImpl> callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
 
-  TextureMailbox mailbox(gpu_mailbox, target, sync_point);
+  TextureMailbox mailbox(gpu_mailbox, sync_token, target);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
       mailbox, callback.Pass());
@@ -3018,19 +3033,19 @@ TEST_P(ResourceProviderTest,
   Mock::VerifyAndClearExpectations(context);
 
   {
-    // First call to WaitSyncPointIfNeeded should call waitSyncPoint.
-    EXPECT_CALL(*context, waitSyncPoint(sync_point));
-    resource_provider->WaitSyncPointIfNeeded(id);
+    // First call to WaitSyncTokenIfNeeded should call waitSyncToken.
+    EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
+    resource_provider->WaitSyncTokenIfNeeded(id);
     Mock::VerifyAndClearExpectations(context);
 
-    // Subsequent calls to WaitSyncPointIfNeeded shouldn't call waitSyncPoint.
-    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
-    resource_provider->WaitSyncPointIfNeeded(id);
+    // Subsequent calls to WaitSyncTokenIfNeeded shouldn't call waitSyncToken.
+    EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
+    resource_provider->WaitSyncTokenIfNeeded(id);
     Mock::VerifyAndClearExpectations(context);
   }
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
+TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
@@ -3049,11 +3064,11 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
       gpu_memory_buffer_manager_.get(), NULL, 0, 1,
       use_image_texture_targets_));
 
-  uint32 sync_point = 0;
+  gpu::SyncToken sync_token;
   unsigned target = GL_TEXTURE_2D;
 
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
-  EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
+  EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
   EXPECT_CALL(*context, insertSyncPoint()).Times(0);
   EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
   EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
@@ -3063,7 +3078,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
   scoped_ptr<SingleReleaseCallbackImpl> callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
 
-  TextureMailbox mailbox(gpu_mailbox, target, sync_point);
+  TextureMailbox mailbox(gpu_mailbox, sync_token, target);
 
   ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
       mailbox, callback.Pass());
@@ -3072,9 +3087,9 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
   Mock::VerifyAndClearExpectations(context);
 
   {
-    // WaitSyncPointIfNeeded with sync_point == 0 shouldn't call waitSyncPoint.
-    EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
-    resource_provider->WaitSyncPointIfNeeded(id);
+    // WaitSyncTokenIfNeeded with empty sync_token shouldn't call waitSyncToken.
+    EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
+    resource_provider->WaitSyncTokenIfNeeded(id);
     Mock::VerifyAndClearExpectations(context);
   }
 }

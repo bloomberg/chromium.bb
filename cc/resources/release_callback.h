@@ -7,9 +7,14 @@
 
 #include "base/callback.h"
 
+namespace gpu {
+struct SyncToken;
+}  // namespace gpu
+
 namespace cc {
 
-typedef base::Callback<void(uint32 sync_point, bool is_lost)> ReleaseCallback;
+typedef base::Callback<void(const gpu::SyncToken& sync_token, bool is_lost)>
+    ReleaseCallback;
 
 }  // namespace cc
 

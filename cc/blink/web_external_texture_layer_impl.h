@@ -56,7 +56,7 @@ class WebExternalTextureLayerImpl
       base::WeakPtr<WebExternalTextureLayerImpl> layer,
       const blink::WebExternalTextureMailbox& mailbox,
       WebExternalBitmapImpl* bitmap,
-      unsigned sync_point,
+      const gpu::SyncToken& sync_token,
       bool lost_resource);
 
   WebExternalBitmapImpl* AllocateBitmap();

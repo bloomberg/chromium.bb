@@ -467,7 +467,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     *textures = 1;
   }
 };
-void MailboxHoldersReleased(uint32 sync_point) {}
+void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 }  // namespace
 
 // Test that SkCanvasVideoRendererTest::Paint doesn't crash when GrContext is
@@ -485,8 +485,8 @@ TEST_F(SkCanvasVideoRendererTest, ContextLost) {
   TestGLES2Interface gles2;
   Context3D context_3d(&gles2, gr_context.get());
   gfx::Size size(kWidth, kHeight);
-  gpu::MailboxHolder mailbox(gpu::Mailbox::Generate(), GL_TEXTURE_RECTANGLE_ARB,
-                             0);
+  gpu::MailboxHolder mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
+                             GL_TEXTURE_RECTANGLE_ARB);
   auto video_frame = VideoFrame::WrapNativeTexture(
       PIXEL_FORMAT_UYVY, mailbox, base::Bind(MailboxHoldersReleased), size,
       gfx::Rect(size), size, kNoTimestamp());

@@ -17,10 +17,30 @@ enum ResourceFormat {
   ETC1,
 };
 
+// See src/gpu/command_buffer/common/constants.h
+enum CommandBufferNamespace {
+  INVALID = -1,
+
+  GPU_IO,
+  IN_PROCESS,
+  MOJO,
+  OLD_SYNC_POINTS,
+
+  NUM_COMMAND_BUFFER_NAMESPACES
+};
+
+// See src/gpu/command_buffer/common/sync_token.h
+struct SyncToken {
+  bool verified_flush;
+  CommandBufferNamespace namespace_id;
+  uint64 command_buffer_id;
+  uint64 release_count;
+};
+
 // See src/cc/resources/returned_resource.h.
 struct ReturnedResource {
   uint32 id;
-  uint32 sync_point;
+  SyncToken sync_token;
   int32 count;
   bool lost;
 };
@@ -33,8 +53,8 @@ struct Mailbox {
 // See src/gpu/command_buffer/common/mailbox_holder.h.
 struct MailboxHolder {
   Mailbox mailbox;
+  SyncToken sync_token;
   uint32 texture_target;
-  uint32 sync_point;
 };
 
 // A TransferableResource is a graphics resource such as a texture or a bitmap

@@ -25,6 +25,7 @@
 
 using mus::mojom::Color;
 using mus::mojom::ColorPtr;
+using mus::mojom::CommandBufferNamespace;
 using mus::mojom::CompositorFrame;
 using mus::mojom::CompositorFramePtr;
 using mus::mojom::CompositorFrameMetadata;
@@ -54,6 +55,8 @@ using mus::mojom::SurfaceId;
 using mus::mojom::SurfaceIdPtr;
 using mus::mojom::SurfaceQuadState;
 using mus::mojom::SurfaceQuadStatePtr;
+using mus::mojom::SyncToken;
+using mus::mojom::SyncTokenPtr;
 using mus::mojom::TextureQuadState;
 using mus::mojom::TextureQuadStatePtr;
 using mus::mojom::TileQuadState;
@@ -527,12 +530,38 @@ gpu::Mailbox TypeConverter<gpu::Mailbox, MailboxPtr>::Convert(
 }
 
 // static
+SyncTokenPtr TypeConverter<SyncTokenPtr, gpu::SyncToken>::Convert(
+    const gpu::SyncToken& input) {
+  DCHECK(!input.HasData() || input.verified_flush());
+  SyncTokenPtr sync_token(SyncToken::New());
+  sync_token->verified_flush = input.verified_flush();
+  sync_token->namespace_id =
+      static_cast<CommandBufferNamespace>(input.namespace_id());
+  sync_token->command_buffer_id = input.command_buffer_id();
+  sync_token->release_count = input.release_count();
+  return sync_token.Pass();
+}
+
+// static
+gpu::SyncToken TypeConverter<gpu::SyncToken, SyncTokenPtr>::Convert(
+    const SyncTokenPtr& input) {
+  const gpu::CommandBufferNamespace namespace_id =
+      static_cast<gpu::CommandBufferNamespace>(input->namespace_id);
+  gpu::SyncToken sync_token(namespace_id, input->command_buffer_id,
+                            input->release_count);
+  if (input->verified_flush)
+    sync_token.SetVerifyFlush();
+
+  return sync_token;
+}
+
+// static
 MailboxHolderPtr TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::Convert(
     const gpu::MailboxHolder& input) {
   MailboxHolderPtr holder(MailboxHolder::New());
   holder->mailbox = Mailbox::From<gpu::Mailbox>(input.mailbox);
+  holder->sync_token = SyncToken::From<gpu::SyncToken>(input.sync_token);
   holder->texture_target = input.texture_target;
-  holder->sync_point = input.sync_point;
   return holder.Pass();
 }
 
@@ -541,8 +570,8 @@ gpu::MailboxHolder TypeConverter<gpu::MailboxHolder, MailboxHolderPtr>::Convert(
     const MailboxHolderPtr& input) {
   gpu::MailboxHolder holder;
   holder.mailbox = input->mailbox.To<gpu::Mailbox>();
+  holder.sync_token = input->sync_token.To<gpu::SyncToken>();
   holder.texture_target = input->texture_target;
-  holder.sync_point = input->sync_point;
   return holder;
 }
 
@@ -603,7 +632,7 @@ TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::Convert(
     const cc::ReturnedResource& input) {
   ReturnedResourcePtr returned = ReturnedResource::New();
   returned->id = input.id;
-  returned->sync_point = input.sync_point;
+  returned->sync_token = SyncToken::From<gpu::SyncToken>(input.sync_token);
   returned->count = input.count;
   returned->lost = input.lost;
   return returned.Pass();
@@ -615,7 +644,7 @@ TypeConverter<cc::ReturnedResource, ReturnedResourcePtr>::Convert(
     const ReturnedResourcePtr& input) {
   cc::ReturnedResource returned;
   returned.id = input->id;
-  returned.sync_point = input->sync_point;
+  returned.sync_token = input->sync_token.To<gpu::SyncToken>();
   returned.count = input->count;
   returned.lost = input->lost;
   return returned;

@@ -68,8 +68,8 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       TransferableFrame& texture = returned_textures_.front();
       if (texture.size == surface_size_) {
         current_backing_ = texture;
-        if (current_backing_.sync_point)
-          gl->WaitSyncPointCHROMIUM(current_backing_.sync_point);
+        if (current_backing_.sync_token.HasData())
+          gl->WaitSyncTokenCHROMIUM(current_backing_.sync_token.GetConstData());
         returned_textures_.pop();
         break;
       }
@@ -173,7 +173,7 @@ void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
       }
     }
     DCHECK(it != pending_textures_.end());
-    it->sync_point = ack.gl_frame_data->sync_point;
+    it->sync_token = ack.gl_frame_data->sync_token;
 
     if (!is_backbuffer_discarded_) {
       returned_textures_.push(*it);
@@ -206,8 +206,8 @@ void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
   frame->gl_frame_data->mailbox = current_backing_.mailbox;
   context_provider_->ContextGL()->Flush();
-  frame->gl_frame_data->sync_point =
-      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
+  frame->gl_frame_data->sync_token =
+      gpu::SyncToken(context_provider_->ContextGL()->InsertSyncPointCHROMIUM());
   CompositorOutputSurface::SwapBuffers(frame);
 
   pending_textures_.push_back(current_backing_);
@@ -218,5 +218,13 @@ size_t MailboxOutputSurface::GetNumAcksPending() {
   DCHECK(pending_textures_.size());
   return pending_textures_.size() - 1;
 }
+
+MailboxOutputSurface::TransferableFrame::TransferableFrame() : texture_id(0) {}
+
+MailboxOutputSurface::TransferableFrame::TransferableFrame(
+    uint32 texture_id,
+    const gpu::Mailbox& mailbox,
+    const gfx::Size size)
+    : texture_id(texture_id), mailbox(mailbox), size(size) {}
 
 }  // namespace content

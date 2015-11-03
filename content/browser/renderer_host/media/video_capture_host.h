@@ -130,7 +130,7 @@ class CONTENT_EXPORT VideoCaptureHost
   // the controller.
   void OnRendererFinishedWithBuffer(int device_id,
                                     int buffer_id,
-                                    uint32 sync_point,
+                                    const gpu::SyncToken& sync_token,
                                     double consumer_resource_utilization);
 
   // IPC message: Get supported formats referenced by |capture_session_id|.

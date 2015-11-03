@@ -114,7 +114,7 @@ class CONTENT_EXPORT VideoCaptureController {
   void ReturnBuffer(VideoCaptureControllerID id,
                     VideoCaptureControllerEventHandler* event_handler,
                     int buffer_id,
-                    uint32 sync_point,
+                    const gpu::SyncToken& sync_token,
                     double consumer_resource_utilization);
 
   const media::VideoCaptureFormat& GetVideoCaptureFormat() const;

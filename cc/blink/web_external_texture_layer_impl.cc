@@ -81,9 +81,15 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
   if (bitmap) {
     *mailbox = cc::TextureMailbox(bitmap->shared_bitmap(), bitmap->size());
   } else {
+    gpu::SyncToken sync_token;
+    static_assert(sizeof(sync_token) <= sizeof(client_mailbox.syncToken),
+                  "Size of web external sync token too small.");
+    if (client_mailbox.validSyncToken)
+      memcpy(&sync_token, client_mailbox.syncToken, sizeof(sync_token));
+
     // TODO(achaulk): pass a valid size here if allowOverlay is set.
-    *mailbox = cc::TextureMailbox(name, GL_TEXTURE_2D, client_mailbox.syncPoint,
-                                  gfx::Size(), client_mailbox.allowOverlay);
+    *mailbox = cc::TextureMailbox(name, sync_token, GL_TEXTURE_2D, gfx::Size(),
+                                  client_mailbox.allowOverlay);
   }
   mailbox->set_nearest_neighbor(client_mailbox.nearestNeighbor);
 
@@ -112,12 +118,16 @@ void WebExternalTextureLayerImpl::DidReleaseMailbox(
     base::WeakPtr<WebExternalTextureLayerImpl> layer,
     const blink::WebExternalTextureMailbox& mailbox,
     WebExternalBitmapImpl* bitmap,
-    unsigned sync_point,
+    const gpu::SyncToken& sync_token,
     bool lost_resource) {
   DCHECK(layer);
   blink::WebExternalTextureMailbox available_mailbox;
+  static_assert(sizeof(sync_token) <= sizeof(available_mailbox.syncToken),
+                "Size of web external sync token too small.");
   memcpy(available_mailbox.name, mailbox.name, sizeof(available_mailbox.name));
-  available_mailbox.syncPoint = sync_point;
+  memcpy(available_mailbox.syncToken, sync_token.GetConstData(),
+         sizeof(sync_token));
+  available_mailbox.validSyncToken = sync_token.HasData();
   if (bitmap)
     layer->free_bitmaps_.push_back(bitmap);
   layer->client_->mailboxReleased(available_mailbox, lost_resource);

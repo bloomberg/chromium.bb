@@ -802,15 +802,15 @@ void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
   done_callbacks_.push_back(callback);
 }
 
-void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
+void VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
   DCHECK(HasTextures());
-  base::AutoLock locker(release_sync_point_lock_);
+  base::AutoLock locker(release_sync_token_lock_);
   // Must wait on the previous sync point before inserting a new sync point so
   // that |mailbox_holders_release_cb_| guarantees the previous sync point
-  // occurred when it waits on |release_sync_point_|.
-  if (release_sync_point_)
-    client->WaitSyncPoint(release_sync_point_);
-  release_sync_point_ = client->InsertSyncPoint();
+  // occurred when it waits on |release_sync_token_|.
+  if (release_sync_token_.HasData())
+    client->WaitSyncToken(release_sync_token_);
+  release_sync_token_ = gpu::SyncToken(client->InsertSyncPoint());
 }
 
 // static
@@ -871,8 +871,7 @@ VideoFrame::VideoFrame(VideoPixelFormat format,
       natural_size_(natural_size),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
       shared_memory_offset_(0),
-      timestamp_(timestamp),
-      release_sync_point_(0) {
+      timestamp_(timestamp) {
   DCHECK(IsValidConfig(format_, storage_type, coded_size_, visible_rect_,
                        natural_size_));
   memset(&mailbox_holders_, 0, sizeof(mailbox_holders_));
@@ -919,14 +918,14 @@ VideoFrame::VideoFrame(VideoPixelFormat format,
 
 VideoFrame::~VideoFrame() {
   if (!mailbox_holders_release_cb_.is_null()) {
-    uint32 release_sync_point;
+    gpu::SyncToken release_sync_token;
     {
-      // To ensure that changes to |release_sync_point_| are visible on this
+      // To ensure that changes to |release_sync_token_| are visible on this
       // thread (imply a memory barrier).
-      base::AutoLock locker(release_sync_point_lock_);
-      release_sync_point = release_sync_point_;
+      base::AutoLock locker(release_sync_token_lock_);
+      release_sync_token = release_sync_token_;
     }
-    base::ResetAndReturn(&mailbox_holders_release_cb_).Run(release_sync_point);
+    base::ResetAndReturn(&mailbox_holders_release_cb_).Run(release_sync_token);
   }
 
   for (auto& callback : done_callbacks_)

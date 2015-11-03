@@ -130,7 +130,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
 
   EXPECT_NE(software_frame.get(), frame.get());
   gpu::Mailbox mailbox = frame->mailbox_holder(0).mailbox;
-  unsigned sync_point = frame->mailbox_holder(0).sync_point;
+  const gpu::SyncToken sync_token = frame->mailbox_holder(0).sync_token;
   EXPECT_EQ(3u, gles2_->gen_textures);
 
   scoped_refptr<VideoFrame> frame2;
@@ -153,7 +153,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
   EXPECT_NE(software_frame.get(), frame.get());
   EXPECT_EQ(6u, gles2_->gen_textures);
   EXPECT_EQ(frame->mailbox_holder(0).mailbox, mailbox);
-  EXPECT_NE(frame->mailbox_holder(0).sync_point, sync_point);
+  EXPECT_NE(frame->mailbox_holder(0).sync_token, sync_token);
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {

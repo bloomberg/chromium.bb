@@ -133,8 +133,8 @@ class GLHelper::CopyTextureToImpl
   ~CopyTextureToImpl() { CancelRequests(); }
 
   GLuint ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
-                                 uint32 sync_point) {
-    return helper_->ConsumeMailboxToTexture(mailbox, sync_point);
+                                 const gpu::SyncToken& sync_token) {
+    return helper_->ConsumeMailboxToTexture(mailbox, sync_token);
   }
 
   void CropScaleReadbackAndCleanTexture(
@@ -273,7 +273,7 @@ class GLHelper::CopyTextureToImpl
                     ReadbackSwizzle swizzle);
 
     void ReadbackYUV(const gpu::Mailbox& mailbox,
-                     uint32 sync_point,
+                     const gpu::SyncToken& sync_token,
                      const scoped_refptr<media::VideoFrame>& target,
                      const gfx::Point& paste_location,
                      const base::Callback<void(bool)>& callback) override;
@@ -309,7 +309,7 @@ class GLHelper::CopyTextureToImpl
                     ReadbackSwizzle swizzle);
 
     void ReadbackYUV(const gpu::Mailbox& mailbox,
-                     uint32 sync_point,
+                     const gpu::SyncToken& sync_token,
                      const scoped_refptr<media::VideoFrame>& target,
                      const gfx::Point& paste_location,
                      const base::Callback<void(bool)>& callback) override;
@@ -815,7 +815,7 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
 
 void GLHelper::CropScaleReadbackAndCleanMailbox(
     const gpu::Mailbox& src_mailbox,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     const gfx::Size& src_size,
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
@@ -823,7 +823,7 @@ void GLHelper::CropScaleReadbackAndCleanMailbox(
     const SkColorType out_color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
-  GLuint mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_point);
+  GLuint mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_token);
   CropScaleReadbackAndCleanTexture(mailbox_texture,
                                    src_size,
                                    src_subrect,
@@ -954,8 +954,8 @@ void GLHelper::DeleteTexture(GLuint texture_id) {
 
 uint32 GLHelper::InsertSyncPoint() { return gl_->InsertSyncPointCHROMIUM(); }
 
-void GLHelper::WaitSyncPoint(uint32 sync_point) {
-  gl_->WaitSyncPointCHROMIUM(sync_point);
+void GLHelper::WaitSyncToken(const gpu::SyncToken& sync_token) {
+  gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
 }
 
 gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
@@ -963,15 +963,16 @@ gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
   gpu::Mailbox mailbox;
   gl_->GenMailboxCHROMIUM(mailbox.name);
   gl_->ProduceTextureDirectCHROMIUM(texture_id, GL_TEXTURE_2D, mailbox.name);
-  return gpu::MailboxHolder(mailbox, GL_TEXTURE_2D, InsertSyncPoint());
+  return gpu::MailboxHolder(mailbox, gpu::SyncToken(InsertSyncPoint()),
+                            GL_TEXTURE_2D);
 }
 
 GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
-                                         uint32 sync_point) {
+                                         const gpu::SyncToken& sync_token) {
   if (mailbox.IsZero())
     return 0;
-  if (sync_point)
-    WaitSyncPoint(sync_point);
+  if (sync_token.HasData())
+    WaitSyncToken(sync_token);
   GLuint texture =
       gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   return texture;
@@ -1117,7 +1118,7 @@ static void CallbackKeepingVideoFrameAlive(
 
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
     const gpu::Mailbox& mailbox,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     const scoped_refptr<media::VideoFrame>& target,
     const gfx::Point& paste_location,
     const base::Callback<void(bool)>& callback) {
@@ -1125,7 +1126,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
   DCHECK(!(paste_location.y() & 1));
 
   GLuint mailbox_texture =
-      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_point);
+      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_token);
 
   // Scale texture to right size.
   scaler_.Scale(mailbox_texture);
@@ -1238,7 +1239,7 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
 
 void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
     const gpu::Mailbox& mailbox,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     const scoped_refptr<media::VideoFrame>& target,
     const gfx::Point& paste_location,
     const base::Callback<void(bool)>& callback) {
@@ -1246,7 +1247,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
   DCHECK(!(paste_location.y() & 1));
 
   GLuint mailbox_texture =
-      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_point);
+      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_token);
 
   GLuint texture;
   if (quality_ == GLHelper::SCALER_QUALITY_FAST) {

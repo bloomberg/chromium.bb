@@ -212,7 +212,7 @@ class CCMessagesTest : public testing::Test {
                 b.mailbox_holder.mailbox.name[i]);
     }
     EXPECT_EQ(a.mailbox_holder.texture_target, b.mailbox_holder.texture_target);
-    EXPECT_EQ(a.mailbox_holder.sync_point, b.mailbox_holder.sync_point);
+    EXPECT_EQ(a.mailbox_holder.sync_token, b.mailbox_holder.sync_token);
     EXPECT_EQ(a.is_overlay_candidate, b.is_overlay_candidate);
   }
 };
@@ -619,8 +619,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 TEST_F(CCMessagesTest, Resources) {
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   gfx::Size arbitrary_size(757, 1281);
-  unsigned int arbitrary_uint1 = 71234838;
-  unsigned int arbitrary_uint2 = 53589793;
+  gpu::SyncToken arbitrary_token1(71234838);
+  gpu::SyncToken arbitrary_token2(53589793);
 
   GLbyte arbitrary_mailbox1[GL_MAILBOX_SIZE_CHROMIUM] = {
       1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2,
@@ -639,7 +639,7 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource1.size = gfx::Size(37189, 123123);
   arbitrary_resource1.mailbox_holder.mailbox.SetName(arbitrary_mailbox1);
   arbitrary_resource1.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  arbitrary_resource1.mailbox_holder.sync_point = arbitrary_uint1;
+  arbitrary_resource1.mailbox_holder.sync_token = arbitrary_token1;
   arbitrary_resource1.is_overlay_candidate = true;
 
   TransferableResource arbitrary_resource2;
@@ -649,7 +649,7 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox_holder.mailbox.SetName(arbitrary_mailbox2);
   arbitrary_resource2.mailbox_holder.texture_target = GL_TEXTURE_EXTERNAL_OES;
-  arbitrary_resource2.mailbox_holder.sync_point = arbitrary_uint2;
+  arbitrary_resource2.mailbox_holder.sync_token = arbitrary_token2;
   arbitrary_resource2.is_overlay_candidate = false;
 
   scoped_ptr<RenderPass> renderpass_in = RenderPass::Create();

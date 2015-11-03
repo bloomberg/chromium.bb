@@ -51,6 +51,12 @@ using testing::StrictMock;
 
 namespace cc {
 
+MATCHER_P(MatchesSyncToken, sync_token, "") {
+  gpu::SyncToken other;
+  memcpy(&other, arg, sizeof(other));
+  return other == sync_token;
+}
+
 class GLRendererTest : public testing::Test {
  protected:
   RenderPass* root_render_pass() { return render_passes_in_draw_order_.back(); }
@@ -929,7 +935,7 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
     test_capabilities_.gpu.egl_image_external = true;
   }
 
-  MOCK_METHOD1(waitSyncPoint, void(unsigned sync_point));
+  MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
   MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
   MOCK_METHOD4(drawElements,
                void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
@@ -973,7 +979,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 1),
                     gfx::Rect(100, 100), gfx::Transform());
-  uint32_t mailbox_sync_point;
+  unsigned mailbox_sync_point;
   AddOneOfEveryQuadType(root_pass, resource_provider.get(), RenderPassId(0, 0),
                         &mailbox_sync_point);
 
@@ -987,7 +993,9 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
     // The sync points for all quads are waited on first. This sync point is
     // for a texture quad drawn later in the frame.
-    EXPECT_CALL(*context, waitSyncPoint(mailbox_sync_point)).Times(1);
+    gpu::SyncToken mailbox_sync_token(mailbox_sync_point);
+    EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(mailbox_sync_token)))
+        .Times(1);
 
     // yuv_quad is drawn with the default linear filter.
     EXPECT_CALL(*context, drawElements(_, _, _, _));
@@ -2023,10 +2031,9 @@ class TestOverlayProcessor : public OverlayProcessor {
   Strategy* strategy_;
 };
 
-void MailboxReleased(unsigned sync_point,
+void MailboxReleased(const gpu::SyncToken& sync_token,
                      bool lost_resource,
-                     BlockingTaskRunner* main_thread_task_runner) {
-}
+                     BlockingTaskRunner* main_thread_task_runner) {}
 
 void IgnoreCopyResult(scoped_ptr<CopyOutputResult> result) {
 }
@@ -2063,9 +2070,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   root_pass->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&IgnoreCopyResult)));
 
-  unsigned sync_point = 0;
   TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point,
+      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
                      gfx::Size(256, 256), true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
@@ -2139,9 +2145,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   SingleOverlayValidator validator_;
 };
 
-class WaitSyncPointCountingContext : public TestWebGraphicsContext3D {
+class WaitSyncTokenCountingContext : public TestWebGraphicsContext3D {
  public:
-  MOCK_METHOD1(waitSyncPoint, void(unsigned sync_point));
+  MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
 };
 
 class MockOverlayScheduler {
@@ -2154,10 +2160,10 @@ class MockOverlayScheduler {
                     const gfx::RectF& uv_rect));
 };
 
-TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
-  scoped_ptr<WaitSyncPointCountingContext> context_owned(
-      new WaitSyncPointCountingContext);
-  WaitSyncPointCountingContext* context = context_owned.get();
+TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
+  scoped_ptr<WaitSyncTokenCountingContext> context_owned(
+      new WaitSyncTokenCountingContext);
+  WaitSyncTokenCountingContext* context = context_owned.get();
 
   MockOverlayScheduler overlay_scheduler;
   scoped_refptr<TestContextProvider> context_provider =
@@ -2193,9 +2199,9 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
                     viewport_rect, gfx::Transform());
   root_pass->has_transparent_background = false;
 
-  unsigned sync_point = 29;
+  gpu::SyncToken sync_token(29);
   TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point,
+      TextureMailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
                      gfx::Size(256, 256), true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
@@ -2220,7 +2226,7 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.
-  EXPECT_CALL(*context, waitSyncPoint(sync_point)).Times(1);
+  EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token))).Times(1);
   EXPECT_CALL(overlay_scheduler,
               Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _, viewport_rect,
                        BoundingRect(uv_top_left, uv_bottom_right))).Times(1);

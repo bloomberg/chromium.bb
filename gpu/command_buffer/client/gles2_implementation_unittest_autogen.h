@@ -3044,17 +3044,6 @@ TEST_F(GLES2ImplementationTest, LoseContextCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, WaitSyncPointCHROMIUM) {
-  struct Cmds {
-    cmds::WaitSyncPointCHROMIUM cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(1);
-
-  gl_->WaitSyncPointCHROMIUM(1);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(GLES2ImplementationTest, DrawBuffersEXT) {
   GLenum data[1][1] = {{0}};
   struct Cmds {

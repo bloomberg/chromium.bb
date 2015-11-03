@@ -121,12 +121,12 @@ class CC_EXPORT VideoResourceUpdater
 
   static void RecycleResource(base::WeakPtr<VideoResourceUpdater> updater,
                               unsigned resource_id,
-                              uint32 sync_point,
+                              const gpu::SyncToken& sync_token,
                               bool lost_resource,
                               BlockingTaskRunner* main_thread_task_runner);
   static void ReturnTexture(base::WeakPtr<VideoResourceUpdater> updater,
                             const scoped_refptr<media::VideoFrame>& video_frame,
-                            uint32 sync_point,
+                            const gpu::SyncToken& sync_token,
                             bool lost_resource,
                             BlockingTaskRunner* main_thread_task_runner);
 

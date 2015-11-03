@@ -13,6 +13,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace cc {
 class ContextProvider;
 class SingleReleaseCallback;
@@ -40,7 +44,7 @@ class CC_EXPORT TextureMailboxDeleter {
   // Runs the |impl_callback| to delete the texture and removes the callback
   // from the |impl_callbacks_| list.
   void RunDeleteTextureOnImplThread(SingleReleaseCallback* impl_callback,
-                                    uint32 sync_point,
+                                    const gpu::SyncToken& sync_token,
                                     bool is_lost);
 
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;

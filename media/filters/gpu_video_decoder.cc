@@ -416,8 +416,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       PIXEL_FORMAT_ARGB,
-      gpu::MailboxHolder(pb.texture_mailbox(), decoder_texture_target_,
-                         0 /* sync_point */),
+      gpu::MailboxHolder(pb.texture_mailbox(), gpu::SyncToken(),
+                         decoder_texture_target_),
       BindToCurrentLoop(base::Bind(
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
@@ -458,9 +458,9 @@ void GpuVideoDecoder::ReleaseMailbox(
     media::GpuVideoAcceleratorFactories* factories,
     int64 picture_buffer_id,
     uint32 texture_id,
-    uint32 release_sync_point) {
+    const gpu::SyncToken& release_sync_token) {
   DCHECK(factories->GetTaskRunner()->BelongsToCurrentThread());
-  factories->WaitSyncPoint(release_sync_point);
+  factories->WaitSyncToken(release_sync_token);
 
   if (decoder) {
     decoder->ReusePictureBuffer(picture_buffer_id);

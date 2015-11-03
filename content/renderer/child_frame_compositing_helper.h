@@ -44,7 +44,6 @@ class Size;
 }
 
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
-struct FrameHostMsg_BuffersSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
 
 namespace content {

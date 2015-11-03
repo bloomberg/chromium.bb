@@ -14,6 +14,7 @@
 #include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/converters/surfaces/mojo_surfaces_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -102,6 +103,17 @@ template <>
 struct MOJO_SURFACES_EXPORT
     TypeConverter<gpu::Mailbox, mus::mojom::MailboxPtr> {
   static gpu::Mailbox Convert(const mus::mojom::MailboxPtr& input);
+};
+
+template <>
+struct MOJO_SURFACES_EXPORT
+    TypeConverter<mus::mojom::SyncTokenPtr, gpu::SyncToken> {
+  static mus::mojom::SyncTokenPtr Convert(const gpu::SyncToken& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT
+    TypeConverter<gpu::SyncToken, mus::mojom::SyncTokenPtr> {
+  static gpu::SyncToken Convert(const mus::mojom::SyncTokenPtr& input);
 };
 
 template <>

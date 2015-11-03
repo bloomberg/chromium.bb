@@ -52,17 +52,15 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   size_t GetNumAcksPending();
 
   struct TransferableFrame {
-    TransferableFrame() : texture_id(0), sync_point(0) {}
-
+    TransferableFrame();
     TransferableFrame(uint32 texture_id,
                       const gpu::Mailbox& mailbox,
-                      const gfx::Size size)
-        : texture_id(texture_id), mailbox(mailbox), size(size), sync_point(0) {}
+                      const gfx::Size size);
 
     uint32 texture_id;
     gpu::Mailbox mailbox;
+    gpu::SyncToken sync_token;
     gfx::Size size;
-    uint32 sync_point;
   };
 
   TransferableFrame current_backing_;

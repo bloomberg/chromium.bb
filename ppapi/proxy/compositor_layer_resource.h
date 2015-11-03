@@ -12,6 +12,10 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/ppb_compositor_layer_api.h"
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace ppapi {
 namespace proxy {
 
@@ -22,7 +26,8 @@ class PPAPI_PROXY_EXPORT CompositorLayerResource
       public thunk::PPB_CompositorLayer_API {
  public:
   // Release callback for texture or image layer.
-  typedef base::Callback<void(int32_t, uint32_t, bool)> ReleaseCallback;
+  typedef base::Callback<void(int32_t, const gpu::SyncToken&, bool)>
+      ReleaseCallback;
 
   CompositorLayerResource(Connection connection,
                           PP_Instance instance,

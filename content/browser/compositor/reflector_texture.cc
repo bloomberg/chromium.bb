@@ -21,8 +21,8 @@ ReflectorTexture::ReflectorTexture(cc::ContextProvider* context_provider)
 
   gl_helper_.reset(new GLHelper(gl, context_provider->ContextSupport()));
 
-  texture_id_ = gl_helper_->ConsumeMailboxToTexture(
-      mailbox_->mailbox(), mailbox_->sync_point());
+  texture_id_ = gl_helper_->ConsumeMailboxToTexture(mailbox_->mailbox(),
+                                                    mailbox_->sync_token());
 }
 
 ReflectorTexture::~ReflectorTexture() {

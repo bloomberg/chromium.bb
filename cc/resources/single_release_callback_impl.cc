@@ -22,13 +22,13 @@ SingleReleaseCallbackImpl::~SingleReleaseCallbackImpl() {
 }
 
 void SingleReleaseCallbackImpl::Run(
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool is_lost,
     BlockingTaskRunner* main_thread_task_runner) {
   DCHECK(!callback_.is_null())
       << "SingleReleaseCallbackImpl was run more than once.";
   base::ResetAndReturn(&callback_)
-      .Run(sync_point, is_lost, main_thread_task_runner);
+      .Run(sync_token, is_lost, main_thread_task_runner);
 }
 
 }  // namespace cc

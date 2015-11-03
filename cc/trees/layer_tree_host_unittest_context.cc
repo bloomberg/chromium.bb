@@ -910,7 +910,8 @@ class LayerTreeHostContextTestDontUseLostResources
         child_output_surface_.get(), shared_bitmap_manager_.get());
   }
 
-  static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}
+  static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
+                                   bool lost) {}
 
   void SetupTree() override {
     gpu::gles2::GLES2Interface* gl =
@@ -949,7 +950,7 @@ class LayerTreeHostContextTestDontUseLostResources
 
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
-    GLuint sync_point = gl->InsertSyncPointCHROMIUM();
+    gpu::SyncToken sync_token(gl->InsertSyncPointCHROMIUM());
 
     scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(10, 10));
@@ -973,10 +974,10 @@ class LayerTreeHostContextTestDontUseLostResources
     texture->SetBounds(gfx::Size(10, 10));
     texture->SetIsDrawable(true);
     texture->SetTextureMailbox(
-        TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
+        TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
         SingleReleaseCallback::Create(
             base::Bind(&LayerTreeHostContextTestDontUseLostResources::
-                            EmptyReleaseCallback)));
+                           EmptyReleaseCallback)));
     root->AddChild(texture);
 
     scoped_refptr<PictureLayer> mask =
@@ -1012,12 +1013,12 @@ class LayerTreeHostContextTestDontUseLostResources
         gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());
     hw_video_frame_ = VideoFrame::WrapNativeTexture(
         media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(mailbox, GL_TEXTURE_2D, sync_point),
+        gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D),
         media::VideoFrame::ReleaseMailboxCB(), gfx::Size(4, 4),
         gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta());
     scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
         media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(mailbox, GL_TEXTURE_2D, sync_point),
+        gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D),
         media::VideoFrame::ReleaseMailboxCB(), gfx::Size(4, 4),
         gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4), base::TimeDelta());
 

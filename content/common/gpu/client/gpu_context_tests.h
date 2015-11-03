@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/common/sync_token.h"
 
 namespace {
 
@@ -43,7 +44,9 @@ CONTEXT_TEST_F(SignalTest, BasicSignalSyncPointTest) {
   if (!context_)
     return;
 
-  TestSignalSyncPoint(context_->insertSyncPoint());
+  gpu::SyncToken sync_token;
+  ASSERT_TRUE(context_->insertSyncPoint(sync_token.GetData()));
+  TestSignalSyncPoint(static_cast<unsigned>(sync_token.release_count()));
 };
 
 CONTEXT_TEST_F(SignalTest, InvalidSignalSyncPointTest) {

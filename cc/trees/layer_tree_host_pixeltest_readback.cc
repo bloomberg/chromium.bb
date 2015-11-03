@@ -123,7 +123,7 @@ class LayerTreeHostReadbackPixelTest
 
     scoped_ptr<SkBitmap> bitmap =
         CopyTextureMailboxToBitmap(result->size(), texture_mailbox);
-    release_callback->Run(0, false);
+    release_callback->Run(gpu::SyncToken(), false);
 
     ReadbackResultAsBitmap(CopyOutputResult::CreateBitmapResult(bitmap.Pass()));
   }

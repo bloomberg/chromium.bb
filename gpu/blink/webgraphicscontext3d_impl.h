@@ -37,8 +37,8 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   uint32_t lastFlushID() override;
 
-  unsigned int insertSyncPoint() override;
-  void waitSyncPoint(unsigned int sync_point) override;
+  bool insertSyncPoint(blink::WGC3Dbyte* sync_token) override;
+  void waitSyncToken(const blink::WGC3Dbyte* sync_token) override;
 
   void loseContextCHROMIUM(blink::WGC3Denum current,
                            blink::WGC3Denum other) override;

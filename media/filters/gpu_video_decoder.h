@@ -23,6 +23,10 @@ class SharedMemory;
 class SingleThreadTaskRunner;
 }
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace media {
 
 class DecoderBuffer;
@@ -104,7 +108,7 @@ class MEDIA_EXPORT GpuVideoDecoder
                              media::GpuVideoAcceleratorFactories* factories,
                              int64 picture_buffer_id,
                              uint32 texture_id,
-                             uint32 release_sync_point);
+                             const gpu::SyncToken& release_sync_token);
   // Indicate the picture buffer can be reused by the decoder.
   void ReusePictureBuffer(int64 picture_buffer_id);
 

@@ -323,12 +323,12 @@ void TestGLES2Interface::BufferData(GLenum target,
   test_context_->bufferData(target, size, data, usage);
 }
 
-void TestGLES2Interface::WaitSyncPointCHROMIUM(GLuint sync_point) {
-  test_context_->waitSyncPoint(sync_point);
-}
-
 GLuint TestGLES2Interface::InsertSyncPointCHROMIUM() {
   return test_context_->insertSyncPoint();
+}
+
+void TestGLES2Interface::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  test_context_->waitSyncToken(sync_token);
 }
 
 void TestGLES2Interface::BeginQueryEXT(GLenum target, GLuint id) {

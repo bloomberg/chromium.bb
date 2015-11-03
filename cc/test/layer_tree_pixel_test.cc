@@ -228,8 +228,8 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
   scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();
 
-  if (texture_mailbox.sync_point())
-    gl->WaitSyncPointCHROMIUM(texture_mailbox.sync_point());
+  if (texture_mailbox.sync_token().HasData())
+    gl->WaitSyncTokenCHROMIUM(texture_mailbox.sync_token().GetConstData());
 
   GLuint texture_id = 0;
   gl->GenTextures(1, &texture_id);

@@ -87,9 +87,9 @@ const char* kMediaEme = "Media.EME.";
 void OnReleaseTexture(
     const scoped_refptr<content::StreamTextureFactory>& factories,
     uint32 texture_id,
-    uint32 release_sync_point) {
+    const gpu::SyncToken& sync_token) {
   GLES2Interface* gl = factories->ContextGL();
-  gl->WaitSyncPointCHROMIUM(release_sync_point);
+  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   gl->DeleteTextures(1, &texture_id);
   // Flush to ensure that the stream texture gets deleted in a timely fashion.
   gl->ShallowFlushCHROMIUM();
@@ -130,17 +130,20 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   return true;
 }
 
-class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
+class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
  public:
-  explicit SyncPointClientImpl(
+  explicit SyncTokenClientImpl(
       blink::WebGraphicsContext3D* web_graphics_context)
       : web_graphics_context_(web_graphics_context) {}
-  ~SyncPointClientImpl() override {}
+  ~SyncTokenClientImpl() override {}
   uint32 InsertSyncPoint() override {
-    return web_graphics_context_->insertSyncPoint();
+    gpu::SyncToken sync_token;
+    if (!web_graphics_context_->insertSyncPoint(sync_token.GetData()))
+      return 0;
+    return static_cast<uint32>(sync_token.release_count());
   }
-  void WaitSyncPoint(uint32 sync_point) override {
-    web_graphics_context_->waitSyncPoint(sync_point);
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    web_graphics_context_->waitSyncToken(sync_token.GetConstData());
   }
 
  private:
@@ -684,7 +687,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
           mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES) ||
          (is_remote_ && mailbox_holder.texture_target == GL_TEXTURE_2D));
 
-  web_graphics_context->waitSyncPoint(mailbox_holder.sync_point);
+  web_graphics_context->waitSyncToken(mailbox_holder.sync_token.GetConstData());
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
@@ -703,8 +706,8 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   web_graphics_context->deleteTexture(src_texture);
   web_graphics_context->flush();
 
-  SyncPointClientImpl client(web_graphics_context);
-  video_frame->UpdateReleaseSyncPoint(&client);
+  SyncTokenClientImpl client(web_graphics_context);
+  video_frame->UpdateReleaseSyncToken(&client);
   return true;
 }
 
@@ -1228,12 +1231,12 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
   gl->GenMailboxCHROMIUM(texture_mailbox.name);
   gl->ProduceTextureCHROMIUM(texture_target, texture_mailbox.name);
   gl->Flush();
-  GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
+  gpu::SyncToken texture_mailbox_sync_token(gl->InsertSyncPointCHROMIUM());
 
   scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
       media::PIXEL_FORMAT_ARGB,
-      gpu::MailboxHolder(texture_mailbox, texture_target,
-                         texture_mailbox_sync_point),
+      gpu::MailboxHolder(texture_mailbox, texture_mailbox_sync_token,
+                         texture_target),
       media::BindToCurrentLoop(base::Bind(&OnReleaseTexture,
                                           stream_texture_factory_,
                                           remote_playback_texture_id)),
@@ -1266,12 +1269,12 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     GLuint texture_id_ref = gl->CreateAndConsumeTextureCHROMIUM(
         texture_target, texture_mailbox_.name);
     gl->Flush();
-    GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
+    gpu::SyncToken texture_mailbox_sync_token(gl->InsertSyncPointCHROMIUM());
 
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
         media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(texture_mailbox_, texture_target,
-                           texture_mailbox_sync_point),
+        gpu::MailboxHolder(texture_mailbox_, texture_mailbox_sync_token,
+                           texture_target),
         media::BindToCurrentLoop(base::Bind(
             &OnReleaseTexture, stream_texture_factory_, texture_id_ref)),
         natural_size_, gfx::Rect(natural_size_), natural_size_,

@@ -169,9 +169,9 @@ void ReflectorImpl::OnSourcePostSubBuffer(const gfx::Rect& rect) {
 }
 
 static void ReleaseMailbox(scoped_refptr<OwnedMailbox> mailbox,
-                           unsigned int sync_point,
+                           const gpu::SyncToken& sync_token,
                            bool is_lost) {
-  mailbox->UpdateSyncPoint(sync_point);
+  mailbox->UpdateSyncToken(sync_token);
 }
 
 ScopedVector<ReflectorImpl::LayerData>::iterator ReflectorImpl::FindLayerData(

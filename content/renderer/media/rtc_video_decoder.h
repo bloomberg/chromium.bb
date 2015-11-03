@@ -33,6 +33,10 @@ class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
 }
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace content {
 
 // This class uses hardware accelerated video decoder to decode video for
@@ -146,7 +150,7 @@ class CONTENT_EXPORT RTCVideoDecoder
                              media::GpuVideoAcceleratorFactories* factories,
                              int64 picture_buffer_id,
                              uint32 texture_id,
-                             uint32 release_sync_point);
+                             const gpu::SyncToken& release_sync_token);
   // Tells VDA that a picture buffer can be recycled.
   void ReusePictureBuffer(int64 picture_buffer_id);
 

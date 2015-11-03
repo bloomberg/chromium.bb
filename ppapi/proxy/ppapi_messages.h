@@ -15,6 +15,7 @@
 #include "base/sync_socket.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -278,8 +279,8 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::CompositorLayerData::TextureLayer)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
+  IPC_STRUCT_TRAITS_MEMBER(sync_token)
   IPC_STRUCT_TRAITS_MEMBER(target)
-  IPC_STRUCT_TRAITS_MEMBER(sync_point)
   IPC_STRUCT_TRAITS_MEMBER(source_rect)
   IPC_STRUCT_TRAITS_MEMBER(premult_alpha)
 IPC_STRUCT_TRAITS_END()
@@ -1402,7 +1403,7 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Compositor_CommitLayers,
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Compositor_CommitLayersReply)
 IPC_MESSAGE_CONTROL3(PpapiPluginMsg_Compositor_ReleaseResource,
                      int32_t /* id */,
-                     uint32_t /* sync_point */,
+                     gpu::SyncToken /* sync_token */,
                      bool /* is_lost */)
 
 // File chooser.

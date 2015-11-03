@@ -488,13 +488,13 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
 
-  // Insert WaitSyncPointCHROMIUM on quad resources prior to drawing the frame,
+  // Insert WaitSyncTokenCHROMIUM on quad resources prior to drawing the frame,
   // so that drawing can proceed without GL context switching interruptions.
   ResourceProvider* resource_provider = resource_provider_;
   for (const auto& pass : *frame->render_passes_in_draw_order) {
     for (const auto& quad : pass->quad_list) {
       for (ResourceId resource_id : quad->resources)
-        resource_provider->WaitSyncPointIfNeeded(resource_id);
+        resource_provider->WaitSyncTokenIfNeeded(resource_id);
     }
   }
 
@@ -2701,17 +2701,18 @@ void GLRenderer::GetFramebufferPixelsAsync(
       DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
                 request->texture_mailbox().target());
       DCHECK(!mailbox.IsZero());
-      unsigned incoming_sync_point = request->texture_mailbox().sync_point();
-      if (incoming_sync_point)
-        gl_->WaitSyncPointCHROMIUM(incoming_sync_point);
+      const gpu::SyncToken& incoming_sync_token =
+          request->texture_mailbox().sync_token();
+      if (incoming_sync_token.HasData())
+        gl_->WaitSyncTokenCHROMIUM(incoming_sync_token.GetConstData());
 
       texture_id =
           gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     }
     GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
 
-    unsigned sync_point = gl_->InsertSyncPointCHROMIUM();
-    TextureMailbox texture_mailbox(mailbox, GL_TEXTURE_2D, sync_point);
+    gpu::SyncToken sync_token(gl_->InsertSyncPointCHROMIUM());
+    TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
 
     scoped_ptr<SingleReleaseCallback> release_callback;
     if (own_mailbox) {

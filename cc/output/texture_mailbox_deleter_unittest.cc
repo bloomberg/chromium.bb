@@ -41,7 +41,7 @@ TEST(TextureMailboxDeleterTest, Destroy) {
 
   // Run the scoped release callback before destroying it, but it won't do
   // anything.
-  cb->Run(0, false);
+  cb->Run(gpu::SyncToken(), false);
 }
 
 TEST(TextureMailboxDeleterTest, NullTaskRunner) {
@@ -62,7 +62,7 @@ TEST(TextureMailboxDeleterTest, NullTaskRunner) {
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
-  cb->Run(0, false);
+  cb->Run(gpu::SyncToken(), false);
 
   // With no task runner the callback will immediately drops its ref on the
   // ContextProvider and delete the texture.

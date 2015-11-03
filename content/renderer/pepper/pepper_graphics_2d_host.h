@@ -28,6 +28,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace ppapi {
 struct ViewData;
 }
@@ -159,7 +163,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   void ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
                        const gfx::Size& bitmap_size,
-                       uint32 sync_point,
+                       const gpu::SyncToken& sync_token,
                        bool lost_resource);
 
   RendererPpapiHost* renderer_ppapi_host_;

@@ -553,7 +553,7 @@ void Layer::SetTextureMailbox(
     frame_size_in_dip_ = gfx::Size();
   }
   if (mailbox_release_callback_)
-    mailbox_release_callback_->Run(0, false);
+    mailbox_release_callback_->Run(gpu::SyncToken(), false);
   mailbox_release_callback_ = release_callback.Pass();
   mailbox_ = mailbox;
   SetTextureSize(texture_size_in_dip);
@@ -623,7 +623,7 @@ void Layer::SetShowSolidColorContent() {
 
   mailbox_ = cc::TextureMailbox();
   if (mailbox_release_callback_) {
-    mailbox_release_callback_->Run(0, false);
+    mailbox_release_callback_->Run(gpu::SyncToken(), false);
     mailbox_release_callback_.reset();
   }
   RecomputeDrawsContentAndUVRect();

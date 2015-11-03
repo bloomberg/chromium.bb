@@ -28,6 +28,10 @@ class Rect;
 class Size;
 }
 
+namespace gpu {
+struct SyncToken;
+};
+
 namespace media {
 
 class VideoDecodeAccelerator;
@@ -72,7 +76,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
                               uint32 texture_target) = 0;
   virtual void DeleteTexture(uint32 texture_id) = 0;
 
-  virtual void WaitSyncPoint(uint32 sync_point) = 0;
+  virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,

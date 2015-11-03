@@ -1363,7 +1363,8 @@ class GLHelperTest : public testing::Test {
     context_->genMailboxCHROMIUM(mailbox.name);
     EXPECT_FALSE(mailbox.IsZero());
     context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-    uint32 sync_point = context_->insertSyncPoint();
+    gpu::SyncToken sync_token;
+    ASSERT_TRUE(context_->insertSyncPoint(sync_token.GetData()));
 
     std::string message = base::StringPrintf(
         "input size: %dx%d "
@@ -1407,9 +1408,7 @@ class GLHelperTest : public testing::Test {
             base::TimeDelta::FromSeconds(0));
 
     base::RunLoop run_loop;
-    yuv_reader->ReadbackYUV(mailbox,
-                            sync_point,
-                            output_frame.get(),
+    yuv_reader->ReadbackYUV(mailbox, sync_token, output_frame.get(),
                             gfx::Point(xmargin, ymargin),
                             base::Bind(&callcallback, run_loop.QuitClosure()));
     run_loop.Run();

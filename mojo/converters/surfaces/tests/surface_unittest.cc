@@ -402,17 +402,17 @@ TEST(SurfaceLibTest, MailboxHolder) {
   gpu::Mailbox mailbox;
   mailbox.Generate();
   uint32_t texture_target = GL_TEXTURE_2D;
-  uint32_t sync_point = 7u;
-  gpu::MailboxHolder holder(mailbox, texture_target, sync_point);
+  gpu::SyncToken sync_token(7u);
+  gpu::MailboxHolder holder(mailbox, sync_token, texture_target);
 
   MailboxHolderPtr mus_holder = MailboxHolder::From(holder);
   EXPECT_EQ(texture_target, mus_holder->texture_target);
-  EXPECT_EQ(sync_point, mus_holder->sync_point);
+  EXPECT_EQ(sync_token, mus_holder->sync_token.To<gpu::SyncToken>());
 
   gpu::MailboxHolder round_trip_holder = mus_holder.To<gpu::MailboxHolder>();
   EXPECT_EQ(mailbox, round_trip_holder.mailbox);
   EXPECT_EQ(texture_target, round_trip_holder.texture_target);
-  EXPECT_EQ(sync_point, round_trip_holder.sync_point);
+  EXPECT_EQ(sync_token, round_trip_holder.sync_token);
 }
 
 TEST(SurfaceLibTest, TransferableResource) {
@@ -446,32 +446,32 @@ TEST(SurfaceLibTest, TransferableResource) {
   EXPECT_EQ(mailbox_holder.mailbox, round_trip_resource.mailbox_holder.mailbox);
   EXPECT_EQ(mailbox_holder.texture_target,
             round_trip_resource.mailbox_holder.texture_target);
-  EXPECT_EQ(mailbox_holder.sync_point,
-            round_trip_resource.mailbox_holder.sync_point);
+  EXPECT_EQ(mailbox_holder.sync_token,
+            round_trip_resource.mailbox_holder.sync_token);
   EXPECT_EQ(is_software, round_trip_resource.is_software);
 }
 
 TEST(SurfaceLibTest, ReturnedResource) {
   uint32_t id = 5u;
-  uint32_t sync_point = 24u;
+  gpu::SyncToken sync_token(24u);
   int count = 2;
   bool lost = false;
   cc::ReturnedResource resource;
   resource.id = id;
-  resource.sync_point = sync_point;
+  resource.sync_token = sync_token;
   resource.count = count;
   resource.lost = lost;
 
   ReturnedResourcePtr mus_resource = ReturnedResource::From(resource);
   EXPECT_EQ(id, mus_resource->id);
-  EXPECT_EQ(sync_point, mus_resource->sync_point);
+  EXPECT_EQ(sync_token, mus_resource->sync_token.To<gpu::SyncToken>());
   EXPECT_EQ(count, mus_resource->count);
   EXPECT_EQ(lost, mus_resource->lost);
 
   cc::ReturnedResource round_trip_resource =
       mus_resource.To<cc::ReturnedResource>();
   EXPECT_EQ(id, round_trip_resource.id);
-  EXPECT_EQ(sync_point, round_trip_resource.sync_point);
+  EXPECT_EQ(sync_token, round_trip_resource.sync_token);
   EXPECT_EQ(count, round_trip_resource.count);
   EXPECT_EQ(lost, round_trip_resource.lost);
 }

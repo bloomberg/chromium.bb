@@ -154,7 +154,8 @@ void TextureLayer::SetTextureMailbox(
       mailbox, release_callback.Pass(), requires_commit, allow_mailbox_reuse);
 }
 
-static void IgnoreReleaseCallback(uint32 sync_point, bool lost) {}
+static void IgnoreReleaseCallback(const gpu::SyncToken& sync_token, bool lost) {
+}
 
 void TextureLayer::SetTextureMailboxWithoutReleaseCallback(
     const TextureMailbox& mailbox) {
@@ -163,7 +164,7 @@ void TextureLayer::SetTextureMailboxWithoutReleaseCallback(
   // multiple times for the same mailbox.
   DCHECK(!mailbox.IsValid() || !holder_ref_ ||
          !mailbox.Equals(holder_ref_->holder()->mailbox()) ||
-         mailbox.sync_point() != holder_ref_->holder()->mailbox().sync_point());
+         mailbox.sync_token() != holder_ref_->holder()->mailbox().sync_token());
   scoped_ptr<SingleReleaseCallback> release;
   bool requires_commit = true;
   bool allow_mailbox_reuse = true;
@@ -267,9 +268,8 @@ TextureLayer::TextureMailboxHolder::TextureMailboxHolder(
     : internal_references_(0),
       mailbox_(mailbox),
       release_callback_(release_callback.Pass()),
-      sync_point_(mailbox.sync_point()),
-      is_lost_(false) {
-}
+      sync_token_(mailbox.sync_token()),
+      is_lost_(false) {}
 
 TextureLayer::TextureMailboxHolder::~TextureMailboxHolder() {
   DCHECK_EQ(0u, internal_references_);
@@ -283,10 +283,11 @@ TextureLayer::TextureMailboxHolder::Create(
       new TextureMailboxHolder(mailbox, release_callback.Pass())));
 }
 
-void TextureLayer::TextureMailboxHolder::Return(uint32 sync_point,
-                                                bool is_lost) {
+void TextureLayer::TextureMailboxHolder::Return(
+    const gpu::SyncToken& sync_token,
+    bool is_lost) {
   base::AutoLock lock(arguments_lock_);
-  sync_point_ = sync_point;
+  sync_token_ = sync_token;
   is_lost_ = is_lost;
 }
 
@@ -307,17 +308,17 @@ void TextureLayer::TextureMailboxHolder::InternalAddRef() {
 void TextureLayer::TextureMailboxHolder::InternalRelease() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!--internal_references_) {
-    release_callback_->Run(sync_point_, is_lost_);
+    release_callback_->Run(sync_token_, is_lost_);
     mailbox_ = TextureMailbox();
     release_callback_ = nullptr;
   }
 }
 
 void TextureLayer::TextureMailboxHolder::ReturnAndReleaseOnImplThread(
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool is_lost,
     BlockingTaskRunner* main_thread_task_runner) {
-  Return(sync_point, is_lost);
+  Return(sync_token, is_lost);
   main_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(&TextureMailboxHolder::InternalRelease, this));
 }

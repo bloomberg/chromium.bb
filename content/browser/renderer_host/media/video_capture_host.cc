@@ -270,7 +270,7 @@ void VideoCaptureHost::OnResumeCapture(
 void VideoCaptureHost::OnRendererFinishedWithBuffer(
     int device_id,
     int buffer_id,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     double consumer_resource_utilization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -279,10 +279,7 @@ void VideoCaptureHost::OnRendererFinishedWithBuffer(
   if (it != entries_.end()) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
     if (controller) {
-      controller->ReturnBuffer(controller_id,
-                               this,
-                               buffer_id,
-                               sync_point,
+      controller->ReturnBuffer(controller_id, this, buffer_id, sync_token,
                                consumer_resource_utilization);
     }
   }

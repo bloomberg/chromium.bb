@@ -24,10 +24,12 @@ class CONTENT_EXPORT OwnedMailbox : public base::RefCounted<OwnedMailbox>,
 
   const gpu::MailboxHolder& holder() const { return mailbox_holder_; }
   const gpu::Mailbox& mailbox() const { return mailbox_holder_.mailbox; }
+  const gpu::SyncToken& sync_token() const {
+    return mailbox_holder_.sync_token;
+  }
   uint32 texture_id() const { return texture_id_; }
   uint32 target() const { return mailbox_holder_.texture_target; }
-  uint32 sync_point() const { return mailbox_holder_.sync_point; }
-  void UpdateSyncPoint(uint32 sync_point);
+  void UpdateSyncToken(const gpu::SyncToken& sync_token);
   void Destroy();
 
  protected:

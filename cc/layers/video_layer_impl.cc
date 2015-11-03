@@ -363,7 +363,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   if (frame_resource_type_ ==
       VideoFrameExternalResources::SOFTWARE_RESOURCE) {
     for (size_t i = 0; i < software_resources_.size(); ++i) {
-      software_release_callback_.Run(0, false,
+      software_release_callback_.Run(gpu::SyncToken(), false,
                                      layer_tree_impl()
                                          ->task_runner_provider()
                                          ->blocking_main_thread_task_runner());

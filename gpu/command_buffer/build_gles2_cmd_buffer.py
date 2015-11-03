@@ -4118,7 +4118,9 @@ _FUNCTION_INFO = {
   },
   'WaitSyncPointCHROMIUM': {
     'type': 'Custom',
-    'impl_func': True,
+    'impl_func': False,
+    'unit_test': False,
+    'client_test': False,
     'extension': "CHROMIUM_sync_point",
     'chromium': True,
     'trace_level': 1,

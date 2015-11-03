@@ -20,7 +20,7 @@ class CC_EXPORT SingleReleaseCallbackImpl {
 
   ~SingleReleaseCallbackImpl();
 
-  void Run(uint32 sync_point,
+  void Run(const gpu::SyncToken& sync_token,
            bool is_lost,
            BlockingTaskRunner* main_thread_task_runner);
 

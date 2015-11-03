@@ -86,16 +86,17 @@ class MockVideoCaptureControllerEventHandler
       EXPECT_EQ(frame->format(), media::PIXEL_FORMAT_I420);
       DoI420BufferReady(id, frame->coded_size());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
-                                base::Unretained(controller_), id, this,
-                                buffer_id, 0, resource_utilization_));
+          FROM_HERE,
+          base::Bind(&VideoCaptureController::ReturnBuffer,
+                     base::Unretained(controller_), id, this, buffer_id,
+                     gpu::SyncToken(), resource_utilization_));
     } else {
       EXPECT_EQ(frame->format(), media::PIXEL_FORMAT_ARGB);
       DoTextureBufferReady(id, frame->coded_size());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
                                 base::Unretained(controller_), id, this,
-                                buffer_id, frame->mailbox_holder(0).sync_point,
+                                buffer_id, frame->mailbox_holder(0).sync_token,
                                 resource_utilization_));
     }
   }
@@ -260,9 +261,9 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Client count should return to zero after all clients are gone.";
 }
 
-static void CacheSyncPoint(uint32* called_release_sync_point,
-                           uint32 release_sync_point) {
-  *called_release_sync_point = release_sync_point;
+static void CacheSyncToken(gpu::SyncToken* called_release_sync_token,
+                           const gpu::SyncToken& release_sync_token) {
+  *called_release_sync_token = release_sync_token;
 }
 
 // This test will connect and disconnect several clients while simulating an
@@ -524,8 +525,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
                                           base::TimeTicks());
   }
-  std::vector<uint32> mailbox_syncpoints(mailbox_buffers);
-  std::vector<uint32> release_syncpoints(mailbox_buffers);
+  std::vector<gpu::SyncToken> mailbox_synctokens(mailbox_buffers);
+  std::vector<gpu::SyncToken> release_synctokens(mailbox_buffers);
   for (int i = 0; i < mailbox_buffers; ++i) {
     scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer =
         device_->ReserveOutputBuffer(capture_resolution,
@@ -533,14 +534,14 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                      media::PIXEL_STORAGE_TEXTURE);
     ASSERT_TRUE(buffer.get());
 #if !defined(OS_ANDROID)
-    mailbox_syncpoints[i] =
-        ImageTransportFactory::GetInstance()->GetGLHelper()->InsertSyncPoint();
+    mailbox_synctokens[i] = gpu::SyncToken(
+        ImageTransportFactory::GetInstance()->GetGLHelper()->InsertSyncPoint());
 #endif
     device_->OnIncomingCapturedVideoFrame(
         buffer.Pass(),
-        WrapMailboxBuffer(gpu::MailboxHolder(gpu::Mailbox::Generate(), 0,
-                                             mailbox_syncpoints[i]),
-                          base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
+        WrapMailboxBuffer(gpu::MailboxHolder(gpu::Mailbox::Generate(),
+                                             mailbox_synctokens[i], 0),
+                          base::Bind(&CacheSyncToken, &release_synctokens[i]),
                           capture_resolution),
         base::TimeTicks());
   }
@@ -564,12 +565,12 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   EXPECT_CALL(*client_b_, DoBufferDestroyed(client_b_route_2));
 #endif
   base::RunLoop().RunUntilIdle();
-  for (size_t i = 0; i < mailbox_syncpoints.size(); ++i) {
+  for (size_t i = 0; i < mailbox_synctokens.size(); ++i) {
     // A new release sync point must be inserted when the video frame is
     // returned to the Browser process.
     // See: MockVideoCaptureControllerEventHandler::OnMailboxBufferReady() and
     // VideoCaptureController::ReturnBuffer()
-    ASSERT_NE(mailbox_syncpoints[i], release_syncpoints[i]);
+    ASSERT_NE(mailbox_synctokens[i], release_synctokens[i]);
   }
   Mock::VerifyAndClearExpectations(client_b_.get());
 

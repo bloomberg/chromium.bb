@@ -104,6 +104,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   };
   typedef std::map<int, ClientInfo> ClientInfoMap;
 
+  typedef base::Callback<void(const gpu::SyncToken& sync_token,
+                              double consumer_resource_utilization)>
+      BufferFinishedCallback;
+
   // VideoCaptureMessageFilter::Delegate interface.
   void OnBufferCreated(base::SharedMemoryHandle handle,
                        int length,
@@ -130,16 +134,14 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.
-  void OnClientBufferFinished(
-      int buffer_id,
-      const scoped_refptr<ClientBuffer>& buffer,
-      uint32 release_sync_point,
-      double consumer_resource_utilization);
-  void OnClientBufferFinished2(
-      int buffer_id,
-      const scoped_refptr<ClientBuffer2>& buffer,
-      uint32 release_sync_point,
-      double consumer_resource_utilization);
+  void OnClientBufferFinished(int buffer_id,
+                              const scoped_refptr<ClientBuffer>& buffer,
+                              const gpu::SyncToken& release_sync_token,
+                              double consumer_resource_utilization);
+  void OnClientBufferFinished2(int buffer_id,
+                               const scoped_refptr<ClientBuffer2>& buffer,
+                               const gpu::SyncToken& release_sync_token,
+                               double consumer_resource_utilization);
 
   void StopDevice();
   void RestartCapture();
@@ -155,9 +157,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   // RESOURCE_UTILIZATION value from the |metadata| and then runs the given
   // callback, to trampoline back to the IO thread with the values.
   static void DidFinishConsumingFrame(
-    const media::VideoFrameMetadata* metadata,
-    uint32* release_sync_point_storage,  // Takes ownership.
-    const base::Callback<void(uint32, double)>& callback_to_io_thread);
+      const media::VideoFrameMetadata* metadata,
+      gpu::SyncToken* release_sync_token_storage,  // Takes ownership
+      const BufferFinishedCallback& callback_to_io_thread);
 
   const scoped_refptr<VideoCaptureMessageFilter> message_filter_;
   int device_id_;

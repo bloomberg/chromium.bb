@@ -39,13 +39,6 @@ IPC_STRUCT_BEGIN(FrameMsg_CompositorFrameSwapped_Params)
   IPC_STRUCT_MEMBER(base::SharedMemoryHandle, shared_memory_handle)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(FrameHostMsg_BuffersSwappedACK_Params)
-  IPC_STRUCT_MEMBER(int, gpu_host_id)
-  IPC_STRUCT_MEMBER(int, gpu_route_id)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
-  IPC_STRUCT_MEMBER(uint32, sync_point)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(FrameHostMsg_CompositorFrameSwappedACK_Params)
   // Specifies which RenderWidget produced the CompositorFrame.
   IPC_STRUCT_MEMBER(int, producing_host_id)

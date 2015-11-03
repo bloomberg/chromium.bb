@@ -3446,14 +3446,6 @@ void GLES2Implementation::LoseContextCHROMIUM(GLenum current, GLenum other) {
   CheckGLError();
 }
 
-void GLES2Implementation::WaitSyncPointCHROMIUM(GLuint sync_point) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glWaitSyncPointCHROMIUM("
-                     << sync_point << ")");
-  helper_->WaitSyncPointCHROMIUM(sync_point);
-  CheckGLError();
-}
-
 void GLES2Implementation::DrawBuffersEXT(GLsizei count, const GLenum* bufs) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDrawBuffersEXT(" << count << ", "

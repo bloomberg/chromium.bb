@@ -66,7 +66,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
                       std::vector<gpu::Mailbox>* texture_mailboxes,
                       uint32 texture_target) override;
   void DeleteTexture(uint32 texture_id) override;
-  void WaitSyncPoint(uint32 sync_point) override;
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,

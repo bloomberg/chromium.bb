@@ -773,7 +773,7 @@ void PepperPluginInstanceImpl::CommitBackingTexture() {
   DCHECK(!mailbox.IsZero());
   DCHECK_NE(sync_point, 0u);
   texture_layer_->SetTextureMailboxWithoutReleaseCallback(
-      cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point));
+      cc::TextureMailbox(mailbox, gpu::SyncToken(sync_point), GL_TEXTURE_2D));
   texture_layer_->SetNeedsDisplay();
 }
 
@@ -2005,7 +2005,8 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
           cc_blink::WebLayerImpl::LayerSettings(), NULL);
       opaque = bound_graphics_3d_->IsOpaque();
       texture_layer_->SetTextureMailboxWithoutReleaseCallback(
-          cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point));
+          cc::TextureMailbox(mailbox, gpu::SyncToken(sync_point),
+                             GL_TEXTURE_2D));
     } else {
       DCHECK(bound_graphics_2d_platform_);
       texture_layer_ = cc::TextureLayer::CreateForMailbox(

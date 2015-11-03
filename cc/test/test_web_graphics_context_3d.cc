@@ -67,7 +67,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       test_support_(NULL),
       last_update_type_(NO_UPDATE),
       next_insert_sync_point_(1),
-      last_waited_sync_point_(0),
       unpack_alignment_(4),
       bound_buffer_(0),
       weak_ptr_factory_(this) {
@@ -651,9 +650,13 @@ unsigned TestWebGraphicsContext3D::insertSyncPoint() {
   return next_insert_sync_point_++;
 }
 
-void TestWebGraphicsContext3D::waitSyncPoint(unsigned sync_point) {
-  if (sync_point)
-    last_waited_sync_point_ = sync_point;
+void TestWebGraphicsContext3D::waitSyncToken(const GLbyte* sync_token) {
+  if (sync_token) {
+    gpu::SyncToken sync_token_data;
+    memcpy(sync_token_data.GetData(), sync_token, sizeof(sync_token_data));
+    if (sync_token_data.HasData())
+      last_waited_sync_token_ = sync_token_data;
+  }
 }
 
 size_t TestWebGraphicsContext3D::NumTextures() const {

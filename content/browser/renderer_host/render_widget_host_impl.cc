@@ -1551,7 +1551,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     cc::CompositorFrameAck ack;
     if (frame->gl_frame_data) {
       ack.gl_frame_data = frame->gl_frame_data.Pass();
-      ack.gl_frame_data->sync_point = 0;
+      ack.gl_frame_data->sync_token.Clear();
     } else if (frame->delegated_frame_data) {
       cc::TransferableResource::ReturnResources(
           frame->delegated_frame_data->resource_list,

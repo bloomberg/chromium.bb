@@ -162,7 +162,7 @@ class CC_EXPORT ResourceProvider
 
   // Sets whether resources need sync points set on them when returned to this
   // child. Defaults to true.
-  void SetChildNeedsSyncPoints(int child, bool needs_sync_points);
+  void SetChildNeedsSyncTokens(int child, bool needs_sync_tokens);
 
   // Gets the child->parent resource ID map.
   const ResourceIdMap& GetChildToParentMap(int child) const;
@@ -181,7 +181,7 @@ class CC_EXPORT ResourceProvider
   // declaring which resources are in use. Use DeclareUsedResourcesFromChild
   // after calling this method to do that. All calls to ReceiveFromChild should
   // be followed by a DeclareUsedResourcesFromChild.
-  // NOTE: if the sync_point is set on any TransferableResource, this will
+  // NOTE: if the sync_token is set on any TransferableResource, this will
   // wait on it.
   void ReceiveFromChild(
       int child, const TransferableResourceArray& transferable_resources);
@@ -194,7 +194,7 @@ class CC_EXPORT ResourceProvider
 
   // Receives resources from the parent, moving them from mailboxes. Resource
   // IDs passed are in the child namespace.
-  // NOTE: if the sync_point is set on any TransferableResource, this will
+  // NOTE: if the sync_token is set on any TransferableResource, this will
   // wait on it.
   void ReceiveReturnsFromParent(
       const ReturnedResourceArray& transferable_resources);
@@ -412,7 +412,7 @@ class CC_EXPORT ResourceProvider
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(ResourceId id);
 
-  void WaitSyncPointIfNeeded(ResourceId id);
+  void WaitSyncTokenIfNeeded(ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
@@ -508,7 +508,7 @@ class CC_EXPORT ResourceProvider
     ResourceIdMap parent_to_child_map;
     ReturnCallback return_callback;
     bool marked_for_deletion;
-    bool needs_sync_points;
+    bool needs_sync_tokens;
   };
   typedef base::hash_map<int, Child> ChildMap;
 

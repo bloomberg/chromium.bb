@@ -240,7 +240,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   static void ReturnSubscriberTexture(
       base::WeakPtr<DelegatedFrameHost> rwhva,
       scoped_refptr<OwnedMailbox> subscriber_texture,
-      uint32 sync_point);
+      const gpu::SyncToken& sync_token);
 
   void SendDelegatedFrameAck(uint32 output_surface_id);
   void SurfaceDrawn(uint32 output_surface_id, cc::SurfaceDrawStatus drawn);

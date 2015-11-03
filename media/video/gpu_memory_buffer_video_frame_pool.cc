@@ -124,7 +124,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // longer referenced.
   // This could be called by any thread.
   void MailboxHoldersReleased(FrameResources* frame_resources,
-                              uint32 sync_point);
+                              const gpu::SyncToken& sync_token);
 
   // Return frame resources to the pool. This has to be called on the thread
   // where |media_task_runner_| is current.
@@ -554,16 +554,16 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     }
     if (plane_resource.image_id)
       gles2->BindTexImage2DCHROMIUM(texture_target_, plane_resource.image_id);
-    mailbox_holders[i] =
-        gpu::MailboxHolder(plane_resource.mailbox, texture_target_, 0);
+    mailbox_holders[i] = gpu::MailboxHolder(plane_resource.mailbox,
+                                            gpu::SyncToken(), texture_target_);
   }
 
-  // Insert a sync_point, this is needed to make sure that the textures the
+  // Insert a sync_token, this is needed to make sure that the textures the
   // mailboxes refer to will be used only after all the previous commands posted
   // in the command buffer have been processed.
-  unsigned sync_point = gles2->InsertSyncPointCHROMIUM();
+  gpu::SyncToken sync_token(gles2->InsertSyncPointCHROMIUM());
   for (size_t i = 0; i < num_planes; i += planes_per_copy)
-    mailbox_holders[i].sync_point = sync_point;
+    mailbox_holders[i].sync_token = sync_token;
 
   scoped_refptr<VideoFrame> frame;
 
@@ -700,7 +700,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
 // Called when a VideoFrame is no longer references.
 void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
     FrameResources* frame_resources,
-    uint32 sync_point) {
+    const gpu::SyncToken& sync_token) {
   // Return the resource on the media thread.
   media_task_runner_->PostTask(
       FROM_HERE,

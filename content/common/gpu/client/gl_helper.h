@@ -188,7 +188,7 @@ class CONTENT_EXPORT GLHelper {
   // assumed to be GL_TEXTURE_2D.
   void CropScaleReadbackAndCleanMailbox(
       const gpu::Mailbox& src_mailbox,
-      uint32 sync_point,
+      const gpu::SyncToken& sync_token,
       const gfx::Size& src_size,
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
@@ -246,8 +246,9 @@ class CONTENT_EXPORT GLHelper {
 
   // Insert a sync point into the GL command buffer.
   uint32 InsertSyncPoint();
-  // Wait for the sync point before executing further GL commands.
-  void WaitSyncPoint(uint32 sync_point);
+
+  // Wait for the sync token before executing further GL commands.
+  void WaitSyncToken(const gpu::SyncToken& sync_token);
 
   // Creates a mailbox holder that is attached to the given texture id, with a
   // sync point to wait on before using the mailbox. Returns a holder with an
@@ -258,7 +259,7 @@ class CONTENT_EXPORT GLHelper {
   // Creates a texture and consumes a mailbox into it. Returns 0 on failure.
   // Note the mailbox is assumed to be GL_TEXTURE_2D.
   GLuint ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
-                                 uint32 sync_point);
+                                 const gpu::SyncToken& sync_token);
 
   // Resizes the texture's size to |size|.
   void ResizeTexture(GLuint texture, const gfx::Size& size);
@@ -369,7 +370,7 @@ class CONTENT_EXPORT ReadbackYUVInterface {
   // the call to CreateReadbackPipelineYUV() must be fully contained within
   // |target->visible_rect()|.
   virtual void ReadbackYUV(const gpu::Mailbox& mailbox,
-                           uint32 sync_point,
+                           const gpu::SyncToken& sync_token,
                            const scoped_refptr<media::VideoFrame>& target,
                            const gfx::Point& paste_location,
                            const base::Callback<void(bool)>& callback) = 0;

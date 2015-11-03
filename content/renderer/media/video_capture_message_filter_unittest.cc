@@ -136,7 +136,8 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   params_m.pixel_format = media::PIXEL_FORMAT_ARGB;
   params_m.storage_type = media::VideoFrame::STORAGE_OPAQUE;
   params_m.coded_size = gfx::Size(345, 256);
-  params_m.mailbox_holder = gpu::MailboxHolder(gpu::Mailbox::Generate(), 0, 44);
+  params_m.mailbox_holder =
+      gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 44);
 
   gpu::MailboxHolder received_mailbox_holder;
   EXPECT_CALL(delegate, OnBufferReceived(params_m.buffer_id, params_m.timestamp,

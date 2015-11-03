@@ -164,16 +164,17 @@ void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32 texture_id) {
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
 }
 
-void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
+void RendererGpuVideoAcceleratorFactories::WaitSyncToken(
+    const gpu::SyncToken& sync_token) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return;
 
   cc::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
-  gles2->WaitSyncPointCHROMIUM(sync_point);
+  gles2->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
 
-  // Callers expect the WaitSyncPoint to affect the next IPCs. Make sure to
+  // Callers expect the WaitSyncToken to affect the next IPCs. Make sure to
   // flush the command buffers to ensure that.
   gles2->ShallowFlushCHROMIUM();
 }

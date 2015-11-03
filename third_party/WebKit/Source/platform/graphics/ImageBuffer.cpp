@@ -214,9 +214,10 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     sharedContext->produceTextureDirectCHROMIUM(textureId, GL_TEXTURE_2D, mailbox->name);
     sharedContext->flush();
 
-    mailbox->syncPoint = sharedContext->insertSyncPoint();
+    mailbox->validSyncToken = sharedContext->insertSyncPoint(mailbox->syncToken);
+    if (mailbox->validSyncToken)
+        context->waitSyncToken(mailbox->syncToken);
 
-    context->waitSyncPoint(mailbox->syncPoint);
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
@@ -226,7 +227,10 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     context->deleteTexture(sourceTexture);
 
     context->flush();
-    sharedContext->waitSyncPoint(context->insertSyncPoint());
+
+    WGC3Dbyte syncToken[24];
+    if (context->insertSyncPoint(syncToken))
+        sharedContext->waitSyncToken(syncToken);
 
     // Undo grContext texture binding changes introduced in this function
     provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);

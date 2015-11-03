@@ -549,7 +549,7 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
 
 void PepperGraphics2DHost::ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
                                            const gfx::Size& bitmap_size,
-                                           uint32 sync_point,
+                                           const gpu::SyncToken& sync_token,
                                            bool lost_resource) {
   cached_bitmap_.reset();
   // Only keep around a cached bitmap if the plugin is currently drawing (has

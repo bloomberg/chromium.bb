@@ -279,7 +279,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
       GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
       GLuint texture = gl_helper->ConsumeMailboxToTexture(
           last_copy_request_->texture_mailbox().mailbox(),
-          last_copy_request_->texture_mailbox().sync_point());
+          last_copy_request_->texture_mailbox().sync_token());
       gl_helper->ResizeTexture(texture, window()->bounds().size());
       gl_helper->DeleteTexture(texture);
     }

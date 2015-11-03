@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
@@ -72,20 +73,20 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // CB to be called on the mailbox backing this frame when the frame is
   // destroyed.
-  typedef base::Callback<void(uint32)> ReleaseMailboxCB;
+  typedef base::Callback<void(const gpu::SyncToken&)> ReleaseMailboxCB;
 
-  // Interface representing client operations on a SyncPoint, i.e. insert one in
+  // Interface representing client operations on a SyncToken, i.e. insert one in
   // the GPU Command Buffer and wait for it.
-  class SyncPointClient {
+  class SyncTokenClient {
    public:
-    SyncPointClient() {}
+    SyncTokenClient() {}
     virtual uint32 InsertSyncPoint() = 0;
-    virtual void WaitSyncPoint(uint32 sync_point) = 0;
+    virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 
    protected:
-    virtual ~SyncPointClient() {}
+    virtual ~SyncTokenClient() {}
 
-    DISALLOW_COPY_AND_ASSIGN(SyncPointClient);
+    DISALLOW_COPY_AND_ASSIGN(SyncTokenClient);
   };
 
   // Call prior to CreateFrame to ensure validity of frame configuration. Called
@@ -119,7 +120,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Wraps a native texture of the given parameters with a VideoFrame.
   // The backing of the VideoFrame is held in the mailbox held by
   // |mailbox_holder|, and |mailbox_holder_release_cb| will be called with
-  // a syncpoint as the argument when the VideoFrame is to be destroyed.
+  // a sync token as the argument when the VideoFrame is to be destroyed.
   static scoped_refptr<VideoFrame> WrapNativeTexture(
       VideoPixelFormat format,
       const gpu::MailboxHolder& mailbox_holder,
@@ -130,7 +131,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       base::TimeDelta timestamp);
 
   // Wraps a set of native textures representing YUV data with a VideoFrame.
-  // |mailbox_holders_release_cb| will be called with a syncpoint as the
+  // |mailbox_holders_release_cb| will be called with a sync token as the
   // argument when the VideoFrame is to be destroyed.
   static scoped_refptr<VideoFrame> WrapYUV420NativeTextures(
       const gpu::MailboxHolder& y_mailbox_holder,
@@ -401,7 +402,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // older sync point. The final sync point will be used to release this
   // VideoFrame.
   // This method is thread safe. Both blink and compositor threads can call it.
-  void UpdateReleaseSyncPoint(SyncPointClient* client);
+  void UpdateReleaseSyncToken(SyncTokenClient* client);
 
  private:
   friend class base::RefCountedThreadSafe<VideoFrame>;
@@ -511,8 +512,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   base::TimeDelta timestamp_;
 
-  base::Lock release_sync_point_lock_;
-  uint32 release_sync_point_;
+  base::Lock release_sync_token_lock_;
+  gpu::SyncToken release_sync_token_;
 
   VideoFrameMetadata metadata_;
 

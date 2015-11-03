@@ -313,8 +313,9 @@ void TestPlugin::updateGeometry(
     context_->genMailboxCHROMIUM(mailbox.name);
     context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     context_->flush();
-    uint32 sync_point = context_->insertSyncPoint();
-    texture_mailbox_ = cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point);
+    gpu::SyncToken sync_token;
+    context_->insertSyncPoint(sync_token.GetData());
+    texture_mailbox_ = cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
   } else {
     scoped_ptr<cc::SharedBitmap> bitmap =
         delegate_->GetSharedBitmapManager()->AllocateSharedBitmap(
@@ -341,13 +342,12 @@ bool TestPlugin::isPlaceholder() {
   return false;
 }
 
-static void IgnoreReleaseCallback(uint32 sync_point, bool lost) {
+static void IgnoreReleaseCallback(const gpu::SyncToken& sync_token, bool lost) {
 }
 
 static void ReleaseSharedMemory(scoped_ptr<cc::SharedBitmap> bitmap,
-                                uint32 sync_point,
-                                bool lost) {
-}
+                                const gpu::SyncToken& sync_token,
+                                bool lost) {}
 
 bool TestPlugin::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,

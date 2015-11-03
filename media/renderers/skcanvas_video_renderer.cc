@@ -59,19 +59,19 @@ bool CheckColorSpace(const VideoFrame* video_frame, ColorSpace color_space) {
          result == color_space;
 }
 
-class SyncPointClientImpl : public VideoFrame::SyncPointClient {
+class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
-  explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
-  ~SyncPointClientImpl() override {}
+  explicit SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
+  ~SyncTokenClientImpl() override {}
   uint32 InsertSyncPoint() override { return gl_->InsertSyncPointCHROMIUM(); }
-  void WaitSyncPoint(uint32 sync_point) override {
-    gl_->WaitSyncPointCHROMIUM(sync_point);
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
  private:
   gpu::gles2::GLES2Interface* gl_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SyncPointClientImpl);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SyncTokenClientImpl);
 };
 
 skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
@@ -96,7 +96,7 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
     DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
            mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES ||
            mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB);
-    gl->WaitSyncPointCHROMIUM(mailbox_holder.sync_point);
+    gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
     source_textures[i] = gl->CreateAndConsumeTextureCHROMIUM(
         mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
@@ -165,7 +165,7 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameNative(
         gl, video_frame, source_texture, GL_RGBA, GL_UNSIGNED_BYTE, true,
         false);
   } else {
-    gl->WaitSyncPointCHROMIUM(mailbox_holder.sync_point);
+    gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
     source_texture = gl->CreateAndConsumeTextureCHROMIUM(
         mailbox_holder.texture_target, mailbox_holder.mailbox.name);
   }
@@ -419,8 +419,8 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 
   if (video_frame->HasTextures()) {
     DCHECK(gl);
-    SyncPointClientImpl client(gl);
-    video_frame->UpdateReleaseSyncPoint(&client);
+    SyncTokenClientImpl client(gl);
+    video_frame->UpdateReleaseSyncToken(&client);
   }
 }
 
@@ -555,7 +555,7 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
          mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES)
       << mailbox_holder.texture_target;
 
-  gl->WaitSyncPointCHROMIUM(mailbox_holder.sync_point);
+  gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
   uint32 source_texture = gl->CreateAndConsumeTextureCHROMIUM(
       mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
@@ -572,8 +572,8 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();
 
-  SyncPointClientImpl client(gl);
-  video_frame->UpdateReleaseSyncPoint(&client);
+  SyncTokenClientImpl client(gl);
+  video_frame->UpdateReleaseSyncToken(&client);
 }
 
 void SkCanvasVideoRenderer::ResetCache() {

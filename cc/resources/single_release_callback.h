@@ -19,7 +19,7 @@ class CC_EXPORT SingleReleaseCallback {
 
   ~SingleReleaseCallback();
 
-  void Run(uint32 sync_point, bool is_lost);
+  void Run(const gpu::SyncToken& sync_token, bool is_lost);
 
  private:
   explicit SingleReleaseCallback(const ReleaseCallback& callback);

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/c/ppb_compositor_layer.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
@@ -79,13 +80,12 @@ struct PPAPI_SHARED_EXPORT CompositorLayerData {
   struct TextureLayer {
     TextureLayer()
        : target(0),
-         sync_point(0),
          source_rect(PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 1.0f, 1.0f)),
          premult_alpha(true) {}
 
     gpu::Mailbox mailbox;
+    gpu::SyncToken sync_token;
     uint32_t target;
-    uint32_t sync_point;
     PP_FloatRect source_rect;
     bool premult_alpha;
   };

@@ -11,27 +11,30 @@
 #include "cc/output/context_provider.h"
 #include "cc/resources/single_release_callback.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/sync_token.h"
 
 namespace cc {
 
 static void DeleteTextureOnImplThread(
     const scoped_refptr<ContextProvider>& context_provider,
     unsigned texture_id,
-    uint32 sync_point,
+    const gpu::SyncToken& sync_token,
     bool is_lost) {
-  if (sync_point)
-    context_provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point);
+  if (sync_token.HasData()) {
+    context_provider->ContextGL()->WaitSyncTokenCHROMIUM(
+        sync_token.GetConstData());
+  }
   context_provider->ContextGL()->DeleteTextures(1, &texture_id);
 }
 
 static void PostTaskFromMainToImplThread(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     ReleaseCallback run_impl_callback,
-    unsigned sync_point,
+    const gpu::SyncToken& sync_token,
     bool is_lost) {
   // This posts the task to RunDeleteTextureOnImplThread().
   impl_task_runner->PostTask(
-      FROM_HERE, base::Bind(run_impl_callback, sync_point, is_lost));
+      FROM_HERE, base::Bind(run_impl_callback, sync_token, is_lost));
 }
 
 TextureMailboxDeleter::TextureMailboxDeleter(
@@ -40,7 +43,7 @@ TextureMailboxDeleter::TextureMailboxDeleter(
 
 TextureMailboxDeleter::~TextureMailboxDeleter() {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i)
-    impl_callbacks_.at(i)->Run(0, true);
+    impl_callbacks_.at(i)->Run(gpu::SyncToken(), true);
 }
 
 scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
@@ -78,12 +81,12 @@ scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
 
 void TextureMailboxDeleter::RunDeleteTextureOnImplThread(
     SingleReleaseCallback* impl_callback,
-    unsigned sync_point,
+    const gpu::SyncToken& sync_token,
     bool is_lost) {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i) {
     if (impl_callbacks_.at(i) == impl_callback) {
       // Run the callback, then destroy it here on the impl thread.
-      impl_callbacks_.at(i)->Run(sync_point, is_lost);
+      impl_callbacks_.at(i)->Run(sync_token, is_lost);
       impl_callbacks_.erase(impl_callbacks_.begin() + i);
       return;
     }

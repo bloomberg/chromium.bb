@@ -30,7 +30,7 @@ CopyOutputResult::CopyOutputResult(
 
 CopyOutputResult::~CopyOutputResult() {
   if (release_callback_)
-    release_callback_->Run(0, false);
+    release_callback_->Run(gpu::SyncToken(), false);
 }
 
 scoped_ptr<SkBitmap> CopyOutputResult::TakeBitmap() {

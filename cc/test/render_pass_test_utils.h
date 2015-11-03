@@ -58,7 +58,7 @@ void AddRenderPassQuad(RenderPass* to_pass,
 void AddOneOfEveryQuadType(RenderPass* to_pass,
                            ResourceProvider* resource_provider,
                            RenderPassId child_pass,
-                           uint32_t* sync_point_for_mailbox_texture_quad);
+                           uint32_t* sync_point_for_mailbox_texture);
 
 }  // namespace cc
 

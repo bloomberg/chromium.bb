@@ -73,10 +73,10 @@ enum CommandBufferNamespace {
   GPU_IO,
   IN_PROCESS,
   MOJO,
+  OLD_SYNC_POINTS,
 
   NUM_COMMAND_BUFFER_NAMESPACES
 };
-
 
 }  // namespace gpu
 

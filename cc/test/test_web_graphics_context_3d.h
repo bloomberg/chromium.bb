@@ -19,6 +19,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/test/ordered_texture_map.h"
 #include "cc/test/test_texture.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -271,9 +272,11 @@ class TestWebGraphicsContext3D {
                                            GLuint plane) {}
 
   virtual unsigned insertSyncPoint();
-  virtual void waitSyncPoint(unsigned sync_point);
+  virtual void waitSyncToken(const GLbyte* sync_token);
 
-  unsigned last_waited_sync_point() const { return last_waited_sync_point_; }
+  const gpu::SyncToken& last_waited_sync_token() const {
+    return last_waited_sync_token_;
+  }
 
   const ContextProvider::Capabilities& test_capabilities() const {
     return test_capabilities_;
@@ -473,7 +476,7 @@ class TestWebGraphicsContext3D {
   gfx::Rect update_rect_;
   UpdateType last_update_type_;
   unsigned next_insert_sync_point_;
-  unsigned last_waited_sync_point_;
+  gpu::SyncToken last_waited_sync_token_;
   int unpack_alignment_;
 
   unsigned bound_buffer_;

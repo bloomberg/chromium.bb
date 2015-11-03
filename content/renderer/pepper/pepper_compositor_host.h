@@ -21,6 +21,10 @@ class Layer;
 class SharedBitmap;
 }  // namespace cc
 
+namespace gpu {
+struct SyncToken;
+}  // namespace gpu
+
 namespace content {
 
 class PepperPluginInstanceImpl;
@@ -47,10 +51,10 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   void ImageReleased(int32_t id,
                      scoped_ptr<base::SharedMemory> shared_memory,
                      scoped_ptr<cc::SharedBitmap> bitmap,
-                     uint32_t sync_point,
+                     const gpu::SyncToken& sync_token,
                      bool is_lost);
   void ResourceReleased(int32_t id,
-                        uint32_t sync_point,
+                        const gpu::SyncToken& sync_token,
                         bool is_lost);
   void SendCommitLayersReplyIfNecessary();
   void UpdateLayer(const scoped_refptr<cc::Layer>& layer,

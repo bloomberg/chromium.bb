@@ -16,7 +16,7 @@ namespace media {
 
 HoleFrameFactory::HoleFrameFactory(
     ::media::GpuVideoAcceleratorFactories* gpu_factories)
-    : gpu_factories_(gpu_factories), texture_(0), image_id_(0), sync_point_(0) {
+    : gpu_factories_(gpu_factories), texture_(0), image_id_(0) {
   if (gpu_factories_) {
     scoped_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
         gpu_factories_->GetGLContextLock());
@@ -32,7 +32,7 @@ HoleFrameFactory::HoleFrameFactory(
     gl->GenMailboxCHROMIUM(mailbox_.name);
     gl->ProduceTextureDirectCHROMIUM(texture_, GL_TEXTURE_2D, mailbox_.name);
 
-    sync_point_ = gl->InsertSyncPointCHROMIUM();
+    sync_token_ = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
   }
 }
 
@@ -55,7 +55,7 @@ scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
     scoped_refptr<::media::VideoFrame> frame =
         ::media::VideoFrame::WrapNativeTexture(
             ::media::PIXEL_FORMAT_XRGB,
-            gpu::MailboxHolder(mailbox_, GL_TEXTURE_2D, sync_point_),
+            gpu::MailboxHolder(mailbox_, sync_token_, GL_TEXTURE_2D),
             ::media::VideoFrame::ReleaseMailboxCB(),
             size,                // coded_size
             gfx::Rect(size),     // visible rect

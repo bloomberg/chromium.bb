@@ -21,7 +21,7 @@ TransferableResource::~TransferableResource() {
 ReturnedResource TransferableResource::ToReturnedResource() const {
   ReturnedResource returned;
   returned.id = id;
-  returned.sync_point = mailbox_holder.sync_point;
+  returned.sync_token = mailbox_holder.sync_token;
   returned.count = 1;
   return returned;
 }

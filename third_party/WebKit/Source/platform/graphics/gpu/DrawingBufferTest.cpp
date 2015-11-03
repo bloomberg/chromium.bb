@@ -53,8 +53,10 @@ public:
         : MockWebGraphicsContext3D()
         , m_boundTexture(0)
         , m_currentMailboxByte(0)
-        , m_mostRecentlyWaitedSyncPoint(0)
-        , m_currentImageId(1) { }
+        , m_mostRecentlyWaitedSyncToken(0)
+        , m_currentImageId(1)
+    {
+    }
 
     void bindTexture(WGC3Denum target, WebGLId texture) override
     {
@@ -89,15 +91,17 @@ public:
         return m_mostRecentlyProducedSize;
     }
 
-    unsigned insertSyncPoint() override
+    bool insertSyncPoint(WGC3Dbyte* syncToken) override
     {
-        static unsigned syncPointGenerator = 0;
-        return ++syncPointGenerator;
+        static WGC3Duint syncPointGenerator = 0;
+        WGC3Duint newSyncPoint = ++syncPointGenerator;
+        memcpy(syncToken, &newSyncPoint, sizeof(newSyncPoint));
+        return true;
     }
 
-    void waitSyncPoint(unsigned syncPoint) override
+    void waitSyncToken(const WGC3Dbyte* syncToken) override
     {
-        m_mostRecentlyWaitedSyncPoint = syncPoint;
+        memcpy(&m_mostRecentlyWaitedSyncToken, syncToken, sizeof(m_mostRecentlyWaitedSyncToken));
     }
 
     WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) override
@@ -136,9 +140,9 @@ public:
         }
     }
 
-    unsigned mostRecentlyWaitedSyncPoint()
+    WGC3Duint mostRecentlyWaitedSyncToken()
     {
-        return m_mostRecentlyWaitedSyncPoint;
+        return m_mostRecentlyWaitedSyncToken;
     }
 
     WGC3Duint nextImageIdToBeCreated()
@@ -151,7 +155,7 @@ private:
     HashMap<WebGLId, IntSize> m_textureSizes;
     WGC3Dbyte m_currentMailboxByte;
     IntSize m_mostRecentlyProducedSize;
-    unsigned m_mostRecentlyWaitedSyncPoint;
+    WGC3Duint m_mostRecentlyWaitedSyncToken;
     WGC3Duint m_currentImageId;
     HashMap<WGC3Duint, IntSize> m_imageSizes;
     HashMap<WGC3Duint, WebGLId> m_imageToTextureMap;
@@ -401,34 +405,37 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept)
     m_drawingBuffer->beginDestruction();
 }
 
-TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncPointCorrectly)
+TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
 {
     WebExternalTextureMailbox mailbox;
 
     // Produce mailboxes.
     m_drawingBuffer->markContentsChanged();
-    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncPoint());
+    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncToken());
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
     // prepareMailbox() does not wait for any sync point.
-    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncPoint());
+    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncToken());
 
-    unsigned waitSyncPoint = webContext()->insertSyncPoint();
-    mailbox.syncPoint = waitSyncPoint;
+    WGC3Duint waitSyncToken = 0;
+    webContext()->insertSyncPoint(reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
+    mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
     // m_drawingBuffer will wait for the sync point when recycling.
-    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncPoint());
+    EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncToken());
 
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
     // m_drawingBuffer waits for the sync point when recycling in prepareMailbox().
-    EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
+    EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
     m_drawingBuffer->beginDestruction();
-    waitSyncPoint = webContext()->insertSyncPoint();
-    mailbox.syncPoint = waitSyncPoint;
+    webContext()->insertSyncPoint(reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
+    mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
     // m_drawingBuffer waits for the sync point because the destruction is in progress.
-    EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
+    EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 }
 
 class DrawingBufferImageChromiumTest : public DrawingBufferTest {
@@ -654,12 +661,14 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
 
-    unsigned waitSyncPoint = webContext()->insertSyncPoint();
-    mailbox.syncPoint = waitSyncPoint;
+    mailbox.validSyncToken = webContext()->insertSyncPoint(mailbox.syncToken);
     m_drawingBuffer->setIsHidden(true);
     m_drawingBuffer->mailboxReleased(mailbox);
     // m_drawingBuffer deletes mailbox immediately when hidden.
-    EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
+
+    WGC3Duint waitSyncToken = 0;
+    memcpy(&waitSyncToken, mailbox.syncToken, sizeof(waitSyncToken));
+    EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
     m_drawingBuffer->beginDestruction();
 }

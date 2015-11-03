@@ -113,7 +113,7 @@ void VideoCaptureMessageFilter::OnBufferCreated(int device_id,
     base::SharedMemory::CloseHandle(handle);
 
     Send(new VideoCaptureHostMsg_BufferReady(
-        device_id, buffer_id, 0 /* release_sync_point */,
+        device_id, buffer_id, gpu::SyncToken() /* release_sync_token */,
         -1.0 /* consumer_resource_utilization */));
     return;
   }
@@ -131,7 +131,7 @@ void VideoCaptureMessageFilter::OnBufferCreated2(
     DLOG(WARNING) << "OnBufferCreated: Got video GMB buffer for a "
                      "non-existent or removed video capture.";
     Send(new VideoCaptureHostMsg_BufferReady(
-        device_id, buffer_id, 0 /* release_sync_point */,
+        device_id, buffer_id, gpu::SyncToken() /* release_sync_token */,
         -1.0 /* consumer_resource_utilization */));
     return;
   }
@@ -148,8 +148,8 @@ void VideoCaptureMessageFilter::OnBufferReceived(
 
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
-    Send(new VideoCaptureHostMsg_BufferReady(
-        params.device_id, params.buffer_id, 0, -1.0));
+    Send(new VideoCaptureHostMsg_BufferReady(params.device_id, params.buffer_id,
+                                             gpu::SyncToken(), -1.0));
     return;
   }
 

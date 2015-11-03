@@ -728,7 +728,7 @@ class LayerTreeHostCopyRequestTestCountTextures
   void BeginTest() override {
     num_textures_without_readback_ = 0;
     num_textures_with_readback_ = 0;
-    waited_sync_point_after_readback_ = 0;
+    waited_sync_token_after_readback_.Clear();
     PostSetNeedsCommitToMainThread();
   }
 
@@ -755,8 +755,8 @@ class LayerTreeHostCopyRequestTestCountTextures
         // We did a readback, so there will be a readback texture around now.
         num_textures_with_readback_ =
             context_provider_->TestContext3d()->NumTextures();
-        waited_sync_point_after_readback_ =
-            context_provider_->TestContext3d()->last_waited_sync_point();
+        waited_sync_token_after_readback_ =
+            context_provider_->TestContext3d()->last_waited_sync_token();
 
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
@@ -771,7 +771,7 @@ class LayerTreeHostCopyRequestTestCountTextures
   scoped_refptr<TestContextProvider> context_provider_;
   size_t num_textures_without_readback_;
   size_t num_textures_with_readback_;
-  unsigned waited_sync_point_after_readback_;
+  gpu::SyncToken waited_sync_token_after_readback_;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> copy_layer_;
@@ -797,12 +797,12 @@ class LayerTreeHostCopyRequestTestCreatesTexture
     result->TakeTexture(&mailbox, &release);
     EXPECT_TRUE(release);
 
-    release->Run(0, false);
+    release->Run(gpu::SyncToken(), false);
   }
 
   void AfterTest() override {
     // No sync point was needed.
-    EXPECT_EQ(0u, waited_sync_point_after_readback_);
+    EXPECT_FALSE(waited_sync_token_after_readback_.HasData());
     // Except the copy to have made another texture.
     EXPECT_EQ(num_textures_without_readback_ + 1, num_textures_with_readback_);
   }
@@ -841,9 +841,9 @@ class LayerTreeHostCopyRequestTestProvideTexture
     gpu::gles2::GLES2Interface* gl = external_context_provider_->ContextGL();
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
-    sync_point_ = gl->InsertSyncPointCHROMIUM();
+    sync_token_ = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
     request->SetTextureMailbox(
-        TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point_));
+        TextureMailbox(mailbox, sync_token_, GL_TEXTURE_2D));
     EXPECT_TRUE(request->has_texture_mailbox());
 
     copy_layer_->RequestCopyOfOutput(request.Pass());
@@ -852,13 +852,13 @@ class LayerTreeHostCopyRequestTestProvideTexture
   void AfterTest() override {
     // Expect the compositor to have waited for the sync point in the provided
     // TextureMailbox.
-    EXPECT_EQ(sync_point_, waited_sync_point_after_readback_);
+    EXPECT_EQ(sync_token_, waited_sync_token_after_readback_);
     // Except the copy to have *not* made another texture.
     EXPECT_EQ(num_textures_without_readback_, num_textures_with_readback_);
   }
 
   scoped_refptr<TestContextProvider> external_context_provider_;
-  unsigned sync_point_;
+  gpu::SyncToken sync_token_;
 };
 
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(

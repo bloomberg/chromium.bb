@@ -10,6 +10,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/proxy/compositor_resource.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/thunk/enter.h"
@@ -30,14 +31,13 @@ float clamp(float value) {
   return std::min(std::max(value, 0.0f), 1.0f);
 }
 
-void OnTextureReleased(
-    const ScopedPPResource& layer,
-    const ScopedPPResource& context,
-    uint32_t texture,
-    const scoped_refptr<TrackedCallback>& release_callback,
-    int32_t result,
-    uint32_t sync_point,
-    bool is_lost) {
+void OnTextureReleased(const ScopedPPResource& layer,
+                       const ScopedPPResource& context,
+                       uint32_t texture,
+                       const scoped_refptr<TrackedCallback>& release_callback,
+                       int32_t result,
+                       const gpu::SyncToken& sync_token,
+                       bool is_lost) {
   if (!TrackedCallback::IsPending(release_callback))
     return;
 
@@ -47,7 +47,7 @@ void OnTextureReleased(
   }
 
   do {
-    if (!sync_point)
+    if (!sync_token.HasData())
       break;
 
     EnterResourceNoLock<PPB_Graphics3D_API> enter(context.get(), true);
@@ -58,19 +58,18 @@ void OnTextureReleased(
         static_cast<PPB_Graphics3D_Shared*>(enter.object());
 
     GLES2Implementation* gl = graphics->gles2_impl();
-    gl->WaitSyncPointCHROMIUM(sync_point);
+    gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   } while (false);
 
   release_callback->Run(is_lost ? PP_ERROR_FAILED : PP_OK);
 }
 
-void OnImageReleased(
-    const ScopedPPResource& layer,
-    const ScopedPPResource& image,
-    const scoped_refptr<TrackedCallback>& release_callback,
-    int32_t result,
-    uint32_t sync_point,
-    bool is_lost) {
+void OnImageReleased(const ScopedPPResource& layer,
+                     const ScopedPPResource& image,
+                     const scoped_refptr<TrackedCallback>& release_callback,
+                     int32_t result,
+                     const gpu::SyncToken& sync_token,
+                     bool is_lost) {
   if (!TrackedCallback::IsPending(release_callback))
     return;
   release_callback->Run(result);
@@ -175,7 +174,7 @@ int32_t CompositorLayerResource::SetTexture(
   data_.common.size = *size;
   data_.common.resource_id = compositor_->GenerateResourceId();
   data_.texture->target = target;
-  data_.texture->sync_point = gl->InsertSyncPointCHROMIUM();
+  data_.texture->sync_token = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
   data_.texture->source_rect.point = PP_MakeFloatPoint(0.0f, 0.0f);
   data_.texture->source_rect.size = source_size_;
 

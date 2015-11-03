@@ -142,10 +142,10 @@ class BenchCompositorObserver : public ui::CompositorObserver {
 
 void ReturnMailbox(scoped_refptr<cc::ContextProvider> context_provider,
                    GLuint texture,
-                   GLuint sync_point,
+                   const gpu::SyncToken& sync_token,
                    bool is_lost) {
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
-  gl->WaitSyncPointCHROMIUM(sync_point);
+  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   gl->DeleteTextures(1, &texture);
   gl->ShallowFlushCHROMIUM();
 }
@@ -227,7 +227,7 @@ class WebGLBench : public BenchCompositorObserver {
 
     GLuint sync_point = gl->InsertSyncPointCHROMIUM();
     webgl_.SetTextureMailbox(
-        cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
+        cc::TextureMailbox(mailbox, gpu::SyncToken(sync_point), GL_TEXTURE_2D),
         cc::SingleReleaseCallback::Create(
             base::Bind(ReturnMailbox, context_provider_, texture)),
         bounds.size());
