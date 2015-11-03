@@ -14,8 +14,9 @@ In particular, ~ at the start of a string means it's a regex.
   <Match>
     <Class name="~.*\.R(\$\w+)?" />
   </Match>
+  <!-- Skip the generated Manifest class (including nested classes). -->
   <Match>
-    <Class name="~org\.chromium\..*\.Manifest(\$\w+)?" />
+    <Class name="~.*\.Manifest(\$\w+)?" />
   </Match>
   <Bug pattern="DM_STRING_CTOR" />
   <!-- Ignore "reliance on default String encoding" warnings, as we're not multi-platform -->
