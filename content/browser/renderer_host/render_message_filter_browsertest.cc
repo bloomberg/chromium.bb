@@ -21,7 +21,6 @@
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -43,17 +42,16 @@ using RenderMessageFilterBrowserTest = ContentBrowserTest;
 // interacting with secure cookies.
 IN_PROC_BROWSER_TEST_F(RenderMessageFilterBrowserTest, Cookies) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   SetupCrossSiteRedirector(embedded_test_server());
 
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
   // The server sends a HttpOnly cookie. The RenderMessageFilter should never
   // allow this to be sent to any renderer process.
-  GURL https_url = https_server.GetURL("set-cookie?notforjs=1;HttpOnly");
+  GURL https_url = https_server.GetURL("/set-cookie?notforjs=1;HttpOnly");
   GURL http_url = embedded_test_server()->GetURL("/frame_with_load_event.html");
 
   Shell* shell2 = CreateBrowser();
@@ -112,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(RenderMessageFilterBrowserTest,
   }
 
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   SetupCrossSiteRedirector(embedded_test_server());
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/frame_with_load_event.html"));

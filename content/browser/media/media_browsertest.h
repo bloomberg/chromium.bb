@@ -15,8 +15,8 @@ namespace content {
 class TitleWatcher;
 
 // Class used to automate running media related browser tests. The functions
-// assume that media files are located under files/media/ folder known to
-// the test http server.
+// assume that media files are located under media/ folder known to the test
+// http server.
 class MediaBrowserTest : public ContentBrowserTest {
  public:
   // Common test results.

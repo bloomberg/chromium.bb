@@ -27,6 +27,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "mojo/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/js/constants.h"
@@ -201,10 +202,10 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
     return;
 
   got_message = false;
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   base::RunLoop run_loop;
   factory()->set_run_loop(&run_loop);
-  GURL test_url(test_server()->GetURL("files/web_ui_mojo.html?ping"));
+  GURL test_url(embedded_test_server()->GetURL("/web_ui_mojo.html?ping"));
   NavigateToURL(shell(), test_url);
   // RunLoop is quit when message received from page.
   run_loop.Run();
@@ -231,9 +232,9 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, ConnectToApplication) {
           "content/public/test/test_mojo_service.mojom"))
     return;
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
-                test_server()->GetURL("files/web_ui_mojo_shell_test.html"));
+                embedded_test_server()->GetURL("/web_ui_mojo_shell_test.html"));
 
   DOMMessageQueue message_queue;
   std::string message;

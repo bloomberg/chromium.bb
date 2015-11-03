@@ -313,7 +313,7 @@ void SitePerProcessBrowserTest::SetUpCommandLine(
 
 void SitePerProcessBrowserTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   SetupCrossSiteRedirector(embedded_test_server());
 }
 
@@ -1494,20 +1494,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
-// TODO(creis): Replace SpawnedTestServer with host_resolver to get test to run
-// on Android (http://crbug.com/187570).
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectOnce) {
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
-  GURL http_url(test_server()->GetURL("files/title1.html"));
-  GURL https_url(https_server.GetURL("files/title1.html"));
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL https_url(https_server.GetURL("/title1.html"));
 
   NavigateToURL(shell(), main_url);
 
@@ -1515,8 +1510,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load cross-site client-redirect page into Iframe.
     // Should be blocked.
-    GURL client_redirect_https_url(https_server.GetURL(
-        "client-redirect?files/title1.html"));
+    GURL client_redirect_https_url(
+        https_server.GetURL("/client-redirect?/title1.html"));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     client_redirect_https_url));
     // DidFailProvisionalLoad when navigating to client_redirect_https_url.
@@ -1527,8 +1522,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load cross-site server-redirect page into Iframe,
     // which redirects to same-site page.
-    GURL server_redirect_http_url(https_server.GetURL(
-        "server-redirect?" + http_url.spec()));
+    GURL server_redirect_http_url(
+        https_server.GetURL("/server-redirect?" + http_url.spec()));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     server_redirect_http_url));
     EXPECT_EQ(observer.last_navigation_url(), http_url);
@@ -1538,8 +1533,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load cross-site server-redirect page into Iframe,
     // which redirects to cross-site page.
-    GURL server_redirect_http_url(https_server.GetURL(
-        "server-redirect?files/title1.html"));
+    GURL server_redirect_http_url(
+        https_server.GetURL("/server-redirect?/title1.html"));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     server_redirect_http_url));
     // DidFailProvisionalLoad when navigating to https_url.
@@ -1550,8 +1545,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load same-site server-redirect page into Iframe,
     // which redirects to cross-site page.
-    GURL server_redirect_http_url(test_server()->GetURL(
-        "server-redirect?" + https_url.spec()));
+    GURL server_redirect_http_url(
+        embedded_test_server()->GetURL("/server-redirect?" + https_url.spec()));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     server_redirect_http_url));
 
@@ -1562,8 +1557,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load same-site client-redirect page into Iframe,
     // which redirects to cross-site page.
-    GURL client_redirect_http_url(test_server()->GetURL(
-        "client-redirect?" + https_url.spec()));
+    GURL client_redirect_http_url(
+        embedded_test_server()->GetURL("/client-redirect?" + https_url.spec()));
 
     RedirectNotificationObserver load_observer2(
         NOTIFICATION_LOAD_STOP,
@@ -1586,8 +1581,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load same-site server-redirect page into Iframe,
     // which redirects to same-site page.
-    GURL server_redirect_http_url(test_server()->GetURL(
-        "server-redirect?files/title1.html"));
+    GURL server_redirect_http_url(
+        embedded_test_server()->GetURL("/server-redirect?/title1.html"));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     server_redirect_http_url));
     EXPECT_EQ(observer.last_navigation_url(), http_url);
@@ -1597,8 +1592,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load same-site client-redirect page into Iframe,
     // which redirects to same-site page.
-    GURL client_redirect_http_url(test_server()->GetURL(
-        "client-redirect?" + http_url.spec()));
+    GURL client_redirect_http_url(
+        embedded_test_server()->GetURL("/client-redirect?" + http_url.spec()));
     RedirectNotificationObserver load_observer2(
         NOTIFICATION_LOAD_STOP,
         Source<NavigationController>(
@@ -1620,20 +1615,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
-// TODO(creis): Replace SpawnedTestServer with host_resolver to get test to run
-// on Android (http://crbug.com/187570).
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectTwice) {
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
-  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
-  GURL http_url(test_server()->GetURL("files/title1.html"));
-  GURL https_url(https_server.GetURL("files/title1.html"));
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL https_url(https_server.GetURL("/title1.html"));
 
   NavigateToURL(shell(), main_url);
 
@@ -1641,10 +1631,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load client-redirect page pointing to a cross-site client-redirect page,
     // which eventually redirects back to same-site page.
-    GURL client_redirect_https_url(https_server.GetURL(
-        "client-redirect?" + http_url.spec()));
-    GURL client_redirect_http_url(test_server()->GetURL(
-        "client-redirect?" + client_redirect_https_url.spec()));
+    GURL client_redirect_https_url(
+        https_server.GetURL("/client-redirect?" + http_url.spec()));
+    GURL client_redirect_http_url(embedded_test_server()->GetURL(
+        "/client-redirect?" + client_redirect_https_url.spec()));
 
     // We should wait until second client redirect get cancelled.
     RedirectNotificationObserver load_observer2(
@@ -1664,10 +1654,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load server-redirect page pointing to a cross-site server-redirect page,
     // which eventually redirect back to same-site page.
-    GURL server_redirect_https_url(https_server.GetURL(
-        "server-redirect?" + http_url.spec()));
-    GURL server_redirect_http_url(test_server()->GetURL(
-        "server-redirect?" + server_redirect_https_url.spec()));
+    GURL server_redirect_https_url(
+        https_server.GetURL("/server-redirect?" + http_url.spec()));
+    GURL server_redirect_http_url(embedded_test_server()->GetURL(
+        "/server-redirect?" + server_redirect_https_url.spec()));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     server_redirect_http_url));
     EXPECT_EQ(observer.last_navigation_url(), http_url);
@@ -1677,10 +1667,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load server-redirect page pointing to a cross-site server-redirect page,
     // which eventually redirects back to cross-site page.
-    GURL server_redirect_https_url(https_server.GetURL(
-        "server-redirect?" + https_url.spec()));
-    GURL server_redirect_http_url(test_server()->GetURL(
-        "server-redirect?" + server_redirect_https_url.spec()));
+    GURL server_redirect_https_url(
+        https_server.GetURL("/server-redirect?" + https_url.spec()));
+    GURL server_redirect_http_url(embedded_test_server()->GetURL(
+        "/server-redirect?" + server_redirect_https_url.spec()));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     server_redirect_http_url));
 
@@ -1692,10 +1682,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   {
     // Load server-redirect page pointing to a cross-site client-redirect page,
     // which eventually redirects back to same-site page.
-    GURL client_redirect_http_url(https_server.GetURL(
-        "client-redirect?" + http_url.spec()));
-    GURL server_redirect_http_url(test_server()->GetURL(
-        "server-redirect?" + client_redirect_http_url.spec()));
+    GURL client_redirect_http_url(
+        https_server.GetURL("/client-redirect?" + http_url.spec()));
+    GURL server_redirect_http_url(embedded_test_server()->GetURL(
+        "/server-redirect?" + client_redirect_http_url.spec()));
     EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "test",
                                     server_redirect_http_url));
 

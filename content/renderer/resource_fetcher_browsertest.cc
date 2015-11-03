@@ -20,6 +20,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -180,7 +181,6 @@ class ResourceFetcherTests : public ContentBrowserTest {
 
     ASSERT_TRUE(delegate->completed());
     EXPECT_EQ(delegate->response().httpStatusCode(), 404);
-    EXPECT_TRUE(delegate->data().find("Not Found.") != std::string::npos);
   }
 
   void ResourceFetcherDidFailOnRenderer() {
@@ -295,8 +295,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
   // Need to spin up the renderer.
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("files/simple_page.html"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/simple_page.html"));
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(&ResourceFetcherTests::ResourceFetcherDownloadOnRenderer,
@@ -308,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcher404) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Test 404 response.
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/thisfiledoesntexist.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/thisfiledoesntexist.html");
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(&ResourceFetcherTests::ResourceFetcher404OnRenderer,
@@ -332,8 +332,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("slow?1"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/slow?1"));
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(&ResourceFetcherTests::ResourceFetcherTimeoutOnRenderer,
@@ -346,8 +346,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("slow?1"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/slow?1"));
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(
@@ -363,8 +363,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherPost) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Grab a page that echos the POST body.
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("echo"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/echo"));
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(
@@ -378,8 +378,8 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherSetHeader) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   // Grab a page that echos the POST body.
-  ASSERT_TRUE(test_server()->Start());
-  GURL url(test_server()->GetURL("echoheader?header"));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/echoheader?header"));
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(

@@ -117,8 +117,8 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
   // size to the root window.  Returns after the navigation to the url is
   // complete.
   void StartTestWithPage(const std::string& url) {
-    ASSERT_TRUE(test_server()->Start());
-    GURL test_url(test_server()->GetURL(url));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL test_url(embedded_test_server()->GetURL(url));
     NavigateToURL(shell(), test_url);
     aura::Window* content = shell()->web_contents()->GetContentNativeView();
     content->GetHost()->SetBounds(gfx::Rect(800, 600));
@@ -163,7 +163,7 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
 // menu properly.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicSelection) {
   // Set the test page up.
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
   WebContents* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, BasicSelection) {
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
                        BasicInsertionFollowedByTapsOnHandle) {
   // Set the test page up.
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
   WebContents* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
                        QuickMenuHiddenOnTouch) {
   // Set the test page up.
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
   WebContents* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
 // Tests that the quick menu and touch handles are hidden during an scroll.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
   // Set the test page up.
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
   WebContents* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest, HiddenOnScroll) {
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
                        HiddenAfterOverscroll) {
   // Set the page up.
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/touch_selection.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
   WebContents* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(

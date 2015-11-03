@@ -331,8 +331,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SynthesizeTapGesture) {
 #endif  // defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL test_url = test_server()->GetURL("files/devtools/navigation.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
   Attach();
   SendCommand("Page.enable", nullptr, false);
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNoDetach) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   GURL test_url1 = embedded_test_server()->GetURL(
@@ -377,8 +377,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNoDetach) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReconnectPreservesState) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL test_url = test_server()->GetURL("files/devtools/navigation.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
 
   Shell* second = CreateBrowser();
@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReconnectPreservesState) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
 
   NavigateToURLBlockUntilNavigationsComplete(shell(),

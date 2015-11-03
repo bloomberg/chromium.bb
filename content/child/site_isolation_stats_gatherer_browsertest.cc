@@ -13,7 +13,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -28,13 +28,13 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
   ~SiteIsolationStatsGathererBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
     // Add a host resolver rule to map all outgoing requests to the test server.
     // This allows us to use "real" hostnames in URLs, which we can use to
     // create arbitrary SiteInstances.
     command_line->AppendSwitchASCII(
         switches::kHostResolverRules,
-        "MAP * " + test_server()->host_port_pair().ToString() +
+        "MAP * " + embedded_test_server()->host_port_pair().ToString() +
             ",EXCLUDE localhost");
 
     // Since we assume exploited renderer process, it can bypass the same origin
@@ -112,26 +112,15 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationStatsGathererBrowserTest);
 };
 
-// TODO(dsjang): we cannot run these tests on Android since SetUpCommandLine()
-// is executed before the I/O thread is created on Android. After this bug
-// (crbug.com/278425) is resolved, we can enable this test case on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_CrossSiteDocumentBlockingForMimeType \
-  DISABLED_CrossSiteDocumentBlockingForMimeType
-#else
-#define MAYBE_CrossSiteDocumentBlockingForMimeType \
-  CrossSiteDocumentBlockingForMimeType
-#endif
-
 IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
-                       MAYBE_CrossSiteDocumentBlockingForMimeType) {
+                       CrossSiteDocumentBlockingForMimeType) {
   // Load a page that issues illegal cross-site document requests to bar.com.
   // The page uses XHR to request HTML/XML/JSON documents from bar.com, and
   // inspects if any of them were successfully received. Currently, on illegal
   // access, the XHR requests should succeed, but the UMA histograms should
   // record that they would have been blocked. This test is only possible since
   // we run the browser without the same origin policy.
-  GURL foo("http://foo.com/files/cross_site_document_request.html");
+  GURL foo("http://foo.com/cross_site_document_request.html");
 
   NavigateToURL(shell(), foo);
 
@@ -192,19 +181,8 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
   }
 }
 
-// TODO(dsjang): we cannot run these tests on Android since SetUpCommandLine()
-// is executed before the I/O thread is created on Android. After this bug
-// (crbug.com/278425) is resolved, we can enable this test case on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_CrossSiteDocumentBlockingForDifferentTargets \
-  DISABLED_CrossSiteDocumentBlockingForDifferentTargets
-#else
-#define MAYBE_CrossSiteDocumentBlockingForDifferentTargets \
-  CrossSiteDocumentBlockingForDifferentTargets
-#endif
-
 IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
-                       MAYBE_CrossSiteDocumentBlockingForDifferentTargets) {
+                       CrossSiteDocumentBlockingForDifferentTargets) {
   // This webpage loads a cross-site HTML page in different targets such as
   // <img>,<link>,<embed>, etc. Since the requested document is blocked, and one
   // character string (' ') is returned instead, this tests that the renderer
@@ -214,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
 
   // TODO(nick): Split up these cases, and add positive assertions here about
   // what actually happens in these various resource-block cases.
-  GURL foo("http://foo.com/files/cross_site_document_request_target.html");
+  GURL foo("http://foo.com/cross_site_document_request_target.html");
   NavigateToURL(shell(), foo);
 }
 

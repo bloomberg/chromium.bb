@@ -7,10 +7,11 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
-const char kTestFile[] = "files/simple_page.html";
+const char kTestFile[] = "/simple_page.html";
 
 class SavePackageBrowserTest : public ContentBrowserTest {
  protected:
@@ -34,22 +35,21 @@ class SavePackageBrowserTest : public ContentBrowserTest {
 // Create a SavePackage and delete it without calling Init.
 // SavePackage dtor has various asserts/checks that should not fire.
 IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ImplicitCancel) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL(kTestFile);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(kTestFile);
   NavigateToURL(shell(), url);
   base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   scoped_refptr<SavePackage> save_package(new SavePackage(
       shell()->web_contents(), SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name,
       dir));
-  ASSERT_TRUE(test_server()->Stop());
 }
 
 // Create a SavePackage, call Cancel, then delete it.
 // SavePackage dtor has various asserts/checks that should not fire.
 IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ExplicitCancel) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL(kTestFile);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(kTestFile);
   NavigateToURL(shell(), url);
   base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
@@ -57,7 +57,6 @@ IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ExplicitCancel) {
       shell()->web_contents(), SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name,
       dir));
   save_package->Cancel(true);
-  ASSERT_TRUE(test_server()->Stop());
 }
 
 }  // namespace content

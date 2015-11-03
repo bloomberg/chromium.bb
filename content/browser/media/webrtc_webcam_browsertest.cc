@@ -71,7 +71,7 @@ class WebRtcWebcamBrowserTest: public ContentBrowserTest {
 // want here since the bot runs tests sequentially on the device.
 IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
                        MANUAL_CanAcquireVgaOnRealWebcam) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
       "/media/getusermedia-real-webcam.html"));
   NavigateToURL(shell(), url);

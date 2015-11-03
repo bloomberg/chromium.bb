@@ -49,7 +49,7 @@ class SessionHistoryTest : public ContentBrowserTest {
   SessionHistoryTest() {}
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleEchoTitleRequest, "/echotitle"));
 

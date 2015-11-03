@@ -681,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, ConvertedGraphs) {
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
                        DISABLED_WithRealPeerConnectionCall) {
   // Start a peerconnection call in the first window.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
   ASSERT_TRUE(ExecuteJavascript("call({video:true});"));

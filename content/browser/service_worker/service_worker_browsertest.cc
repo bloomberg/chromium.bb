@@ -306,7 +306,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
         shell()->web_contents()->GetBrowserContext());
     wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
@@ -985,13 +985,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
                        MAYBE_ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
-  const char kPageUrl[] = "files/service_worker/fetch_event_blob.html";
-  const char kWorkerUrl[] = "files/service_worker/fetch_event_blob.js";
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::BaseTestServer::SSLOptions(
-          net::BaseTestServer::SSLOptions::CERT_OK),
-      base::FilePath(FILE_PATH_LITERAL("content/test/data/")));
+  const char kPageUrl[] = "/service_worker/fetch_event_blob.html";
+  const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
   scoped_refptr<WorkerActivatedObserver> observer =

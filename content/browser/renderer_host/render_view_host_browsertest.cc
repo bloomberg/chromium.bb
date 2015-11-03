@@ -62,7 +62,7 @@ class RenderViewHostTestWebContentsObserver : public WebContentsObserver {
 };
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(shell()->web_contents());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
 }
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(shell()->web_contents());
 
   // Base URL is not set if it is the same as the URL.
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
 // This test ensures a RenderFrameHost object is created for the top level frame
 // in each RenderViewHost.
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BasicRenderFrameHost) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateToURL(shell(), test_url);
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BasicRenderFrameHost) {
 }
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, IsFocusedElementEditable) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/touch_selection.html");
   NavigateToURL(shell(), test_url);
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, IsFocusedElementEditable) {
 }
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, ReleaseSessionOnCloseACK) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url = embedded_test_server()->GetURL(
       "/access-session-storage.html");
   NavigateToURL(shell(), test_url);

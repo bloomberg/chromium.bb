@@ -121,7 +121,7 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
   void RunGetUserMediaAndCollectMeasures(const int time_to_sample_secs,
                                          const std::string& measure_filter,
                                          const std::string& graph_name) {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
     NavigateToURL(shell(), url);
@@ -179,7 +179,7 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
       const std::string& constraints1,
       const std::string& constraints2,
       const std::string& expected_result) {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
     NavigateToURL(shell(), url);
@@ -249,7 +249,7 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_GetVideoStreamAndStop) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_RenderSameTrackMediastreamAndStop) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        RenderClonedMediastreamAndStop) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        kRenderClonedTrackMediastreamAndStop) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        kRenderDuplicatedMediastreamAndStop) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetAudioAndVideoStreamAndStop) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetAudioAndVideoStreamAndClone) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // Flaky everywhere else: http://crbug.com/523152
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        RenderVideoTrackInMultipleTagsAndPause) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithMandatorySourceID) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   std::vector<std::string> audio_ids;
   std::vector<std::string> video_ids;
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithInvalidMandatorySourceID) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   std::vector<std::string> audio_ids;
   std::vector<std::string> video_ids;
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithInvalidOptionalSourceID) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   std::vector<std::string> audio_ids;
   std::vector<std::string> video_ids;
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        TwoGetUserMediaAndStop) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -521,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_TwoGetUserMediaAndVerifyFrameRate) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithTooHighVideoConstraintsValues) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // verifies getUserMedia can succeed after being given impossible constraints.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        TwoGetUserMediaAndCheckCallbackAfterFailure) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -611,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_TestGetUserMediaAspectRatio4To3) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -633,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_TestGetUserMediaAspectRatio16To9) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -655,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        MAYBE_TestGetUserMediaAspectRatio1To1) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -671,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // in the scope of the success callback.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        AudioInIFrameAndCloseInSuccessCb) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        VideoInIFrameAndCloseInSuccessCb) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -697,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // in the scope of the failure callback.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        VideoWithBadConstraintsInIFrameAndCloseInFailureCb) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        InvalidSourceIdInIFrameAndCloseInFailureCb) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
@@ -765,7 +765,7 @@ class WebRtcConstraintsBrowserTest
 // This test calls getUserMedia in sequence with different constraints.
 IN_PROC_BROWSER_TEST_P(WebRtcConstraintsBrowserTest,
                        MAYBE_GetUserMediaConstraints) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 

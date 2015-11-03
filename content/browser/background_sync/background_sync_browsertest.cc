@@ -27,6 +27,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/network_change_notifier.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::NetworkChangeNotifier;
@@ -35,7 +36,7 @@ namespace content {
 
 namespace {
 
-const char kDefaultTestURL[] = "files/background_sync/test.html";
+const char kDefaultTestURL[] = "/background_sync/test.html";
 
 const char kSuccessfulOperationPrefix[] = "ok - ";
 
@@ -127,11 +128,9 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    https_server_.reset(new net::SpawnedTestServer(
-        net::SpawnedTestServer::TYPE_HTTPS,
-        net::BaseTestServer::SSLOptions(
-            net::BaseTestServer::SSLOptions::CERT_OK),
-        base::FilePath(FILE_PATH_LITERAL("content/test/data/"))));
+    https_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(https_server_->Start());
 
     SetIncognitoMode(false);
@@ -189,7 +188,7 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   bool StoreRegistrationOneShot(const std::string& tag);
 
  private:
-  scoped_ptr<net::SpawnedTestServer> https_server_;
+  scoped_ptr<net::EmbeddedTestServer> https_server_;
   Shell* shell_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncBrowserTest);

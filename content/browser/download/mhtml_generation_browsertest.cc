@@ -31,7 +31,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     ContentBrowserTest::SetUp();
   }
 
@@ -145,7 +145,7 @@ class MHTMLGenerationSitePerProcessTest : public MHTMLGenerationTest {
     MHTMLGenerationTest::SetUpOnMainThread();
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     content::SetupCrossSiteRedirector(embedded_test_server());
   }
 

@@ -36,6 +36,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -250,8 +251,12 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   // size to the root window.  Returns after the navigation to the url is
   // complete.
   void StartTestWithPage(const std::string& url) {
-    ASSERT_TRUE(test_server()->Start());
-    GURL test_url(test_server()->GetURL(url));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL test_url;
+    if (url == "about:blank")
+      test_url = GURL(url);
+    else
+      test_url = GURL(embedded_test_server()->GetURL(url));
     NavigateToURL(shell(), test_url);
 
     WebContentsImpl* web_contents =
@@ -271,8 +276,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   }
 
   void TestOverscrollNavigation(bool touch_handler) {
-    ASSERT_NO_FATAL_FAILURE(
-        StartTestWithPage("files/overscroll_navigation.html"));
+    ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     NavigationController& controller = web_contents->GetController();
@@ -467,8 +471,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 #endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_QuickOverscrollDirectionChange) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
@@ -563,8 +566,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
   }
 #endif
 
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
@@ -653,13 +655,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
 // RenderViewHost to be swapped out.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_ScreenshotForSwappedOutRenderViews) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   // Create a new server with a different site.
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
   WebContentsImpl* web_contents =
@@ -670,14 +669,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     GURL url;
     int transition;
   } navigations[] = {
-    { https_server.GetURL("files/title1.html"),
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR },
-    { test_server()->GetURL("files/title2.html"),
-      ui::PAGE_TRANSITION_AUTO_BOOKMARK },
-    { https_server.GetURL("files/title3.html"),
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR },
-    { GURL(), 0 }
-  };
+      {https_server.GetURL("/title1.html"),
+       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR},
+      {embedded_test_server()->GetURL("/title2.html"),
+       ui::PAGE_TRANSITION_AUTO_BOOKMARK},
+      {https_server.GetURL("/title3.html"),
+       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR},
+      {GURL(), 0}};
 
   screenshot_manager()->Reset();
   for (int i = 0; !navigations[i].url.is_empty(); ++i) {
@@ -722,8 +720,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // Tests that navigations resulting from reloads, history.replaceState,
 // and history.pushState do not capture screenshots.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ReplaceStateReloadPushState) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
@@ -761,8 +758,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ReplaceStateReloadPushState) {
 //               better.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        DISABLED_ContentWindowReparent) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->Init(ui::LAYER_NOT_DRAWN);
@@ -785,8 +781,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -818,8 +813,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_RepeatedQuickOverscrollGestures) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -873,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
 // Verify that hiding a parent of the renderer will hide the content too.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, HideContentOnParenHide) {
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("files/title1.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/title1.html"));
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   aura::Window* content = web_contents->GetNativeView()->parent();
@@ -887,8 +881,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, HideContentOnParenHide) {
 // Ensure that SnapToPhysicalPixelBoundary() is called on WebContentsView parent
 // change. This is a regression test for http://crbug.com/388908.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->Init(ui::LAYER_NOT_DRAWN);
@@ -918,8 +911,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
 // a non-scrollable area, except during gesture-nav.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_OverscrollNavigationTouchThrottling) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartTestWithPage("files/overscroll_navigation.html"));
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
   AddInputEventMessageFilter();
 

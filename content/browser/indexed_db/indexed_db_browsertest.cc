@@ -693,7 +693,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
 IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
   ASSERT_TRUE(embedded_test_server()->Started() ||
-              embedded_test_server()->InitializeAndWaitUntilReady());
+              embedded_test_server()->Start());
   const GURL& origin_url = embedded_test_server()->base_url();
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&CorruptDBRequestHandler,

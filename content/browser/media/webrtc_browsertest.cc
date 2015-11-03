@@ -46,7 +46,7 @@ class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
   // Convenience function since most peerconnection-call.html tests just load
   // the page, kick off some javascript and wait for the title to change to OK.
   void MakeTypicalPeerConnectionCall(const std::string& javascript) {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
     GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
     NavigateToURL(shell(), url);

@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteRedirectorBrowserTest,
                        VerifyCrossSiteRedirectURL) {
   // Map all hosts to localhost and setup the EmbeddedTestServer for redirects.
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   SetupCrossSiteRedirector(embedded_test_server());
 
   // Navigate to http://localhost:<port>/cross-site/foo.com/title2.html and

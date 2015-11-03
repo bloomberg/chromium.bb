@@ -21,7 +21,6 @@
 #include "content/test/weburl_loader_mock_factory.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "storage/browser/database/vfs_backend.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"

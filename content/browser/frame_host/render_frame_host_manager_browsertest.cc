@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -45,7 +46,7 @@
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 
 using base::ASCIIToUTF16;
 
@@ -76,36 +77,36 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
     replace_host_.SetHostStr(foo_com_);
   }
 
-  static bool GetFilePathWithHostAndPortReplacement(
+  static void GetFilePathWithHostAndPortReplacement(
       const std::string& original_file_path,
       const net::HostPortPair& host_port_pair,
       std::string* replacement_path) {
-    std::vector<net::SpawnedTestServer::StringPair> replacement_text;
+    base::StringPairs replacement_text;
     replacement_text.push_back(
         make_pair("REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()));
-    return net::SpawnedTestServer::GetFilePathWithReplacements(
+    net::test_server::GetFilePathWithReplacements(
         original_file_path, replacement_text, replacement_path);
   }
 
   void StartServer() {
     // Support multiple sites on the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
 
-    foo_host_port_ = test_server()->host_port_pair();
+    foo_host_port_ = embedded_test_server()->host_port_pair();
     foo_host_port_.set_host(foo_com_);
   }
 
   void StartEmbeddedServer() {
     // Support multiple sites on the embedded test server.
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
     SetupCrossSiteRedirector(embedded_test_server());
   }
 
   // Returns a URL on foo.com with the given path.
   GURL GetCrossSiteURL(const std::string& path) {
-    GURL cross_site_url(test_server()->GetURL(path));
+    GURL cross_site_url(embedded_test_server()->GetURL(path));
     return cross_site_url.ReplaceComponents(replace_host_);
   }
 
@@ -999,8 +1000,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
   EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Load a cross-site page that fails with a 204 error.
-  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(shell(),
-                                             GetCrossSiteURL("nocontent")));
+  EXPECT_TRUE(
+      NavigateToURLAndExpectNoCommit(shell(), GetCrossSiteURL("/nocontent")));
 
   // We should still be looking at the normal page.  Because we started from a
   // blank new tab, the typed URL will still be visible until the user clears it
@@ -1016,7 +1017,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
   // Renderer-initiated navigations should work.
   base::string16 expected_title = ASCIIToUTF16("Title Of Awesomeness");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-  GURL url = test_server()->GetURL("files/title2.html");
+  GURL url = embedded_test_server()->GetURL("/title2.html");
   EXPECT_TRUE(ExecuteScript(
       shell()->web_contents(),
       base::StringPrintf("location.href = '%s'", url.spec().c_str())));
@@ -1024,7 +1025,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
 
   // Opens in same tab.
   EXPECT_EQ(1u, Shell::windows().size());
-  EXPECT_EQ("/files/title2.html",
+  EXPECT_EQ("/title2.html",
             shell()->web_contents()->GetLastCommittedURL().path());
 
   // Should have the same SiteInstance.
@@ -1038,11 +1039,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
 // about:blank page is modified by another window.  At that point, we should
 // revert to showing about:blank to prevent a URL spoof.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ShowLoadingURLUntilSpoof) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load a page that can open a URL that won't commit in a new window.
-  NavigateToURL(
-      shell(), test_server()->GetURL("files/click-nocontent-link.html"));
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/click-nocontent-link.html"));
   WebContents* orig_contents = shell()->web_contents();
 
   // Click a /nocontent link that opens in a new window but never commits.
@@ -1088,11 +1089,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ShowLoadingURLUntilSpoof) {
 // show the pending URL without allowing a spoof.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DontShowLoadingURLIfNotInitialNav) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load a page that can open a URL that won't commit in a new window.
-  NavigateToURL(
-      shell(), test_server()->GetURL("files/click-nocontent-link.html"));
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/click-nocontent-link.html"));
   WebContents* orig_contents = shell()->web_contents();
 
   // Click a /nocontent link that opens in a new window but never commits.
@@ -1714,7 +1715,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   file = file.AppendASCII("bar");
 
   // Navigate to url and get it to reference a file in its PageState.
-  GURL url1(test_server()->GetURL("files/file_input.html"));
+  GURL url1(embedded_test_server()->GetURL("/file_input.html"));
   NavigateToURL(shell(), url1);
   int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
   scoped_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
@@ -1730,7 +1731,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderProcessHostWatcher exit_observer(
       shell()->web_contents()->GetRenderProcessHost(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
-  NavigateToURL(shell(), GetCrossSiteURL("files/title1.html"));
+  NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
@@ -1758,7 +1759,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate to a same site page to trigger a PageState update and ensure the
   // renderer is not killed.
   EXPECT_TRUE(
-      NavigateToURL(shell(), test_server()->GetURL("files/title2.html")));
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
 }
 
 // Test for http://crbug.com/441966.
@@ -1770,7 +1771,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   file = file.AppendASCII("bar");
 
   // Navigate to url and get it to reference a file in its PageState.
-  GURL url1(test_server()->GetURL("files/file_input_subframe.html"));
+  GURL url1(embedded_test_server()->GetURL("/file_input_subframe.html"));
   NavigateToURL(shell(), url1);
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = wc->GetFrameTree()->root();
@@ -1788,7 +1789,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   RenderProcessHostWatcher exit_observer(
       shell()->web_contents()->GetRenderProcessHost(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
-  NavigateToURL(shell(), GetCrossSiteURL("files/title1.html"));
+  NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       shell()->web_contents()->GetRenderProcessHost()->GetID(), file));

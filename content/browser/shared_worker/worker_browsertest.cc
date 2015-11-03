@@ -22,6 +22,8 @@
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "net/base/escape.h"
 #include "net/base/test_data_directory.h"
+#include "net/ssl/ssl_server_config.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "url/gurl.h"
 
@@ -141,8 +143,8 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, IncognitoSharedWorkers) {
 // Make sure that auth dialog is displayed from worker context.
 // http://crbug.com/33344
 IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerHttpAuth) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/workers/worker_auth.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/workers/worker_auth.html");
 
   NavigateAndWaitForAuth(url);
 }
@@ -158,24 +160,24 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   if (!SupportsSharedWorker())
     return;
 
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/workers/shared_worker_auth.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/workers/shared_worker_auth.html");
   NavigateAndWaitForAuth(url);
 }
 
 // Tests that TLS client auth prompts for normal workers.
 IN_PROC_BROWSER_TEST_F(WorkerTest, WorkerTlsClientAuth) {
   // Launch HTTPS server.
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  net::SSLServerConfig ssl_config;
+  ssl_config.require_client_cert = true;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
   ASSERT_TRUE(https_server.Start());
 
   RunTest("worker_tls_client_auth.html",
-          "url=" +
-              net::EscapeQueryParamValue(https_server.GetURL("").spec(), true));
+          "url=" + net::EscapeQueryParamValue(https_server.GetURL("/").spec(),
+                                              true));
   EXPECT_EQ(1, select_certificate_count());
 }
 
@@ -186,16 +188,16 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, SharedWorkerTlsClientAuth) {
     return;
 
   // Launch HTTPS server.
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  net::SSLServerConfig ssl_config;
+  ssl_config.require_client_cert = true;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
   ASSERT_TRUE(https_server.Start());
 
   RunTest("worker_tls_client_auth.html",
-          "shared=true&url=" +
-              net::EscapeQueryParamValue(https_server.GetURL("").spec(), true));
+          "shared=true&url=" + net::EscapeQueryParamValue(
+                                   https_server.GetURL("/").spec(), true));
   EXPECT_EQ(0, select_certificate_count());
 }
 

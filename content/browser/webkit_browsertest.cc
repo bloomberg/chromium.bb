@@ -8,13 +8,14 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/net/url_request_abort_on_end_job.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
 typedef ContentBrowserTest WebKitBrowserTest;
 
 const char kAsyncScriptThatAbortsOnEndPage[] =
-    "files/webkit/async_script_abort_on_end.html";
+    "/webkit/async_script_abort_on_end.html";
 
 // This is a browser test because it is hard to reproduce reliably in a
 // layout test without races. http://crbug.com/75604 deals with a request
@@ -23,9 +24,9 @@ const char kAsyncScriptThatAbortsOnEndPage[] =
 // if chrome does not crash.
 
 IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   URLRequestAbortOnEndJob::AddUrlHandler();
-  GURL url = test_server()->GetURL(kAsyncScriptThatAbortsOnEndPage);
+  GURL url = embedded_test_server()->GetURL(kAsyncScriptThatAbortsOnEndPage);
 
   NavigateToURL(shell(), url);
 
@@ -43,12 +44,11 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
 
 // TODO(gavinp): remove this browser_test if we can get good LayoutTest
 // coverage of the same issue.
-const char kXsltBadImportPage[] =
-    "files/webkit/xslt-bad-import.html";
+const char kXsltBadImportPage[] = "/webkit/xslt-bad-import.html";
 IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
   URLRequestAbortOnEndJob::AddUrlHandler();
-  GURL url = test_server()->GetURL(kXsltBadImportPage);
+  GURL url = embedded_test_server()->GetURL(kXsltBadImportPage);
 
   NavigateToURL(shell(), url);
 
@@ -65,11 +65,10 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
 // But both will exist when we use content_shell to run layout tests. We must
 // then add a mechanism to start content_shell without these, or else this
 // test is not very interesting.
-const char kPrerenderNoCrashPage[] =
-    "files/prerender/prerender-no-crash.html";
+const char kPrerenderNoCrashPage[] = "/prerender/prerender-no-crash.html";
 IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, PrerenderNoCrash) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL(kPrerenderNoCrashPage);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(kPrerenderNoCrashPage);
 
   NavigateToURL(shell(), url);
 

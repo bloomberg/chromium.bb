@@ -99,7 +99,7 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
 // Test title for content created by javascript window.open().
 // See http://crbug.com/5988
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle1) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/dynamic1.html"));
   base::string16 title;
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle1) {
 // Test title for content created by javascript window.open().
 // See http://crbug.com/5988
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle2) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/dynamic2.html"));
   base::string16 title;
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 // Test for bug #1091358.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(
       shell(), embedded_test_server()->GetURL("/sync_xmlhttprequest.html"));
 
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
 // If this flakes, use http://crbug.com/62776.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SyncXMLHttpRequest_Disallowed) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(
       shell(),
       embedded_test_server()->GetURL("/sync_xmlhttprequest_disallowed.html"));
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        MAYBE_SyncXMLHttpRequest_DuringUnload) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   BrowserContext::GetDownloadManager(
       shell()->web_contents()->GetBrowserContext())->AddObserver(this);
 
@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // Tests that onunload is run for cross-site requests.  (Bug 1114994)
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        DISABLED_CrossSiteOnunloadCookie) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url = embedded_test_server()->GetURL("/onunload_cookie.html");
   CheckTitleTest(url, "set cookie on unload");
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // without network loads (e.g., about:blank, data URLs).
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        DISABLED_CrossSiteImmediateLoadOnunloadCookie) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url = embedded_test_server()->GetURL("/onunload_cookie.html");
   CheckTitleTest(url, "set cookie on unload");
@@ -294,7 +294,7 @@ scoped_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
 // If this flakes use http://crbug.com/80596.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossSiteNoUnloadOn204) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Start with a URL that sets a cookie in its unload handler.
   GURL url = embedded_test_server()->GetURL("/onunload_cookie.html");
@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // away from the link doctor page.  (Bug 1235537)
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        DISABLED_CrossSiteNavigationErrorPage) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/onunload_cookie.html"));
   CheckTitleTest(url, "set cookie on unload");
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossSiteNavigationErrorPage2) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title2.html"));
   CheckTitleTest(url, "Title Of Awesomeness");
@@ -480,7 +480,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
 // Test that we update the cookie policy URLs correctly when transferring
 // navigations.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CookiePolicy) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRedirectRequest, "/redirect?"));
 
@@ -524,7 +524,7 @@ class PageTransitionResourceDispatcherHostDelegate
 // when encountering a meta refresh tag.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        PageTransitionClientRedirect) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   PageTransitionResourceDispatcherHostDelegate delegate(
       embedded_test_server()->GetURL("/title1.html"));

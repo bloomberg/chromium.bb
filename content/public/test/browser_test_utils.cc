@@ -809,8 +809,7 @@ void FetchHistogramsFromChildProcesses() {
   runner->Run();
 }
 
-void SetupCrossSiteRedirector(
-    net::test_server::EmbeddedTestServer* embedded_test_server) {
+void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
    embedded_test_server->RegisterRequestHandler(
        base::Bind(&CrossSiteRedirectResponseHandler,
                   embedded_test_server->base_url()));

@@ -65,8 +65,8 @@ class AsyncResourceHandlerBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AsyncResourceHandlerBrowserTest, UploadProgress) {
-  net::test_server::EmbeddedTestServer* test_server = embedded_test_server();
-  ASSERT_TRUE(test_server->InitializeAndWaitUntilReady());
+  net::EmbeddedTestServer* test_server = embedded_test_server();
+  ASSERT_TRUE(test_server->Start());
   test_server->RegisterRequestHandler(
       base::Bind(&HandlePostAndRedirectURLs, kPostPath));
 
@@ -85,8 +85,8 @@ IN_PROC_BROWSER_TEST_F(AsyncResourceHandlerBrowserTest, UploadProgress) {
 
 IN_PROC_BROWSER_TEST_F(AsyncResourceHandlerBrowserTest,
                        UploadProgressRedirect) {
-  net::test_server::EmbeddedTestServer* test_server = embedded_test_server();
-  ASSERT_TRUE(test_server->InitializeAndWaitUntilReady());
+  net::EmbeddedTestServer* test_server = embedded_test_server();
+  ASSERT_TRUE(test_server->Start());
   test_server->RegisterRequestHandler(
       base::Bind(&HandlePostAndRedirectURLs, kRedirectPostPath));
 

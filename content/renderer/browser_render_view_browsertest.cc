@@ -194,10 +194,10 @@ class RenderViewBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load URL with "nocache" set, to create stale cache.
-  GURL test_url(test_server()->GetURL("files/nocache.html"));
+  GURL test_url(embedded_test_server()->GetURL("/nocache.html"));
   NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
 
   // Reload same URL after forcing an error from the the network layer;

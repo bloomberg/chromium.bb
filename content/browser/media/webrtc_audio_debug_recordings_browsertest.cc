@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     return;
   }
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
   NavigateToURL(shell(), GURL(""));
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     return;
   }
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
   NavigateToURL(shell(), GURL(""));
@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     return;
   }
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // We must navigate somewhere first so that the render process is created.
   NavigateToURL(shell(), GURL(""));

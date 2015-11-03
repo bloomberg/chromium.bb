@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/javascript_test_observer.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "url/gurl.h"
 
 // This file provides test classes for writing Pepper tests for

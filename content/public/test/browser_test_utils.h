@@ -37,6 +37,9 @@ namespace net {
 namespace test_server {
 class EmbeddedTestServer;
 }
+// TODO(svaldez): Remove typedef once EmbeddedTestServer has been migrated
+// out of net::test_server.
+using test_server::EmbeddedTestServer;
 }
 
 // A collections of functions designed for use with content_browsertests and
@@ -248,8 +251,7 @@ void FetchHistogramsFromChildProcesses();
 // "/cross-site/hostname/rest/of/path" to redirect the request to
 // "<scheme>://hostname:<port>/rest/of/path", where <scheme> and <port>
 // are the values for the instance of EmbeddedTestServer.
-void SetupCrossSiteRedirector(
-    net::test_server::EmbeddedTestServer* embedded_test_server);
+void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server);
 
 // Waits for an interstitial page to attach to given web contents.
 void WaitForInterstitialAttach(content::WebContents* web_contents);

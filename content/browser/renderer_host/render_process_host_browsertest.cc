@@ -62,7 +62,7 @@ class RenderProcessHostTest : public ContentBrowserTest,
 // http://crbug.com/87176.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        ShutdownRequestFromActiveTabIgnored) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateToURL(shell(), test_url);
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateToURL(shell(), test_url);
@@ -160,7 +160,7 @@ class ObserverLogger : public RenderProcessHostObserver {
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        AllProcessExitedCallsBeforeAnyHostDestroyedCalls) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateToURL(shell(), test_url);
