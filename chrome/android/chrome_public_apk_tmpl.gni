@@ -1,0 +1,32 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+# GYP: //chrome/android/chrome_apk.gypi
+template("chrome_public_apk_tmpl") {
+  forward_variables_from(invoker, "*")
+
+  android_apk(target_name) {
+    asset_location = "$root_build_dir/chrome_public_apk_assets"
+    _native_lib_file =
+        rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
+    native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
+
+    # TODO(GYP):
+    #'proguard_enabled': 'true',
+    #'proguard_flags_paths': [
+    #  'chrome/android/java/proguard.flags',
+    #]
+
+    if (chromium_linker_supported) {
+      use_chromium_linker = true
+
+      # TODO: Enable packed relocations for x64. See: b/20532404
+      if (current_cpu != "x64") {
+        enable_relocation_packing = true
+      }
+    }
+  }
+}

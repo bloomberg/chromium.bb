@@ -5,6 +5,7 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build_overrides/v8.gni")
+import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
@@ -341,11 +342,9 @@ android_resources("chrome_public_apk_resources") {
   ]
 }
 
-chrome_public_apk_assets_dir = "$root_build_dir/chrome_public_apk_assets"
-
 copy_ex("chrome_public_apk_assets") {
   clear_dir = true
-  dest = chrome_public_apk_assets_dir
+  dest = "$root_build_dir/chrome_public_apk_assets"
   sources = chrome_android_paks_gypi.chrome_android_pak_input_resources
   if (icu_use_data_file) {
     sources += [ "$root_build_dir/icudtl.dat" ]
@@ -410,7 +409,7 @@ shared_library("chrome_public") {
   #],
 }
 
-android_apk("chrome_public_apk") {
+chrome_public_apk_tmpl("chrome_public_apk") {
   version_name = "Developer Build"
   version_code = "1"
   android_manifest = get_target_outputs(":chrome_public_apk_manifest")
@@ -418,10 +417,6 @@ android_apk("chrome_public_apk") {
   apk_name = "ChromePublic"
   native_libs = [ "$root_build_dir/lib.stripped/libchrome_public.so" ]
   native_lib_version_rule = "//build/util:chrome_version_json"
-  _native_lib_file =
-      rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
-  native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
-  asset_location = chrome_public_apk_assets_dir
 
   deps = [
     ":chrome_java",

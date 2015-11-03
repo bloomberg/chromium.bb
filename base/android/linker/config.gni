@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(GYP) add "|| profiling_full_stack_frames
-# Only enable the chromium linker on regular builds, since the
-# component build crashes on Android 4.4. See b/11379966
-chromium_linker_supported = !is_component_build
+import("//build/config/android/config.gni")
+
+# Chromium linker crashes on component builds on Android 4.4. See b/11379966
+# Chromium linker causes instrumentation to return incorrect results.
+chromium_linker_supported = !is_component_build && !use_order_profiling
