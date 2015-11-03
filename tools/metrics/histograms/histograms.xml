@@ -14437,6 +14437,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.EGLDisplayType" enum="EGLDisplayType">
+  <owner>jbauman@chromium.org</owner>
+  <summary>The display type used to ask for an EGLDisplay.</summary>
+</histogram>
+
 <histogram name="GPU.FenceSupport" enum="BooleanAvailable">
   <owner>reveman@chromium.org</owner>
   <summary>
@@ -56945,6 +56950,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="23" label="P-256"/>
   <int value="24" label="P-384"/>
   <int value="25" label="P-521"/>
+</enum>
+
+<enum name="EGLDisplayType" type="int">
+  <int value="0" label="Default"/>
+  <int value="1" label="SwiftShader"/>
+  <int value="2" label="ANGLE WARP"/>
+  <int value="3" label="ANGLE D3D9"/>
+  <int value="4" label="ANGLE D3D11"/>
+  <int value="5" label="ANGLE OpenGL"/>
+  <int value="6" label="ANGLE OpenGL ES"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase" type="int">

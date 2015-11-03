@@ -24,14 +24,17 @@ namespace gfx {
 // Get default EGL display for GLSurfaceEGL (differs by platform).
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay();
 
+// If adding a new type, also add it to EGLDisplayType in
+// tools/metrics/histograms/histograms.xml. Don't remove or reorder entries.
 enum DisplayType {
-  DEFAULT,
-  SWIFT_SHADER,
-  ANGLE_WARP,
-  ANGLE_D3D9,
-  ANGLE_D3D11,
-  ANGLE_OPENGL,
-  ANGLE_OPENGLES,
+  DEFAULT = 0,
+  SWIFT_SHADER = 1,
+  ANGLE_WARP = 2,
+  ANGLE_D3D9 = 3,
+  ANGLE_D3D11 = 4,
+  ANGLE_OPENGL = 5,
+  ANGLE_OPENGLES = 6,
+  DISPLAY_TYPE_MAX = 7,
 };
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
