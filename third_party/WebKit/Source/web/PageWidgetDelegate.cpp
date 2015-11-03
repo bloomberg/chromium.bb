@@ -60,7 +60,12 @@ void PageWidgetDelegate::animate(Page& page, double monotonicFrameBeginTime)
 
 void PageWidgetDelegate::layout(Page& page, LocalFrame& root)
 {
-    page.animator().updateLayoutAndStyleForPainting(&root);
+    page.animator().updateLayoutAndStyleForPainting(root);
+}
+
+void PageWidgetDelegate::updateAllLifecyclePhases(Page& page, LocalFrame& root)
+{
+    page.animator().updateAllLifecyclePhases(root);
 }
 
 static void paintInternal(Page& page, WebCanvas* canvas,

@@ -21,7 +21,8 @@ public:
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
     bool isServicingAnimations() const { return m_servicingAnimations; }
-    void updateLayoutAndStyleForPainting(LocalFrame* rootFrame);
+    void updateLayoutAndStyleForPainting(LocalFrame& rootFrame);
+    void updateAllLifecyclePhases(LocalFrame& rootFrame);
 
 private:
     explicit PageAnimator(Page&);

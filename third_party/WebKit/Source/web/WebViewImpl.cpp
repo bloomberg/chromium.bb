@@ -1922,6 +1922,8 @@ void WebViewImpl::layout()
 
     PageWidgetDelegate::layout(*m_page, *mainFrameImpl()->frame());
     updateLayerTreeBackgroundColor();
+
+    // TODO(wangxianzhu): Refactor the following into the main layout stage. crbug.com/550517.
     if (InspectorOverlay* overlay = inspectorOverlay())
         overlay->layout();
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
@@ -1947,6 +1949,9 @@ void WebViewImpl::layout()
             client()->didMeaningfulLayout(WebMeaningfulLayout::FinishedLoading);
         }
     }
+
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
 }
 
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)

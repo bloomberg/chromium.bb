@@ -86,14 +86,24 @@ void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
     }
 }
 
-void PageAnimator::updateLayoutAndStyleForPainting(LocalFrame* rootFrame)
+void PageAnimator::updateLayoutAndStyleForPainting(LocalFrame& rootFrame)
 {
-    RefPtrWillBeRawPtr<FrameView> view = rootFrame->view();
+    RefPtrWillBeRawPtr<FrameView> view = rootFrame.view();
 
     TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
 
     // setFrameRect may have the side-effect of causing existing page layout to
     // be invalidated, so layout needs to be called last.
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        view->updateLifecycleToCompositingCleanPlusScrolling();
+    else
+        view->updateAllLifecyclePhases();
+}
+
+void PageAnimator::updateAllLifecyclePhases(LocalFrame& rootFrame)
+{
+    RefPtrWillBeRawPtr<FrameView> view = rootFrame.view();
+    TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
     view->updateAllLifecyclePhases();
 }
 

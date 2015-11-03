@@ -2483,7 +2483,9 @@ void FrameView::synchronizedPaint()
     ASSERT(view);
     forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPaint); });
 
-    // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree.
+    // A null graphics layer can occur for painting of SVG images that are not parented into the main frame tree,
+    // or when the FrameView is the main frame view of a page overlay. The page overlay is in the layer tree of
+    // the host page and will be painted during synchronized painting of the host page.
     if (GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking()) {
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             // TODO(wangxianzhu,chrishtr): What about the extra graphics layers for overflow control, virtual viewport, etc?
