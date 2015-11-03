@@ -13,49 +13,69 @@
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ToJavaArrayOfStrings;
 
 namespace chrome {
 
 namespace android {
 
 ExternalDataUseObserver::ExternalDataUseObserver(
-    data_usage::DataUseAggregator* data_use_aggregator)
+    data_usage::DataUseAggregator* data_use_aggregator,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : data_use_aggregator_(data_use_aggregator),
       matching_rules_fetch_pending_(false),
       submit_data_report_pending_(false),
       registered_as_observer_(false),
-      task_runner_(nullptr),
-      weak_factory_(this) {
+      io_task_runner_(io_task_runner),
+      ui_task_runner_(ui_task_runner),
+      io_weak_factory_(this),
+      ui_weak_factory_(this) {
   DCHECK(data_use_aggregator_);
+  DCHECK(io_task_runner_);
+  DCHECK(ui_task_runner_);
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalDataUseObserver::CreateJavaObjectOnUIThread,
+                 GetUIWeakPtr()));
 
-  // TODO(tbansal): Remove this check.
-  if (base::MessageLoop::current())
-    task_runner_ = base::MessageLoop::current()->task_runner();
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalDataUseObserver::FetchMatchingRulesOnUIThread,
+                 GetUIWeakPtr()));
 
+  matching_rules_fetch_pending_ = true;
+  data_use_aggregator_->AddObserver(this);
+  registered_as_observer_ = true;
+}
+
+void ExternalDataUseObserver::CreateJavaObjectOnUIThread() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   j_external_data_use_observer_.Reset(Java_ExternalDataUseObserver_create(
       env, base::android::GetApplicationContext(),
       reinterpret_cast<intptr_t>(this)));
   DCHECK(!j_external_data_use_observer_.is_null());
-
-  if (Java_ExternalDataUseObserver_fetchMatchingRules(
-          env, j_external_data_use_observer_.obj())) {
-    matching_rules_fetch_pending_ = true;
-    data_use_aggregator_->AddObserver(this);
-    registered_as_observer_ = true;
-  }
 }
 
 ExternalDataUseObserver::~ExternalDataUseObserver() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-
-  Java_ExternalDataUseObserver_onDestroy(env,
-                                         j_external_data_use_observer_.obj());
-
+  if (!j_external_data_use_observer_.is_null()) {
+    Java_ExternalDataUseObserver_onDestroy(env,
+                                           j_external_data_use_observer_.obj());
+  }
   if (registered_as_observer_)
     data_use_aggregator_->RemoveObserver(this);
+}
+
+void ExternalDataUseObserver::FetchMatchingRulesOnUIThread() const {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(!j_external_data_use_observer_.is_null());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ExternalDataUseObserver_fetchMatchingRules(
+      env, j_external_data_use_observer_.obj());
 }
 
 void ExternalDataUseObserver::FetchMatchingRulesCallback(
@@ -64,9 +84,7 @@ void ExternalDataUseObserver::FetchMatchingRulesCallback(
     const base::android::JavaParamRef<jobjectArray>& app_package_name,
     const base::android::JavaParamRef<jobjectArray>& domain_path_regex,
     const base::android::JavaParamRef<jobjectArray>& label) {
-  if (!task_runner_)
-    return;
-
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   // Convert to native objects.
   std::vector<std::string> app_package_name_native;
   std::vector<std::string> domain_path_regex_native;
@@ -81,10 +99,10 @@ void ExternalDataUseObserver::FetchMatchingRulesCallback(
                                                        &label_native);
   }
 
-  task_runner_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserver::FetchMatchingRulesCallbackOnIOThread,
-                 weak_factory_.GetWeakPtr(), app_package_name_native,
+                 GetIOWeakPtr(), app_package_name_native,
                  domain_path_regex_native, label_native));
 }
 
@@ -102,13 +120,19 @@ void ExternalDataUseObserver::FetchMatchingRulesCallbackOnIOThread(
 void ExternalDataUseObserver::OnReportDataUseDone(JNIEnv* env,
                                                   jobject obj,
                                                   bool success) {
-  if (!task_runner_)
-    return;
-
-  task_runner_->PostTask(
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserver::OnReportDataUseDoneOnIOThread,
-                 weak_factory_.GetWeakPtr(), success));
+                 GetIOWeakPtr(), success));
+}
+
+base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetIOWeakPtr() {
+  return io_weak_factory_.GetWeakPtr();
+}
+
+base::WeakPtr<ExternalDataUseObserver> ExternalDataUseObserver::GetUIWeakPtr() {
+  return ui_weak_factory_.GetWeakPtr();
 }
 
 void ExternalDataUseObserver::OnReportDataUseDoneOnIOThread(bool success) {
@@ -126,9 +150,6 @@ void ExternalDataUseObserver::OnReportDataUseDoneOnIOThread(bool success) {
 void ExternalDataUseObserver::OnDataUse(
     const std::vector<const data_usage::DataUse*>& data_use_sequence) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!j_external_data_use_observer_.is_null());
-
-  JNIEnv* env = base::android::AttachCurrentThread();
 
   if (matching_rules_fetch_pending_) {
     // TODO(tbansal): Buffer reports.
@@ -160,14 +181,27 @@ void ExternalDataUseObserver::OnDataUse(
     submit_data_report_pending_ = true;
     DCHECK_GT(buffered_data_reports_.size(), 0U);
     DataReport earliest_report = buffered_data_reports_[0];
-    // TODO(tbansal): Get real values, instead of using 0s.
-    Java_ExternalDataUseObserver_reportDataUse(
-        env, j_external_data_use_observer_.obj(),
-        ConvertUTF8ToJavaString(env, earliest_report.label).obj(), 0,
-        ConvertUTF8ToJavaString(env, "").obj(), 0, 0,
-        earliest_report.bytes_downloaded, earliest_report.bytes_uploaded);
+
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ExternalDataUseObserver::ReportDataUseOnUIThread,
+                              GetUIWeakPtr(), earliest_report));
     buffered_data_reports_.erase(buffered_data_reports_.begin());
   }
+}
+
+void ExternalDataUseObserver::ReportDataUseOnUIThread(
+    const DataReport& earliest_report) const {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(!j_external_data_use_observer_.is_null());
+
+  // TODO(tbansal): Get real values, instead of using 0s.
+  Java_ExternalDataUseObserver_reportDataUse(
+      env, j_external_data_use_observer_.obj(),
+      ConvertUTF8ToJavaString(env, earliest_report.label).obj(),
+      0 /* network_type */, ConvertUTF8ToJavaString(env, "").obj() /* mccMnc */,
+      0 /* startTimeInMillis */, 0 /* endTimeInMillis */,
+      earliest_report.bytes_downloaded, earliest_report.bytes_uploaded);
 }
 
 void ExternalDataUseObserver::RegisterURLRegexes(

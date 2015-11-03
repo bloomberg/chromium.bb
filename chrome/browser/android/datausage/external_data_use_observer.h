@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_usage/core/data_use_aggregator.h"
@@ -43,10 +44,13 @@ namespace android {
 // of the requests, and notifies the filtered data use to the Java listener. The
 // Java object in turn may notify the platform APIs of the data usage
 // observations.
+// TODO(tbansal): Create an inner class that manages the UI and IO threads.
 class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
  public:
-  explicit ExternalDataUseObserver(
-      data_usage::DataUseAggregator* data_use_aggregator);
+  ExternalDataUseObserver(
+      data_usage::DataUseAggregator* data_use_aggregator,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~ExternalDataUseObserver() override;
 
   // Called by Java when new matching rules have been fetched. This may be
@@ -56,7 +60,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // reports corresponding to the matching rule, and must
   // uniquely identify the matching rule. Each element in |label| must have
   // non-zero length. The three vectors should have equal length. The vectors
-  // may be empty which implies that no matching rules are active.
+  // may be empty which implies that no matching rules are active. Must be
+  // called on UI thread.
   void FetchMatchingRulesCallback(
       JNIEnv* env,
       jobject obj,
@@ -66,7 +71,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   // Called by Java when the reporting of data usage has finished.  This may be
   // called on a different thread. |success| is true if the request was
-  // successfully submitted to the external data use observer by Java.
+  // successfully submitted to the external data use observer by Java. Must be
+  // called on UI thread.
   void OnReportDataUseDone(JNIEnv* env, jobject obj, bool success);
 
  private:
@@ -119,18 +125,29 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // size |kMaxBufferSize|, then the oldest entry will be removed.
   static const size_t kMaxBufferSize = 100;
 
+  // Creates Java object. Must be called on the UI thread.
+  void CreateJavaObjectOnUIThread();
+
   // data_usage::DataUseAggregator::Observer implementation:
   void OnDataUse(const std::vector<const data_usage::DataUse*>&
                      data_use_sequence) override;
 
-  // Called by |FetchMatchingRulesCallback| on IO thread when new matching rules
+  // Fetches matching rules from Java. Must be called on the UI thread. Returns
+  // result asynchronously on UI thread via FetchMatchingRulesCallback.
+  void FetchMatchingRulesOnUIThread() const;
+
+  // Called by FetchMatchingRulesCallback on IO thread when new matching rules
   // have been fetched.
   void FetchMatchingRulesCallbackOnIOThread(
       const std::vector<std::string>& app_package_name,
       const std::vector<std::string>& domain_path_regex,
       const std::vector<std::string>& label);
 
-  // Called by |OnReportDataUseDone| on IO thread when a data use report has
+  // Reports data use to Java. Must be called on the UI thread. Returns
+  // result asynchronously on UI thread via OnReportDataUseDone.
+  void ReportDataUseOnUIThread(const DataReport& earliest_report) const;
+
+  // Called by OnReportDataUseDone on IO thread when a data use report has
   // been submitted.
   void OnReportDataUseDoneOnIOThread(bool success);
 
@@ -146,6 +163,11 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // |label| must not be null. If a match is found, the |label| is set to the
   // matching rule's label.
   bool Matches(const GURL& gurl, std::string* label) const;
+
+  // Return the weak pointer to |this| to be used on IO and UI thread,
+  // respectively.
+  base::WeakPtr<ExternalDataUseObserver> GetIOWeakPtr();
+  base::WeakPtr<ExternalDataUseObserver> GetUIWeakPtr();
 
   // Aggregator that sends data use observations to |this|.
   data_usage::DataUseAggregator* data_use_aggregator_;
@@ -171,13 +193,20 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // True if |this| is currently registered as a data use observer.
   bool registered_as_observer_;
 
-  // |task_runner_| accesses ExternalDataUseObserver members on IO thread.
-  scoped_refptr<base::TaskRunner> task_runner_;
+  // |io_task_runner_| accesses ExternalDataUseObserver members on IO thread.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // |ui_task_runner_| is used to call Java code on UI thread. This ensures
+  // that Java code is safely called only on a single thread, and eliminates
+  // the need for locks in Java.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   base::ThreadChecker thread_checker_;
 
-  // |weak_factory_| is used for posting tasks on the IO thread.
-  base::WeakPtrFactory<ExternalDataUseObserver> weak_factory_;
+  // |io_weak_factory_| and |ui_weak_factory_| are used for posting tasks on the
+  // IO and UI thread, respectively.
+  base::WeakPtrFactory<ExternalDataUseObserver> io_weak_factory_;
+  base::WeakPtrFactory<ExternalDataUseObserver> ui_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalDataUseObserver);
 };

@@ -621,7 +621,10 @@ void IOThread::Init() {
 
 #if defined(OS_ANDROID)
   external_data_use_observer_.reset(
-      new chrome::android::ExternalDataUseObserver(data_use_aggregator()));
+      new chrome::android::ExternalDataUseObserver(
+          data_use_aggregator(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
 #endif
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432

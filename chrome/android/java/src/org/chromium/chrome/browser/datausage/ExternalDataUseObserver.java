@@ -44,14 +44,12 @@ public class ExternalDataUseObserver {
     }
 
     /**
-    * Fetches matching rules asynchronously. While an asynchronous fetch is underway, it is illegal
-    * to make calls to this method.
-    * @return true if {@link #nativeFetchMatchingRulesCallback} will eventually be called with
-    * matching rules, and false if matching rules cannot be retrieved.
+    * Fetches matching rules and returns them via {@link #fetchMatchingRulesCallback}. While the
+    * fetch is underway, it is illegal to make calls to this method.
     */
     @CalledByNative
-    protected boolean fetchMatchingRules() {
-        return false;
+    protected void fetchMatchingRules() {
+        fetchMatchingRulesCallback(null, null, null);
     }
 
     /*

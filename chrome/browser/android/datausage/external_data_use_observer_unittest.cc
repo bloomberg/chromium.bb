@@ -8,8 +8,12 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -18,12 +22,35 @@ namespace chrome {
 
 namespace android {
 
-TEST(ExternalDataUseObserverTest, SingleRegex) {
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator(
-      new data_usage::DataUseAggregator());
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
-      new ExternalDataUseObserver(data_use_aggregator.get()));
+class ExternalDataUseObserverTest : public testing::Test {
+ public:
+  void SetUp() override {
+    thread_bundle_.reset(new content::TestBrowserThreadBundle(
+        content::TestBrowserThreadBundle::REAL_IO_THREAD));
+    io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::IO);
+    ui_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::UI);
+    data_use_aggregator_.reset(new data_usage::DataUseAggregator());
+    external_data_use_observer_.reset(new ExternalDataUseObserver(
+        data_use_aggregator_.get(), io_task_runner_.get(),
+        ui_task_runner_.get()));
+  }
 
+  ExternalDataUseObserver* external_data_use_observer() const {
+    return external_data_use_observer_.get();
+  }
+
+ private:
+  // Required for creating multiple threads for unit testing.
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
+  scoped_ptr<ExternalDataUseObserver> external_data_use_observer_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+};
+
+TEST_F(ExternalDataUseObserverTest, SingleRegex) {
   const struct {
     std::string url;
     std::string regex;
@@ -53,12 +80,12 @@ TEST(ExternalDataUseObserverTest, SingleRegex) {
 
   std::string label("test");
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    external_data_use_observer->RegisterURLRegexes(
+    external_data_use_observer()->RegisterURLRegexes(
         std::vector<std::string>(1, std::string()),
         std::vector<std::string>(1, tests[i].regex),
         std::vector<std::string>(1, "label"));
     EXPECT_EQ(tests[i].expect_match,
-              external_data_use_observer->Matches(GURL(tests[i].url), &label))
+              external_data_use_observer()->Matches(GURL(tests[i].url), &label))
         << i;
 
     // Verify label matches the expected label.
@@ -70,12 +97,7 @@ TEST(ExternalDataUseObserverTest, SingleRegex) {
   }
 }
 
-TEST(ExternalDataUseObserverTest, TwoRegex) {
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator(
-      new data_usage::DataUseAggregator());
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
-      new ExternalDataUseObserver(data_use_aggregator.get()));
-
+TEST_F(ExternalDataUseObserverTest, TwoRegex) {
   const struct {
     std::string url;
     std::string regex1;
@@ -115,26 +137,21 @@ TEST(ExternalDataUseObserverTest, TwoRegex) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::vector<std::string> url_regexes;
     url_regexes.push_back(tests[i].regex1 + "|" + tests[i].regex2);
-    external_data_use_observer->RegisterURLRegexes(
+    external_data_use_observer()->RegisterURLRegexes(
         std::vector<std::string>(url_regexes.size(), std::string()),
         url_regexes, std::vector<std::string>(url_regexes.size(), "label"));
     EXPECT_EQ(tests[i].expect_match,
-              external_data_use_observer->Matches(GURL(tests[i].url), &label))
+              external_data_use_observer()->Matches(GURL(tests[i].url), &label))
         << i;
   }
 }
 
-TEST(ExternalDataUseObserverTest, MultipleRegex) {
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator(
-      new data_usage::DataUseAggregator());
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
-      new ExternalDataUseObserver(data_use_aggregator.get()));
-
+TEST_F(ExternalDataUseObserverTest, MultipleRegex) {
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "https?://www[.]google[.]com/#q=.*|https?://www[.]google[.]com[.]ph/"
       "#q=.*|https?://www[.]google[.]com[.]ph/[?]gws_rd=ssl#q=.*");
-  external_data_use_observer->RegisterURLRegexes(
+  external_data_use_observer()->RegisterURLRegexes(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), "label"));
 
@@ -170,36 +187,29 @@ TEST(ExternalDataUseObserverTest, MultipleRegex) {
   std::string label;
   for (size_t i = 0; i < arraysize(tests); ++i) {
     EXPECT_EQ(tests[i].expect_match,
-              external_data_use_observer->Matches(GURL(tests[i].url), &label))
+              external_data_use_observer()->Matches(GURL(tests[i].url), &label))
         << i << " " << tests[i].url;
   }
 }
 
-TEST(ExternalDataUseObserverTest, ChangeRegex) {
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator(
-      new data_usage::DataUseAggregator());
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
-      new ExternalDataUseObserver(data_use_aggregator.get()));
-
+TEST_F(ExternalDataUseObserverTest, ChangeRegex) {
   std::string label;
   // When no regex is specified, the URL match should fail.
-  EXPECT_FALSE(external_data_use_observer->Matches(GURL(""), &label));
-  EXPECT_FALSE(external_data_use_observer->Matches(
+  EXPECT_FALSE(external_data_use_observer()->Matches(GURL(""), &label));
+  EXPECT_FALSE(external_data_use_observer()->Matches(
       GURL("http://www.google.com"), &label));
-  EXPECT_FALSE(external_data_use_observer->registered_as_observer_);
-  EXPECT_FALSE(external_data_use_observer->matching_rules_fetch_pending_);
 
   std::vector<std::string> url_regexes;
   url_regexes.push_back("http://www[.]google[.]com/#q=.*");
   url_regexes.push_back("https://www[.]google[.]com/#q=.*");
-  external_data_use_observer->RegisterURLRegexes(
+  external_data_use_observer()->RegisterURLRegexes(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), "label"));
 
-  EXPECT_FALSE(external_data_use_observer->Matches(GURL(""), &label));
-  EXPECT_TRUE(external_data_use_observer->Matches(
+  EXPECT_FALSE(external_data_use_observer()->Matches(GURL(""), &label));
+  EXPECT_TRUE(external_data_use_observer()->Matches(
       GURL("http://www.google.com#q=abc"), &label));
-  EXPECT_FALSE(external_data_use_observer->Matches(
+  EXPECT_FALSE(external_data_use_observer()->Matches(
       GURL("http://www.google.co.in#q=abc"), &label));
 
   // Change the regular expressions to verify that the new regexes replace
@@ -207,36 +217,31 @@ TEST(ExternalDataUseObserverTest, ChangeRegex) {
   url_regexes.clear();
   url_regexes.push_back("http://www[.]google[.]co[.]in/#q=.*");
   url_regexes.push_back("https://www[.]google[.]co[.]in/#q=.*");
-  external_data_use_observer->RegisterURLRegexes(
+  external_data_use_observer()->RegisterURLRegexes(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), "label"));
-  EXPECT_FALSE(external_data_use_observer->Matches(GURL(""), &label));
-  EXPECT_FALSE(external_data_use_observer->Matches(
+  EXPECT_FALSE(external_data_use_observer()->Matches(GURL(""), &label));
+  EXPECT_FALSE(external_data_use_observer()->Matches(
       GURL("http://www.google.com#q=abc"), &label));
-  EXPECT_TRUE(external_data_use_observer->Matches(
+  EXPECT_TRUE(external_data_use_observer()->Matches(
       GURL("http://www.google.co.in#q=abc"), &label));
 }
 
 // Tests that at most one data use request is submitted, and if buffer size
 // does not exceed the specified limit.
-TEST(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator(
-      new data_usage::DataUseAggregator());
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
-      new ExternalDataUseObserver(data_use_aggregator.get()));
-
+TEST_F(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
   const std::string label("label");
 
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]google[.]com/#q=.*|https://www[.]google[.]com/#q=.*");
 
-  external_data_use_observer->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), label));
-  EXPECT_EQ(0U, external_data_use_observer->buffered_data_reports_.size());
-  EXPECT_FALSE(external_data_use_observer->submit_data_report_pending_);
-  EXPECT_FALSE(external_data_use_observer->matching_rules_fetch_pending_);
+  EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
+  EXPECT_FALSE(external_data_use_observer()->submit_data_report_pending_);
+  EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
 
   std::vector<const data_usage::DataUse*> data_use_sequence;
   data_usage::DataUse data_use(
@@ -244,10 +249,10 @@ TEST(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 0, 0);
   data_use_sequence.push_back(&data_use);
   data_use_sequence.push_back(&data_use);
-  external_data_use_observer->OnDataUse(data_use_sequence);
+  external_data_use_observer()->OnDataUse(data_use_sequence);
 
-  EXPECT_EQ(1U, external_data_use_observer->buffered_data_reports_.size());
-  EXPECT_TRUE(external_data_use_observer->submit_data_report_pending_);
+  EXPECT_EQ(1U, external_data_use_observer()->buffered_data_reports_.size());
+  EXPECT_TRUE(external_data_use_observer()->submit_data_report_pending_);
 
   const size_t max_buffer_size = ExternalDataUseObserver::kMaxBufferSize;
 
@@ -255,24 +260,19 @@ TEST(ExternalDataUseObserverTest, AtMostOneDataUseSubmitRequest) {
   for (size_t i = 0; i < max_buffer_size; ++i)
     data_use_sequence.push_back(&data_use);
 
-  external_data_use_observer->OnDataUse(data_use_sequence);
+  external_data_use_observer()->OnDataUse(data_use_sequence);
   EXPECT_EQ(max_buffer_size,
-            external_data_use_observer->buffered_data_reports_.size());
+            external_data_use_observer()->buffered_data_reports_.size());
 
   // Verify the label of the data use report.
   for (const auto& data_report :
-       external_data_use_observer->buffered_data_reports_) {
+       external_data_use_observer()->buffered_data_reports_) {
     EXPECT_EQ(label, data_report.label);
   }
 }
 
 // Tests the behavior when multiple matching rules are available.
-TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
-  scoped_ptr<data_usage::DataUseAggregator> data_use_aggregator(
-      new data_usage::DataUseAggregator());
-  scoped_ptr<ExternalDataUseObserver> external_data_use_observer(
-      new ExternalDataUseObserver(data_use_aggregator.get()));
-
+TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
@@ -285,12 +285,12 @@ TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
   labels.push_back(label_foo);
   labels.push_back(label_bar);
 
-  external_data_use_observer->FetchMatchingRulesCallbackOnIOThread(
+  external_data_use_observer()->FetchMatchingRulesCallbackOnIOThread(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       labels);
-  EXPECT_EQ(0U, external_data_use_observer->buffered_data_reports_.size());
-  EXPECT_FALSE(external_data_use_observer->submit_data_report_pending_);
-  EXPECT_FALSE(external_data_use_observer->matching_rules_fetch_pending_);
+  EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
+  EXPECT_FALSE(external_data_use_observer()->submit_data_report_pending_);
+  EXPECT_FALSE(external_data_use_observer()->matching_rules_fetch_pending_);
 
   // Check |label_foo| matching rule.
   std::vector<const data_usage::DataUse*> data_use_sequence;
@@ -299,17 +299,18 @@ TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 0, 0);
   data_use_sequence.push_back(&data_foo);
   data_use_sequence.push_back(&data_foo);
-  external_data_use_observer->OnDataUse(data_use_sequence);
+  external_data_use_observer()->OnDataUse(data_use_sequence);
 
-  EXPECT_EQ(1U, external_data_use_observer->buffered_data_reports_.size());
-  EXPECT_TRUE(external_data_use_observer->submit_data_report_pending_);
+  EXPECT_EQ(1U, external_data_use_observer()->buffered_data_reports_.size());
+  EXPECT_TRUE(external_data_use_observer()->submit_data_report_pending_);
 
   // Verify the label of the data use report.
-  EXPECT_EQ(label_foo,
-            external_data_use_observer->buffered_data_reports_.begin()->label);
+  EXPECT_EQ(
+      label_foo,
+      external_data_use_observer()->buffered_data_reports_.begin()->label);
 
   // Clear the state.
-  external_data_use_observer->buffered_data_reports_.clear();
+  external_data_use_observer()->buffered_data_reports_.clear();
   data_use_sequence.clear();
 
   // Check |label_bar| matching rule.
@@ -317,9 +318,9 @@ TEST(ExternalDataUseObserverTest, MultipleMatchingRules) {
       GURL("http://www.bar.com/#q=abc"), base::TimeTicks::Now(), GURL(), 0,
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 0, 0);
   data_use_sequence.push_back(&data_bar);
-  external_data_use_observer->OnDataUse(data_use_sequence);
+  external_data_use_observer()->OnDataUse(data_use_sequence);
   for (const auto& data_report :
-       external_data_use_observer->buffered_data_reports_) {
+       external_data_use_observer()->buffered_data_reports_) {
     EXPECT_EQ(label_bar, data_report.label);
   }
 }
