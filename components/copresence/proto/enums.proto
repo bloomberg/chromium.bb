@@ -5,7 +5,7 @@ enum IdentityType {
   IDENTITY_TYPE_UNKNOWN = 0;
   GAIA_USER = 1;
   CHROMECAST = 2;
-  ANDROID = 3;
+  ANDROIDOS = 3;
   CHROME = 4;
   UNREGISTERED = 5;
 }
