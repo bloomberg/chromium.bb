@@ -125,6 +125,26 @@
 #define TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_CONTEXT_ID \
     base::trace_event::TraceLog::GetInstance()->AddTraceEventWithContextId
 
+// Add a trace event to the platform tracing system overriding the pid.
+// The resulting event will have tid = pid == (process_id passed here).
+// base::trace_event::TraceEventHandle
+// TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
+//                    char phase,
+//                    const unsigned char* category_group_enabled,
+//                    const char* name,
+//                    unsigned long long id,
+//                    unsigned long long context_id,
+//                    int process_id,
+//                    int num_args,
+//                    const char** arg_names,
+//                    const unsigned char* arg_types,
+//                    const unsigned long long* arg_values,
+//                    const scoped_refptr<ConvertableToTraceFormat>*
+//                    convertable_values,
+//                    unsigned int flags)
+#define TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID \
+  base::trace_event::TraceLog::GetInstance()->AddTraceEventWithProcessId
+
 // Add a trace event to the platform tracing system.
 // base::trace_event::TraceEventHandle
 // TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_TIMESTAMP(

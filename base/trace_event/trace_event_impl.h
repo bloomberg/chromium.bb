@@ -168,7 +168,13 @@ class BASE_EXPORT TraceEvent {
   const unsigned char* category_group_enabled_;
   const char* name_;
   scoped_refptr<base::RefCountedString> parameter_copy_storage_;
-  int thread_id_;
+  // Depending on TRACE_EVENT_FLAG_HAS_PROCESS_ID the event will have either:
+  //  tid: thread_id_, pid: current_process_id (default case).
+  //  tid: -1, pid: process_id_ (when flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID).
+  union {
+    int thread_id_;
+    int process_id_;
+  };
   unsigned int flags_;
   unsigned long long bind_id_;
   unsigned char arg_types_[kTraceMaxNumArgs];

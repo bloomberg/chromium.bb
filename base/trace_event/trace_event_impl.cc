@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
+#include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -60,7 +61,10 @@ void TraceEvent::CopyFrom(const TraceEvent& other) {
   context_id_ = other.context_id_;
   category_group_enabled_ = other.category_group_enabled_;
   name_ = other.name_;
-  thread_id_ = other.thread_id_;
+  if (other.flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID)
+    process_id_ = other.process_id_;
+  else
+    thread_id_ = other.thread_id_;
   phase_ = other.phase_;
   flags_ = other.flags_;
   parameter_copy_storage_ = other.parameter_copy_storage_;
@@ -270,7 +274,16 @@ void TraceEvent::AppendAsJSON(
     std::string* out,
     const ArgumentFilterPredicate& argument_filter_predicate) const {
   int64 time_int64 = timestamp_.ToInternalValue();
-  int process_id = TraceLog::GetInstance()->process_id();
+  int process_id;
+  int thread_id;
+  if ((flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
+      process_id_ != kNullProcessId) {
+    process_id = process_id_;
+    thread_id = -1;
+  } else {
+    process_id = TraceLog::GetInstance()->process_id();
+    thread_id = thread_id_;
+  }
   const char* category_group_name =
       TraceLog::GetCategoryGroupName(category_group_enabled_);
 
@@ -279,7 +292,7 @@ void TraceEvent::AppendAsJSON(
   StringAppendF(out, "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
                      ","
                      "\"ph\":\"%c\",\"cat\":\"%s\",\"name\":\"%s\",\"args\":",
-                process_id, thread_id_, time_int64, phase_, category_group_name,
+                process_id, thread_id, time_int64, phase_, category_group_name,
                 name_);
 
   // Output argument names and values, stop at first NULL argument name.

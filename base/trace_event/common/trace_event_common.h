@@ -1024,6 +1024,7 @@
 #define TRACE_EVENT_FLAG_FLOW_IN (static_cast<unsigned int>(1 << 8))
 #define TRACE_EVENT_FLAG_FLOW_OUT (static_cast<unsigned int>(1 << 9))
 #define TRACE_EVENT_FLAG_HAS_CONTEXT_ID (static_cast<unsigned int>(1 << 10))
+#define TRACE_EVENT_FLAG_HAS_PROCESS_ID (static_cast<unsigned int>(1 << 11))
 
 #define TRACE_EVENT_FLAG_SCOPE_MASK                          \
   (static_cast<unsigned int>(TRACE_EVENT_FLAG_SCOPE_OFFSET | \

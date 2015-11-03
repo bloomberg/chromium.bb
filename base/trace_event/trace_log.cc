@@ -1129,6 +1129,36 @@ TraceEventHandle TraceLog::AddTraceEventWithContextId(
       flags | TRACE_EVENT_FLAG_HAS_CONTEXT_ID);
 }
 
+TraceEventHandle TraceLog::AddTraceEventWithProcessId(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int process_id,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+    unsigned int flags) {
+  base::TraceTicks now = base::TraceTicks::Now();
+  return AddTraceEventWithThreadIdAndTimestamp(
+      phase,
+      category_group_enabled,
+      name,
+      id,
+      trace_event_internal::kNoId,  // context_id
+      trace_event_internal::kNoId,  // bind_id
+      process_id,
+      now,
+      num_args,
+      arg_names,
+      arg_types,
+      arg_values,
+      convertable_values,
+      flags | TRACE_EVENT_FLAG_HAS_PROCESS_ID);
+}
+
 // Handle legacy calls to AddTraceEventWithThreadIdAndTimestamp
 // with kNoId as bind_id
 TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
