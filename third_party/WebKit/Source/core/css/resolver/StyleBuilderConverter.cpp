@@ -40,7 +40,7 @@
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
-#include "core/svg/SVGElement.h"
+#include "core/css/resolver/FilterOperationResolver.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
@@ -109,6 +109,11 @@ LengthBox StyleBuilderConverter::convertClip(StyleResolverState& state, const CS
         convertLengthOrAuto(state, *rect.right()),
         convertLengthOrAuto(state, *rect.bottom()),
         convertLengthOrAuto(state, *rect.left()));
+}
+
+FilterOperations StyleBuilderConverter::convertFilterOperations(StyleResolverState& state, const CSSValue& value)
+{
+    return FilterOperationResolver::createFilterOperations(state, value);
 }
 
 static FontDescription::GenericFamilyType convertGenericFamily(CSSValueID valueID)

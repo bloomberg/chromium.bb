@@ -32,7 +32,7 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSShadowValue.h"
-#include "core/css/resolver/TransformBuilder.h"
+#include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -71,16 +71,16 @@ static FilterOperation::OperationType filterOperationForType(CSSValueID type)
     }
 }
 
-void FilterOperationResolver::createFilterOperations(const CSSValue& inValue, const CSSToLengthConversionData& conversionData, FilterOperations& outOperations, StyleResolverState& state)
+FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverState& state, const CSSValue& inValue)
 {
-    ASSERT(outOperations.isEmpty());
+    FilterOperations operations;
 
     if (inValue.isPrimitiveValue()) {
         ASSERT(toCSSPrimitiveValue(inValue).getValueID() == CSSValueNone);
-        return;
+        return operations;
     }
 
-    FilterOperations operations;
+    const CSSToLengthConversionData& conversionData = state.cssToLengthConversionData();
     for (auto& currValue : toCSSValueList(inValue)) {
         CSSFunctionValue* filterValue = toCSSFunctionValue(currValue.get());
         FilterOperation::OperationType operationType = filterOperationForType(filterValue->functionType());
@@ -162,7 +162,7 @@ void FilterOperationResolver::createFilterOperations(const CSSValue& inValue, co
         }
     }
 
-    outOperations = operations;
+    return operations;
 }
 
 } // namespace blink

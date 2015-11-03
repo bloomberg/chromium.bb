@@ -114,7 +114,7 @@ animation-iteration-count custom_all
 animation-name custom_all
 animation-play-state custom_all
 animation-timing-function custom_all
-backdrop-filter interpolable, custom_value, runtime_flag=CSSBackdropFilter
+backdrop-filter interpolable, converter=convertFilterOperations, runtime_flag=CSSBackdropFilter
 backface-visibility
 background-attachment custom_all
 background-blend-mode custom_all
@@ -344,7 +344,7 @@ y interpolable, svg, converter=convertLength
 -webkit-column-rule-width interpolable, converter=convertLineWidth<unsigned short>
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width interpolable, converter=convertComputedLength<float>, custom_all
--webkit-filter interpolable, custom_value
+-webkit-filter interpolable, converter=convertFilterOperations
 -webkit-highlight inherited, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character inherited, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
 -webkit-line-break inherited, type_name=LineBreak

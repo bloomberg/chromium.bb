@@ -572,22 +572,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolverSta
     }
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitFilter(StyleResolverState& state, CSSValue* value)
-{
-    // FIXME: We should just make this a converter
-    FilterOperations operations;
-    FilterOperationResolver::createFilterOperations(*value, state.cssToLengthConversionData(), operations, state);
-    state.style()->setFilter(operations);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyBackdropFilter(StyleResolverState& state, CSSValue* value)
-{
-    // FIXME: We should just make this a converter
-    FilterOperations operations;
-    FilterOperationResolver::createFilterOperations(*value, state.cssToLengthConversionData(), operations, state);
-    state.style()->setBackdropFilter(operations);
-}
-
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitTextEmphasisStyle(StyleResolverState& state)
 {
     state.style()->setTextEmphasisFill(ComputedStyle::initialTextEmphasisFill());

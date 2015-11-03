@@ -56,6 +56,7 @@ public:
     static Color convertColor(StyleResolverState&, const CSSValue&, bool forVisitedLink = false);
     template <typename T> static T convertComputedLength(StyleResolverState&, const CSSValue&);
     static LengthBox convertClip(StyleResolverState&, const CSSValue&);
+    static FilterOperations convertFilterOperations(StyleResolverState&, const CSSValue&);
     template <typename T> static T convertFlags(StyleResolverState&, const CSSValue&);
     static FontDescription::FamilyDescription convertFontFamily(StyleResolverState&, const CSSValue&);
     static PassRefPtr<FontFeatureSettings> convertFontFeatureSettings(StyleResolverState&, const CSSValue&);

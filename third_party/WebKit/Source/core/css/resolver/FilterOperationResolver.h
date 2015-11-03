@@ -22,19 +22,18 @@
 #ifndef FilterOperationResolver_h
 #define FilterOperationResolver_h
 
-#include "core/css/resolver/StyleResolverState.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CSSToLengthConversionData;
 class CSSValue;
+class StyleResolverState;
 
 class FilterOperationResolver {
     STATIC_ONLY(FilterOperationResolver);
 public:
-    static void createFilterOperations(const CSSValue& inValue, const CSSToLengthConversionData&, FilterOperations& outOperations, StyleResolverState&);
+    static FilterOperations createFilterOperations(StyleResolverState&, const CSSValue&);
 };
 
 } // namespace blink
