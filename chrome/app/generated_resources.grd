@@ -5479,6 +5479,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_FAST_UNLOAD_NAME" desc="Name of the 'Extensions on chrome:// URLs' lab">
         Enable fast tab/window close
       </message>
+      <message name="IDS_FLAGS_DISABLE_DISTILLER_IN_PRINT_PREVIEW_NAME" desc="Name of the 'disable simplify on print preview' lab">
+        Disable simplify page on print preview
+      </message>
+      <message name="IDS_FLAGS_DISABLE_DISTILLER_IN_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'disable simplify on print preview' lab">
+        Disable the simplify page check box on the print preview dialog
+      </message>
       <message name="IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME" desc="Name of the 'Enable 'window-controls' element' lab.">
         Enable 'window-controls' element
       </message>

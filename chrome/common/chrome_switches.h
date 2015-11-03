@@ -91,6 +91,7 @@ extern const char kDisablePdfMaterialUI[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];
 extern const char kDisablePrintPreview[];
+extern const char kDisablePrintPreviewSimplify[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisablePushApiBackgroundMode[];
 extern const char kDisableQuic[];

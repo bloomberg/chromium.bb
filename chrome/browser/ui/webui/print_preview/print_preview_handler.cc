@@ -1298,11 +1298,13 @@ void PrintPreviewHandler::SendInitialSettings(
     GetNumberFormatAndMeasurementSystem(&initial_settings);
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
 
+  if (cmdline->HasSwitch(switches::kDisablePrintPreviewSimplify))
+    return;
+
   WebContents* initiator = GetInitiator();
-  if (initiator && cmdline->HasSwitch(switches::kEnableDomDistiller) &&
-      dom_distiller::url_utils::IsUrlDistillable(
-          initiator->GetLastCommittedURL())) {
-    web_ui()->CallJavascriptFunction("detectDistillablePage");
+  if (initiator && dom_distiller::url_utils::IsUrlDistillable(
+                       initiator->GetLastCommittedURL())) {
+    web_ui()->CallJavascriptFunction("allowDistillPage");
   }
 }
 

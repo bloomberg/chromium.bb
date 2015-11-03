@@ -67,8 +67,8 @@ cr.define('print_preview', function() {
         this.onEnableManipulateSettingsForTest_.bind(this);
     global.printPresetOptionsFromDocument =
         this.onPrintPresetOptionsFromDocument_.bind(this);
-   global.detectDistillablePage =
-        this.detectDistillablePage_.bind(this);
+   global.allowDistillPage =
+        this.allowDistillPage_.bind(this);
     global.onProvisionalPrinterResolved =
         this.onProvisionalDestinationResolved_.bind(this);
     global.failedToResolveProvisionalPrinter =
@@ -742,13 +742,10 @@ cr.define('print_preview', function() {
     },
 
     /**
-      * Updates the interface to show the "Distill Page" option
-      * when PrintPreviewHandler::HandleIsPageDistillableResult
-      * determines that this page can be distilled with the
-      * DOM Distiller.
+      * Updates the interface to show the "Simplify Page" option.
       * @private
       */
-     detectDistillablePage_: function() {
+     allowDistillPage_: function() {
        var allowDistillPageEvent = new Event(
            NativeLayer.EventType.ALLOW_DISTILL_PAGE);
        this.dispatchEvent(allowDistillPageEvent);

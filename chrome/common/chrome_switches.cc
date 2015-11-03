@@ -317,6 +317,9 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 // Disables print preview (For testing, and for users who don't like us. :[ )
 const char kDisablePrintPreview[]           = "disable-print-preview";
 
+// Switch to disable simplify page on the print preview dialog.
+const char kDisablePrintPreviewSimplify[] = "disable-print-preview-simplify";
+
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.

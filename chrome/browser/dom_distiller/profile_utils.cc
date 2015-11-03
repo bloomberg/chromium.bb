@@ -10,6 +10,7 @@
 #include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
@@ -23,7 +24,8 @@
 void RegisterDomDistillerViewerSource(Profile* profile) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableDomDistiller)) {
+  if (command_line.HasSwitch(switches::kEnableDomDistiller) ||
+      !command_line.HasSwitch(switches::kDisablePrintPreviewSimplify)) {
     dom_distiller::DomDistillerServiceFactory* dom_distiller_service_factory =
         dom_distiller::DomDistillerServiceFactory::GetInstance();
     // The LazyDomDistillerService deletes itself when the profile is destroyed.

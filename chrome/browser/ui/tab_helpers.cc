@@ -239,7 +239,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif  // defined(ENABLE_PRINTING) && !defined(OS_ANDROID)
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDomDistiller)) {
+          switches::kEnableDomDistiller) ||
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePrintPreviewSimplify)) {
     dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
         web_contents);
   }
