@@ -529,6 +529,7 @@ FileTransferController.prototype.paste =
       /** @type {DirectoryEntry} */ (this.directoryModel_.getCurrentDirEntry());
   var entries = [];
   var failureUrls;
+  var shareEntries;
   var taskId = this.fileOperationManager_.generateTaskId();
 
   FileTransferController.URLsToEntriesWithAccess(sourceURLs)
@@ -575,41 +576,44 @@ FileTransferController.prototype.paste =
           }.bind(this))
       .then(
           /**
-           * @param {!Array<Entry>} shareEntries
+           * @param {!Array<Entry>} inShareEntries
            * @this {FileTransferController}
-           * @return {!Promise<Array<Entry>>|undefined}
+           * @return {!Promise<Array<Entry>>}
            */
-          function(shareEntries) {
+          function(inShareEntries) {
+            shareEntries = inShareEntries;
             if (shareEntries.length === 0)
-              return;
+              return Promise.resolve(null);
             return this.multiProfileShareDialog_.
-                showMultiProfileShareDialog(shareEntries.length > 1).then(
-                    /**
-                     * @param {string} dialogResult
-                     * @return {!Promise<undefined>|undefined}
-                     */
-                    function(dialogResult) {
-                      if (dialogResult === 'cancel')
-                        return Promise.reject('ABORT');
-                      // Do cross share.
-                      // TODO(hirono): Make the loop cancellable.
-                      var requestDriveShare = function(index) {
-                        if (index >= shareEntries.length)
-                          return;
-                        return new Promise(function(fulfill) {
-                          chrome.fileManagerPrivate.requestDriveShare(
-                              shareEntries[index],
-                              dialogResult,
-                              function() {
-                                // TODO(hirono): Check chrome.runtime.lastError
-                                // here.
-                                fulfill(undefined);
-                              });
-                        }).then(requestDriveShare.bind(null, index + 1));
-                      };
-                      return requestDriveShare(0);
-                    });
+                showMultiProfileShareDialog(shareEntries.length > 1);
           }.bind(this))
+      .then(
+          /**
+           * @param {?string} dialogResult
+           * @return {!Promise<undefined>|undefined}
+           */
+           function(dialogResult) {
+              if (dialogResult === null)
+                return;  // No dialog was shown, skip this step.
+              if (dialogResult === 'cancel')
+                return Promise.reject('ABORT');
+              // Do cross share.
+              // TODO(hirono): Make the loop cancellable.
+              var requestDriveShare = function(index) {
+                if (index >= shareEntries.length)
+                  return;
+                return new Promise(function(fulfill) {
+                  chrome.fileManagerPrivate.requestDriveShare(
+                      shareEntries[index],
+                      assert(dialogResult),
+                      function() {
+                        // TODO(hirono): Check chrome.runtime.lastError here.
+                        fulfill();
+                      });
+                }).then(requestDriveShare.bind(null, index + 1));
+              };
+              return requestDriveShare(0);
+            })
       .then(
           /**
            * @this {FileTransferController}
