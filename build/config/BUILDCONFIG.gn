@@ -132,6 +132,96 @@ declare_args() {
   # DON'T ADD MORE FLAGS HERE. Read the comment above.
 }
 
+# ==============================================================================
+# TOOLCHAIN SETUP
+# ==============================================================================
+#
+# Here we set the default toolchain, as well as the variable host_toolchain
+# which will identify the toolchain corresponding to the local system when
+# doing cross-compiles. When not cross-compiling, this will be the same as the
+# default toolchain.
+#
+# We do this before anything else to make sure we complain about any
+# unsupported os/cpu combinations as early as possible.
+
+if (host_os == "linux") {
+  if (target_os != "linux") {
+    # TODO(dpranke) - is_clang normally applies only to the target
+    # build, and there is no way to indicate that you want to override
+    # it for both the target build *and* the host build. Do we need to
+    # support this?
+    host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
+  } else if (is_clang) {
+    host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
+  } else {
+    host_toolchain = "//build/toolchain/linux:$host_cpu"
+  }
+} else if (host_os == "mac") {
+  host_toolchain = "//build/toolchain/mac:clang_$host_cpu"
+} else if (host_os == "win") {
+  # TODO(crbug.com/467159): win cross-compiles don't actually work yet, so
+  # use the target_cpu instead of the host_cpu.
+  if (is_clang) {
+    host_toolchain = "//build/toolchain/win:clang_$target_cpu"
+  } else {
+    host_toolchain = "//build/toolchain/win:$target_cpu"
+  }
+} else {
+  assert(false, "Unsupported host_os: $host_os")
+}
+
+_default_toolchain = ""
+
+if (target_os == "android") {
+  assert(host_os == "linux" || host_os == "mac",
+         "Android builds are only supported on Linux and Mac hosts.")
+  if (is_clang) {
+    _default_toolchain = "//build/toolchain/android:clang_$target_cpu"
+  } else {
+    _default_toolchain = "//build/toolchain/android:$target_cpu"
+  }
+} else if (target_os == "chromeos") {
+  assert(host_os == "linux",
+         "ChromeOS builds are only supported on Linux hosts.")
+  if (is_clang) {
+    _default_toolchain = "//build/toolchain/linux:clang_$target_cpu"
+  } else {
+    _default_toolchain = "//build/toolchain/linux:$target_cpu"
+  }
+} else if (target_os == "ios") {
+  _default_toolchain = "//build/toolchain/mac:ios_clang_arm"
+} else if (target_os == "linux") {
+  if (is_clang) {
+    _default_toolchain = "//build/toolchain/linux:clang_$target_cpu"
+  } else {
+    _default_toolchain = "//build/toolchain/linux:$target_cpu"
+  }
+} else if (target_os == "mac") {
+  assert(host_os == "mac", "Mac cross-compiles are unsupported.")
+  _default_toolchain = host_toolchain
+} else if (target_os == "win") {
+  # On windows we use the same toolchain for host and target by default.
+  assert(target_os == host_os, "Win cross-compiles only work on win hosts.")
+  if (is_clang) {
+    _default_toolchain = "//build/toolchain/win:clang_$target_cpu"
+  } else {
+    _default_toolchain = "//build/toolchain/win:$target_cpu"
+  }
+} else if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
+           target_os == "winrt_10") {
+  _default_toolchain = "//build/toolchain/win:winrt_$target_cpu"
+} else {
+  assert(false, "Unsupported target_os: $target_os")
+}
+
+# If a custom toolchain has been set in the args, set it as default. Otherwise,
+# set the default toolchain for the platform (if any).
+if (custom_toolchain != "") {
+  set_default_toolchain(custom_toolchain)
+} else if (_default_toolchain != "") {
+  set_default_toolchain(_default_toolchain)
+}
+
 # =============================================================================
 # OS DEFINITIONS
 # =============================================================================
@@ -475,79 +565,6 @@ set_defaults("test") {
   } else {
     configs = _executable_configs
   }
-}
-
-# ==============================================================================
-# TOOLCHAIN SETUP
-# ==============================================================================
-#
-# Here we set the default toolchain, as well as the variable host_toolchain
-# which will identify the toolchain corresponding to the local system when
-# doing cross-compiles. When not cross-compiling, this will be the same as the
-# default toolchain.
-
-_default_toolchain = ""
-if (is_win) {
-  # On windows we use the same toolchain for host and target by default.
-  if (is_clang) {
-    host_toolchain = "//build/toolchain/win:clang_$current_cpu"
-  } else {
-    host_toolchain = "//build/toolchain/win:$current_cpu"
-  }
-
-  if (current_os == "win") {
-    _default_toolchain = host_toolchain
-  } else if (current_cpu == "x64") {  # WinRT x64
-    _default_toolchain = "//build/toolchain/win:winrt_x64"
-  } else if (current_cpu == "x86") {  # WinRT x86
-    _default_toolchain = "//build/toolchain/win:winrt_x86"
-  }
-} else if (is_android) {
-  if (host_os == "linux") {
-    # Use clang for the x86/64 Linux host builds.
-    if (host_cpu == "x86" || host_cpu == "x64") {
-      host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
-    } else {
-      host_toolchain = "//build/toolchain/linux:$host_cpu"
-    }
-  } else if (host_os == "mac") {
-    host_toolchain = "//build/toolchain/mac:clang_$host_cpu"
-  } else {
-    assert(false, "Unknown host for android cross compile")
-  }
-  if (is_clang) {
-    _default_toolchain = "//build/toolchain/android:clang_$current_cpu"
-  } else {
-    _default_toolchain = "//build/toolchain/android:$current_cpu"
-  }
-} else if (is_linux) {
-  if (is_clang) {
-    host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
-    _default_toolchain = "//build/toolchain/linux:clang_$current_cpu"
-  } else {
-    host_toolchain = "//build/toolchain/linux:$host_cpu"
-    _default_toolchain = "//build/toolchain/linux:$current_cpu"
-  }
-} else if (is_mac) {
-  host_toolchain = "//build/toolchain/mac:clang_x64"
-  _default_toolchain = host_toolchain
-} else if (is_ios) {
-  host_toolchain = "//build/toolchain/mac:clang_x64"
-  _default_toolchain = "//build/toolchain/mac:ios_clang_arm"
-} else if (is_nacl) {
-  # TODO(GYP): This will need to change when we get NaCl working
-  # on multiple platforms, but this whole block of code (how we define
-  # host_toolchain) needs to be reworked regardless to key off of host_os
-  # and host_cpu rather than the is_* variables.
-  host_toolchain = "//build/toolchain/linux:clang_x64"
-}
-
-# If a custom toolchain has been set in the args, set it as default. Otherwise,
-# set the default toolchain for the platform (if any).
-if (custom_toolchain != "") {
-  set_default_toolchain(custom_toolchain)
-} else if (_default_toolchain != "") {
-  set_default_toolchain(_default_toolchain)
 }
 
 # ==============================================================================
