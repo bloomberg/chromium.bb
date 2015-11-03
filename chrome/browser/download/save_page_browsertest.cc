@@ -397,13 +397,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SavePageBrowserTest);
 };
 
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
-#define MAYBE_SaveHTMLOnly DISABLED_SaveHTMLOnly
-#else
-#define MAYBE_SaveHTMLOnly SaveHTMLOnly
-#endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   GURL url = NavigateToMockURL("a");
 
   base::FilePath full_file_name, dir;
@@ -417,8 +411,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
       kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
 
-// http://crbug.com/162323
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveHTMLOnlyCancel) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
   GURL url = NavigateToMockURL("a");
   DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;
@@ -468,13 +461,7 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   DISALLOW_COPY_AND_ASSIGN(DelayingDownloadManagerDelegate);
 };
 
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
-#define MAYBE_SaveHTMLOnlyTabDestroy DISABLED_SaveHTMLOnlyTabDestroy
-#else
-#define MAYBE_SaveHTMLOnlyTabDestroy SaveHTMLOnlyTabDestroy
-#endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
   GURL url = NavigateToMockURL("a");
   scoped_ptr<DelayingDownloadManagerDelegate> delaying_delegate(
       new DelayingDownloadManagerDelegate(browser()->profile()));
@@ -504,13 +491,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
   EXPECT_FALSE(base::PathExists(dir));
 }
 
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
-#define MAYBE_SaveViewSourceHTMLOnly DISABLED_SaveViewSourceHTMLOnly
-#else
-#define MAYBE_SaveViewSourceHTMLOnly SaveViewSourceHTMLOnly
-#endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
   GURL mock_url = URLRequestMockHTTPJob::GetMockUrl("save_page/a.htm");
   GURL view_source_url =
       GURL(content::kViewSourceScheme + std::string(":") + mock_url.spec());
@@ -530,13 +511,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
       full_file_name));
 }
 
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
-#define MAYBE_SaveCompleteHTML DISABLED_SaveCompleteHTML
-#else
-#define MAYBE_SaveCompleteHTML SaveCompleteHTML
-#endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveCompleteHTML) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   GURL url = NavigateToMockURL("b");
 
   base::FilePath full_file_name, dir;
@@ -557,16 +532,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveCompleteHTML) {
       dir.AppendASCII("1.css")));
 }
 
-// Invoke a save page during the initial navigation.
-// (Regression test for http://crbug.com/156538).
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
-#define MAYBE_SaveDuringInitialNavigationIncognito DISABLED_SaveDuringInitialNavigationIncognito
-#else
-#define MAYBE_SaveDuringInitialNavigationIncognito SaveDuringInitialNavigationIncognito
-#endif
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
-                       MAYBE_SaveDuringInitialNavigationIncognito) {
+                       SaveDuringInitialNavigationIncognito) {
   // Open an Incognito window.
   Browser* incognito = CreateIncognitoBrowser();  // Waits.
   ASSERT_TRUE(incognito);
@@ -606,13 +573,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
   EXPECT_FALSE(chrome::CanSavePage(browser()));
 }
 
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
-#define MAYBE_FileNameFromPageTitle DISABLED_FileNameFromPageTitle
-#else
-#define MAYBE_FileNameFromPageTitle FileNameFromPageTitle
-#endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_FileNameFromPageTitle) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   GURL url = NavigateToMockURL("b");
 
   base::FilePath full_file_name = save_dir_.path().AppendASCII(
@@ -647,13 +608,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_FileNameFromPageTitle) {
       dir.AppendASCII("1.css")));
 }
 
-// Disabled on Windows due to flakiness. http://crbug.com/162323
-#if defined(OS_WIN)
-#define MAYBE_RemoveFromList DISABLED_RemoveFromList
-#else
-#define MAYBE_RemoveFromList RemoveFromList
-#endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
   GURL url = NavigateToMockURL("a");
 
   base::FilePath full_file_name, dir;
