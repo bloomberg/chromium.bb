@@ -169,5 +169,7 @@ test("wm_unittests") {
     "//ui/gl",
   ]
 
-  data_deps = [ "//ui/resources:ui_test_pak_data" ]
+  data_deps = [
+    "//ui/resources:ui_test_pak_data",
+  ]
 }

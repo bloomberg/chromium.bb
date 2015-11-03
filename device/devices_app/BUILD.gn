@@ -69,6 +69,8 @@ if (!is_component_build) {
       "//device/devices_app/usb/public/interfaces",
     ]
 
-    data_deps = [ ":devices" ]
+    data_deps = [
+      ":devices",
+    ]
   }
 }

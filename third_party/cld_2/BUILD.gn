@@ -98,6 +98,7 @@ config("cld2_warnings") {
       # cld_2 contains unused private fields.
       # https://code.google.com/p/cld2/issues/detail?id=37
       "-Wno-unused-private-field",
+
       # offsetmap.cc uses a char as a subscript.
       "-Wno-char-subscripts",
     ]

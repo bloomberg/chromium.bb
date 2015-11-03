@@ -13,9 +13,8 @@ compute_interfaces_info_individual("interfaces_info_individual_core") {
   sources_static = core_static_idl_files
   sources_generated = core_generated_idl_files
   interfaces_info_file =
-    "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"
-  component_info_file =
-    "$bindings_core_output_dir/ComponentInfoCore.pickle"
+      "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"
+  component_info_file = "$bindings_core_output_dir/ComponentInfoCore.pickle"
   deps = [
     "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
     "//third_party/WebKit/Source/core:generated_testing_idls_settings",
@@ -38,5 +37,7 @@ generate_global_constructors("core_global_constructors_idls") {
   interfaces = core_global_constructors_original_interfaces
   component = "Core"
   output_dir = blink_core_output_dir
-  deps = [ ":core_global_objects" ]
+  deps = [
+    ":core_global_objects",
+  ]
 }

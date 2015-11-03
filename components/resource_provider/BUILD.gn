@@ -141,5 +141,7 @@ mojo_native_application("apptests") {
     "//mojo/platform_handle",
   ]
 
-  data_deps = [ ":resource_provider" ]
+  data_deps = [
+    ":resource_provider",
+  ]
 }

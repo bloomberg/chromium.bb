@@ -29,9 +29,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
 
 # GYP version: EventModulesFactory action in bindings_modules_generated
 make_event_factory("bindings_modules_generated_event_modules_factory") {
-  in_files = [
-    "$root_gen_dir/blink/EventModulesInterfaces.in",
-  ]
+  in_files = [ "$root_gen_dir/blink/EventModulesInterfaces.in" ]
   outputs = [
     "$blink_modules_output_dir/EventModules.cpp",
     "$blink_modules_output_dir/EventModulesHeaders.h",
@@ -43,9 +41,7 @@ make_event_factory("bindings_modules_generated_event_modules_factory") {
 
 # GYP version: EventModulesNames action in bindings_modules_generated
 make_names("bindings_modules_generated_event_modules_names") {
-  in_files = [
-    "$root_gen_dir/blink/EventModulesInterfaces.in",
-  ]
+  in_files = [ "$root_gen_dir/blink/EventModulesInterfaces.in" ]
   outputs = [
     "$blink_modules_output_dir/EventModulesNames.cpp",
     "$blink_modules_output_dir/EventModulesNames.h",
@@ -57,9 +53,7 @@ make_names("bindings_modules_generated_event_modules_names") {
 
 # GYP version: EventTargetModulesNames action in bindings_modules_generated
 make_names("bindings_modules_generated_event_target_modules_names") {
-  in_files = [
-    "../../modules/EventTargetModulesFactory.in",
-  ]
+  in_files = [ "../../modules/EventTargetModulesFactory.in" ]
   outputs = [
     "$blink_modules_output_dir/EventTargetModulesNames.cpp",
     "$blink_modules_output_dir/EventTargetModulesNames.h",
@@ -73,9 +67,9 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources_static = modules_static_idl_files
   sources_generated = modules_generated_dependency_idl_files
   interfaces_info_file =
-    "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle"
+      "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle"
   component_info_file =
-    "$bindings_modules_output_dir/ComponentInfoModules.pickle"
+      "$bindings_modules_output_dir/ComponentInfoModules.pickle"
   deps = [
     ":modules_core_global_constructors_idls",
     ":modules_global_constructors_idls",
@@ -97,15 +91,13 @@ action("interfaces_info") {
   args = [
     "--write-file-only-if-changed=1",
     "--",
-    rebase_path(
-        "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
-        root_build_dir),
+    rebase_path("$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
+                root_build_dir),
     rebase_path(
         "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle",
         root_build_dir),
-    rebase_path(
-        "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
-        root_build_dir),
+    rebase_path("$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
+                root_build_dir),
   ]
 
   public_deps = [
@@ -119,25 +111,33 @@ compute_global_objects("modules_global_objects") {
   sources = modules_idl_files
   sources_generated = [ "$bindings_core_output_dir/GlobalObjectsCore.pickle" ]
   output_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
-  deps = [ "//third_party/WebKit/Source/bindings/core:core_global_objects" ]
+  deps = [
+    "//third_party/WebKit/Source/bindings/core:core_global_objects",
+  ]
 }
 
 # GYP version: Source/bindings/modules/generated.gyp:modules_core_global_constructors_idls
 generate_global_constructors("modules_core_global_constructors_idls") {
   sources = core_idl_files + core_idl_with_modules_dependency_files
-  global_objects_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+  global_objects_file =
+      "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
   interfaces = modules_core_global_constructors_original_interfaces
   component = "Core"
   output_dir = blink_modules_output_dir
-  deps = [ ":modules_global_objects" ]
+  deps = [
+    ":modules_global_objects",
+  ]
 }
 
 # GYP version: Source/bindings/modules/generated.gyp:modules_global_constructors_idls
 generate_global_constructors("modules_global_constructors_idls") {
   sources = modules_idl_files
-  global_objects_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+  global_objects_file =
+      "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
   interfaces = modules_global_constructors_original_interfaces
   component = "Modules"
   output_dir = blink_modules_output_dir
-  deps = [ ":modules_global_objects" ]
+  deps = [
+    ":modules_global_objects",
+  ]
 }

@@ -29,8 +29,7 @@ static_library("zlib_x86_simd") {
 }
 
 config("zlib_warnings") {
-  if (is_clang && !is_ios &&
-      (current_cpu == "x86" || current_cpu == "x64")) {
+  if (is_clang && !is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     cflags = [ "-Wno-incompatible-pointer-types" ]
   }
 }

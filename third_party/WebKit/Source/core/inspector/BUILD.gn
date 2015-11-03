@@ -28,7 +28,8 @@ action("protocol_sources") {
 
   args = [
     rebase_path(protocol_file, root_build_dir),
-    "--output_dir", rebase_path(blink_core_output_dir, root_build_dir),
+    "--output_dir",
+    rebase_path(blink_core_output_dir, root_build_dir),
   ]
 
   deps = [
@@ -54,19 +55,25 @@ action("instrumentation_sources") {
 
   args = [
     rebase_path("InspectorInstrumentation.idl", root_build_dir),
-    "--output_dir", rebase_path(blink_core_output_dir, root_build_dir),
+    "--output_dir",
+    rebase_path(blink_core_output_dir, root_build_dir),
   ]
 }
 
 action("protocol_version") {
   script = "generate-inspector-protocol-version"
 
-  inputs = [ protocol_file ]
+  inputs = [
+    protocol_file,
+  ]
   output_file = "$blink_core_output_dir/InspectorProtocolVersion.h"
-  outputs = [ output_file ]
+  outputs = [
+    output_file,
+  ]
 
   args = [
-    "-o", rebase_path(output_file, root_build_dir),
+    "-o",
+    rebase_path(output_file, root_build_dir),
     rebase_path(protocol_file, root_build_dir),
   ]
 }

@@ -42,6 +42,7 @@ source_set("freetype") {
   defines = [
     "FT2_BUILD_LIBRARY",
     "DARWIN_NO_CARBON",
+
     # Long directory name to avoid accidentally using wrong headers.
     "FT_CONFIG_MODULES_H=<freetype-android-config/ftmodule.h>",
     "FT_CONFIG_OPTIONS_H=<freetype-android-config/ftoption.h>",

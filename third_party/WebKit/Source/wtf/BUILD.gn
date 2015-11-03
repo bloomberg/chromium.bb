@@ -19,14 +19,13 @@ config("wtf_config") {
       "_CRT_SECURE_NO_DEPRECATE",
       "_SCL_SECURE_NO_DEPRECATE",
     ]
-    include_dirs = [
-      "os-win32",
-    ]
+    include_dirs = [ "os-win32" ]
 
     cflags = [
       # Don't complain about calling specific versions of templatized
       # functions (e.g. in RefPtrHashMap.h).
       "/wd4344",
+
       # dtoa, icu, etc. like doing assignment within conditional.
       "/wd4706",
     ]
@@ -53,6 +52,7 @@ component("wtf") {
 
   public_configs = [
     ":wtf_config",
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/WebKit/Source:features",
@@ -63,13 +63,9 @@ component("wtf") {
   ]
 
   if (is_win) {
-    sources -= [
-      "ThreadingPthreads.cpp",
-    ]
+    sources -= [ "ThreadingPthreads.cpp" ]
 
-    cflags = [
-      "/wd4068",  # Unknown pragma.
-    ]
+    cflags = [ "/wd4068" ]  # Unknown pragma.
   } else {
     # Non-Windows.
     sources -= [
@@ -86,11 +82,14 @@ component("wtf") {
   }
 
   if (is_mac) {
-    libs = [ "CoreFoundation.framework", "Foundation.framework" ]
+    libs = [
+      "CoreFoundation.framework",
+      "Foundation.framework",
+    ]
   } else {
     sources -= [
-      "text/StringImplCF.cpp",
       "text/AtomicStringCF.cpp",
+      "text/StringImplCF.cpp",
     ]
   }
 }
@@ -110,7 +109,7 @@ test("wtf_unittests") {
     cflags = [ "/wd4068" ]  # Unknown pragma.
   }
 
-  configs += [ "//third_party/WebKit/Source:config", ]
+  configs += [ "//third_party/WebKit/Source:config" ]
 
   deps = [
     ":test_support",
@@ -130,6 +129,7 @@ component("test_support") {
 
   configs += [
     ":wtf_config",
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/WebKit/Source:config",

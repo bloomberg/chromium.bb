@@ -1175,8 +1175,8 @@ if (is_linux) {
       # Not Windows.
       sources -= [
         # mpi_x86_asm.c contains MSVC inline assembly code.
-        "nss/lib/freebl/mpi/mpi_x86_asm.c",
         "nss/lib/freebl/intel-aes-x86-masm.asm",
+        "nss/lib/freebl/mpi/mpi_x86_asm.c",
       ]
     }
 

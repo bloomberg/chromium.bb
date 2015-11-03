@@ -88,7 +88,9 @@ if (is_ios || is_mac) {
 # This group exists just for targets that need the data file
 # to exist in the build directory so it can be loaded for test purposes.
 group("ui_test_pak_data") {
-  data_deps = [ ":repack_ui_test_pak" ]
+  data_deps = [
+    ":repack_ui_test_pak",
+  ]
 }
 
 # GYP version: ui/resources/ui_resources.gyp:ui_test_pak

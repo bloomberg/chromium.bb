@@ -8,7 +8,8 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 visibility = [ "//third_party/WebKit/*" ]
 
-core_idl_with_modules_dependency_files_list = "$target_gen_dir/core_idl_with_modules_dependency_files.tmp"
+core_idl_with_modules_dependency_files_list =
+    "$target_gen_dir/core_idl_with_modules_dependency_files.tmp"
 write_file(core_idl_with_modules_dependency_files_list,
            rebase_path(core_idl_with_modules_dependency_files, root_build_dir))
 
@@ -45,7 +46,7 @@ idl_compiler("bindings_modules_v8_generated_individual") {
 idl_impl("bindings_modules_impl_generated") {
   sources = modules_dictionary_idl_files
   outputs = bindings_modules_generated_union_type_files +
-    generated_modules_dictionary_files
+            generated_modules_dictionary_files
   output_dir = bindings_modules_v8_output_dir
   target_component = "modules"
 }
@@ -54,14 +55,16 @@ idl_impl("bindings_modules_impl_generated") {
 idl_compiler("bindings_modules_v8_generated_partial_individual") {
   # Note in GYP this is modules_interface_idl_files but this variable is just
   # defined to modules_definition_idl_files.
-  sources = core_idl_with_modules_dependency_files + webcore_testing_idl_with_modules_dependency_files
+  sources = core_idl_with_modules_dependency_files +
+            webcore_testing_idl_with_modules_dependency_files
   output_dir = bindings_modules_v8_output_dir
   output_name_suffix = "Partial"
   target_component = "modules"
 }
 
 # bindings_modules_generated_aggregate in modules/v8/generated.gyp
-aggregate_generated_bindings("bindings_modules_v8_generated_partial_aggregate") {
+aggregate_generated_bindings(
+    "bindings_modules_v8_generated_partial_aggregate") {
   sources = core_idl_with_modules_dependency_files
   component_dir = "modules"
   outputs = bindings_modules_generated_partial_aggregate_files
@@ -75,13 +78,16 @@ action("bindings_modules_v8_generated_init_partial") {
     core_idl_with_modules_dependency_files_list,
     "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
   ]
-  outputs = [ bindings_modules_generated_init_partial_interfaces_file ]
+  outputs = [
+    bindings_modules_generated_init_partial_interfaces_file,
+  ]
 
   args = [
     "--idl-files-list",
     rebase_path(core_idl_with_modules_dependency_files_list, root_build_dir),
     "--output",
-    rebase_path(bindings_modules_generated_init_partial_interfaces_file, root_build_dir),
+    rebase_path(bindings_modules_generated_init_partial_interfaces_file,
+                root_build_dir),
     "--write-file-only-if-changed=1",
   ]
 
@@ -89,4 +95,3 @@ action("bindings_modules_v8_generated_init_partial") {
     "//third_party/WebKit/Source/bindings/modules:interfaces_info",
   ]
 }
-
