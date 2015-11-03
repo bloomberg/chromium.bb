@@ -28,33 +28,35 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     public static final int CUSTOM_TAB_MODE = 1;
     public static final int FULLSCREEN_TAB_MODE = 2;
 
+    // Items that are included in all context menus.
+    private static final int[] BASE_WHITELIST = {
+            R.id.contextmenu_copy_link_address,
+            R.id.contextmenu_copy_email_address,
+            R.id.contextmenu_copy_link_text,
+            R.id.contextmenu_save_image,
+            R.id.contextmenu_share_image,
+            R.id.contextmenu_save_video,
+    };
+
+    // Items that are included for normal Chrome browser mode.
     private static final int[] NORMAL_MODE_WHITELIST = {
             R.id.contextmenu_load_images,
             R.id.contextmenu_open_in_new_tab,
             R.id.contextmenu_open_in_incognito_tab,
-            R.id.contextmenu_copy_link_address,
-            R.id.contextmenu_copy_email_address,
-            R.id.contextmenu_copy_link_text,
             R.id.contextmenu_save_link_as,
             R.id.contextmenu_load_original_image,
-            R.id.contextmenu_save_image,
             R.id.contextmenu_open_image,
             R.id.contextmenu_search_by_image,
-            R.id.contextmenu_share_image,
-            R.id.contextmenu_save_video
     };
 
+    // Additional items for custom tabs mode.
     private static final int[] CUSTOM_TAB_MODE_WHITELIST = {
-            R.id.contextmenu_copy_link_address,
-            R.id.contextmenu_copy_link_text,
             R.id.contextmenu_save_link_as,
-            R.id.contextmenu_save_image,
             R.id.contextmenu_open_image
     };
 
+    // Additional items for fullscreen tabs mode.
     private static final int[] FULLSCREEN_TAB_MODE_WHITELIST = {
-            R.id.contextmenu_copy_link_address,
-            R.id.contextmenu_copy_link_text,
             R.id.menu_id_open_in_chrome
     };
 
@@ -214,10 +216,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     private void removeUnsupportedItems(ContextMenu menu, int[] whitelist) {
+        Arrays.sort(BASE_WHITELIST);
         Arrays.sort(whitelist);
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
-            if (Arrays.binarySearch(whitelist, item.getItemId()) < 0) {
+            if (Arrays.binarySearch(whitelist, item.getItemId()) < 0
+                    && Arrays.binarySearch(BASE_WHITELIST, item.getItemId()) < 0) {
                 menu.removeItem(item.getItemId());
                 i--;
             }
