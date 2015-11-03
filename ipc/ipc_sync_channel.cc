@@ -305,15 +305,13 @@ bool SyncChannel::SyncContext::TryToUnblockListener(const Message* msg) {
     return false;
   }
 
-  // TODO(bauerb): Remove logging once investigation of http://crbug.com/141055
-  // has finished.
   if (!msg->is_reply_error()) {
     bool send_result = deserializers_.back().deserializer->
         SerializeOutputParameters(*msg);
     deserializers_.back().send_result = send_result;
-    VLOG_IF(1, !send_result) << "Couldn't deserialize reply message";
+    DVLOG_IF(1, !send_result) << "Couldn't deserialize reply message";
   } else {
-    VLOG(1) << "Received error reply";
+    DVLOG(1) << "Received error reply";
   }
   deserializers_.back().done_event->Signal();
 
@@ -370,7 +368,7 @@ void SyncChannel::SyncContext::OnChannelClosed() {
 void SyncChannel::SyncContext::OnSendTimeout(int message_id) {
   base::AutoLock auto_lock(deserializers_lock_);
   PendingSyncMessageQueue::iterator iter;
-  VLOG(1) << "Send timeout";
+  DVLOG(1) << "Send timeout";
   for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++) {
     if (iter->id == message_id) {
       iter->done_event->Signal();
@@ -382,8 +380,7 @@ void SyncChannel::SyncContext::OnSendTimeout(int message_id) {
 void SyncChannel::SyncContext::CancelPendingSends() {
   base::AutoLock auto_lock(deserializers_lock_);
   PendingSyncMessageQueue::iterator iter;
-  // TODO(bauerb): Remove once http://crbug/141055 is fixed.
-  VLOG(1) << "Canceling pending sends";
+  DVLOG(1) << "Canceling pending sends";
   for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++)
     iter->done_event->Signal();
 }
@@ -487,7 +484,7 @@ bool SyncChannel::Send(Message* message) {
   // *this* might get deleted in WaitForReply.
   scoped_refptr<SyncContext> context(sync_context());
   if (context->shutdown_event()->IsSignaled()) {
-    VLOG(1) << "shutdown event is signaled";
+    DVLOG(1) << "shutdown event is signaled";
     delete message;
     return false;
   }
