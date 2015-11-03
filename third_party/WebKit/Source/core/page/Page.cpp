@@ -582,6 +582,12 @@ DEFINE_TRACE(Page)
     MemoryPurgeClient::trace(visitor);
 }
 
+void Page::willCloseLayerTreeView()
+{
+    if (m_scrollingCoordinator)
+        m_scrollingCoordinator->willCloseLayerTreeView();
+}
+
 void Page::willBeDestroyed()
 {
     RefPtrWillBeRawPtr<Frame> mainFrame = m_mainFrame;

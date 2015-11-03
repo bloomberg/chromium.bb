@@ -59,6 +59,7 @@ public:
     ~ScrollingCoordinator();
     DECLARE_TRACE();
 
+    void willCloseLayerTreeView();
     void willBeDestroyed();
 
     // Return whether this scrolling coordinator handles scrolling for the given frame view.
@@ -154,6 +155,9 @@ private:
     void removeWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
     bool frameViewIsDirty() const;
+
+    void createProgrammaticScrollAnimatorTimeline();
+    void destroyProgrammaticScrollAnimatorTimeline();
 
     OwnPtr<WebCompositorAnimationTimeline> m_programmaticScrollAnimatorTimeline;
 

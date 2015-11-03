@@ -2685,6 +2685,9 @@ void WebViewImpl::willCloseLayerTreeView()
         m_linkHighlightsTimeline.clear();
     }
 
+    if (page())
+        page()->willCloseLayerTreeView();
+
     setRootGraphicsLayer(nullptr);
     m_layerTreeView = nullptr;
 }

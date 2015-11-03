@@ -206,6 +206,8 @@ public:
     void purgeMemory(MemoryPurgeMode, DeviceKind) override;
 
     DECLARE_TRACE();
+
+    void willCloseLayerTreeView();
     void willBeDestroyed();
 
 private:

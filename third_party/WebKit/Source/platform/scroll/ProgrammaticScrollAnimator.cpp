@@ -216,13 +216,14 @@ void ProgrammaticScrollAnimator::reattachCompositorPlayerIfNeeded(WebCompositorA
         if (m_compositorPlayer && timeline) {
             // Detach from old layer (if any).
             if (m_compositorAnimationAttachedToLayerId) {
-                ASSERT(m_compositorPlayer->isLayerAttached());
-                m_compositorPlayer->detachLayer();
+                if (m_compositorPlayer->isLayerAttached())
+                    m_compositorPlayer->detachLayer();
                 timeline->playerDestroyed(*this);
             }
             // Attach to new layer (if any).
             if (compositorAnimationAttachedToLayerId) {
                 ASSERT(m_scrollableArea->layerForScrolling());
+                ASSERT(!m_compositorPlayer->isLayerAttached());
                 timeline->playerAttached(*this);
                 m_compositorPlayer->attachLayer(m_scrollableArea->layerForScrolling()->platformLayer());
             }
