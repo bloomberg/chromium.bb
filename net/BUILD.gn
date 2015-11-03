@@ -1213,10 +1213,8 @@ if (is_android) {
     dest = _net_unittests_apk_assets_dir
 
     if (v8_use_external_startup_data) {
-      sources = [
-        "$root_out_dir/natives_blob.bin",
-        "$root_out_dir/snapshot_blob.bin",
-      ]
+      renaming_sources = v8_external_startup_data_renaming_sources
+      renaming_destinations = v8_external_startup_data_renaming_destinations
       deps = [
         "//v8",
       ]
