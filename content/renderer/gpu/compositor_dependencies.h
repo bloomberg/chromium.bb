@@ -40,6 +40,7 @@ class CompositorDependencies {
   virtual bool IsDistanceFieldTextEnabled() = 0;
   virtual bool IsZeroCopyEnabled() = 0;
   virtual bool IsPartialRasterEnabled() = 0;
+  virtual bool IsGpuMemoryBufferCompositorResourcesEnabled() = 0;
   virtual bool IsElasticOverscrollEnabled() = 0;
   virtual std::vector<unsigned> GetImageTextureTargets() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner>

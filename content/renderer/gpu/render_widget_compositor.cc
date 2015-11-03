@@ -300,6 +300,8 @@ void RenderWidgetCompositor::Initialize() {
   settings.use_partial_raster = compositor_deps_->IsPartialRasterEnabled();
   settings.enable_elastic_overscroll =
       compositor_deps_->IsElasticOverscrollEnabled();
+  settings.renderer_settings.use_gpu_memory_buffer_resources =
+      compositor_deps_->IsGpuMemoryBufferCompositorResourcesEnabled();
   settings.use_image_texture_targets =
       compositor_deps_->GetImageTextureTargets();
   settings.image_decode_tasks_enabled =

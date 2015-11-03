@@ -107,6 +107,7 @@ CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
 CONTENT_EXPORT extern const char kEnableFeatures[];
 CONTENT_EXPORT extern const char kEnableWebBluetooth[];
 extern const char kEnableGpuClientTracing[];
+CONTENT_EXPORT extern const char kEnableGpuMemoryBufferCompositorResources[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferVideoFrames[];
 CONTENT_EXPORT extern const char kEnableGpuRasterization[];
 CONTENT_EXPORT extern const char kGpuRasterizationMSAASampleCount[];

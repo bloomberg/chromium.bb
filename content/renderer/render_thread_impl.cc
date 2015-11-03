@@ -705,6 +705,8 @@ void RenderThreadImpl::Init() {
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
   is_partial_raster_enabled_ =
       command_line.HasSwitch(switches::kEnablePartialRaster);
+  is_gpu_memory_buffer_compositor_resources_enabled_ = command_line.HasSwitch(
+      switches::kEnableGpuMemoryBufferCompositorResources);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   is_elastic_overscroll_enabled_ = base::mac::IsOSLionOrLater();
@@ -1501,6 +1503,10 @@ bool RenderThreadImpl::IsZeroCopyEnabled() {
 
 bool RenderThreadImpl::IsPartialRasterEnabled() {
   return is_partial_raster_enabled_;
+}
+
+bool RenderThreadImpl::IsGpuMemoryBufferCompositorResourcesEnabled() {
+  return is_gpu_memory_buffer_compositor_resources_enabled_;
 }
 
 bool RenderThreadImpl::IsElasticOverscrollEnabled() {

@@ -323,11 +323,13 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     size_t id_allocation_chunk_size,
+    bool use_gpu_memory_buffer_resources,
     const std::vector<unsigned>& use_image_texture_targets) {
   scoped_ptr<ResourceProvider> resource_provider(new ResourceProvider(
       output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
       blocking_main_thread_task_runner, highp_threshold_min,
-      id_allocation_chunk_size, use_image_texture_targets));
+      id_allocation_chunk_size, use_gpu_memory_buffer_resources,
+      use_image_texture_targets));
   resource_provider->Initialize();
   return resource_provider;
 }
@@ -385,10 +387,10 @@ ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GL_TEXTURE:
-      return CreateGLTexture(size,
-                             GL_TEXTURE_2D,
-                             hint,
-                             format);
+      return CreateGLTexture(size, use_gpu_memory_buffer_resources_
+                                       ? GetImageTextureTarget(format)
+                                       : GL_TEXTURE_2D,
+                             hint, format);
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size);
@@ -815,6 +817,8 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
   resource_provider_->LazyAllocate(resource_);
   texture_id_ = resource_->gl_id;
   DCHECK(texture_id_);
+  if (resource_->dirty_image)
+    resource_provider_->BindImageForSampling(resource_);
 }
 
 ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
@@ -859,13 +863,10 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
                                    ResourceId resource_id)
     : resource_provider_(resource_provider),
-      resource_(resource_provider->LockForWrite(resource_id)),
-      gpu_memory_buffer_manager_(resource_provider->gpu_memory_buffer_manager_),
-      gpu_memory_buffer_(nullptr),
-      size_(resource_->size),
-      format_(resource_->format) {
+      resource_(resource_provider->LockForWrite(resource_id)) {
   DCHECK_EQ(RESOURCE_TYPE_GL_TEXTURE, resource_->type);
-  std::swap(gpu_memory_buffer_, resource_->gpu_memory_buffer);
+  gpu_memory_buffer_.reset(resource_->gpu_memory_buffer);
+  resource_->gpu_memory_buffer = nullptr;
 }
 
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
@@ -875,27 +876,13 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   if (!gpu_memory_buffer_)
     return;
 
+  DCHECK(!resource_->gpu_memory_buffer);
   resource_provider_->LazyCreate(resource_);
-
-  if (!resource_->image_id) {
-    GLES2Interface* gl = resource_provider_->ContextGL();
-    DCHECK(gl);
-
-#if defined(OS_CHROMEOS)
-    // TODO(reveman): GL_COMMANDS_ISSUED_CHROMIUM is used for synchronization
-    // on ChromeOS to avoid some performance issues. This only works with
-    // shared memory backed buffers. crbug.com/436314
-    DCHECK_EQ(gpu_memory_buffer_->GetHandle().type, gfx::SHARED_MEMORY_BUFFER);
-#endif
-
-    resource_->image_id = gl->CreateImageCHROMIUM(
-        gpu_memory_buffer_->AsClientBuffer(), size_.width(), size_.height(),
-        GLInternalFormat(resource_->format));
-  }
-
-  std::swap(resource_->gpu_memory_buffer, gpu_memory_buffer_);
+  resource_->gpu_memory_buffer = gpu_memory_buffer_.release();
   resource_->allocated = true;
+  resource_provider_->LazyCreateImage(resource_);
   resource_->dirty_image = true;
+  resource_->is_overlay_candidate = true;
 
   // GpuMemoryBuffer provides direct access to the memory used by the GPU.
   // Read lock fences are required to ensure that we're not trying to map a
@@ -905,14 +892,13 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
 
 gfx::GpuMemoryBuffer*
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
-  if (gpu_memory_buffer_)
-    return gpu_memory_buffer_;
-  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
-      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
-          size_, BufferFormat(format_),
-          gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
-  gpu_memory_buffer_ = gpu_memory_buffer.release();
-  return gpu_memory_buffer_;
+  if (!gpu_memory_buffer_) {
+    gpu_memory_buffer_ =
+        resource_provider_->gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+            resource_->size, BufferFormat(resource_->format),
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+  }
+  return gpu_memory_buffer_.get();
 }
 
 ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
@@ -1001,6 +987,7 @@ ResourceProvider::ResourceProvider(
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     size_t id_allocation_chunk_size,
+    bool use_gpu_memory_buffer_resources,
     const std::vector<unsigned>& use_image_texture_targets)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
@@ -1011,6 +998,7 @@ ResourceProvider::ResourceProvider(
       next_id_(1),
       next_child_(1),
       default_resource_type_(RESOURCE_TYPE_BITMAP),
+      use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       use_texture_storage_ext_(false),
       use_texture_format_bgra_(false),
       use_texture_usage_hint_(false),
@@ -1308,11 +1296,8 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     LazyCreate(source);
     DCHECK(source->gl_id);
     DCHECK(source->origin == Resource::INTERNAL);
-    if (source->image_id) {
-      DCHECK(source->dirty_image);
-      gl->BindTexture(resource->mailbox_holder.texture_target, source->gl_id);
+    if (source->image_id && source->dirty_image)
       BindImageForSampling(source);
-    }
     // This is a resource allocated by the compositor, we need to produce it.
     // Don't set a sync point, the caller will do it.
     gl->GenMailboxCHROMIUM(resource->mailbox_holder.mailbox.name);
@@ -1326,7 +1311,6 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     if (source->image_id && source->dirty_image) {
       DCHECK(source->gl_id);
       DCHECK(source->origin == Resource::INTERNAL);
-      gl->BindTexture(resource->mailbox_holder.texture_target, source->gl_id);
       BindImageForSampling(source);
     }
     // This is either an external resource, or a compositor resource that we
@@ -1514,9 +1498,18 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   gfx::Size& size = resource->size;
   ResourceFormat format = resource->format;
   gl->BindTexture(resource->target, resource->gl_id);
-  if (use_texture_storage_ext_ &&
-      IsFormatSupportedForStorage(format, use_texture_format_bgra_) &&
-      (resource->hint & TEXTURE_HINT_IMMUTABLE)) {
+  if (use_gpu_memory_buffer_resources_) {
+    resource->gpu_memory_buffer =
+        gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+                                      size, BufferFormat(format),
+                                      gfx::BufferUsage::SCANOUT)
+            .release();
+    LazyCreateImage(resource);
+    resource->dirty_image = true;
+    resource->is_overlay_candidate = true;
+  } else if (use_texture_storage_ext_ &&
+             IsFormatSupportedForStorage(format, use_texture_format_bgra_) &&
+             (resource->hint & TEXTURE_HINT_IMMUTABLE)) {
     GLenum storage_format = TextureToStorageFormat(format);
     gl->TexStorage2DEXT(resource->target, 1, storage_format, size.width(),
                         size.height());
@@ -1530,12 +1523,34 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   }
 }
 
+void ResourceProvider::LazyCreateImage(Resource* resource) {
+  DCHECK(resource->gpu_memory_buffer);
+  DCHECK(resource->gl_id);
+  DCHECK(resource->allocated);
+  if (!resource->image_id) {
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+
+#if defined(OS_CHROMEOS)
+    // TODO(reveman): GL_COMMANDS_ISSUED_CHROMIUM is used for synchronization
+    // on ChromeOS to avoid some performance issues. This only works with
+    // shared memory backed buffers. crbug.com/436314
+    DCHECK_EQ(resource->gpu_memory_buffer->GetHandle().type,
+              gfx::SHARED_MEMORY_BUFFER);
+#endif
+    resource->image_id = gl->CreateImageCHROMIUM(
+        resource->gpu_memory_buffer->AsClientBuffer(), resource->size.width(),
+        resource->size.height(), GLInternalFormat(resource->format));
+  }
+}
+
 void ResourceProvider::BindImageForSampling(Resource* resource) {
   GLES2Interface* gl = ContextGL();
   DCHECK(resource->gl_id);
   DCHECK(resource->image_id);
 
   // Release image currently bound to texture.
+  gl->BindTexture(resource->target, resource->gl_id);
   if (resource->bound_image_id)
     gl->ReleaseTexImage2DCHROMIUM(resource->target, resource->bound_image_id);
   gl->BindTexImage2DCHROMIUM(resource->target, resource->image_id);

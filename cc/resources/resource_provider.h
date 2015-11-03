@@ -87,6 +87,7 @@ class CC_EXPORT ResourceProvider
       BlockingTaskRunner* blocking_main_thread_task_runner,
       int highp_threshold_min,
       size_t id_allocation_chunk_size,
+      bool use_gpu_memory_buffer_resources,
       const std::vector<unsigned>& use_image_texture_targets);
   ~ResourceProvider() override;
 
@@ -309,10 +310,7 @@ class CC_EXPORT ResourceProvider
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-    gfx::GpuMemoryBuffer* gpu_memory_buffer_;
-    gfx::Size size_;
-    ResourceFormat format_;
+    scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
     base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
@@ -435,6 +433,7 @@ class CC_EXPORT ResourceProvider
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
                    size_t id_allocation_chunk_size,
+                   bool use_gpu_memory_buffer_resources,
                    const std::vector<unsigned>& use_image_texture_targets);
   void Initialize();
 
@@ -546,6 +545,7 @@ class CC_EXPORT ResourceProvider
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
   void LazyCreate(Resource* resource);
   void LazyAllocate(Resource* resource);
+  void LazyCreateImage(Resource* resource);
 
   void BindImageForSampling(Resource* resource);
   // Binds the given GL resource to a texture target for sampling using the
@@ -569,6 +569,7 @@ class CC_EXPORT ResourceProvider
   ChildMap children_;
 
   ResourceType default_resource_type_;
+  bool use_gpu_memory_buffer_resources_;
   bool use_texture_storage_ext_;
   bool use_texture_format_bgra_;
   bool use_texture_usage_hint_;

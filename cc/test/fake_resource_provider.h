@@ -16,7 +16,7 @@ class FakeResourceProvider : public ResourceProvider {
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager) {
     scoped_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
-        output_surface, shared_bitmap_manager, nullptr, nullptr, 0, 1,
+        output_surface, shared_bitmap_manager, nullptr, nullptr, 0, 1, false,
         std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
                               GL_TEXTURE_2D)));
     provider->Initialize();
@@ -29,7 +29,7 @@ class FakeResourceProvider : public ResourceProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
     scoped_ptr<FakeResourceProvider> provider(new FakeResourceProvider(
         output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
-        nullptr, 0, 1,
+        nullptr, 0, 1, false,
         std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
                               GL_TEXTURE_2D)));
     provider->Initialize();
@@ -43,6 +43,7 @@ class FakeResourceProvider : public ResourceProvider {
                        BlockingTaskRunner* blocking_main_thread_task_runner,
                        int highp_threshold_min,
                        size_t id_allocation_chunk_size,
+                       bool use_gpu_memory_buffer_resources,
                        const std::vector<unsigned>& use_image_texture_targets)
       : ResourceProvider(output_surface,
                          shared_bitmap_manager,
@@ -50,6 +51,7 @@ class FakeResourceProvider : public ResourceProvider {
                          blocking_main_thread_task_runner,
                          highp_threshold_min,
                          id_allocation_chunk_size,
+                         use_gpu_memory_buffer_resources,
                          use_image_texture_targets) {}
 };
 

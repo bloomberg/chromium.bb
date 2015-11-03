@@ -46,6 +46,10 @@ bool FakeCompositorDependencies::IsPartialRasterEnabled() {
   return false;
 }
 
+bool FakeCompositorDependencies::IsGpuMemoryBufferCompositorResourcesEnabled() {
+  return false;
+}
+
 bool FakeCompositorDependencies::IsElasticOverscrollEnabled() {
   return false;
 }

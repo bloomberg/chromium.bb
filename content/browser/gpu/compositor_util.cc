@@ -216,6 +216,13 @@ bool IsPartialRasterEnabled() {
   return command_line.HasSwitch(switches::kEnablePartialRaster);
 }
 
+bool IsGpuMemoryBufferCompositorResourcesEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(
+      switches::kEnableGpuMemoryBufferCompositorResources);
+}
+
 bool IsGpuRasterizationEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

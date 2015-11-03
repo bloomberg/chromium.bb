@@ -26,6 +26,7 @@ class CC_EXPORT RendererSettings {
   int highp_threshold_min;
   bool use_rgba_4444_textures;
   size_t texture_id_allocation_chunk_size;
+  bool use_gpu_memory_buffer_resources;
 };
 
 }  // namespace cc

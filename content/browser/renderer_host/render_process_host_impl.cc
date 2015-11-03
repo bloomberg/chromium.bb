@@ -1198,6 +1198,11 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
 
+  if (IsGpuMemoryBufferCompositorResourcesEnabled()) {
+    command_line->AppendSwitch(
+        switches::kEnableGpuMemoryBufferCompositorResources);
+  }
+
   // Persistent buffers may come at a performance hit (not all platform specific
   // buffers support it), so only enable them if partial raster is enabled and
   // we are actually going to use them.

@@ -24,6 +24,9 @@ CONTENT_EXPORT bool IsZeroCopyUploadEnabled();
 // Returns true if a partial raster is on (via flags).
 CONTENT_EXPORT bool IsPartialRasterEnabled();
 
+// Returns true if all compositor resources should use GPU memory buffers.
+CONTENT_EXPORT bool IsGpuMemoryBufferCompositorResourcesEnabled();
+
 // Returns true if gpu rasterization is on (via flags) for the renderer.
 CONTENT_EXPORT bool IsGpuRasterizationEnabled();
 

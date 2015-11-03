@@ -21,7 +21,8 @@ RendererSettings::RendererSettings()
       refresh_rate(60.0),
       highp_threshold_min(0),
       use_rgba_4444_textures(false),
-      texture_id_allocation_chunk_size(64) {}
+      texture_id_allocation_chunk_size(64),
+      use_gpu_memory_buffer_resources(false) {}
 
 RendererSettings::~RendererSettings() {
 }

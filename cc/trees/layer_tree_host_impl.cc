@@ -2273,6 +2273,7 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
       task_runner_provider_->blocking_main_thread_task_runner(),
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
+      settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.use_image_texture_targets);
 
   CreateAndSetRenderer();

@@ -106,6 +106,7 @@ void Display::InitializeRenderer() {
       output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
       nullptr, settings_.highp_threshold_min,
       settings_.texture_id_allocation_chunk_size,
+      settings_.use_gpu_memory_buffer_resources,
       std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
                             GL_TEXTURE_2D));
   if (!resource_provider)
