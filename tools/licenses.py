@@ -309,11 +309,12 @@ def ParseDir(path, root, require_license_file=True, optional_keys=None):
                     metadata[key] = line[len(field):]
 
     # Check that all expected metadata is present.
+    errors = []
     for key, value in metadata.iteritems():
         if not value:
-            raise LicenseError("couldn't find '" + key + "' line "
-                               "in README.chromium or licences.py "
-                               "SPECIAL_CASES")
+            errors.append("couldn't find '" + key + "' line "
+                          "in README.chromium or licences.py "
+                          "SPECIAL_CASES")
 
     # Special-case modules that aren't in the shipping product, so don't need
     # their license in about:credits.
@@ -325,13 +326,15 @@ def ParseDir(path, root, require_license_file=True, optional_keys=None):
                 break
 
         if require_license_file and not license_path:
-            raise LicenseError("License file not found. "
-                               "Either add a file named LICENSE, "
-                               "import upstream's COPYING if available, "
-                               "or add a 'License File:' line to "
-                               "README.chromium with the appropriate path.")
+            errors.append("License file not found. "
+                          "Either add a file named LICENSE, "
+                          "import upstream's COPYING if available, "
+                          "or add a 'License File:' line to "
+                          "README.chromium with the appropriate path.")
         metadata["License File"] = license_path
 
+    if errors:
+        raise LicenseError(";\n".join(errors))
     return metadata
 
 
