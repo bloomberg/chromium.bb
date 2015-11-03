@@ -9,15 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/threading/thread_checker.h"
+#include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
 #include "media/base/player_tracker.h"
 
 namespace media {
 
 // A common implementation that can be shared by different PlayerTracker
-// implementations. This class is not thread safe and should only be called
-// on one thread.
+// implementations. This class is thread safe and can be called on any thread.
 class MEDIA_EXPORT PlayerTrackerImpl : public PlayerTracker {
  public:
   PlayerTrackerImpl();
@@ -34,17 +33,19 @@ class MEDIA_EXPORT PlayerTrackerImpl : public PlayerTracker {
 
  private:
   struct PlayerCallbacks {
-    PlayerCallbacks(base::Closure new_key_cb, base::Closure cdm_unset_cb);
+    PlayerCallbacks(const base::Closure& new_key_cb,
+                    const base::Closure& cdm_unset_cb);
     ~PlayerCallbacks();
 
     base::Closure new_key_cb;
     base::Closure cdm_unset_cb;
   };
 
+  // Lock used to serialize access to other data members.
+  base::Lock lock_;
+
   int next_registration_id_;
   std::map<int, PlayerCallbacks> player_callbacks_map_;
-
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PlayerTrackerImpl);
 };

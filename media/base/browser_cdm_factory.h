@@ -8,18 +8,19 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "media/base/browser_cdm.h"
+#include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
+#include "media/base/media_keys.h"
 
 namespace media {
 
+// TODO(xhwang): Merge this with media::CdmFactory.
 class MEDIA_EXPORT BrowserCdmFactory {
  public:
   BrowserCdmFactory() {}
   virtual ~BrowserCdmFactory() {}
 
-  virtual ScopedBrowserCdmPtr CreateBrowserCdm(
+  virtual scoped_refptr<MediaKeys> CreateBrowserCdm(
       const std::string& key_system,
       bool use_hw_secure_codecs,
       const SessionMessageCB& session_message_cb,
@@ -36,12 +37,12 @@ class MEDIA_EXPORT BrowserCdmFactory {
 // BrowserCdmFactory per process.
 void SetBrowserCdmFactory(BrowserCdmFactory* factory);
 
-// Creates a BrowserCdm for |key_system|. Returns NULL if the CDM cannot be
+// Creates a MediaKeys for |key_system|. Returns NULL if the CDM cannot be
 // created.
 // |use_hw_secure_codecs| indicates that the CDM should be configured to use
 // hardware-secure codecs (for platforms that support it).
 // TODO(xhwang): Add ifdef for IPC based CDM.
-ScopedBrowserCdmPtr MEDIA_EXPORT
+scoped_refptr<MediaKeys> MEDIA_EXPORT
 CreateBrowserCdm(const std::string& key_system,
                  bool use_hw_secure_codecs,
                  const SessionMessageCB& session_message_cb,

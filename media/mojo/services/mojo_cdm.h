@@ -41,8 +41,6 @@ class MojoCdm : public MediaKeys,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const media::CdmCreatedCB& cdm_created_cb);
 
-  ~MojoCdm() final;
-
   // MediaKeys implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             scoped_ptr<SimpleCdmPromise> promise) final;
@@ -74,6 +72,8 @@ class MojoCdm : public MediaKeys,
           const LegacySessionErrorCB& legacy_session_error_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
           const SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  ~MojoCdm() final;
 
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin,

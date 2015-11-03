@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -202,14 +203,15 @@ class FakeEncryptedMedia {
   };
 
   FakeEncryptedMedia(AppBase* app)
-      : decryptor_(GURL::EmptyGURL(),
-                   base::Bind(&FakeEncryptedMedia::OnSessionMessage,
-                              base::Unretained(this)),
-                   base::Bind(&FakeEncryptedMedia::OnSessionClosed,
-                              base::Unretained(this)),
-                   base::Bind(&FakeEncryptedMedia::OnSessionKeysChange,
-                              base::Unretained(this))),
-        cdm_context_(&decryptor_),
+      : decryptor_(new AesDecryptor(
+            GURL::EmptyGURL(),
+            base::Bind(&FakeEncryptedMedia::OnSessionMessage,
+                       base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::OnSessionClosed,
+                       base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::OnSessionKeysChange,
+                       base::Unretained(this)))),
+        cdm_context_(decryptor_.get()),
         app_(app) {}
 
   CdmContext* GetCdmContext() { return &cdm_context_; }
@@ -220,7 +222,7 @@ class FakeEncryptedMedia {
                         const std::vector<uint8_t>& message,
                         const GURL& legacy_destination_url) {
     app_->OnSessionMessage(session_id, message_type, message,
-                           legacy_destination_url, &decryptor_);
+                           legacy_destination_url, decryptor_.get());
   }
 
   void OnSessionClosed(const std::string& session_id) {
@@ -244,7 +246,7 @@ class FakeEncryptedMedia {
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8_t>& init_data) {
-    app_->OnEncryptedMediaInitData(init_data_type, init_data, &decryptor_);
+    app_->OnEncryptedMediaInitData(init_data_type, init_data, decryptor_.get());
   }
 
  private:
@@ -259,7 +261,7 @@ class FakeEncryptedMedia {
     Decryptor* decryptor_;
   };
 
-  AesDecryptor decryptor_;
+  scoped_refptr<AesDecryptor> decryptor_;
   TestCdmContext cdm_context_;
   scoped_ptr<AppBase> app_;
 };

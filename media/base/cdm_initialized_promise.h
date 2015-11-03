@@ -5,7 +5,7 @@
 #ifndef MEDIA_BASE_CDM_INITIALIZED_PROMISE_H_
 #define MEDIA_BASE_CDM_INITIALIZED_PROMISE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_export.h"
@@ -19,7 +19,7 @@ namespace media {
 class MEDIA_EXPORT CdmInitializedPromise : public SimpleCdmPromise {
  public:
   CdmInitializedPromise(const CdmCreatedCB& cdm_created_cb,
-                        scoped_ptr<MediaKeys> cdm);
+                        const scoped_refptr<MediaKeys>& cdm);
   ~CdmInitializedPromise() override;
 
   // SimpleCdmPromise implementation.
@@ -30,7 +30,9 @@ class MEDIA_EXPORT CdmInitializedPromise : public SimpleCdmPromise {
 
  private:
   CdmCreatedCB cdm_created_cb_;
-  scoped_ptr<MediaKeys> cdm_;
+
+  // Holds a ref-count of the CDM.
+  scoped_refptr<MediaKeys> cdm_;
 };
 
 }  // namespace media

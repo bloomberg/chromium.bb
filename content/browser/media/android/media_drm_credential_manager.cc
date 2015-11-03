@@ -85,7 +85,7 @@ void MediaDrmCredentialManager::OnResetCredentialsCompleted(
   }
 
   base::ResetAndReturn(&reset_credentials_cb_).Run(success);
-  media_drm_bridge_.reset();
+  media_drm_bridge_ = nullptr;
 }
 
 // TODO(ddorwin): The key system should be passed in. http://crbug.com/459400

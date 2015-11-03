@@ -35,18 +35,17 @@ void MojoCdm::Create(
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     const media::CdmCreatedCB& cdm_created_cb) {
-  scoped_ptr<MojoCdm> mojo_cdm(
+  scoped_refptr<MojoCdm> mojo_cdm(
       new MojoCdm(remote_cdm.Pass(), session_message_cb, session_closed_cb,
                   legacy_session_error_cb, session_keys_change_cb,
                   session_expiration_update_cb));
 
-  // |mojo_cdm|'s ownership will be passed to the promise. Get a raw pointer
-  // here in order to call Initialize().
-  MojoCdm* mojo_cdm_ptr = mojo_cdm.get();
+  // |mojo_cdm| ownership is passed to the promise.
   scoped_ptr<CdmInitializedPromise> promise(
-      new CdmInitializedPromise(cdm_created_cb, mojo_cdm.Pass()));
-  mojo_cdm_ptr->InitializeCdm(key_system, security_origin, cdm_config,
-                              promise.Pass());
+      new CdmInitializedPromise(cdm_created_cb, mojo_cdm));
+
+  mojo_cdm->InitializeCdm(key_system, security_origin, cdm_config,
+                          promise.Pass());
 }
 
 MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,

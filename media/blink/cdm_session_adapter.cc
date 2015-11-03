@@ -128,11 +128,10 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
   return key_system_uma_prefix_;
 }
 
-void CdmSessionAdapter::OnCdmCreated(
-    const std::string& key_system,
-    base::TimeTicks start_time,
-    scoped_ptr<MediaKeys> cdm,
-    const std::string& error_message) {
+void CdmSessionAdapter::OnCdmCreated(const std::string& key_system,
+                                     base::TimeTicks start_time,
+                                     const scoped_refptr<MediaKeys>& cdm,
+                                     const std::string& error_message) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(!cdm_);
 
@@ -155,7 +154,7 @@ void CdmSessionAdapter::OnCdmCreated(
   // Only report time for successful CDM creation.
   ReportTimeToCreateCdmUMA(base::TimeTicks::Now() - start_time);
 
-  cdm_ = cdm.Pass();
+  cdm_ = cdm;
 
   cdm_created_result_->completeWithContentDecryptionModule(
       new WebContentDecryptionModuleImpl(this));

@@ -29,24 +29,16 @@ void ProxyMediaKeys::Create(
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     const media::CdmCreatedCB& cdm_created_cb) {
   DCHECK(manager);
-  scoped_ptr<ProxyMediaKeys> proxy_media_keys(new ProxyMediaKeys(
+  scoped_refptr<ProxyMediaKeys> proxy_media_keys(new ProxyMediaKeys(
       manager, session_message_cb, session_closed_cb, legacy_session_error_cb,
       session_keys_change_cb, session_expiration_update_cb));
 
-  // ProxyMediaKeys ownership passed to the promise, but keep a copy in order
-  // to call InitializeCdm().
-  ProxyMediaKeys* proxy_media_keys_copy = proxy_media_keys.get();
+  // ProxyMediaKeys ownership passed to the promise.
   scoped_ptr<media::CdmInitializedPromise> promise(
-      new media::CdmInitializedPromise(cdm_created_cb,
-                                       proxy_media_keys.Pass()));
-  proxy_media_keys_copy->InitializeCdm(key_system, security_origin,
-                                       use_hw_secure_codecs, promise.Pass());
-}
+      new media::CdmInitializedPromise(cdm_created_cb, proxy_media_keys));
 
-ProxyMediaKeys::~ProxyMediaKeys() {
-  manager_->DestroyCdm(cdm_id_);
-  manager_->UnregisterMediaKeys(cdm_id_);
-  cdm_promise_adapter_.Clear();
+  proxy_media_keys->InitializeCdm(key_system, security_origin,
+                                  use_hw_secure_codecs, promise.Pass());
 }
 
 void ProxyMediaKeys::SetServerCertificate(
@@ -191,6 +183,12 @@ ProxyMediaKeys::ProxyMediaKeys(
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb) {
   cdm_id_ = manager->RegisterMediaKeys(this);
+}
+
+ProxyMediaKeys::~ProxyMediaKeys() {
+  manager_->DestroyCdm(cdm_id_);
+  manager_->UnregisterMediaKeys(cdm_id_);
+  cdm_promise_adapter_.Clear();
 }
 
 void ProxyMediaKeys::InitializeCdm(

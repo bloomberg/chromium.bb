@@ -214,13 +214,14 @@ enum PromiseResult { RESOLVED, REJECTED };
 class AesDecryptorTest : public testing::Test {
  public:
   AesDecryptorTest()
-      : decryptor_(GURL::EmptyGURL(),
-                   base::Bind(&AesDecryptorTest::OnSessionMessage,
-                              base::Unretained(this)),
-                   base::Bind(&AesDecryptorTest::OnSessionClosed,
-                              base::Unretained(this)),
-                   base::Bind(&AesDecryptorTest::OnSessionKeysChange,
-                              base::Unretained(this))),
+      : decryptor_(
+            new AesDecryptor(GURL::EmptyGURL(),
+                             base::Bind(&AesDecryptorTest::OnSessionMessage,
+                                        base::Unretained(this)),
+                             base::Bind(&AesDecryptorTest::OnSessionClosed,
+                                        base::Unretained(this)),
+                             base::Bind(&AesDecryptorTest::OnSessionKeysChange,
+                                        base::Unretained(this)))),
         decrypt_cb_(base::Bind(&AesDecryptorTest::BufferDecrypted,
                                base::Unretained(this))),
         original_data_(kOriginalData, kOriginalData + kOriginalDataSize),
@@ -233,8 +234,7 @@ class AesDecryptorTest : public testing::Test {
         iv_(kIv, kIv + arraysize(kIv)),
         normal_subsample_entries_(
             kSubsampleEntriesNormal,
-            kSubsampleEntriesNormal + arraysize(kSubsampleEntriesNormal)) {
-  }
+            kSubsampleEntriesNormal + arraysize(kSubsampleEntriesNormal)) {}
 
  protected:
   void OnResolveWithSession(PromiseResult expected_result,
@@ -285,9 +285,9 @@ class AesDecryptorTest : public testing::Test {
     DCHECK(!key_id.empty());
     EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                         GURL::EmptyGURL()));
-    decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                               EmeInitDataType::WEBM, key_id,
-                                               CreateSessionPromise(RESOLVED));
+    decryptor_->CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                                EmeInitDataType::WEBM, key_id,
+                                                CreateSessionPromise(RESOLVED));
     // This expects the promise to be called synchronously, which is the case
     // for AesDecryptor.
     return session_id_;
@@ -296,7 +296,7 @@ class AesDecryptorTest : public testing::Test {
   // Closes the session specified by |session_id|.
   void CloseSession(const std::string& session_id) {
     EXPECT_CALL(*this, OnSessionClosed(session_id));
-    decryptor_.CloseSession(session_id, CreatePromise(RESOLVED));
+    decryptor_->CloseSession(session_id, CreatePromise(RESOLVED));
   }
 
   // Removes the session specified by |session_id|. This should simply do a
@@ -305,7 +305,7 @@ class AesDecryptorTest : public testing::Test {
   // http://crbug.com/249976.
   void RemoveSession(const std::string& session_id) {
     EXPECT_CALL(*this, OnSessionClosed(session_id));
-    decryptor_.RemoveSession(session_id, CreatePromise(RESOLVED));
+    decryptor_->RemoveSession(session_id, CreatePromise(RESOLVED));
   }
 
   MOCK_METHOD2(OnSessionKeysChangeCalled,
@@ -334,9 +334,9 @@ class AesDecryptorTest : public testing::Test {
       EXPECT_CALL(*this, OnSessionKeysChangeCalled(_, _)).Times(0);
     }
 
-    decryptor_.UpdateSession(session_id,
-                             std::vector<uint8>(key.begin(), key.end()),
-                             CreatePromise(expected_result));
+    decryptor_->UpdateSession(session_id,
+                              std::vector<uint8>(key.begin(), key.end()),
+                              CreatePromise(expected_result));
   }
 
   bool KeysInfoContains(std::vector<uint8> expected) {
@@ -380,7 +380,7 @@ class AesDecryptorTest : public testing::Test {
         break;
     }
 
-    decryptor_.Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
+    decryptor_->Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
 
     std::vector<uint8> decrypted_text;
     if (decrypted.get() && decrypted->data_size()) {
@@ -413,7 +413,7 @@ class AesDecryptorTest : public testing::Test {
                     const GURL& legacy_destination_url));
   MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
 
-  AesDecryptor decryptor_;
+  scoped_refptr<AesDecryptor> decryptor_;
   AesDecryptor::DecryptCB decrypt_cb_;
   std::string session_id_;
   CdmKeysInfo keys_info_;
@@ -431,7 +431,7 @@ class AesDecryptorTest : public testing::Test {
 TEST_F(AesDecryptorTest, CreateSessionWithNullInitData) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
       CreateSessionPromise(RESOLVED));
 }
@@ -439,19 +439,19 @@ TEST_F(AesDecryptorTest, CreateSessionWithNullInitData) {
 TEST_F(AesDecryptorTest, MultipleCreateSession) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
       CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
       CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
       CreateSessionPromise(RESOLVED));
 }
@@ -474,12 +474,12 @@ TEST_F(AesDecryptorTest, CreateSessionWithCencInitData) {
 #if defined(USE_PROPRIETARY_CODECS)
   EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                       GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
       std::vector<uint8>(init_data, init_data + arraysize(init_data)),
       CreateSessionPromise(RESOLVED));
 #else
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
       std::vector<uint8>(init_data, init_data + arraysize(init_data)),
       CreateSessionPromise(REJECTED));
@@ -492,7 +492,7 @@ TEST_F(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {
 
   EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                       GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
       std::vector<uint8>(init_data, init_data + arraysize(init_data) - 1),
       CreateSessionPromise(RESOLVED));
@@ -525,7 +525,7 @@ TEST_F(AesDecryptorTest, NoKey) {
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, no_subsample_entries_);
   EXPECT_CALL(*this, BufferDecrypted(AesDecryptor::kNoKey, IsNull()));
-  decryptor_.Decrypt(Decryptor::kVideo, encrypted_buffer, decrypt_cb_);
+  decryptor_->Decrypt(Decryptor::kVideo, encrypted_buffer, decrypt_cb_);
 }
 
 TEST_F(AesDecryptorTest, KeyReplacement) {

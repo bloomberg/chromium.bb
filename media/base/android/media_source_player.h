@@ -63,7 +63,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   bool CanSeekForward() override;
   bool CanSeekBackward() override;
   bool IsPlayerReady() override;
-  void SetCdm(BrowserCdm* cdm) override;
+  void SetCdm(const scoped_refptr<MediaKeys>& cdm) override;
 
   // DemuxerAndroidClient implementation.
   void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) override;
@@ -165,9 +165,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // available.
   void ResumePlaybackAfterKeyAdded();
 
-  // Called when the CDM is detached.
-  void OnCdmUnset();
-
   // Test-only method to setup hook for the completion of the next decode cycle.
   // This callback state is cleared when it is next run.
   // Prevent usage creep by only calling this from the
@@ -245,7 +242,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // elapses.
   base::CancelableClosure decoder_starvation_callback_;
 
-  MediaDrmBridge* drm_bridge_;
+  // Holds a ref-count to the CDM.
+  scoped_refptr<MediaKeys> cdm_;
+
   int cdm_registration_id_;
 
   // No decryption key available to decrypt the encrypted buffer. In this case,

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
@@ -76,7 +77,7 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
  private:
   // Callback for CdmFactory::Create().
   void OnCdmCreated(scoped_ptr<MojoCdmPromise<int>> promise,
-                    scoped_ptr<MediaKeys> cdm,
+                    const scoped_refptr<MediaKeys>& cdm,
                     const std::string& error_message);
 
   // Callbacks for firing session events.
@@ -105,7 +106,7 @@ class MojoCdmService : public interfaces::ContentDecryptionModule {
 
   mojo::ServiceProvider* service_provider_;
   CdmFactory* cdm_factory_;
-  scoped_ptr<MediaKeys> cdm_;
+  scoped_refptr<MediaKeys> cdm_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.
   int cdm_id_;

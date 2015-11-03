@@ -6,8 +6,8 @@
 #define CHROMECAST_BROWSER_MEDIA_CAST_BROWSER_CDM_FACTORY_H_
 
 #include "chromecast/media/base/key_systems_common.h"
-#include "media/base/browser_cdm.h"
 #include "media/base/browser_cdm_factory.h"
+#include "media/base/media_keys.h"
 
 namespace chromecast {
 namespace media {
@@ -20,7 +20,7 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
   ~CastBrowserCdmFactory() override {};
 
   // ::media::BrowserCdmFactory implementation:
-  ::media::ScopedBrowserCdmPtr CreateBrowserCdm(
+  scoped_refptr<::media::MediaKeys> CreateBrowserCdm(
       const std::string& key_system,
       bool use_hw_secure_codecs,
       const ::media::SessionMessageCB& session_message_cb,
@@ -31,7 +31,7 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
       override;
 
   // Provides a platform-specific BrowserCdm instance.
-  virtual scoped_ptr<BrowserCdmCast> CreatePlatformBrowserCdm(
+  virtual scoped_refptr<BrowserCdmCast> CreatePlatformBrowserCdm(
       const CastKeySystem& key_system);
 
  private:

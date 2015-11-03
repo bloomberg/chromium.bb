@@ -10,4 +10,13 @@ MediaKeys::MediaKeys() {}
 
 MediaKeys::~MediaKeys() {}
 
+void MediaKeys::DeleteOnCorrectThread() const {
+  delete this;
+}
+
+// static
+void MediaKeysTraits::Destruct(const MediaKeys* media_keys) {
+  media_keys->DeleteOnCorrectThread();
+}
+
 }  // namespace media

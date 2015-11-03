@@ -19,7 +19,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
-#include "media/base/browser_cdm.h"
 #include "media/base/browser_cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/limits.h"
@@ -30,9 +29,7 @@
 
 namespace content {
 
-using media::BrowserCdm;
 using media::MediaKeys;
-using media::ScopedBrowserCdmPtr;
 
 namespace {
 
@@ -222,10 +219,11 @@ bool BrowserCdmManager::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-media::BrowserCdm* BrowserCdmManager::GetCdm(int render_frame_id,
-                                             int cdm_id) const {
+scoped_refptr<MediaKeys> BrowserCdmManager::GetCdm(int render_frame_id,
+                                                   int cdm_id) const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  return cdm_map_.get(GetId(render_frame_id, cdm_id));
+  const auto& iter = cdm_map_.find(GetId(render_frame_id, cdm_id));
+  return iter == cdm_map_.end() ? nullptr : iter->second;
 }
 
 void BrowserCdmManager::RenderFrameDeleted(int render_frame_id) {
@@ -264,20 +262,19 @@ void BrowserCdmManager::ResolvePromiseWithSession(
 void BrowserCdmManager::RejectPromise(int render_frame_id,
                                       int cdm_id,
                                       uint32_t promise_id,
-                                      media::MediaKeys::Exception exception,
+                                      MediaKeys::Exception exception,
                                       uint32_t system_code,
                                       const std::string& error_message) {
   Send(new CdmMsg_RejectPromise(render_frame_id, cdm_id, promise_id, exception,
                                 system_code, error_message));
 }
 
-void BrowserCdmManager::OnSessionMessage(
-    int render_frame_id,
-    int cdm_id,
-    const std::string& session_id,
-    media::MediaKeys::MessageType message_type,
-    const std::vector<uint8>& message,
-    const GURL& legacy_destination_url) {
+void BrowserCdmManager::OnSessionMessage(int render_frame_id,
+                                         int cdm_id,
+                                         const std::string& session_id,
+                                         MediaKeys::MessageType message_type,
+                                         const std::vector<uint8>& message,
+                                         const GURL& legacy_destination_url) {
   GURL verified_gurl = legacy_destination_url;
   if (!verified_gurl.is_valid() && !verified_gurl.is_empty()) {
     DLOG(WARNING) << "SessionMessage legacy_destination_url is invalid : "
@@ -356,7 +353,7 @@ void BrowserCdmManager::OnSetServerCertificate(
   scoped_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
     return;
@@ -414,7 +411,7 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
       return;
   }
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     DLOG(WARNING) << "No CDM found for: " << render_frame_id << ", " << cdm_id;
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
@@ -439,7 +436,7 @@ void BrowserCdmManager::OnLoadSession(
   scoped_ptr<NewSessionPromise> promise(new NewSessionPromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     DLOG(WARNING) << "No CDM found for: " << render_frame_id << ", " << cdm_id;
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
@@ -463,7 +460,7 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
   scoped_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
     return;
@@ -493,7 +490,7 @@ void BrowserCdmManager::OnCloseSession(int render_frame_id,
   scoped_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
     return;
@@ -511,7 +508,7 @@ void BrowserCdmManager::OnRemoveSession(int render_frame_id,
   scoped_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
     return;
@@ -542,7 +539,7 @@ void BrowserCdmManager::AddCdm(int render_frame_id,
   scoped_ptr<SimplePromise> promise(new SimplePromise(
       weak_ptr_factory_.GetWeakPtr(), render_frame_id, cdm_id, promise_id));
 
-  ScopedBrowserCdmPtr cdm(media::CreateBrowserCdm(
+  scoped_refptr<MediaKeys> cdm(media::CreateBrowserCdm(
       key_system, use_hw_secure_codecs,
       BROWSER_CDM_MANAGER_CB(OnSessionMessage),
       BROWSER_CDM_MANAGER_CB(OnSessionClosed),
@@ -557,7 +554,7 @@ void BrowserCdmManager::AddCdm(int render_frame_id,
   }
 
   uint64 id = GetId(render_frame_id, cdm_id);
-  cdm_map_.add(id, cdm.Pass());
+  cdm_map_[id] = cdm;
   cdm_security_origin_map_[id] = security_origin;
   promise->resolve();
 }
@@ -566,13 +563,13 @@ void BrowserCdmManager::RemoveAllCdmForFrame(int render_frame_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<uint64> ids_to_remove;
-  for (CdmMap::iterator it = cdm_map_.begin(); it != cdm_map_.end(); ++it) {
-    if (IdBelongsToFrame(it->first, render_frame_id))
-      ids_to_remove.push_back(it->first);
+  for (const auto& entry : cdm_map_) {
+    if (IdBelongsToFrame(entry.first, render_frame_id))
+      ids_to_remove.push_back(entry.first);
   }
 
-  for (size_t i = 0; i < ids_to_remove.size(); ++i)
-    RemoveCdm(ids_to_remove[i]);
+  for (const auto& id_to_remove : ids_to_remove)
+    RemoveCdm(id_to_remove);
 }
 
 void BrowserCdmManager::RemoveCdm(uint64 id) {
@@ -653,7 +650,7 @@ void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
     return;
   }
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
     return;
@@ -678,7 +675,7 @@ void BrowserCdmManager::LoadSessionIfPermitted(
     return;
   }
 
-  BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
+  scoped_refptr<MediaKeys> cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
     return;

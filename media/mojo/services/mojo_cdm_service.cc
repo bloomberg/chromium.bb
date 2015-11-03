@@ -140,7 +140,7 @@ CdmContext* MojoCdmService::GetCdmContext() {
 }
 
 void MojoCdmService::OnCdmCreated(scoped_ptr<CdmIdMojoCdmPromise> promise,
-                                  scoped_ptr<MediaKeys> cdm,
+                                  const scoped_refptr<MediaKeys>& cdm,
                                   const std::string& error_message) {
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
   // populated. See http://crbug.com/469366
@@ -149,7 +149,7 @@ void MojoCdmService::OnCdmCreated(scoped_ptr<CdmIdMojoCdmPromise> promise,
     return;
   }
 
-  cdm_ = cdm.Pass();
+  cdm_ = cdm;
   cdm_id_ = next_cdm_id_++;
   context_->RegisterCdm(cdm_id_, this);
   promise->resolve(cdm_id_);

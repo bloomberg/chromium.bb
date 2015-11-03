@@ -39,8 +39,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const media::CdmCreatedCB& cdm_created_cb);
 
-  ~ProxyMediaKeys() override;
-
   // MediaKeys implementation.
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
@@ -98,6 +96,8 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  ~ProxyMediaKeys() override;
 
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin,

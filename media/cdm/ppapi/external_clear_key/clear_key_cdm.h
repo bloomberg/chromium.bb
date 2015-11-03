@@ -145,7 +145,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // Keep track of the last session created.
   void SetSessionId(const std::string& session_id);
 
-  AesDecryptor decryptor_;
+  scoped_refptr<AesDecryptor> decryptor_;
 
   ClearKeyCdmHost* host_;
 

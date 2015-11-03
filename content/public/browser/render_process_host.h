@@ -29,7 +29,7 @@ union ValueState;
 
 namespace media {
 class AudioOutputController;
-class BrowserCdm;
+class MediaKeys;
 }
 
 namespace content {
@@ -287,10 +287,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const GetAudioOutputControllersCallback& callback) const = 0;
 
 #if defined(ENABLE_BROWSER_CDMS)
-  // Returns the ::media::BrowserCdm instance associated with |render_frame_id|
-  // and |cdm_id|, or nullptr if not found.
-  virtual media::BrowserCdm* GetBrowserCdm(int render_frame_id,
-                                           int cdm_id) const = 0;
+  // Returns the CDM instance associated with |render_frame_id| and |cdm_id|,
+  // or nullptr if not found.
+  virtual scoped_refptr<media::MediaKeys> GetCdm(int render_frame_id,
+                                                 int cdm_id) const = 0;
 #endif
 
   // Returns the current number of active views in this process.  Excludes

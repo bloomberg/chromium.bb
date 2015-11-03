@@ -27,6 +27,10 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
 
+#if defined(ENABLE_BROWSER_CDMS)
+#include "media/base/media_keys.h"
+#endif
+
 namespace content {
 
 MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
@@ -282,8 +286,9 @@ void MockRenderProcessHost::SendUpdateValueState(
 }
 
 #if defined(ENABLE_BROWSER_CDMS)
-media::BrowserCdm* MockRenderProcessHost::GetBrowserCdm(int render_frame_id,
-                                                        int cdm_id) const {
+scoped_refptr<media::MediaKeys> MockRenderProcessHost::GetCdm(
+    int render_frame_id,
+    int cdm_id) const {
   return nullptr;
 }
 #endif

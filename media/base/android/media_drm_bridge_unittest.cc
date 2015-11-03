@@ -90,7 +90,7 @@ TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_InvalidKeySystem) {
 
 TEST(MediaDrmBridgeTest, SetSecurityLevel_Widevine) {
   base::MessageLoop message_loop_;
-  scoped_ptr<MediaDrmBridge, BrowserCdmDeleter> media_drm_bridge =
+  scoped_refptr<MediaDrmBridge> media_drm_bridge =
       MediaDrmBridge::CreateWithoutSessionSupport(kWidevineKeySystem);
   EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(media_drm_bridge);
   if (!media_drm_bridge)

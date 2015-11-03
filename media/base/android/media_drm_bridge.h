@@ -13,9 +13,10 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/browser_cdm.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/media_export.h"
+#include "media/base/media_keys.h"
+#include "media/base/player_tracker.h"
 #include "media/cdm/player_tracker_impl.h"
 #include "url/gurl.h"
 
@@ -23,12 +24,15 @@ class GURL;
 
 namespace media {
 
-class MediaDrmBridge;
+// Implements a CDM using Android MediaDrm API.
+//
+// Thread Safety:
+//
+// This class lives on the thread where it is created. All methods must be
+// called on the |task_runner_| except for the PlayerTracker methods and
+// SetMediaCryptoReadyCB(), which can be called on any thread.
 
-using ScopedMediaDrmBridgePtr = scoped_ptr<MediaDrmBridge, BrowserCdmDeleter>;
-
-// This class provides DRM services for android EME implementation.
-class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
+class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
  public:
   // TODO(ddorwin): These are specific to Widevine. http://crbug.com/459400
   enum SecurityLevel {
@@ -47,10 +51,6 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // |needs_protected_surface| - true if protected surface is required.
   using MediaCryptoReadyCB = base::Callback<void(JavaObjectPtr media_crypto,
                                                  bool needs_protected_surface)>;
-
-  ~MediaDrmBridge() override;
-
-  void DeleteOnCorrectThread() override;
 
   // Checks whether MediaDRM is available.
   // All other static methods check IsAvailable() internally. There's no need
@@ -75,7 +75,7 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
   // pointer otherwise.
   // TODO(xhwang): Is it okay not to update session expiration info?
-  static ScopedMediaDrmBridgePtr Create(
+  static scoped_refptr<MediaDrmBridge> Create(
       const std::string& key_system,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
@@ -86,13 +86,10 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
   // otherwise. No session callbacks are provided. This is used when we need to
   // use MediaDrmBridge without creating any sessions.
-  static ScopedMediaDrmBridgePtr CreateWithoutSessionSupport(
+  static scoped_refptr<MediaDrmBridge> CreateWithoutSessionSupport(
       const std::string& key_system);
 
-  // Returns a WeakPtr to be used on the |task_runner_|.
-  base::WeakPtr<MediaDrmBridge> WeakPtr();
-
-  // MediaKeys (via BrowserCdm) implementation.
+  // MediaKeys implementation.
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
       scoped_ptr<media::SimpleCdmPromise> promise) override;
@@ -112,8 +109,14 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   void RemoveSession(const std::string& session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
   CdmContext* GetCdmContext() override;
+  void DeleteOnCorrectThread() const override;
 
-  // PlayerTracker (via BrowserCdm) implementation.
+  // PlayerTracker implementation. Can be called on any thread.
+  // The registered callbacks will be fired on |task_runner_|. The caller
+  // should make sure that the callbacks are posted to the correct thread.
+  //
+  // Note: RegisterPlayer() should be called before SetMediaCryptoReadyCB() to
+  // avoid missing any new key notifications.
   int RegisterPlayer(const base::Closure& new_key_cb,
                      const base::Closure& cdm_unset_cb) override;
   void UnregisterPlayer(int registration_id) override;
@@ -144,8 +147,11 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // otherwise.
   base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
-  // Sets callback which will be called when MediaCrypto is ready. If
-  // |media_crypto_ready_cb| is null, previously set callback will be cleared.
+  // Registers a callback which will be called when MediaCrypto is ready.
+  // Can be called on any thread. Only one callback should be registered.
+  // The registered callbacks will be fired on |task_runner_|. The caller
+  // should make sure that the callbacks are posted to the correct thread.
+  // TODO(xhwang): Move this up to be close to RegisterPlayer().
   void SetMediaCryptoReadyCB(const MediaCryptoReadyCB& media_crypto_ready_cb);
 
   // All the OnXxx functions below are called from Java. The implementation must
@@ -212,6 +218,9 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   void OnResetDeviceCredentialsCompleted(JNIEnv* env, jobject, bool success);
 
  private:
+  // For DeleteSoon() in DeleteOnCorrectThread().
+  friend class base::DeleteHelper<MediaDrmBridge>;
+
   MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
@@ -219,13 +228,12 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb);
 
+  ~MediaDrmBridge() override;
+
   static bool IsSecureDecoderRequired(SecurityLevel security_level);
 
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();
-
-  // A helper method that calls a |player_tracker_| method on correct thread.
-  void NotifyNewKeyOnCorrectThread();
 
   // A helper method that calculates the |media_crypto_ready_cb_| arguments and
   // run this callback.
@@ -248,24 +256,15 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
 
   ResetCredentialsCB reset_credentials_cb_;
 
-  // The |player_tracker_| must be accessed by one thread only. It is accessed
-  // by the Media thread when |use_media_thread_| is true.
   PlayerTrackerImpl player_tracker_;
 
+  // TODO(xhwang): Host a CdmPromiseAdapter directly. No need to use scoped_ptr.
   scoped_ptr<CdmPromiseAdapter> cdm_promise_adapter_;
 
   // Default task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // This flag is set when we use media thread for certain callbacks.
-  const bool use_media_thread_;
-
   // NOTE: Weak pointers must be invalidated before all other member variables.
-
-  // WeakPtrFactory to generate weak pointers to be used on the media thread.
-  base::WeakPtrFactory<MediaDrmBridge> media_weak_factory_;
-
-  // Default WeakPtrFactory.
   base::WeakPtrFactory<MediaDrmBridge> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);

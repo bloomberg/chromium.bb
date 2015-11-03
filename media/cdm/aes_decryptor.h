@@ -37,7 +37,6 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
                const SessionMessageCB& session_message_cb,
                const SessionClosedCB& session_closed_cb,
                const SessionKeysChangeCB& session_keys_change_cb);
-  ~AesDecryptor() override;
 
   // MediaKeys implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -115,6 +114,8 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
   typedef base::ScopedPtrHashMap<std::string,
                                  scoped_ptr<SessionIdDecryptionKeyMap>>
       KeyIdToSessionKeysMap;
+
+  ~AesDecryptor() override;
 
   // Creates a DecryptionKey using |key_string| and associates it with |key_id|.
   // Returns true if successful.

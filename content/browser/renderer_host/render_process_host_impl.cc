@@ -1087,8 +1087,9 @@ void RenderProcessHostImpl::SendUpdateValueState(unsigned int target,
 }
 
 #if defined(ENABLE_BROWSER_CDMS)
-media::BrowserCdm* RenderProcessHostImpl::GetBrowserCdm(int render_frame_id,
-                                                        int cdm_id) const {
+scoped_refptr<media::MediaKeys> RenderProcessHostImpl::GetCdm(
+    int render_frame_id,
+    int cdm_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserCdmManager* manager = BrowserCdmManager::FromProcess(GetID());
   if (!manager)

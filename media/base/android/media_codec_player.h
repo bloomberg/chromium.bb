@@ -157,7 +157,6 @@
 
 namespace media {
 
-class BrowserCdm;
 class MediaCodecAudioDecoder;
 class MediaCodecVideoDecoder;
 
@@ -214,7 +213,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   bool CanSeekForward() override;
   bool CanSeekBackward() override;
   bool IsPlayerReady() override;
-  void SetCdm(BrowserCdm* cdm) override;
+  void SetCdm(const scoped_refptr<MediaKeys>& cdm) override;
 
   // DemuxerAndroidClient implementation.
   void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) override;
@@ -300,11 +299,10 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   // Callbacks from video decoder
   void OnVideoResolutionChanged(const gfx::Size& size);
 
-  // Callbacks from CDM
+  // Callbacks from MediaDrmBridge.
   void OnMediaCryptoReady(MediaDrmBridge::JavaObjectPtr media_crypto,
                           bool needs_protected_surface);
   void OnKeyAdded();
-  void OnCdmUnset();
 
   // Operations called from the state machine.
   void SetState(PlayerState new_state);
@@ -395,10 +393,11 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   // For testing only.
   DecodersTimeCallback decoders_time_cb_;
 
-  // DRM
+  // Holds a ref-count to the CDM to keep |media_crypto_| valid.
+  scoped_refptr<MediaKeys> cdm_;
+
   MediaDrmBridge::JavaObjectPtr media_crypto_;
 
-  MediaDrmBridge* drm_bridge_;
   int cdm_registration_id_;
 
   // The flag is set when the player receives the error from decoder that the

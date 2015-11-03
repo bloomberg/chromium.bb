@@ -65,11 +65,11 @@ void RenderCdmFactory::Create(
     // identifiers and persistent state. Once that changes we can sanity check
     // here that neither is allowed for AesDecryptor, since it does not support
     // them and should never be configured that way. http://crbug.com/455271
-    scoped_ptr<media::MediaKeys> cdm(
+    scoped_refptr<media::MediaKeys> cdm(
         new media::AesDecryptor(security_origin, session_message_cb,
                                 session_closed_cb, session_keys_change_cb));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm), ""));
+        FROM_HERE, base::Bind(cdm_created_cb, cdm, ""));
     return;
   }
 

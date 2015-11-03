@@ -48,8 +48,6 @@ class PpapiDecryptor : public media::MediaKeys,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const media::CdmCreatedCB& cdm_created_cb);
 
-  ~PpapiDecryptor() override;
-
   // media::MediaKeys implementation.
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
@@ -103,6 +101,8 @@ class PpapiDecryptor : public media::MediaKeys,
       const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  ~PpapiDecryptor() override;
 
   void InitializeCdm(const std::string& key_system,
                      bool allow_distinctive_identifier,

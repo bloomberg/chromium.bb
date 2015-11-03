@@ -108,7 +108,7 @@ void SetCdmOnUiThread(
     return;
   }
 
-  ::media::BrowserCdm* cdm = host->GetBrowserCdm(render_frame_id, cdm_id);
+  scoped_refptr<::media::MediaKeys> cdm = host->GetCdm(render_frame_id, cdm_id);
   if (!cdm) {
     LOG(WARNING) << "Could not find BrowserCdm (" << render_frame_id << ","
                  << cdm_id << ")";
@@ -116,13 +116,10 @@ void SetCdmOnUiThread(
   }
 
   BrowserCdmCast* browser_cdm_cast =
-      static_cast<BrowserCdmCastUi*>(cdm)->browser_cdm_cast();
+      static_cast<BrowserCdmCastUi*>(cdm.get())->browser_cdm_cast();
   MediaMessageLoop::GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SetCdmOnCmaThread,
-                 render_process_id,
-                 media_id,
-                 browser_cdm_cast));
+      FROM_HERE, base::Bind(&SetCdmOnCmaThread, render_process_id, media_id,
+                            base::Unretained(browser_cdm_cast)));
 }
 
 }  // namespace

@@ -11,25 +11,21 @@
 namespace media {
 
 PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
-    base::Closure new_key_cb,
-    base::Closure cdm_unset_cb)
-    : new_key_cb(new_key_cb), cdm_unset_cb(cdm_unset_cb) {
-}
+    const base::Closure& new_key_cb,
+    const base::Closure& cdm_unset_cb)
+    : new_key_cb(new_key_cb), cdm_unset_cb(cdm_unset_cb) {}
 
 PlayerTrackerImpl::PlayerCallbacks::~PlayerCallbacks() {
 }
 
 PlayerTrackerImpl::PlayerTrackerImpl() : next_registration_id_(1) {
-  // Enable PlayerTrackerImpl to be created on another thread than it will be
-  // later exclusively used.
-  thread_checker_.DetachFromThread();
 }
 
 PlayerTrackerImpl::~PlayerTrackerImpl() {}
 
 int PlayerTrackerImpl::RegisterPlayer(const base::Closure& new_key_cb,
                                       const base::Closure& cdm_unset_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
   int registration_id = next_registration_id_++;
   DCHECK(!ContainsKey(player_callbacks_map_, registration_id));
   player_callbacks_map_.insert(std::make_pair(
@@ -38,24 +34,36 @@ int PlayerTrackerImpl::RegisterPlayer(const base::Closure& new_key_cb,
 }
 
 void PlayerTrackerImpl::UnregisterPlayer(int registration_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
   DCHECK(ContainsKey(player_callbacks_map_, registration_id))
       << registration_id;
   player_callbacks_map_.erase(registration_id);
 }
 
 void PlayerTrackerImpl::NotifyNewKey() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::map<int, PlayerCallbacks>::iterator iter = player_callbacks_map_.begin();
-  for (; iter != player_callbacks_map_.end(); ++iter)
-    iter->second.new_key_cb.Run();
+  std::vector<base::Closure> new_key_callbacks;
+
+  {
+    base::AutoLock lock(lock_);
+    for (const auto& entry : player_callbacks_map_)
+      new_key_callbacks.push_back(entry.second.new_key_cb);
+  }
+
+  for (const auto& cb : new_key_callbacks)
+    cb.Run();
 }
 
 void PlayerTrackerImpl::NotifyCdmUnset() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::map<int, PlayerCallbacks>::iterator iter = player_callbacks_map_.begin();
-  for (; iter != player_callbacks_map_.end(); ++iter)
-    iter->second.cdm_unset_cb.Run();
+  std::vector<base::Closure> cdm_unset_callbacks;
+
+  {
+    base::AutoLock lock(lock_);
+    for (const auto& entry : player_callbacks_map_)
+      cdm_unset_callbacks.push_back(entry.second.cdm_unset_cb);
+  }
+
+  for (const auto& cb : cdm_unset_callbacks)
+    cb.Run();
 }
 
 }  // namespace media

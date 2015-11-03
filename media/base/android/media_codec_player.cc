@@ -6,6 +6,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
@@ -49,7 +50,6 @@ MediaCodecPlayer::MediaCodecPlayer(
       interpolator_(&default_tick_clock_),
       pending_start_(false),
       pending_seek_(kNoTimestamp()),
-      drm_bridge_(nullptr),
       cdm_registration_id_(0),
       key_is_required_(false),
       key_is_added_(false),
@@ -99,9 +99,10 @@ MediaCodecPlayer::~MediaCodecPlayer()
 
   media_stat_->StopAndReport(GetInterpolatedTime());
 
-  if (drm_bridge_) {
+  if (cdm_) {
     DCHECK(cdm_registration_id_);
-    drm_bridge_->UnregisterPlayer(cdm_registration_id_);
+    static_cast<MediaDrmBridge*>(cdm_.get())
+        ->UnregisterPlayer(cdm_registration_id_);
   }
 }
 
@@ -410,7 +411,8 @@ bool MediaCodecPlayer::IsPlayerReady() {
   return true;
 }
 
-void MediaCodecPlayer::SetCdm(BrowserCdm* cdm) {
+void MediaCodecPlayer::SetCdm(const scoped_refptr<MediaKeys>& cdm) {
+  DCHECK(cdm);
   RUN_ON_MEDIA_THREAD(SetCdm, cdm);
 
   DVLOG(1) << __FUNCTION__;
@@ -423,27 +425,31 @@ void MediaCodecPlayer::SetCdm(BrowserCdm* cdm) {
     return;
   }
 
-  if (drm_bridge_) {
+  if (cdm_) {
     NOTREACHED() << "Currently we do not support resetting CDM.";
     return;
   }
 
-  DCHECK(cdm);
-  drm_bridge_ = static_cast<MediaDrmBridge*>(cdm);
+  cdm_ = cdm;
 
-  DCHECK(drm_bridge_);
+  // Only MediaDrmBridge will be set on MediaCodecPlayer.
+  MediaDrmBridge* drm_bridge = static_cast<MediaDrmBridge*>(cdm_.get());
 
-  cdm_registration_id_ = drm_bridge_->RegisterPlayer(
-      base::Bind(&MediaCodecPlayer::OnKeyAdded, media_weak_this_),
-      base::Bind(&MediaCodecPlayer::OnCdmUnset, media_weak_this_));
+  // Register CDM callbacks. The callbacks registered will be posted back to the
+  // media thread via BindToCurrentLoop.
 
-  MediaDrmBridge::MediaCryptoReadyCB cb = BindToCurrentLoop(
-      base::Bind(&MediaCodecPlayer::OnMediaCryptoReady, media_weak_this_));
+  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
+  // destructed, UnregisterPlayer() must have been called and |this| has been
+  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
+  // called.
+  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
+  cdm_registration_id_ = drm_bridge->RegisterPlayer(
+      BindToCurrentLoop(
+          base::Bind(&MediaCodecPlayer::OnKeyAdded, media_weak_this_)),
+      base::Bind(&base::DoNothing));
 
-  // Post back to MediaDrmBridge's default thread.
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&MediaDrmBridge::SetMediaCryptoReadyCB,
-                                       drm_bridge_->WeakPtr(), cb));
+  drm_bridge->SetMediaCryptoReadyCB(BindToCurrentLoop(
+      base::Bind(&MediaCodecPlayer::OnMediaCryptoReady, media_weak_this_)));
 }
 
 // Callbacks from Demuxer.
@@ -963,31 +969,6 @@ void MediaCodecPlayer::OnKeyAdded() {
     SetState(kStatePlaying);
     StartPlaybackOrBrowserSeek();
   }
-}
-
-void MediaCodecPlayer::OnCdmUnset() {
-  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
-
-  // This comment is copied from MediaSourcePlayer::OnCdmUnset().
-  // TODO(xhwang): Currently this is only called during teardown. Support full
-  // detachment of CDM during playback. This will be needed when we start to
-  // support setMediaKeys(0) (see http://crbug.com/330324), or when we release
-  // MediaDrm when the video is paused, or when the device goes to sleep (see
-  // http://crbug.com/272421).
-
-  if (audio_decoder_) {
-    audio_decoder_->SetNeedsReconfigure();
-  }
-
-  if (video_decoder_) {
-    video_decoder_->SetProtectedSurfaceRequired(false);
-    video_decoder_->SetNeedsReconfigure();
-  }
-
-  cdm_registration_id_ = 0;
-  drm_bridge_ = nullptr;
-  media_crypto_.reset();
 }
 
 // State machine operations, called on Media thread

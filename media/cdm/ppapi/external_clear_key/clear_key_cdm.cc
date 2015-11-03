@@ -267,12 +267,12 @@ namespace media {
 ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host,
                          const std::string& key_system,
                          const GURL& origin)
-    : decryptor_(
+    : decryptor_(new AesDecryptor(
           origin,
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionKeysChange,
-                     base::Unretained(this))),
+                     base::Unretained(this)))),
       host_(host),
       key_system_(key_system),
       has_received_keys_change_event_for_emulated_loadsession_(false),
@@ -311,7 +311,7 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
           base::Bind(&ClearKeyCdm::OnPromiseFailed,
                      base::Unretained(this),
                      promise_id)));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       ConvertSessionType(session_type), ConvertInitDataType(init_data_type),
       std::vector<uint8_t>(init_data, init_data + init_data_size),
       promise.Pass());
@@ -347,7 +347,7 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
           base::Bind(&ClearKeyCdm::OnPromiseFailed,
                      base::Unretained(this),
                      promise_id)));
-  decryptor_.CreateSessionAndGenerateRequest(
+  decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(), promise.Pass());
 }
@@ -369,7 +369,7 @@ void ClearKeyCdm::UpdateSession(uint32 promise_id,
                  promise_id),
       base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                  promise_id)));
-  decryptor_.UpdateSession(
+  decryptor_->UpdateSession(
       web_session_str, std::vector<uint8_t>(response, response + response_size),
       promise.Pass());
 
@@ -394,7 +394,7 @@ void ClearKeyCdm::CloseSession(uint32 promise_id,
           &ClearKeyCdm::OnPromiseResolved, base::Unretained(this), promise_id),
       base::Bind(
           &ClearKeyCdm::OnPromiseFailed, base::Unretained(this), promise_id)));
-  decryptor_.CloseSession(web_session_str, promise.Pass());
+  decryptor_->CloseSession(web_session_str, promise.Pass());
 }
 
 void ClearKeyCdm::RemoveSession(uint32 promise_id,
@@ -423,7 +423,7 @@ void ClearKeyCdm::RemoveSession(uint32 promise_id,
                  promise_id),
       base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                  promise_id)));
-  decryptor_.RemoveSession(web_session_str, promise.Pass());
+  decryptor_->RemoveSession(web_session_str, promise.Pass());
 }
 
 void ClearKeyCdm::SetServerCertificate(uint32 promise_id,
@@ -671,9 +671,8 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   media::Decryptor::Status status = media::Decryptor::kError;
   // The AesDecryptor does not care what the stream type is. Pass kVideo
   // for both audio and video decryption.
-  decryptor_.Decrypt(
-      media::Decryptor::kVideo,
-      buffer,
+  decryptor_->Decrypt(
+      media::Decryptor::kVideo, buffer,
       base::Bind(&CopyDecryptResults, &status, decrypted_buffer));
 
   if (status == media::Decryptor::kError)
@@ -707,9 +706,9 @@ void ClearKeyCdm::LoadLoadableSession() {
       base::Bind(&ClearKeyCdm::OnLoadSessionUpdated, base::Unretained(this)),
       base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                  promise_id_for_emulated_loadsession_)));
-  decryptor_.UpdateSession(session_id_for_emulated_loadsession_,
-                           std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()),
-                           promise.Pass());
+  decryptor_->UpdateSession(
+      session_id_for_emulated_loadsession_,
+      std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()), promise.Pass());
 }
 
 void ClearKeyCdm::OnSessionMessage(const std::string& session_id,

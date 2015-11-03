@@ -55,18 +55,17 @@ void PpapiDecryptor::Create(
     return;
   }
 
-  scoped_ptr<PpapiDecryptor> ppapi_decryptor(
+  scoped_refptr<PpapiDecryptor> ppapi_decryptor(
       new PpapiDecryptor(pepper_cdm_wrapper.Pass(), session_message_cb,
                          session_closed_cb, legacy_session_error_cb,
                          session_keys_change_cb, session_expiration_update_cb));
 
-  // PpapiDecryptor ownership passed to the promise, but keep a copy in order
-  // to call InitializeCdm().
-  PpapiDecryptor* ppapi_decryptor_copy = ppapi_decryptor.get();
+  // |ppapi_decryptor| ownership is passed to the promise.
   scoped_ptr<media::CdmInitializedPromise> promise(
-      new media::CdmInitializedPromise(cdm_created_cb, ppapi_decryptor.Pass()));
-  ppapi_decryptor_copy->InitializeCdm(key_system, allow_distinctive_identifier,
-                                      allow_persistent_state, promise.Pass());
+      new media::CdmInitializedPromise(cdm_created_cb, ppapi_decryptor));
+
+  ppapi_decryptor->InitializeCdm(key_system, allow_distinctive_identifier,
+                                 allow_persistent_state, promise.Pass());
 }
 
 PpapiDecryptor::PpapiDecryptor(

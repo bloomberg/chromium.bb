@@ -111,7 +111,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // Callback for CreateCdm().
   void OnCdmCreated(const std::string& key_system,
                     base::TimeTicks start_time,
-                    scoped_ptr<MediaKeys> cdm,
+                    const scoped_refptr<MediaKeys>& cdm,
                     const std::string& error_message);
 
   // Callbacks for firing session events.
@@ -136,7 +136,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   void ReportTimeToCreateCdmUMA(base::TimeDelta cdm_creation_time) const;
 
-  scoped_ptr<MediaKeys> cdm_;
+  scoped_refptr<MediaKeys> cdm_;
 
   SessionMap sessions_;
 

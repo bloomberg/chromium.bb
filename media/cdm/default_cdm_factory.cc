@@ -43,11 +43,11 @@ void DefaultCdmFactory::Create(
     return;
   }
 
-  scoped_ptr<MediaKeys> cdm(
+  scoped_refptr<MediaKeys> cdm(
       new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
                        session_keys_change_cb));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm), ""));
+      FROM_HERE, base::Bind(cdm_created_cb, cdm, ""));
 }
 
 }  // namespace media

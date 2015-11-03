@@ -15,7 +15,7 @@
 namespace chromecast {
 namespace media {
 
-::media::ScopedBrowserCdmPtr CastBrowserCdmFactory::CreateBrowserCdm(
+scoped_refptr<::media::MediaKeys> CastBrowserCdmFactory::CreateBrowserCdm(
     const std::string& key_system_name,
     bool use_hw_secure_codecs,
     const ::media::SessionMessageCB& session_message_cb,
@@ -28,7 +28,7 @@ namespace media {
 
   CastKeySystem key_system(GetKeySystemByName(key_system_name));
 
-  scoped_ptr<chromecast::media::BrowserCdmCast> browser_cdm;
+  scoped_refptr<chromecast::media::BrowserCdmCast> browser_cdm;
   if (key_system == chromecast::media::KEY_SYSTEM_CLEAR_KEY) {
     // TODO(gunsch): handle ClearKey decryption. See crbug.com/441957
   } else {
@@ -45,17 +45,17 @@ namespace media {
                    ::media::BindToCurrentLoop(legacy_session_error_cb),
                    ::media::BindToCurrentLoop(session_keys_change_cb),
                    ::media::BindToCurrentLoop(session_expiration_update_cb)));
-    return ::media::ScopedBrowserCdmPtr(new BrowserCdmCastUi(
-        browser_cdm.Pass(), MediaMessageLoop::GetTaskRunner()));
+    return scoped_refptr<::media::MediaKeys>(
+        new BrowserCdmCastUi(browser_cdm, MediaMessageLoop::GetTaskRunner()));
   }
 
   LOG(INFO) << "No matching key system found.";
-  return ::media::ScopedBrowserCdmPtr();
+  return nullptr;
 }
 
-scoped_ptr<BrowserCdmCast> CastBrowserCdmFactory::CreatePlatformBrowserCdm(
+scoped_refptr<BrowserCdmCast> CastBrowserCdmFactory::CreatePlatformBrowserCdm(
     const CastKeySystem& key_system) {
-  return scoped_ptr<BrowserCdmCast>();
+  return nullptr;
 }
 
 }  // namespace media

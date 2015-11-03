@@ -19,7 +19,8 @@ class MEDIA_EXPORT PlayerTracker {
 
   // Registers player callbacks with the CDM.
   // - |new_key_cb| is fired when a new decryption key becomes available.
-  // - |cdm_unset_cb| is fired when the CDM is detached from the player.
+  // - |cdm_unset_cb| is fired when the CDM is detached from the player. The
+  //   player should stop using the CDM and release any ref-count to the CDM.
   // Returns a registration ID which can be used to unregister a player.
   virtual int RegisterPlayer(const base::Closure& new_key_cb,
                              const base::Closure& cdm_unset_cb) = 0;

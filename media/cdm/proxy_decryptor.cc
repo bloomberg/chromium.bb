@@ -60,7 +60,7 @@ ProxyDecryptor::ProxyDecryptor(MediaPermission* media_permission,
 
 ProxyDecryptor::~ProxyDecryptor() {
   // Destroy the decryptor explicitly before destroying the plugin.
-  media_keys_.reset();
+  media_keys_ = nullptr;
 }
 
 void ProxyDecryptor::CreateCdm(CdmFactory* cdm_factory,
@@ -96,7 +96,7 @@ void ProxyDecryptor::CreateCdm(CdmFactory* cdm_factory,
 void ProxyDecryptor::OnCdmCreated(const std::string& key_system,
                                   const GURL& security_origin,
                                   const CdmContextReadyCB& cdm_context_ready_cb,
-                                  scoped_ptr<MediaKeys> cdm,
+                                  const scoped_refptr<MediaKeys>& cdm,
                                   const std::string& /* error_message */) {
   is_creating_cdm_ = false;
 
@@ -106,7 +106,7 @@ void ProxyDecryptor::OnCdmCreated(const std::string& key_system,
     key_system_ = key_system;
     security_origin_ = security_origin;
     is_clear_key_ = IsClearKey(key_system) || IsExternalClearKey(key_system);
-    media_keys_ = cdm.Pass();
+    media_keys_ = cdm;
 
     cdm_context_ready_cb.Run(media_keys_->GetCdmContext());
   }

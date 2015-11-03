@@ -240,8 +240,6 @@ source_set("base") {
 
   if (enable_browser_cdms) {
     sources += [
-      "browser_cdm.cc",
-      "browser_cdm.h",
       "browser_cdm_factory.cc",
       "browser_cdm_factory.h",
     ]

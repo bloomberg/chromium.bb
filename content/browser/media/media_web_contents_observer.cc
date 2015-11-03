@@ -141,7 +141,7 @@ void MediaWebContentsObserver::OnSetCdm(RenderFrameHost* render_frame_host,
     return;
   }
 
-  media::BrowserCdm* cdm =
+  scoped_refptr<media::MediaKeys> cdm =
       browser_cdm_manager->GetCdm(render_frame_host->GetRoutingID(), cdm_id);
   if (!cdm) {
     NOTREACHED() << "OnSetCdm: CDM not found for " << cdm_id;

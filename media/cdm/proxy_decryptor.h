@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -77,7 +78,7 @@ class MEDIA_EXPORT ProxyDecryptor {
   void OnCdmCreated(const std::string& key_system,
                     const GURL& security_origin,
                     const CdmContextReadyCB& cdm_context_ready_cb,
-                    scoped_ptr<MediaKeys> cdm,
+                    const scoped_refptr<MediaKeys>& cdm,
                     const std::string& error_message);
 
   void GenerateKeyRequestInternal(EmeInitDataType init_data_type,
@@ -129,7 +130,7 @@ class MEDIA_EXPORT ProxyDecryptor {
   bool is_creating_cdm_;
 
   // The real MediaKeys that manages key operations for the ProxyDecryptor.
-  scoped_ptr<MediaKeys> media_keys_;
+  scoped_refptr<MediaKeys> media_keys_;
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   MediaPermission* media_permission_;

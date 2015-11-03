@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -20,7 +19,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/permission_status.mojom.h"
 #include "ipc/ipc_message.h"
-#include "media/base/browser_cdm.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_keys.h"
@@ -52,7 +50,9 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  media::BrowserCdm* GetCdm(int render_frame_id, int cdm_id) const;
+  // Returns the CDM associated with |render_frame_id| and |cdm_id|. Returns
+  // null if no such CDM exists.
+  scoped_refptr<media::MediaKeys> GetCdm(int render_frame_id, int cdm_id) const;
 
   // Notifies that the render frame has been deleted so that all CDMs belongs
   // to this render frame needs to be destroyed as well. This is needed because
@@ -196,8 +196,8 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // The key in the following maps is a combination of |render_frame_id| and
   // |cdm_id|.
 
-  // Map of managed BrowserCdms.
-  typedef base::ScopedPtrHashMap<uint64, media::ScopedBrowserCdmPtr> CdmMap;
+  // Map of managed CDMs.
+  typedef std::map<uint64, scoped_refptr<media::MediaKeys>> CdmMap;
   CdmMap cdm_map_;
 
   // Map of CDM's security origin.
