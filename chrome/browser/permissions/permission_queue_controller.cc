@@ -12,8 +12,8 @@
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
-#include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage/durable_storage_permission_infobar_delegate_android.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -219,11 +219,11 @@ void PermissionQueueController::OnPermissionSet(
   if (update_content_setting) {
     UpdateContentSetting(requesting_frame, embedder, allowed);
     if (allowed)
-      PermissionContextUmaUtil::PermissionGranted(type_, requesting_frame);
+      PermissionUmaUtil::PermissionGranted(type_, requesting_frame);
     else
-      PermissionContextUmaUtil::PermissionDenied(type_, requesting_frame);
+      PermissionUmaUtil::PermissionDenied(type_, requesting_frame);
   } else {
-    PermissionContextUmaUtil::PermissionDismissed(type_, requesting_frame);
+    PermissionUmaUtil::PermissionDismissed(type_, requesting_frame);
   }
 
   // Cancel this request first, then notify listeners.  TODO(pkasting): Why

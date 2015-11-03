@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -164,7 +164,7 @@ void PermissionContextBase::DecidePermission(
     return;
   }
 
-  PermissionContextUmaUtil::PermissionRequested(
+  PermissionUmaUtil::PermissionRequested(
       permission_type_, requesting_origin, embedding_origin, profile_);
 
 #if !defined(OS_ANDROID)
@@ -215,15 +215,12 @@ void PermissionContextBase::PermissionDecided(
     DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
            content_setting == CONTENT_SETTING_BLOCK);
     if (content_setting == CONTENT_SETTING_ALLOW)
-      PermissionContextUmaUtil::PermissionGranted(permission_type_,
-                                                  requesting_origin);
+      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_origin);
     else
-      PermissionContextUmaUtil::PermissionDenied(permission_type_,
-                                                 requesting_origin);
+      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_origin);
   } else {
     DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
-    PermissionContextUmaUtil::PermissionDismissed(permission_type_,
-                                                  requesting_origin);
+    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_origin);
   }
 #endif
 

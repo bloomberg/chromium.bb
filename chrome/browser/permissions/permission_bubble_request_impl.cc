@@ -5,7 +5,7 @@
 #include "chrome/browser/permissions/permission_bubble_request_impl.h"
 
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "chrome/browser/permissions/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "grit/theme_resources.h"
@@ -33,7 +33,7 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
 PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_)
-    PermissionContextUmaUtil::PermissionIgnored(type_, request_origin_);
+    PermissionUmaUtil::PermissionIgnored(type_, request_origin_);
 }
 
 gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {

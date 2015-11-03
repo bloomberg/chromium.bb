@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/permissions/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -279,7 +279,7 @@ void RecordPermissionRequest(ContentSettingsType permission,
 
 // Make sure you update histograms.xml permission histogram_suffix if you
 // add new permission
-void PermissionContextUmaUtil::PermissionRequested(
+void PermissionUmaUtil::PermissionRequested(
     ContentSettingsType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
@@ -288,22 +288,22 @@ void PermissionContextUmaUtil::PermissionRequested(
                           profile);
 }
 
-void PermissionContextUmaUtil::PermissionGranted(
+void PermissionUmaUtil::PermissionGranted(
     ContentSettingsType permission, const GURL& requesting_origin) {
   RecordPermissionAction(permission, GRANTED, requesting_origin);
 }
 
-void PermissionContextUmaUtil::PermissionDenied(
+void PermissionUmaUtil::PermissionDenied(
     ContentSettingsType permission, const GURL& requesting_origin) {
   RecordPermissionAction(permission, DENIED, requesting_origin);
 }
 
-void PermissionContextUmaUtil::PermissionDismissed(
+void PermissionUmaUtil::PermissionDismissed(
     ContentSettingsType permission, const GURL& requesting_origin) {
   RecordPermissionAction(permission, DISMISSED, requesting_origin);
 }
 
-void PermissionContextUmaUtil::PermissionIgnored(
+void PermissionUmaUtil::PermissionIgnored(
     ContentSettingsType permission, const GURL& requesting_origin) {
   RecordPermissionAction(permission, IGNORED, requesting_origin);
 }

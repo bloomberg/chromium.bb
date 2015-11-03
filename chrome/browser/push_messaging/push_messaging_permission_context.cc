@@ -7,8 +7,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context_factory.h"
-#include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -125,8 +125,7 @@ void PushMessagingPermissionContext::DecidePushPermission(
 
   if (push_content_setting == CONTENT_SETTING_BLOCK) {
     DVLOG(1) << "Push permission was explicitly blocked.";
-    PermissionContextUmaUtil::PermissionDenied(kPushSettingType,
-                                               requesting_origin);
+    PermissionUmaUtil::PermissionDenied(kPushSettingType, requesting_origin);
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         true /* persist */, CONTENT_SETTING_BLOCK);
     return;
@@ -139,8 +138,7 @@ void PushMessagingPermissionContext::DecidePushPermission(
     return;
   }
 
-  PermissionContextUmaUtil::PermissionGranted(kPushSettingType,
-                                              requesting_origin);
+  PermissionUmaUtil::PermissionGranted(kPushSettingType, requesting_origin);
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       true /* persist */, CONTENT_SETTING_ALLOW);
 }
