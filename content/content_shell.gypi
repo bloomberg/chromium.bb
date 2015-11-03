@@ -941,16 +941,13 @@
               }],
               ['v8_use_external_startup_data==1', {
                 'additional_input_paths': [
-                  '<(asset_location)/natives_blob_<(arch_suffix).bin',
-                  '<(asset_location)/snapshot_blob_<(arch_suffix).bin',
+                  '<(asset_location)/natives_blob.bin',
+                  '<(asset_location)/snapshot_blob.bin',
                 ],
               }],
             ],
           },
-          'includes': [ 
-            '../build/android/v8_external_startup_data_arch_suffix.gypi',
-            '../build/java_apk.gypi',
-          ],
+          'includes': [ '../build/java_apk.gypi' ],
         },
       ],
     }],  # OS=="android"

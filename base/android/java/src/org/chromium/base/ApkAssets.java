@@ -33,6 +33,19 @@ public class ApkAssets {
                                 afd.getStartOffset(),
                                 afd.getLength() };
         } catch (IOException e) {
+            // TODO(michaelbai): Remove dump assets once crbug.com/547235 fixed.
+            try {
+                String[] assets = context.getAssets().list("");
+                StringBuffer sb = new StringBuffer("Dump assets(" + assets.length + "):\n");
+                for (String asset : assets) {
+                    sb.append(asset);
+                    sb.append("\n");
+                }
+                Log.e(LOGTAG, sb.toString());
+            } catch (IOException ioe) {
+                Log.e(LOGTAG, "Error while list assets: " + ioe);
+            }
+
             Log.e(LOGTAG, "Error while loading asset " + fileName + ": " + e);
             return new long[] {-1, -1, -1};
         } finally {
