@@ -127,30 +127,8 @@ inline float parentTextZoomFactor(LocalFrame* frame)
 
 } // namespace
 
-// TODO(bokan): Temporary to help track down crash in crbug.com/519752
-static void checkCanLoad(Document* doc)
-{
-    if (!doc)
-        return;
-
-    // I suspect this check wont trip since it's checked a little higher up in the call stack
-    // in HTMLFrameOwnerElement::loadOrRedirectSubframe, unless we're somehow navigating the
-    // frame from an unexpected direction.
-    RELEASE_ASSERT(!doc->unloadStarted());
-
-    // I added this flag that gets set to true just before detaching the document loader. This
-    // should trip and will hopefully illuminate why the loadEventProgress state isn't stopping
-    // navigation.
-    RELEASE_ASSERT(!doc->m_detachingDocumentLoader);
-
-    checkCanLoad(doc->parentDocument());
-}
-
 PassRefPtrWillBeRawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
 {
-    if (owner && owner->isLocal())
-        checkCanLoad(&toHTMLFrameOwnerElement(owner)->document());
-
     RefPtrWillBeRawPtr<LocalFrame> frame = adoptRefWillBeNoop(new LocalFrame(client, host, owner));
     InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();
