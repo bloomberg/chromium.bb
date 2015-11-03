@@ -278,7 +278,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // True if proxy doesn't allow access to google.com/generate_204.
   NetworkPortalDetector::CaptivePortalStatus captive_portal_status_ =
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
 
   scoped_ptr<NetworkPortalDetector> network_portal_detector_;
   bool disable_restrictive_proxy_check_for_test_ = false;
