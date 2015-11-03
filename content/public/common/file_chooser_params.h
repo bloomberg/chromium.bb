@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -54,6 +55,11 @@ struct CONTENT_EXPORT FileChooserParams {
   // If true, the data should be obtained using the device's camera/mic/etc.
   bool capture;
 #endif
+
+  // If non-empty, represents the URL of the requestor if the request was
+  // initiated by a document. Note that this value should be considered
+  // untrustworthy since it is specified by the sandbox and not validated.
+  GURL requestor;
 };
 
 }  // namespace content

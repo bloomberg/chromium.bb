@@ -627,6 +627,7 @@ void ChromeClientImpl::openFileChooser(LocalFrame* frame, PassRefPtr<FileChooser
         params.initialValue = params.selectedFiles[0];
     params.useMediaCapture = fileChooser->settings().useMediaCapture;
     params.needLocalPath = fileChooser->settings().allowsDirectoryUpload;
+    params.requestor = frame->document()->url();
 
     WebFileChooserCompletionImpl* chooserCompletion = new WebFileChooserCompletionImpl(fileChooser);
     if (client->runFileChooser(params, chooserCompletion))

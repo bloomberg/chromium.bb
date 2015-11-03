@@ -1769,6 +1769,7 @@ bool RenderViewImpl::runFileChooser(
 #if defined(OS_ANDROID)
   ipc_params.capture = params.useMediaCapture;
 #endif
+  ipc_params.requestor = params.requestor;
 
   return ScheduleFileChooser(ipc_params, chooser_completion);
 }

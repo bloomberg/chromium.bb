@@ -14,6 +14,11 @@
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_database_manager.h"
+#endif
+
 namespace {
 
 class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
@@ -117,7 +122,53 @@ class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
   Mode mode_;
 };
 
+class FakeDatabaseManager : public TestSafeBrowsingDatabaseManager {
+ public:
+  bool IsSupported() const override { return true; }
+  bool MatchDownloadWhitelistUrl(const GURL& url) override {
+    // This matches the behavior in RunTestViaHTTP().
+    return url.SchemeIsHTTPOrHTTPS() && url.has_path() &&
+           url.path().find("/files/test_case.html") == 0;
+  }
+
+ protected:
+  ~FakeDatabaseManager() override {}
+};
+
+class TestSafeBrowsingService : public SafeBrowsingService {
+ public:
+  SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
+    return new FakeDatabaseManager();
+  }
+
+ protected:
+  ~TestSafeBrowsingService() override {}
+};
+
+class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
+ public:
+  SafeBrowsingService* CreateSafeBrowsingService() override {
+    SafeBrowsingService* service = new TestSafeBrowsingService();
+    return service;
+  }
+};
+
 class PPAPIFileChooserTest : public OutOfProcessPPAPITest {};
+
+class PPAPIFileChooserTestWithSBService : public PPAPIFileChooserTest {
+ public:
+  void SetUp() override {
+    SafeBrowsingService::RegisterFactory(&safe_browsing_service_factory_);
+    PPAPIFileChooserTest::SetUp();
+  }
+  void TearDown() override {
+    PPAPIFileChooserTest::TearDown();
+    SafeBrowsingService::RegisterFactory(nullptr);
+  }
+
+ private:
+  TestSafeBrowsingServiceFactory safe_browsing_service_factory_;
+};
 
 }  // namespace
 
@@ -211,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_SaveAs_Cancel) {
 }
 
 #if defined(FULL_SAFE_BROWSING)
-// These two tests only make sense when SafeBrowsing is enabled. They verify
+// These tests only make sense when SafeBrowsing is enabled. They verify
 // that files written via the FileChooser_Trusted API are properly passed
 // through Safe Browsing.
 
@@ -246,6 +297,34 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
       TestSelectFileDialogFactory::NOT_REACHED,
       TestSelectFileDialogFactory::SelectedFileInfoList());
   RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableDisallowed");
+}
+
+// The kDisallowUncheckedDangerousDownloads switch (whose behavior is verified
+// by the FileChooser_SaveAs_DangerousExecutable_Disallowed test above) should
+// block the file being downloaded. However, the FakeDatabaseManager reports
+// that the requestors document URL matches the Safe Browsing whitelist. Hence
+// the download succeeds.
+IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
+                       FileChooser_SaveAs_DangerousExecutable_Whitelist) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisallowUncheckedDangerousDownloads);
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath suggested_filename = temp_dir.path().AppendASCII("foo");
+
+  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  file_info_list.push_back(
+      ui::SelectedFileInfo(suggested_filename, suggested_filename));
+  TestSelectFileDialogFactory test_dialog_factory(
+      TestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
+
+  RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableAllowed");
+  base::FilePath actual_filename = temp_dir.path().AppendASCII("dangerous.exe");
+
+  ASSERT_TRUE(base::PathExists(actual_filename));
+  std::string file_contents;
+  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents, 100));
+  EXPECT_EQ("Hello from PPAPI", file_contents);
 }
 
 #endif  // FULL_SAFE_BROWSING

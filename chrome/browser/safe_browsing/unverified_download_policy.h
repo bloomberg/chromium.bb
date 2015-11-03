@@ -5,15 +5,27 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_UNVERIFIED_DOWNLOAD_POLICY_H_
 #define CHROME_BROWSER_SAFE_BROWSING_UNVERIFIED_DOWNLOAD_POLICY_H_
 
+#include "base/callback_forward.h"
+
+class GURL;
+
 namespace base {
 class FilePath;
 }
 
 namespace safe_browsing {
 
-// Returns true if |file| is allowed to be downloaded without invoking
-// SafeBrowsing to verify the contents and source URL.
-bool IsUnverifiedDownloadAllowed(const base::FilePath& file);
+enum class UnverifiedDownloadPolicy { ALLOWED, DISALLOWED };
+
+using UnverifiedDownloadCheckCompletionCallback =
+    base::Callback<void(UnverifiedDownloadPolicy)>;
+
+// Invokes |callback| on the current thread with the effective download policy
+// for an unverified download of |file| by |requestor|.
+void CheckUnverifiedDownloadPolicy(
+    const GURL& requestor,
+    const base::FilePath& file,
+    const UnverifiedDownloadCheckCompletionCallback& callback);
 
 }  // namespace safe_browsing
 

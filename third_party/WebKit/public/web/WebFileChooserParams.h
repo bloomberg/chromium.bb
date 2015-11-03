@@ -32,6 +32,7 @@
 #define WebFileChooserParams_h
 
 #include "../platform/WebString.h"
+#include "../platform/WebURL.h"
 #include "../platform/WebVector.h"
 #include "WebFileChooserCompletion.h"
 
@@ -76,6 +77,9 @@ struct WebFileChooserParams {
     // WebFileChooserCompletion that can handle files without local paths,
     // 'false' should be specified to the flag.
     bool needLocalPath;
+    // If non-empty, represents the URL of the requestor if the request was
+    // initiated by a document.
+    WebURL requestor;
 
     WebFileChooserParams()
         : multiSelect(false)

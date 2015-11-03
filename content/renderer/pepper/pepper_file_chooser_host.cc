@@ -149,6 +149,7 @@ int32_t PepperFileChooserHost::OnShow(
   params.acceptTypes = mime_types;
   params.directory = false;
   params.needLocalPath = true;
+  params.requestor = renderer_ppapi_host_->GetDocumentURL(pp_instance());
 
   handler_ = new CompletionHandler(AsWeakPtr());
   RenderViewImpl* render_view = static_cast<RenderViewImpl*>(

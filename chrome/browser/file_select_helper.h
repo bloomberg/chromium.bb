@@ -10,12 +10,17 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/file_chooser_params.h"
 #include "net/base/directory_lister.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/unverified_download_policy.h"
+#endif
 
 class Profile;
 
@@ -78,11 +83,18 @@ class FileSelectHelper : public base::RefCountedThreadSafe<FileSelectHelper>,
 
   void RunFileChooser(content::RenderViewHost* render_view_host,
                       content::WebContents* web_contents,
-                      const content::FileChooserParams& params);
-  void RunFileChooserOnFileThread(
-      const content::FileChooserParams& params);
-  void RunFileChooserOnUIThread(
-      const content::FileChooserParams& params);
+                      scoped_ptr<content::FileChooserParams> params);
+  void GetFileTypesOnFileThread(scoped_ptr<content::FileChooserParams> params);
+  void GetSanitizedFilenameOnUIThread(
+      scoped_ptr<content::FileChooserParams> params);
+#if defined(FULL_SAFE_BROWSING)
+  void ApplyUnverifiedDownloadPolicy(
+      const base::FilePath& default_path,
+      scoped_ptr<content::FileChooserParams> params,
+      safe_browsing::UnverifiedDownloadPolicy policy);
+#endif
+  void RunFileChooserOnUIThread(const base::FilePath& default_path,
+                                scoped_ptr<content::FileChooserParams> params);
 
   // Cleans up and releases this instance. This must be called after the last
   // callback is received from the file chooser dialog.

@@ -218,6 +218,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(capture)
 #endif
+  IPC_STRUCT_TRAITS_MEMBER(requestor)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
