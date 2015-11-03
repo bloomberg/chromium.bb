@@ -158,7 +158,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   // callback, to trampoline back to the IO thread with the values.
   static void DidFinishConsumingFrame(
       const media::VideoFrameMetadata* metadata,
-      gpu::SyncToken* release_sync_token_storage,  // Takes ownership
+      scoped_ptr<gpu::SyncToken> release_sync_token,
       const BufferFinishedCallback& callback_to_io_thread);
 
   const scoped_refptr<VideoCaptureMessageFilter> message_filter_;

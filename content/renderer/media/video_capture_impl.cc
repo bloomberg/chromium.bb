@@ -331,7 +331,7 @@ void VideoCaptureImpl::OnBufferReceived(
 
   scoped_refptr<media::VideoFrame> frame;
   BufferFinishedCallback buffer_finished_callback;
-  gpu::SyncToken* release_sync_token_storage = new gpu::SyncToken;
+  scoped_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
   if (storage_type == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS) {
     DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
     const auto& iter = client_buffer2s_.find(buffer_id);
@@ -381,7 +381,7 @@ void VideoCaptureImpl::OnBufferReceived(
       DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format);
       frame = media::VideoFrame::WrapNativeTexture(
           pixel_format, mailbox_holder,
-          base::Bind(&SaveReleaseSyncToken, release_sync_token_storage),
+          base::Bind(&SaveReleaseSyncToken, release_sync_token.get()),
           coded_size, gfx::Rect(coded_size), coded_size,
           timestamp - first_frame_timestamp_);
     }
@@ -393,7 +393,7 @@ void VideoCaptureImpl::OnBufferReceived(
                                   timestamp);
   frame->AddDestructionObserver(
       base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
-                 release_sync_token_storage, buffer_finished_callback));
+                 base::Passed(&release_sync_token), buffer_finished_callback));
 
   frame->metadata()->MergeInternalValuesFrom(metadata);
 
@@ -553,23 +553,17 @@ bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
 // static
 void VideoCaptureImpl::DidFinishConsumingFrame(
     const media::VideoFrameMetadata* metadata,
-    gpu::SyncToken* release_sync_token_storage,
+    scoped_ptr<gpu::SyncToken> release_sync_token,
     const BufferFinishedCallback& callback_to_io_thread) {
   // Note: This function may be called on any thread by the VideoFrame
   // destructor.  |metadata| is still valid for read-access at this point.
-  gpu::SyncToken release_sync_token;
-  if (release_sync_token_storage) {
-    release_sync_token = *release_sync_token_storage;
-    delete release_sync_token_storage;
-  }
-
   double consumer_resource_utilization = -1.0;
   if (!metadata->GetDouble(media::VideoFrameMetadata::RESOURCE_UTILIZATION,
                            &consumer_resource_utilization)) {
     consumer_resource_utilization = -1.0;
   }
 
-  callback_to_io_thread.Run(release_sync_token, consumer_resource_utilization);
+  callback_to_io_thread.Run(*release_sync_token, consumer_resource_utilization);
 }
 
 }  // namespace content
