@@ -565,10 +565,6 @@ const char kEnableWebAppFrame[] = "enable-web-app-frame";
 const char kEnableWebNotificationCustomLayouts[] =
     "enable-web-notification-custom-layouts";
 
-// Enables webusb notifications, which shows notifications when usb devices with
-// landing page are plugged in.
-const char kEnableWebUsbNotifications[] = "enable-webusb-notifications";
-
 // Bypasses the WebUSB permission prompt as it is not yet implemented.
 // crbug.com/529950
 const char kEnableWebUsbOnAnyOrigin[] = "enable-webusb-on-any-origin";

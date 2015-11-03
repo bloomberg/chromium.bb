@@ -2088,11 +2088,6 @@ const FeatureEntry kFeatureEntries[] = {
                                switches::kDisablePushApiBackgroundMode)},
 #endif  // defined(ENABLE_BACKGROUND)
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-     {"enable-webusb-notifications",
-      IDS_FLAGS_ENABLE_WEBUSB_NOTIFICATIONS_NAME,
-      IDS_FLAGS_ENABLE_WEBUSB_NOTIFICATIONS_DESCRIPTION,
-      kOsDesktop,
-      SINGLE_VALUE_TYPE(switches::kEnableWebUsbNotifications)},
      // TODO(reillyg): Remove this flag when the permission granting UI is
      // available. crbug.com/529950
      {"enable-webusb-on-any-origin",

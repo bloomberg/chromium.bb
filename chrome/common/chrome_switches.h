@@ -159,7 +159,6 @@ extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWebAppFrame[];
 extern const char kEnableWebNotificationCustomLayouts[];
-extern const char kEnableWebUsbNotifications[];
 extern const char kEnableWebUsbOnAnyOrigin[];
 extern const char kEnableWifiCredentialSync[];
 extern const char kExtensionContentVerificationBootstrap[];
