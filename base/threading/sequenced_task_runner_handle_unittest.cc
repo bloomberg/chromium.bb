@@ -12,6 +12,7 @@
 #include "base/sequence_checker_impl.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/simple_thread.h"
@@ -51,13 +52,16 @@ TEST_F(SequencedTaskRunnerHandleTest, FromMessageLoop) {
 }
 
 TEST_F(SequencedTaskRunnerHandleTest, FromSequencedWorkerPool) {
-  scoped_refptr<SequencedWorkerPool> pool(new SequencedWorkerPool(3, "Test"));
+  // Wrap the SequencedWorkerPool to avoid leaks due to its asynchronous
+  // destruction.
+  SequencedWorkerPoolOwner owner(3, "Test");
   WaitableEvent event(false, false);
-  pool->PostSequencedWorkerTask(
-      pool->GetSequenceToken(), FROM_HERE,
+  owner.pool()->PostSequencedWorkerTask(
+      owner.pool()->GetSequenceToken(), FROM_HERE,
       base::Bind(&SequencedTaskRunnerHandleTest::GetTaskRunner,
                  base::Bind(&WaitableEvent::Signal, base::Unretained(&event))));
   event.Wait();
+  owner.pool()->Shutdown();
 }
 
 class ThreadRunner : public DelegateSimpleThread::Delegate {
