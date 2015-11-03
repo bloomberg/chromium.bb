@@ -44,7 +44,7 @@ class JingleSession : public base::NonThreadSafe,
   const SessionConfig& config() override;
   Transport* GetTransport() override;
   StreamChannelFactory* GetQuicChannelFactory() override;
-  void Close() override;
+  void Close(protocol::ErrorCode error) override;
 
  private:
   friend class JingleSessionManager;
@@ -112,11 +112,6 @@ class JingleSession : public base::NonThreadSafe,
 
   // Called when authentication is finished.
   void OnAuthenticated();
-
-  // Terminates the session and sends session-terminate if it is
-  // necessary. |error| specifies the error code in case when the
-  // session is being closed due to an error.
-  void CloseInternal(ErrorCode error);
 
   // Sets |state_| to |new_state| and calls state change callback.
   void SetState(State new_state);

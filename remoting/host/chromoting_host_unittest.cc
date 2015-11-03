@@ -367,7 +367,7 @@ class ChromotingHostTest : public testing::Test {
     MockConnectionToClient* connection = get_connection(connection_index);
 
     Expectation client_disconnected =
-        EXPECT_CALL(*connection, Disconnect())
+        EXPECT_CALL(*connection, Disconnect(_))
             .After(after)
             .WillOnce(InvokeWithoutArgs(CreateFunctor(
                 this, &ChromotingHostTest::NotifyClientSessionClosed,
@@ -568,7 +568,7 @@ TEST_F(ChromotingHostTest, IncomingSessionDeclined) {
 
 TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
   ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(*session_unowned1_, Close()).WillOnce(InvokeWithoutArgs(
+  EXPECT_CALL(*session_unowned1_, Close(_)).WillOnce(InvokeWithoutArgs(
     this, &ChromotingHostTest::NotifyConnectionClosed1));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
   EXPECT_CALL(host_status_observer_, OnShutdown());
@@ -586,7 +586,7 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
 
 TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
   ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(*session_unowned1_, Close()).WillOnce(
+  EXPECT_CALL(*session_unowned1_, Close(_)).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
   EXPECT_CALL(host_status_observer_, OnShutdown());
@@ -609,10 +609,10 @@ TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
 
 TEST_F(ChromotingHostTest, LoginBackOffUponAuthenticating) {
   Expectation start = ExpectHostAndSessionManagerStart();
-  EXPECT_CALL(*session_unowned1_, Close()).WillOnce(
+  EXPECT_CALL(*session_unowned1_, Close(_)).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
 
-  EXPECT_CALL(*session_unowned2_, Close()).WillOnce(
+  EXPECT_CALL(*session_unowned2_, Close(_)).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed2));
 
   EXPECT_CALL(host_status_observer_, OnShutdown());

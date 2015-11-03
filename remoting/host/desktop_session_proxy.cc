@@ -331,12 +331,12 @@ void DesktopSessionProxy::SetMouseCursorMonitor(
   mouse_cursor_monitor_ = mouse_cursor_monitor;
 }
 
-void DesktopSessionProxy::DisconnectSession() {
+void DesktopSessionProxy::DisconnectSession(protocol::ErrorCode error) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Disconnect the client session if it hasn't been disconnected yet.
   if (client_session_control_.get())
-    client_session_control_->DisconnectSession();
+    client_session_control_->DisconnectSession(error);
 }
 
 void DesktopSessionProxy::InjectClipboardEvent(

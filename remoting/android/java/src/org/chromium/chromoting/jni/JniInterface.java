@@ -77,7 +77,9 @@ public class JniInterface {
             SIGNALING_ERROR(6, R.string.error_p2p_failure),
             SIGNALING_TIMEOUT(7, R.string.error_p2p_failure),
             HOST_OVERLOAD(8, R.string.error_host_overload),
-            UNKNOWN_ERROR(9, R.string.error_unexpected);
+            MAX_SESSION_LENGTH(9, R.string.error_max_session_length),
+            HOST_CONFIGURATION_ERROR(10, R.string.error_host_configuration_error),
+            UNKNOWN_ERROR(11, R.string.error_unexpected);
 
             private final int mValue;
             private final int mMessage;

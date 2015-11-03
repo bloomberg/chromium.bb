@@ -16,10 +16,11 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/protocol/errors.h"
+
+namespace remoting {
 
 namespace {
-
-using remoting::ClientSessionControl;
 
 const char* kCGSessionPath =
     "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/"
@@ -56,7 +57,7 @@ class SessionWatcher : public base::RefCountedThreadSafe<SessionWatcher> {
   void RemoveEventHandler();
 
   // Disconnects the client session.
-  void DisconnectSession();
+  void DisconnectSession(protocol::ErrorCode error);
 
   // Handlers for the switch-in event.
   static OSStatus SessionActivateHandler(EventHandlerCallRef handler,
@@ -122,7 +123,7 @@ void SessionWatcher::ActivateCurtain() {
   // curtain mode on suitable versions of Lion.
   if (base::mac::IsOSLion()) {
     LOG(ERROR) << "Host curtaining is not supported on Mac OS X 10.7.";
-    DisconnectSession();
+    DisconnectSession(protocol::ErrorCode::HOST_CONFIGURATION_ERROR);
     return;
   }
 
@@ -130,7 +131,7 @@ void SessionWatcher::ActivateCurtain() {
   // current session so that the console session is not affected if it fails.
   if (!InstallEventHandler()) {
     LOG(ERROR) << "Failed to install the switch-in handler.";
-    DisconnectSession();
+    DisconnectSession(protocol::ErrorCode::HOST_CONFIGURATION_ERROR);
     return;
   }
 
@@ -162,12 +163,12 @@ void SessionWatcher::ActivateCurtain() {
       waitpid(child, &status, 0);
       if (status != 0) {
         LOG(ERROR) << kCGSessionPath << " failed.";
-        DisconnectSession();
+        DisconnectSession(protocol::ErrorCode::HOST_CONFIGURATION_ERROR);
         return;
       }
     } else {
       LOG(ERROR) << "fork() failed.";
-      DisconnectSession();
+      DisconnectSession(protocol::ErrorCode::HOST_CONFIGURATION_ERROR);
       return;
     }
   }
@@ -185,7 +186,7 @@ bool SessionWatcher::InstallEventHandler() {
       &event_handler_);
   if (result != noErr) {
     event_handler_ = nullptr;
-    DisconnectSession();
+    DisconnectSession(protocol::ErrorCode::HOST_CONFIGURATION_ERROR);
     return false;
   }
 
@@ -201,27 +202,26 @@ void SessionWatcher::RemoveEventHandler() {
   }
 }
 
-void SessionWatcher::DisconnectSession() {
+void SessionWatcher::DisconnectSession(protocol::ErrorCode error) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SessionWatcher::DisconnectSession, this));
+        FROM_HERE, base::Bind(&SessionWatcher::DisconnectSession, this, error));
     return;
   }
 
   if (client_session_control_)
-    client_session_control_->DisconnectSession();
+    client_session_control_->DisconnectSession(error);
 }
 
 OSStatus SessionWatcher::SessionActivateHandler(EventHandlerCallRef handler,
                                                 EventRef event,
                                                 void* user_data) {
-  static_cast<SessionWatcher*>(user_data)->DisconnectSession();
+  static_cast<SessionWatcher*>(user_data)
+      ->DisconnectSession(protocol::ErrorCode::OK);
   return noErr;
 }
 
 }  // namespace
-
-namespace remoting {
 
 class CurtainModeMac : public CurtainMode {
  public:

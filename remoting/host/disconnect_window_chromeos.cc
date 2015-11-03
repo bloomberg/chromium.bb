@@ -40,7 +40,7 @@ void DisconnectWindowAura::Start(
   base::string16 helper_name;
   ash::Shell::GetInstance()->system_tray_notifier()->NotifyScreenShareStart(
       base::Bind(&ClientSessionControl::DisconnectSession,
-                 client_session_control),
+                 client_session_control, protocol::OK),
       helper_name);
 }
 

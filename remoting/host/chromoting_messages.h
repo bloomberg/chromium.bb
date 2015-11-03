@@ -9,6 +9,7 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/screen_resolution.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -180,8 +181,12 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_MouseCursor,
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
                      std::string /* serialized_event */ )
 
+IPC_ENUM_TRAITS_MAX_VALUE(remoting::protocol::ErrorCode,
+                          remoting::protocol::ERROR_CODE_MAX)
+
 // Requests the network process to terminate the client session.
-IPC_MESSAGE_CONTROL0(ChromotingDesktopNetworkMsg_DisconnectSession)
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_DisconnectSession,
+                     remoting::protocol::ErrorCode /* error */)
 
 // Carries an audio packet from the desktop session agent to the client.
 // |serialized_packet| is a serialized AudioPacket.

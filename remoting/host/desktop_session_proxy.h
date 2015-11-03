@@ -20,6 +20,7 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/errors.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace base {
@@ -101,7 +102,7 @@ class DesktopSessionProxy
   void DetachFromDesktop();
 
   // Disconnects the client session that owns |this|.
-  void DisconnectSession();
+  void DisconnectSession(protocol::ErrorCode error);
 
   // Stores |audio_capturer| to be used to post captured audio packets. Called
   // on the |audio_capture_task_runner_| thread.

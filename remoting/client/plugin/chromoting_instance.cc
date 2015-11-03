@@ -120,6 +120,12 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
     case protocol::HOST_OVERLOAD:
       return "HOST_OVERLOAD";
 
+    case protocol::MAX_SESSION_LENGTH:
+      return "MAX_SESSION_LENGTH";
+
+    case protocol::HOST_CONFIGURATION_ERROR:
+      return "HOST_CONFIGURATION_ERROR";
+
     case protocol::CHANNEL_CONNECTION_ERROR:
     case protocol::SIGNALING_ERROR:
     case protocol::SIGNALING_TIMEOUT:

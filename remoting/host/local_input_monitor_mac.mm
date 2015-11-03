@@ -270,7 +270,7 @@ void LocalInputMonitorMac::Core::OnLocalMouseMoved(
 void LocalInputMonitorMac::Core::OnDisconnectShortcut() {
   caller_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
-                            client_session_control_));
+                            client_session_control_, protocol::OK));
 }
 
 }  // namespace

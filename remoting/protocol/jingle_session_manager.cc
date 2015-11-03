@@ -141,7 +141,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
           error = SESSION_REJECTED;
       }
 
-      session->CloseInternal(error);
+      session->Close(error);
       delete session;
       DCHECK(sessions_.find(message.sid) == sessions_.end());
     }

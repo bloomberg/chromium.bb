@@ -130,7 +130,7 @@ class ClientSession
 
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
-  void DisconnectSession() override;
+  void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
   void ResetVideoPipeline() override;
