@@ -414,7 +414,7 @@ void InspectorOverlay::drawNodeHighlight()
         return;
 
     String selectors = m_nodeHighlightConfig.selectorList;
-    RefPtrWillBeRawPtr<StaticElementList> elements;
+    RefPtrWillBeRawPtr<StaticElementList> elements = nullptr;
     TrackExceptionState exceptionState;
     if (selectors.length())
         elements = m_highlightNode->ownerDocument()->querySelectorAll(AtomicString(selectors), exceptionState);
