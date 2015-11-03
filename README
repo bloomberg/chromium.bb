@@ -121,5 +121,5 @@ Releases
 ~~~~~~~~
 Each release of wayland-protocols finalizes the version of the protocols
 to their state they had at that time. Between each release, backward
-incompatible changes can be made to both stable and unstable protocols
-as long as the requirements are held upon release.
+incompatible changes can be made to both stable and major unstable protocol
+versions as long as the requirements are held upon release.
