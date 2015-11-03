@@ -22,9 +22,11 @@
 
 #if defined(__OBJC__)
 @class NSHTTPCookie;
+@class NSHTTPCookieStorage;
 @class NSArray;
 #else
 class NSHTTPCookie;
+class NSHTTPCookieStorage;
 class NSArray;
 #endif
 
@@ -32,12 +34,14 @@ namespace net {
 
 class CookieCreationTimeManager;
 
-// Observer for system cookie notifications.
+// Observer for changes on |NSHTTPCookieStorge sharedHTTPCookieStorage|.
 class CookieNotificationObserver {
  public:
-  // Called when any cookie is added, deleted or changed in the system store.
+  // Called when any cookie is added, deleted or changed in
+  // |NSHTTPCookieStorge sharedHTTPCookieStorage|.
   virtual void OnSystemCookiesChanged() = 0;
-  // Called when the cookie policy changes.
+  // Called when the cookie policy changes on
+  // |NSHTTPCookieStorge sharedHTTPCookieStorage|.
   virtual void OnSystemCookiePolicyChanged() = 0;
 };
 
@@ -64,27 +68,38 @@ class CookieNotificationObserver {
 class CookieStoreIOS : public net::CookieStore,
                        public CookieNotificationObserver {
  public:
+  // Creates a CookieStoreIOS with a default value of
+  // |NSHTTPCookieStorage sharedCookieStorage| as the system's cookie store.
   explicit CookieStoreIOS(
       net::CookieMonster::PersistentCookieStore* persistent_store);
+
+  explicit CookieStoreIOS(
+      net::CookieMonster::PersistentCookieStore* persistent_store,
+      NSHTTPCookieStorage* system_store);
 
   enum CookiePolicy { ALLOW, BLOCK };
 
   // Must be called on the thread where CookieStoreIOS instances live.
+  // Affects only those CookieStoreIOS instances that are backed by
+  // |NSHTTPCookieStorage sharedHTTPCookieStorage|.
   static void SetCookiePolicy(CookiePolicy setting);
 
   // Create an instance of CookieStoreIOS that is generated from the cookies
-  // stored in the system NSHTTPCookieStorage. The caller is responsible for
-  // deleting the cookie store.
-  // Apple does not persist the cookies' creation dates in the system store,
+  // stored in |cookie_storage|. The CookieStoreIOS uses the |cookie_storage|
+  // as its default backend and is initially synchronized with it.
+  // Apple does not persist the cookies' creation dates in NSHTTPCookieStorage,
   // so callers should not expect these values to be populated.
-  static CookieStoreIOS* CreateCookieStoreFromNSHTTPCookieStorage();
+  static CookieStoreIOS* CreateCookieStore(NSHTTPCookieStorage* cookie_storage);
 
   // As there is only one system store, only one CookieStoreIOS at a time may
   // be synchronized with it.
   static void SwitchSynchronizedStore(CookieStoreIOS* old_store,
                                       CookieStoreIOS* new_store);
 
-  // Must be called when the state of the system cookie store changes.
+  // Must be called when the state of
+  // |NSHTTPCookieStorage sharedHTTPCookieStorage| changes.
+  // Affects only those CookieStoreIOS instances that are backed by
+  // |NSHTTPCookieStorage sharedHTTPCookieStorage|.
   static void NotifySystemCookiesChanged();
 
   // Saves the cookies to the cookie monster.
@@ -175,6 +190,7 @@ class CookieStoreIOS : public net::CookieStore,
                                const DeleteCallback& callback);
 
   scoped_refptr<net::CookieMonster> cookie_monster_;
+  NSHTTPCookieStorage* system_store_;
   scoped_ptr<CookieCreationTimeManager> creation_time_manager_;
   bool metrics_enabled_;
   base::TimeDelta flush_delay_;

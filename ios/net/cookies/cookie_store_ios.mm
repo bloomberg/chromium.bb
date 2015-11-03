@@ -200,9 +200,9 @@ NSInteger CompareCookies(id a, id b, void* context) {
 }
 
 // Gets the cookies for |url| from the system cookie store.
-NSArray* GetCookiesForURL(const GURL& url, CookieCreationTimeManager* manager) {
-  NSArray* cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage]
-      cookiesForURL:net::NSURLWithGURL(url)];
+NSArray* GetCookiesForURL(NSHTTPCookieStorage* system_store,
+                          const GURL& url, CookieCreationTimeManager* manager) {
+  NSArray* cookies = [system_store cookiesForURL:net::NSURLWithGURL(url)];
 
   // Sort cookies by decreasing path length, then creation time, as per RFC6265.
   return [cookies sortedArrayUsingFunction:CompareCookies context:manager];
@@ -274,11 +274,21 @@ bool HasExplicitDomain(const std::string& cookie_line) {
 
 CookieStoreIOS::CookieStoreIOS(
     net::CookieMonster::PersistentCookieStore* persistent_store)
-    : creation_time_manager_(new CookieCreationTimeManager),
+    : CookieStoreIOS(persistent_store,
+                     [NSHTTPCookieStorage sharedHTTPCookieStorage]) {
+}
+
+CookieStoreIOS::CookieStoreIOS(
+    net::CookieMonster::PersistentCookieStore* persistent_store,
+    NSHTTPCookieStorage* system_store)
+    : system_store_(system_store),
+      creation_time_manager_(new CookieCreationTimeManager),
       metrics_enabled_(false),
       flush_delay_(base::TimeDelta::FromSeconds(10)),
       synchronization_state_(NOT_SYNCHRONIZED),
       cookie_cache_(new CookieCache()) {
+  DCHECK(system_store);
+
   NotificationTrampoline::GetInstance()->AddObserver(this);
   cookie_monster_ = new net::CookieMonster(persistent_store, nullptr);
   cookie_monster_->SetPersistSessionCookies(true);
@@ -298,14 +308,16 @@ void CookieStoreIOS::SetCookiePolicy(CookiePolicy setting) {
   NotificationTrampoline::GetInstance()->NotifyCookiePolicyChanged();
 }
 
-CookieStoreIOS* CookieStoreIOS::CreateCookieStoreFromNSHTTPCookieStorage() {
+// static
+CookieStoreIOS* CookieStoreIOS::CreateCookieStore(
+    NSHTTPCookieStorage* cookie_storage) {
+  DCHECK(cookie_storage);
   // TODO(huey): Update this when CrNet supports multiple cookie jars.
-  [[NSHTTPCookieStorage sharedHTTPCookieStorage]
-      setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
+  [cookie_storage setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
 
   // Create a cookie store with no persistent store backing. Then, populate
   // it from the system's cookie jar.
-  CookieStoreIOS* cookie_store = new CookieStoreIOS(nullptr);
+  CookieStoreIOS* cookie_store = new CookieStoreIOS(nullptr, cookie_storage);
   cookie_store->synchronization_state_ = SYNCHRONIZED;
   cookie_store->Flush(base::Closure());
   return cookie_store;
@@ -332,8 +344,7 @@ void CookieStoreIOS::Flush(const base::Closure& closure) {
   if (SystemCookiesAllowed()) {
     // If cookies are disabled, the system store is empty, and the cookies are
     // stashed on disk. Do not delete the cookies on the disk in this case.
-    WriteToCookieMonster(
-        [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies]);
+    WriteToCookieMonster([system_store_ cookies]);
   }
   cookie_monster_->FlushStore(closure);
   flush_closure_.Cancel();
@@ -408,7 +419,7 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
                      (!has_explicit_domain || has_valid_domain);
 
       if (success) {
-        [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:cookie];
+        [system_store_ setCookie:cookie];
         creation_time_manager_->SetCreationTime(
             cookie,
             creation_time_manager_->MakeUniqueCreationTime(base::Time::Now()));
@@ -443,7 +454,8 @@ void CookieStoreIOS::GetCookiesWithOptionsAsync(
       // engine.
       DCHECK(!options.exclude_httponly());
 
-      NSArray* cookies = GetCookiesForURL(url, creation_time_manager_.get());
+      NSArray* cookies = GetCookiesForURL(system_store_,
+                                          url, creation_time_manager_.get());
       if (!callback.is_null())
         callback.Run(BuildCookieLine(cookies, options));
       break;
@@ -471,7 +483,8 @@ void CookieStoreIOS::GetAllCookiesForURLAsync(
         return;
       }
 
-      NSArray* cookies = GetCookiesForURL(url, creation_time_manager_.get());
+      NSArray* cookies = GetCookiesForURL(system_store_,
+                                          url, creation_time_manager_.get());
       net::CookieList cookie_list;
       cookie_list.reserve([cookies count]);
       for (NSHTTPCookie* cookie in cookies) {
@@ -500,11 +513,12 @@ void CookieStoreIOS::DeleteCookieAsync(const GURL& url,
                      WrapClosure(callback)));
       break;
     case SYNCHRONIZED:
-      NSArray* cookies = GetCookiesForURL(url, creation_time_manager_.get());
+      NSArray* cookies = GetCookiesForURL(system_store_,
+                                          url, creation_time_manager_.get());
       for (NSHTTPCookie* cookie in cookies) {
         if ([[cookie name]
                 isEqualToString:base::SysUTF8ToNSString(cookie_name)]) {
-          [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
+          [system_store_ deleteCookie:cookie];
           creation_time_manager_->DeleteCreationTime(cookie);
         }
       }
@@ -613,27 +627,29 @@ CookieStoreIOS::~CookieStoreIOS() {
 
 void CookieStoreIOS::ClearSystemStore() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NSHTTPCookieStorage* cookie_storage =
-      [NSHTTPCookieStorage sharedHTTPCookieStorage];
   base::scoped_nsobject<NSArray> copy(
-      [[NSArray alloc] initWithArray:[cookie_storage cookies]]);
+      [[NSArray alloc] initWithArray:[system_store_ cookies]]);
   for (NSHTTPCookie* cookie in copy.get())
-    [cookie_storage deleteCookie:cookie];
-  DCHECK_EQ(0u, [[cookie_storage cookies] count]);
+    [system_store_ deleteCookie:cookie];
+  DCHECK_EQ(0u, [[system_store_ cookies] count]);
   creation_time_manager_->Clear();
 }
 
 void CookieStoreIOS::OnSystemCookiePolicyChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (synchronization_state_ == NOT_SYNCHRONIZED)
+  // If the CookieStoreIOS is not synchronized or is not backed by
+  // |NSHTTPCookieStorage sharedHTTPCookieStorage| this callback is irrelevant.
+  if (synchronization_state_ == NOT_SYNCHRONIZED ||
+      system_store_ != [NSHTTPCookieStorage sharedHTTPCookieStorage]) {
     return;
+  }
 
   NSHTTPCookieAcceptPolicy policy =
-      [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookieAcceptPolicy];
+      [system_store_ cookieAcceptPolicy];
   if (policy == NSHTTPCookieAcceptPolicyAlways) {
     // If cookies are disabled, the system cookie store should be empty.
-    DCHECK(![[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies] count]);
+    DCHECK(![[system_store_ cookies] count]);
     DCHECK(synchronization_state_ != SYNCHRONIZING);
     synchronization_state_ = SYNCHRONIZING;
     cookie_monster_->GetAllCookiesAsync(
@@ -642,8 +658,7 @@ void CookieStoreIOS::OnSystemCookiePolicyChanged() {
     DCHECK_EQ(NSHTTPCookieAcceptPolicyNever, policy);
     // Flush() does not write the cookies to disk when they are disabled.
     // Explicitly copy them.
-    WriteToCookieMonster(
-        [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies]);
+    WriteToCookieMonster([system_store_ cookies]);
     Flush(base::Closure());
     ClearSystemStore();
     if (synchronization_state_ == SYNCHRONIZING) {
@@ -677,13 +692,13 @@ void CookieStoreIOS::SetSynchronizedWithSystemStore(bool synchronized) {
 #endif
 
   NSHTTPCookieAcceptPolicy policy =
-      [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookieAcceptPolicy];
+      [system_store_ cookieAcceptPolicy];
   DCHECK(policy == NSHTTPCookieAcceptPolicyAlways ||
          policy == NSHTTPCookieAcceptPolicyNever);
 
   // If cookies are disabled, the system cookie store should be empty.
   DCHECK(policy == NSHTTPCookieAcceptPolicyAlways ||
-         ![[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies] count]);
+         ![[system_store_ cookies] count]);
 
   // If cookies are disabled, nothing is done now, the work will be done when
   // cookies are re-enabled.
@@ -710,7 +725,7 @@ void CookieStoreIOS::SetSynchronizedWithSystemStore(bool synchronized) {
 
 bool CookieStoreIOS::SystemCookiesAllowed() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookieAcceptPolicy] ==
+  return [system_store_ cookieAcceptPolicy] ==
          NSHTTPCookieAcceptPolicyAlways;
 }
 
@@ -738,7 +753,7 @@ void CookieStoreIOS::AddCookiesToSystemStore(const net::CookieList& cookies) {
     // invalid characters.
     if (!system_cookie)
       continue;
-    [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:system_cookie];
+    [system_store_ setCookie:system_cookie];
     creation_time_manager_->SetCreationTime(system_cookie,
                                             net_cookie.CreationDate());
   }
@@ -783,7 +798,7 @@ void CookieStoreIOS::DeleteCookiesWithFilter(const CookieFilterFunction& filter,
                                              const DeleteCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(SYNCHRONIZED, synchronization_state_);
-  NSArray* cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
+  NSArray* cookies = [system_store_ cookies];
 
   // Collect the cookies to delete.
   base::scoped_nsobject<NSMutableArray> to_delete(
@@ -796,7 +811,7 @@ void CookieStoreIOS::DeleteCookiesWithFilter(const CookieFilterFunction& filter,
 
   // Delete them.
   for (NSHTTPCookie* cookie in to_delete.get()) {
-    [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
+    [system_store_ deleteCookie:cookie];
     creation_time_manager_->DeleteCreationTime(cookie);
   }
 
@@ -807,9 +822,12 @@ void CookieStoreIOS::DeleteCookiesWithFilter(const CookieFilterFunction& filter,
 void CookieStoreIOS::OnSystemCookiesChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If the CookieStoreIOS is not synchronized, system cookies are irrelevant.
-  if (synchronization_state_ != SYNCHRONIZED)
+  // If the CookieStoreIOS is not synchronized or is not backed by
+  // |NSHTTPCookieStorage sharedHTTPCookieStorage| this callback is irrelevant.
+  if (synchronization_state_ != SYNCHRONIZED ||
+      system_store_ != [NSHTTPCookieStorage sharedHTTPCookieStorage]) {
     return;
+  }
 
   for (const auto& hook_map_entry : hook_map_) {
     std::pair<GURL, std::string> key = hook_map_entry.first;
@@ -885,8 +903,7 @@ bool CookieStoreIOS::GetSystemCookies(
     std::vector<net::CanonicalCookie>* cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NSURL* url = net::NSURLWithGURL(gurl);
-  NSHTTPCookieStorage* storage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-  NSArray* nscookies = [storage cookiesForURL:url];
+  NSArray* nscookies = [system_store_ cookiesForURL:url];
   bool found_cookies = false;
   for (NSHTTPCookie* nscookie in nscookies) {
     if (nscookie.name.UTF8String == name) {

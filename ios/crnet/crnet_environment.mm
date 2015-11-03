@@ -462,7 +462,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
 
   // Cookies
   scoped_refptr<net::CookieStore> cookie_store =
-      net::CookieStoreIOS::CreateCookieStoreFromNSHTTPCookieStorage();
+  net::CookieStoreIOS::CreateCookieStore(
+      [NSHTTPCookieStorage sharedHTTPCookieStorage]);
   main_context_->set_cookie_store(cookie_store.get());
 
   net::URLRequestJobFactoryImpl* job_factory =
