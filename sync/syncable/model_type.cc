@@ -25,6 +25,110 @@
 
 namespace syncer {
 
+struct ModelTypeInfo {
+  const ModelType model_type;
+  const char* const notification_type;  // Model Type notification string.
+  const char* const root_tag;           // Root tag for Model Type
+  const char* const model_type_string;  // String value for Model Type
+  const int specifics_field_number;     // SpecificsFieldNumber for Model Type
+  // Histogram value should be unique for the Model Type, Existing histogram
+  // values should never be modified without updating "SyncModelTypes" enum in
+  // histograms.xml to maintain backward compatibility.
+  const int model_type_histogram_val;
+};
+
+// Below struct entries are in the same order as their definition in the
+// ModelType enum. Don't forget to update the ModelType enum when you make
+// changes to this list.
+const ModelTypeInfo kModelTypeInfoMap[] = {
+    {UNSPECIFIED, "", "", "Unspecified", -1, 0},
+    {TOP_LEVEL_FOLDER, "", "", "Top Level Folder", -1, 1},
+    {BOOKMARKS, "BOOKMARK", "bookmarks", "Bookmarks",
+     sync_pb::EntitySpecifics::kBookmarkFieldNumber, 2},
+    {PREFERENCES, "PREFERENCE", "preferences", "Preferences",
+     sync_pb::EntitySpecifics::kPreferenceFieldNumber, 3},
+    {PASSWORDS, "PASSWORD", "passwords", "Passwords",
+     sync_pb::EntitySpecifics::kPasswordFieldNumber, 4},
+    {AUTOFILL_PROFILE, "AUTOFILL_PROFILE", "autofill_profiles",
+     "Autofill Profiles", sync_pb::EntitySpecifics::kAutofillProfileFieldNumber,
+     5},
+    {AUTOFILL, "AUTOFILL", "autofill", "Autofill",
+     sync_pb::EntitySpecifics::kAutofillFieldNumber, 6},
+    {AUTOFILL_WALLET_DATA, "AUTOFILL_WALLET", "autofill_wallet",
+     "Autofill Wallet", sync_pb::EntitySpecifics::kAutofillWalletFieldNumber,
+     34},
+    {AUTOFILL_WALLET_METADATA, "AUTOFILL_WALLET_METADATA",
+     "autofill_wallet_metadata", "Autofill Wallet Metadata",
+     sync_pb::EntitySpecifics::kWalletMetadataFieldNumber, 35},
+    {THEMES, "THEME", "themes", "Themes",
+     sync_pb::EntitySpecifics::kThemeFieldNumber, 7},
+    {TYPED_URLS, "TYPED_URL", "typed_urls", "Typed URLs",
+     sync_pb::EntitySpecifics::kTypedUrlFieldNumber, 8},
+    {EXTENSIONS, "EXTENSION", "extensions", "Extensions",
+     sync_pb::EntitySpecifics::kExtensionFieldNumber, 9},
+    {SEARCH_ENGINES, "SEARCH_ENGINE", "search_engines", "Search Engines",
+     sync_pb::EntitySpecifics::kSearchEngineFieldNumber, 10},
+    {SESSIONS, "SESSION", "sessions", "Sessions",
+     sync_pb::EntitySpecifics::kSessionFieldNumber, 11},
+    {APPS, "APP", "apps", "Apps", sync_pb::EntitySpecifics::kAppFieldNumber,
+     12},
+    {APP_SETTINGS, "APP_SETTING", "app_settings", "App settings",
+     sync_pb::EntitySpecifics::kAppSettingFieldNumber, 13},
+    {EXTENSION_SETTINGS, "EXTENSION_SETTING", "extension_settings",
+     "Extension settings",
+     sync_pb::EntitySpecifics::kExtensionSettingFieldNumber, 14},
+    {APP_NOTIFICATIONS, "APP_NOTIFICATION", "app_notifications",
+     "App Notifications", sync_pb::EntitySpecifics::kAppNotificationFieldNumber,
+     15},
+    {HISTORY_DELETE_DIRECTIVES, "HISTORY_DELETE_DIRECTIVE",
+     "history_delete_directives", "History Delete Directives",
+     sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber, 16},
+    {SYNCED_NOTIFICATIONS, "SYNCED_NOTIFICATION", "synced_notifications",
+     "Synced Notifications",
+     sync_pb::EntitySpecifics::kSyncedNotificationFieldNumber, 20},
+    {SYNCED_NOTIFICATION_APP_INFO, "SYNCED_NOTIFICATION_APP_INFO",
+     "synced_notification_app_info", "Synced Notification App Info",
+     sync_pb::EntitySpecifics::kSyncedNotificationAppInfoFieldNumber, 31},
+    {DICTIONARY, "DICTIONARY", "dictionary", "Dictionary",
+     sync_pb::EntitySpecifics::kDictionaryFieldNumber, 22},
+    {FAVICON_IMAGES, "FAVICON_IMAGE", "favicon_images", "Favicon Images",
+     sync_pb::EntitySpecifics::kFaviconImageFieldNumber, 23},
+    {FAVICON_TRACKING, "FAVICON_TRACKING", "favicon_tracking",
+     "Favicon Tracking", sync_pb::EntitySpecifics::kFaviconTrackingFieldNumber,
+     24},
+    {DEVICE_INFO, "DEVICE_INFO", "device_info", "Device Info",
+     sync_pb::EntitySpecifics::kDeviceInfoFieldNumber, 18},
+    {PRIORITY_PREFERENCES, "PRIORITY_PREFERENCE", "priority_preferences",
+     "Priority Preferences",
+     sync_pb::EntitySpecifics::kPriorityPreferenceFieldNumber, 21},
+    {SUPERVISED_USER_SETTINGS, "MANAGED_USER_SETTING", "managed_user_settings",
+     "Managed User Settings",
+     sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber, 26},
+    {SUPERVISED_USERS, "MANAGED_USER", "managed_users", "Managed Users",
+     sync_pb::EntitySpecifics::kManagedUserFieldNumber, 27},
+    {SUPERVISED_USER_SHARED_SETTINGS, "MANAGED_USER_SHARED_SETTING",
+     "managed_user_shared_settings", "Managed User Shared Settings",
+     sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber, 30},
+    {ARTICLES, "ARTICLE", "articles", "Articles",
+     sync_pb::EntitySpecifics::kArticleFieldNumber, 28},
+    {APP_LIST, "APP_LIST", "app_list", "App List",
+     sync_pb::EntitySpecifics::kAppListFieldNumber, 29},
+    {WIFI_CREDENTIALS, "WIFI_CREDENTIAL", "wifi_credentials",
+     "WiFi Credentials", sync_pb::EntitySpecifics::kWifiCredentialFieldNumber,
+     32},
+    {SUPERVISED_USER_WHITELISTS, "MANAGED_USER_WHITELIST",
+     "managed_user_whitelists", "Managed User Whitelists",
+     sync_pb::EntitySpecifics::kManagedUserWhitelistFieldNumber, 33},
+    {PROXY_TABS, "", "", "Tabs", -1, 25},
+    {NIGORI, "NIGORI", "nigori", "Encryption keys",
+     sync_pb::EntitySpecifics::kNigoriFieldNumber, 17},
+    {EXPERIMENTS, "EXPERIMENTS", "experiments", "Experiments",
+     sync_pb::EntitySpecifics::kExperimentsFieldNumber, 19},
+};
+
+static_assert(arraysize(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
+              "kModelTypeInfoMap should have MODEL_TYPE_COUNT elements");
+
 // Notes:
 // 1) This list must contain exactly the same elements as the set returned by
 //    UserSelectableTypes().
@@ -171,77 +275,10 @@ ModelType GetModelTypeFromSpecificsFieldNumber(int field_number) {
 int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
   DCHECK(ProtocolTypes().Has(model_type))
       << "Only protocol types have field values.";
-  switch (model_type) {
-    case BOOKMARKS:
-      return sync_pb::EntitySpecifics::kBookmarkFieldNumber;
-    case PASSWORDS:
-      return sync_pb::EntitySpecifics::kPasswordFieldNumber;
-    case PREFERENCES:
-      return sync_pb::EntitySpecifics::kPreferenceFieldNumber;
-    case AUTOFILL:
-      return sync_pb::EntitySpecifics::kAutofillFieldNumber;
-    case AUTOFILL_PROFILE:
-      return sync_pb::EntitySpecifics::kAutofillProfileFieldNumber;
-    case AUTOFILL_WALLET_DATA:
-      return sync_pb::EntitySpecifics::kAutofillWalletFieldNumber;
-    case AUTOFILL_WALLET_METADATA:
-      return sync_pb::EntitySpecifics::kWalletMetadataFieldNumber;
-    case THEMES:
-      return sync_pb::EntitySpecifics::kThemeFieldNumber;
-    case TYPED_URLS:
-      return sync_pb::EntitySpecifics::kTypedUrlFieldNumber;
-    case EXTENSIONS:
-      return sync_pb::EntitySpecifics::kExtensionFieldNumber;
-    case NIGORI:
-      return sync_pb::EntitySpecifics::kNigoriFieldNumber;
-    case SEARCH_ENGINES:
-      return sync_pb::EntitySpecifics::kSearchEngineFieldNumber;
-    case SESSIONS:
-      return sync_pb::EntitySpecifics::kSessionFieldNumber;
-    case APPS:
-      return sync_pb::EntitySpecifics::kAppFieldNumber;
-    case APP_LIST:
-      return sync_pb::EntitySpecifics::kAppListFieldNumber;
-    case APP_SETTINGS:
-      return sync_pb::EntitySpecifics::kAppSettingFieldNumber;
-    case EXTENSION_SETTINGS:
-      return sync_pb::EntitySpecifics::kExtensionSettingFieldNumber;
-    case APP_NOTIFICATIONS:
-      return sync_pb::EntitySpecifics::kAppNotificationFieldNumber;
-    case HISTORY_DELETE_DIRECTIVES:
-      return sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber;
-    case SYNCED_NOTIFICATIONS:
-      return sync_pb::EntitySpecifics::kSyncedNotificationFieldNumber;
-    case SYNCED_NOTIFICATION_APP_INFO:
-      return sync_pb::EntitySpecifics::kSyncedNotificationAppInfoFieldNumber;
-    case DEVICE_INFO:
-      return sync_pb::EntitySpecifics::kDeviceInfoFieldNumber;
-    case EXPERIMENTS:
-      return sync_pb::EntitySpecifics::kExperimentsFieldNumber;
-    case PRIORITY_PREFERENCES:
-      return sync_pb::EntitySpecifics::kPriorityPreferenceFieldNumber;
-    case DICTIONARY:
-      return sync_pb::EntitySpecifics::kDictionaryFieldNumber;
-    case FAVICON_IMAGES:
-      return sync_pb::EntitySpecifics::kFaviconImageFieldNumber;
-    case FAVICON_TRACKING:
-      return sync_pb::EntitySpecifics::kFaviconTrackingFieldNumber;
-    case SUPERVISED_USER_SETTINGS:
-      return sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber;
-    case SUPERVISED_USERS:
-      return sync_pb::EntitySpecifics::kManagedUserFieldNumber;
-    case SUPERVISED_USER_SHARED_SETTINGS:
-      return sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber;
-    case SUPERVISED_USER_WHITELISTS:
-      return sync_pb::EntitySpecifics::kManagedUserWhitelistFieldNumber;
-    case ARTICLES:
-      return sync_pb::EntitySpecifics::kArticleFieldNumber;
-    case WIFI_CREDENTIALS:
-      return sync_pb::EntitySpecifics::kWifiCredentialFieldNumber;
-    default:
-      NOTREACHED() << "No known extension for model type.";
-      return 0;
-  }
+  if (ProtocolTypes().Has(model_type))
+    return kModelTypeInfoMap[model_type].specifics_field_number;
+  NOTREACHED() << "No known extension for model type.";
+  return 0;
 }
 
 FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in) {
@@ -534,82 +571,8 @@ const char* ModelTypeToString(ModelType model_type) {
   // This is used in serialization routines as well as for displaying debug
   // information.  Do not attempt to change these string values unless you know
   // what you're doing.
-  switch (model_type) {
-    case TOP_LEVEL_FOLDER:
-      return "Top Level Folder";
-    case UNSPECIFIED:
-      return "Unspecified";
-    case BOOKMARKS:
-      return "Bookmarks";
-    case PREFERENCES:
-      return "Preferences";
-    case PASSWORDS:
-      return "Passwords";
-    case AUTOFILL:
-      return "Autofill";
-    case THEMES:
-      return "Themes";
-    case TYPED_URLS:
-      return "Typed URLs";
-    case EXTENSIONS:
-      return "Extensions";
-    case NIGORI:
-      return "Encryption keys";
-    case SEARCH_ENGINES:
-      return "Search Engines";
-    case SESSIONS:
-      return "Sessions";
-    case APPS:
-      return "Apps";
-    case APP_LIST:
-      return "App List";
-    case AUTOFILL_PROFILE:
-      return "Autofill Profiles";
-    case APP_SETTINGS:
-      return "App settings";
-    case EXTENSION_SETTINGS:
-      return "Extension settings";
-    case APP_NOTIFICATIONS:
-      return "App Notifications";
-    case HISTORY_DELETE_DIRECTIVES:
-      return "History Delete Directives";
-    case SYNCED_NOTIFICATIONS:
-      return "Synced Notifications";
-    case SYNCED_NOTIFICATION_APP_INFO:
-      return "Synced Notification App Info";
-    case DEVICE_INFO:
-      return "Device Info";
-    case EXPERIMENTS:
-      return "Experiments";
-    case PRIORITY_PREFERENCES:
-      return "Priority Preferences";
-    case DICTIONARY:
-      return "Dictionary";
-    case FAVICON_IMAGES:
-      return "Favicon Images";
-    case FAVICON_TRACKING:
-      return "Favicon Tracking";
-    case SUPERVISED_USER_SETTINGS:
-      return "Managed User Settings";
-    case SUPERVISED_USERS:
-      return "Managed Users";
-    case SUPERVISED_USER_SHARED_SETTINGS:
-      return "Managed User Shared Settings";
-    case SUPERVISED_USER_WHITELISTS:
-      return "Managed User Whitelists";
-    case ARTICLES:
-      return "Articles";
-    case WIFI_CREDENTIALS:
-      return "WiFi Credentials";
-    case PROXY_TABS:
-      return "Tabs";
-    case AUTOFILL_WALLET_DATA:
-      return "Autofill Wallet";
-    case AUTOFILL_WALLET_METADATA:
-      return "Autofill Wallet Metadata";
-    default:
-      break;
-  }
+  if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT)
+    return kModelTypeInfoMap[model_type].model_type_string;
   NOTREACHED() << "No known extension for model type.";
   return "INVALID";
 }
@@ -621,83 +584,8 @@ const char* ModelTypeToString(ModelType model_type) {
 // Don't forget to update the "SyncModelTypes" enum in histograms.xml when you
 // make changes to this list.
 int ModelTypeToHistogramInt(ModelType model_type) {
-  switch (model_type) {
-    case UNSPECIFIED:
-      return 0;
-    case TOP_LEVEL_FOLDER:
-      return 1;
-    case BOOKMARKS:
-      return 2;
-    case PREFERENCES:
-      return 3;
-    case PASSWORDS:
-      return 4;
-    case AUTOFILL_PROFILE:
-      return 5;
-    case AUTOFILL:
-      return 6;
-    case THEMES:
-      return 7;
-    case TYPED_URLS:
-      return 8;
-    case EXTENSIONS:
-      return 9;
-    case SEARCH_ENGINES:
-      return 10;
-    case SESSIONS:
-      return 11;
-    case APPS:
-      return 12;
-    case APP_SETTINGS:
-      return 13;
-    case EXTENSION_SETTINGS:
-      return 14;
-    case APP_NOTIFICATIONS:
-      return 15;
-    case HISTORY_DELETE_DIRECTIVES:
-      return 16;
-    case NIGORI:
-      return 17;
-    case DEVICE_INFO:
-      return 18;
-    case EXPERIMENTS:
-      return 19;
-    case SYNCED_NOTIFICATIONS:
-      return 20;
-    case PRIORITY_PREFERENCES:
-      return 21;
-    case DICTIONARY:
-      return 22;
-    case FAVICON_IMAGES:
-      return 23;
-    case FAVICON_TRACKING:
-      return 24;
-    case PROXY_TABS:
-      return 25;
-    case SUPERVISED_USER_SETTINGS:
-      return 26;
-    case SUPERVISED_USERS:
-      return 27;
-    case ARTICLES:
-      return 28;
-    case APP_LIST:
-      return 29;
-    case SUPERVISED_USER_SHARED_SETTINGS:
-      return 30;
-    case SYNCED_NOTIFICATION_APP_INFO:
-      return 31;
-    case WIFI_CREDENTIALS:
-      return 32;
-    case SUPERVISED_USER_WHITELISTS:
-      return 33;
-    case AUTOFILL_WALLET_DATA:
-      return 34;
-    case AUTOFILL_WALLET_METADATA:
-      return 35;
-    // Silence a compiler warning.
-    case MODEL_TYPE_COUNT:
-      return 0;
-  }
+  if (model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT)
+    return kModelTypeInfoMap[model_type].model_type_histogram_val;
   return 0;
 }
 
@@ -729,77 +617,15 @@ ModelType ModelTypeFromValue(const base::Value& value) {
 }
 
 ModelType ModelTypeFromString(const std::string& model_type_string) {
-  if (model_type_string == "Bookmarks")
-    return BOOKMARKS;
-  else if (model_type_string == "Preferences")
-    return PREFERENCES;
-  else if (model_type_string == "Passwords")
-    return PASSWORDS;
-  else if (model_type_string == "Autofill")
-    return AUTOFILL;
-  else if (model_type_string == "Autofill Profiles")
-    return AUTOFILL_PROFILE;
-  else if (model_type_string == "Autofill Wallet")
-    return AUTOFILL_WALLET_DATA;
-  else if (model_type_string == "Autofill Wallet Metadata")
-    return AUTOFILL_WALLET_METADATA;
-  else if (model_type_string == "Themes")
-    return THEMES;
-  else if (model_type_string == "Typed URLs")
-    return TYPED_URLS;
-  else if (model_type_string == "Extensions")
-    return EXTENSIONS;
-  else if (model_type_string == "Encryption keys")
-    return NIGORI;
-  else if (model_type_string == "Search Engines")
-    return SEARCH_ENGINES;
-  else if (model_type_string == "Sessions")
-    return SESSIONS;
-  else if (model_type_string == "Apps")
-    return APPS;
-  else if (model_type_string == "App List")
-    return APP_LIST;
-  else if (model_type_string == "App settings")
-    return APP_SETTINGS;
-  else if (model_type_string == "Extension settings")
-    return EXTENSION_SETTINGS;
-  else if (model_type_string == "App Notifications")
-    return APP_NOTIFICATIONS;
-  else if (model_type_string == "History Delete Directives")
-    return HISTORY_DELETE_DIRECTIVES;
-  else if (model_type_string == "Synced Notifications")
-    return SYNCED_NOTIFICATIONS;
-  else if (model_type_string == "Synced Notification App Info")
-    return SYNCED_NOTIFICATION_APP_INFO;
-  else if (model_type_string == "Device Info")
-    return DEVICE_INFO;
-  else if (model_type_string == "Experiments")
-    return EXPERIMENTS;
-  else if (model_type_string == "Priority Preferences")
-    return PRIORITY_PREFERENCES;
-  else if (model_type_string == "Dictionary")
-    return DICTIONARY;
-  else if (model_type_string == "Favicon Images")
-    return FAVICON_IMAGES;
-  else if (model_type_string == "Favicon Tracking")
-    return FAVICON_TRACKING;
-  else if (model_type_string == "Managed User Settings")
-    return SUPERVISED_USER_SETTINGS;
-  else if (model_type_string == "Managed Users")
-    return SUPERVISED_USERS;
-  else if (model_type_string == "Managed User Shared Settings")
-    return SUPERVISED_USER_SHARED_SETTINGS;
-  else if (model_type_string == "Managed User Whitelists")
-    return SUPERVISED_USER_WHITELISTS;
-  else if (model_type_string == "Articles")
-    return ARTICLES;
-  else if (model_type_string == "WiFi Credentials")
-    return WIFI_CREDENTIALS;
-  else if (model_type_string == "Tabs")
-    return PROXY_TABS;
-  else
-    NOTREACHED() << "No known model type corresponding to "
-                 << model_type_string << ".";
+  if (model_type_string != "Unspecified" &&
+      model_type_string != "Top Level Folder") {
+    for (size_t i = 0; i < arraysize(kModelTypeInfoMap); ++i) {
+      if (kModelTypeInfoMap[i].model_type_string == model_type_string)
+        return kModelTypeInfoMap[i].model_type;
+    }
+  }
+  NOTREACHED() << "No known model type corresponding to " << model_type_string
+               << ".";
   return UNSPECIFIED;
 }
 
@@ -860,229 +686,19 @@ ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
 // NOTE: Proxy types should return empty strings (so that we don't NOTREACHED
 // in tests when we verify they have no root node).
 std::string ModelTypeToRootTag(ModelType type) {
-  switch (type) {
-    case BOOKMARKS:
-      return "google_chrome_bookmarks";
-    case PREFERENCES:
-      return "google_chrome_preferences";
-    case PASSWORDS:
-      return "google_chrome_passwords";
-    case AUTOFILL:
-      return "google_chrome_autofill";
-    case THEMES:
-      return "google_chrome_themes";
-    case TYPED_URLS:
-      return "google_chrome_typed_urls";
-    case EXTENSIONS:
-      return "google_chrome_extensions";
-    case NIGORI:
-      return "google_chrome_nigori";
-    case SEARCH_ENGINES:
-      return "google_chrome_search_engines";
-    case SESSIONS:
-      return "google_chrome_sessions";
-    case APPS:
-      return "google_chrome_apps";
-    case APP_LIST:
-      return "google_chrome_app_list";
-    case AUTOFILL_PROFILE:
-      return "google_chrome_autofill_profiles";
-    case AUTOFILL_WALLET_DATA:
-      return "google_chrome_autofill_wallet";
-    case AUTOFILL_WALLET_METADATA:
-      return "google_chrome_autofill_wallet_metadata";
-    case APP_SETTINGS:
-      return "google_chrome_app_settings";
-    case EXTENSION_SETTINGS:
-      return "google_chrome_extension_settings";
-    case APP_NOTIFICATIONS:
-      return "google_chrome_app_notifications";
-    case HISTORY_DELETE_DIRECTIVES:
-      return "google_chrome_history_delete_directives";
-    case SYNCED_NOTIFICATIONS:
-      return "google_chrome_synced_notifications";
-    case SYNCED_NOTIFICATION_APP_INFO:
-      return "google_chrome_synced_notification_app_info";
-    case DEVICE_INFO:
-      return "google_chrome_device_info";
-    case EXPERIMENTS:
-      return "google_chrome_experiments";
-    case PRIORITY_PREFERENCES:
-      return "google_chrome_priority_preferences";
-    case DICTIONARY:
-      return "google_chrome_dictionary";
-    case FAVICON_IMAGES:
-      return "google_chrome_favicon_images";
-    case FAVICON_TRACKING:
-      return "google_chrome_favicon_tracking";
-    case SUPERVISED_USER_SETTINGS:
-      return "google_chrome_managed_user_settings";
-    case SUPERVISED_USERS:
-      return "google_chrome_managed_users";
-    case SUPERVISED_USER_SHARED_SETTINGS:
-      return "google_chrome_managed_user_shared_settings";
-    case SUPERVISED_USER_WHITELISTS:
-      return "google_chrome_managed_user_whitelists";
-    case ARTICLES:
-      return "google_chrome_articles";
-    case WIFI_CREDENTIALS:
-      return "google_chrome_wifi_credentials";
-    case PROXY_TABS:
-      return std::string();
-    default:
-      break;
-  }
+  if (IsProxyType(type))
+    return std::string();
+  if (IsRealDataType(type))
+    return "google_chrome_" + std::string(kModelTypeInfoMap[type].root_tag);
   NOTREACHED() << "No known extension for model type.";
   return "INVALID";
 }
 
-// TODO(akalin): Figure out a better way to do these mappings.
-// Note: Do not include proxy types in this list. They should never receive
-// or trigger notifications.
-namespace {
-const char kBookmarkNotificationType[] = "BOOKMARK";
-const char kPreferenceNotificationType[] = "PREFERENCE";
-const char kPasswordNotificationType[] = "PASSWORD";
-const char kAutofillNotificationType[] = "AUTOFILL";
-const char kThemeNotificationType[] = "THEME";
-const char kTypedUrlNotificationType[] = "TYPED_URL";
-const char kExtensionNotificationType[] = "EXTENSION";
-const char kExtensionSettingNotificationType[] = "EXTENSION_SETTING";
-const char kNigoriNotificationType[] = "NIGORI";
-const char kAppSettingNotificationType[] = "APP_SETTING";
-const char kAppNotificationType[] = "APP";
-const char kAppListNotificationType[] = "APP_LIST";
-const char kSearchEngineNotificationType[] = "SEARCH_ENGINE";
-const char kSessionNotificationType[] = "SESSION";
-const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
-const char kAutofillWalletMetadataNotificationType[] =
-    "AUTOFILL_WALLET_METADATA";
-const char kAutofillWalletNotificationType[] = "AUTOFILL_WALLET";
-const char kAppNotificationNotificationType[] = "APP_NOTIFICATION";
-const char kHistoryDeleteDirectiveNotificationType[] =
-    "HISTORY_DELETE_DIRECTIVE";
-const char kSyncedNotificationType[] = "SYNCED_NOTIFICATION";
-const char kSyncedNotificationAppInfoType[] = "SYNCED_NOTIFICATION_APP_INFO";
-const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
-const char kExperimentsNotificationType[] = "EXPERIMENTS";
-const char kPriorityPreferenceNotificationType[] = "PRIORITY_PREFERENCE";
-const char kDictionaryNotificationType[] = "DICTIONARY";
-const char kFaviconImageNotificationType[] = "FAVICON_IMAGE";
-const char kFaviconTrackingNotificationType[] = "FAVICON_TRACKING";
-const char kSupervisedUserSettingNotificationType[] = "MANAGED_USER_SETTING";
-const char kSupervisedUserNotificationType[] = "MANAGED_USER";
-const char kSupervisedUserSharedSettingNotificationType[] =
-    "MANAGED_USER_SHARED_SETTING";
-const char kSupervisedUserWhitelistNotificationType[] =
-    "MANAGED_USER_WHITELIST";
-const char kArticleNotificationType[] = "ARTICLE";
-const char kWifiCredentialNotificationType[] = "WIFI_CREDENTIAL";
-}  // namespace
-
 bool RealModelTypeToNotificationType(ModelType model_type,
                                      std::string* notification_type) {
-  switch (model_type) {
-    case BOOKMARKS:
-      *notification_type = kBookmarkNotificationType;
-      return true;
-    case PREFERENCES:
-      *notification_type = kPreferenceNotificationType;
-      return true;
-    case PASSWORDS:
-      *notification_type = kPasswordNotificationType;
-      return true;
-    case AUTOFILL:
-      *notification_type = kAutofillNotificationType;
-      return true;
-    case THEMES:
-      *notification_type = kThemeNotificationType;
-      return true;
-    case TYPED_URLS:
-      *notification_type = kTypedUrlNotificationType;
-      return true;
-    case EXTENSIONS:
-      *notification_type = kExtensionNotificationType;
-      return true;
-    case NIGORI:
-      *notification_type = kNigoriNotificationType;
-      return true;
-    case APP_SETTINGS:
-      *notification_type = kAppSettingNotificationType;
-      return true;
-    case APPS:
-      *notification_type = kAppNotificationType;
-      return true;
-    case APP_LIST:
-      *notification_type = kAppListNotificationType;
-      return true;
-    case SEARCH_ENGINES:
-      *notification_type = kSearchEngineNotificationType;
-      return true;
-    case SESSIONS:
-      *notification_type = kSessionNotificationType;
-      return true;
-    case AUTOFILL_PROFILE:
-      *notification_type = kAutofillProfileNotificationType;
-      return true;
-    case AUTOFILL_WALLET_DATA:
-      *notification_type = kAutofillWalletNotificationType;
-      return true;
-    case AUTOFILL_WALLET_METADATA:
-      *notification_type = kAutofillWalletMetadataNotificationType;
-      return true;
-    case EXTENSION_SETTINGS:
-      *notification_type = kExtensionSettingNotificationType;
-      return true;
-    case APP_NOTIFICATIONS:
-      *notification_type = kAppNotificationNotificationType;
-      return true;
-    case HISTORY_DELETE_DIRECTIVES:
-      *notification_type = kHistoryDeleteDirectiveNotificationType;
-      return true;
-    case SYNCED_NOTIFICATIONS:
-      *notification_type = kSyncedNotificationType;
-      return true;
-    case SYNCED_NOTIFICATION_APP_INFO:
-      *notification_type = kSyncedNotificationAppInfoType;
-      return true;
-    case DEVICE_INFO:
-      *notification_type = kDeviceInfoNotificationType;
-      return true;
-    case EXPERIMENTS:
-      *notification_type = kExperimentsNotificationType;
-      return true;
-    case PRIORITY_PREFERENCES:
-      *notification_type = kPriorityPreferenceNotificationType;
-      return true;
-    case DICTIONARY:
-      *notification_type = kDictionaryNotificationType;
-      return true;
-    case FAVICON_IMAGES:
-      *notification_type = kFaviconImageNotificationType;
-      return true;
-    case FAVICON_TRACKING:
-      *notification_type = kFaviconTrackingNotificationType;
-      return true;
-    case SUPERVISED_USER_SETTINGS:
-      *notification_type = kSupervisedUserSettingNotificationType;
-      return true;
-    case SUPERVISED_USERS:
-      *notification_type = kSupervisedUserNotificationType;
-      return true;
-    case SUPERVISED_USER_SHARED_SETTINGS:
-      *notification_type = kSupervisedUserSharedSettingNotificationType;
-      return true;
-    case SUPERVISED_USER_WHITELISTS:
-      *notification_type = kSupervisedUserWhitelistNotificationType;
-      return true;
-    case ARTICLES:
-      *notification_type = kArticleNotificationType;
-      return true;
-    case WIFI_CREDENTIALS:
-      *notification_type = kWifiCredentialNotificationType;
-      return true;
-    default:
-      break;
+  if (ProtocolTypes().Has(model_type)) {
+    *notification_type = kModelTypeInfoMap[model_type].notification_type;
+    return true;
   }
   notification_type->clear();
   return false;
@@ -1090,106 +706,15 @@ bool RealModelTypeToNotificationType(ModelType model_type,
 
 bool NotificationTypeToRealModelType(const std::string& notification_type,
                                      ModelType* model_type) {
-  if (notification_type == kBookmarkNotificationType) {
-    *model_type = BOOKMARKS;
-    return true;
-  } else if (notification_type == kPreferenceNotificationType) {
-    *model_type = PREFERENCES;
-    return true;
-  } else if (notification_type == kPasswordNotificationType) {
-    *model_type = PASSWORDS;
-    return true;
-  } else if (notification_type == kAutofillNotificationType) {
-    *model_type = AUTOFILL;
-    return true;
-  } else if (notification_type == kThemeNotificationType) {
-    *model_type = THEMES;
-    return true;
-  } else if (notification_type == kTypedUrlNotificationType) {
-    *model_type = TYPED_URLS;
-    return true;
-  } else if (notification_type == kExtensionNotificationType) {
-    *model_type = EXTENSIONS;
-    return true;
-  } else if (notification_type == kNigoriNotificationType) {
-    *model_type = NIGORI;
-    return true;
-  } else if (notification_type == kAppNotificationType) {
-    *model_type = APPS;
-    return true;
-  } else if (notification_type == kAppListNotificationType) {
-    *model_type = APP_LIST;
-    return true;
-  } else if (notification_type == kSearchEngineNotificationType) {
-    *model_type = SEARCH_ENGINES;
-    return true;
-  } else if (notification_type == kSessionNotificationType) {
-    *model_type = SESSIONS;
-    return true;
-  } else if (notification_type == kAutofillProfileNotificationType) {
-    *model_type = AUTOFILL_PROFILE;
-    return true;
-  } else if (notification_type == kAutofillWalletNotificationType) {
-    *model_type = AUTOFILL_WALLET_DATA;
-    return true;
-  } else if (notification_type == kAutofillWalletMetadataNotificationType) {
-    *model_type = AUTOFILL_WALLET_METADATA;
-    return true;
-  } else if (notification_type == kAppSettingNotificationType) {
-    *model_type = APP_SETTINGS;
-    return true;
-  } else if (notification_type == kExtensionSettingNotificationType) {
-    *model_type = EXTENSION_SETTINGS;
-    return true;
-  } else if (notification_type == kAppNotificationNotificationType) {
-    *model_type = APP_NOTIFICATIONS;
-    return true;
-  } else if (notification_type == kHistoryDeleteDirectiveNotificationType) {
-    *model_type = HISTORY_DELETE_DIRECTIVES;
-    return true;
-  } else if (notification_type == kSyncedNotificationType) {
-    *model_type = SYNCED_NOTIFICATIONS;
-    return true;
-  } else if (notification_type == kSyncedNotificationAppInfoType) {
-    *model_type = SYNCED_NOTIFICATION_APP_INFO;
-    return true;
-  } else if (notification_type == kDeviceInfoNotificationType) {
-    *model_type = DEVICE_INFO;
-    return true;
-  } else if (notification_type == kExperimentsNotificationType) {
-    *model_type = EXPERIMENTS;
-    return true;
-  } else if (notification_type == kPriorityPreferenceNotificationType) {
-    *model_type = PRIORITY_PREFERENCES;
-    return true;
-  } else if (notification_type == kDictionaryNotificationType) {
-    *model_type = DICTIONARY;
-    return true;
-  } else if (notification_type == kFaviconImageNotificationType) {
-    *model_type = FAVICON_IMAGES;
-    return true;
-  } else if (notification_type == kFaviconTrackingNotificationType) {
-    *model_type = FAVICON_TRACKING;
-    return true;
-  } else if (notification_type == kSupervisedUserSettingNotificationType) {
-    *model_type = SUPERVISED_USER_SETTINGS;
-    return true;
-  } else if (notification_type == kSupervisedUserNotificationType) {
-    *model_type = SUPERVISED_USERS;
-    return true;
-  } else if (notification_type ==
-      kSupervisedUserSharedSettingNotificationType) {
-    *model_type = SUPERVISED_USER_SHARED_SETTINGS;
-    return true;
-  } else if (notification_type == kSupervisedUserWhitelistNotificationType) {
-    *model_type = SUPERVISED_USER_WHITELISTS;
-    return true;
-  } else if (notification_type == kArticleNotificationType) {
-    *model_type = ARTICLES;
-    return true;
-  } else if (notification_type == kWifiCredentialNotificationType) {
-    *model_type = WIFI_CREDENTIALS;
-    return true;
+  if (notification_type.empty()) {
+    *model_type = UNSPECIFIED;
+    return false;
+  }
+  for (size_t i = 0; i < arraysize(kModelTypeInfoMap); ++i) {
+    if (kModelTypeInfoMap[i].notification_type == notification_type) {
+      *model_type = kModelTypeInfoMap[i].model_type;
+      return true;
+    }
   }
   *model_type = UNSPECIFIED;
   return false;

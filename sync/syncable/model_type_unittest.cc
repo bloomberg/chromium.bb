@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "sync/protocol/sync.pb.h"
@@ -141,6 +142,53 @@ TEST_F(ModelTypeTest, DefaultFieldValues) {
     EXPECT_TRUE(from_string.IsInitialized());
 
     EXPECT_EQ(it.Get(), syncer::GetModelTypeFromSpecifics(from_string));
+  }
+}
+
+TEST_F(ModelTypeTest, ModelTypeToRootTagValues) {
+  ModelTypeSet all_types = ModelTypeSet::All();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    ModelType model_type = it.Get();
+    std::string root_tag = ModelTypeToRootTag(model_type);
+    if (IsProxyType(model_type)) {
+      EXPECT_EQ(root_tag, std::string());
+    } else if (IsRealDataType(model_type)) {
+      EXPECT_TRUE(base::StartsWith(root_tag, "google_chrome_",
+                                   base::CompareCase::INSENSITIVE_ASCII));
+    } else {
+      EXPECT_EQ(root_tag, "INVALID");
+    }
+  }
+}
+
+TEST_F(ModelTypeTest, ModelTypeStringMapping) {
+  ModelTypeSet all_types = ModelTypeSet::All();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    ModelType model_type = it.Get();
+    const char* model_type_string = ModelTypeToString(model_type);
+    ModelType converted_model_type = ModelTypeFromString(model_type_string);
+    if (IsRealDataType(model_type))
+      EXPECT_EQ(converted_model_type, model_type);
+    else
+      EXPECT_EQ(converted_model_type, UNSPECIFIED);
+  }
+}
+
+TEST_F(ModelTypeTest, ModelTypeNotificationTypeMapping) {
+  ModelTypeSet all_types = ModelTypeSet::All();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    ModelType model_type = it.Get();
+    std::string notification_type;
+    bool ret = RealModelTypeToNotificationType(model_type, &notification_type);
+    if (ret) {
+      ModelType notified_model_type;
+      EXPECT_TRUE(NotificationTypeToRealModelType(notification_type,
+                                                  &notified_model_type));
+      EXPECT_EQ(notified_model_type, model_type);
+    } else {
+      EXPECT_FALSE(ProtocolTypes().Has(model_type));
+      EXPECT_TRUE(notification_type.empty());
+    }
   }
 }
 
