@@ -76,6 +76,7 @@ public class NewTabPageView extends FrameLayout
         "sm-g901", // Galaxy S5 LTE-A
         "sm-g906", // Galaxy S5
         "scl23",   // Galaxy S5
+        "sm-n920", // Galaxy Note 5
         "sm-n915", // Galaxy Note Edge
         "scl24",   // Galaxy Note Edge
         "sm-n916", // Galaxy Note 4
@@ -372,7 +373,12 @@ public class NewTabPageView extends FrameLayout
         optOutText.setMovementMethod(LinkMovementMethod.getInstance());
 
         ImageView illustration = (ImageView) mOptOutView.findViewById(R.id.tabs_moved_illustration);
-        illustration.setImageResource(getTabsMovedIllustration());
+        int resourceId = getTabsMovedIllustration();
+        if (resourceId != 0) {
+            illustration.setImageResource(getTabsMovedIllustration());
+        } else {
+            illustration.setImageDrawable(null);
+        }
 
         mOptOutView.setVisibility(View.VISIBLE);
         mMostVisitedLayout.setVisibility(View.GONE);
