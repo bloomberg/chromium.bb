@@ -547,7 +547,6 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyGridRowGap: return 512;
     case CSSPropertyGridGap: return 513;
     case CSSPropertyFontFeatureSettings: return 514;
-    case CSSPropertyVariable: return 515;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -564,7 +563,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 515; }
+static int maximumCSSSampleId() { return 514; }
 
 void UseCounter::muteForInspector()
 {

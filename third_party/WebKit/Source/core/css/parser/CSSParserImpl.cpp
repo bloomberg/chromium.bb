@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/css/parser/CSSParserImpl.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
@@ -21,7 +20,6 @@
 #include "core/css/parser/CSSSelectorParser.h"
 #include "core/css/parser/CSSSupportsParser.h"
 #include "core/css/parser/CSSTokenizer.h"
-#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/parser/MediaQueryParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -58,13 +56,10 @@ static inline void filterProperties(bool important, const WillBeHeapVector<CSSPr
         const CSSProperty& property = input[i];
         if (property.isImportant() != important)
             continue;
-        const unsigned propertyIDIndex = property.id();
-        // All custom properties use the same CSSPropertyID so we can't remove repeated definitions
-        if (property.id() != CSSPropertyVariable) {
-            if (seenProperties.get(propertyIDIndex))
-                continue;
-            seenProperties.set(propertyIDIndex);
-        }
+        const unsigned propertyIDIndex = property.id() - firstCSSProperty;
+        if (seenProperties.get(propertyIDIndex))
+            continue;
+        seenProperties.set(propertyIDIndex);
         output[--unusedEntries] = property;
     }
 }
@@ -677,8 +672,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     CSSParserTokenRange rangeCopy = range; // For inspector callbacks
 
     ASSERT(range.peek().type() == IdentToken);
-    const CSSParserToken& token = range.consumeIncludingWhitespace();
-    CSSPropertyID unresolvedProperty = token.parseAsUnresolvedCSSPropertyID();
+    CSSPropertyID unresolvedProperty = range.consumeIncludingWhitespace().parseAsUnresolvedCSSPropertyID();
     if (range.consume().type() != ColonToken)
         return; // Parse error
 
@@ -695,11 +689,6 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
             important = true;
             declarationValueEnd = last;
         }
-    }
-    if (RuntimeEnabledFeatures::cssVariablesEnabled() && unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
-        AtomicString variableName = token.value();
-        consumeVariableDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
-        return;
     }
 
     if (important && (ruleType == StyleRule::FontFace || ruleType == StyleRule::Keyframes))
@@ -719,12 +708,6 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
         return;
 
     consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
-}
-
-void CSSParserImpl::consumeVariableDeclarationValue(CSSParserTokenRange range, const AtomicString& variableName, bool important)
-{
-    if (RefPtrWillBeRawPtr<CSSCustomPropertyDeclaration> value = CSSVariableParser::parseDeclarationValue(variableName, range))
-        m_parsedProperties.append(CSSProperty(CSSPropertyVariable, value.release(), important));
 }
 
 void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID unresolvedProperty, bool important, StyleRule::Type ruleType)

@@ -2683,10 +2683,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             list->append(cssValuePool().createValue(style.scale()->z(), CSSPrimitiveValue::UnitType::Number));
         return list.release();
     }
-    case CSSPropertyVariable:
-        // TODO(leviw): We should have a way to retrive variables here.
-        ASSERT_NOT_REACHED();
-        return nullptr;
     case CSSPropertyAll:
         return nullptr;
     default:

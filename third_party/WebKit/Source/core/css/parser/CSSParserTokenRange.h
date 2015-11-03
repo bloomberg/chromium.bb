@@ -66,6 +66,7 @@ public:
 
     String serialize() const;
 
+    // This is only for the inspector integration
     const CSSParserToken* begin() const { return m_first; }
 
     static void initStaticEOFToken();
