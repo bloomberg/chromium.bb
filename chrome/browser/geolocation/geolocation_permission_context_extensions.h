@@ -26,14 +26,14 @@ class GeolocationPermissionContextExtensions {
   // Returns true if the permission request was handled. In which case,
   // |permission_set| will be set to true if the permission changed, and the
   // permission has been set to |new_permission|.
-  bool RequestPermission(content::WebContents* web_contents,
-                         const PermissionRequestID& request_id,
-                         int bridge_id,
-                         const GURL& requesting_frame,
-                         bool user_gesture,
-                         const base::Callback<void(ContentSetting)>& callback,
-                         bool* permission_set,
-                         bool* new_permission);
+  bool DecidePermission(content::WebContents* web_contents,
+                        const PermissionRequestID& request_id,
+                        int bridge_id,
+                        const GURL& requesting_frame,
+                        bool user_gesture,
+                        const base::Callback<void(ContentSetting)>& callback,
+                        bool* permission_set,
+                        bool* new_permission);
 
   // Returns true if the cancellation request was handled.
   bool CancelPermissionRequest(content::WebContents* web_contents,

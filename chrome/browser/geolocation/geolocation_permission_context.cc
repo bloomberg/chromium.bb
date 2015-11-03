@@ -23,24 +23,25 @@ GeolocationPermissionContext::GeolocationPermissionContext(
 GeolocationPermissionContext::~GeolocationPermissionContext() {
 }
 
-void GeolocationPermissionContext::RequestPermission(
+void GeolocationPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
-    const GURL& requesting_frame_origin,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   bool permission_set;
   bool new_permission;
-  if (extensions_context_.RequestPermission(
-      web_contents, id, id.request_id(), requesting_frame_origin, user_gesture,
+  if (extensions_context_.DecidePermission(
+      web_contents, id, id.request_id(), requesting_origin, user_gesture,
       callback, &permission_set, &new_permission)) {
     if (permission_set) {
       ContentSetting content_setting =
           new_permission ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
       NotifyPermissionSet(id,
-                          requesting_frame_origin,
+                          requesting_origin,
                           web_contents->GetLastCommittedURL().GetOrigin(),
                           callback,
                           false /* persist */,
@@ -49,10 +50,12 @@ void GeolocationPermissionContext::RequestPermission(
     return;
   }
 
-  PermissionContextBase::RequestPermission(web_contents, id,
-                                           requesting_frame_origin,
-                                           user_gesture,
-                                           callback);
+  PermissionContextBase::DecidePermission(web_contents,
+                                          id,
+                                          requesting_origin,
+                                          embedding_origin,
+                                          user_gesture,
+                                          callback);
 }
 
 void GeolocationPermissionContext::CancelPermissionRequest(

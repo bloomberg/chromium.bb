@@ -21,14 +21,15 @@ class GeolocationPermissionContext  : public PermissionContextBase {
   explicit GeolocationPermissionContext(Profile* profile);
   ~GeolocationPermissionContext() override;
 
-  // In addition to the base class flow the geolocation permission request
+  // In addition to the base class flow the geolocation permission decision
   // checks that it is only code from valid iframes.
   // It also adds special logic when called through an extension.
-  void RequestPermission(content::WebContents* web_contents,
-                         const PermissionRequestID& id,
-                         const GURL& requesting_frame_origin,
-                         bool user_gesture,
-                         const BrowserPermissionCallback& callback) override;
+  void DecidePermission(content::WebContents* web_contents,
+                        const PermissionRequestID& id,
+                        const GURL& requesting_origin,
+                        const GURL& embedding_origin,
+                        bool user_gesture,
+                        const BrowserPermissionCallback& callback) override;
 
   // Adds special logic when called through an extension.
   void CancelPermissionRequest(content::WebContents* web_contents,

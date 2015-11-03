@@ -41,7 +41,7 @@ GeolocationPermissionContextExtensions::
 ~GeolocationPermissionContextExtensions() {
 }
 
-bool GeolocationPermissionContextExtensions::RequestPermission(
+bool GeolocationPermissionContextExtensions::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& request_id,
     int bridge_id,
