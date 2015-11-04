@@ -960,10 +960,6 @@ int SSLClientSocketOpenSSL::Init() {
   if (cert_verifier_->SupportsOCSPStapling())
     SSL_enable_ocsp_stapling(ssl_);
 
-  // By default, renegotiations are rejected. After the initial handshake
-  // completes, some application protocols may re-enable it.
-  SSL_set_reject_peer_renegotiations(ssl_, 1);
-
   return OK;
 }
 
@@ -1136,7 +1132,7 @@ int SSLClientSocketOpenSSL::DoHandshakeComplete(int result) {
   set_signed_cert_timestamps_received(sct_list_len != 0);
 
   if (IsRenegotiationAllowed())
-    SSL_set_reject_peer_renegotiations(ssl_, 0);
+    SSL_set_renegotiate_mode(ssl_, ssl_renegotiate_freely);
 
   // Verify the certificate.
   UpdateServerCert();
