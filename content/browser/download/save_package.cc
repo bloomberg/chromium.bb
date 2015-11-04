@@ -1254,7 +1254,8 @@ SaveItem* SavePackage::FindOrCreatePendingSaveItem(
   if (it != url_to_save_item_.end()) {
     save_item = it->second;
   } else {
-    save_item = new SaveItem(url, referrer, this, save_source);
+    Referrer sanitized_referrer = Referrer::SanitizeForRequest(url, referrer);
+    save_item = new SaveItem(url, sanitized_referrer, this, save_source);
     waiting_item_queue_.push_back(save_item);
     url_to_save_item_[url] = save_item;
   }
