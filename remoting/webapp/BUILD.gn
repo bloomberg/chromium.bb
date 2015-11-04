@@ -35,12 +35,8 @@ action("credits") {
 desktop_remoting_webapp("webapp") {
   webapp_type = "desktop"
   output_dir = "$root_build_dir/remoting/remoting-webapp.v2"
-  zip_path = "$root_build_dir/remoting/remoting-webapp.v2.zip"
-  extra_files = [
-    "crd/remoting_client_pnacl.nmf.jinja2",
-    # TODO(garykac): Get correct path to this.
-    #"<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe",
-  ]
+  zip_path = "$root_build_dir/remoting-webapp.v2.zip"
+  extra_files = [ "crd/remoting_client_pnacl.nmf.jinja2" ]
 }
 
 app_remoting_webapp("ar_sample_app") {

@@ -2,17 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/allocator.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/util/version.gni")
 import("//remoting/remoting_host.gni")
 import("//remoting/remoting_locales.gni")
+import("//remoting/remoting_options.gni")
 import("//remoting/remoting_srcs.gni")
 import("//remoting/remoting_version.gni")
 import("//remoting/tools/build/remoting_localize.gni")
 
 # GYP version: remoting/remoting_host:remoting_host_credits
 action("credits") {
-  about_credits_file = "$target_gen_dir/CREDITS.txt"
+  # We put this in $root_build_dir/gen/remoting instead of
+  # $root_build_dir/gen/remoting/host (target_gen_dir) for
+  # compatibility w/ GYP, since the installer needs the file to
+  # be at the same location.
+  about_credits_file = "$root_build_dir/gen/remoting/CREDITS.txt"
   script = "//tools/licenses.py"
 
   inputs = [
@@ -419,6 +426,52 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         deps += [ "//third_party/libjingle:libjingle_webrtc" ]
       }
     }
+
+    action_foreach("remoting_native_messaging_manifests") {
+      if (is_mac) {
+        assert(false, "not implemented on mac yet")
+      } else if (is_win) {
+        assert(false, "not implemented on win yet")
+      } else {
+        me2me_host_path =
+            "/opt/google/chrome-remote-desktop/native-messaging-host"
+        it2me_host_path =
+            "/opt/google/chrome-remote-desktop/remote-assistance-host"
+      }
+
+      script = "../tools/build/remoting_localize.py"
+
+      sources = [
+        "it2me/com.google.chrome.remote_assistance.json.jinja2",
+        "setup/com.google.chrome.remote_desktop.json.jinja2",
+      ]
+
+      inputs = [
+        branding_path,
+      ]
+
+      outputs = [
+        "$root_build_dir/remoting/{{source_name_part}}",
+      ]
+
+      args = [
+        "--define",
+        "ME2ME_HOST_PATH=$me2me_host_path",
+        "--define",
+        "IT2ME_HOST_PATH=$it2me_host_path",
+        "--variables",
+        branding_path,
+        "--template",
+        "{{source}}",
+        "--locale_output",
+        "remoting/{{source_name_part}}",
+        "en",
+      ]
+    }
+
+    # TODO(crbug.com/512899) This still needs to be ported to GN.
+    group("remoting_infoplist_strings") {
+    }
   }
 
   if (enable_me2me_host) {
@@ -476,6 +529,134 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
           ":credits",
           "//build/config/sanitizers:deps",
         ]
+      }
+
+      executable("native_messaging_host") {
+        sources = [
+          "setup/me2me_native_messaging_host_entry_point.cc",
+          "setup/me2me_native_messaging_host_main.cc",
+          "setup/me2me_native_messaging_host_main.h",
+        ]
+
+        deps = [
+          ":remoting_infoplist_strings",
+          "//base",
+          "//remoting/base:breakpad",
+          "//remoting/host",
+          "//remoting/host/setup",
+          "//remoting/host/native_messaging",
+        ]
+
+        configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+        # The |major|, |build| and |patch| versions are inherited from Chrome.
+        # Since Chrome's |minor| version is always '0', we replace it with a
+        # Chromoting-specific patch version.
+        defines = [ "VERSION=" + "$chrome_version_major" + "." +
+                    "$remoting_version_patch" + "." + "$chrome_version_build" +
+                    "." + "$chrome_version_patch" ]
+
+        if (is_linux && use_allocator != "none") {
+          deps += [ "//base/allocator" ]
+        } else if (is_mac || is_win) {
+          assert(false, "not implemented on mac or win yet")
+        }
+      }
+    }
+
+    if (is_chrome_branded && enable_me2me_host && !is_chromeos) {
+      # TODO(GYP): add support for archive_chromoting_tests variable?
+
+      import("//build/config/zip.gni")
+
+      build_deb_script = "installer/linux/build_deb.py"
+      deb_filename =
+          "$root_build_dir/" + exec_script(build_deb_script,
+                                           [
+                                             "-p",
+                                             "-s",
+                                             rebase_path("//"),
+                                           ],
+                                           "string",
+                                           [ "installer/linux/build-deb.sh" ])
+      changes_filename =
+          "$root_build_dir/" + get_path_info(deb_filename, "name") + ".changes"
+
+      packaging_outputs = [
+        deb_filename,
+        changes_filename,
+
+        # TODO(GYP): These files will only be present if we're stripping
+        # binaries. We need to support linux_dump_symbols for this.
+        #"$root_build_dir/remoting_me2me_host.debug",
+        #"$root_build_dir/remoting_start_host.debug",
+        #"$root_build_dir/native_messaging_host.debug",
+        #"$root_build_dir/remote_assistance_host.debug",
+      ]
+
+      zip("remoting_me2me_host_archive") {
+        # Store the installer package(s) into a zip file so there is a
+        # consistent filename to reference for build archiving (i.e. in
+        # FILES.cfg). This also avoids possible conflicts with "wildcard"
+        # package handling in other build/signing scripts.
+        inputs = packaging_outputs
+        output = "$root_build_dir/remoting-me2me-host-linux.zip"
+        deps = [
+          ":remoting_me2me_host_copy",
+        ]
+      }
+
+      copy("remoting_me2me_host_copy") {
+        # Copy the debian package file, which has version info in it,
+        # to a consistewnt filename for use on Chromoting swarming bots.
+        sources = [
+          deb_filename,
+        ]
+        outputs = [
+          "$root_build_dir/remoting-me2me-host.deb",
+        ]
+        public_deps = [
+          ":remoting_me2me_host_deb_installer",
+        ]
+      }
+
+      action("remoting_me2me_host_deb_installer") {
+        script = build_deb_script
+        inputs = [
+          build_deb_script,
+          "installer/linux/Makefile",
+          "installer/linux/debian/chrome-remote-desktop.init",
+          "installer/linux/debian/chrome-remote-desktop.pam",
+          "installer/linux/debian/compat",
+          "installer/linux/debian/control",
+          "installer/linux/debian/copyright",
+          "installer/linux/debian/postinst",
+          "installer/linux/debian/preinst",
+          "installer/linux/debian/rules",
+        ]
+        outputs = packaging_outputs
+        sources = [
+          "installer/linux/build-deb.sh",
+        ]
+        args = [
+          "-s",
+          rebase_path("//"),
+          "-o",
+          rebase_path("$root_build_dir"),
+        ]
+
+        deps = [
+          ":native_messaging_host",
+          ":remoting_me2me_host",
+          ":remoting_native_messaging_manifests",
+          ":remoting_start_host",
+          "//remoting/host/it2me:remote_assistance_host",
+          "//remoting/resources",
+          "//third_party/icu:icudata",
+        ]
+      }
+    } else {
+      group("remoting_me2me_host_archive") {
       }
     }
   }

@@ -17,10 +17,14 @@
 # all values we need at once.
 _version_dictionary_template = "full = \"@MAJOR@.@MINOR@.@BUILD@.@PATCH@\" " +
                                "major = \"@MAJOR@\" minor = \"@MINOR@\" " +
-                               "build = \"@BUILD@\" patch = \"@PATCH@\""
+                               "build = \"@BUILD@\" patch = \"@PATCH@\" " +
+                               "remoting = \"@REMOTING_PATCH\" "
 
 # The file containing the Chrome version number.
 chrome_version_file = "//chrome/VERSION"
+
+# The file containing the Chromoting version number.
+remoting_version_file = "//remoting/VERSION"
 
 _result = exec_script("version.py",
                       [
@@ -40,3 +44,4 @@ chrome_version_major = _result.major
 chrome_version_minor = _result.minor
 chrome_version_build = _result.build
 chrome_version_patch = _result.patch
+remoting_version_patch = _result.remoting

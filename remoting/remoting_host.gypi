@@ -265,6 +265,7 @@
 
         # Generates native messaging manifest files.
         {
+          # GN: //remoting/host:remoting_native_messaging_manifests
           'target_name': 'remoting_native_messaging_manifests',
           'type': 'none',
           'conditions': [
@@ -340,6 +341,7 @@
           ],
         },  # end of target 'remoting_start_host'
         {
+          # GN: //remoting/host:remoting_infoplist_strings
           'target_name': 'remoting_infoplist_strings',
           'type': 'none',
           'dependencies': [
@@ -552,6 +554,7 @@
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host'
         {
+          # GN: //remoting/host:native_messaging_host
           'target_name': 'remoting_me2me_native_messaging_host',
           'type': 'executable',
           'product_name': 'native_messaging_host',
@@ -644,6 +647,7 @@
         ['chromeos==0', {
           'targets': [
             {
+              # GN: //remoting/host/it2me:remote_assistance_host
               'target_name': 'remoting_it2me_native_messaging_host',
               'type': 'executable',
               'product_name': 'remote_assistance_host',

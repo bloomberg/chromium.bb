@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
+
 # These arguments can be overridden from the command line (see "gn help args").
 declare_args() {
   # Set this to run the jscompile checks after building the webapp.
@@ -26,7 +28,11 @@ if (is_win) {
 
 remoting_rdp_session = 1
 
-branding_path = "../remoting/branding_<(branding)"
+if (is_chrome_branded) {
+  branding_path = rebase_path("//remoting/branding_Chrome", root_build_dir)
+} else {
+  branding_path = rebase_path("//remoting/branding_Chromium", root_build_dir)
+}
 
 # The ar_service_environment variable is used to define the target
 # environment for the app being built.
