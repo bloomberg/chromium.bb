@@ -194,6 +194,7 @@ PYTHON_UNIT_TEST_SUITES = {
     'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android', 'gyp'),
     'test_modules': [
       'java_cpp_enum_tests',
+      'java_google_api_keys_tests',
     ]
   },
 }
