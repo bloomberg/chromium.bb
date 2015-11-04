@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -229,13 +230,27 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
             event_store()->GetHttpProxyList());
   EXPECT_EQ("baz.com:80", event_store()->GetHttpsProxyList());
 
+  configurator.Disable();
+  EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
+  EXPECT_EQ(std::string(), event_store()->GetHttpsProxyList());
+}
+
+TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
+  DataReductionProxyConfigurator configurator(net_log(), event_creator());
+  std::vector<net::ProxyServer> http_proxies;
+  std::vector<net::ProxyServer> https_proxies;
+  configurator.Enable(false, http_proxies, https_proxies);
+
   scoped_ptr<base::DictionaryValue> bypass_event(new base::DictionaryValue());
   scoped_ptr<base::DictionaryValue> bypass_params(new base::DictionaryValue());
   scoped_ptr<base::DictionaryValue> sanitized_event(
       new base::DictionaryValue());
 
-  bypass_event->SetString("time", "12/31/2014 23:58");
-  sanitized_event->SetString("bypass_time", "12/31/2014 23:58");
+  // Set bypass event time to be 4 minutes ago.
+  std::string time = net::NetLog::TickCountToString(
+      base::TimeTicks::Now() - base::TimeDelta::FromMinutes(4));
+  bypass_event->SetString("time", time);
+  sanitized_event->SetString("bypass_time", time);
   bypass_params->SetInteger("bypass_type", 4);
   sanitized_event->SetInteger("bypass_type", 4);
   bypass_params->SetString("bypass_duration_seconds", "40");
@@ -248,10 +263,36 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
   base::JSONWriter::Write(*sanitized_event.get(), &sanitized_output);
   event_store()->AddAndSetLastBypassEvent(bypass_event.Pass(), 0);
   EXPECT_EQ(sanitized_output, event_store()->SanitizedLastBypassEvent());
+}
 
-  configurator.Disable();
-  EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
-  EXPECT_EQ(std::string(), event_store()->GetHttpsProxyList());
+TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
+  DataReductionProxyConfigurator configurator(net_log(), event_creator());
+  std::vector<net::ProxyServer> http_proxies;
+  std::vector<net::ProxyServer> https_proxies;
+  configurator.Enable(false, http_proxies, https_proxies);
+
+  scoped_ptr<base::DictionaryValue> bypass_event(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> bypass_params(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> sanitized_event(
+      new base::DictionaryValue());
+
+  // Set bypass event time to be 6 minutes ago.
+  std::string time = net::NetLog::TickCountToString(
+      base::TimeTicks::Now() - base::TimeDelta::FromMinutes(6));
+  bypass_event->SetString("time", time);
+  sanitized_event->SetString("bypass_time", time);
+  bypass_params->SetInteger("bypass_type", 4);
+  sanitized_event->SetInteger("bypass_type", 4);
+  bypass_params->SetString("bypass_duration_seconds", "40");
+  sanitized_event->SetString("bypass_seconds", "40");
+  bypass_params->SetString("url", "http://www.foo.com/bar?baz=1234");
+  sanitized_event->SetString("url", "www.foo.com");
+
+  bypass_event->Set("params", bypass_params.Pass());
+  std::string sanitized_output;
+  base::JSONWriter::Write(*sanitized_event.get(), &sanitized_output);
+  event_store()->AddAndSetLastBypassEvent(bypass_event.Pass(), 0);
+  EXPECT_EQ(sanitized_output, event_store()->SanitizedLastBypassEvent());
 }
 
 }  // namespace data_reduction_proxy

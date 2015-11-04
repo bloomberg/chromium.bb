@@ -4,11 +4,14 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -17,6 +20,10 @@
 namespace {
 
 const size_t kMaxEventsToStore = 100;
+
+// Used by Data Reduction Proxy feedback reports. If the last bypass happened in
+// the last 5 minutes, the url will be cropped to only the host.
+const int kLastBypassTimeDeltaInMinutes = 5;
 
 struct StringToConstant {
   const char* name;
@@ -239,9 +246,6 @@ std::string DataReductionProxyEventStore::SanitizedLastBypassEvent() const {
 
   std::string str_value;
   int int_value;
-  if (bypass_dict->GetString("time", &str_value))
-    last_bypass->SetString("bypass_time", str_value);
-
   if (params_dict->GetInteger("bypass_type", &int_value))
     last_bypass->SetInteger("bypass_type", int_value);
 
@@ -251,12 +255,34 @@ std::string DataReductionProxyEventStore::SanitizedLastBypassEvent() const {
   if (params_dict->GetString("bypass_duration_seconds", &str_value))
     last_bypass->SetString("bypass_seconds", str_value);
 
+  bool truncate_url_to_host = true;
+  if (bypass_dict->GetString("time", &str_value)) {
+    last_bypass->SetString("bypass_time", str_value);
+
+    int64_t bypass_ticks_ms;
+    base::StringToInt64(str_value, &bypass_ticks_ms);
+
+    base::TimeTicks bypass_ticks =
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(bypass_ticks_ms);
+
+    // If the last bypass happened in the last 5 minutes, don't crop the url to
+    // the host.
+    if (base::TimeTicks::Now() - bypass_ticks <
+        base::TimeDelta::FromMinutes(kLastBypassTimeDeltaInMinutes)) {
+      truncate_url_to_host = false;
+    }
+  }
+
   if (params_dict->GetString("url", &str_value)) {
     GURL url(str_value);
-    GURL::Replacements replacements;
-    replacements.ClearQuery();
-    GURL clean_url = url.ReplaceComponents(replacements);
-    last_bypass->SetString("url", clean_url.spec());
+    if (truncate_url_to_host) {
+      last_bypass->SetString("url", url.host());
+    } else {
+      GURL::Replacements replacements;
+      replacements.ClearQuery();
+      GURL clean_url = url.ReplaceComponents(replacements);
+      last_bypass->SetString("url", clean_url.spec());
+    }
   }
 
   std::string json;
