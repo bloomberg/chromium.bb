@@ -16,9 +16,13 @@ enum {
   DIR_USER_DATA = PATH_START,  // Directory where user data can be written.
   DIR_CRASH_DUMPS,             // Directory where crash dumps are written.
   DIR_TEST_DATA,               // Directory where unit test data resides.
-
-  FILE_LOCAL_STATE,  // Path and filename to the file in which
-                     // installation-specific state is saved.
+  DIR_GLOBAL_GCM_STORE,        // Directory where the global GCM instance
+                               // stores its data.
+  FILE_LOCAL_STATE,            // Path and filename to the file in which
+                               // installation-specific state is saved.
+  FILE_RESOURCES_PACK,         // Full path to the .pak file containing binary
+                               // data (e.g. html files and images used by
+                               // internal pages).
 
   PATH_END
 };

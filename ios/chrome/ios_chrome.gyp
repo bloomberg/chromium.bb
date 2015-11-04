@@ -184,6 +184,7 @@
         'browser/browsing_data_change_listening.h',
         'browser/chrome_paths.h',
         'browser/chrome_paths.mm',
+        'browser/chrome_paths_internal.h',
         'browser/chrome_switches.cc',
         'browser/chrome_switches.h',
         'browser/chrome_url_constants.cc',
@@ -564,9 +565,9 @@
         '../..',
       ],
       'dependencies': [
-        'app_group_mainapp',
         '../../base/base.gyp:base',
         '../../components/components.gyp:version_info',
+        'app_group_mainapp',
       ],
       'link_settings': {
         'libraries': [
@@ -579,7 +580,7 @@
         'common/channel_info.mm',
         'common/string_util.h',
         'common/string_util.mm',
-      ]
+      ],
     },
     {
       'target_name': 'injected_js',
@@ -587,9 +588,7 @@
       'sources': [
         'browser/find_in_page/resources/find_in_page.js',
       ],
-      'includes': [
-        '../../ios/web/js_compile.gypi',
-      ],
+      'includes': [ '../../ios/web/js_compile.gypi' ],
       'link_settings': {
         'mac_bundle_resources': [
           '<(SHARED_INTERMEDIATE_DIR)/find_in_page.js',
