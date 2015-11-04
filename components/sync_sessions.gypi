@@ -13,6 +13,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../sync/sync.gyp:sync',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
@@ -42,6 +43,8 @@
         'sync_sessions/revisit/typed_url_page_revisit_observer.h',
         'sync_sessions/revisit/typed_url_page_revisit_task.cc',
         'sync_sessions/revisit/typed_url_page_revisit_task.h',
+        'sync_sessions/session_data_type_controller.cc',
+        'sync_sessions/session_data_type_controller.h',
         'sync_sessions/sessions_sync_manager.cc',
         'sync_sessions/sessions_sync_manager.h',
         'sync_sessions/synced_tab_delegate.cc',

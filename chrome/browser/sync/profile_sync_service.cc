@@ -65,6 +65,7 @@
 #include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"
 #include "components/sync_sessions/favicon_cache.h"
+#include "components/sync_sessions/session_data_type_controller.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
@@ -476,6 +477,18 @@ void ProfileSyncService::GetDataTypeControllerStates(
            data_type_controllers_.begin();
        iter != data_type_controllers_.end(); ++iter)
       (*state_map)[iter->first] = iter->second.get()->state();
+}
+
+void ProfileSyncService::OnSessionRestoreComplete() {
+  scoped_refptr<DataTypeController> session_data_type_controller =
+      data_type_controllers_[syncer::SESSIONS];
+
+  if (!session_data_type_controller)
+    return;
+
+  static_cast<browser_sync::SessionDataTypeController*>(
+      session_data_type_controller.get())
+      ->OnSessionRestoreComplete();
 }
 
 SyncCredentials ProfileSyncService::GetCredentials() {

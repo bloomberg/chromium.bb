@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_sessions/session_data_type_controller.h"
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/sync/sessions/session_data_type_controller.h"
-#include "chrome/test/base/testing_profile.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/glue/synced_window_delegate.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_driver::LocalDeviceInfoProviderMock;
@@ -24,11 +26,11 @@ namespace browser_sync {
 
 namespace {
 
+const char* kSavingBrowserHistoryDisabled = "history_disabled";
+
 class MockSyncedWindowDelegate : public SyncedWindowDelegate {
  public:
-  explicit MockSyncedWindowDelegate(Profile* profile)
-    : is_restore_in_progress_(false),
-      profile_(profile) {}
+  MockSyncedWindowDelegate() : is_restore_in_progress_(false) {}
   ~MockSyncedWindowDelegate() override {}
 
   bool HasWindow() const override { return false; }
@@ -52,18 +54,10 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
 
   void SetSessionRestoreInProgress(bool is_restore_in_progress) {
     is_restore_in_progress_ = is_restore_in_progress;
-
-    if (!is_restore_in_progress_) {
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SESSION_RESTORE_COMPLETE,
-          content::Source<Profile>(profile_),
-          content::NotificationService::NoDetails());
-    }
   }
 
  private:
   bool is_restore_in_progress_;
-  Profile* profile_;
 };
 
 class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
@@ -76,46 +70,41 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
     return nullptr;
   }
 
-  void Add(SyncedWindowDelegate* delegate) {
-    delegates_.insert(delegate);
-  }
+  void Add(SyncedWindowDelegate* delegate) { delegates_.insert(delegate); }
 
  private:
   std::set<const SyncedWindowDelegate*> delegates_;
 };
 
-class SessionDataTypeControllerTest
-    : public testing::Test, public sync_driver::FakeSyncClient {
+class SessionDataTypeControllerTest : public testing::Test,
+                                      public sync_driver::FakeSyncClient {
  public:
   SessionDataTypeControllerTest()
       : sync_driver::FakeSyncClient(&profile_sync_factory_),
         load_finished_(false),
-        thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         last_type_(syncer::UNSPECIFIED),
         weak_ptr_factory_(this) {}
   ~SessionDataTypeControllerTest() override {}
 
   // FakeSyncClient overrides.
-  PrefService* GetPrefService() override {
-    return profile_.GetPrefs();
-  }
+  PrefService* GetPrefService() override { return &prefs_; }
 
   void SetUp() override {
-    synced_window_delegate_.reset(new MockSyncedWindowDelegate(&profile_));
+    prefs_.registry()->RegisterBooleanPref(kSavingBrowserHistoryDisabled,
+                                           false);
+
+    synced_window_delegate_.reset(new MockSyncedWindowDelegate());
     synced_window_getter_.reset(new MockSyncedWindowDelegatesGetter());
     synced_window_getter_->Add(synced_window_delegate_.get());
 
     local_device_.reset(new LocalDeviceInfoProviderMock(
-        "cache_guid",
-        "Wayne Gretzky's Hacking Box",
-        "Chromium 10k",
-        "Chrome 10k",
-        sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        "device_id"));
+        "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
+        "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
 
     controller_ = new SessionDataTypeController(
-        base::Bind(&base::DoNothing), this, &profile_,
-        synced_window_getter_.get(), local_device_.get());
+        base::ThreadTaskRunnerHandle::Get(), base::Bind(&base::DoNothing), this,
+        synced_window_getter_.get(), local_device_.get(),
+        kSavingBrowserHistoryDisabled);
 
     load_finished_ = false;
     last_type_ = syncer::UNSPECIFIED;
@@ -131,8 +120,8 @@ class SessionDataTypeControllerTest
 
   void Start() {
     controller_->LoadModels(
-      base::Bind(&SessionDataTypeControllerTest::OnLoadFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&SessionDataTypeControllerTest::OnLoadFinished,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnLoadFinished(syncer::ModelType type, syncer::SyncError error) {
@@ -143,26 +132,33 @@ class SessionDataTypeControllerTest
 
   testing::AssertionResult LoadResult() {
     if (!load_finished_) {
-      return testing::AssertionFailure() <<
-          "OnLoadFinished wasn't called";
+      return testing::AssertionFailure() << "OnLoadFinished wasn't called";
     }
 
     if (last_error_.IsSet()) {
-      return testing::AssertionFailure() <<
-          "OnLoadFinished was called with a SyncError: " <<
-          last_error_.ToString();
+      return testing::AssertionFailure()
+             << "OnLoadFinished was called with a SyncError: "
+             << last_error_.ToString();
     }
 
     if (last_type_ != syncer::SESSIONS) {
-      return testing::AssertionFailure() <<
-          "OnLoadFinished was called with a wrong sync type: " <<
-          last_type_;
+      return testing::AssertionFailure()
+             << "OnLoadFinished was called with a wrong sync type: "
+             << last_type_;
     }
 
     return testing::AssertionSuccess();
   }
 
  protected:
+  void SetSessionRestoreInProgress(bool is_restore_in_progress) {
+    synced_window_delegate_->SetSessionRestoreInProgress(
+        is_restore_in_progress);
+
+    if (!is_restore_in_progress)
+      controller_->OnSessionRestoreComplete();
+  }
+
   scoped_refptr<SessionDataTypeController> controller_;
   scoped_ptr<MockSyncedWindowDelegatesGetter> synced_window_getter_;
   scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
@@ -170,9 +166,9 @@ class SessionDataTypeControllerTest
   bool load_finished_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
+  TestingPrefServiceSimple prefs_;
   SyncApiComponentFactoryMock profile_sync_factory_;
-  TestingProfile profile_;
   syncer::ModelType last_type_;
   syncer::SyncError last_error_;
   base::WeakPtrFactory<SessionDataTypeControllerTest> weak_ptr_factory_;
@@ -199,13 +195,13 @@ TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByLocalDevice) {
 }
 
 TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByRestoreInProgress) {
-  synced_window_delegate_->SetSessionRestoreInProgress(true);
+  SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished_);
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
             controller_->state());
 
-  synced_window_delegate_->SetSessionRestoreInProgress(false);
+  SetSessionRestoreInProgress(false);
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
             controller_->state());
   EXPECT_TRUE(LoadResult());
@@ -214,7 +210,7 @@ TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByRestoreInProgress) {
 TEST_F(SessionDataTypeControllerTest,
        StartModelsDelayedByLocalDeviceThenRestoreInProgress) {
   local_device_->SetInitialized(false);
-  synced_window_delegate_->SetSessionRestoreInProgress(true);
+  SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished_);
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
@@ -225,7 +221,7 @@ TEST_F(SessionDataTypeControllerTest,
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
             controller_->state());
 
-  synced_window_delegate_->SetSessionRestoreInProgress(false);
+  SetSessionRestoreInProgress(false);
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
             controller_->state());
   EXPECT_TRUE(LoadResult());
@@ -234,13 +230,13 @@ TEST_F(SessionDataTypeControllerTest,
 TEST_F(SessionDataTypeControllerTest,
        StartModelsDelayedByRestoreInProgressThenLocalDevice) {
   local_device_->SetInitialized(false);
-  synced_window_delegate_->SetSessionRestoreInProgress(true);
+  SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished_);
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
             controller_->state());
 
-  synced_window_delegate_->SetSessionRestoreInProgress(false);
+  SetSessionRestoreInProgress(false);
   EXPECT_FALSE(load_finished_);
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
             controller_->state());

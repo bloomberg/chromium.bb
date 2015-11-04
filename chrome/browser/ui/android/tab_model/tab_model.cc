@@ -9,6 +9,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_window_delegate_android.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "content/public/browser/notification_service.h"
 
@@ -71,10 +73,10 @@ content::WebContents* TabModel::GetActiveWebContents() const {
 
 void TabModel::BroadcastSessionRestoreComplete() {
   if (profile_) {
-    NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SESSION_RESTORE_COMPLETE,
-        content::Source<Profile>(profile_),
-        NotificationService::NoDetails());
+    ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+    if (sync_service)
+      sync_service->OnSessionRestoreComplete();
   } else {
     // TODO(nyquist): Uncomment this once downstream Android uses new
     // constructor that takes a Profile* argument. See crbug.com/159704.

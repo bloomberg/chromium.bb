@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-class Profile;
 
 namespace browser_sync {
 
@@ -20,24 +17,23 @@ class SyncedWindowDelegatesGetter;
 // Overrides StartModels to avoid sync contention with sessions during
 // a session restore operation at startup and to wait for the local
 // device info to become available.
-class SessionDataTypeController : public sync_driver::UIDataTypeController,
-                                  public content::NotificationObserver {
+class SessionDataTypeController : public sync_driver::UIDataTypeController {
  public:
-  SessionDataTypeController(const base::Closure& error_callback,
-                            sync_driver::SyncClient* sync_client,
-                            Profile* profile,
-                            SyncedWindowDelegatesGetter* synced_window_getter,
-                            sync_driver::LocalDeviceInfoProvider* local_device);
-
-  // NotificationObserver interface.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  SessionDataTypeController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const base::Closure& error_callback,
+      sync_driver::SyncClient* sync_client,
+      SyncedWindowDelegatesGetter* synced_window_getter,
+      sync_driver::LocalDeviceInfoProvider* local_device,
+      const char* history_disabled_pref_name);
 
   // UIDataTypeController interface.
   bool StartModels() override;
   void StopModels() override;
   bool ReadyForStart() const override;
+
+  // Called when asynchronous session restore has completed.
+  void OnSessionRestoreComplete();
 
  protected:
   ~SessionDataTypeController() override;
@@ -49,13 +45,14 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
   void OnSavingBrowserHistoryPrefChanged();
 
   sync_driver::SyncClient* const sync_client_;
-  Profile* const profile_;
 
   SyncedWindowDelegatesGetter* synced_window_getter_;
-  content::NotificationRegistrar notification_registrar_;
 
   sync_driver::LocalDeviceInfoProvider* const local_device_;
   scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription> subscription_;
+
+  // Name of the pref that indicates whether saving history is disabled.
+  const char* history_disabled_pref_name_;
 
   // Flags that indicate the reason for pending loading models.
   bool waiting_on_session_restore_;
@@ -68,4 +65,4 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_

@@ -342,6 +342,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   void GetDataTypeControllerStates(
       sync_driver::DataTypeController::StateMap* state_map) const;
 
+  // Called when asynchronous session restore has completed.
+  void OnSessionRestoreComplete();
+
   // SyncFrontend implementation.
   void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,

@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sessions/session_data_type_controller.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -41,6 +40,7 @@
 #include "components/sync_driver/proxy_data_type_controller.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/ui_data_type_controller.h"
+#include "components/sync_sessions/session_data_type_controller.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -245,9 +245,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     // ProfileSyncService at this level.
     ProfileSyncService* pss = static_cast<ProfileSyncService*>(sync_service);
     sync_service->RegisterDataTypeController(new SessionDataTypeController(
-        error_callback, sync_client, profile_,
+        ui_thread, error_callback, sync_client,
         pss->GetSyncedWindowDelegatesGetter(),
-        sync_service->GetLocalDeviceInfoProvider()));
+        sync_service->GetLocalDeviceInfoProvider(),
+        prefs::kSavingBrowserHistoryDisabled));
   }
 
   // Favicon sync is enabled by default. Register unless explicitly disabled.
