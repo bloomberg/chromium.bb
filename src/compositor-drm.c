@@ -1559,14 +1559,15 @@ fallback_format_for(uint32_t format)
 static int
 drm_backend_create_gl_renderer(struct drm_backend *b)
 {
-	EGLint format[2] = {
+	EGLint format[3] = {
 		b->format,
 		fallback_format_for(b->format),
+		0,
 	};
-	int n_formats = 1;
+	int n_formats = 2;
 
 	if (format[1])
-		n_formats = 2;
+		n_formats = 3;
 	if (gl_renderer->create(b->compositor,
 				EGL_PLATFORM_GBM_KHR,
 				(void *)b->gbm,
