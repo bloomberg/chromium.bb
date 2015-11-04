@@ -638,6 +638,38 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   EXPECT_EQ(syncer::CONNECTION_OK, token_status.connection_status);
 }
 
+TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
+  CreateService(browser_sync::AUTO_START);
+  IssueTestTokens();
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncBackendHostCreation(1);
+  InitializeForNthSync();
+  EXPECT_TRUE(service()->IsSyncActive());
+
+  std::string primary_account_id =
+      SigninManagerFactory::GetForProfile(profile())
+          ->GetAuthenticatedAccountId();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->LoadCredentials(primary_account_id);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
+
+  std::string secondary_account_gaiaid = "1234567";
+  std::string secondary_account_name = "test_user2@gmail.com";
+  std::string secondary_account_id =
+      AccountTrackerServiceFactory::GetForProfile(profile())
+          ->SeedAccountInfo(secondary_account_gaiaid, secondary_account_name);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->UpdateCredentials(secondary_account_id, "second_account_refresh_token");
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->RevokeCredentials(secondary_account_id);
+  EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
+
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->RevokeCredentials(primary_account_id);
+  EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
+}
+
 #if defined(ENABLE_PRE_SYNC_BACKUP)
 TEST_F(ProfileSyncServiceTest, DontStartBackupOnBrowserStart) {
   CreateServiceWithoutSignIn();
