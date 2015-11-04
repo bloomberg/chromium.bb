@@ -49,10 +49,8 @@ void WebMainLoop::EarlyInitialization() {
     parts_->PreEarlyInitialization();
   }
 
-#if !defined(USE_OPENSSL)
   // We want to be sure to init NSPR on the main thread.
   crypto::EnsureNSPRInit();
-#endif  // !defined(USE_OPENSSL)
 
   if (parts_) {
     parts_->PostEarlyInitialization();
@@ -115,11 +113,8 @@ int WebMainLoop::PreCreateThreads() {
 }
 
 int WebMainLoop::CreateThreads() {
-  base::Thread::Options default_options;
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  base::Thread::Options ui_message_loop_options;
-  ui_message_loop_options.message_loop_type = base::MessageLoop::TYPE_UI;
 
   // Start threads in the order they occur in the WebThread::ID
   // enumeration, except for WebThread::UI which is the main
@@ -129,28 +124,31 @@ int WebMainLoop::CreateThreads() {
   for (size_t thread_id = WebThread::UI + 1; thread_id < WebThread::ID_COUNT;
        ++thread_id) {
     scoped_ptr<WebThreadImpl>* thread_to_start = nullptr;
-    base::Thread::Options* options = &default_options;
+    base::Thread::Options options;
 
     switch (thread_id) {
       // TODO(rohitrao): We probably do not need all of these threads.  Remove
       // the ones that serve no purpose.  http://crbug.com/365909
       case WebThread::DB:
         thread_to_start = &db_thread_;
+        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
         break;
       case WebThread::FILE_USER_BLOCKING:
         thread_to_start = &file_user_blocking_thread_;
         break;
       case WebThread::FILE:
         thread_to_start = &file_thread_;
-        options = &io_message_loop_options;
+        options = io_message_loop_options;
+        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
         break;
       case WebThread::CACHE:
         thread_to_start = &cache_thread_;
-        options = &io_message_loop_options;
+        options = io_message_loop_options;
+        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
         break;
       case WebThread::IO:
         thread_to_start = &io_thread_;
-        options = &io_message_loop_options;
+        options = io_message_loop_options;
         break;
       case WebThread::UI:
       case WebThread::ID_COUNT:
@@ -163,7 +161,7 @@ int WebMainLoop::CreateThreads() {
 
     if (thread_to_start) {
       (*thread_to_start).reset(new WebThreadImpl(id));
-      (*thread_to_start)->StartWithOptions(*options);
+      (*thread_to_start)->StartWithOptions(options);
     } else {
       NOTREACHED();
     }

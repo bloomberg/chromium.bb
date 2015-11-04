@@ -51,10 +51,6 @@ class WebMainRunnerImpl : public WebMainRunner {
     if (!GetWebClient())
       SetWebClient(&empty_web_client_);
 
-#if defined(USE_NSS)
-    crypto::EarlySetupForNSSInit();
-#endif
-
     // TODO(rohitrao): Desktop calls content::RegisterContentSchemes(true) here.
     // Do we need similar scheme registration on iOS?
     ui::RegisterPathProvider();
