@@ -72,11 +72,6 @@ private:
     static type& name = *new type arguments
 #endif
 
-// Does the same as DEFINE_STATIC_LOCAL but without assertions.
-// Use this when you are absolutely sure that it is safe but above
-// assertions fail (e.g. called on multiple thread with a local lock).
-#define DEFINE_STATIC_LOCAL_NOASSERT(type, name, arguments) \
-    static type& name = *new type arguments
 #endif
 
 

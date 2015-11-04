@@ -86,6 +86,13 @@
 
 namespace blink {
 
+// Defines static local variable after making sure that guid lock is held.
+// (We can't use DEFINE_STATIC_LOCAL for this because it asserts thread
+// safety, which is externally guaranteed by the guideMutex lock)
+#define DEFINE_STATIC_LOCAL_WITH_LOCK(type, name, arguments) \
+    ASSERT(guidMutex().locked()); \
+    static type& name = *new type arguments
+
 static const char versionKey[] = "WebKitDatabaseVersionKey";
 static const char infoTableName[] = "__WebKitDatabaseInfoTable__";
 
@@ -149,9 +156,7 @@ static RecursiveMutex& guidMutex()
 typedef HashMap<DatabaseGuid, String> GuidVersionMap;
 static GuidVersionMap& guidToVersionMap()
 {
-    // Ensure the the mutex is locked.
-    ASSERT(guidMutex().locked());
-    DEFINE_STATIC_LOCAL_NOASSERT(GuidVersionMap, map, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(GuidVersionMap, map, ());
     return map;
 }
 
@@ -174,9 +179,7 @@ static inline void updateGuidVersionMap(DatabaseGuid guid, String newVersion)
 
 static HashCountedSet<DatabaseGuid>& guidCount()
 {
-    // Ensure the the mutex is locked.
-    ASSERT(guidMutex().locked());
-    DEFINE_STATIC_LOCAL_NOASSERT(HashCountedSet<DatabaseGuid>, guidCount, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(HashCountedSet<DatabaseGuid>, guidCount, ());
     return guidCount;
 }
 
@@ -188,7 +191,7 @@ static DatabaseGuid guidForOriginAndName(const String& origin, const String& nam
     String stringID = origin + "/" + name;
 
     typedef HashMap<String, int> IDGuidMap;
-    DEFINE_STATIC_LOCAL_NOASSERT(IDGuidMap, stringIdentifierToGUIDMap, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(IDGuidMap, stringIdentifierToGUIDMap, ());
     DatabaseGuid guid = stringIdentifierToGUIDMap.get(stringID);
     if (!guid) {
         static int currentNewGUID = 1;

@@ -41,17 +41,16 @@ static Mutex& mutex()
     return m;
 }
 
-static void assertLockHeld()
-{
-#if ENABLE(ASSERT)
-    ASSERT(mutex().locked());
-#endif
-}
+// Defines static local variable after making sure that a lock is held.
+// (We can't use DEFINE_STATIC_LOCAL for this because it asserts thread
+// safety, which is externally guaranteed by the local mutex() lock)
+#define DEFINE_STATIC_LOCAL_WITH_LOCK(type, name, arguments) \
+    ASSERT(mutex().locked());  \
+    static type& name = *new type arguments
 
 static URLSchemesSet& localURLSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, localSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, localSchemes, ());
 
     if (localSchemes.isEmpty())
         localSchemes.add("file");
@@ -61,15 +60,13 @@ static URLSchemesSet& localURLSchemes()
 
 static URLSchemesSet& displayIsolatedURLSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, displayIsolatedSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, displayIsolatedSchemes, ());
     return displayIsolatedSchemes;
 }
 
 static URLSchemesSet& mixedContentRestrictingSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, mixedContentRestrictingSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, mixedContentRestrictingSchemes, ());
 
     if (mixedContentRestrictingSchemes.isEmpty())
         mixedContentRestrictingSchemes.add("https");
@@ -79,8 +76,7 @@ static URLSchemesSet& mixedContentRestrictingSchemes()
 
 static URLSchemesSet& secureSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, secureSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, secureSchemes, ());
 
     if (secureSchemes.isEmpty()) {
         secureSchemes.add("https");
@@ -94,8 +90,7 @@ static URLSchemesSet& secureSchemes()
 
 static URLSchemesSet& schemesWithUniqueOrigins()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, schemesWithUniqueOrigins, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, schemesWithUniqueOrigins, ());
 
     if (schemesWithUniqueOrigins.isEmpty()) {
         schemesWithUniqueOrigins.add("about");
@@ -110,8 +105,7 @@ static URLSchemesSet& schemesWithUniqueOrigins()
 
 static URLSchemesSet& emptyDocumentSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, emptyDocumentSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, emptyDocumentSchemes, ());
 
     if (emptyDocumentSchemes.isEmpty())
         emptyDocumentSchemes.add("about");
@@ -121,15 +115,13 @@ static URLSchemesSet& emptyDocumentSchemes()
 
 static HashSet<String>& schemesForbiddenFromDomainRelaxation()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(HashSet<String>, schemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(HashSet<String>, schemes, ());
     return schemes;
 }
 
 static URLSchemesSet& notAllowingJavascriptURLsSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, notAllowingJavascriptURLsSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, notAllowingJavascriptURLsSchemes, ());
     return notAllowingJavascriptURLsSchemes;
 }
 
@@ -147,9 +139,7 @@ const URLSchemesSet& SchemeRegistry::localSchemes()
 
 static URLSchemesSet& CORSEnabledSchemes()
 {
-    // FIXME: http://bugs.webkit.org/show_bug.cgi?id=77160
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, CORSEnabledSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, CORSEnabledSchemes, ());
 
     if (CORSEnabledSchemes.isEmpty()) {
         CORSEnabledSchemes.add("http");
@@ -162,8 +152,7 @@ static URLSchemesSet& CORSEnabledSchemes()
 
 static URLSchemesSet& serviceWorkerSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, serviceWorkerSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, serviceWorkerSchemes, ());
 
     if (serviceWorkerSchemes.isEmpty()) {
         // HTTP is required because http://localhost is considered secure.
@@ -178,8 +167,7 @@ static URLSchemesSet& serviceWorkerSchemes()
 
 static URLSchemesSet& fetchAPISchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, fetchAPISchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, fetchAPISchemes, ());
 
     if (fetchAPISchemes.isEmpty()) {
         fetchAPISchemes.add("http");
@@ -191,22 +179,19 @@ static URLSchemesSet& fetchAPISchemes()
 
 static URLSchemesSet& firstPartyWhenTopLevelSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, firstPartyWhenTopLevelSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, firstPartyWhenTopLevelSchemes, ());
     return firstPartyWhenTopLevelSchemes;
 }
 
 static URLSchemesMap<SchemeRegistry::PolicyAreas>& ContentSecurityPolicyBypassingSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesMap<SchemeRegistry::PolicyAreas>, schemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesMap<SchemeRegistry::PolicyAreas>, schemes, ());
     return schemes;
 }
 
 static URLSchemesSet& secureContextBypassingSchemes()
 {
-    assertLockHeld();
-    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, secureContextBypassingSchemes, ());
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, secureContextBypassingSchemes, ());
     return secureContextBypassingSchemes;
 }
 
