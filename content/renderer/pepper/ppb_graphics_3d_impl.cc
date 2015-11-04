@@ -229,9 +229,12 @@ bool PPB_Graphics3D_Impl::InitRaw(
   if (!plugin_instance)
     return false;
 
-  const WebPreferences& prefs =
-      static_cast<RenderViewImpl*>(plugin_instance->GetRenderView())
-          ->webkit_preferences();
+  RenderView* render_view = plugin_instance->GetRenderView();
+  if (!render_view)
+    return false;
+
+  const WebPreferences& prefs = render_view->GetWebkitPreferences();
+
   // 3D access might be disabled or blacklisted.
   if (!prefs.pepper_3d_enabled)
     return false;
