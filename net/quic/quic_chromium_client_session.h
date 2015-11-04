@@ -144,6 +144,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Cancels the pending stream creation request.
   void CancelRequest(StreamRequest* request);
 
+  // QuicSpdySession methods:
+  void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) override;
+
   // QuicSession methods:
   void OnStreamFrame(const QuicStreamFrame& frame) override;
   QuicReliableClientStream* CreateOutgoingDynamicStream() override;

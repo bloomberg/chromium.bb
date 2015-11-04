@@ -188,6 +188,8 @@ const QuicTag kSourceAddressTokenTag =
     TAG('S', 'T', 'K', 0);  // Source-address token
 const QuicTag kCertificateTag =
     TAG('C', 'R', 'T', 255);  // Certificate chain
+const QuicTag kCertificateSCTTag =
+    TAG('C', 'S', 'C', 'T');  // Signed cert timestamp (RFC6962) of leaf cert.
 
 #undef TAG
 

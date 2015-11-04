@@ -278,6 +278,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       largest_seen_packet_with_stop_waiting_(0),
       max_undecryptable_packets_(0),
       pending_version_negotiation_packet_(false),
+      save_crypto_packets_as_termination_packets_(false),
       silent_close_enabled_(false),
       received_packet_manager_(&stats_),
       ack_queued_(false),
@@ -341,6 +342,9 @@ QuicConnection::~QuicConnection() {
     delete writer_;
   }
   STLDeleteElements(&undecryptable_packets_);
+  if (termination_packets_.get() != nullptr) {
+    STLDeleteElements(termination_packets_.get());
+  }
   STLDeleteValues(&group_map_);
   ClearQueuedPackets();
 }
@@ -843,12 +847,12 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  for (QuicPacketNumber revived_packet : incoming_ack.revived_packets) {
-    if (!incoming_ack.missing_packets.Contains(revived_packet)) {
-      DLOG(ERROR) << ENDPOINT
-                  << "Peer specified revived packet which was not missing.";
-      return false;
-    }
+  if (incoming_ack.latest_revived_packet != 0 &&
+      !incoming_ack.missing_packets.Contains(
+          incoming_ack.latest_revived_packet)) {
+    DLOG(ERROR) << ENDPOINT
+                << "Peer specified revived packet which was not missing.";
+    return false;
   }
   return true;
 }
@@ -1103,8 +1107,7 @@ void QuicConnection::SendVersionNegotiationPacket() {
       self_address().address(), peer_address());
 
   if (result.status == WRITE_STATUS_ERROR) {
-    // We can't send an error as the socket is presumably borked.
-    CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
+    OnWriteError(result.error_code);
     return;
   }
   if (result.status == WRITE_STATUS_BLOCKED) {
@@ -1340,6 +1343,15 @@ bool QuicConnection::ProcessValidatedPacket() {
   }
 
   if (peer_ip_changed_ || peer_port_changed_) {
+    PeerAddressChangeType type = DeterminePeerAddressChangeType();
+    if (type != NO_CHANGE && type != UNKNOWN &&
+        (FLAGS_quic_disable_non_nat_address_migration &&
+         type != NAT_PORT_REBINDING && type != IPV4_SUBNET_REBINDING)) {
+      SendConnectionCloseWithDetails(QUIC_ERROR_MIGRATING_ADDRESS,
+                                     "Invalid peer address migration.");
+      return false;
+    }
+
     IPEndPoint old_peer_address = peer_address_;
     peer_address_ = IPEndPoint(
         peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address(),
@@ -1498,9 +1510,9 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
     ++stats_.packets_discarded;
     return true;
   }
-  // Connection close packets are encrypted and saved, so don't exit early.
-  const bool is_connection_close = IsConnectionClose(*packet);
-  if (writer_->IsWriteBlocked() && !is_connection_close) {
+  // Termination packets are encrypted and saved, so don't exit early.
+  const bool is_termination_packet = IsTerminationPacket(*packet);
+  if (writer_->IsWriteBlocked() && !is_termination_packet) {
     return false;
   }
 
@@ -1509,12 +1521,14 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   packet_number_of_last_sent_packet_ = packet_number;
 
   QuicEncryptedPacket* encrypted = packet->serialized_packet.packet;
-  // Connection close packets are eventually owned by TimeWaitListManager.
+  // Termination packets are eventually owned by TimeWaitListManager.
   // Others are deleted at the end of this call.
-  if (is_connection_close) {
-    DCHECK(connection_close_packet_.get() == nullptr);
+  if (is_termination_packet) {
+    if (termination_packets_.get() == nullptr) {
+      termination_packets_.reset(new std::vector<QuicEncryptedPacket*>);
+    }
     // Clone the packet so it's owned in the future.
-    connection_close_packet_.reset(encrypted->Clone());
+    termination_packets_->push_back(encrypted->Clone());
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
     if (writer_->IsWriteBlocked()) {
@@ -1523,9 +1537,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
     }
   }
 
-  if (!FLAGS_quic_allow_oversized_packets_for_test) {
-    DCHECK_LE(encrypted->length(), kMaxPacketSize);
-  }
+  DCHECK_LE(encrypted->length(), kMaxPacketSize);
   DCHECK_LE(encrypted->length(), packet_generator_.GetMaxPacketLength());
   DVLOG(1) << ENDPOINT << "Sending packet " << packet_number << " : "
            << (packet->serialized_packet.is_fec_packet
@@ -1736,6 +1748,10 @@ void QuicConnection::SendOrQueuePacket(QueuedPacket packet) {
           first_required_forward_secure_packet_ - 1) {
     SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   }
+}
+
+PeerAddressChangeType QuicConnection::DeterminePeerAddressChangeType() {
+  return UNKNOWN;
 }
 
 void QuicConnection::SendPing() {
@@ -2027,6 +2043,10 @@ bool QuicConnection::HasQueuedData() const {
       !queued_packets_.empty() || packet_generator_.HasQueuedFrames();
 }
 
+void QuicConnection::EnableSavingCryptoPackets() {
+  save_crypto_packets_as_termination_packets_ = true;
+}
+
 bool QuicConnection::CanWriteStreamData() {
   // Don't write stream data if there are negotiation or queued data packets
   // to send. Otherwise, continue and bundle as many frames as possible.
@@ -2231,7 +2251,7 @@ HasRetransmittableData QuicConnection::IsRetransmittable(
   }
 }
 
-bool QuicConnection::IsConnectionClose(const QueuedPacket& packet) {
+bool QuicConnection::IsTerminationPacket(const QueuedPacket& packet) {
   const RetransmittableFrames* retransmittable_frames =
       packet.serialized_packet.retransmittable_frames;
   if (retransmittable_frames == nullptr) {
@@ -2239,6 +2259,11 @@ bool QuicConnection::IsConnectionClose(const QueuedPacket& packet) {
   }
   for (const QuicFrame& frame : retransmittable_frames->frames()) {
     if (frame.type == CONNECTION_CLOSE_FRAME) {
+      return true;
+    }
+    if (save_crypto_packets_as_termination_packets_ &&
+        frame.type == STREAM_FRAME &&
+        frame.stream_frame->stream_id == kCryptoStreamId) {
       return true;
     }
   }
@@ -2251,10 +2276,6 @@ void QuicConnection::SetMtuDiscoveryTarget(QuicByteCount target) {
 
 QuicByteCount QuicConnection::LimitMaxPacketSize(
     QuicByteCount suggested_max_packet_size) {
-  if (FLAGS_quic_allow_oversized_packets_for_test) {
-    return suggested_max_packet_size;
-  }
-
   if (peer_address_.address().empty()) {
     LOG(DFATAL) << "Attempted to use a connection without a valid peer address";
     return suggested_max_packet_size;

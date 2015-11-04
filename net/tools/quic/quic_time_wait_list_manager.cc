@@ -97,7 +97,7 @@ QuicTimeWaitListManager::~QuicTimeWaitListManager() {
   for (ConnectionIdMap::iterator it = connection_id_map_.begin();
        it != connection_id_map_.end();
        ++it) {
-    delete it->second.close_packet;
+    STLDeleteElements(&it->second.termination_packets);
   }
 }
 
@@ -105,23 +105,28 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
     QuicVersion version,
     bool connection_rejected_statelessly,
-    QuicEncryptedPacket* close_packet) {
-  DCHECK(!connection_rejected_statelessly || !close_packet)
-      << "Connections that were rejected statelessly should not "
-      << "have a close packet.  connection_id = " << connection_id;
+    std::vector<QuicEncryptedPacket*>* termination_packets) {
+  if (connection_rejected_statelessly) {
+    DCHECK(termination_packets != nullptr && !termination_packets->empty())
+        << "Connections that were rejected statelessly must "
+        << "have a close packet.  connection_id = " << connection_id;
+  }
   int num_packets = 0;
   ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
   const bool new_connection_id = it == connection_id_map_.end();
   if (!new_connection_id) {  // Replace record if it is reinserted.
     num_packets = it->second.num_packets;
-    delete it->second.close_packet;
+    STLDeleteElements(&it->second.termination_packets);
     connection_id_map_.erase(it);
   }
   TrimTimeWaitListIfNeeded();
   DCHECK_LT(num_connections(),
             static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
   ConnectionIdData data(num_packets, version, clock_->ApproximateNow(),
-                        close_packet, connection_rejected_statelessly);
+                        connection_rejected_statelessly);
+  if (termination_packets != nullptr) {
+    data.termination_packets.swap(*termination_packets);
+  }
   connection_id_map_.insert(std::make_pair(connection_id, data));
   if (new_connection_id) {
     visitor_->OnConnectionAddedToTimeWaitList(connection_id);
@@ -171,17 +176,17 @@ void QuicTimeWaitListManager::ProcessPacket(
     return;
   }
 
-  if (connection_data->close_packet) {
-    QueuedPacket* queued_packet = new QueuedPacket(
-        server_address, client_address, connection_data->close_packet->Clone());
-    // Takes ownership of the packet.
-    SendOrQueuePacket(queued_packet);
-    return;
-  }
-
-  if (connection_data->connection_rejected_statelessly) {
-    DVLOG(3) << "Time wait list not sending response for connection "
-             << connection_id << " due to previous stateless reject.";
+  if (!connection_data->termination_packets.empty()) {
+    if (connection_data->connection_rejected_statelessly) {
+      DVLOG(3) << "Time wait list sending previous stateless reject response "
+               << "for connection " << connection_id;
+    }
+    for (QuicEncryptedPacket* packet : connection_data->termination_packets) {
+      QueuedPacket* queued_packet =
+          new QueuedPacket(server_address, client_address, packet->Clone());
+      // Takes ownership of the packet.
+      SendOrQueuePacket(queued_packet);
+    }
     return;
   }
 
@@ -290,7 +295,7 @@ bool QuicTimeWaitListManager::MaybeExpireOldestConnection(
   }
   // This connection_id has lived its age, retire it now.
   const QuicConnectionId connection_id = it->first;
-  delete it->second.close_packet;
+  STLDeleteElements(&it->second.termination_packets);
   connection_id_map_.erase(it);
   visitor_->OnConnectionRemovedFromTimeWaitList(connection_id);
   return true;
@@ -315,6 +320,18 @@ void QuicTimeWaitListManager::TrimTimeWaitListIfNeeded() {
     MaybeExpireOldestConnection(QuicTime::Infinite());
   }
 }
+
+QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
+    int num_packets_,
+    QuicVersion version_,
+    QuicTime time_added_,
+    bool connection_rejected_statelessly)
+    : num_packets(num_packets_),
+      version(version_),
+      time_added(time_added_),
+      connection_rejected_statelessly(connection_rejected_statelessly) {}
+
+QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() {}
 
 }  // namespace tools
 }  // namespace net

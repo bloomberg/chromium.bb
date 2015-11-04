@@ -76,7 +76,6 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
       packet_number_(0),
       should_fec_protect_(false),
-      fec_group_number_(0),
       send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
       max_packet_length_(0),
       max_packets_per_fec_group_(kDefaultMaxPacketsPerFecGroup),
@@ -130,6 +129,10 @@ void QuicPacketCreator::set_max_packets_per_fec_group(
   DCHECK_LT(0u, max_packets_per_fec_group_);
 }
 
+QuicFecGroupNumber QuicPacketCreator::fec_group_number() {
+  return fec_group_ != nullptr ? fec_group_->FecGroupNumber() : 0;
+}
+
 bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
   DCHECK(!HasPendingFrames());
   return fec_group_.get() != nullptr && fec_group_->NumReceivedPackets() > 0 &&
@@ -175,7 +178,6 @@ void QuicPacketCreator::StopFecProtectingPackets() {
   }
   DCHECK(should_fec_protect_);
   should_fec_protect_ = false;
-  fec_group_number_ = 0;
 }
 
 bool QuicPacketCreator::IsFecProtected() const {
@@ -205,8 +207,7 @@ InFecGroup QuicPacketCreator::MaybeUpdateLengthsAndStartFec() {
   }
   // Start a new FEC group since protection is on. Set the fec group number to
   // the packet number of the next packet.
-  fec_group_number_ = packet_number() + 1;
-  fec_group_.reset(new QuicFecGroup(fec_group_number_));
+  fec_group_.reset(new QuicFecGroup(packet_number_ + 1));
   return IN_FEC_GROUP;
 }
 
@@ -479,9 +480,12 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   DCHECK_LT(0u, encrypted_buffer_len);
   LOG_IF(DFATAL, queued_frames_.empty())
       << "Attempt to serialize empty packet";
-  DCHECK_GE(packet_number_ + 1, fec_group_number_);
+  if (fec_group_.get() != nullptr) {
+    DCHECK_GE(packet_number_ + 1, fec_group_->FecGroupNumber());
+  }
   QuicPacketHeader header;
-  FillPacketHeader(should_fec_protect_ ? fec_group_number_ : 0, false, &header);
+  // FillPacketHeader increments packet_number_.
+  FillPacketHeader(fec_group_number(), false, &header);
 
   MaybeAddPadding();
 
@@ -500,17 +504,8 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   ALIGNAS(64) char buffer[kMaxPacketSize];
   // Use the packet_size_ instead of the buffer size to ensure smaller
   // packet sizes are properly used.
-  scoped_ptr<char[]> large_buffer;
-  size_t length = 0;
-  const bool use_stack_buffer = packet_size_ <= kMaxPacketSize;
-  if (use_stack_buffer) {
-    length =
-        framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_);
-  } else {
-    large_buffer.reset(new char[packet_size_]);
-    length = framer_->BuildDataPacket(header, queued_frames_,
-                                      large_buffer.get(), packet_size_);
-  }
+  size_t length =
+      framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_);
   if (length == 0) {
     LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
                 << " frames.";
@@ -519,7 +514,7 @@ SerializedPacket QuicPacketCreator::SerializePacket(
 
   // TODO(ianswett) Consider replacing QuicPacket with something else,
   // since it's only used to provide convenience methods to FEC and encryption.
-  QuicPacket packet(use_stack_buffer ? buffer : large_buffer.get(), length,
+  QuicPacket packet(buffer, length,
                     /* owns_buffer */ false,
                     header.public_header.connection_id_length,
                     header.public_header.version_flag,
@@ -533,10 +528,10 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   }
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // packet number multiple times.
-  QuicEncryptedPacket* encrypted =
+  size_t encrypted_length =
       framer_->EncryptPayload(encryption_level_, packet_number_, packet,
                               encrypted_buffer, encrypted_buffer_len);
-  if (encrypted == nullptr) {
+  if (encrypted_length == 0) {
     LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
     return NoPacket();
   }
@@ -561,7 +556,8 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   needs_padding_ = false;
   return SerializedPacket(
       header.packet_number, header.public_header.packet_number_length,
-      encrypted, QuicFramer::GetPacketEntropyHash(header),
+      encrypted_buffer, encrypted_length, /* owns_buffer*/ false,
+      QuicFramer::GetPacketEntropyHash(header),
       queued_retransmittable_frames_.release(), has_ack, has_stop_waiting);
 }
 
@@ -575,26 +571,27 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
   }
   DCHECK_EQ(0u, queued_frames_.size());
   QuicPacketHeader header;
-  FillPacketHeader(fec_group_number_, true, &header);
+  FillPacketHeader(fec_group_->FecGroupNumber(), true, &header);
   scoped_ptr<QuicPacket> packet(
       framer_->BuildFecPacket(header, fec_group_->PayloadParity()));
   fec_group_.reset(nullptr);
   packet_size_ = 0;
   LOG_IF(DFATAL, packet == nullptr)
-      << "Failed to serialize fec packet for group:" << fec_group_number_;
+      << "Failed to serialize fec packet for group:"
+      << fec_group_->FecGroupNumber();
   DCHECK_GE(max_packet_length_, packet->length());
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // packet number multiple times.
-  QuicEncryptedPacket* encrypted = framer_->EncryptPayload(
+  size_t encrypted_length = framer_->EncryptPayload(
       encryption_level_, packet_number_, *packet, buffer, buffer_len);
-  if (encrypted == nullptr) {
+  if (encrypted_length == 0) {
     LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
     return NoPacket();
   }
   SerializedPacket serialized(
-      header.packet_number, header.public_header.packet_number_length,
-      encrypted, QuicFramer::GetPacketEntropyHash(header), nullptr, false,
-      false);
+      header.packet_number, header.public_header.packet_number_length, buffer,
+      encrypted_length, /* owns_buffer */ false,
+      QuicFramer::GetPacketEntropyHash(header), nullptr, false, false);
   serialized.is_fec_packet = true;
   return serialized;
 }

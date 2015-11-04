@@ -128,13 +128,8 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
   for (QuicPacketNumber packet : frame->missing_packets)
     missing->AppendString(base::Uint64ToString(packet));
 
-  base::ListValue* revived = new base::ListValue();
-  dict->Set("revived_packets", revived);
-  const PacketNumberSet& revived_packets = frame->revived_packets;
-  for (PacketNumberSet::const_iterator it = revived_packets.begin();
-       it != revived_packets.end(); ++it) {
-    revived->AppendString(base::Uint64ToString(*it));
-  }
+  dict->SetString("latest_revived_packet",
+                  base::Int64ToString(frame->latest_revived_packet));
 
   base::ListValue* received = new base::ListValue();
   dict->Set("received_packet_times", received);

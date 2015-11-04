@@ -501,7 +501,7 @@ TEST_F(QuicSentPacketManagerTest, LoseButDontRetransmitRevivedPacket) {
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 3;
   ack_frame.missing_packets.Add(1);
-  ack_frame.revived_packets.insert(1);
+  ack_frame.latest_revived_packet = 1;
   QuicPacketNumber acked[] = {2, 3};
   ExpectAcksAndLosses(true, acked, arraysize(acked), nullptr, 0);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
@@ -547,7 +547,7 @@ TEST_F(QuicSentPacketManagerTest, MarkLostThenReviveAndDontRetransmitPacket) {
   // Ack 5th packet (FEC) and revive 1st packet. 1st packet should now be
   // removed from pending retransmissions map.
   ack_frame.largest_observed = 5;
-  ack_frame.revived_packets.insert(1);
+  ack_frame.latest_revived_packet = 1;
   ExpectAck(5);
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
 

@@ -53,6 +53,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     HANDSHAKE_CONFIRMED,
   };
 
+  // Takes ownership of |connection|.
   QuicSession(QuicConnection* connection, const QuicConfig& config);
 
   ~QuicSession() override;
@@ -225,9 +226,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // underlying counter.
   QuicStreamId GetNextOutgoingStreamId();
 
-  ReliableQuicStream* GetIncomingDynamicStream(QuicStreamId stream_id);
-
-  ReliableQuicStream* GetDynamicStream(const QuicStreamId stream_id);
+  // Returns existing stream with id = |stream_id|. If no such stream exists,
+  // and |stream_id| is a peer-created id, then a new stream is created and
+  // returned. However if |stream_id| is a locally-created id and no such stream
+  // exists, the connection is closed.
+  ReliableQuicStream* GetOrCreateDynamicStream(QuicStreamId stream_id);
 
   // This is called after every call other than OnConnectionClose from the
   // QuicConnectionVisitor to allow post-processing once the work has been done.

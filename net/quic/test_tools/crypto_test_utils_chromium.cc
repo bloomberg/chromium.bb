@@ -50,6 +50,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
 const char kLeafCert[] = "leaf";
 const char kIntermediateCert[] = "intermediate";
 const char kSignature[] = "signature";
+const char kSCT[] = "CryptoServerTests";
 
 class FakeProofSource : public ProofSource {
  public:
@@ -65,9 +66,11 @@ class FakeProofSource : public ProofSource {
                 const std::string& server_config,
                 bool ecdsa_ok,
                 const std::vector<std::string>** out_certs,
-                std::string* out_signature) override {
+                std::string* out_signature,
+                std::string* out_leaf_cert_sct) override {
     *out_certs = &certs_;
     *out_signature = kSignature;
+    *out_leaf_cert_sct = kSCT;
     return true;
   }
 
@@ -117,7 +120,8 @@ ProofSource* CryptoTestUtils::ProofSourceForTesting() {
   base::FilePath certs_dir = GetTestCertsDirectory();
   CHECK(source->Initialize(
       certs_dir.AppendASCII("quic_test.example.com.crt"),
-      certs_dir.AppendASCII("quic_test.example.com.key.pkcs8")));
+      certs_dir.AppendASCII("quic_test.example.com.key.pkcs8"),
+      certs_dir.AppendASCII("quic_test.example.com.key.sct")));
   return source;
 }
 

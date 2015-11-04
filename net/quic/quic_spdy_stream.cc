@@ -113,6 +113,19 @@ void QuicSpdyStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
   }
 }
 
+void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
+  if (frame.error_code != QUIC_STREAM_NO_ERROR ||
+      version() <= QUIC_VERSION_28) {
+    ReliableQuicStream::OnStreamReset(frame);
+    return;
+  }
+  DVLOG(1) << "Received QUIC_STREAM_NO_ERROR, not discarding response";
+  set_rst_received(true);
+  MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
+  set_stream_error(frame.error_code);
+  CloseWriteSide();
+}
+
 void QuicSpdyStream::OnClose() {
   ReliableQuicStream::OnClose();
 

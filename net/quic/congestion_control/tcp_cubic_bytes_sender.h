@@ -129,8 +129,6 @@ class NET_EXPORT_PRIVATE TcpCubicBytesSender : public SendAlgorithmInterface {
   // collection of slowstart_packets_lost.
   bool last_cutback_exited_slowstart_;
 
-  const QuicClock* clock_;
-
   DISALLOW_COPY_AND_ASSIGN(TcpCubicBytesSender);
 };
 

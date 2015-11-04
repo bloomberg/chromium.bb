@@ -74,6 +74,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
                               CryptoTestUtils::ProofSourceForTesting()),
         server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
         client_crypto_config_(CryptoTestUtils::ProofVerifierForTesting()) {
+    FLAGS_enable_quic_stateless_reject_support = false;
     server_crypto_config_.set_strike_register_no_startup_period();
 
     InitializeServer();
@@ -99,7 +100,8 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   // called multiple times.
   void InitializeServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
-    helpers_.push_back(new MockHelper);
+    helpers_.push_back(new MockConnectionHelper);
+
     CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
                                helpers_.back(), &server_crypto_config_,
                                &server_connection_, &server_session);
@@ -122,7 +124,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   // testing.  May be called multiple times.
   void InitializeFakeClient(bool supports_stateless_rejects) {
     TestQuicSpdyClientSession* client_session = nullptr;
-    helpers_.push_back(new MockHelper);
+    helpers_.push_back(new MockConnectionHelper);
     CreateClientSessionForTest(server_id_, supports_stateless_rejects,
                                QuicTime::Delta::FromSeconds(100000),
                                helpers_.back(), &client_crypto_config_,
@@ -164,9 +166,10 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   }
 
  protected:
-  // Every connection gets its own MockHelper, tracked separately from the
-  // server and client state so their lifetimes persist through the whole test.
-  std::vector<MockHelper*> helpers_;
+  // Every connection gets its own MockConnectionHelper, tracked separately
+  // from the server and client state so their lifetimes persist through the
+  // whole test.
+  std::vector<MockConnectionHelper*> helpers_;
 
   // Server state
   PacketSavingConnection* server_connection_;
@@ -210,7 +213,7 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
 TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
                               true);
-  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
+  InitializeServer();
 
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
   AdvanceHandshakeWithFakeClient();
@@ -242,7 +245,7 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
 TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
                               true);
-  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
+  InitializeServer();
 
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
   AdvanceHandshakeWithFakeClient();
@@ -269,7 +272,6 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   // Now create new client and server streams with the existing config
   // and try the handshake again (0-RTT handshake).
   InitializeServer();
-  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
 
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
 
@@ -290,7 +292,7 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
 TEST_P(QuicCryptoServerStreamTest, NoStatelessRejectIfNoClientSupport) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_stateless_reject_support,
                               true);
-  server_stream()->set_use_stateless_rejects_if_peer_supported(true);
+  InitializeServer();
 
   // The server is configured to use stateless rejects, but the client does not
   // support it.

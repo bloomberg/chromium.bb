@@ -20,7 +20,7 @@ using net::test::ConstructMisFramedEncryptedPacket;
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
-using net::test::MockHelper;
+using net::test::MockConnectionHelper;
 using net::test::PacketSavingConnection;
 using net::test::QuicSpdySessionPeer;
 using net::test::SupportedVersions;
@@ -60,12 +60,13 @@ class ToolsQuicClientSessionTest
 
   void CompleteCryptoHandshake() {
     session_->CryptoConnect();
-    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_,
-                                             session_->GetCryptoStream());
+    QuicCryptoClientStream* stream =
+        static_cast<QuicCryptoClientStream*>(session_->GetCryptoStream());
+    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_, stream);
   }
 
   QuicCryptoClientConfig crypto_config_;
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   PacketSavingConnection* connection_;
   scoped_ptr<QuicClientSession> session_;
 };

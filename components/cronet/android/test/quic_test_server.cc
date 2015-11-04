@@ -50,7 +50,8 @@ void StartOnServerThread(const base::FilePath& test_files_root) {
   net::ProofSourceChromium* proof_source = new net::ProofSourceChromium();
   CHECK(proof_source->Initialize(
       directory.Append("quic_test.example.com.crt"),
-      directory.Append("quic_test.example.com.key.pkcs8")));
+      directory.Append("quic_test.example.com.key.pkcs8"),
+      directory.Append("quic_test.example.com.key.sct")));
   g_quic_server = new net::tools::QuicSimpleServer(
       proof_source, config, net::QuicSupportedVersions());
 

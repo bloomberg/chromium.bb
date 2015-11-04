@@ -176,7 +176,7 @@ void QuicFlowController::MaybeSendWindowUpdate() {
   if (available_window >= threshold) {
     DVLOG(1) << ENDPOINT << "Not sending WindowUpdate for stream " << id_
              << ", available window: " << available_window
-             << ">= threshold: " << threshold;
+             << " >= threshold: " << threshold;
     return;
   }
 

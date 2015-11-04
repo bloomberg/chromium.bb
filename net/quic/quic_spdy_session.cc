@@ -72,9 +72,13 @@ size_t QuicSpdySession::WriteHeaders(
                                        ack_notifier_delegate);
 }
 
+void QuicSpdySession::OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) {
+  // Implemented in Chromium for stats tracking.
+}
+
 QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(
     const QuicStreamId stream_id) {
-  return static_cast<QuicSpdyStream*>(GetDynamicStream(stream_id));
+  return static_cast<QuicSpdyStream*>(GetOrCreateDynamicStream(stream_id));
 }
 
 }  // namespace net

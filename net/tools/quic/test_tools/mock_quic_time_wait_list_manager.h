@@ -25,15 +25,16 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
                void(QuicConnectionId connection_id,
                     QuicVersion version,
                     bool connection_rejected_statelessly,
-                    QuicEncryptedPacket* close_packet));
+                    std::vector<QuicEncryptedPacket*>* termination_packets));
 
   void QuicTimeWaitListManager_AddConnectionIdToTimeWait(
       QuicConnectionId connection_id,
       QuicVersion version,
       bool connection_rejected_statelessly,
-      QuicEncryptedPacket* close_packet) {
+      std::vector<QuicEncryptedPacket*>* termination_packets) {
     QuicTimeWaitListManager::AddConnectionIdToTimeWait(
-        connection_id, version, connection_rejected_statelessly, close_packet);
+        connection_id, version, connection_rejected_statelessly,
+        termination_packets);
   }
 
   MOCK_METHOD5(ProcessPacket,

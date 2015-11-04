@@ -346,6 +346,8 @@ enum QuicVersion {
   QUIC_VERSION_26 = 26,  // In CHLO, send XLCT tag containing hash of leaf cert
   QUIC_VERSION_27 = 27,  // Sends a nonce in the SHLO.
   QUIC_VERSION_28 = 28,  // Receiver can refuse to create a requested stream.
+  QUIC_VERSION_29 = 29,  // Server and client honor QUIC_STREAM_NO_ERROR.
+  QUIC_VERSION_30 = 30,  // Add server side support of cert transparency.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -356,7 +358,8 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
-    QUIC_VERSION_28, QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
+    QUIC_VERSION_30, QUIC_VERSION_29, QUIC_VERSION_28,
+    QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -418,6 +421,8 @@ GetStartOfEncryptedData(QuicConnectionIdLength connection_id_length,
                         QuicPacketNumberLength packet_number_length);
 
 enum QuicRstStreamErrorCode {
+  // Complete response has been sent, sending a RST to ask the other endpoint
+  // to stop sending request data without discarding the response.
   QUIC_STREAM_NO_ERROR = 0,
 
   // There was some error which halted stream processing.
@@ -490,8 +495,6 @@ enum QuicErrorCode {
   // ACK frame data is malformed.
   QUIC_INVALID_ACK_DATA = 9,
 
-  // deprecated: QUIC_INVALID_CONGESTION_FEEDBACK_DATA = 47,
-
   // Version negotiation packet is malformed.
   QUIC_INVALID_VERSION_NEGOTIATION_PACKET = 10,
   // Public RST packet is malformed.
@@ -502,8 +505,6 @@ enum QuicErrorCode {
   QUIC_ENCRYPTION_FAILURE = 13,
   // The packet exceeded kMaxPacketSize.
   QUIC_PACKET_TOO_LARGE = 14,
-  // Data was sent for a stream which did not exist.
-  QUIC_PACKET_FOR_NONEXISTENT_STREAM = 15,
   // The peer is going away.  May be a client or server.
   QUIC_PEER_GOING_AWAY = 16,
   // A stream ID was invalid.
@@ -520,8 +521,6 @@ enum QuicErrorCode {
   QUIC_PUBLIC_RESET = 19,
   // Invalid protocol version.
   QUIC_INVALID_VERSION = 20,
-
-  // deprecated: QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED = 21
 
   // The Header ID for a stream was too far from the previous.
   QUIC_INVALID_HEADER_ID = 22,
@@ -868,9 +867,9 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   // The set of packets which we're expecting and have not received.
   PacketNumberQueue missing_packets;
 
-  // Packets which have been revived via FEC.
-  // All of these must also be in missing_packets.
-  PacketNumberSet revived_packets;
+  // Packet most recently revived via FEC, 0 if no packet was revived by FEC.
+  // If non-zero, must be present in missing_packets.
+  QuicPacketNumber latest_revived_packet;
 };
 
 // True if the packet number is greater than largest_observed or is listed
@@ -986,6 +985,23 @@ enum EncryptionLevel {
   ENCRYPTION_FORWARD_SECURE = 2,
 
   NUM_ENCRYPTION_LEVELS,
+};
+
+enum PeerAddressChangeType {
+  NO_CHANGE,
+  // Peer address changes which are considered to be cause by NATs. Currently,
+  // IPv4 address change with /24 does not change is considered to be cause by
+  // NATs.
+  NAT_PORT_REBINDING,
+  IPV4_SUBNET_REBINDING,
+  // IPv6 related address changes.
+  IPV4_TO_IPV6,
+  IPV6_TO_IPV4,
+  IPV6_TO_IPV6,
+  // This type is used when we always allow peer address changes.
+  UNKNOWN,
+  // All other peer address change types.
+  UNSPECIFIED,
 };
 
 struct NET_EXPORT_PRIVATE QuicFrame {
@@ -1150,6 +1166,15 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   SerializedPacket(QuicPacketNumber packet_number,
                    QuicPacketNumberLength packet_number_length,
                    QuicEncryptedPacket* packet,
+                   QuicPacketEntropyHash entropy_hash,
+                   RetransmittableFrames* retransmittable_frames,
+                   bool has_ack,
+                   bool has_stop_waiting);
+  SerializedPacket(QuicPacketNumber packet_number,
+                   QuicPacketNumberLength packet_number_length,
+                   char* encrypted_buffer,
+                   size_t encrypted_length,
+                   bool owns_buffer,
                    QuicPacketEntropyHash entropy_hash,
                    RetransmittableFrames* retransmittable_frames,
                    bool has_ack,

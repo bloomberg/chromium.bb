@@ -226,10 +226,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // To turn off FEC protection, use StopFecProtectingPackets().
   void set_max_packets_per_fec_group(size_t max_packets_per_fec_group);
 
-  // Returns the currently open FEC group's number. If there isn't an open FEC
-  // group, returns the last closed FEC group number. Returns 0 when FEC is
-  // disabled or no FEC group has been created yet.
-  QuicFecGroupNumber fec_group_number() { return fec_group_number_; }
+  // Returns the currently open FEC group's number.  Returns 0 when FEC is
+  // disabled or no FEC group is open.
+  QuicFecGroupNumber fec_group_number();
 
  private:
   friend class test::QuicPacketCreatorPeer;
@@ -276,7 +275,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   QuicPacketNumber packet_number_;
   // If true, any created packets will be FEC protected.
   bool should_fec_protect_;
-  QuicFecGroupNumber fec_group_number_;
   scoped_ptr<QuicFecGroup> fec_group_;
   // Controls whether protocol version should be included while serializing the
   // packet.

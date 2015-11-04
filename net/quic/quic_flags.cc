@@ -111,3 +111,7 @@ bool FLAGS_quic_count_unfinished_as_open_streams = true;
 
 // If true, use the unrolled prefetch path in QuicPacketCreator::CopyToBuffer.
 bool FLAGS_quic_packet_creator_prefetch = false;
+
+// If true, only migrate QUIC connections when client address changes are
+// considered to be caused by NATs.
+bool FLAGS_quic_disable_non_nat_address_migration = true;

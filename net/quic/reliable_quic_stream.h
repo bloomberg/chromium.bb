@@ -114,6 +114,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   void set_fec_policy(FecPolicy fec_policy) { fec_policy_ = fec_policy; }
   FecPolicy fec_policy() const { return fec_policy_; }
 
+  void set_rst_received(bool rst_received) { rst_received_ = rst_received; }
+  void set_stream_error(QuicRstStreamErrorCode error) { stream_error_ = error; }
+
   // Adjust the flow control window according to new offset in |frame|.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
 

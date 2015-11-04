@@ -21,12 +21,6 @@ namespace tools {
 using std::make_pair;
 using base::StringPiece;
 
-// The threshold size for the session map, over which the dispatcher will start
-// sending stateless rejects (SREJ), rather than stateful rejects (REJ) to
-// clients who support them.  If -1, stateless rejects will not be sent.  If 0,
-// the server will only send stateless rejects to clients who support them.
-int32 FLAGS_quic_session_map_threshold_for_stateless_rejects = -1;
-
 namespace {
 
 // An alarm that informs the QuicDispatcher to delete old sessions.
@@ -209,7 +203,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
   current_packet_ = &packet;
   // ProcessPacket will cause the packet to be dispatched in
   // OnUnauthenticatedPublicHeader, or sent to the time wait list manager
-  // in OnAuthenticatedHeader.
+  // in OnUnauthenticatedHeader.
   framer_.ProcessPacket(packet);
   // TODO(rjshade): Return a status describing if/why a packet was dropped,
   //                and log somehow.  Maybe expose as a varz.
@@ -359,13 +353,15 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
 void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
                                     bool should_close_statelessly) {
   QuicConnection* connection = it->second->connection();
-  QuicEncryptedPacket* connection_close_packet =
-      connection->ReleaseConnectionClosePacket();
+
   write_blocked_list_.erase(connection);
-  DCHECK(!should_close_statelessly || !connection_close_packet);
+  if (should_close_statelessly) {
+    DCHECK(connection->termination_packets() != nullptr &&
+           !connection->termination_packets()->empty());
+  }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
       it->first, connection->version(), should_close_statelessly,
-      connection_close_packet);
+      connection->termination_packets());
   session_map_.erase(it);
 }
 
@@ -460,12 +456,6 @@ QuicServerSession* QuicDispatcher::CreateQuicSession(
   QuicServerSession* session =
       new QuicServerSession(config_, connection, this, crypto_config_);
   session->Initialize();
-  if (FLAGS_quic_session_map_threshold_for_stateless_rejects != -1 &&
-      session_map_.size() >=
-          static_cast<size_t>(
-              FLAGS_quic_session_map_threshold_for_stateless_rejects)) {
-    session->set_use_stateless_rejects_if_peer_supported(true);
-  }
   return session;
 }
 

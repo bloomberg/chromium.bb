@@ -271,6 +271,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   //
   // |cached_network_params| is optional, and can be nullptr.
   bool BuildServerConfigUpdateMessage(
+      QuicVersion version,
       const SourceAddressTokens& previous_source_address_tokens,
       const IPAddressNumber& server_ip,
       const IPAddressNumber& client_ip,
@@ -337,6 +338,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // client hellos for longer and still use server nonces as proofs of
   // uniqueness.
   void set_server_nonce_strike_register_window_secs(uint32 window_secs);
+
+  // set_enable_serving_sct enables or disables serving signed cert timestamp
+  // (RFC6962) in server hello.
+  void set_enable_serving_sct(bool enable_serving_sct);
 
   // Set and take ownership of the callback to invoke on primary config changes.
   void AcquirePrimaryConfigChangedCb(PrimaryConfigChangedCallback* cb);
@@ -438,7 +443,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       ValidateClientHelloResultCallback* done_cb) const;
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
-  void BuildRejection(const Config& config,
+  void BuildRejection(QuicVersion version,
+                      const Config& config,
                       const CryptoHandshakeMessage& client_hello,
                       const ClientHelloInfo& info,
                       const CachedNetworkParameters& cached_network_params,
@@ -592,6 +598,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   uint32 source_address_token_lifetime_secs_;
   uint32 server_nonce_strike_register_max_entries_;
   uint32 server_nonce_strike_register_window_secs_;
+
+  // Enable serving SCT or not.
+  bool enable_serving_sct_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerConfig);
 };

@@ -211,18 +211,12 @@ vector<TestParams> GetTestParams() {
 
 class ServerDelegate : public PacketDroppingTestWriter::Delegate {
  public:
-  ServerDelegate(TestWriterFactory* writer_factory,
-                 QuicDispatcher* dispatcher)
-      : writer_factory_(writer_factory),
-        dispatcher_(dispatcher) {}
+  explicit ServerDelegate(QuicDispatcher* dispatcher)
+      : dispatcher_(dispatcher) {}
   ~ServerDelegate() override {}
-  void OnPacketSent(WriteResult result) override {
-    writer_factory_->OnPacketSent(result);
-  }
   void OnCanWrite() override { dispatcher_->OnCanWrite(); }
 
  private:
-  TestWriterFactory* writer_factory_;
   QuicDispatcher* dispatcher_;
 };
 
@@ -230,7 +224,6 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
  public:
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   ~ClientDelegate() override {}
-  void OnPacketSent(WriteResult /*result*/) override {}
   void OnCanWrite() override {
     EpollEvent event(EPOLLOUT, false);
     client_->OnEvent(client_->fd(), &event);
@@ -400,19 +393,11 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                                                packet_writer_factory);
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
 
-    if (GetParam().server_uses_stateless_rejects_if_peer_supported) {
-      // Enable stateless rejects and force the server to always send
-      // them.
-      FLAGS_enable_quic_stateless_reject_support = true;
-      FLAGS_quic_session_map_threshold_for_stateless_rejects = 0;
-    } else {
-      FLAGS_enable_quic_stateless_reject_support = false;
-      FLAGS_quic_session_map_threshold_for_stateless_rejects = -1;
-    }
+    FLAGS_enable_quic_stateless_reject_support =
+        GetParam().server_uses_stateless_rejects_if_peer_supported;
 
-    server_writer_->Initialize(
-        QuicDispatcherPeer::GetHelper(dispatcher),
-        new ServerDelegate(packet_writer_factory, dispatcher));
+    server_writer_->Initialize(QuicDispatcherPeer::GetHelper(dispatcher),
+                               new ServerDelegate(dispatcher));
     if (stream_factory_ != nullptr) {
       static_cast<QuicTestServer*>(server_thread_->server())
           ->SetSpdyStreamFactory(stream_factory_);
@@ -474,7 +459,11 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     //   EXPECT_EQ(0u, client_stats.packets_lost);
     // }
     EXPECT_EQ(0u, client_stats.packets_discarded);
-    EXPECT_EQ(0u, client_stats.packets_dropped);
+    // When doing 0-RTT with stateless rejects, the encrypted requests cause
+    // a retranmission of the SREJ packets which are dropped by the client.
+    if (!BothSidesSupportStatelessRejects()) {
+      EXPECT_EQ(0u, client_stats.packets_dropped);
+    }
     EXPECT_EQ(client_stats.packets_received, client_stats.packets_processed);
 
     const int num_expected_stateless_rejects =
@@ -926,22 +915,9 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
 TEST_P(EndToEndTest, StatelessRejectWithPacketLoss) {
   // In this test, we intentionally drop the first packet from the
   // server, which corresponds with the initial REJ/SREJ response from
-  // the server.  The REJ case will succeed, due to redundancy in the
-  // stateful handshake.  The SREJ will fail, because there is
-  // (currently) no way to recover from a loss of the first SREJ, and
-  // all remaining state for the first handshake is black-holed on the
-  // time-wait list.
-  // TODO(jokulik): Once redundant SREJ support is added, this test
-  // should succeed.
+  // the server.
   server_writer_->set_fake_drop_first_n_packets(1);
-  // If this test will involve version negotiation then the version
-  // negotiation packet will be dropped, not the SREJ, and since the
-  // version negotiation packet will be retransmitted the test will
-  // succeed.
-  const bool will_succeed =
-      !BothSidesSupportStatelessRejects() ||
-      negotiated_version_ != client_supported_versions_.front();
-  ASSERT_EQ(will_succeed, Initialize());
+  ASSERT_TRUE(Initialize());
 }
 
 TEST_P(EndToEndTest, SetInitialReceivedConnectionOptions) {
@@ -1073,7 +1049,8 @@ TEST_P(EndToEndTest, InvalidStream) {
 
   client_->SendCustomSynchronousRequest(request);
   // EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
-  EXPECT_EQ(QUIC_PACKET_FOR_NONEXISTENT_STREAM, client_->connection_error());
+  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
+  EXPECT_EQ(QUIC_INVALID_STREAM_ID, client_->connection_error());
 }
 
 // TODO(rch): this test seems to cause net_unittests timeouts :|
@@ -1721,7 +1698,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
   // Send another request to flush out any pending ACKs on the server.
-  client_->SendSynchronousRequest(request_string);
+  client_->SendSynchronousRequest("/bar");
 
   // Pause the server to avoid races.
   server_thread_->Pause();

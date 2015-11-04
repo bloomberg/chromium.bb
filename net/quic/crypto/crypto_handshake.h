@@ -137,6 +137,10 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   // Used to generate cert chain when sending server config updates.
   std::string client_common_set_hashes;
   std::string client_cached_cert_hashes;
+
+  // Default to false; set to true if the client indicates that it supports sct
+  // by sending CSCT tag with an empty value in client hello.
+  bool sct_supported_by_client;
 };
 
 struct NET_EXPORT_PRIVATE QuicCryptoProof {
@@ -146,6 +150,7 @@ struct NET_EXPORT_PRIVATE QuicCryptoProof {
   std::string signature;
   // QuicCryptoProof does not take ownership of |certs|.
   const std::vector<std::string>* certs;
+  std::string cert_sct;
 };
 
 // QuicCryptoConfig contains common configuration between clients and servers.

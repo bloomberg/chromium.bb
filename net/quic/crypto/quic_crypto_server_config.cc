@@ -223,7 +223,8 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       source_address_token_future_secs_(3600),
       source_address_token_lifetime_secs_(86400),
       server_nonce_strike_register_max_entries_(1 << 10),
-      server_nonce_strike_register_window_secs_(120) {
+      server_nonce_strike_register_window_secs_(120),
+      enable_serving_sct_(false) {
   DCHECK(proof_source_.get());
   default_source_address_token_boxer_.SetKey(
       DeriveSourceAddressTokenKey(source_address_token_secret));
@@ -611,13 +612,21 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   if (!crypto_proof->certs &&
       !proof_source_->GetProof(server_ip, info.sni.as_string(),
                                primary_config->serialized, x509_ecdsa_supported,
-                               &crypto_proof->certs,
-                               &crypto_proof->signature)) {
+                               &crypto_proof->certs, &crypto_proof->signature,
+                               &crypto_proof->cert_sct)) {
     return QUIC_HANDSHAKE_FAILED;
   }
 
+  if (version > QUIC_VERSION_29) {
+    StringPiece cert_sct;
+    if (client_hello.GetStringPiece(kCertificateSCTTag, &cert_sct) &&
+        cert_sct.empty()) {
+      params->sct_supported_by_client = true;
+    }
+  }
+
   if (!info.reject_reasons.empty() || !requested_config.get()) {
-    BuildRejection(*primary_config, client_hello, info,
+    BuildRejection(version, *primary_config, client_hello, info,
                    validate_chlo_result.cached_network_params,
                    use_stateless_rejects, server_designated_connection_id, rand,
                    params, *crypto_proof, out);
@@ -1014,10 +1023,10 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     bool x509_supported = false;
     bool x509_ecdsa_supported = false;
     ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
-    if (!proof_source_->GetProof(server_ip, info->sni.as_string(),
-                                 requested_config->serialized,
-                                 x509_ecdsa_supported, &crypto_proof->certs,
-                                 &crypto_proof->signature)) {
+    if (!proof_source_->GetProof(
+            server_ip, info->sni.as_string(), requested_config->serialized,
+            x509_ecdsa_supported, &crypto_proof->certs,
+            &crypto_proof->signature, &crypto_proof->cert_sct)) {
       found_error = true;
       info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
     }
@@ -1115,6 +1124,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 }
 
 bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
+    QuicVersion version,
     const SourceAddressTokens& previous_source_address_tokens,
     const IPAddressNumber& server_ip,
     const IPAddressNumber& client_ip,
@@ -1134,9 +1144,10 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
 
   const vector<string>* certs;
   string signature;
+  string cert_sct;
   if (!proof_source_->GetProof(
           server_ip, params.sni, primary_config_->serialized,
-          params.x509_ecdsa_supported, &certs, &signature)) {
+          params.x509_ecdsa_supported, &certs, &signature, &cert_sct)) {
     DVLOG(1) << "Server: failed to get proof.";
     return false;
   }
@@ -1147,10 +1158,19 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
 
   out->SetStringPiece(kCertificateTag, compressed);
   out->SetStringPiece(kPROF, signature);
+  if (params.sct_supported_by_client && version > QUIC_VERSION_29 &&
+      enable_serving_sct_) {
+    if (cert_sct.empty()) {
+      DLOG(WARNING) << "SCT is expected but it is empty.";
+    } else {
+      out->SetStringPiece(kCertificateSCTTag, cert_sct);
+    }
+  }
   return true;
 }
 
 void QuicCryptoServerConfig::BuildRejection(
+    QuicVersion version,
     const Config& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
@@ -1215,19 +1235,30 @@ void QuicCryptoServerConfig::BuildRejection(
   const size_t kREJOverheadBytes = 166;
   // kMultiplier is the multiple of the CHLO message size that a REJ message
   // must stay under when the client doesn't present a valid source-address
-  // token.
+  // token. This is used to protect QUIC from amplification attacks.
   const size_t kMultiplier = 2;
-  // max_unverified_size is the number of bytes that the certificate chain
-  // and signature can consume before we will demand a valid source-address
-  // token.
+  // max_unverified_size is the number of bytes that the certificate chain,
+  // signature, and (optionally) signed certificate timestamp can consume before
+  // we will demand a valid source-address token.
   const size_t max_unverified_size =
       client_hello.size() * kMultiplier - kREJOverheadBytes;
   static_assert(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
-                "overhead calculation may overflow");
+                "overhead calculation may underflow");
+  bool should_return_sct = params->sct_supported_by_client &&
+                           version > QUIC_VERSION_29 && enable_serving_sct_;
+  const size_t sct_size = should_return_sct ? crypto_proof.cert_sct.size() : 0;
   if (info.valid_source_address_token ||
-      crypto_proof.signature.size() + compressed.size() < max_unverified_size) {
+      crypto_proof.signature.size() + compressed.size() + sct_size <
+          max_unverified_size) {
     out->SetStringPiece(kCertificateTag, compressed);
     out->SetStringPiece(kPROF, crypto_proof.signature);
+    if (should_return_sct) {
+      if (crypto_proof.cert_sct.empty()) {
+        DLOG(WARNING) << "SCT is expected but it is empty.";
+      } else {
+        out->SetStringPiece(kCertificateSCTTag, crypto_proof.cert_sct);
+      }
+    }
   }
 }
 
@@ -1450,6 +1481,10 @@ void QuicCryptoServerConfig::set_server_nonce_strike_register_window_secs(
     uint32 window_secs) {
   DCHECK(!server_nonce_strike_register_.get());
   server_nonce_strike_register_window_secs_ = window_secs;
+}
+
+void QuicCryptoServerConfig::set_enable_serving_sct(bool enable_serving_sct) {
+  enable_serving_sct_ = enable_serving_sct;
 }
 
 void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(

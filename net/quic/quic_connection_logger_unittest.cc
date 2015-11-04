@@ -39,7 +39,7 @@ class QuicConnectionLoggerTest : public ::testing::Test {
                 net_log_) {}
 
   BoundNetLog net_log_;
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   MockQuicSpdySession session_;
   QuicConnectionLogger logger_;
 };

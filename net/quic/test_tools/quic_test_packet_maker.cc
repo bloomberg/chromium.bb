@@ -92,10 +92,11 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
-      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize));
-  EXPECT_TRUE(encrypted != nullptr);
-  return scoped_ptr<QuicEncryptedPacket>(encrypted->Clone());
+  size_t encrypted_size = framer.EncryptPayload(
+      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  EXPECT_NE(0u, encrypted_size);
+  QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
+  return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
 }
 
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeConnectionClosePacket(
@@ -149,10 +150,11 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
-      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize));
-  EXPECT_TRUE(encrypted != nullptr);
-  return scoped_ptr<QuicEncryptedPacket>(encrypted->Clone());
+  size_t encrypted_size = framer.EncryptPayload(
+      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  EXPECT_NE(0u, encrypted_size);
+  QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
+  return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
 }
 
 // Returns a newly created packet to send kData on stream 1.
@@ -282,10 +284,11 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
-      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize));
-  EXPECT_TRUE(encrypted != nullptr);
-  return scoped_ptr<QuicEncryptedPacket>(encrypted->Clone());
+  size_t encrypted_size = framer.EncryptPayload(
+      ENCRYPTION_NONE, header.packet_number, *packet, buffer, kMaxPacketSize);
+  EXPECT_NE(0u, encrypted_size);
+  QuicEncryptedPacket encrypted(buffer, encrypted_size, false);
+  return scoped_ptr<QuicEncryptedPacket>(encrypted.Clone());
 }
 
 void QuicTestPacketMaker::InitializeHeader(QuicPacketNumber packet_number,

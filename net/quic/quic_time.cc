@@ -11,51 +11,55 @@
 namespace net {
 
 uint64 QuicWallTime::ToUNIXSeconds() const {
-  return seconds_;
+  return microseconds_ / 1000000;
+}
+
+uint64 QuicWallTime::ToUNIXMicroseconds() const {
+  return microseconds_;
 }
 
 bool QuicWallTime::IsAfter(QuicWallTime other) const {
-  return seconds_ > other.seconds_;
+  return microseconds_ > other.microseconds_;
 }
 
 bool QuicWallTime::IsBefore(QuicWallTime other) const {
-  return seconds_ < other.seconds_;
+  return microseconds_ < other.microseconds_;
 }
 
 bool QuicWallTime::IsZero() const {
-  return seconds_ == 0;
+  return microseconds_ == 0;
 }
 
 QuicTime::Delta QuicWallTime::AbsoluteDifference(QuicWallTime other) const {
   uint64 d;
 
-  if (seconds_ > other.seconds_) {
-    d = seconds_ - other.seconds_;
+  if (microseconds_ > other.microseconds_) {
+    d = microseconds_ - other.microseconds_;
   } else {
-    d = other.seconds_ - seconds_;
+    d = other.microseconds_ - microseconds_;
   }
 
   if (d > static_cast<uint64>(kint64max)) {
     d = kint64max;
   }
-  return QuicTime::Delta::FromSeconds(d);
+  return QuicTime::Delta::FromMicroseconds(d);
 }
 
 QuicWallTime QuicWallTime::Add(QuicTime::Delta delta) const {
-  uint64 seconds = seconds_ + delta.ToSeconds();
-  if (seconds < seconds_) {
-    seconds = kuint64max;
+  uint64 microseconds = microseconds_ + delta.ToMicroseconds();
+  if (microseconds < microseconds_) {
+    microseconds = kuint64max;
   }
-  return QuicWallTime(seconds);
+  return QuicWallTime(microseconds);
 }
 
 // TODO(ianswett) Test this.
 QuicWallTime QuicWallTime::Subtract(QuicTime::Delta delta) const {
-  uint64 seconds = seconds_ - delta.ToSeconds();
-  if (seconds > seconds_) {
-    seconds = 0;
+  uint64 microseconds = microseconds_ - delta.ToMicroseconds();
+  if (microseconds > microseconds_) {
+    microseconds = 0;
   }
-  return QuicWallTime(seconds);
+  return QuicWallTime(microseconds);
 }
 
 }  // namespace net

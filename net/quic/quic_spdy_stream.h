@@ -78,6 +78,10 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // should be closed; no more data will be sent by the peer.
   virtual void OnStreamHeadersComplete(bool fin, size_t frame_len);
 
+  // Override the base class to not discard response when receiving
+  // QUIC_STREAM_NO_ERROR on QUIC_VERSION_29 and later versions.
+  void OnStreamReset(const QuicRstStreamFrame& frame) override;
+
   // Writes the headers contained in |header_block| to the dedicated
   // headers stream.
   virtual size_t WriteHeaders(const SpdyHeaderBlock& header_block,

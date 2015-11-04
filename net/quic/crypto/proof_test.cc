@@ -118,18 +118,20 @@ TEST(ProofTest, DISABLED_Verify) {
   const string hostname = "test.example.com";
   const vector<string>* certs;
   const vector<string>* first_certs;
-  string error_details, signature, first_signature;
+  string error_details, signature, first_signature, first_cert_sct, cert_sct;
   IPAddressNumber server_ip;
 
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
                                false /* no ECDSA */, &first_certs,
-                               &first_signature));
+                               &first_signature, &first_cert_sct));
   ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
-                               false /* no ECDSA */, &certs, &signature));
+                               false /* no ECDSA */, &certs, &signature,
+                               &cert_sct));
 
   // Check that the proof source is caching correctly:
   ASSERT_EQ(first_certs, certs);
   ASSERT_EQ(signature, first_signature);
+  ASSERT_EQ(first_cert_sct, cert_sct);
 
   RunVerification(
       verifier.get(), hostname, server_config, *certs, signature, true);

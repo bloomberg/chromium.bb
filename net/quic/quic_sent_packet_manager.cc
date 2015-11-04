@@ -326,10 +326,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
   }
 
   // Discard any retransmittable frames associated with revived packets.
-  for (PacketNumberSet::const_iterator revived_it =
-           ack_frame.revived_packets.begin();
-       revived_it != ack_frame.revived_packets.end(); ++revived_it) {
-    MarkPacketRevived(*revived_it, delta_largest_observed);
+  if (ack_frame.latest_revived_packet != 0) {
+    MarkPacketRevived(ack_frame.latest_revived_packet, delta_largest_observed);
   }
 }
 

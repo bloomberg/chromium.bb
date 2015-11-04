@@ -92,15 +92,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
     return use_stateless_rejects_if_peer_supported_;
   }
 
-  // Used by the quic dispatcher to indicate that this crypto server
-  // stream should use stateless rejects, so long as stateless rejects
-  // are supported by the client.
-  void set_use_stateless_rejects_if_peer_supported(
-      bool use_stateless_rejects_if_peer_supported) {
-    use_stateless_rejects_if_peer_supported_ =
-        use_stateless_rejects_if_peer_supported;
-  }
-
   bool peer_supports_stateless_rejects() const {
     return peer_supports_stateless_rejects_;
   }

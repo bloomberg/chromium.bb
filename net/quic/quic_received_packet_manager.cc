@@ -179,13 +179,15 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   ack_frame_.received_packet_times.push_back(
       std::make_pair(packet_number, receipt_time));
 
-  ack_frame_.revived_packets.erase(packet_number);
+  if (ack_frame_.latest_revived_packet == packet_number) {
+    ack_frame_.latest_revived_packet = 0;
+  }
 }
 
 void QuicReceivedPacketManager::RecordPacketRevived(
     QuicPacketNumber packet_number) {
   LOG_IF(DFATAL, !IsAwaitingPacket(packet_number));
-  ack_frame_.revived_packets.insert(packet_number);
+  ack_frame_.latest_revived_packet = packet_number;
 }
 
 bool QuicReceivedPacketManager::IsMissing(QuicPacketNumber packet_number) {
@@ -253,9 +255,9 @@ QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(
 
 bool QuicReceivedPacketManager::DontWaitForPacketsBefore(
     QuicPacketNumber least_unacked) {
-  ack_frame_.revived_packets.erase(
-      ack_frame_.revived_packets.begin(),
-      ack_frame_.revived_packets.lower_bound(least_unacked));
+  if (ack_frame_.latest_revived_packet < least_unacked) {
+    ack_frame_.latest_revived_packet = 0;
+  }
   return ack_frame_.missing_packets.RemoveUpTo(least_unacked);
 }
 

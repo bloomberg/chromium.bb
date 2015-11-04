@@ -61,7 +61,7 @@ class QuicCryptoStreamTest : public ::testing::Test {
   }
 
  protected:
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   MockConnection* connection_;
   MockQuicSpdySession session_;
   MockQuicCryptoStream stream_;

@@ -304,11 +304,7 @@ size_t QuicFramer::GetSerializedFrameLength(
     DVLOG(1) << "Truncating large frame, free bytes: " << free_bytes;
     return free_bytes;
   }
-  if (!FLAGS_quic_allow_oversized_packets_for_test) {
-    return 0;
-  }
-  LOG(DFATAL) << "Packet size too small to fit frame.";
-  return frame_len;
+  return 0;
 }
 
 QuicFramer::AckFrameInfo::AckFrameInfo() : max_delta(0) {}
@@ -1363,6 +1359,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
   }
 
   // Parse the revived packets list.
+  // TODO(ianswett): Change the ack frame so it only expresses one revived.
   uint8 num_revived_packets;
   if (!reader->ReadBytes(&num_revived_packets, 1)) {
     set_detailed_error("Unable to read num revived packets.");
@@ -1376,8 +1373,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
       set_detailed_error("Unable to read revived packet.");
       return false;
     }
-
-    ack_frame->revived_packets.insert(revived_packet);
+    ack_frame->latest_revived_packet = revived_packet;
   }
 
   return true;
@@ -1614,44 +1610,28 @@ void QuicFramer::SetEncrypter(EncryptionLevel level,
   encrypter_[level].reset(encrypter);
 }
 
-QuicEncryptedPacket* QuicFramer::EncryptPayload(EncryptionLevel level,
-                                                QuicPacketNumber packet_number,
-                                                const QuicPacket& packet,
-                                                char* buffer,
-                                                size_t buffer_len) {
+size_t QuicFramer::EncryptPayload(EncryptionLevel level,
+                                  QuicPacketNumber packet_number,
+                                  const QuicPacket& packet,
+                                  char* buffer,
+                                  size_t buffer_len) {
   DCHECK(encrypter_[level].get() != nullptr);
 
-  const size_t encrypted_len =
-      encrypter_[level]->GetCiphertextSize(packet.Plaintext().length());
   StringPiece header_data = packet.BeforePlaintext();
-  const size_t total_len = header_data.length() + encrypted_len;
-
-  char* encryption_buffer = buffer;
-  // Allocate a large enough buffer for the header and the encrypted data.
-  const bool is_new_buffer = total_len > buffer_len;
-  if (is_new_buffer) {
-    if (!FLAGS_quic_allow_oversized_packets_for_test) {
-      LOG(DFATAL) << "Buffer of length:" << buffer_len
-                  << " is not large enough to encrypt length " << total_len;
-      return nullptr;
-    }
-    encryption_buffer = new char[total_len];
-  }
   // Copy in the header, because the encrypter only populates the encrypted
   // plaintext content.
-  memcpy(encryption_buffer, header_data.data(), header_data.length());
+  const size_t header_len = header_data.length();
+  memcpy(buffer, header_data.data(), header_len);
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
   if (!encrypter_[level]->EncryptPacket(
           packet_number, packet.AssociatedData(), packet.Plaintext(),
-          encryption_buffer + header_data.length(), &output_length,
-          encrypted_len)) {
+          buffer + header_len, &output_length, buffer_len - header_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
-    return nullptr;
+    return 0;
   }
 
-  return new QuicEncryptedPacket(
-      encryption_buffer, header_data.length() + output_length, is_new_buffer);
+  return header_len + output_length;
 }
 
 size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
@@ -1733,8 +1713,9 @@ size_t QuicFramer::GetAckFrameSize(
     ack_size += kNumberOfNackRangesSize  + kNumberOfRevivedPacketsSize;
     ack_size += min(ack_info.nack_ranges.size(), kMaxNackRanges) *
                 (missing_packet_number_length + PACKET_1BYTE_PACKET_NUMBER);
-    ack_size += min(ack.revived_packets.size(),
-                    kMaxRevivedPackets) * largest_observed_length;
+    if (ack.latest_revived_packet != 0) {
+      ack_size += largest_observed_length;
+    }
   }
 
   // In version 23, if the ack will be truncated due to too many nack ranges,
@@ -2026,20 +2007,20 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
 
   // Append revived packets.
   // If not all the revived packets fit, only mention the ones that do.
-  uint8 num_revived_packets =
-      static_cast<uint8>(min(frame.revived_packets.size(), kMaxRevivedPackets));
-  num_revived_packets = static_cast<uint8>(min(
-      static_cast<size_t>(num_revived_packets),
-      (writer->capacity() - writer->length()) / largest_observed_length));
+  uint8 num_revived_packets = frame.latest_revived_packet == 0 ? 0 : 1;
+  if (((writer->capacity() - writer->length()) / largest_observed_length) ==
+      0) {
+    num_revived_packets = 0;
+  }
   if (!writer->WriteBytes(&num_revived_packets, 1)) {
     return false;
   }
 
-  PacketNumberSet::const_iterator iter = frame.revived_packets.begin();
-  for (int i = 0; i < num_revived_packets; ++i, ++iter) {
-    LOG_IF(DFATAL, !frame.missing_packets.Contains(*iter));
+  if (num_revived_packets > 0) {
+    LOG_IF(DFATAL,
+           !frame.missing_packets.Contains(frame.latest_revived_packet));
     if (!AppendPacketSequenceNumber(largest_observed_length,
-                                    *iter, writer)) {
+                                    frame.latest_revived_packet, writer)) {
       return false;
     }
   }

@@ -147,8 +147,8 @@ class TestSession : public QuicSpdySession {
     return QuicSession::IsClosedStream(id);
   }
 
-  ReliableQuicStream* GetIncomingDynamicStream(QuicStreamId stream_id) {
-    return QuicSpdySession::GetIncomingDynamicStream(stream_id);
+  ReliableQuicStream* GetOrCreateDynamicStream(QuicStreamId stream_id) {
+    return QuicSpdySession::GetOrCreateDynamicStream(stream_id);
   }
 
   QuicConsumedData WritevData(
@@ -245,7 +245,7 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
 
   QuicVersion version() const { return connection_->version(); }
 
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   StrictMock<MockConnection>* connection_;
   TestSession session_;
   set<QuicStreamId> closed_streams_;
@@ -280,12 +280,12 @@ TEST_P(QuicSessionTestServer, IsClosedStreamDefault) {
 }
 
 TEST_P(QuicSessionTestServer, AvailableStreams) {
-  ASSERT_TRUE(session_.GetIncomingDynamicStream(9) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(9) != nullptr);
   // Both 5 and 7 should be available.
   EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 5));
   EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 7));
-  ASSERT_TRUE(session_.GetIncomingDynamicStream(7) != nullptr);
-  ASSERT_TRUE(session_.GetIncomingDynamicStream(5) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(7) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(5) != nullptr);
 }
 
 TEST_P(QuicSessionTestServer, IsClosedStreamLocallyCreated) {
@@ -304,8 +304,8 @@ TEST_P(QuicSessionTestServer, IsClosedStreamLocallyCreated) {
 TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
   QuicStreamId stream_id1 = kClientDataStreamId1;
   QuicStreamId stream_id2 = kClientDataStreamId2;
-  session_.GetIncomingDynamicStream(stream_id1);
-  session_.GetIncomingDynamicStream(stream_id2);
+  session_.GetOrCreateDynamicStream(stream_id1);
+  session_.GetOrCreateDynamicStream(stream_id2);
 
   CheckClosedStreams();
   CloseStream(stream_id1);
@@ -313,7 +313,7 @@ TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
   CloseStream(stream_id2);
   // Create a stream, and make another available.
   ReliableQuicStream* stream3 =
-      session_.GetIncomingDynamicStream(stream_id2 + 4);
+      session_.GetOrCreateDynamicStream(stream_id2 + 4);
   CheckClosedStreams();
   // Close one, but make sure the other is still not closed
   CloseStream(stream3->id());
@@ -322,17 +322,17 @@ TEST_P(QuicSessionTestServer, IsClosedStreamPeerCreated) {
 
 TEST_P(QuicSessionTestServer, MaximumAvailableOpenedStreams) {
   QuicStreamId stream_id = kClientDataStreamId1;
-  session_.GetIncomingDynamicStream(stream_id);
+  session_.GetOrCreateDynamicStream(stream_id);
   EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
   EXPECT_NE(nullptr,
-            session_.GetIncomingDynamicStream(
+            session_.GetOrCreateDynamicStream(
                 stream_id + 2 * (session_.get_max_open_streams() - 1)));
 }
 
 TEST_P(QuicSessionTestServer, TooManyAvailableStreams) {
   QuicStreamId stream_id1 = kClientDataStreamId1;
   QuicStreamId stream_id2;
-  EXPECT_NE(nullptr, session_.GetIncomingDynamicStream(stream_id1));
+  EXPECT_NE(nullptr, session_.GetOrCreateDynamicStream(stream_id1));
   // A stream ID which is too large to create.
   if (FLAGS_allow_many_available_streams) {
     stream_id2 = stream_id1 + 2 * session_.get_max_available_streams() + 4;
@@ -342,7 +342,7 @@ TEST_P(QuicSessionTestServer, TooManyAvailableStreams) {
     stream_id2 = stream_id1 + 2 * session_.get_max_open_streams();
     EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
   }
-  EXPECT_EQ(nullptr, session_.GetIncomingDynamicStream(stream_id2));
+  EXPECT_EQ(nullptr, session_.GetOrCreateDynamicStream(stream_id2));
 }
 
 TEST_P(QuicSessionTestServer, ManyAvailableStreams) {
@@ -351,10 +351,10 @@ TEST_P(QuicSessionTestServer, ManyAvailableStreams) {
   QuicSessionPeer::SetMaxOpenStreams(&session_, 200);
   QuicStreamId stream_id = kClientDataStreamId1;
   // Create one stream.
-  session_.GetIncomingDynamicStream(stream_id);
+  session_.GetOrCreateDynamicStream(stream_id);
   EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
   // Create the largest stream ID of a threatened total of 200 streams.
-  session_.GetIncomingDynamicStream(stream_id + 2 * (200 - 1));
+  session_.GetOrCreateDynamicStream(stream_id + 2 * (200 - 1));
 }
 
 TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
@@ -593,7 +593,7 @@ TEST_P(QuicSessionTestServer, SendGoAway) {
   EXPECT_CALL(*connection_,
               SendRstStream(kTestStreamId, QUIC_STREAM_PEER_GOING_AWAY, 0))
       .Times(0);
-  EXPECT_TRUE(session_.GetIncomingDynamicStream(kTestStreamId));
+  EXPECT_TRUE(session_.GetOrCreateDynamicStream(kTestStreamId));
 }
 
 TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {
@@ -612,7 +612,8 @@ TEST_P(QuicSessionTestServer, RstStreamBeforeHeadersDecompressed) {
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
 
   EXPECT_CALL(*connection_, SendRstStream(kClientDataStreamId1, _, _));
-  QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_STREAM_NO_ERROR, 0);
+  QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM,
+                          0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenStreams());
   // Connection should remain alive.
@@ -1081,12 +1082,12 @@ INSTANTIATE_TEST_CASE_P(Tests,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicSessionTestClient, AvailableStreamsClient) {
-  ASSERT_TRUE(session_.GetIncomingDynamicStream(6) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(6) != nullptr);
   // Both 2 and 4 should be available.
   EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 2));
   EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 4));
-  ASSERT_TRUE(session_.GetIncomingDynamicStream(2) != nullptr);
-  ASSERT_TRUE(session_.GetIncomingDynamicStream(4) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(2) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(4) != nullptr);
   // And 5 should be not available.
   EXPECT_FALSE(QuicSessionPeer::IsStreamAvailable(&session_, 5));
 }

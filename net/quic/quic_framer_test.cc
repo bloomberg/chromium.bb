@@ -2186,7 +2186,7 @@ TEST_P(QuicFramerTest, AckFrame500Nacks) {
   QuicAckFrame* frame = visitor_.ack_frames_[0];
   EXPECT_EQ(0xBA, frame->entropy_hash);
   EXPECT_EQ(UINT64_C(0x0123456789ABF), frame->largest_observed);
-  EXPECT_EQ(0u, frame->revived_packets.size());
+  EXPECT_EQ(0u, frame->latest_revived_packet);
   ASSERT_EQ(500u, frame->missing_packets.NumPacketsSlow());
   EXPECT_EQ(UINT64_C(0x0123456789ABE) - 499, frame->missing_packets.Min());
   EXPECT_EQ(UINT64_C(0x0123456789ABE), frame->missing_packets.Max());
@@ -4023,10 +4023,10 @@ TEST_P(QuicFramerTest, EncryptPacket) {
       AsChars(packet), arraysize(packet), false, PACKET_8BYTE_CONNECTION_ID,
       !kIncludeVersion, PACKET_6BYTE_PACKET_NUMBER));
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
-      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize));
+  size_t encrypted_length = framer_.EncryptPayload(
+      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
-  ASSERT_TRUE(encrypted.get() != nullptr);
+  ASSERT_NE(0u, encrypted_length);
   EXPECT_TRUE(CheckEncryption(packet_number, raw.get()));
 }
 
@@ -4061,10 +4061,10 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
       AsChars(packet), arraysize(packet), false, PACKET_8BYTE_CONNECTION_ID,
       kIncludeVersion, PACKET_6BYTE_PACKET_NUMBER));
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
-      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize));
+  size_t encrypted_length = framer_.EncryptPayload(
+      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
-  ASSERT_TRUE(encrypted.get() != nullptr);
+  ASSERT_NE(0u, encrypted_length);
   EXPECT_TRUE(CheckEncryption(packet_number, raw.get()));
 }
 
@@ -4090,11 +4090,13 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   scoped_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> ack_packet(
+  size_t encrypted_length =
       framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_number,
-                             *raw_ack_packet, buffer, kMaxPacketSize));
+                             *raw_ack_packet, buffer, kMaxPacketSize);
+  ASSERT_NE(0u, encrypted_length);
   // Now make sure we can turn our ack packet back into an ack frame.
-  ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
+  ASSERT_TRUE(framer_.ProcessPacket(
+      QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_TRUE(processed_ack_frame.is_truncated);
@@ -4126,11 +4128,13 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   scoped_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames, 500));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> ack_packet(
+  size_t encrypted_length =
       framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_number,
-                             *raw_ack_packet, buffer, kMaxPacketSize));
+                             *raw_ack_packet, buffer, kMaxPacketSize);
+  ASSERT_NE(0u, encrypted_length);
   // Now make sure we can turn our ack packet back into an ack frame.
-  ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
+  ASSERT_TRUE(framer_.ProcessPacket(
+      QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_TRUE(processed_ack_frame.is_truncated);
@@ -4165,12 +4169,14 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   ASSERT_TRUE(raw_ack_packet != nullptr);
 
   char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> ack_packet(
+  size_t encrypted_length =
       framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_number,
-                             *raw_ack_packet, buffer, kMaxPacketSize));
+                             *raw_ack_packet, buffer, kMaxPacketSize);
+  ASSERT_NE(0u, encrypted_length);
 
   // Now make sure we can turn our ack packet back into an ack frame.
-  ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
+  ASSERT_TRUE(framer_.ProcessPacket(
+      QuicEncryptedPacket(buffer, encrypted_length, false)));
 
   // Test for clean truncation of the ack by comparing the length of the
   // original packets to the re-serialized packets.

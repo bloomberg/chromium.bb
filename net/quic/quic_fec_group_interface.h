@@ -63,6 +63,9 @@ class NET_EXPORT_PRIVATE QuicFecGroupInterface {
   // Returns the effective encryption level of the FEC group.
   virtual EncryptionLevel EffectiveEncryptionLevel() const = 0;
 
+  // Return the FEC group number of this group.
+  virtual QuicFecGroupNumber FecGroupNumber() const = 0;
+
   // An optimized version of running |output| ^= |input|, where ^ is
   // byte-by-byte XOR and both |output| and |input| are of size |size_in_bytes|.
   static void XorBuffers(const char* input, size_t size_in_bytes, char* output);

@@ -33,7 +33,7 @@ namespace net {
 namespace test {
 namespace {
 
-// No-op alarm implementation used by MockHelper.
+// No-op alarm implementation used by MockConnectionHelper.
 class TestAlarm : public QuicAlarm {
  public:
   explicit TestAlarm(QuicAlarm::Delegate* delegate)
@@ -204,23 +204,23 @@ MockConnectionVisitor::MockConnectionVisitor() {}
 
 MockConnectionVisitor::~MockConnectionVisitor() {}
 
-MockHelper::MockHelper() {}
+MockConnectionHelper::MockConnectionHelper() {}
 
-MockHelper::~MockHelper() {}
+MockConnectionHelper::~MockConnectionHelper() {}
 
-const QuicClock* MockHelper::GetClock() const {
+const QuicClock* MockConnectionHelper::GetClock() const {
   return &clock_;
 }
 
-QuicRandom* MockHelper::GetRandomGenerator() {
+QuicRandom* MockConnectionHelper::GetRandomGenerator() {
   return &random_generator_;
 }
 
-QuicAlarm* MockHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
+QuicAlarm* MockConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
   return new TestAlarm(delegate);
 }
 
-void MockHelper::AdvanceTime(QuicTime::Delta delta) {
+void MockConnectionHelper::AdvanceTime(QuicTime::Delta delta) {
   clock_.AdvanceTime(delta);
 }
 
@@ -229,7 +229,8 @@ QuicPacketWriter* NiceMockPacketWriterFactory::Create(
   return new testing::NiceMock<MockPacketWriter>();
 }
 
-MockConnection::MockConnection(MockHelper* helper, Perspective perspective)
+MockConnection::MockConnection(MockConnectionHelper* helper,
+                               Perspective perspective)
     : MockConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      helper,
@@ -237,7 +238,7 @@ MockConnection::MockConnection(MockHelper* helper, Perspective perspective)
                      QuicSupportedVersions()) {}
 
 MockConnection::MockConnection(IPEndPoint address,
-                               MockHelper* helper,
+                               MockConnectionHelper* helper,
                                Perspective perspective)
     : MockConnection(kTestConnectionId,
                      address,
@@ -246,7 +247,7 @@ MockConnection::MockConnection(IPEndPoint address,
                      QuicSupportedVersions()) {}
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
-                               MockHelper* helper,
+                               MockConnectionHelper* helper,
                                Perspective perspective)
     : MockConnection(connection_id,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
@@ -254,7 +255,7 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      perspective,
                      QuicSupportedVersions()) {}
 
-MockConnection::MockConnection(MockHelper* helper,
+MockConnection::MockConnection(MockConnectionHelper* helper,
                                Perspective perspective,
                                const QuicVersionVector& supported_versions)
     : MockConnection(kTestConnectionId,
@@ -265,7 +266,7 @@ MockConnection::MockConnection(MockHelper* helper,
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
                                IPEndPoint address,
-                               MockHelper* helper,
+                               MockConnectionHelper* helper,
                                Perspective perspective,
                                const QuicVersionVector& supported_versions)
     : QuicConnection(connection_id,
@@ -283,15 +284,15 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
 MockConnection::~MockConnection() {}
 
 void MockConnection::AdvanceTime(QuicTime::Delta delta) {
-  static_cast<MockHelper*>(helper())->AdvanceTime(delta);
+  static_cast<MockConnectionHelper*>(helper())->AdvanceTime(delta);
 }
 
-PacketSavingConnection::PacketSavingConnection(MockHelper* helper,
+PacketSavingConnection::PacketSavingConnection(MockConnectionHelper* helper,
                                                Perspective perspective)
     : MockConnection(helper, perspective) {}
 
 PacketSavingConnection::PacketSavingConnection(
-    MockHelper* helper,
+    MockConnectionHelper* helper,
     Perspective perspective,
     const QuicVersionVector& supported_versions)
     : MockConnection(helper, perspective, supported_versions) {}
@@ -508,11 +509,11 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
-  char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
-      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize));
-  EXPECT_TRUE(encrypted != nullptr);
-  return encrypted->Clone();
+  char* buffer = new char[kMaxPacketSize];
+  size_t encrypted_length = framer.EncryptPayload(
+      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
+  EXPECT_NE(0u, encrypted_length);
+  return new QuicEncryptedPacket(buffer, encrypted_length, true);
 }
 
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
@@ -552,11 +553,11 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
       packet->mutable_data())[GetStartOfEncryptedData(
       connection_id_length, version_flag, packet_number_length)] = 0xFF;
 
-  char buffer[kMaxPacketSize];
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
-      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize));
-  EXPECT_TRUE(encrypted != nullptr);
-  return encrypted->Clone();
+  char* buffer = new char[kMaxPacketSize];
+  size_t encrypted_length = framer.EncryptPayload(
+      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
+  EXPECT_NE(0u, encrypted_length);
+  return new QuicEncryptedPacket(buffer, encrypted_length, true);
 }
 
 void CompareCharArraysWithHexError(
@@ -755,7 +756,7 @@ MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {}
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
                                 QuicTime::Delta connection_start_time,
-                                MockHelper* helper,
+                                MockConnectionHelper* helper,
                                 QuicCryptoClientConfig* crypto_client_config,
                                 PacketSavingConnection** client_connection,
                                 TestQuicSpdyClientSession** client_session) {
@@ -778,7 +779,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
 
 void CreateServerSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
-                                MockHelper* helper,
+                                MockConnectionHelper* helper,
                                 QuicCryptoServerConfig* server_crypto_config,
                                 PacketSavingConnection** server_connection,
                                 TestQuicSpdyServerSession** server_session) {

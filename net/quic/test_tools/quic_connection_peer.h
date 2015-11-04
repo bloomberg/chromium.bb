@@ -25,6 +25,7 @@ class QuicPacketCreator;
 class QuicPacketGenerator;
 class QuicPacketWriter;
 class QuicReceivedPacketManager;
+class QuicSentEntropyManager;
 class QuicSentPacketManager;
 class SendAlgorithmInterface;
 
@@ -54,6 +55,9 @@ class QuicConnectionPeer {
       QuicConnection* connection);
 
   static QuicTime::Delta GetNetworkTimeout(QuicConnection* connection);
+
+  static QuicSentEntropyManager* GetSentEntropyManager(
+      QuicConnection* connection);
 
   static QuicPacketEntropyHash GetSentEntropyHash(
       QuicConnection* connection,

@@ -18,10 +18,18 @@ TEST(QuicEpollClockTest, ApproximateNowInUsec) {
   epoll_server.set_now_in_usec(1000000);
   EXPECT_EQ(1000000,
             clock.ApproximateNow().Subtract(QuicTime::Zero()).ToMicroseconds());
+  EXPECT_EQ(1u, clock.WallNow().ToUNIXSeconds());
+  EXPECT_EQ(1000000u, clock.WallNow().ToUNIXMicroseconds());
 
   epoll_server.AdvanceBy(5);
   EXPECT_EQ(1000005,
             clock.ApproximateNow().Subtract(QuicTime::Zero()).ToMicroseconds());
+  EXPECT_EQ(1u, clock.WallNow().ToUNIXSeconds());
+  EXPECT_EQ(1000005u, clock.WallNow().ToUNIXMicroseconds());
+
+  epoll_server.AdvanceBy(10 * 1000000);
+  EXPECT_EQ(11u, clock.WallNow().ToUNIXSeconds());
+  EXPECT_EQ(11000005u, clock.WallNow().ToUNIXMicroseconds());
 }
 
 TEST(QuicEpollClockTest, NowInUsec) {
@@ -35,21 +43,6 @@ TEST(QuicEpollClockTest, NowInUsec) {
   epoll_server.AdvanceBy(5);
   EXPECT_EQ(1000005,
             clock.Now().Subtract(QuicTime::Zero()).ToMicroseconds());
-}
-
-TEST(QuicEpollClockTest, WallNow) {
-  MockEpollServer epoll_server;
-  QuicEpollClock clock(&epoll_server);
-
-  base::Time start = base::Time::Now();
-  QuicWallTime now = clock.WallNow();
-  base::Time end = base::Time::Now();
-
-  // If end > start, then we can check now is between start and end.
-  if (end > start) {
-    EXPECT_LE(static_cast<uint64>(start.ToTimeT()), now.ToUNIXSeconds());
-    EXPECT_LE(now.ToUNIXSeconds(), static_cast<uint64>(end.ToTimeT()));
-  }
 }
 
 }  // namespace test

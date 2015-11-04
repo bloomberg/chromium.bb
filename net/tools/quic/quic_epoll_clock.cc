@@ -25,5 +25,10 @@ QuicTime QuicEpollClock::Now() const {
       QuicTime::Delta::FromMicroseconds(epoll_server_->NowInUsec()));
 }
 
+QuicWallTime QuicEpollClock::WallNow() const {
+  return QuicWallTime::FromUNIXMicroseconds(
+      epoll_server_->ApproximateNowInUsec());
+}
+
 }  // namespace tools
 }  // namespace net

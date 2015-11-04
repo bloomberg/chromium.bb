@@ -147,7 +147,7 @@ class QuicStreamSequencerTest : public ::testing::Test {
     return QuicStreamSequencerPeer::GetNumBufferedBytes(sequencer_.get());
   }
 
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   MockConnection* connection_;
   MockClock clock_;
   MockQuicSpdySession session_;

@@ -58,7 +58,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
 
   QuicCryptoClientStream* stream() { return session_->GetCryptoStream(); }
 
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   PacketSavingConnection* connection_;
   scoped_ptr<TestQuicSpdyClientSession> session_;
   QuicServerId server_id_;
@@ -237,10 +237,10 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
     CryptoTestUtils::SetupCryptoServerConfigForTest(
         server_connection_->clock(), server_connection_->random_generator(),
         server_session_->config(), &server_crypto_config_);
-    server_stream()->set_use_stateless_rejects_if_peer_supported(true);
+    FLAGS_enable_quic_stateless_reject_support = true;
   }
 
-  MockHelper helper_;
+  MockConnectionHelper helper_;
 
   // Client crypto stream state
   PacketSavingConnection* client_connection_;

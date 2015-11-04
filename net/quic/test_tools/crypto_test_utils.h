@@ -69,12 +69,12 @@ class CryptoTestUtils {
   };
 
   // returns: the number of client hellos that the client sent.
-  static int HandshakeWithFakeServer(MockHelper* helper,
+  static int HandshakeWithFakeServer(MockConnectionHelper* helper,
                                      PacketSavingConnection* client_conn,
                                      QuicCryptoClientStream* client);
 
   // returns: the number of client hellos that the client sent.
-  static int HandshakeWithFakeClient(MockHelper* helper,
+  static int HandshakeWithFakeClient(MockConnectionHelper* helper,
                                      PacketSavingConnection* server_conn,
                                      QuicCryptoServerStream* server,
                                      const QuicServerId& server_id,

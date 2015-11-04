@@ -42,10 +42,10 @@ QuicWriteBlockedList* QuicSessionPeer::GetWriteBlockedStreams(
 }
 
 // static
-ReliableQuicStream* QuicSessionPeer::GetIncomingDynamicStream(
+ReliableQuicStream* QuicSessionPeer::GetOrCreateDynamicStream(
     QuicSession* session,
     QuicStreamId stream_id) {
-  return session->GetIncomingDynamicStream(stream_id);
+  return session->GetOrCreateDynamicStream(stream_id);
 }
 
 // static

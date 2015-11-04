@@ -130,8 +130,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Maximum number of outstanding packets for tcp.
   QuicPacketCount max_tcp_congestion_window_;
 
-  const QuicClock* clock_;
-
   DISALLOW_COPY_AND_ASSIGN(TcpCubicSender);
 };
 

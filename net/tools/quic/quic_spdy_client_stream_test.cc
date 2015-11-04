@@ -17,7 +17,7 @@
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
-using net::test::MockHelper;
+using net::test::MockConnectionHelper;
 using net::test::SupportedVersions;
 using net::test::kClientDataStreamId1;
 using net::test::kInitialSessionFlowControlWindowForTest;
@@ -60,7 +60,7 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
     stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
   }
 
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   StrictMock<MockConnection>* connection_;
   QuicCryptoClientConfig crypto_config_;
   QuicClientSession session_;

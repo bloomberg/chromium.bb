@@ -165,4 +165,40 @@ uint64 CryptoUtils::ComputeLeafCertHash(const std::string& cert) {
   return QuicUtils::FNV1a_64_Hash(cert.data(), cert.size());
 }
 
+QuicErrorCode CryptoUtils::ValidateServerHello(
+    const CryptoHandshakeMessage& server_hello,
+    const QuicVersionVector& negotiated_versions,
+    string* error_details) {
+  DCHECK(error_details != nullptr);
+
+  if (server_hello.tag() != kSHLO) {
+    *error_details = "Bad tag";
+    return QUIC_INVALID_CRYPTO_MESSAGE_TYPE;
+  }
+
+  const QuicTag* supported_version_tags;
+  size_t num_supported_versions;
+
+  if (server_hello.GetTaglist(kVER, &supported_version_tags,
+                              &num_supported_versions) != QUIC_NO_ERROR) {
+    *error_details = "server hello missing version list";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+  if (!negotiated_versions.empty()) {
+    bool mismatch = num_supported_versions != negotiated_versions.size();
+    for (size_t i = 0; i < num_supported_versions && !mismatch; ++i) {
+      mismatch = QuicTagToQuicVersion(supported_version_tags[i]) !=
+                 negotiated_versions[i];
+    }
+    // The server sent a list of supported versions, and the connection
+    // reports that there was a version negotiation during the handshake.
+    // Ensure that these two lists are identical.
+    if (mismatch) {
+      *error_details = "Downgrade attack detected";
+      return QUIC_VERSION_NEGOTIATION_MISMATCH;
+    }
+  }
+  return QUIC_NO_ERROR;
+}
+
 }  // namespace net

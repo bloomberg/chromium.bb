@@ -294,10 +294,10 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   DISALLOW_COPY_AND_ASSIGN(MockConnectionVisitor);
 };
 
-class MockHelper : public QuicConnectionHelperInterface {
+class MockConnectionHelper : public QuicConnectionHelperInterface {
  public:
-  MockHelper();
-  ~MockHelper() override;
+  MockConnectionHelper();
+  ~MockConnectionHelper() override;
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
@@ -307,7 +307,7 @@ class MockHelper : public QuicConnectionHelperInterface {
   MockClock clock_;
   MockRandom random_generator_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockHelper);
+  DISALLOW_COPY_AND_ASSIGN(MockConnectionHelper);
 };
 
 class NiceMockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
@@ -324,32 +324,33 @@ class NiceMockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
 class MockConnection : public QuicConnection {
  public:
   // Uses a ConnectionId of 42 and 127.0.0.1:123.
-  MockConnection(MockHelper* helper, Perspective perspective);
+  MockConnection(MockConnectionHelper* helper, Perspective perspective);
 
   // Uses a ConnectionId of 42.
   MockConnection(IPEndPoint address,
-                 MockHelper* helper,
+                 MockConnectionHelper* helper,
                  Perspective perspective);
 
   // Uses 127.0.0.1:123.
   MockConnection(QuicConnectionId connection_id,
-                 MockHelper* helper,
+                 MockConnectionHelper* helper,
                  Perspective perspective);
 
   // Uses a ConnectionId of 42, and 127.0.0.1:123.
-  MockConnection(MockHelper* helper,
+  MockConnection(MockConnectionHelper* helper,
                  Perspective perspective,
                  const QuicVersionVector& supported_versions);
 
   MockConnection(QuicConnectionId connection_id,
                  IPEndPoint address,
-                 MockHelper* helper,
+                 MockConnectionHelper* helper,
                  Perspective perspective,
                  const QuicVersionVector& supported_versions);
 
   ~MockConnection() override;
 
-  // If the constructor that uses a MockHelper has been used then this method
+  // If the constructor that uses a MockConnectionHelper has been used then
+  // this method
   // will advance the time of the MockClock.
   void AdvanceTime(QuicTime::Delta delta);
 
@@ -404,9 +405,9 @@ class MockConnection : public QuicConnection {
 
 class PacketSavingConnection : public MockConnection {
  public:
-  PacketSavingConnection(MockHelper* helper, Perspective perspective);
+  PacketSavingConnection(MockConnectionHelper* helper, Perspective perspective);
 
-  PacketSavingConnection(MockHelper* helper,
+  PacketSavingConnection(MockConnectionHelper* helper,
                          Perspective perspective,
                          const QuicVersionVector& supported_versions);
 
@@ -448,6 +449,7 @@ class MockQuicSpdySession : public QuicSpdySession {
                                    QuicRstStreamErrorCode error,
                                    QuicStreamOffset bytes_written));
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
+  MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
 
   using QuicSession::ActivateStream;
 
@@ -730,7 +732,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 //   Needed for strike-register nonce verification.  The client
 //   connection_start_time should be synchronized witht the server
 //   start time, otherwise nonce verification will fail.
-// helper: Pointer to the MockHelper to use for the session.
+// helper: Pointer to the MockConnectionHelper to use for the session.
 // crypto_client_config: Pointer to the crypto client config.
 // client_connection: Pointer reference for newly created
 //   connection.  This object will be owned by the
@@ -740,7 +742,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
                                 QuicTime::Delta connection_start_time,
-                                MockHelper* helper,
+                                MockConnectionHelper* helper,
                                 QuicCryptoClientConfig* crypto_client_config,
                                 PacketSavingConnection** client_connection,
                                 TestQuicSpdyClientSession** client_session);
@@ -752,7 +754,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
 //   Needed for strike-register nonce verification.  The server
 //   connection_start_time should be synchronized witht the client
 //   start time, otherwise nonce verification will fail.
-// helper: Pointer to the MockHelper to use for the session.
+// helper: Pointer to the MockConnectionHelper to use for the session.
 // crypto_server_config: Pointer to the crypto server config.
 // server_connection: Pointer reference for newly created
 //   connection.  This object will be owned by the
@@ -761,7 +763,7 @@ void CreateClientSessionForTest(QuicServerId server_id,
 //   session.  The new object will be owned by the caller.
 void CreateServerSessionForTest(QuicServerId server_id,
                                 QuicTime::Delta connection_start_time,
-                                MockHelper* helper,
+                                MockConnectionHelper* helper,
                                 QuicCryptoServerConfig* crypto_server_config,
                                 PacketSavingConnection** server_connection,
                                 TestQuicSpdyServerSession** server_session);

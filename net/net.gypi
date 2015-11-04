@@ -380,6 +380,8 @@
       'quic/quic_write_blocked_list.h',
       'quic/reliable_quic_stream.cc',
       'quic/reliable_quic_stream.h',
+      'quic/stream_sequencer_buffer.cc',
+      'quic/stream_sequencer_buffer.h',
     ],
     'net_non_nacl_sources': [
       'android/android_private_key.cc',
@@ -1559,6 +1561,7 @@
       'quic/quic_utils_test.cc',
       'quic/quic_write_blocked_list_test.cc',
       'quic/reliable_quic_stream_test.cc',
+      'quic/stream_sequencer_buffer_test.cc',
       'quic/test_tools/crypto_test_utils.cc',
       'quic/test_tools/crypto_test_utils.h',
       'quic/test_tools/crypto_test_utils_chromium.cc',

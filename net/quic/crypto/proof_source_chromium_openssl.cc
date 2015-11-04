@@ -24,7 +24,8 @@ ProofSourceChromium::ProofSourceChromium() {}
 ProofSourceChromium::~ProofSourceChromium() {}
 
 bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
-                                     const base::FilePath& key_path) {
+                                     const base::FilePath& key_path,
+                                     const base::FilePath& sct_path) {
   crypto::EnsureOpenSSLInit();
 
   std::string cert_data;
@@ -64,6 +65,16 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
     DLOG(FATAL) << "Unable to create private key.";
     return false;
   }
+
+  // Loading of the signed certificate timestamp is optional.
+  if (sct_path.empty())
+    return true;
+
+  if (!base::ReadFileToString(sct_path, &signed_certificate_timestamp_)) {
+    DLOG(FATAL) << "Unable to read signed certificate timestamp.";
+    return false;
+  }
+
   return true;
 }
 
@@ -72,7 +83,8 @@ bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
                                    const string& server_config,
                                    bool ecdsa_ok,
                                    const vector<string>** out_certs,
-                                   string* out_signature) {
+                                   string* out_signature,
+                                   string* out_leaf_cert_sct) {
   DCHECK(private_key_.get()) << " this: " << this;
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -108,6 +120,7 @@ bool ProofSourceChromium::GetProof(const IPAddressNumber& server_ip,
   *out_certs = &certificates_;
   VLOG(1) << "signature: "
           << base::HexEncode(out_signature->data(), out_signature->size());
+  *out_leaf_cert_sct = signed_certificate_timestamp_;
   return true;
 }
 

@@ -31,7 +31,7 @@ using net::EpollServer;
 using net::test::ConstructEncryptedPacket;
 using net::test::CryptoTestUtils;
 using net::test::MockConnection;
-using net::test::MockHelper;
+using net::test::MockConnectionHelper;
 using net::test::ValueRestore;
 using net::test::TestWriterFactory;
 using std::string;
@@ -98,7 +98,7 @@ class TestDispatcher : public QuicDispatcher {
 class MockServerConnection : public MockConnection {
  public:
   MockServerConnection(QuicConnectionId connection_id,
-                       MockHelper* helper,
+                       MockConnectionHelper* helper,
                        QuicDispatcher* dispatcher)
       : MockConnection(connection_id, helper, Perspective::IS_SERVER),
         dispatcher_(dispatcher) {}
@@ -116,7 +116,7 @@ QuicServerSession* CreateSession(QuicDispatcher* dispatcher,
                                  const QuicConfig& config,
                                  QuicConnectionId connection_id,
                                  const IPEndPoint& client_address,
-                                 MockHelper* helper,
+                                 MockConnectionHelper* helper,
                                  const QuicCryptoServerConfig* crypto_config,
                                  TestQuicSpdyServerSession** session) {
   MockServerConnection* connection =
@@ -203,7 +203,7 @@ class QuicDispatcherTest : public ::testing::Test {
 
   EpollServer eps_;
   QuicEpollConnectionHelper helper_;
-  MockHelper mock_helper_;
+  MockConnectionHelper mock_helper_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   IPEndPoint server_address_;
@@ -328,12 +328,9 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
 
 struct StatelessRejectTestParams {
   StatelessRejectTestParams(bool enable_stateless_rejects_via_flag,
-                            bool use_stateless_rejects_if_peer_supported,
                             bool client_supports_statelesss_rejects,
                             bool crypto_handshake_successful)
       : enable_stateless_rejects_via_flag(enable_stateless_rejects_via_flag),
-        use_stateless_rejects_if_peer_supported(
-            use_stateless_rejects_if_peer_supported),
         client_supports_statelesss_rejects(client_supports_statelesss_rejects),
         crypto_handshake_successful(crypto_handshake_successful) {}
 
@@ -341,8 +338,6 @@ struct StatelessRejectTestParams {
                                   const StatelessRejectTestParams& p) {
     os << "  enable_stateless_rejects_via_flag: "
        << p.enable_stateless_rejects_via_flag << std::endl;
-    os << "{ use_stateless_rejects_if_peer_supported: "
-       << p.use_stateless_rejects_if_peer_supported << std::endl;
     os << "{ client_supports_statelesss_rejects: "
        << p.client_supports_statelesss_rejects << std::endl;
     os << "  crypto_handshake_successful: " << p.crypto_handshake_successful
@@ -351,12 +346,8 @@ struct StatelessRejectTestParams {
   }
 
   // This only enables the stateless reject feature via the feature-flag.
-  // It does not force the crypto server to emit stateless rejects.
+  // This should be a no-op if the peer does not support them.
   bool enable_stateless_rejects_via_flag;
-  // If true, this forces the server to send a stateless reject when rejecting
-  // messages.  This should be a no-op if enable_stateless_rejects_via_flag is
-  // false or the peer does not support them.
-  bool use_stateless_rejects_if_peer_supported;
   // Whether or not the client supports stateless rejects.
   bool client_supports_statelesss_rejects;
   // Should the initial crypto handshake succeed or not.
@@ -367,14 +358,11 @@ struct StatelessRejectTestParams {
 vector<StatelessRejectTestParams> GetStatelessRejectTestParams() {
   vector<StatelessRejectTestParams> params;
   for (bool enable_stateless_rejects_via_flag : {true, false}) {
-    for (bool use_stateless_rejects_if_peer_supported : {true, false}) {
-      for (bool client_supports_statelesss_rejects : {true, false}) {
-        for (bool crypto_handshake_successful : {true, false}) {
-          params.push_back(StatelessRejectTestParams(
-              enable_stateless_rejects_via_flag,
-              use_stateless_rejects_if_peer_supported,
-              client_supports_statelesss_rejects, crypto_handshake_successful));
-        }
+    for (bool client_supports_statelesss_rejects : {true, false}) {
+      for (bool crypto_handshake_successful : {true, false}) {
+        params.push_back(StatelessRejectTestParams(
+            enable_stateless_rejects_via_flag,
+            client_supports_statelesss_rejects, crypto_handshake_successful));
       }
     }
   }
@@ -404,7 +392,6 @@ class QuicDispatcherStatelessRejectTest
   // a stateless reject, depending upon the parameters of the test.
   bool ExpectStatelessReject() {
     return GetParam().enable_stateless_rejects_via_flag &&
-           GetParam().use_stateless_rejects_if_peer_supported &&
            !GetParam().crypto_handshake_successful &&
            GetParam().client_supports_statelesss_rejects;
   }
@@ -419,8 +406,6 @@ class QuicDispatcherStatelessRejectTest
 
     crypto_stream1_ = new MockQuicCryptoServerStream(crypto_config_, session1_);
     session1_->SetCryptoStream(crypto_stream1_);
-    crypto_stream1_->set_use_stateless_rejects_if_peer_supported(
-        GetParam().use_stateless_rejects_if_peer_supported);
     crypto_stream1_->set_handshake_confirmed_for_testing(
         GetParam().crypto_handshake_successful);
     crypto_stream1_->set_peer_supports_stateless_rejects(
@@ -624,7 +609,7 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
   }
 
  protected:
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   BlockingWriter* writer_;
   QuicDispatcher::WriteBlockedList* blocked_list_;
 };

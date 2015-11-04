@@ -141,7 +141,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   }
 
  protected:
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   MockConnection* connection_;
   scoped_ptr<MockQuicSpdySession> session_;
   TestStream* stream_;

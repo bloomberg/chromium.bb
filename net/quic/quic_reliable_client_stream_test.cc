@@ -98,7 +98,7 @@ class QuicReliableClientStreamTest
 
   QuicCryptoClientConfig crypto_config_;
   testing::StrictMock<MockDelegate> delegate_;
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   MockQuicSpdySession session_;
   QuicReliableClientStream* stream_;
   SpdyHeaderBlock headers_;

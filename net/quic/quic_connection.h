@@ -479,9 +479,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Testing only.
   size_t NumQueuedPackets() const { return queued_packets_.size(); }
 
-  QuicEncryptedPacket* ReleaseConnectionClosePacket() {
-    return connection_close_packet_.release();
-  }
+  // Once called, any sent crypto packets to be saved as the
+  // termination packet, for use with stateless rejections.
+  void EnableSavingCryptoPackets();
 
   // Returns true if the underlying UDP socket is writable, there is
   // no queued data and the connection is not congestion-control
@@ -622,6 +622,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Return the id of the cipher of the primary decrypter of the framer.
   uint32 cipher_id() const { return framer_.decrypter()->cipher_id(); }
 
+  std::vector<QuicEncryptedPacket*>* termination_packets() {
+    return termination_packets_.get();
+  }
+
  protected:
   // Packets which have not been written to the wire.
   // Owns the QuicPacket* packet.
@@ -652,6 +656,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicConnectionHelperInterface* helper() { return helper_; }
 
+  // On peer address changes, determine and return the change type.
+  virtual PeerAddressChangeType DeterminePeerAddressChangeType();
+
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
   // such a version exists, false otherwise.
@@ -660,6 +667,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool peer_ip_changed() const { return peer_ip_changed_; }
 
   bool peer_port_changed() const { return peer_port_changed_; }
+
+  const IPAddressNumber& migrating_peer_ip() const {
+    return migrating_peer_ip_;
+  }
 
  private:
   friend class test::QuicConnectionPeer;
@@ -765,7 +776,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                                 const IPEndPoint& peer_address);
 
   HasRetransmittableData IsRetransmittable(const QueuedPacket& packet);
-  bool IsConnectionClose(const QueuedPacket& packet);
+  bool IsTerminationPacket(const QueuedPacket& packet);
 
   // Set the size of the packet we are targeting while doing path MTU discovery.
   void SetMtuDiscoveryTarget(QuicByteCount target);
@@ -835,8 +846,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // unacked_packets_ if they are to be retransmitted.
   QueuedPacketList queued_packets_;
 
-  // Contains the connection close packet if the connection has been closed.
-  scoped_ptr<QuicEncryptedPacket> connection_close_packet_;
+  // If true, then crypto packets will be saved as termination packets.
+  bool save_crypto_packets_as_termination_packets_;
+
+  // Contains the connection close packets if the connection has been closed.
+  scoped_ptr<std::vector<QuicEncryptedPacket*>> termination_packets_;
 
   // When true, the connection does not send a close packet on timeout.
   bool silent_close_enabled_;

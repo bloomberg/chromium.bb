@@ -95,13 +95,6 @@ class QuicServerSession : public QuicSpdySession {
     serving_region_ = serving_region;
   }
 
-  void set_use_stateless_rejects_if_peer_supported(
-      bool use_stateless_rejects_if_peer_supported) {
-    DCHECK(GetCryptoStream() != nullptr);
-    GetCryptoStream()->set_use_stateless_rejects_if_peer_supported(
-        use_stateless_rejects_if_peer_supported);
-  }
-
  protected:
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;

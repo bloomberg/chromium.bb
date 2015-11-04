@@ -17,6 +17,10 @@ using std::string;
 
 namespace net {
 
+QuicCryptoClientStreamBase::QuicCryptoClientStreamBase(
+    QuicClientSessionBase* session)
+    : QuicCryptoStream(session) {}
+
 QuicCryptoClientStream::ChannelIDSourceCallbackImpl::
 ChannelIDSourceCallbackImpl(QuicCryptoClientStream* stream)
     : stream_(stream) {}
@@ -77,7 +81,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
     QuicClientSessionBase* session,
     ProofVerifyContext* verify_context,
     QuicCryptoClientConfig* crypto_config)
-    : QuicCryptoStream(session),
+    : QuicCryptoClientStreamBase(session),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
       crypto_config_(crypto_config),
@@ -103,7 +107,7 @@ QuicCryptoClientStream::~QuicCryptoClientStream() {
 
 void QuicCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  QuicCryptoStream::OnHandshakeMessage(message);
+  QuicCryptoClientStreamBase::OnHandshakeMessage(message);
 
   if (message.tag() == kSCUP) {
     if (!handshake_confirmed()) {
@@ -187,7 +191,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         DoInitialize(cached);
         break;
       case STATE_SEND_CHLO:
-        DoSendCHLO(in, cached);
+        DoSendCHLO(cached);
         return;  // return waiting to hear from server.
       case STATE_RECV_REJ:
         DoReceiveREJ(in, cached);
@@ -237,7 +241,6 @@ void QuicCryptoClientStream::DoInitialize(
 }
 
 void QuicCryptoClientStream::DoSendCHLO(
-    const CryptoHandshakeMessage* in,
     QuicCryptoClientConfig::CachedState* cached) {
   if (stateless_reject_received_) {
     // If we've gotten to this point, we've sent at least one hello

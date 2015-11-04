@@ -299,9 +299,7 @@ void QuicHeadersStream::OnControlFrameHeaderData(SpdyStreamId stream_id,
         DVLOG(1) << "stream " << stream_id
                  << ": Net.QuicSession.HeadersHOLBlockedTime "
                  << delta.ToMilliseconds();
-        UMA_HISTOGRAM_TIMES(
-            "Net.QuicSession.HeadersHOLBlockedTime",
-            base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()));
+        spdy_session_->OnHeadersHeadOfLineBlocking(delta);
       }
       prev_max_timestamp_ = std::max(prev_max_timestamp_, cur_max_timestamp_);
       cur_max_timestamp_ = QuicTime::Zero();

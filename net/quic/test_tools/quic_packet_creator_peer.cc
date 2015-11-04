@@ -52,5 +52,13 @@ void QuicPacketCreatorPeer::SetPacketNumber(QuicPacketCreator* creator,
   creator->packet_number_ = s;
 }
 
+// static
+void QuicPacketCreatorPeer::FillPacketHeader(QuicPacketCreator* creator,
+                                             QuicFecGroupNumber fec_group,
+                                             bool fec_flag,
+                                             QuicPacketHeader* header) {
+  creator->FillPacketHeader(fec_group, fec_flag, header);
+}
+
 }  // namespace test
 }  // namespace net

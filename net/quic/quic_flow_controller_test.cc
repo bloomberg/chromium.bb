@@ -40,7 +40,7 @@ class QuicFlowControllerTest : public ::testing::Test {
   QuicByteCount send_window_;
   QuicByteCount receive_window_;
   scoped_ptr<QuicFlowController> flow_controller_;
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   MockConnection connection_;
 };
 

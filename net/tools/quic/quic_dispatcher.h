@@ -33,8 +33,6 @@ namespace test {
 class QuicDispatcherPeer;
 }  // namespace test
 
-extern int32 FLAGS_quic_session_map_threshold_for_stateless_rejects;
-
 class ProcessPacketInterface {
  public:
   virtual ~ProcessPacketInterface() {}

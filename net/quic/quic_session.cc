@@ -157,7 +157,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     return;
   }
 
-  ReliableQuicStream* stream = GetDynamicStream(frame.stream_id);
+  ReliableQuicStream* stream = GetOrCreateDynamicStream(frame.stream_id);
   if (!stream) {
     // The RST frame contains the final byte offset for the stream: we can now
     // update the connection level flow controller if needed.
@@ -570,7 +570,7 @@ ReliableQuicStream* QuicSession::GetStream(const QuicStreamId stream_id) {
   if (it != static_stream_map_.end()) {
     return it->second;
   }
-  return GetDynamicStream(stream_id);
+  return GetOrCreateDynamicStream(stream_id);
 }
 
 void QuicSession::StreamDraining(QuicStreamId stream_id) {
@@ -586,10 +586,11 @@ void QuicSession::CloseConnection(QuicErrorCode error) {
   }
 }
 
-ReliableQuicStream* QuicSession::GetDynamicStream(
+ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
     const QuicStreamId stream_id) {
-  if (static_stream_map_.find(stream_id) != static_stream_map_.end()) {
-    DLOG(FATAL) << "Attempt to call GetDynamicStream for a static stream";
+  if (ContainsKey(static_stream_map_, stream_id)) {
+    DLOG(FATAL)
+        << "Attempt to call GetOrCreateDynamicStream for a static stream";
     return nullptr;
   }
 
@@ -603,30 +604,13 @@ ReliableQuicStream* QuicSession::GetDynamicStream(
   }
 
   if (stream_id % 2 == next_outgoing_stream_id_ % 2) {
-    // We've received a frame for a locally-created stream that is not
-    // currently active.  This is an error.
-    CloseConnection(QUIC_PACKET_FOR_NONEXISTENT_STREAM);
+    // Received a frame for a locally-created stream that is not currently
+    // active. This is an error.
+    CloseConnection(QUIC_INVALID_STREAM_ID);
     return nullptr;
   }
 
-  return GetIncomingDynamicStream(stream_id);
-}
-
-ReliableQuicStream* QuicSession::GetIncomingDynamicStream(
-    QuicStreamId stream_id) {
-  if (IsClosedStream(stream_id)) {
-    return nullptr;
-  }
   available_streams_.erase(stream_id);
-
-  // Legitimate streams created by the peer are alternately-numbered.
-  if (FLAGS_allow_many_available_streams &&
-      stream_id % 2 != largest_peer_created_stream_id_ % 2) {
-    // Close the connection.
-    DVLOG(1) << "Invalid incoming stream_id " << stream_id;
-    connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
-    return nullptr;
-  }
 
   if (stream_id > largest_peer_created_stream_id_) {
     if (FLAGS_allow_many_available_streams) {

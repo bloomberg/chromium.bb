@@ -748,7 +748,7 @@ TEST_F(TcpCubicSenderTest, BandwidthResumption) {
   CachedNetworkParameters cached_network_params;
   const QuicPacketCount kNumberOfPackets = 123;
   const int kBandwidthEstimateBytesPerSecond =
-      kNumberOfPackets * kMaxPacketSize;
+      kNumberOfPackets * kDefaultTCPMSS;
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
       kBandwidthEstimateBytesPerSecond);
   cached_network_params.set_min_rtt_ms(1000);
@@ -761,12 +761,12 @@ TEST_F(TcpCubicSenderTest, BandwidthResumption) {
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      (kMaxCongestionWindow + 1) * kMaxPacketSize);
+      (kMaxCongestionWindow + 1) * kDefaultTCPMSS);
   sender_->ResumeConnectionState(cached_network_params, false);
   EXPECT_EQ(kMaxCongestionWindow, sender_->congestion_window());
 
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      (kMinCongestionWindowForBandwidthResumption - 1) * kMaxPacketSize);
+      (kMinCongestionWindowForBandwidthResumption - 1) * kDefaultTCPMSS);
   sender_->ResumeConnectionState(cached_network_params, false);
   EXPECT_EQ(kMinCongestionWindowForBandwidthResumption,
             sender_->congestion_window());

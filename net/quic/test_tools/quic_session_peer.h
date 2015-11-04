@@ -29,7 +29,7 @@ class QuicSessionPeer {
   static void SetMaxOpenStreams(QuicSession* session, uint32 max_streams);
   static QuicCryptoStream* GetCryptoStream(QuicSession* session);
   static QuicWriteBlockedList* GetWriteBlockedStreams(QuicSession* session);
-  static ReliableQuicStream* GetIncomingDynamicStream(QuicSession* session,
+  static ReliableQuicStream* GetOrCreateDynamicStream(QuicSession* session,
                                                       QuicStreamId stream_id);
   static std::map<QuicStreamId, QuicStreamOffset>&
   GetLocallyClosedStreamsHighestOffset(QuicSession* session);

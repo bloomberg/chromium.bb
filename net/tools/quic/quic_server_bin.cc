@@ -25,7 +25,7 @@ int32 FLAGS_port = 6121;
 net::ProofSource* CreateProofSource(const base::FilePath& cert_path,
                                     const base::FilePath& key_path) {
   net::ProofSourceChromium* proof_source = new net::ProofSourceChromium();
-  CHECK(proof_source->Initialize(cert_path, key_path));
+  CHECK(proof_source->Initialize(cert_path, key_path, base::FilePath()));
   return proof_source;
 }
 

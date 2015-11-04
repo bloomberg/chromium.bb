@@ -94,7 +94,7 @@ class QuicChromiumClientSessionTest
     ASSERT_EQ(OK, callback_.WaitForResult());
   }
 
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   QuicCryptoClientConfig crypto_config_;
   PacketSavingConnection* connection_;
   TestNetLog net_log_;

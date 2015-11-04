@@ -190,4 +190,8 @@ EncryptionLevel QuicFecGroup::EffectiveEncryptionLevel() const {
   return effective_encryption_level_;
 }
 
+QuicFecGroupNumber QuicFecGroup::FecGroupNumber() const {
+  return min_protected_packet_;
+}
+
 }  // namespace net

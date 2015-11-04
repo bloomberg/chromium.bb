@@ -337,6 +337,13 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
       static_cast<base::HistogramBase::Sample>(stats.max_sequence_reordering));
 }
 
+void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(
+    QuicTime::Delta delta) {
+  UMA_HISTOGRAM_TIMES(
+      "Net.QuicSession.HeadersHOLBlockedTime",
+      base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()));
+}
+
 void QuicChromiumClientSession::OnStreamFrame(const QuicStreamFrame& frame) {
   // Record total number of stream frames.
   UMA_HISTOGRAM_COUNTS("Net.QuicNumStreamFramesInPacket", 1);

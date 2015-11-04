@@ -159,24 +159,30 @@ class NET_EXPORT_PRIVATE QuicTime {
   int64 time_;
 };
 
-// A QuicWallTime represents an absolute time that is globally consistent. It
-// provides, at most, one second granularity and, in practice, clock-skew means
-// that you shouldn't even depend on that.
+// A QuicWallTime represents an absolute time that is globally consistent. In
+// practice, clock-skew means that comparing values from different machines
+// requires some flexibility in interpretation.
 class NET_EXPORT_PRIVATE QuicWallTime {
  public:
   // FromUNIXSeconds constructs a QuicWallTime from a count of the seconds
   // since the UNIX epoch.
   static QUICTIME_CONSTEXPR QuicWallTime FromUNIXSeconds(uint64 seconds) {
-    return QuicWallTime(seconds);
+    return QuicWallTime(seconds * 1000000);
+  }
+
+  static QUICTIME_CONSTEXPR QuicWallTime
+  FromUNIXMicroseconds(uint64 microseconds) {
+    return QuicWallTime(microseconds);
   }
 
   // Zero returns a QuicWallTime set to zero. IsZero will return true for this
   // value.
   static QUICTIME_CONSTEXPR QuicWallTime Zero() { return QuicWallTime(0); }
 
-  // ToUNIXSeconds converts a QuicWallTime into a count of seconds since the
-  // UNIX epoch.
+  // Returns the number of seconds since the UNIX epoch.
   uint64 ToUNIXSeconds() const;
+  // Returns the number of microseconds since the UNIX epoch.
+  uint64 ToUNIXMicroseconds() const;
 
   bool IsAfter(QuicWallTime other) const;
   bool IsBefore(QuicWallTime other) const;
@@ -197,10 +203,10 @@ class NET_EXPORT_PRIVATE QuicWallTime {
   QuicWallTime Subtract(QuicTime::Delta delta) const WARN_UNUSED_RESULT;
 
  private:
-  explicit QUICTIME_CONSTEXPR QuicWallTime(uint64 seconds)
-      : seconds_(seconds) {}
+  explicit QUICTIME_CONSTEXPR QuicWallTime(uint64 microseconds)
+      : microseconds_(microseconds) {}
 
-  uint64 seconds_;
+  uint64 microseconds_;
 };
 
 // Non-member relational operators for QuicTime::Delta.

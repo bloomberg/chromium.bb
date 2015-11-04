@@ -27,8 +27,12 @@ class QuicEpollClock : public QuicClock {
   QuicTime ApproximateNow() const override;
 
   // Returns the current time as a QuicTime object.
-  // Note: this use significant resources please use only if needed.
+  // Note: this uses significant resources, please use only if needed.
   QuicTime Now() const override;
+
+  // Returns the current time as a QuicWallTime object.
+  // Note: this uses significant resources, please use only if needed.
+  QuicWallTime WallNow() const override;
 
  protected:
   EpollServer* epoll_server_;

@@ -38,6 +38,7 @@ class NET_EXPORT_PRIVATE QuicFecGroup : public QuicFecGroupInterface {
   const base::StringPiece PayloadParity() const override;
   QuicPacketCount NumReceivedPackets() const override;
   EncryptionLevel EffectiveEncryptionLevel() const override;
+  QuicFecGroupNumber FecGroupNumber() const override;
 
  private:
   bool UpdateParity(base::StringPiece payload);

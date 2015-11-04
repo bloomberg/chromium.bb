@@ -22,7 +22,7 @@
 
 using base::StringPiece;
 using net::test::MockConnection;
-using net::test::MockHelper;
+using net::test::MockConnectionHelper;
 using net::test::MockQuicSpdySession;
 using net::test::ReliableQuicStreamPeer;
 using net::test::SupportedVersions;
@@ -126,7 +126,7 @@ class QuicSpdyServerStreamTest : public ::testing::Test {
   }
 
   SpdyHeaderBlock response_headers_;
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   StrictMock<MockConnection>* connection_;
   StrictMock<MockQuicSpdySession> session_;
   QuicSpdyServerStreamPeer* stream_;  // Owned by session_.

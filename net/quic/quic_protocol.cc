@@ -142,6 +142,10 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '2', '7');
     case QUIC_VERSION_28:
       return MakeQuicTag('Q', '0', '2', '8');
+    case QUIC_VERSION_29:
+      return MakeQuicTag('Q', '0', '2', '9');
+    case QUIC_VERSION_30:
+      return MakeQuicTag('Q', '0', '3', '0');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -172,6 +176,8 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_26);
     RETURN_STRING_LITERAL(QUIC_VERSION_27);
     RETURN_STRING_LITERAL(QUIC_VERSION_28);
+    RETURN_STRING_LITERAL(QUIC_VERSION_29);
+    RETURN_STRING_LITERAL(QUIC_VERSION_30);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -235,7 +241,8 @@ QuicAckFrame::QuicAckFrame()
     : entropy_hash(0),
       is_truncated(false),
       largest_observed(0),
-      delta_time_largest_observed(QuicTime::Delta::Infinite()) {}
+      delta_time_largest_observed(QuicTime::Delta::Infinite()),
+      latest_revived_packet(0) {}
 
 QuicAckFrame::~QuicAckFrame() {}
 
@@ -468,13 +475,9 @@ ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
      << " delta_time_largest_observed: "
      << ack_frame.delta_time_largest_observed.ToMicroseconds()
      << " missing_packets: [ " << ack_frame.missing_packets
-     << " ] is_truncated: " << ack_frame.is_truncated;
-  os << " revived_packets: [ ";
-  for (PacketNumberSet::const_iterator it = ack_frame.revived_packets.begin();
-       it != ack_frame.revived_packets.end(); ++it) {
-    os << *it << " ";
-  }
-  os << " ] received_packets: [ ";
+     << " ] is_truncated: " << ack_frame.is_truncated
+     << " revived_packet: " << ack_frame.latest_revived_packet
+     << " received_packets: [ ";
   for (const std::pair<QuicPacketNumber, QuicTime>& p :
        ack_frame.received_packet_times) {
     os << p.first << " at " << p.second.ToDebuggingValue() << " ";
@@ -774,6 +777,26 @@ SerializedPacket::SerializedPacket(
       is_fec_packet(false),
       has_ack(has_ack),
       has_stop_waiting(has_stop_waiting) {}
+
+SerializedPacket::SerializedPacket(
+    QuicPacketNumber packet_number,
+    QuicPacketNumberLength packet_number_length,
+    char* encrypted_buffer,
+    size_t encrypted_length,
+    bool owns_buffer,
+    QuicPacketEntropyHash entropy_hash,
+    RetransmittableFrames* retransmittable_frames,
+    bool has_ack,
+    bool has_stop_waiting)
+    : SerializedPacket(packet_number,
+                       packet_number_length,
+                       new QuicEncryptedPacket(encrypted_buffer,
+                                               encrypted_length,
+                                               owns_buffer),
+                       entropy_hash,
+                       retransmittable_frames,
+                       has_ack,
+                       has_stop_waiting) {}
 
 SerializedPacket::~SerializedPacket() {}
 

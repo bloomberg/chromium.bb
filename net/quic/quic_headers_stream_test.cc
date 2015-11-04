@@ -4,7 +4,6 @@
 
 #include "net/quic/quic_headers_stream.h"
 
-#include "base/test/histogram_tester.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -15,8 +14,6 @@
 #include "net/spdy/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Bucket;
-using base::HistogramTester;
 using base::StringPiece;
 using std::ostream;
 using std::string;
@@ -229,7 +226,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   static const bool kFrameComplete = true;
   static const bool kHasPriority = true;
 
-  MockHelper helper_;
+  MockConnectionHelper helper_;
   StrictMock<MockConnection>* connection_;
   StrictMock<MockQuicSpdySession> session_;
   QuicHeadersStream* headers_stream_;
@@ -306,17 +303,8 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
 }
 
 TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
-// In the absence of surfacing HOL measurements externally, via UMA
-// or tcp connection stats, log messages are the only indication.
-// This test verifies that false positives are not generated when
-// headers arrive in order.
-#if 0
-  ScopedMockLog log(kDoNotCaptureLogsYet);
-  EXPECT_CALL(log, Log(_, _, _)).Times(0);
-  log.StartCapturingLogs();
-#endif
-  InSequence seq;
-  HistogramTester histogram_tester;
+  EXPECT_CALL(session_, OnHeadersHeadOfLineBlocking(_)).Times(0);
+  testing::InSequence seq;
   bool fin = true;
   for (int stream_num = 0; stream_num < 10; stream_num++) {
     QuicStreamId stream_id = QuicClientDataStreamId(stream_num);
@@ -343,18 +331,9 @@ TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
     connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
     stream_frame_.offset += frame->size();
   }
-  histogram_tester.ExpectTotalCount("Net.QuicSession.HeadersHOLBlockedTime", 0);
 }
 
 TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
-// In the absence of surfacing HOL measurements externally, via UMA
-// or tcp connection stats, log messages are the only indication.
-// This test verifies that HOL blocking log messages are correct
-// when there are out of order arrivals.
-#if 0
-  ScopedMockLog log(kDoNotCaptureLogsYet);
-#endif
-  HistogramTester histogram_tester;
   QuicStreamId stream_id;
   bool fin = true;
   QuicStreamFrame stream_frames[10];
@@ -388,36 +367,16 @@ TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
           .Times(1);
     }
   }
-#if 0
-  // Actually writing the frames in reverse order will trigger log messages.
-  {
-    InSequence seq;
-    for (int stream_num = 0; stream_num < 10; ++stream_num) {
-      stream_id = QuicClientDataStreamId(stream_num);
-      if (stream_num > 0) {
-        string expected_msg = StringPrintf(
-            "stream %d: Net.QuicSession.HeadersHOLBlockedTime %d",
-            stream_id, stream_num);
-#ifndef NDEBUG
-        EXPECT_CALL(log, Log(INFO, _, expected_msg));
-#endif
-      }
-    }
-  }
-  log.StartCapturingLogs();
-#endif
+
+  // Actually writing the frames in reverse order will cause HOL blocking.
+  EXPECT_CALL(session_, OnHeadersHeadOfLineBlocking(_)).Times(9);
+
   for (int stream_num = 9; stream_num >= 0; --stream_num) {
     DVLOG(1) << "OnStreamFrame for stream " << stream_num << " offset "
              << stream_frames[stream_num].offset;
     headers_stream_->OnStreamFrame(stream_frames[stream_num]);
     connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
   }
-  // We expect 1 sample each for delays from 1 to 9 ms (8 and 9 go
-  // into the same bucket).
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Net.QuicSession.HeadersHOLBlockedTime"),
-      ElementsAre(Bucket(1, 1), Bucket(2, 1), Bucket(3, 1), Bucket(4, 1),
-                  Bucket(5, 1), Bucket(6, 1), Bucket(7, 1), Bucket(8, 2)));
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {

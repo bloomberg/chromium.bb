@@ -51,6 +51,10 @@ class NET_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 
+  // Called when Head of Line Blocking happens in the headers stream.
+  // |delta| indicates how long that piece of data has been blocked.
+  virtual void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta);
+
  protected:
   // Override CreateIncomingDynamicStream() and CreateOutgoingDynamicStream()
   // with QuicSpdyStream return type to make sure that all data streams are

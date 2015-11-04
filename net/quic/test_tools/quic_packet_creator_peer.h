@@ -29,6 +29,10 @@ class QuicPacketCreatorPeer {
   static QuicPacketNumberLength NextPacketNumberLength(
       QuicPacketCreator* creator);
   static void SetPacketNumber(QuicPacketCreator* creator, QuicPacketNumber s);
+  static void FillPacketHeader(QuicPacketCreator* creator,
+                               QuicFecGroupNumber fec_group,
+                               bool fec_flag,
+                               QuicPacketHeader* header);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreatorPeer);

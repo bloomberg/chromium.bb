@@ -171,7 +171,7 @@ CryptoTestUtils::FakeClientOptions::FakeClientOptions()
 
 // static
 int CryptoTestUtils::HandshakeWithFakeServer(
-    MockHelper* helper,
+    MockConnectionHelper* helper,
     PacketSavingConnection* client_conn,
     QuicCryptoClientStream* client) {
   PacketSavingConnection* server_conn = new PacketSavingConnection(
@@ -199,7 +199,7 @@ int CryptoTestUtils::HandshakeWithFakeServer(
 
 // static
 int CryptoTestUtils::HandshakeWithFakeClient(
-    MockHelper* helper,
+    MockConnectionHelper* helper,
     PacketSavingConnection* server_conn,
     QuicCryptoServerStream* server,
     const QuicServerId& server_id,

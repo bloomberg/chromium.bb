@@ -288,28 +288,28 @@ void QuicPacketGenerator::MaybeStartFecProtection() {
 
 void QuicPacketGenerator::MaybeSendFecPacketAndCloseGroup(bool force,
                                                           bool is_fec_timeout) {
-  if (!ShouldSendFecPacket(force)) {
-    return;
+  if (ShouldSendFecPacket(force)) {
+    // If we want to send FEC packet only when FEC alaram goes off and if it is
+    // not a FEC timeout then close the group and dont send FEC packet.
+    if (fec_send_policy_ == FEC_ALARM_TRIGGER && !is_fec_timeout) {
+      ResetFecGroup();
+    } else {
+      // TODO(jri): SerializeFec can return a NULL packet, and this should cause
+      // an early return, with a call to delegate_->OnPacketGenerationError.
+      char buffer[kMaxPacketSize];
+      SerializedPacket serialized_fec =
+          packet_creator_.SerializeFec(buffer, kMaxPacketSize);
+      DCHECK(serialized_fec.packet);
+      delegate_->OnSerializedPacket(serialized_fec);
+    }
   }
 
-  // If we want to send FEC packet only when FEC alaram goes off and if it is
-  // not a FEC timeout then close the group and dont send FEC packet.
-  if (fec_send_policy_ == FEC_ALARM_TRIGGER && !is_fec_timeout) {
-    ResetFecGroup();
-  } else {
-    // TODO(jri): SerializeFec can return a NULL packet, and this should
-    // cause an early return, with a call to delegate_->OnPacketGenerationError.
-    char buffer[kMaxPacketSize];
-    SerializedPacket serialized_fec =
-        packet_creator_.SerializeFec(buffer, kMaxPacketSize);
-    DCHECK(serialized_fec.packet);
-    delegate_->OnSerializedPacket(serialized_fec);
-  }
   // Turn FEC protection off if creator's protection is on and the creator
   // does not have an open FEC group.
   // Note: We only wait until the frames queued in the creator are flushed;
   // pending frames in the generator will not keep us from turning FEC off.
-  if (!should_fec_protect_ && !packet_creator_.IsFecGroupOpen()) {
+  if (!should_fec_protect_ && packet_creator_.IsFecProtected() &&
+      !packet_creator_.IsFecGroupOpen()) {
     packet_creator_.StopFecProtectingPackets();
     DCHECK(!packet_creator_.IsFecProtected());
   }
