@@ -15,7 +15,10 @@ namespace cc {
 class LayerTreeHost;
 }
 
-namespace blink { class WebLayer; }
+namespace blink {
+class WebCompositorAnimationTimeline;
+class WebLayer;
+}
 
 namespace content {
 
@@ -33,6 +36,10 @@ class WebLayerTreeViewImplForTesting
   // blink::WebLayerTreeView implementation.
   void setRootLayer(const blink::WebLayer& layer) override;
   void clearRootLayer() override;
+  void attachCompositorAnimationTimeline(
+      blink::WebCompositorAnimationTimeline*) override;
+  void detachCompositorAnimationTimeline(
+      blink::WebCompositorAnimationTimeline*) override;
   virtual void setViewportSize(const blink::WebSize& unused_deprecated,
                                const blink::WebSize& device_viewport_size);
   void setViewportSize(const blink::WebSize& device_viewport_size) override;

@@ -8,7 +8,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/base/switches.h"
+#include "cc/blink/web_compositor_animation_timeline_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -56,6 +59,26 @@ void WebLayerTreeViewImplForTesting::setRootLayer(
 
 void WebLayerTreeViewImplForTesting::clearRootLayer() {
   layer_tree_host_->SetRootLayer(scoped_refptr<cc::Layer>());
+}
+
+void WebLayerTreeViewImplForTesting::attachCompositorAnimationTimeline(
+    blink::WebCompositorAnimationTimeline* compositor_timeline) {
+  DCHECK(compositor_timeline);
+  DCHECK(layer_tree_host_->animation_host());
+  layer_tree_host_->animation_host()->AddAnimationTimeline(
+      static_cast<const cc_blink::WebCompositorAnimationTimelineImpl*>(
+          compositor_timeline)
+          ->animation_timeline());
+}
+
+void WebLayerTreeViewImplForTesting::detachCompositorAnimationTimeline(
+    blink::WebCompositorAnimationTimeline* compositor_timeline) {
+  DCHECK(compositor_timeline);
+  DCHECK(layer_tree_host_->animation_host());
+  layer_tree_host_->animation_host()->RemoveAnimationTimeline(
+      static_cast<const cc_blink::WebCompositorAnimationTimelineImpl*>(
+          compositor_timeline)
+          ->animation_timeline());
 }
 
 void WebLayerTreeViewImplForTesting::setViewportSize(

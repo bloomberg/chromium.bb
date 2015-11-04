@@ -2681,6 +2681,7 @@ bool WebViewImpl::isAcceleratedCompositingActive() const
 void WebViewImpl::willCloseLayerTreeView()
 {
     if (m_linkHighlightsTimeline) {
+        m_linkHighlights.clear();
         detachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
         m_linkHighlightsTimeline.clear();
     }

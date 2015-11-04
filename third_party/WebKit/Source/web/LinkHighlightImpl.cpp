@@ -102,7 +102,8 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
 LinkHighlightImpl::~LinkHighlightImpl()
 {
     if (m_compositorPlayer) {
-        m_compositorPlayer->detachLayer();
+        if (m_compositorPlayer->isLayerAttached())
+            m_compositorPlayer->detachLayer();
         if (m_owningWebViewImpl->linkHighlightsTimeline())
             m_owningWebViewImpl->linkHighlightsTimeline()->playerDestroyed(*this);
         m_compositorPlayer->setAnimationDelegate(nullptr);

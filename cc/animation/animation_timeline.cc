@@ -50,8 +50,6 @@ void AnimationTimeline::DetachPlayer(scoped_refptr<AnimationPlayer> player) {
     ErasePlayers(iter, iter + 1);
     break;
   }
-
-  player->SetAnimationHost(nullptr);
 }
 
 AnimationPlayer* AnimationTimeline::GetPlayerById(int player_id) const {
@@ -103,6 +101,7 @@ void AnimationTimeline::ErasePlayers(AnimationPlayerList::iterator begin,
     if (player->element_animations())
       player->DetachLayer();
     player->SetAnimationTimeline(nullptr);
+    player->SetAnimationHost(nullptr);
   }
 
   players_.erase(begin, end);

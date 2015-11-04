@@ -169,6 +169,48 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
 }
 
+// A lifetime test: delete LayerTreeView while running LinkHighlights.
+TEST(LinkHighlightImplTest, resetLayerTreeView)
+{
+    OwnPtr<FakeCompositingWebViewClient> webViewClient = adoptPtr(new FakeCompositingWebViewClient());
+
+    const std::string baseURL("http://www.test.com/");
+    const std::string fileName("test_touch_link_highlight.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("test_touch_link_highlight.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true, 0, webViewClient.get());
+
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->updateAllLifecyclePhases();
+
+    WebGestureEvent touchEvent;
+    touchEvent.type = WebInputEvent::GestureShowPress;
+    touchEvent.sourceDevice = WebGestureDeviceTouchscreen;
+    touchEvent.x = 20;
+    touchEvent.y = 20;
+
+    GestureEventWithHitTestResults targetedEvent = getTargetedEvent(webViewImpl, touchEvent);
+    Node* touchNode = webViewImpl->bestTapNode(targetedEvent);
+    ASSERT_TRUE(touchNode);
+
+    webViewImpl->enableTapHighlightAtPoint(targetedEvent);
+    ASSERT_TRUE(webViewImpl->linkHighlight(0));
+
+    GraphicsLayer* highlightLayer = webViewImpl->linkHighlight(0)->currentGraphicsLayerForTesting();
+    ASSERT_TRUE(highlightLayer);
+    EXPECT_TRUE(highlightLayer->linkHighlight(0));
+
+    // Mimic the logic from RenderWidget::Close:
+    webViewImpl->willCloseLayerTreeView();
+    webViewClient.clear();
+    webViewHelper.reset();
+
+    Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+}
+
 TEST(LinkHighlightImplTest, multipleHighlights)
 {
     FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbarSettings;
