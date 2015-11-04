@@ -10,9 +10,12 @@
 
 namespace blink {
 
-bool WebCSSParser::parseColor(WebColor* color, const WebString& colorString)
+bool WebCSSParser::parseColor(WebColor* webColor, const WebString& colorString)
 {
-    return CSSParser::parseColor(*color, colorString, true);
+    Color color = Color(*webColor);
+    bool success = CSSParser::parseColor(color, colorString, true);
+    *webColor = color.rgb();
+    return success;
 }
 
 } // namespace blink

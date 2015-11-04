@@ -24,8 +24,7 @@ public:
         return m_color.serializedAsCSSComponentValue();
     }
 
-    // TODO(sashab): Make this return a Color.
-    RGBA32 value() const { return m_color.rgb(); }
+    Color value() const { return m_color; }
 
     bool equals(const CSSColorValue& other) const
     {

@@ -73,7 +73,7 @@ private:
     Member<CanvasPattern> m_pattern;
 };
 
-bool parseColorOrCurrentColor(RGBA32& parsedColor, const String& colorString, HTMLCanvasElement*);
+bool parseColorOrCurrentColor(Color& parsedColor, const String& colorString, HTMLCanvasElement*);
 
 } // namespace blink
 

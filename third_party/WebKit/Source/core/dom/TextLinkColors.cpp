@@ -62,7 +62,7 @@ void TextLinkColors::resetActiveLinkColor()
 Color TextLinkColors::colorFromCSSValue(const CSSValue& value, Color currentColor, bool forVisitedLink) const
 {
     if (value.isColorValue())
-        return Color(toCSSColorValue(value).value());
+        return toCSSColorValue(value).value();
 
     CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
     switch (valueID) {

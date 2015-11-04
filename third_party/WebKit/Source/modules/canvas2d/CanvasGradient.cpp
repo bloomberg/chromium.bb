@@ -44,20 +44,20 @@ CanvasGradient::CanvasGradient(const FloatPoint& p0, float r0, const FloatPoint&
 {
 }
 
-void CanvasGradient::addColorStop(float value, const String& color, ExceptionState& exceptionState)
+void CanvasGradient::addColorStop(float value, const String& colorString, ExceptionState& exceptionState)
 {
     if (!(value >= 0 && value <= 1.0f)) {
         exceptionState.throwDOMException(IndexSizeError, "The provided value (" + String::number(value) + ") is outside the range (0.0, 1.0).");
         return;
     }
 
-    RGBA32 rgba = 0;
-    if (!parseColorOrCurrentColor(rgba, color, 0 /*canvas*/)) {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + color + "') could not be parsed as a color.");
+    Color color = 0;
+    if (!parseColorOrCurrentColor(color, colorString, 0 /*canvas*/)) {
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + colorString + "') could not be parsed as a color.");
         return;
     }
 
-    m_gradient->addColorStop(value, Color(rgba));
+    m_gradient->addColorStop(value, color);
 }
 
 } // namespace

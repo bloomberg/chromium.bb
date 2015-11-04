@@ -384,14 +384,14 @@ void CanvasRenderingContext2D::setStrokeStyle(const StringOrCanvasGradientOrCanv
         colorString = style.getAsString();
         if (colorString == state().unparsedStrokeColor())
             return;
-        RGBA32 parsedColor = 0;
+        Color parsedColor = 0;
         if (!parseColorOrCurrentColor(parsedColor, colorString, canvas()))
             return;
-        if (state().strokeStyle()->isEquivalentRGBA(parsedColor)) {
+        if (state().strokeStyle()->isEquivalentRGBA(parsedColor.rgb())) {
             modifiableState().setUnparsedStrokeColor(colorString);
             return;
         }
-        canvasStyle = CanvasStyle::createFromRGBA(parsedColor);
+        canvasStyle = CanvasStyle::createFromRGBA(parsedColor.rgb());
     } else if (style.isCanvasGradient()) {
         canvasStyle = CanvasStyle::createFromGradient(style.getAsCanvasGradient());
     } else if (style.isCanvasPattern()) {
@@ -424,14 +424,14 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
         colorString = style.getAsString();
         if (colorString == state().unparsedFillColor())
             return;
-        RGBA32 parsedColor = 0;
+        Color parsedColor = 0;
         if (!parseColorOrCurrentColor(parsedColor, colorString, canvas()))
             return;
-        if (state().fillStyle()->isEquivalentRGBA(parsedColor)) {
+        if (state().fillStyle()->isEquivalentRGBA(parsedColor.rgb())) {
             modifiableState().setUnparsedFillColor(colorString);
             return;
         }
-        canvasStyle = CanvasStyle::createFromRGBA(parsedColor);
+        canvasStyle = CanvasStyle::createFromRGBA(parsedColor.rgb());
     } else if (style.isCanvasGradient()) {
         canvasStyle = CanvasStyle::createFromGradient(style.getAsCanvasGradient());
     } else if (style.isCanvasPattern()) {
@@ -554,14 +554,14 @@ String CanvasRenderingContext2D::shadowColor() const
     return Color(state().shadowColor()).serialized();
 }
 
-void CanvasRenderingContext2D::setShadowColor(const String& color)
+void CanvasRenderingContext2D::setShadowColor(const String& colorString)
 {
-    RGBA32 rgba;
-    if (!parseColorOrCurrentColor(rgba, color, canvas()))
+    Color color;
+    if (!parseColorOrCurrentColor(color, colorString, canvas()))
         return;
-    if (state().shadowColor() == rgba)
+    if (state().shadowColor() == color)
         return;
-    modifiableState().setShadowColor(rgba);
+    modifiableState().setShadowColor(color.rgb());
 }
 
 const Vector<float>& CanvasRenderingContext2D::getLineDash() const

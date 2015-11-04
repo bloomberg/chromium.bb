@@ -109,7 +109,7 @@ bool CSSParser::parseSupportsCondition(const String& condition)
     return CSSSupportsParser::supportsCondition(scope.tokenRange(), parser) == CSSSupportsParser::Supported;
 }
 
-bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
+bool CSSParser::parseColor(Color& color, const String& string, bool strict)
 {
     if (string.isEmpty())
         return false;
@@ -118,7 +118,7 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
     // handle these first.
     Color namedColor;
     if (namedColor.setNamedColor(string)) {
-        color = namedColor.rgb();
+        color = namedColor;
         return true;
     }
 
@@ -133,7 +133,7 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
     return true;
 }
 
-bool CSSParser::parseSystemColor(RGBA32& color, const String& colorString)
+bool CSSParser::parseSystemColor(Color& color, const String& colorString)
 {
     CSSParserString cssColor;
     cssColor.init(colorString);
@@ -141,8 +141,7 @@ bool CSSParser::parseSystemColor(RGBA32& color, const String& colorString)
     if (!CSSPropertyParser::isSystemColor(id))
         return false;
 
-    Color parsedColor = LayoutTheme::theme().systemColor(id);
-    color = parsedColor.rgb();
+    color = LayoutTheme::theme().systemColor(id);
     return true;
 }
 
