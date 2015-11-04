@@ -176,6 +176,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="third_party/findbugs/lib/findbugs.jar"/>
     <classpathentry kind="lib" path="third_party/junit/src/lib/hamcrest-core-1.1.jar"/>
     <classpathentry kind="lib" path="third_party/robolectric/lib/robolectric-2.4-jar-with-dependencies.jar"/>
+    <classpathentry kind="lib" path="out/Debug/gen/chrome/android/chrome_public_apk/chrome_public_apk.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/cacheinvalidation_proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/content_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/jsr_305_javalib.jar"/>
