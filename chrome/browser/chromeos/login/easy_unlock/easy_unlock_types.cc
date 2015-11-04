@@ -7,13 +7,14 @@
 namespace chromeos {
 
 const char kEasyUnlockKeyMetaNameBluetoothAddress[] = "eu.btaddr";
+const char kEasyUnlockKeyMetaNameBluetoothType[] = "eu.bttype";
 const char kEasyUnlockKeyMetaNamePsk[] = "eu.psk";
 const char kEasyUnlockKeyMetaNamePubKey[] = "eu.pubkey";
 const char kEasyUnlockKeyMetaNameChallenge[] = "eu.C";
 const char kEasyUnlockKeyMetaNameWrappedSecret[] = "eu.WUK";
 
-EasyUnlockDeviceKeyData::EasyUnlockDeviceKeyData() {
-}
+EasyUnlockDeviceKeyData::EasyUnlockDeviceKeyData()
+    : bluetooth_type(BLUETOOTH_CLASSIC) {}
 
 EasyUnlockDeviceKeyData::~EasyUnlockDeviceKeyData() {
 }

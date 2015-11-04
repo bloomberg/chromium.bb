@@ -430,11 +430,9 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   proximity_auth::Base64UrlDecode(devices[0].public_key, &decoded_public_key);
   proximity_auth::Base64UrlDecode(devices[0].psk, &decoded_psk);
   proximity_auth::Base64UrlDecode(devices[0].challenge, &decoded_challenge);
-
-  // TODO(tengs): We need to store the Bluetooth type with the TPM data.
   proximity_auth::RemoteDevice::BluetoothType bluetooth_type =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)
+      devices[0].bluetooth_type ==
+              chromeos::EasyUnlockDeviceKeyData::BLUETOOTH_LE
           ? proximity_auth::RemoteDevice::BLUETOOTH_LE
           : proximity_auth::RemoteDevice::BLUETOOTH_CLASSIC;
 

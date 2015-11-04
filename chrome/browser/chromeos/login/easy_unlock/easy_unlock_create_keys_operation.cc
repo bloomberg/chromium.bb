@@ -18,6 +18,7 @@
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/login/auth/key.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "crypto/encryptor.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
@@ -114,14 +115,14 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEcKeyPairGenerated(
     const std::string& ec_private_key,
     const std::string& ec_public_key) {
   if (ec_private_key.empty() || ec_public_key.empty()) {
-    LOG(ERROR) << "Easy unlock failed to generate ec key pair.";
+    PA_LOG(ERROR) << "Easy unlock failed to generate ec key pair.";
     callback_.Run(false);
     return;
   }
 
   std::string device_pub_key;
   if (!proximity_auth::Base64UrlDecode(device_->public_key, &device_pub_key)) {
-    LOG(ERROR) << "Easy unlock failed to decode device public key.";
+    PA_LOG(ERROR) << "Easy unlock failed to decode device public key.";
     callback_.Run(false);
     return;
   }
@@ -137,7 +138,7 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEcKeyPairGenerated(
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEskGenerated(
     const std::string& esk) {
   if (esk.empty()) {
-    LOG(ERROR) << "Easy unlock failed to generate challenge esk.";
+    PA_LOG(ERROR) << "Easy unlock failed to generate challenge esk.";
     callback_.Run(false);
     return;
   }
@@ -157,7 +158,7 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::WrapTPMPublicKey() {
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnTPMPublicKeyWrapped(
     const std::string& wrapped_key) {
   if (wrapped_key.empty()) {
-    LOG(ERROR) << "Unable to wrap RSA key";
+    PA_LOG(ERROR) << "Unable to wrap RSA key";
     callback_.Run(false);
     return;
   }
@@ -198,7 +199,7 @@ EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadMessageGenerated(
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadGenerated(
     const std::string& payload) {
   if (payload.empty()) {
-    LOG(ERROR) << "Easy unlock failed to generate challenge payload.";
+    PA_LOG(ERROR) << "Easy unlock failed to generate challenge payload.";
     callback_.Run(false);
     return;
   }
@@ -219,7 +220,7 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnPayloadGenerated(
 void EasyUnlockCreateKeysOperation::ChallengeCreator::OnChallengeGenerated(
     const std::string& challenge) {
   if (challenge.empty()) {
-    LOG(ERROR) << "Easy unlock failed to generate challenge.";
+    PA_LOG(ERROR) << "Easy unlock failed to generate challenge.";
     callback_.Run(false);
     return;
   }
@@ -273,14 +274,14 @@ void EasyUnlockCreateKeysOperation::CreateKeyForDeviceAtIndex(size_t index) {
   std::string iv(kSessionKeyByteSize, ' ');
   crypto::Encryptor encryptor;
   if (!encryptor.Init(session_key.get(), crypto::Encryptor::CBC, iv)) {
-    LOG(ERROR) << "Easy unlock failed to init encryptor for key creation.";
+    PA_LOG(ERROR) << "Easy unlock failed to init encryptor for key creation.";
     callback_.Run(false);
     return;
   }
 
   EasyUnlockDeviceKeyData* device = &devices_[index];
   if (!encryptor.Encrypt(user_key, &device->wrapped_secret)) {
-    LOG(ERROR) << "Easy unlock failed to encrypt user key for key creation.";
+    PA_LOG(ERROR) << "Easy unlock failed to encrypt user key for key creation.";
     callback_.Run(false);
     return;
   }
@@ -304,7 +305,7 @@ void EasyUnlockCreateKeysOperation::OnChallengeCreated(size_t index,
   DCHECK_EQ(key_creation_index_, index);
 
   if (!success) {
-    LOG(ERROR) << "Easy unlock failed to create challenge for key creation.";
+    PA_LOG(ERROR) << "Easy unlock failed to create challenge for key creation.";
     callback_.Run(false);
     return;
   }
@@ -320,7 +321,7 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
     const std::string& system_salt) {
   DCHECK_EQ(key_creation_index_, index);
   if (system_salt.empty()) {
-    LOG(ERROR) << "Easy unlock failed to get system salt for key creation.";
+    PA_LOG(ERROR) << "Easy unlock failed to get system salt for key creation.";
     callback_.Run(false);
     return;
   }
@@ -336,6 +337,9 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   key_def.revision = kEasyUnlockKeyRevision;
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNameBluetoothAddress, device->bluetooth_address));
+  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
+      kEasyUnlockKeyMetaNameBluetoothType,
+      static_cast<int64>(device->bluetooth_type)));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNamePsk, device->psk));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
@@ -374,7 +378,7 @@ void EasyUnlockCreateKeysOperation::OnKeyCreated(
   DCHECK_EQ(key_creation_index_, index);
 
   if (!success) {
-    LOG(ERROR) << "Easy unlock failed to create key, code=" << return_code;
+    PA_LOG(ERROR) << "Easy unlock failed to create key, code=" << return_code;
     callback_.Run(false);
     return;
   }

@@ -133,6 +133,7 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     dict->SetString("name", device.name);
     dict->SetString("psk", b64_psk);
     dict->SetString("bluetoothAddress", device.bluetooth_address);
+    dict->SetInteger("bluetoothType", static_cast<int>(device.bluetooth_type));
     dict->SetString("permitId", "permit://google.com/easyunlock/v1/" +
                                     proximity_auth_client()->GetAccountId());
     dict->SetString("permitRecord.id", b64_public_key);

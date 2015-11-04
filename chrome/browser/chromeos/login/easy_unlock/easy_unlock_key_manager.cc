@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "components/signin/core/account_id/account_id.h"
 
 namespace chromeos {
@@ -18,6 +19,7 @@ namespace chromeos {
 namespace {
 
 const char kKeyBluetoothAddress[] = "bluetoothAddress";
+const char kKeyBluetoothType[] = "bluetoothType";
 const char kKeyPermitRecord[] = "permitRecord";
 const char kKeyPermitId[] = "permitRecord.id";
 const char kKeyPermitPermitId[] = "permitRecord.permitId";
@@ -55,7 +57,7 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
       EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
           user_context.GetAccountId().GetUserEmail());
   if (!tpm_key_manager) {
-    LOG(ERROR) << "No TPM key manager.";
+    PA_LOG(ERROR) << "No TPM key manager.";
     callback.Run(false);
     return;
   }
@@ -112,6 +114,7 @@ void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
     const EasyUnlockDeviceKeyData& data,
     base::DictionaryValue* dict) {
   dict->SetString(kKeyBluetoothAddress, data.bluetooth_address);
+  dict->SetInteger(kKeyBluetoothType, static_cast<int>(data.bluetooth_type));
   dict->SetString(kKeyPsk, data.psk);
   scoped_ptr<base::DictionaryValue> permit_record(new base::DictionaryValue);
   dict->Set(kKeyPermitRecord, permit_record.release());
@@ -135,6 +138,19 @@ bool EasyUnlockKeyManager::RemoteDeviceDictionaryToDeviceData(
       !dict.GetString(kKeyPermitId, &public_key) ||
       !dict.GetString(kKeyPsk, &psk)) {
     return false;
+  }
+
+  // TODO(tengs): Move this conditional up once we can be certain that the
+  // dictionary will contain the Bluetooth type key.
+  int bluetooth_type_as_int;
+  if (dict.GetInteger(kKeyBluetoothType, &bluetooth_type_as_int)) {
+    if (bluetooth_type_as_int >= EasyUnlockDeviceKeyData::NUM_BLUETOOTH_TYPES) {
+      PA_LOG(ERROR) << "Invalid Bluetooth type: " << bluetooth_type_as_int;
+    } else {
+      data->bluetooth_type =
+          static_cast<EasyUnlockDeviceKeyData::BluetoothType>(
+              bluetooth_type_as_int);
+    }
   }
 
   data->bluetooth_address.swap(bluetooth_address);
