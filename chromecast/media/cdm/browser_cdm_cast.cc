@@ -111,11 +111,6 @@ void BrowserCdmCast::UnregisterPlayer(int registration_id) {
   player_tracker_impl_->UnregisterPlayer(registration_id);
 }
 
-::media::CdmContext* BrowserCdmCast::GetCdmContext() {
-  NOTREACHED();
-  return nullptr;
-}
-
 void BrowserCdmCast::OnSessionMessage(
     const std::string& session_id,
     const std::vector<uint8_t>& message,
@@ -229,11 +224,6 @@ void BrowserCdmCastUi::RemoveSession(
   DCHECK(thread_checker_.CalledOnValidThread());
   FORWARD_ON_CDM_THREAD(RemoveSession, session_id,
       base::Passed(BindPromiseToCurrentLoop(promise.Pass())));
-}
-
-::media::CdmContext* BrowserCdmCastUi::GetCdmContext() {
-  NOTREACHED();
-  return nullptr;
 }
 
 // A default empty implementation for subclasses that don't need to provide

@@ -108,7 +108,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
                     scoped_ptr<media::SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
-  CdmContext* GetCdmContext() override;
   void DeleteOnCorrectThread() const override;
 
   // PlayerTracker implementation. Can be called on any thread.

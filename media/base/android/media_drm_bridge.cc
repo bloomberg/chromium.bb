@@ -410,11 +410,6 @@ void MediaDrmBridge::RemoveSession(
   promise->reject(NOT_SUPPORTED_ERROR, 0, "RemoveSession() is not supported.");
 }
 
-CdmContext* MediaDrmBridge::GetCdmContext() {
-  NOTREACHED();
-  return nullptr;
-}
-
 void MediaDrmBridge::DeleteOnCorrectThread() const {
   DVLOG(1) << __FUNCTION__;
 
