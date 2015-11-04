@@ -114,6 +114,7 @@ private:
 
     bool parseShorthand(CSSPropertyID, const StylePropertyShorthand&, bool important);
     bool parseShorthand(CSSPropertyID, bool important);
+    bool consumeShorthandGreedily(const StylePropertyShorthand&, bool important);
     bool parse4Values(CSSPropertyID, const CSSPropertyID* properties, bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> parseContent();
 
@@ -239,8 +240,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseMotionRotation();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTextEmphasisStyle();
-
-    PassRefPtrWillBeRawPtr<CSSValue> parseTextDecoration();
 
     bool parseCalculation(CSSParserValue*, ValueRange);
 
