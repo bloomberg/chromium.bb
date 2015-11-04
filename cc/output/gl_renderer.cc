@@ -838,12 +838,12 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
       ScopedResource::Create(resource_provider_);
   // CopyTexImage2D fails when called on a texture having immutable storage.
   device_background_texture->Allocate(
-      bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT, RGBA_8888);
+      bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      resource_provider_->best_texture_format());
   {
     ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
                                              device_background_texture->id());
-    GetFramebufferTexture(
-        lock.texture_id(), device_background_texture->format(), bounding_rect);
+    GetFramebufferTexture(lock.texture_id(), RGBA_8888, bounding_rect);
   }
   return device_background_texture.Pass();
 }

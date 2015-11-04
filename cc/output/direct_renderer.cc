@@ -516,8 +516,9 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   size.Enlarge(enlarge_pass_texture_amount_.x(),
                enlarge_pass_texture_amount_.y());
   if (!texture->id()) {
-    texture->Allocate(
-        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER, RGBA_8888);
+    texture->Allocate(size,
+                      ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
+                      resource_provider_->best_texture_format());
   }
   DCHECK(texture->id());
 
