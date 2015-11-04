@@ -30,7 +30,6 @@
 #define WEBPImageDecoder_h
 
 #include "platform/image-decoders/ImageDecoder.h"
-
 #include "webp/decode.h"
 #include "webp/demux.h"
 

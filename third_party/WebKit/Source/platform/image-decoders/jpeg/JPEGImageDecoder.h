@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (C) 2008-2009 Torch Mobile, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,14 +28,10 @@
 
 #include "platform/image-decoders/ImageDecoder.h"
 
-#include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-
 namespace blink {
 
 class JPEGImageReader;
 
-// This class decodes the JPEG image format.
 class PLATFORM_EXPORT JPEGImageDecoder : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(JPEGImageDecoder);
 public:
