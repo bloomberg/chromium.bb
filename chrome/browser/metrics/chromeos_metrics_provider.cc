@@ -93,25 +93,6 @@ void IncrementPrefValue(const char* path) {
   pref->SetInteger(path, value + 1);
 }
 
-// Possible device enrollment status for a Chrome OS device.
-enum EnrollmentStatus {
-  NON_MANAGED,
-  UNUSED,  // Formerly MANAGED_EDU, see crbug.com/462770.
-  MANAGED,
-  ERROR_GETTING_ENROLLMENT_STATUS,
-  ENROLLMENT_STATUS_MAX,
-};
-
-// Get the enrollment status.
-EnrollmentStatus GetEnrollmentStatus() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector)
-    return ERROR_GETTING_ENROLLMENT_STATUS;
-
-  return connector->IsEnterpriseManaged() ? MANAGED : NON_MANAGED;
-}
-
 }  // namespace
 
 ChromeOSMetricsProvider::ChromeOSMetricsProvider()
@@ -144,6 +125,16 @@ void ChromeOSMetricsProvider::LogCrash(const std::string& crash_type) {
   // Wake up metrics logs sending if necessary now that new
   // log data is available.
   g_browser_process->metrics_service()->OnApplicationNotIdle();
+}
+
+ChromeOSMetricsProvider::EnrollmentStatus
+ChromeOSMetricsProvider::GetEnrollmentStatus() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector)
+    return ERROR_GETTING_ENROLLMENT_STATUS;
+
+  return connector->IsEnterpriseManaged() ? MANAGED : NON_MANAGED;
 }
 
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
