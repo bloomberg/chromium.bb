@@ -54,6 +54,83 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 0
 PASS lastPointerEvent.buttons is 0
+Received pointermove
+Received mousemove
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointermove"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.buttons is 0
+
+--- move within target ---
+Received pointermove
+Received mousemove
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointermove"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 25
+PASS lastPointerEvent.clientY is 41
+PASS lastPointerEvent.layerX is 25
+PASS lastPointerEvent.layerY is 41
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 7
+PASS lastPointerEvent.offsetY is 15
+PASS lastPointerEvent.pageX is 25
+PASS lastPointerEvent.pageY is 41
+PASS lastPointerEvent.screenX is 25
+PASS lastPointerEvent.screenY is 41
+PASS lastPointerEvent.x is 25
+PASS lastPointerEvent.y is 41
+PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.buttons is 0
+Received pointermove
+Received mousemove
+PASS lastPointerEvent is non-null.
+PASS lastPointerEvent.type is "pointermove"
+PASS lastPointerEvent.bubbles is true
+PASS lastPointerEvent.cancelable is true
+PASS lastPointerEvent.pointerId is 0
+PASS lastPointerEvent.pointerType is "mouse"
+PASS lastPointerEvent.isPrimary is true
+PASS lastPointerEvent.clientX is 23
+PASS lastPointerEvent.clientY is 31
+PASS lastPointerEvent.layerX is 23
+PASS lastPointerEvent.layerY is 31
+PASS lastPointerEvent.movementX is 0
+PASS lastPointerEvent.movementY is 0
+PASS lastPointerEvent.offsetX is 5
+PASS lastPointerEvent.offsetY is 5
+PASS lastPointerEvent.pageX is 23
+PASS lastPointerEvent.pageY is 31
+PASS lastPointerEvent.screenX is 23
+PASS lastPointerEvent.screenY is 31
+PASS lastPointerEvent.x is 23
+PASS lastPointerEvent.y is 31
+PASS lastPointerEvent.button is 0
+PASS lastPointerEvent.buttons is 0
 
 --- click each button ---
 Received pointerdown

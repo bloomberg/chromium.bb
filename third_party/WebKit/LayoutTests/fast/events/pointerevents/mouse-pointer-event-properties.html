@@ -17,9 +17,8 @@ div.box {
 <script>
 description("Verifies that pointer event parameters are correct when fired for mouse events.");
 
-// TODO(mustaq): Grow the list as we add support for more PEs
-var testEventList = ["mouseenter", "mouseleave", "mouseover", "mouseout", "mouseup", "mousedown",
-                   "pointerenter", "pointerleave", "pointerover", "pointerout", "pointerup", "pointerdown"];
+var testEventList = ["mouseenter", "mouseleave", "mouseover", "mouseout", "mouseup", "mousedown", "mousemove",
+                   "pointerenter", "pointerleave", "pointerover", "pointerout", "pointerup", "pointerdown", "pointermove"];
 var lastPointerEvent = null;
 
 var checkKeyModifiers = false;
@@ -99,6 +98,11 @@ function runTests() {
   var rect = document.getElementById("target").getBoundingClientRect();
 
   debug("--- move mouse into target ---");
+  eventSender.mouseMoveTo(rect.left + 5, rect.top + 5);
+  debug("");
+
+  debug("--- move within target ---");
+  eventSender.mouseMoveTo(rect.left + 7, rect.top + 15);
   eventSender.mouseMoveTo(rect.left + 5, rect.top + 5);
   debug("");
 

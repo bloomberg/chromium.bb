@@ -283,7 +283,7 @@ private:
     void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
 
     // Returns true when the sent PE has defaultPrevented or defaultHandled set.
-    bool dispatchPointerEventForMouseEvent(Node* target, const AtomicString& eventType, const PlatformMouseEvent&, Node* relatedTarget = nullptr);
+    bool dispatchPointerEvent(Node* target, const AtomicString& eventType, const PlatformMouseEvent&, Node* relatedTarget = nullptr);
 
     // Dispatches mouseover, mouseout, mouseenter and mouseleave events to appropriate nodes when the mouse pointer moves from one node to another.
     void sendMouseEventsForNodeTransition(Node*, Node*, const PlatformMouseEvent&);
@@ -291,6 +291,15 @@ private:
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 
     bool dispatchMouseEvent(const AtomicString& eventType, Node* target, int clickCount, const PlatformMouseEvent&);
+
+    // Dispatches ME after corresponding PE provided the PE has not been canceled. The eventType arg
+    // must be a mouse event that can be gated though a preventDefaulted pointerdown (i.e., one of
+    // {mousedown, mousemove, mouseup}).
+    // TODO(mustaq): Can we avoid the clickCount param, instead use PlatformMouseEvent's count?
+    //     Same applied to dispatchMouseEvent() above.
+    bool updatePointerTargetAndDispatchEvents(const AtomicString& mouseEventType, Node* target,
+        int clickCount, const PlatformMouseEvent&);
+
     bool dispatchDragEvent(const AtomicString& eventType, Node* target, const PlatformMouseEvent&, DataTransfer*);
 
     void clearDragDataTransfer();
@@ -341,7 +350,7 @@ private:
     // the given element.
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 
-    void dispatchPointerEventsForTouchEvent(const PlatformTouchEvent&, WillBeHeapVector<TouchInfo>&);
+    void dispatchPointerEvents(const PlatformTouchEvent&, WillBeHeapVector<TouchInfo>&);
     void sendPointerCancels(WillBeHeapVector<TouchInfo>&);
 
     bool dispatchTouchEvents(const PlatformTouchEvent&, WillBeHeapVector<TouchInfo>&, bool, bool);

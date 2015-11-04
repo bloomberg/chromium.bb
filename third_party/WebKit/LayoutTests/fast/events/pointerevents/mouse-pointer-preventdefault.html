@@ -16,9 +16,8 @@ div.box {
 <script>
 description("Verifies the effect of pointer event prevent-default on following pointer & mouse events.");
 
-// TODO(mustaq): Grow the lists as we add support for more PEs.
-var mouseEventList = ["mousedown", "mouseup", "mouseenter", "mouseleave", "mouseover", "mouseout"];
-var pointerEventList = ["pointerdown", "pointerup", "pointerenter", "pointerleave", "pointerover", "pointerout"];
+var mouseEventList = ["mousedown", "mouseup", "mouseenter", "mouseleave", "mouseover", "mouseout", "mousemove"];
+var pointerEventList = ["pointerdown", "pointerup", "pointerenter", "pointerleave", "pointerover", "pointerout", "pointermove"];
 
 var preventDefaultList = ["none"].concat(pointerEventList);
 var eventToPreventDefault = "";

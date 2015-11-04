@@ -108,7 +108,66 @@ bool isNodeInDocument(Node* n)
     return n && n->inDocument();
 }
 
+const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::State state)
+{
+    switch (state) {
+    case PlatformTouchPoint::TouchReleased:
+        return EventTypeNames::touchend;
+    case PlatformTouchPoint::TouchCancelled:
+        return EventTypeNames::touchcancel;
+    case PlatformTouchPoint::TouchPressed:
+        return EventTypeNames::touchstart;
+    case PlatformTouchPoint::TouchMoved:
+        return EventTypeNames::touchmove;
+    case PlatformTouchPoint::TouchStationary:
+        // Fall through to default
+    default:
+        ASSERT_NOT_REACHED();
+        return emptyAtom;
+    }
 }
+
+const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::State state)
+{
+    switch (state) {
+    case PlatformTouchPoint::TouchReleased:
+        return EventTypeNames::pointerup;
+    case PlatformTouchPoint::TouchCancelled:
+        return EventTypeNames::pointercancel;
+    case PlatformTouchPoint::TouchPressed:
+        return EventTypeNames::pointerdown;
+    case PlatformTouchPoint::TouchMoved:
+        return EventTypeNames::pointermove;
+    case PlatformTouchPoint::TouchStationary:
+        // Fall through to default
+    default:
+        ASSERT_NOT_REACHED();
+        return emptyAtom;
+    }
+}
+
+const AtomicString& pointerEventNameForMouseEventName(const AtomicString& mouseEventName)
+{
+#define RETURN_CORRESPONDING_PE_NAME(eventSuffix) \
+    if (mouseEventName == EventTypeNames::mouse##eventSuffix) {\
+        return EventTypeNames::pointer##eventSuffix;\
+    }
+
+    RETURN_CORRESPONDING_PE_NAME(down);
+    RETURN_CORRESPONDING_PE_NAME(enter);
+    RETURN_CORRESPONDING_PE_NAME(leave);
+    RETURN_CORRESPONDING_PE_NAME(move);
+    RETURN_CORRESPONDING_PE_NAME(out);
+    RETURN_CORRESPONDING_PE_NAME(over);
+    RETURN_CORRESPONDING_PE_NAME(up);
+
+#undef RETURN_CORRESPONDING_PE_NAME
+
+    ASSERT_NOT_REACHED();
+    return emptyAtom;
+}
+
+} // namespace
 
 using namespace HTMLNames;
 
@@ -971,13 +1030,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 
     m_frame->selection().setCaretBlinkingSuspended(true);
 
-    bool swallowEvent = dispatchPointerEventForMouseEvent(mev.innerNode(), EventTypeNames::pointerdown, mouseEvent);
-
-    if (swallowEvent) {
-        m_preventMouseEventForPointerTypeMouse = true;
-    }
-    if (!m_preventMouseEventForPointerTypeMouse)
-        swallowEvent = swallowEvent || !dispatchMouseEvent(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent);
+    bool swallowEvent = updatePointerTargetAndDispatchEvents(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent);
 
     // m_selectionInitiationState is initialized after dispatching mousedown
     // event in order not to keep the selection by DOM APIs Because we can't
@@ -1111,7 +1164,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     }
 
     if (m_frameSetBeingResized)
-        return !dispatchMouseEvent(EventTypeNames::mousemove, m_frameSetBeingResized.get(), 0, mouseEvent);
+        return updatePointerTargetAndDispatchEvents(EventTypeNames::mousemove, m_frameSetBeingResized.get(), 0, mouseEvent);
 
     // Send events right to a scrollbar if the mouse is pressed.
     if (m_lastScrollbarUnderMouse && m_mousePressed) {
@@ -1193,7 +1246,8 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     if (swallowEvent)
         return true;
 
-    swallowEvent = !dispatchMouseEvent(EventTypeNames::mousemove, mev.innerNode(), 0, mouseEvent);
+    swallowEvent = updatePointerTargetAndDispatchEvents(EventTypeNames::mousemove, mev.innerNode(), 0, mouseEvent);
+
     if (!swallowEvent)
         swallowEvent = handleMouseDraggedEvent(mev);
 
@@ -1246,12 +1300,12 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     }
 
     if (m_frameSetBeingResized)
-        return !dispatchMouseEvent(EventTypeNames::mouseup, m_frameSetBeingResized.get(), m_clickCount, mouseEvent);
+        return dispatchMouseEvent(EventTypeNames::mouseup, m_frameSetBeingResized.get(), m_clickCount, mouseEvent);
 
     if (m_lastScrollbarUnderMouse) {
         invalidateClick();
         m_lastScrollbarUnderMouse->mouseUp(mouseEvent);
-        return !dispatchMouseEvent(EventTypeNames::mouseup, m_nodeUnderMouse.get(), m_clickCount, mouseEvent);
+        return dispatchMouseEvent(EventTypeNames::mouseup, m_nodeUnderMouse.get(), m_clickCount, mouseEvent);
     }
 
     // Mouse events simulated from touch should not hit-test again.
@@ -1266,14 +1320,10 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     if (subframe && passMouseReleaseEventToSubframe(mev, subframe))
         return true;
 
-    bool swallowPointerUpEvent = dispatchPointerEventForMouseEvent(mev.innerNode(), EventTypeNames::pointerup, mouseEvent);
-    bool swallowMouseUpEvent = false;
-    if (!m_preventMouseEventForPointerTypeMouse) {
-        swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mouseEvent);
-    } else {
-        // TODO(crbug/545647): This state should reset with pointercancel too.
-        m_preventMouseEventForPointerTypeMouse = false;
-    }
+    bool swallowUpEvent = updatePointerTargetAndDispatchEvents(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mouseEvent);
+
+    // TODO(crbug/545647): This state should reset with pointercancel too.
+    m_preventMouseEventForPointerTypeMouse = false;
 
     bool contextMenuEvent = mouseEvent.button() == RightButton;
 #if OS(MACOSX)
@@ -1308,12 +1358,12 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     }
 
     bool swallowMouseReleaseEvent = false;
-    if (!swallowPointerUpEvent && !swallowMouseUpEvent)
+    if (!swallowUpEvent)
         swallowMouseReleaseEvent = handleMouseReleaseEvent(mev);
 
     invalidateClick();
 
-    return swallowPointerUpEvent || swallowMouseUpEvent || swallowClickEvent || swallowMouseReleaseEvent;
+    return swallowUpEvent || swallowClickEvent || swallowMouseReleaseEvent;
 }
 
 bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTarget, const PlatformMouseEvent& event, DataTransfer* dataTransfer)
@@ -1562,7 +1612,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
         sendMouseEventsForNodeTransition(lastNodeUnderMouse.get(), m_nodeUnderMouse.get(), mouseEvent);
 }
 
-bool EventHandler::dispatchPointerEventForMouseEvent(Node* target, const AtomicString& eventType,
+bool EventHandler::dispatchPointerEvent(Node* target, const AtomicString& eventType,
     const PlatformMouseEvent& mouseEvent, Node* relatedTarget)
 {
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
@@ -1581,7 +1631,7 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
 
     // Dispatch pointerout/mouseout events
     if (isNodeInDocument(exitedNode)) {
-        dispatchPointerEventForMouseEvent(exitedNode, EventTypeNames::pointerout, mouseEvent, enteredNode);
+        dispatchPointerEvent(exitedNode, EventTypeNames::pointerout, mouseEvent, enteredNode);
         exitedNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseout, 0, enteredNode);
     }
 
@@ -1643,7 +1693,7 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     // Dispatch pointerleave/mouseleave events, in child-to-parent order.
     for (size_t j = 0; j < exitedAncestorIndex; j++) {
         if (exitedNodeHasCapturingAncestor || exitedAncestors[j]->hasEventListeners(EventTypeNames::pointerleave)) {
-            dispatchPointerEventForMouseEvent(exitedAncestors[j].get(), EventTypeNames::pointerleave, mouseEvent,
+            dispatchPointerEvent(exitedAncestors[j].get(), EventTypeNames::pointerleave, mouseEvent,
                 enteredNode);
         }
         if (exitedNodeHasCapturingAncestor || exitedAncestors[j]->hasEventListeners(EventTypeNames::mouseleave))
@@ -1652,7 +1702,7 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
 
     // Dispatch pointerover/mouseover.
     if (isNodeInDocument(enteredNode)) {
-        dispatchPointerEventForMouseEvent(enteredNode, EventTypeNames::pointerover, mouseEvent, exitedNode);
+        dispatchPointerEvent(enteredNode, EventTypeNames::pointerover, mouseEvent, exitedNode);
         enteredNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseover, 0, exitedNode);
     }
 
@@ -1669,7 +1719,7 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     // Dispatch pointerenter/mouseenter events, in parent-to-child order.
     for (size_t i = enteredAncestorIndex; i > 0; i--) {
         if (enteredNodeHasCapturingAncestor || enteredAncestors[i-1]->hasEventListeners(EventTypeNames::pointerenter)) {
-            dispatchPointerEventForMouseEvent(enteredAncestors[i-1].get(), EventTypeNames::pointerenter, mouseEvent,
+            dispatchPointerEvent(enteredAncestors[i-1].get(), EventTypeNames::pointerenter, mouseEvent,
                 exitedNode);
         }
         if (enteredNodeHasCapturingAncestor || enteredAncestors[i-1]->hasEventListeners(EventTypeNames::mouseenter))
@@ -1677,14 +1727,38 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     }
 }
 
-// The return value means 'continue default handling.'
 bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targetNode, int clickCount, const PlatformMouseEvent& mouseEvent)
 {
     updateMouseEventTargetNode(targetNode, mouseEvent);
-    return !m_nodeUnderMouse || m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, eventType, clickCount);
+    return m_nodeUnderMouse && !m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, eventType, clickCount);
 }
 
-// The return value means 'swallow event' (was handled), as for other handle* functions.
+// TODO(mustaq): Make PE drive ME dispatch & bookkeeping in EventHandler.
+bool EventHandler::updatePointerTargetAndDispatchEvents(const AtomicString& mouseEventType, Node* targetNode, int clickCount, const PlatformMouseEvent& mouseEvent)
+{
+    ASSERT(mouseEventType == EventTypeNames::mousedown
+        || mouseEventType == EventTypeNames::mousemove
+        || mouseEventType == EventTypeNames::mouseup);
+
+    updateMouseEventTargetNode(targetNode, mouseEvent);
+    if (!m_nodeUnderMouse)
+        return false;
+
+    bool swallowEvent = dispatchPointerEvent(m_nodeUnderMouse.get(),
+        pointerEventNameForMouseEventName(mouseEventType),
+        mouseEvent);
+
+    if (swallowEvent && mouseEventType == EventTypeNames::mousedown) {
+        m_preventMouseEventForPointerTypeMouse = true;
+    }
+
+    if (!m_preventMouseEventForPointerTypeMouse) {
+        swallowEvent |= !m_nodeUnderMouse->dispatchMouseEvent(mouseEvent, mouseEventType, clickCount);
+    }
+
+    return swallowEvent;
+}
+
 bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)
 {
     // If clicking on a frame scrollbar, do not mess up with content focus.
@@ -2126,7 +2200,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
         static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::LeftButtonDown),
         PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
-    bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown);
+    bool swallowMouseDownEvent = dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown);
     selectionController().initializeSelectionState();
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest), InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
@@ -2152,7 +2226,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
-    bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseUp);
+    bool swallowMouseUpEvent = dispatchMouseEvent(EventTypeNames::mouseup, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseUp);
 
     bool swallowClickEvent = false;
     if (m_clickNode) {
@@ -2164,7 +2238,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
             // because commonAncestor() will exit early if their documents are different.
             m_clickNode->updateDistribution();
             Node* clickTargetNode = currentHitTest.innerNode()->commonAncestor(*m_clickNode, parentForClickEvent);
-            swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, gestureEvent.tapCount(), fakeMouseUp);
+            swallowClickEvent = dispatchMouseEvent(EventTypeNames::click, clickTargetNode, gestureEvent.tapCount(), fakeMouseUp);
         }
         m_clickNode = nullptr;
     }
@@ -2811,7 +2885,7 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event, Node* o
     selectionController().sendContextMenuEvent(mev, positionInContents);
 
     Node* targetNode = overrideTargetNode ? overrideTargetNode : mev.innerNode();
-    return !dispatchMouseEvent(EventTypeNames::contextmenu, targetNode, 0, event);
+    return dispatchMouseEvent(EventTypeNames::contextmenu, targetNode, 0, event);
 }
 
 bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
@@ -3271,7 +3345,7 @@ void EventHandler::updateDragStateAfterEditDragIfNeeded(Element* rootEditableEle
 // returns if we should continue "default processing", i.e., whether eventhandler canceled
 bool EventHandler::dispatchDragSrcEvent(const AtomicString& eventType, const PlatformMouseEvent& event)
 {
-    return !dispatchDragEvent(eventType, dragState().m_dragSrc.get(), event, dragState().m_dragDataTransfer.get());
+    return dispatchDragEvent(eventType, dragState().m_dragSrc.get(), event, dragState().m_dragDataTransfer.get());
 }
 
 bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, DragInitiator initiator)
@@ -3358,7 +3432,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     // reset. Hence, need to check if this particular drag operation can
     // continue even if dispatchEvent() indicates no (direct) cancellation.
     // Do that by checking if m_dragSrc is still set.
-    m_mouseDownMayStartDrag = dispatchDragSrcEvent(EventTypeNames::dragstart, m_mouseDown)
+    m_mouseDownMayStartDrag = !dispatchDragSrcEvent(EventTypeNames::dragstart, m_mouseDown)
         && !m_frame->selection().isInPasswordField() && dragState().m_dragSrc;
 
     // Invalidate clipboard here against anymore pasteboard writing for security. The drag
@@ -3554,44 +3628,6 @@ void EventHandler::updateLastScrollbarUnderMouse(Scrollbar* scrollbar, bool setL
     }
 }
 
-static const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::State state)
-{
-    switch (state) {
-    case PlatformTouchPoint::TouchReleased:
-        return EventTypeNames::touchend;
-    case PlatformTouchPoint::TouchCancelled:
-        return EventTypeNames::touchcancel;
-    case PlatformTouchPoint::TouchPressed:
-        return EventTypeNames::touchstart;
-    case PlatformTouchPoint::TouchMoved:
-        return EventTypeNames::touchmove;
-    case PlatformTouchPoint::TouchStationary:
-        // Fall through to default
-    default:
-        ASSERT_NOT_REACHED();
-        return emptyAtom;
-    }
-}
-
-static const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::State state)
-{
-    switch (state) {
-    case PlatformTouchPoint::TouchReleased:
-        return EventTypeNames::pointerup;
-    case PlatformTouchPoint::TouchCancelled:
-        return EventTypeNames::pointercancel;
-    case PlatformTouchPoint::TouchPressed:
-        return EventTypeNames::pointerdown;
-    case PlatformTouchPoint::TouchMoved:
-        return EventTypeNames::pointermove;
-    case PlatformTouchPoint::TouchStationary:
-        // Fall through to default
-    default:
-        ASSERT_NOT_REACHED();
-        return emptyAtom;
-    }
-}
-
 HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType)
 {
     HitTestResult result(HitTestRequest(hitType), point);
@@ -3607,9 +3643,12 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
     return result;
 }
 
-void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& event,
+void EventHandler::dispatchPointerEvents(const PlatformTouchEvent& event,
     WillBeHeapVector<TouchInfo>& touchInfos)
 {
+    if (!RuntimeEnabledFeatures::pointerEventEnabled())
+        return;
+
     // Iterate through the touch points, sending PointerEvents to the targets as required.
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         TouchInfo& touchInfo = touchInfos[i];
@@ -3645,6 +3684,9 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
 
 void EventHandler::sendPointerCancels(WillBeHeapVector<TouchInfo>& touchInfos)
 {
+    if (!RuntimeEnabledFeatures::pointerEventEnabled())
+        return;
+
     for (unsigned i = 0; i < touchInfos.size(); ++i) {
         TouchInfo& touchInfo = touchInfos[i];
         const PlatformTouchPoint& point = touchInfo.point;
@@ -3941,14 +3983,12 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         touchInfo.consumed = false;
     }
 
-    if (RuntimeEnabledFeatures::pointerEventEnabled()) {
-        if (!m_inPointerCanceledState) {
-            dispatchPointerEventsForTouchEvent(event, touchInfos);
-            // Note that the disposition of any pointer events affects only the generation of touch
-            // events. If all pointer events were handled (and hence no touch events were fired), that
-            // is still equivalent to the touch events going unhandled because pointer event handler
-            // don't block scroll gesture generation.
-        }
+    if (!m_inPointerCanceledState) {
+        dispatchPointerEvents(event, touchInfos);
+        // Note that the disposition of any pointer events affects only the generation of touch
+        // events. If all pointer events were handled (and hence no touch events were fired), that
+        // is still equivalent to the touch events going unhandled because pointer event handler
+        // don't block scroll gesture generation.
     }
 
     // TODO(crbug.com/507408): If PE handlers always call preventDefault, we won't see TEs until after
@@ -3958,17 +3998,15 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     bool swallowedTouchEvent = dispatchTouchEvents(event, touchInfos, freshTouchEvents,
         allTouchReleased);
 
-    if (RuntimeEnabledFeatures::pointerEventEnabled()) {
-        if (!m_inPointerCanceledState) {
-            // Check if we need to stop firing pointer events because of a touch action.
-            // See: www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
-            if (event.causesScrollingIfUncanceled() && !swallowedTouchEvent) {
-                m_inPointerCanceledState = true;
-                sendPointerCancels(touchInfos);
-            }
-        } else if (allTouchReleased) {
-            m_inPointerCanceledState = false;
+    if (!m_inPointerCanceledState) {
+        // Check if we need to stop firing pointer events because of a touch action.
+        // See: www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
+        if (event.causesScrollingIfUncanceled() && !swallowedTouchEvent) {
+            m_inPointerCanceledState = true;
+            sendPointerCancels(touchInfos);
         }
+    } else if (allTouchReleased) {
+        m_inPointerCanceledState = false;
     }
 
     return swallowedTouchEvent;
