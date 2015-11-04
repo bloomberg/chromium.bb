@@ -978,10 +978,6 @@ crbug.com/521124 [ Win7 Release ] fast/text/justify-ideograph-vertical.html [ Pa
 crbug.com/521124 [ Win7 Release ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 crbug.com/521124 [ Win7 ] fast/text/orientation-sideways.html [ Pass Failure ]
 
-# Re-check these after the re-baseline for crbug.com/512991
-#crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
-#crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
-
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 
