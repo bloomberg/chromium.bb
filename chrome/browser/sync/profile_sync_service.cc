@@ -26,9 +26,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -44,7 +42,6 @@
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -154,24 +151,6 @@ static const base::FilePath::CharType kSyncBackupDataFolderName[] =
 
 namespace {
 
-void ClearBrowsingData(BrowsingDataRemover::Observer* observer,
-                       Profile* profile,
-                       base::Time start,
-                       base::Time end) {
-  // BrowsingDataRemover deletes itself when it's done.
-  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForRange(
-      profile, start, end);
-  if (observer)
-    remover->AddObserver(observer);
-  remover->Remove(BrowsingDataRemover::REMOVE_ALL,
-                  BrowsingDataHelper::ALL);
-
-  scoped_refptr<password_manager::PasswordStore> password =
-      PasswordStoreFactory::GetForProfile(profile,
-                                          ServiceAccessType::EXPLICIT_ACCESS);
-  password->RemoveLoginsSyncedBetween(start, end);
-}
-
 // Perform the actual sync data folder deletion.
 // This should only be called on the sync thread.
 void DeleteSyncDataFolder(const base::FilePath& directory_path) {
@@ -230,8 +209,6 @@ ProfileSyncService::ProfileSyncService(
       backend_mode_(IDLE),
       need_backup_(false),
       backup_finished_(false),
-      clear_browsing_data_(base::Bind(&ClearBrowsingData)),
-      browsing_data_remover_observer_(NULL),
       catch_up_configure_in_progress_(false),
       passphrase_prompt_triggered_by_version_(false),
       weak_factory_(this),
@@ -2591,23 +2568,8 @@ void ProfileSyncService::ClearBrowsingDataSinceFirstSync() {
   if (first_sync_time.is_null())
     return;
 
-  clear_browsing_data_.Run(browsing_data_remover_observer_,
-                           profile_,
-                           first_sync_time,
-                           base::Time::Now());
-}
-
-void ProfileSyncService::SetBrowsingDataRemoverObserverForTesting(
-    BrowsingDataRemover::Observer* observer) {
-  browsing_data_remover_observer_ = observer;
-}
-
-void ProfileSyncService::SetClearingBrowseringDataForTesting(
-    base::Callback<void(BrowsingDataRemover::Observer* observer,
-                        Profile*,
-                        base::Time,
-                        base::Time)> c) {
-  clear_browsing_data_ = c;
+  sync_client_->GetClearBrowsingDataCallback().Run(first_sync_time,
+                                                   base::Time::Now());
 }
 
 void ProfileSyncService::CheckSyncBackupIfNeeded() {

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_SYNC_CHROME_SYNC_CLIENT_H__
 
 #include "base/macros.h"
-#include "components/sync_driver/sync_client.h"
-
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
+#include "components/sync_driver/sync_client.h"
 
 class Profile;
 
@@ -34,6 +34,8 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
   scoped_refptr<password_manager::PasswordStore> GetPasswordStore() override;
+  sync_driver::ClearBrowsingDataCallback GetClearBrowsingDataCallback()
+      override;
   base::Closure GetPasswordStateChangedCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
@@ -47,8 +49,14 @@ class ChromeSyncClient : public sync_driver::SyncClient {
       syncer::WorkerLoopDestructionObserver* observer) override;
   sync_driver::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
+  // Helper for testing rollback.
+  void SetBrowsingDataRemoverObserverForTesting(
+      BrowsingDataRemover::Observer* observer);
+
  private:
   Profile* const profile_;
+
+  void ClearBrowsingData(base::Time start, base::Time end);
 
   // The sync api component factory in use by this client.
   scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
@@ -68,6 +76,9 @@ class ChromeSyncClient : public sync_driver::SyncClient {
 
   // Generates and monitors the ExtensionsActivity object used by sync.
   ExtensionsActivityMonitor extensions_activity_monitor_;
+
+  // Used in integration tests.
+  BrowsingDataRemover::Observer* browsing_data_remover_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSyncClient);
 };

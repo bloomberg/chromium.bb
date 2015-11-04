@@ -16,6 +16,7 @@
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

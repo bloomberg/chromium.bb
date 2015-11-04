@@ -21,7 +21,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -34,6 +33,7 @@
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/protocol_event_observer.h"
 #include "components/sync_driver/startup_controller.h"
+#include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service.h"
@@ -554,13 +554,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Returns the current mode the backend is in.
   BackendMode backend_mode() const;
 
-  // Helpers for testing rollback.
-  void SetBrowsingDataRemoverObserverForTesting(
-      BrowsingDataRemover::Observer* observer);
-  void SetClearingBrowseringDataForTesting(base::Callback<
-      void(BrowsingDataRemover::Observer*, Profile*, base::Time, base::Time)>
-                                               c);
-
   base::Time GetDeviceBackupTimeForTesting() const;
 
   // This triggers a Directory::SaveChanges() call on the sync thread.
@@ -950,15 +943,9 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   base::Time backup_start_time_;
 
-  base::Callback<
-      void(BrowsingDataRemover::Observer*, Profile*, base::Time, base::Time)>
-      clear_browsing_data_;
-
   // Last time when pre-sync data was saved. NULL pointer means backup data
   // state is unknown. If time value is null, backup data doesn't exist.
   scoped_ptr<base::Time> last_backup_time_;
-
-  BrowsingDataRemover::Observer* browsing_data_remover_observer_;
 
   // The full path to the sync data directory.
   base::FilePath directory_path_;

@@ -101,6 +101,26 @@ using testing::Return;
 using testing::StrictMock;
 using testing::_;
 
+class TestChromeSyncClient : public ChromeSyncClient {
+ public:
+  TestChromeSyncClient(
+      Profile* profile,
+      scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory,
+      sync_driver::ClearBrowsingDataCallback callback)
+      : ChromeSyncClient(profile, component_factory.Pass()),
+        callback_(callback) {}
+  ~TestChromeSyncClient() override {}
+
+ private:
+  // SyncClient:
+  sync_driver::ClearBrowsingDataCallback GetClearBrowsingDataCallback()
+      override {
+    return callback_;
+  }
+
+  sync_driver::ClearBrowsingDataCallback callback_;
+};
+
 class TestSyncServiceObserver : public sync_driver::SyncServiceObserver {
  public:
   explicit TestSyncServiceObserver(ProfileSyncService* service)
@@ -281,15 +301,14 @@ class ProfileSyncServiceTest : public ::testing::Test {
     scoped_ptr<SyncApiComponentFactoryMock> components_factory(
         new SyncApiComponentFactoryMock());
     components_factory_ = components_factory.get();
-    scoped_ptr<ChromeSyncClient> sync_client(
-        new ChromeSyncClient(profile_, components_factory.Pass()));
+    scoped_ptr<ChromeSyncClient> sync_client(new TestChromeSyncClient(
+        profile_, components_factory.Pass(),
+        base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
+                   base::Unretained(this))));
     service_.reset(new ProfileSyncService(
         sync_client.Pass(), profile_,
         make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
         behavior, base::Bind(&EmptyNetworkTimeUpdate)));
-    service_->SetClearingBrowseringDataForTesting(
-        base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
-                   base::Unretained(this)));
     service_->RegisterDataTypeController(
         new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
   }
@@ -400,11 +419,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return components_factory_;
   }
 
-  void ClearBrowsingDataCallback(BrowsingDataRemover::Observer* observer,
-                                 Profile* profile,
-                                 base::Time start,
-                                 base::Time end) {
-    EXPECT_EQ(profile_, profile);
+  void ClearBrowsingDataCallback(base::Time start, base::Time end) {
     clear_browsing_date_start_ = start;
   }
 
