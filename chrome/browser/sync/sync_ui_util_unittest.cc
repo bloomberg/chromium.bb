@@ -352,10 +352,8 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     GetDistinctCase(service, &signin, provider.get(), idx);
     base::string16 status_label;
     base::string16 link_label;
-    sync_ui_util::GetStatusLabels(&service,
-                                  signin,
-                                  sync_ui_util::WITH_HTML,
-                                  &status_label,
+    sync_ui_util::GetStatusLabels(profile.get(), &service, signin,
+                                  sync_ui_util::WITH_HTML, &status_label,
                                   &link_label);
     // If the status and link message combination is already present in the set
     // of messages already seen, this is a duplicate rather than a unique
@@ -391,10 +389,8 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     GetDistinctCase(service, &signin, provider.get(), idx);
     base::string16 status_label;
     base::string16 link_label;
-    sync_ui_util::GetStatusLabels(&service,
-                                  signin,
-                                  sync_ui_util::PLAIN_TEXT,
-                                  &status_label,
+    sync_ui_util::GetStatusLabels(profile.get(), &service, signin,
+                                  sync_ui_util::PLAIN_TEXT, &status_label,
                                   &link_label);
 
     // Ensures a search for string 'href' (found in links, not a string to be

@@ -1145,10 +1145,10 @@ void ProfileSyncService::OnExperimentsChanged(
 
   current_experiments_ = experiments;
 
-  profile()->GetPrefs()->SetBoolean(
+  profile_->GetPrefs()->SetBoolean(
       invalidation::prefs::kInvalidationServiceUseGCMChannel,
       experiments.gcm_invalidations_enabled);
-  profile()->GetPrefs()->SetBoolean(
+  profile_->GetPrefs()->SetBoolean(
       autofill::prefs::kAutofillWalletSyncExperimentEnabled,
       experiments.wallet_sync_enabled);
 }

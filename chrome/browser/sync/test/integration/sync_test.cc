@@ -604,7 +604,8 @@ bool SyncTest::SetupSync() {
   // client set up.
   if (UsingExternalServers()) {
     for (int i = 0; i < num_clients_; ++i) {
-      sync_refreshers_[i] = new P2PSyncRefresher(clients_[i]->service());
+      sync_refreshers_[i] =
+          new P2PSyncRefresher(GetProfile(i), clients_[i]->service());
     }
 
     // OneClickSigninSyncStarter observer is created with a real user sign in.

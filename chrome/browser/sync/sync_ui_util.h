@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 
+class Profile;
 class ProfileSyncService;
 class SigninManagerBase;
 
@@ -33,7 +34,8 @@ enum StatusLabelStyle {
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
 // |style| sets the link properties, see |StatusLabelStyle|.
-MessageType GetStatusLabels(ProfileSyncService* service,
+MessageType GetStatusLabels(Profile* profile,
+                            ProfileSyncService* service,
                             const SigninManagerBase& signin,
                             StatusLabelStyle style,
                             base::string16* status_label,
@@ -41,7 +43,8 @@ MessageType GetStatusLabels(ProfileSyncService* service,
 
 // Same as above but for use specifically on the New Tab Page.
 // |status_label| may contain an HTML-formatted link.
-MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
+MessageType GetStatusLabelsForNewTabPage(Profile* profile,
+                                         ProfileSyncService* service,
                                          const SigninManagerBase& signin,
                                          base::string16* status_label,
                                          base::string16* link_label);
@@ -56,7 +59,8 @@ void GetStatusLabelsForSyncGlobalError(const ProfileSyncService* service,
                                        base::string16* bubble_accept_label);
 #endif
 
-MessageType GetStatus(ProfileSyncService* service,
+MessageType GetStatus(Profile* profile,
+                      ProfileSyncService* service,
                       const SigninManagerBase& signin);
 
 }  // namespace sync_ui_util

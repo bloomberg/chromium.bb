@@ -11,22 +11,23 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SyncGlobalError::SyncGlobalError(SyncErrorController* error_controller,
+SyncGlobalError::SyncGlobalError(GlobalErrorService* global_error_service,
+                                 LoginUIService* login_ui_service,
+                                 SyncErrorController* error_controller,
                                  ProfileSyncService* profile_sync_service)
-    : error_controller_(error_controller),
-      service_(profile_sync_service) {
-  DCHECK(service_);
+    : global_error_service_(global_error_service),
+      login_ui_service_(login_ui_service),
+      error_controller_(error_controller),
+      sync_service_(profile_sync_service) {
+  DCHECK(sync_service_);
   error_controller_->AddObserver(this);
-  GlobalErrorServiceFactory::GetForProfile(service_->profile())->
-      AddGlobalError(this);
+  global_error_service_->AddGlobalError(this);
 }
 
 SyncGlobalError::~SyncGlobalError() {
@@ -35,8 +36,7 @@ SyncGlobalError::~SyncGlobalError() {
 }
 
 void SyncGlobalError::Shutdown() {
-  GlobalErrorServiceFactory::GetForProfile(service_->profile())->
-      RemoveGlobalError(this);
+  global_error_service_->RemoveGlobalError(this);
   error_controller_->RemoveObserver(this);
   error_controller_ = NULL;
 }
@@ -54,10 +54,8 @@ base::string16 SyncGlobalError::MenuItemLabel() {
 }
 
 void SyncGlobalError::ExecuteMenuItem(Browser* browser) {
-  LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(
-      service_->profile());
-  if (login_ui->current_login_ui()) {
-    login_ui->current_login_ui()->FocusUI();
+  if (login_ui_service_->current_login_ui()) {
+    login_ui_service_->current_login_ui()->FocusUI();
     return;
   }
   // Need to navigate to the settings page and display the UI.
@@ -100,7 +98,7 @@ void SyncGlobalError::OnErrorChanged() {
   base::string16 bubble_message;
   base::string16 bubble_accept_label;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      service_, &menu_label, &bubble_message, &bubble_accept_label);
+      sync_service_, &menu_label, &bubble_message, &bubble_accept_label);
 
   // All the labels should be empty or all of them non-empty.
   DCHECK((menu_label.empty() && bubble_message.empty() &&
@@ -114,11 +112,6 @@ void SyncGlobalError::OnErrorChanged() {
     bubble_message_ = bubble_message;
     bubble_accept_label_ = bubble_accept_label;
 
-    // Profile can be NULL during tests.
-    Profile* profile = service_->profile();
-    if (profile) {
-      GlobalErrorServiceFactory::GetForProfile(
-          profile)->NotifyErrorsChanged(this);
-    }
+    global_error_service_->NotifyErrorsChanged(this);
   }
 }

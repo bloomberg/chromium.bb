@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "components/sync_driver/sync_service_observer.h"
 
+class Profile;
 class ProfileSyncService;
 
 // This class observes ProfileSyncService events and emits refresh notifications
@@ -17,7 +18,7 @@ class ProfileSyncService;
 // intended to make it easy to manage with a scoped_ptr.
 class P2PSyncRefresher : public sync_driver::SyncServiceObserver {
  public:
-  explicit P2PSyncRefresher(ProfileSyncService* sync_service);
+  P2PSyncRefresher(Profile* profile, ProfileSyncService* sync_service);
   ~P2PSyncRefresher() override;
 
   // Implementation of sync_driver::SyncServiceObserver
@@ -25,7 +26,8 @@ class P2PSyncRefresher : public sync_driver::SyncServiceObserver {
   void OnSyncCycleCompleted() override;
 
  private:
-  ProfileSyncService* sync_service_;
+  Profile* const profile_;            // weak
+  ProfileSyncService* sync_service_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(P2PSyncRefresher);
 };

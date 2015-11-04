@@ -416,9 +416,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // never become active. Use IsSyncActive to see if sync is running.
   virtual bool IsSyncRequested() const;
 
-  // The profile we are syncing for.
-  Profile* profile() const { return profile_; }
-
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
 

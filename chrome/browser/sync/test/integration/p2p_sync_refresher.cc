@@ -11,8 +11,9 @@
 #include "content/public/browser/notification_service.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
-P2PSyncRefresher::P2PSyncRefresher(ProfileSyncService* sync_service)
-    : sync_service_(sync_service){
+P2PSyncRefresher::P2PSyncRefresher(Profile* profile,
+                                   ProfileSyncService* sync_service)
+    : profile_(profile), sync_service_(sync_service) {
   sync_service_->AddObserver(this);
 }
 
@@ -32,7 +33,7 @@ void P2PSyncRefresher::OnSyncCycleCompleted() {
         snap.model_neutral_state().commit_request_types;
     SyncTest* test = sync_datatype_helper::test();
     for (int i = 0; i < test->num_clients(); ++i) {
-      if (sync_service_->profile() != test->GetProfile(i))
+      if (profile_ != test->GetProfile(i))
         test->TriggerSyncForModelTypes(i, model_types);
     }
   }

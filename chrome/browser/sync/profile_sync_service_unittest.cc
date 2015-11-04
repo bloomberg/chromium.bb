@@ -330,7 +330,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void InitializeForNthSync() {
     // Set first sync time before initialize to disable backup and simulate
     // a complete sync setup.
-    sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+    sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
     sync_prefs.SetFirstSyncTime(base::Time::Now());
     sync_prefs.SetSyncSetupCompleted();
     sync_prefs.SetKeepEverythingSynced(true);
@@ -539,7 +539,7 @@ TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
       sync_driver::prefs::kSyncSuppressStart));
 
   // Because of suppression, this should fail.
-  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
   sync_prefs.SetFirstSyncTime(base::Time::Now());
   service()->Initialize();
   EXPECT_FALSE(service()->IsSyncActive());
@@ -709,7 +709,7 @@ TEST_F(ProfileSyncServiceTest, Rollback) {
   EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
 
   // First sync time should be recorded.
-  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
   base::Time first_sync_time = sync_prefs.GetFirstSyncTime();
   EXPECT_FALSE(first_sync_time.is_null());
 
@@ -783,7 +783,7 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
 
   testing::Mock::VerifyAndClearExpectations(components_factory());
 
-  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
 
   EXPECT_EQ(profile()->GetPrefs()->GetInteger(
                 sync_driver::prefs::kSyncMemoryPressureWarningCount),
@@ -980,7 +980,7 @@ TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {
   ExpectSyncBackendHostCreation(1);
   InitializeForNthSync();
 
-  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile()->GetPrefs());
   EXPECT_EQ(PRODUCT_VERSION, sync_prefs.GetLastRunVersion());
 
   sync_prefs.SetPassphrasePrompted(true);
