@@ -436,7 +436,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay() {
                  << " failed with error " << GetLastEGLErrorString()
                  << (is_last ? "" : ", trying next display type");
     } else {
-      UMA_HISTOGRAM_ENUMERATION("GPU.EGLDisplay", display_type,
+      UMA_HISTOGRAM_ENUMERATION("GPU.EGLDisplayType", display_type,
                                 DISPLAY_TYPE_MAX);
       g_display = display;
       break;
