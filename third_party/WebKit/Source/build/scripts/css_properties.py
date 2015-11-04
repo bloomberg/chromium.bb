@@ -52,8 +52,8 @@ class CSSProperties(in_generator.Writer):
         self._aliases = [property for property in properties if property['alias_for']]
         properties = [property for property in properties if not property['alias_for']]
 
-        # We currently assign 0 to CSSPropertyInvalid
-        self._first_enum_value = 1
+        # We currently assign 0 to CSSPropertyInvalid, and 1 to CSSPropertyVariable
+        self._first_enum_value = 2
 
         # StylePropertyMetadata additionally assumes there are under 1024 properties.
         assert self._first_enum_value + len(properties) < 512, 'Property aliasing expects there are under 512 properties.'

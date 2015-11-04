@@ -53,6 +53,7 @@ CSSOMSmoothScroll status=experimental
 CSSStickyPosition
 CSSTouchActionPanDirections status=experimental
 CSSTypedOM status=experimental
+CSSVariables status=experimental
 CSSViewport status=experimental
 CSSScrollSnapPoints status=test
 // getPropertyCSSValue, CSSValue, etc. will be removed once layout tests no longer depend on them. crbug.com/331608

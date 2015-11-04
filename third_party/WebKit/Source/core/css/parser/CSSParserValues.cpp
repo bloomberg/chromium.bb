@@ -22,9 +22,11 @@
 #include "core/css/parser/CSSParserValues.h"
 
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSVariableData.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParser.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
 namespace blink {
@@ -34,6 +36,8 @@ using namespace WTF;
 CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
 : m_current(0)
 {
+    CSSParserTokenRange originalRangeForVariables = range;
+
     Vector<CSSParserValueList*> stack;
     Vector<int> bracketCounts;
     stack.append(this);
@@ -51,7 +55,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 range.consume();
                 const CSSParserToken& next = range.consumeIncludingWhitespace();
                 if (next.type() == BadStringToken || range.consume().type() != RightParenthesisToken) {
-                    destroyAndClear();
+                    checkForVariableReferencesOrDestroyAndClear(originalRangeForVariables);
                     return;
                 }
                 ASSERT(next.type() == StringToken);
@@ -60,6 +64,9 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 value.m_unit = CSSParserValue::URI;
                 value.string = next.value();
                 break;
+            } else if (token.valueEqualsIgnoringCase("var")) {
+                checkForVariableReferencesOrDestroyAndClear(originalRangeForVariables);
+                return;
             }
 
             value.id = CSSValueInvalid;
@@ -98,7 +105,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
                 stack.removeLast();
                 bracketCounts.removeLast();
                 if (bracketCounts.isEmpty()) {
-                    destroyAndClear();
+                    checkForVariableReferencesOrDestroyAndClear(originalRangeForVariables);
                     return;
                 }
                 continue;
@@ -202,10 +209,12 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
         case SuffixMatchToken:
         case SubstringMatchToken:
         case ColumnToken:
-        case BadStringToken:
-        case BadUrlToken:
         case ColonToken:
         case SemicolonToken:
+            checkForVariableReferencesOrDestroyAndClear(originalRangeForVariables);
+            return;
+        case BadStringToken:
+        case BadUrlToken:
             destroyAndClear();
             return;
         }
@@ -235,7 +244,28 @@ static void destroy(Vector<CSSParserValue, 4>& values)
         else if (values[i].m_unit == CSSParserValue::ValueList
             || values[i].m_unit == CSSParserValue::DimensionList)
             delete values[i].valueList;
+        else if (values[i].m_unit == CSSParserValue::VariableReference)
+            values[i].variableData->deref();
     }
+}
+
+void CSSParserValueList::checkForVariableReferencesOrDestroyAndClear(const CSSParserTokenRange& originalRange)
+{
+    // We have to clear any state that may have been previously loaded
+    destroyAndClear();
+    if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::containsValidVariableReferences(originalRange))
+        consumeVariableValue(originalRange);
+}
+
+void CSSParserValueList::consumeVariableValue(const CSSParserTokenRange& originalRange)
+{
+    ASSERT(m_values.isEmpty());
+    CSSParserValue variableValue;
+    variableValue.id = CSSValueInternalVariableValue;
+    variableValue.m_unit = CSSParserValue::VariableReference;
+    variableValue.isInt = false;
+    variableValue.variableData = CSSVariableData::create(originalRange).leakRef();
+    addValue(variableValue);
 }
 
 void CSSParserValueList::destroyAndClear()
