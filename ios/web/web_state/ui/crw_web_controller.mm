@@ -2611,7 +2611,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _URLOnStartLoading = url;
   _displayStateOnStartLoading = self.pageDisplayState;
 
-  _userInteractionRegistered = NO;
+  self.userInteractionRegistered = NO;
   _pageHasZoomed = NO;
 
   [[self sessionController] commitPendingEntry];
@@ -3094,7 +3094,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)touched:(BOOL)touched {
   _clickInProgress = touched;
   if (touched) {
-    _userInteractionRegistered = YES;
+    self.userInteractionRegistered = YES;
     _userInteractedWithWebController = YES;
     if (_isBeingDestroyed)
       return;
@@ -3302,7 +3302,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // - the user has interacted with the page.
   CRWSessionEntry* current = [self currentSessionEntry];
   if (current && [current navigationItem]->GetURL() == [self currentURL] &&
-      _userInteractionRegistered) {
+      self.userInteractionRegistered) {
     [current navigationItem]->SetPageDisplayState(self.pageDisplayState);
   }
 }

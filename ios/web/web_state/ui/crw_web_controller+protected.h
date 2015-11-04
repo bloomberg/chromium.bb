@@ -240,9 +240,9 @@ struct NewWindowInfo {
 // Returns whether the user is interacting with the page.
 @property(nonatomic, readonly) BOOL userIsInteracting;
 
-// YES if a user interaction has been registered at any time once the page has
+// YES if a user interaction has been registered at any time since the page has
 // loaded.
-@property(nonatomic, readonly) BOOL userInteractionRegistered;
+@property(nonatomic, readwrite) BOOL userInteractionRegistered;
 
 // Returns the current window id.
 @property(nonatomic, readonly) NSString* windowId;
@@ -298,10 +298,6 @@ struct NewWindowInfo {
 // been registered for a non-document-changing URL change. Updates internal
 // state not specific to web pages, and informs the delegate.
 - (void)didStartLoadingURL:(const GURL&)URL updateHistory:(BOOL)updateHistory;
-
-// Should be called with YES if a user interaction has been registered at any
-// time once the page has loaded.
-- (void)setUserInteractionRegistered:(BOOL)flag;
 
 // Returns YES if the user interacted with the page recently.
 - (BOOL)userClickedRecently;
