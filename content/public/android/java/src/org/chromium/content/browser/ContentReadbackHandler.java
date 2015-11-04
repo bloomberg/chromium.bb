@@ -12,7 +12,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A class for reading back content.
@@ -98,31 +97,6 @@ public abstract class ContentReadbackHandler {
     }
 
     /**
-     * Asynchronously, grab a bitmap of the current browser compositor root layer.
-     *
-     * @param windowAndroid The window that hosts the compositor.
-     * @param callback      The callback to be executed after readback completes.
-     */
-    public void getCompositorBitmapAsync(
-            WindowAndroid windowAndroid, final GetBitmapCallback callback) {
-        if (!readyForReadback()) {
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
-                }
-            });
-            return;
-        }
-        ThreadUtils.assertOnUiThread();
-
-        int readbackId = mNextReadbackId++;
-        mGetBitmapRequests.put(readbackId, callback);
-        nativeGetCompositorBitmap(mNativeContentReadbackHandler, readbackId,
-                windowAndroid.getNativePointer());
-    }
-
-    /**
      * Implemented by the owner of this class to signal whether readback is possible or not.
      * @return Whether readback is possible or not.
      */
@@ -133,6 +107,4 @@ public abstract class ContentReadbackHandler {
     private native void nativeGetContentBitmap(long nativeContentReadbackHandler, int readbackId,
             float scale, Bitmap.Config config, float x, float y, float width, float height,
             Object contentViewCore);
-    private native void nativeGetCompositorBitmap(long nativeContentReadbackHandler,
-            int readbackId, long nativeWindowAndroid);
 }

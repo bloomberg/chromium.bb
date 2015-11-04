@@ -76,11 +76,11 @@ public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActi
         }
 
         @Override
-        public void onGotBitmap(@Nullable final Bitmap bitmap, final boolean success) {
+        public void onGotBitmap(@Nullable final Bitmap bitmap) {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    TestFeedbackCollector.super.onGotBitmap(bitmap, success);
+                    TestFeedbackCollector.super.onGotBitmap(bitmap);
                 }
             });
         }
@@ -245,7 +245,7 @@ public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActi
         mCollector.setDescription("some description");
         mCollector.add("foo", "bar");
         Bitmap bitmap = createBitmap();
-        mCollector.onGotBitmap(bitmap, true);
+        mCollector.onGotBitmap(bitmap);
 
         // Wait until the callback has been called.
         assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
@@ -278,7 +278,7 @@ public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActi
         mTestConnectivityTask.setFeedbackData(feedbackData);
         assertFalse("Result should not be ready after connectivity data.", hasResult.get());
         Bitmap bitmap = createBitmap();
-        mCollector.onGotBitmap(bitmap, true);
+        mCollector.onGotBitmap(bitmap);
 
         // This timeout task should trigger the callback.
         mCollector.setTimedOut(true);
@@ -320,7 +320,7 @@ public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActi
 
         // Trigger callback by finishing taking the screenshot.
         Bitmap bitmap = createBitmap();
-        mCollector.onGotBitmap(bitmap, true);
+        mCollector.onGotBitmap(bitmap);
 
         // Wait until the callback has been called.
         assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));

@@ -143,10 +143,10 @@ public class FeedbackCollector
      * {@link ScreenshotTask.ScreenshotTaskCallback} implementation.
      */
     @Override
-    public void onGotBitmap(@Nullable Bitmap bitmap, boolean success) {
+    public void onGotBitmap(@Nullable Bitmap bitmap) {
         ThreadUtils.assertOnUiThread();
         mScreenshotTaskFinished = true;
-        if (success) mScreenshot = bitmap;
+        mScreenshot = bitmap;
         maybePostResult();
     }
 

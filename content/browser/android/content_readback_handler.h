@@ -40,10 +40,6 @@ class ContentReadbackHandler {
                         jfloat width,
                         jfloat height,
                         jobject content_view_core);
-  void GetCompositorBitmap(JNIEnv* env,
-                           jobject obj,
-                           jint readback_id,
-                           jlong native_window_android);
 
  private:
   virtual ~ContentReadbackHandler();

@@ -18,22 +18,6 @@
 
 namespace content {
 
-namespace {
-
-void OnFinishCopyOutputRequest(
-    const ReadbackRequestCallback& result_callback,
-    scoped_ptr<cc::CopyOutputResult> copy_output_result) {
-  if (!copy_output_result->HasBitmap()) {
-    result_callback.Run(SkBitmap(), READBACK_FAILED);
-    return;
-  }
-
-  scoped_ptr<SkBitmap> bitmap = copy_output_result->TakeBitmap();
-  result_callback.Run(*bitmap, READBACK_SUCCESS);
-}
-
-}  // anonymous namespace
-
 // static
 bool ContentReadbackHandler::RegisterContentReadbackHandler(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -70,34 +54,6 @@ void ContentReadbackHandler::GetContentBitmap(JNIEnv* env,
   SkColorType sk_color_type = gfx::ConvertToSkiaColorType(color_type);
   view->GetScaledContentBitmap(
       scale, sk_color_type, gfx::Rect(x, y, width, height), result_callback);
-}
-
-void ContentReadbackHandler::GetCompositorBitmap(JNIEnv* env,
-                                                 jobject obj,
-                                                 jint readback_id,
-                                                 jlong native_window_android) {
-  ui::WindowAndroid* window_android =
-      reinterpret_cast<ui::WindowAndroid*>(native_window_android);
-  DCHECK(window_android);
-
-  const ReadbackRequestCallback result_callback =
-      base::Bind(&ContentReadbackHandler::OnFinishReadback,
-                 weak_factory_.GetWeakPtr(),
-                 readback_id);
-
-  base::Callback<void(scoped_ptr<cc::CopyOutputResult>)> copy_output_callback =
-      base::Bind(&OnFinishCopyOutputRequest,
-                 result_callback);
-
-  ui::WindowAndroidCompositor* compositor = window_android->GetCompositor();
-
-  if (!compositor) {
-    copy_output_callback.Run(cc::CopyOutputResult::CreateEmptyResult());
-    return;
-  }
-
-  compositor->RequestCopyOfOutputOnRootLayer(
-      cc::CopyOutputRequest::CreateBitmapRequest(copy_output_callback));
 }
 
 ContentReadbackHandler::~ContentReadbackHandler() {}

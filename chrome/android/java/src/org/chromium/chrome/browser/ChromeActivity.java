@@ -46,7 +46,6 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -121,7 +120,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentReadbackHandler;
-import org.chromium.content.browser.ContentReadbackHandler.GetBitmapCallback;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
@@ -874,13 +872,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * This creates and shows a share intent picker dialog or starts a share intent directly.
      *
      * @param currentTab The {@link Tab} a user is watching.
-     * @param windowAndroid The {@link WindowAndroid} currentTab is linked to.
      * @param shareDirectly Whether it should share directly with the activity that was most
      *                      recently used to share.
      * @param isIncognito Whether currentTab is incognito.
      */
     public void onShareMenuItemSelected(final Tab currentTab,
-            final WindowAndroid windowAndroid, final boolean shareDirectly, boolean isIncognito) {
+            final boolean shareDirectly, boolean isIncognito) {
         if (currentTab == null) return;
 
         final Activity mainActivity = this;
@@ -898,8 +895,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     }
                 };
         ContentReadbackHandler readbackHandler = getContentReadbackHandler();
-        if (isIncognito || readbackHandler == null || windowAndroid == null
-                || currentTab.getContentViewCore() == null) {
+        if (isIncognito || readbackHandler == null || currentTab.getContentViewCore() == null) {
             bitmapCallback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
         } else {
             readbackHandler.getContentBitmapAsync(1, new Rect(), currentTab.getContentViewCore(),
@@ -1174,24 +1170,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * Starts asynchronously taking the compositor activity screenshot.
-     * @param getBitmapCallback The callback to call once the screenshot is taken, or when failed.
-     */
-    public void startTakingCompositorActivityScreenshot(final GetBitmapCallback getBitmapCallback) {
-        ContentReadbackHandler readbackHandler = getContentReadbackHandler();
-        if (readbackHandler == null || getWindowAndroid() == null) {
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    getBitmapCallback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
-                }
-            });
-        } else {
-            readbackHandler.getCompositorBitmapAsync(getWindowAndroid(), getBitmapCallback);
-        }
-    }
-
-    /**
      * @return The {@code ContextualSearchManager} or {@code null} if none;
      */
     public ContextualSearchManager getContextualSearchManager() {
@@ -1397,8 +1375,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             RecordUserAction.record("MobileMenuHistory");
             StartupMetrics.getInstance().recordOpenedHistory();
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
-            onShareMenuItemSelected(currentTab, getWindowAndroid(),
-                    id == R.id.direct_share_menu_id, getCurrentTabModel().isIncognito());
+            onShareMenuItemSelected(currentTab, id == R.id.direct_share_menu_id,
+                    getCurrentTabModel().isIncognito());
         } else if (id == R.id.print_id) {
             PrintingController printingController = getChromeApplication().getPrintingController();
             if (printingController != null && !printingController.isBusy()
