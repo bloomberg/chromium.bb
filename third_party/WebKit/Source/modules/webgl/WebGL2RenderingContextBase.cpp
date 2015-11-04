@@ -2093,6 +2093,17 @@ Vector<GLint> WebGL2RenderingContextBase::getActiveUniforms(WebGLProgram* progra
         return result;
     }
 
+    GLint activeUniforms = -1;
+    webContext()->getProgramiv(objectOrZero(program), GL_ACTIVE_UNIFORMS, &activeUniforms);
+
+    GLuint activeUniformsUnsigned = activeUniforms;
+    for (size_t i = 0; i < uniformIndices.size(); ++i) {
+        if (uniformIndices[i] >= activeUniformsUnsigned) {
+            synthesizeGLError(GL_INVALID_VALUE, "getActiveUniforms", "uniform index greater than ACTIVE_UNIFORMS");
+            return result;
+        }
+    }
+
     result.resize(uniformIndices.size());
     webContext()->getActiveUniformsiv(objectOrZero(program), uniformIndices.size(), uniformIndices.data(), pname, result.data());
     return result;
