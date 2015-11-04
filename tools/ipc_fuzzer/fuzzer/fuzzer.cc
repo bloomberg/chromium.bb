@@ -1220,6 +1220,7 @@ struct FuzzTraits<gpu::SyncToken> {
     p->Set(namespace_id, command_buffer_id, release_count);
     if (verified_flush)
       p->SetVerifyFlush();
+    return true;
   }
 };
 
