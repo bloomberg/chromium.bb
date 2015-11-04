@@ -674,8 +674,12 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		if (since != NULL) {
 			version = strtouint(since);
-			if (version == -1)
+			if (version == -1) {
 				fail(&ctx->loc, "invalid integer (%s)\n", since);
+			} else if (version > ctx->interface->version) {
+				fail(&ctx->loc, "since (%u) larger than version (%u)\n",
+				     version, ctx->interface->version);
+			}
 		} else {
 			version = 1;
 		}
