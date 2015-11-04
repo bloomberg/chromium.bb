@@ -538,7 +538,7 @@ group("both_gn_and_gyp") {
     ]
   } else if (!is_android && !is_ios) {
     deps += [
-      "//breakpad:symupload",
+      "//breakpad:symupload($host_toolchain)",
       "//media/cast:cast_unittests",
     ]
   }
