@@ -130,7 +130,7 @@ deps = {
    Var('chromium_git') + '/crashpad/crashpad.git' + '@' + '6c0d42ce9dee55eaa906865191e28df35b32910d',
 
   'src/third_party/icu':
-   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '94e4b770ce2f6065d4261d29c32683a6099b9d93',
+   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '42c58d4e49f2250039f0e98d43e0b76e8f5ca024',
 
   'src/third_party/libexif/sources':
    Var('chromium_git') + '/chromium/deps/libexif/sources.git' + '@' + 'ed98343daabd7b4497f97fda972e132e6877c48a',
