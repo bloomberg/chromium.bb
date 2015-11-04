@@ -200,16 +200,24 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         // to detach).
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_pendingAsyncScripts.contains(scriptLoader));
         m_pendingAsyncScripts.remove(scriptLoader);
-        scriptLoader->detach();
-        m_document->decrementLoadEventDelayCount();
         break;
 
     case IN_ORDER_EXECUTION:
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
         m_numberOfInOrderScriptsWithPendingNotification--;
 
+        auto it = m_pendingInOrderScripts.begin();
+        for (; it != m_pendingInOrderScripts.end(); ++it) {
+            if (*it == scriptLoader) {
+                m_pendingInOrderScripts.remove(it);
+                break;
+            }
+        }
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(it != m_pendingInOrderScripts.end());
         break;
     }
+    scriptLoader->detach();
+    m_document->decrementLoadEventDelayCount();
 }
 
 void ScriptRunner::movePendingAsyncScript(Document& oldDocument, Document& newDocument, ScriptLoader* scriptLoader)
