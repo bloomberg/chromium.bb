@@ -36,6 +36,10 @@
   color: #999;
 }
 
+.clear-browser-data-counter::before {
+  content: '–\00a0\00a0';
+}
+
 input[type=checkbox]:not(:checked) ~ .clear-browser-data-counter {
   display: none;
 }
