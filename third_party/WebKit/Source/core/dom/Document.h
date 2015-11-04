@@ -1043,6 +1043,9 @@ public:
     WebTaskRunner* loadingTaskRunner() const;
     WebTaskRunner* timerTaskRunner() const;
 
+    // TODO(bokan): Temporary to help track down crash in crbug.com/519752.
+    bool m_detachingDocumentLoader;
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1146,6 +1149,10 @@ private:
     static EventFactorySet& eventFactories();
 
     void setNthIndexCache(NthIndexCache* nthIndexCache) { ASSERT(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
+
+    // TODO(bokan): Temporarily moved this to the top of memebers so it's likely
+    // to be included in a minidump memory region. crbug.com/519752
+    LoadEventProgress m_loadEventProgress;
 
     DocumentLifecycle m_lifecycle;
 
@@ -1251,8 +1258,6 @@ private:
     Timer<Document> m_updateFocusAppearanceTimer;
 
     RawPtrWillBeMember<Element> m_cssTarget;
-
-    LoadEventProgress m_loadEventProgress;
 
     double m_startTime;
 
