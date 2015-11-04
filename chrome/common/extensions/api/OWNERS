@@ -17,4 +17,5 @@ per-file automation*.idl=aboxhall@chromium.org
 per-file automation*.idl=dmazzoni@chromium.org
 per-file automation*.idl=dtseng@chromium.org
 per-file file_manager_private*.idl=mtomasz@chromium.org
+per-file gcd_private.idl=vitalybuka@chromium.org
 per-file resources_private.idl=tsergeant@chromium.org
