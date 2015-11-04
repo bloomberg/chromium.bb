@@ -61,10 +61,10 @@
                 'cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.h',
               ],
             }],
-            ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
+            ['os_posix == 1 and OS != "mac"', {
               'type': 'loadable_module',  # Must be in PRODUCT_DIR for ASAN bot.
             }],
-            ['(OS == "mac" or OS == "win") and enable_pepper_cdms==1', {
+            ['OS == "mac" or OS == "win"', {
               'type': 'shared_library',
             }],
             ['OS == "mac"', {
@@ -128,7 +128,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/clearkeycdmadapter_version.rc',
           ],
           'conditions': [
-            ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
+            ['os_posix == 1 and OS != "mac"', {
               # Because clearkeycdm has type 'loadable_module' (see comments),
               # we must explicitly specify this dependency.
               'libraries': [
