@@ -105,7 +105,6 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
             "Nexus 4", // Nexus 4
             "Nexus 5", // Nexus 5
             "Nexus 7", // Nexus 7
-            "Nexus 9", // Nexus 9
             "SM-N9005", // Galaxy Note 3
             "SM-T310", // Galaxy Tab 3 8.0 (WiFi)
     };
