@@ -376,10 +376,13 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextColor(GetEntry(), SELECTED);
     case kColorId_ResultsTableNormalDimmedText:
     case kColorId_ResultsTableHoveredDimmedText:
+    case kColorId_ResultsTableNormalHeadline:
+    case kColorId_ResultsTableHoveredHeadline:
       return color_utils::AlphaBlend(GetTextColor(GetEntry(), NORMAL),
                                      GetBaseColor(GetEntry(), NORMAL),
                                      0x80);
     case kColorId_ResultsTableSelectedDimmedText:
+    case kColorId_ResultsTableSelectedHeadline:
       return color_utils::AlphaBlend(GetTextColor(GetEntry(), SELECTED),
                                      GetBaseColor(GetEntry(), NORMAL),
                                      0x80);

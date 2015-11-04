@@ -139,6 +139,9 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
       case kColorId_ResultsTableNormalText:
       case kColorId_ResultsTableHoveredText:
       case kColorId_ResultsTableSelectedText:
+      case kColorId_ResultsTableNormalHeadline:
+      case kColorId_ResultsTableHoveredHeadline:
+      case kColorId_ResultsTableSelectedHeadline:
         return kResultsTableTextMd;
       case kColorId_ResultsTableNormalDimmedText:
       case kColorId_ResultsTableHoveredDimmedText:
@@ -368,10 +371,13 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedText:
       return kResultsTableSelectedText;
     case kColorId_ResultsTableNormalDimmedText:
+    case kColorId_ResultsTableNormalHeadline:
       return kResultsTableNormalDimmedText;
     case kColorId_ResultsTableHoveredDimmedText:
+    case kColorId_ResultsTableHoveredHeadline:
       return kResultsTableHoveredDimmedText;
     case kColorId_ResultsTableSelectedDimmedText:
+    case kColorId_ResultsTableSelectedHeadline:
       return kResultsTableSelectedDimmedText;
     case kColorId_ResultsTableNormalUrl:
       return kResultsTableNormalUrl;

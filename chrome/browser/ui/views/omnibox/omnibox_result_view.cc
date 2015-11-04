@@ -95,9 +95,9 @@ struct TextStyle {
      gfx::NORMAL_BASELINE},
     // 2  HEADLINE_TEXT
     {ui::ResourceBundle::LargeFont,
-     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
-      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
-      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     {NativeTheme::kColorId_ResultsTableNormalHeadline,
+      NativeTheme::kColorId_ResultsTableHoveredHeadline,
+      NativeTheme::kColorId_ResultsTableSelectedHeadline},
      gfx::NORMAL_BASELINE},
     // 3  TOP_ALIGNED_TEXT
     {ui::ResourceBundle::LargeFont,
