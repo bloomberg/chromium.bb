@@ -1,8 +1,10 @@
-# Copyright (c) 2014 The Native ClientAuthors. All rights reserved.
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("sel_main") {
+import("//native_client/src/trusted/asm.gni")
+
+source_set("sel_main") {
   sources = [
     "sel_main.c",
   ]
@@ -13,7 +15,7 @@ static_library("sel_main") {
   ]
 }
 
-static_library("sel_main_chrome") {
+source_set("sel_main_chrome") {
   sources = [
     "sel_main_chrome.c",
   ]
@@ -24,7 +26,7 @@ static_library("sel_main_chrome") {
   ]
 }
 
-static_library("env_cleanser") {
+source_set("env_cleanser") {
   sources = [
     "env_cleanser.c",
   ]
@@ -33,7 +35,7 @@ static_library("env_cleanser") {
   ]
 }
 
-static_library("nacl_error_code") {
+source_set("nacl_error_code") {
   sources = [
     "nacl_error_code.c",
   ]
@@ -42,7 +44,48 @@ static_library("nacl_error_code") {
   ]
 }
 
-static_library("sel") {
+source_set("sel_asm") {
+  if (current_cpu == "x86") {
+    sources = [
+      "arch/x86_32/nacl_switch_32.S",
+      "arch/x86_32/nacl_switch_all_regs_asm_32.S",
+      "arch/x86_32/nacl_syscall_32.S",
+      "arch/x86_32/springboard.S",
+      "arch/x86_32/tramp_32.S",
+    ]
+  } else if (current_cpu == "x64") {
+    sources = [
+      "arch/x86_64/nacl_switch_64.S",
+      "arch/x86_64/nacl_syscall_64.S",
+      "arch/x86_64/tramp_64.S",
+    ]
+    if (is_win) {
+      sources += [
+        "arch/x86_64/fnstcw.S",
+        "arch/x86_64/fxsaverstor.S",
+        "win/exception_patch/exit_fast.S",
+        "win/exception_patch/intercept.S",
+      ]
+    }
+  } else if (current_cpu == "arm") {
+    sources = [
+      "arch/arm/nacl_switch.S",
+      "arch/arm/nacl_syscall.S",
+      "arch/arm/tramp_arm.S",
+    ]
+  } else if (current_cpu == "mipsel") {
+    sources = [
+      "arch/mips/nacl_switch.S",
+      "arch/mips/nacl_syscall.S",
+      "arch/mips/tramp_mips.S",
+    ]
+  }
+  deps = [
+    "//build/config/nacl:nacl_base",
+  ]
+}
+
+source_set("sel") {
   sources = [
     "dyn_array.c",
     "elf_util.c",
@@ -89,7 +132,7 @@ static_library("sel") {
     sources += [ "linux/nacl_signal.c" ]
   }
 
-  if (current_os == "mac") {
+  if (is_mac) {
     sources += [
       "osx/crash_filter.c",
       "osx/mach_exception_handler.c",
@@ -103,7 +146,8 @@ static_library("sel") {
       "posix/x86/sel_segments.c",
     ]
   }
-  if (current_os == "win") {
+
+  if (is_win) {
     sources += [
       "win/addrspace_teardown.c",
       "win/debug_exception_handler.c",
@@ -119,32 +163,28 @@ static_library("sel") {
   if (current_cpu == "arm") {
     sources += [
       "arch/arm/nacl_app.c",
-      "arch/arm/nacl_switch.S",
       "arch/arm/nacl_switch_to_app_arm.c",
-      "arch/arm/nacl_syscall.S",
       "arch/arm/nacl_tls.c",
       "arch/arm/sel_addrspace_arm.c",
       "arch/arm/sel_ldr_arm.c",
       "arch/arm/sel_rt.c",
-      "arch/arm/tramp_arm.S",
       "linux/nacl_signal_arm.c",
     ]
   }
+
   if (current_cpu == "mipsel") {
     sources += [
       "arch/mips/nacl_app.c",
-      "arch/mips/nacl_switch.S",
       "arch/mips/nacl_switch_to_app_mips.c",
-      "arch/mips/nacl_syscall.S",
       "arch/mips/nacl_tls.c",
       "arch/mips/sel_addrspace_mips.c",
       "arch/mips/sel_ldr_mips.c",
       "arch/mips/sel_rt.c",
-      "arch/mips/tramp_mips.S",
       "linux/nacl_signal_mips.c",
     ]
   }
-  if (is_linux || current_os == "android") {
+
+  if (is_linux || is_android) {
     sources += [
       "linux/nacl_bootstrap_args.c",
       "linux/nacl_thread_nice.c",
@@ -167,6 +207,7 @@ static_library("sel") {
       sources += [ "linux/mips/sel_segments.c" ]
     }
   }
+
   if (is_posix) {
     sources += [
       "posix/nacl_signal_stack.c",
@@ -185,10 +226,72 @@ static_library("sel") {
     sources += [ "generic/vm_hole.c" ]
   }
 
+  if (current_cpu == "x86" || current_cpu == "x64") {
+    sources += [
+      "arch/x86/nacl_ldt_x86.c",
+    ]
+  }
+
+  if (current_cpu == "x86") {
+    sources += [
+      "arch/x86_32/nacl_app_32.c",
+      "arch/x86_32/nacl_switch_all_regs_32.c",
+      "arch/x86_32/nacl_switch_to_app_32.c",
+      "arch/x86_32/nacl_tls_32.c",
+      "arch/x86_32/sel_addrspace_x86_32.c",
+      "arch/x86_32/sel_ldr_x86_32.c",
+      "arch/x86_32/sel_rt_32.c",
+    ]
+    if (is_mac) {
+      sources += [ "osx/nacl_signal_32.c" ]
+    }
+    if (is_linux) {
+      sources += [ "linux/nacl_signal_32.c" ]
+    }
+    if (is_win) {
+      sources += [ "win/nacl_signal_32.c" ]
+    }
+  }
+
+  if (current_cpu == "x64") {
+    sources += [
+      "arch/x86_64/nacl_app_64.c",
+      "arch/x86_64/nacl_switch_to_app_64.c",
+      "arch/x86_64/nacl_tls_64.c",
+      "arch/x86_64/sel_ldr_x86_64.c",
+      "arch/x86_64/sel_rt_64.c",
+    ]
+    if (is_mac) {
+      sources += [
+        "osx/nacl_signal_64.c",
+        "arch/x86_64/sel_addrspace_posix_x86_64.c",
+      ]
+    }
+    if (is_linux) {
+      sources += [
+        "linux/nacl_signal_64.c",
+        "arch/x86_64/sel_addrspace_posix_x86_64.c",
+      ]
+    }
+    if (is_win) {
+      sources += [
+        "win/exception_patch/ntdll_patch.c",
+        "win/nacl_signal_64.c",
+        # We assemble the .asm assembly file with the Microsoft assembler
+        # because we need to generate x86-64 Windows unwind info, which the
+        # GNU assembler we use elsewhere does not support.
+        "arch/x86_64/nacl_switch_unwind_win.asm",
+        "arch/x86_64/sel_addrspace_win_x86_64.c",
+      ]
+    }
+    defines = [ "NACL_X86_64_ZERO_BASED_SANDBOX=0" ]
+  }
+
   deps = [
     "//build/config/nacl:nacl_base",
-    "//native_client/src/trusted/service_runtime:nacl_error_code",
-    "//native_client/src/trusted/service_runtime:env_cleanser",
+    ":sel_asm($nacl_asm_toolchain)",
+    ":nacl_error_code",
+    ":env_cleanser",
     "//native_client/src/trusted/simple_service:simple_service",
     "//native_client/src/trusted/threading:thread_interface",
     "//native_client/src/shared/srpc:nonnacl_srpc",
@@ -204,18 +307,6 @@ static_library("sel") {
     "//native_client/src/trusted/validator:validation_cache",
     "//native_client/src/trusted/validator:validators",
   ]
-  if (current_cpu == "x86") {
-    deps += [
-      "//native_client/src/trusted/service_runtime/arch/x86:service_runtime_x86_common",
-      "//native_client/src/trusted/service_runtime/arch/x86_32:service_runtime_x86_32",
-    ]
-  }
-  if (current_cpu == "x64") {
-    deps += [
-      "//native_client/src/trusted/service_runtime/arch/x86:service_runtime_x86_common",
-      "//native_client/src/trusted/service_runtime/arch/x86_64:service_runtime_x86_64",
-    ]
-  }
 
   if (current_os == "mac") {
     deps += [ ":nacl_exc" ]
@@ -245,7 +336,7 @@ executable("sel_ldr") {
     "nacl_test_injection_main.c",
   ]
   deps = [
-    "//native_client/src/trusted/service_runtime:sel_main",
+    ":sel_main",
   ]
   if (is_linux) {
     libs = [ "rt" ]

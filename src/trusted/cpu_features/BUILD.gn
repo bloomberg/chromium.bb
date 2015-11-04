@@ -2,13 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//native_client/src/trusted/asm.gni")
+
 group("all_cpu_features") {
   deps = [
     ":cpu_features",
   ]
 }
 
-static_library("cpu_features") {
+source_set("cpu_features_asm") {
+  if (current_cpu == "x64" || current_cpu == "x86") {
+    sources = [
+      "arch/x86/cpu_xgetbv.S",
+    ]
+  }
+  deps = [
+    "//build/config/nacl:nacl_base",
+  ]
+}
+
+source_set("cpu_features") {
   include_dirs = [ "." ]
   sources = [
     "arch/arm/cpu_arm.c",
@@ -18,11 +31,11 @@ static_library("cpu_features") {
   if (current_cpu == "x64" || current_cpu == "x86") {
     sources += [
       "arch/x86/cpu_x86.c",
-      "arch/x86/cpu_xgetbv.S",
     ]
   }
 
   deps = [
     "//build/config/nacl:nacl_base",
+    ":cpu_features_asm($nacl_asm_toolchain)",
   ]
 }
