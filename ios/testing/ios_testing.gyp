@@ -22,6 +22,9 @@
       'include_dirs': [
         '../..',
       ],
+      'export_dependent_settings': [
+        '../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
+      ],
     },
     {
       # GN version: //ios/testing:ocmock_support_unittest
