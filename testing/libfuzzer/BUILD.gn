@@ -62,39 +62,6 @@ test("dns_record_fuzzer") {
   ]
 }
 
-test("es_parser_adts_fuzzer") {
-  sources = [
-    "es_parser_adts_fuzzer.cc",
-  ]
-  deps = [
-    ":libfuzzer_main",
-    "//base",
-    "//media",
-  ]
-}
-
-test("es_parser_h264_fuzzer") {
-  sources = [
-    "es_parser_h264_fuzzer.cc",
-  ]
-  deps = [
-    ":libfuzzer_main",
-    "//base",
-    "//media",
-  ]
-}
-
-test("es_parser_mpeg1audio_fuzzer") {
-  sources = [
-    "es_parser_mpeg1audio_fuzzer.cc",
-  ]
-  deps = [
-    ":libfuzzer_main",
-    "//base",
-    "//media",
-  ]
-}
-
 test("ftp_ctrl_response_fuzzer") {
   sources = [
     "ftp_ctrl_response_fuzzer.cc",
@@ -135,6 +102,39 @@ if (proprietary_codecs) {
     ]
     deps = [
       ":libfuzzer_main",
+      "//media",
+    ]
+  }
+
+  test("es_parser_adts_fuzzer") {
+    sources = [
+      "es_parser_adts_fuzzer.cc",
+    ]
+    deps = [
+      ":libfuzzer_main",
+      "//base",
+      "//media",
+    ]
+  }
+
+  test("es_parser_h264_fuzzer") {
+    sources = [
+      "es_parser_h264_fuzzer.cc",
+    ]
+    deps = [
+      ":libfuzzer_main",
+      "//base",
+      "//media",
+    ]
+  }
+
+  test("es_parser_mpeg1audio_fuzzer") {
+    sources = [
+      "es_parser_mpeg1audio_fuzzer.cc",
+    ]
+    deps = [
+      ":libfuzzer_main",
+      "//base",
       "//media",
     ]
   }
