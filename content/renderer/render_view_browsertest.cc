@@ -1911,12 +1911,11 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   common_params.url = GURL("data:text/html,world");
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
+  common_params.navigation_start = base::TimeTicks::FromInternalValue(1);
   request_params.current_history_list_length = 1;
   request_params.current_history_list_offset = 0;
   request_params.pending_history_list_offset = 1;
   request_params.page_id = -1;
-  request_params.browser_navigation_start =
-      base::TimeTicks::FromInternalValue(1);
 
   TestRenderFrame* subframe =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromWebFrame(
@@ -2273,16 +2272,14 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   base::Time before_navigation = base::Time::Now();
   CommonNavigationParams early_common_params;
   StartNavigationParams early_start_params;
-  RequestNavigationParams early_request_params;
   early_common_params.url = GURL("data:text/html,<div>Page</div>");
   early_common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   early_common_params.transition = ui::PAGE_TRANSITION_TYPED;
+  early_common_params.navigation_start = base::TimeTicks::FromInternalValue(1);
   early_start_params.is_post = true;
-  early_request_params.browser_navigation_start =
-      base::TimeTicks::FromInternalValue(1);
 
   frame()->Navigate(early_common_params, early_start_params,
-                    early_request_params);
+                    RequestNavigationParams());
   ProcessPendingMessages();
 
   base::Time early_nav_reported_start =
@@ -2293,16 +2290,16 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   // days from now is *not* reported as one that starts in the future; as we
   // sanitize the override allowing a maximum of ::Now().
   CommonNavigationParams late_common_params;
-  RequestNavigationParams late_request_params;
   StartNavigationParams late_start_params;
   late_common_params.url = GURL("data:text/html,<div>Another page</div>");
   late_common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   late_common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  late_start_params.is_post = true;
-  late_request_params.browser_navigation_start =
+  late_common_params.navigation_start =
       base::TimeTicks::Now() + base::TimeDelta::FromDays(42);
+  late_start_params.is_post = true;
 
-  frame()->Navigate(late_common_params, late_start_params, late_request_params);
+  frame()->Navigate(late_common_params, late_start_params,
+                    RequestNavigationParams());
   ProcessPendingMessages();
   base::Time after_navigation =
       base::Time::Now() + base::TimeDelta::FromDays(1);

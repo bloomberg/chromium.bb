@@ -1801,8 +1801,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
-      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
-      LOFI_OFF);
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), LOFI_OFF,
+      base::TimeTicks::Now());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     CommitNavigation(nullptr, nullptr, common_params,
@@ -2184,8 +2184,10 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
     SetState(RenderFrameHostImpl::STATE_DEFAULT);
 
     DCHECK(!proceed_time.is_null());
-    suspended_nav_params_->request_params.browser_navigation_start =
-        proceed_time;
+    // TODO(csharrison): Make sure that PlzNavigate and the current architecture
+    // measure navigation start in the same way in the presence of the
+    // BeforeUnload event.
+    suspended_nav_params_->common_params.navigation_start = proceed_time;
     SendNavigateMessage(suspended_nav_params_->common_params,
                         suspended_nav_params_->start_params,
                         suspended_nav_params_->request_params);

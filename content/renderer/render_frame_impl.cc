@@ -510,7 +510,8 @@ CommonNavigationParams MakeCommonNavigationParams(
   return CommonNavigationParams(
       request->url(), referrer, extra_data->transition_type(),
       FrameMsg_Navigate_Type::NORMAL, true, should_replace_current_entry,
-      ui_timestamp, report_type, GURL(), GURL(), LOFI_UNSPECIFIED);
+      ui_timestamp, report_type, GURL(), GURL(), LOFI_UNSPECIFIED,
+      base::TimeTicks::Now());
 }
 
 #if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
@@ -4811,7 +4812,7 @@ void RenderFrameImpl::NavigateInternal(
 
     if (load_type == blink::WebFrameLoadType::Standard) {
       UpdateFrameNavigationTiming(frame_,
-                                  request_params.browser_navigation_start,
+                                  common_params.navigation_start,
                                   renderer_navigation_start);
     }
   }

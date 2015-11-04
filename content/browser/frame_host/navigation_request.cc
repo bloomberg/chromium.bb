@@ -62,7 +62,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     const NavigationEntryImpl& entry,
     FrameMsg_Navigate_Type::Value navigation_type,
     bool is_same_document_history_load,
-    base::TimeTicks navigation_start,
+    const base::TimeTicks& navigation_start,
     NavigationControllerImpl* controller) {
   std::string method = entry.GetHasPostData() ? "POST" : "GET";
 
@@ -89,14 +89,14 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_tree_node,
       entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
                                             frame_entry, navigation_type,
-                                            LOFI_UNSPECIFIED),
+                                            LOFI_UNSPECIFIED, navigation_start),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type),
                             false,  // has_user_gestures
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION),
       entry.ConstructRequestNavigationParams(
-          frame_entry, navigation_start, is_same_document_history_load,
+          frame_entry, is_same_document_history_load,
           frame_tree_node->has_committed_real_load(),
           controller->GetPendingEntryIndex() == -1,
           controller->GetIndexOfEntry(&entry),
@@ -123,7 +123,6 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // TODO(clamy): Set has_committed_real_load.
   RequestNavigationParams request_params(
       false,                   // is_overriding_user_agent
-      base::TimeTicks::Now(),  // browser_navigation_start
       std::vector<GURL>(),     // redirects
       false,                   // can_load_local_resources
       base::Time::Now(),       // request_time

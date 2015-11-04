@@ -148,11 +148,11 @@ class CONTENT_EXPORT NavigationEntryImpl
       const Referrer& dest_referrer,
       const FrameNavigationEntry& frame_entry,
       FrameMsg_Navigate_Type::Value navigation_type,
-      LoFiState lofi_state) const;
+      LoFiState lofi_state,
+      const base::TimeTicks& navigation_start) const;
   StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(
       const FrameNavigationEntry& frame_entry,
-      base::TimeTicks navigation_start,
       bool is_same_document_history_load,
       bool has_committed_real_load,
       bool intended_as_new_entry,

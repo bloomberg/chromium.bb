@@ -30,7 +30,8 @@ CommonNavigationParams::CommonNavigationParams()
       allow_download(true),
       should_replace_current_entry(false),
       report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT),
-      lofi_state(LOFI_UNSPECIFIED) {
+      lofi_state(LOFI_UNSPECIFIED),
+      navigation_start(base::TimeTicks::Now()) {
 }
 
 CommonNavigationParams::CommonNavigationParams(
@@ -44,7 +45,8 @@ CommonNavigationParams::CommonNavigationParams(
     FrameMsg_UILoadMetricsReportType::Value report_type,
     const GURL& base_url_for_data_url,
     const GURL& history_url_for_data_url,
-    LoFiState lofi_state)
+    LoFiState lofi_state,
+    const base::TimeTicks& navigation_start)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -55,7 +57,8 @@ CommonNavigationParams::CommonNavigationParams(
       report_type(report_type),
       base_url_for_data_url(base_url_for_data_url),
       history_url_for_data_url(history_url_for_data_url),
-      lofi_state(lofi_state) {
+      lofi_state(lofi_state),
+      navigation_start(navigation_start) {
 }
 
 CommonNavigationParams::~CommonNavigationParams() {
@@ -114,7 +117,6 @@ StartNavigationParams::~StartNavigationParams() {
 
 RequestNavigationParams::RequestNavigationParams()
     : is_overriding_user_agent(false),
-      browser_navigation_start(base::TimeTicks::Now()),
       can_load_local_resources(false),
       request_time(base::Time::Now()),
       page_id(-1),
@@ -131,7 +133,6 @@ RequestNavigationParams::RequestNavigationParams()
 
 RequestNavigationParams::RequestNavigationParams(
     bool is_overriding_user_agent,
-    base::TimeTicks navigation_start,
     const std::vector<GURL>& redirects,
     bool can_load_local_resources,
     base::Time request_time,
@@ -146,7 +147,6 @@ RequestNavigationParams::RequestNavigationParams(
     int current_history_list_length,
     bool should_clear_history_list)
     : is_overriding_user_agent(is_overriding_user_agent),
-      browser_navigation_start(navigation_start),
       redirects(redirects),
       can_load_local_resources(can_load_local_resources),
       request_time(request_time),

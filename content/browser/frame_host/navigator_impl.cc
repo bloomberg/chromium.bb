@@ -341,11 +341,12 @@ bool NavigatorImpl::NavigateToEntry(
              ? LOFI_OFF
              : LOFI_UNSPECIFIED);
     dest_render_frame_host->Navigate(
-        entry.ConstructCommonNavigationParams(
-            dest_url, dest_referrer, frame_entry, navigation_type, lofi_state),
+        entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
+                                              frame_entry, navigation_type,
+                                              lofi_state, navigation_start),
         entry.ConstructStartNavigationParams(),
         entry.ConstructRequestNavigationParams(
-            frame_entry, navigation_start, is_same_document_history_load,
+            frame_entry, is_same_document_history_load,
             frame_tree_node->has_committed_real_load(),
             controller_->GetPendingEntryIndex() == -1,
             controller_->GetIndexOfEntry(&entry),

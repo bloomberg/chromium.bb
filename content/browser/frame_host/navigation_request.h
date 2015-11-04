@@ -66,7 +66,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const NavigationEntryImpl& entry,
       FrameMsg_Navigate_Type::Value navigation_type,
       bool is_same_document_history_load,
-      base::TimeTicks navigation_start,
+      const base::TimeTicks& navigation_start,
       NavigationControllerImpl* controller);
 
   // Creates a request for a renderer-intiated navigation.

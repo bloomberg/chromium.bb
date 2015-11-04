@@ -60,7 +60,8 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          FrameMsg_UILoadMetricsReportType::Value report_type,
                          const GURL& base_url_for_data_url,
                          const GURL& history_url_for_data_url,
-                         LoFiState lofi_state);
+                         LoFiState lofi_state,
+                         const base::TimeTicks& navigation_start);
   ~CommonNavigationParams();
 
   // The URL to navigate to.
@@ -107,6 +108,13 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // Whether or not to request a LoFi version of the document or let the browser
   // decide.
   LoFiState lofi_state;
+
+  // The navigationStart time exposed through the Navigation Timing API to JS.
+  // If this is for a browser-initiated navigation, this can override the
+  // navigation_start value in Blink.
+  // PlzNavigate: For renderer initiated navigations, this will be set on the
+  // renderer side and sent with FrameHostMsg_BeginNavigation.
+  base::TimeTicks navigation_start;
 };
 
 // Provided by the renderer ----------------------------------------------------
@@ -204,7 +212,6 @@ struct CONTENT_EXPORT StartNavigationParams {
 struct CONTENT_EXPORT RequestNavigationParams {
   RequestNavigationParams();
   RequestNavigationParams(bool is_overriding_user_agent,
-                          base::TimeTicks navigation_start,
                           const std::vector<GURL>& redirects,
                           bool can_load_local_resources,
                           base::Time request_time,
@@ -222,9 +229,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
 
   // Whether or not the user agent override string should be used.
   bool is_overriding_user_agent;
-
-  // The navigationStart time to expose through the Navigation Timing API to JS.
-  base::TimeTicks browser_navigation_start;
 
   // Any redirect URLs that occurred before |url|. Useful for cross-process
   // navigations; defaults to empty.
