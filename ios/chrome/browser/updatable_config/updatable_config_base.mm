@@ -132,8 +132,8 @@ class ConfigFetcher : public net::URLFetcherDelegate {
     // two phases and is probably not MT safe. However,
     // initWithAppId:version:plist: is called from a singleton's
     // initialization loop and thus will not be called more than once.
-    // TODO(pkl): -loadDefaults accesses the file system to load in the
-    // plist. This should be done via PostBlockingPoolTask.
+    // TODO(crbug/545309): -loadDefaults accesses the file system to load in
+    // the plist. This should be done via PostBlockingPoolTask.
     [_updatableResource loadDefaults];
 
     NSString* notificationName = ios::GetChromeBrowserProvider()
