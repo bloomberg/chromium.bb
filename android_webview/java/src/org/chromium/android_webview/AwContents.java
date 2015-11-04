@@ -249,6 +249,8 @@ public class AwContents implements SmartClipProvider,
     private boolean mIsAttachedToWindow;
     // Visiblity state of |mContentViewCore|.
     private boolean mIsContentViewCoreVisible;
+    private boolean mIsUpdateVisibilityTaskPending;
+    private Runnable mUpdateVisibilityRunnable;
 
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
@@ -702,6 +704,12 @@ public class AwContents implements SmartClipProvider,
         mBackgroundThreadClient = new BackgroundThreadClientImpl();
         mIoThreadClient = new IoThreadClientImpl();
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
+        mUpdateVisibilityRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateContentViewCoreVisibility();
+            }
+        };
 
         AwSettings.ZoomSupportChangeListener zoomListener =
                 new AwSettings.ZoomSupportChangeListener() {
@@ -2356,10 +2364,27 @@ public class AwContents implements SmartClipProvider,
                 && visible && !mIsWindowVisible;
         mIsWindowVisible = visible;
         if (!isDestroyed(NO_WARN)) nativeSetWindowVisibility(mNativeAwContents, mIsWindowVisible);
-        updateContentViewCoreVisibility();
+        postUpdateContentViewCoreVisibility();
+    }
+
+    private void postUpdateContentViewCoreVisibility() {
+        if (mIsUpdateVisibilityTaskPending) return;
+        // When WebView is attached to a visible window, WebView will be
+        // attached to a window whose visibility is initially invisible, then
+        // the window visibility will be updated to true. This means CVC
+        // visibility will be set to false then true immediately, in the same
+        // function call of View#dispatchAttachedToWindow.  DetachedFromWindow
+        // is a similar case, where window visibility changes before AwContents
+        // is detached from window.
+        //
+        // To prevent this flip of CVC visibility, post the task to update CVC
+        // visibility during attach, detach and window visibility change.
+        mIsUpdateVisibilityTaskPending = true;
+        mHandler.post(mUpdateVisibilityRunnable);
     }
 
     private void updateContentViewCoreVisibility() {
+        mIsUpdateVisibilityTaskPending = false;
         if (isDestroyed(NO_WARN)) return;
         boolean contentViewCoreVisible = nativeIsVisible(mNativeAwContents);
 
@@ -3005,6 +3030,7 @@ public class AwContents implements SmartClipProvider,
             nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                     mContainerView.getHeight());
             updateHardwareAcceleratedFeaturesToggle();
+            postUpdateContentViewCoreVisibility();
 
             setLocale(LocaleUtils.getDefaultLocale());
 
@@ -3026,6 +3052,7 @@ public class AwContents implements SmartClipProvider,
 
             mContentViewCore.onDetachedFromWindow();
             updateHardwareAcceleratedFeaturesToggle();
+            postUpdateContentViewCoreVisibility();
 
             if (mComponentCallbacks != null) {
                 mContext.unregisterComponentCallbacks(mComponentCallbacks);
