@@ -347,6 +347,12 @@ TEST_F(PageSerializerTest, CSS)
     EXPECT_TRUE(isSerialized("ul-dot.png", "image/png"));
     EXPECT_TRUE(isSerialized("ol-dot.png", "image/png"));
 
+    // Ensure encodings are specified.
+    EXPECT_TRUE(getSerializedData("link_styles.css", "text/css").startsWith("@charset"));
+    EXPECT_TRUE(getSerializedData("import_styles.css", "text/css").startsWith("@charset"));
+    EXPECT_TRUE(getSerializedData("import_style_from_link.css", "text/css").startsWith("@charset"));
+    EXPECT_TRUE(getSerializedData("encoding.css", "text/css").startsWith("@charset \"euc-kr\";"));
+
     // Ensure that stylesheet contents are not NFC-normalized before encoding.
     EXPECT_TRUE(getSerializedData("encoding.css", "text/css").contains("\xE4\xC5\xD1\xE2"));
     EXPECT_FALSE(getSerializedData("encoding.css", "text/css").contains("\xE4\xC5\xE4\xC5"));

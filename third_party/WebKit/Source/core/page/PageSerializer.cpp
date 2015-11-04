@@ -397,6 +397,10 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
 void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KURL& url)
 {
     StringBuilder cssText;
+    cssText.appendLiteral("@charset \"");
+    cssText.append(styleSheet.contents()->charset().lower());
+    cssText.appendLiteral("\";\n\n");
+
     for (unsigned i = 0; i < styleSheet.length(); ++i) {
         CSSRule* rule = styleSheet.item(i);
         String itemText = rule->cssText();
@@ -411,10 +415,8 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KUR
     }
 
     if (url.isValid() && !m_resourceURLs.contains(url)) {
-        // FIXME: We should check whether a charset has been specified and if none was found add one.
         WTF::TextEncoding textEncoding(styleSheet.contents()->charset());
         ASSERT(textEncoding.isValid());
-        // TODO(jsbell): Ensure @charset is written out if non-UTF-8.
         String textString = cssText.toString();
         CString text = textEncoding.encode(textString, WTF::EntitiesForUnencodables);
         m_resources->append(SerializedResource(url, String("text/css"), SharedBuffer::create(text.data(), text.length())));
