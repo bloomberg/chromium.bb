@@ -983,16 +983,23 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testClickableContent() throws Throwable {
+    private void doTestClickableContent(boolean inMainFrame) throws Throwable {
         standardSetup();
 
-        final String pageTitle = "Click Title";
         final String testEmail = "nobody@example.org";
-        final String testUrl = mWebServer.setResponse("/email_test.html",
-                "<html><head><title>" + pageTitle + "</title></head>"
-                + "<body><span id='email'>" + testEmail + "</span></body>", null);
+        final String findEmailJs = inMainFrame
+                ? "document.getElementById(\"email\")"
+                : "window.frames[0].document.getElementById(\"email\")";
+        final String pageHtml = inMainFrame
+                ? "<html><body onload='document.title=" + findEmailJs + ".innerText'>"
+                + "<span id='email'>" + testEmail + "</span></body></html>"
+                : "<html>"
+                + "<body style='margin:0;' onload='document.title=" + findEmailJs + ".innerText'>"
+                + " <iframe style='border:none;' srcdoc=\""
+                + "   <body style='margin:0;'><span id='email'>" + testEmail + "</span></body>"
+                + "\" src='iframe.html'></iframe>"
+                + "</body></html>";
+        final String testUrl = mWebServer.setResponse("/email_test.html", pageHtml, null);
 
         // JS is required for the click simulator.
         mAwContents.getSettings().setJavaScriptEnabled(true);
@@ -1000,53 +1007,29 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return mAwContents.getTitle().equals(pageTitle);
+                return mAwContents.getTitle().equals(testEmail);
             }
         });
 
         int callCount = mShouldOverrideUrlLoadingHelper.getCallCount();
-        DOMUtils.clickNode(this, mAwContents.getContentViewCore(), "email");
+        DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(), findEmailJs);
         mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
         assertEquals("mailto:" + testEmail.replace("@", "%40"),
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
         assertFalse(mShouldOverrideUrlLoadingHelper.isRedirect());
         assertTrue(mShouldOverrideUrlLoadingHelper.hasUserGesture());
-        assertTrue(mShouldOverrideUrlLoadingHelper.isMainFrame());
+        assertEquals(inMainFrame, mShouldOverrideUrlLoadingHelper.isMainFrame());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testClickableContent() throws Throwable {
+        doTestClickableContent(true);
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testClickableContentInIframe() throws Throwable {
-        standardSetup();
-
-        final String pageTitle = "Click Title";
-        final String testEmail = "nobody@example.org";
-        final String testUrl = mWebServer.setResponse("/email_test.html",
-                "<html><head><title>" + pageTitle + "</title></head>"
-                + "<body style='margin:0;'>"
-                + " <iframe style='border:none;' srcdoc=\""
-                + "   <body style='margin:0;'><span id='email'>" + testEmail + "</span></body>"
-                + "\" src='iframe.html'></iframe>"
-                + "</body>", null);
-
-        // JS is required for the click simulator.
-        mAwContents.getSettings().setJavaScriptEnabled(true);
-        loadUrlAsync(mAwContents, testUrl);
-        pollOnUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mAwContents.getTitle().equals(pageTitle);
-            }
-        });
-
-        int callCount = mShouldOverrideUrlLoadingHelper.getCallCount();
-        DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(),
-                "window.frames[0].document.getElementById('email')");
-        mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
-        assertEquals("mailto:" + testEmail.replace("@", "%40"),
-                mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
-        assertFalse(mShouldOverrideUrlLoadingHelper.isRedirect());
-        assertTrue(mShouldOverrideUrlLoadingHelper.hasUserGesture());
-        assertFalse(mShouldOverrideUrlLoadingHelper.isMainFrame());
+        doTestClickableContent(false);
     }
 }
