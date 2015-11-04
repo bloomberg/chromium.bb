@@ -66,6 +66,8 @@ class BrowserCdmCast : public ::media::MediaKeys,
       const std::string& key_id) const = 0;
 
  protected:
+  ~BrowserCdmCast() override;
+
   void OnSessionMessage(const std::string& session_id,
                         const std::vector<uint8_t>& message,
                         const GURL& destination_url,
@@ -76,8 +78,6 @@ class BrowserCdmCast : public ::media::MediaKeys,
 
  private:
   friend class BrowserCdmCastUi;
-
-  ~BrowserCdmCast() override;
 
   // Allow subclasses to override to provide key sysytem specific
   // initialization.
