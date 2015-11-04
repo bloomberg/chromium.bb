@@ -111,6 +111,9 @@
         "test": "sync_unit_tests"
       },
       {
+        "test": "ui_android_unittests"
+      },
+      {
         "test": "ui_base_unittests"
       },
       {

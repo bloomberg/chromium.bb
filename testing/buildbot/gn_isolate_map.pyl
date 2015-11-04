@@ -407,6 +407,10 @@
       "-v",
     ],
   },
+  "ui_android_unittests": {
+    "label": "//ui/android:ui_android_unittests",
+    "type": "console_test_launcher",
+  },
   "ui_base_unittests": {
     "label": "//ui/base:ui_base_unittests",
     "type": "windowed_test_launcher",
