@@ -62,15 +62,9 @@ TEST(UnverifiedDownloadFieldTrialTest, Assumptions) {
       base::FilePath(kSafeFilename)));
 }
 
-TEST(UnverifiedDownloadFieldTrialTest, CommandLine_AllowAll) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowUncheckedDangerousDownloads);
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
-      base::FilePath(kSafeFilename)));
-  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
-      base::FilePath(kHandledFilename)));
-}
-
+// Verify that disallow-unchecked-dangerous-downloads command line switch causes
+// all dangerous file types to be blocked, and that safe files types are still
+// allowed.
 TEST(UnverifiedDownloadFieldTrialTest, CommandLine_DisallowDangerous) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisallowUncheckedDangerousDownloads);
@@ -80,15 +74,76 @@ TEST(UnverifiedDownloadFieldTrialTest, CommandLine_DisallowDangerous) {
       base::FilePath(kHandledFilename)));
 }
 
-TEST(UnverifiedDownloadFieldTrialTest, DisableAll) {
-  ScopedFieldTrialState field_trial(kUnverifiedDownloadFieldTrialDisableAll);
+// Verify that a wildcard blacklist matches all file types.
+TEST(UnverifiedDownloadFieldTrialTest, WildCardBlacklist) {
+  FieldTrialParameters parameters;
+  parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = "*";
+  parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".xyz";
+  ScopedFieldTrialState field_trial(
+      kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
+
   EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
   EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
+  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.xyz"))));
 }
 
-TEST(UnverifiedDownloadFieldTrialTest, DisableByParam) {
+// Verify that allow-unchecked-dangerous-downloads command line option takes
+// precedence over a Finch trial specified blacklist.
+TEST(UnverifiedDownloadFieldTrialTest, BlacklistVsCommandline) {
+  FieldTrialParameters parameters;
+  parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = "*";
+  parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".xyz";
+  ScopedFieldTrialState field_trial(
+      kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowUncheckedDangerousDownloads);
+
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(kSafeFilename)));
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(kHandledFilename)));
+}
+
+// Verify that disallow-unchecked-dangerous-downloads command line option takes
+// precedence over a Finch trial specified whitelist.
+TEST(UnverifiedDownloadFieldTrialTest, WhitelistVsCommandline) {
+  FieldTrialParameters parameters;
+  parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".foo";
+  parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".exe";
+  ScopedFieldTrialState field_trial(
+      kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisallowUncheckedDangerousDownloads);
+
+  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.foo"))));
+  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.exe"))));
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.txt"))));
+}
+
+// Verify that wildcards only work if they are specified by themselves.
+TEST(UnverifiedDownloadFieldTrialTest, WildcardOnlyByItself) {
+  FieldTrialParameters parameters;
+  parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".foo,*";
+  parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".xyz";
+  ScopedFieldTrialState field_trial(
+      kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
+
+  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.foo"))));
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.xyz"))));
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.txt"))));
+}
+
+// Verify that the blacklist takes precedence over whitelist.
+TEST(UnverifiedDownloadFieldTrialTest, WhitelistVsBlacklist) {
   FieldTrialParameters parameters;
   parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".abc,.def";
   parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".xyz";
@@ -107,9 +162,8 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableByParam) {
       base::FilePath(FILE_PATH_LITERAL("foo.def"))));
 }
 
-// Verify that nothing terrible happens if no parameters are specified for a
-// group that expects parameters.
-TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_NoParameters) {
+// Verify that nothing terrible happens if no parameters are specified.
+TEST(UnverifiedDownloadFieldTrialTest, MissingParameters) {
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter);
 
@@ -121,7 +175,7 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_NoParameters) {
 
 // Verify that nothing terrible happens if the parameters set for a field trial
 // are malformed.
-TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_BadFormat) {
+TEST(UnverifiedDownloadFieldTrialTest, MalformedParameters) {
   FieldTrialParameters parameters;
   parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = "abcasdfa#??# ~def";
   parameters[kUnverifiedDownloadFieldTrialWhitelistParam] =
@@ -141,6 +195,7 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_Empty) {
   FieldTrialParameters parameters;
   parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = "";
   parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = "";
+  parameters[kUnverifiedDownloadFieldTrialBlockSBTypesParam] = "";
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
@@ -150,10 +205,10 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_Empty) {
       base::FilePath(kHandledFilename)));
 }
 
-TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_CaseSensitive) {
+// Verified that file types specified via white/blacklists are case insensitive.
+TEST(UnverifiedDownloadFieldTrialTest, CaseInsensitive) {
   FieldTrialParameters parameters;
   parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".ABC,.xyz";
-  parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = "";
   ScopedFieldTrialState field_trial(
       kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
@@ -167,12 +222,14 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableByParam_CaseSensitive) {
       base::FilePath(FILE_PATH_LITERAL("FOO.txt"))));
 }
 
-TEST(UnverifiedDownloadFieldTrialTest, DisableSBTypesAndByParameter) {
+// Verify functionality when all parameters are specified.
+TEST(UnverifiedDownloadFieldTrialTest, WhitelistVsBlacklistVsSBTypes) {
   FieldTrialParameters parameters;
   parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".abc,.def";
   parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".xyz";
+  parameters[kUnverifiedDownloadFieldTrialBlockSBTypesParam] = "*";
   ScopedFieldTrialState field_trial(
-      kUnverifiedDownloadFieldTrialDisableSBTypesAndByParameter, parameters);
+      kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
   EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
@@ -186,19 +243,53 @@ TEST(UnverifiedDownloadFieldTrialTest, DisableSBTypesAndByParameter) {
       base::FilePath(FILE_PATH_LITERAL("foo.def"))));
 }
 
-// Verify that a whitelist is able to override the SafeBrowsing file type list.
-TEST(UnverifiedDownloadFieldTrialTest,
-     DisableSBTypesAndByParameter_OverrideSB) {
+// Verify that block_sb_types parameter being empty is equivalent to it not
+// being specified.
+TEST(UnverifiedDownloadFieldTrialTest, DisableSBTypesEmpty) {
   FieldTrialParameters parameters;
-  parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".abc,.def";
-  parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".exe";
+  parameters[kUnverifiedDownloadFieldTrialBlockSBTypesParam] = "";
   ScopedFieldTrialState field_trial(
-      kUnverifiedDownloadFieldTrialDisableSBTypesAndByParameter, parameters);
+      kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
 
   EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kSafeFilename)));
   EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
       base::FilePath(kHandledFilename)));
+}
+
+// Verify that a whitelist is able to override the SafeBrowsing file type list.
+TEST(UnverifiedDownloadFieldTrialTest, ListsOverrideSBTypes) {
+  FieldTrialParameters parameters;
+  parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".abc,.def";
+  parameters[kUnverifiedDownloadFieldTrialWhitelistParam] = ".exe";
+  parameters[kUnverifiedDownloadFieldTrialBlockSBTypesParam] = "*";
+  ScopedFieldTrialState field_trial(
+      kUnverifiedDownloadFieldTrialDisableByParameter, parameters);
+
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(kSafeFilename)));
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(kHandledFilename)));
+  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.abc"))));
+}
+
+// Verify that the field trial is only sensitive to the prefix of the group
+// name.
+TEST(UnverifiedDownloadFieldTrialTest, FieldTrialGroupPrefix) {
+  FieldTrialParameters parameters;
+  parameters[kUnverifiedDownloadFieldTrialBlacklistParam] = ".abc,.def";
+  parameters[kUnverifiedDownloadFieldTrialBlockSBTypesParam] = "*";
+  ScopedFieldTrialState field_trial(
+      std::string(kUnverifiedDownloadFieldTrialDisableByParameter) + "FooBar",
+      parameters);
+
+  EXPECT_TRUE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(kSafeFilename)));
+  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(kHandledFilename)));
+  EXPECT_FALSE(safe_browsing::IsUnverifiedDownloadAllowedByFieldTrial(
+      base::FilePath(FILE_PATH_LITERAL("foo.abc"))));
 }
 
 }  // namespace safe_browsing

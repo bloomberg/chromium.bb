@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
@@ -19,14 +20,12 @@ namespace safe_browsing {
 const char kUnverifiedDownloadFieldTrialName[] =
     "SafeBrowsingUnverifiedDownloads";
 
-const char kUnverifiedDownloadFieldTrialDisableAll[] = "DisableAll";
 const char kUnverifiedDownloadFieldTrialDisableByParameter[] =
     "DisableByParameter";
-const char kUnverifiedDownloadFieldTrialDisableSBTypesAndByParameter[] =
-    "DisableSBTypesAndByParameter";
 
 const char kUnverifiedDownloadFieldTrialWhitelistParam[] = "whitelist";
 const char kUnverifiedDownloadFieldTrialBlacklistParam[] = "blacklist";
+const char kUnverifiedDownloadFieldTrialBlockSBTypesParam[] = "block_sb_types";
 
 namespace {
 
@@ -41,6 +40,11 @@ bool MatchesExtensionList(const base::FilePath& needle,
   std::vector<base::FilePath::StringPieceType> extension_list =
       base::SplitStringPiece(comma_separated_extensions, FILE_PATH_LITERAL(","),
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  // A single '*' matches everything.
+  if (extension_list.size() == 1 && extension_list[0] == FILE_PATH_LITERAL("*"))
+    return true;
+
   for (const auto& extension : extension_list) {
     // This shouldn't happen, but check anyway in case the parameter is
     // accidentally malformed. The underlying FilePath implementation expects
@@ -64,11 +68,14 @@ bool IsUnverifiedDownloadAllowedByFieldTrial(const base::FilePath& file) {
           switches::kAllowUncheckedDangerousDownloads))
     return true;
 
-  if (group_name == kUnverifiedDownloadFieldTrialDisableAll)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisallowUncheckedDangerousDownloads) &&
+      download_protection_util::IsSupportedBinaryFile(file))
     return false;
 
-  if (group_name == kUnverifiedDownloadFieldTrialDisableByParameter ||
-      group_name == kUnverifiedDownloadFieldTrialDisableSBTypesAndByParameter) {
+  if (base::StartsWith(group_name,
+                       kUnverifiedDownloadFieldTrialDisableByParameter,
+                       base::CompareCase::SENSITIVE)) {
     std::map<std::string, std::string> parameters;
     variations::GetVariationParams(kUnverifiedDownloadFieldTrialName,
                                    &parameters);
@@ -82,12 +89,12 @@ bool IsUnverifiedDownloadAllowedByFieldTrial(const base::FilePath& file) {
         MatchesExtensionList(
             file, parameters[kUnverifiedDownloadFieldTrialWhitelistParam]))
       return true;
-  }
 
-  if (group_name == kUnverifiedDownloadFieldTrialDisableSBTypesAndByParameter ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisallowUncheckedDangerousDownloads))
-    return !download_protection_util::IsSupportedBinaryFile(file);
+    if (parameters.count(kUnverifiedDownloadFieldTrialBlockSBTypesParam) &&
+        !parameters[kUnverifiedDownloadFieldTrialBlockSBTypesParam].empty() &&
+        download_protection_util::IsSupportedBinaryFile(file))
+      return false;
+  }
 
   return true;
 }

@@ -24,12 +24,7 @@ extern const char kUnverifiedDownloadFieldTrialName[];
 
 // The trial groups are:
 //
-// * DisableAll : Disables all unverified downloads regardless of whether the
-//     specific file in question is potentially dangerous or handled by Safe
-//     Browsing at all.
-extern const char kUnverifiedDownloadFieldTrialDisableAll[];
-
-// * DisableByParameter : Decides the fate of unverified downloads based on
+// * DisableByParameter[*] : Decides the fate of unverified downloads based on
 //     whether the file type matches a whitelist and a blacklist specified as a
 //     parameter to this trial group. Any file type that doesn't match either of
 //     these lists will default to being allowed.
@@ -47,11 +42,9 @@ extern const char kUnverifiedDownloadFieldTrialWhitelistParam[];
 //         types to be disallowed from downloading.
 extern const char kUnverifiedDownloadFieldTrialBlacklistParam[];
 
-// * DisableSBTypesAndByParameter : Applies the whitelist and blacklist as
-//     described in DisableByParameter. However, any file type that doesn't
-//     match either list but is considered supported by SafeBrowsing will be
-//     blocked.
-extern const char kUnverifiedDownloadFieldTrialDisableSBTypesAndByParameter[];
+//     - 'block_sb_types' : If non-empty, causes all file types that satisfy
+//         safe_browsing::IsSupportedBinaryFile() to be blocked.
+extern const char kUnverifiedDownloadFieldTrialBlockSBTypesParam[];
 
 // Returns true if |file| is allowed to be downloaded based on the current field
 // trial settings.
