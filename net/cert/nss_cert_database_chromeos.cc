@@ -42,7 +42,7 @@ void NSSCertDatabaseChromeOS::ListCertsSync(CertificateList* certs) {
 }
 
 void NSSCertDatabaseChromeOS::ListCerts(
-    const base::Callback<void(scoped_ptr<CertificateList> certs)>& callback) {
+    const NSSCertDatabase::ListCertsCallback& callback) {
   scoped_ptr<CertificateList> certs(new CertificateList());
 
   // base::Pased will NULL out |certs|, so cache the underlying pointer here.
