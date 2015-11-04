@@ -19,6 +19,7 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -35,7 +36,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A base class for android_webview tests. WebView only runs on KitKat and later,
@@ -417,16 +417,13 @@ public class AwTestBase
     }
 
     public AwTestContainerView createAwTestContainerViewOnMainSync(
-            final AwContentsClient client, final boolean supportsLegacyQuirks) throws Exception {
-        final AtomicReference<AwTestContainerView> testContainerView =
-                new AtomicReference<AwTestContainerView>();
-        getInstrumentation().runOnMainSync(new Runnable() {
+            final AwContentsClient client, final boolean supportsLegacyQuirks) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<AwTestContainerView>() {
             @Override
-            public void run() {
-                testContainerView.set(createAwTestContainerView(client, supportsLegacyQuirks));
+            public AwTestContainerView call() {
+                return createAwTestContainerView(client, supportsLegacyQuirks);
             }
         });
-        return testContainerView.get();
     }
 
     public void destroyAwContentsOnMainSync(final AwContents awContents) {

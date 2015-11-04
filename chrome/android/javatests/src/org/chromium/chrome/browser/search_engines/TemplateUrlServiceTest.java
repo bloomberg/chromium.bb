@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Tests for Chrome on Android's usage of the TemplateUrlService API.
@@ -150,18 +149,16 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
                 observerNotified.set(true);
             }
         };
-        final AtomicReference<TemplateUrlService> templateUrlService =
-                new AtomicReference<TemplateUrlService>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                TemplateUrlService service = TemplateUrlService.getInstance();
-                templateUrlService.set(service);
-
-                service.registerLoadListener(listener);
-                service.load();
-            }
-        });
+        final TemplateUrlService templateUrlService = ThreadUtils.runOnUiThreadBlockingNoException(
+                new Callable<TemplateUrlService>() {
+                    @Override
+                    public TemplateUrlService call() {
+                        TemplateUrlService service = TemplateUrlService.getInstance();
+                        service.registerLoadListener(listener);
+                        service.load();
+                        return service;
+                    }
+                });
 
         assertTrue("Observer wasn't notified of TemplateUrlService load.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
@@ -170,6 +167,6 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
                         return observerNotified.get();
                     }
                 }));
-        return templateUrlService.get();
+        return templateUrlService;
     }
 }
