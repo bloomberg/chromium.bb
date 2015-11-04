@@ -92,7 +92,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_RELOAD = 1 << 2,
     DISABLE_UNSUPPORTED_REQUIREMENT = 1 << 3,
     DISABLE_SIDELOAD_WIPEOUT = 1 << 4,
-    DISABLE_UNKNOWN_FROM_SYNC = 1 << 5,
+    DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC = 1 << 5,
     // DISABLE_PERMISSIONS_CONSENT = 1 << 6,  // Deprecated.
     // DISABLE_KNOWN_DISABLED = 1 << 7,  // Deprecated.
     DISABLE_NOT_VERIFIED = 1 << 8,  // Disabled because we could not verify
@@ -102,8 +102,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_REMOTE_INSTALL = 1 << 11,
     DISABLE_INACTIVE_EPHEMERAL_APP = 1 << 12,  // Cached ephemeral apps are
                                                // disabled to prevent activity.
-    DISABLE_EXTERNAL_EXTENSION = 1 << 13,  // External extensions might be
-                                           // disabled for user prompting.
+    DISABLE_EXTERNAL_EXTENSION = 1 << 13,      // External extensions might be
+                                               // disabled for user prompting.
     DISABLE_UPDATE_REQUIRED_BY_POLICY = 1 << 14,  // Doesn't meet minimum
                                                   // version requirement.
     DISABLE_REASON_LAST = 1 << 15,  // This should always be the last value

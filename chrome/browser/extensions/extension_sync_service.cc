@@ -380,15 +380,15 @@ void ExtensionSyncService::ApplySyncData(
       }
     } else if (!extension_sync_data.supports_disable_reasons()) {
       // Legacy case (<M45), from before we synced disable reasons (see
-      // crbug.com/484214).
-      disable_reasons = Extension::DISABLE_UNKNOWN_FROM_SYNC;
+      // crbug.com/484214). Assume the extension was likely disabled by the
+      // user, so add DISABLE_USER_ACTION to any existing disable reasons.
+      disable_reasons = extension_prefs->GetDisableReasons(id);
+      disable_reasons |= Extension::DISABLE_USER_ACTION;
     }
 
-    // In the non-legacy case (>=M45), clear any existing disable reasons first.
-    // Otherwise sync can't remove just some of them.
-    if (extension_sync_data.supports_disable_reasons())
-      extension_prefs->ClearDisableReasons(id);
-
+    // Clear any existing disable reasons first, otherwise sync can't remove
+    // just some of them.
+    extension_prefs->ClearDisableReasons(id);
     extension_service()->DisableExtension(id, disable_reasons);
   }
 

@@ -839,8 +839,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataNewExtension) {
       Extension::DISABLE_USER_ACTION, true },
     // Legacy case (<M45): No disable reasons come in from Sync (see
     // crbug.com/484214). After installation, the reason should be set to
-    // DISABLE_UNKNOWN_FROM_SYNC.
-    { "Legacy", false, -1, Extension::DISABLE_UNKNOWN_FROM_SYNC, true },
+    // DISABLE_USER_ACTION (default assumption).
+    { "Legacy", false, -1, Extension::DISABLE_USER_ACTION, true },
     // If the extension came in disabled due to a permissions increase, then the
     // user has *not* approved the permissions, and they shouldn't be granted.
     // crbug.com/484214
@@ -1084,12 +1084,12 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataEnableDisable) {
       Extension::DISABLE_USER_ACTION, Extension::DISABLE_USER_ACTION },
     { "Disable", 0, false, Extension::DISABLE_USER_ACTION,
       Extension::DISABLE_USER_ACTION },
-    { "DisableLegacy", 0, false, -1, Extension::DISABLE_UNKNOWN_FROM_SYNC },
+    { "DisableLegacy", 0, false, -1, Extension::DISABLE_USER_ACTION },
     { "AddDisableReason", Extension::DISABLE_REMOTE_INSTALL, false,
       Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION,
       Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION },
     { "AddDisableReasonLegacy", Extension::DISABLE_USER_ACTION, false, -1,
-      Extension::DISABLE_USER_ACTION | Extension::DISABLE_UNKNOWN_FROM_SYNC},
+      Extension::DISABLE_USER_ACTION},
     { "RemoveDisableReason",
       Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION, false,
       Extension::DISABLE_USER_ACTION, Extension::DISABLE_USER_ACTION },
