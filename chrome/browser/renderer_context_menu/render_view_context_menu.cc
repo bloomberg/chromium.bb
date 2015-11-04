@@ -130,10 +130,6 @@
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif
-
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
@@ -387,6 +383,7 @@ void WriteTextToClipboard(const base::string16& text) {
 
 bool g_custom_id_ranges_initialized = false;
 
+#if !defined(OS_CHROMEOS)
 void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
   int width = icon.Width();
   int height = icon.Height();
@@ -406,6 +403,7 @@ void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
       height);
   menu->SetIcon(menu->GetItemCount() - 1, sized_icon);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 void OnProfileCreated(chrome::HostDesktopType desktop_type,
                       const GURL& link_url,
@@ -868,6 +866,11 @@ void RenderViewContextMenu::AppendLinkItems() {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
                                     IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
 
+    // While ChromeOS supports multiple profiles, only one can be open at a
+    // time.
+    // TODO(jochen): Consider adding support for ChromeOS with similar
+    // semantics as the profile switcher in the system tray.
+#if !defined(OS_CHROMEOS)
     // g_browser_process->profile_manager() is null during unit tests.
     if (g_browser_process->profile_manager() &&
         GetProfile()->GetProfileType() == Profile::REGULAR_PROFILE) {
@@ -883,10 +886,6 @@ void RenderViewContextMenu::AppendLinkItems() {
            ++profile_index) {
         base::FilePath profile_path =
             profile_info_cache.GetPathOfProfileAtIndex(profile_index);
-#if defined(OS_CHROMEOS)
-        if (profile_path == chromeos::ProfileHelper::GetSigninProfileDir())
-          continue;
-#endif
         Profile* profile = profile_manager->GetProfileByPath(profile_path);
         if ((profile != GetProfile()) &&
             !profile_info_cache.IsOmittedProfileAtIndex(profile_index)) {
@@ -925,6 +924,7 @@ void RenderViewContextMenu::AppendLinkItems() {
             &profile_link_submenu_model_);
       }
     }
+#endif  // !defined(OS_CHROMEOS)
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
                                     IDS_CONTENT_CONTEXT_SAVELINKAS);

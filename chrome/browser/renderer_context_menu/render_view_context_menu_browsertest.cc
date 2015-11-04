@@ -47,12 +47,6 @@
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user_manager.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -104,21 +98,12 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     return menu;
   }
 
+  // Does not work on ChromeOS.
   Profile* CreateSecondaryProfile(int profile_num) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     base::FilePath profile_path = profile_manager->user_data_dir();
-#if defined(OS_CHROMEOS)
-    std::string profile_name = base::StringPrintf("NewProfile%d", profile_num);
-    user_manager::UserManager::Get()->UserLoggedIn(
-        AccountId::FromUserEmail(
-            base::StringPrintf("user%d@test.com", profile_num)),
-        profile_name, false);
-    profile_path = profile_path.Append(
-        chromeos::ProfileHelper::GetUserProfileDir(profile_name).BaseName());
-#else
     profile_path = profile_path.AppendASCII(
         base::StringPrintf("New Profile %d", profile_num));
-#endif
     return profile_manager->GetProfile(profile_path);
   }
 };
@@ -430,6 +415,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenImageInNewTab) {
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB));
 }
 
+// Functionality is not present on ChromeOS.
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfileEntryPresent) {
   {
     scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenuMediaTypeNone(
@@ -510,6 +497,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   ASSERT_EQ(other_profile,
             Profile::FromBrowserContext(tab->GetBrowserContext()));
 }
+#endif  // !defined(OS_CHROMEOS)
 
 class ThumbnailResponseWatcher : public content::NotificationObserver {
  public:
