@@ -47,7 +47,6 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     base::Closure callback)
     : browser_sync::SyncBackendHostImpl(
           profile->GetDebugName(),
-          profile,
           sync_client,
           ui_thread,
           invalidator,

@@ -16,8 +16,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -29,7 +27,6 @@
 #include "sync/util/extensions_activity.h"
 
 class GURL;
-class Profile;
 
 namespace base {
 class MessageLoop;
@@ -60,7 +57,6 @@ struct DoInitializeOptions;
 // definition for documentation of public methods.
 class SyncBackendHostImpl
     : public SyncBackendHost,
-      public content::NotificationObserver,
       public syncer::InvalidationHandler {
  public:
   typedef syncer::SyncStatus Status;
@@ -71,7 +67,6 @@ class SyncBackendHostImpl
   // |sync_prefs|.
   SyncBackendHostImpl(
       const std::string& name,
-      Profile* profile,
       sync_driver::SyncClient* sync_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       invalidation::InvalidationService* invalidator,
@@ -315,21 +310,12 @@ class SyncBackendHostImpl
   void HandleConnectionStatusChangeOnFrontendLoop(
       syncer::ConnectionStatus status);
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   void ClearServerDataDoneOnFrontendLoop(
       const syncer::SyncManager::ClearServerDataCallback& frontend_callback);
-
-  content::NotificationRegistrar notification_registrar_;
 
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
   base::MessageLoop* const frontend_loop_;
-
-  Profile* const profile_;
 
   sync_driver::SyncClient* const sync_client_;
 

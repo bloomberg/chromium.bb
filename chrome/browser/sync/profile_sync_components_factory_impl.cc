@@ -413,7 +413,7 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder) {
   return new browser_sync::SyncBackendHostImpl(
-      name, profile_, sync_client,
+      name, sync_client,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
       invalidator, sync_prefs, sync_folder);
 }

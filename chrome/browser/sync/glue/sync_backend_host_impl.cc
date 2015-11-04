@@ -8,10 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -21,8 +18,6 @@
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/events/protocol_event.h"
@@ -47,14 +42,12 @@ namespace browser_sync {
 
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
-    Profile* profile,
     sync_driver::SyncClient* sync_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder)
     : frontend_loop_(base::MessageLoop::current()),
-      profile_(profile),
       sync_client_(sync_client),
       ui_thread_(ui_thread),
       name_(name),
@@ -242,9 +235,6 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
 
   // Immediately stop sending messages to the frontend.
   frontend_ = NULL;
-
-  // Stop listening for and forwarding locally-triggered sync refresh requests.
-  notification_registrar_.RemoveAll();
 
   // Stop non-blocking sync types from sending any more requests to the syncer.
   sync_context_proxy_.reset();
@@ -595,17 +585,6 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
     ready_task.Run(succeeded_configuration_types, failed_configuration_types);
 }
 
-void SyncBackendHostImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL);
-
-  content::Details<const syncer::ModelTypeSet> state_details(details);
-  const syncer::ModelTypeSet& types = *(state_details.ptr());
-  TriggerRefresh(types);
-}
-
 void SyncBackendHostImpl::AddExperimentalTypes() {
   CHECK(initialized());
   syncer::Experiments experiments;
@@ -637,10 +616,6 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     // state.
     OnInvalidatorStateChange(invalidator_->GetInvalidatorState());
   }
-
-  // Start forwarding refresh requests to the SyncManager
-  notification_registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-                              content::Source<Profile>(profile_));
 
   // Now that we've downloaded the control types, we can see if there are any
   // experimental types to enable. This should be done before we inform
