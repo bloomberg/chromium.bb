@@ -963,6 +963,7 @@ void SchedulerStateMachine::SetMaxSwapsPending(int max) {
 }
 
 void SchedulerStateMachine::DidSwapBuffers() {
+  TRACE_EVENT_ASYNC_BEGIN0("cc", "Scheduler:pending_swaps", this);
   pending_swaps_++;
   swaps_with_current_output_surface_++;
 
@@ -973,6 +974,7 @@ void SchedulerStateMachine::DidSwapBuffers() {
 }
 
 void SchedulerStateMachine::DidSwapBuffersComplete() {
+  TRACE_EVENT_ASYNC_END0("cc", "Scheduler:pending_swaps", this);
   pending_swaps_--;
 }
 
