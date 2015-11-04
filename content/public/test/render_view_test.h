@@ -88,6 +88,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   void LoadHTML(const char* html);
 
   // Returns the current PageState.
+  // In OOPIF enabled modes, this returns a PageState object for the main frame.
   PageState GetCurrentPageState();
 
   // Navigates the main frame back or forward in session history and commits.

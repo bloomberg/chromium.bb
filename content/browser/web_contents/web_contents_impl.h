@@ -415,6 +415,8 @@ class CONTENT_EXPORT WebContentsImpl
   void DidChangeName(RenderFrameHost* render_frame_host,
                      const std::string& name) override;
   void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) override;
+  void UpdateStateForFrame(RenderFrameHost* render_frame_host,
+                           const PageState& page_state) override;
   void UpdateTitle(RenderFrameHost* render_frame_host,
                    int32 page_id,
                    const base::string16& title,

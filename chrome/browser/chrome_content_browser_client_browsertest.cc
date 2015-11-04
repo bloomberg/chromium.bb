@@ -82,12 +82,26 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
   EXPECT_EQ(url, entry->GetVirtualURL());
 }
 
+// Use a test class with SetUpCommandLine to ensure the flag is sent to the
+// first renderer process.
+class ChromeContentBrowserClientSitePerProcessTest
+    : public ChromeContentBrowserClientBrowserTest {
+ public:
+  ChromeContentBrowserClientSitePerProcessTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    content::IsolateAllSitesForTesting(command_line);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientSitePerProcessTest);
+};
+
 // Test that a basic navigation works in --site-per-process mode.  This prevents
 // regressions when that mode calls out into the ChromeContentBrowserClient,
 // such as http://crbug.com/164223.
-IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
+IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientSitePerProcessTest,
                        SitePerProcessNavigation) {
-  content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(test_server()->Start());
   const GURL url(test_server()->GetURL("files/title1.html"));
 

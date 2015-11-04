@@ -14,6 +14,7 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -180,8 +181,19 @@ void RenderViewTest::LoadHTML(const char* html) {
 }
 
 PageState RenderViewTest::GetCurrentPageState() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  return HistoryEntryToPageState(impl->history_controller()->GetCurrentEntry());
+  RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(view_);
+
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // This returns a PageState object for the main frame, excluding subframes.
+    // This could be extended to all local frames if needed by tests, but it
+    // cannot include out-of-process frames.
+    TestRenderFrame* frame =
+        static_cast<TestRenderFrame*>(view_impl->GetMainRenderFrame());
+    return SingleHistoryItemToPageState(frame->current_history_item());
+  } else {
+    return HistoryEntryToPageState(
+        view_impl->history_controller()->GetCurrentEntry());
+  }
 }
 
 void RenderViewTest::GoBack(const PageState& state) {

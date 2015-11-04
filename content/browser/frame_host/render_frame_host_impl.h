@@ -528,6 +528,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool was_ignored_by_handler);
   void OnDidCommitProvisionalLoad(const IPC::Message& msg);
   void OnDidDropNavigation();
+  void OnUpdateState(const PageState& state);
   void OnBeforeUnloadACK(
       bool proceed,
       const base::TimeTicks& renderer_before_unload_start_time,

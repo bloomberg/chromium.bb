@@ -791,6 +791,9 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidStartLoading,
 // Sent when the renderer is done loading a page.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
 
+// Notifies the browser that this frame has new session history information.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateState, content::PageState /* state */)
+
 // Sent when the frame changes its window.name.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeName, std::string /* name */)
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/site_isolation_policy.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/render_frame_impl.h"
@@ -36,6 +37,11 @@ class HistoryControllerTest : public RenderViewTest {
 #endif
 
 TEST_F(HistoryControllerTest, MAYBE_InertCommitRemovesChildren) {
+  // This test is moot when subframe FrameNavigationEntries are enabled, since
+  // we don't use HistoryController in that case.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
   HistoryEntry* entry = history_controller()->GetCurrentEntry();
   ASSERT_TRUE(entry);
   ASSERT_EQ(1ul, entry->root_history_node()->children().size());

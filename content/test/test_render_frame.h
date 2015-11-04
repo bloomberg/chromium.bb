@@ -7,6 +7,10 @@
 
 #include "content/renderer/render_frame_impl.h"
 
+namespace blink {
+class WebHistoryItem;
+}
+
 namespace content {
 
 class RenderViewImpl;
@@ -20,6 +24,10 @@ class TestRenderFrame : public RenderFrameImpl {
   static RenderFrameImpl* CreateTestRenderFrame(
       const RenderFrameImpl::CreateParams& params);
   ~TestRenderFrame() override;
+
+  const blink::WebHistoryItem& current_history_item() {
+    return current_history_item_;
+  }
 
   void Navigate(const CommonNavigationParams& common_params,
                 const StartNavigationParams& start_params,

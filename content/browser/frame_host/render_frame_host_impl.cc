@@ -459,6 +459,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
                                 OnDidCommitProvisionalLoad(msg))
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDropNavigation, OnDidDropNavigation)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DocumentOnLoadCompleted,
                         OnDocumentOnLoadCompleted)
@@ -971,6 +972,21 @@ void RenderFrameHostImpl::OnDidDropNavigation() {
   // to be turned off.
   frame_tree_node_->DidStopLoading();
   navigation_handle_.reset();
+}
+
+void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
+  // TODO(creis): Verify the state's ISN matches the last committed FNE.
+
+  // Without this check, the renderer can trick the browser into using
+  // filenames it can't access in a future session restore.
+  // TODO(creis): Move CanAccessFilesOfPageState to RenderFrameHostImpl.
+  if (!render_view_host_->CanAccessFilesOfPageState(state)) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
+    return;
+  }
+
+  delegate_->UpdateStateForFrame(this, state);
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {

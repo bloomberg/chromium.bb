@@ -846,6 +846,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void LoadDataURL(const CommonNavigationParams& params,
                    blink::WebFrame* frame);
 
+  // Sends the current frame's navigation state to the browser.
+  void SendUpdateState();
+
   // Sends a proper FrameHostMsg_DidFailProvisionalLoadWithError_Params IPC for
   // the failed request |request|.
   void SendFailedProvisionalLoad(const blink::WebURLRequest& request,
@@ -936,6 +939,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // until the NavigationState corresponding to the new navigation is created in
   // didCreateDataSource().
   scoped_ptr<NavigationParams> pending_navigation_params_;
+
+  // Stores the current history item for this frame, so that updates to it can
+  // be reported to the browser process via SendUpdateState.
+  blink::WebHistoryItem current_history_item_;
 
 #if defined(ENABLE_PLUGINS)
   // Current text input composition text. Empty if no composition is in

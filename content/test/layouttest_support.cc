@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/renderer/fetchers/manifest_fetcher.h"
@@ -188,6 +189,10 @@ int GetLocalSessionHistoryLength(RenderView* render_view) {
 }
 
 void SyncNavigationState(RenderView* render_view) {
+  // TODO(creis): Add support for testing in OOPIF-enabled modes.
+  // See https://crbug.com/477150.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
   static_cast<RenderViewImpl*>(render_view)->SendUpdateState();
 }
 

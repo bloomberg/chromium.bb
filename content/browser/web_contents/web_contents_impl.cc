@@ -3872,6 +3872,8 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
 void WebContentsImpl::UpdateState(RenderViewHost* rvh,
                                   int32 page_id,
                                   const PageState& page_state) {
+  DCHECK(!SiteIsolationPolicy::UseSubframeNavigationEntries());
+
   // Ensure that this state update comes from a RenderViewHost that belongs to
   // this WebContents.
   // TODO(nasko): This should go through RenderFrameHost.
@@ -3892,14 +3894,7 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
       static_cast<RenderFrameHostImpl*>(rvhi->GetMainFrame())->nav_entry_id());
 
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // TODO(creis): We can't properly update state for cross-process subframes
-    // until PageState is decomposed into FrameStates. Until then, use the new
-    // method.
-    entry = new_entry;
-  } else {
-    DCHECK_EQ(entry, new_entry);
-  }
+  DCHECK_EQ(entry, new_entry);
 
   if (page_state == entry->GetPageState())
     return;  // Nothing to update.
@@ -4059,6 +4054,34 @@ void WebContentsImpl::DocumentOnLoadCompleted(
       NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       Source<WebContents>(this),
       NotificationService::NoDetails());
+}
+
+void WebContentsImpl::UpdateStateForFrame(RenderFrameHost* render_frame_host,
+                                          const PageState& page_state) {
+  DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
+
+  // The state update affects the last NavigationEntry associated with the given
+  // |render_frame_host|. This may not be the last committed NavigationEntry (as
+  // in the case of an UpdateState from a frame being swapped out). We track
+  // which entry this is in the RenderFrameHost's nav_entry_id.
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  NavigationEntryImpl* entry =
+      controller_.GetEntryWithUniqueID(rfhi->nav_entry_id());
+  if (!entry)
+    return;
+
+  FrameNavigationEntry* frame_entry =
+      entry->GetFrameEntry(rfhi->frame_tree_node());
+  if (!frame_entry)
+    return;
+
+  CHECK_EQ(frame_entry->site_instance(), rfhi->GetSiteInstance());
+  if (page_state == frame_entry->page_state())
+    return;  // Nothing to update.
+
+  frame_entry->set_page_state(page_state);
+  controller_.NotifyEntryChanged(entry);
 }
 
 void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,

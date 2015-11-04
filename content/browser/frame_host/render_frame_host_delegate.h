@@ -28,6 +28,7 @@ class Message;
 
 namespace content {
 class GeolocationServiceContext;
+class PageState;
 class RenderFrameHost;
 class WakeLockServiceContext;
 class WebContents;
@@ -91,6 +92,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
   virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}
+
+  // The state for the page changed and should be updated in session history.
+  virtual void UpdateStateForFrame(RenderFrameHost* render_frame_host,
+                                   const PageState& page_state) {}
 
   // The page's title was changed and should be updated. Only called for the
   // top-level frame.

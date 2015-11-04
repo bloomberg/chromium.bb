@@ -5437,7 +5437,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:RenderFrameHostManagerTest.Restore*"
+          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:*.RestoreSubframeFileAccessForHistoryNavigation"
         ],
         "test": "content_browsertests"
       },
@@ -5468,7 +5468,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:RenderFrameHostManagerTest.Restore*"
+          "--gtest_filter=-*.PopupPendingAndBackToSameSiteInstance:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.ReloadOriginalRequest:*.RestoreSubframeFileAccessForHistoryNavigation"
         ],
         "test": "content_browsertests"
       },

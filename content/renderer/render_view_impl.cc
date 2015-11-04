@@ -801,7 +801,9 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // along with the RenderView automatically.
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
 
-  history_controller_.reset(new HistoryController(this));
+  // We don't use HistoryController in OOPIF-enabled modes.
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
+    history_controller_.reset(new HistoryController(this));
 
   new IdleUserDetector(this);
 
@@ -1475,13 +1477,8 @@ void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void RenderViewImpl::SendUpdateState() {
-  // Don't send state updates when using subframe FrameNavigationEntries until
-  // PageState and HistoryController have been updated.  For now, the current
-  // entry's root WebHistoryItem sometimes points to data for a subframe (e.g.,
-  // after a subframe back/forward).
-  // TODO(creis): Fix this in https://crbug.com/545219.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    return;
+  // We don't use this path in OOPIF-enabled modes.
+  DCHECK(!SiteIsolationPolicy::UseSubframeNavigationEntries());
 
   HistoryEntry* entry = history_controller_->GetCurrentEntry();
   if (!entry)
@@ -1860,6 +1857,11 @@ gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
 }
 
 void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
+  // TODO(creis): Move this to RenderFrameHost.  In the meantime, we'll ignore
+  // state changes between navigation events in OOPIF-enabled modes.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
   int delay;
   if (send_content_state_immediately_)
     delay = 0;

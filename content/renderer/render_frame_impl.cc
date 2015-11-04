@@ -273,11 +273,7 @@ static base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
 typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
 
-int64 ExtractPostId(HistoryEntry* entry) {
-  if (!entry)
-    return -1;
-
-  const WebHistoryItem& item = entry->root();
+int64 ExtractPostId(const WebHistoryItem& item) {
   if (item.isNull() || item.httpBody().isNull())
     return -1;
 
@@ -1270,7 +1266,10 @@ void RenderFrameImpl::OnSwapOut(
     // other active RenderFrames in it.
 
     // Send an UpdateState message before we get swapped out.
-    render_view_->SendUpdateState();
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+      SendUpdateState();
+    else
+      render_view_->SendUpdateState();
 
     // If we need a proxy to replace this, create it now so its routing id is
     // registered for receiving IPC messages.
@@ -2532,6 +2531,12 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
 blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame(
     blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
+
+  // TODO(creis): In OOPIF enabled modes, send an IPC to the browser process
+  // telling it to navigate the new frame.  See https://crbug.com/502317.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return WebHistoryItem();
+
   return render_view_->history_controller()->GetItemForNewChildFrame(this);
 }
 
@@ -2732,6 +2737,11 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
     blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
+
+  // We don't use HistoryController in OOPIF enabled modes.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
   render_view_->history_controller()->RemoveChildrenForRedirect(this);
 }
 
@@ -2834,11 +2844,15 @@ void RenderFrameImpl::didCommitProvisionalLoad(
 
   // When we perform a new navigation, we need to update the last committed
   // session history entry with state for the page we are leaving. Do this
-  // before updating the HistoryController state.
-  render_view_->SendUpdateState();
-
-  render_view_->history_controller()->UpdateForCommit(
-      this, item, commit_type, navigation_state->WasWithinSamePage());
+  // before updating the current history item.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    SendUpdateState();
+    current_history_item_ = item;
+  } else {
+    render_view_->SendUpdateState();
+    render_view_->history_controller()->UpdateForCommit(
+        this, item, commit_type, navigation_state->WasWithinSamePage());
+  }
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
@@ -4128,17 +4142,21 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that committed entry has it at all times.
-  HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
+  int64 post_id = -1;
   if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    if (entry)
+    HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
+    if (entry) {
       params.page_state = HistoryEntryToPageState(entry);
-    else
+      post_id = ExtractPostId(entry->root());
+    } else {
       params.page_state = PageState::CreateFromURL(request.url());
+    }
   } else {
     // In --site-per-process, just send a single HistoryItem for this frame,
     // rather than the whole tree.  It will be stored in the corresponding
     // FrameNavigationEntry.
     params.page_state = SingleHistoryItemToPageState(item);
+    post_id = ExtractPostId(item);
   }
   params.item_sequence_number = item.itemSequenceNumber();
   params.document_sequence_number = item.documentSequenceNumber();
@@ -4209,7 +4227,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     base::string16 method = request.httpMethod();
     if (base::EqualsASCII(method, "POST")) {
       params.is_post = true;
-      params.post_id = ExtractPostId(entry);
+      params.post_id = post_id;
     }
 
     // Send the user agent override back.
@@ -4655,7 +4673,11 @@ void RenderFrameImpl::NavigateInternal(
   if (request_params.has_committed_real_load && frame_->parent())
     frame_->setCommittedFirstRealLoad();
 
-  if (is_reload && !render_view_->history_controller()->GetCurrentEntry()) {
+  bool no_current_entry =
+      SiteIsolationPolicy::UseSubframeNavigationEntries()
+          ? current_history_item_.isNull()
+          : !render_view_->history_controller()->GetCurrentEntry();
+  if (is_reload && no_current_entry) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.
     is_reload = false;
@@ -4736,13 +4758,7 @@ void RenderFrameImpl::NavigateInternal(
                   ? blink::WebHistorySameDocumentLoad
                   : blink::WebHistoryDifferentDocumentLoad;
 
-          // Let the history controller know the provisional entry, since it is
-          // used at commit time.  Otherwise skip GoToEntry and navigate the
-          // frame directly.
-          // TODO(creis): Consider cloning the current entry to handle subframe
-          // cases.  Changes to SendUpdateState might affect this.
-          render_view_->history_controller()->set_provisional_entry(
-              entry.Pass());
+          // Navigate the frame directly.
           WebURLRequest request =
               frame_->requestFromHistoryItem(history_item, cache_policy);
           frame_->load(request, blink::WebFrameLoadType::BackForward,
@@ -5066,6 +5082,15 @@ void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,
     CHECK(false) << "Invalid URL passed: "
                  << params.url.possibly_invalid_spec();
   }
+}
+
+void RenderFrameImpl::SendUpdateState() {
+  DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
+  if (current_history_item_.isNull())
+    return;
+
+  Send(new FrameHostMsg_UpdateState(
+      routing_id_, SingleHistoryItemToPageState(current_history_item_)));
 }
 
 void RenderFrameImpl::SendFailedProvisionalLoad(

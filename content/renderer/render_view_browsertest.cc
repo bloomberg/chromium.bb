@@ -1690,8 +1690,7 @@ TEST_F(RenderViewImplTest, ContextMenu) {
 
 TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page A</div>");
-  PageState page_a_state =
-      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  PageState page_a_state = GetCurrentPageState();
   int was_page_a = -1;
   base::string16 check_page_a =
       base::ASCIIToUTF16(
@@ -1707,8 +1706,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
-  PageState back_state =
-      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  PageState back_state = GetCurrentPageState();
 
   LoadHTML("<div id=pagename>Page C</div>");
   int was_page_c = -1;
@@ -1718,14 +1716,12 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_c);
 
-  PageState forward_state =
-      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  PageState forward_state = GetCurrentPageState();
   GoBack(back_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
-  PageState back_state2 =
-      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  PageState back_state2 = GetCurrentPageState();
 
   GoForward(forward_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
@@ -1735,8 +1731,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
-  forward_state =
-      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+  forward_state = GetCurrentPageState();
   GoBack(page_a_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
   EXPECT_EQ(1, was_page_a);
