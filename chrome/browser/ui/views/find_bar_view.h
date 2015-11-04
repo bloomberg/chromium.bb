@@ -22,6 +22,7 @@ class ImageButton;
 class Label;
 class MouseEvent;
 class Painter;
+class Separator;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +105,9 @@ class FindBarView : public DropdownBarView,
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
+  // Returns the color for the icons on the buttons per the current NativeTheme.
+  SkColor GetTextColorForIcon();
+
   // We use a hidden view to grab mouse clicks and bring focus to the find
   // text box. This is because although the find text box may look like it
   // extends all the way to the find button, it only goes as far as to the
@@ -137,6 +141,7 @@ class FindBarView : public DropdownBarView,
   scoped_ptr<views::Painter> find_text_border_;
   views::Label* match_count_text_;
   views::View* focus_forwarder_view_;
+  views::Separator* separator_;
   views::ImageButton* find_previous_button_;
   views::ImageButton* find_next_button_;
   views::ImageButton* close_button_;

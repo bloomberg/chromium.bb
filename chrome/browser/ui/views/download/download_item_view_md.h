@@ -35,6 +35,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
+class BarControlButton;
 class DownloadShelfView;
 class DownloadShelfContextMenuView;
 
@@ -46,6 +47,10 @@ namespace gfx {
 class Image;
 class ImageSkia;
 class SlideAnimation;
+}
+
+namespace ui {
+class ThemeProvider;
 }
 
 namespace views {
@@ -70,6 +75,9 @@ class DownloadItemViewMd : public views::ButtonListener,
   void UpdateDownloadProgress();
   void StartDownloadProgress();
   void StopDownloadProgress();
+
+  // Returns the base color for text on this download item, based on |theme|.
+  static SkColor GetTextColorForThemeProvider(ui::ThemeProvider* theme);
 
   // IconManager::Client interface.
   void OnExtractIconComplete(gfx::Image* icon);
@@ -205,6 +213,12 @@ class DownloadItemViewMd : public views::ButtonListener,
                               State to,
                               gfx::SlideAnimation* animation);
 
+  // Returns the base text color.
+  SkColor GetTextColor();
+
+  // Returns a slightly dimmed version of the base text color.
+  SkColor GetDimmedTextColor();
+
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
 
@@ -264,7 +278,7 @@ class DownloadItemViewMd : public views::ButtonListener,
   views::LabelButton* discard_button_;
 
   // The drop down button.
-  views::ImageButton* dropdown_button_;
+  BarControlButton* dropdown_button_;
 
   // Dangerous mode label.
   views::Label* dangerous_download_label_;

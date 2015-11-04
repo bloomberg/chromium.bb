@@ -2108,6 +2108,8 @@
       'browser/ui/views/autofill/save_card_bubble_views.h',
       'browser/ui/views/autofill/tooltip_icon.cc',
       'browser/ui/views/autofill/tooltip_icon.h',
+      'browser/ui/views/bar_control_button.cc',
+      'browser/ui/views/bar_control_button.h',
       'browser/ui/views/bookmarks/bookmark_bar_instructions_view.cc',
       'browser/ui/views/bookmarks/bookmark_bar_instructions_view.h',
       'browser/ui/views/bookmarks/bookmark_bar_view.cc',

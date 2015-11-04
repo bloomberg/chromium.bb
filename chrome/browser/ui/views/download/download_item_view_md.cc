@@ -30,6 +30,7 @@
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -102,8 +103,6 @@ const int kLabelPadding = 8;
 
 // Height/width of the warning icon, also in dp.
 const int kWarningIconSize = 24;
-
-const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
 
 // How long the 'download complete' animation should last for.
 const int kCompleteAnimationDurationMs = 2500;
@@ -180,12 +179,7 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
 
   OnDownloadUpdated(download());
 
-  // TODO(estade): share this button init code with the find in page bar;
-  // also fix theming.
-  dropdown_button_ = new views::ImageButton(this);
-  dropdown_button_->SetBorder(views::Border::CreateEmptyBorder(4, 4, 4, 4));
-  dropdown_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                      views::ImageButton::ALIGN_MIDDLE);
+  dropdown_button_ = new BarControlButton(this);
   AddChildView(dropdown_button_);
   SetDropdownState(NORMAL);
   UpdateColorsFromTheme();
@@ -220,6 +214,13 @@ void DownloadItemViewMd::StopDownloadProgress() {
   previous_progress_elapsed_ += base::TimeTicks::Now() - progress_start_time_;
   progress_start_time_ = base::TimeTicks();
   progress_timer_.Stop();
+}
+
+// static
+SkColor DownloadItemViewMd::GetTextColorForThemeProvider(
+    ui::ThemeProvider* theme) {
+  return theme ? theme->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)
+               : SK_ColorRED;
 }
 
 void DownloadItemViewMd::OnExtractIconComplete(gfx::Image* icon_bitmap) {
@@ -588,10 +589,8 @@ void DownloadItemViewMd::DrawStatusText(gfx::Canvas* canvas) {
       kTextWidth);
   int y =
       GetYForFilenameText() + font_list_.GetBaseline() + kVerticalTextPadding;
-  SkColor file_name_color = SkColorSetA(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT), 0xC7);
   canvas->DrawStringRect(
-      status_text_, status_font_list_, file_name_color,
+      status_text_, status_font_list_, GetDimmedTextColor(),
       gfx::Rect(mirrored_x, y, kTextWidth, status_font_list_.GetHeight()));
 }
 
@@ -624,11 +623,8 @@ void DownloadItemViewMd::DrawFilename(gfx::Canvas* canvas) {
       kStartPadding + DownloadShelf::kProgressIndicatorSize +
           kProgressTextPadding,
       kTextWidth);
-  SkColor file_name_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
-
   canvas->DrawStringRect(filename, font_list_,
-                         enabled() ? file_name_color : kFileNameDisabledColor,
+                         enabled() ? GetTextColor() : GetDimmedTextColor(),
                          gfx::Rect(mirrored_x, GetYForFilenameText(),
                                    kTextWidth, font_list_.GetHeight()));
 }
@@ -760,10 +756,8 @@ void DownloadItemViewMd::UpdateColorsFromTheme() {
   if (!GetThemeProvider())
     return;
 
-  if (dangerous_download_label_) {
-    dangerous_download_label_->SetEnabledColor(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
-  }
+  if (dangerous_download_label_)
+    dangerous_download_label_->SetEnabledColor(GetTextColor());
   SetBorder(make_scoped_ptr(new SeparatorBorder(
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR))));
 }
@@ -825,12 +819,11 @@ void DownloadItemViewMd::SetDropdownState(State new_state) {
       !dropdown_button_->GetImage(views::CustomButton::STATE_NORMAL).isNull())
     return;
 
-  // TODO(estade): theme this color instead of using a constant.
-  gfx::ImageSkia image =
-      gfx::CreateVectorIcon(new_state == PUSHED ? gfx::VectorIconId::FIND_NEXT
-                                                : gfx::VectorIconId::FIND_PREV,
-                            16, gfx::kChromeIconGrey);
-  dropdown_button_->SetImage(views::CustomButton::STATE_NORMAL, &image);
+  dropdown_button_->SetIcon(
+      new_state == PUSHED ? gfx::VectorIconId::FIND_NEXT
+                          : gfx::VectorIconId::FIND_PREV,
+      base::Bind(&DownloadItemViewMd::GetTextColor, base::Unretained(this)));
+  dropdown_button_->OnThemeChanged();
   dropdown_state_ = new_state;
   SchedulePaint();
 }
@@ -1076,4 +1069,12 @@ void DownloadItemViewMd::AnimateStateTransition(
   } else if (from != to) {
     animation->Reset((to == HOT) ? 1.0 : 0.0);
   }
+}
+
+SkColor DownloadItemViewMd::GetTextColor() {
+  return GetTextColorForThemeProvider(GetThemeProvider());
+}
+
+SkColor DownloadItemViewMd::GetDimmedTextColor() {
+  return SkColorSetA(GetTextColor(), 0xC7);
 }

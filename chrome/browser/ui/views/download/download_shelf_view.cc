@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "chrome/browser/ui/views/download/download_item_view_md.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -29,8 +30,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
@@ -143,9 +142,6 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
 
   arrow_image_ = new views::ImageView();
   AddChildView(arrow_image_);
-  close_button_ = new views::ImageButton(this);
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     arrow_image_->SetImage(rb.GetImageSkiaNamed(IDR_DOWNLOADS_FAVICON));
 
@@ -154,6 +150,7 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     show_all_view->set_listener(this);
     show_all_view_ = show_all_view;
 
+    close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                             rb.GetImageSkiaNamed(IDR_CLOSE_1));
     close_button_->SetImage(views::CustomButton::STATE_HOVERED,
@@ -167,15 +164,14 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     show_all_view->SetStyle(views::Button::STYLE_BUTTON);
     show_all_view_ = show_all_view;
 
-    // TODO(estade): share this button init code with the find in page bar;
-    // also fix theming.
-    close_button_->SetBorder(views::Border::CreateEmptyBorder(4, 4, 4, 4));
-    close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                     views::ImageButton::ALIGN_MIDDLE);
-    gfx::ImageSkia image = gfx::CreateVectorIcon(gfx::VectorIconId::BAR_CLOSE,
-                                                 16, gfx::kChromeIconGrey);
-    close_button_->SetImage(views::CustomButton::STATE_NORMAL, &image);
+    BarControlButton* close_button = new BarControlButton(this);
+    close_button->SetIcon(gfx::VectorIconId::BAR_CLOSE,
+                          base::Bind(&DownloadShelfView::GetTextColorForIconMd,
+                                     base::Unretained(this)));
+    close_button_ = close_button;
   }
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(show_all_view_);
   AddChildView(close_button_);
 
@@ -397,15 +393,13 @@ void DownloadShelfView::UpdateColorsFromTheme() {
       show_all_view->SetBackgroundColor(background()->get_color());
       show_all_view->SetEnabledColor(
           GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
-    }
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    set_background(views::Background::CreateSolidBackground(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
-    close_button_->SetBackground(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT),
-        rb.GetImageSkiaNamed(IDR_CLOSE_1),
-        rb.GetImageSkiaNamed(IDR_CLOSE_1_MASK));
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      close_button_->SetBackground(
+          GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT),
+          rb.GetImageSkiaNamed(IDR_CLOSE_1),
+          rb.GetImageSkiaNamed(IDR_CLOSE_1_MASK));
+    }
   }
 }
 
@@ -493,4 +487,8 @@ content::DownloadItem* DownloadShelfView::GetDownloadItemForView(size_t i) {
   if (ui::MaterialDesignController::IsModeMaterial())
     return static_cast<DownloadItemViewMd*>(download_views_[i])->download();
   return static_cast<DownloadItemView*>(download_views_[i])->download();
+}
+
+SkColor DownloadShelfView::GetTextColorForIconMd() {
+  return DownloadItemViewMd::GetTextColorForThemeProvider(GetThemeProvider());
 }

@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,9 +37,6 @@
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/animation/ink_drop_animation_controller.h"
-#include "ui/views/animation/ink_drop_animation_controller_factory.h"
-#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -68,8 +66,6 @@ const int kInterChildSpacing = 4;
 // Additional spacing around the separator.
 const int kSeparatorLeftSpacing = 12 - kInterChildSpacing;
 const int kSeparatorRightSpacing = 8 - kInterChildSpacing;
-// Extra space around the buttons to increase their event target size.
-const int kButtonExtraTouchSize = 4;
 
 // The margins around the match count label (We add extra space so that the
 // background highlight extends beyond just the text).
@@ -90,35 +86,9 @@ const SkColor kBackgroundColorMatch = SkColorSetARGB(0, 255, 255, 255);
 // The background color of the match count label when no results are found.
 const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);
 
-// The color of the match count label for Material Design.
-const SkColor kMatchTextColorMD = SkColorSetRGB(0x96, 0x96, 0x96);
-
-// Color of the vertical separator between match count and buttons. (MD only.)
-const SkColor kSeparatorColor = SkColorSetARGB(0x26, 0, 0, 0);
-
 // The default number of average characters that the text box will be. This
 // number brings the width on a "regular fonts" system to about 300px.
 const int kDefaultCharWidth = 43;
-
-class FindBarButton : public views::ImageButton, public views::InkDropHost {
- public:
-  explicit FindBarButton(views::ButtonListener* listener);
-  ~FindBarButton() override;
-
- private:
-  void Layout() override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void NotifyClick(const ui::Event& event) override;
-
-  // Animation controller for the ink drop ripple effect.
-  scoped_ptr<views::InkDropAnimationController> ink_drop_animation_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(FindBarButton);
-};
 
 // The match count label is like a normal label, but can process events (which
 // makes it easier to forward events to the text input --- see
@@ -138,114 +108,17 @@ class MatchCountLabel : public views::Label {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarButton, public:
-
-FindBarButton::FindBarButton(views::ButtonListener* listener)
-    : views::ImageButton(listener),
-      ink_drop_animation_controller_(
-          views::InkDropAnimationControllerFactory::
-              CreateInkDropAnimationController(this)) {
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 4;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-
-  ink_drop_animation_controller_->SetInkDropSize(
-      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
-      kInkDropLargeCornerRadius,
-      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
-      kInkDropSmallCornerRadius);
-}
-
-FindBarButton::~FindBarButton() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// FindBarButton, private:
-
-void FindBarButton::Layout() {
-  ImageButton::Layout();
-
-  ink_drop_animation_controller_->SetInkDropCenter(
-      GetLocalBounds().CenterPoint());
-}
-
-void FindBarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
-}
-
-void FindBarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-  SetFillsBoundsOpaquely(true);
-  SetPaintToLayer(false);
-}
-
-bool FindBarButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (IsTriggerableEvent(event)) {
-    ink_drop_animation_controller_->AnimateToState(
-        views::InkDropState::ACTION_PENDING);
-  }
-
-  return ImageButton::OnMousePressed(event);
-}
-
-void FindBarButton::OnGestureEvent(ui::GestureEvent* event) {
-  views::InkDropState ink_drop_state = views::InkDropState::HIDDEN;
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      ink_drop_state = views::InkDropState::ACTION_PENDING;
-      // The ui::ET_GESTURE_TAP_DOWN event needs to be marked as handled so
-      // that subsequent events for the gesture are sent to |this|.
-      event->SetHandled();
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      ink_drop_state = views::InkDropState::SLOW_ACTION_PENDING;
-      break;
-    case ui::ET_GESTURE_TAP:
-      ink_drop_state = views::InkDropState::QUICK_ACTION;
-      break;
-    case ui::ET_GESTURE_LONG_TAP:
-      ink_drop_state = views::InkDropState::SLOW_ACTION;
-      break;
-    case ui::ET_GESTURE_END:
-    case ui::ET_GESTURE_TAP_CANCEL:
-      ink_drop_state = views::InkDropState::HIDDEN;
-      break;
-    default:
-      return;
-  }
-  ink_drop_animation_controller_->AnimateToState(ink_drop_state);
-
-  ImageButton::OnGestureEvent(event);
-}
-
-void FindBarButton::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!HitTestPoint(event.location()))
-    ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
-
-  ImageButton::OnMouseReleased(event);
-}
-
-void FindBarButton::NotifyClick(const ui::Event& event) {
-  ink_drop_animation_controller_->AnimateToState(
-      views::InkDropState::QUICK_ACTION);
-
-  ImageButton::NotifyClick(event);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
 
 FindBarView::FindBarView(FindBarHost* host)
     : DropdownBarView(host),
-      find_text_(NULL),
-      match_count_text_(NULL),
-      focus_forwarder_view_(NULL),
-      find_previous_button_(NULL),
-      find_next_button_(NULL),
-      close_button_(NULL) {
+      find_text_(nullptr),
+      match_count_text_(nullptr),
+      focus_forwarder_view_(nullptr),
+      separator_(nullptr),
+      find_previous_button_(nullptr),
+      find_next_button_(nullptr),
+      close_button_(nullptr) {
   find_text_ = new views::Textfield;
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
@@ -254,7 +127,29 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   AddChildView(find_text_);
 
-  find_previous_button_ = new FindBarButton(this);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    BarControlButton* find_previous = new BarControlButton(this);
+    find_previous->SetIcon(
+        gfx::VectorIconId::FIND_PREV,
+        base::Bind(&FindBarView::GetTextColorForIcon, base::Unretained(this)));
+    BarControlButton* find_next = new BarControlButton(this);
+    find_next->SetIcon(
+        gfx::VectorIconId::FIND_NEXT,
+        base::Bind(&FindBarView::GetTextColorForIcon, base::Unretained(this)));
+    BarControlButton* close = new BarControlButton(this);
+    close->SetIcon(
+        gfx::VectorIconId::BAR_CLOSE,
+        base::Bind(&FindBarView::GetTextColorForIcon, base::Unretained(this)));
+
+    find_previous_button_ = find_previous;
+    find_next_button_ = find_next;
+    close_button_ = close;
+  } else {
+    find_previous_button_ = new views::ImageButton(this);
+    find_next_button_ = new views::ImageButton(this);
+    close_button_ = new views::ImageButton(this);
+  }
+
   find_previous_button_->set_tag(FIND_PREVIOUS_TAG);
   find_previous_button_->SetFocusable(true);
   find_previous_button_->set_request_focus_on_press(false);
@@ -264,7 +159,6 @@ FindBarView::FindBarView(FindBarHost* host)
       l10n_util::GetStringUTF16(IDS_ACCNAME_PREVIOUS));
   AddChildView(find_previous_button_);
 
-  find_next_button_ = new FindBarButton(this);
   find_next_button_->set_tag(FIND_NEXT_TAG);
   find_next_button_->SetFocusable(true);
   find_next_button_->set_request_focus_on_press(false);
@@ -274,7 +168,6 @@ FindBarView::FindBarView(FindBarHost* host)
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEXT));
   AddChildView(find_next_button_);
 
-  close_button_ = new FindBarButton(this);
   close_button_->set_tag(CLOSE_TAG);
   close_button_->SetFocusable(true);
   close_button_->set_request_focus_on_press(false);
@@ -655,39 +548,12 @@ void FindBarView::InitViewsForMaterial() {
       make_scoped_ptr(new views::ViewTargeter(this)));
   AddChildViewAt(match_count_text_, 1);
 
-  views::Separator* separator =
-      new views::Separator(views::Separator::VERTICAL);
-  separator->SetColor(kSeparatorColor);
-  separator->SetBorder(views::Border::CreateEmptyBorder(
+  separator_ = new views::Separator(views::Separator::VERTICAL);
+  separator_->SetBorder(views::Border::CreateEmptyBorder(
       0, kSeparatorLeftSpacing, 0, kSeparatorRightSpacing));
-  AddChildViewAt(separator, 2);
+  AddChildViewAt(separator_, 2);
 
   find_text_->SetBorder(views::Border::NullBorder());
-
-  struct {
-    views::ImageButton* button;
-    gfx::VectorIconId id;
-  } button_images[] = {
-      {find_previous_button_, gfx::VectorIconId::FIND_PREV},
-      {find_next_button_, gfx::VectorIconId::FIND_NEXT},
-      {close_button_, gfx::VectorIconId::BAR_CLOSE},
-  };
-
-  for (size_t i = 0; i < arraysize(button_images); ++i) {
-    views::ImageButton* button = button_images[i].button;
-    button->SetBorder(views::Border::CreateEmptyBorder(
-        kButtonExtraTouchSize, kButtonExtraTouchSize, kButtonExtraTouchSize,
-        kButtonExtraTouchSize));
-    button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                              views::ImageButton::ALIGN_MIDDLE);
-
-    gfx::ImageSkia image =
-        gfx::CreateVectorIcon(button_images[i].id, 16, gfx::kChromeIconGrey);
-    button->SetImage(views::CustomButton::STATE_NORMAL, &image);
-    image = gfx::CreateVectorIcon(button_images[i].id, 16,
-                                  SkColorSetA(gfx::kChromeIconGrey, 0xff / 2));
-    button->SetImage(views::CustomButton::STATE_DISABLED, &image);
-  }
 
   views::BoxLayout* manager =
       new views::BoxLayout(views::BoxLayout::kHorizontal, kInteriorPadding,
@@ -781,9 +647,18 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (!ui::MaterialDesignController::IsModeMaterial())
     return;
 
-  SkColor color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
-  set_background(views::Background::CreateSolidBackground(color));
-  match_count_text_->SetBackgroundColor(color);
-  match_count_text_->SetEnabledColor(kMatchTextColorMD);
+  SkColor bg_color = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+  set_background(views::Background::CreateSolidBackground(bg_color));
+  match_count_text_->SetBackgroundColor(bg_color);
+
+  SkColor text_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  match_count_text_->SetEnabledColor(SkColorSetA(text_color, 0x69));
+  separator_->SetColor(SkColorSetA(text_color, 0x26));
+}
+
+SkColor FindBarView::GetTextColorForIcon() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }

@@ -124,6 +124,9 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // shouldn't be necessary after we only have one type of DownloadItemView.
   content::DownloadItem* GetDownloadItemForView(size_t i);
 
+  // Returns the color of text for the shelf (used for deriving icon color).
+  SkColor GetTextColorForIconMd();
+
   // The browser for this shelf.
   Browser* browser_;
 
