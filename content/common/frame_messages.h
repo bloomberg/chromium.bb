@@ -1201,10 +1201,11 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
                     GURL /* target URL */)
 
 // Response to FrameMsg_GetSavableResourceLinks.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
-                    GURL /* frame URL */,
+IPC_MESSAGE_ROUTED4(FrameHostMsg_SavableResourceLinksResponse,
                     std::vector<GURL> /* savable resource links */,
-                    content::Referrer /* referrer for all the links above */)
+                    content::Referrer /* referrer for all the links above */,
+                    std::vector<GURL> /* subframe original links */,
+                    std::vector<int> /* subframe routing ids */)
 
 // Response to FrameMsg_GetSavableResourceLinks in case the frame contains
 // non-savable content (i.e. from a non-savable scheme) or if there were
@@ -1212,8 +1213,7 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 
 // Response to FrameMsg_GetSerializedHtmlWithLocalLinks.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
-                    GURL /* frame URL */,
+IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     std::string /* data buffer */,
                     bool /* end of data? */)
 

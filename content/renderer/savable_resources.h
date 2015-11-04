@@ -27,12 +27,23 @@ namespace content {
 // for keeping these pointers valid for the lifetime of the
 // SavableResourcesResult instance.
 struct SavableResourcesResult {
-  // vector which contains all savable links of sub resource.
+  // Links of all savable resources.
   std::vector<GURL>* resources_list;
 
+  // Original urls of subframes.
+  std::vector<GURL>* subframe_original_urls;
+  // Subframe objects.
+  // subframes[i] corresponds to subframe_original_urls[i].
+  std::vector<blink::WebFrame*>* subframes;
+
   // Constructor.
-  SavableResourcesResult(std::vector<GURL>* resources_list)
-      : resources_list(resources_list) {}
+  SavableResourcesResult(
+      std::vector<GURL>* resources_list,
+      std::vector<GURL>* subframe_original_urls,
+      std::vector<blink::WebFrame*>* subframes)
+      : resources_list(resources_list),
+        subframe_original_urls(subframe_original_urls),
+        subframes(subframes) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SavableResourcesResult);

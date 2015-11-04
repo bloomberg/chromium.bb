@@ -42,9 +42,13 @@ void GetSavableResourceLinkForElement(
     const WebElement& element,
     const WebDocument& current_doc,
     SavableResourcesResult* result) {
-  // Skipping frame and iframe tag.
-  if (element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame"))
+  if (element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame")) {
+    GURL original_url = current_doc.completeURL(element.getAttribute("src"));
+    WebFrame* subframe = WebFrame::fromFrameOwnerElement(element);
+    result->subframes->push_back(subframe);
+    result->subframe_original_urls->push_back(original_url);
     return;
+  }
 
   // Check whether the node has sub resource URL or not.
   WebString value = GetSubResourceLinkFromElement(element);

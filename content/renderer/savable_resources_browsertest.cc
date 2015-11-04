@@ -16,6 +16,7 @@
 #include "net/base/filename_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
@@ -37,7 +38,8 @@ class SavableResourcesTest : public ContentBrowserTest {
   // matches expected_resources_set.
   void GetSavableResourceLinksForPage(
       const base::FilePath& page_file_path,
-      const UrlVectorMatcher& expected_resources_matcher) {
+      const UrlVectorMatcher& expected_resources_matcher,
+      const UrlVectorMatcher& expected_subframe_urls_matcher) {
     // Convert local file path to file URL.
     GURL file_url = net::FilePathToFileURL(page_file_path);
     // Load the test file.
@@ -45,17 +47,22 @@ class SavableResourcesTest : public ContentBrowserTest {
 
     PostTaskToInProcessRendererAndWait(base::Bind(
         &SavableResourcesTest::CheckResources, base::Unretained(this),
-        page_file_path, expected_resources_matcher, file_url,
+        page_file_path, expected_resources_matcher,
+        expected_subframe_urls_matcher, file_url,
         shell()->web_contents()->GetMainFrame()->GetRoutingID()));
   }
 
   void CheckResources(const base::FilePath& page_file_path,
                       const UrlVectorMatcher& expected_resources_matcher,
+                      const UrlVectorMatcher& expected_subframe_urls_matcher,
                       const GURL& file_url,
                       int render_frame_routing_id) {
     // Get all savable resource links for the page.
     std::vector<GURL> resources_list;
-    SavableResourcesResult result(&resources_list);
+    std::vector<GURL> subframe_original_urls;
+    std::vector<blink::WebFrame*> subframes;
+    SavableResourcesResult result(&resources_list,
+                                  &subframe_original_urls, &subframes);
 
     const char* savable_schemes[] = {
       "http",
@@ -72,6 +79,10 @@ class SavableResourcesTest : public ContentBrowserTest {
         &result, savable_schemes));
 
     EXPECT_THAT(resources_list, expected_resources_matcher);
+
+    EXPECT_EQ(subframe_original_urls.size(), subframes.size());
+    EXPECT_THAT(subframe_original_urls, expected_subframe_urls_matcher);
+    EXPECT_THAT(subframes, testing::Each(testing::NotNull()));
   }
 };
 
@@ -83,7 +94,10 @@ IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
   auto expected_subresources_matcher = testing::UnorderedElementsAre(
       net::FilePathToFileURL(GetTestFilePath("dom_serializer", "style.css")));
 
-  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher);
+  auto expected_subframe_urls_matcher = testing::IsEmpty();
+
+  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher,
+                                 expected_subframe_urls_matcher);
 }
 
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
@@ -98,7 +112,12 @@ IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
       GURL("file:///c:/yt/js/base_all_with_bidi-vfl36451.js"),
       GURL("file:///c:/yt/img/pixel-vfl73.gif"));
 
-  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher);
+  auto expected_subframe_urls_matcher =
+      testing::UnorderedElementsAre(net::FilePathToFileURL(
+          GetTestFilePath("dom_serializer", "youtube_2.htm")));
+
+  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher,
+                                 expected_subframe_urls_matcher);
 }
 
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
@@ -109,7 +128,11 @@ IN_PROC_BROWSER_TEST_F(SavableResourcesTest,
       GetTestFilePath("dom_serializer", "youtube_2.htm");
 
   auto expected_subresources_matcher = testing::IsEmpty();
-  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher);
+
+  auto expected_subframe_urls_matcher = testing::IsEmpty();
+
+  GetSavableResourceLinksForPage(page_file_path, expected_subresources_matcher,
+                                 expected_subframe_urls_matcher);
 }
 
 }  // namespace content

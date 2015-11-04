@@ -596,7 +596,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // WebPageSerializerClient implementation:
   void didSerializeDataForFrame(
-      const blink::WebURL& frame_url,
       const blink::WebCString& data,
       blink::WebPageSerializerClient::PageSerializationStatus status) override;
 

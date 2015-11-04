@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
 
-#include <queue>
+#include <deque>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/download/save_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -31,11 +33,12 @@ class GURL;
 namespace content {
 class DownloadItemImpl;
 class DownloadManagerImpl;
-class WebContents;
+class FrameTreeNode;
+class RenderFrameHostImpl;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
-struct SaveFileCreateInfo;
+class WebContents;
 
 // The SavePackage object manages the process of saving a page as only-html or
 // complete-html or MHTML and providing the information for displaying saving
@@ -176,42 +179,68 @@ class CONTENT_EXPORT SavePackage
                         bool need_html_ext,
                         base::FilePath::StringType* generated_name);
 
-  // Set of methods to get all savable resource links from current web page,
-  // including main frame and sub-frames.
+  // Main routine that initiates asking all frames for their savable resources,
+  // using GetSavableResourceLinksForFrame to send IPC to individual frames.
+  //
+  // Responses are received asynchronously by OnSavableResourceLinks... methods
+  // and pending responses are counted/tracked by
+  // CompleteSavableResourceLinksResponse.
+  //
+  // OnSavableResourceLinksResponse creates of SaveItems for each savable
+  // resource and each subframe which get enqueued into |waiting_item_queue_|
+  // with the help of FindOrCreatePendingSaveItem, EnqueueSavableResource,
+  // EnqueueFrame.
   void GetSavableResourceLinks();
+
+  // Asks a given frame for its savable resources.
   void GetSavableResourceLinksForFrame(RenderFrameHost* target);
-  void OnSavableResourceLinksResponse(RenderFrameHost* sender,
-                                      const GURL& frame_url,
-                                      const std::vector<GURL>& resources_list,
-                                      const Referrer& referrer);
-  void OnSavableResourceLinksError(RenderFrameHost* sender);
+
+  // Response from |sender| frame to GetSavableResourceLinksForFrame request.
+  void OnSavableResourceLinksResponse(
+      RenderFrameHostImpl* sender,
+      const std::vector<GURL>& resources_list,
+      const Referrer& referrer,
+      const std::vector<GURL>& subframe_original_urls,
+      const std::vector<int>& subframe_routing_ids);
+
+  // Helper for finding or creating a SaveItem with the given parameters.
+  SaveItem* FindOrCreatePendingSaveItem(
+      int container_frame_tree_node_id,
+      const GURL& url,
+      const Referrer& referrer,
+      SaveFileCreateInfo::SaveFileSource save_source);
+
+  // Helper to enqueue a savable resource reported by
+  // GetSavableResourceLinksForFrame.
+  void EnqueueSavableResource(int container_frame_tree_node_id,
+                              const GURL& url,
+                              const Referrer& referrer);
+  // Helper to enqueue a subframe reported by GetSavableResourceLinksForFrame.
+  void EnqueueFrame(int container_frame_tree_node_id,
+                    int frame_tree_node_id,
+                    const GURL& frame_original_url);
+
+  // Response to GetSavableResourceLinksForFrame that indicates an error
+  // when processing the frame associated with |sender|.
+  void OnSavableResourceLinksError(RenderFrameHostImpl* sender);
+
+  // Helper tracking how many |number_of_frames_pending_response_| we have
+  // left and kicking off the next phase after we got all the
+  // OnSavableResourceLinksResponse messages we were waiting for.
   void CompleteSavableResourceLinksResponse();
 
   // For each frame in the current page, ask the renderer process associated
   // with that frame to serialize that frame into html.
   void GetSerializedHtmlWithLocalLinks();
 
-  // Ask renderer process to serialize |target| frame into html data
-  // with lists which contain all resource links that have a local copy.
-  // - The parameter |saved_links| contains original URLs of all saved links
-  //   (which may include URLs referred to from the whole page (not just from
-  //   the |target| frame).
-  // - The parameter |saved_file_paths| contains corresponding local file paths
-  //   of all saved links, which is matched with |saved_links| vector one by
-  //   one.
-  // - The parameter |relative_dir_name| is relative path of directory which
-  //   contain all saved auxiliary files included all sub frames and resouces.
-  void GetSerializedHtmlWithLocalLinksForFrame(
-      const std::vector<GURL>& saved_links,
-      const std::vector<base::FilePath>& saved_file_paths,
-      const base::FilePath& relative_dir_name,
-      RenderFrameHost* target);
+  // Ask renderer process to serialize |target_tree_node| into html data
+  // with resource links replaced with a link to a locally saved copy.
+  void GetSerializedHtmlWithLocalLinksForFrame(FrameTreeNode* target_tree_node);
 
   // Routes html data (sent by renderer process in response to
   // GetSerializedHtmlWithLocalLinksForFrame above) to the associated local file
   // (and also keeps track of when all frames have been completed).
-  void OnSerializedHtmlWithLocalLinksResponse(RenderFrameHost* sender,
-                                              const GURL& frame_url,
+  void OnSerializedHtmlWithLocalLinksResponse(RenderFrameHostImpl* sender,
                                               const std::string& data,
                                               bool end_of_data);
 
@@ -282,15 +311,29 @@ class CONTENT_EXPORT SavePackage
   static const base::FilePath::CharType* ExtensionForMimeType(
       const std::string& contents_mime_type);
 
-  typedef std::queue<SaveItem*> SaveItemQueue;
+  typedef std::deque<SaveItem*> SaveItemQueue;
   // A queue for items we are about to start saving.
   SaveItemQueue waiting_item_queue_;
 
-  // Used to de-dupe urls that are being gathered into |waiting_item_queue_|.
-  std::set<GURL> unique_urls_to_save_;
+  // Used to de-dupe urls that are being gathered into |waiting_item_queue_|
+  // and also to find SaveItems to associate with a containing frame.
+  // Note that |url_to_save_item_| does NOT own SaveItems - they
+  // remain owned by waiting_item_queue_, in_progress_items_, etc.
+  std::map<GURL, SaveItem*> url_to_save_item_;
 
-  // Temporarily stores urls of savable frames, until we can process them.
-  std::vector<GURL> frame_urls_to_save_;
+  // Map used to route responses from a given a subframe (i.e.
+  // OnSerializedHtmlWithLocalLinksResponse) to the right SaveItem.
+  // Note that |frame_tree_node_id_to_save_item_| does NOT own SaveItems - they
+  // remain owned by waiting_item_queue_, in_progress_items_, etc.
+  base::hash_map<int, SaveItem*> frame_tree_node_id_to_save_item_;
+
+  // Used to limit which local paths get exposed to which frames
+  // (i.e. to prevent information disclosure to oop frames).
+  // Note that |frame_tree_node_id_to_contained_save_items_| does NOT own
+  // SaveItems - they remain owned by waiting_item_queue_, in_progress_items_,
+  // etc.
+  base::hash_map<int, std::vector<SaveItem*>>
+      frame_tree_node_id_to_contained_save_items_;
 
   // Number of frames that we still need to get a response from.
   int number_of_frames_pending_response_;

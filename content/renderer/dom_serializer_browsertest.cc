@@ -159,7 +159,8 @@ class DomSerializerTests : public ContentBrowserTest,
                            public WebPageSerializerClient {
  public:
   DomSerializerTests()
-      : local_directory_name_(FILE_PATH_LITERAL("./dummy_files/")) {}
+      : serialization_reported_end_of_data_(false),
+        local_directory_name_(FILE_PATH_LITERAL("./dummy_files/")) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
@@ -175,39 +176,17 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
   // DomSerializerDelegate.
-  void didSerializeDataForFrame(const WebURL& frame_web_url,
-                                const WebCString& data,
+  void didSerializeDataForFrame(const WebCString& data,
                                 PageSerializationStatus status) override {
-    GURL frame_url(frame_web_url);
-
     // Check finish status of current frame.
-    SerializationFinishStatusMap::iterator it =
-        serialization_finish_status_.find(frame_url.spec());
-    // New frame, set initial status as false.
-    if (it == serialization_finish_status_.end())
-      serialization_finish_status_[frame_url.spec()] = false;
-
-    it = serialization_finish_status_.find(frame_url.spec());
-    ASSERT_TRUE(it != serialization_finish_status_.end());
-    // In process frame, finish status should be false.
-    ASSERT_FALSE(it->second);
+    ASSERT_FALSE(serialization_reported_end_of_data_);
 
     // Add data to corresponding frame's content.
-    serialized_frame_map_[frame_url.spec()] += data;
+    serialized_contents_ += data;
 
     // Current frame is completed saving, change the finish status.
     if (status == WebPageSerializerClient::CurrentFrameIsFinished)
-      it->second = true;
-  }
-
-  bool HasSerializedFrame(const GURL& frame_url) {
-    return serialized_frame_map_.find(frame_url.spec()) !=
-           serialized_frame_map_.end();
-  }
-
-  const std::string& GetSerializedContentForFrame(
-      const GURL& frame_url) {
-    return serialized_frame_map_[frame_url.spec()];
+      serialization_reported_end_of_data_ = true;
   }
 
   RenderView* GetRenderView() {
@@ -278,10 +257,8 @@ class DomSerializerTests : public ContentBrowserTest,
     // Do serialization.
     SerializeDomForURL(file_url);
     // Load the serialized contents.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
-    LoadContents(serialized_contents, file_url,
+    ASSERT_TRUE(serialization_reported_end_of_data_);
+    LoadContents(serialized_contents_, file_url,
                  web_frame->document().encoding());
     // Make sure serialized contents still have document type.
     web_frame = GetMainFrame();
@@ -298,10 +275,8 @@ class DomSerializerTests : public ContentBrowserTest,
     // Do serialization.
     SerializeDomForURL(file_url);
     // Load the serialized contents.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
-    LoadContents(serialized_contents, file_url,
+    ASSERT_TRUE(serialization_reported_end_of_data_);
+    LoadContents(serialized_contents_, file_url,
                  web_frame->document().encoding());
     // Make sure serialized contents do not have document type.
     web_frame = GetMainFrame();
@@ -314,10 +289,8 @@ class DomSerializerTests : public ContentBrowserTest,
     // Do serialization.
     SerializeDomForURL(xml_file_url);
     // Compare the serialized contents with original contents.
-    ASSERT_TRUE(HasSerializedFrame(xml_file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(xml_file_url);
-    ASSERT_EQ(original_contents, serialized_contents);
+    ASSERT_TRUE(serialization_reported_end_of_data_);
+    ASSERT_EQ(original_contents, serialized_contents_);
   }
 
   void SerializeHTMLDOMWithAddingMOTWOnRenderer(
@@ -333,11 +306,9 @@ class DomSerializerTests : public ContentBrowserTest,
     // Do serialization.
     SerializeDomForURL(file_url);
     // Make sure the serialized contents have MOTW ;
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
+    ASSERT_TRUE(serialization_reported_end_of_data_);
     ASSERT_FALSE(std::string::npos ==
-        serialized_contents.find(motw_declaration));
+                 serialized_contents_.find(motw_declaration));
   }
 
   void SerializeHTMLDOMWithNoMetaCharsetInOriginalDocOnRenderer(
@@ -360,10 +331,8 @@ class DomSerializerTests : public ContentBrowserTest,
     SerializeDomForURL(file_url);
 
     // Load the serialized contents.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
-    LoadContents(serialized_contents, file_url,
+    ASSERT_TRUE(serialization_reported_end_of_data_);
+    LoadContents(serialized_contents_, file_url,
                  web_frame->document().encoding());
     // Make sure the first child of HEAD element is META which has charset
     // declaration in serialized contents.
@@ -416,10 +385,8 @@ class DomSerializerTests : public ContentBrowserTest,
     SerializeDomForURL(file_url);
 
     // Load the serialized contents.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
-    LoadContents(serialized_contents, file_url,
+    ASSERT_TRUE(serialization_reported_end_of_data_);
+    LoadContents(serialized_contents_, file_url,
                  web_frame->document().encoding());
     // Make sure only first child of HEAD element is META which has charset
     // declaration in serialized contents.
@@ -473,9 +440,7 @@ class DomSerializerTests : public ContentBrowserTest,
     // Do serialization.
     SerializeDomForURL(file_url);
     // Compare the serialized contents with original contents.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
+    ASSERT_TRUE(serialization_reported_end_of_data_);
     // Compare the serialized contents with original contents to make sure
     // they are same.
     // Because we add MOTW when serializing DOM, so before comparison, we also
@@ -499,7 +464,7 @@ class DomSerializerTests : public ContentBrowserTest,
       head_part += "</head>";
       original_str.insert(pos, head_part);
     }
-    ASSERT_EQ(original_str, serialized_contents);
+    ASSERT_EQ(original_str, serialized_contents_);
   }
 
   void SerializeHTMLDOMWithEntitiesInAttributeValueOnRenderer() {
@@ -526,9 +491,7 @@ class DomSerializerTests : public ContentBrowserTest,
     // Do serialization.
     SerializeDomForURL(file_url);
     // Compare the serialized contents with original contents.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
+    ASSERT_TRUE(serialization_reported_end_of_data_);
     // Compare the serialized contents with original contents to make sure
     // they are same.
     std::string original_str =
@@ -546,7 +509,7 @@ class DomSerializerTests : public ContentBrowserTest,
       head_part += "</head>";
       original_str.insert(pos, head_part);
     }
-    ASSERT_EQ(original_str, serialized_contents);
+    ASSERT_EQ(original_str, serialized_contents_);
   }
 
   void SerializeHTMLDOMWithNonStandardEntitiesOnRenderer(const GURL& file_url) {
@@ -567,14 +530,12 @@ class DomSerializerTests : public ContentBrowserTest,
     // Do serialization.
     SerializeDomForURL(file_url);
     // Check the serialized string.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
+    ASSERT_TRUE(serialization_reported_end_of_data_);
     // Confirm that the serialized string has no non-standard HTML entities.
-    ASSERT_EQ(std::string::npos, serialized_contents.find("&percnt;"));
-    ASSERT_EQ(std::string::npos, serialized_contents.find("&nsup;"));
-    ASSERT_EQ(std::string::npos, serialized_contents.find("&sup1;"));
-    ASSERT_EQ(std::string::npos, serialized_contents.find("&apos;"));
+    ASSERT_EQ(std::string::npos, serialized_contents_.find("&percnt;"));
+    ASSERT_EQ(std::string::npos, serialized_contents_.find("&nsup;"));
+    ASSERT_EQ(std::string::npos, serialized_contents_.find("&sup1;"));
+    ASSERT_EQ(std::string::npos, serialized_contents_.find("&apos;"));
   }
 
   void SerializeHTMLDOMWithBaseTagOnRenderer(const GURL& file_url,
@@ -621,10 +582,8 @@ class DomSerializerTests : public ContentBrowserTest,
     SerializeDomForURL(file_url);
 
     // Load the serialized contents.
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
-    LoadContents(serialized_contents, file_url,
+    ASSERT_TRUE(serialization_reported_end_of_data_);
+    LoadContents(serialized_contents_, file_url,
                  web_frame->document().encoding());
 
     // Make sure all links are absolute URLs and doc there are some number of
@@ -689,13 +648,10 @@ class DomSerializerTests : public ContentBrowserTest,
 
     // Do serialization.
     SerializeDomForURL(file_url);
-    // Make sure the serialized contents have META ;
-    ASSERT_TRUE(HasSerializedFrame(file_url));
-    const std::string& serialized_contents =
-        GetSerializedContentForFrame(file_url);
+    ASSERT_TRUE(serialization_reported_end_of_data_);
 
     // Reload serialized contents and make sure there is only one META tag.
-    LoadContents(serialized_contents, file_url,
+    LoadContents(serialized_contents_, file_url,
                  web_frame->document().encoding());
     web_frame = GetMainFrame();
     ASSERT_TRUE(web_frame != NULL);
@@ -738,12 +694,8 @@ class DomSerializerTests : public ContentBrowserTest,
 
  private:
   int32 render_view_routing_id_;
-  // Map frame_url to corresponding serialized_content.
-  typedef base::hash_map<std::string, std::string> SerializedFrameContentMap;
-  SerializedFrameContentMap serialized_frame_map_;
-  // Map frame_url to corresponding status of serialization finish.
-  typedef base::hash_map<std::string, bool> SerializationFinishStatusMap;
-  SerializationFinishStatusMap serialization_finish_status_;
+  std::string serialized_contents_;
+  bool serialization_reported_end_of_data_;
   // The local_directory_name_ is dummy relative path of directory which
   // contain all saved auxiliary files included all sub frames and resources.
   const base::FilePath local_directory_name_;

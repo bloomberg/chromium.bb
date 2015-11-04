@@ -282,8 +282,7 @@ void WebPageSerializerImpl::encodeAndFlushBuffer(
     CString encodedContent = param->textEncoding.encode(content, WTF::EntitiesForUnencodables);
 
     // Send result to the client.
-    m_client->didSerializeDataForFrame(
-        param->url, WebCString(encodedContent), status);
+    m_client->didSerializeDataForFrame(WebCString(encodedContent), status);
 }
 
 // TODO(yosin): We should utilize |MarkupFormatter| here to share code,
@@ -321,9 +320,7 @@ void WebPageSerializerImpl::openTagToString(Element* element,
                     result.append(m_htmlEntities.convertEntitiesInString(attrValue));
                 } else {
                     // Get the absolute link
-                    WebLocalFrameImpl* subFrame = WebLocalFrameImpl::fromFrameOwnerElement(element);
-                    String completeURL = subFrame ? subFrame->frame()->document()->url() :
-                                                    param->document->completeURL(attrValue);
+                    String completeURL = param->document->completeURL(attrValue);
                     // Check whether we have local files for those link.
                     if (m_localLinks.contains(completeURL)) {
                         if (!param->directoryName.isEmpty()) {
@@ -455,19 +452,16 @@ WebPageSerializerImpl::WebPageSerializerImpl(WebLocalFrame* frame,
 bool WebPageSerializerImpl::serialize()
 {
     bool didSerialization = false;
-    KURL mainURL = m_specifiedWebLocalFrameImpl->frame()->document()->url();
 
-    WebLocalFrameImpl* webFrame = m_specifiedWebLocalFrameImpl;
-    Document* document = webFrame->frame()->document();
+    Document* document = m_specifiedWebLocalFrameImpl->frame()->document();
     const KURL& url = document->url();
 
-    if (url.isValid() && m_localLinks.contains(url.string())) {
+    if (url.isValid()) {
         didSerialization = true;
 
         const WTF::TextEncoding& textEncoding = document->encoding().isValid() ? document->encoding() : UTF8Encoding();
-        String directoryName = url == mainURL ? m_localDirectoryName : "";
 
-        SerializeDomParam param(url, textEncoding, document, directoryName);
+        SerializeDomParam param(url, textEncoding, document, m_localDirectoryName);
 
         Element* documentElement = document->documentElement();
         if (documentElement)
@@ -477,8 +471,7 @@ bool WebPageSerializerImpl::serialize()
     } else {
         // Report empty contents for invalid URLs.
         m_client->didSerializeDataForFrame(
-            url, WebCString(),
-            WebPageSerializerClient::CurrentFrameIsFinished);
+            WebCString(), WebPageSerializerClient::CurrentFrameIsFinished);
     }
 
     ASSERT(m_dataBuffer.isEmpty());

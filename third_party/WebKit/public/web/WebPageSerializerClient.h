@@ -55,11 +55,9 @@ public:
     };
 
     // Receive the individual chunks of serialized and encoded data to be saved.
-    // The parameter frameURL specifies what frame the data belongs. The
-    // parameter data contains the available data for saving. The parameter
-    // status indicates the status of data serialization.
-    virtual void didSerializeDataForFrame(const WebURL& frameURL,
-                                          const WebCString& data,
+    // The parameter data contains the available data for saving.
+    // The parameter status indicates the status of data serialization.
+    virtual void didSerializeDataForFrame(const WebCString& data,
                                           PageSerializationStatus status) = 0;
     WebPageSerializerClient() { }
 

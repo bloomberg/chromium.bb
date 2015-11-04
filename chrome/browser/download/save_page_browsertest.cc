@@ -161,8 +161,7 @@ bool DownloadStoredProperly(
     return false;
   }
   if (info.url_chain.size() != 1u) {
-    DVLOG(20) << __FUNCTION__ << " " << info.url_chain.size()
-              << " != 1";
+    DVLOG(20) << __FUNCTION__ << " " << info.url_chain.size() << " != 1";
     return false;
   }
   if (info.url_chain[0] != expected_url) {
@@ -176,8 +175,7 @@ bool DownloadStoredProperly(
     return false;
   }
   if (info.state != expected_state) {
-    DVLOG(20) << __FUNCTION__ << " " << info.state
-              << " != " << expected_state;
+    DVLOG(20) << __FUNCTION__ << " " << info.state << " != " << expected_state;
     return false;
   }
   return true;
@@ -750,10 +748,12 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
 
   base::FilePath full_file_name, dir;
   SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-                 "iframe-src-is-a-download", 2, &dir, &full_file_name);
+                 "iframe-src-is-a-download", 3, &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
   EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_TRUE(base::PathExists(dir.AppendASCII("thisdayinhistory.html")));
+  EXPECT_TRUE(base::PathExists(dir.AppendASCII("no-such-file.html")));
 }
 
 // Test suite that allows testing --site-per-process against cross-site frames.
@@ -783,14 +783,7 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
 };
 
 // Test for crbug.com/526786.
-//
-// Disabled because the test will crash until the bug is fixed (but note that
-// the crash only happens with --site-per-process flag).
-// Currently, the crash would happen under
-// blink::WebLocalFrameImpl::fromFrameOwnerElement called from
-// blink::WebPageSerializerImpl::openTagToString).
-IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
-                       DISABLED_SaveAsCompleteHtml) {
+IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
   GURL url(embedded_test_server()->GetURL("a.com", "/save_page/iframes.htm"));
   ui_test_utils::NavigateToURL(browser(), url);
 

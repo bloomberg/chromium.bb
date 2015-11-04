@@ -56,7 +56,7 @@ public:
     std::string toString() const { return m_string; }
 
 private:
-    void didSerializeDataForFrame(const WebURL&, const WebCString& data, PageSerializationStatus) final
+    void didSerializeDataForFrame(const WebCString& data, PageSerializationStatus) final
     {
         m_string += data;
     }

@@ -4004,12 +4004,11 @@ void RenderFrameImpl::PlayerGone(WebMediaPlayer* player) {
 }
 
 void RenderFrameImpl::didSerializeDataForFrame(
-    const WebURL& frame_url,
     const WebCString& data,
     WebPageSerializerClient::PageSerializationStatus status) {
   bool end_of_data = status == WebPageSerializerClient::CurrentFrameIsFinished;
   Send(new FrameHostMsg_SerializedHtmlWithLocalLinksResponse(
-      routing_id_, frame_url, data, end_of_data));
+      routing_id_, data, end_of_data));
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
@@ -4566,7 +4565,10 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
 void RenderFrameImpl::OnGetSavableResourceLinks() {
   std::vector<GURL> resources_list;
-  SavableResourcesResult result(&resources_list);
+  std::vector<GURL> subframe_original_urls;
+  std::vector<blink::WebFrame*> subframes;
+  SavableResourcesResult result(&resources_list,
+                                &subframe_original_urls, &subframes);
 
   if (!GetSavableResourceLinksForFrame(
           frame_, &result, const_cast<const char**>(GetSavableSchemes()))) {
@@ -4577,8 +4579,15 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
   Referrer referrer =
       Referrer(frame_->document().url(), frame_->document().referrerPolicy());
 
+  std::vector<int> subframe_routing_ids;
+  for (WebFrame* subframe : subframes) {
+    subframe_routing_ids.push_back(GetRoutingIdForFrameOrProxy(subframe));
+  }
+
+  DCHECK_EQ(subframe_original_urls.size(), subframe_routing_ids.size());
   Send(new FrameHostMsg_SavableResourceLinksResponse(
-      routing_id_, frame_->document().url(), resources_list, referrer));
+      routing_id_, resources_list, referrer,
+      subframe_original_urls, subframe_routing_ids));
 }
 
 void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
