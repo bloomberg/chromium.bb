@@ -30,6 +30,11 @@ public class FirstRunTest extends SyncTestBase {
         NO;
     }
 
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityFromLauncher();
+    }
+
     // Test that signing in through FirstRun signs in and starts sync.
     @SmallTest
     @Feature({"Sync"})
