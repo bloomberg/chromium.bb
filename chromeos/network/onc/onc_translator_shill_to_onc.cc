@@ -27,6 +27,9 @@ namespace onc {
 
 namespace {
 
+// TODO(pstew): Remove once crosreview.com/310644 lands and merges to Chrome.
+const char kKeyManagementIEEE8021X[] = "IEEE8021X";
+
 // Converts |str| to a base::Value of the given |type|. If the conversion fails,
 // returns NULL.
 scoped_ptr<base::Value> ConvertStringToValue(const std::string& str,
@@ -329,8 +332,21 @@ void ShillToONCTranslator::TranslateVPN() {
 }
 
 void ShillToONCTranslator::TranslateWiFiWithState() {
-  TranslateWithTableAndSet(shill::kSecurityClassProperty, kWiFiSecurityTable,
-                           ::onc::wifi::kSecurity);
+  std::string shill_security;
+  std::string shill_key_mgmt;
+  if (shill_dictionary_->GetStringWithoutPathExpansion(
+          shill::kSecurityClassProperty, &shill_security) &&
+      shill_security == shill::kSecurityWep &&
+      shill_dictionary_->GetStringWithoutPathExpansion(
+          shill::kEapKeyMgmtProperty, &shill_key_mgmt) &&
+      shill_key_mgmt == kKeyManagementIEEE8021X) {
+    onc_object_->SetStringWithoutPathExpansion(::onc::wifi::kSecurity,
+                                               ::onc::wifi::kWEP_8021X);
+  } else {
+    TranslateWithTableAndSet(shill::kSecurityClassProperty, kWiFiSecurityTable,
+                             ::onc::wifi::kSecurity);
+  }
+
   bool unknown_encoding = true;
   std::string ssid = shill_property_util::GetSSIDFromProperties(
       *shill_dictionary_, false /* verbose_logging */, &unknown_encoding);
