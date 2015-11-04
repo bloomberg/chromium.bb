@@ -574,7 +574,7 @@ function test()
         var callTree = timeline._detailsView._rangeDetailViews.get(type);
         callTree._groupByCombobox.select(callTree._groupByCombobox.options().find((x) => x.value === grouping));
         callTree._onGroupByChanged();
-        var rootNode = callTree.dataGrid.rootNode();
+        var rootNode = callTree._dataGrid.rootNode();
         for (var node of rootNode.children)
             printProfileTree(1, node._profileNode);
     }
