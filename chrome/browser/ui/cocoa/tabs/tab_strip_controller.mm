@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
-#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -252,6 +251,9 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
 - (void)themeDidChangeNotification:(NSNotification*)notification;
 - (void)setNewTabImages;
+- (BOOL)isAnyOtherTab:(content::WebContents*)selected
+            withState:(TabMediaState)state;
+
 @end
 
 // A simple view class that contains the traffic light buttons. This class
@@ -1278,7 +1280,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   [tab setTitle:base::SysUTF16ToNSString(title)];
 
   const base::string16& toolTip = chrome::AssembleTabTooltipText(
-      title, chrome::GetTabMediaStateForContents(contents));
+      title, [self mediaStateForContents:contents]);
   [tab setToolTip:base::SysUTF16ToNSString(toolTip)];
 }
 
@@ -1631,7 +1633,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     }
   }
 
-  [tabController setMediaState:chrome::GetTabMediaStateForContents(contents)];
+  TabMediaState mediaState = [self mediaStateForContents:contents];
+
+  [self updateWindowMediaState:mediaState on:contents];
+  [tabController setMediaState:mediaState];
 
   [tabController updateVisibility];
 }
@@ -2294,6 +2299,57 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     [permanentSubviews_ removeObject:customWindowControls_];
   [self regenerateSubviewList];
   [customWindowControls_ setMouseInside:NO];
+}
+
+// Gets the tab and the media state to check whether the window
+// media state should be updated or not. If the tab media state is
+// AUDIO_PLAYING, the window media state should be set to AUDIO_PLAYING.
+// If the tab media state is AUDIO_MUTING, this method would check if the
+// window has no other tab with state AUDIO_PLAYING, then the window
+// media state will be set to AUDIO_MUTING. If the tab media state is NONE,
+// this method checks if the window has no playing or muting tab, then window
+// media state will be set as NONE.
+- (void)updateWindowMediaState:(TabMediaState)mediaState
+                            on:(content::WebContents*)selected {
+  NSWindow* window = [tabStripView_ window];
+  BrowserWindowController* windowController =
+      [BrowserWindowController browserWindowControllerForWindow:window];
+  if (mediaState == TAB_MEDIA_STATE_NONE) {
+    if (![self isAnyOtherTab:selected
+                   withState:TAB_MEDIA_STATE_AUDIO_PLAYING] &&
+        ![self isAnyOtherTab:selected withState:TAB_MEDIA_STATE_AUDIO_MUTING]) {
+      [windowController setMediaState:TAB_MEDIA_STATE_NONE];
+    } else if ([self isAnyOtherTab:selected
+                         withState:TAB_MEDIA_STATE_AUDIO_MUTING]) {
+      [windowController setMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
+    }
+  } else if (mediaState == TAB_MEDIA_STATE_AUDIO_MUTING) {
+    if (![self isAnyOtherTab:selected withState:TAB_MEDIA_STATE_AUDIO_PLAYING])
+      [windowController setMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
+  } else {
+    [windowController setMediaState:mediaState];
+  }
+}
+
+// Checks if tabs (excluding selected) has media state equals to the second
+// parameter. It returns YES when it finds the first tab with the criterion.
+- (BOOL)isAnyOtherTab:(content::WebContents*)selected
+            withState:(TabMediaState)state {
+  const int existingTabCount = tabStripModel_->count();
+  for (int i = 0; i < existingTabCount; ++i) {
+    content::WebContents* currentContents = tabStripModel_->GetWebContentsAt(i);
+    if (selected == currentContents)
+      continue;
+    TabMediaState currentMediaStateForContents =
+        [self mediaStateForContents:currentContents];
+    if (currentMediaStateForContents == state)
+      return YES;
+  }
+  return NO;
+}
+
+- (TabMediaState)mediaStateForContents:(content::WebContents*)contents {
+  return chrome::GetTabMediaStateForContents(contents);
 }
 
 - (void)themeDidChangeNotification:(NSNotification*)notification {

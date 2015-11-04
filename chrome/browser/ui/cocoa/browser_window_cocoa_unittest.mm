@@ -11,11 +11,13 @@
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // Main test class.
 class BrowserWindowCocoaTest : public CocoaProfileTest {
@@ -46,6 +48,30 @@ TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
 
   chrome::ToggleBookmarkBarWhenVisible(profile());
   EXPECT_EQ(before, bwc->IsBookmarkBarVisible());
+}
+
+TEST_F(BrowserWindowCocoaTest, TestWindowTitle) {
+  scoped_ptr<BrowserWindowCocoa> bwc(
+      new BrowserWindowCocoa(browser(), controller_));
+  NSString* playing_emoji =
+      l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_PLAYING_MAC, base::string16());
+  NSString* muting_emoji =
+      l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_MUTING_MAC, base::string16());
+  EXPECT_EQ([bwc->WindowTitle() rangeOfString:playing_emoji].location,
+            NSNotFound);
+  EXPECT_EQ([bwc->WindowTitle() rangeOfString:muting_emoji].location,
+            NSNotFound);
+  bwc->UpdateMediaState(TAB_MEDIA_STATE_AUDIO_PLAYING);
+  EXPECT_NE([bwc->WindowTitle() rangeOfString:playing_emoji].location,
+            NSNotFound);
+  bwc->UpdateMediaState(TAB_MEDIA_STATE_AUDIO_MUTING);
+  EXPECT_NE([bwc->WindowTitle() rangeOfString:muting_emoji].location,
+            NSNotFound);
+  bwc->UpdateMediaState(TAB_MEDIA_STATE_NONE);
+  EXPECT_EQ([bwc->WindowTitle() rangeOfString:playing_emoji].location,
+            NSNotFound);
+  EXPECT_EQ([bwc->WindowTitle() rangeOfString:muting_emoji].location,
+            NSNotFound);
 }
 
 // Test that IsMaximized() returns false when the browser window goes from
