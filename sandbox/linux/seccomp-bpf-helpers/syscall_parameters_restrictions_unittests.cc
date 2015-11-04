@@ -92,18 +92,6 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
 }
 
-#if defined(OS_LINUX)
-
-BPF_DEATH_TEST_C(ParameterRestrictions,
-                 clock_gettime_crash_system_trace,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
-                 RestrictClockIdPolicy) {
-  struct timespec ts;
-  clock_gettime(base::TraceTicks::kClockSystemTrace, &ts);
-}
-
-#endif  // defined(OS_LINUX)
-
 #if !defined(OS_ANDROID)
 BPF_DEATH_TEST_C(ParameterRestrictions,
                  clock_gettime_crash_cpu_clock,
