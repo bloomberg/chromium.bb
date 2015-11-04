@@ -22,7 +22,7 @@ class FakeBaseTabStripController : public TabStripController {
   void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
 
   // TabStripController overrides:
-  const ui::ListSelectionModel& GetSelectionModel() override;
+  const ui::ListSelectionModel& GetSelectionModel() const override;
   int GetCount() const override;
   bool IsValidIndex(int index) const override;
   bool IsActiveTab(int index) const override;

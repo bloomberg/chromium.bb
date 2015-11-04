@@ -187,6 +187,12 @@ class TabStrip : public views::View,
   // Sets a painting style with miniature "tab indicator" rectangles at the top.
   void SetImmersiveStyle(bool enable);
 
+  // Returns the alpha that inactive tabs and the new tab button should use to
+  // blend against the frame background.  Inactive tabs and the new tab button
+  // differ in whether they change alpha when tab multiselection is occurring;
+  // |for_new_tab_button| toggles between the two calculations.
+  SkAlpha GetInactiveAlpha(bool for_new_tab_button) const;
+
   // Returns true if Tabs in this TabStrip are currently changing size or
   // position.
   bool IsAnimating() const;
@@ -199,7 +205,7 @@ class TabStrip : public views::View,
   void FileSupported(const GURL& url, bool supported);
 
   // TabController overrides:
-  const ui::ListSelectionModel& GetSelectionModel() override;
+  const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
   bool ShouldHideCloseButtonForInactiveTabs() override;
   void SelectTab(Tab* tab) override;

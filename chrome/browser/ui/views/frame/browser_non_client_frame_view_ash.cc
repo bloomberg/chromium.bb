@@ -176,10 +176,8 @@ int BrowserNonClientFrameViewAsh::GetTopInset() const {
     return 0;
 
   if (browser_view()->IsTabStripVisible()) {
-    if (frame()->IsMaximized() || frame()->IsFullscreen())
-      return kTabstripTopSpacingShort;
-    else
-      return kTabstripTopSpacingTall;
+    return (frame()->IsMaximized() || frame()->IsFullscreen()) ?
+        kTabstripTopSpacingShort : kTabstripTopSpacingTall;
   }
 
   if (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle())

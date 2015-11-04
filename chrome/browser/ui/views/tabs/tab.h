@@ -369,16 +369,16 @@ class Tab : public gfx::AnimationDelegate,
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
 
-  struct TabImage {
+  struct TabImages {
     gfx::ImageSkia* image_l;
     gfx::ImageSkia* image_c;
     gfx::ImageSkia* image_r;
     int l_width;
     int r_width;
   };
-  static TabImage tab_active_;
-  static TabImage tab_inactive_;
-  static TabImage tab_alpha_;
+  static TabImages active_images_;
+  static TabImages inactive_images_;
+  static TabImages mask_images_;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.

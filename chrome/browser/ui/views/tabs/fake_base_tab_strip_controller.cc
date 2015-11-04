@@ -30,7 +30,8 @@ void FakeBaseTabStripController::RemoveTab(int index) {
     active_index_ = -1;
 }
 
-const ui::ListSelectionModel& FakeBaseTabStripController::GetSelectionModel() {
+const ui::ListSelectionModel&
+FakeBaseTabStripController::GetSelectionModel() const {
   return selection_model_;
 }
 

@@ -45,7 +45,7 @@ class BrowserTabStripController : public TabStripController,
   bool IsTabPinned(Tab* tab) const;
 
   // TabStripController implementation:
-  const ui::ListSelectionModel& GetSelectionModel() override;
+  const ui::ListSelectionModel& GetSelectionModel() const override;
   int GetCount() const override;
   bool IsValidIndex(int model_index) const override;
   bool IsActiveTab(int model_index) const override;

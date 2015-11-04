@@ -200,16 +200,15 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetWindowBoundsForClientBounds(
 }
 
 int OpaqueBrowserFrameViewLayout::FrameBorderThickness(bool restored) const {
-  return (!restored && (IsTitleBarCondensed() ||
-                        delegate_->IsFullscreen())) ?
+  return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen())) ?
       0 : kFrameBorderThickness;
 }
 
 int OpaqueBrowserFrameViewLayout::NonClientBorderThickness() const {
+  const int frame = FrameBorderThickness(false);
   // When we fill the screen, we don't show a client edge.
-  return FrameBorderThickness(false) +
-      ((IsTitleBarCondensed() || delegate_->IsFullscreen()) ?
-       0 : views::NonClientFrameView::kClientEdgeThickness);
+  return (IsTitleBarCondensed() || delegate_->IsFullscreen()) ?
+      frame : (frame + views::NonClientFrameView::kClientEdgeThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
@@ -221,33 +220,31 @@ int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
   }
 
   int thickness = FrameBorderThickness(restored);
-  if (!restored && delegate_->IsTabStripVisible() &&
-      (delegate_->IsMaximized() || IsTitleBarCondensed())) {
+  if (!restored && delegate_->IsTabStripVisible() && IsTitleBarCondensed())
     thickness -= kTabstripTopShadowThickness;
-  }
   return thickness;
 }
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
-  return NonClientTopBorderHeight(restored) +
-      ((!restored &&
-        (delegate_->IsMaximized() || IsTitleBarCondensed() ||
-         delegate_->IsFullscreen())) ? 0 : kNonClientRestoredExtraThickness);
+  const int top = NonClientTopBorderHeight(restored);
+  return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen())) ?
+      top : (top + kNonClientRestoredExtraThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {
-  return kTitlebarTopAndBottomEdgeThickness +
-      ((!restored && IsTitleBarCondensed()) ? 0 :
-       views::NonClientFrameView::kClientEdgeThickness);
+  const int edge = kTitlebarTopAndBottomEdgeThickness;
+  return (!restored && IsTitleBarCondensed()) ?
+      edge : (edge + views::NonClientFrameView::kClientEdgeThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::CaptionButtonY(bool restored) const {
   // Maximized buttons start at window top, since the window has no border. This
   // offset is for the image (the actual clickable bounds extend all the way to
   // the top to take Fitts' Law into account).
-  return ((!restored && IsTitleBarCondensed()) ?
+  const int frame = (!restored && IsTitleBarCondensed()) ?
       FrameBorderThickness(false) :
-          views::NonClientFrameView::kFrameShadowThickness) + extra_caption_y_;
+      views::NonClientFrameView::kFrameShadowThickness;
+  return frame + extra_caption_y_;
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::IconBounds() const {
@@ -281,10 +278,10 @@ bool OpaqueBrowserFrameViewLayout::ShouldAvatarBeOnRight() const {
 }
 
 int OpaqueBrowserFrameViewLayout::NewTabCaptionSpacing() const {
-  return has_trailing_buttons_
-             ? (IsTitleBarCondensed() ? kNewTabCaptionCondensedSpacing
-                                      : kNewTabCaptionNormalSpacing)
-             : kNewTabNoCaptionButtonsSpacing;
+  if (!has_trailing_buttons_)
+    return kNewTabNoCaptionButtonsSpacing;
+  return IsTitleBarCondensed() ?
+      kNewTabCaptionCondensedSpacing : kNewTabCaptionNormalSpacing;
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {

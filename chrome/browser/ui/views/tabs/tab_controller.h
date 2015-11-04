@@ -24,7 +24,7 @@ class View;
 // Controller for tabs.
 class TabController {
  public:
-  virtual const ui::ListSelectionModel& GetSelectionModel() = 0;
+  virtual const ui::ListSelectionModel& GetSelectionModel() const = 0;
 
   // Returns true if multiple selection is supported.
   virtual bool SupportsMultipleSelection() = 0;

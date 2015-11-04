@@ -100,14 +100,6 @@ const int kPinnedTitleChangeAnimationIntervalMS = 40;
 // animation.
 const int kPinnedTitleChangeInitialXOffset = 6;
 
-// Radius of the radial gradient used for pinned title change animation.
-const int kPinnedTitleChangeGradientRadius = 20;
-
-// Colors of the gradient used during the pinned title change animation.
-const SkColor kPinnedTitleChangeGradientColor1 = SK_ColorWHITE;
-const SkColor kPinnedTitleChangeGradientColor2 =
-    SkColorSetARGB(0, 255, 255, 255);
-
 // Max number of images to cache. This has to be at least two since rounding
 // errors may lead to tabs in the same tabstrip having different sizes.
 const size_t kMaxImageCacheSize = 4;
@@ -146,6 +138,23 @@ chrome::HostDesktopType GetHostDesktopType(views::View* view) {
 void StopAndDeleteAnimation(scoped_ptr<gfx::Animation> animation) {
   if (animation)
     animation->Stop();
+}
+
+void DrawHighlight(gfx::Canvas* canvas,
+                   const SkPoint& p,
+                   SkScalar radius,
+                   SkAlpha alpha) {
+  const SkColor colors[2] = { SkColorSetA(SK_ColorWHITE, alpha),
+                              SkColorSetA(SK_ColorWHITE, 0) };
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(SkGradientShader::CreateRadial(
+      p, radius, colors, nullptr, 2, SkShader::kClamp_TileMode));
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+  paint.setShader(shader.get());
+  canvas->sk_canvas()->drawRect(
+      SkRect::MakeXYWH(p.x() - radius, p.y() - radius, radius * 2, radius * 2),
+      paint);
 }
 
 }  // namespace
@@ -356,9 +365,9 @@ Tab::ImageCacheEntry::~ImageCacheEntry() {}
 
 // static
 const char Tab::kViewClassName[] = "Tab";
-Tab::TabImage Tab::tab_active_ = {0};
-Tab::TabImage Tab::tab_inactive_ = {0};
-Tab::TabImage Tab::tab_alpha_ = {0};
+Tab::TabImages Tab::active_images_ = {0};
+Tab::TabImages Tab::inactive_images_ = {0};
+Tab::TabImages Tab::mask_images_ = {0};
 Tab::ImageCache* Tab::image_cache_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -580,7 +589,7 @@ gfx::Size Tab::GetMinimumInactiveSize() {
   // Since we use images, the real minimum height of the image is
   // defined most accurately by the height of the end cap images.
   InitTabResources();
-  int height = tab_active_.image_l->height();
+  int height = active_images_.image_l->height();
   return gfx::Size(GetLayoutInsets(TAB).width(), height);
 }
 
@@ -1124,15 +1133,14 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
     PaintActiveTabBackground(canvas);
   } else {
     if (pinned_title_change_animation_ &&
-        pinned_title_change_animation_->is_animating()) {
+        pinned_title_change_animation_->is_animating())
       PaintInactiveTabBackgroundWithTitleChange(canvas);
-    } else {
+    else
       PaintInactiveTabBackground(canvas);
-    }
 
-    double throb_value = GetThrobValue();
+    const double throb_value = GetThrobValue();
     if (throb_value > 0) {
-      canvas->SaveLayerAlpha(static_cast<int>(throb_value * 0xff),
+      canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
                              GetLocalBounds());
       PaintActiveTabBackground(canvas);
       canvas->Restore();
@@ -1141,76 +1149,47 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
-  // Render the inactive tab background. We'll use this for clipping.
+  const int kPinnedTitleChangeGradientRadius = 20;
+  const float radius = kPinnedTitleChangeGradientRadius;
+  double x = radius;
+  int alpha = 255;
+  if (pinned_title_change_animation_->current_part_index() == 0) {
+    x = pinned_title_change_animation_->CurrentValueBetween(
+            width() + radius - kPinnedTitleChangeInitialXOffset, radius);
+  } else if (pinned_title_change_animation_->current_part_index() == 2) {
+    x = pinned_title_change_animation_->CurrentValueBetween(radius, -radius);
+    alpha = pinned_title_change_animation_->CurrentValueBetween(255, 0);
+  }
+  SkPoint p;
+  p.set(SkDoubleToScalar(x), 0);
   gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
   PaintInactiveTabBackground(&background_canvas);
-
   gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
-
-  // Draw a radial gradient to hover_canvas.
+  canvas->DrawImageInt(background_image, 0, 0);
   gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
-  int radius = kPinnedTitleChangeGradientRadius;
-  int x0 = width() + radius - kPinnedTitleChangeInitialXOffset;
-  int x1 = radius;
-  int x2 = -radius;
-  int x;
-  if (pinned_title_change_animation_->current_part_index() == 0) {
-    x = pinned_title_change_animation_->CurrentValueBetween(x0, x1);
-  } else if (pinned_title_change_animation_->current_part_index() == 1) {
-    x = x1;
-  } else {
-    x = pinned_title_change_animation_->CurrentValueBetween(x1, x2);
-  }
-  SkPoint center_point;
-  center_point.iset(x, 0);
-  SkColor colors[2] = { kPinnedTitleChangeGradientColor1,
-                        kPinnedTitleChangeGradientColor2 };
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      SkGradientShader::CreateRadial(
-          center_point, SkIntToScalar(radius), colors, NULL, 2,
-          SkShader::kClamp_TileMode));
-  SkPaint paint;
-  paint.setShader(shader.get());
-  hover_canvas.DrawRect(gfx::Rect(x - radius, -radius, radius * 2, radius * 2),
-                        paint);
-
-  // Draw the radial gradient clipped to the background into hover_image.
+  DrawHighlight(&hover_canvas, p, SkFloatToScalar(radius), alpha);
   gfx::ImageSkia hover_image = gfx::ImageSkiaOperations::CreateMaskedImage(
       gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
-
-  // Draw the tab background to the canvas.
-  canvas->DrawImageInt(background_image, 0, 0);
-
-  // And then the gradient on top of that.
-  if (pinned_title_change_animation_->current_part_index() == 2) {
-    uint8 alpha = pinned_title_change_animation_->CurrentValueBetween(255, 0);
-    canvas->DrawImageInt(hover_image, 0, 0, alpha);
-  } else {
-    canvas->DrawImageInt(hover_image, 0, 0);
-  }
+  canvas->DrawImageInt(hover_image, 0, 0);
 }
 
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
-  int tab_id;
-  int frame_id;
-  views::Widget* widget = GetWidget();
-  GetTabIdAndFrameId(widget, &tab_id, &frame_id);
+  int tab_id, frame_id;
+  GetTabIdAndFrameId(GetWidget(), &tab_id, &frame_id);
+  // HasCustomImage() is only true if the theme provides the image. However,
+  // even if the theme does not provide a tab background, the theme machinery
+  // will make one if given a frame image.
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const bool has_custom_image = theme_provider->HasCustomImage(tab_id) ||
+      (frame_id != 0 && theme_provider->HasCustomImage(frame_id));
 
   // Explicitly map the id so we cache correctly.
   const chrome::HostDesktopType host_desktop_type = GetHostDesktopType(this);
   tab_id = chrome::MapThemeImage(host_desktop_type, tab_id);
 
-  // HasCustomImage() is only true if the theme provides the image. However,
-  // even if the theme does not provide a tab background, the theme machinery
-  // will make one if given a frame image.
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
-  const bool theme_provided_image = theme_provider->HasCustomImage(tab_id) ||
-      (frame_id != 0 && theme_provider->HasCustomImage(frame_id));
-
-  const bool can_cache = !theme_provided_image &&
-      !hover_controller_.ShouldDraw();
-
-  if (can_cache) {
+  // We only cache the image when it's the default image and we're not hovered,
+  // to avoid caching a background image that isn't the same for all tabs.
+  if (!has_custom_image && !hover_controller_.ShouldDraw()) {
     ui::ScaleFactor scale_factor =
         ui::GetSupportedScaleFactor(canvas->image_scale());
     gfx::ImageSkia cached_image(GetCachedImage(tab_id, size(), scale_factor));
@@ -1228,120 +1207,114 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
 void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
                                                     int tab_id) {
-  // WARNING: the inactive tab background may be cached. If you change what it
-  // is drawn from you may need to update whether it can be cached.
-
+  gfx::ImageSkia* tab_background =
+      GetThemeProvider()->GetImageSkiaNamed(tab_id);
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
   // position within the frame background image.
-  int offset = GetMirroredX() + background_offset_.x();
-
-  gfx::ImageSkia* tab_bg = GetThemeProvider()->GetImageSkiaNamed(tab_id);
-
-  TabImage* tab_image = &tab_active_;
-  TabImage* tab_inactive_image = &tab_inactive_;
-  TabImage* alpha = &tab_alpha_;
+  const int x_offset = GetMirroredX() + background_offset_.x();
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
-  int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
+  const int y_offset = GetThemeProvider()->HasCustomImage(tab_id) ?
       0 : background_offset_.y();
 
-  // We need a gfx::Canvas object to be able to extract the image from.
-  // We draw everything to this canvas and then output it to the canvas
-  // parameter in addition to using it to mask the hover glow if needed.
+  const gfx::Insets tab_insets(GetLayoutInsets(TAB));
+  // Don't draw over the toolbar, but do include the 1 px divider stroke at the
+  // bottom.
+  const int toolbar_overlap = tab_insets.bottom() - 1;
+
+  // Draw everything to a temporary canvas so we can extract an image for use in
+  // masking the hover glow.
   gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
 
-  // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
-  // tab, but do include the 1 px divider stroke at the bottom.
-  const gfx::Insets tab_insets(GetLayoutInsets(TAB));
-  const int toolbar_overlap = tab_insets.bottom() - 1;
+  // Draw left edge.
   gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
-      *tab_bg, offset, bg_offset_y, tab_image->l_width, height());
+      *tab_background, x_offset, y_offset, mask_images_.l_width, height());
   gfx::ImageSkia theme_l =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *alpha->image_l);
-  background_canvas.DrawImageInt(theme_l,
-      0, 0, theme_l.width(), theme_l.height() - toolbar_overlap,
-      0, 0, theme_l.width(), theme_l.height() - toolbar_overlap,
-      false);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *mask_images_.image_l);
+  background_canvas.DrawImageInt(
+      theme_l, 0, 0, theme_l.width(), theme_l.height() - toolbar_overlap, 0, 0,
+      theme_l.width(), theme_l.height() - toolbar_overlap, false);
 
-  // Draw right edge.  Again, don't draw over the toolbar.
-  gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(*tab_bg,
-      offset + width() - tab_image->r_width, bg_offset_y,
-      tab_image->r_width, height());
+  // Draw right edge.
+  gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(
+      *tab_background, x_offset + width() - mask_images_.r_width, y_offset,
+      mask_images_.r_width, height());
   gfx::ImageSkia theme_r =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *alpha->image_r);
-  background_canvas.DrawImageInt(theme_r,
-      0, 0, theme_r.width(), theme_r.height() - toolbar_overlap,
-      width() - theme_r.width(), 0, theme_r.width(),
-      theme_r.height() - toolbar_overlap, false);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *mask_images_.image_r);
+  background_canvas.DrawImageInt(theme_r, 0, 0, theme_r.width(),
+                                 theme_r.height() - toolbar_overlap,
+                                 width() - theme_r.width(), 0, theme_r.width(),
+                                 theme_r.height() - toolbar_overlap, false);
 
   // Draw center.  Instead of masking out the top portion we simply skip over
-  // it by incrementing by the top padding, since it's a simple rectangle. And
-  // again, don't draw over the toolbar.
+  // it by incrementing by the top padding, since it's a simple rectangle.
   background_canvas.TileImageInt(
-     *tab_bg, offset + tab_image->l_width, bg_offset_y + tab_insets.top(),
-     tab_image->l_width, tab_insets.top(),
-     width() - tab_image->l_width - tab_image->r_width,
-     height() - tab_insets.top() - toolbar_overlap);
+      *tab_background, x_offset + mask_images_.l_width,
+      y_offset + tab_insets.top(), mask_images_.l_width, tab_insets.top(),
+      width() - mask_images_.l_width - mask_images_.r_width,
+      height() - tab_insets.top() - toolbar_overlap);
 
-  canvas->DrawImageInt(
-      gfx::ImageSkia(background_canvas.ExtractImageRep()), 0, 0);
+  gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
+  canvas->DrawImageInt(background_image, 0, 0);
 
   if (!GetThemeProvider()->HasCustomImage(tab_id) &&
-      hover_controller_.ShouldDraw()) {
-    hover_controller_.Draw(canvas, gfx::ImageSkia(
-        background_canvas.ExtractImageRep()));
-  }
+      hover_controller_.ShouldDraw())
+    hover_controller_.Draw(canvas, background_image);
 
-  // Now draw the highlights/shadows around the tab edge.
-  canvas->DrawImageInt(*tab_inactive_image->image_l, 0, 0);
-  canvas->TileImageInt(*tab_inactive_image->image_c,
-                       tab_inactive_image->l_width, 0,
-                       width() - tab_inactive_image->l_width -
-                           tab_inactive_image->r_width,
-                       height());
-  canvas->DrawImageInt(*tab_inactive_image->image_r,
-                       width() - tab_inactive_image->r_width, 0);
+  // Now draw the stroke, highlights, and shadows around the tab edge.
+  TabImages* stroke_images = &inactive_images_;
+  canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
+  canvas->TileImageInt(
+      *stroke_images->image_c, stroke_images->l_width, 0,
+      width() - stroke_images->l_width - stroke_images->r_width, height());
+  canvas->DrawImageInt(*stroke_images->image_r,
+                       width() - stroke_images->r_width, 0);
 }
 
 void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia* tab_background =
       GetThemeProvider()->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-  int offset = GetMirroredX() + background_offset_.x();
+  int x_offset = GetMirroredX() + background_offset_.x();
 
-  TabImage* tab_image = &tab_active_;
-  TabImage* alpha = &tab_alpha_;
+  const gfx::Insets tab_insets(GetLayoutInsets(TAB));
 
   // Draw left edge.
   gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
-      *tab_background, offset, 0, tab_image->l_width, height());
+      *tab_background, x_offset, 0, mask_images_.l_width, height());
   gfx::ImageSkia theme_l =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *alpha->image_l);
-  canvas->DrawImageInt(theme_l, 0, 0);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *mask_images_.image_l);
+  canvas->DrawImageInt(
+      theme_l, 0, 0, theme_l.width(), theme_l.height(), 0, 0, theme_l.width(),
+      theme_l.height(), false);
 
   // Draw right edge.
   gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(
-      *tab_background,
-      offset + width() - tab_image->r_width, 0, tab_image->r_width, height());
+      *tab_background, x_offset + width() - mask_images_.r_width, 0,
+      mask_images_.r_width, height());
   gfx::ImageSkia theme_r =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *alpha->image_r);
-  canvas->DrawImageInt(theme_r, width() - tab_image->r_width, 0);
+      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *mask_images_.image_r);
+  canvas->DrawImageInt(theme_r, 0, 0, theme_r.width(), theme_r.height(),
+                       width() - theme_r.width(), 0, theme_r.width(),
+                       theme_r.height(), false);
 
   // Draw center.  Instead of masking out the top portion we simply skip over it
   // by incrementing by the top padding, since it's a simple rectangle.
-  const int top_padding = GetLayoutInsets(TAB).top();
-  canvas->TileImageInt(*tab_background, offset + tab_image->l_width,
-                       top_padding, tab_image->l_width, top_padding,
-                       width() - tab_image->l_width - tab_image->r_width,
-                       height() - top_padding);
+  canvas->TileImageInt(*tab_background, x_offset + mask_images_.l_width,
+                       tab_insets.top(), mask_images_.l_width, tab_insets.top(),
+                       width() - mask_images_.l_width - mask_images_.r_width,
+                       height() - tab_insets.top());
 
-  // Now draw the highlights/shadows around the tab edge.
-  canvas->DrawImageInt(*tab_image->image_l, 0, 0);
-  canvas->TileImageInt(*tab_image->image_c, tab_image->l_width, 0,
-      width() - tab_image->l_width - tab_image->r_width, height());
-  canvas->DrawImageInt(*tab_image->image_r, width() - tab_image->r_width, 0);
+  // Now draw the stroke, highlights, and shadows around the tab edge.
+  TabImages* stroke_images = &active_images_;
+  canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
+  canvas->TileImageInt(
+      *stroke_images->image_c, stroke_images->l_width, 0,
+      width() - stroke_images->l_width - stroke_images->r_width, height());
+  canvas->DrawImageInt(*stroke_images->image_r,
+                       width() - stroke_images->r_width, 0);
 }
 
 void Tab::PaintIcon(gfx::Canvas* canvas) {
@@ -1528,8 +1501,8 @@ gfx::Rect Tab::GetImmersiveBarRect() const {
   // This top line of the tab extends a few pixels left and right of the
   // center image due to pixels in the rounded corner images.
   const int kBarPadding = 1;
-  int main_bar_left = tab_active_.l_width - kBarPadding;
-  int main_bar_right = width() - tab_active_.r_width + kBarPadding;
+  int main_bar_left = active_images_.l_width - kBarPadding;
+  int main_bar_right = width() - active_images_.r_width + kBarPadding;
   return gfx::Rect(
       main_bar_left, 0, main_bar_right - main_bar_left, kImmersiveBarHeight);
 }
@@ -1571,20 +1544,22 @@ void Tab::LoadTabImages() {
   // We're not letting people override tab images just yet.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  tab_alpha_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_LEFT);
-  tab_alpha_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_RIGHT);
+  mask_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_LEFT);
+  mask_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_RIGHT);
+  mask_images_.l_width = mask_images_.image_l->width();
+  mask_images_.r_width = mask_images_.image_r->width();
 
-  tab_active_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_LEFT);
-  tab_active_.image_c = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_CENTER);
-  tab_active_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_RIGHT);
-  tab_active_.l_width = tab_active_.image_l->width();
-  tab_active_.r_width = tab_active_.image_r->width();
+  active_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_LEFT);
+  active_images_.image_c = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_CENTER);
+  active_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_RIGHT);
+  active_images_.l_width = active_images_.image_l->width();
+  active_images_.r_width = active_images_.image_r->width();
 
-  tab_inactive_.image_l = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_LEFT);
-  tab_inactive_.image_c = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_CENTER);
-  tab_inactive_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
-  tab_inactive_.l_width = tab_inactive_.image_l->width();
-  tab_inactive_.r_width = tab_inactive_.image_r->width();
+  inactive_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_LEFT);
+  inactive_images_.image_c = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_CENTER);
+  inactive_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
+  inactive_images_.l_width = inactive_images_.image_l->width();
+  inactive_images_.r_width = inactive_images_.image_r->width();
 }
 
 // static

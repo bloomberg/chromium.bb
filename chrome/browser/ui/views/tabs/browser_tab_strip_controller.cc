@@ -236,7 +236,8 @@ bool BrowserTabStripController::IsTabPinned(Tab* tab) const {
   return IsTabPinned(tabstrip_->GetModelIndexOfTab(tab));
 }
 
-const ui::ListSelectionModel& BrowserTabStripController::GetSelectionModel() {
+const ui::ListSelectionModel&
+BrowserTabStripController::GetSelectionModel() const {
   return model_->selection_model();
 }
 

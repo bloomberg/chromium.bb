@@ -28,7 +28,7 @@ class TabStripController {
   virtual ~TabStripController() {}
 
   // Returns the selection model of the tabstrip.
-  virtual const ui::ListSelectionModel& GetSelectionModel() = 0;
+  virtual const ui::ListSelectionModel& GetSelectionModel() const = 0;
 
   // Returns the number of tabs in the model.
   virtual int GetCount() const = 0;

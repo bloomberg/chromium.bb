@@ -27,7 +27,7 @@ class FakeTabController : public TabController {
   void set_immersive_style(bool value) { immersive_style_ = value; }
   void set_active_tab(bool value) { active_tab_ = value; }
 
-  const ui::ListSelectionModel& GetSelectionModel() override {
+  const ui::ListSelectionModel& GetSelectionModel() const override {
     return selection_model_;
   }
   bool SupportsMultipleSelection() override { return false; }

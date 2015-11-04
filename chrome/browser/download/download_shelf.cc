@@ -121,9 +121,9 @@ void DownloadShelf::PaintDownloadComplete(
     double animation_progress) {
   // Start at full opacity, then loop back and forth five times before ending
   // at zero opacity.
-  canvas->sk_canvas()->saveLayerAlpha(nullptr, GetOpacity(animation_progress));
+  canvas->SaveLayerAlpha(GetOpacity(animation_progress));
   PaintDownloadProgress(canvas, theme_provider, base::TimeDelta(), 100);
-  canvas->sk_canvas()->restore();
+  canvas->Restore();
 }
 
 // static
