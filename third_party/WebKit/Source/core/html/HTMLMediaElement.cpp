@@ -3593,6 +3593,22 @@ void HTMLMediaElement::setNetworkState(NetworkState state)
     }
 }
 
+void HTMLMediaElement::notifyPositionMayHaveChanged(const IntRect& visibleRect)
+{
+    m_autoplayHelper.positionChanged(visibleRect);
+}
+
+void HTMLMediaElement::updatePositionNotificationRegistration()
+{
+    m_autoplayHelper.updatePositionNotificationRegistration();
+}
+
+// TODO(liberato): remove once autoplay gesture override experiment concludes.
+void HTMLMediaElement::triggerAutoplayViewportCheckForTesting()
+{
+    m_autoplayHelper.triggerAutoplayViewportCheckForTesting();
+}
+
 #if ENABLE(WEB_AUDIO)
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {

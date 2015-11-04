@@ -39,6 +39,7 @@ namespace blink {
 class FrameView;
 class PaintLayerCompositor;
 class LayoutQuote;
+class LayoutMedia;
 
 // LayoutView is the root of the layout tree and the Document's LayoutObject.
 //
@@ -199,6 +200,16 @@ public:
     // TODO(skobes): This is not quite the ideal behavior, see http://crbug.com/250514 and http://crbug.com/249860.
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override { return false; }
 
+    // Some LayoutMedias want to know about their viewport visibility for
+    // crbug.com/487345,402044 .  This facility will be removed once those
+    // experiments complete.
+    // TODO(ojan): Merge this with IntersectionObserver once it lands.
+    void registerMediaForPositionChangeNotification(LayoutMedia&);
+    void unregisterMediaForPositionChangeNotification(LayoutMedia&);
+    // Notify all registered LayoutMedias that their position on-screen might
+    // have changed.  visibleRect is the clipping boundary.
+    void sendMediaPositionChangeNotifications(const IntRect& visibleRect);
+
 private:
     void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
 
@@ -261,6 +272,8 @@ private:
     unsigned m_hitTestCount;
     unsigned m_hitTestCacheHits;
     OwnPtrWillBePersistent<HitTestCache> m_hitTestCache;
+
+    Vector<LayoutMedia*> m_mediaForPositionNotification;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());

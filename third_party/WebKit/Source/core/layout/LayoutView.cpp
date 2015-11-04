@@ -29,10 +29,12 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutMedia.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutQuote.h"
 #include "core/layout/LayoutScrollbarPart.h"
@@ -945,6 +947,26 @@ void LayoutView::willBeDestroyed()
 {
     LayoutBlockFlow::willBeDestroyed();
     m_compositor.clear();
+}
+
+void LayoutView::registerMediaForPositionChangeNotification(LayoutMedia& media)
+{
+    if (!m_mediaForPositionNotification.contains(&media))
+        m_mediaForPositionNotification.append(&media);
+}
+
+void LayoutView::unregisterMediaForPositionChangeNotification(LayoutMedia& media)
+{
+    size_t at = m_mediaForPositionNotification.find(&media);
+    if (at != kNotFound)
+        m_mediaForPositionNotification.remove(at);
+}
+
+void LayoutView::sendMediaPositionChangeNotifications(const IntRect& visibleRect)
+{
+    for (auto& media : m_mediaForPositionNotification) {
+        media->notifyPositionMayHaveChanged(visibleRect);
+    }
 }
 
 } // namespace blink

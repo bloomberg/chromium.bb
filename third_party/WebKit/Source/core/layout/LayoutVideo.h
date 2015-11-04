@@ -77,7 +77,6 @@ private:
 
     void updatePlayer();
 
-
     LayoutSize m_cachedImageSize;
 };
 

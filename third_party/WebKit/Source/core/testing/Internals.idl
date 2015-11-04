@@ -359,4 +359,7 @@
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
 
     [TypeChecking=Interface] void setMediaElementNetworkState(HTMLMediaElement element, long state);
+
+    // TODO(liberato): remove once autoplay gesture override experiment concludes.
+    [TypeChecking=Interface] void triggerAutoplayViewportCheck(HTMLMediaElement mediaElement);
 };

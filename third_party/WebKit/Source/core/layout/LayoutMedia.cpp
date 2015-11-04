@@ -119,4 +119,36 @@ void LayoutMedia::paintReplaced(const PaintInfo&, const LayoutPoint&) const
 {
 }
 
+void LayoutMedia::willBeDestroyed()
+{
+    if (view())
+        view()->unregisterMediaForPositionChangeNotification(*this);
+    LayoutImage::willBeDestroyed();
+}
+
+void LayoutMedia::insertedIntoTree()
+{
+    LayoutImage::insertedIntoTree();
+
+    // Note that if we don't want them and aren't registered, then this
+    // will do nothing.
+    if (HTMLMediaElement* element = mediaElement())
+        element->updatePositionNotificationRegistration();
+}
+
+void LayoutMedia::notifyPositionMayHaveChanged(const IntRect& visibleRect)
+{
+    // Tell our element about it.
+    if (HTMLMediaElement* element = mediaElement())
+        element->notifyPositionMayHaveChanged(visibleRect);
+}
+
+void LayoutMedia::setRequestPositionUpdates(bool want)
+{
+    if (want)
+        view()->registerMediaForPositionChangeNotification(*this);
+    else
+        view()->unregisterMediaForPositionChangeNotification(*this);
+}
+
 } // namespace blink

@@ -577,6 +577,9 @@ public:
     void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> scrollTranslation) { m_scrollTranslation = scrollTranslation; }
     const TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
+    // TODO(ojan): Merge this with IntersectionObserver once it lands.
+    IntRect computeVisibleArea();
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);

@@ -1092,6 +1092,28 @@ void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidation
 
     m_doFullPaintInvalidation = false;
     lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
+
+    // Temporary callback for crbug.com/487345,402044
+    // TODO(ojan): Make this more general to be used by PositionObserver
+    // and rAF throttling.
+    IntRect visibleRect = rootFrameToContents(computeVisibleArea());
+    rootForPaintInvalidation.sendMediaPositionChangeNotifications(visibleRect);
+}
+
+IntRect FrameView::computeVisibleArea()
+{
+    // Return our clipping bounds in the root frame.
+    IntRect us(frameRect());
+    if (FrameView* parent = parentFrameView()) {
+        us = parent->contentsToRootFrame(us);
+        IntRect parentRect = parent->computeVisibleArea();
+        if (parentRect.isEmpty())
+            return IntRect();
+
+        us.intersect(parentRect);
+    }
+
+    return us;
 }
 
 DocumentLifecycle& FrameView::lifecycle() const

@@ -398,6 +398,9 @@ public:
 
     void setMediaElementNetworkState(HTMLMediaElement*, int state);
 
+    // TODO(liberato): remove once autoplay gesture override experiment concludes.
+    void triggerAutoplayViewportCheck(HTMLMediaElement*);
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

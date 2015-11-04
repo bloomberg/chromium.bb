@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutFullScreen.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/VideoPainter.h"
 #include "public/platform/WebLayer.h"
 

@@ -5,7 +5,6 @@
 #ifndef AutoplayExperimentHelper_h
 #define AutoplayExperimentHelper_h
 
-#include "core/html/AutoplayExperimentConfig.h"
 #include "core/page/Page.h"
 #include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
@@ -77,13 +76,49 @@ public:
     void playMethodCalled();
     void pauseMethodCalled();
     void mutedChanged();
-    void positionChanged();
+    void positionChanged(const IntRect&);
+    void updatePositionNotificationRegistration();
+
+    void triggerAutoplayViewportCheckForTesting();
+
+    enum Mode {
+        // Do not enable the autoplay experiment.
+        ExperimentOff = 0,
+        // Enable gestureless autoplay for video elements.
+        ForVideo      = 1 << 0,
+        // Enable gestureless autoplay for audio elements.
+        ForAudio      = 1 << 1,
+        // Restrict gestureless autoplay to media that is in a visible page.
+        IfPageVisible = 1 << 2,
+        // Restrict gestureless autoplay to media that is visible in
+        // the viewport.
+        IfViewport    = 1 << 3,
+        // Restrict gestureless autoplay to audio-less or muted media.
+        IfMuted       = 1 << 4,
+        // Restrict gestureless autoplay to sites which contain the
+        // viewport tag.
+        IfMobile      = 1 << 5,
+        // If gestureless autoplay is allowed, then mute the media before
+        // starting to play.
+        PlayMuted     = 1 << 6,
+    };
 
 private:
+    // Register to receive position updates, if we haven't already.  If we
+    // have, then this does nothing.
+    void registerForPositionUpdatesIfNeeded();
+
+    // Un-register for position updates, if we are currently registered.
+    void unregisterForPositionUpdatesIfNeeded();
+
     // Return true if any only if this player meets (most) of the eligibility
     // requirements for the experiment to override the need for a user
     // gesture.  This includes everything except the visibility test.
     bool isEligible() const;
+
+    // Return false if and only if m_element is not visible, and we care
+    // that it must be visible.
+    bool meetsVisibilityRequirements() const;
 
     // Set the muted flag on the media if we're in an experiment mode that
     // requires it, else do nothing.
@@ -98,25 +133,51 @@ private:
     // there are several different cases.
     void prepareToPlay(AutoplayMetrics);
 
+    // Process a timer for checking visibility.
+    void viewportTimerFired(Timer<AutoplayExperimentHelper>*);
+
     // Return our media element's document.
     Document& document() const;
 
-    inline bool enabled(AutoplayExperimentConfig::Mode mode) const
+    inline bool enabled(Mode mode) const
     {
         return ((int)m_mode) & ((int)mode);
     }
 
+    Mode fromString(const String& mode);
+
 private:
     HTMLMediaElement& m_element;
 
-    AutoplayExperimentConfig::Mode m_mode;
+    Mode m_mode;
 
     // Autoplay experiment state.
     // True if we've received a play() without a pause().
     bool m_playPending : 1;
 
-    friend class Internals;
+    // Are we registered with the view for position updates?
+    bool m_registeredWithLayoutObject : 1;
+
+    // According to our last position update, are we in the viewport?
+    bool m_wasInViewport : 1;
+
+    // According to our last position update, where was our element?
+    IntRect m_lastLocation;
+    IntRect m_lastVisibleRect;
+
+    // When was m_lastLocation set?
+    double m_lastLocationUpdateTime;
+
+    Timer<AutoplayExperimentHelper> m_viewportTimer;
 };
+
+inline AutoplayExperimentHelper::Mode& operator|=(AutoplayExperimentHelper::Mode& a,
+    const AutoplayExperimentHelper::Mode& b)
+{
+    a = static_cast<AutoplayExperimentHelper::Mode>(static_cast<int>(a) | static_cast<int>(b));
+    return a;
+}
+
 
 } // namespace blink
 

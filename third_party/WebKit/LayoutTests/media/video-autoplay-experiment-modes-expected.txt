@@ -5,7 +5,6 @@ CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 END OF TEST
   Check if the autoplay gesture override experiment works.  There are a lot
   of config options, so this test just runs all of them.
@@ -16,49 +15,56 @@ END OF TEST
   Flags  - autoplay experiment setting being tested.
                a      - "foraudio"
                v      - "forvideo"
+               V      - "ifviewport"
+               P      - "ifpagevisible"
                M      - "ifmuted"
                p      - "playmuted"
                m      - "ifmobile"
-               For example, EM means "enabled-ifmuted".
+               For example, vM means '-forvideo-ifmuted".
   Type   - audio or video element?
                audio  - 
-#	Flags	Type	Play w/	Mute	Mobile	Played?	Muted?
-0		video	none	no	no	no	-
-1		audio	none	no	no	no	-
-2	v	video	none	no	no	no	-
-3	v	audio	none	no	no	no	-
-4	vM	video	none	no	no	no	-
-5	vM	audio	none	no	no	no	-
-6	vp	video	none	no	no	no	-
-7	vp	audio	none	no	no	no	-
-8	a	video	none	no	no	no	-
-9	a	audio	none	no	no	no	-
-12		video	attr	no	no	no	-
-13		audio	attr	no	no	no	-
-14	v	video	attr	no	no	played	unmuted
-15	v	audio	attr	no	no	no	-
-16	vM	video	attr	no	no	no	-
-17	vM	audio	attr	no	no	no	-
-18	vp	video	attr	no	no	played	muted
-19	vp	audio	attr	no	no	no	-
-20	a	video	attr	no	no	no	-
-21	a	audio	attr	no	no	played	unmuted
-22	vm	video	attr	no	no	no	-
-24		video	play()	no	no	no	-
-25		audio	play()	no	no	no	-
-26	v	video	play()	no	no	played	unmuted
-27	v	audio	play()	no	no	no	-
-28	vM	video	play()	no	no	no	-
-29	vM	audio	play()	no	no	no	-
-30	vp	video	play()	no	no	played	muted
-31	vp	audio	play()	no	no	no	-
-32	a	video	play()	no	no	no	-
-33	a	audio	play()	no	no	played	unmuted
-40	vM	video	none	yes	no	no	-
-41	vM	audio	none	yes	no	no	-
-52	vM	video	attr	yes	no	played	muted
-53	vM	audio	attr	yes	no	no	-
-64	vM	video	play()	yes	no	played	muted
-65	vM	audio	play()	yes	no	no	-
-86	v	video	attr	no	yes	played	unmuted
-94	vm	video	attr	no	yes	played	unmuted
+#	Flags	Type	Play w/	Mute	Mobile	View	Early?	Played?	Muted?
+0		video	none	no	no	onscree	-	no	-
+2	v	video	none	no	no	onscree	-	no	-
+6	vV	video	none	no	no	onscree	-	no	-
+8	vVM	video	none	no	no	onscree	-	no	-
+10	vVp	video	none	no	no	onscree	-	no	-
+18		video	attr	no	no	onscree	-	no	-
+20	v	video	attr	no	no	onscree	-	played	unmuted
+22	vP	video	attr	no	no	onscree	-	played	unmuted
+24	vV	video	attr	no	no	onscree	-	played	unmuted
+26	vVM	video	attr	no	no	onscree	-	no	-
+28	vVp	video	attr	no	no	onscree	-	played	muted
+30	a	video	attr	no	no	onscree	-	no	-
+32	vm	video	attr	no	no	onscree	-	no	-
+34	aV	video	attr	no	no	onscree	-	no	-
+36		video	play()	no	no	onscree	-	no	-
+38	v	video	play()	no	no	onscree	-	played	unmuted
+42	vV	video	play()	no	no	onscree	-	played	unmuted
+44	vVM	video	play()	no	no	onscree	-	no	-
+46	vVp	video	play()	no	no	onscree	-	played	muted
+62	vVM	video	none	yes	no	onscree	-	no	-
+80	vVM	video	attr	yes	no	onscree	-	played	muted
+98	vVM	video	play()	yes	no	onscree	-	played	muted
+126		video	attr	no	no	scroll	no	no	-
+127		audio	attr	no	no	scroll	no	no	-
+128	v	video	attr	no	no	scroll	yes	played	unmuted
+132	vV	video	attr	no	no	scroll	no	played	unmuted
+136	vVp	video	attr	no	no	scroll	no	played	muted
+139	a	audio	attr	no	no	scroll	yes	played	unmuted
+143	aV	audio	attr	no	no	scroll	no	played	unmuted
+144		video	play()	no	no	scroll	no	no	-
+145		audio	play()	no	no	scroll	no	no	-
+146	v	video	play()	no	no	scroll	yes	played	unmuted
+150	vV	video	play()	no	no	scroll	no	played	unmuted
+154	vVp	video	play()	no	no	scroll	no	played	muted
+157	a	audio	play()	no	no	scroll	yes	played	unmuted
+161	aV	audio	play()	no	no	scroll	no	played	unmuted
+234		video	attr	no	no	offscre	-	no	-
+236	v	video	attr	no	no	offscre	-	played	unmuted
+240	vV	video	attr	no	no	offscre	-	no	-
+244	vVp	video	attr	no	no	offscre	-	no	-
+346	vP	video	attr	no	no	obscure	-	no	-
+452	v	video	attr	no	yes	onscree	-	played	unmuted
+464	vm	video	attr	no	yes	onscree	-	played	unmuted
+

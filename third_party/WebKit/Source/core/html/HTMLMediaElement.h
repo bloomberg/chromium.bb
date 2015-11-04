@@ -257,6 +257,10 @@ public:
     virtual bool isHTMLAudioElement() const { return false; }
     virtual bool isHTMLVideoElement() const { return false; }
 
+    // Temporary callback for crbug.com/487345,402044
+    void notifyPositionMayHaveChanged(const IntRect&);
+    void updatePositionNotificationRegistration();
+
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
     ~HTMLMediaElement() override;
@@ -445,6 +449,9 @@ private:
     void setNetworkState(NetworkState);
 
     void audioTracksTimerFired(Timer<HTMLMediaElement>*);
+
+    // TODO(liberato): remove once autoplay gesture override experiment concludes.
+    void triggerAutoplayViewportCheckForTesting();
 
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_progressEventTimer;

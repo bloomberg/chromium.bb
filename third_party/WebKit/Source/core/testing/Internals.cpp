@@ -2569,4 +2569,10 @@ void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement, int 
     mediaElement->setNetworkState(static_cast<WebMediaPlayer::NetworkState>(state));
 }
 
+// TODO(liberato): remove once autoplay gesture override experiment concludes.
+void Internals::triggerAutoplayViewportCheck(HTMLMediaElement* element)
+{
+    element->triggerAutoplayViewportCheckForTesting();
+}
+
 } // namespace blink
