@@ -1808,15 +1808,15 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
         (void (^)(NSString *result))completionHandler {
   SEL textInputSelector = @selector(webController:
             runJavaScriptTextInputPanelWithPrompt:
-                                  placeholderText:
+                                      defaultText:
                                        requestURL:
                                 completionHandler:);
   if ([self.UIDelegate respondsToSelector:textInputSelector]) {
+    GURL requestURL = net::GURLWithNSURL(frame.request.URL);
     [self.UIDelegate webController:self
         runJavaScriptTextInputPanelWithPrompt:prompt
-                              placeholderText:defaultText
-                                   requestURL:
-            net::GURLWithNSURL(frame.request.URL)
+                                  defaultText:defaultText
+                                   requestURL:requestURL
                             completionHandler:completionHandler];
   } else if (completionHandler) {
     completionHandler(nil);

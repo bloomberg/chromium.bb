@@ -37,17 +37,17 @@ class GURL;
         (void (^)(BOOL isConfirmed))completionHandler;
 
 // Displays a JavaScript input alert with an OK and Cancel button, showing the
-// provided message and placeholder text.  |completionHandler| is called after a
+// provided message and default text.  |completionHandler| is called after a
 // button is pressed.  If the OK button is pressed, |input| contains the user
 // text.  If the cancel but is pressed, |input| will be nil.  If this selector
 // isn't implemented, the completion handler provided by the web view will be
 // called with |input| = nil.
 - (void)webController:(CRWWebController*)webController
     runJavaScriptTextInputPanelWithPrompt:(NSString*)message
-                          placeholderText:(NSString*)placeholderText
+                              defaultText:(NSString*)defaultText
                                requestURL:(const GURL&)requestURL
                         completionHandler:
-        (void (^)(NSString* input))completionHandler;
+                            (void (^)(NSString* input))completionHandler;
 
 // Displays a context menu for DOM element. |point| and |view| represent the
 // location and UIView where the context menu was triggered by a user gesture.
