@@ -44,7 +44,7 @@ class ASH_EXPORT ScreenUtil {
   // general use, we should consider always using physical display in
   // window layout instead of root window, and keep the logical
   // display only in display management code.
-  static gfx::Rect GetShelfDisplayBoundsInScreen(aura::Window* window);
+  static gfx::Rect GetShelfDisplayBoundsInRoot(aura::Window* window);
 
   // TODO(oshima): Move following two to wm/coordinate_conversion.h
   // Converts |rect| from |window|'s coordinates to the virtual screen

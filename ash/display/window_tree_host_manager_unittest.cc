@@ -24,6 +24,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_handler.h"
@@ -1291,6 +1292,69 @@ TEST_F(WindowTreeHostManagerTest, ReplaceSwappedPrimary) {
   display_manager->OnNativeDisplaysChanged(display_info_list);
 
   EXPECT_EQ(20, Shell::GetScreen()->GetPrimaryDisplay().id());
+}
+
+namespace {
+
+class RootWindowTestObserver : public aura::WindowObserver {
+ public:
+  RootWindowTestObserver() {}
+  ~RootWindowTestObserver() override {}
+
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
+    shelf_display_bounds_ = ScreenUtil::GetShelfDisplayBoundsInRoot(window);
+  }
+
+  const gfx::Rect& shelf_display_bounds() const {
+    return shelf_display_bounds_;
+  }
+
+ private:
+  gfx::Rect shelf_display_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowTestObserver);
+};
+
+}  // names
+
+// Make sure that GetShelfDisplayBoundsInRoot returns the correct bounds
+// when primary display gets replaced in a following scenario.
+// 1) Two displays connected: a) b)
+// 2) both are disconnected and new one with the same size as b) is connected
+// in one configuration event.
+// See crbug.com/547280.
+TEST_F(WindowTreeHostManagerTest, ReplacePrimary) {
+  if (!SupportsMultipleDisplays())
+    return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  DisplayInfo first_display_info =
+      CreateDisplayInfo(10, 0, gfx::Display::ROTATE_0);
+  first_display_info.SetBounds(gfx::Rect(0, 0, 400, 400));
+  const DisplayInfo second_display_info =
+      CreateDisplayInfo(11, 500, gfx::Display::ROTATE_0);
+
+  std::vector<DisplayInfo> display_info_list;
+  // Extended
+  display_info_list.push_back(first_display_info);
+  display_info_list.push_back(second_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  aura::Window* primary_root = Shell::GetAllRootWindows()[0];
+
+  int64 new_display_id = 20;
+  RootWindowTestObserver test_observer;
+  primary_root->AddObserver(&test_observer);
+
+  display_info_list.clear();
+  const DisplayInfo new_first_display_info =
+      CreateDisplayInfo(new_display_id, 0, gfx::Display::ROTATE_0);
+
+  display_info_list.push_back(new_first_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ("0,0 500x500", test_observer.shelf_display_bounds().ToString());
+  primary_root->RemoveObserver(&test_observer);
 }
 
 TEST_F(WindowTreeHostManagerTest, UpdateMouseLocationAfterDisplayChange) {

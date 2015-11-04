@@ -125,7 +125,8 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
 gfx::Point GetCenterOfDisplayForView(const views::View* view,
                                      int minimum_height) {
   aura::Window* window = view->GetWidget()->GetNativeView();
-  gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInScreen(window);
+  gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInRoot(window);
+  bounds = ScreenUtil::ConvertRectToScreen(window->GetRootWindow(), bounds);
 
   // If the virtual keyboard is active, subtract it from the display bounds, so
   // that the app list is centered in the non-keyboard area of the display.

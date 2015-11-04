@@ -190,7 +190,7 @@ void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
     keyboard_bounds = keyboard_controller->current_keyboard_bounds();
   }
   gfx::Rect bounds =
-      ScreenUtil::GetShelfDisplayBoundsInScreen(window_state->window());
+      ScreenUtil::GetShelfDisplayBoundsInRoot(window_state->window());
 
   bounds.set_height(bounds.height() - keyboard_bounds.height());
 

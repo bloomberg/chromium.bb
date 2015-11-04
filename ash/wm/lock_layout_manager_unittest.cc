@@ -129,6 +129,9 @@ TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
 }
 
 TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
+  if (!SupportsHostWindowResize())
+    return;
+
   gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
 
   views::Widget::InitParams widget_params(
@@ -178,6 +181,9 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
 }
 
 TEST_F(LockLayoutManagerTest, KeyboardBounds) {
+  if (!SupportsHostWindowResize())
+    return;
+
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Rect screen_bounds = primary_display.bounds();
 

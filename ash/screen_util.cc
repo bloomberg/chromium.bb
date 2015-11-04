@@ -52,7 +52,7 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
       Shell::GetScreen()->GetDisplayNearestWindow(window).work_area());
 }
 
-gfx::Rect ScreenUtil::GetShelfDisplayBoundsInScreen(aura::Window* window) {
+gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (display_manager->IsInUnifiedMode()) {
     // In unified desktop mode, there is only one shelf in the 1st display.
@@ -65,9 +65,7 @@ gfx::Rect ScreenUtil::GetShelfDisplayBoundsInScreen(aura::Window* window) {
     size.Scale(scale, scale);
     return gfx::Rect(gfx::ToCeiledSize(size));
   } else {
-    return gfx::Screen::GetScreenFor(window)
-        ->GetDisplayNearestWindow(window)
-        .bounds();
+    return window->GetRootWindow()->bounds();
   }
 }
 
