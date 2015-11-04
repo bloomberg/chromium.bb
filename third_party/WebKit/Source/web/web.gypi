@@ -274,7 +274,6 @@
       'tests/ListenerLeakTest.cpp',
       'tests/MHTMLTest.cpp',
       'tests/WebMeaningfulLayoutsTest.cpp',
-      'tests/OpenTypeVerticalDataTest.cpp',
       'tests/PageSerializerTest.cpp',
       'tests/PaintAggregatorTest.cpp',
       'tests/PrerenderingTest.cpp',

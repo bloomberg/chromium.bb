@@ -987,6 +987,7 @@
       'fonts/SmallCapsIteratorTest.cpp',
       'fonts/android/FontCacheAndroidTest.cpp',
       'fonts/mac/FontFamilyMatcherMacTest.mm',
+      'fonts/opentype/OpenTypeVerticalDataTest.cpp',
       'fonts/shaping/CachingWordShaperTest.cpp',
       'fonts/shaping/HarfBuzzShaperTest.cpp',
       'fonts/shaping/RunSegmenterTest.cpp',
