@@ -32,43 +32,43 @@ function shouldNotBeCalled() {
 
 function shouldBeRed(x, y) {
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBeTrue("d[0] == 255");
-    shouldBeTrue("d[1] == 0");
-    shouldBeTrue("d[2] == 0");
-    shouldBeTrue("d[3] == 255");
+    shouldBe("d[0]", "255");
+    shouldBe("d[1]", "0");
+    shouldBe("d[2]", "0");
+    shouldBe("d[3]", "255");
 }
 
 function shouldBeGreen(x, y) {
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBeTrue("d[0] == 0");
-    shouldBeTrue("d[1] == 255");
-    shouldBeTrue("d[2] == 0");
-    shouldBeTrue("d[3] == 255");
+    shouldBe("d[0]", "0");
+    shouldBe("d[1]", "255");
+    shouldBe("d[2]", "0");
+    shouldBe("d[3]", "255");
 }
 
 function shouldBeBlue(x, y) {
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBeTrue("d[0] == 0");
-    shouldBeTrue("d[1] == 0");
-    shouldBeTrue("d[2] == 255");
-    shouldBeTrue("d[3] == 255");
+    shouldBe("d[0]", "0");
+    shouldBe("d[1]", "0");
+    shouldBe("d[2]", "255");
+    shouldBe("d[3]", "255");
 }
 
 function shouldBeBlack(x, y) {
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBeTrue("d[0] == 0");
-    shouldBeTrue("d[1] == 0");
-    shouldBeTrue("d[2] == 0");
-    shouldBeTrue("d[3] == 255");
+    shouldBe("d[0]", "0");
+    shouldBe("d[1]", "0");
+    shouldBe("d[2]", "0");
+    shouldBe("d[3]", "255");
 }
 
 function shouldBeClear(x, y) {
     // should be transparent black pixels
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBeTrue("d[0] == 0");
-    shouldBeTrue("d[1] == 0");
-    shouldBeTrue("d[2] == 0");
-    shouldBeTrue("d[3] == 0");
+    shouldBe("d[0]", "0");
+    shouldBe("d[1]", "0");
+    shouldBe("d[2]", "0");
+    shouldBe("d[3]", "0");
 }
 
 function drawPattern(ctx) {

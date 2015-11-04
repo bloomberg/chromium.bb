@@ -12,3001 +12,3001 @@ Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is imageWidth
 PASS bitmap.height is imageHeight
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop center.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop right.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 60
 PASS bitmap.height is 60
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop right.
 PASS bitmap.width is 50
 PASS bitmap.height is 50
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Checking HTMLCanvasElement.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is imageWidth
 PASS bitmap.height is imageHeight
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop center.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop right.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 60
 PASS bitmap.height is 60
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop right.
 PASS bitmap.width is 50
 PASS bitmap.height is 50
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Checking ImageData.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is imageWidth
 PASS bitmap.height is imageHeight
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop center.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop right.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 60
 PASS bitmap.height is 60
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop right.
 PASS bitmap.width is 50
 PASS bitmap.height is 50
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Checking CanvasRenderingContext2D.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is imageWidth
 PASS bitmap.height is imageHeight
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop center.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop right.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 60
 PASS bitmap.height is 60
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop right.
 PASS bitmap.width is 50
 PASS bitmap.height is 50
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Checking ImageBitmap.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is imageWidth
 PASS bitmap.height is imageHeight
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop center.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop right.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 60
 PASS bitmap.height is 60
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop right.
 PASS bitmap.width is 50
 PASS bitmap.height is 50
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Checking Blob.
 Check no crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is imageWidth
 PASS bitmap.height is imageHeight
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop center.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop right.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 60
 PASS bitmap.height is 60
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 255 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 255 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 255
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 255
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check over crop right.
 PASS bitmap.width is 50
 PASS bitmap.height is 50
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check crop.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 10
 PASS bitmap.height is 10
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 255 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 255 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 255
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 255
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 Check empty.
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 PASS bitmap.width is 30
 PASS bitmap.height is 30
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
-PASS d[0] == 0 is true
-PASS d[1] == 0 is true
-PASS d[2] == 0 is true
-PASS d[3] == 0 is true
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
+PASS d[0] is 0
+PASS d[1] is 0
+PASS d[2] is 0
+PASS d[3] is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

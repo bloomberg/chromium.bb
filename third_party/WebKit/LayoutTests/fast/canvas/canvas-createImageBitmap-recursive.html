@@ -10,25 +10,25 @@ window.jsTestIsAsync = true;
 
 function shouldBeFilled(x, y, w, h) {
     shouldBeGreen(x+2, y+2);
-    shouldBeGreen(x+w-2, y+h-2);
+    shouldBeGreen(x+w-3, y+h-3);
     shouldBeGreen(x+w/2, y+h/2);
     shouldBeClear(x-2, y-2);
     shouldBeClear(x+w+2, y+h+2);
 }
 function shouldBeGreen(x, y) {
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBeTrue("d[0] == 0");
-    shouldBeTrue("d[1] == 255");
-    shouldBeTrue("d[2] == 0");
-    shouldBeTrue("d[3] == 255");
+    shouldBe("d[0]", "0");
+    shouldBe("d[1]", "255");
+    shouldBe("d[2]", "0");
+    shouldBe("d[3]", "255");
 }
 function shouldBeClear(x, y) {
     // should be transparent black pixels
     d = ctx.getImageData(x, y, 1, 1).data;
-    shouldBeTrue("d[0] == 0");
-    shouldBeTrue("d[1] == 0");
-    shouldBeTrue("d[2] == 0");
-    shouldBeTrue("d[3] == 0");
+    shouldBe("d[0]", "0");
+    shouldBe("d[1]", "0");
+    shouldBe("d[2]", "0");
+    shouldBe("d[3]", "0");
 }
 function shouldNotBeCalled() {
     testFailed("Promise was rejected.");
@@ -127,6 +127,7 @@ function checkDrawnToRect(bitmap, x, y, w, h) {
         shouldBeFilled(x3, y3, w3, h3);
 
         clearContext(ctx);
+        ctx.imageSmoothingEnabled=false;
         ctx.drawImage(imageBitmap, x1, y1, w1, h1, 0, 0, 50, 50);
         shouldBeFilled(0, 0, 50, 50);
     }
