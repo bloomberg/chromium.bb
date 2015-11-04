@@ -254,6 +254,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(creis): Make bindings frame-specific, to support cases like <webview>.
   int GetEnabledBindings();
 
+  // The unique ID of the latest NavigationEntry that this RenderFrameHost is
+  // showing. This may change even when this frame hasn't committed a page,
+  // such as for a new subframe navigation in a different frame.
+  int nav_entry_id() const { return nav_entry_id_; }
+  void set_nav_entry_id(int nav_entry_id) { nav_entry_id_ = nav_entry_id; }
+
+  // A NavigationHandle for the pending navigation in this frame, if any. This
+  // is cleared when the navigation commits.
   NavigationHandleImpl* navigation_handle() const {
     return navigation_handle_.get();
   }
@@ -754,6 +762,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Used to track whether a commit is expected in this frame. Only used in
   // tests.
   bool pending_commit_;
+
+  // The unique ID of the latest NavigationEntry that this RenderFrameHost is
+  // showing. This may change even when this frame hasn't committed a page,
+  // such as for a new subframe navigation in a different frame.  Tracking this
+  // allows us to send things like title and state updates to the latest
+  // relevant NavigationEntry.
+  int nav_entry_id_;
 
   // Used to swap out or shut down this RFH when the unload event is taking too
   // long to execute, depending on the number of active frames in the

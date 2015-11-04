@@ -326,11 +326,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // currently using it.
   int ref_count() { return frames_ref_count_; }
 
-  // TODO(avi): Move to RenderFrameHost once PageState is broken up into
-  // FrameStates.
-  int nav_entry_id() const { return nav_entry_id_; }
-  void set_nav_entry_id(int nav_entry_id) { nav_entry_id_ = nav_entry_id; }
-
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better
@@ -438,11 +433,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // used as context when other session history related IPCs arrive.
   // TODO(creis): Allocate this in WebContents/NavigationController instead.
   int32 page_id_;
-
-  // The unique ID of the latest NavigationEntry that this RenderViewHost is
-  // showing. TODO(avi): Move to RenderFrameHost once PageState is broken up
-  // into FrameStates.
-  int nav_entry_id_;
 
   // Tracks whether this RenderViewHost is in an active state.  False if the
   // main frame is pending swap out, pending deletion, or swapped out, because

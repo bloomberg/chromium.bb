@@ -145,6 +145,13 @@ bool ShouldKeepOverride(const NavigationEntry* last_entry) {
   return last_entry && last_entry->GetIsOverridingUserAgent();
 }
 
+// Helper method for FrameTree::ForEach to set the nav_entry_id on each current
+// RenderFrameHost in the tree.
+bool SetFrameNavEntryID(int nav_entry_id, FrameTreeNode* node) {
+  node->current_frame_host()->set_nav_entry_id(nav_entry_id);
+  return true;
+}
+
 }  // namespace
 
 // NavigationControllerImpl ----------------------------------------------------
@@ -947,13 +954,13 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   NotifyNavigationEntryCommitted(details);
 
-  // Update the RenderViewHost of the top-level RenderFrameHost's notion of what
-  // entry it's showing for use later.
-  RenderFrameHostImpl* main_frame =
-      rfh->frame_tree_node()->frame_tree()->root()->current_frame_host();
-  static_cast<RenderViewHostImpl*>(main_frame->GetRenderViewHost())->
-      set_nav_entry_id(active_entry->GetUniqueID());
-
+  // Update the nav_entry_id for each RenderFrameHost in the tree, so that each
+  // one knows the latest NavigationEntry it is showing (whether it has
+  // committed anything in this navigation or not). This allows things like
+  // state and title updates from RenderFrames to apply to the latest relevant
+  // NavigationEntry.
+  delegate_->GetFrameTree()->ForEach(
+      base::Bind(&SetFrameNavEntryID, active_entry->GetUniqueID()));
   return true;
 }
 

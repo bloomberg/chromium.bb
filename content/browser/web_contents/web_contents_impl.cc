@@ -3890,7 +3890,7 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
     return;
 
   NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
-      rvhi->nav_entry_id());
+      static_cast<RenderFrameHostImpl*>(rvhi->GetMainFrame())->nav_entry_id());
 
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // TODO(creis): We can't properly update state for cross-process subframes
@@ -4074,10 +4074,8 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       render_frame_host->GetSiteInstance(), page_id);
 
-  RenderViewHostImpl* rvhi =
-      static_cast<RenderViewHostImpl*>(render_frame_host->GetRenderViewHost());
   NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
-      rvhi->nav_entry_id());
+      static_cast<RenderFrameHostImpl*>(render_frame_host)->nav_entry_id());
   DCHECK_EQ(entry, new_entry);
 
   // We can handle title updates when we don't have an entry in
