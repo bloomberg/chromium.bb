@@ -1,22 +1,22 @@
 
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 Frame appended
-Animation created: start time is valid
+Animation started: start time is valid
 

@@ -12,7 +12,7 @@ function appendIframe()
 
 function test()
 {
-    InspectorTest.eventHandler["Animation.animationCreated"] = onCreated;
+    InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
     InspectorTest.sendCommand("Animation.enable", {});
     InspectorTest.evaluateInPage("appendIframe()", frameAttached);
     var numberAnimationsCaptured = 0;
@@ -23,13 +23,15 @@ function test()
         InspectorTest.log("Frame appended");
     }
 
-    function onCreated(data)
+    function onStarted(data)
     {
-        var player = data.params.player;
+        var animation = data.params.animation;
 
-        if (!lastStartTime || player.startTime > lastStartTime)
-            InspectorTest.log("Animation created: start time is valid");
-        lastStartTime = player.startTime;
+        if (!lastStartTime || animation.startTime >= lastStartTime)
+            InspectorTest.log("Animation started: start time is valid");
+        else if (lastStartTime)
+            InspectorTest.log("Animation started: invalid startTime!" + animation.startTime + "." + lastStartTime);
+        lastStartTime = animation.startTime;
         numberAnimationsCaptured++;
 
         if (numberAnimationsCaptured < 10)

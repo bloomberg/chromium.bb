@@ -203,7 +203,6 @@ crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Failure Pass ]
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Failure Pass ]
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
-crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ Failure Pass ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 crbug.com/516364 svg/animations/smil-leak-element-instances.svg [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
