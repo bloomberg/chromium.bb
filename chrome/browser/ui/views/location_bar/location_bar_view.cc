@@ -219,7 +219,8 @@ void LocationBarView::Init() {
 
   // Determine the font for use inside the bubbles.  The bubble background
   // images have 1 px thick edges, which we don't want to overlap.
-  const int kBubbleInteriorVerticalPadding = 1;
+  const int kBubbleInteriorVerticalPadding =
+      ui::MaterialDesignController::IsModeMaterial() ? 2 : 1;
   const int bubble_padding =
       GetVerticalEdgeThickness() +
       GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
