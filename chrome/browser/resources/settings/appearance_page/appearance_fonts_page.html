@@ -1,0 +1,96 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+<link rel="import" href="appearance_font_menu.html">
+
+<dom-module id="settings-appearance-fonts-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css"
+      href="chrome://md-settings/appearance_page/appearance_shared.css">
+  <template>
+    <div>[[selectedStandardFont_]]</div>
+    <div class="control-row">
+      <div i18n-content="fontSize"></div>
+      <paper-slider id="sizeSlider" value="{{fontSizeIndex_}}"
+          max="[[fontSizeRangeLimit_]]"
+          immediate-value="{{immediateSizeIndex_}}"
+          on-immediate-value-change="immediateSizeIndexChanged_">
+      </paper-slider>
+    </div>
+    <div class="control-row">
+      <settings-appearance-font-menu id="standardFont"
+          i18n-values="label:standardFont"
+          pref="{{prefs.webkit.webprefs.fonts.standard.Zyyy}}"
+          menuOptions="[[fontOptions_]]">
+      </settings-appearance-font-menu>
+      <div class="control-column"
+          style$="[[computeStyle_(defaultFontSize_,
+              prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
+        <span>[[defaultFontSize_]]</span>:
+        <span i18n-content="loremIpsum"></span>
+      </div>
+    </div>
+    <div class="control-row">
+      <settings-appearance-font-menu id="serifFont"
+          i18n-values="label:serifFont"
+          pref="{{prefs.webkit.webprefs.fonts.serif.Zyyy}}"
+          menuOptions="[[fontOptions_]]">
+      </settings-appearance-font-menu>
+      <div class="control-column"
+          style$="[[computeStyle_(defaultFontSize_,
+              prefs.webkit.webprefs.fonts.serif.Zyyy.value)]]">
+        <span>[[defaultFontSize_]]</span>:
+        <span i18n-content="loremIpsum"></span>
+      </div>
+    </div>
+    <div class="control-row">
+      <settings-appearance-font-menu id="sansSerifFont"
+          i18n-values="label:sansSerifFont"
+          pref="{{prefs.webkit.webprefs.fonts.sansserif.Zyyy}}"
+          menuOptions="[[fontOptions_]]">
+      </settings-appearance-font-menu>
+      <div class="control-column"
+          style$="{{computeStyle_(defaultFontSize_,
+              prefs.webkit.webprefs.fonts.sansserif.Zyyy.value)}}">
+        <span>[[defaultFontSize_]]</span>:
+        <span i18n-content="loremIpsum"></span>
+      </div>
+    </div>
+    <div class="control-row">
+      <settings-appearance-font-menu id="fixedFont"
+          i18n-values="label:fixedWidthFont"
+          pref="{{prefs.webkit.webprefs.fonts.fixed.Zyyy}}"
+          menuOptions="[[fontOptions_]]">
+      </settings-appearance-font-menu>
+      <div class="control-column"
+          style$="[[computeStyle_(defaultFontSize_,
+              prefs.webkit.webprefs.fonts.fixed.Zyyy.value)]]">
+        <span i18n-content="loremIpsum"></span>
+      </div>
+    </div>
+    <div class="control-row">
+      <div class="control-column">
+        <div class="control-title" i18n-content="minimumFont"></div>
+        <paper-slider id="minimumSizeSlider" value="{{minimumSizeIndex_}}"
+            max="[[minimumFontSizeRangeLimit_]]"
+            immediate-value="{{immediateMinimumSizeIndex_}}"
+            on-immediate-value-change="immediateMinimumSizeIndexChanged_">
+        </paper-slider>
+      </div>
+      <div class="control-column"
+          style$="[[computeStyle_(minimumFontSize_,
+              prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
+        <span>[[minimumFontSize_]]</span>:
+        <span i18n-content="loremIpsum"></span>
+      </div>
+    </div>
+    <div class="control-row">
+      <settings-appearance-font-menu id="encoding"
+          i18n-values="label:encoding"
+          pref="{{prefs.intl.charset_default}}"
+          menuOptions="[[encodingOptions_]]">
+      </settings-appearance-font-menu>
+    </div>
+  </template>
+  <script src="appearance_fonts_page.js"></script>
+</dom-module>

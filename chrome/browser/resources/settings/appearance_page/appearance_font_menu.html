@@ -1,0 +1,26 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+
+<dom-module id="settings-appearance-font-menu">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css"
+      href="chrome://md-settings/appearance_page/appearance_shared.css">
+  <template>
+    <paper-dropdown-menu id="dropdownMenu"
+        label="[[menuLabel_]]" disabled>
+      <paper-menu class="dropdown-content" selected="{{selected_}}">
+        <template is="dom-repeat" items="[[menuOptions]]">
+          <paper-item>[[item.1]]</paper-item>
+        </template>
+        <template is="dom-if" if="[[showNotFoundValue_]]">
+          <paper-item>[[i18n('custom')]]</paper-item>
+        </template>
+      </paper-menu>
+    </paper-dropdown-menu>
+  </template>
+  <script src="appearance_font_menu.js"></script>
+</dom-module>
