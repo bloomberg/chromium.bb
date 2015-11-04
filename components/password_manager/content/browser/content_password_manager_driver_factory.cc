@@ -82,7 +82,7 @@ ContentPasswordManagerDriverFactory::GetDriverForFrame(
 void ContentPasswordManagerDriverFactory::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   // This is called twice for the main frame.
-  if (!frame_driver_map_[render_frame_host])
+  if (!ContainsKey(frame_driver_map_, render_frame_host))
     CreateDriverForFrame(render_frame_host);
 }
 
@@ -107,6 +107,8 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
 
 void ContentPasswordManagerDriverFactory::CreateDriverForFrame(
     content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->IsRenderFrameLive())
+    return;
   DCHECK(!frame_driver_map_[render_frame_host]);
   frame_driver_map_[render_frame_host] = new ContentPasswordManagerDriver(
       render_frame_host, password_client_, autofill_client_);
