@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/callback_helpers.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,6 +26,8 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/origin_util.h"
@@ -69,6 +72,64 @@ bool ContentTypeIsRequested(ContentSettingsType type,
   return false;
 }
 
+// This helper class helps to measure the number of media stream requests that
+// occur. It ensures that only one request will be recorded per navigation, per
+// frame. TODO(raymes): Remove this when https://crbug.com/526324 is fixed.
+class MediaPermissionRequestLogger : content::WebContentsObserver {
+  // Map of <render process id, render frame id> ->
+  // MediaPermissionRequestLogger.
+  using RequestMap =
+      base::ScopedPtrMap<std::pair<int, int>,
+                         scoped_ptr<MediaPermissionRequestLogger>>;
+
+ public:
+  static void LogRequest(content::WebContents* contents,
+                         int render_process_id,
+                         int render_frame_id,
+                         bool is_secure) {
+    RequestMap::key_type key =
+        std::make_pair(render_process_id, render_frame_id);
+    if (!ContainsKey(GetRequestMap(), key)) {
+      UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
+                            is_secure);
+      GetRequestMap().set(key, make_scoped_ptr(new MediaPermissionRequestLogger(
+                                   contents, key)));
+    }
+  }
+
+ private:
+  MediaPermissionRequestLogger(content::WebContents* contents,
+                               RequestMap::key_type key)
+      : WebContentsObserver(contents), key_(key) {}
+
+  void PageChanged(content::RenderFrameHost* render_frame_host) {
+    if (std::make_pair(render_frame_host->GetProcess()->GetID(),
+                       render_frame_host->GetRoutingID()) == key_) {
+      GetRequestMap().erase(key_);
+    }
+  }
+
+  static RequestMap& GetRequestMap() {
+    CR_DEFINE_STATIC_LOCAL(RequestMap, request_map, ());
+    return request_map;
+  }
+
+  // content::WebContentsObserver overrides
+  void DidNavigateAnyFrame(
+      content::RenderFrameHost* render_frame_host,
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override {
+    PageChanged(render_frame_host);
+  }
+
+  void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) override {
+    PageChanged(render_frame_host);
+  }
+
+  RequestMap::key_type key_;
+};
+
 }  // namespace
 
 MediaStreamDevicesController::MediaStreamDevicesController(
@@ -80,8 +141,9 @@ MediaStreamDevicesController::MediaStreamDevicesController(
       callback_(callback),
       persist_permission_changes_(true) {
   if (request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
-    UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
-                          content::IsOriginSecure(request_.security_origin));
+    MediaPermissionRequestLogger::LogRequest(
+        web_contents, request.render_process_id, request.render_frame_id,
+        content::IsOriginSecure(request_.security_origin));
   }
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   content_settings_ = TabSpecificContentSettings::FromWebContents(web_contents);
