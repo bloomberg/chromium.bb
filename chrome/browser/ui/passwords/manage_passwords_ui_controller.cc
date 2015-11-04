@@ -354,6 +354,11 @@ void ManagePasswordsUIController::OnNopeUpdateClicked() {
 }
 
 void ManagePasswordsUIController::OnNoInteractionOnUpdate() {
+  if (state() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    // Do nothing if the state was changed. It can happen for example when the
+    // update bubble is active and a page navigation happens.
+    return;
+  }
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   DCHECK(form_manager);
