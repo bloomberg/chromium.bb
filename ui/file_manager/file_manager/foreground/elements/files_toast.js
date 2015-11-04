@@ -31,7 +31,7 @@ var FilesToast = Polymer({
    */
   created: function() {
     /**
-     * @private {{text: string, callback: function()}}
+     * @private {?{text: string, callback: function()}}
      */
     this.action_ = null;
 
