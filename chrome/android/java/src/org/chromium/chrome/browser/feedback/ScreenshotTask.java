@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feedback;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -47,7 +48,10 @@ public final class ScreenshotTask {
      */
     public static void create(Activity activity, final ScreenshotTaskCallback callback) {
         if (activity instanceof ChromeActivity) {
-            createCompositorScreenshot(((ChromeActivity) activity).getWindowAndroid(), callback);
+            Rect rect = new Rect();
+            activity.getWindow().getDecorView().getRootView().getWindowVisibleDisplayFrame(rect);
+            createCompositorScreenshot(((ChromeActivity) activity).getWindowAndroid(), rect,
+                    callback);
             return;
         }
 
@@ -72,7 +76,7 @@ public final class ScreenshotTask {
     }
 
     private static void createCompositorScreenshot(WindowAndroid windowAndroid,
-            final ScreenshotTaskCallback callback) {
+            Rect windowRect, final ScreenshotTaskCallback callback) {
         SnapshotResultCallback resultCallback = new SnapshotResultCallback() {
             @Override
             public void onCompleted(byte[] pngBytes) {
@@ -80,7 +84,8 @@ public final class ScreenshotTask {
                         ? BitmapFactory.decodeByteArray(pngBytes, 0, pngBytes.length) : null);
             }
         };
-        nativeGrabWindowSnapshotAsync(resultCallback, windowAndroid.getNativePointer());
+        nativeGrabWindowSnapshotAsync(resultCallback, windowAndroid.getNativePointer(),
+                windowRect.width(), windowRect.height());
     }
 
     /**
@@ -116,5 +121,5 @@ public final class ScreenshotTask {
     private ScreenshotTask() {}
 
     private static native void nativeGrabWindowSnapshotAsync(SnapshotResultCallback callback,
-            long nativeWindowAndroid);
+            long nativeWindowAndroid, int width, int height);
 }

@@ -41,14 +41,15 @@ void SnapshotCallback(JNIEnv* env,
 void GrabWindowSnapshotAsync(JNIEnv* env,
                              const JavaParamRef<jclass>& clazz,
                              const JavaParamRef<jobject>& jcallback,
-                             jlong native_window_android) {
+                             jlong native_window_android,
+                             jint window_width,
+                             jint window_height) {
   WindowAndroid* window_android = reinterpret_cast<WindowAndroid*>(
       native_window_android);
-  // TODO(jinsukkim): Use window bounds once WindowAndroid provides it.
-  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  gfx::Rect window_bounds(window_width, window_height);
   ui::GrabWindowSnapshotAsync(
       window_android,
-      display.bounds(),
+      window_bounds,
       base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&SnapshotCallback,
                  env,
