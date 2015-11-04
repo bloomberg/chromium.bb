@@ -15,9 +15,9 @@
 
 class DevToolsNetworkConditions;
 class DevToolsNetworkInterceptor;
-class DevToolsNetworkTransaction;
 
-// DevToolsNetworkController tracks DevToolsNetworkTransactions.
+// DevToolsNetworkController manages interceptors identified by client id
+// and their throttling conditions.
 class DevToolsNetworkController {
  public:
   DevToolsNetworkController();
@@ -29,7 +29,7 @@ class DevToolsNetworkController {
       scoped_ptr<DevToolsNetworkConditions> conditions);
 
   base::WeakPtr<DevToolsNetworkInterceptor> GetInterceptor(
-      DevToolsNetworkTransaction* transaction);
+      const std::string& client_id);
 
  private:
   using InterceptorMap =

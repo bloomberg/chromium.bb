@@ -53,14 +53,6 @@ class DevToolsNetworkTransaction
 
   ~DevToolsNetworkTransaction() override;
 
-  // Checks if request contains DevTools specific headers. Found values are
-  // remembered and corresponding keys are removed from headers.
-  void ProcessRequest();
-
-  const std::string& client_id() const {
-    return client_id_;
-  }
-
   // DevToolsNetworkInterceptor::Throttable implementation.
   bool HasStarted() override;
   bool HasFailed() override;
@@ -110,6 +102,11 @@ class DevToolsNetworkTransaction
   friend class test::DevToolsNetworkControllerHelper;
 
  private:
+  // Checks whether request contains
+  // "X-DevTools-Emulate-Network-Conditions-Client-Id" header.
+  // If it does, header is removed from request, and it's value is returned.
+  void ProcessRequest(std::string* client_id);
+
   // Proxy callback handler. Runs saved callback.
   void OnCallback(int result);
 
@@ -127,7 +124,7 @@ class DevToolsNetworkTransaction
   // True if Fail was already invoked.
   bool failed_;
 
-  // Value of "X-DevTools-Emulate-Network-Conditions-Client-Id" request header.
+  // Value of  request header.
   std::string client_id_;
 
   enum CallbackType {

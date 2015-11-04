@@ -6,7 +6,6 @@
 
 #include "chrome/browser/devtools/devtools_network_conditions.h"
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
-#include "chrome/browser/devtools/devtools_network_transaction.h"
 #include "net/http/http_request_info.h"
 
 DevToolsNetworkController::DevToolsNetworkController()
@@ -19,17 +18,9 @@ DevToolsNetworkController::~DevToolsNetworkController() {
 
 base::WeakPtr<DevToolsNetworkInterceptor>
 DevToolsNetworkController::GetInterceptor(
-    DevToolsNetworkTransaction* transaction) {
+    const std::string& client_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(transaction->HasStarted());
-
-  if (!interceptors_.size())
-    return default_interceptor_->GetWeakPtr();
-
-  transaction->ProcessRequest();
-
-  const std::string& client_id = transaction->client_id();
-  if (client_id.empty())
+  if (!interceptors_.size() || client_id.empty())
     return default_interceptor_->GetWeakPtr();
 
   DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);

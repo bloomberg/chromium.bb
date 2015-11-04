@@ -141,10 +141,14 @@ int DevToolsNetworkTransaction::Start(
     const net::BoundNetLog& net_log) {
   DCHECK(request);
   request_ = request;
-  interceptor_ = controller_->GetInterceptor(this);
-  interceptor_->AddThrottable(this);
 
-  if (interceptor_->ShouldFail()) {
+  std::string client_id;
+  ProcessRequest(&client_id);
+  interceptor_ = controller_->GetInterceptor(client_id);
+  if (interceptor_)
+    interceptor_->AddThrottable(this);
+
+  if (interceptor_ && interceptor_->ShouldFail()) {
     failed_ = true;
     network_transaction_->SetBeforeNetworkStartCallback(
         BeforeNetworkStartCallback());
@@ -154,7 +158,7 @@ int DevToolsNetworkTransaction::Start(
   return SetupCallback(callback, rv, START);
 }
 
-void DevToolsNetworkTransaction::ProcessRequest() {
+void DevToolsNetworkTransaction::ProcessRequest(std::string* client_id) {
   DCHECK(request_);
   bool has_devtools_client_id = request_->extra_headers.HasHeader(
       kDevToolsEmulateNetworkConditionsClientId);
@@ -163,7 +167,7 @@ void DevToolsNetworkTransaction::ProcessRequest() {
 
   custom_request_.reset(new net::HttpRequestInfo(*request_));
   custom_request_->extra_headers.GetHeader(
-      kDevToolsEmulateNetworkConditionsClientId, &client_id_);
+      kDevToolsEmulateNetworkConditionsClientId, client_id);
   custom_request_->extra_headers.RemoveHeader(
       kDevToolsEmulateNetworkConditionsClientId);
   request_ = custom_request_.get();
