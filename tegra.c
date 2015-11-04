@@ -54,7 +54,8 @@ static inline uint32_t align_up(uint32_t value, uint32_t alignment)
 }
 
 static void compute_layout_blocklinear(int width, int height, int format,
-				       enum nv_mem_kind *kind, uint32_t *block_height_log2,
+				       enum nv_mem_kind *kind,
+				       uint32_t *block_height_log2,
 				       uint32_t *stride, uint32_t *size)
 {
 	int pitch = width * gbm_bytes_from_format(format);
@@ -65,7 +66,8 @@ static void compute_layout_blocklinear(int width, int height, int format,
 	/* Compute padded height. */
 	*block_height_log2 = compute_block_height_log2(height);
 	int block_height = 1 << *block_height_log2;
-	int padded_height = align_up(height, NV_BLOCKLINEAR_GOB_HEIGHT * block_height);
+	int padded_height =
+		align_up(height, NV_BLOCKLINEAR_GOB_HEIGHT * block_height);
 
 	int bytes = pitch * padded_height;
 
@@ -87,8 +89,8 @@ static void compute_layout_linear(int width, int height, int format,
 	*size = *stride * height;
 }
 
-static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
-			       uint32_t format, uint32_t flags)
+static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width,
+			       uint32_t height, uint32_t format, uint32_t flags)
 {
 	uint32_t size, stride, block_height_log2 = 0;
 	enum nv_mem_kind kind = NV_MEM_KIND_PITCH;
@@ -124,8 +126,8 @@ static int gbm_tegra_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t heigh
 		gem_tile.mode = DRM_TEGRA_GEM_TILING_MODE_BLOCK;
 		gem_tile.value = block_height_log2;
 
-		ret = drmCommandWriteRead(bo->gbm->fd, DRM_TEGRA_GEM_SET_TILING, &gem_tile,
-					  sizeof(gem_tile));
+		ret = drmCommandWriteRead(bo->gbm->fd, DRM_TEGRA_GEM_SET_TILING,
+					  &gem_tile, sizeof(gem_tile));
 		if (ret < 0) {
 			gbm_gem_bo_destroy(bo);
 			return ret;

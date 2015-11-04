@@ -25,7 +25,8 @@ struct gbm_i915_device
 
 static int get_gen(int device_id)
 {
-	const uint16_t gen3_ids[] = {0x2582, 0x2592, 0x2772, 0x27A2, 0x27AE, 0x29C2, 0x29B2, 0x29D2, 0xA001, 0xA011};
+	const uint16_t gen3_ids[] = {0x2582, 0x2592, 0x2772, 0x27A2, 0x27AE,
+				     0x29C2, 0x29B2, 0x29D2, 0xA001, 0xA011};
 	unsigned i;
 	for(i = 0; i < ARRAY_SIZE(gen3_ids); i++)
 		if (gen3_ids[i] == device_id)
@@ -68,7 +69,8 @@ void gbm_i915_close(struct gbm_device *gbm)
 	gbm->priv = NULL;
 }
 
-static void i915_align_dimensions(struct gbm_device *gbm, uint32_t tiling_mode, uint32_t *width, uint32_t *height, int bpp)
+static void i915_align_dimensions(struct gbm_device *gbm, uint32_t tiling_mode,
+				  uint32_t *width, uint32_t *height, int bpp)
 {
 	struct gbm_i915_device *i915_gbm = (struct gbm_i915_device *)gbm->priv;
 	uint32_t width_alignment = 4, height_alignment = 4;
@@ -107,7 +109,8 @@ static void i915_align_dimensions(struct gbm_device *gbm, uint32_t tiling_mode, 
 	}
 }
 
-static int i915_verify_dimensions(struct gbm_device *gbm, uint32_t stride, uint32_t height)
+static int i915_verify_dimensions(struct gbm_device *gbm, uint32_t stride,
+				  uint32_t height)
 {
 	struct gbm_i915_device *i915_gbm = (struct gbm_i915_device *)gbm->priv;
 	if (i915_gbm->gen <= 3 && stride > 8192)
@@ -116,7 +119,8 @@ static int i915_verify_dimensions(struct gbm_device *gbm, uint32_t stride, uint3
 	return 1;
 }
 
-int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
+int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
+		       uint32_t format, uint32_t flags)
 {
 	struct gbm_device *gbm = bo->gbm;
 	int bpp = gbm_bytes_from_format(format);
@@ -158,7 +162,8 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint3
 		gem_set_tiling.handle = bo->handle.u32;
 		gem_set_tiling.tiling_mode = tiling_mode;
 		gem_set_tiling.stride = bo->stride;
-		ret = drmIoctl(gbm->fd, DRM_IOCTL_I915_GEM_SET_TILING, &gem_set_tiling);
+		ret = drmIoctl(gbm->fd, DRM_IOCTL_I915_GEM_SET_TILING,
+			       &gem_set_tiling);
 	} while (ret == -1 && (errno == EINTR || errno == EAGAIN));
 
 	if (ret == -1) {

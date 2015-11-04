@@ -88,7 +88,8 @@ int gbm_is_format_supported(struct gbm_bo *bo)
 	return 1;
 }
 
-int gbm_dumb_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
+int gbm_dumb_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
+		       uint32_t format, uint32_t flags)
 {
 	struct drm_mode_create_dumb create_dumb;
 	int ret;

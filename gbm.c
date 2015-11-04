@@ -13,26 +13,6 @@
 #include "gbm_priv.h"
 #include "util.h"
 
-/*
-gbm_buffer_base.cc:  gbm_bo_get_width(bo),
-gbm_buffer_base.cc:  gbm_bo_get_height(bo),
-gbm_buffer_base.cc:  gbm_bo_get_stride(bo),
-gbm_buffer_base.cc:  gbm_bo_get_handle(bo).u32,
-gbm_buffer_base.cc:  return gbm_bo_get_handle(bo_).u32;
-gbm_buffer_base.cc:  return gfx::Size(gbm_bo_get_width(bo_), gbm_bo_get_height(bo_));
-gbm_buffer.cc:    gbm_bo_destroy(bo());
-gbm_buffer.cc:  gbm_bo* bo = gbm_bo_create(device,
-gbm_surface.cc:    gbm_bo_set_user_data(bo, this, GbmSurfaceBuffer::Destroy);
-gbm_surface.cc:      static_cast<GbmSurfaceBuffer*>(gbm_bo_get_user_data(buffer)));
-gbm_surface.cc:    gbm_surface_release_buffer(native_surface_, current_buffer_);
-gbm_surface.cc:    gbm_surface_destroy(native_surface_);
-gbm_surface.cc:  native_surface_ = gbm_surface_create(
-gbm_surface.cc:  gbm_bo* pending_buffer = gbm_surface_lock_front_buffer(native_surface_);
-gbm_surface.cc:    gbm_surface_release_buffer(native_surface_, current_buffer_);
-ozone_platform_gbm.cc:        device_(gbm_create_device(dri_->get_fd())) {}
-ozone_platform_gbm.cc:    gbm_device_destroy(device_);
-*/
-
 extern struct gbm_driver gbm_driver_cirrus;
 #ifdef GBM_EXYNOS
 extern struct gbm_driver gbm_driver_exynos;
@@ -108,7 +88,7 @@ gbm_device_get_backend_name(struct gbm_device *gbm)
 
 PUBLIC int
 gbm_device_is_format_supported(struct gbm_device *gbm,
-                             uint32_t format, uint32_t usage)
+			       uint32_t format, uint32_t usage)
 {
 	unsigned i;
 
@@ -169,9 +149,13 @@ PUBLIC void gbm_device_destroy(struct gbm_device *gbm)
 	free(gbm);
 }
 
-PUBLIC struct gbm_surface *gbm_surface_create(struct gbm_device *gbm, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
+PUBLIC struct gbm_surface *gbm_surface_create(struct gbm_device *gbm,
+					      uint32_t width, uint32_t height,
+					      uint32_t format, uint32_t flags)
 {
-	struct gbm_surface *surface = (struct gbm_surface*) malloc(sizeof(*surface));
+	struct gbm_surface *surface =
+		(struct gbm_surface*) malloc(sizeof(*surface));
+
 	if (!surface)
 		return NULL;
 
@@ -188,11 +172,14 @@ PUBLIC struct gbm_bo *gbm_surface_lock_front_buffer(struct gbm_surface *surface)
 	return NULL;
 }
 
-PUBLIC void gbm_surface_release_buffer(struct gbm_surface *surface, struct gbm_bo *bo)
+PUBLIC void gbm_surface_release_buffer(struct gbm_surface *surface,
+				       struct gbm_bo *bo)
 {
 }
 
-PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
+PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
+				    uint32_t height, uint32_t format,
+				    uint32_t flags)
 {
 	struct gbm_bo *bo;
 	int ret;

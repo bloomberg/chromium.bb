@@ -14,7 +14,8 @@
 #include "gbm_priv.h"
 #include "helpers.h"
 
-int gbm_rockchip_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint32_t format, uint32_t flags)
+int gbm_rockchip_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height,
+			   uint32_t format, uint32_t flags)
 {
 	size_t size = width * height * gbm_bytes_from_format(format);
 	struct drm_rockchip_gem_create gem_create;
