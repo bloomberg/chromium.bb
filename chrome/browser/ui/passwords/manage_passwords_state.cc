@@ -202,6 +202,45 @@ void ManagePasswordsState::ProcessLoginsChanged(
   }
 }
 
+void ManagePasswordsState::ChooseCredential(
+    const autofill::PasswordForm& form,
+    password_manager::CredentialType credential_type) {
+  DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state());
+  DCHECK(!credentials_callback().is_null());
+
+  // Here, |credential_type| refers to whether the credential was originally
+  // passed into ::OnRequestCredentials as part of the |local_credentials| or
+  // |federated_credentials| lists (e.g. whether it is an existing credential
+  // saved for this origin, or whether we should synthesize a new
+  // FederatedCredential).
+  //
+  // If |credential_type| is federated, the credential MUST be returned as
+  // a FederatedCredential in order to prevent password information leaking
+  // cross-origin.
+  //
+  // If |credential_type| is local, the credential MIGHT be a PasswordCredential
+  // or it MIGHT be a FederatedCredential. We inspect the |federation_url|
+  // field to determine which we should return.
+  //
+  // TODO(mkwst): Clean this up. It is confusing.
+  password_manager::CredentialType type_to_return;
+  if (credential_type ==
+          password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD &&
+      form.federation_url.is_empty()) {
+    type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD;
+  } else if (credential_type ==
+             password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {
+    type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY;
+  } else {
+    type_to_return =
+        password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED;
+  }
+  password_manager::CredentialInfo info =
+      password_manager::CredentialInfo(form, type_to_return);
+  credentials_callback().Run(info);
+  set_credentials_callback(ManagePasswordsState::CredentialsCallback());
+}
+
 void ManagePasswordsState::ClearData() {
   form_manager_.reset();
   current_forms_weak_.clear();

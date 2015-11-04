@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "url/gurl.h"
 
@@ -77,6 +78,13 @@ class ManagePasswordsState {
   // Updates the internal state applying |changes|.
   void ProcessLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes);
+
+  // Called when the user chooses a credential. Using data from |form| and
+  // |credential_type| it constructs the object which next is passed to the
+  // credentials callback. Method should be called in the
+  // CREDENTIAL_REQUEST_STATE state.
+  void ChooseCredential(const autofill::PasswordForm& form,
+                        password_manager::CredentialType credential_type);
 
   password_manager::ui::State state() const { return state_; }
   const GURL& origin() const { return origin_; }

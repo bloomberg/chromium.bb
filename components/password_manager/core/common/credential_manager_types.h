@@ -34,6 +34,8 @@ struct CredentialInfo {
   CredentialInfo(const autofill::PasswordForm& form, CredentialType form_type);
   ~CredentialInfo();
 
+  bool operator==(const CredentialInfo& rhs) const;
+
   CredentialType type;
 
   // An identifier (username, email address, etc). Corresponds to

@@ -60,5 +60,10 @@ scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
   form->username_value = info.id;
   return form.Pass();
 }
+bool CredentialInfo::operator==(const CredentialInfo& rhs) const {
+  return (type == rhs.type && id == rhs.id && name == rhs.name &&
+          icon == rhs.icon && password == rhs.password &&
+          federation == rhs.federation);
+}
 
 }  // namespace password_manager
