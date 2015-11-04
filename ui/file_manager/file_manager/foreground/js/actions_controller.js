@@ -78,12 +78,8 @@ function ActionsController(
   /**
    * @private {ActionsController.Context}
    */
-  this.focusContext_ = ActionsController.Context.FILE_LIST;
+  this.menuContext_ = ActionsController.Context.UNKNOWN;
 
-  this.updateContext_(document.activeElement);
-
-  document.addEventListener(
-      'focus', this.onDocumentFocus_.bind(this), true);
   this.ui_.directoryTree.addEventListener(
       'change', this.onNavigationListSelectionChanged_.bind(this), true);
   this.selectionHandler_.addEventListener(
@@ -130,7 +126,7 @@ ActionsController.prototype.getContextFor_ = function(element) {
  * @private
  */
 ActionsController.prototype.updateUI_ = function() {
-  var actionsModel = this.getActionsModelForContext(this.focusContext_);
+  var actionsModel = this.getActionsModelForContext(this.menuContext_);
   // TODO(mtomasz): Prevent flickering somehow.
   this.ui_.actionsSubmenu.setActionsModel(actionsModel);
 };
@@ -139,32 +135,9 @@ ActionsController.prototype.updateUI_ = function() {
  * @param {!Event} event
  * @private
  */
-ActionsController.prototype.onDocumentFocus_ = function(event) {
-  if (!this.updateContext_(document.activeElement))
-    return;
-
-  // Update UI with the model for the focused context.
-  this.updateUI_();
-};
-
-/**
- * @param {!Event} event
- * @private
- */
 ActionsController.prototype.onContextMenuShow_ = function(event) {
-  if (this.updateContext_(event.element))
-    this.updateUI_();
-};
-
-/**
- * @param {!HTMLElement} element
- * @return {boolean} Whether the context has changed.
- * @private
- */
-ActionsController.prototype.updateContext_ = function(element) {
-  var previousContext = this.focusContext_;
-  this.focusContext_ = this.getContextFor_(element);
-  return this.focusContext_ != previousContext;
+  this.menuContext_ = this.getContextFor_(event.element);
+  this.updateUI_();
 };
 
 /**
