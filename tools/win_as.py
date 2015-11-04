@@ -57,20 +57,29 @@ def main(argv):
       #
       # Run the C compiler as a preprocessor and pipe the output into a string
       #
-      p = subprocess.Popen(['cl.exe',
-                            '/nologo',
-                            '/D__ASSEMBLER__',
-                            '/DNACL_BUILD_ARCH=' + nacl_build_arch,
-                            '/DNACL_BUILD_SUBARCH=' + str(nacl_build_subarch),
-                            '/DNACL_WINDOWS=1',
-                            '/TP',
-                            '/E',
-                            '/I' + nacl_path,
-                            filename],
+      cl_command = ['cl.exe',
+                    '/nologo',
+                    '/D__ASSEMBLER__',
+                    '/DNACL_BUILD_ARCH=' + nacl_build_arch,
+                    '/DNACL_BUILD_SUBARCH=' + str(nacl_build_subarch),
+                    '/DNACL_WINDOWS=1',
+                    '/TP',
+                    '/E',
+                    '/I' + nacl_path,
+                    filename]
+      p = subprocess.Popen(cl_command,
                            shell=True,
                            stdout=subprocess.PIPE,
-                           stderr=open(os.devnull, 'w'))
-      cl_output = p.communicate()[0]
+                           stderr=subprocess.PIPE)
+      cl_results = p.communicate()
+      cl_status = p.returncode
+      cl_output = cl_results[0]
+      cl_errors = cl_results[1]
+
+      if cl_status != 0:
+        print >>sys.stderr, 'FAILED: %s\n%s\n' % (' '.join(cl_command),
+                                                  cl_errors)
+        return cl_status
 
       #
       # Uncomment this if you need to see exactly what the MSVC preprocessor
@@ -88,30 +97,34 @@ def main(argv):
       foo = re.compile(r'^#line ', re.MULTILINE)
       cl_output = foo.sub(r'#', cl_output)
 
-      if p.wait() == 0: # success
-        #
-        # Pipe the preprocessor output into the assembler
-        #
-        p = subprocess.Popen([nacl_path + as_exe,
-                              '-defsym','@feat.00=1',
-                              '--' + str(nacl_build_subarch),
-                              '-o', output_filename ],
-                             stdin=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        as_output, as_error = p.communicate(cl_output)
+      #
+      # Pipe the preprocessor output into the assembler
+      #
+      as_command = [nacl_path + as_exe,
+                    '-defsym','@feat.00=1',
+                    '--' + str(nacl_build_subarch),
+                    '-o', output_filename]
+      p = subprocess.Popen(as_command,
+                           stdin=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+      as_output, as_error = p.communicate(cl_output)
+      as_status = p.returncode
 
-        #
-        # massage the assembler stderr into a format that Visual Studio likes
-        #
-        as_error = re.sub(r'\{standard input\}', filename, as_error)
-        as_error = re.sub(r':([0-9]+):', r'(\1) :', as_error)
-        as_error = re.sub(r'Error', 'error', as_error)
-        as_error = re.sub(r'Warning', 'warning', as_error)
+      #
+      # massage the assembler stderr into a format that Visual Studio likes
+      #
+      as_error = re.sub(r'\{standard input\}', filename, as_error)
+      as_error = re.sub(r':([0-9]+):', r'(\1) :', as_error)
+      as_error = re.sub(r'Error', 'error', as_error)
+      as_error = re.sub(r'Warning', 'warning', as_error)
 
-        if as_error:
-          print >>sys.stderr, as_error
+      if as_error:
+        print >>sys.stderr, as_error
 
-      # endif
+      if as_status != 0:
+        print >>sys.stderr, 'FAILED: %s\n' % ' '.join(as_command)
+        return as_status
+
     # endfor
 
   except getopt.error, e:
