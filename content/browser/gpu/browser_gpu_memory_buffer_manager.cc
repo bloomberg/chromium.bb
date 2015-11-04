@@ -146,11 +146,12 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::RGBX_8888,
         gfx::BufferFormat::BGRA_8888, gfx::BufferFormat::BGRX_8888,
         gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
+    const gfx::BufferUsage kGPUReadWriteUsages[] = {
+        gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT};
     for (auto& format : kGPUReadWriteFormats) {
-      if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(
-              format, gfx::BufferUsage::SCANOUT)) {
-        configurations.insert(
-            std::make_pair(format, gfx::BufferUsage::SCANOUT));
+      for (auto& usage : kGPUReadWriteUsages) {
+        if (IsNativeGpuMemoryBufferFactoryConfigurationSupported(format, usage))
+          configurations.insert(std::make_pair(format, usage));
       }
     }
   }
