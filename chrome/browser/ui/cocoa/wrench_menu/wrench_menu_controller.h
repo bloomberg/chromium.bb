@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
@@ -126,20 +127,22 @@ class ZoomLevelObserver;
 
   MenuTrackedRootView* toolbarActionsOverflowItem_;
   BrowserActionsContainerView* overflowActionsContainerView_;
+
+  base::mac::ObjCPropertyReleaser propertyReleaser_;
 }
 
-@property(assign, nonatomic) IBOutlet MenuTrackedRootView* editItem;
-@property(assign, nonatomic) IBOutlet NSButton* editCut;
-@property(assign, nonatomic) IBOutlet NSButton* editCopy;
-@property(assign, nonatomic) IBOutlet NSButton* editPaste;
-@property(assign, nonatomic) IBOutlet MenuTrackedRootView* zoomItem;
-@property(assign, nonatomic) IBOutlet NSButton* zoomPlus;
-@property(assign, nonatomic) IBOutlet NSButton* zoomDisplay;
-@property(assign, nonatomic) IBOutlet NSButton* zoomMinus;
-@property(assign, nonatomic) IBOutlet NSButton* zoomFullScreen;
-@property(assign, nonatomic)
+@property(retain, nonatomic) IBOutlet MenuTrackedRootView* editItem;
+@property(retain, nonatomic) IBOutlet NSButton* editCut;
+@property(retain, nonatomic) IBOutlet NSButton* editCopy;
+@property(retain, nonatomic) IBOutlet NSButton* editPaste;
+@property(retain, nonatomic) IBOutlet MenuTrackedRootView* zoomItem;
+@property(retain, nonatomic) IBOutlet NSButton* zoomPlus;
+@property(retain, nonatomic) IBOutlet NSButton* zoomDisplay;
+@property(retain, nonatomic) IBOutlet NSButton* zoomMinus;
+@property(retain, nonatomic) IBOutlet NSButton* zoomFullScreen;
+@property(retain, nonatomic)
     IBOutlet MenuTrackedRootView* toolbarActionsOverflowItem;
-@property(assign, nonatomic)
+@property(retain, nonatomic)
     IBOutlet BrowserActionsContainerView* overflowActionsContainerView;
 
 - (id)initWithController:(WrenchMenuController*)controller;

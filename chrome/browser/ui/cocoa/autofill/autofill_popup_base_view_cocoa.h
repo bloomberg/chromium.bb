@@ -15,7 +15,7 @@ class AutofillPopupViewDelegate;
 
 @interface AutofillPopupBaseViewCocoa : BaseView {
  @private
-   __weak autofill::AutofillPopupViewDelegate* delegate_;
+   autofill::AutofillPopupViewDelegate* delegate_;  // weak
 }
 
 - (NSColor*)backgroundColor;

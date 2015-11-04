@@ -29,7 +29,7 @@ class Observer;
   scoped_ptr<ProfileMenuControllerInternal::Observer> observer_;
 
   // The main menu item to which the profile menu is attached.
-  __weak NSMenuItem* mainMenuItem_;
+  NSMenuItem* mainMenuItem_;  // weak
 }
 
 // Designated initializer.

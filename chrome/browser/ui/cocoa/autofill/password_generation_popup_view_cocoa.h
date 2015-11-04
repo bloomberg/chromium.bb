@@ -23,7 +23,7 @@ class AutofillPopupController;
     : AutofillPopupBaseViewCocoa <NSTextViewDelegate> {
  @private
   // The cross-platform controller for this view.
-  __weak autofill::PasswordGenerationPopupController* controller_;
+  autofill::PasswordGenerationPopupController* controller_;  // weak
 
   base::scoped_nsobject<NSView> passwordSection_;
   base::scoped_nsobject<NSTextField> passwordField_;

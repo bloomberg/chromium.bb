@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -55,7 +56,7 @@ class Browser;
 @interface AvatarMenuItemController : NSViewController<NSAnimationDelegate> {
  @private
   // The parent menu controller; owns this.
-  __weak AvatarMenuBubbleController* controller_;
+  AvatarMenuBubbleController* controller_;  // weak
 
   // The index of the item in the AvatarMenu.
   size_t menuIndex_;
@@ -68,22 +69,24 @@ class Browser;
   base::scoped_nsobject<NSAnimation> linkAnimation_;
 
   // Instance variables that back the outlets.
-  __weak NSImageView* iconView_;
-  __weak NSImageView* activeView_;
-  __weak NSTextField* nameField_;
+  NSImageView* iconView_;
+  NSImageView* activeView_;
+  NSTextField* nameField_;
   // These two views sit on top of each other, and only one is visible at a
   // time. The editButton_ is visible when the mouse is over the item and the
   // emailField_ is visible otherwise.
-  __weak NSTextField* emailField_;
-  __weak NSButton* editButton_;
+  NSTextField* emailField_;
+  NSButton* editButton_;
+
+  base::mac::ObjCPropertyReleaser propertyReleaser_;
 }
 @property(readonly, nonatomic) size_t menuIndex;
 @property(assign, nonatomic) BOOL isHighlighted;
-@property(assign, nonatomic) IBOutlet NSImageView* iconView;
-@property(assign, nonatomic) IBOutlet NSImageView* activeView;
-@property(assign, nonatomic) IBOutlet NSTextField* nameField;
-@property(assign, nonatomic) IBOutlet NSTextField* emailField;
-@property(assign, nonatomic) IBOutlet NSButton* editButton;
+@property(retain, nonatomic) IBOutlet NSImageView* iconView;
+@property(retain, nonatomic) IBOutlet NSImageView* activeView;
+@property(retain, nonatomic) IBOutlet NSTextField* nameField;
+@property(retain, nonatomic) IBOutlet NSTextField* emailField;
+@property(retain, nonatomic) IBOutlet NSButton* editButton;
 
 // Designated initializer.
 - (id)initWithMenuIndex:(size_t)menuIndex
@@ -108,7 +111,8 @@ class Browser;
 @interface AvatarMenuItemView : NSView {
  @private
   // The controller that manages this.
-  __weak AvatarMenuItemController* viewController_;
+  // weak to not form a reference cycle with the controller.
+  __unsafe_unretained AvatarMenuItemController* viewController_;
 
   // Used to highlight the background on hover.
   ui::ScopedCrTrackingArea trackingArea_;

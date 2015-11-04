@@ -17,7 +17,7 @@ class AutofillPopupController;
 @interface AutofillPopupViewCocoa : AutofillPopupBaseViewCocoa {
  @private
   // The cross-platform controller for this view.
-  __weak autofill::AutofillPopupController* controller_;
+  autofill::AutofillPopupController* controller_;  // weak
 }
 
 // Designated initializer.

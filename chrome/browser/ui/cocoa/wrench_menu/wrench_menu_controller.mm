@@ -573,6 +573,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 - (id)initWithController:(WrenchMenuController*)controller {
   if ((self = [super initWithNibName:@"WrenchMenu"
                               bundle:base::mac::FrameworkBundle()])) {
+    propertyReleaser_.Init(self, [WrenchMenuButtonViewController class]);
     controller_ = controller;
     [[NSNotificationCenter defaultCenter]
         addObserver:self

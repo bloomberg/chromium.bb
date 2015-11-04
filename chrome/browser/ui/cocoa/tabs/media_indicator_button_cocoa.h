@@ -43,14 +43,14 @@ class AnimationDelegate;
   // Target and action invoked whenever a fade-in/out animation completes.  This
   // is used by TabController to layout the TabView after an indicator has
   // completely faded out.
-  __weak id animationDoneTarget_;
+  id animationDoneTarget_;  // weak
   SEL animationDoneAction_;
 
   // The image to show when the mouse hovers over the button.
   base::scoped_nsobject<NSImage> affordanceImage_;
 
   // Target and action invoked whenever an enabled button is clicked.
-  __weak id clickTarget_;
+  id clickTarget_;  // weak
   SEL clickAction_;
 }
 

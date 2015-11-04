@@ -480,6 +480,7 @@ const CGFloat kSupervisedUserSpacing = 26.0;
           menuController:(AvatarMenuBubbleController*)controller {
   if ((self = [super initWithNibName:@"AvatarMenuItem"
                               bundle:base::mac::FrameworkBundle()])) {
+    propertyReleaser_.Init(self, [AvatarMenuItemController class]);
     menuIndex_ = menuIndex;
     controller_ = controller;
     [self loadView];
