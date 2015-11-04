@@ -217,7 +217,7 @@ source_set("test_support") {
     ]
   }
 
-  if (enable_plugins) {
+  if (enable_plugins && enable_pdf) {
     deps += [ "//pdf" ]
   }
 

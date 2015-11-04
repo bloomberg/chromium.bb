@@ -520,6 +520,11 @@
             '../win8/win8.gyp:metro_viewer',
           ],
         }],
+        ['chromecast==1', {
+          'dependencies': [
+            '../chromecast/chromecast.gyp:cast_shell',
+          ]
+        }]
       ],
     },
     {

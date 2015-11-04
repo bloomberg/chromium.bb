@@ -185,7 +185,7 @@ if (!is_android) {
         "//chrome/installer/util",
         "//content/public/app:both",
       ]
-      if (enable_plugins) {
+      if (enable_plugins && enable_pdf) {
         deps += [ "//pdf" ]
       }
 
@@ -370,7 +370,7 @@ if (is_mac || is_win) {
       ]
     }
 
-    if (enable_plugins && !is_multi_dll_chrome) {
+    if (enable_plugins && enable_pdf && !is_multi_dll_chrome) {
       deps += [ "//pdf" ]
     }
   }
@@ -423,7 +423,7 @@ if (is_mac || is_win) {
         #   },
         # }],
       }
-      if (enable_plugins) {
+      if (enable_plugins && enable_pdf) {
         deps += [ "//pdf" ]
       }
     }

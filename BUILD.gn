@@ -79,7 +79,7 @@ group("both_gn_and_gyp") {
     "//url:url_unittests",
   ]
 
-  if (!is_ios && !is_android) {
+  if (!is_ios && !is_android && !is_chromecast) {
     deps += [
       "//chrome",
       "//chrome/test:browser_tests",
@@ -542,6 +542,9 @@ group("both_gn_and_gyp") {
       "//media/cast:cast_unittests",
     ]
   }
+  if (is_chromecast) {
+    deps += [ "//chromecast:cast_shell" ]
+  }
 }
 
 group("gn_only") {
@@ -549,7 +552,7 @@ group("gn_only") {
 
   deps = []
 
-  if (!is_ios) {
+  if (!is_ios && !is_chromecast) {
     deps += [ "//mandoline:all" ]
   }
 
@@ -561,7 +564,7 @@ group("gn_only") {
     deps += [ "//components/mus/example:all" ]
   }
 
-  if (is_linux && !is_chromeos) {
+  if (is_linux && !is_chromeos && !is_chromecast) {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
     deps += [
