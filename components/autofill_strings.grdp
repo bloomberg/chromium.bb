@@ -17,15 +17,28 @@
   <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
     Automatic credit card filling is disabled because this form does not use a secure connection.
   </message>
-  <message name="IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an autocomplete form history suggestion.">
-    Remove form suggestion from Chrome?
-  </message>
-  <message name="IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete a credit card from Chrome Autofill.">
-    Remove credit card from Chrome?
-  </message>
-  <message name="IDS_AUTOFILL_DELETE_PROFILE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an address from Chrome Autofill.">
-    Remove address from Chrome?
-  </message>
+  <if expr="_google_chrome">
+    <message name="IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an autocomplete form history suggestion.">
+      Remove form suggestion from Chrome?
+    </message>
+    <message name="IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete a credit card from Autofill.">
+      Remove credit card from Chrome?
+    </message>
+    <message name="IDS_AUTOFILL_DELETE_PROFILE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an address from Autofill.">
+      Remove address from Chrome?
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an autocomplete form history suggestion.">
+      Remove form suggestion from Chromium?
+    </message>
+    <message name="IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete a credit card from Autofill.">
+      Remove credit card from Chromium?
+    </message>
+    <message name="IDS_AUTOFILL_DELETE_PROFILE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an address from Autofill.">
+      Remove address from Chromium?
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_CC_AMEX" desc="Full American Express credit card name.">
     American Express
   </message>
@@ -159,9 +172,16 @@
   <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
     Don't save
   </message>
-  <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
-    Do you want Chrome to save this credit card information for completing web forms?
-  </message>
+  <if expr="_google_chrome">
+    <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
+      Do you want Chrome to save this credit card information for completing web forms?
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
+      Do you want Chromium to save this credit card information for completing web forms?
+    </message>
+  </if>
 
   <!-- Autofill save credit card bubble -->
   <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_ACCEPT" desc="Text to show for the Autofill save credit card bubble accept button.">
@@ -170,9 +190,16 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_DENY" desc="Text to show for the Autofill save credit card bubble deny button.">
     No thanks
   </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL" desc="Title text for the Autofill save card bubble when the card is to be saved locally.">
-    Do you want to save this card with Chrome?
-  </message>
+  <if expr="_google_chrome">
+    <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL" desc="Title text for the Autofill save card bubble when the card is to be saved locally.">
+      Do you want Chrome to save this card?
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_AUTOFILL_SAVE_CARD_BUBBLE_TITLE_LOCAL" desc="Title text for the Autofill save card bubble when the card is to be saved locally.">
+      Do you want Chromium to save this card?
+    </message>
+  </if>
 
   <!-- Autofill credit card unmask prompt -->
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN" desc="Error message that encourages the user to try to re-enter their credit card CVC after a previous failed attempt.">
@@ -181,9 +208,16 @@
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_WITH_EXPIRATION" desc="Error message that encourages the user to try to re-enter their credit card expiration date and CVC after a previous failed attempt.">
     Check your expiration date and CVC and try again
   </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT" desc="Error message to show when a credit card cannot be verified and the user isn't allowed to retry.">
-    Chrome was unable to verify your card at this time. Please try again later.
-  </message>
+  <if expr="_google_chrome">
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT" desc="Error message to show when a credit card cannot be verified and the user isn't allowed to retry.">
+      Chrome was unable to verify your card at this time. Please try again later.
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT" desc="Error message to show when a credit card cannot be verified and the user isn't allowed to retry.">
+      Chromium was unable to verify your card at this time. Please try again later.
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_NETWORK" desc="Error message to show when a credit card cannot be verified because Wallet servers can't be reached.">
     There was a problem verifying your card. Check your internet connection and try again.
   </message>
