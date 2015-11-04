@@ -9,6 +9,7 @@ https://gerrit-review.googlesource.com/Documentation/rest-api.html
 """
 
 import base64
+import cookielib
 import httplib
 import json
 import logging
@@ -91,6 +92,7 @@ class NetrcAuthenticator(Authenticator):
 
   def __init__(self):
     self.netrc = self._get_netrc()
+    self.gitcookies = self._get_gitcookies()
 
   @staticmethod
   def _get_netrc():
@@ -114,8 +116,39 @@ class NetrcAuthenticator(Authenticator):
         raise
       return netrc.netrc(os.devnull)
 
+  @staticmethod
+  def _get_gitcookies():
+    gitcookies = {}
+    path = os.path.join(os.environ['HOME'], '.gitcookies')
+    try:
+      f = open(path, 'rb')
+    except IOError:
+      return gitcookies
+
+    with f:
+      for line in f:
+        try:
+          fields = line.strip().split('\t')
+          if line.strip().startswith('#') or len(fields) != 7:
+            continue
+          domain, xpath, key, value = fields[0], fields[2], fields[5], fields[6]
+          if xpath == '/' and key == 'o':
+            login, secret_token = value.split('=', 1)
+            gitcookies[domain] = (login, secret_token)
+        except (IndexError, ValueError, TypeError) as exc:
+          logging.warning(exc)
+
+    return gitcookies
+
   def get_auth_header(self, host):
-    auth = self.netrc.authenticators(host)
+    auth = None
+    for domain, creds in self.gitcookies.iteritems():
+      if cookielib.domain_match(host, domain):
+        auth = (creds[0], None, creds[1])
+        break
+
+    if not auth:
+      auth = self.netrc.authenticators(host)
     if auth:
       return 'Basic %s' % (base64.b64encode('%s:%s' % (auth[0], auth[2])))
     return None
