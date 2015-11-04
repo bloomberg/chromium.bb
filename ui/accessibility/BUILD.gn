@@ -109,9 +109,6 @@ if (is_android) {
     sources = [
       "ax_enums.idl",
     ]
-    outputs = [
-      "org/chromium/ui/accessibility/AXTextStyle.java",
-    ]
   }
 }
 

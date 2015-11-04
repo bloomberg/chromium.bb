@@ -208,16 +208,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/ssl/security_state_model.h",
     "//chrome/browser/ui/android/infobars/infobar_android.h",
   ]
-  outputs = [
-    "org/chromium/chrome/browser/ActivityTypeIds.java",
-    "org/chromium/chrome/browser/feedback/ConnectivityCheckResult.java",
-    "org/chromium/chrome/browser/ntp/MostVisitedTileType.java",
-    "org/chromium/chrome/browser/ShortcutSource.java",
-    "org/chromium/chrome/browser/TabLoadStatus.java",
-    "org/chromium/chrome/browser/profiles/ProfileAccountManagementMetrics.java",
-    "org/chromium/chrome/browser/ssl/ConnectionSecurityLevel.java",
-    "org/chromium/chrome/browser/infobar/ActionType.java",
-  ]
 }
 
 # GYP: //chrome/chrome_browser.gypi:document_tab_model_info_proto_java

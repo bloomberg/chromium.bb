@@ -70,16 +70,6 @@ java_cpp_enum("java_enums_srcjar") {
     "resources/resource_manager.h",
     "resources/system_ui_resource_type.h",
   ]
-  outputs = [
-    "org/chromium/ui/WindowOpenDisposition.java",
-    "org/chromium/ui/base/PageTransition.java",
-    "org/chromium/ui/base/HoverType.java",
-    "org/chromium/ui/base/PointerType.java",
-    "org/chromium/ui/base/ime/TextInputType.java",
-    "org/chromium/ui/gfx/BitmapFormat.java",
-    "org/chromium/ui/resources/AndroidResourceType.java",
-    "org/chromium/ui/resources/SystemUIResourceType.java",
-  ]
 }
 
 java_strings_grd("ui_strings_grd") {

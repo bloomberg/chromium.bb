@@ -133,23 +133,6 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/common/speech_recognition_error.h",
     "//content/public/common/top_controls_state.h",
   ]
-  outputs = [
-    "org/chromium/content/browser/ConsumerType.java",
-    "org/chromium/content/browser/GestureEventType.java",
-    "org/chromium/content/browser/OrientationSensorType.java",
-    "org/chromium/content/browser/input/CanonicalAxisIndex.java",
-    "org/chromium/content/browser/input/CanonicalButtonIndex.java",
-    "org/chromium/content/browser/input/PopupItemType.java",
-    "org/chromium/content_public/browser/InvalidateTypes.java",
-    "org/chromium/content_public/browser/navigation_controller/LoadURLType.java",
-    "org/chromium/content_public/browser/navigation_controller/UserAgentOverrideOption.java",
-    "org/chromium/content_public/browser/readback_types/ReadbackResponse.java",
-    "org/chromium/content_public/common/ConsoleMessageLevel.java",
-    "org/chromium/content_public/common/ResultCode.java",
-    "org/chromium/content_public/common/ScreenOrientationValues.java",
-    "org/chromium/content_public/common/SpeechRecognitionErrorCode.java",
-    "org/chromium/content_public/common/TopControlsState.java",
-  ]
 }
 
 generate_jar_jni("jar_jni") {

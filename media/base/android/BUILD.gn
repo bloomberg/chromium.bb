@@ -126,10 +126,6 @@ java_cpp_enum("media_java_enums_srcjar") {
     "//media/capture/video/android/video_capture_device_android.h",
     "//media/capture/video/video_capture_device.h",
   ]
-  outputs = [
-    "org/chromium/media/AndroidImageFormat.java",
-    "org/chromium/media/CaptureApiType.java",
-  ]
 }
 
 android_library("media_java") {

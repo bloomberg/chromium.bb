@@ -65,9 +65,6 @@ java_cpp_enum("net_java_test_support_enums_srcjar") {
   sources = [
     "../test/url_request/url_request_failed_job.h",
   ]
-  outputs = [
-    "org/chromium/net/test/FailurePhase.java",
-  ]
 }
 
 java_cpp_enum("net_android_java_enums_srcjar") {
@@ -78,15 +75,6 @@ java_cpp_enum("net_android_java_enums_srcjar") {
     "keystore.h",
     "network_change_notifier_android.cc",
     "traffic_stats.cc",
-  ]
-  outputs = [
-    "org/chromium/net/CertificateMimeType.java",
-    "org/chromium/net/CertVerifyStatusAndroid.java",
-    "org/chromium/net/ConnectionSubtype.java",
-    "org/chromium/net/ConnectionType.java",
-    "org/chromium/net/NetId.java",
-    "org/chromium/net/PrivateKeyType.java",
-    "org/chromium/net/TrafficStatsError.java",
   ]
 }
 

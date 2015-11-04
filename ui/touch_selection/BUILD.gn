@@ -105,16 +105,10 @@ if (is_android) {
     sources = [
       "selection_event_type.h",
     ]
-    outputs = [
-      "org/chromium/ui/touch_selection/SelectionEventType.java",
-    ]
   }
   java_cpp_enum("ui_touch_handle_orientation_srcjar") {
     sources = [
       "touch_handle_orientation.h",
-    ]
-    outputs = [
-      "org/chromium/ui/touch_selection/TouchHandleOrientation.java",
     ]
   }
 }

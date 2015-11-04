@@ -150,7 +150,4 @@ java_cpp_enum("aw_permission_request_resource") {
   sources = [
     "permission/aw_permission_request.h",
   ]
-  outputs = [
-    "org/chromium/android_webview/permission/Resource.java",
-  ]
 }

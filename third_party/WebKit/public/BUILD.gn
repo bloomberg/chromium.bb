@@ -87,12 +87,6 @@ if (is_android) {
       "./web/WebInputEvent.h",
       "./web/WebTextInputType.h",
     ]
-    outputs = [
-      "org/chromium/blink_public/platform/WebDisplayMode.java",
-      "org/chromium/blink_public/web/WebInputEventModifier.java",
-      "org/chromium/blink_public/web/WebInputEventType.java",
-      "org/chromium/blink_public/web/WebTextInputFlags.java",
-    ]
   }
 
   # GYP version: WebKit/public/blink_headers.gyp:blink_headers_java

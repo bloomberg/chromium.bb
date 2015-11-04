@@ -1722,12 +1722,6 @@ if (is_android) {
       "android/library_loader/library_loader_hooks.h",
       "memory/memory_pressure_listener.h",
     ]
-    outputs = [
-      "org/chromium/base/ApplicationState.java",
-      "org/chromium/base/library_loader/LibraryLoadFromApkStatusCodes.java",
-      "org/chromium/base/library_loader/LibraryProcessType.java",
-      "org/chromium/base/MemoryPressureLevel.java",
-    ]
   }
 
   # GYP: //base/base.gyp:base_native_libraries_gen

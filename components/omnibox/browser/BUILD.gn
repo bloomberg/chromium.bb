@@ -145,9 +145,6 @@ if (is_android) {
     sources = [
       "autocomplete_match_type.h",
     ]
-    outputs = [
-      "org/chromium/chrome/browser/omnibox/OmniboxSuggestionType.java",
-    ]
   }
 }
 
