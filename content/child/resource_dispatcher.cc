@@ -192,6 +192,7 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
 
   request_info->buffer.reset(
       new base::SharedMemory(shm_handle, true));  // read only
+  request_info->has_received_buffer = true;
   request_info->received_data_factory =
       make_scoped_refptr(new SharedMemoryReceivedDataFactory(
           message_sender_, request_id, request_info->buffer));
@@ -224,6 +225,11 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   bool send_ack = true;
   if (request_info && data_length > 0) {
+    // TODO(erikchen): Temporary debugging. http://crbug.com/550938.
+    CHECK(request_info->has_received_buffer);
+    CHECK(!request_info->has_destroyed_buffer);
+    CHECK(request_info->buffer.get());
+
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
@@ -342,6 +348,7 @@ void ResourceDispatcher::OnRequestComplete(
     return;
   request_info->completion_time = ConsumeIOTimestamp();
   request_info->buffer.reset();
+  request_info->has_destroyed_buffer = true;
   if (request_info->received_data_factory)
     request_info->received_data_factory->Stop();
   request_info->received_data_factory = nullptr;
@@ -504,7 +511,9 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       frame_origin(frame_origin),
       response_url(request_url),
       download_to_file(download_to_file),
-      request_start(base::TimeTicks::Now()) {
+      request_start(base::TimeTicks::Now()),
+      has_received_buffer(false),
+      has_destroyed_buffer(false) {
 }
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
