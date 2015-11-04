@@ -291,7 +291,6 @@ class Request {
   void Cancel();
   int WaitForResult();
 
-  int error() const { return error_; }
   const ProxyInfo& results() const { return results_; }
   LoadState load_state() { return resolver_->GetLoadState(handle_); }
   BoundTestNetLog& net_log() { return net_log_; }
