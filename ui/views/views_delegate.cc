@@ -30,11 +30,6 @@ ViewsDelegate* ViewsDelegate::GetInstance() {
   return views_delegate;
 }
 
-NativeWidget* ViewsDelegate::CreateNativeWidget(
-    internal::NativeWidgetDelegate* delegate) {
-  return internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
-}
-
 void ViewsDelegate::SaveWindowPlacement(const Widget* widget,
                                         const std::string& window_name,
                                         const gfx::Rect& bounds,

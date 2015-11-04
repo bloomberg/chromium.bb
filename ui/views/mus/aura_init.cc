@@ -13,6 +13,7 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/views/views_delegate.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "components/font_service/public/cpp/font_loader.h"
@@ -28,10 +29,27 @@ std::set<std::string> GetResourcePaths(const std::string& resource_file) {
   return paths;
 }
 
+class MusViewsDelegate : public ViewsDelegate {
+ public:
+  MusViewsDelegate() {}
+  ~MusViewsDelegate() override {}
+
+ private:
+#if defined(OS_WIN)
+  HICON GetSmallWindowIcon() const override { return nullptr; }
+#endif
+  void OnBeforeWidgetInit(
+      Widget::InitParams* params,
+      internal::NativeWidgetDelegate* delegate) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(MusViewsDelegate);
+};
+
 }  // namespace
 
 AuraInit::AuraInit(mojo::ApplicationImpl* app, const std::string& resource_file)
-    : resource_file_(resource_file) {
+    : resource_file_(resource_file),
+      views_delegate_(new MusViewsDelegate) {
   aura::Env::CreateInstance(false);
 
   InitializeResources(app);

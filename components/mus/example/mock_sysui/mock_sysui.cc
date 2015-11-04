@@ -30,7 +30,7 @@ class DesktopBackground : public views::WidgetDelegateView {
         mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
             ash::mojom::CONTAINER_USER_BACKGROUND);
     mus::Window* window =
-        views::WindowManagerConnection::Get()->CreateWindow(properties);
+        views::WindowManagerConnection::Get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
         widget, shell, window, mus::mojom::SURFACE_TYPE_DEFAULT);
     widget->Init(params);
@@ -65,7 +65,7 @@ class Shelf : public views::WidgetDelegateView {
         mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
             ash::mojom::CONTAINER_USER_SHELF);
     mus::Window* window =
-        views::WindowManagerConnection::Get()->CreateWindow(properties);
+        views::WindowManagerConnection::Get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
         widget, shell, window, mus::mojom::SURFACE_TYPE_DEFAULT);
     widget->Init(params);

@@ -58,17 +58,16 @@ void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
 // Finally, make a default one.
 NativeWidget* CreateNativeWidget(NativeWidget* native_widget,
                                  internal::NativeWidgetDelegate* delegate) {
-  if (!native_widget) {
-    if (ViewsDelegate::GetInstance()) {
-      native_widget = ViewsDelegate::GetInstance()->CreateNativeWidget(
-          delegate);
-    }
-    if (!native_widget) {
-      native_widget =
-          internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
-    }
+  if (native_widget)
+    return native_widget;
+
+  ViewsDelegate* views_delegate = ViewsDelegate::GetInstance();
+  if (views_delegate && !views_delegate->native_widget_factory().is_null()) {
+    native_widget = views_delegate->native_widget_factory().Run(delegate);
+    if (native_widget)
+      return native_widget;
   }
-  return native_widget;
+  return internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
 }
 
 void NotifyCaretBoundsChanged(ui::InputMethod* input_method) {

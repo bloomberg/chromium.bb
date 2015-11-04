@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
-#include "ui/views/views_delegate.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -21,18 +20,21 @@ class UIInit;
 }
 
 namespace views {
+class NativeWidget;
+namespace internal {
+class NativeWidgetDelegate;
+}
 
 // Establishes a connection to the window manager for use by views within an
 // application, and performs Aura initialization.
-class WindowManagerConnection : public ViewsDelegate,
-                                public mus::WindowTreeDelegate {
+class WindowManagerConnection : public mus::WindowTreeDelegate {
  public:
   static void Create(mus::mojom::WindowManagerPtr window_manager,
                      mojo::ApplicationImpl* app);
   static WindowManagerConnection* Get();
 
-  mus::Window* CreateWindow(
-      const std::map<std::string, std::vector<uint8_t>>& properties);
+  mus::Window* NewWindow(const std::map<std::string,
+                         std::vector<uint8_t>>& properties);
 
   mus::mojom::WindowManager* window_manager() {
     return window_manager_.get();
@@ -43,19 +45,11 @@ class WindowManagerConnection : public ViewsDelegate,
                           mojo::ApplicationImpl* app);
   ~WindowManagerConnection() override;
 
-  // views::ViewsDelegate:
-  NativeWidget* CreateNativeWidget(
-      internal::NativeWidgetDelegate* delegate) override;
-  void OnBeforeWidgetInit(
-      views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) override;
-
   // mus::WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
-#if defined(OS_WIN)
-  HICON GetSmallWindowIcon() const override;
-#endif
+
+  NativeWidget* CreateNativeWidget(internal::NativeWidgetDelegate* delegate);
 
   mojo::ApplicationImpl* app_;
   mus::mojom::WindowManagerPtr window_manager_;

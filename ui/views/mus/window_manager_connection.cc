@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/views_delegate.h"
 
 namespace mojo {
 
@@ -97,7 +98,7 @@ WindowManagerConnection* WindowManagerConnection::Get() {
   return connection;
 }
 
-mus::Window* WindowManagerConnection::CreateWindow(
+mus::Window* WindowManagerConnection::NewWindow(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   mus::mojom::WindowTreeClientPtr window_tree_client;
   mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
@@ -119,30 +120,23 @@ WindowManagerConnection::WindowManagerConnection(
     : app_(app), window_manager_(window_manager.Pass()) {
   ui_init_.reset(new ui::mojo::UIInit(
       GetDisplaysFromWindowManager(&window_manager_)));
+  ViewsDelegate::GetInstance()->set_native_widget_factory(
+      base::Bind(&WindowManagerConnection::CreateNativeWidget,
+                 base::Unretained(this)));
 }
 
 WindowManagerConnection::~WindowManagerConnection() {}
-
-NativeWidget* WindowManagerConnection::CreateNativeWidget(
-    internal::NativeWidgetDelegate* delegate) {
-  return new NativeWidgetMus(
-      delegate, app_->shell(),
-      CreateWindow(std::map<std::string, std::vector<uint8_t>>()),
-      mus::mojom::SURFACE_TYPE_DEFAULT);
-}
-
-void WindowManagerConnection::OnBeforeWidgetInit(
-    Widget::InitParams* params,
-    internal::NativeWidgetDelegate* delegate) {}
 
 void WindowManagerConnection::OnEmbed(mus::Window* root) {}
 void WindowManagerConnection::OnConnectionLost(
     mus::WindowTreeConnection* connection) {}
 
-#if defined(OS_WIN)
-HICON WindowManagerConnection::GetSmallWindowIcon() const {
-  return nullptr;
+NativeWidget* WindowManagerConnection::CreateNativeWidget(
+    internal::NativeWidgetDelegate* delegate) {
+  return new NativeWidgetMus(
+      delegate, app_->shell(),
+      NewWindow(std::map<std::string, std::vector<uint8_t>>()),
+      mus::mojom::SURFACE_TYPE_DEFAULT);
 }
-#endif
 
 }  // namespace views
