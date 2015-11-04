@@ -199,7 +199,7 @@ bool ParseGetHash(const char* chunk_data,
       return false;
 
     SBFullHashResult full_hash;
-    full_hash.list_id = safe_browsing_util::GetListId(cmd_parts[0]);
+    full_hash.list_id = safe_browsing::GetListId(cmd_parts[0]);
 
     size_t hash_len;
     if (!base::StringToSizeT(cmd_parts[1], &hash_len))

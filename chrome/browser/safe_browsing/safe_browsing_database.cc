@@ -107,7 +107,7 @@ int DecodeChunkId(int encoded_chunk_id) {
   return encoded_chunk_id >> 1;
 }
 int EncodeChunkId(const int chunk, const int list_id) {
-  DCHECK_NE(list_id, safe_browsing_util::INVALID);
+  DCHECK_NE(list_id, safe_browsing::INVALID);
   return chunk << 1 | list_id % 2;
 }
 
@@ -128,16 +128,17 @@ void UrlToFullHashes(const GURL& url,
   if (url.HostIsIPAddress()) {
     hosts.push_back(url.host());
   } else {
-    safe_browsing_util::GenerateHostsToCheck(url, &hosts);
+    safe_browsing::GenerateHostsToCheck(url, &hosts);
   }
 
   std::vector<std::string> paths;
-  safe_browsing_util::GeneratePathsToCheck(url, &paths);
+  safe_browsing::GeneratePathsToCheck(url, &paths);
 
   for (size_t i = 0; i < hosts.size(); ++i) {
     for (size_t j = 0; j < paths.size(); ++j) {
       const std::string& path = paths[j];
-      full_hashes->push_back(SBFullHashForString(hosts[i] + path));
+      full_hashes->push_back(safe_browsing::SBFullHashForString(
+          hosts[i] + path));
 
       // We may have /foo as path-prefix in the whitelist which should
       // also match with /foo/bar and /foo?bar.  Hence, for every path
@@ -146,7 +147,8 @@ void UrlToFullHashes(const GURL& url,
           path.size() > 1 &&
           path[path.size() - 1] == '/') {
         full_hashes->push_back(
-            SBFullHashForString(hosts[i] + path.substr(0, path.size() - 1)));
+            safe_browsing::SBFullHashForString(
+                hosts[i] + path.substr(0, path.size() - 1)));
       }
     }
   }
@@ -230,10 +232,10 @@ void UpdateChunkRanges(SafeBrowsingStore* store,
 
   for (size_t i = 0; i < listnames.size(); ++i) {
     const std::string& listname = listnames[i];
-    DCHECK_EQ(safe_browsing_util::GetListId(listname) % 2,
+    DCHECK_EQ(safe_browsing::GetListId(listname) % 2,
               static_cast<int>(i % 2));
-    DCHECK_NE(safe_browsing_util::GetListId(listname),
-              safe_browsing_util::INVALID);
+    DCHECK_NE(safe_browsing::GetListId(listname),
+              safe_browsing::INVALID);
     lists->push_back(SBListChunkRanges(listname));
     lists->back().adds.swap(adds[i]);
     lists->back().subs.swap(subs[i]);
@@ -289,7 +291,7 @@ bool GetCachedFullHash(std::map<SBPrefix, SBCachedFullHashResult>* cache,
   // Find full-hash matches.
   std::vector<SBFullHashResult>& cached_hashes = cached_result.full_hashes;
   for (size_t i = 0; i < cached_hashes.size(); ++i) {
-    if (SBFullHashEqual(full_hash, cached_hashes[i].hash))
+    if (safe_browsing::SBFullHashEqual(full_hash, cached_hashes[i].hash))
       results->push_back(cached_hashes[i]);
   }
 
@@ -445,22 +447,22 @@ SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
   // Stores are not thread safe.
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
 
-  if (list_id == safe_browsing_util::PHISH ||
-      list_id == safe_browsing_util::MALWARE) {
+  if (list_id == safe_browsing::PHISH ||
+      list_id == safe_browsing::MALWARE) {
     return browse_store_.get();
-  } else if (list_id == safe_browsing_util::BINURL) {
+  } else if (list_id == safe_browsing::BINURL) {
     return download_store_.get();
-  } else if (list_id == safe_browsing_util::CSDWHITELIST) {
+  } else if (list_id == safe_browsing::CSDWHITELIST) {
     return csd_whitelist_store_.get();
-  } else if (list_id == safe_browsing_util::DOWNLOADWHITELIST) {
+  } else if (list_id == safe_browsing::DOWNLOADWHITELIST) {
     return download_whitelist_store_.get();
-  } else if (list_id == safe_browsing_util::INCLUSIONWHITELIST) {
+  } else if (list_id == safe_browsing::INCLUSIONWHITELIST) {
     return inclusion_whitelist_store_.get();
-  } else if (list_id == safe_browsing_util::EXTENSIONBLACKLIST) {
+  } else if (list_id == safe_browsing::EXTENSIONBLACKLIST) {
     return extension_blacklist_store_.get();
-  } else if (list_id == safe_browsing_util::IPBLACKLIST) {
+  } else if (list_id == safe_browsing::IPBLACKLIST) {
     return ip_blacklist_store_.get();
-  } else if (list_id == safe_browsing_util::UNWANTEDURL) {
+  } else if (list_id == safe_browsing::UNWANTEDURL) {
     return unwanted_software_store_.get();
   }
   return NULL;
@@ -915,7 +917,7 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadUrlPrefixes(
     return false;
 
   return MatchAddPrefixes(download_store_.get(),
-                          safe_browsing_util::BINURL % 2,
+                          safe_browsing::BINURL % 2,
                           prefixes,
                           prefix_hits);
 }
@@ -947,7 +949,7 @@ bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
     return false;
 
   return MatchAddPrefixes(extension_blacklist_store_.get(),
-                          safe_browsing_util::EXTENSIONBLACKLIST % 2,
+                          safe_browsing::EXTENSIONBLACKLIST % 2,
                           prefixes,
                           prefix_hits);
 }
@@ -987,7 +989,7 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
 bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedString(
     const std::string& str) {
   std::vector<SBFullHash> hashes;
-  hashes.push_back(SBFullHashForString(str));
+  hashes.push_back(safe_browsing::SBFullHashForString(str));
   return ContainsWhitelistedHashes(SBWhitelistId::DOWNLOAD, hashes);
 }
 
@@ -1001,7 +1003,7 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
   for (std::vector<SBFullHash>::const_iterator it = hashes.begin();
        it != hashes.end(); ++it) {
     if (std::binary_search(whitelist->first.begin(), whitelist->first.end(),
-                           *it, SBFullHashLess)) {
+                           *it, safe_browsing::SBFullHashLess)) {
       return true;
     }
   }
@@ -1011,7 +1013,7 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
 // Helper to insert add-chunk entries.
 void SafeBrowsingDatabaseNew::InsertAddChunk(
     SafeBrowsingStore* store,
-    const safe_browsing_util::ListType list_id,
+    const safe_browsing::ListType list_id,
     const SBChunkData& chunk_data) {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(store);
@@ -1040,7 +1042,7 @@ void SafeBrowsingDatabaseNew::InsertAddChunk(
 // Helper to insert sub-chunk entries.
 void SafeBrowsingDatabaseNew::InsertSubChunk(
     SafeBrowsingStore* store,
-    const safe_browsing_util::ListType list_id,
+    const safe_browsing::ListType list_id,
     const SBChunkData& chunk_data) {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(store);
@@ -1083,8 +1085,8 @@ void SafeBrowsingDatabaseNew::InsertChunks(
   const base::TimeTicks before = base::TimeTicks::Now();
 
   // TODO(shess): The caller should just pass list_id.
-  const safe_browsing_util::ListType list_id =
-      safe_browsing_util::GetListId(list_name);
+  const safe_browsing::ListType list_id =
+      safe_browsing::GetListId(list_name);
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -1116,8 +1118,8 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
     return;
 
   const std::string& list_name = chunk_deletes.front().list_name;
-  const safe_browsing_util::ListType list_id =
-      safe_browsing_util::GetListId(list_name);
+  const safe_browsing::ListType list_id =
+      safe_browsing::GetListId(list_name);
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -1221,8 +1223,8 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
   state_manager_.BeginWriteTransaction()->clear_prefix_gethash_cache();
 
   UpdateChunkRangesForLists(browse_store_.get(),
-                            safe_browsing_util::kMalwareList,
-                            safe_browsing_util::kPhishingList,
+                            safe_browsing::kMalwareList,
+                            safe_browsing::kPhishingList,
                             lists);
 
   // NOTE(shess): |download_store_| used to contain kBinHashList, which has been
@@ -1230,25 +1232,25 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
   // of Feb 2014, so it has been removed.  Everything _should_ be resilient to
   // extra data of that sort.
   UpdateChunkRangesForList(download_store_.get(),
-                           safe_browsing_util::kBinUrlList, lists);
+                           safe_browsing::kBinUrlList, lists);
 
   UpdateChunkRangesForList(csd_whitelist_store_.get(),
-                           safe_browsing_util::kCsdWhiteList, lists);
+                           safe_browsing::kCsdWhiteList, lists);
 
   UpdateChunkRangesForList(download_whitelist_store_.get(),
-                           safe_browsing_util::kDownloadWhiteList, lists);
+                           safe_browsing::kDownloadWhiteList, lists);
 
   UpdateChunkRangesForList(inclusion_whitelist_store_.get(),
-                           safe_browsing_util::kInclusionWhitelist, lists);
+                           safe_browsing::kInclusionWhitelist, lists);
 
   UpdateChunkRangesForList(extension_blacklist_store_.get(),
-                           safe_browsing_util::kExtensionBlacklist, lists);
+                           safe_browsing::kExtensionBlacklist, lists);
 
   UpdateChunkRangesForList(ip_blacklist_store_.get(),
-                           safe_browsing_util::kIPBlacklist, lists);
+                           safe_browsing::kIPBlacklist, lists);
 
   UpdateChunkRangesForList(unwanted_software_store_.get(),
-                           safe_browsing_util::kUnwantedUrlList,
+                           safe_browsing::kUnwantedUrlList,
                            lists);
 
   db_state_manager_.reset_corruption_detected();
@@ -1702,11 +1704,13 @@ void SafeBrowsingDatabaseNew::LoadWhitelist(
        it != full_hashes.end(); ++it) {
     new_whitelist.push_back(it->full_hash);
   }
-  std::sort(new_whitelist.begin(), new_whitelist.end(), SBFullHashLess);
+  std::sort(new_whitelist.begin(), new_whitelist.end(),
+            safe_browsing::SBFullHashLess);
 
-  SBFullHash kill_switch = SBFullHashForString(kWhitelistKillSwitchUrl);
+  SBFullHash kill_switch = safe_browsing::SBFullHashForString(
+      kWhitelistKillSwitchUrl);
   if (std::binary_search(new_whitelist.begin(), new_whitelist.end(),
-                         kill_switch, SBFullHashLess)) {
+                         kill_switch, safe_browsing::SBFullHashLess)) {
     // The kill switch is whitelisted hence we whitelist all URLs.
     state_manager_.BeginWriteTransaction()->WhitelistEverything(whitelist_id);
   } else {
@@ -1756,7 +1760,8 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
 }
 
 bool SafeBrowsingDatabaseNew::IsMalwareIPMatchKillSwitchOn() {
-  SBFullHash malware_kill_switch = SBFullHashForString(kMalwareIPKillSwitchUrl);
+  SBFullHash malware_kill_switch = safe_browsing::SBFullHashForString(
+      kMalwareIPKillSwitchUrl);
   std::vector<SBFullHash> full_hashes;
   full_hashes.push_back(malware_kill_switch);
   return ContainsWhitelistedHashes(SBWhitelistId::CSD, full_hashes);
