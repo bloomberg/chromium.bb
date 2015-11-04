@@ -39,8 +39,6 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/dtoa/utils.h"
 
 extern "C" {
 #include <stdio.h> // jpeglib.h needs stdio FILE.
