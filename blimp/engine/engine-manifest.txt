@@ -7,7 +7,5 @@
 ./blimp_engine_app
 icudtl.dat
 natives_blob.bin
-snapshot_blob.bin
 blimp_engine.pak
 ./chrome_sandbox
-./libosmesa.so

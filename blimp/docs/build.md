@@ -36,6 +36,8 @@ is_clang = true
 is_component_build = true
 symbol_level = 1  # Use -g1 instead of -g2
 use_goma = true
+use_aura = true
+use_ozone = true
 ```
 
 # Building

@@ -6,16 +6,21 @@ import("//testing/test.gni")
 
 component("blimp_common") {
   sources = [
-    # TODO(dtrainor): Remove this once the LayerTreeHost settings for Blimp
-    # are finalized or are pushed from the server component.  See
-    # crbug.com/527655.
-    "../../content/public/common/content_switches.cc",
     "blimp_common_export.h",
     "compositor/blimp_layer_tree_settings.cc",
     "compositor/blimp_layer_tree_settings.h",
     "compositor/blimp_task_graph_runner.cc",
     "compositor/blimp_task_graph_runner.h",
   ]
+
+  if (is_android) {
+    sources += [
+      # TODO(dtrainor): Remove this once the LayerTreeHost settings for Blimp
+      # are finalized or are pushed from the server component.  See
+      # crbug.com/527655.
+      "../../content/public/common/content_switches.cc",
+    ]
+  }
 
   defines = [ "BLIMP_COMMON_IMPLEMENTATION=1" ]
 
