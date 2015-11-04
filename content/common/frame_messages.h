@@ -15,6 +15,7 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request_body.h"
+#include "content/common/savable_subframe.h"
 #include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/console_message_level.h"
@@ -413,6 +414,11 @@ IPC_STRUCT_BEGIN(FrameMsg_TextTrackSettings_Params)
   // Size of the text track text.
   IPC_STRUCT_MEMBER(std::string, text_track_text_size)
 IPC_STRUCT_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::SavableSubframe)
+  IPC_STRUCT_TRAITS_MEMBER(original_url)
+  IPC_STRUCT_TRAITS_MEMBER(routing_id)
+IPC_STRUCT_TRAITS_END()
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 // This message is used for supporting popup menus on Mac OS X and Android using
@@ -1201,11 +1207,10 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
                     GURL /* target URL */)
 
 // Response to FrameMsg_GetSavableResourceLinks.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_SavableResourceLinksResponse,
+IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
                     std::vector<GURL> /* savable resource links */,
                     content::Referrer /* referrer for all the links above */,
-                    std::vector<GURL> /* subframe original links */,
-                    std::vector<int> /* subframe routing ids */)
+                    std::vector<content::SavableSubframe> /* subframes */);
 
 // Response to FrameMsg_GetSavableResourceLinks in case the frame contains
 // non-savable content (i.e. from a non-savable scheme) or if there were

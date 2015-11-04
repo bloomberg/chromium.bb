@@ -1212,16 +1212,9 @@ void SavePackage::OnSavableResourceLinksResponse(
     RenderFrameHostImpl* sender,
     const std::vector<GURL>& resources_list,
     const Referrer& referrer,
-    const std::vector<GURL>& subframe_original_urls,
-    const std::vector<int>& subframe_routing_ids) {
+    const std::vector<SavableSubframe>& subframes) {
   if (wait_state_ != RESOURCES_LIST)
     return;
-
-  if (subframe_original_urls.size() != subframe_routing_ids.size()) {
-    // Only reachable if the renderer has a bug or has been compromised.
-    NOTREACHED();
-    return;
-  }
 
   // Add all sub-resources to wait list.
   int container_frame_tree_node_id =
@@ -1229,10 +1222,10 @@ void SavePackage::OnSavableResourceLinksResponse(
   for (const GURL& u : resources_list) {
     EnqueueSavableResource(container_frame_tree_node_id, u, referrer);
   }
-  for (size_t i = 0; i < subframe_routing_ids.size(); ++i) {
+  for (const SavableSubframe& subframe : subframes) {
     FrameTreeNode* subframe_tree_node =
         sender->frame_tree_node()->frame_tree()->FindByRoutingID(
-            sender->GetProcess()->GetID(), subframe_routing_ids[i]);
+            sender->GetProcess()->GetID(), subframe.routing_id);
 
     if (!subframe_tree_node ||
         subframe_tree_node->parent() != sender->frame_tree_node()) {
@@ -1243,7 +1236,7 @@ void SavePackage::OnSavableResourceLinksResponse(
 
     EnqueueFrame(container_frame_tree_node_id,
                  subframe_tree_node->frame_tree_node_id(),
-                 subframe_original_urls[i]);
+                 subframe.original_url);
   }
 
   CompleteSavableResourceLinksResponse();

@@ -41,6 +41,7 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/savable_subframe.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
@@ -109,6 +110,7 @@
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
 #include "content/renderer/wake_lock/wake_lock_dispatcher.h"
+#include "content/renderer/web_frame_utils.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "gin/modules/module_registry.h"
@@ -525,16 +527,6 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
   return navigation_type == FrameMsg_Navigate_Type::RELOAD ||
          navigation_type == FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
          navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
-}
-
-// Returns the routing ID of the RenderFrameImpl or RenderFrameProxy
-// associated with |web_frame|.
-int GetRoutingIdForFrameOrProxy(WebFrame* web_frame) {
-  if (!web_frame)
-    return MSG_ROUTING_NONE;
-  if (web_frame->isWebRemoteFrame())
-    return RenderFrameProxy::FromWebFrame(web_frame)->routing_id();
-  return RenderFrameImpl::FromWebFrame(web_frame)->GetRoutingID();
 }
 
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
@@ -4565,10 +4557,8 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
 void RenderFrameImpl::OnGetSavableResourceLinks() {
   std::vector<GURL> resources_list;
-  std::vector<GURL> subframe_original_urls;
-  std::vector<blink::WebFrame*> subframes;
-  SavableResourcesResult result(&resources_list,
-                                &subframe_original_urls, &subframes);
+  std::vector<SavableSubframe> subframes;
+  SavableResourcesResult result(&resources_list, &subframes);
 
   if (!GetSavableResourceLinksForFrame(
           frame_, &result, const_cast<const char**>(GetSavableSchemes()))) {
@@ -4579,15 +4569,8 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
   Referrer referrer =
       Referrer(frame_->document().url(), frame_->document().referrerPolicy());
 
-  std::vector<int> subframe_routing_ids;
-  for (WebFrame* subframe : subframes) {
-    subframe_routing_ids.push_back(GetRoutingIdForFrameOrProxy(subframe));
-  }
-
-  DCHECK_EQ(subframe_original_urls.size(), subframe_routing_ids.size());
   Send(new FrameHostMsg_SavableResourceLinksResponse(
-      routing_id_, resources_list, referrer,
-      subframe_original_urls, subframe_routing_ids));
+      routing_id_, resources_list, referrer, subframes));
 }
 
 void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(

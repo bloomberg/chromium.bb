@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "content/common/savable_subframe.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
 
@@ -30,19 +31,14 @@ struct SavableResourcesResult {
   // Links of all savable resources.
   std::vector<GURL>* resources_list;
 
-  // Original urls of subframes.
-  std::vector<GURL>* subframe_original_urls;
-  // Subframe objects.
-  // subframes[i] corresponds to subframe_original_urls[i].
-  std::vector<blink::WebFrame*>* subframes;
+  // Subframes.
+  std::vector<SavableSubframe>* subframes;
 
   // Constructor.
   SavableResourcesResult(
       std::vector<GURL>* resources_list,
-      std::vector<GURL>* subframe_original_urls,
-      std::vector<blink::WebFrame*>* subframes)
+      std::vector<SavableSubframe>* subframes)
       : resources_list(resources_list),
-        subframe_original_urls(subframe_original_urls),
         subframes(subframes) {}
 
  private:

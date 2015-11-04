@@ -35,6 +35,7 @@ class DownloadItemImpl;
 class DownloadManagerImpl;
 class FrameTreeNode;
 class RenderFrameHostImpl;
+struct SavableSubframe;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
@@ -200,8 +201,7 @@ class CONTENT_EXPORT SavePackage
       RenderFrameHostImpl* sender,
       const std::vector<GURL>& resources_list,
       const Referrer& referrer,
-      const std::vector<GURL>& subframe_original_urls,
-      const std::vector<int>& subframe_routing_ids);
+      const std::vector<SavableSubframe>& subframes);
 
   // Helper for finding or creating a SaveItem with the given parameters.
   SaveItem* FindOrCreatePendingSaveItem(

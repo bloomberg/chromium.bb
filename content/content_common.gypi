@@ -513,6 +513,7 @@
       'common/sandbox_util.h',
       'common/sandbox_win.cc',
       'common/sandbox_win.h',
+      'common/savable_subframe.h',
       'common/savable_url_schemes.cc',
       'common/savable_url_schemes.h',
       'common/screen_orientation_messages.h',

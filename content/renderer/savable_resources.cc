@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "content/renderer/web_frame_utils.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -43,10 +44,14 @@ void GetSavableResourceLinkForElement(
     const WebDocument& current_doc,
     SavableResourcesResult* result) {
   if (element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame")) {
-    GURL original_url = current_doc.completeURL(element.getAttribute("src"));
-    WebFrame* subframe = WebFrame::fromFrameOwnerElement(element);
+    GURL complete_url = current_doc.completeURL(element.getAttribute("src"));
+    WebFrame* web_frame = WebFrame::fromFrameOwnerElement(element);
+
+    SavableSubframe subframe;
+    subframe.original_url = complete_url;
+    subframe.routing_id = GetRoutingIdForFrameOrProxy(web_frame);
+
     result->subframes->push_back(subframe);
-    result->subframe_original_urls->push_back(original_url);
     return;
   }
 

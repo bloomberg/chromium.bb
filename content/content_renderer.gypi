@@ -458,6 +458,8 @@
       'renderer/webgraphicscontext3d_provider_impl.h',
       'renderer/webpublicsuffixlist_impl.cc',
       'renderer/webpublicsuffixlist_impl.h',
+      'renderer/web_frame_utils.cc',
+      'renderer/web_frame_utils.h',
       'renderer/webscrollbarbehavior_impl_gtkoraura.cc',
       'renderer/webscrollbarbehavior_impl_gtkoraura.h',
       'renderer/webscrollbarbehavior_impl_mac.h',
