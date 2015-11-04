@@ -93,19 +93,32 @@ class FakeManifest(object):
     """Fake HasField method based on the python members."""
     return hasattr(self, field_name) and getattr(self, field_name) is not None
 
+class FakeHeader(object):
+  """Fake payload header for testing."""
+
+  def __init__(self, version, manifest_len, metadata_signature_len):
+    self.version = version
+    self.manifest_len = manifest_len
+    self.metadata_signature_len = metadata_signature_len
+
+  @property
+  def size(self):
+    return (20 if self.version == cros_payload.MAJOR_PAYLOAD_VERSION_CHROMEOS
+            else 24)
+
+
 class FakePayload(object):
   """Fake payload for testing."""
 
   def __init__(self, major_version):
-    FakeHeader = collections.namedtuple('FakeHeader',
-                                        ['version', 'manifest_len'])
-    self._header = FakeHeader(major_version, 222)
+    self._header = FakeHeader(major_version, 222, 0)
     self.header = None
     self._manifest = FakeManifest(major_version)
     self.manifest = None
 
     self._blobs = {}
-    self._signatures = update_metadata_pb2.Signatures()
+    self._payload_signatures = update_metadata_pb2.Signatures()
+    self._metadata_signatures = update_metadata_pb2.Signatures()
 
   def Init(self):
     """Fake Init that sets header and manifest.
@@ -126,14 +139,27 @@ class FakePayload(object):
                              'actual: %d)' % (len(blob), length))
     return blob
 
-  def AddSignature(self, **kwargs):
-    new_signature = self._signatures.signatures.add()
+  @staticmethod
+  def _AddSignatureToProto(proto, **kwargs):
+    """Add a new Signature element to the passed proto."""
+    new_signature = proto.signatures.add()
     for key, val in kwargs.iteritems():
       setattr(new_signature, key, val)
-    blob = self._signatures.SerializeToString()
+
+  def AddPayloadSignature(self, **kwargs):
+    self._AddSignatureToProto(self._payload_signatures, **kwargs)
+    blob = self._payload_signatures.SerializeToString()
     self._manifest.signatures_offset = 1234
     self._manifest.signatures_size = len(blob)
     self._blobs[self._manifest.signatures_offset] = blob
+
+  def AddMetadataSignature(self, **kwargs):
+    self._AddSignatureToProto(self._metadata_signatures, **kwargs)
+    if self._header.metadata_signature_len:
+      del self._blobs[-self._header.metadata_signature_len]
+    blob = self._metadata_signatures.SerializeToString()
+    self._header.metadata_signature_len = len(blob)
+    self._blobs[-len(blob)] = blob
 
 
 class PayloadCommandTest(cros_test_lib.MockOutputTestCase):
@@ -298,7 +324,8 @@ Number of operations:    1
 Number of kernel ops:    1
 Block size:              4096
 Minor version:           4
-No signatures stored in the payload
+No metadata signatures stored in the payload
+No payload signatures stored in the payload
 """
     self.assertEquals(stdout, expected_out)
 
@@ -307,22 +334,29 @@ No signatures stored in the payload
     """Verify that the --signatures option shows the present signatures."""
     payload_cmd = cros_payload.PayloadCommand(
         FakeOption(action='show', signatures=True))
-    payload = FakePayload(cros_payload.MAJOR_PAYLOAD_VERSION_CHROMEOS)
-    payload.AddSignature(version=1, data='12345678abcdefgh\x00\x01\x02\x03')
-    payload.AddSignature(data='I am a signature so access is yes.')
+    payload = FakePayload(cros_payload.MAJOR_PAYLOAD_VERSION_BRILLO)
+    payload.AddPayloadSignature(version=1,
+                                data='12345678abcdefgh\x00\x01\x02\x03')
+    payload.AddPayloadSignature(data='I am a signature so access is yes.')
+    payload.AddMetadataSignature(data='\x00\x0a\x0c')
     self.PatchObject(update_payload, 'Payload', return_value=payload)
 
     with self.OutputCapturer() as output:
       payload_cmd.Run()
 
     stdout = output.GetStdout()
-    expected_out = """Payload version:         1
+    expected_out = """Payload version:         2
 Manifest length:         222
-Number of operations:    1
-Number of kernel ops:    1
+Number of partitions:    2
+  Number of "rootfs" ops: 1
+  Number of "kernel" ops: 1
 Block size:              4096
 Minor version:           4
-Signature blob:          offset=1234 (64 bytes)
+Metadata signatures blob: file_offset=246 (7 bytes)
+Metadata signatures: (1 entries)
+  version=None, hex_data: (3 bytes)
+    00 0a 0c                                        | ...
+Payload signatures blob: blob_offset=1234 (64 bytes)
 Payload signatures: (2 entries)
   version=1, hex_data: (20 bytes)
     31 32 33 34 35 36 37 38 61 62 63 64 65 66 67 68 | 12345678abcdefgh

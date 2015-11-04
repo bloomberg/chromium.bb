@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import itertools
 import os
-import string
 import sys
 import textwrap
 
@@ -37,7 +36,7 @@ def DisplayHexData(data, indent=0):
           ' '.join('%.2x' % ord(c) for c in chunk) +
           '   ' * (16 - len(chunk)) +
           ' | ' +
-          ''.join(c if c in string.printable else '.' for c in chunk))
+          ''.join(c if 32 <= ord(c) and ord(c) < 127 else '.' for c in chunk))
 
 
 @command.CommandDecorator('payload')
@@ -101,22 +100,38 @@ Example:
 
   def _DisplaySignatures(self):
     """Show information about the signatures from the manifest."""
+    header = self.payload.header
+    if header.metadata_signature_len:
+      offset = header.size + header.manifest_len
+      DisplayValue('Metadata signatures blob',
+                   'file_offset=%d (%d bytes)' %
+                   (offset, header.metadata_signature_len))
+      signatures_blob = self.payload.ReadDataBlob(
+          -header.metadata_signature_len,
+          header.metadata_signature_len)
+      self._DisplaySignaturesBlob('Metadata', signatures_blob)
+    else:
+      print('No metadata signatures stored in the payload')
+
     manifest = self.payload.manifest
-    if not manifest.HasField('signatures_offset'):
-      print('No signatures stored in the payload')
-      return
+    if manifest.HasField('signatures_offset'):
+      signature_msg = 'blob_offset=%d' % manifest.signatures_offset
+      if manifest.signatures_size:
+        signature_msg += ' (%d bytes)' % manifest.signatures_size
+      DisplayValue('Payload signatures blob', signature_msg)
+      signatures_blob = self.payload.ReadDataBlob(manifest.signatures_offset,
+                                                  manifest.signatures_size)
+      self._DisplaySignaturesBlob('Payload', signatures_blob)
+    else:
+      print('No payload signatures stored in the payload')
 
-    signature_msg = 'offset=%d' % manifest.signatures_offset
-    if manifest.signatures_size:
-      signature_msg += ' (%d bytes)' % manifest.signatures_size
-    DisplayValue('Signature blob', signature_msg)
-    signatures_blob = self.payload.ReadDataBlob(manifest.signatures_offset,
-                                                manifest.signatures_size)
-
+  @staticmethod
+  def _DisplaySignaturesBlob(signature_name, signatures_blob):
     from dev.host.lib.update_payload import update_metadata_pb2
     signatures = update_metadata_pb2.Signatures()
     signatures.ParseFromString(signatures_blob)
-    print('Payload signatures: (%d entries)' % len(signatures.signatures))
+    print('%s signatures: (%d entries)' %
+          (signature_name, len(signatures.signatures)))
     for signature in signatures.signatures:
       print('  version=%s, hex_data: (%d bytes)' %
             (signature.version if signature.HasField('version') else None,
