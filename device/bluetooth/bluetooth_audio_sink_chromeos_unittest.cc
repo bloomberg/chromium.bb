@@ -8,20 +8,21 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "chromeos/dbus/bluetooth_media_client.h"
-#include "chromeos/dbus/bluetooth_media_endpoint_service_provider.h"
-#include "chromeos/dbus/bluetooth_media_transport_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_bluetooth_media_client.h"
-#include "chromeos/dbus/fake_bluetooth_media_endpoint_service_provider.h"
-#include "chromeos/dbus/fake_bluetooth_media_transport_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_audio_sink_chromeos.h"
+#include "device/bluetooth/dbus/bluetooth_media_client.h"
+#include "device/bluetooth/dbus/bluetooth_media_endpoint_service_provider.h"
+#include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_media_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_media_endpoint_service_provider.h"
+#include "device/bluetooth/dbus/fake_bluetooth_media_transport_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using bluez::FakeBluetoothMediaTransportClient;
 using dbus::ObjectPath;
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
@@ -81,26 +82,26 @@ class TestAudioSinkObserver : public BluetoothAudioSink::Observer {
 class BluetoothAudioSinkChromeOSTest : public testing::Test {
  public:
   void SetUp() override {
-    DBusThreadManager::Initialize();
+    bluez::BluezDBusManager::Initialize(NULL, true);
 
     callback_count_ = 0;
     error_callback_count_ = 0;
 
-    fake_media_ = static_cast<FakeBluetoothMediaClient*>(
-        DBusThreadManager::Get()->GetBluetoothMediaClient());
+    fake_media_ = static_cast<bluez::FakeBluetoothMediaClient*>(
+        bluez::BluezDBusManager::Get()->GetBluetoothMediaClient());
     fake_transport_ = static_cast<FakeBluetoothMediaTransportClient*>(
-        DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
+        bluez::BluezDBusManager::Get()->GetBluetoothMediaTransportClient());
 
     // Initiates Delegate::TransportProperties with default values.
     properties_.device =
         ObjectPath(FakeBluetoothMediaTransportClient::kTransportDevicePath);
-    properties_.uuid = BluetoothMediaClient::kBluetoothAudioSinkUUID;
+    properties_.uuid = bluez::BluetoothMediaClient::kBluetoothAudioSinkUUID;
     properties_.codec = FakeBluetoothMediaTransportClient::kTransportCodec;
     properties_.configuration = std::vector<uint8_t>(
         FakeBluetoothMediaTransportClient::kTransportConfiguration,
         FakeBluetoothMediaTransportClient::kTransportConfiguration +
             FakeBluetoothMediaTransportClient::kTransportConfigurationLength);
-    properties_.state = BluetoothMediaTransportClient::kStateIdle;
+    properties_.state = bluez::BluetoothMediaTransportClient::kStateIdle;
     properties_.delay.reset(
         new uint16_t(FakeBluetoothMediaTransportClient::kTransportDelay));
     properties_.volume.reset(
@@ -119,7 +120,7 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
     // The adapter should outlive audio sink.
     audio_sink_ = nullptr;
     adapter_ = nullptr;
-    DBusThreadManager::Shutdown();
+    bluez::BluezDBusManager::Shutdown();
   }
 
   // Gets the existing Bluetooth adapter.
@@ -180,8 +181,9 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
         static_cast<BluetoothAudioSinkChromeOS*>(audio_sink_.get());
     ASSERT_NE(audio_sink_chromeos, nullptr);
 
-    media_endpoint_ = static_cast<FakeBluetoothMediaEndpointServiceProvider*>(
-        audio_sink_chromeos->GetEndpointServiceProvider());
+    media_endpoint_ =
+        static_cast<bluez::FakeBluetoothMediaEndpointServiceProvider*>(
+            audio_sink_chromeos->GetEndpointServiceProvider());
   }
 
   // Called whenever RegisterAudioSink is completed successfully.
@@ -233,16 +235,16 @@ class BluetoothAudioSinkChromeOSTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
 
-  FakeBluetoothMediaClient* fake_media_;
+  bluez::FakeBluetoothMediaClient* fake_media_;
   FakeBluetoothMediaTransportClient* fake_transport_;
-  FakeBluetoothMediaEndpointServiceProvider* media_endpoint_;
+  bluez::FakeBluetoothMediaEndpointServiceProvider* media_endpoint_;
   scoped_ptr<TestAudioSinkObserver> observer_;
   scoped_refptr<BluetoothAdapter> adapter_;
   scoped_refptr<BluetoothAudioSink> audio_sink_;
 
   // The default property set used while calling SetConfiguration on a media
   // endpoint object.
-  BluetoothMediaEndpointServiceProvider::Delegate::TransportProperties
+  bluez::BluetoothMediaEndpointServiceProvider::Delegate::TransportProperties
       properties_;
 };
 

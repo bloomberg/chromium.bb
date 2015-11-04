@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
-#include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 
 namespace device {
 
@@ -36,8 +36,8 @@ class BluetoothRemoteGattDescriptorChromeOS;
 // for remote GATT services on the Chrome OS platform.
 class BluetoothRemoteGattServiceChromeOS
     : public device::BluetoothGattService,
-      public BluetoothGattServiceClient::Observer,
-      public BluetoothGattCharacteristicClient::Observer {
+      public bluez::BluetoothGattServiceClient::Observer,
+      public bluez::BluetoothGattCharacteristicClient::Observer {
  public:
   // device::BluetoothGattService overrides.
   std::string GetIdentifier() const override;
@@ -104,11 +104,11 @@ class BluetoothRemoteGattServiceChromeOS
                                      const dbus::ObjectPath& object_path);
   ~BluetoothRemoteGattServiceChromeOS() override;
 
-  // BluetoothGattServiceClient::Observer override.
+  // bluez::BluetoothGattServiceClient::Observer override.
   void GattServicePropertyChanged(const dbus::ObjectPath& object_path,
                                   const std::string& property_name) override;
 
-  // BluetoothGattCharacteristicClient::Observer override.
+  // bluez::BluetoothGattCharacteristicClient::Observer override.
   void GattCharacteristicAdded(const dbus::ObjectPath& object_path) override;
   void GattCharacteristicRemoved(const dbus::ObjectPath& object_path) override;
   void GattCharacteristicPropertyChanged(

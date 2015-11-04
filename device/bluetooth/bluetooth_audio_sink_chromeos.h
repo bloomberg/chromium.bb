@@ -14,14 +14,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/bluetooth_media_client.h"
-#include "chromeos/dbus/bluetooth_media_endpoint_service_provider.h"
-#include "chromeos/dbus/bluetooth_media_transport_client.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/dbus/bluetooth_media_client.h"
+#include "device/bluetooth/dbus/bluetooth_media_endpoint_service_provider.h"
+#include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 
 namespace chromeos {
 
@@ -30,9 +30,9 @@ class BluetoothAudioSinkChromeOSTest;
 class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
     : public device::BluetoothAudioSink,
       public device::BluetoothAdapter::Observer,
-      public BluetoothMediaClient::Observer,
-      public BluetoothMediaTransportClient::Observer,
-      public BluetoothMediaEndpointServiceProvider::Delegate,
+      public bluez::BluetoothMediaClient::Observer,
+      public bluez::BluetoothMediaTransportClient::Observer,
+      public bluez::BluetoothMediaEndpointServiceProvider::Delegate,
       public base::MessageLoopForIO::Watcher {
  public:
   explicit BluetoothAudioSinkChromeOS(
@@ -61,7 +61,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
 
   // Returns a pointer to the media endpoint object. This function should be
   // used for testing purpose only.
-  BluetoothMediaEndpointServiceProvider* GetEndpointServiceProvider();
+  bluez::BluetoothMediaEndpointServiceProvider* GetEndpointServiceProvider();
 
  private:
   ~BluetoothAudioSinkChromeOS() override;
@@ -72,15 +72,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                              bool powered) override;
 
-  // BluetoothMediaClient::Observer overrides.
+  // bluez::BluetoothMediaClient::Observer overrides.
   void MediaRemoved(const dbus::ObjectPath& object_path) override;
 
-  // BluetoothMediaTransportClient::Observer overrides.
+  // bluez::BluetoothMediaTransportClient::Observer overrides.
   void MediaTransportRemoved(const dbus::ObjectPath& object_path) override;
   void MediaTransportPropertyChanged(const dbus::ObjectPath& object_path,
                                      const std::string& property_name) override;
 
-  // BluetoothMediaEndpointServiceProvider::Delegate overrides.
+  // bluez::BluetoothMediaEndpointServiceProvider::Delegate overrides.
   void SetConfiguration(const dbus::ObjectPath& transport_path,
                         const TransportProperties& properties) override;
   void SelectConfiguration(
@@ -204,7 +204,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   device::BluetoothAudioSink::Options options_;
 
   // Media Endpoint object owned by the audio sink object.
-  scoped_ptr<BluetoothMediaEndpointServiceProvider> media_endpoint_;
+  scoped_ptr<bluez::BluetoothMediaEndpointServiceProvider> media_endpoint_;
 
   // List of observers interested in event notifications from us. Objects in
   // |observers_| are expected to outlive a BluetoothAudioSinkChromeOS object.

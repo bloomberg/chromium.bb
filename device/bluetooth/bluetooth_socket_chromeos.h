@@ -10,14 +10,14 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_net.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
 
 namespace dbus {
 class FileDescriptor;
@@ -33,10 +33,10 @@ class BluetoothAdapterProfileChromeOS;
 // Chrome OS platform.
 //
 // This class is not thread-safe, but is only called from the UI thread.
-class CHROMEOS_EXPORT BluetoothSocketChromeOS
+class DEVICE_BLUETOOTH_EXPORT BluetoothSocketChromeOS
     : public device::BluetoothSocketNet,
       public device::BluetoothAdapter::Observer,
-      public BluetoothProfileServiceProvider::Delegate {
+      public bluez::BluetoothProfileServiceProvider::Delegate {
  public:
   enum SecurityLevel {
     SECURITY_LEVEL_LOW,
@@ -112,12 +112,12 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   void OnInternalRegisterProfile(BluetoothAdapterProfileChromeOS* profile);
   void OnInternalRegisterProfileError(const std::string& error_message);
 
-  // BluetoothProfileServiceProvider::Delegate:
+  // bluez::BluetoothProfileServiceProvider::Delegate:
   void Released() override;
   void NewConnection(
       const dbus::ObjectPath& device_path,
       scoped_ptr<dbus::FileDescriptor> fd,
-      const BluetoothProfileServiceProvider::Delegate::Options& options,
+      const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback) override;
   void RequestDisconnection(const dbus::ObjectPath& device_path,
                             const ConfirmationCallback& callback) override;
@@ -131,7 +131,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   void DoNewConnection(
       const dbus::ObjectPath& device_path,
       scoped_ptr<dbus::FileDescriptor> fd,
-      const BluetoothProfileServiceProvider::Delegate::Options& options,
+      const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback);
 
   // Method run on the UI thread after a new connection has been accepted and
@@ -166,7 +166,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   device::BluetoothUUID uuid_;
 
   // Copy of the profile options used for registering the profile.
-  scoped_ptr<BluetoothProfileManagerClient::Options> options_;
+  scoped_ptr<bluez::BluetoothProfileManagerClient::Options> options_;
 
   // The profile registered with the adapter for this socket.
   BluetoothAdapterProfileChromeOS* profile_;
@@ -188,7 +188,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
 
     dbus::ObjectPath device_path;
     scoped_ptr<dbus::FileDescriptor> fd;
-    BluetoothProfileServiceProvider::Delegate::Options options;
+    bluez::BluetoothProfileServiceProvider::Delegate::Options options;
     ConfirmationCallback callback;
     bool accepting;
     bool cancelled;

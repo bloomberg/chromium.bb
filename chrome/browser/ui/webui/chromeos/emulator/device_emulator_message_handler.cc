@@ -10,12 +10,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
-#include "chromeos/dbus/fake_bluetooth_device_client.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "content/public/browser/web_ui.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 
 namespace {
 
@@ -63,7 +64,7 @@ const char kPairedPropertyName[] = "Paired";
 namespace chromeos {
 
 class DeviceEmulatorMessageHandler::BluetoothObserver
-    : public BluetoothDeviceClient::Observer {
+    : public bluez::BluetoothDeviceClient::Observer {
  public:
   explicit BluetoothObserver(DeviceEmulatorMessageHandler* owner)
       : owner_(owner) {
@@ -179,8 +180,8 @@ void DeviceEmulatorMessageHandler::PowerObserver::PowerChanged(
 
 DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
     : fake_bluetooth_device_client_(
-          static_cast<chromeos::FakeBluetoothDeviceClient*>(
-              chromeos::DBusThreadManager::Get()
+          static_cast<bluez::FakeBluetoothDeviceClient*>(
+              bluez::BluezDBusManager::Get()
                   ->GetBluetoothDeviceClient())),
       fake_cras_audio_client_(static_cast<chromeos::FakeCrasAudioClient*>(
           chromeos::DBusThreadManager::Get()
@@ -208,7 +209,7 @@ void DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice(
   std::string path;
   CHECK(args->GetString(0, &path));
   fake_bluetooth_device_client_->RemoveDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
       dbus::ObjectPath(path));
 }
 
@@ -223,7 +224,7 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
   // the main adapter.
   std::vector<dbus::ObjectPath> paths =
       fake_bluetooth_device_client_->GetDevicesForAdapter(
-          dbus::ObjectPath(chromeos::FakeBluetoothAdapterClient::kAdapterPath));
+          dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath));
 
   base::ListValue devices;
   // Get each device's properties.
@@ -237,21 +238,21 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
 
   base::ListValue pairing_method_options;
   pairing_method_options.AppendString(
-      FakeBluetoothDeviceClient::kPairingMethodNone);
+      bluez::FakeBluetoothDeviceClient::kPairingMethodNone);
   pairing_method_options.AppendString(
-      FakeBluetoothDeviceClient::kPairingMethodPinCode);
+      bluez::FakeBluetoothDeviceClient::kPairingMethodPinCode);
   pairing_method_options.AppendString(
-      FakeBluetoothDeviceClient::kPairingMethodPassKey);
+      bluez::FakeBluetoothDeviceClient::kPairingMethodPassKey);
 
   base::ListValue pairing_action_options;
   pairing_action_options.AppendString(
-      FakeBluetoothDeviceClient::kPairingActionDisplay);
+      bluez::FakeBluetoothDeviceClient::kPairingActionDisplay);
   pairing_action_options.AppendString(
-      FakeBluetoothDeviceClient::kPairingActionRequest);
+      bluez::FakeBluetoothDeviceClient::kPairingActionRequest);
   pairing_action_options.AppendString(
-      FakeBluetoothDeviceClient::kPairingActionConfirmation);
+      bluez::FakeBluetoothDeviceClient::kPairingActionConfirmation);
   pairing_action_options.AppendString(
-      FakeBluetoothDeviceClient::kPairingActionFail);
+      bluez::FakeBluetoothDeviceClient::kPairingActionFail);
 
   // Send the list of devices to the view.
   web_ui()->CallJavascriptFunction(kUpdateBluetoothInfoJSCallback,
@@ -263,7 +264,7 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
     const base::ListValue* args) {
   // Create the device if it does not already exist.
   std::string path = CreateBluetoothDeviceFromListValue(args);
-  chromeos::FakeBluetoothDeviceClient::Properties* props =
+  bluez::FakeBluetoothDeviceClient::Properties* props =
       fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(path));
 
   // Try to pair the device with the main adapter. The device is identified
@@ -442,7 +443,7 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
 std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
     const base::ListValue* args) {
   const base::DictionaryValue* device_dict = nullptr;
-  FakeBluetoothDeviceClient::IncomingDeviceProperties props;
+  bluez::FakeBluetoothDeviceClient::IncomingDeviceProperties props;
 
   CHECK(args->GetDictionary(0, &device_dict));
   CHECK(device_dict->GetString("path", &props.device_path));
@@ -459,8 +460,7 @@ std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
   // Create the device and store it in the FakeBluetoothDeviceClient's observed
   // list of devices.
   fake_bluetooth_device_client_->CreateDeviceWithProperties(
-      dbus::ObjectPath(chromeos::FakeBluetoothAdapterClient::kAdapterPath),
-      props);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath), props);
 
   return props.device_path;
 }
@@ -468,11 +468,11 @@ std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
 scoped_ptr<base::DictionaryValue> DeviceEmulatorMessageHandler::GetDeviceInfo(
     const dbus::ObjectPath& object_path) {
   // Get the device's properties.
-  chromeos::FakeBluetoothDeviceClient::Properties* props =
+  bluez::FakeBluetoothDeviceClient::Properties* props =
       fake_bluetooth_device_client_->GetProperties(object_path);
   scoped_ptr<base::DictionaryValue> device(new base::DictionaryValue());
   scoped_ptr<base::ListValue> uuids(new base::ListValue);
-  chromeos::FakeBluetoothDeviceClient::SimulatedPairingOptions* options =
+  bluez::FakeBluetoothDeviceClient::SimulatedPairingOptions* options =
       fake_bluetooth_device_client_->GetPairingOptions(object_path);
 
   device->SetString("path", object_path.value());
