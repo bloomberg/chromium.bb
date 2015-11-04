@@ -977,6 +977,7 @@ SlideMode.prototype.selectLast = function() {
  */
 SlideMode.prototype.loadItem_ = function(
     item, effect, displayCallback, loadCallback) {
+  this.dimmableUIController_.setLoading(true);
   this.showProgressBar_(item);
 
   var loadDone = this.itemLoaded_.bind(this, item, loadCallback);
@@ -1009,6 +1010,7 @@ SlideMode.prototype.itemLoaded_ = function(
   var entry = item.getEntry();
 
   this.hideProgressBar_();
+  this.dimmableUIController_.setLoading(false);
 
   if (loadType === ImageView.LoadType.ERROR) {
     // if we have a specific error, then display it
@@ -1699,7 +1701,6 @@ SlideMode.prototype.print_ = function() {
  * @private
  */
 SlideMode.prototype.showProgressBar_ = function(item) {
-  this.dimmableUIController_.setLoading(true);
   this.loadingItemUrl_ = item.getEntry().toURL();
 
   if (this.progressBarTimer_ !== 0) {
@@ -1719,8 +1720,6 @@ SlideMode.prototype.showProgressBar_ = function(item) {
  * @private
  */
 SlideMode.prototype.hideProgressBar_ = function() {
-  this.dimmableUIController_.setLoading(false);
-
   if (this.progressBarTimer_ !== 0) {
     clearTimeout(this.progressBarTimer_);
     this.progressBarTimer_ = 0;

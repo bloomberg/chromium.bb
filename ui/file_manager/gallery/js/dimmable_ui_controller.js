@@ -31,9 +31,14 @@ function DimmableUIController(container) {
   this.isCursorInTools_ = false;
 
   /**
-   * @private {boolean}
+   * @private {Gallery.Mode|undefined}
    */
-  this.isInAvailableMode_ = false;
+  this.mode_ = undefined;
+
+  /**
+   * @private {Gallery.SubMode|undefined}
+   */
+  this.subMode_ = undefined;
 
   /**
    * @private {boolean}
@@ -87,15 +92,35 @@ DimmableUIController.DEFAULT_TIMEOUT = 3000; // ms
 DimmableUIController.MIN_OPERATION_INTERVAL = 500; // ms
 
 /**
+ * Returns true if this controller should be disabled.
+ * @param {Gallery.Mode|undefined} mode
+ * @param {Gallery.SubMode|undefined} subMode
+ * @param {boolean} loading
+ * @param {boolean} spokenFeedbackEnabled
+ * @return {boolean}
+ */
+DimmableUIController.shouldBeDisabled = function(
+    mode, subMode, loading, spokenFeedbackEnabled) {
+  return spokenFeedbackEnabled ||
+      mode === undefined ||
+      subMode === undefined ||
+      mode === Gallery.Mode.THUMBNAIL ||
+      (mode === Gallery.Mode.SLIDE && subMode === Gallery.SubMode.EDIT) ||
+      (mode === Gallery.Mode.SLIDE && subMode === Gallery.SubMode.BROWSE &&
+       loading);
+};
+
+/**
  * Sets current mode of Gallery.
  * @param {Gallery.Mode} mode
  * @param {Gallery.SubMode} subMode
  */
 DimmableUIController.prototype.setCurrentMode = function(mode, subMode) {
-  this.isInAvailableMode_ = mode === Gallery.Mode.SLIDE &&
-      (subMode === Gallery.SubMode.BROWSE ||
-       subMode === Gallery.SubMode.SLIDESHOW);
+  if (this.mode_ === mode && this.subMode_ === subMode)
+    return;
 
+  this.mode_ = mode;
+  this.subMode_ = subMode;
   this.updateAvailability_();
 };
 
@@ -309,9 +334,8 @@ DimmableUIController.prototype.kick = function(opt_timeout) {
  * @private
  */
 DimmableUIController.prototype.updateAvailability_ = function() {
-  var disabled = !this.isInAvailableMode_ ||
-      this.spokenFeedbackEnabled_ ||
-      this.loading_;
+  var disabled = DimmableUIController.shouldBeDisabled(
+      this.mode_, this.subMode_, this.loading_, this.spokenFeedbackEnabled_);
 
   if (this.disabled_ === disabled)
     return;
