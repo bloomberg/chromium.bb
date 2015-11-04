@@ -612,10 +612,11 @@ start_element(void *data, const char *element_name, const char **atts)
 	for (i = 0; atts[i]; i += 2) {
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
-		if (strcmp(atts[i], "version") == 0)
+		if (strcmp(atts[i], "version") == 0) {
 			version = strtouint(atts[i + 1]);
 			if (version == -1)
 				fail(&ctx->loc, "wrong version (%s)", atts[i + 1]);
+		}
 		if (strcmp(atts[i], "type") == 0)
 			type = atts[i + 1];
 		if (strcmp(atts[i], "value") == 0)
