@@ -187,78 +187,78 @@ class ThreadProxyForTest : public ThreadProxy {
   }
 
   void SetThrottleFrameProductionOnImpl(bool throttle) override {
-    ThreadProxy::SetThrottleFrameProductionOnImpl(throttle);
     test_hooks_->SetThrottleFrameProductionOnImpl(throttle);
+    ThreadProxy::SetThrottleFrameProductionOnImpl(throttle);
   }
 
   void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) override {
-    ThreadProxy::InitializeOutputSurfaceOnImpl(output_surface);
     test_hooks_->InitializeOutputSurfaceOnImpl(output_surface);
+    ThreadProxy::InitializeOutputSurfaceOnImpl(output_surface);
   }
 
   void MainThreadHasStoppedFlingingOnImpl() override {
-    ThreadProxy::MainThreadHasStoppedFlingingOnImpl();
     test_hooks_->MainThreadHasStoppedFlingingOnImpl();
+    ThreadProxy::MainThreadHasStoppedFlingingOnImpl();
   }
 
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override {
-    ThreadProxy::SetInputThrottledUntilCommitOnImpl(is_throttled);
     test_hooks_->SetInputThrottledUntilCommitOnImpl(is_throttled);
+    ThreadProxy::SetInputThrottledUntilCommitOnImpl(is_throttled);
   }
 
   void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                     TopControlsState current,
                                     bool animate) override {
-    ThreadProxy::UpdateTopControlsStateOnImpl(constraints, current, animate);
     test_hooks_->UpdateTopControlsStateOnImpl(constraints, current, animate);
+    ThreadProxy::UpdateTopControlsStateOnImpl(constraints, current, animate);
   }
 
   void SetDeferCommitsOnImpl(bool defer_commits) const override {
-    ThreadProxy::SetDeferCommitsOnImpl(defer_commits);
     test_hooks_->SetDeferCommitsOnImpl(defer_commits);
+    ThreadProxy::SetDeferCommitsOnImpl(defer_commits);
   }
 
   void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override {
-    ThreadProxy::BeginMainFrameAbortedOnImpl(reason);
     test_hooks_->BeginMainFrameAbortedOnImpl(reason);
+    ThreadProxy::BeginMainFrameAbortedOnImpl(reason);
   }
 
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override {
-    ThreadProxy::SetNeedsRedrawOnImpl(damage_rect);
     test_hooks_->SetNeedsRedrawOnImpl(damage_rect);
+    ThreadProxy::SetNeedsRedrawOnImpl(damage_rect);
   };
 
   void SetNeedsCommitOnImpl() override {
-    ThreadProxy::SetNeedsCommitOnImpl();
     test_hooks_->SetNeedsCommitOnImpl();
+    ThreadProxy::SetNeedsCommitOnImpl();
   }
 
   void FinishAllRenderingOnImpl(CompletionEvent* completion) override {
-    ThreadProxy::FinishAllRenderingOnImpl(completion);
     test_hooks_->FinishAllRenderingOnImpl();
+    ThreadProxy::FinishAllRenderingOnImpl(completion);
   };
 
   void SetVisibleOnImpl(bool visible) override {
-    ThreadProxy::SetVisibleOnImpl(visible);
     test_hooks_->SetVisibleOnImpl(visible);
+    ThreadProxy::SetVisibleOnImpl(visible);
   }
 
   void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion) override {
-    ThreadProxy::ReleaseOutputSurfaceOnImpl(completion);
     test_hooks_->ReleaseOutputSurfaceOnImpl();
+    ThreadProxy::ReleaseOutputSurfaceOnImpl(completion);
   }
 
   void FinishGLOnImpl(CompletionEvent* completion) override {
-    ThreadProxy::FinishGLOnImpl(completion);
     test_hooks_->FinishGLOnImpl();
+    ThreadProxy::FinishGLOnImpl(completion);
   }
 
   void StartCommitOnImpl(CompletionEvent* completion,
                          LayerTreeHost* layer_tree_host,
                          bool hold_commit_for_activation) override {
+    test_hooks_->StartCommitOnImpl();
     ThreadProxy::StartCommitOnImpl(completion, layer_tree_host,
                                    hold_commit_for_activation);
-    test_hooks_->StartCommitOnImpl();
   }
 
   void InitializeImplOnImpl(CompletionEvent* completion,
@@ -273,66 +273,66 @@ class ThreadProxyForTest : public ThreadProxy {
   }
 
   void DidCompleteSwapBuffers() override {
-    ThreadProxy::DidCompleteSwapBuffers();
     test_hooks_->ReceivedDidCompleteSwapBuffers();
+    ThreadProxy::DidCompleteSwapBuffers();
   }
 
   void SetRendererCapabilitiesMainCopy(
       const RendererCapabilities& capabilities) override {
-    ThreadProxy::SetRendererCapabilitiesMainCopy(capabilities);
     test_hooks_->ReceivedSetRendererCapabilitiesMainCopy(capabilities);
+    ThreadProxy::SetRendererCapabilitiesMainCopy(capabilities);
   }
 
   void BeginMainFrameNotExpectedSoon() override {
-    ThreadProxy::BeginMainFrameNotExpectedSoon();
     test_hooks_->ReceivedBeginMainFrameNotExpectedSoon();
+    ThreadProxy::BeginMainFrameNotExpectedSoon();
   }
 
   void DidCommitAndDrawFrame() override {
-    ThreadProxy::DidCommitAndDrawFrame();
     test_hooks_->ReceivedDidCommitAndDrawFrame();
+    ThreadProxy::DidCommitAndDrawFrame();
   }
 
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) override {
-    ThreadProxy::SetAnimationEvents(events.Pass());
     test_hooks_->ReceivedSetAnimationEvents();
+    ThreadProxy::SetAnimationEvents(events.Pass());
   }
 
   void DidLoseOutputSurface() override {
-    ThreadProxy::DidLoseOutputSurface();
     test_hooks_->ReceivedDidLoseOutputSurface();
+    ThreadProxy::DidLoseOutputSurface();
   }
 
   void RequestNewOutputSurface() override {
-    ThreadProxy::RequestNewOutputSurface();
     test_hooks_->ReceivedRequestNewOutputSurface();
+    ThreadProxy::RequestNewOutputSurface();
   }
 
   void DidInitializeOutputSurface(
       bool success,
       const RendererCapabilities& capabilities) override {
-    ThreadProxy::DidInitializeOutputSurface(success, capabilities);
     test_hooks_->ReceivedDidInitializeOutputSurface(success, capabilities);
+    ThreadProxy::DidInitializeOutputSurface(success, capabilities);
   }
 
   void DidCompletePageScaleAnimation() override {
-    ThreadProxy::DidCompletePageScaleAnimation();
     test_hooks_->ReceivedDidCompletePageScaleAnimation();
+    ThreadProxy::DidCompletePageScaleAnimation();
   }
 
   void PostFrameTimingEventsOnMain(
       scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
       override {
+    test_hooks_->ReceivedPostFrameTimingEventsOnMain();
     ThreadProxy::PostFrameTimingEventsOnMain(composite_events.Pass(),
                                              main_frame_events.Pass());
-    test_hooks_->ReceivedPostFrameTimingEventsOnMain();
   }
 
   void BeginMainFrame(scoped_ptr<BeginMainFrameAndCommitState>
                           begin_main_frame_state) override {
-    ThreadProxy::BeginMainFrame(begin_main_frame_state.Pass());
     test_hooks_->ReceivedBeginMainFrame();
+    ThreadProxy::BeginMainFrame(begin_main_frame_state.Pass());
   };
 
   ThreadProxyForTest(
