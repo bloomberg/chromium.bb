@@ -9,7 +9,6 @@ namespace blink {
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSCustomPropertyDeclaration)
 {
-    visitor->trace(m_value);
     CSSValue::traceAfterDispatch(visitor);
 }
 
