@@ -822,7 +822,7 @@ class PatchSeries(object):
 
   @_ManifestDecorator
   def Apply(self, changes, frozen=True, honor_ordering=False,
-            changes_filter=None, max_change_count=None):
+            changes_filter=None):
     """Applies changes from pool into the build root specified by the manifest.
 
     This method resolves each given change down into a set of transactions-
@@ -855,10 +855,6 @@ class PatchSeries(object):
         changes being inspected, and expand the changes if necessary.
         Primarily this is of use for cbuildbot patching when dealing w/
         uploaded/remote patches.
-      max_change_count: If not None, this is a soft integer limit on the number
-        of patches to pull in. We stop pulling in patches as soon as we grab
-        at least this many patches. Note that this limit may be exceeded by N-1,
-        where N is the length of the longest transaction.
 
     Returns:
       A tuple of changes-applied, Exceptions for the changes that failed
@@ -884,9 +880,6 @@ class PatchSeries(object):
         logging.info("Transaction for %s is %s.",
                      change, ', '.join(map(str, resolved[-1][-1])))
         planned.update(plan)
-
-      if max_change_count is not None and len(planned) >= max_change_count:
-        break
 
     if not resolved:
       # No work to do; either no changes were given to us, or all failed
@@ -1622,6 +1615,22 @@ class ValidationPool(object):
 
       logging.PrintBuildbotLink(s, change.url)
 
+  def FilterChangesForThrottledTree(self):
+    """Apply Throttled Tree logic to select patch candidates.
+
+    If the tree is throttled, we only test a random subset of our candidate
+    changes. Call this to select that subset, and throw away unrelated changes.
+
+    If the three was open when this pool was created, it does nothing.
+    """
+    if self.tree_was_open:
+      return
+
+    fail_streak = self._GetFailStreak()
+    test_pool_size = max(1, len(self.changes) / (2**fail_streak))
+    random.shuffle(self.changes)
+    self.changes = self.changes[:test_pool_size]
+
   def ApplyPoolIntoRepo(self, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
 
@@ -1640,18 +1649,11 @@ class ValidationPool(object):
     failed_inflight = []
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
 
-    # Only try a subset of the changes if the tree was throttled.
-    max_change_count = len(self.changes)
-    if not self.tree_was_open:
-      random.shuffle(self.changes)
-      fail_streak = self._GetFailStreak()
-      max_change_count = max(1, len(self.changes) / (2**fail_streak))
-
     if self.is_master:
       try:
         # pylint: disable=E1123
         applied, failed_tot, failed_inflight = patch_series.Apply(
-            self.changes, manifest=manifest, max_change_count=max_change_count)
+            self.changes, manifest=manifest)
       except (KeyboardInterrupt, RuntimeError, SystemExit):
         raise
       except Exception as e:

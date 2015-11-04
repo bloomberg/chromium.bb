@@ -249,6 +249,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.InitializeManifestVariables(version_info)
 
     self.GenerateBlameListSinceLKGM()
+
+    # Throw away CLs that might not be used this run.
+    if validation_pool:
+      validation_pool.FilterChangesForThrottledTree()
+
     new_manifest = self.CreateManifest()
 
     # For Chrome PFQ, add the version of Chrome to use.

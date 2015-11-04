@@ -16,7 +16,6 @@ import mock
 import mox
 import os
 import pickle
-import random
 import tempfile
 import time
 
@@ -878,10 +877,7 @@ class TestCoreLogic(MoxBase):
   def MakeFailure(self, patch, inflight=True):
     return cros_patch.ApplyPatchException(patch, inflight=inflight)
 
-  def GetPool(self, changes, applied=(), tot=(), inflight=(),
-              max_change_count=None, **kwargs):
-    if not max_change_count:
-      max_change_count = len(changes)
+  def GetPool(self, changes, applied=(), tot=(), inflight=(), **kwargs):
 
     pool = self.MakePool(changes=changes, fake_db=self.fake_db, **kwargs)
     applied = list(applied)
@@ -889,8 +885,7 @@ class TestCoreLogic(MoxBase):
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
     # pylint: disable=E1120,E1123
     validation_pool.PatchSeries.Apply(
-        changes, manifest=mox.IgnoreArg(), max_change_count=max_change_count
-        ).AndReturn((applied, tot, inflight))
+        changes, manifest=mox.IgnoreArg()).AndReturn((applied, tot, inflight))
 
     for patch in applied:
       pool.HandleApplySuccess(patch, mox.IgnoreArg()).AndReturn(None)
@@ -1138,8 +1133,7 @@ class TestCoreLogic(MoxBase):
 
     # pylint: disable=E1120,E1123
     validation_pool.PatchSeries.Apply(
-        patches, manifest=mox.IgnoreArg(),
-        max_change_count=len(patches)).AndRaise(MyException)
+        patches, manifest=mox.IgnoreArg()).AndRaise(MyException)
     errors = [mox.Func(functools.partial(VerifyCQError, x)) for x in patches]
     pool._HandleApplyFailure(errors).AndReturn(None)
 
@@ -1366,47 +1360,72 @@ class TestCoreLogic(MoxBase):
 
     self.assertEqual(slave_pool._GetFailStreak(), 0)
 
-  def testApplyWithTreeNotOpen(self):
+  def testFilterChangesForThrottledTree(self):
     """Tests that we can correctly apply exponential fallback."""
     patches = self.GetPatches(4)
-
-    # We mock out the shuffle so that we can deterministically test.
-    self.mox.StubOutWithMock(random, 'shuffle')
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_GetFailStreak')
 
-    slave_pool = self.GetPool(changes=patches, applied=patches[:2],
-                              max_change_count=2,
-                              tree_was_open=False, handlers=True)
-    random.shuffle(patches) # Mock.
+    #
+    # Test when tree is open.
+    #
+    self.mox.ReplayAll()
+
+    # Perform test.
+    slave_pool = self.MakePool(changes=patches, tree_was_open=True)
+    slave_pool.FilterChangesForThrottledTree()
+
+    # Validate results.
+    self.assertEqual(len(slave_pool.changes), 4)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    #
+    # Test when tree is closed with a streak of 1.
+    #
+
     # pylint: disable=no-value-for-parameter
     validation_pool.ValidationPool._GetFailStreak().AndReturn(1)
-
     self.mox.ReplayAll()
-    self.runApply(slave_pool, True)
+
+    # Perform test.
+    slave_pool = self.MakePool(changes=patches, tree_was_open=False)
+    slave_pool.FilterChangesForThrottledTree()
+
+    # Validate results.
     self.assertEqual(len(slave_pool.changes), 2)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
-    slave_pool = self.GetPool(changes=patches, applied=patches[:1],
-                              max_change_count=1,
-                              tree_was_open=False, handlers=True)
-    random.shuffle(patches) # Mock.
-    validation_pool.ValidationPool._GetFailStreak().AndReturn(2)
+    #
+    # Test when tree is closed with a streak of 2.
+    #
 
+    # pylint: disable=no-value-for-parameter
+    validation_pool.ValidationPool._GetFailStreak().AndReturn(2)
     self.mox.ReplayAll()
-    self.runApply(slave_pool, True)
+
+    # Perform test.
+    slave_pool = self.MakePool(changes=patches, tree_was_open=False)
+    slave_pool.FilterChangesForThrottledTree()
+
+    # Validate results.
     self.assertEqual(len(slave_pool.changes), 1)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
-    slave_pool = self.GetPool(changes=patches, applied=patches[:1],
-                              max_change_count=1,
-                              tree_was_open=False, handlers=True)
-    random.shuffle(patches) # Mock.
-    validation_pool.ValidationPool._GetFailStreak().AndReturn(10)
+    #
+    # Test when tree is closed with a streak of many.
+    #
 
+    # pylint: disable=no-value-for-parameter
+    validation_pool.ValidationPool._GetFailStreak().AndReturn(200)
     self.mox.ReplayAll()
-    self.runApply(slave_pool, True)
+
+    # Perform test.
+    slave_pool = self.MakePool(changes=patches, tree_was_open=False)
+    slave_pool.FilterChangesForThrottledTree()
+
+    # Validate results.
     self.assertEqual(len(slave_pool.changes), 1)
     self.mox.VerifyAll()
 
