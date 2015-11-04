@@ -26,7 +26,6 @@
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/switches.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
@@ -128,10 +127,6 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
  protected:
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    bluez::BluezDBusManager::Initialize(
-        chromeos::DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingStub(
-            chromeos::DBusClientBundle::BLUETOOTH));
     client_ = chromeos::DBusThreadManager::Get()->GetEasyUnlockClient();
 
     extensions::ExtensionApiUnittest::SetUp();
@@ -140,7 +135,6 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
   void TearDown() override {
     extensions::ExtensionApiUnittest::TearDown();
 
-    bluez::BluezDBusManager::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

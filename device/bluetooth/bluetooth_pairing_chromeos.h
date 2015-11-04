@@ -5,8 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_CHROMEOS_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_CHROMEOS_H_
 
+#include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 
 namespace chromeos {
 
@@ -36,8 +36,7 @@ class BluetoothPairingChromeOS {
   // calls on this object are translated into the appropriate response to
   // |callback|.
   void RequestPinCode(
-      const bluez::BluetoothAgentServiceProvider::Delegate::PinCodeCallback&
-          callback);
+      const BluetoothAgentServiceProvider::Delegate::PinCodeCallback& callback);
 
   // Indicates whether the device is currently pairing and expecting a
   // PIN Code to be returned.
@@ -58,8 +57,7 @@ class BluetoothPairingChromeOS {
   // calls on this object are translated into the appropriate response to
   // |callback|.
   void RequestPasskey(
-      const bluez::BluetoothAgentServiceProvider::Delegate::PasskeyCallback&
-          callback);
+      const BluetoothAgentServiceProvider::Delegate::PasskeyCallback& callback);
 
   // Sends the Passkey |passkey| to the remote device during pairing.
   //
@@ -81,16 +79,18 @@ class BluetoothPairingChromeOS {
   // from the current pairing delegate. The ConfirmPairing(), RejectPairing()
   // and CancelPairing() method calls on this object are translated into the
   // appropriate response to |callback|.
-  void RequestConfirmation(uint32 passkey,
-                           const bluez::BluetoothAgentServiceProvider::
-                               Delegate::ConfirmationCallback& callback);
+  void RequestConfirmation(
+      uint32 passkey,
+      const BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
+          callback);
 
   // Requests authorization that the current device be allowed to pair with
   // this device from the current pairing delegate. The ConfirmPairing(),
   // RejectPairing() and CancelPairing() method calls on this object are
   // translated into the appropriate response to |callback|.
-  void RequestAuthorization(const bluez::BluetoothAgentServiceProvider::
-                                Delegate::ConfirmationCallback& callback);
+  void RequestAuthorization(
+      const BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
+          callback);
 
   // Confirms to the remote device during pairing that a passkey provided by
   // the ConfirmPasskey() delegate call is displayed on both devices.
@@ -115,7 +115,7 @@ class BluetoothPairingChromeOS {
   // Internal method to respond to the relevant callback for a RejectPairing
   // or CancelPairing call.
   bool RunPairingCallbacks(
-      bluez::BluetoothAgentServiceProvider::Delegate::Status status);
+      BluetoothAgentServiceProvider::Delegate::Status status);
 
   // The underlying BluetoothDeviceChromeOS that owns this pairing context.
   BluetoothDeviceChromeOS* device_;
@@ -131,13 +131,11 @@ class BluetoothPairingChromeOS {
 
   // During pairing these callbacks are set to those provided by method calls
   // made on the BluetoothAdapterChromeOS instance by its respective
-  // bluez::BluetoothAgentServiceProvider instance, and are called by our own
+  // BluetoothAgentServiceProvider instance, and are called by our own
   // method calls such as SetPinCode() and SetPasskey().
-  bluez::BluetoothAgentServiceProvider::Delegate::PinCodeCallback
-      pincode_callback_;
-  bluez::BluetoothAgentServiceProvider::Delegate::PasskeyCallback
-      passkey_callback_;
-  bluez::BluetoothAgentServiceProvider::Delegate::ConfirmationCallback
+  BluetoothAgentServiceProvider::Delegate::PinCodeCallback pincode_callback_;
+  BluetoothAgentServiceProvider::Delegate::PasskeyCallback passkey_callback_;
+  BluetoothAgentServiceProvider::Delegate::ConfirmationCallback
       confirmation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPairingChromeOS);

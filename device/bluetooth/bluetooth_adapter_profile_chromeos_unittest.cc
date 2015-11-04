@@ -4,17 +4,17 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "chromeos/dbus/bluetooth_profile_service_provider.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
+#include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
-#include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
-#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
-#include "device/bluetooth/dbus/fake_bluetooth_profile_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using device::BluetoothAdapter;
@@ -27,29 +27,25 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
   BluetoothAdapterProfileChromeOSTest()
       : success_callback_count_(0),
         error_callback_count_(0),
-        fake_delegate_paired_(
-            bluez::FakeBluetoothDeviceClient::kPairedDevicePath),
-        fake_delegate_autopair_(
-            bluez::FakeBluetoothDeviceClient::kLegacyAutopairPath),
+        fake_delegate_paired_(FakeBluetoothDeviceClient::kPairedDevicePath),
+        fake_delegate_autopair_(FakeBluetoothDeviceClient::kLegacyAutopairPath),
         fake_delegate_listen_(""),
         profile_user_ptr_(nullptr) {}
 
   void SetUp() override {
-    scoped_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
-        bluez::BluezDBusManager::GetSetterForTesting();
+    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+        DBusThreadManager::GetSetterForTesting();
 
     dbus_setter->SetBluetoothAdapterClient(
-        scoped_ptr<bluez::BluetoothAdapterClient>(
-            new bluez::FakeBluetoothAdapterClient));
+        scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
     dbus_setter->SetBluetoothAgentManagerClient(
-        scoped_ptr<bluez::BluetoothAgentManagerClient>(
-            new bluez::FakeBluetoothAgentManagerClient));
+        scoped_ptr<BluetoothAgentManagerClient>(
+            new FakeBluetoothAgentManagerClient));
     dbus_setter->SetBluetoothDeviceClient(
-        scoped_ptr<bluez::BluetoothDeviceClient>(
-            new bluez::FakeBluetoothDeviceClient));
+        scoped_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
     dbus_setter->SetBluetoothProfileManagerClient(
-        scoped_ptr<bluez::BluetoothProfileManagerClient>(
-            new bluez::FakeBluetoothProfileManagerClient));
+        scoped_ptr<BluetoothProfileManagerClient>(
+            new FakeBluetoothProfileManagerClient));
 
     // Grab a pointer to the adapter.
     device::BluetoothAdapterFactory::GetAdapter(
@@ -68,20 +64,21 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
   void TearDown() override {
     profile_.reset();
     adapter_ = nullptr;
-    bluez::BluezDBusManager::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
   void AdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
     adapter_ = adapter;
   }
 
-  class FakeDelegate : public bluez::BluetoothProfileServiceProvider::Delegate {
+  class FakeDelegate
+      : public chromeos::BluetoothProfileServiceProvider::Delegate {
    public:
     FakeDelegate(const std::string& device_path) : connections_(0) {
       device_path_ = dbus::ObjectPath(device_path);
     }
 
-    // bluez::BluetoothProfileServiceProvider::Delegate:
+    // BluetoothProfileServiceProvider::Delegate:
     void Released() override {
       // noop
     }
@@ -89,8 +86,7 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
     void NewConnection(
         const dbus::ObjectPath& device_path,
         scoped_ptr<dbus::FileDescriptor> fd,
-        const bluez::BluetoothProfileServiceProvider::Delegate::Options&
-            options,
+        const BluetoothProfileServiceProvider::Delegate::Options& options,
         const ConfirmationCallback& callback) override {
       ++connections_;
       fd->CheckValidity();
@@ -161,8 +157,8 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
 };
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, DelegateCount) {
-  BluetoothUUID uuid(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid);
-  bluez::BluetoothProfileManagerClient::Options options;
+  BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
+  BluetoothProfileManagerClient::Options options;
 
   options.require_authentication.reset(new bool(false));
 
@@ -198,8 +194,8 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, DelegateCount) {
 }
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
-  BluetoothUUID uuid(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid);
-  bluez::BluetoothProfileManagerClient::Options options;
+  BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
+  BluetoothProfileManagerClient::Options options;
 
   options.require_authentication.reset(new bool(false));
 
@@ -216,9 +212,9 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
 
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
-      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kPairedDevicePath),
-      bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath),
+      FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(
           &BluetoothAdapterProfileChromeOSTest::DBusConnectSuccessCallback,
           base::Unretained(this)),
@@ -234,8 +230,8 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
 }
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
-  BluetoothUUID uuid(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid);
-  bluez::BluetoothProfileManagerClient::Options options;
+  BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
+  BluetoothProfileManagerClient::Options options;
 
   options.require_authentication.reset(new bool(false));
 
@@ -259,9 +255,9 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
   profile_->SetDelegate(fake_delegate_listen_.device_path_,
                         &fake_delegate_listen_);
 
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
-      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kPairedDevicePath),
-      bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath),
+      FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(
           &BluetoothAdapterProfileChromeOSTest::DBusConnectSuccessCallback,
           base::Unretained(this)),
@@ -275,9 +271,9 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
 
   EXPECT_EQ(1U, fake_delegate_paired_.connections_);
 
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
-      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLegacyAutopairPath),
-      bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLegacyAutopairPath),
+      FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(
           &BluetoothAdapterProfileChromeOSTest::DBusConnectSuccessCallback,
           base::Unretained(this)),
@@ -292,9 +288,9 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
   EXPECT_EQ(1U, fake_delegate_autopair_.connections_);
 
   // Incoming connections look the same from BlueZ.
-  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
-      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kDisplayPinCodePath),
-      bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kDisplayPinCodePath),
+      FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(
           &BluetoothAdapterProfileChromeOSTest::DBusConnectSuccessCallback,
           base::Unretained(this)),
@@ -310,8 +306,8 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
 }
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegister) {
-  BluetoothUUID uuid(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid);
-  bluez::BluetoothProfileManagerClient::Options options;
+  BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
+  BluetoothProfileManagerClient::Options options;
   BluetoothAdapterChromeOS* adapter =
       static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
@@ -351,9 +347,8 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegister) {
 }
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegisterFail) {
-  BluetoothUUID uuid(
-      bluez::FakeBluetoothProfileManagerClient::kUnregisterableUuid);
-  bluez::BluetoothProfileManagerClient::Options options;
+  BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kUnregisterableUuid);
+  BluetoothProfileManagerClient::Options options;
   BluetoothAdapterChromeOS* adapter =
       static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 

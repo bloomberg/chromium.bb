@@ -6,24 +6,21 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_CHROMEOS_H_
 
 #include "base/macros.h"
+#include "chromeos/dbus/bluetooth_le_advertisement_service_provider.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_export.h"
-#include "device/bluetooth/dbus/bluetooth_le_advertisement_service_provider.h"
-
-namespace bluez {
-class BluetoothLEAdvertisementServiceProvider;
-}
 
 namespace chromeos {
 
+class BluetoothLEAdvertisementServiceProvider;
 class BluetoothAdapterChromeOS;
 
 // The BluetoothAdvertisementChromeOS class implements BluetoothAdvertisement
 // for the Chrome OS platform.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementChromeOS
     : public device::BluetoothAdvertisement,
-      public bluez::BluetoothLEAdvertisementServiceProvider::Delegate {
+      public BluetoothLEAdvertisementServiceProvider::Delegate {
  public:
   BluetoothAdvertisementChromeOS(
       scoped_ptr<device::BluetoothAdvertisement::Data> data,
@@ -33,7 +30,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementChromeOS
   void Unregister(const SuccessCallback& success_callback,
                   const ErrorCallback& error_callback) override;
 
-  // bluez::BluetoothLEAdvertisementServiceProvider::Delegate overrides:
+  // BluetoothLEAdvertisementServiceProvider::Delegate overrides:
   void Released() override;
 
   void Register(
@@ -43,7 +40,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementChromeOS
 
   // Used from tests to be able to trigger events on the fake advertisement
   // provider.
-  bluez::BluetoothLEAdvertisementServiceProvider* provider() {
+  BluetoothLEAdvertisementServiceProvider* provider() {
     return provider_.get();
   }
 
@@ -52,7 +49,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementChromeOS
 
   // Adapter this advertisement is advertising on.
   scoped_refptr<BluetoothAdapterChromeOS> adapter_;
-  scoped_ptr<bluez::BluetoothLEAdvertisementServiceProvider> provider_;
+  scoped_ptr<BluetoothLEAdvertisementServiceProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementChromeOS);
 };

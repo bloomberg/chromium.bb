@@ -121,7 +121,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
@@ -187,12 +186,6 @@ class DBusServices {
     // Initialize DBusThreadManager for the browser. This must be done after
     // the main message loop is started, as it uses the message loop.
     DBusThreadManager::Initialize();
-
-    bluez::BluezDBusManager::Initialize(
-        DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingStub(
-            chromeos::DBusClientBundle::BLUETOOTH));
-
     PowerPolicyController::Initialize(
         DBusThreadManager::Get()->GetPowerManagerClient());
 
@@ -259,7 +252,6 @@ class DBusServices {
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
-    bluez::BluezDBusManager::Shutdown();
 
     // NOTE: This must only be called if Initialize() was called.
     DBusThreadManager::Shutdown();
