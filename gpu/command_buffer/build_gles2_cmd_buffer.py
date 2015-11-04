@@ -4416,7 +4416,7 @@ class CWriter(object):
   """
   def __init__(self, filename):
     self.filename = filename
-    self._file = open(filename, 'w')
+    self._file = open(filename, 'wb')
     self._ENTER_MSG = _LICENSE + _DO_NOT_EDIT_WARNING
     self._EXIT_MSG = ""
 
@@ -10759,7 +10759,7 @@ namespace mojo {
     with CHeaderWriter(filename) as f:
       f.write("static const GLES2Util::EnumToString "
                  "enum_to_string_table[] = {\n")
-      for value in dict:
+      for value in sorted(dict):
         f.write('  { %s, "%s", },\n' % (value, dict[value]))
       f.write("""};
 
