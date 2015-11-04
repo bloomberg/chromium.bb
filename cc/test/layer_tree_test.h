@@ -108,6 +108,7 @@ class TestHooks : public AnimationDelegate {
                                        bool visible) {}
   virtual void ScheduleComposite() {}
   virtual void DidSetNeedsUpdateLayers() {}
+  virtual void DidActivateSyncTree() {}
 
   // Hooks for SchedulerClient.
   virtual void ScheduledActionWillSendBeginMainFrame() {}
@@ -138,6 +139,8 @@ class TestHooks : public AnimationDelegate {
   virtual void ReleaseOutputSurfaceOnImpl() {}
   virtual void FinishGLOnImpl() {}
   virtual void StartCommitOnImpl() {}
+  virtual void InitializeImplOnImpl() {}
+  virtual void WillCloseLayerTreeHostOnImpl() {}
 
   // Hooks for ProxyMain
   virtual void ReceivedDidCompleteSwapBuffers() {}

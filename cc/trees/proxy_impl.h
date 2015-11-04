@@ -43,7 +43,12 @@ class CC_EXPORT ProxyImpl {
   virtual void MainFrameWillHappenOnImplForTesting(
       CompletionEvent* completion,
       bool* main_frame_will_happen) = 0;
-  virtual void StartCommitOnImpl(CompletionEvent* completion) = 0;
+  virtual void StartCommitOnImpl(CompletionEvent* completion,
+                                 LayerTreeHost* layer_tree_host,
+                                 bool hold_commit_for_activation) = 0;
+  virtual void InitializeImplOnImpl(CompletionEvent* completion,
+                                    LayerTreeHost* layer_tree_host) = 0;
+  virtual void LayerTreeHostClosedOnImpl(CompletionEvent* completion) = 0;
 
   // TODO(khushalsagar): Rename as GetWeakPtr() once ThreadProxy is split.
   virtual base::WeakPtr<ProxyImpl> GetImplWeakPtr() = 0;

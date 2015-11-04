@@ -45,6 +45,8 @@ class ThreadedChannelTest : public LayerTreeTest {
 
 class ThreadedChannelTestInitializationAndShutdown
     : public ThreadedChannelTest {
+  void InitializeImplOnImpl() override { calls_received_++; }
+
   void SetVisibleOnImpl(bool visible) override { calls_received_++; }
 
   void ReceivedRequestNewOutputSurface() override { calls_received_++; }
@@ -65,9 +67,10 @@ class ThreadedChannelTestInitializationAndShutdown
     EndTest();
   }
 
+  void WillCloseLayerTreeHostOnImpl() override { calls_received_++; }
   void FinishGLOnImpl() override { calls_received_++; }
 
-  void AfterTest() override { EXPECT_EQ(6, calls_received_); }
+  void AfterTest() override { EXPECT_EQ(8, calls_received_); }
 };
 
 MULTI_THREAD_DIRECT_RENDERER_TEST_F(

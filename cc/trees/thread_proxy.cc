@@ -62,8 +62,7 @@ ThreadProxy::ThreadProxy(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     scoped_ptr<BeginFrameSource> external_begin_frame_source)
     : Proxy(main_task_runner, impl_task_runner),
-      main_thread_only_vars_unsafe_(this, layer_tree_host->id()),
-      main_thread_or_blocked_vars_unsafe_(layer_tree_host),
+      main_thread_only_vars_unsafe_(this, layer_tree_host),
       compositor_thread_vars_unsafe_(
           this,
           layer_tree_host->id(),
@@ -71,7 +70,7 @@ ThreadProxy::ThreadProxy(
           external_begin_frame_source.Pass()) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
-  DCHECK(this->layer_tree_host());
+  DCHECK(this->main().layer_tree_host);
   // TODO(khushalsagar): Move this to LayerTreeHost#InitializeThreaded once
   // ThreadProxy is split. LayerTreeHost creates the channel and passes it to
   // ProxyMain#SetChannel.
@@ -79,11 +78,13 @@ ThreadProxy::ThreadProxy(
 }
 
 ThreadProxy::MainThreadOnly::MainThreadOnly(ThreadProxy* proxy,
-                                            int layer_tree_host_id)
-    : layer_tree_host_id(layer_tree_host_id),
+                                            LayerTreeHost* layer_tree_host)
+    : layer_tree_host_id(layer_tree_host->id()),
+      layer_tree_host(layer_tree_host),
       max_requested_pipeline_stage(NO_PIPELINE_STAGE),
       current_pipeline_stage(NO_PIPELINE_STAGE),
       final_pipeline_stage(NO_PIPELINE_STAGE),
+      commit_waits_for_activation(false),
       started(false),
       prepare_tiles_pending(false),
       defer_commits(false),
@@ -91,13 +92,10 @@ ThreadProxy::MainThreadOnly::MainThreadOnly(ThreadProxy* proxy,
 
 ThreadProxy::MainThreadOnly::~MainThreadOnly() {}
 
-ThreadProxy::MainThreadOrBlockedMainThread::MainThreadOrBlockedMainThread(
-    LayerTreeHost* host)
-    : layer_tree_host(host),
-      commit_waits_for_activation(false),
-      main_thread_inside_commit(false) {}
+ThreadProxy::BlockedMainCommitOnly::BlockedMainCommitOnly()
+    : layer_tree_host(nullptr) {}
 
-ThreadProxy::MainThreadOrBlockedMainThread::~MainThreadOrBlockedMainThread() {}
+ThreadProxy::BlockedMainCommitOnly::~BlockedMainCommitOnly() {}
 
 ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
     ThreadProxy* proxy,
@@ -105,8 +103,8 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     scoped_ptr<BeginFrameSource> external_begin_frame_source)
     : layer_tree_host_id(layer_tree_host_id),
+      next_commit_waits_for_activation(false),
       commit_completion_event(nullptr),
-      completion_event_for_commit_held_on_tree_activation(nullptr),
       next_frame_is_newly_committed_frame(false),
       inside_draw(false),
       input_throttled_until_commit(false),
@@ -180,12 +178,12 @@ void ThreadProxy::SetThrottleFrameProductionOnImpl(bool throttle) {
 void ThreadProxy::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "ThreadProxy::DidLoseOutputSurface");
   DCHECK(IsMainThread());
-  layer_tree_host()->DidLoseOutputSurface();
+  main().layer_tree_host->DidLoseOutputSurface();
 }
 
 void ThreadProxy::RequestNewOutputSurface() {
   DCHECK(IsMainThread());
-  layer_tree_host()->RequestNewOutputSurface();
+  main().layer_tree_host->RequestNewOutputSurface();
 }
 
 void ThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
@@ -194,7 +192,7 @@ void ThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
 
 void ThreadProxy::ReleaseOutputSurface() {
   DCHECK(IsMainThread());
-  DCHECK(layer_tree_host()->output_surface_lost());
+  DCHECK(main().layer_tree_host->output_surface_lost());
 
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
   CompletionEvent completion;
@@ -209,11 +207,11 @@ void ThreadProxy::DidInitializeOutputSurface(
   DCHECK(IsMainThread());
 
   if (!success) {
-    layer_tree_host()->DidFailToInitializeOutputSurface();
+    main().layer_tree_host->DidFailToInitializeOutputSurface();
     return;
   }
   main().renderer_capabilities_main_thread_copy = capabilities;
-  layer_tree_host()->DidInitializeOutputSurface();
+  main().layer_tree_host->DidInitializeOutputSurface();
 }
 
 void ThreadProxy::SetRendererCapabilitiesMainCopy(
@@ -241,12 +239,12 @@ void ThreadProxy::SetNeedsCommitOnImpl() {
 
 void ThreadProxy::DidCompletePageScaleAnimation() {
   DCHECK(IsMainThread());
-  layer_tree_host()->DidCompletePageScaleAnimation();
+  main().layer_tree_host->DidCompletePageScaleAnimation();
 }
 
 const RendererCapabilities& ThreadProxy::GetRendererCapabilities() const {
   DCHECK(IsMainThread());
-  DCHECK(!layer_tree_host()->output_surface_lost());
+  DCHECK(!main().layer_tree_host->output_surface_lost());
   return main().renderer_capabilities_main_thread_copy;
 }
 
@@ -403,8 +401,7 @@ void ThreadProxy::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
 
 void ThreadProxy::SetNextCommitWaitsForActivation() {
   DCHECK(IsMainThread());
-  DCHECK(!blocked_main().main_thread_inside_commit);
-  blocked_main().commit_waits_for_activation = true;
+  main().commit_waits_for_activation = true;
 }
 
 void ThreadProxy::SetDeferCommits(bool defer_commits) {
@@ -485,14 +482,6 @@ void ThreadProxy::SetInputThrottledUntilCommitOnImpl(bool is_throttled) {
   RenewTreePriority();
 }
 
-LayerTreeHost* ThreadProxy::layer_tree_host() {
-  return blocked_main().layer_tree_host;
-}
-
-const LayerTreeHost* ThreadProxy::layer_tree_host() const {
-  return blocked_main().layer_tree_host;
-}
-
 ThreadProxy::MainThreadOnly& ThreadProxy::main() {
   DCHECK(IsMainThread());
   return main_thread_only_vars_unsafe_;
@@ -502,15 +491,10 @@ const ThreadProxy::MainThreadOnly& ThreadProxy::main() const {
   return main_thread_only_vars_unsafe_;
 }
 
-ThreadProxy::MainThreadOrBlockedMainThread& ThreadProxy::blocked_main() {
-  DCHECK(IsMainThread() || IsMainThreadBlocked());
-  return main_thread_or_blocked_vars_unsafe_;
-}
-
-const ThreadProxy::MainThreadOrBlockedMainThread& ThreadProxy::blocked_main()
-    const {
-  DCHECK(IsMainThread() || IsMainThreadBlocked());
-  return main_thread_or_blocked_vars_unsafe_;
+ThreadProxy::BlockedMainCommitOnly& ThreadProxy::blocked_main_commit() {
+  DCHECK(IsMainThreadBlocked());
+  DCHECK(impl().commit_completion_event);
+  return main_thread_blocked_commit_vars_unsafe_;
 }
 
 ThreadProxy::CompositorThreadOnly& ThreadProxy::impl() {
@@ -530,11 +514,8 @@ void ThreadProxy::Start() {
   // Create LayerTreeHostImpl.
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
   CompletionEvent completion;
-  Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::InitializeImplOnImplThread,
-                 base::Unretained(this),
-                 &completion));
+  main().channel_main->InitializeImplOnImpl(&completion,
+                                            main().layer_tree_host);
   completion.Wait();
 
   main_thread_weak_ptr_ = main().weak_factory.GetWeakPtr();
@@ -561,16 +542,12 @@ void ThreadProxy::Stop() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
     CompletionEvent completion;
-    Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::LayerTreeHostClosedOnImplThread,
-                   impl_thread_weak_ptr_,
-                   &completion));
+    main().channel_main->LayerTreeHostClosedOnImpl(&completion);
     completion.Wait();
   }
 
   main().weak_factory.InvalidateWeakPtrs();
-  blocked_main().layer_tree_host = NULL;
+  main().layer_tree_host = nullptr;
   main().started = false;
 }
 
@@ -633,19 +610,19 @@ void ThreadProxy::BeginMainFrame(
   // If the commit finishes, LayerTreeHost will transfer its swap promises to
   // LayerTreeImpl. The destructor of ScopedSwapPromiseChecker aborts the
   // remaining swap promises.
-  ScopedAbortRemainingSwapPromises swap_promise_checker(layer_tree_host());
+  ScopedAbortRemainingSwapPromises swap_promise_checker(main().layer_tree_host);
 
   main().final_pipeline_stage = main().max_requested_pipeline_stage;
   main().max_requested_pipeline_stage = NO_PIPELINE_STAGE;
 
-  if (!layer_tree_host()->visible()) {
+  if (!main().layer_tree_host->visible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
     main().channel_main->BeginMainFrameAbortedOnImpl(
         CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
     return;
   }
 
-  if (layer_tree_host()->output_surface_lost()) {
+  if (main().layer_tree_host->output_surface_lost()) {
     TRACE_EVENT_INSTANT0(
         "cc", "EarlyOut_OutputSurfaceLost", TRACE_EVENT_SCOPE_THREAD);
     main().channel_main->BeginMainFrameAbortedOnImpl(
@@ -655,21 +632,22 @@ void ThreadProxy::BeginMainFrame(
 
   main().current_pipeline_stage = ANIMATE_PIPELINE_STAGE;
 
-  layer_tree_host()->ApplyScrollAndScale(
+  main().layer_tree_host->ApplyScrollAndScale(
       begin_main_frame_state->scroll_info.get());
 
-  layer_tree_host()->WillBeginMainFrame();
+  main().layer_tree_host->WillBeginMainFrame();
 
-  layer_tree_host()->BeginMainFrame(begin_main_frame_state->begin_frame_args);
-  layer_tree_host()->AnimateLayers(
+  main().layer_tree_host->BeginMainFrame(
+      begin_main_frame_state->begin_frame_args);
+  main().layer_tree_host->AnimateLayers(
       begin_main_frame_state->begin_frame_args.frame_time);
 
   // Recreate all UI resources if there were evicted UI resources when the impl
   // thread initiated the commit.
   if (begin_main_frame_state->evicted_ui_resources)
-    layer_tree_host()->RecreateUIResources();
+    main().layer_tree_host->RecreateUIResources();
 
-  layer_tree_host()->RequestMainFrameUpdate();
+  main().layer_tree_host->RequestMainFrameUpdate();
   TRACE_EVENT_SYNTHETIC_DELAY_END("cc.BeginMainFrame");
 
   bool can_cancel_this_commit =
@@ -679,11 +657,11 @@ void ThreadProxy::BeginMainFrame(
   main().current_pipeline_stage = UPDATE_LAYERS_PIPELINE_STAGE;
   bool should_update_layers =
       main().final_pipeline_stage >= UPDATE_LAYERS_PIPELINE_STAGE;
-  bool updated = should_update_layers && layer_tree_host()->UpdateLayers();
+  bool updated = should_update_layers && main().layer_tree_host->UpdateLayers();
 
-  layer_tree_host()->WillCommit();
+  main().layer_tree_host->WillCommit();
   devtools_instrumentation::ScopedCommitTrace commit_task(
-      layer_tree_host()->id());
+      main().layer_tree_host->id());
 
   main().current_pipeline_stage = COMMIT_PIPELINE_STAGE;
   if (!updated && can_cancel_this_commit) {
@@ -695,9 +673,9 @@ void ThreadProxy::BeginMainFrame(
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
     main().current_pipeline_stage = NO_PIPELINE_STAGE;
-    layer_tree_host()->CommitComplete();
-    layer_tree_host()->DidBeginMainFrame();
-    layer_tree_host()->BreakSwapPromises(SwapPromise::COMMIT_NO_UPDATE);
+    main().layer_tree_host->CommitComplete();
+    main().layer_tree_host->DidBeginMainFrame();
+    main().layer_tree_host->BreakSwapPromises(SwapPromise::COMMIT_NO_UPDATE);
     return;
   }
 
@@ -717,27 +695,38 @@ void ThreadProxy::BeginMainFrame(
         blocking_main_thread_task_runner());
 
     CompletionEvent completion;
-    main().channel_main->StartCommitOnImpl(&completion);
+    main().channel_main->StartCommitOnImpl(&completion, main().layer_tree_host,
+                                           main().commit_waits_for_activation);
     completion.Wait();
+    main().commit_waits_for_activation = false;
   }
 
   main().current_pipeline_stage = NO_PIPELINE_STAGE;
-  layer_tree_host()->CommitComplete();
-  layer_tree_host()->DidBeginMainFrame();
+  main().layer_tree_host->CommitComplete();
+  main().layer_tree_host->DidBeginMainFrame();
 }
 
 void ThreadProxy::BeginMainFrameNotExpectedSoon() {
   TRACE_EVENT0("cc", "ThreadProxy::BeginMainFrameNotExpectedSoon");
   DCHECK(IsMainThread());
-  layer_tree_host()->BeginMainFrameNotExpectedSoon();
+  main().layer_tree_host->BeginMainFrameNotExpectedSoon();
 }
 
-void ThreadProxy::StartCommitOnImpl(CompletionEvent* completion) {
+void ThreadProxy::StartCommitOnImpl(CompletionEvent* completion,
+                                    LayerTreeHost* layer_tree_host,
+                                    bool hold_commit_for_activation) {
   TRACE_EVENT0("cc", "ThreadProxy::StartCommitOnImplThread");
   DCHECK(!impl().commit_completion_event);
   DCHECK(IsImplThread() && IsMainThreadBlocked());
   DCHECK(impl().scheduler);
   DCHECK(impl().scheduler->CommitPending());
+
+  if (hold_commit_for_activation) {
+    // This commit may be aborted. Store the value for
+    // hold_commit_for_activation so that whenever the next commit is started,
+    // the main thread will be unblocked only after pending tree activation.
+    impl().next_commit_waits_for_activation = hold_commit_for_activation;
+  }
 
   if (!impl().layer_tree_host_impl) {
     TRACE_EVENT_INSTANT0(
@@ -750,6 +739,8 @@ void ThreadProxy::StartCommitOnImpl(CompletionEvent* completion) {
   // But, we can avoid a PostTask in here.
   impl().scheduler->NotifyBeginMainFrameStarted();
   impl().commit_completion_event = completion;
+  DCHECK(!blocked_main_commit().layer_tree_host);
+  blocked_main_commit().layer_tree_host = layer_tree_host;
   impl().scheduler->NotifyReadyToCommit();
 }
 
@@ -782,24 +773,23 @@ void ThreadProxy::ScheduledActionCommit() {
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
   DCHECK(impl().commit_completion_event);
+  DCHECK(blocked_main_commit().layer_tree_host);
 
-  blocked_main().main_thread_inside_commit = true;
   impl().layer_tree_host_impl->BeginCommit();
-  layer_tree_host()->FinishCommitOnImplThread(
+  blocked_main_commit().layer_tree_host->FinishCommitOnImplThread(
       impl().layer_tree_host_impl.get());
-  blocked_main().main_thread_inside_commit = false;
 
-  bool hold_commit = blocked_main().commit_waits_for_activation;
-  blocked_main().commit_waits_for_activation = false;
+  // Remove the LayerTreeHost reference before the completion event is signaled
+  // and cleared. This is necessary since blocked_main_commit() allows access
+  // only while we have the completion event to ensure the main thread is
+  // blocked for a commit.
+  blocked_main_commit().layer_tree_host = nullptr;
 
-  if (hold_commit) {
+  if (impl().next_commit_waits_for_activation) {
     // For some layer types in impl-side painting, the commit is held until
     // the sync tree is activated.  It's also possible that the
     // sync tree has already activated if there was no work to be done.
     TRACE_EVENT_INSTANT0("cc", "HoldCommit", TRACE_EVENT_SCOPE_THREAD);
-    impl().completion_event_for_commit_held_on_tree_activation =
-        impl().commit_completion_event;
-    impl().commit_completion_event = nullptr;
   } else {
     impl().commit_completion_event->Signal();
     impl().commit_completion_event = nullptr;
@@ -932,33 +922,35 @@ void ThreadProxy::SetAuthoritativeVSyncInterval(
 
 void ThreadProxy::DidCommitAndDrawFrame() {
   DCHECK(IsMainThread());
-  layer_tree_host()->DidCommitAndDrawFrame();
+  main().layer_tree_host->DidCommitAndDrawFrame();
 }
 
 void ThreadProxy::DidCompleteSwapBuffers() {
   DCHECK(IsMainThread());
-  layer_tree_host()->DidCompleteSwapBuffers();
+  main().layer_tree_host->DidCompleteSwapBuffers();
 }
 
 void ThreadProxy::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0("cc", "ThreadProxy::SetAnimationEvents");
   DCHECK(IsMainThread());
-  layer_tree_host()->SetAnimationEvents(events.Pass());
+  main().layer_tree_host->SetAnimationEvents(events.Pass());
 }
 
-void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
+void ThreadProxy::InitializeImplOnImpl(CompletionEvent* completion,
+                                       LayerTreeHost* layer_tree_host) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeImplOnImplThread");
   DCHECK(IsImplThread());
+  DCHECK(IsMainThreadBlocked());
+  DCHECK(layer_tree_host);
 
   // TODO(khushalsagar): ThreadedChannel will create ProxyImpl here and pass a
   // reference to itself.
   impl().channel_impl = threaded_channel_.get();
 
-  impl().layer_tree_host_impl =
-      layer_tree_host()->CreateLayerTreeHostImpl(this);
+  impl().layer_tree_host_impl = layer_tree_host->CreateLayerTreeHostImpl(this);
 
   SchedulerSettings scheduler_settings(
-      layer_tree_host()->settings().ToSchedulerSettings());
+      layer_tree_host->settings().ToSchedulerSettings());
 
   scoped_ptr<CompositorTimingHistory> compositor_timing_history(
       new CompositorTimingHistory(CompositorTimingHistory::RENDERER_UMA,
@@ -1015,7 +1007,7 @@ void ThreadProxy::FinishGLOnImpl(CompletionEvent* completion) {
   completion->Signal();
 }
 
-void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
+void ThreadProxy::LayerTreeHostClosedOnImpl(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::LayerTreeHostClosedOnImplThread");
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
@@ -1119,11 +1111,13 @@ void ThreadProxy::DidActivateSyncTree() {
   TRACE_EVENT0("cc", "ThreadProxy::DidActivateSyncTreeOnImplThread");
   DCHECK(IsImplThread());
 
-  if (impl().completion_event_for_commit_held_on_tree_activation) {
+  if (impl().next_commit_waits_for_activation) {
     TRACE_EVENT_INSTANT0(
         "cc", "ReleaseCommitbyActivation", TRACE_EVENT_SCOPE_THREAD);
-    impl().completion_event_for_commit_held_on_tree_activation->Signal();
-    impl().completion_event_for_commit_held_on_tree_activation = nullptr;
+    DCHECK(impl().commit_completion_event);
+    impl().commit_completion_event->Signal();
+    impl().commit_completion_event = nullptr;
+    impl().next_commit_waits_for_activation = false;
   }
 
   impl().last_processed_begin_main_frame_args =
@@ -1177,8 +1171,8 @@ void ThreadProxy::PostFrameTimingEventsOnMain(
     scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   DCHECK(IsMainThread());
-  layer_tree_host()->RecordFrameTimingEvents(composite_events.Pass(),
-                                             main_frame_events.Pass());
+  main().layer_tree_host->RecordFrameTimingEvents(composite_events.Pass(),
+                                                  main_frame_events.Pass());
 }
 
 base::WeakPtr<ProxyMain> ThreadProxy::GetMainWeakPtr() {

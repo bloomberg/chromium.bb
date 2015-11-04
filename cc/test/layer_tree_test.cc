@@ -181,6 +181,11 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->SendBeginMainFrameNotExpectedSoon();
   }
 
+  void DidActivateSyncTree() override {
+    ThreadProxy::DidActivateSyncTree();
+    test_hooks_->DidActivateSyncTree();
+  }
+
   void SetThrottleFrameProductionOnImpl(bool throttle) override {
     ThreadProxy::SetThrottleFrameProductionOnImpl(throttle);
     test_hooks_->SetThrottleFrameProductionOnImpl(throttle);
@@ -248,9 +253,23 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->FinishGLOnImpl();
   }
 
-  void StartCommitOnImpl(CompletionEvent* completion) override {
-    ThreadProxy::StartCommitOnImpl(completion);
+  void StartCommitOnImpl(CompletionEvent* completion,
+                         LayerTreeHost* layer_tree_host,
+                         bool hold_commit_for_activation) override {
+    ThreadProxy::StartCommitOnImpl(completion, layer_tree_host,
+                                   hold_commit_for_activation);
     test_hooks_->StartCommitOnImpl();
+  }
+
+  void InitializeImplOnImpl(CompletionEvent* completion,
+                            LayerTreeHost* layer_tree_host) override {
+    ThreadProxy::InitializeImplOnImpl(completion, layer_tree_host);
+    test_hooks_->InitializeImplOnImpl();
+  }
+
+  void LayerTreeHostClosedOnImpl(CompletionEvent* completion) override {
+    test_hooks_->WillCloseLayerTreeHostOnImpl();
+    ThreadProxy::LayerTreeHostClosedOnImpl(completion);
   }
 
   void DidCompleteSwapBuffers() override {

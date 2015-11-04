@@ -44,7 +44,12 @@ class CC_EXPORT ChannelMain {
   virtual void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) = 0;
   virtual void SetNeedsCommitOnImpl() = 0;
   virtual void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) = 0;
-  virtual void StartCommitOnImpl(CompletionEvent* completion) = 0;
+  virtual void StartCommitOnImpl(CompletionEvent* completion,
+                                 LayerTreeHost* layer_tree_host,
+                                 bool hold_commit_for_activation) = 0;
+  virtual void InitializeImplOnImpl(CompletionEvent* completion,
+                                    LayerTreeHost* layer_tree_host) = 0;
+  virtual void LayerTreeHostClosedOnImpl(CompletionEvent* completion) = 0;
 
   virtual ~ChannelMain() {}
 };

@@ -96,7 +96,12 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void MainFrameWillHappenOnImplForTesting(
       CompletionEvent* completion,
       bool* main_frame_will_happen) override;
-  void StartCommitOnImpl(CompletionEvent* completion) override;
+  void StartCommitOnImpl(CompletionEvent* completion,
+                         LayerTreeHost* layer_tree_host,
+                         bool hold_commit_for_activation) override;
+  void InitializeImplOnImpl(CompletionEvent* completion,
+                            LayerTreeHost* layer_tree_host) override;
+  void LayerTreeHostClosedOnImpl(CompletionEvent* completion) override;
 
   // ChannelImpl Implementation
   void DidCompleteSwapBuffers() override;

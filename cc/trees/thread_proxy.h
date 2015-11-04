@@ -62,10 +62,12 @@ class CC_EXPORT ThreadProxy : public Proxy,
   };
 
   struct MainThreadOnly {
-    MainThreadOnly(ThreadProxy* proxy, int layer_tree_host_id);
+    MainThreadOnly(ThreadProxy* proxy, LayerTreeHost* layer_tree_host);
     ~MainThreadOnly();
 
     const int layer_tree_host_id;
+
+    LayerTreeHost* layer_tree_host;
 
     // The furthest pipeline stage which has been requested for the next
     // commit.
@@ -76,6 +78,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
     // will stop. Only valid while we are executing the pipeline (i.e.,
     // |current_pipeline_stage| is set to a pipeline stage).
     CommitPipelineStage final_pipeline_stage;
+
+    bool commit_waits_for_activation;
 
     bool started;
     bool prepare_tiles_pending;
@@ -90,14 +94,11 @@ class CC_EXPORT ThreadProxy : public Proxy,
     base::WeakPtrFactory<ThreadProxy> weak_factory;
   };
 
-  // Accessed on the main thread, or when main thread is blocked.
-  struct MainThreadOrBlockedMainThread {
-    explicit MainThreadOrBlockedMainThread(LayerTreeHost* host);
-    ~MainThreadOrBlockedMainThread();
-
+  // Accessed on the impl thread when the main thread is blocked for a commit.
+  struct BlockedMainCommitOnly {
+    BlockedMainCommitOnly();
+    ~BlockedMainCommitOnly();
     LayerTreeHost* layer_tree_host;
-    bool commit_waits_for_activation;
-    bool main_thread_inside_commit;
   };
 
   struct CompositorThreadOnly {
@@ -112,15 +113,12 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
     scoped_ptr<Scheduler> scheduler;
 
-    // Set when the main thread is waiting on a
-    // ScheduledActionSendBeginMainFrame to be issued.
-    CompletionEvent* begin_main_frame_sent_completion_event;
-
-    // Set when the main thread is waiting on a commit to complete.
-    CompletionEvent* commit_completion_event;
-
     // Set when the main thread is waiting on a pending tree activation.
-    CompletionEvent* completion_event_for_commit_held_on_tree_activation;
+    bool next_commit_waits_for_activation;
+
+    // Set when the main thread is waiting on a commit to complete or on a
+    // pending tree activation.
+    CompletionEvent* commit_completion_event;
 
     // Set when the next draw should post DidCommitAndDrawFrame to the main
     // thread.
@@ -152,7 +150,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   };
 
   const MainThreadOnly& main() const;
-  const MainThreadOrBlockedMainThread& blocked_main() const;
   const CompositorThreadOnly& impl() const;
 
   // Proxy implementation
@@ -292,7 +289,12 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetNeedsCommitOnImpl() override;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override;
   void BeginMainFrameAbortedOnImpl(CommitEarlyOutReason reason) override;
-  void StartCommitOnImpl(CompletionEvent* completion) override;
+  void StartCommitOnImpl(CompletionEvent* completion,
+                         LayerTreeHost* layer_tree_host,
+                         bool hold_commit_for_activation) override;
+  void InitializeImplOnImpl(CompletionEvent* completion,
+                            LayerTreeHost* layer_tree_host) override;
+  void LayerTreeHostClosedOnImpl(CompletionEvent* completion) override;
 
   // Returns |true| if the request was actually sent, |false| if one was
   // already outstanding.
@@ -302,20 +304,15 @@ class CC_EXPORT ThreadProxy : public Proxy,
   // Called on impl thread.
   struct SchedulerStateRequest;
 
-  void InitializeImplOnImplThread(CompletionEvent* completion);
-  void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   DrawResult DrawSwapInternal(bool forced_draw);
-
-  LayerTreeHost* layer_tree_host();
-  const LayerTreeHost* layer_tree_host() const;
 
   // Use accessors instead of this variable directly.
   MainThreadOnly main_thread_only_vars_unsafe_;
   MainThreadOnly& main();
 
   // Use accessors instead of this variable directly.
-  MainThreadOrBlockedMainThread main_thread_or_blocked_vars_unsafe_;
-  MainThreadOrBlockedMainThread& blocked_main();
+  BlockedMainCommitOnly main_thread_blocked_commit_vars_unsafe_;
+  BlockedMainCommitOnly& blocked_main_commit();
 
   // Use accessors instead of this variable directly.
   CompositorThreadOnly compositor_thread_vars_unsafe_;

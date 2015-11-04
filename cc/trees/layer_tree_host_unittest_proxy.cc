@@ -287,4 +287,66 @@ class ThreadProxyTestSetNeedsCommitWhileAnimating : public ThreadProxyTest {
 
 THREAD_PROXY_TEST_F(ThreadProxyTestSetNeedsCommitWhileAnimating);
 
+class ThreadProxyTestCommitWaitsForActivation : public ThreadProxyTest {
+ protected:
+  ThreadProxyTestCommitWaitsForActivation() : commits_completed_(0) {}
+  ~ThreadProxyTestCommitWaitsForActivation() override {}
+
+  void BeginTest() override { proxy()->SetNeedsCommit(); }
+
+  void ScheduledActionCommit() override {
+    switch (commits_completed_) {
+      case 0:
+        // The first commit does not wait for activation. Verify that the
+        // completion event is cleared.
+        EXPECT_FALSE(ThreadProxyImplOnly().commit_completion_event);
+        EXPECT_FALSE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+        break;
+      case 1:
+        // The second commit should be held until activation.
+        EXPECT_TRUE(ThreadProxyImplOnly().commit_completion_event);
+        EXPECT_TRUE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+        break;
+      case 2:
+        // The third commit should not wait for activation.
+        EXPECT_FALSE(ThreadProxyImplOnly().commit_completion_event);
+        EXPECT_FALSE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+    }
+  }
+
+  void DidActivateSyncTree() override {
+    // The next_commit_waits_for_activation should have been cleared after the
+    // sync tree is activated.
+    EXPECT_FALSE(ThreadProxyImplOnly().next_commit_waits_for_activation);
+  }
+
+  void DidCommit() override {
+    switch (commits_completed_) {
+      case 0:
+        // The first commit has been completed. Set next commit waits for
+        // activation and start another commit.
+        commits_completed_++;
+        proxy()->SetNextCommitWaitsForActivation();
+        proxy()->SetNeedsCommit();
+      case 1:
+        // Start another commit to verify that this is not held until
+        // activation.
+        commits_completed_++;
+        proxy()->SetNeedsCommit();
+      case 2:
+        commits_completed_++;
+        EndTest();
+    }
+  }
+
+  void AfterTest() override { EXPECT_EQ(3, commits_completed_); }
+
+ private:
+  int commits_completed_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadProxyTestCommitWaitsForActivation);
+};
+
+THREAD_PROXY_TEST_F(ThreadProxyTestCommitWaitsForActivation);
+
 }  // namespace cc

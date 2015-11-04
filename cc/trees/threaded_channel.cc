@@ -92,10 +92,28 @@ void ThreadedChannel::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
                             proxy_impl_->GetImplWeakPtr(), damage_rect));
 }
 
-void ThreadedChannel::StartCommitOnImpl(CompletionEvent* completion) {
+void ThreadedChannel::StartCommitOnImpl(CompletionEvent* completion,
+                                        LayerTreeHost* layer_tree_host,
+                                        bool hold_commit_for_activation) {
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyImpl::StartCommitOnImpl,
+      FROM_HERE,
+      base::Bind(&ProxyImpl::StartCommitOnImpl, proxy_impl_->GetImplWeakPtr(),
+                 completion, layer_tree_host, hold_commit_for_activation));
+}
+
+void ThreadedChannel::InitializeImplOnImpl(CompletionEvent* completion,
+                                           LayerTreeHost* layer_tree_host) {
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ProxyImpl::InitializeImplOnImpl,
+                 base::Unretained(proxy_impl_), completion, layer_tree_host));
+}
+
+void ThreadedChannel::LayerTreeHostClosedOnImpl(CompletionEvent* completion) {
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyImpl::LayerTreeHostClosedOnImpl,
                             proxy_impl_->GetImplWeakPtr(), completion));
+  proxy_impl_ = nullptr;
 }
 
 void ThreadedChannel::SetVisibleOnImpl(bool visible) {
