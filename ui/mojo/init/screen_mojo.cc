@@ -13,17 +13,17 @@ ScreenMojo::ScreenMojo(const std::vector<gfx::Display>& displays)
 ScreenMojo::~ScreenMojo() {}
 
 gfx::Point ScreenMojo::GetCursorScreenPoint() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return gfx::Point();
 }
 
 gfx::NativeWindow ScreenMojo::GetWindowUnderCursor() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return nullptr;
 }
 
 gfx::NativeWindow ScreenMojo::GetWindowAtScreenPoint(const gfx::Point& point) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return nullptr;
 }
 

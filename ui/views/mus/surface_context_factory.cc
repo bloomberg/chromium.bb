@@ -36,29 +36,29 @@ SurfaceContextFactory::~SurfaceContextFactory() {}
 
 void SurfaceContextFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   compositor->SetOutputSurface(surface_binding_.CreateOutputSurface());
 }
 
 scoped_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(
     ui::Compositor* mirroed_compositor,
     ui::Layer* mirroring_layer) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return make_scoped_ptr(new FakeReflector);
 }
 
 void SurfaceContextFactory::RemoveReflector(ui::Reflector* reflector) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 scoped_refptr<cc::ContextProvider>
 SurfaceContextFactory::SharedMainThreadContextProvider() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return nullptr;
 }
 
 void SurfaceContextFactory::RemoveCompositor(ui::Compositor* compositor) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 bool SurfaceContextFactory::DoesCreateTestContexts() {
@@ -72,7 +72,7 @@ uint32 SurfaceContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
 }
 
 cc::SharedBitmapManager* SurfaceContextFactory::GetSharedBitmapManager() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return nullptr;
 }
 
@@ -93,7 +93,7 @@ SurfaceContextFactory::CreateSurfaceIdAllocator() {
 
 void SurfaceContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                           const gfx::Size& size) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 }  // namespace views

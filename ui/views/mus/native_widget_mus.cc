@@ -120,22 +120,22 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 }
 
 NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return nullptr;
 }
 
 bool NativeWidgetMus::ShouldUseNativeFrame() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return false;
 }
 
 bool NativeWidgetMus::ShouldWindowContentsBeTransparent() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return true;
 }
 
 void NativeWidgetMus::FrameTypeChanged() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 Widget* NativeWidgetMus::GetWidget() {
@@ -143,7 +143,7 @@ Widget* NativeWidgetMus::GetWidget() {
 }
 
 const Widget* NativeWidgetMus::GetWidget() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return native_widget_delegate_->AsWidget();
 }
 
@@ -168,26 +168,26 @@ const ui::Layer* NativeWidgetMus::GetLayer() const {
 }
 
 void NativeWidgetMus::ReorderNativeViews() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::ViewRemoved(View* view) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetNativeWindowProperty(const char* name, void* value) {
   // TODO(beng): push properties to mus::Window.
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void* NativeWidgetMus::GetNativeWindowProperty(const char* name) const {
   // TODO(beng): pull properties to mus::Window.
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return nullptr;
 }
 
 TooltipManager* NativeWidgetMus::GetTooltipManager() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return nullptr;
 }
 
@@ -215,36 +215,36 @@ void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
 void NativeWidgetMus::GetWindowPlacement(
       gfx::Rect* bounds,
       ui::WindowShowState* maximized) const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 bool NativeWidgetMus::SetWindowTitle(const base::string16& title) {
   // TODO(beng): push title to window manager.
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return false;
 }
 
 void NativeWidgetMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                      const gfx::ImageSkia& app_icon) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::InitModalType(ui::ModalType modal_type) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 gfx::Rect NativeWidgetMus::GetWindowBoundsInScreen() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return gfx::Rect();
 }
 
 gfx::Rect NativeWidgetMus::GetClientAreaBoundsInScreen() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return gfx::Rect();
 }
 
 gfx::Rect NativeWidgetMus::GetRestoredBounds() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return gfx::Rect();
 }
 
@@ -257,27 +257,27 @@ void NativeWidgetMus::SetSize(const gfx::Size& size) {
 }
 
 void NativeWidgetMus::StackAbove(gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::StackAtTop() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::StackBelow(gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetShape(SkRegion* shape) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::Close() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::CloseNow() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::Show() {
@@ -291,7 +291,7 @@ void NativeWidgetMus::Hide() {
 
 void NativeWidgetMus::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
@@ -300,34 +300,34 @@ void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
 }
 
 bool NativeWidgetMus::IsVisible() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return true;
 }
 
 void NativeWidgetMus::Activate() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::Deactivate() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 bool NativeWidgetMus::IsActive() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return true;
 }
 
 void NativeWidgetMus::SetAlwaysOnTop(bool always_on_top) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 bool NativeWidgetMus::IsAlwaysOnTop() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return false;
 }
 
 void NativeWidgetMus::SetVisibleOnAllWorkspaces(bool always_visible) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::Maximize() {
@@ -364,15 +364,15 @@ bool NativeWidgetMus::IsFullscreen() const {
 }
 
 void NativeWidgetMus::SetOpacity(unsigned char opacity) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetUseDragFrame(bool use_drag_frame) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::FlashFrame(bool flash_frame) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::RunShellDrag(
@@ -381,28 +381,28 @@ void NativeWidgetMus::RunShellDrag(
     const gfx::Point& location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SchedulePaintInRect(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetCursor(gfx::NativeCursor cursor) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 bool NativeWidgetMus::IsMouseEventsEnabled() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return true;
 }
 
 void NativeWidgetMus::ClearNativeFocus() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 gfx::Rect NativeWidgetMus::GetWorkAreaBoundsInScreen() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return gfx::Rect();
 }
 
@@ -410,26 +410,26 @@ Widget::MoveLoopResult NativeWidgetMus::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return Widget::MOVE_LOOP_CANCELED;
 }
 
 void NativeWidgetMus::EndMoveLoop() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetVisibilityChangedAnimationsEnabled(bool value) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetVisibilityAnimationDuration(
     const base::TimeDelta& duration) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetVisibilityAnimationTransition(
     Widget::VisibilityTransition transition) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 ui::NativeTheme* NativeWidgetMus::GetNativeTheme() const {
@@ -437,20 +437,20 @@ ui::NativeTheme* NativeWidgetMus::GetNativeTheme() const {
 }
 
 void NativeWidgetMus::OnRootViewLayout() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 bool NativeWidgetMus::IsTranslucentWindowOpacitySupported() const {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return true;
 }
 
 void NativeWidgetMus::OnSizeConstraintsChanged() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::RepostNativeEvent(gfx::NativeEvent native_event) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

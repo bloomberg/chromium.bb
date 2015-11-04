@@ -99,23 +99,23 @@ gfx::Point WindowTreeHostMus::GetLocationOnNativeScreen() const {
 }
 
 void WindowTreeHostMus::SetCapture() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void WindowTreeHostMus::ReleaseCapture() {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void WindowTreeHostMus::SetCursorNative(gfx::NativeCursor cursor) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void WindowTreeHostMus::MoveCursorToNative(const gfx::Point& location) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void WindowTreeHostMus::OnCursorVisibilityChangedNative(bool show) {
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
