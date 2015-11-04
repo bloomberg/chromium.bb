@@ -11,6 +11,7 @@
 import argparse
 import os
 import sys
+import zipfile
 
 from util import build_utils
 
@@ -21,6 +22,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '..',
                                              'third_party')))
 import jinja2
+
+
+RESOURCE_REWRITER_JAVA="ResourceRewriter.java"
 
 RESOURCE_REWRITER="""/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
 
@@ -56,17 +60,18 @@ def ParseArgs(args):
                       help='A list of packages whose resource id will be'
                            'overwritten in ResourceRewriter.')
   parser.add_argument('--output-dir',
-                      required=True,
                       help='A output directory of generated'
+                           ' ResourceRewriter.java')
+  parser.add_argument('--srcjar',
+                      help='The path of generated srcjar which has'
                            ' ResourceRewriter.java')
 
   return parser.parse_args(args)
 
 
 def CreateResourceRewriter(package, res_packages, output_dir):
-  output_dir = os.path.join(output_dir, *package.split('.'))
   build_utils.MakeDirectory(output_dir)
-  java_path = os.path.join(output_dir, 'ResourceRewriter.java')
+  java_path = os.path.join(output_dir, RESOURCE_REWRITER_JAVA)
   template = jinja2.Template(RESOURCE_REWRITER,
                              trim_blocks=True,
                              lstrip_blocks=True)
@@ -74,14 +79,30 @@ def CreateResourceRewriter(package, res_packages, output_dir):
   with open(java_path, 'w') as f:
     f.write(output)
 
+def CreateResourceRewriterSrcjar(package, res_packages, srcjar_path):
+  with build_utils.TempDir() as temp_dir:
+    output_dir = os.path.join(temp_dir, *package.split('.'))
+    CreateResourceRewriter(package, res_packages, output_dir)
+    build_utils.DoZip([os.path.join(output_dir, RESOURCE_REWRITER_JAVA)],
+                      srcjar_path,
+                      temp_dir)
+
 
 def main():
-  options = ParseArgs(sys.argv[1:])
+  options = ParseArgs(build_utils.ExpandFileArgs(sys.argv[1:]))
+  package = options.package_name
+  if options.output_dir:
+    output_dir = os.path.join(options.output_dir, *package.split('.'))
+    CreateResourceRewriter(
+        package,
+        build_utils.ParseGypList(options.dep_packages),
+        output_dir)
+  else:
+    CreateResourceRewriterSrcjar(
+        package,
+        build_utils.ParseGypList(options.dep_packages),
+        options.srcjar)
 
-  CreateResourceRewriter(
-      options.package_name,
-      build_utils.ParseGypList(options.dep_packages),
-      options.output_dir)
   return 0
 
 if __name__ == '__main__':

@@ -203,7 +203,8 @@ def main(argv):
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
       'android_apk': ['build_config', 'jar_path', 'dex_path', 'resources_zip'],
-      'deps_dex': ['build_config', 'dex_path']
+      'deps_dex': ['build_config', 'dex_path'],
+      'resource_rewriter': ['build_config']
   }
   required_options = required_options_map.get(options.type)
   if not required_options:
@@ -334,14 +335,14 @@ def main(argv):
     if options.r_text:
       deps_info['r_text'] = options.r_text
 
-  if options.type == 'android_resources' or options.type == 'android_apk':
+  if options.type in ('android_resources','android_apk', 'resource_rewriter'):
     config['resources'] = {}
     config['resources']['dependency_zips'] = [
         c['resources_zip'] for c in all_resources_deps]
     config['resources']['extra_package_names'] = []
     config['resources']['extra_r_text_files'] = []
 
-  if options.type == 'android_apk':
+  if options.type == 'android_apk' or options.type == 'resource_rewriter':
     config['resources']['extra_package_names'] = [
         c['package_name'] for c in all_resources_deps if 'package_name' in c]
     config['resources']['extra_r_text_files'] = [

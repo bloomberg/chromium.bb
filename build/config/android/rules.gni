@@ -630,6 +630,11 @@ template("android_resources") {
                              "v14_skip",
                            ])
     deps += [ ":$build_config_target_name" ]
+
+    # Always generate R.onResourcesLoaded() method, it is required for
+    # compiling ResourceRewriter, there is no side effect because the
+    # generated R.class isn't used in final apk.
+    shared_resources = true
     if (!defined(android_manifest)) {
       android_manifest = "//build/android/AndroidManifest.xml"
     }
@@ -1054,6 +1059,12 @@ template("java_prebuilt") {
 #   dex_path: If set, the resulting .dex.jar file will be placed under this
 #     path.
 #
+#   alternative_android_sdk_ijar: if set, the given android_sdk_ijar file
+#     replaces the default android_sdk_ijar.
+#
+#   alternative_android_sdk_ijar_dep: the target that generates
+#      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
+#      is used.
 #
 # Example
 #   android_library("foo_java") {
@@ -1076,6 +1087,11 @@ template("android_library") {
   set_sources_assignment_filter([])
   assert(!defined(invoker.jar_path),
          "android_library does not support a custom jar path")
+
+  if (defined(invoker.alternative_android_sdk_ijar)) {
+    assert(defined(invoker.alternative_android_sdk_ijar_dep))
+  }
+
   java_library_impl(target_name) {
     forward_variables_from(invoker, "*")
 

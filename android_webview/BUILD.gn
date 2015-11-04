@@ -23,6 +23,7 @@ group("system_webview_apk") {
     ":android_webview_java",
     ":common",
     ":assets",
+    "//android_webview/glue",
   ]
 }
 

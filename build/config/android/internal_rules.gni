@@ -243,7 +243,7 @@ template("write_build_config") {
 
   assert(type == "android_apk" || type == "java_library" ||
          type == "android_resources" || type == "deps_dex" ||
-         type == "android_assets")
+         type == "android_assets" || type == "resource_rewriter")
 
   action(target_name) {
     deps = []
@@ -1185,8 +1185,13 @@ template("compile_java") {
       outputs += [ "${_intermediate_jar_path}.pdb" ]
     }
     if (_supports_android) {
-      deps += [ "//build/android:android_ijar" ]
-      _android_sdk_ijar = "$root_out_dir/lib.java/android.interface.jar"
+      if (defined(invoker.alternative_android_sdk_ijar)) {
+        deps += [ invoker.alternative_android_sdk_ijar_dep ]
+        _android_sdk_ijar = invoker.alternative_android_sdk_ijar
+      } else {
+        deps += [ "//build/android:android_ijar" ]
+        _android_sdk_ijar = "$root_out_dir/lib.java/android.interface.jar"
+      }
       inputs += [ _android_sdk_ijar ]
       _rebased_android_sdk_ijar = rebase_path(_android_sdk_ijar, root_build_dir)
       args += [ "--bootclasspath=$_rebased_android_sdk_ijar" ]
@@ -1353,6 +1358,8 @@ template("java_library_impl") {
   compile_java(_compile_java_target) {
     forward_variables_from(invoker,
                            [
+                             "alternative_android_sdk_ijar",
+                             "alternative_android_sdk_ijar_dep",
                              "dist_jar_path",
                              "enable_errorprone",
                              "enable_incremental_javac",
