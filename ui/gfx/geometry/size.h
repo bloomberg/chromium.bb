@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/numerics/safe_math.h"
 #include "ui/gfx/gfx_export.h"
 
 #if defined(OS_WIN)
@@ -49,6 +50,8 @@ class GFX_EXPORT Size {
 
   // This call will CHECK if the area of this size would overflow int.
   int GetArea() const;
+  // Returns a checked numeric representation of the area.
+  base::CheckedNumeric<int> GetCheckedArea() const;
 
   void SetSize(int width, int height) {
     set_width(width);

@@ -148,13 +148,8 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   // Count the area that is being invalidated.
   Region recorded_invalidation(*invalidation);
   recorded_invalidation.Intersect(recorded_viewport_);
-  for (Region::Iterator it(recorded_invalidation); it.has_rect(); it.next()) {
-    // gfx::Size::GetArea might overflow in this case, so use an explicit
-    // CheckedNumeric instead.
-    base::CheckedNumeric<int> checked_area = it.rect().size().width();
-    checked_area *= it.rect().size().height();
-    timer.AddArea(checked_area);
-  }
+  for (Region::Iterator it(recorded_invalidation); it.has_rect(); it.next())
+    timer.AddArea(it.rect().size().GetCheckedArea());
 
   if (!updated && !invalidation->Intersects(recorded_viewport_))
     return false;

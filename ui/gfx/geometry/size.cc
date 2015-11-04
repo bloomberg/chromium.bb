@@ -45,9 +45,13 @@ CGSize Size::ToCGSize() const {
 #endif
 
 int Size::GetArea() const {
+  return GetCheckedArea().ValueOrDie();
+}
+
+base::CheckedNumeric<int> Size::GetCheckedArea() const {
   base::CheckedNumeric<int> checked_area = width();
   checked_area *= height();
-  return checked_area.ValueOrDie();
+  return checked_area;
 }
 
 void Size::Enlarge(int grow_width, int grow_height) {
