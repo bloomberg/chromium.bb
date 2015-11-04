@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "content/public/browser/navigation_details.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::SaveCardBubbleControllerImpl);
@@ -80,6 +81,12 @@ void SaveCardBubbleControllerImpl::OnSaveButton() {
 
 void SaveCardBubbleControllerImpl::OnCancelButton() {
   save_card_callback_.Reset();
+}
+
+void SaveCardBubbleControllerImpl::OnLearnMoreClicked() {
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL(kHelpURL), content::Referrer(), NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
 }
 
 void SaveCardBubbleControllerImpl::OnBubbleClosed() {

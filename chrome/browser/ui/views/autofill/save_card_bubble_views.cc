@@ -11,6 +11,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
@@ -20,6 +21,15 @@ namespace {
 
 // Fixed width of the column holding the message text.
 const int kWidthOfMessageText = 375;
+
+// TODO(bondd): BubbleManager will eventually move this logic somewhere else,
+// and then kIsOkButtonOnLeftSide can be removed from here and
+// dialog_client_view.cc.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+const bool kIsOkButtonOnLeftSide = true;
+#else
+const bool kIsOkButtonOnLeftSide = false;
+#endif
 
 }  // namespace
 
@@ -31,7 +41,8 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller),
       save_button_(nullptr),
-      cancel_button_(nullptr) {
+      cancel_button_(nullptr),
+      learn_more_link_(nullptr) {
   DCHECK(controller);
   views::BubbleDelegateView::CreateBubble(this);
 }
@@ -79,6 +90,11 @@ void SaveCardBubbleViews::ButtonPressed(views::Button* sender,
   GetWidget()->Close();
 }
 
+void SaveCardBubbleViews::LinkClicked(views::Link* source, int event_flags) {
+  DCHECK_EQ(source, learn_more_link_);
+  controller_->OnLearnMoreClicked();
+}
+
 void SaveCardBubbleViews::Init() {
   enum {
     COLUMN_SET_ID_MESSAGE,
@@ -97,8 +113,11 @@ void SaveCardBubbleViews::Init() {
   cs->AddPaddingColumn(1, kWidthOfMessageText);
   cs->AddPaddingColumn(0, horizontal_inset);
 
-  // Set up ColumnSet that will contain the buttons.
+  // Set up ColumnSet that will contain the buttons and "learn more" link.
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
+  cs->AddPaddingColumn(0, horizontal_inset);
+  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
@@ -107,18 +126,29 @@ void SaveCardBubbleViews::Init() {
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, horizontal_inset);
 
-  // Create accept button and add it to layout.
+  // Create "learn more" link and add it to layout.
+  learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more_link_->set_listener(this);
+  layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
+  layout->AddView(learn_more_link_);
+
+  // Create accept button.
   save_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_BUBBLE_ACCEPT));
   save_button_->SetIsDefault(true);
-  layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
-  layout->AddView(save_button_);
 
-  // Create cancel button and add it to layout.
+  // Create cancel button.
   cancel_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_BUBBLE_DENY));
   cancel_button_->SetStyle(views::Button::STYLE_BUTTON);
-  layout->AddView(cancel_button_);
+
+  if (kIsOkButtonOnLeftSide) {
+    layout->AddView(save_button_);
+    layout->AddView(cancel_button_);
+  } else {
+    layout->AddView(cancel_button_);
+    layout->AddView(save_button_);
+  }
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   set_margins(gfx::Insets(1, 0, 1, 0));

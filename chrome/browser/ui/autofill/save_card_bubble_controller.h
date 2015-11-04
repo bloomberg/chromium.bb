@@ -16,6 +16,7 @@ class SaveCardBubbleController {
  public:
   virtual void OnSaveButton() = 0;
   virtual void OnCancelButton() = 0;
+  virtual void OnLearnMoreClicked() = 0;
   virtual void OnBubbleClosed() = 0;
 
  protected:

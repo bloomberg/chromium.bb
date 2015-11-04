@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/link_listener.h"
 
 namespace content {
 class WebContents;
@@ -16,6 +17,7 @@ class WebContents;
 
 namespace views {
 class LabelButton;
+class Link;
 }
 
 namespace autofill {
@@ -27,7 +29,8 @@ class SaveCardBubbleController;
 // previously saved.
 class SaveCardBubbleViews : public SaveCardBubbleView,
                             public LocationBarBubbleDelegateView,
-                            public views::ButtonListener {
+                            public views::ButtonListener,
+                            public views::LinkListener {
  public:
   // Bubble will be anchored to |anchor_view|.
   SaveCardBubbleViews(views::View* anchor_view,
@@ -48,18 +51,23 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::LinkListener
+  void LinkClicked(views::Link* source, int event_flags) override;
+
  private:
   ~SaveCardBubbleViews() override;
 
   // views::BubbleDelegateView
   void Init() override;
 
-  SaveCardBubbleController* controller_;
+  SaveCardBubbleController* controller_;  // Weak reference.
 
   // Button for the user to confirm saving the credit card info.
   views::LabelButton* save_button_;
 
   views::LabelButton* cancel_button_;
+
+  views::Link* learn_more_link_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };

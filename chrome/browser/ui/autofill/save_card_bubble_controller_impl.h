@@ -43,6 +43,7 @@ class SaveCardBubbleControllerImpl
   // SaveCardBubbleController:
   void OnSaveButton() override;
   void OnCancelButton() override;
+  void OnLearnMoreClicked() override;
   void OnBubbleClosed() override;
 
  private:
