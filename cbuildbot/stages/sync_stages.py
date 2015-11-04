@@ -733,10 +733,9 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   This stage uses an LKGM manifest manager that handles LKGM
   candidates and their states.
   """
-
-  # TODO(mtennant): Turn this into self._run.attrs.sub_manager or similar.
-  # An instance of lkgm_manager.LKGMManager for slave builds.
-  sub_manager = None
+  # If we are using an internal manifest, but need to be able to create an
+  # external manifest, we create a second manager for that manifest.
+  external_manager = None
   MAX_BUILD_HISTORY_LENGTH = 10
   MilestoneVersion = collections.namedtuple(
       'MilestoneVersion', ['milestone', 'platform'])
@@ -775,12 +774,13 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     self.RegisterManifestManager(self._GetInitializedManager(self.internal))
     if self._run.config.master and self._GetSlaveConfigs():
       assert self.internal, 'Unified masters must use an internal checkout.'
-      MasterSlaveLKGMSyncStage.sub_manager = self._GetInitializedManager(False)
+      MasterSlaveLKGMSyncStage.external_manager = \
+          self._GetInitializedManager(False)
 
   def ForceVersion(self, version):
     manifest = super(MasterSlaveLKGMSyncStage, self).ForceVersion(version)
-    if MasterSlaveLKGMSyncStage.sub_manager:
-      MasterSlaveLKGMSyncStage.sub_manager.BootstrapFromVersion(version)
+    if MasterSlaveLKGMSyncStage.external_manager:
+      MasterSlaveLKGMSyncStage.external_manager.BootstrapFromVersion(version)
 
     return manifest
 
@@ -806,8 +806,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     manifest = self.manifest_manager.CreateNewCandidate(
         chrome_version=self._chrome_version,
         build_id=build_id)
-    if MasterSlaveLKGMSyncStage.sub_manager:
-      MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
+    if MasterSlaveLKGMSyncStage.external_manager:
+      MasterSlaveLKGMSyncStage.external_manager.CreateFromManifest(
           manifest, build_id=build_id)
 
     return manifest
@@ -981,7 +981,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       if self._run.options.cq_gerrit_override:
         query = (self._run.options.cq_gerrit_override, None)
 
-      self.pool = pool = validation_pool.ValidationPool.AcquirePool(
+      self.pool = validation_pool.ValidationPool.AcquirePool(
           self._run.config.overlays, self.repo,
           self._run.buildnumber, self._run.GetBuilderName(),
           query,
@@ -1004,10 +1004,10 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       db.ExtendDeadline(build_id, timeout)
 
     logging.info('Creating new candidate manifest.')
-    manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool,
-                                                        build_id=build_id)
-    if MasterSlaveLKGMSyncStage.sub_manager:
-      MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
+    manifest = self.manifest_manager.CreateNewCandidate(
+        validation_pool=self.pool, build_id=build_id)
+    if MasterSlaveLKGMSyncStage.external_manager:
+      MasterSlaveLKGMSyncStage.external_manager.CreateFromManifest(
           manifest, build_id=build_id)
 
     return manifest

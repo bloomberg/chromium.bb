@@ -326,6 +326,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       build_id: Optional integer cidb build id of the build publishing the
                 manifest.
 
+    Returns:
+      Path to the manifest version file to use.
+
     Raises:
       GenerateBuildSpecException in case of failure to check-in the new
         manifest because of a git error or the manifest is already checked-in.

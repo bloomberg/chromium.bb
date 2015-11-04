@@ -180,8 +180,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         timeout = 3 * 60
 
       manager = self._run.attrs.manifest_manager
-      if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
-        manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
+      if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
+        manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
       slave_statuses.update(manager.GetBuildersStatus(
           self._run.attrs.metadata.GetValue('build_id'),
           builder_names,
@@ -221,8 +221,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         self._run.manifest_branch == 'master' and
         self._run.config.build_type != constants.CHROME_PFQ_TYPE):
       self._run.attrs.manifest_manager.PromoteCandidate()
-      if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
-        sync_stages.MasterSlaveLKGMSyncStage.sub_manager.PromoteCandidate()
+      if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
+        sync_stages.MasterSlaveLKGMSyncStage.external_manager.PromoteCandidate()
 
   def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure.
