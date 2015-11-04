@@ -147,12 +147,11 @@ class PlatformInfo(object):
     def _determine_mac_version(self, mac_version_string):
         release_version = int(mac_version_string.split('.')[1])
         version_strings = {
-            5: 'leopard',
             6: 'snowleopard',
             7: 'lion',
             8: 'mountainlion',
             9: 'mavericks',
-            10: 'yosemite',
+            10: 'mac10.10',
         }
         assert release_version >= min(version_strings.keys())
         return version_strings.get(release_version, 'future')

@@ -137,12 +137,11 @@ class TestPlatformInfo(unittest.TestCase):
 
     def test_os_version(self):
         self.assertRaises(AssertionError, self.make_info, fake_sys('darwin'), fake_platform('10.4.3'))
-        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.5.1')).os_version, 'leopard')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.6.1')).os_version, 'snowleopard')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.7.1')).os_version, 'lion')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.8.1')).os_version, 'mountainlion')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.9.0')).os_version, 'mavericks')
-        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.10.0')).os_version, 'yosemite')
+        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.10.0')).os_version, 'mac10.10')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.11.0')).os_version, 'future')
 
         self.assertEqual(self.make_info(fake_sys('linux2')).os_version, 'trusty')

@@ -102,7 +102,7 @@ class Port(object):
 
         ('mountainlion', 'x86'),
         ('mavericks', 'x86'),
-        ('yosemite', 'x86'),
+        ('mac10.10', 'x86'),
         ('xp', 'x86'),
         ('win7', 'x86'),
         ('win10', 'x86'),
@@ -117,13 +117,13 @@ class Port(object):
         )
 
     ALL_BASELINE_VARIANTS = [
-        'mac-yosemite', 'mac-mavericks', 'mac-retina', 'mac-mountainlion', 'mac-lion', 'mac-snowleopard',
+        'mac-mac10.10', 'mac-mavericks', 'mac-retina', 'mac-mountainlion', 'mac-lion', 'mac-snowleopard',
         'win-win10', 'win-win7', 'win-xp'
         'linux-trusty', 'linux-precise', 'linux-x86',
     ]
 
     CONFIGURATION_SPECIFIER_MACROS = {
-        'mac': ['snowleopard', 'lion', 'mountainlion', 'retina', 'mavericks', 'yosemite'],
+        'mac': ['snowleopard', 'lion', 'mountainlion', 'retina', 'mavericks', 'mac10.10'],
         'win': ['xp', 'win7', 'win10'],
         'linux': ['linux32', 'precise', 'trusty'],
         'android': ['icecreamsandwich'],
@@ -1271,7 +1271,7 @@ class Port(object):
 
         The list should be sorted so that a later platform  will reuse
         an earlier platform's baselines if they are the same (e.g.,
-        'yosemite' should precede 'mavericks')."""
+        'mac10.10' should precede 'mac10.9')."""
         return self.ALL_BASELINE_VARIANTS
 
     def _generate_all_test_configurations(self):

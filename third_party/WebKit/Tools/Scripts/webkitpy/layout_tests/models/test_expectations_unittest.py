@@ -103,6 +103,21 @@ class BasicTests(Base):
 
 
 class MiscTests(Base):
+    def test_parse_mac_legacy_names(self):
+        host = MockHost()
+        expectations_dict = OrderedDict()
+        expectations_dict['expectations'] = '\nBug(x) [ Mac10.6 ] failures/expected/text.html [ Failure ]\n'
+
+        port = host.port_factory.get('test-mac-snowleopard', None)
+        port.expectations_dict = lambda: expectations_dict
+        expectations = TestExpectations(port, self.get_basic_tests())
+        self.assertEqual(expectations.get_expectations('failures/expected/text.html'), set([FAIL]))
+
+        port = host.port_factory.get('test-win-xp', None)
+        port.expectations_dict = lambda: expectations_dict
+        expectations = TestExpectations(port, self.get_basic_tests())
+        self.assertEqual(expectations.get_expectations('failures/expected/text.html'), set([PASS]))
+
     def test_multiple_results(self):
         self.parse_exp('Bug(x) failures/expected/text.html [ Crash Failure ]')
         self.assertEqual(self._exp.get_expectations('failures/expected/text.html'), set([FAIL, CRASH]))
@@ -866,6 +881,15 @@ class TestExpectationSerializationTests(unittest.TestCase):
         self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP Release ] test/name/for/realz.html [ Failure ]')
         expectation_line.matching_configurations = set([TestConfiguration('xp', 'x86', 'release'), TestConfiguration('xp', 'x86', 'debug')])
         self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ XP ] test/name/for/realz.html [ Failure ]')
+
+    def test_parsed_to_string_mac_legacy_names(self):
+        expectation_line = TestExpectationLine()
+        expectation_line.bugs = ['Bug(x)']
+        expectation_line.name = 'test/name/for/realz.html'
+        expectation_line.parsed_expectations = set([IMAGE])
+        self.assertEqual(expectation_line.to_string(self._converter), None)
+        expectation_line.matching_configurations = set([TestConfiguration('snowleopard', 'x86', 'release')])
+        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ Mac10.6 Release ] test/name/for/realz.html [ Failure ]')
 
     def test_serialize_parsed_expectations(self):
         expectation_line = TestExpectationLine()

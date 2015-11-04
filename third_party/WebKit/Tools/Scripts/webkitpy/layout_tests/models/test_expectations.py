@@ -59,6 +59,19 @@ MISSING_KEYWORD = 'Missing'
 NEEDS_REBASELINE_KEYWORD = 'NeedsRebaseline'
 NEEDS_MANUAL_REBASELINE_KEYWORD = 'NeedsManualRebaseline'
 
+# TODO(ojan): Don't add new platforms here. New mac platforms
+# should use the version number directly instead of the english
+# language names throughout the code.
+MAC_VERSION_MAPPING = {
+    'mac10.6': 'snowleopard',
+    'mac10.7': 'lion',
+    'mac10.8': 'mountainlion',
+    'mac10.9': 'mavericks',
+}
+
+INVERTED_MAC_VERSION_MAPPING = {value: name for name, value in MAC_VERSION_MAPPING.items()}
+
+
 class ParseError(Exception):
     def __init__(self, warnings):
         super(ParseError, self).__init__()
@@ -149,11 +162,15 @@ class TestExpectationParser(object):
         self._parse_specifiers(expectation_line)
         self._parse_expectations(expectation_line)
 
+    def _parse_specifier(self, specifier):
+        specifier = specifier.lower()
+        return MAC_VERSION_MAPPING.get(specifier, specifier)
+
     def _parse_specifiers(self, expectation_line):
         if self._is_lint_mode:
             self._lint_line(expectation_line)
 
-        parsed_specifiers = set([specifier.lower() for specifier in expectation_line.specifiers])
+        parsed_specifiers = set([self._parse_specifier(specifier) for specifier in expectation_line.specifiers])
         expectation_line.matching_configurations = self._test_configuration_converter.to_config_set(parsed_specifiers, expectation_line.warnings)
 
     def _lint_line(self, expectation_line):
@@ -213,7 +230,7 @@ class TestExpectationParser(object):
 
     # FIXME: Update the original specifiers and remove this once the old syntax is gone.
     _configuration_tokens_list = [
-        'Mac', 'SnowLeopard', 'Lion', 'MountainLion', 'Retina', 'Mavericks', 'Yosemite',
+        'Mac', 'Mac10.6', 'Mac10.7', 'Mac10.8', 'Mac10.9', 'Mac10.10', 'Retina',
         'Win', 'XP', 'Win7', 'Win10',
         'Linux', 'Linux32', 'Precise', 'Trusty',
         'Android',
@@ -491,6 +508,7 @@ class TestExpectationLine(object):
         result = []
         result.extend(sorted(self.parsed_specifiers))
         result.extend(test_configuration_converter.specifier_sorter().sort_specifiers(specifiers))
+        result = [INVERTED_MAC_VERSION_MAPPING.get(specifier, specifier) for specifier in result]
         return ' '.join(result)
 
     @staticmethod

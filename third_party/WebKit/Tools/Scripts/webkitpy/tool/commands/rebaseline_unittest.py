@@ -464,7 +464,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         self.command._rebaseline(options,  {"userscripts/first-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
 
         new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Mavericks MountainLion Retina SnowLeopard Yosemite ] userscripts/first-test.html [ Failure ]\nbug(z) [ Linux ] userscripts/first-test.html [ Failure ]\n")
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Mac10.10 Mac10.9 Mac10.8 Retina Mac10.6 ] userscripts/first-test.html [ Failure ]\nbug(z) [ Linux ] userscripts/first-test.html [ Failure ]\n")
 
     def test_rebaseline_updates_expectations_file_all_platforms(self):
         options = MockOptions(optimize=False, verbose=True, results_directory=None)
@@ -476,7 +476,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         self.command._rebaseline(options,  {"userscripts/first-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
 
         new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Android Linux Mavericks MountainLion Retina SnowLeopard Win Yosemite ] userscripts/first-test.html [ Failure ]\n")
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Android Linux Mac10.10 Mac10.9 Mac10.8 Retina Mac10.6 Win ] userscripts/first-test.html [ Failure ]\n")
 
     def test_rebaseline_handles_platform_skips(self):
         # This test is just like test_rebaseline_updates_expectations_file_all_platforms(),
@@ -492,7 +492,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         self.command._rebaseline(options,  {"userscripts/first-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
 
         new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Linux Mavericks MountainLion Retina SnowLeopard Win Yosemite ] userscripts/first-test.html [ Failure ]\n")
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Linux Mac10.10 Mac10.9 Mac10.8 Retina Mac10.6 Win ] userscripts/first-test.html [ Failure ]\n")
 
     def test_rebaseline_handles_skips_in_file(self):
         # This test is like test_Rebaseline_handles_platform_skips, except that the
@@ -513,7 +513,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         new_expectations = self._read(self.lion_expectations_path)
         self.assertMultiLineEqual(
             new_expectations,
-            ("Bug(x) [ Linux Mavericks MountainLion Retina SnowLeopard Win Yosemite ] userscripts/first-test.html [ Failure ]\n"
+            ("Bug(x) [ Linux Mac10.10 Mac10.9 Mac10.8 Retina Mac10.6 Win ] userscripts/first-test.html [ Failure ]\n"
              "Bug(y) [ Android ] userscripts/first-test.html [ Skip ]\n"))
 
     def test_rebaseline_handles_smoke_tests(self):
@@ -531,7 +531,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         self.command._rebaseline(options,  {"userscripts/first-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
 
         new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Linux Mavericks MountainLion Retina SnowLeopard Win Yosemite ] userscripts/first-test.html [ Failure ]\n")
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Linux Mac10.10 Mac10.9 Mac10.8 Retina Mac10.6 Win ] userscripts/first-test.html [ Failure ]\n")
 
 
 class TestRebaseline(_BaseTestCase):
