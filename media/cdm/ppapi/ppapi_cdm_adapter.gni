@@ -30,6 +30,7 @@ template("ppapi_cdm_adapter") {
       "//media/cdm/ppapi/linked_ptr.h",
       "//media/cdm/ppapi/ppapi_cdm_adapter.cc",
       "//media/cdm/ppapi/ppapi_cdm_adapter.h",
+      "//media/cdm/supported_cdm_versions.cc",
       "//media/cdm/supported_cdm_versions.h",
     ]
     if (is_mac) {

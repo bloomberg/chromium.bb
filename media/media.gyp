@@ -498,6 +498,8 @@
         'cdm/player_tracker_impl.h',
         'cdm/proxy_decryptor.cc',
         'cdm/proxy_decryptor.h',
+        'cdm/supported_cdm_versions.cc',
+        'cdm/supported_cdm_versions.h',
         'ffmpeg/ffmpeg_common.cc',
         'ffmpeg/ffmpeg_common.h',
         'ffmpeg/ffmpeg_deleters.h',

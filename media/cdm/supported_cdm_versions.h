@@ -5,48 +5,24 @@
 #ifndef MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
 #define MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
 
-#include "media/cdm/api/content_decryption_module.h"
+#ifdef USE_PPAPI_CDM_ADAPTER
+// When building the adapter these functions need to be local.
+#define FUNCTION_EXPORT
+#else
+#include "media/base/media_export.h"
+#define FUNCTION_EXPORT MEDIA_EXPORT
+#endif
 
 namespace media {
 
-bool IsSupportedCdmModuleVersion(int version) {
-  switch (version) {
-    // Latest.
-    case CDM_MODULE_VERSION:
-      return true;
-    default:
-      return false;
-  }
-}
+FUNCTION_EXPORT bool IsSupportedCdmModuleVersion(int version);
 
-bool IsSupportedCdmInterfaceVersion(int version) {
-  static_assert(cdm::ContentDecryptionModule::kVersion ==
-                    cdm::ContentDecryptionModule_8::kVersion,
-                "update the code below");
-  switch (version) {
-    // Supported versions in decreasing order.
-    case cdm::ContentDecryptionModule_8::kVersion:
-    case cdm::ContentDecryptionModule_7::kVersion:
-      return true;
-    default:
-      return false;
-  }
-}
+FUNCTION_EXPORT bool IsSupportedCdmInterfaceVersion(int version);
 
-bool IsSupportedCdmHostVersion(int version) {
-  static_assert(cdm::ContentDecryptionModule::Host::kVersion ==
-                    cdm::ContentDecryptionModule_8::Host::kVersion,
-                "update the code below");
-  switch (version) {
-    // Supported versions in decreasing order.
-    case cdm::Host_8::kVersion:
-    case cdm::Host_7::kVersion:
-      return true;
-    default:
-      return false;
-  }
-}
+FUNCTION_EXPORT bool IsSupportedCdmHostVersion(int version);
 
 }  // namespace media
+
+#undef FUNCTION_EXPORT
 
 #endif  // MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_

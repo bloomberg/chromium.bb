@@ -36,6 +36,7 @@
               'cdm/ppapi/cdm_logging.cc',
               'cdm/ppapi/cdm_logging.h',
               'cdm/ppapi/linked_ptr.h',
+              'cdm/supported_cdm_versions.cc',
               'cdm/supported_cdm_versions.h',
             ],
             'conditions': [
