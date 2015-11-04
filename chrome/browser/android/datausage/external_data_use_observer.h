@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_ANDROID_DATAUSAGE_EXTERNAL_DATA_USE_OBSERVER_H_
 
 #include <jni.h>
+#include <stdint.h>
+
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/android/jni_array.h"
@@ -19,7 +22,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "components/data_usage/core/data_use_aggregator.h"
+#include "net/base/network_change_notifier.h"
 
 class GURL;
 
@@ -83,19 +88,103 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            AtMostOneDataUseSubmitRequest);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ReportsMergedCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           TimestampsMergedCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
 
-  // Data report that is sent to the external observer.
-  struct DataReport {
-    DataReport(const std::string& label,
-               int64_t bytes_downloaded,
-               int64_t bytes_uploaded)
-        : label(label),
+  // DataUseReportKey is a unique identifier for a data use report.
+  struct DataUseReportKey {
+    DataUseReportKey(const std::string& label,
+                     net::NetworkChangeNotifier::ConnectionType connection_type,
+                     const std::string& mcc_mnc)
+        : label(label), connection_type(connection_type), mcc_mnc(mcc_mnc) {}
+
+    DataUseReportKey(const DataUseReportKey& other)
+        : label(other.label),
+          connection_type(other.connection_type),
+          mcc_mnc(other.mcc_mnc) {}
+
+    bool operator==(const DataUseReportKey& other) const {
+      return (label == other.label &&
+              connection_type == other.connection_type &&
+              mcc_mnc == other.mcc_mnc);
+    }
+
+    virtual ~DataUseReportKey() {}
+
+    // Label provided by the matching rules.
+    const std::string label;
+
+    // Type of network used by the request.
+    const net::NetworkChangeNotifier::ConnectionType connection_type;
+
+    // mcc_mnc operator of the provider of the SIM as obtained from
+    // TelephonyManager#getNetworkOperator() Java API in Android.
+    const std::string mcc_mnc;
+  };
+
+  // DataUseReport is paired with a  DataUseReportKey object. DataUseReport
+  // contains the bytes send/received during a specific interval. Only the bytes
+  // from the data use reports that have the |label|, |connection_type|, and
+  // |mcc_mnc| specified in the corresponding DataUseReportKey object are
+  // counted in the DataUseReport.
+  struct DataUseReport {
+    // |start_time| and |end_time| are the start and end timestamps (in UTC
+    // since the standard Java epoch of 1970-01-01 00:00:00) of the interval
+    // that this data report covers. |bytes_downloaded| and |bytes_uploaded| are
+    // the total bytes received and send during this interval.
+    DataUseReport(const base::Time& start_time,
+                  const base::Time& end_time,
+                  int64_t bytes_downloaded,
+                  int64_t bytes_uploaded)
+        : start_time(start_time),
+          end_time(end_time),
           bytes_downloaded(bytes_downloaded),
           bytes_uploaded(bytes_uploaded) {}
-    std::string label;
-    int64_t bytes_downloaded;
-    int64_t bytes_uploaded;
+
+    virtual ~DataUseReport() {}
+
+    // Start time of |this| data report (in UTC since the standard Java epoch of
+    // 1970-01-01 00:00:00).
+    const base::Time start_time;
+
+    // End time of |this| data report (in UTC since the standard Java epoch of
+    // 1970-01-01 00:00:00)
+    const base::Time end_time;
+
+    // Number of bytes downloaded and uploaded by Chromium from |start_time| to
+    // |end_time|.
+    const int64_t bytes_downloaded;
+    const int64_t bytes_uploaded;
   };
+
+  // Class that implements hash operator on DataUseReportKey.
+  class DataUseReportKeyHash {
+   public:
+    // A simple heuristical hash function that satisifes the property that two
+    // equal data structures have the same hash value. The hash is computed by
+    // hashing individual variables and combining them using prime numbers.
+    // Prime numbers are used for multiplication because the number of buckets
+    // used by map is always an even number. Using a prime number ensures that
+    // for two different DataUseReportKey objects (say |j| and |k|), if the
+    // hash value of |k.label| is equal to hash value of |j.mcc_mnc|, then |j|
+    // and |k| map to different buckets. Large prime numbers are used so that
+    // hash value is spread over a larger range.
+    size_t operator()(const DataUseReportKey& k) const {
+      std::hash<std::string> hash_function;
+      size_t hash = 1;
+      hash = hash * 23 + hash_function(k.label);
+      hash = hash * 43 + k.connection_type;
+      hash = hash * 83 + hash_function(k.mcc_mnc);
+      return hash;
+    }
+  };
+
+  typedef std::unordered_map<DataUseReportKey,
+                             DataUseReport,
+                             DataUseReportKeyHash> DataUseReports;
 
   // Stores the matching rules.
   class MatchingRule {
@@ -137,6 +226,24 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   void FetchMatchingRulesOnUIThread() const;
 
   // Called by FetchMatchingRulesCallback on IO thread when new matching rules
+  // Adds |data_use| to buffered reports. |data_use| is the data use report
+  // received from DataUseAggregator. |data_use| should not be null. |label| is
+  // a non-empty label that applies to |data_use|. |start_time| and |end_time|
+  // are the start, and end times of the interval during which bytes reported in
+  // |data_use| went over the network.
+  void BufferDataUseReport(const data_usage::DataUse* data_use,
+                           const std::string& label,
+                           const base::Time& start_time,
+                           const base::Time& end_time);
+
+  // Submits the first data report among the buffered data reports in
+  // |buffered_data_reports_|. Since an unordered_map is used to buffer the
+  // reports, the order of reports may change. The reports are buffered in an
+  // arbitrary order and there are no guarantees that the next report to be
+  // submitted is the oldest one buffered.
+  void SubmitBufferedDataUseReport();
+
+  // Called by |FetchMatchingRulesCallback| on IO thread when new matching rules
   // have been fetched.
   void FetchMatchingRulesCallbackOnIOThread(
       const std::vector<std::string>& app_package_name,
@@ -145,7 +252,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   // Reports data use to Java. Must be called on the UI thread. Returns
   // result asynchronously on UI thread via OnReportDataUseDone.
-  void ReportDataUseOnUIThread(const DataReport& earliest_report) const;
+  void ReportDataUseOnUIThread(const DataUseReportKey& key,
+                               const DataUseReport& report) const;
 
   // Called by OnReportDataUseDone on IO thread when a data use report has
   // been submitted.
@@ -188,7 +296,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
 
   // Buffered data reports that need to be submitted to the Java data use
   // observer.
-  std::vector<DataReport> buffered_data_reports_;
+  DataUseReports buffered_data_reports_;
 
   // True if |this| is currently registered as a data use observer.
   bool registered_as_observer_;
@@ -200,6 +308,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // that Java code is safely called only on a single thread, and eliminates
   // the need for locks in Java.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // Time when the data use reports were last received from DataUseAggregator.
+  base::Time previous_report_time_;
 
   base::ThreadChecker thread_checker_;
 

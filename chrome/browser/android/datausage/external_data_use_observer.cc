@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/datausage/external_data_use_observer.h"
 
+#include <utility>
+
 #include "base/android/jni_string.h"
 #include "base/message_loop/message_loop.h"
 #include "components/data_usage/core/data_use.h"
@@ -29,6 +31,7 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       registered_as_observer_(false),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
+      previous_report_time_(base::Time::Now()),
       io_weak_factory_(this),
       ui_weak_factory_(this) {
   DCHECK(data_use_aggregator_);
@@ -140,11 +143,11 @@ void ExternalDataUseObserver::OnReportDataUseDoneOnIOThread(bool success) {
   DCHECK(!buffered_data_reports_.empty());
   DCHECK(submit_data_report_pending_);
 
-  // TODO(tbansal): If not successful, retry.
+  // TODO(tbansal): If not successful, record UMA.
 
   submit_data_report_pending_ = false;
 
-  // TODO(tbansal): Submit one more report from |buffered_data_reports_|.
+  SubmitBufferedDataUseReport();
 }
 
 void ExternalDataUseObserver::OnDataUse(
@@ -156,52 +159,107 @@ void ExternalDataUseObserver::OnDataUse(
   }
 
   std::string label;
+
   for (const data_usage::DataUse* data_use : data_use_sequence) {
     if (!Matches(data_use->url, &label))
       continue;
 
-    int64_t bytes_downloaded = data_use->rx_bytes;
-    int64_t bytes_uploaded = data_use->tx_bytes;
-    buffered_data_reports_.push_back(
-        DataReport(label, bytes_downloaded, bytes_uploaded));
+    BufferDataUseReport(data_use, label, previous_report_time_,
+                        base::Time::Now());
+  }
+  previous_report_time_ = base::Time::Now();
 
+  // TODO(tbansal): Post SubmitBufferedDataUseReport on IO thread once the
+  // task runners are plumbed in.
+  SubmitBufferedDataUseReport();
+}
+
+void ExternalDataUseObserver::BufferDataUseReport(
+    const data_usage::DataUse* data_use,
+    const std::string& label,
+    const base::Time& start_time,
+    const base::Time& end_time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!label.empty());
+  DCHECK_LE(0, data_use->rx_bytes);
+  DCHECK_LE(0, data_use->tx_bytes);
+  if (data_use->rx_bytes < 0 || data_use->tx_bytes < 0)
+    return;
+
+  DataUseReportKey data_use_report_key =
+      DataUseReportKey(label, data_use->connection_type, data_use->mcc_mnc);
+
+  DataUseReport report = DataUseReport(start_time, end_time, data_use->rx_bytes,
+                                       data_use->tx_bytes);
+
+  // Check if the |data_use_report_key| is already in the buffered reports.
+  DataUseReports::iterator it =
+      buffered_data_reports_.find(data_use_report_key);
+  if (it == buffered_data_reports_.end()) {
     // Limit the buffer size.
-    if (buffered_data_reports_.size() > static_cast<size_t>(kMaxBufferSize)) {
+    if (buffered_data_reports_.size() == kMaxBufferSize) {
       // TODO(tbansal): Add UMA to track impact of lost reports.
+      // Remove the first entry.
       buffered_data_reports_.erase(buffered_data_reports_.begin());
     }
+    buffered_data_reports_.insert(std::make_pair(data_use_report_key, report));
+  } else {
+    DataUseReport existing_report = DataUseReport(it->second);
+    DataUseReport merged_report = DataUseReport(
+        std::min(existing_report.start_time, report.start_time),
+        std::max(existing_report.end_time, report.end_time),
+        existing_report.bytes_downloaded + report.bytes_downloaded,
+        existing_report.bytes_uploaded + report.bytes_uploaded);
+    buffered_data_reports_.erase(it);
+    buffered_data_reports_.insert(
+        std::make_pair(data_use_report_key, merged_report));
+  }
 
     DCHECK_LE(buffered_data_reports_.size(),
               static_cast<size_t>(kMaxBufferSize));
+}
 
-    if (submit_data_report_pending_)
-      continue;
+void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-    // TODO(tbansal): Use buffering to avoid frequent JNI calls.
-    submit_data_report_pending_ = true;
-    DCHECK_GT(buffered_data_reports_.size(), 0U);
-    DataReport earliest_report = buffered_data_reports_[0];
+  if (submit_data_report_pending_ || buffered_data_reports_.empty())
+    return;
 
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ExternalDataUseObserver::ReportDataUseOnUIThread,
-                              GetUIWeakPtr(), earliest_report));
-    buffered_data_reports_.erase(buffered_data_reports_.begin());
-  }
+  // TODO(tbansal): Keep buffering until enough data has been received.
+
+  // Send one data use report.
+  DataUseReports::iterator it = buffered_data_reports_.begin();
+  DataUseReportKey key = it->first;
+  DataUseReport report = it->second;
+
+  // Remove the entry from the map.
+  buffered_data_reports_.erase(it);
+
+  submit_data_report_pending_ = true;
+
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ExternalDataUseObserver::ReportDataUseOnUIThread,
+                            GetIOWeakPtr(), key, report));
 }
 
 void ExternalDataUseObserver::ReportDataUseOnUIThread(
-    const DataReport& earliest_report) const {
+    const DataUseReportKey& key,
+    const DataUseReport& report) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(!j_external_data_use_observer_.is_null());
 
-  // TODO(tbansal): Get real values, instead of using 0s.
+  // End time should be greater than start time.
+  int64_t start_time_milliseconds = report.start_time.ToJavaTime();
+  int64_t end_time_milliseconds = report.end_time.ToJavaTime();
+  if (start_time_milliseconds >= end_time_milliseconds)
+    start_time_milliseconds = end_time_milliseconds - 1;
+
   Java_ExternalDataUseObserver_reportDataUse(
       env, j_external_data_use_observer_.obj(),
-      ConvertUTF8ToJavaString(env, earliest_report.label).obj(),
-      0 /* network_type */, ConvertUTF8ToJavaString(env, "").obj() /* mccMnc */,
-      0 /* startTimeInMillis */, 0 /* endTimeInMillis */,
-      earliest_report.bytes_downloaded, earliest_report.bytes_uploaded);
+      ConvertUTF8ToJavaString(env, key.label).obj(), key.connection_type,
+      ConvertUTF8ToJavaString(env, key.mcc_mnc).obj(), start_time_milliseconds,
+      end_time_milliseconds, report.bytes_downloaded, report.bytes_uploaded);
 }
 
 void ExternalDataUseObserver::RegisterURLRegexes(
