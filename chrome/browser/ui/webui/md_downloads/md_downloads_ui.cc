@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/downloads_ui.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -43,13 +43,17 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
   source->AddLocalizedString("searchResultsFor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
+
   source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
+  source->AddLocalizedString("clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH);
   source->AddLocalizedString("openDownloadsFolder",
                              IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
-  source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
+  source->AddLocalizedString("moreActions", IDS_DOWNLOAD_MORE_ACTIONS);
+  source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
+
 
   // No results message that shows instead of the downloads list.
-  source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
+  source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
   source->AddLocalizedString("noSearchResults",
                              IDS_DOWNLOAD_NO_SEARCH_RESULTS);
 
@@ -79,26 +83,47 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
   source->AddLocalizedString("controlRemoveFromList",
                              IDS_DOWNLOAD_LINK_REMOVE);
-  source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
-  source->AddLocalizedString("controlByExtension",
-                             IDS_DOWNLOAD_BY_EXTENSION);
+  source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
+  source->AddLocalizedString("controlledByUrl",
+                             IDS_DOWNLOAD_BY_EXTENSION_URL);
 
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allowDeletingHistory",
                      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory) &&
                      !profile->IsSupervised());
 
-  source->AddResourcePath("constants.html", IDR_DOWNLOADS_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_DOWNLOADS_CONSTANTS_JS);
-  source->AddResourcePath("item_view.js", IDR_DOWNLOADS_ITEM_VIEW_JS);
-  source->AddResourcePath("focus_row.js", IDR_DOWNLOADS_FOCUS_ROW_JS);
-  source->AddResourcePath("manager.js", IDR_DOWNLOADS_MANAGER_JS);
-  source->AddResourcePath("throttled_icon_loader.html",
-                          IDR_DOWNLOADS_THROTTLED_ICON_LOADER_HTML);
-  source->AddResourcePath("throttled_icon_loader.js",
-                          IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS);
+  source->AddLocalizedString("inIncognito", IDS_DOWNLOAD_IN_INCOGNITO);
 
-  source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
+  source->AddResourcePath("1x/incognito_marker.png",
+                          IDR_MD_DOWNLOADS_1X_INCOGNITO_MARKER_PNG);
+  source->AddResourcePath("2x/incognito_marker.png",
+                          IDR_MD_DOWNLOADS_2X_INCOGNITO_MARKER_PNG);
+  source->AddResourcePath("1x/no_downloads.png",
+                          IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
+  source->AddResourcePath("2x/no_downloads.png",
+                          IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
+  source->AddResourcePath("action_service.html",
+                          IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
+  source->AddResourcePath("action_service.js",
+                          IDR_MD_DOWNLOADS_ACTION_SERVICE_JS);
+  source->AddResourcePath("constants.html", IDR_MD_DOWNLOADS_CONSTANTS_HTML);
+  source->AddResourcePath("constants.js", IDR_MD_DOWNLOADS_CONSTANTS_JS);
+  source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
+  source->AddResourcePath("dev.html", IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
+  source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
+  source->AddResourcePath("item.html", IDR_MD_DOWNLOADS_ITEM_HTML);
+  source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);
+  source->AddResourcePath("manager.css", IDR_MD_DOWNLOADS_MANAGER_CSS);
+  source->AddResourcePath("manager.html", IDR_MD_DOWNLOADS_MANAGER_HTML);
+  source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);
+  source->AddResourcePath("shared_style.css",
+                          IDR_MD_DOWNLOADS_SHARED_STYLE_CSS);
+  source->AddResourcePath("strings.html", IDR_MD_DOWNLOADS_STRINGS_HTML);
+  source->AddResourcePath("toolbar.css", IDR_MD_DOWNLOADS_TOOLBAR_CSS);
+  source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
+  source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
+
+  source->SetDefaultResource(IDR_MD_DOWNLOADS_VULCANIZED_HTML);
   source->SetJsonPath("strings.js");
 
   return source;
@@ -108,15 +133,15 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// DownloadsUI
+// MdDownloadsUI
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
-  DownloadsDOMHandler* handler = new DownloadsDOMHandler(dlm);
+  MdDownloadsDOMHandler* handler = new MdDownloadsDOMHandler(dlm);
   web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://downloads/ source.
@@ -129,8 +154,8 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor) {
+base::RefCountedMemory* MdDownloadsUI::GetFaviconResourceBytes(
+    ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_DOWNLOADS_FAVICON, scale_factor);
 }

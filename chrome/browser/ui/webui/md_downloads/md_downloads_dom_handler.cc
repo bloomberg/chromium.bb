@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
 
 #include <algorithm>
 #include <functional>
@@ -112,6 +112,16 @@ const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
   }
 }
 
+// TODO(dbeam): if useful elsewhere, move to base/i18n/time_formatting.h?
+base::string16 TimeFormatLongDate(const base::Time& time) {
+  scoped_ptr<icu::DateFormat> formatter(
+      icu::DateFormat::createDateInstance(icu::DateFormat::kLong));
+  icu::UnicodeString date_string;
+  formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
+  return base::string16(date_string.getBuffer(),
+                        static_cast<size_t>(date_string.length()));
+}
+
 // Returns a JSON dictionary containing some of the attributes of |download|.
 // The JSON dictionary will also have a field "id" set to |id|, and a field
 // "otr" set to |incognito|.
@@ -136,7 +146,7 @@ base::DictionaryValue* CreateDownloadItemValue(
           download_item->GetStartTime(), NULL));
 
   base::Time start_time = download_item->GetStartTime();
-  base::string16 date_string = base::TimeFormatShortDate(start_time);
+  base::string16 date_string = TimeFormatLongDate(start_time);
   file_value->SetString("date_string", date_string);
 
   file_value->SetString("id", base::Uint64ToString(download_item->GetId()));
@@ -213,7 +223,7 @@ base::DictionaryValue* CreateDownloadItemValue(
         state = "IN_PROGRESS";
       }
       progress_status_text = download_model.GetTabProgressStatusText();
-      percent = std::max(0, download_item->PercentComplete());
+      percent = download_item->PercentComplete();
       break;
     }
 
@@ -269,7 +279,7 @@ bool IsDownloadDisplayable(const content::DownloadItem& item) {
 
 }  // namespace
 
-DownloadsDOMHandler::DownloadsDOMHandler(
+MdDownloadsDOMHandler::MdDownloadsDOMHandler(
     content::DownloadManager* download_manager)
     : download_manager_(download_manager),
       update_scheduled_(false),
@@ -280,55 +290,55 @@ DownloadsDOMHandler::DownloadsDOMHandler(
   content::URLDataSource::Add(profile, new FileIconSource());
 }
 
-DownloadsDOMHandler::~DownloadsDOMHandler() {
+MdDownloadsDOMHandler::~MdDownloadsDOMHandler() {
   FinalizeRemovals();
 }
 
-// DownloadsDOMHandler, public: -----------------------------------------------
+// MdDownloadsDOMHandler, public: ---------------------------------------------
 
-void DownloadsDOMHandler::RegisterMessages() {
+void MdDownloadsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getDownloads",
-      base::Bind(&DownloadsDOMHandler::HandleGetDownloads,
+      base::Bind(&MdDownloadsDOMHandler::HandleGetDownloads,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("openFile",
-      base::Bind(&DownloadsDOMHandler::HandleOpenFile,
+      base::Bind(&MdDownloadsDOMHandler::HandleOpenFile,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("drag",
-      base::Bind(&DownloadsDOMHandler::HandleDrag,
+      base::Bind(&MdDownloadsDOMHandler::HandleDrag,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("saveDangerous",
-      base::Bind(&DownloadsDOMHandler::HandleSaveDangerous,
+      base::Bind(&MdDownloadsDOMHandler::HandleSaveDangerous,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("discardDangerous",
-      base::Bind(&DownloadsDOMHandler::HandleDiscardDangerous,
+      base::Bind(&MdDownloadsDOMHandler::HandleDiscardDangerous,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("show",
-      base::Bind(&DownloadsDOMHandler::HandleShow,
+      base::Bind(&MdDownloadsDOMHandler::HandleShow,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("pause",
-      base::Bind(&DownloadsDOMHandler::HandlePause,
+      base::Bind(&MdDownloadsDOMHandler::HandlePause,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("resume",
-      base::Bind(&DownloadsDOMHandler::HandleResume,
+      base::Bind(&MdDownloadsDOMHandler::HandleResume,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("remove",
-      base::Bind(&DownloadsDOMHandler::HandleRemove,
+      base::Bind(&MdDownloadsDOMHandler::HandleRemove,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("undo",
-      base::Bind(&DownloadsDOMHandler::HandleUndo,
+      base::Bind(&MdDownloadsDOMHandler::HandleUndo,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("cancel",
-      base::Bind(&DownloadsDOMHandler::HandleCancel,
+      base::Bind(&MdDownloadsDOMHandler::HandleCancel,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("clearAll",
-      base::Bind(&DownloadsDOMHandler::HandleClearAll,
+      base::Bind(&MdDownloadsDOMHandler::HandleClearAll,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("openDownloadsFolder",
-      base::Bind(&DownloadsDOMHandler::HandleOpenDownloadsFolder,
+      base::Bind(&MdDownloadsDOMHandler::HandleOpenDownloadsFolder,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DownloadsDOMHandler::OnDownloadCreated(
+void MdDownloadsDOMHandler::OnDownloadCreated(
     content::DownloadManager* manager, content::DownloadItem* download_item) {
   if (IsDownloadDisplayable(*download_item))
     ScheduleSendCurrentDownloads();
@@ -336,7 +346,7 @@ void DownloadsDOMHandler::OnDownloadCreated(
     new_downloads_.insert(download_item->GetId());
 }
 
-void DownloadsDOMHandler::OnDownloadUpdated(
+void MdDownloadsDOMHandler::OnDownloadUpdated(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
   if (update_scheduled_)
@@ -382,7 +392,7 @@ void DownloadsDOMHandler::OnDownloadUpdated(
   CallUpdateItem(*item);
 }
 
-void DownloadsDOMHandler::OnDownloadRemoved(
+void MdDownloadsDOMHandler::OnDownloadRemoved(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
   if (!DownloadItemModel(download_item).ShouldShowInShelf())
@@ -395,13 +405,13 @@ void DownloadsDOMHandler::OnDownloadRemoved(
   // at all downloads, and we do not tell it that |download_item| is being
   // removed. If DownloadManager is ever changed to not immediately remove
   // |download_item| from its map when OnDownloadRemoved is sent, then
-  // DownloadsDOMHandler::OnDownloadRemoved() will need to explicitly tell
+  // MdDownloadsDOMHandler::OnDownloadRemoved() will need to explicitly tell
   // SendCurrentDownloads() that |download_item| was removed. A
   // SupportsUserData::Data would be the correct way to do this.
   ScheduleSendCurrentDownloads();
 }
 
-void DownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
   search_terms_.reset(args && !args->empty() ? args->DeepCopy() : NULL);
   ScheduleSendCurrentDownloads();
@@ -419,14 +429,14 @@ void DownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
   }
 }
 
-void DownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FILE);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->OpenDownload();
 }
 
-void DownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DRAG);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (!file)
@@ -451,42 +461,43 @@ void DownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
   }
 }
 
-void DownloadsDOMHandler::HandleSaveDangerous(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleSaveDangerous(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     ShowDangerPrompt(file);
 }
 
-void DownloadsDOMHandler::HandleDiscardDangerous(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleDiscardDangerous(
+    const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DISCARD_DANGEROUS);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Remove();
 }
 
-void DownloadsDOMHandler::HandleShow(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleShow(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SHOW);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->ShowDownloadInShell();
 }
 
-void DownloadsDOMHandler::HandlePause(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandlePause(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_PAUSE);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Pause();
 }
 
-void DownloadsDOMHandler::HandleResume(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleResume(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_RESUME);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Resume();
 }
 
-void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
   if (!IsDeletingHistoryAllowed())
     return;
 
@@ -500,7 +511,7 @@ void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
   RemoveDownloads(downloads);
 }
 
-void DownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
   // TODO(dbeam): handle more than removed downloads someday?
   if (removals_.empty())
     return;
@@ -523,14 +534,14 @@ void DownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
   }
 }
 
-void DownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Cancel(true);
 }
 
-void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
+void MdDownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
   if (!IsDeletingHistoryAllowed()) {
     // This should only be reached during tests.
     return;
@@ -546,7 +557,7 @@ void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
   RemoveDownloads(downloads);
 }
 
-void DownloadsDOMHandler::RemoveDownloads(
+void MdDownloadsDOMHandler::RemoveDownloads(
     const std::vector<content::DownloadItem*>& to_remove) {
   std::set<uint32> ids;
 
@@ -566,7 +577,7 @@ void DownloadsDOMHandler::RemoveDownloads(
     removals_.push_back(ids);
 }
 
-void DownloadsDOMHandler::HandleOpenDownloadsFolder(
+void MdDownloadsDOMHandler::HandleOpenDownloadsFolder(
     const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FOLDER);
   content::DownloadManager* manager = GetMainNotifierManager();
@@ -578,9 +589,9 @@ void DownloadsDOMHandler::HandleOpenDownloadsFolder(
   }
 }
 
-// DownloadsDOMHandler, private: ----------------------------------------------
+// MdDownloadsDOMHandler, private: --------------------------------------------
 
-void DownloadsDOMHandler::ScheduleSendCurrentDownloads() {
+void MdDownloadsDOMHandler::ScheduleSendCurrentDownloads() {
   // Don't call SendCurrentDownloads() every time anything changes. Batch them
   // together instead. This may handle hundreds of OnDownloadDestroyed() calls
   // in a single UI message loop iteration when the user Clears All downloads.
@@ -591,20 +602,21 @@ void DownloadsDOMHandler::ScheduleSendCurrentDownloads() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadsDOMHandler::SendCurrentDownloads,
+      base::Bind(&MdDownloadsDOMHandler::SendCurrentDownloads,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-content::DownloadManager* DownloadsDOMHandler::GetMainNotifierManager() const {
+content::DownloadManager* MdDownloadsDOMHandler::GetMainNotifierManager()
+    const {
   return main_notifier_ ? main_notifier_->GetManager() : nullptr;
 }
 
-content::DownloadManager* DownloadsDOMHandler::GetOriginalNotifierManager()
+content::DownloadManager* MdDownloadsDOMHandler::GetOriginalNotifierManager()
     const {
   return original_notifier_ ? original_notifier_->GetManager() : nullptr;
 }
 
-void DownloadsDOMHandler::FinalizeRemovals() {
+void MdDownloadsDOMHandler::FinalizeRemovals() {
   while (!removals_.empty()) {
     const std::set<uint32> remove = removals_.back();
     removals_.pop_back();
@@ -617,7 +629,7 @@ void DownloadsDOMHandler::FinalizeRemovals() {
   }
 }
 
-void DownloadsDOMHandler::SendCurrentDownloads() {
+void MdDownloadsDOMHandler::SendCurrentDownloads() {
   update_scheduled_ = false;
 
   content::DownloadManager::DownloadVector all_items, filtered_items;
@@ -648,19 +660,19 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
   CallUpdateAll(results_value);
 }
 
-void DownloadsDOMHandler::ShowDangerPrompt(
+void MdDownloadsDOMHandler::ShowDangerPrompt(
     content::DownloadItem* dangerous_item) {
   DownloadDangerPrompt* danger_prompt = DownloadDangerPrompt::Create(
       dangerous_item,
       GetWebUIWebContents(),
       false,
-      base::Bind(&DownloadsDOMHandler::DangerPromptDone,
+      base::Bind(&MdDownloadsDOMHandler::DangerPromptDone,
                  weak_ptr_factory_.GetWeakPtr(), dangerous_item->GetId()));
   // danger_prompt will delete itself.
   DCHECK(danger_prompt);
 }
 
-void DownloadsDOMHandler::DangerPromptDone(
+void MdDownloadsDOMHandler::DangerPromptDone(
     int download_id, DownloadDangerPrompt::Action action) {
   if (action != DownloadDangerPrompt::ACCEPT)
     return;
@@ -675,14 +687,14 @@ void DownloadsDOMHandler::DangerPromptDone(
   item->ValidateDangerousDownload();
 }
 
-bool DownloadsDOMHandler::IsDeletingHistoryAllowed() {
+bool MdDownloadsDOMHandler::IsDeletingHistoryAllowed() {
   content::DownloadManager* manager = GetMainNotifierManager();
   return manager &&
          Profile::FromBrowserContext(manager->GetBrowserContext())->
              GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 }
 
-content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(
+content::DownloadItem* MdDownloadsDOMHandler::GetDownloadByValue(
     const base::ListValue* args) {
   std::string download_id;
   if (!args->GetString(0, &download_id)) {
@@ -699,7 +711,7 @@ content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(
   return GetDownloadById(static_cast<uint32>(id));
 }
 
-content::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32 id) {
+content::DownloadItem* MdDownloadsDOMHandler::GetDownloadById(uint32 id) {
   content::DownloadItem* item = NULL;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(id);
@@ -708,14 +720,14 @@ content::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32 id) {
   return item;
 }
 
-content::WebContents* DownloadsDOMHandler::GetWebUIWebContents() {
+content::WebContents* MdDownloadsDOMHandler::GetWebUIWebContents() {
   return web_ui()->GetWebContents();
 }
 
-void DownloadsDOMHandler::CallUpdateAll(const base::ListValue& list) {
+void MdDownloadsDOMHandler::CallUpdateAll(const base::ListValue& list) {
   web_ui()->CallJavascriptFunction("downloads.Manager.updateAll", list);
 }
 
-void DownloadsDOMHandler::CallUpdateItem(const base::DictionaryValue& item) {
+void MdDownloadsDOMHandler::CallUpdateItem(const base::DictionaryValue& item) {
   web_ui()->CallJavascriptFunction("downloads.Manager.updateItem", item);
 }
