@@ -90,6 +90,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void RemoveListener(Listener* listener);
   void NotifyRegistrationFailed();
   void NotifyUpdateFound();
+  void NotifyVersionAttributesChanged(ChangedVersionAttributesMask mask);
 
   ServiceWorkerRegistrationInfo GetInfo();
 
@@ -143,6 +144,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // registration from storage if there is no longer a stored version.
   void DeleteVersion(const scoped_refptr<ServiceWorkerVersion>& version);
 
+  void RegisterRegistrationFinishedCallback(const base::Closure& callback);
+  void NotifyRegistrationFinished();
+
   bool force_update_on_page_load() const { return force_update_on_page_load_; }
   void set_force_update_on_page_load(bool force_update_on_page_load) {
     force_update_on_page_load_ = force_update_on_page_load;
@@ -190,6 +194,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   scoped_refptr<ServiceWorkerVersion> installing_version_;
 
   base::ObserverList<Listener> listeners_;
+  std::vector<base::Closure> registration_finished_callbacks_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistration);

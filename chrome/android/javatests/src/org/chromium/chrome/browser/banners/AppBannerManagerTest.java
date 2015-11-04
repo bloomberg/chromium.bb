@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -424,27 +423,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"AppBanners"})
     public void testWebAppBannerAppears() throws Exception {
-        // Create a Tab that doesn't have the AppBannerManager enabled.  This prevents race
-        // conditions between service worker activation and AppBannerManager getting triggered.
-        // This race condition is a known problem, which is why the specs include wiggle room for
-        // how many times a site must be visited.
-        AppBannerManager.setIsEnabledForTesting(false);
-        loadUrlInNewTab("about:blank");
-
-        // Visit a site that can have a banner, then wait until the service worker is activated.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(
-                new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL)));
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                String url = getActivity().getActivityTab().getUrl();
-                Uri uri = Uri.parse(url);
-                return TextUtils.equals(uri.getFragment(), "sw_activated");
-            }
-        }));
-        AppBannerManager.setIsEnabledForTesting(true);
-
-        // Revisit the site in a new tab, which will have the AppBannerManager enabled.
+        // Visit the site in a new tab.
         loadUrlInNewTab("about:blank");
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(
                 new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL)));
@@ -481,27 +460,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
         WebappDataStorage.setFactoryForTests(dataStorageFactory);
 
-        // Create a Tab that doesn't have the AppBannerManager enabled.  This prevents race
-        // conditions between service worker activation and AppBannerManager getting triggered.
-        // This race condition is a known problem, which is why the specs include wiggle room for
-        // how many times a site must be visited.
-        AppBannerManager.setIsEnabledForTesting(false);
-        loadUrlInNewTab("about:blank");
-
-        // Visit a site that can have a banner, then wait until the service worker is activated.
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(
-                new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL)));
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                String url = getActivity().getActivityTab().getUrl();
-                Uri uri = Uri.parse(url);
-                return TextUtils.equals(uri.getFragment(), "sw_activated");
-            }
-        }));
-        AppBannerManager.setIsEnabledForTesting(true);
-
-        // Revisit the site in a new tab, which will have the AppBannerManager enabled.
+        // Visit the site in a new tab.
         loadUrlInNewTab("about:blank");
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(
                 new TabLoadObserver(getActivity().getActivityTab(), WEB_APP_URL)));

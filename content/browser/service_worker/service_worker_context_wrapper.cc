@@ -332,25 +332,13 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
   callback.Run(usage_infos);
 }
 
-void ServiceWorkerContextWrapper::DidFindRegistrationForCheckHasServiceWorker(
-    const GURL& other_url,
+void ServiceWorkerContextWrapper::DidCheckHasServiceWorker(
     const CheckHasServiceWorkerCallback& callback,
-    ServiceWorkerStatusCode status,
-    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    bool has_service_worker) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (status != SERVICE_WORKER_OK) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, false));
-    return;
-  }
-
-  DCHECK(registration);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, registration->active_version() &&
-                               ServiceWorkerUtils::ScopeMatches(
-                                   registration->pattern(), other_url)));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, has_service_worker));
 }
 
 void ServiceWorkerContextWrapper::StopAllServiceWorkersForOrigin(
@@ -439,11 +427,10 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
                             base::Bind(callback, false));
     return;
   }
-  context()->storage()->FindRegistrationForDocument(
-      net::SimplifyUrlForRequest(url),
-      base::Bind(&ServiceWorkerContextWrapper::
-                     DidFindRegistrationForCheckHasServiceWorker,
-                 this, net::SimplifyUrlForRequest(other_url), callback));
+  context()->CheckHasServiceWorker(
+      net::SimplifyUrlForRequest(url), net::SimplifyUrlForRequest(other_url),
+      base::Bind(&ServiceWorkerContextWrapper::DidCheckHasServiceWorker, this,
+                 callback));
 }
 
 void ServiceWorkerContextWrapper::ClearAllServiceWorkersForTest(

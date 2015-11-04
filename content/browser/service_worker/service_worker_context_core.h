@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/service_worker_context.h"
 
 class GURL;
 
@@ -262,6 +263,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void ClearAllServiceWorkersForTest(const base::Closure& callback);
 
+  // Determines if there is a ServiceWorker registration that matches |url|, and
+  // if |other_url| falls inside the scope of the same registration. See
+  // ServiceWorkerContext::CheckHasServiceWorker for more details.
+  void CheckHasServiceWorker(
+      const GURL& url,
+      const GURL& other_url,
+      const ServiceWorkerContext::CheckHasServiceWorkerCallback callback);
+
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -294,6 +303,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const UnregistrationCallback& result,
       const GURL& origin,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
+
+  void DidFindRegistrationForCheckHasServiceWorker(
+      const GURL& other_url,
+      const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
+  void OnRegistrationFinishedForCheckHasServiceWorker(
+      const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   // It's safe to store a raw pointer instead of a scoped_refptr to |wrapper_|
   // because the Wrapper::Shutdown call that hops threads to destroy |this| uses

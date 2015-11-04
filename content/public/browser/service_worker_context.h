@@ -70,9 +70,9 @@ class ServiceWorkerContext {
   virtual void DeleteForOrigin(const GURL& origin_url,
                                const ResultCallback& callback) = 0;
 
-  // Returns true if an active Service Worker registration exists that matches
-  // |url|, and if |other_url| falls inside the scope of the same registration.
-  // Note this still returns true even if there is a Service Worker registration
+  // Returns true if a Service Worker registration exists that matches |url|,
+  // and if |other_url| falls inside the scope of the same registration. Note
+  // this still returns true even if there is a Service Worker registration
   // which has a longer match for |other_url|.
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.

@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_response_headers.h"
@@ -668,6 +669,16 @@ void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
                  AsWeakPtr()));
 }
 
+void ServiceWorkerContextCore::CheckHasServiceWorker(
+    const GURL& url,
+    const GURL& other_url,
+    const ServiceWorkerContext::CheckHasServiceWorkerCallback callback) {
+  storage()->FindRegistrationForDocument(
+      url, base::Bind(&ServiceWorkerContextCore::
+                          DidFindRegistrationForCheckHasServiceWorker,
+                      AsWeakPtr(), other_url, callback));
+}
+
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
   if (!observer_list_)
@@ -757,6 +768,44 @@ void ServiceWorkerContextCore::OnControlleeRemoved(
 
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {
   return wrapper_->process_manager();
+}
+
+void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
+    const GURL& other_url,
+    const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  if (status != SERVICE_WORKER_OK) {
+    callback.Run(false);
+    return;
+  }
+
+  if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(), other_url)) {
+    callback.Run(false);
+    return;
+  }
+
+  if (registration->is_uninstalling() || registration->is_uninstalled()) {
+    callback.Run(false);
+    return;
+  }
+
+  if (!registration->active_version() && !registration->waiting_version()) {
+    registration->RegisterRegistrationFinishedCallback(
+        base::Bind(&ServiceWorkerContextCore::
+                       OnRegistrationFinishedForCheckHasServiceWorker,
+                   AsWeakPtr(), callback, registration));
+    return;
+  }
+
+  callback.Run(true);
+}
+
+void ServiceWorkerContextCore::OnRegistrationFinishedForCheckHasServiceWorker(
+    const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  callback.Run(registration->active_version() ||
+               registration->waiting_version());
 }
 
 }  // namespace content

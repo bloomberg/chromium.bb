@@ -109,15 +109,6 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     ASSERT_FALSE(fetcher->is_active());
   }
 
-  void LoadURLAndWaitForServiceWorker(const GURL& url) {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    content::TestNavigationObserver observer(web_contents, 2);
-    ui_test_utils::NavigateToURL(browser(), url);
-    observer.Wait();
-    EXPECT_EQ("sw_activated", observer.last_navigation_url().ref());
-  }
-
   void RunBannerTest(const std::string& manifest_page,
                      ui::PageTransition transition,
                      unsigned int unshown_repetitions,
@@ -128,13 +119,13 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
         browser()->tab_strip_model()->GetActiveWebContents();
 
     for (unsigned int i = 0; i < unshown_repetitions; ++i) {
-      LoadURLAndWaitForServiceWorker(test_url);
+      ui_test_utils::NavigateToURL(browser(), test_url);
       RunFetcher(web_contents->GetURL(), std::string(), transition, false);
       AppBannerDataFetcher::SetTimeDeltaForTesting(i+1);
     }
 
     // On the final loop, check whether the banner triggered or not as expected.
-    LoadURLAndWaitForServiceWorker(test_url);
+    ui_test_utils::NavigateToURL(browser(), test_url);
     RunFetcher(web_contents->GetURL(), std::string(), transition, expectation);
   }
 
@@ -246,40 +237,40 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Add a direct nav on day 1.
-  LoadURLAndWaitForServiceWorker(test_url);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   RunFetcher(web_contents->GetURL(), std::string(), ui::PAGE_TRANSITION_TYPED,
              false);
 
   // Add an indirect nav on day 1 which is ignored.
-  LoadURLAndWaitForServiceWorker(test_url);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   RunFetcher(web_contents->GetURL(), std::string(), ui::PAGE_TRANSITION_LINK,
              false);
   AppBannerDataFetcher::SetTimeDeltaForTesting(1);
 
   // Add an indirect nav on day 2.
-  LoadURLAndWaitForServiceWorker(test_url);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   RunFetcher(web_contents->GetURL(), std::string(),
              ui::PAGE_TRANSITION_MANUAL_SUBFRAME, false);
 
   // Add a direct nav on day 2 which overrides.
-  LoadURLAndWaitForServiceWorker(test_url);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   RunFetcher(web_contents->GetURL(), std::string(),
              ui::PAGE_TRANSITION_GENERATED, false);
   AppBannerDataFetcher::SetTimeDeltaForTesting(2);
 
   // Add a direct nav on day 3.
-  LoadURLAndWaitForServiceWorker(test_url);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   RunFetcher(web_contents->GetURL(), std::string(),
              ui::PAGE_TRANSITION_GENERATED, false);
   AppBannerDataFetcher::SetTimeDeltaForTesting(3);
 
   // Add an indirect nav on day 4.
-  LoadURLAndWaitForServiceWorker(test_url);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   RunFetcher(web_contents->GetURL(), std::string(),
              ui::PAGE_TRANSITION_FORM_SUBMIT, false);
 
   // Add a direct nav on day 4 which should trigger the banner.
-  LoadURLAndWaitForServiceWorker(test_url);
+  ui_test_utils::NavigateToURL(browser(), test_url);
   RunFetcher(web_contents->GetURL(), std::string(),
              ui::PAGE_TRANSITION_TYPED, true);
 }

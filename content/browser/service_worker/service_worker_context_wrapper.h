@@ -185,11 +185,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GetUsageInfoCallback& callback,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
-  void DidFindRegistrationForCheckHasServiceWorker(
-      const GURL& other_url,
-      const CheckHasServiceWorkerCallback& callback,
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+  void DidCheckHasServiceWorker(const CheckHasServiceWorkerCallback& callback,
+                                bool has_service_worker);
 
   void DidFindRegistrationForUpdate(
       ServiceWorkerStatusCode status,
