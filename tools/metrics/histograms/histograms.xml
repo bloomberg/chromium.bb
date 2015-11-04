@@ -64210,6 +64210,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The brokerable attachment's destination was not the process that received
     the attachment.
   </int>
+  <int value="2" label="ERR_RECEIVE_MACH_MESSAGE">
+    An error occurred while trying to receive a Mach port with mach_msg().
+  </int>
 </enum>
 
 <enum name="IPPermissionStatus" type="int">

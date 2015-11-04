@@ -37,7 +37,7 @@ class IPC_EXPORT AttachmentBrokerUnprivileged : public IPC::AttachmentBroker {
   IPC::Sender* get_sender() { return sender_; }
 
   // Errors that can be reported by subclasses.
-  // These match tools/metrics/histograms.xml.
+  // These match tools/metrics/histograms/histograms.xml.
   // This enum is append-only.
   enum UMAError {
     // The brokerable attachment was successfully processed.
@@ -45,6 +45,8 @@ class IPC_EXPORT AttachmentBrokerUnprivileged : public IPC::AttachmentBroker {
     // The brokerable attachment's destination was not the process that received
     // the attachment.
     WRONG_DESTINATION = 1,
+    // An error occurred while trying to receive a Mach port with mach_msg().
+    ERR_RECEIVE_MACH_MESSAGE = 2,
     ERROR_MAX
   };
 
