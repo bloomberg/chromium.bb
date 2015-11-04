@@ -383,6 +383,10 @@ LayoutUnit LayoutFlexibleBox::childIntrinsicHeight(const LayoutBox& child) const
 {
     if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
+    // If our height is auto, make sure that our returned height is unaffected by earlier layouts by
+    // returning the max preferred height (=logical width)
+    if (!child.isHorizontalWritingMode() && child.styleRef().height().isAuto())
+        return child.maxPreferredLogicalWidth();
     return child.size().height();
 }
 
@@ -390,6 +394,7 @@ LayoutUnit LayoutFlexibleBox::childIntrinsicWidth(const LayoutBox& child) const
 {
     if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
+    // TOOO(cbiesinger): should this return the maxPreferredLogicalWidth?
     return child.size().width();
 }
 
@@ -1144,13 +1149,17 @@ bool LayoutFlexibleBox::needToStretchChildLogicalHeight(const LayoutBox& child) 
 {
     // This function is a little bit magical. It relies on the fact that blocks intrinsically
     // "stretch" themselves in their inline axis, i.e. a <div> has an implicit width: 100%.
-    // Therefore, we never need to stretch an item if we're a vertical flow, because the child
-    // will automatically stretch itself.
-    // TODO(cbiesinger): this code is wrong when the child has an orthogonal flow and we're vertical. crbug.com/482766
+    // So the child will automatically stretch if our cross axis is the child's inline axis. That's the case if:
+    // - We are horizontal and the child is in vertical writing mode
+    // - We are vertical and the child is in horizontal writing mode
+    // Otherwise, we need to stretch if the cross axis size is auto.
     if (alignmentForChild(child) != ItemPositionStretch)
         return false;
 
-    return isHorizontalFlow() && child.style()->height().isAuto();
+    if (isHorizontalFlow() != child.styleRef().isHorizontalWritingMode())
+        return false;
+
+    return isHorizontalFlow() ? child.styleRef().height().isAuto() : child.styleRef().width().isAuto();
 }
 
 bool LayoutFlexibleBox::childHasIntrinsicMainAxisSize(const LayoutBox& child) const
@@ -1462,38 +1471,32 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts)
 
 void LayoutFlexibleBox::applyStretchAlignmentToChild(LayoutBox& child, LayoutUnit lineCrossAxisExtent)
 {
-    if (!isColumnFlow() && child.style()->logicalHeight().isAuto()) {
-        // FIXME: If the child has orthogonal flow, then it already has an override height set, so use it.
-        if (!hasOrthogonalFlow(child)) {
-            LayoutUnit heightBeforeStretching = needToStretchChildLogicalHeight(child) ? constrainedChildIntrinsicContentLogicalHeight(child) : child.logicalHeight();
-            LayoutUnit stretchedLogicalHeight = std::max(child.borderAndPaddingLogicalHeight(), heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(lineCrossAxisExtent, child));
-            ASSERT(!child.needsLayout());
-            LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());
+    if (!hasOrthogonalFlow(child) && child.style()->logicalHeight().isAuto()) {
+        LayoutUnit heightBeforeStretching = needToStretchChildLogicalHeight(child) ? constrainedChildIntrinsicContentLogicalHeight(child) : child.logicalHeight();
+        LayoutUnit stretchedLogicalHeight = std::max(child.borderAndPaddingLogicalHeight(), heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(lineCrossAxisExtent, child));
+        ASSERT(!child.needsLayout());
+        LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());
 
-            // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
-            bool childNeedsRelayout = desiredLogicalHeight != child.logicalHeight();
-            if (childNeedsRelayout || !child.hasOverrideLogicalContentHeight())
-                child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
-            if (childNeedsRelayout) {
-                child.setLogicalHeight(0);
-                // We cache the child's intrinsic content logical height to avoid it being reset to the stretched height.
-                // FIXME: This is fragile. LayoutBoxes should be smart enough to determine their intrinsic content logical
-                // height correctly even when there's an overrideHeight.
-                LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
-                child.forceChildLayout();
-                child.setIntrinsicContentLogicalHeight(childIntrinsicContentLogicalHeight);
-            }
+        // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
+        bool childNeedsRelayout = desiredLogicalHeight != child.logicalHeight();
+        if (childNeedsRelayout || !child.hasOverrideLogicalContentHeight())
+            child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
+        if (childNeedsRelayout) {
+            child.setLogicalHeight(0);
+            // We cache the child's intrinsic content logical height to avoid it being reset to the stretched height.
+            // FIXME: This is fragile. LayoutBoxes should be smart enough to determine their intrinsic content logical
+            // height correctly even when there's an overrideHeight.
+            LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
+            child.forceChildLayout();
+            child.setIntrinsicContentLogicalHeight(childIntrinsicContentLogicalHeight);
         }
-    } else if (isColumnFlow() && child.style()->logicalWidth().isAuto()) {
-        // FIXME: If the child doesn't have orthogonal flow, then it already has an override width set, so use it.
-        if (hasOrthogonalFlow(child)) {
-            LayoutUnit childWidth = std::max<LayoutUnit>(0, lineCrossAxisExtent - crossAxisMarginExtentForChild(child));
-            childWidth = child.constrainLogicalWidthByMinMax(childWidth, childWidth, this);
+    } else if (hasOrthogonalFlow(child) && child.style()->logicalWidth().isAuto()) {
+        LayoutUnit childWidth = std::max<LayoutUnit>(0, lineCrossAxisExtent - crossAxisMarginExtentForChild(child));
+        childWidth = child.constrainLogicalWidthByMinMax(childWidth, childWidth, this);
 
-            if (childWidth != child.logicalWidth()) {
-                child.setOverrideLogicalContentWidth(childWidth - child.borderAndPaddingLogicalWidth());
-                child.forceChildLayout();
-            }
+        if (childWidth != child.logicalWidth()) {
+            child.setOverrideLogicalContentWidth(childWidth - child.borderAndPaddingLogicalWidth());
+            child.forceChildLayout();
         }
     }
 }
