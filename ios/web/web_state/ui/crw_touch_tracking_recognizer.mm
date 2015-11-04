@@ -5,7 +5,7 @@
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
 
 @interface CRWTouchTrackingRecognizer () <UIGestureRecognizerDelegate> {
-  __weak id<CRWTouchTrackingDelegate> _delegate;
+  id<CRWTouchTrackingDelegate> _delegate;  // weak
 }
 @end
 

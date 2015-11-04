@@ -255,7 +255,7 @@ TEST_F(CRBProtocolObserversTest, NestedMutateObservers) {
 @end
 
 @implementation TestMutateObserver {
-  __weak id _observers;
+  id _observers;  // weak
 }
 
 - (instancetype)initWithObserver:(CRBProtocolObservers*)observers {

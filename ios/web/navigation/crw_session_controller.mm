@@ -91,7 +91,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   BOOL _useDesktopUserAgentForNextPendingEntry;
 
   // The browser state associated with this CRWSessionController;
-  __weak web::BrowserState* _browserState;
+  web::BrowserState* _browserState;  // weak
 
   // Time smoother for navigation entry timestamps; see comment in
   // navigation_controller_impl.h

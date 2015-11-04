@@ -17,7 +17,7 @@
 #include "ui/gfx/image/image.h"
 
 @interface AfterTranslateInfoBarController () {
-  __weak translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;
+  translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;  // weak
 }
 
 // Action for any of the user defined buttons.

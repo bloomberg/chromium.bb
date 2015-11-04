@@ -31,7 +31,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 // language list.
 @interface LanguagePickerController
     : UIViewController<UIPickerViewDataSource, UIPickerViewDelegate> {
-  __weak translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;
+  translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;  // weak
   NSInteger _initialRow;   // Displayed in bold font.
   NSInteger _disabledRow;  // Grayed out.
 }
@@ -107,7 +107,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 @end
 
 @implementation BeforeTranslateInfoBarController {
-  __weak translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;
+  translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;  // weak
   // A fullscreen view that catches all touch events and contains a UIPickerView
   // and a UINavigationBar.
   base::scoped_nsobject<UIView> _languageSelectionView;

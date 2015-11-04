@@ -5,17 +5,11 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 
 @interface FormSuggestion ()
-// TODO(rohitrao): These properties must be redefined readwrite to work around a
-// clang bug.  crbug.com/228650
-@property(copy, readwrite) NSString* value;
-@property(copy, readwrite) NSString* icon;
-
 // Local initializer for a FormSuggestion.
 - (id)initWithValue:(NSString*)value
     displayDescription:(NSString*)displayDescription
                   icon:(NSString*)icon
             identifier:(NSInteger)identifier;
-
 @end
 
 @implementation FormSuggestion {

@@ -32,7 +32,7 @@
 
 @implementation CRWTestBrowsingDataStoreObserver {
   // The underlying CRWBrowsingDataStore.
-  __weak CRWBrowsingDataStore* _browsingDataStore;
+  CRWBrowsingDataStore* _browsingDataStore;  // weak
 }
 
 @synthesize modeChangeCount = _modeChangeCount;

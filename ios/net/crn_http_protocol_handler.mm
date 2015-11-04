@@ -55,7 +55,7 @@ void DoNothing(bool flag) {}
 @interface CRWHTTPStreamDelegate : NSObject<NSStreamDelegate> {
  @private
   // The object is owned by |_core| and has a weak reference to it.
-  __weak net::HttpProtocolHandlerCore* _core;
+  net::HttpProtocolHandlerCore* _core;  // weak
 }
 - (instancetype)initWithHttpProtocolHandlerCore:
     (net::HttpProtocolHandlerCore*)core;

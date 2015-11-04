@@ -48,7 +48,7 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
 @end
 
 @implementation ConfirmInfoBarController {
-  __weak ConfirmInfoBarDelegate* confirmInfobarDelegate_;
+  ConfirmInfoBarDelegate* confirmInfobarDelegate_;  // weak
 }
 
 #pragma mark -

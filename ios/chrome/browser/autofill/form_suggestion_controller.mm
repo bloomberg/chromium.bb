@@ -91,7 +91,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   base::scoped_nsobject<JsSuggestionManager> _jsSuggestionManager;
 
   // The provider for the current set of suggestions.
-  __weak id<FormSuggestionProvider> _provider;
+  id<FormSuggestionProvider> _provider;  // weak
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState
