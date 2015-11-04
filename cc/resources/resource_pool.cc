@@ -92,7 +92,7 @@ ResourcePool::~ResourcePool() {
 Resource* ResourcePool::AcquireResource(const gfx::Size& size,
                                         ResourceFormat format) {
   // Finding resources in |unused_resources_| from MRU to LRU direction, touches
-  // LRU resources only if needed, which inreases possibility of expiring more
+  // LRU resources only if needed, which increases possibility of expiring more
   // LRU resources within kResourceExpirationDelayMs.
   for (ResourceDeque::iterator it = unused_resources_.begin();
        it != unused_resources_.end(); ++it) {
