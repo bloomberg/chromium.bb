@@ -38,6 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
+#include "core/testing/DummyPageHolder.h"
 #include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
 
@@ -53,9 +54,11 @@ protected:
 
     void setUpWithoutStartingTimeline()
     {
-        document = Document::create();
+        pageHolder = DummyPageHolder::create();
+        document = &pageHolder->document();
         document->animationClock().resetTimeForTesting();
         timeline = AnimationTimeline::create(document.get());
+        timeline->resetForTesting();
         animation = timeline->play(0);
         animation->setStartTime(0);
         animation->setEffect(makeAnimation());
@@ -86,6 +89,7 @@ protected:
     Persistent<AnimationTimeline> timeline;
     Persistent<Animation> animation;
     TrackExceptionState exceptionState;
+    OwnPtr<DummyPageHolder> pageHolder;
 };
 
 TEST_F(AnimationAnimationTest, InitialState)
@@ -181,26 +185,6 @@ TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEnd)
     EXPECT_EQ(Animation::Running, animation->playStateInternal());
     simulateFrame(40);
     EXPECT_EQ(10, animation->currentTimeInternal());
-}
-
-TEST_F(AnimationAnimationTest, SetCurrentTimeBeforeTimelineStarted)
-{
-    setUpWithoutStartingTimeline();
-    animation->setCurrentTimeInternal(5);
-    EXPECT_EQ(5, animation->currentTimeInternal());
-    startTimeline();
-    simulateFrame(10);
-    EXPECT_EQ(15, animation->currentTimeInternal());
-}
-
-TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEndBeforeTimelineStarted)
-{
-    setUpWithoutStartingTimeline();
-    animation->setCurrentTime(250 * 1000);
-    EXPECT_EQ(250, animation->currentTimeInternal());
-    startTimeline();
-    simulateFrame(10);
-    EXPECT_EQ(250, animation->currentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetCurrentTimeMax)
@@ -318,21 +302,6 @@ TEST_F(AnimationAnimationTest, PausePlay)
     EXPECT_EQ(10, animation->currentTimeInternal());
     simulateFrame(30);
     EXPECT_EQ(20, animation->currentTimeInternal());
-}
-
-TEST_F(AnimationAnimationTest, PauseBeforeTimelineStarted)
-{
-    setUpWithoutStartingTimeline();
-    animation->pause();
-    EXPECT_TRUE(animation->paused());
-    animation->play();
-    EXPECT_FALSE(animation->paused());
-
-    animation->pause();
-    startTimeline();
-    simulateFrame(100);
-    EXPECT_TRUE(animation->paused());
-    EXPECT_EQ(0, animation->currentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, PlayRewindsToStart)
@@ -551,17 +520,6 @@ TEST_F(AnimationAnimationTest, SetPlaybackRate)
     simulateFrame(0);
     EXPECT_EQ(2, animation->playbackRate());
     EXPECT_EQ(0, animation->currentTimeInternal());
-    simulateFrame(10);
-    EXPECT_EQ(20, animation->currentTimeInternal());
-}
-
-TEST_F(AnimationAnimationTest, SetPlaybackRateBeforeTimelineStarted)
-{
-    setUpWithoutStartingTimeline();
-    animation->setPlaybackRate(2);
-    EXPECT_EQ(2, animation->playbackRate());
-    EXPECT_EQ(0, animation->currentTimeInternal());
-    startTimeline();
     simulateFrame(10);
     EXPECT_EQ(20, animation->currentTimeInternal());
 }

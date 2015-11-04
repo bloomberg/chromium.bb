@@ -80,7 +80,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
                 startedSynchronizedOnCompositor = true;
             }
 
-            if (animation->playing() && !animation->hasStartTime()) {
+            if (animation->playing() && !animation->hasStartTime() && animation->timeline() && animation->timeline()->isActive()) {
                 waitingForStartTime.append(animation.get());
             }
         } else {
@@ -142,7 +142,7 @@ void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monoto
     animations.swap(m_waitingForCompositorAnimationStart);
 
     for (auto animation : animations) {
-        if (animation->hasStartTime() || animation->playStateInternal() != Animation::Pending) {
+        if (animation->hasStartTime() || animation->playStateInternal() != Animation::Pending || !animation->timeline() || !animation->timeline()->isActive()) {
             // Already started or no longer relevant.
             continue;
         }

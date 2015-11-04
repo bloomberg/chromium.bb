@@ -38,6 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
+#include "core/testing/DummyPageHolder.h"
 #include "platform/weborigin/KURL.h"
 
 #include <gmock/gmock.h>
@@ -49,20 +50,7 @@ class MockPlatformTiming : public AnimationTimeline::PlatformTiming {
 public:
 
     MOCK_METHOD1(wakeAfter, void(double));
-    MOCK_METHOD0(cancelWake, void());
     MOCK_METHOD0(serviceOnNextFrame, void());
-
-    /**
-     * AnimationTimelines should do one of the following things after servicing animations:
-     *  - cancel the timer and not request to be woken again (expectNoMoreActions)
-     *  - cancel the timer and request to be woken on the next frame (expectNextFrameAction)
-     *  - cancel the timer and request to be woken at some point in the future (expectDelayedAction)
-     */
-
-    void expectNoMoreActions()
-    {
-        EXPECT_CALL(*this, cancelWake());
-    }
 
     DEFINE_INLINE_TRACE()
     {
@@ -74,11 +62,13 @@ class AnimationAnimationTimelineTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        document = Document::create();
+        pageHolder = DummyPageHolder::create();
+        document = &pageHolder->document();
         document->animationClock().resetTimeForTesting();
         element = Element::create(QualifiedName::null() , document.get());
         platformTiming = new MockPlatformTiming;
         timeline = AnimationTimeline::create(document.get(), platformTiming);
+        timeline->resetForTesting();
         ASSERT_EQ(0, timeline->currentTimeInternal());
     }
 
@@ -100,6 +90,7 @@ protected:
         timeline->scheduleNextService();
     }
 
+    OwnPtr<DummyPageHolder> pageHolder;
     RefPtrWillBePersistent<Document> document;
     RefPtrWillBePersistent<Element> element;
     Persistent<AnimationTimeline> timeline;
@@ -117,11 +108,6 @@ protected:
     }
 };
 
-TEST_F(AnimationAnimationTimelineTest, HasStarted)
-{
-    timeline = AnimationTimeline::create(document.get());
-}
-
 TEST_F(AnimationAnimationTimelineTest, EmptyKeyframeAnimation)
 {
     AnimatableValueKeyframeEffectModel* effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
@@ -129,12 +115,10 @@ TEST_F(AnimationAnimationTimelineTest, EmptyKeyframeAnimation)
 
     timeline->play(keyframeEffect);
 
-    platformTiming->expectNoMoreActions();
     updateClockAndService(0);
     EXPECT_FLOAT_EQ(0, timeline->currentTimeInternal());
     EXPECT_FALSE(keyframeEffect->isInEffect());
 
-    platformTiming->expectNoMoreActions();
     updateClockAndService(100);
     EXPECT_FLOAT_EQ(100, timeline->currentTimeInternal());
 }
@@ -147,19 +131,16 @@ TEST_F(AnimationAnimationTimelineTest, EmptyForwardsKeyframeAnimation)
 
     timeline->play(keyframeEffect);
 
-    platformTiming->expectNoMoreActions();
     updateClockAndService(0);
     EXPECT_FLOAT_EQ(0, timeline->currentTimeInternal());
     EXPECT_TRUE(keyframeEffect->isInEffect());
 
-    platformTiming->expectNoMoreActions();
     updateClockAndService(100);
     EXPECT_FLOAT_EQ(100, timeline->currentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTimelineTest, ZeroTime)
 {
-    timeline = AnimationTimeline::create(document.get());
     bool isNull;
 
     document->animationClock().updateTime(100);
@@ -175,7 +156,6 @@ TEST_F(AnimationAnimationTimelineTest, ZeroTime)
 
 TEST_F(AnimationAnimationTimelineTest, PlaybackRateNormal)
 {
-    timeline = AnimationTimeline::create(document.get());
     double zeroTime = timeline->zeroTime();
     bool isNull;
 
@@ -196,7 +176,6 @@ TEST_F(AnimationAnimationTimelineTest, PlaybackRateNormal)
 
 TEST_F(AnimationAnimationTimelineTest, PlaybackRatePause)
 {
-    timeline = AnimationTimeline::create(document.get());
     bool isNull;
 
     document->animationClock().updateTime(100);
@@ -224,7 +203,6 @@ TEST_F(AnimationAnimationTimelineTest, PlaybackRatePause)
 
 TEST_F(AnimationAnimationTimelineTest, PlaybackRateSlow)
 {
-    timeline = AnimationTimeline::create(document.get());
     bool isNull;
 
     document->animationClock().updateTime(100);
@@ -252,7 +230,6 @@ TEST_F(AnimationAnimationTimelineTest, PlaybackRateSlow)
 
 TEST_F(AnimationAnimationTimelineTest, PlaybackRateFast)
 {
-    timeline = AnimationTimeline::create(document.get());
     bool isNull;
 
     document->animationClock().updateTime(100);
@@ -280,7 +257,6 @@ TEST_F(AnimationAnimationTimelineTest, PlaybackRateFast)
 
 TEST_F(AnimationAnimationTimelineTest, SetCurrentTime)
 {
-    timeline = AnimationTimeline::create(document.get());
     double zeroTime = timeline->zeroTime();
 
     document->animationClock().updateTime(100);

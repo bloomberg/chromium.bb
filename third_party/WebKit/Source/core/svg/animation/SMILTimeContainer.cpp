@@ -413,7 +413,7 @@ Document& SMILTimeContainer::document() const
 
 double SMILTimeContainer::currentTime() const
 {
-    return document().animationClock().currentTime();
+    return document().timeline().currentTimeInternal();
 }
 
 void SMILTimeContainer::serviceOnNextFrame()

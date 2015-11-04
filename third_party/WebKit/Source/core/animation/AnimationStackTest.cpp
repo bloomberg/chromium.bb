@@ -11,6 +11,7 @@
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/animatable/AnimatableDouble.h"
+#include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -19,7 +20,8 @@ class AnimationAnimationStackTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        document = Document::create();
+        pageHolder = DummyPageHolder::create();
+        document = &pageHolder->document();
         document->animationClock().resetTimeForTesting();
         timeline = AnimationTimeline::create(document.get());
         element = document->createElement("foo", ASSERT_NO_EXCEPTION);
@@ -35,7 +37,7 @@ protected:
 
     void updateTimeline(double time)
     {
-        document->animationClock().updateTime(time);
+        document->animationClock().updateTime(document->timeline().zeroTime() + time);
         timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     }
 
@@ -77,6 +79,7 @@ protected:
         return toLegacyStyleInterpolation(interpolation).currentValue().get();
     }
 
+    OwnPtr<DummyPageHolder> pageHolder;
     RefPtrWillBePersistent<Document> document;
     Persistent<AnimationTimeline> timeline;
     RefPtrWillBePersistent<Element> element;

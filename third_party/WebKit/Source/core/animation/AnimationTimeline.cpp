@@ -89,6 +89,11 @@ AnimationTimeline::~AnimationTimeline()
 {
 }
 
+bool AnimationTimeline::isActive()
+{
+    return m_document && m_document->page();
+}
+
 void AnimationTimeline::animationAttached(Animation& animation)
 {
     ASSERT(animation.timeline() == this);
@@ -145,7 +150,7 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
     }
 
     ASSERT(m_outdatedAnimationCount == 0);
-    ASSERT(m_lastCurrentTimeInternal == currentTimeInternal());
+    ASSERT(m_lastCurrentTimeInternal == currentTimeInternal() || (std::isnan(currentTimeInternal()) && std::isnan(m_lastCurrentTimeInternal)));
 
 #if ENABLE(ASSERT)
     for (const auto& animation : m_animationsNeedingUpdate)
@@ -176,11 +181,6 @@ void AnimationTimeline::AnimationTimelineTiming::wakeAfter(double duration)
     m_timer.startOneShot(duration, BLINK_FROM_HERE);
 }
 
-void AnimationTimeline::AnimationTimelineTiming::cancelWake()
-{
-    m_timer.stop();
-}
-
 void AnimationTimeline::AnimationTimelineTiming::serviceOnNextFrame()
 {
     if (m_timeline->m_document && m_timeline->m_document->view())
@@ -202,6 +202,14 @@ double AnimationTimeline::zeroTime()
     return m_zeroTime;
 }
 
+void AnimationTimeline::resetForTesting()
+{
+    m_zeroTime = 0;
+    m_zeroTimeInitialized = true;
+    m_playbackRate = 1;
+    m_lastCurrentTimeInternal = 0;
+}
+
 double AnimationTimeline::currentTime(bool& isNull)
 {
     return currentTimeInternal(isNull) * 1000;
@@ -209,7 +217,7 @@ double AnimationTimeline::currentTime(bool& isNull)
 
 double AnimationTimeline::currentTimeInternal(bool& isNull)
 {
-    if (!m_document) {
+    if (!isActive()) {
         isNull = true;
         return std::numeric_limits<double>::quiet_NaN();
     }
@@ -238,7 +246,7 @@ void AnimationTimeline::setCurrentTime(double currentTime)
 
 void AnimationTimeline::setCurrentTimeInternal(double currentTime)
 {
-    if (!document())
+    if (!isActive())
         return;
     m_zeroTime = m_playbackRate == 0
         ? currentTime
@@ -273,6 +281,9 @@ bool AnimationTimeline::needsAnimationTimingUpdate()
     if (currentTimeInternal() == m_lastCurrentTimeInternal)
         return false;
 
+    if (std::isnan(currentTimeInternal()) && std::isnan(m_lastCurrentTimeInternal))
+        return false;
+
     // We allow m_lastCurrentTimeInternal to advance here when there
     // are no animations to allow animations spawned during style
     // recalc to not invalidate this flag.
@@ -293,13 +304,13 @@ void AnimationTimeline::setOutdatedAnimation(Animation* animation)
     ASSERT(animation->outdated());
     m_outdatedAnimationCount++;
     m_animationsNeedingUpdate.add(animation);
-    if (m_document && m_document->page() && !m_document->page()->animator().isServicingAnimations())
+    if (isActive() && !m_document->page()->animator().isServicingAnimations())
         m_timing->serviceOnNextFrame();
 }
 
 void AnimationTimeline::setPlaybackRate(double playbackRate)
 {
-    if (!document())
+    if (!isActive())
         return;
     double currentTime = currentTimeInternal();
     m_playbackRate = playbackRate;
