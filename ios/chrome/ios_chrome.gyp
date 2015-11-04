@@ -182,6 +182,8 @@
         'browser/browser_state_metrics/browser_state_metrics.cc',
         'browser/browser_state_metrics/browser_state_metrics.h',
         'browser/browsing_data_change_listening.h',
+        'browser/chrome_constants.cc',
+        'browser/chrome_constants.h',
         'browser/chrome_paths.h',
         'browser/chrome_paths.mm',
         'browser/chrome_paths_internal.h',
