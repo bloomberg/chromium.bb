@@ -243,7 +243,7 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
     CloseHandle(exception_event);
   }
   if (error) {
-    TerminateProcess(process_handle, -1);
+    TerminateProcess(process_handle, (UINT) -1);
   }
 }
 

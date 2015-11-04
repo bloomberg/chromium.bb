@@ -143,7 +143,7 @@ struct NaClThreadContext *NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
 
   if (NACL_UNLIKELY(sysnum >= NACL_MAX_SYSCALLS)) {
     NaClLog(2, "INVALID system call %"NACL_PRIuS"\n", sysnum);
-    sysret = -NACL_ABI_EINVAL;
+    sysret = (uint32_t) -NACL_ABI_EINVAL;
     NaClCopyDropLock(nap);
   } else {
     sysret = (*(nap->syscall_table[sysnum].handler))(natp);

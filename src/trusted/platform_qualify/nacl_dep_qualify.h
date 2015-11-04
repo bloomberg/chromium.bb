@@ -21,6 +21,7 @@
 
 #include <stddef.h>
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability.h"
 
 EXTERN_C_BEGIN
 
@@ -33,7 +34,7 @@ EXTERN_C_BEGIN
  */
 int NaClCheckDEP(void);
 
-int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size);
+int NaClAttemptToExecuteDataAtAddr(uint8_t *thunk_buffer, size_t size);
 
 /*
  * Attempts to generate and execute some functions in data memory, to verify
@@ -62,7 +63,7 @@ typedef void (*nacl_void_thunk)(void);
  * NOTE: the implementation of this function is architecture-specific, and can
  * be found beneath arch/ in this directory.
  */
-nacl_void_thunk NaClGenerateThunk(char *buf, size_t buf_size);
+nacl_void_thunk NaClGenerateThunk(uint8_t *buf, size_t buf_size);
 
 EXTERN_C_END
 

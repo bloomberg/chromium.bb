@@ -18,7 +18,7 @@
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 
 
-int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
+int NaClAttemptToExecuteDataAtAddr(uint8_t *thunk_buffer, size_t size) {
   int got_fault = 0;
   nacl_void_thunk thunk = NaClGenerateThunk(thunk_buffer, size);
   __try {
@@ -35,7 +35,7 @@ int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
  */
 int NaClAttemptToExecuteData(void) {
   int result;
-  char *thunk_buffer = malloc(64);
+  uint8_t *thunk_buffer = malloc(64);
   if (NULL == thunk_buffer) {
     return 0;
   }

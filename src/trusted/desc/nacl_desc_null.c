@@ -90,8 +90,8 @@ static int NaClDescNullFstat(struct NaClDesc *vself,
   statbuf->nacl_abi_st_ino = NACL_FAKE_INODE_NUM;
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IRUSR | NACL_ABI_S_IFCHR;
   statbuf->nacl_abi_st_nlink = 1;
-  statbuf->nacl_abi_st_uid = -1;
-  statbuf->nacl_abi_st_gid = -1;
+  statbuf->nacl_abi_st_uid = (nacl_abi_uid_t) -1;
+  statbuf->nacl_abi_st_gid = (nacl_abi_gid_t) -1;
   statbuf->nacl_abi_st_rdev = 0;
   statbuf->nacl_abi_st_size = 0;
   statbuf->nacl_abi_st_blksize = 0;

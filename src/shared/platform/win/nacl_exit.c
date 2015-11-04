@@ -12,6 +12,17 @@
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 
+/*
+ * The MSVC compiler wrongly gives an "unreachable code" warning for
+ * the contents of NaClAbort.  Best guess is that it inlines NaClAbort
+ * into NaClExit, sees that the call is after the call to ExitProcess
+ * and ExitProcess is marked as never returning, and decides the body
+ * of NaClAbort is unreachable.  As this is not the only call to
+ * NaClAbort, the compiler is just wrong and the only thing to do is
+ * just to suppress the warning.
+ */
+#pragma warning(disable:4702)
+
 void NaClAbort(void) {
   /*
    * We crash the process with a HLT instruction so that the Breakpad

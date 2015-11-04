@@ -38,7 +38,7 @@
 /* bool */
 int NaClFindAddressSpaceRandomized(uintptr_t *addr, size_t memory_size,
                                    int max_tries) {
-  void *map_addr;
+  void *map_addr = NULL;
   int tries_remaining;
   /*
    * Mask for keeping the low order NUM_USER_ADDRESS_BITS of a randomly

@@ -781,7 +781,7 @@ int32_t NaClSysTestInfoLeak(struct NaClAppThread *natp) {
     } fxsave;
   };
 
-  static const char tenbytes[10] = "SecretBits";
+  static const char tenbytes[10] = "SecretBit";
   static const char manybytes[256] =
       "Highly sensitive information must not be leaked to untrusted code!\n"
       "xyzzy\nplugh\nYou are likely to be eaten by a grue.\n"

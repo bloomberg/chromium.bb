@@ -121,13 +121,13 @@ static DWORD Reprotect(void *ptr, uint32_t len, DWORD newflags) {
   DWORD oldflags;
 
   if (!CheckReadRights(ptr, len)) {
-    return -1;
+    return (DWORD) -1;
   }
 
   if (!VirtualProtect(ptr, len, newflags, &oldflags)) {
     NaClLog(LOG_ERROR, "Reprotect: VirtualProtect failed with %d\n",
             GetLastError());
-    return -1;
+    return (DWORD) -1;
   }
 
   FlushInstructionCache(GetCurrentProcess(), ptr, len);
@@ -171,5 +171,4 @@ bool IPlatform::SetMemory(struct NaClApp *nap, uint64_t virt, uint32_t len,
   return true;
 }
 
-}  // End of port namespace
-
+}  // namespace port

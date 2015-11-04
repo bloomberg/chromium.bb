@@ -154,7 +154,8 @@ uint8_t *NaClGetKiUserExceptionDispatcher(void) {
             "NaClGetKiUserExceptionDispatcher: "
             "Failed to open ntdll.dll\n");
   }
-  handler = (uint8_t *) GetProcAddress(ntdll, "KiUserExceptionDispatcher");
+  handler = (uint8_t *) (uintptr_t)
+            GetProcAddress(ntdll, "KiUserExceptionDispatcher");
   if (handler == NULL) {
     NaClLog(LOG_FATAL,
             "NaClGetKiUserExceptionDispatcher: "

@@ -283,7 +283,7 @@ bool ValidateX86(
       0, &kFullCPUIDFeatures,
       ProcessError, &user_data));
 
-  return static_cast<bool>(result);
+  return result != FALSE;
 }
 
 

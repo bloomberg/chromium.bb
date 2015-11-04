@@ -21,7 +21,7 @@ NaCl::LockImpl::~LockImpl() {
 }
 
 bool NaCl::LockImpl::Try() {
-  return TryEnterCriticalSection(&mu_);
+  return TryEnterCriticalSection(&mu_) != 0;
 }
 
 void NaCl::LockImpl::Lock() {

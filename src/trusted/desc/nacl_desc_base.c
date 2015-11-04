@@ -263,7 +263,7 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
           "Map method is not implemented for object of type %s\n",
           NaClDescTypeString(((struct NaClDescVtbl const *)
                               vself->base.vtbl)->typeTag));
-  return -NACL_ABI_EINVAL;
+  return (uintptr_t) -NACL_ABI_EINVAL;
 }
 
 #if NACL_WINDOWS

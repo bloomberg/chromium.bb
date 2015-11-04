@@ -223,14 +223,15 @@ static const char NSC_CPUID0[kVendorIDLength]     = "Geode by NSC";
 #endif
 
 static int asm_HasCPUID(void) {
-  volatile int before, after, result;
 #if NACL_BUILD_SUBARCH == 64
   /* Note: If we are running in x86-64, then cpuid must be defined,
    * since CPUID dates from DX2 486, and x86-64 was added after this.
    */
   return 1;
+#else
+  volatile int before, after, result;
 /* TODO(bradchen): split into separate Windows, etc., files */
-#elif defined(__GNUC__)
+# if defined(__GNUC__)
   __asm__ volatile("pushfl                \n\t" /* save EFLAGS to eax */
                    "pop %%eax             \n\t"
                    "movl %%eax, %0        \n\t" /* remember EFLAGS in %0 */
@@ -248,7 +249,7 @@ static int asm_HasCPUID(void) {
                     * that we're clobbering %eax as a scratch register.
                     */
                    : "=r" (before), "=r" (after) : : "eax");
-#elif NACL_WINDOWS
+# elif NACL_WINDOWS
   __asm {
     pushfd
     pop eax
@@ -259,11 +260,12 @@ static int asm_HasCPUID(void) {
     pushfd
     pop after
   }
-#else
-# error Unsupported platform
-#endif
+# else
+#  error Unsupported platform
+# endif
   result = (before ^ after) & 0x0200000;
   return result;
+#endif
 }
 
 static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {

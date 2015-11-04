@@ -36,7 +36,7 @@ size_t gvprintf(struct Gio *gp,
   int       rv;
   va_list   ap_copy;
 
-  if (!buf) return -1;
+  if (!buf) return (size_t) -1;
 
   va_copy(ap_copy, ap);
 

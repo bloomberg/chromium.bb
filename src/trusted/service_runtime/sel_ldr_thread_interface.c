@@ -62,12 +62,12 @@ int NaClAddrSpSquattingThreadIfFactoryFunction(
     goto cleanup;
   }
 
-  if (!(rv =
-        NaClAddrSpSquattingThreadIfCtor_protected(new_thread,
-                                                  factory_data,
-                                                  thread_fn_ptr,
-                                                  thread_fn_data,
-                                                  thread_stack_size))) {
+  rv = NaClAddrSpSquattingThreadIfCtor_protected(new_thread,
+                                                 factory_data,
+                                                 thread_fn_ptr,
+                                                 thread_fn_data,
+                                                 thread_stack_size);
+  if (!rv) {
     goto cleanup;
   }
 

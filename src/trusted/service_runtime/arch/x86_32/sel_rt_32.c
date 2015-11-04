@@ -71,7 +71,7 @@ int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
   ntcp->new_prog_ctr = 0;
-  ntcp->sysret = -NACL_ABI_EINVAL;
+  ntcp->sysret = (nacl_reg_t) -NACL_ABI_EINVAL;
 
   ntcp->cs = nap->code_seg_sel;
   ntcp->ds = nap->data_seg_sel;

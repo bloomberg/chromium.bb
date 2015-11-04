@@ -194,13 +194,13 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
     NaClLog(LOG_INFO,
             ("NaClDescIoDescMap: prot has other bits"
              " than NACL_ABI_PROT_{READ|WRITE|EXEC}\n"));
-    return -NACL_ABI_EINVAL;
+    return (uintptr_t) -NACL_ABI_EINVAL;
   }
 
   if (0 == (NACL_ABI_MAP_FIXED & flags)) {
     if (!NaClFindAddressSpace(&addr, len)) {
       NaClLog(1, "NaClDescIoDescMap: no address space?\n");
-      return -NACL_ABI_ENOMEM;
+      return (uintptr_t) -NACL_ABI_ENOMEM;
     }
     NaClLog(4,
             "NaClDescIoDescMap: NaClFindAddressSpace"

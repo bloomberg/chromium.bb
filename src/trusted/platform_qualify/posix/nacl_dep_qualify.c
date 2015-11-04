@@ -120,7 +120,7 @@ static void EnableMachExceptionHandler(
 
 #endif
 
-int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
+int NaClAttemptToExecuteDataAtAddr(uint8_t *thunk_buffer, size_t size) {
   int result;
   MachExceptionHandlerData saved_handlers;
   nacl_void_thunk thunk = NaClGenerateThunk(thunk_buffer, size);
@@ -146,7 +146,7 @@ int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
  */
 int NaClAttemptToExecuteData(void) {
   int result;
-  char *thunk_buffer = malloc(64);
+  uint8_t *thunk_buffer = malloc(64);
   if (NULL == thunk_buffer) {
     return 0;
   }

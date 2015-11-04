@@ -80,7 +80,7 @@ static void NaClTakeFilePosLock(HANDLE hFile) {
   DWORD err;
 
   memset(&overlap, 0, sizeof overlap);
-  overlap.Offset = (DWORD) OFFSET_FOR_FILEPOS_LOCK;
+  overlap.Offset = (DWORD) (OFFSET_FOR_FILEPOS_LOCK & 0xffffffffU);
   overlap.OffsetHigh = (DWORD) (OFFSET_FOR_FILEPOS_LOCK >> 32);
   /*
    * LockFileEx should never fail -- untrusted code cannot cause hFile
@@ -148,7 +148,7 @@ static void NaClDropFilePosLock(HANDLE hFile) {
   DWORD err;
 
   memset(&overlap, 0, sizeof overlap);
-  overlap.Offset = (DWORD) OFFSET_FOR_FILEPOS_LOCK;
+  overlap.Offset = (DWORD) (OFFSET_FOR_FILEPOS_LOCK & 0xffffffffU);
   overlap.OffsetHigh = (DWORD) (OFFSET_FOR_FILEPOS_LOCK >> 32);
   if (!UnlockFileEx(hFile,
                     /* dwReserved= */ 0,
@@ -993,6 +993,12 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
    * allowed values.
    */
   switch (flags & (NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC)) {
+    default:
+      /*
+       * There is no other value possible, but the Windows compiler
+       * is too stupid to realize that and thinks that the variable
+       * might be used uninitialized.
+       */
     case 0:
       dwCreationDisposition = OPEN_EXISTING;
       break;

@@ -155,7 +155,7 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
             ("NaClDescImcShmMap: Mapping not NACL_ABI_MAP_SHARED,"
              " flags 0x%x\n"),
             flags);
-    return -NACL_ABI_EINVAL;
+    return (uintptr_t) -NACL_ABI_EINVAL;
   }
   if (0 != (NACL_ABI_MAP_FIXED & flags) && NULL == start_addr) {
     NaClLog(LOG_INFO,
@@ -172,7 +172,7 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
     NaClLog(LOG_INFO,
             "NaClDescImcShmMap: prot has other bits than"
             " PROT_{READ|WRITE|EXEC}\n");
-    return -NACL_ABI_EINVAL;
+    return (uintptr_t) -NACL_ABI_EINVAL;
   }
   /*
    * Map from NACL_ABI_ prot and flags bits to IMC library flags,
@@ -194,7 +194,7 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
     /* start_addr is a hint, and we just ignore the hint... */
     if (!NaClFindAddressSpace(&addr, len)) {
       NaClLog(1, "NaClDescImcShmMap: no address space?!?\n");
-      return -NACL_ABI_ENOMEM;
+      return (uintptr_t) -NACL_ABI_ENOMEM;
     }
     start_addr = (void *) addr;
   }
@@ -207,7 +207,7 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   if (tmp_off64 > INT32_MAX) {
     NaClLog(LOG_INFO,
             "NaClDescImcShmMap: total offset exceeds 32-bits\n");
-    return -NACL_ABI_EOVERFLOW;
+    return (uintptr_t) -NACL_ABI_EOVERFLOW;
   }
 
   result = NaClMap(effp,
@@ -218,7 +218,7 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
                    self->h,
                    (off_t) offset);
   if (NACL_MAP_FAILED == result) {
-    return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
+    return (uintptr_t) -NACL_ABI_E_MOVE_ADDRESS_SPACE;
   }
   if (0 != (NACL_ABI_MAP_FIXED & flags) && result != (void *) start_addr) {
     NaClLog(LOG_FATAL,
@@ -275,8 +275,8 @@ static int NaClDescImcShmFstat(struct NaClDesc         *vself,
                             NACL_ABI_S_IRUSR |
                             NACL_ABI_S_IWUSR);
   stbp->nacl_abi_st_nlink = 1;
-  stbp->nacl_abi_st_uid = -1;
-  stbp->nacl_abi_st_gid = -1;
+  stbp->nacl_abi_st_uid = (nacl_abi_uid_t) -1;
+  stbp->nacl_abi_st_gid = (nacl_abi_gid_t) -1;
   stbp->nacl_abi_st_rdev = 0;
   stbp->nacl_abi_st_size = (nacl_abi_off_t) self->size;
   stbp->nacl_abi_st_blksize = 0;

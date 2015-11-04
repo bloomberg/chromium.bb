@@ -64,7 +64,7 @@ int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
 
   ntcp->prog_ctr = NaClUserToSys(nap, prog_ctr);
   ntcp->new_prog_ctr = 0;
-  ntcp->sysret = -NACL_ABI_EINVAL;
+  ntcp->sysret = (nacl_reg_t) -NACL_ABI_EINVAL;
 
   ntcp->tls_idx = NaClTlsAllocate(natp);
   if (ntcp->tls_idx == NACL_TLS_INDEX_INVALID)

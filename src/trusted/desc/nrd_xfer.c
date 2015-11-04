@@ -343,7 +343,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
         goto cleanup;
       }
     }
-    *xfer_state.next_byte++ = (char) NACL_DESC_TYPE_END_TAG;
+    *xfer_state.next_byte++ = (uint8_t) NACL_DESC_TYPE_END_TAG;
     /*
      * zero fill the rest of memory to avoid leaking info from
      * otherwise uninitialized malloc'd memory.

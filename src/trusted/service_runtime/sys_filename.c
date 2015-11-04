@@ -34,11 +34,11 @@ static uint32_t CopyPathFromUser(struct NaClApp *nap,
   if (!NaClCopyInFromUserZStr(nap, dest, num_bytes, src)) {
     if (dest[0] == '\0') {
       NaClLog(LOG_ERROR, "NaClSys: invalid address for pathname\n");
-      return -NACL_ABI_EFAULT;
+      return (uint32_t) -NACL_ABI_EFAULT;
     }
 
     NaClLog(LOG_ERROR, "NaClSys: pathname string too long\n");
-    return -NACL_ABI_ENAMETOOLONG;
+    return (uint32_t) -NACL_ABI_ENAMETOOLONG;
   }
 
   return 0;
@@ -49,7 +49,7 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
                     int                   flags,
                     int                   mode) {
   struct NaClApp       *nap = natp->nap;
-  uint32_t             retval = -NACL_ABI_EINVAL;
+  uint32_t             retval = (uint32_t) -NACL_ABI_EINVAL;
   char                 path[NACL_CONFIG_PATH_MAX];
   nacl_host_stat_t     stbuf;
   int                  allowed_flags;
@@ -100,13 +100,13 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
      * until the race is fixed this is best we can do.
      */
     if (flags & NACL_ABI_O_EXCL) {
-      retval = -NACL_ABI_EEXIST;
+      retval = (uint32_t) -NACL_ABI_EEXIST;
       goto cleanup;
     }
 
     hd = malloc(sizeof *hd);
     if (NULL == hd) {
-      retval = -NACL_ABI_ENOMEM;
+      retval = (uint32_t) -NACL_ABI_ENOMEM;
       goto cleanup;
     }
     retval = NaClHostDirOpen(hd, path);
@@ -122,13 +122,13 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
     struct NaClHostDesc  *hd;
 
     if (flags & NACL_ABI_O_DIRECTORY) {
-      retval = -NACL_ABI_ENOTDIR;
+      retval = (uint32_t) -NACL_ABI_ENOTDIR;
       goto cleanup;
     }
 
     hd = malloc(sizeof *hd);
     if (NULL == hd) {
-      retval = -NACL_ABI_ENOMEM;
+      retval = (uint32_t) -NACL_ABI_ENOMEM;
       goto cleanup;
     }
     retval = NaClHostDescOpen(hd, path, flags, mode);

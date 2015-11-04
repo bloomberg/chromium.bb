@@ -142,7 +142,7 @@ static BOOL SkipFile(HANDLE handle, size_t length) {
   while (0 < length) {
     char scratch[1024];
     size_t count = std::min(sizeof scratch, length);
-    if (ReadAll(handle, scratch, count) != count) {
+    if (ReadAll(handle, scratch, count) != (int) count) {
       return FALSE;
     }
     length -= count;
@@ -250,7 +250,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
     return -1;
   }
   if (0 < message->handle_count && message->handles) {
-    HANDLE target;
+    HANDLE target = NULL;
     /*
      * TODO(shiki): On Windows Vista, we can use GetNamedPipeClientProcessId()
      * and GetNamedPipeServerProcessId() and probably we can remove
@@ -274,11 +274,11 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
         success = g_broker_duplicate_handle_func(message->handles[i],
                                                  header.pid,
                                                  &temp_remote_handle,
-                                                 0, DUPLICATE_SAME_ACCESS);
+                                                 0, DUPLICATE_SAME_ACCESS) != 0;
       } else {
         success = DuplicateHandle(GetCurrentProcess(), message->handles[i],
                                   target, &temp_remote_handle,
-                                  0, FALSE, DUPLICATE_SAME_ACCESS);
+                                  0, FALSE, DUPLICATE_SAME_ACCESS) != 0;
       }
       if (!success) {
         /*
@@ -315,7 +315,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
   }
   for (i = 0; i < message->iov_length; ++i) {
     if (WriteAll(handle, message->iov[i].base, message->iov[i].length) !=
-        message->iov[i].length) {
+        (int) message->iov[i].length) {
       return -1;
     }
   }
@@ -323,7 +323,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
       WriteAll(handle,
                remote_handles,
                sizeof(uint64_t) * message->handle_count) !=
-          sizeof(uint64_t) * message->handle_count) {
+      (int) (sizeof(uint64_t) * message->handle_count)) {
     return -1;
   }
   return (int) header.message_length;
@@ -486,7 +486,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
            ++i) {
         NaClIOVec* iov = &message->iov[i];
         uint32_t len = std::min((uint32_t) iov->length, total_message_bytes);
-        if (ReadAll(handle, iov->base, len) != len) {
+        if (ReadAll(handle, iov->base, len) != (int) len) {
           break;
         }
         total_message_bytes -= len;
@@ -504,7 +504,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
                                          header.handle_count);
         if (ReadAll(handle, received_handles,
                     message->handle_count * sizeof(uint64_t)) !=
-            message->handle_count * sizeof(uint64_t)) {
+            (int) (message->handle_count * sizeof(uint64_t))) {
           break;
         }
         for (i = 0; i < message->handle_count; ++i) {

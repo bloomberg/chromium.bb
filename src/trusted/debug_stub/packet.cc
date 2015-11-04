@@ -205,7 +205,7 @@ bool Packet::GetNumberSep(uint64_t *val, char *sep) {
     }
 
     if (ch == '1') {
-      *val = -1;
+      *val = (uint64_t) -1;
 
       ch = 0;
       GetRawChar(&ch);
@@ -462,4 +462,3 @@ void Packet::SetSequence(int32_t val) {
 }
 
 }  // namespace gdb_rsp
-

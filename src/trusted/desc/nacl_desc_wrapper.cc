@@ -370,6 +370,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
 
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
+  header.iov = NULL;
   // Allocate and copy IOV.
   if (NACL_ABI_SIZE_T_MAX / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
