@@ -69,6 +69,7 @@ namespace blink {
 BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool isInICO)
     : m_parent(parent)
     , m_buffer(0)
+    , m_fastReader(nullptr)
     , m_decodedOffset(decodedAndHeaderOffset)
     , m_headerOffset(decodedAndHeaderOffset)
     , m_imgDataOffset(imgDataOffset)
@@ -88,6 +89,10 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffs
 
 bool BMPImageReader::decodeBMP(bool onlySize)
 {
+    // Defensively clear the FastSharedBufferReader's cache, as another caller
+    // may have called SharedBuffer::mergeSegmentsIntoBuffer().
+    m_fastReader.clearCache();
+
     // Calculate size of info header.
     if (!m_infoHeader.biSize && !readInfoHeaderSize())
         return false;
@@ -541,13 +546,14 @@ bool BMPImageReader::processColorTable()
     if ((m_decodedOffset > m_data->size()) || ((m_data->size() - m_decodedOffset) < tableSizeInBytes))
         return false;
     m_colorTable.resize(m_infoHeader.biClrUsed);
+
+    // On non-OS/2 1.x, an extra padding byte is present, which we need to skip.
+    const size_t bytesPerColor = m_isOS21x ? 3 : 4;
     for (size_t i = 0; i < m_infoHeader.biClrUsed; ++i) {
-        m_colorTable[i].rgbBlue = m_data->data()[m_decodedOffset++];
-        m_colorTable[i].rgbGreen = m_data->data()[m_decodedOffset++];
-        m_colorTable[i].rgbRed = m_data->data()[m_decodedOffset++];
-        // Skip padding byte (not present on OS/2 1.x).
-        if (!m_isOS21x)
-            ++m_decodedOffset;
+        m_colorTable[i].rgbBlue = readUint8(0);
+        m_colorTable[i].rgbGreen = readUint8(1);
+        m_colorTable[i].rgbRed = readUint8(2);
+        m_decodedOffset += bytesPerColor;
     }
 
     // We've now decoded all the non-image data we care about.  Skip anything
@@ -594,8 +600,8 @@ BMPImageReader::ProcessingResult BMPImageReader::processRLEData()
 
         // For every entry except EOF, we'd better not have reached the end of
         // the image.
-        const uint8_t count = m_data->data()[m_decodedOffset];
-        const uint8_t code = m_data->data()[m_decodedOffset + 1];
+        const uint8_t count = readUint8(0);
+        const uint8_t code = readUint8(1);
         if ((count || (code != 1)) && pastEndOfImage(0))
             return Failure;
 
@@ -629,8 +635,8 @@ BMPImageReader::ProcessingResult BMPImageReader::processRLEData()
 
                 // Fail if this takes us past the end of the desired row or
                 // past the end of the image.
-                const uint8_t dx = m_data->data()[m_decodedOffset + 2];
-                const uint8_t dy = m_data->data()[m_decodedOffset + 3];
+                const uint8_t dx = readUint8(2);
+                const uint8_t dy = readUint8(3);
                 if (dx || dy)
                     m_buffer->setHasAlpha(true);
                 if (((m_coord.x() + dx) > m_parent->size().width()) || pastEndOfImage(dy))
@@ -670,7 +676,7 @@ BMPImageReader::ProcessingResult BMPImageReader::processRLEData()
                     return InsufficientData;
 
                 // One BGR triple that we copy |count| times.
-                fillRGBA(endX, m_data->data()[m_decodedOffset + 3], m_data->data()[m_decodedOffset + 2], code, 0xff);
+                fillRGBA(endX, readUint8(3), readUint8(2), code, 0xff);
                 m_decodedOffset += 4;
             } else {
                 // RLE8 has one color index that gets repeated; RLE4 has two
@@ -733,7 +739,7 @@ BMPImageReader::ProcessingResult BMPImageReader::processNonRLEData(bool inRLE, i
             // the most significant bits in the byte).
             const uint8_t mask = (1 << m_infoHeader.biBitCount) - 1;
             for (size_t byte = 0; byte < unpaddedNumBytes; ++byte) {
-                uint8_t pixelData = m_data->data()[m_decodedOffset + byte];
+                uint8_t pixelData = readUint8(byte);
                 for (size_t pixel = 0; (pixel < pixelsPerByte) && (m_coord.x() < endX); ++pixel) {
                     const size_t colorIndex = (pixelData >> (8 - m_infoHeader.biBitCount)) & mask;
                     if (m_decodingAndMask) {

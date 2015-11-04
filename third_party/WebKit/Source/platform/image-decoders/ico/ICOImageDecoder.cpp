@@ -46,6 +46,7 @@ static const size_t sizeOfDirEntry = 16;
 
 ICOImageDecoder::ICOImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
+    , m_fastReader(nullptr)
     , m_decodedOffset(0)
 {
 }
@@ -56,6 +57,8 @@ ICOImageDecoder::~ICOImageDecoder()
 
 void ICOImageDecoder::onSetData(SharedBuffer* data)
 {
+    m_fastReader.setData(data);
+
     for (BMPReaders::iterator i(m_bmpReaders.begin()); i != m_bmpReaders.end(); ++i) {
         if (*i)
             (*i)->setData(data);
@@ -126,18 +129,17 @@ void ICOImageDecoder::setDataForPNGDecoderAtIndex(size_t index)
     if (!m_pngDecoders[index])
         return;
 
-    const IconDirectoryEntry& dirEntry = m_dirEntries[index];
-    // Copy out PNG data to a separate vector and send to the PNG decoder.
-    // FIXME: Save this copy by making the PNG decoder able to take an
-    // optional offset.
-    RefPtr<SharedBuffer> pngData(SharedBuffer::create(&m_data->data()[dirEntry.m_imageOffset], m_data->size() - dirEntry.m_imageOffset));
-    m_pngDecoders[index]->setData(pngData.get(), isAllDataReceived());
+    m_pngDecoders[index]->setData(m_data.get(), isAllDataReceived());
 }
 
 void ICOImageDecoder::decode(size_t index, bool onlySize)
 {
     if (failed())
         return;
+
+    // Defensively clear the FastSharedBufferReader's cache, as another caller
+    // may have called SharedBuffer::mergeSegmentsIntoBuffer().
+    m_fastReader.clearCache();
 
     // If we couldn't decode the image but we've received all the data, decoding
     // has failed.
@@ -186,9 +188,9 @@ bool ICOImageDecoder::decodeAtIndex(size_t index)
     }
 
     if (!m_pngDecoders[index]) {
-        m_pngDecoders[index] = adoptPtr(
-            new PNGImageDecoder(m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied,
-                m_ignoreGammaAndColorProfile ? GammaAndColorProfileIgnored : GammaAndColorProfileApplied, m_maxDecodedBytes));
+        AlphaOption alphaOption = m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied;
+        GammaAndColorProfileOption colorOptions = m_ignoreGammaAndColorProfile ? GammaAndColorProfileIgnored : GammaAndColorProfileApplied;
+        m_pngDecoders[index] = adoptPtr(new PNGImageDecoder(alphaOption, colorOptions, m_maxDecodedBytes, dirEntry.m_imageOffset));
         setDataForPNGDecoderAtIndex(index);
     }
     // Fail if the size the PNGImageDecoder calculated does not match the size
@@ -253,14 +255,14 @@ bool ICOImageDecoder::processDirectoryEntries()
 ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::readDirectoryEntry()
 {
     // Read icon data.
-    // The casts to uint8_t in the next few lines are because that's the on-disk
-    // type of the width and height values.  Storing them in ints (instead of
-    // matching uint8_ts) is so we can record dimensions of size 256 (which is
-    // what a zero byte really means).
-    int width = static_cast<uint8_t>(m_data->data()[m_decodedOffset]);
+    // The following calls to readUint8() return a uint8_t, which is appropriate
+    // because that's the on-disk type of the width and height values.  Storing
+    // them in ints (instead of matching uint8_ts) is so we can record dimensions
+    // of size 256 (which is what a zero byte really means).
+    int width = readUint8(0);
     if (!width)
         width = 256;
-    int height = static_cast<uint8_t>(m_data->data()[m_decodedOffset + 1]);
+    int height = readUint8(1);
     if (!height)
         height = 256;
     IconDirectoryEntry entry;
@@ -279,7 +281,7 @@ ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::readDirectoryEntry()
     // this isn't quite what the bitmap info header says later, as we only use
     // this value to determine which icon entry is best.
     if (!entry.m_bitCount) {
-        int colorCount = static_cast<uint8_t>(m_data->data()[m_decodedOffset + 2]);
+        int colorCount = readUint8(2);
         if (!colorCount)
             colorCount = 256;  // Vague in the spec, needed by real-world icons.
         for (--colorCount; colorCount; colorCount >>= 1)
@@ -298,7 +300,9 @@ ICOImageDecoder::ImageType ICOImageDecoder::imageTypeAtIndex(size_t index)
     const uint32_t imageOffset = m_dirEntries[index].m_imageOffset;
     if ((imageOffset > m_data->size()) || ((m_data->size() - imageOffset) < 4))
         return Unknown;
-    return strncmp(&m_data->data()[imageOffset], "\x89PNG", 4) ? BMP : PNG;
+    char buffer[4];
+    const char* data = m_fastReader.getConsecutiveData(imageOffset, 4, buffer);
+    return strncmp(data, "\x89PNG", 4) ? BMP : PNG;
 }
 
 }

@@ -31,6 +31,7 @@
 #ifndef ICOImageDecoder_h
 #define ICOImageDecoder_h
 
+#include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/bmp/BMPImageReader.h"
 
 namespace blink {
@@ -83,14 +84,24 @@ private:
     size_t decodeFrameCount() override;
     void decode(size_t index) override { decode(index, false); }
 
+    // TODO (scroggo): These functions are identical to functions in BMPImageReader. Share code?
+    inline uint8_t readUint8(size_t offset) const
+    {
+        return m_fastReader.getOneByte(m_decodedOffset + offset);
+    }
+
     inline uint16_t readUint16(int offset) const
     {
-        return BMPImageReader::readUint16(m_data.get(), m_decodedOffset + offset);
+        char buffer[2];
+        const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 2, buffer);
+        return BMPImageReader::readUint16(data);
     }
 
     inline uint32_t readUint32(int offset) const
     {
-        return BMPImageReader::readUint32(m_data.get(), m_decodedOffset + offset);
+        char buffer[4];
+        const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 4, buffer);
+        return BMPImageReader::readUint32(data);
     }
 
     // If the desired PNGImageDecoder exists, gives it the appropriate data.
@@ -129,6 +140,8 @@ private:
     // Determines whether the desired entry is a BMP or PNG.  Returns true
     // if the type could be determined.
     ImageType imageTypeAtIndex(size_t);
+
+    FastSharedBufferReader m_fastReader;
 
     // An index into |m_data| representing how much we've already decoded.
     // Note that this only tracks data _this_ class decodes; once the

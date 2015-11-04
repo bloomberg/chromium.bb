@@ -46,6 +46,8 @@ class PLATFORM_EXPORT FastSharedBufferReader {
 public:
     FastSharedBufferReader(PassRefPtr<SharedBuffer> data);
 
+    void setData(PassRefPtr<SharedBuffer>);
+
     // Returns a consecutive buffer that carries the data starting
     // at |dataPosition| with |length| bytes.
     // This method returns a pointer to a memory segment stored in
@@ -68,6 +70,11 @@ public:
     {
         return m_data->size();
     }
+
+    // This class caches the last access for faster subsequent reads. This
+    // method clears that cache in case the SharedBuffer has been modified
+    // (i.e. with mergeSegmentsIntoBuffer).
+    void clearCache();
 
 private:
     void getSomeDataInternal(unsigned dataPosition) const;
