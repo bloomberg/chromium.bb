@@ -123,12 +123,7 @@ private:
     unsigned m_unitType : 4;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGLength> toSVGLength(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGLength::classType());
-    return static_pointer_cast<SVGLength>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLength);
 
 } // namespace blink
 

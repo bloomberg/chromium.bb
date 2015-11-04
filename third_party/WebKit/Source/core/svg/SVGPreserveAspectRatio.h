@@ -97,12 +97,7 @@ private:
     SVGMeetOrSliceType m_meetOrSlice;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> toSVGPreserveAspectRatio(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGPreserveAspectRatio::classType());
-    return static_pointer_cast<SVGPreserveAspectRatio>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPreserveAspectRatio);
 
 } // namespace blink
 

@@ -26,16 +26,6 @@ public:
     }
 };
 
-#define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)\
-    DEFINE_TYPE_CASTS(thisType, SVGPropertyBase, value, value->type() == thisType::classType(), value.type() == thisType::classType());\
-    inline PassRefPtrWillBeRawPtr<thisType> to##thisType(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)\
-    {\
-        RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;\
-        ASSERT(base->type() == thisType::classType());\
-        return static_pointer_cast<thisType>(base.release());\
-    }
-
-
 } // namespace blink
 
 #endif // SVGPropertyHelper_h

@@ -24,8 +24,8 @@ PassRefPtrWillBeRawPtr<SVGLengthList> LengthSVGInterpolation::createList(const S
 PassRefPtr<LengthSVGInterpolation> LengthSVGInterpolation::create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
 {
     NonInterpolableType modeData;
-    OwnPtr<InterpolableValue> startValue = toInterpolableValue(toSVGLength(start).get(), attribute.get(), &modeData);
-    OwnPtr<InterpolableValue> endValue = toInterpolableValue(toSVGLength(end).get(), attribute.get(), nullptr);
+    OwnPtr<InterpolableValue> startValue = toInterpolableValue(toSVGLength(start), attribute.get(), &modeData);
+    OwnPtr<InterpolableValue> endValue = toInterpolableValue(toSVGLength(end), attribute.get(), nullptr);
     return adoptRef(new LengthSVGInterpolation(startValue.release(), endValue.release(), attribute, modeData));
 }
 

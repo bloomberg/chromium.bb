@@ -69,12 +69,7 @@ private:
     bool m_value;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGBoolean> toSVGBoolean(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGBoolean::classType());
-    return static_pointer_cast<SVGBoolean>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGBoolean);
 
 } // namespace blink
 

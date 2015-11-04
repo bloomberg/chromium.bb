@@ -35,12 +35,7 @@
 
 namespace blink {
 
-inline PassRefPtrWillBeRawPtr<SVGTransformList> toSVGTransformList(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGTransformList::classType());
-    return static_pointer_cast<SVGTransformList>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGTransformList);
 
 SVGTransformList::SVGTransformList()
 {

@@ -32,7 +32,7 @@
 #define SVGAnimatedColor_h
 
 #include "core/css/StyleColor.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
 
@@ -62,12 +62,7 @@ private:
     StyleColor m_styleColor;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGColorProperty> toSVGColorProperty(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGColorProperty::classType());
-    return static_pointer_cast<SVGColorProperty>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGColorProperty);
 
 } // namespace blink
 

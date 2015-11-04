@@ -67,12 +67,7 @@ protected:
     int m_value;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGInteger> toSVGInteger(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGInteger::classType());
-    return static_pointer_cast<SVGInteger>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGInteger);
 
 } // namespace blink
 

@@ -86,12 +86,7 @@ private:
     FloatRect m_value;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGRect> toSVGRect(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGRect::classType());
-    return static_pointer_cast<SVGRect>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGRect);
 
 } // namespace blink
 

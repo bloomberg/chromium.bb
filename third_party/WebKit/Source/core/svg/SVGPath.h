@@ -78,12 +78,7 @@ private:
     mutable OwnPtr<Path> m_cachedPath;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGPath> toSVGPath(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGPath::classType());
-    return static_pointer_cast<SVGPath>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPath);
 
 } // namespace blink
 

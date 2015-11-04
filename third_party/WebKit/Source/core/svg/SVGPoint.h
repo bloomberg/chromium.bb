@@ -84,12 +84,7 @@ private:
     FloatPoint m_value;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGPoint> toSVGPoint(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGPoint::classType());
-    return static_pointer_cast<SVGPoint>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPoint);
 
 } // namespace blink
 

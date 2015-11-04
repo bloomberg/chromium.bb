@@ -86,12 +86,7 @@ private:
     String m_value;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGString> toSVGString(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGString::classType());
-    return static_pointer_cast<SVGString>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGString);
 
 } // namespace blink
 

@@ -31,7 +31,7 @@
 #ifndef SVGNumberOptionalNumber_h
 #define SVGNumberOptionalNumber_h
 
-#include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGNumber.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -71,12 +71,7 @@ protected:
     RefPtrWillBeMember<SVGNumber> m_secondNumber;
 };
 
-inline PassRefPtrWillBeRawPtr<SVGNumberOptionalNumber> toSVGNumberOptionalNumber(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGNumberOptionalNumber::classType());
-    return static_pointer_cast<SVGNumberOptionalNumber>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumberOptionalNumber);
 
 } // namespace blink
 

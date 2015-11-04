@@ -28,12 +28,7 @@
 
 namespace blink {
 
-inline PassRefPtrWillBeRawPtr<SVGLengthList> toSVGLengthList(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGLengthList::classType());
-    return static_pointer_cast<SVGLengthList>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLengthList);
 
 SVGLengthList::SVGLengthList(SVGLengthMode mode)
     : m_mode(mode)

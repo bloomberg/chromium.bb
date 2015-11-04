@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGEnumeration.h"
 
 #include "bindings/core/v8/ExceptionState.h"
@@ -39,12 +38,7 @@
 
 namespace blink {
 
-inline PassRefPtrWillBeRawPtr<SVGEnumerationBase> toSVGEnumerationBase(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
-{
-    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGEnumerationBase::classType());
-    return static_pointer_cast<SVGEnumerationBase>(base.release());
-}
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGEnumerationBase);
 
 SVGEnumerationBase::~SVGEnumerationBase()
 {
