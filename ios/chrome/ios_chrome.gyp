@@ -295,6 +295,8 @@
         'browser/install_time_util.mm',
         'browser/installation_notifier.h',
         'browser/installation_notifier.mm',
+        'browser/ios_chrome_field_trials.cc',
+        'browser/ios_chrome_field_trials.h',
         'browser/memory/memory_debugger.h',
         'browser/memory/memory_debugger.mm',
         'browser/memory/memory_debugger_manager.h',
