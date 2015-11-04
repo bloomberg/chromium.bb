@@ -130,6 +130,7 @@ TableView::TableView(ui::TableModel* model,
       header_(NULL),
       table_type_(table_type),
       single_selection_(single_selection),
+      select_on_remove_(true),
       table_view_observer_(NULL),
       row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
       last_parent_width_(0),
@@ -482,7 +483,7 @@ void TableView::OnItemsRemoved(int start, int length) {
   // If the selection was empty and is no longer empty select the same visual
   // index.
   if (selection_model_.empty() && previously_selected_view_index != -1 &&
-      RowCount()) {
+      RowCount() && select_on_remove_) {
     selection_model_.SetSelectedIndex(
         ViewToModel(std::min(RowCount() - 1, previously_selected_view_index)));
   }

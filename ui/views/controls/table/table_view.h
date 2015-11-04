@@ -167,6 +167,10 @@ class VIEWS_EXPORT TableView
 
   int row_height() const { return row_height_; }
 
+  void set_select_on_remove(bool select_on_remove) {
+    select_on_remove_ = select_on_remove;
+  }
+
   // View overrides:
   void Layout() override;
   const char* GetClassName() const override;
@@ -314,6 +318,13 @@ class VIEWS_EXPORT TableView
   const TableTypes table_type_;
 
   const bool single_selection_;
+
+  // If |select_on_remove_| is true: when a selected item is removed, if the
+  // removed item is not the last item, select its next one; otherwise select
+  // its previous one if there is an item.
+  // If |select_on_remove_| is false: when a selected item is removed, no item
+  // is selected then.
+  bool select_on_remove_ = true;
 
   // TODO(sky): rename to observer_.
   TableViewObserver* table_view_observer_;

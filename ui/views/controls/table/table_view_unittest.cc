@@ -571,6 +571,56 @@ TEST_F(TableViewTest, Selection) {
   table_->SetObserver(NULL);
 }
 
+// 0 1 2 3:
+// select 3 -> 0 1 2 [3]
+// remove 3 -> 0 1 2 (none selected)
+// select 1 -> 0 [1] 2
+// remove 1 -> 0 1 (none selected)
+// select 0 -> [0] 1
+// remove 0 -> 0 (none selected)
+TEST_F(TableViewTest, SelectionNoSelectOnRemove) {
+  TableViewObserverImpl observer;
+  table_->SetObserver(&observer);
+  table_->set_select_on_remove(false);
+
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  // Select row 3.
+  table_->Select(3);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
+
+  // Remove the selected row, this should notify of a change and since the
+  // select_on_remove_ is set false, and the removed item is the previously
+  // selected item, so no item is selected.
+  model_->RemoveRow(3);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  // Select row 1.
+  table_->Select(1);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
+
+  // Remove the selected row.
+  model_->RemoveRow(1);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  // Select row 0.
+  table_->Select(0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
+
+  // Remove the selected row.
+  model_->RemoveRow(0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  table_->SetObserver(nullptr);
+}
+
 // Verifies selection works by way of a gesture.
 TEST_F(TableViewTest, SelectOnTap) {
   // Initially no selection.
