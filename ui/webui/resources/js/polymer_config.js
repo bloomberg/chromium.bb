@@ -2,4 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer = {dom: 'shadow'};
+if (typeof Polymer == 'undefined')
+  Polymer = {dom: 'shadow'};
+else
+  console.error('Polymer is already defined.');

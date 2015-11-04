@@ -46,15 +46,48 @@ PolymerTest.prototype = {
   setUp: function() {
     testing.Test.prototype.setUp.call(this);
 
+    // List of imported URLs for debugging purposes.
+    PolymerTest.importUrls_ = [];
+
+    // Importing a URL like "chrome://md-settings/foo" redirects to the base
+    // ("chrome://md-settings") page, which due to how browsePreload works can
+    // result in duplicate imports. Wrap document.registerElement so failures
+    // caused by re-registering Polymer elements are caught; otherwise Chrome
+    // simply throws "Script error" which is unhelpful.
+    var originalRegisterElement = document.registerElement;
+    document.registerElement = function() {
+      try {
+        return originalRegisterElement.apply(document, arguments);
+      } catch (e) {
+        var msg =
+            'If the call to document.registerElement failed because a type ' +
+            'is already registered, perhaps you have loaded a script twice. ' +
+            'Incorrect resource URLs can redirect to base WebUI pages; make ' +
+            'sure the following URLs are correct and unique:\n';
+        for (var i = 0; i < PolymerTest.importUrls_.length; i++)
+          msg += '  ' + PolymerTest.importUrls_[i] + '\n';
+        console.error(msg);
+
+        // Mocha will handle the error.
+        throw e;
+      }
+    };
+
     // Import Polymer and iron-test-helpers before running tests.
     suiteSetup(function() {
-      return Promise.all([
-        PolymerTest.importHtml(
-            'chrome://resources/polymer/v1_0/polymer/polymer.html'),
-        PolymerTest.importHtml(
-            'chrome://resources/polymer/v1_0/iron-test-helpers/' +
-            'iron-test-helpers.html'),
-      ]);
+      var promises = [];
+      if (typeof Polymer != 'function') {
+        promises.push(
+            PolymerTest.importHtml(
+                'chrome://resources/polymer/v1_0/polymer/polymer.html'));
+      }
+      if (typeof TestHelpers != 'object') {
+        promises.push(
+            PolymerTest.importHtml(
+                'chrome://resources/polymer/v1_0/iron-test-helpers/' +
+                'iron-test-helpers.html'));
+      }
+      return Promise.all(promises);
     });
   },
 };
@@ -65,6 +98,7 @@ PolymerTest.prototype = {
  * @return {Promise} A promise that is resolved/rejected on success/failure.
  */
 PolymerTest.importHtml = function(src) {
+  PolymerTest.importUrls_.push(src);
   var link = document.createElement('link');
   link.rel = 'import';
   var promise = new Promise(function(resolve, reject) {
