@@ -6,7 +6,6 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/XLinkNames.h"
-#include "core/animation/AngleSVGInterpolation.h"
 #include "core/animation/CSSColorInterpolationType.h"
 #include "core/animation/CSSImageInterpolationType.h"
 #include "core/animation/CSSImageListInterpolationType.h"
@@ -319,7 +318,6 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(PropertyHandl
             || attribute == SVGNames::yChannelSelectorAttr
             || attribute == XLinkNames::hrefAttr) {
             // Use default SVGValueInterpolationType.
-            applicableTypes->append(new SVGValueInterpolationType(attribute));
         } else if (attribute == SVGNames::orientAttr) {
             applicableTypes->append(new SVGAngleInterpolationType(attribute));
         } else {

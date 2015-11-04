@@ -801,7 +801,6 @@
         'webcore_non_rendering_files': [
             'Init.cpp',
             'Init.h',
-            'animation/AngleSVGInterpolation.h',
             'animation/KeyframeEffect.cpp',
             'animation/KeyframeEffect.h',
             'animation/AnimationClock.cpp',
