@@ -8,6 +8,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.Action;
 import android.text.format.DateFormat;
@@ -73,6 +74,14 @@ public class CustomNotificationBuilder implements NotificationBuilder {
                 button.setOnClickPendingIntent(R.id.button, action.getActionIntent());
                 bigView.addView(R.id.buttons, button);
             }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            compactView.setViewVisibility(R.id.small_icon_overlay, View.VISIBLE);
+            bigView.setViewVisibility(R.id.small_icon_overlay, View.VISIBLE);
+        } else {
+            compactView.setViewVisibility(R.id.small_icon_footer, View.VISIBLE);
+            bigView.setViewVisibility(R.id.small_icon_footer, View.VISIBLE);
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);

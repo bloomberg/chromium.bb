@@ -60,11 +60,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/icon_frame"
-        android:layout_alignParentEnd="true"
+        android:layout_toStartOf="@+id/small_icon_footer"
         android:layout_below="@id/body"
         android:layout_marginEnd="8dp"
         android:singleLine="true"
         android:ellipsize="start"
         style="@style/WebNotificationOrigin"/>
+
+    <ViewStub
+        android:id="@id/small_icon_footer"
+        android:inflatedId="@id/small_icon_footer"
+        android:layout="@layout/web_notification_small_icon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/body"/>
 
 </RelativeLayout>

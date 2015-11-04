@@ -331,6 +331,9 @@
     <style name="WebNotificationLargeIcon">
         <item name="android:background">@drawable/notification_template_icon_bg</item>
     </style>
+    <style name="WebNotificationSmallIcon">
+        <item name="android:alpha">0.6</item>
+    </style>
 
     <!-- First Run and Bookmark/recent-tabs dialogs -->
     <style name="DialogWhenLarge" parent="Theme.AppCompat.Light.DialogWhenLarge" >
