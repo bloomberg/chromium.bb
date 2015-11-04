@@ -656,9 +656,16 @@ void Directory::UnapplyEntry(EntryKernel* entry) {
   // Note: do not modify the root node in order to preserve the
   // initial sync ended bit for this type (else on the next restart
   // this type will be treated as disabled and therefore fully purged).
-  if (IsRealDataType(server_type) &&
-      ModelTypeToRootTag(server_type) == entry->ref(UNIQUE_SERVER_TAG)) {
-    return;
+  if (entry->ref(PARENT_ID).IsRoot()) {
+    ModelType root_type = server_type;
+    // Support both server created and client created type root folders.
+    if (!IsRealDataType(root_type)) {
+      root_type = GetModelTypeFromSpecifics(entry->ref(SPECIFICS));
+    }
+    if (IsRealDataType(root_type) &&
+        ModelTypeToRootTag(root_type) == entry->ref(UNIQUE_SERVER_TAG)) {
+      return;
+    }
   }
 
   // Set the unapplied bit if this item has server data.
@@ -1006,8 +1013,10 @@ void Directory::MarkInitialSyncEndedForType(BaseWriteTransaction* trans,
 
   // Some tests don't bother creating type root. Need to check if the root
   // exists before clearing its base version.
-  if (root.good() && root.GetBaseVersion() == CHANGES_VERSION) {
-    root.PutBaseVersion(0);
+  if (root.good()) {
+    DCHECK(!root.GetIsDel());
+    if (root.GetBaseVersion() == CHANGES_VERSION)
+      root.PutBaseVersion(0);
   }
 }
 
