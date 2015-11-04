@@ -68,6 +68,10 @@ void CrushedSpriteLayer::DrawSpriteFrame(
       for (int i = previous_frame_ + 1; i < sprite_frame; ++i) {
         DrawRectanglesForFrame(resource, i, canvas);
       }
+    } else {
+      // The newly allocated pixels for the SkBitmap need to be cleared if this
+      // is the first or last frame. See crbug.com/549453.
+      canvas->clear(SK_ColorTRANSPARENT);
     }
 
     // Draw the current frame.
