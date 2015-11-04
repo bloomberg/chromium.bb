@@ -84,9 +84,8 @@ void ExpectAudioSuccess(OperationalStatus status) {
   EXPECT_EQ(STATUS_INITIALIZED, status);
 }
 
-void IgnoreRawEvents(const std::vector<PacketEvent>& packet_events,
-                     const std::vector<FrameEvent>& frame_events) {
-}
+void IgnoreRawEvents(scoped_ptr<std::vector<FrameEvent>> frame_events,
+                     scoped_ptr<std::vector<PacketEvent>> packet_events) {}
 
 }  // namespace
 

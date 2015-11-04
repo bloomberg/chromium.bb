@@ -59,6 +59,15 @@ class AudioDecoder::ImplBase
     scoped_ptr<AudioBus> decoded_audio = Decode(
         encoded_frame->mutable_bytes(),
         static_cast<int>(encoded_frame->data.size()));
+
+    scoped_ptr<FrameEvent> event(new FrameEvent());
+    event->timestamp = cast_environment_->Clock()->NowTicks();
+    event->type = FRAME_DECODED;
+    event->media_type = AUDIO_EVENT;
+    event->rtp_timestamp = encoded_frame->rtp_timestamp;
+    event->frame_id = encoded_frame->frame_id;
+    cast_environment_->logger()->DispatchFrameEvent(event.Pass());
+
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(callback,

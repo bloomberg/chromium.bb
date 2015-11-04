@@ -95,15 +95,14 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     : clock_(clock),
       status_callback_(status_callback),
       transport_task_runner_(transport_task_runner),
-      transport_(
-          external_transport ?
-              NULL :
-              new UdpTransport(net_log,
-                               transport_task_runner,
-                               local_end_point,
-                               remote_end_point,
-                               GetTransportSendBufferSize(*options),
-                               status_callback)),
+      transport_(external_transport
+                     ? nullptr
+                     : new UdpTransport(net_log,
+                                        transport_task_runner,
+                                        local_end_point,
+                                        remote_end_point,
+                                        GetTransportSendBufferSize(*options),
+                                        status_callback)),
       pacer_(LookupOptionWithDefault(*options,
                                      kOptionPacerTargetBurstSize,
                                      kTargetBurstSize),
@@ -111,7 +110,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
                                      kOptionPacerMaxBurstSize,
                                      kMaxBurstSize),
              clock,
-             &logging_,
+             raw_events_callback.is_null() ? nullptr : &recent_packet_events_,
              external_transport ? external_transport : transport_.get(),
              transport_task_runner),
       raw_events_callback_(raw_events_callback),
@@ -122,8 +121,6 @@ CastTransportSenderImpl::CastTransportSenderImpl(
   DCHECK(clock_);
   if (!raw_events_callback_.is_null()) {
     DCHECK(raw_events_callback_interval > base::TimeDelta());
-    event_subscriber_.reset(new SimpleEventSubscriber);
-    logging_.AddRawEventSubscriber(event_subscriber_.get());
     transport_task_runner->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CastTransportSenderImpl::SendRawEvents,
@@ -161,8 +158,6 @@ CastTransportSenderImpl::~CastTransportSenderImpl() {
   if (transport_) {
     transport_->StopReceiving();
   }
-  if (event_subscriber_.get())
-    logging_.RemoveRawEventSubscriber(event_subscriber_.get());
 }
 
 void CastTransportSenderImpl::InitializeAudio(
@@ -341,13 +336,17 @@ PacketReceiverCallback CastTransportSenderImpl::PacketReceiverForTesting() {
 }
 
 void CastTransportSenderImpl::SendRawEvents() {
-  DCHECK(event_subscriber_.get());
   DCHECK(!raw_events_callback_.is_null());
-  std::vector<PacketEvent> packet_events;
-  std::vector<FrameEvent> frame_events;
-  event_subscriber_->GetPacketEventsAndReset(&packet_events);
-  event_subscriber_->GetFrameEventsAndReset(&frame_events);
-  raw_events_callback_.Run(packet_events, frame_events);
+
+  if (!recent_frame_events_.empty() || !recent_packet_events_.empty()) {
+    scoped_ptr<std::vector<FrameEvent>> frame_events(
+        new std::vector<FrameEvent>());
+    frame_events->swap(recent_frame_events_);
+    scoped_ptr<std::vector<PacketEvent>> packet_events(
+        new std::vector<PacketEvent>());
+    packet_events->swap(recent_packet_events_);
+    raw_events_callback_.Run(frame_events.Pass(), packet_events.Pass());
+  }
 
   transport_task_runner_->PostDelayedTask(
       FROM_HERE,
@@ -390,35 +389,40 @@ bool CastTransportSenderImpl::OnReceivedPacket(scoped_ptr<Packet> packet) {
 void CastTransportSenderImpl::OnReceivedLogMessage(
     EventMediaType media_type,
     const RtcpReceiverLogMessage& log) {
-  // Add received log messages into our log system.
-  RtcpReceiverLogMessage::const_iterator it = log.begin();
-  for (; it != log.end(); ++it) {
-    uint32 rtp_timestamp = it->rtp_timestamp_;
+  if (raw_events_callback_.is_null())
+    return;
 
-    RtcpReceiverEventLogMessages::const_iterator event_it =
-        it->event_log_messages_.begin();
-    for (; event_it != it->event_log_messages_.end(); ++event_it) {
-      switch (event_it->type) {
-        case PACKET_RECEIVED:
-          logging_.InsertPacketEvent(
-              event_it->event_timestamp, event_it->type,
-              media_type, rtp_timestamp,
-              kFrameIdUnknown, event_it->packet_id, 0, 0);
+  // Add received log messages into our log system.
+  for (const RtcpReceiverFrameLogMessage& frame_log_message : log) {
+    for (const RtcpReceiverEventLogMessage& event_log_message :
+         frame_log_message.event_log_messages_) {
+      switch (event_log_message.type) {
+        case PACKET_RECEIVED: {
+          recent_packet_events_.push_back(PacketEvent());
+          PacketEvent& receive_event = recent_packet_events_.back();
+          receive_event.timestamp = event_log_message.event_timestamp;
+          receive_event.type = event_log_message.type;
+          receive_event.media_type = media_type;
+          receive_event.rtp_timestamp = frame_log_message.rtp_timestamp_;
+          receive_event.packet_id = event_log_message.packet_id;
           break;
+        }
         case FRAME_ACK_SENT:
         case FRAME_DECODED:
-          logging_.InsertFrameEvent(
-              event_it->event_timestamp, event_it->type, media_type,
-              rtp_timestamp, kFrameIdUnknown);
+        case FRAME_PLAYOUT: {
+          recent_frame_events_.push_back(FrameEvent());
+          FrameEvent& frame_event = recent_frame_events_.back();
+          frame_event.timestamp = event_log_message.event_timestamp;
+          frame_event.type = event_log_message.type;
+          frame_event.media_type = media_type;
+          frame_event.rtp_timestamp = frame_log_message.rtp_timestamp_;
+          if (event_log_message.type == FRAME_PLAYOUT)
+            frame_event.delay_delta = event_log_message.delay_delta;
           break;
-        case FRAME_PLAYOUT:
-          logging_.InsertFrameEventWithDelay(
-              event_it->event_timestamp, event_it->type, media_type,
-              rtp_timestamp, kFrameIdUnknown, event_it->delay_delta);
-          break;
+        }
         default:
           VLOG(2) << "Received log message via RTCP that we did not expect: "
-                  << static_cast<int>(event_it->type);
+                  << event_log_message.type;
           break;
       }
     }

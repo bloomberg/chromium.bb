@@ -215,15 +215,19 @@ void FrameSender::SendEncodedFrame(
   VLOG_IF(1, !is_audio_ && encoded_frame->dependency == EncodedFrame::KEY)
       << SENDER_SSRC << "Sending encoded key frame, id=" << frame_id;
 
-  cast_environment_->Logging()->InsertEncodedFrameEvent(
-      last_send_time_, FRAME_ENCODED,
-      is_audio_ ? AUDIO_EVENT : VIDEO_EVENT,
-      encoded_frame->rtp_timestamp,
-      frame_id, static_cast<int>(encoded_frame->data.size()),
-      encoded_frame->dependency == EncodedFrame::KEY,
-      requested_bitrate_before_encode,
-      encoded_frame->deadline_utilization,
-      encoded_frame->lossy_utilization);
+  scoped_ptr<FrameEvent> encode_event(new FrameEvent());
+  encode_event->timestamp = encoded_frame->encode_completion_time;
+  encode_event->type = FRAME_ENCODED;
+  encode_event->media_type = is_audio_ ? AUDIO_EVENT : VIDEO_EVENT;
+  encode_event->rtp_timestamp = encoded_frame->rtp_timestamp;
+  encode_event->frame_id = frame_id;
+  encode_event->size = encoded_frame->data.size();
+  encode_event->key_frame = encoded_frame->dependency == EncodedFrame::KEY;
+  encode_event->target_bitrate = requested_bitrate_before_encode;
+  encode_event->encoder_cpu_utilization = encoded_frame->deadline_utilization;
+  encode_event->idealized_bitrate_utilization =
+      encoded_frame->lossy_utilization;
+  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
 
   RecordLatestFrameTimestamps(frame_id,
                               encoded_frame->reference_time,
@@ -321,12 +325,14 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   congestion_control_->AckFrame(cast_feedback.ack_frame_id, now);
 
-  cast_environment_->Logging()->InsertFrameEvent(
-      now,
-      FRAME_ACK_RECEIVED,
-      is_audio_ ? AUDIO_EVENT : VIDEO_EVENT,
-      GetRecordedRtpTimestamp(cast_feedback.ack_frame_id),
-      cast_feedback.ack_frame_id);
+  scoped_ptr<FrameEvent> ack_event(new FrameEvent());
+  ack_event->timestamp = now;
+  ack_event->type = FRAME_ACK_RECEIVED;
+  ack_event->media_type = is_audio_ ? AUDIO_EVENT : VIDEO_EVENT;
+  ack_event->rtp_timestamp =
+      GetRecordedRtpTimestamp(cast_feedback.ack_frame_id);
+  ack_event->frame_id = cast_feedback.ack_frame_id;
+  cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
 
   const bool is_acked_out_of_order =
       static_cast<int32>(cast_feedback.ack_frame_id -

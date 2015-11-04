@@ -756,6 +756,8 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
   // TODO(miu): Compute and populate the |deadline_utilization| and
   // |lossy_utilization| performance metrics in |encoded_frame|.
 
+  encoded_frame->encode_completion_time =
+      encoder->cast_environment_->Clock()->NowTicks();
   encoder->cast_environment_->PostTask(
       CastEnvironment::MAIN, FROM_HERE,
       base::Bind(request->frame_encoded_callback,

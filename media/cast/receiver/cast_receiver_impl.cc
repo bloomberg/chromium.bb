@@ -178,14 +178,20 @@ void CastReceiverImpl::EmitDecodedAudioFrame(
     scoped_ptr<AudioBus> audio_bus,
     bool is_continuous) {
   DCHECK(cast_environment->CurrentlyOn(CastEnvironment::MAIN));
+
   if (audio_bus.get()) {
-    const base::TimeTicks now = cast_environment->Clock()->NowTicks();
-    cast_environment->Logging()->InsertFrameEvent(
-        now, FRAME_DECODED, AUDIO_EVENT, rtp_timestamp, frame_id);
-    cast_environment->Logging()->InsertFrameEventWithDelay(
-        now, FRAME_PLAYOUT, AUDIO_EVENT, rtp_timestamp, frame_id,
-        playout_time - now);
+    // TODO(miu): This is reporting incorrect timestamp and delay.
+    // http://crbug.com/547251
+    scoped_ptr<FrameEvent> playout_event(new FrameEvent());
+    playout_event->timestamp = cast_environment->Clock()->NowTicks();
+    playout_event->type = FRAME_PLAYOUT;
+    playout_event->media_type = AUDIO_EVENT;
+    playout_event->rtp_timestamp = rtp_timestamp;
+    playout_event->frame_id = frame_id;
+    playout_event->delay_delta = playout_time - playout_event->timestamp;
+    cast_environment->logger()->DispatchFrameEvent(playout_event.Pass());
   }
+
   callback.Run(audio_bus.Pass(), playout_time, is_continuous);
 }
 
@@ -199,13 +205,18 @@ void CastReceiverImpl::EmitDecodedVideoFrame(
     const scoped_refptr<VideoFrame>& video_frame,
     bool is_continuous) {
   DCHECK(cast_environment->CurrentlyOn(CastEnvironment::MAIN));
+
   if (video_frame.get()) {
-    const base::TimeTicks now = cast_environment->Clock()->NowTicks();
-    cast_environment->Logging()->InsertFrameEvent(
-        now, FRAME_DECODED, VIDEO_EVENT, rtp_timestamp, frame_id);
-    cast_environment->Logging()->InsertFrameEventWithDelay(
-        now, FRAME_PLAYOUT, VIDEO_EVENT, rtp_timestamp, frame_id,
-        playout_time - now);
+    // TODO(miu): This is reporting incorrect timestamp and delay.
+    // http://crbug.com/547251
+    scoped_ptr<FrameEvent> playout_event(new FrameEvent());
+    playout_event->timestamp = cast_environment->Clock()->NowTicks();
+    playout_event->type = FRAME_PLAYOUT;
+    playout_event->media_type = VIDEO_EVENT;
+    playout_event->rtp_timestamp = rtp_timestamp;
+    playout_event->frame_id = frame_id;
+    playout_event->delay_delta = playout_time - playout_event->timestamp;
+    cast_environment->logger()->DispatchFrameEvent(playout_event.Pass());
 
     // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
     TRACE_EVENT_INSTANT1(
@@ -213,6 +224,7 @@ void CastReceiverImpl::EmitDecodedVideoFrame(
         TRACE_EVENT_SCOPE_THREAD,
         "rtp_timestamp", rtp_timestamp);
   }
+
   callback.Run(video_frame, playout_time, is_continuous);
 }
 

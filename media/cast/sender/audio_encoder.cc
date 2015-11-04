@@ -156,6 +156,9 @@ class AudioEncoder::ImplBase
         TRACE_EVENT_ASYNC_END1("cast.stream", "Audio Encode", audio_frame.get(),
                                "Deadline utilization",
                                audio_frame->deadline_utilization);
+
+        audio_frame->encode_completion_time =
+            cast_environment_->Clock()->NowTicks();
         cast_environment_->PostTask(
             CastEnvironment::MAIN,
             FROM_HERE,

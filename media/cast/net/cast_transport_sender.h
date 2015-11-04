@@ -20,6 +20,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
@@ -48,8 +49,8 @@ struct RtcpTimeData;
 typedef base::Callback<void(CastTransportStatus status)>
     CastTransportStatusCallback;
 
-typedef base::Callback<void(const std::vector<PacketEvent>&,
-                            const std::vector<FrameEvent>&)>
+typedef base::Callback<void(scoped_ptr<std::vector<FrameEvent>>,
+                            scoped_ptr<std::vector<PacketEvent>>)>
     BulkRawEventsCallback;
 
 // The application should only trigger this class from the transport thread.

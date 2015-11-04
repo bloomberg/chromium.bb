@@ -55,13 +55,13 @@ FrameReceiver::FrameReceiver(
   DCHECK_GT(config.rtp_max_delay_ms, 0);
   DCHECK_GT(config.target_frame_rate, 0);
   decryptor_.Initialize(config.aes_key, config.aes_iv_mask);
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
+  cast_environment_->logger()->Subscribe(&event_subscriber_);
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
 FrameReceiver::~FrameReceiver() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
+  cast_environment_->logger()->Unsubscribe(&event_subscriber_);
 }
 
 void FrameReceiver::RequestEncodedFrame(
@@ -110,10 +110,17 @@ void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
 
   frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
       rtp_header.rtp_timestamp;
-  cast_environment_->Logging()->InsertPacketEvent(
-      now, PACKET_RECEIVED, event_media_type_, rtp_header.rtp_timestamp,
-      rtp_header.frame_id, rtp_header.packet_id, rtp_header.max_packet_id,
-      payload_size);
+
+  scoped_ptr<PacketEvent> receive_event(new PacketEvent());
+  receive_event->timestamp = now;
+  receive_event->type = PACKET_RECEIVED;
+  receive_event->media_type = event_media_type_;
+  receive_event->rtp_timestamp = rtp_header.rtp_timestamp;
+  receive_event->frame_id = rtp_header.frame_id;
+  receive_event->packet_id = rtp_header.packet_id;
+  receive_event->max_packet_id = rtp_header.max_packet_id;
+  receive_event->size = payload_size;
+  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
 
   bool duplicate = false;
   const bool complete =
@@ -165,9 +172,14 @@ void FrameReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   RtpTimestamp rtp_timestamp =
       frame_id_to_rtp_timestamp_[cast_message.ack_frame_id & 0xff];
-  cast_environment_->Logging()->InsertFrameEvent(
-      now, FRAME_ACK_SENT, event_media_type_,
-      rtp_timestamp, cast_message.ack_frame_id);
+
+  scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
+  ack_sent_event->timestamp = now;
+  ack_sent_event->type = FRAME_ACK_SENT;
+  ack_sent_event->media_type = event_media_type_;
+  ack_sent_event->rtp_timestamp = rtp_timestamp;
+  ack_sent_event->frame_id = cast_message.ack_frame_id;
+  cast_environment_->logger()->DispatchFrameEvent(ack_sent_event.Pass());
 
   ReceiverRtcpEventSubscriber::RtcpEvents rtcp_events;
   event_subscriber_.GetRtcpEventsWithRedundancy(&rtcp_events);

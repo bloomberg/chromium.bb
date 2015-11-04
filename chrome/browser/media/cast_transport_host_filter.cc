@@ -63,12 +63,11 @@ void CastTransportHostFilter::NotifyStatusChange(
 
 void CastTransportHostFilter::SendRawEvents(
     int32 channel_id,
-    const std::vector<media::cast::PacketEvent>& packet_events,
-    const std::vector<media::cast::FrameEvent>& frame_events) {
-  if (!packet_events.empty())
-    Send(new CastMsg_RawEvents(channel_id,
-                               packet_events,
-                               frame_events));
+    scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
+    scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events) {
+  if (frame_events->empty() && packet_events->empty())
+    return;
+  Send(new CastMsg_RawEvents(channel_id, *packet_events, *frame_events));
 }
 
 void CastTransportHostFilter::SendRtt(int32 channel_id,
