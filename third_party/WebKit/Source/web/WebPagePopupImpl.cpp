@@ -376,7 +376,7 @@ void WebPagePopupImpl::updateAllLifecyclePhases()
 {
     if (!m_page)
         return;
-    PageWidgetDelegate::layout(*m_page, *m_page->deprecatedLocalMainFrame());
+    PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *m_page->deprecatedLocalMainFrame());
 }
 
 void WebPagePopupImpl::paint(WebCanvas* canvas, const WebRect& rect)

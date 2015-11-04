@@ -1920,10 +1920,12 @@ void WebViewImpl::updateAllLifecyclePhases()
     if (!mainFrameImpl())
         return;
 
-    PageWidgetDelegate::layout(*m_page, *mainFrameImpl()->frame());
+    PageWidgetDelegate::updateLifecycleToCompositingCleanPlusScrolling(*m_page, *mainFrameImpl()->frame());
+
     updateLayerTreeBackgroundColor();
 
-    // TODO(wangxianzhu): Refactor the following into the main layout stage. crbug.com/550517.
+    // TODO(wangxianzhu): Refactor overlay and link highlights updating and painting to make clearer
+    // dependency between web/ and core/ in synchronized painting mode.
     if (InspectorOverlay* overlay = inspectorOverlay())
         overlay->layout();
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
@@ -1950,8 +1952,7 @@ void WebViewImpl::updateAllLifecyclePhases()
         }
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
+    PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
 }
 
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)

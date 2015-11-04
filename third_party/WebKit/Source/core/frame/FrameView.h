@@ -234,7 +234,7 @@ public:
     // (e.g., based on visibility) and will not end up being PaintInvalidationClean.
     void updateAllLifecyclePhases();
 
-    // Computes the style, layout and compositing lifecycle stages if needed. After calling this method, all frames wil lbe in a lifecycle
+    // Computes the style, layout and compositing lifecycle stages if needed. After calling this method, all frames will be in a lifecycle
     // state >= CompositingClean, and scrolling has been updated (unless throttling is allowed).
     void updateLifecycleToCompositingCleanPlusScrolling();
 

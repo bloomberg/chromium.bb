@@ -258,7 +258,7 @@ void WebFrameWidgetImpl::updateAllLifecyclePhases()
     if (!m_localRoot)
         return;
 
-    PageWidgetDelegate::layout(*page(), *m_localRoot->frame());
+    PageWidgetDelegate::updateAllLifecyclePhases(*page(), *m_localRoot->frame());
     updateLayerTreeBackgroundColor();
 }
 

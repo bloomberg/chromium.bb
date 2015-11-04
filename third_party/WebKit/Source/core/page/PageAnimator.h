@@ -22,7 +22,9 @@ public:
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
     bool isServicingAnimations() const { return m_servicingAnimations; }
-    void updateLayoutAndStyleForPainting(LocalFrame& rootFrame);
+
+    // See documents of methods with the same names in FrameView class.
+    void updateLifecycleToCompositingCleanPlusScrolling(LocalFrame& rootFrame);
     void updateAllLifecyclePhases(LocalFrame& rootFrame);
     AnimationClock& clock() { return m_animationClock; }
 
