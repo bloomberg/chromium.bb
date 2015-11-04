@@ -810,8 +810,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * @param reason The reason for a change in the panel's state.
      */
     public void setPanelState(PanelState state, StateChangeReason reason) {
-        mPanelState = state;
-
         if (state == PanelState.CLOSED) {
             mIsShowing = false;
             onClosed(reason);
@@ -819,6 +817,12 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
                 || (state == PanelState.MAXIMIZED && !isFullscreenSizePanel())) {
             showPromoViewAtYPosition(getPromoYPx());
         }
+
+        // We should only set the state at the end of this method, in oder to make sure that
+        // all callbacks will be fired before changing the state of the Panel. This prevents
+        // some flakiness on tests since they rely on changes of state to determine when a
+        // particular action has been completed.
+        mPanelState = state;
     }
 
     /**
