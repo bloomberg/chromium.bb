@@ -65250,6 +65250,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
+  <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1553477903" label="ash-disable-text-filtering-in-overview-mode"/>
   <int value="-1546903171" label="enable-touch-drag-drop"/>

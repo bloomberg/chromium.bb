@@ -5591,6 +5591,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PANELS_DESCRIPTION" desc="Description for the flag to enable Panel windows.">
         Enable Panel windows that open outside of the browser frame. Attempts to open a Panel will open a popup instead if not enabled. Panels are always enabled on the dev and canary channels.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEAVE_PAIRING_NAME" desc="Title for the flag to turn on Weave pairing">
+        Enable Weave pairing
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEAVE_PAIRING_DESCRIPTION" desc="Description for the flag to turn on Weave pairing">
+        Weave pairing is used by Weave App for secure communication with devices on local network.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
         Enable WebGL Draft Extensions
       </message>

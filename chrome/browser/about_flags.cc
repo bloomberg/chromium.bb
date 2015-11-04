@@ -1332,6 +1332,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION,
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnablePrintPreviewRegisterPromos)},
+    {"enable-privet-v3",
+     IDS_FLAGS_ENABLE_WEAVE_PAIRING_NAME,
+     IDS_FLAGS_ENABLE_WEAVE_PAIRING_DESCRIPTION,
+     kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnablePrivetV3)},
 #endif  // ENABLE_SERVICE_DISCOVERY
 #if defined(ENABLE_PRINT_PREVIEW)
     {"disable-print-preview-simplify",
