@@ -9093,6 +9093,7 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   const gfx::Transform identity_matrix;
   render_surface1->SetDrawsContent(true);
   render_surface2->SetDrawsContent(true);
+  render_surface2->SetMasksToBounds(true);
 
   gfx::Transform large_transform;
   large_transform.Scale(99999999999999999999.f, 99999999999999999999.f);

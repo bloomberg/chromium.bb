@@ -433,6 +433,12 @@ void FindLayersThatNeedUpdates(
 
 }  // namespace
 
+static void ResetIfHasNanCoordinate(gfx::RectF* rect) {
+  if (std::isnan(rect->x()) || std::isnan(rect->y()) ||
+      std::isnan(rect->right()) || std::isnan(rect->bottom()))
+    *rect = gfx::RectF();
+}
+
 void ComputeClips(ClipTree* clip_tree,
                   const TransformTree& transform_tree,
                   bool non_root_surfaces_enabled) {
@@ -442,8 +448,9 @@ void ComputeClips(ClipTree* clip_tree,
     ClipNode* clip_node = clip_tree->Node(i);
 
     if (clip_node->id == 1) {
-      clip_node->data.combined_clip_in_target_space = clip_node->data.clip;
+      ResetIfHasNanCoordinate(&clip_node->data.clip);
       clip_node->data.clip_in_target_space = clip_node->data.clip;
+      clip_node->data.combined_clip_in_target_space = clip_node->data.clip;
       continue;
     }
     const TransformNode* transform_node =
@@ -496,6 +503,7 @@ void ComputeClips(ClipTree* clip_tree,
       if (clip_node->data.applies_local_clip) {
         clip_node->data.clip_in_target_space = MathUtil::MapClippedRect(
             transform_node->data.to_target, clip_node->data.clip);
+        ResetIfHasNanCoordinate(&clip_node->data.clip_in_target_space);
         clip_node->data.combined_clip_in_target_space =
             gfx::IntersectRects(clip_node->data.clip_in_target_space,
                                 parent_combined_clip_in_target_space);
@@ -505,6 +513,7 @@ void ComputeClips(ClipTree* clip_tree,
         clip_node->data.combined_clip_in_target_space =
             parent_combined_clip_in_target_space;
       }
+      ResetIfHasNanCoordinate(&clip_node->data.combined_clip_in_target_space);
       continue;
     }
 
@@ -563,6 +572,8 @@ void ComputeClips(ClipTree* clip_tree,
       clip_node->data.combined_clip_in_target_space = gfx::IntersectRects(
           parent_combined_clip_in_target_space, source_clip_in_target_space);
     }
+    ResetIfHasNanCoordinate(&clip_node->data.clip_in_target_space);
+    ResetIfHasNanCoordinate(&clip_node->data.combined_clip_in_target_space);
   }
   clip_tree->set_needs_update(false);
 }
