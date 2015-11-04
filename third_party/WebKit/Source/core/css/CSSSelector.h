@@ -252,7 +252,6 @@ public:
     bool isSiblingSelector() const;
     bool isAttributeSelector() const { return m_match >= FirstAttributeSelectorMatch; }
     bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
-    bool isTreeBoundaryCrossing() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
     bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent; }
 
     Relation relation() const { return static_cast<Relation>(m_relation); }

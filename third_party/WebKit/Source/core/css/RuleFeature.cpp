@@ -464,7 +464,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
                 addFeaturesToInvalidationSet(*invalidationSet, descendantFeatures);
             }
         } else {
-            if (current->isTreeBoundaryCrossing())
+            if (current->isHostPseudoClass())
                 descendantFeatures.treeBoundaryCrossing = true;
             if (current->isInsertionPointCrossing())
                 descendantFeatures.insertionPointCrossing = true;
