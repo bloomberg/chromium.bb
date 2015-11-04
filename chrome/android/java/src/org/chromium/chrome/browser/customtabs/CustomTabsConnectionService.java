@@ -26,13 +26,16 @@ public class CustomTabsConnectionService extends Service {
                 .checkIfFirstRunIsNecessary(getApplicationContext(), false) != null;
         if (firstRunNecessary) return null;
         if (!ChromePreferenceManager.getInstance(this).getCustomTabsEnabled()) return null;
-
-        return (IBinder) CustomTabsConnection.getInstance(getApplication());
+        CustomTabsConnection connection = CustomTabsConnection.getInstance(getApplication());
+        connection.logCall("Service#onBind()", true);
+        return (IBinder) connection;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
         super.onUnbind(intent);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance(getApplication());
+        connection.logCall("Service#onUnbind()", true);
         return false; // No support for onRebind().
     }
 }
