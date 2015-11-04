@@ -1,0 +1,29 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x150
+  LayoutBlockFlow {HTML} at (0,0) size 800x150.19
+    LayoutBlockFlow (anonymous) at (0,0) size 800x18
+      LayoutText {#text} at (0,0) size 37x17
+        text run at (0,0) width 37: "PASS"
+    LayoutBlockFlow {BODY} at (8,26) size 784x108.19
+      LayoutBlockFlow (anonymous) at (0,0) size 784x18
+        LayoutInline {OBJECT} at (0,0) size 37x17
+          LayoutText {#text} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 37x17
+            text run at (0,0) width 37: "PASS"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,18) size 784x38.19
+        LayoutBlockFlow {OPTION} at (0,0) size 784x20.19
+        LayoutBlockFlow (anonymous) at (0,20.19) size 784x18
+          LayoutText {#text} at (0,0) size 37x17
+            text run at (0,0) width 37: "PASS"
+        LayoutTable {TABLE} at (0,38.19) size 0x0
+      LayoutBlockFlow (anonymous) at (0,56.19) size 784x18
+        LayoutInline {OBJECT} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 37x17
+          text run at (0,0) width 37: "PASS"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,90.19) size 784x18
+        LayoutText {#text} at (0,0) size 733x17
+          text run at (0,0) width 733: "crbug.com/549544: Don't clean up anonymous wrappers when the element's branch or sub-tree is being destroyed."
