@@ -18,6 +18,7 @@ from telemetry.core import discover
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
+from benchmarks import chrome_signin_startup
 from benchmarks import image_decoding
 from benchmarks import indexeddb_perf
 from benchmarks import jetstream
@@ -83,6 +84,7 @@ _BLACK_LIST_TEST_MODULES = {
     octane,  # Often fails & take long time to timeout on cq bot.
     rasterize_and_record_micro,  # Always fails on cq bot.
     repaint,  # Often fails & takes long time to timeout on cq bot.
+    chrome_signin_startup,  # Failed on linux swarming bot (crbug.com/551236)
     spaceport,  # Takes 451 seconds.
     speedometer,  # Takes 101 seconds.
     jetstream,  # Take 206 seconds.
