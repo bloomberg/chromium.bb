@@ -127,7 +127,6 @@ TEST(ScrollAnimatorEnabled, Enabled)
     OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
     OwnPtr<MockScrollAnimatorNone> scrollAnimatorNone = MockScrollAnimatorNone::create(scrollableArea.get());
 
-    EXPECT_CALL(*scrollableArea, scrollSize(_)).Times(AtLeast(1)).WillRepeatedly(Return(1000));
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
     EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(4);
@@ -236,6 +235,7 @@ public:
     }
 
     void reset();
+    bool updateDataFromParameters(float step, float multiplier, float minScrollPos, float maxScrollPos, double currentTime, ScrollAnimator::Parameters*);
     bool updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, ScrollAnimator::Parameters*);
     bool animateScroll(double currentTime);
 
@@ -273,7 +273,7 @@ void ScrollAnimatorTest::reset()
     m_scrollingDown = true;
 }
 
-bool ScrollAnimatorTest::updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, ScrollAnimator::Parameters* parameters)
+bool ScrollAnimatorTest::updateDataFromParameters(float step, float multiplier, float minScrollPos, float maxScrollPos, double currentTime, ScrollAnimator::Parameters* parameters)
 {
     if (step * multiplier)
         m_scrollingDown = (step * multiplier > 0);
@@ -281,7 +281,7 @@ bool ScrollAnimatorTest::updateDataFromParameters(float step, float multiplier, 
     double oldVelocity = m_data->m_currentVelocity;
     double oldDesiredVelocity = m_data->m_desiredVelocity;
     double oldTimeLeft = m_data->m_animationTime - (m_data->m_lastAnimationTime - m_data->m_startTime);
-    bool result = m_data->updateDataFromParameters(step, multiplier, scrollableSize, currentTime, parameters);
+    bool result = m_data->updateDataFromParameters(step, multiplier, minScrollPos, maxScrollPos, currentTime, parameters);
     if (m_scrollingDown)
         EXPECT_LE(oldVelocity, m_data->m_currentVelocity);
     else
@@ -308,6 +308,11 @@ bool ScrollAnimatorTest::updateDataFromParameters(float step, float multiplier, 
     }
 
     return result;
+}
+
+bool ScrollAnimatorTest::updateDataFromParameters(float step, float multiplier, float scrollableSize, double currentTime, ScrollAnimator::Parameters* parameters)
+{
+    return updateDataFromParameters(step, multiplier, 0, scrollableSize, currentTime, parameters);
 }
 
 bool ScrollAnimatorTest::animateScroll(double currentTime)
@@ -802,6 +807,29 @@ TEST_F(ScrollAnimatorTest, LinuxTrackPadTraceSmoothed)
     result = result && updateDataFromParameters(1.00, 20.00, 1000, 100.8623, &parameters);
     for (double t = 100.8674; result && t < 200; t += 0.015)
         result = result && animateScroll(t);
+}
+
+TEST_F(ScrollAnimatorTest, ScrollRightToBumperRTL)
+{
+    // Tests that scrolling works for a negative scroll bound. This is the case
+    // for RTL pages where the scroll position is always negative.
+    m_currentPosition = 0;
+    ScrollAnimator::Parameters parameters(true, 10 * kTickTime, 7 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Cubic, 3 * kTickTime, ScrollAnimator::Linear, 0);
+
+    EXPECT_TRUE(updateDataFromParameters(1, -20, -200, 0, kStartTime, &parameters));
+    bool result = true;
+    double t = kStartTime;
+    for (int i = 0; i < 10; ++i) {
+        t += kAnimationTime;
+        result = result && animateScroll(t);
+        updateDataFromParameters(1, -20, -200, 0, t, &parameters);
+    }
+    checkDesiredPosition(-200);
+
+    t += kAnimationTime;
+    for (; result && t < kEndTime; t += kAnimationTime)
+        result = result && animateScroll(t);
+    checkSoftLanding(-200);
 }
 
 TEST_F(ScrollAnimatorTest, ScrollDownToBumper)

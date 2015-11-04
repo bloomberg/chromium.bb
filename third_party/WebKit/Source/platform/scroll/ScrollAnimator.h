@@ -96,7 +96,7 @@ protected:
     struct PLATFORM_EXPORT PerAxisData {
         PerAxisData(float* currentPos, int visibleLength);
         void reset();
-        bool updateDataFromParameters(float step, float delta, float scrollableSize, double currentTime, Parameters*);
+        bool updateDataFromParameters(float step, float delta, float minScrollPos, float maxScrollPos, double currentTime, Parameters*);
         bool animateScroll(double currentTime);
         void updateVisibleLength(int visibleLength);
 

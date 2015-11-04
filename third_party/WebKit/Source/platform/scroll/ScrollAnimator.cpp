@@ -219,22 +219,21 @@ void ScrollAnimator::PerAxisData::reset()
 }
 
 
-bool ScrollAnimator::PerAxisData::updateDataFromParameters(float step, float delta, float scrollableSize, double currentTime, Parameters* parameters)
+bool ScrollAnimator::PerAxisData::updateDataFromParameters(float step, float delta, float minScrollPos, float maxScrollPos, double currentTime, Parameters* parameters)
 {
     float pixelDelta = step * delta;
     if (!m_startTime || !pixelDelta || (pixelDelta < 0) != (m_desiredPosition - *m_currentPosition < 0)) {
         m_desiredPosition = *m_currentPosition;
         m_startTime = 0;
     }
-    float newPosition = m_desiredPosition + pixelDelta;
 
-    if (newPosition < 0 || newPosition > scrollableSize)
-        newPosition = std::max(std::min(newPosition, scrollableSize), 0.0f);
+    float newPos = m_desiredPosition + pixelDelta;
+    float clampedPos = std::max(std::min(newPos, maxScrollPos), minScrollPos);
 
-    if (newPosition == m_desiredPosition)
+    if (clampedPos == m_desiredPosition)
         return false;
 
-    m_desiredPosition = newPosition;
+    m_desiredPosition = clampedPos;
 
     if (!m_startTime) {
         m_attackTime = parameters->m_attackTime;
@@ -418,10 +417,11 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orien
         return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
 
     // This is an animatable scroll. Set the animation in motion using the appropriate parameters.
-    float scrollableSize = static_cast<float>(m_scrollableArea->scrollSize(orientation));
+    float minScrollPos = static_cast<float>(m_scrollableArea->minimumScrollPosition(orientation));
+    float maxScrollPos = static_cast<float>(m_scrollableArea->maximumScrollPosition(orientation));
 
     PerAxisData& data = (orientation == VerticalScrollbar) ? m_verticalData : m_horizontalData;
-    bool needToScroll = data.updateDataFromParameters(step, delta, scrollableSize, WTF::monotonicallyIncreasingTime(), &parameters);
+    bool needToScroll = data.updateDataFromParameters(step, delta, minScrollPos, maxScrollPos, WTF::monotonicallyIncreasingTime(), &parameters);
     float unusedDelta = needToScroll ? delta - (data.m_desiredPosition - *data.m_currentPosition) : delta;
     if (needToScroll && !animationTimerActive()) {
         m_startTime = data.m_startTime;
