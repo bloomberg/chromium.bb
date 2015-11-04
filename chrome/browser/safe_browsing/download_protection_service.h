@@ -80,6 +80,13 @@ class DownloadProtectionService {
 
   virtual ~DownloadProtectionService();
 
+  // Parse a flag of blacklisted sha256 hashes to check at each download.
+  // This is used for testing, to hunt for safe-browsing by-pass bugs.
+  virtual void ParseManualBlacklistFlag();
+
+  // Return true if this hash value is blacklisted via flag (for testing).
+  virtual bool IsHashManuallyBlacklisted(const std::string& sha256_hash) const;
+
   // Checks whether the given client download is likely to be malicious or not.
   // The result is delivered asynchronously via the given callback.  This
   // method must be called on the UI thread, and the callback will also be
@@ -158,12 +165,14 @@ class DownloadProtectionService {
     REASON_DOWNLOAD_DANGEROUS_HOST,
     REASON_DOWNLOAD_POTENTIALLY_UNWANTED,
     REASON_UNSUPPORTED_URL_SCHEME,
+    REASON_MANUAL_BLACKLIST,
     REASON_MAX  // Always add new values before this one.
   };
 
  private:
   class CheckClientDownloadRequest;  // Per-request state
   friend class DownloadProtectionServiceTest;
+
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadWhitelistedUrl);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
@@ -184,6 +193,9 @@ class DownloadProtectionService {
                            TestDownloadRequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientCrxDownloadSuccess);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceFlagTest,
+                           CheckClientDownloadOverridenByFlag);
+
   static const char kDownloadRequestUrl[];
 
   // Cancels all requests in |download_requests_|, and empties it, releasing
@@ -230,6 +242,10 @@ class DownloadProtectionService {
   // A list of callbacks to be run on the main thread when a
   // ClientDownloadRequest has been formed.
   ClientDownloadRequestCallbackList client_download_request_callbacks_;
+
+  // List of 8-byte hashes that are blacklisted manually by flag.
+  // Normally empty.
+  std::set<std::string> manual_blacklist_hashes_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadProtectionService);
 };

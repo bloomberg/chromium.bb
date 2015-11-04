@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,6 +17,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -670,6 +673,15 @@ class DownloadProtectionService::CheckClientDownloadRequest
 // the server if we're not on one of those platforms.
 // TODO(noelutz): change this code once the UI is done for Linux.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    // User can manually blacklist a sha256 via flag, for testing.
+    // In this case we don't actually send the request.
+    if (item_ && service_ &&
+        service_->IsHashManuallyBlacklisted(item_->GetHash())) {
+      DVLOG(1) << "Download verdict overridden to DANGEROUS by flag.";
+      PostFinishTask(DANGEROUS, REASON_MANUAL_BLACKLIST);
+      return;
+    }
+
     // The URLFetcher is owned by the UI thread, so post a message to
     // start the pingback.
     BrowserThread::PostTask(
@@ -835,6 +847,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     }
     finished_ = true;
+
     // Ensure the timeout task is cancelled while we still have a non-zero
     // refcount. (crbug.com/240449)
     weakptr_factory_.InvalidateWeakPtrs();
@@ -968,6 +981,7 @@ DownloadProtectionService::DownloadProtectionService(
   if (sb_service) {
     ui_manager_ = sb_service->ui_manager();
     database_manager_ = sb_service->database_manager();
+    ParseManualBlacklistFlag();
   }
 }
 
@@ -985,6 +999,31 @@ void DownloadProtectionService::SetEnabled(bool enabled) {
   if (!enabled_) {
     CancelPendingRequests();
   }
+}
+
+void DownloadProtectionService::ParseManualBlacklistFlag() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kSbManualDownloadBlacklist))
+    return;
+
+  std::string flag_val =
+      command_line->GetSwitchValueASCII(switches::kSbManualDownloadBlacklist);
+  for (const std::string& hash_hex : base::SplitString(
+           flag_val, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    std::vector<uint8> bytes;
+    if (base::HexStringToBytes(hash_hex, &bytes) && bytes.size() == 32) {
+      manual_blacklist_hashes_.insert(
+          std::string(bytes.begin(), bytes.end()));
+    } else {
+      LOG(FATAL) << "Bad sha256 hex value '" << hash_hex << "' found in --"
+                 << switches::kSbManualDownloadBlacklist;
+    }
+  }
+}
+
+bool DownloadProtectionService::IsHashManuallyBlacklisted(
+    const std::string& sha256_hash) const  {
+  return manual_blacklist_hashes_.count(sha256_hash) > 0;
 }
 
 void DownloadProtectionService::CheckClientDownload(

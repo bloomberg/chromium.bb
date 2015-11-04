@@ -11,6 +11,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_database_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/testing_profile.h"
@@ -423,12 +425,14 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   base::FilePath a_exe(FILE_PATH_LITERAL("a.exe"));
   std::vector<GURL> url_chain;
   GURL referrer("http://www.google.com/");
+  std::string hash = "hash";
 
   content::MockDownloadItem item;
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetTabReferrerUrl())
       .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
@@ -446,6 +450,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetTabReferrerUrl())
       .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
@@ -463,6 +468,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
   base::FilePath a_txt(FILE_PATH_LITERAL("a.txt"));
   std::vector<GURL> url_chain;
   GURL referrer("http://www.google.com/");
+  std::string hash = "hash";
 
   content::MockDownloadItem item;
   url_chain.push_back(GURL("http://www.example.com/foo"));
@@ -470,6 +476,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadNotABinary) {
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_txt));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
   EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
   EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
   EXPECT_CALL(item, GetTabReferrerUrl())
       .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
@@ -1956,6 +1963,78 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
 
   download_service_->ShowDetailsForDownload(mock_download_item,
                                             &mock_page_navigator);
+}
+
+// ------------ class DownloadProtectionServiceFlagTest ----------------
+class DownloadProtectionServiceFlagTest : public DownloadProtectionServiceTest {
+ protected:
+  DownloadProtectionServiceFlagTest()
+      : blacklisted_hash_("abcdefghijklmnopqrstuvwxyz012345") {}
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kSbManualDownloadBlacklist,
+        base::HexEncode(blacklisted_hash_.c_str(), blacklisted_hash_.size()));
+    DownloadProtectionServiceTest::SetUp();
+  }
+
+  // Binary 32 bytes
+  const std::string blacklisted_hash_;
+};
+
+TEST_F(DownloadProtectionServiceFlagTest, CheckClientDownloadOverridenByFlag) {
+  ClientDownloadResponse response;
+  response.set_verdict(ClientDownloadResponse::SAFE);
+  net::FakeURLFetcherFactory factory(NULL);
+  // Empty response means SAFE.
+  factory.SetFakeResponse(
+      DownloadProtectionService::GetDownloadRequestUrl(),
+      response.SerializeAsString(),
+      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
+  base::FilePath a_exe(FILE_PATH_LITERAL("a.exe"));
+  std::vector<GURL> url_chain;
+  url_chain.push_back(GURL("http://www.evil.com/a.exe"));
+  GURL referrer("http://www.google.com/");
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(blacklisted_hash_));
+  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  a_tmp, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+  EXPECT_FALSE(HasClientDownloadRequest());
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  // Overriden by flag:
+  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+#else
+  // On !(OS_WIN || OS_MACOSX || OS_CHROMEOS),
+  // no file types are currently supported. Hence all
+  // requests to CheckClientDownload() result in a verdict of UNKNOWN.
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+#endif
 }
 
 }  // namespace safe_browsing
