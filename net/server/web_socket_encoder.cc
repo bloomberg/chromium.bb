@@ -235,7 +235,7 @@ scoped_ptr<WebSocketEncoder> WebSocketEncoder::CreateServer(
 }
 
 // static
-WebSocketEncoder* WebSocketEncoder::CreateClient(
+scoped_ptr<WebSocketEncoder> WebSocketEncoder::CreateClient(
     const std::string& response_extensions) {
   // TODO(yhirano): Add a way to return an error.
 
@@ -246,12 +246,12 @@ WebSocketEncoder* WebSocketEncoder::CreateClient(
     // 2) There is a malformed Sec-WebSocketExtensions header.
     // We should return a deflate-disabled encoder for the former case and
     // fail the connection for the latter case.
-    return new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr);
+    return make_scoped_ptr(new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr));
   }
   if (parser.extensions().size() != 1) {
     // Only permessage-deflate extension is supported.
     // TODO (yhirano): Fail the connection.
-    return new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr);
+    return make_scoped_ptr(new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr));
   }
   const auto& extension = parser.extensions()[0];
   WebSocketDeflateParameters params;
@@ -259,7 +259,7 @@ WebSocketEncoder* WebSocketEncoder::CreateClient(
   if (!params.Initialize(extension, &failure_message) ||
       !params.IsValidAsResponse(&failure_message)) {
     // TODO (yhirano): Fail the connection.
-    return new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr);
+    return make_scoped_ptr(new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr));
   }
 
   auto deflater = make_scoped_ptr(
@@ -269,10 +269,11 @@ WebSocketEncoder* WebSocketEncoder::CreateClient(
   if (!deflater->Initialize(params.PermissiveClientMaxWindowBits()) ||
       !inflater->Initialize(params.PermissiveServerMaxWindowBits())) {
     // TODO (yhirano): Fail the connection.
-    return new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr);
+    return make_scoped_ptr(new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr));
   }
 
-  return new WebSocketEncoder(FOR_CLIENT, deflater.Pass(), inflater.Pass());
+  return make_scoped_ptr(
+      new WebSocketEncoder(FOR_CLIENT, deflater.Pass(), inflater.Pass()));
 }
 
 WebSocketEncoder::WebSocketEncoder(Type type,

@@ -83,7 +83,7 @@ class WebSocketEncoderTest : public testing::Test {
     std::string response_extensions;
     server_ = WebSocketEncoder::CreateServer();
     EXPECT_EQ(std::string(), response_extensions);
-    client_.reset(WebSocketEncoder::CreateClient(""));
+    client_ = WebSocketEncoder::CreateClient("");
   }
 
  protected:
@@ -103,14 +103,13 @@ class WebSocketEncoderCompressionTest : public WebSocketEncoderTest {
     EXPECT_TRUE(server_->deflate_enabled());
     EXPECT_EQ("permessage-deflate; client_max_window_bits=15",
               params.AsExtension().ToString());
-    client_.reset(
-        WebSocketEncoder::CreateClient(params.AsExtension().ToString()));
+    client_ = WebSocketEncoder::CreateClient(params.AsExtension().ToString());
   }
 };
 
 TEST_F(WebSocketEncoderTest, DeflateDisabledEncoder) {
-  scoped_ptr<WebSocketEncoder> server(WebSocketEncoder::CreateServer());
-  scoped_ptr<WebSocketEncoder> client(WebSocketEncoder::CreateClient(""));
+  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer();
+  scoped_ptr<WebSocketEncoder> client = WebSocketEncoder::CreateClient("");
 
   ASSERT_TRUE(server);
   ASSERT_TRUE(client);

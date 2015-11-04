@@ -32,8 +32,8 @@ class WebSocketEncoder final {
   static scoped_ptr<WebSocketEncoder> CreateServer(
       const std::string& extensions,
       WebSocketDeflateParameters* params);
-  // TODO(yhirano): Return a scoped_ptr instead of a raw pointer.
-  static WebSocketEncoder* CreateClient(const std::string& response_extensions);
+  static scoped_ptr<WebSocketEncoder> CreateClient(
+      const std::string& response_extensions);
 
   WebSocket::ParseResult DecodeFrame(const base::StringPiece& frame,
                                      int* bytes_consumed,
