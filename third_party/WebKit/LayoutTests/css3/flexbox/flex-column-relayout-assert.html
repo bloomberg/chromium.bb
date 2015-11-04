@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<link href="resources/flexbox.css" rel="stylesheet">
+<style>
+.flexbox {
+    background-color: green;
+}
+</style>
+<script src="../../resources/check-layout.js"></script>
+<body onload="checkLayout('.flexbox')">
+
+<p>You should see a green rectangle, 20px high.</p>
+
+<div class="flexbox column" data-expected-height="40">
+  <div id="child" data-expected-height="40"></div>
+</div>
+
+<script>
+document.getElementById('child').offsetHeight;
+document.getElementById('child').style.padding = "20px";
+</script>
