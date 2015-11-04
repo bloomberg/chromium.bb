@@ -484,6 +484,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
 TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   const std::string text1_name = "One two three.";
   const std::string text2_name = " Four five six.";
+  const size_t text_name_len = text1_name.length() + text2_name.length();
 
   ui::AXNodeData text1;
   text1.id = 11;
@@ -501,164 +502,216 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
   root.state = 1 << ui::AX_STATE_READ_ONLY;
-  root.child_ids.push_back(11);
-  root.child_ids.push_back(12);
+  root.child_ids.push_back(text1.id);
+  root.child_ids.push_back(text2.id);
 
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, text1, text2),
-          NULL, new CountedBrowserAccessibilityFactory()));
+          MakeAXTreeUpdate(root, text1, text2), nullptr,
+          new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
 
   long text_len;
-  ASSERT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
+  EXPECT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
+  EXPECT_EQ(text_name_len, text_len);
 
   base::win::ScopedBstr text;
-  ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
+  EXPECT_EQ(S_OK, root_obj->get_text(0, text_name_len, text.Receive()));
   EXPECT_EQ(text1_name + text2_name, base::UTF16ToUTF8(base::string16(text)));
 
   long hyperlink_count;
-  ASSERT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
+  EXPECT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
   EXPECT_EQ(0, hyperlink_count);
 
   base::win::ScopedComPtr<IAccessibleHyperlink> hyperlink;
   EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(-1, hyperlink.Receive()));
   EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(0, hyperlink.Receive()));
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(28, hyperlink.Receive()));
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(29, hyperlink.Receive()));
+  EXPECT_EQ(E_INVALIDARG,
+            root_obj->get_hyperlink(text_name_len, hyperlink.Receive()));
+  EXPECT_EQ(E_INVALIDARG,
+            root_obj->get_hyperlink(text_name_len + 1, hyperlink.Receive()));
 
   long hyperlink_index;
-  EXPECT_EQ(E_FAIL, root_obj->get_hyperlinkIndex(0, &hyperlink_index));
+  EXPECT_EQ(S_FALSE, root_obj->get_hyperlinkIndex(0, &hyperlink_index));
   EXPECT_EQ(-1, hyperlink_index);
-  EXPECT_EQ(E_FAIL, root_obj->get_hyperlinkIndex(28, &hyperlink_index));
-  EXPECT_EQ(-1, hyperlink_index);
+  // Invalid arguments should not be modified.
+  hyperlink_index = -2;
+  EXPECT_EQ(E_INVALIDARG,
+            root_obj->get_hyperlinkIndex(text_name_len, &hyperlink_index));
+  EXPECT_EQ(-2, hyperlink_index);
   EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlinkIndex(-1, &hyperlink_index));
-  EXPECT_EQ(-1, hyperlink_index);
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlinkIndex(29, &hyperlink_index));
-  EXPECT_EQ(-1, hyperlink_index);
+  EXPECT_EQ(-2, hyperlink_index);
+  EXPECT_EQ(E_INVALIDARG,
+            root_obj->get_hyperlinkIndex(text_name_len + 1, &hyperlink_index));
+  EXPECT_EQ(-2, hyperlink_index);
 
-  // Delete the manager and test that all BrowserAccessibility instances are
-  // deleted.
   manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
 TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
-  const std::string text1_name = "One two three.";
-  const std::string text2_name = " Four five six.";
-  const std::string button1_text_name = "red";
-  const std::string link1_text_name = "blue";
+  const base::string16 text1_name = L"One two three.";
+  const base::string16 combo_box_name = L"City:";
+  const base::string16 combo_box_value = L"Happyland";
+  const base::string16 text2_name = L" Four five six.";
+  const base::string16 check_box_name = L"I agree";
+  const base::string16 check_box_value = L"Checked";
+  const base::string16 button_text_name = L"Red";
+  const base::string16 link_text_name = L"Blue";
+  // Each control (combo / check box, button and link) will be represented by an
+  // embedded object character.
+  const base::string16 embed(1, BrowserAccessibilityWin::kEmbeddedCharacter);
+  const base::string16 root_hypertext =
+      text1_name + embed + text2_name + embed + embed + embed;
+  const size_t root_hypertext_len = root_hypertext.length();
 
   ui::AXNodeData text1;
   text1.id = 11;
   text1.role = ui::AX_ROLE_STATIC_TEXT;
   text1.state = 1 << ui::AX_STATE_READ_ONLY;
-  text1.SetName(text1_name);
+  text1.SetName(base::UTF16ToUTF8(text1_name));
+
+  ui::AXNodeData combo_box;
+  combo_box.id = 12;
+  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.SetName(base::UTF16ToUTF8(combo_box_name));
+  combo_box.SetValue(base::UTF16ToUTF8(combo_box_value));
 
   ui::AXNodeData text2;
-  text2.id = 12;
+  text2.id = 13;
   text2.role = ui::AX_ROLE_STATIC_TEXT;
   text2.state = 1 << ui::AX_STATE_READ_ONLY;
-  text2.SetName(text2_name);
+  text2.SetName(base::UTF16ToUTF8(text2_name));
 
-  ui::AXNodeData button1, button1_text;
-  button1.id = 13;
-  button1_text.id = 15;
-  button1_text.SetName(button1_text_name);
-  button1.role = ui::AX_ROLE_BUTTON;
-  button1_text.role = ui::AX_ROLE_STATIC_TEXT;
-  button1.state = 1 << ui::AX_STATE_READ_ONLY;
-  button1_text.state = 1 << ui::AX_STATE_READ_ONLY;
-  button1.child_ids.push_back(15);
+  ui::AXNodeData check_box;
+  check_box.id = 14;
+  check_box.role = ui::AX_ROLE_CHECK_BOX;
+  check_box.state = 1 << ui::AX_STATE_CHECKED;
+  check_box.SetName(base::UTF16ToUTF8(check_box_name));
+  check_box.SetValue(base::UTF16ToUTF8(check_box_value));
 
-  ui::AXNodeData link1, link1_text;
-  link1.id = 14;
-  link1_text.id = 16;
-  link1_text.SetName(link1_text_name);
-  link1.role = ui::AX_ROLE_LINK;
-  link1_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link1.state = 1 << ui::AX_STATE_READ_ONLY;
-  link1_text.state = 1 << ui::AX_STATE_READ_ONLY;
-  link1.child_ids.push_back(16);
+  ui::AXNodeData button, button_text;
+  button.id = 15;
+  button_text.id = 17;
+  button_text.SetName(base::UTF16ToUTF8(button_text_name));
+  button.role = ui::AX_ROLE_BUTTON;
+  button_text.role = ui::AX_ROLE_STATIC_TEXT;
+  button.state = 1 << ui::AX_STATE_READ_ONLY;
+  button_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  button.child_ids.push_back(button_text.id);
+
+  ui::AXNodeData link, link_text;
+  link.id = 16;
+  link_text.id = 18;
+  link_text.SetName(base::UTF16ToUTF8(link_text_name));
+  link.role = ui::AX_ROLE_LINK;
+  link_text.role = ui::AX_ROLE_STATIC_TEXT;
+  link.state = 1 << ui::AX_STATE_READ_ONLY;
+  link_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
   root.state = 1 << ui::AX_STATE_READ_ONLY;
-  root.child_ids.push_back(11);
-  root.child_ids.push_back(13);
-  root.child_ids.push_back(12);
-  root.child_ids.push_back(14);
+  root.child_ids.push_back(text1.id);
+  root.child_ids.push_back(combo_box.id);
+  root.child_ids.push_back(text2.id);
+  root.child_ids.push_back(check_box.id);
+  root.child_ids.push_back(button.id);
+  root.child_ids.push_back(link.id);
 
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root,
-                           text1, button1, button1_text,
-                           text2, link1, link1_text),
-          NULL, new CountedBrowserAccessibilityFactory()));
-  ASSERT_EQ(7, CountedBrowserAccessibility::num_instances());
+          MakeAXTreeUpdate(root, text1, combo_box, text2, check_box, button,
+                           button_text, link, link_text),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(9, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
 
   long text_len;
-  ASSERT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
+  EXPECT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
+  EXPECT_EQ(root_hypertext_len, text_len);
 
   base::win::ScopedBstr text;
-  ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
-  const std::string embed = base::UTF16ToUTF8(
-      base::string16(1, BrowserAccessibilityWin::kEmbeddedCharacter));
-  EXPECT_EQ(text1_name + embed + text2_name + embed,
-            base::UTF16ToUTF8(base::string16(text)));
+  EXPECT_EQ(S_OK, root_obj->get_text(0, root_hypertext_len, text.Receive()));
+  EXPECT_STREQ(root_hypertext.c_str(), text);
   text.Reset();
 
   long hyperlink_count;
-  ASSERT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
-  EXPECT_EQ(2, hyperlink_count);
+  EXPECT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
+  EXPECT_EQ(4, hyperlink_count);
 
   base::win::ScopedComPtr<IAccessibleHyperlink> hyperlink;
   base::win::ScopedComPtr<IAccessibleText> hypertext;
   EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(-1, hyperlink.Receive()));
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(2, hyperlink.Receive()));
-  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(28, hyperlink.Receive()));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(4, hyperlink.Receive()));
 
+  // Get the text of the combo box.
+  // It should be its value.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(0, hyperlink.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
   EXPECT_EQ(S_OK,
-            hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
-  EXPECT_EQ(S_OK, hypertext->get_text(0, 3, text.Receive()));
-  EXPECT_STREQ(button1_text_name.c_str(),
-               base::UTF16ToUTF8(base::string16(text)).c_str());
+            hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+  EXPECT_STREQ(combo_box_value.c_str(), text);
   text.Reset();
   hyperlink.Release();
   hypertext.Release();
 
+  // Get the text of the check box.
+  // It should be its name.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(1, hyperlink.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
   EXPECT_EQ(S_OK,
-            hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
+            hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+  EXPECT_STREQ(check_box_name.c_str(), text);
+  text.Reset();
+  hyperlink.Release();
+  hypertext.Release();
+
+  // Get the text of the button.
+  EXPECT_EQ(S_OK, root_obj->get_hyperlink(2, hyperlink.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
+  EXPECT_EQ(S_OK,
+            hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+  EXPECT_STREQ(button_text_name.c_str(), text);
+  text.Reset();
+  hyperlink.Release();
+  hypertext.Release();
+
+  // Get the text of the link.
+  EXPECT_EQ(S_OK, root_obj->get_hyperlink(3, hyperlink.Receive()));
+  EXPECT_EQ(S_OK, hyperlink.QueryInterface(hypertext.Receive()));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
-  EXPECT_STREQ(link1_text_name.c_str(),
-               base::UTF16ToUTF8(base::string16(text)).c_str());
+  EXPECT_STREQ(link_text_name.c_str(), text);
   text.Reset();
   hyperlink.Release();
   hypertext.Release();
 
   long hyperlink_index;
-  EXPECT_EQ(E_FAIL, root_obj->get_hyperlinkIndex(0, &hyperlink_index));
+  EXPECT_EQ(S_FALSE, root_obj->get_hyperlinkIndex(0, &hyperlink_index));
   EXPECT_EQ(-1, hyperlink_index);
-  EXPECT_EQ(E_FAIL, root_obj->get_hyperlinkIndex(28, &hyperlink_index));
-  EXPECT_EQ(-1, hyperlink_index);
+  // Invalid arguments should not be modified.
+  hyperlink_index = -2;
+  EXPECT_EQ(E_INVALIDARG,
+            root_obj->get_hyperlinkIndex(root_hypertext_len, &hyperlink_index));
+  EXPECT_EQ(-2, hyperlink_index);
   EXPECT_EQ(S_OK, root_obj->get_hyperlinkIndex(14, &hyperlink_index));
   EXPECT_EQ(0, hyperlink_index);
   EXPECT_EQ(S_OK, root_obj->get_hyperlinkIndex(30, &hyperlink_index));
   EXPECT_EQ(1, hyperlink_index);
+  EXPECT_EQ(S_OK, root_obj->get_hyperlinkIndex(31, &hyperlink_index));
+  EXPECT_EQ(2, hyperlink_index);
+  EXPECT_EQ(S_OK, root_obj->get_hyperlinkIndex(32, &hyperlink_index));
+  EXPECT_EQ(3, hyperlink_index);
 
-  // Delete the manager and test that all BrowserAccessibility instances are
-  // deleted.
   manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }

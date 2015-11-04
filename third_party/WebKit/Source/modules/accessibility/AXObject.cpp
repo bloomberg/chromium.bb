@@ -142,6 +142,7 @@ const InternalRoleEntry internalRoles[] = {
     { ArticleRole, "Article" },
     { BannerRole, "Banner" },
     { BlockquoteRole, "Blockquote" },
+    // TODO(nektar): Delete busy_indicator role. It's used nowhere.
     { BusyIndicatorRole, "BusyIndicator" },
     { ButtonRole, "Button" },
     { CanvasRole, "Canvas" },

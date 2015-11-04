@@ -1,14 +1,15 @@
 <!--
 @MAC-ALLOW:AXRole*
-@WIN-ALLOW:IA2_STATE_*
-@WIN-ALLOW:xml-roles:*
 @WIN-ALLOW:checkable:*
 @WIN-ALLOW:CHECKED*
+@WIN-ALLOW:ia2_hypertext=*
+@WIN-ALLOW:IA2_STATE_*
+@WIN-ALLOW:xml-roles:*
 -->
 <html>
 <body>
-  <input type="checkbox" checked>
-  <input type="checkbox" aria-checked="true">
-  <input type="checkbox" role="checkbox" aria-checked="true">
+  <label><input type="checkbox" checked value="checked1">CheckBox1</label>
+  <label><input type="checkbox" aria-checked="true" value="checked2">CheckBox2</label>
+  <label><input type="checkbox" role="checkbox" aria-checked="true" value="checked3">CheckBox3</label>
 </body>
 </html>

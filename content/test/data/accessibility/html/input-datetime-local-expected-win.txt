@@ -1,18 +1,18 @@
-ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-++IA2_ROLE_SECTION
-++++IA2_ROLE_DATE_EDITOR FOCUSABLE
-++++++IA2_ROLE_SECTION
-++++++++IA2_ROLE_SECTION
-++++++++++ROLE_SYSTEM_SPINBUTTON name='Month' FOCUSABLE
-++++++++++ROLE_SYSTEM_STATICTEXT name='/'
-++++++++++ROLE_SYSTEM_SPINBUTTON name='Day' FOCUSABLE
-++++++++++ROLE_SYSTEM_STATICTEXT name='/'
-++++++++++ROLE_SYSTEM_SPINBUTTON name='Year' FOCUSABLE
-++++++++++ROLE_SYSTEM_SPINBUTTON name='Hours' FOCUSABLE
-++++++++++ROLE_SYSTEM_STATICTEXT name=':'
-++++++++++ROLE_SYSTEM_SPINBUTTON name='Minutes' FOCUSABLE
-++++++++++ROLE_SYSTEM_SPINBUTTON name='AM/PM' FOCUSABLE
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE ia2_hypertext='<obj0>'
+++IA2_ROLE_SECTION ia2_hypertext='<obj0>'
+++++IA2_ROLE_DATE_EDITOR FOCUSABLE ia2_hypertext='<obj0><obj1><obj2>'
+++++++IA2_ROLE_SECTION ia2_hypertext='<obj0>'
+++++++++IA2_ROLE_SECTION ia2_hypertext='<obj0>/<obj2>/<obj4><obj5>:<obj7><obj8>'
+++++++++++ROLE_SYSTEM_SPINBUTTON name='Month' FOCUSABLE ia2_hypertext='Month'
+++++++++++ROLE_SYSTEM_STATICTEXT name='/' ia2_hypertext='/'
+++++++++++ROLE_SYSTEM_SPINBUTTON name='Day' FOCUSABLE ia2_hypertext='Day'
+++++++++++ROLE_SYSTEM_STATICTEXT name='/' ia2_hypertext='/'
+++++++++++ROLE_SYSTEM_SPINBUTTON name='Year' FOCUSABLE ia2_hypertext='Year'
+++++++++++ROLE_SYSTEM_SPINBUTTON name='Hours' FOCUSABLE ia2_hypertext='Hours'
+++++++++++ROLE_SYSTEM_STATICTEXT name=':' ia2_hypertext=':'
+++++++++++ROLE_SYSTEM_SPINBUTTON name='Minutes' FOCUSABLE ia2_hypertext='Minutes'
+++++++++++ROLE_SYSTEM_SPINBUTTON name='AM/PM' FOCUSABLE ia2_hypertext='AM/PM'
 ++++++ROLE_SYSTEM_BUTTONMENU FOCUSABLE
-++++++ROLE_SYSTEM_SPINBUTTON
+++++++ROLE_SYSTEM_SPINBUTTON ia2_hypertext='<obj0><obj1>'
 ++++++++ROLE_SYSTEM_PUSHBUTTON
 ++++++++ROLE_SYSTEM_PUSHBUTTON

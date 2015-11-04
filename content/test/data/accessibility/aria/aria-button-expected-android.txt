@@ -1,6 +1,6 @@
 android.webkit.WebView focusable focused scrollable
-++android.widget.Button clickable focusable
-++android.widget.ToggleButton checkable checked clickable focusable
-++android.widget.ToggleButton checkable clickable focusable
-++android.widget.Spinner clickable focusable
-++android.widget.Button clickable focusable
+++android.widget.Button clickable focusable name='Button1'
+++android.widget.ToggleButton checkable checked clickable focusable name='Button2'
+++android.widget.ToggleButton checkable clickable focusable name='Button3'
+++android.widget.Spinner clickable focusable name='Button4'
+++android.widget.Button clickable focusable name='Button5'

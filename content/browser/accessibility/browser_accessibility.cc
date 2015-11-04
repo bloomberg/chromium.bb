@@ -717,6 +717,19 @@ bool BrowserAccessibility::IsControl() const {
   }
 }
 
+bool BrowserAccessibility::IsTextControl() const {
+  // Time fields, color wells and spinner buttons might also use text fields as
+  // constituent parts, but they are not considered text fields as a whole.
+  switch (GetRole()) {
+    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_SEARCH_BOX:
+    case ui::AX_ROLE_TEXT_FIELD:
+      return true;
+    default:
+      return false;
+  }
+}
+
 int BrowserAccessibility::GetStaticTextLenRecursive() const {
   if (GetRole() == ui::AX_ROLE_STATIC_TEXT ||
       GetRole() == ui::AX_ROLE_LINE_BREAK) {

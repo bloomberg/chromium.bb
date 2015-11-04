@@ -828,10 +828,6 @@ BrowserAccessibilityWin
   // value for some roles.
   base::string16 GetValueText();
 
-  // Get the text of this node for the purposes of IAccessibleText - it may
-  // be the name, it may be the value, etc. depending on the role.
-  base::string16 TextForIAccessibleText() const;
-
   bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(
       int* start, int* old_len, int* new_len);

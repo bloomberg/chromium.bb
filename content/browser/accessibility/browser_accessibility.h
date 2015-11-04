@@ -274,8 +274,8 @@ class CONTENT_EXPORT BrowserAccessibility {
   // True if this is a web area, and its grandparent is a presentational iframe.
   bool IsWebAreaForPresentationalIframe() const;
 
-  // Is any control, like a button, text field, etc.
   bool IsControl() const;
+  bool IsTextControl() const;
 
  protected:
   BrowserAccessibility();

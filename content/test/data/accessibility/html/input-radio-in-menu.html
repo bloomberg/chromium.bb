@@ -1,14 +1,17 @@
 <!--
 @WIN-ALLOW:MIXED*
 @WIN-ALLOW:checkable*
+@WIN-ALLOW:ia2_hypertext=*
 -->
 <html>
   <body>
     <menu type="list">
-      <input type="radio">
+      <input type="radio" value="r1">Radio1
+      <label><input type="radio" value="r2">Radio2</label>
     </menu>
     <div role="menu">
-      <input type="radio">
+      <label><input type="radio" value="r3">Radio3</label>
+      <input type="radio" value="r4">
     </div>
   </body>
 </html>

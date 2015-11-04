@@ -1,18 +1,19 @@
 <!--
 @MAC-ALLOW:AXRole*
 @MAC-ALLOW:AXSubrole*
-@WIN-ALLOW:xml-roles:*
 @WIN-ALLOW:checkable*
 @WIN-ALLOW:HASPOPUP
+@WIN-ALLOW:ia2_hypertext=*
 @WIN-ALLOW:PRESSED
+@WIN-ALLOW:xml-roles:*
 -->
 <!DOCTYPE html>
 <html>
 <body>
-  <div tabindex=0 role="button"></div>
-  <div tabindex=1 role="button" aria-pressed="true"></div>
-  <div tabindex=2 role="button" aria-pressed="false"></div>
-  <div tabindex=3 role="button" aria-haspopup="true"></div>
-  <div tabindex=4 role="button" aria-haspopup="false"></div>
+  <div tabindex=0 role="button">Button1</div>
+  <div tabindex=1 role="button" aria-pressed="true">Button2</div>
+  <div tabindex=2 role="button" aria-pressed="false">Button3</div>
+  <div tabindex=3 role="button" aria-haspopup="true">Button4</div>
+  <div tabindex=4 role="button" aria-haspopup="false">Button5</div>
 </body>
 </html>

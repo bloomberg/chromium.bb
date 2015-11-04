@@ -71,6 +71,7 @@
     article,
     banner,
     blockquote,
+    // TODO(nektar): Remove busy_indicator because it's used nowhere.
     busy_indicator,
     button,
     button_drop_down,
