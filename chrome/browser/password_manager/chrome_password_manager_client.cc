@@ -57,7 +57,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
-#include "chrome/browser/ui/android/snackbars/auto_signin_snackbar_controller.h"
+#include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #endif
 
 using password_manager::ContentPasswordManagerDriverFactory;
@@ -263,8 +263,7 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());
 #if defined(OS_ANDROID)
-  TabAndroid *tab = TabAndroid::FromWebContents(web_contents());
-  ShowAutoSigninSnackbar(tab, local_forms[0]->username_value);
+  ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
 #else
   ManagePasswordsUIController::FromWebContents(web_contents())->
       OnAutoSignin(local_forms.Pass());

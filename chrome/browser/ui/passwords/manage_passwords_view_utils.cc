@@ -119,3 +119,24 @@ void GetAccountChooserDialogTitleTextAndLinkRange(
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE);
   }
 }
+
+void GetAutoSigninPromptFirstRunExperienceExplanation(
+    bool is_smartlock_branding_enabled,
+    base::string16* explanation,
+    gfx::Range* explanation_link_range) {
+  *explanation_link_range = gfx::Range();
+  if (is_smartlock_branding_enabled) {
+    size_t offset;
+    base::string16 explanation_link =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+    *explanation = l10n_util::GetStringFUTF16(
+        IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME, explanation_link,
+        &offset);
+    *explanation_link_range =
+        gfx::Range(offset, offset + explanation_link.length());
+  } else {
+    *explanation = l10n_util::GetStringFUTF16(
+        IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME,
+        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND));
+  }
+}
