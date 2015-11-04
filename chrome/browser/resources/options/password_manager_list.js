@@ -81,6 +81,7 @@ cr.define('options.passwordManager', function() {
       urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
       this.contentElement.appendChild(urlDiv);
+      this.urlLink = urlLink;
 
       // The stored username.
       var usernameDiv = this.ownerDocument.createElement('div');
@@ -173,7 +174,10 @@ cr.define('options.passwordManager', function() {
      */
     setFocusable_: function(focusable) {
       var tabIndex = focusable ? 0 : -1;
-      this.passwordField.tabIndex = this.closeButtonElement.tabIndex = tabIndex;
+      this.urlLink.tabIndex = tabIndex;
+      this.usernameField.tabIndex = tabIndex;
+      this.passwordField.tabIndex = tabIndex;
+      this.closeButtonElement.tabIndex = tabIndex;
     },
 
     /**
@@ -328,6 +332,7 @@ cr.define('options.passwordManager', function() {
       urlDiv.appendChild(urlLink);
       urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
+      urlLink.tabIndex = -1;
       this.contentElement.appendChild(urlDiv);
     },
 
