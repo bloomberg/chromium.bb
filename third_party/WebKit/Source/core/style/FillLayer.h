@@ -184,6 +184,8 @@ public:
     void fillUnsetProperties();
     void cullEmptyLayers();
 
+    static bool imagesIdentical(const FillLayer*, const FillLayer*);
+
     EFillBox thisOrNextLayersClipMax() const { computeCachedPropertiesIfNeeded(); return static_cast<EFillBox>(m_thisOrNextLayersClipMax); }
     bool thisOrNextLayersUseContentBox() const { computeCachedPropertiesIfNeeded(); return m_thisOrNextLayersUseContentBox; }
     bool thisOrNextLayersHaveLocalAttachment() const { computeCachedPropertiesIfNeeded(); return m_thisOrNextLayersHaveLocalAttachment; }
