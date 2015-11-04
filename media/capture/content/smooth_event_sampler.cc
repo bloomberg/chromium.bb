@@ -10,15 +10,6 @@
 
 namespace media {
 
-namespace {
-
-// The maximum amount of time that can elapse before considering unchanged
-// content as dirty for the purposes of timer-based overdue sampling.  This is
-// the same value found in cc::FrameRateCounter.
-const int kOverdueDirtyThresholdMillis = 250;  // 4 FPS
-
-}  // anonymous namespace
-
 SmoothEventSampler::SmoothEventSampler(base::TimeDelta min_capture_period,
                                        int redundant_capture_goal)
     : redundant_capture_goal_(redundant_capture_goal),
@@ -88,7 +79,7 @@ bool SmoothEventSampler::IsOverdueForSamplingAt(
   // won't request a sample just yet.
   base::TimeDelta dirty_interval = event_time - last_sample_;
   return dirty_interval >=
-         base::TimeDelta::FromMilliseconds(kOverdueDirtyThresholdMillis);
+         base::TimeDelta::FromMilliseconds(OVERDUE_DIRTY_THRESHOLD_MILLIS);
 }
 
 bool SmoothEventSampler::HasUnrecordedEvent() const {

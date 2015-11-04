@@ -159,8 +159,6 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
       } else {
         VLOG_IF(1, had_proposal) << "Content sampler detects animation ended.";
         should_sample = smoothing_sampler_.ShouldSample();
-        if (should_sample)
-          duration_of_next_frame_ = smoothing_sampler_.min_capture_period();
       }
       break;
     }
@@ -168,11 +166,8 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
     case kTimerPoll:
       // While the timer is firing, only allow a sampling if there are none
       // currently in-progress.
-      if (num_frames_pending_ == 0) {
+      if (num_frames_pending_ == 0)
         should_sample = smoothing_sampler_.IsOverdueForSamplingAt(event_time);
-        if (should_sample)
-          duration_of_next_frame_ = smoothing_sampler_.min_capture_period();
-      }
       break;
 
     case kNumEvents:
@@ -182,6 +177,20 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
 
   if (!should_sample)
     return false;
+
+  // If the exact duration of the next frame has not been determined, estimate
+  // it using the difference between the current and last frame.
+  if (duration_of_next_frame_.is_zero()) {
+    if (next_frame_number_ > 0) {
+      duration_of_next_frame_ =
+          event_time - GetFrameTimestamp(next_frame_number_ - 1);
+    }
+    const base::TimeDelta upper_bound = base::TimeDelta::FromMilliseconds(
+        SmoothEventSampler::OVERDUE_DIRTY_THRESHOLD_MILLIS);
+    duration_of_next_frame_ =
+        std::max(std::min(duration_of_next_frame_, upper_bound),
+                 smoothing_sampler_.min_capture_period());
+  }
 
   // Update |capture_size_| and reset all feedback signal accumulators if
   // either: 1) this is the first frame; or 2) |resolution_chooser_| has an
