@@ -103,19 +103,18 @@ void HttpEquiv::processHttpEquivXFrameOptions(Document& document, const AtomicSt
     if (!frame->loader().shouldInterruptLoadForXFrameOptions(content, document.url(), requestIdentifier))
         return;
 
-    String message = "Refused to display '" + document.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-    frame->loader().stopAllLoaders();
-    // TODO(dglazkov): This should probably check document lifecycle instead.
-    if (!document.frame())
-        return;
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
+        "Refused to display '" + document.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.");
+    consoleMessage->setRequestIdentifier(requestIdentifier);
+    document.addConsoleMessage(consoleMessage.release());
 
+    frame->loader().stopAllLoaders();
     // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
     // intent, we must navigate away from the possibly partially-rendered document to a location that
     // doesn't inherit the parent's SecurityOrigin.
-    frame->navigate(document, SecurityOrigin::urlWithUniqueSecurityOrigin(), true, UserGestureStatus::None);
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
-    consoleMessage->setRequestIdentifier(requestIdentifier);
-    document.addConsoleMessage(consoleMessage.release());
+    // TODO(dglazkov): This should probably check document lifecycle instead.
+    if (document.frame())
+        frame->navigate(document, SecurityOrigin::urlWithUniqueSecurityOrigin(), true, UserGestureStatus::None);
 }
 
 }

@@ -1,2 +1,2 @@
-CONSOLE ERROR: Refused to display 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny-meta-tag-subframe-in-body.html' in a frame because it set 'X-Frame-Options' to 'deny'.
+CONSOLE ERROR: line 6: Refused to display 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny-meta-tag-subframe-in-body.html' in a frame because it set 'X-Frame-Options' to 'deny'.
 PASS
