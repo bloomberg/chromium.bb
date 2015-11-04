@@ -195,8 +195,6 @@ interface WindowTree {
   //   OpenWindow(WindowTreeClient client);
   SetPreferredSize(uint32 window_id, mojo.Size size) =>
       (WindowManagerErrorCode result);
-  SetBounds(uint32 window_id, mojo.Rect bounds) =>
-      (WindowManagerErrorCode result);
   SetShowState(uint32 window_id, ShowState show_state) =>
       (WindowManagerErrorCode result);
   GetDisplays() => (array<Display> displays);
@@ -204,7 +202,8 @@ interface WindowTree {
 
 // Changes to windows are not sent to the connection that originated the
 // change. For example, if connection 1 changes the bounds of a window by
-// calling SetBounds(), connection 1 does not receive OnWindowBoundsChanged().
+// calling SetWindowBounds(), connection 1 does not receive
+// OnWindowBoundsChanged().
 interface WindowTreeClient {
   // Invoked when the client application has been embedded at |root|.
   // See Embed() on WindowTree for more details. |tree| will be a handle back to

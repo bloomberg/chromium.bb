@@ -154,7 +154,6 @@ class Window {
   // The following make their way to the WindowManager. See
   // window_manager.mojom for details.
   void SetPreferredSize(const gfx::Size& size);
-  void RequestBoundsChange(const gfx::Rect& bounds);
   void SetShowState(mojom::ShowState show_state);
 
   // Focus.

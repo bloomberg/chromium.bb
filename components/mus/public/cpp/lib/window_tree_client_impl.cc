@@ -163,8 +163,22 @@ bool WindowTreeClientImpl::OwnsWindow(Id id) const {
 
 void WindowTreeClientImpl::SetBounds(Id window_id, const gfx::Rect& bounds) {
   DCHECK(tree_);
-  tree_->SetWindowBounds(window_id, mojo::Rect::From(bounds),
-                         ActionCompletedCallback());
+  Window* window = GetWindowById(window_id);
+  tree_->SetWindowBounds(
+      window_id, mojo::Rect::From(bounds),
+      base::Bind(&WindowTreeClientImpl::OnSetBoundsResponse,
+                 base::Unretained(this), window_id, bounds, window->bounds()));
+}
+
+void WindowTreeClientImpl::OnSetBoundsResponse(
+    Id window_id,
+    const gfx::Rect& requested_bounds,
+    const gfx::Rect& real_bounds,
+    bool success) {
+  if (success)
+    return;
+  Window* window = GetWindowById(window_id);
+  WindowPrivate(window).LocalSetBounds(requested_bounds, real_bounds);
 }
 
 void WindowTreeClientImpl::SetClientArea(Id window_id,
@@ -253,12 +267,6 @@ void WindowTreeClientImpl::SetPreferredSize(Id window_id,
                                             const gfx::Size& size) {
   tree_->SetPreferredSize(window_id, mojo::Size::From(size),
                           base::Bind(&WindowManagerCallback));
-}
-
-void WindowTreeClientImpl::RequestBoundsChange(Id window_id,
-                                               const gfx::Rect& bounds) {
-  tree_->SetBounds(window_id, mojo::Rect::From(bounds),
-                   base::Bind(&WindowManagerCallback));
 }
 
 void WindowTreeClientImpl::SetShowState(Id window_id,

@@ -66,7 +66,7 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
 
   bool is_embed_root() const { return is_embed_root_; }
 
-  WindowTreeHostImpl* GetHost();
+  WindowTreeHostImpl* GetHost() const;
 
   // Invoked when a connection is about to be destroyed.
   void OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection);
@@ -122,6 +122,8 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
  private:
   using WindowIdSet = base::hash_set<Id>;
   using WindowMap = std::map<ConnectionSpecificId, ServerWindow*>;
+
+  bool ShouldRouteToWindowManager(const ServerWindow* window) const;
 
   bool IsWindowKnown(const ServerWindow* window) const;
 
@@ -222,9 +224,6 @@ class WindowTreeImpl : public mojom::WindowTree, public AccessPolicyDelegate {
   void SetPreferredSize(uint32_t window_id,
                         mojo::SizePtr size,
                         const SetPreferredSizeCallback& callback) override;
-  void SetBounds(uint32_t window_id,
-                 mojo::RectPtr bounds,
-                 const SetBoundsCallback& callback) override;
   void SetShowState(uint32_t window_id,
                     mus::mojom::ShowState show_state,
                     const SetShowStateCallback& callback) override;

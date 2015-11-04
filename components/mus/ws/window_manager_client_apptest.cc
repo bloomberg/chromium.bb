@@ -372,7 +372,12 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
   ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
 
   window_in_embedded->SetBounds(gfx::Rect(0, 0, 1024, 768));
-  // Bounds change should have been rejected.
+  // Bounds change is initially accepted, but the server declines the request.
+  EXPECT_FALSE(window->bounds() == window_in_embedded->bounds());
+
+  // The client is notified when the requested is declined, and updates the
+  // local bounds accordingly.
+  ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
   EXPECT_TRUE(window->bounds() == window_in_embedded->bounds());
 }
 

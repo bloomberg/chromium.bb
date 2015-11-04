@@ -44,14 +44,16 @@ class WindowTreeHostMus : public aura::WindowTreeHost,
     return ui::EventSource::SendEventToProcessor(event);
   }
 
+  // WindowTreeHost:
+  gfx::Rect GetBounds() const override;
+  void SetBounds(const gfx::Rect& bounds) override;
+
  private:
   // WindowTreeHost:
   ui::EventSource* GetEventSource() override;
   gfx::AcceleratedWidget GetAcceleratedWidget() override;
   void ShowImpl() override;
   void HideImpl() override;
-  gfx::Rect GetBounds() const override;
-  void SetBounds(const gfx::Rect& bounds) override;
   gfx::Point GetLocationOnNativeScreen() const override;
   void SetCapture() override;
   void ReleaseCapture() override;

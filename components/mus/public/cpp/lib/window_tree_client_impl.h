@@ -91,13 +91,17 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnRootDestroyed(Window* root);
 
   void SetPreferredSize(Id window_id, const gfx::Size& size);
-  void RequestBoundsChange(Id window_id, const gfx::Rect& bounds);
   void SetShowState(Id window_id, mojom::ShowState show_state);
 
  private:
   typedef std::map<Id, Window*> IdToWindowMap;
 
   Id CreateWindowOnServer();
+
+  void OnSetBoundsResponse(Id window_id,
+                           const gfx::Rect& requested_bounds,
+                           const gfx::Rect& real_bounds,
+                           bool success);
 
   // Overridden from WindowTreeConnection:
   Window* GetRoot() override;

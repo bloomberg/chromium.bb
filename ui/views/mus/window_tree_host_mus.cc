@@ -68,6 +68,14 @@ void WindowTreeHostMus::SetShowState(mus::mojom::ShowState show_state) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMus, aura::WindowTreeHost implementation:
 
+gfx::Rect WindowTreeHostMus::GetBounds() const {
+  return mus_window_->bounds();
+}
+
+void WindowTreeHostMus::SetBounds(const gfx::Rect& bounds) {
+  mus_window_->SetBounds(bounds);
+}
+
 ui::EventSource* WindowTreeHostMus::GetEventSource() {
   return this;
 }
@@ -84,14 +92,6 @@ void WindowTreeHostMus::ShowImpl() {
 void WindowTreeHostMus::HideImpl() {
   mus_window_->SetVisible(false);
   window()->Hide();
-}
-
-gfx::Rect WindowTreeHostMus::GetBounds() const {
-  return mus_window_->bounds();
-}
-
-void WindowTreeHostMus::SetBounds(const gfx::Rect& bounds) {
-  window()->SetBounds(gfx::Rect(bounds.size()));
 }
 
 gfx::Point WindowTreeHostMus::GetLocationOnNativeScreen() const {

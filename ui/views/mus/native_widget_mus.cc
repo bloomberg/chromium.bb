@@ -249,11 +249,12 @@ gfx::Rect NativeWidgetMus::GetRestoredBounds() const {
 }
 
 void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
-  window_->RequestBoundsChange(bounds);
+  window_tree_host_->SetBounds(bounds);
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {
-  window_->RequestBoundsChange(gfx::Rect(window_->bounds().size()));
+  gfx::Rect bounds = window_tree_host_->GetBounds();
+  SetBounds(gfx::Rect(bounds.origin(), size));
 }
 
 void NativeWidgetMus::StackAbove(gfx::NativeView native_view) {
