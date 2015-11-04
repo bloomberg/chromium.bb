@@ -423,6 +423,14 @@ chrome_public_apk_tmpl("chrome_public_apk") {
   native_libs = [ "$root_build_dir/lib.stripped/libchrome_public.so" ]
   native_lib_version_rule = "//build/util:chrome_version_json"
 
+  # Only attempt loading the library from the APK for 64 bit devices
+  # until the number of 32 bit devices which don't support this
+  # approach falls to a minimal level -  http://crbug.com/390618.
+  if (chromium_linker_supported &&
+      (target_cpu == "arm64" || target_cpu == "x64")) {
+    load_library_from_apk = true
+  }
+
   deps = [
     ":chrome_java",
     ":chrome_public",
