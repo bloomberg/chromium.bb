@@ -70,7 +70,7 @@ aura::Window* ResizeHandleWindowTargeter::FindTargetForLocatedEvent(
       insets = frame_border_inset_;
     }
 
-    if (!insets.empty()) {
+    if (!insets.IsEmpty()) {
       gfx::Rect bounds = gfx::Rect(window_->bounds().size());
       bounds.Inset(insets);
       if (!bounds.Contains(event->location()))

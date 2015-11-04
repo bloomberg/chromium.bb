@@ -155,7 +155,7 @@ TEST_F(StyledLabelTest, CreateLinks) {
   InitStyledLabel(text);
 
   // Without links, there should be no focus border.
-  EXPECT_TRUE(styled()->GetInsets().empty());
+  EXPECT_TRUE(styled()->GetInsets().IsEmpty());
 
   // Now let's add some links.
   styled()->AddStyleRange(gfx::Range(0, 1),
@@ -168,7 +168,7 @@ TEST_F(StyledLabelTest, CreateLinks) {
                           StyledLabel::RangeStyleInfo::CreateForLink());
 
   // Now there should be a focus border because there are non-empty Links.
-  EXPECT_FALSE(styled()->GetInsets().empty());
+  EXPECT_FALSE(styled()->GetInsets().IsEmpty());
 
   // Verify layout creates the right number of children.
   styled()->SetBounds(0, 0, 1000, 1000);

@@ -32,7 +32,7 @@ class GFX_EXPORT InsetsF {
   float height() const { return top_ + bottom_; }
 
   // Returns true if the insets are empty.
-  bool empty() const { return width() == 0.f && height() == 0.f; }
+  bool IsEmpty() const { return width() == 0.f && height() == 0.f; }
 
   void Set(float top, float left, float bottom, float right) {
     top_ = top;

@@ -313,7 +313,7 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
   for (const auto& display : active_display_list_) {
     DisplayInfo info = GetDisplayInfo(display.id());
     if (info.id() == display_id) {
-      if (insets_in_dip.empty()) {
+      if (insets_in_dip.IsEmpty()) {
         info.set_clear_overscan_insets(true);
       } else {
         info.set_clear_overscan_insets(false);

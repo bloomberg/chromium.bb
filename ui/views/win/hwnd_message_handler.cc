@@ -1070,7 +1070,7 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
 bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
   if (delegate_->GetClientAreaInsets(insets))
     return true;
-  DCHECK(insets->empty());
+  DCHECK(insets->IsEmpty());
 
   // Returning false causes the default handling in OnNCCalcSize() to
   // be invoked.

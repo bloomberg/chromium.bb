@@ -137,7 +137,7 @@ SkBitmap ExtensionIconManager::ApplyTransforms(const SkBitmap& source) {
     result = SkBitmapOperations::CreateHSLShiftedBitmap(result, shift);
   }
 
-  if (!padding_.empty())
+  if (!padding_.IsEmpty())
     result = ApplyPadding(result, padding_);
 
   return result;

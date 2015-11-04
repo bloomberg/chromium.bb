@@ -209,11 +209,11 @@ class DisplayView : public ActionableView {
         display_manager->GetDisplayInfo(external_id);
     if (display_info.GetActiveRotation() != gfx::Display::ROTATE_0 ||
         display_info.configured_ui_scale() != 1.0f ||
-        !display_info.overscan_insets_in_dip().empty()) {
+        !display_info.overscan_insets_in_dip().IsEmpty()) {
       name = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
           name, GetDisplaySize(external_id));
-    } else if (display_info.overscan_insets_in_dip().empty() &&
+    } else if (display_info.overscan_insets_in_dip().IsEmpty() &&
                display_info.has_overscan()) {
       name = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
@@ -268,7 +268,7 @@ class DisplayView : public ActionableView {
         GetDisplayManager()->first_display_id());
     return display_info.GetActiveRotation() != gfx::Display::ROTATE_0 ||
            display_info.configured_ui_scale() != 1.0f ||
-           !display_info.overscan_insets_in_dip().empty() ||
+           !display_info.overscan_insets_in_dip().IsEmpty() ||
            display_info.has_overscan();
   }
 

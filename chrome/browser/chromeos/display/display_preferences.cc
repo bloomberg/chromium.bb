@@ -274,7 +274,7 @@ void StoreCurrentDisplayProperties() {
           "device-scale-factor",
           static_cast<int>(mode.device_scale_factor * 1000));
     }
-    if (!info.overscan_insets_in_dip().empty())
+    if (!info.overscan_insets_in_dip().IsEmpty())
       InsetsToValue(info.overscan_insets_in_dip(), property_value.get());
     if (info.color_profile() != ui::COLOR_PROFILE_STANDARD) {
       property_value->SetString(
