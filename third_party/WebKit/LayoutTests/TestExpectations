@@ -646,7 +646,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-0
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vlr-004.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-001.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-004.html [ Failure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-stretch-001.html [ Failure ]
 
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Skip ]
@@ -1352,10 +1351,6 @@ crbug.com/548416 [ Mac10.6 ] virtual/syncpaint/compositing/repaint/background-at
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
 
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
-
-crbug.com/551057 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-023.xht [ Failure ]
-crbug.com/551057 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-025.xht [ Failure ]
-crbug.com/551057 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-027.xht [ Failure ]
 
 crbug.com/551272 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
 crbug.com/551272 fast/js/pic/cached-named-property-getter.html [ NeedsManualRebaseline ]
