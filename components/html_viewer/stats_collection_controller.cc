@@ -9,7 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/time/time.h"
-#include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "mojo/application/public/cpp/application_impl.h"

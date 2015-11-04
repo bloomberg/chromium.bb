@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'startup_metric_utils',
+      'target_name': 'startup_metric_utils_browser',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -14,8 +14,8 @@
         '..',
       ],
       'sources': [
-        'startup_metric_utils/startup_metric_utils.cc',
-        'startup_metric_utils/startup_metric_utils.h',
+        'startup_metric_utils/browser/startup_metric_utils.cc',
+        'startup_metric_utils/browser/startup_metric_utils.h',
       ],
     },
   ],

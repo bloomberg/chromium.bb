@@ -50,7 +50,6 @@ source_set("browser") {
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/query_parser",
-    "//components/startup_metric_utils",
     "//components/strings",
     "//components/url_formatter",
     "//net",
