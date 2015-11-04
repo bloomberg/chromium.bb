@@ -216,8 +216,10 @@ void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location
         if (ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator())
             coordinator->scrollableAreaScrollLayerDidChange(this);
 
-        if (Document* document = mainFrame()->document())
-            document->enqueueScrollEventForNode(document);
+        if (!frameHost().settings().inertVisualViewport()) {
+            if (Document* document = mainFrame()->document())
+                document->enqueueScrollEventForNode(document);
+        }
 
         mainFrame()->loader().client()->didChangeScrollOffset();
         valuesChanged = true;
