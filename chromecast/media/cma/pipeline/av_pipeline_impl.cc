@@ -61,6 +61,14 @@ AvPipelineImpl::~AvPipelineImpl() {
 void AvPipelineImpl::TransitionToState(State state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   state_ = state;
+
+  if (state_ == kFlushing) {
+    // Break the feeding loop.
+    enable_feeding_ = false;
+
+    // Remove any pending buffer.
+    pending_buffer_ = nullptr;
+  }
 }
 
 void AvPipelineImpl::SetCodedFrameProvider(
@@ -102,13 +110,7 @@ void AvPipelineImpl::Flush(const base::Closure& done_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, kFlushing);
 
-  // Break the feeding loop.
-  enable_feeding_ = false;
-
-  // Remove any pending buffer.
-  pending_buffer_ = nullptr;
-
-  // Finally, remove any frames left in the frame provider.
+  // Remove any frames left in the frame provider.
   pending_read_ = false;
   buffered_time_ = ::media::kNoTimestamp();
   playable_buffered_time_ = ::media::kNoTimestamp();
@@ -166,6 +168,9 @@ void AvPipelineImpl::OnNewFrame(
     const ::media::VideoDecoderConfig& video_config) {
   DCHECK(thread_checker_.CalledOnValidThread());
   pending_read_ = false;
+
+  if (!enable_feeding_)
+    return;
 
   if (audio_config.IsValidConfig() || video_config.IsValidConfig())
     update_config_cb_.Run(buffer->stream_id(), audio_config, video_config);

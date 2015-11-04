@@ -267,7 +267,27 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
 
   buffering_controller_->Reset();
 
-  // Flush both the audio and video pipeline.
+  // Flush audio/video pipeline in three phases:
+  // 1. Stop pushing data to backend. This guarentees media pipeline doesn't
+  // push buffers to backend after stopping backend. (b/23751784)
+  if (audio_pipeline_ && !audio_pipeline_->StartFlush()) {
+    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
+    return;
+  }
+  if (video_pipeline_ && !video_pipeline_->StartFlush()) {
+    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
+    return;
+  }
+
+  // 2. Stop the backend, so that the backend won't push their pending buffer,
+  // which may be invalidated later, to hardware. (b/25342604)
+  if (!media_pipeline_backend_->Stop()) {
+    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
+    return;
+  }
+
+  // 3. Flush both the audio and video pipeline. This will flush the frame
+  // provider and invalidate all the unreleased buffers.
   ::media::SerialRunner::Queue bound_fns;
   if (audio_pipeline_) {
     bound_fns.Push(base::Bind(
@@ -339,12 +359,6 @@ void MediaPipelineImpl::SetVolume(float volume) {
 void MediaPipelineImpl::OnFlushDone(
     const ::media::PipelineStatusCB& status_cb,
     ::media::PipelineStatus status) {
-  // Stop the backend
-  if (!media_pipeline_backend_->Stop()) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
-  }
-
   // Clear pending buffers.
   if (audio_pipeline_)
     audio_pipeline_->BackendStopped();

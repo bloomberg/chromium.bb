@@ -64,14 +64,19 @@ bool VideoPipelineImpl::StartPlayingFrom(
   return true;
 }
 
-void VideoPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
+bool VideoPipelineImpl::StartFlush() {
   CMALOG(kLogControl) << __FUNCTION__;
   if (av_pipeline_impl_->GetState() == AvPipelineImpl::kError) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
+    return false;
   }
   DCHECK_EQ(av_pipeline_impl_->GetState(), AvPipelineImpl::kPlaying);
   av_pipeline_impl_->TransitionToState(AvPipelineImpl::kFlushing);
+  return true;
+}
+
+void VideoPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
+  CMALOG(kLogControl) << __FUNCTION__;
+  DCHECK_EQ(av_pipeline_impl_->GetState(), AvPipelineImpl::kFlushing);
   av_pipeline_impl_->Flush(
       base::Bind(&VideoPipelineImpl::OnFlushDone, weak_this_, status_cb));
 }

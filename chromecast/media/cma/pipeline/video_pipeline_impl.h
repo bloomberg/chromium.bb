@@ -47,6 +47,7 @@ class VideoPipelineImpl {
       const ::media::PipelineStatusCB& status_cb);
   bool StartPlayingFrom(base::TimeDelta time,
                         const scoped_refptr<BufferingState>& buffering_state);
+  bool StartFlush();
   void Flush(const ::media::PipelineStatusCB& status_cb);
   void BackendStopped();
   void Stop();
