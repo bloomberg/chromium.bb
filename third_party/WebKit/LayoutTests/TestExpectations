@@ -1357,6 +1357,6 @@ crbug.com/551057 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignme
 crbug.com/551057 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-025.xht [ Failure ]
 crbug.com/551057 [ XP ] imported/csswg-test/css-writing-modes-3/vertical-alignment-vlr-027.xht [ Failure ]
 
-crbug.com/551272 fast/js/getPropertyDescriptor.html [ NeedsManualRebaseline ]
-crbug.com/551272 fast/js/pic/cached-name-property-getter.html [ NeedsManualRebaseline ]
+crbug.com/551272 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
+crbug.com/551272 fast/js/pic/cached-named-property-getter.html [ NeedsManualRebaseline ]
 crbug.com/551272 fast/js/mozilla/strict/15.10.7.html [ NeedsManualRebaseline ]
