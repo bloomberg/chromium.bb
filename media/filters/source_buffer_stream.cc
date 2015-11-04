@@ -893,29 +893,6 @@ void SourceBufferStream::PrepareRangesForNextAppend(
     const BufferQueue& new_buffers, BufferQueue* deleted_buffers) {
   DCHECK(deleted_buffers);
 
-  bool temporarily_select_range = false;
-  if (!track_buffer_.empty()) {
-    DecodeTimestamp tb_timestamp = track_buffer_.back()->GetDecodeTimestamp();
-    DecodeTimestamp seek_timestamp = FindKeyframeAfterTimestamp(tb_timestamp);
-    if (seek_timestamp != kNoDecodeTimestamp() &&
-        seek_timestamp < new_buffers.front()->GetDecodeTimestamp() &&
-        range_for_next_append_ != ranges_.end() &&
-        (*range_for_next_append_)->BelongsToRange(seek_timestamp)) {
-      DCHECK(tb_timestamp < seek_timestamp);
-      DCHECK(!selected_range_);
-      DCHECK(!(*range_for_next_append_)->HasNextBufferPosition());
-
-      // If there are GOPs between the end of the track buffer and the
-      // beginning of the new buffers, then temporarily seek the range
-      // so that the buffers between these two times will be deposited in
-      // |deleted_buffers| as if they were part of the current playback
-      // position.
-      // TODO(acolwell): Figure out a more elegant way to do this.
-      SeekAndSetSelectedRange(*range_for_next_append_, seek_timestamp);
-      temporarily_select_range = true;
-    }
-  }
-
   // Handle splices between the existing buffers and the new buffers.  If a
   // splice is generated the timestamp and duration of the first buffer in
   // |new_buffers| will be modified.
@@ -966,10 +943,6 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   }
 
   RemoveInternal(start, end, exclude_start, deleted_buffers);
-
-  // Restore the range seek state if necessary.
-  if (temporarily_select_range)
-    SetSelectedRange(NULL);
 }
 
 bool SourceBufferStream::AreAdjacentInSequence(
