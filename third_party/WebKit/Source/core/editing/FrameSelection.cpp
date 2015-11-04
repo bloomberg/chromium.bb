@@ -650,11 +650,6 @@ void FrameSelection::setExtent(const VisiblePosition &pos, EUserTriggered userTr
     setSelection(VisibleSelection(selection().base(), pos.deepEquivalent(), pos.affinity(), selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
 }
 
-static bool isNonOrphanedCaret(const VisibleSelection& selection)
-{
-    return selection.isCaret() && !selection.start().isOrphan() && !selection.end().isOrphan();
-}
-
 static bool isTextFormControl(const VisibleSelection& selection)
 {
     return enclosingTextFormControl(selection.start());
@@ -662,16 +657,18 @@ static bool isTextFormControl(const VisibleSelection& selection)
 
 LayoutBlock* FrameSelection::caretLayoutObject() const
 {
-    if (!isNonOrphanedCaret(selection()))
+    ASSERT(selection().isValidFor(*m_frame->document()));
+    if (!isCaret())
         return nullptr;
     return CaretBase::caretLayoutObject(selection().start().anchorNode());
 }
 
 IntRect FrameSelection::absoluteCaretBounds()
 {
+    ASSERT(selection().isValidFor(*m_frame->document()));
     ASSERT(m_frame->document()->lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
-    if (!isNonOrphanedCaret(selection())) {
+    if (!isCaret()) {
         clearCaretRect();
     } else {
         if (isTextFormControl(selection()))
@@ -682,23 +679,17 @@ IntRect FrameSelection::absoluteCaretBounds()
     return absoluteBoundsForLocalRect(selection().start().anchorNode(), localCaretRectWithoutUpdate());
 }
 
-static LayoutRect localCaretRect(const VisibleSelection& selection, const PositionWithAffinity& caretPosition, LayoutObject*& layoutObject)
-{
-    layoutObject = nullptr;
-    if (!isNonOrphanedCaret(selection))
-        return LayoutRect();
-
-    return localCaretRectOfPosition(caretPosition, layoutObject);
-}
-
 void FrameSelection::invalidateCaretRect()
 {
     if (!m_caretRectDirty)
         return;
     m_caretRectDirty = false;
 
+    ASSERT(selection().isValidFor(*m_frame->document()));
     LayoutObject* layoutObject = nullptr;
-    LayoutRect newRect = localCaretRect(selection(), PositionWithAffinity(selection().start(), selection().affinity()), layoutObject);
+    LayoutRect newRect;
+    if (selection().isCaret())
+        newRect = localCaretRectOfPosition(PositionWithAffinity(selection().start(), selection().affinity()), layoutObject);
     Node* newNode = layoutObject ? layoutObject->node() : nullptr;
 
     if (!m_caretBlinkTimer.isActive()
@@ -712,7 +703,6 @@ void FrameSelection::invalidateCaretRect()
         invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
     if (newNode && (shouldRepaintCaret(*newNode) || shouldRepaintCaret(view)))
         invalidateLocalCaretRect(newNode, newRect);
-
     m_previousCaretNode = newNode;
     m_previousCaretRect = newRect;
     m_previousCaretVisibility = caretVisibility();
