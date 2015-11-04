@@ -75,6 +75,7 @@ cr.define('options.passwordManager', function() {
           'title', getTitleForPasswordOrigin(this.url, this.isUrlSecure));
       var urlLink = this.ownerDocument.createElement('a');
       urlLink.href = this.url;
+      urlLink.setAttribute('target', '_blank');
       urlLink.textContent = this.shownUrl.split('').reverse().join('');
       urlDiv.appendChild(urlLink);
       urlDiv.style.backgroundImage = getFaviconImageSet(
@@ -323,6 +324,7 @@ cr.define('options.passwordManager', function() {
       var urlLink = this.ownerDocument.createElement('a');
       urlLink.href = this.url;
       urlLink.textContent = this.shownUrl.split('').reverse().join('');
+      urlLink.setAttribute('target', '_blank');
       urlDiv.appendChild(urlLink);
       urlDiv.style.backgroundImage = getFaviconImageSet(
           'origin/' + this.url, 16);
