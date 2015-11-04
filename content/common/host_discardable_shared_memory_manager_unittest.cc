@@ -60,6 +60,8 @@ class HostDiscardableSharedMemoryManagerTest : public testing::Test {
     manager_.reset(new TestHostDiscardableSharedMemoryManager);
   }
 
+  // HostDiscardableSharedMemoryManager requires a message loop.
+  base::MessageLoop message_loop_;
   scoped_ptr<TestHostDiscardableSharedMemoryManager> manager_;
 };
 
@@ -241,7 +243,7 @@ class HostDiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest
     manager_.reset(new HostDiscardableSharedMemoryManager);
   }
 
-  // This test requires a message loop.
+  // HostDiscardableSharedMemoryManager requires a message loop.
   base::MessageLoop message_loop_;
   scoped_ptr<HostDiscardableSharedMemoryManager> manager_;
 };

@@ -124,10 +124,7 @@ HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
           base::Bind(&HostDiscardableSharedMemoryManager::OnMemoryPressure,
                      base::Unretained(this)))),
       // Current thread might not have a task runner in tests.
-      enforce_memory_policy_task_runner_(
-          base::ThreadTaskRunnerHandle::IsSet()
-              ? base::ThreadTaskRunnerHandle::Get()
-              : nullptr),
+      enforce_memory_policy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       enforce_memory_policy_pending_(false),
       weak_ptr_factory_(this) {
   DCHECK_NE(memory_limit_, 0u);
