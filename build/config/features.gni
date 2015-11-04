@@ -155,9 +155,6 @@ use_seccomp_bpf = (is_linux || is_android) &&
 # Enable notifications everywhere except iOS.
 enable_notifications = !is_ios
 
-# TODO(brettw) this should be moved to net and only dependents get this define.
-disable_ftp_support = is_ios
-
 enable_web_speech = !is_android && !is_ios
 
 use_dbus = is_linux && !is_chromecast

@@ -56,6 +56,9 @@ config("net_config") {
   if (disable_file_support) {
     defines += [ "DISABLE_FILE_SUPPORT" ]
   }
+  if (disable_ftp_support) {
+    defines += [ "DISABLE_FTP_SUPPORT=1" ]
+  }
 }
 
 # net_internal_config is shared with net and net_small.
