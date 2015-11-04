@@ -430,6 +430,8 @@
     'chromium.fyi': {
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Libfuzzer Upload Linux': 'libfuzzer_upload_bot',
+      'Site Isolation Linux': 'gn_release_trybot',
+      'Site Isolation Win': 'gyp_release_trybot',
     },
     'chromium.webrtc.fyi': {
       'Android GN': 'android_gn_release_bot',
@@ -465,7 +467,7 @@
     'tryserver.chromium.linux': {
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
       'linux_full_bisect_builder': 'swarming_gyp_release_bot',
-      'linux_site_isolation': 'gyp_release_trybot',
+      'linux_site_isolation': 'gn_release_trybot',
       'linux_chromium_compile_rel_ng': 'swarming_gn_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_gn_rel': 'gn_release_trybot',
