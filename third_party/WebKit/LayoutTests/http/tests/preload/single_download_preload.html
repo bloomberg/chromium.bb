@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+    var t = async_test('Makes sure that preloaded resources are not downloaded again when used');
+</script>
+<link rel=preload href="../resources/dummy.js" as=script>
+<link rel=preload href="../resources/dummy.css" as=stylesheet>
+<link rel=preload href="../resources/square.png" as=image>
+<link rel=preload href="../resources/square.png?background" as=image>
+<script src="../resources/slow-script.pl?delay=200"></script>
+<style>
+    #background {
+        width: 200px;
+        height: 200px;
+        background-image: url(../resources/square.png?background);
+    }
+</style>
+<link rel="stylesheet" href="../resources/dummy.css">
+<script src="../resources/dummy.js"></script>
+<div id="background"></div>
+<img src="../resources/square.png">
+<script>
+    window.addEventListener("load", t.step_func(function() {
+        assert_equals(performance.getEntriesByType("resource").length, 7);
+        t.done();
+    }));
+</script>

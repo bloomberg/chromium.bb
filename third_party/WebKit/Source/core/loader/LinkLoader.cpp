@@ -42,6 +42,7 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/LinkHeader.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/PrerenderHandle.h"
@@ -164,7 +165,7 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
     }
 }
 
-static bool getPriorityTypeFromAsAttribute(const String& as, Resource::Type& type)
+static bool getTypeFromAsAttribute(const String& as, Resource::Type& type)
 {
     if (as.isEmpty())
         return false;
@@ -181,8 +182,11 @@ static bool getPriorityTypeFromAsAttribute(const String& as, Resource::Type& typ
     return true;
 }
 
-void LinkLoader::preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as)
+static void preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as)
 {
+    if (!document.loader())
+        return;
+
     if (relAttribute.isLinkPreload()) {
         UseCounter::count(document, UseCounter::LinkRelPreload);
         ASSERT(RuntimeEnabledFeatures::linkPreloadEnabled());
@@ -191,17 +195,17 @@ void LinkLoader::preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
             return;
         }
         // TODO(yoav): Figure out a way that 'as' would be used to set request headers.
-        Resource::Type priorityType;
-        if (!getPriorityTypeFromAsAttribute(as, priorityType)) {
+        Resource::Type type;
+        if (!getTypeFromAsAttribute(as, type)) {
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
             return;
         }
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
-        linkRequest.setPriority(document.fetcher()->loadPriority(priorityType, linkRequest));
+        linkRequest.setPriority(document.fetcher()->loadPriority(type, linkRequest));
         Settings* settings = document.settings();
         if (settings && settings->logPreload())
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
-        setResource(LinkFetchResource::fetch(Resource::LinkPreload, linkRequest, document.fetcher()));
+        document.loader()->startPreload(type, linkRequest);
     }
 }
 

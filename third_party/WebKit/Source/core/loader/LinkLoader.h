@@ -73,7 +73,6 @@ public:
 private:
     void linkLoadTimerFired(Timer<LinkLoader>*);
     void linkLoadingErrorTimerFired(Timer<LinkLoader>*);
-    void preloadIfNeeded(const LinkRelAttribute&, const KURL& href, Document&, const String& as);
 
     LinkLoaderClient* m_client;
 

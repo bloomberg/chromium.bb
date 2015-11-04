@@ -150,6 +150,9 @@ public:
 
     void updateAllImageResourcePriorities();
 
+    // This is only exposed for testing purposes.
+    WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>* preloads() { return m_preloads.get(); }
+
 private:
     friend class ResourceCacheValidationSuppressor;
 

@@ -8,6 +8,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
 #include "core/html/LinkRelAttribute.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/LinkLoaderClient.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/testing/DummyPageHolder.h"
@@ -82,16 +83,16 @@ TEST(LinkLoaderTest, Preload)
         const ResourceLoadPriority priority;
         const bool shouldLoad;
     } cases[] = {
-        {"data://example.com/cat.jpg", "image", ResourceLoadPriorityVeryLow, true},
-        {"data://example.com/cat.jpg", "script", ResourceLoadPriorityMedium, true},
-        {"data://example.com/cat.jpg", "stylesheet", ResourceLoadPriorityHigh, true},
-        {"data://example.com/cat.jpg", "blabla", ResourceLoadPriorityUnresolved, true},
-        {"data://example.com/cat.jpg", "image", ResourceLoadPriorityUnresolved, false},
+        {"data://example.test/cat.jpg", "image", ResourceLoadPriorityVeryLow, true},
+        {"data://example.test/cat.js", "script", ResourceLoadPriorityMedium, true},
+        {"data://example.test/cat.css", "stylesheet", ResourceLoadPriorityHigh, true},
+        {"data://example.test/cat.blob", "blabla", ResourceLoadPriorityUnresolved, false},
     };
 
     // Test the cases with a single header
     for (const auto& testCase : cases) {
         OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
+        dummyPageHolder->frame().settings()->setScriptEnabled(true);
         MockLinkLoaderClient loaderClient(testCase.shouldLoad);
         LinkLoader loader(&loaderClient);
         KURL hrefURL = KURL(KURL(), testCase.href);
@@ -102,11 +103,18 @@ TEST(LinkLoaderTest, Preload)
             hrefURL,
             dummyPageHolder->document(),
             NetworkHintsMock());
-        if (testCase.priority == ResourceLoadPriorityUnresolved) {
-            ASSERT(!loader.resource());
-        } else {
-            ASSERT(loader.resource());
-            ASSERT_EQ(testCase.priority, loader.resource()->resourceRequest().priority());
+        ASSERT(dummyPageHolder->document().fetcher());
+        WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>* preloads = dummyPageHolder->document().fetcher()->preloads();
+        if (testCase.shouldLoad)
+            ASSERT_NE(nullptr, preloads);
+        if (preloads) {
+            if (testCase.priority == ResourceLoadPriorityUnresolved) {
+                ASSERT_EQ((unsigned)0, preloads->size());
+            } else {
+                ASSERT_EQ((unsigned)1, preloads->size());
+                if (preloads->size() > 0)
+                    ASSERT_EQ(testCase.priority, preloads->begin().get()->get()->resourceRequest().priority());
+            }
         }
     }
 }
