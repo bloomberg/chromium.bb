@@ -12,7 +12,6 @@ import android.os.Bundle;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -79,19 +78,9 @@ public abstract class FirstRunFlowSequencer  {
     /**
      * @return Whether the sync could be turned on.
      */
-    @VisibleForTesting
-    boolean isSyncAllowed() {
+    private boolean isSyncAllowed() {
         return FeatureUtilities.canAllowSync(mActivity)
                 && !SigninManager.get(mActivity.getApplicationContext()).isSigninDisabledByPolicy();
-    }
-
-    /**
-     * @return Whether Terms of Service could be assumed to be accepted.
-     */
-    @VisibleForTesting
-    boolean didAcceptToS() {
-        return ToSAckedReceiver.checkAnyUserHasSeenToS(mActivity)
-                || PrefServiceBridge.getInstance().isFirstRunEulaAccepted();
     }
 
     private void processFreEnvironment() {
@@ -120,45 +109,39 @@ public abstract class FirstRunFlowSequencer  {
         final boolean shouldSkipFirstUseHints =
                 ApiCompatibilityUtils.shouldSkipFirstUseHints(context.getContentResolver());
 
-        if (!FirstRunStatus.getFirstRunFlowComplete(context)) {
-            // In the full FRE we always show the Welcome page, except on EDU devices.
-            final boolean showWelcomePage = !forceEduSignIn;
-            freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
+        // In the full FRE we always show the Welcome page, except on EDU devices.
+        final boolean showWelcomePage = !forceEduSignIn;
+        freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
 
-            // Enable reporting by default on non-Stable releases.
-            // The user can turn it off on the Welcome page.
-            // This is controlled by the administrator via a policy on EDU devices.
-            if (!ChromeVersionInfo.isStableBuild()) {
-                PrivacyPreferencesManager.getInstance(context).initCrashUploadPreference(true);
+        // Enable reporting by default on non-Stable releases.
+        // The user can turn it off on the Welcome page.
+        // This is controlled by the administrator via a policy on EDU devices.
+        if (!ChromeVersionInfo.isStableBuild()) {
+            PrivacyPreferencesManager.getInstance(context).initCrashUploadPreference(true);
+        }
+
+        // We show the sign-in page if sync is allowed, and this is not an EDU device, and
+        // - no "skip the first use hints" is set, or
+        // - "skip the first use hints" is set, but there is at least one account.
+        final boolean syncOk = isSyncAllowed();
+        final boolean offerSignInOk = syncOk
+                && !forceEduSignIn
+                && (!shouldSkipFirstUseHints || googleAccounts.length > 0);
+        freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
+
+        if (offerSignInOk || forceEduSignIn) {
+            // If the user has accepted the ToS in the Setup Wizard and there is exactly
+            // one account, or if the device has a child account, or if the device is an
+            // Android EDU device and there is exactly one account, preselect the sign-in
+            // account and force the selection if necessary.
+            if ((ToSAckedReceiver.checkAnyUserHasSeenToS(mActivity) && onlyOneAccount)
+                    || mHasChildAccount
+                    || forceEduSignIn) {
+                freProperties.putString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO,
+                        googleAccounts[0].name);
+                freProperties.putBoolean(AccountFirstRunFragment.PRESELECT_BUT_ALLOW_TO_CHANGE,
+                        !forceEduSignIn && !mHasChildAccount);
             }
-
-            // We show the sign-in page if sync is allowed, and this is not an EDU device, and
-            // - no "skip the first use hints" is set, or
-            // - "skip the first use hints" is set, but there is at least one account.
-            final boolean syncOk = isSyncAllowed();
-            final boolean offerSignInOk = syncOk
-                    && !forceEduSignIn
-                    && (!shouldSkipFirstUseHints || googleAccounts.length > 0);
-            freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
-
-            if (offerSignInOk || forceEduSignIn) {
-                // If the user has accepted the ToS in the Setup Wizard and there is exactly
-                // one account, or if the device has a child account, or if the device is an
-                // Android EDU device and there is exactly one account, preselect the sign-in
-                // account and force the selection if necessary.
-                if ((ToSAckedReceiver.checkAnyUserHasSeenToS(mActivity) && onlyOneAccount)
-                        || mHasChildAccount
-                        || forceEduSignIn) {
-                    freProperties.putString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO,
-                            googleAccounts[0].name);
-                    freProperties.putBoolean(AccountFirstRunFragment.PRESELECT_BUT_ALLOW_TO_CHANGE,
-                            !forceEduSignIn && !mHasChildAccount);
-                }
-            }
-        } else {
-            // If the full FRE has already been shown, don't show Welcome or Sign-In pages.
-            freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, false);
-            freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, false);
         }
 
         freProperties.putBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT, mHasChildAccount);
