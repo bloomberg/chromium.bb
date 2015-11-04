@@ -121,6 +121,7 @@ enum BadMessageReason {
   RDH_INVALID_URL = 97,
   BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED = 98,
   RFH_OWNER_PROPERTY = 99,
+  BDH_EMPTY_OR_INVALID_FILTERS = 100,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

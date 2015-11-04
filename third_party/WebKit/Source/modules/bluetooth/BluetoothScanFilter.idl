@@ -6,4 +6,6 @@
 
 dictionary BluetoothScanFilter {
     sequence<BluetoothServiceUUID> services;
+    DOMString name;
+    DOMString namePrefix;
 };

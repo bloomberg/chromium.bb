@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+
+test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+let matching_services = [heart_rate.uuid];
+let matching_name = 'Heart Rate Device';
+let matching_namePrefix = 'Heart';
+
+let non_matching_services = ['battery_service'];
+let non_matching_name = 'Some Device';
+let non_matching_namePrefix = 'Some';
+
+[{
+  filters: [{
+    services: non_matching_services,
+    name: non_matching_name,
+    namePrefix: non_matching_namePrefix
+  }]
+}, {
+  filters: [{
+    services: matching_services,
+    name: non_matching_name,
+    namePrefix: non_matching_namePrefix
+  }]
+}, {
+  filters: [{
+    services: non_matching_services,
+    name: matching_name,
+    namePrefix: non_matching_namePrefix
+  }]
+}, {
+  filters: [{
+    services: matching_services,
+    name: matching_name,
+    namePrefix: non_matching_namePrefix
+  }]
+}, {
+  filters: [{
+    services: non_matching_services,
+    name: non_matching_name,
+    namePrefix: matching_namePrefix
+  }]
+}, {
+  filters: [{
+    services: matching_services,
+    name: non_matching_name,
+    namePrefix: matching_namePrefix
+  }]
+}, {
+  filters: [{
+    services: non_matching_services,
+    name: matching_name,
+    namePrefix: matching_namePrefix
+  }]
+}].forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+    return assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                  'NotFoundError');
+  }, 'If at least one filter doesn\'t match the promise must reject.');
+});
+
+[{
+  filters: [{
+    services: non_matching_services,
+  }]
+}, {
+  filters: [{
+    services: non_matching_services,
+    name: non_matching_name,
+  }]
+}, {
+  filters: [{
+    services: non_matching_services,
+    namePrefix: non_matching_namePrefix
+  }]
+}, {
+  filters: [{
+    name: non_matching_name,
+  }]
+}, {
+  filters: [{
+    name: non_matching_name,
+    namePrefix: non_matching_namePrefix
+  }]
+}, {
+  filters: [{
+    namePrefix: non_matching_namePrefix
+  }]
+}].forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+    return assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                  'NotFoundError');
+  }, 'If a present filter\'s member doesn\'t match the device, ' +
+     'the device doesn\'t match the filter.');
+});
+
+[{
+  filters: [{
+    services: matching_services,
+  }]
+}, {
+  filters: [{
+    services: matching_services,
+    name: matching_name,
+  }]
+}, {
+  filters: [{
+    services: matching_services,
+    namePrefix: matching_namePrefix
+  }]
+}, {
+  filters: [{
+    name: matching_name,
+  }]
+}, {
+  filters: [{
+    name: matching_name,
+    namePrefix: matching_namePrefix
+  }]
+}, {
+  filters: [{
+    namePrefix: matching_namePrefix
+  }]
+}, {
+  filters: [{
+    services: matching_services,
+    name: matching_name,
+    namePrefix: matching_namePrefix
+  }]
+}].forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+    return requestDeviceWithKeyDown(args).then(device => {
+      assert_in_array(matching_services[0], device.uuids);
+      assert_equals(device.name, matching_name);
+      assert_true(device.name.startsWith(matching_namePrefix));
+    });
+  }, 'Matches a filter if all present members match.')
+});
+</script>

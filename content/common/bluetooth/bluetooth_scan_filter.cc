@@ -9,11 +9,6 @@ namespace content {
 BluetoothScanFilter::BluetoothScanFilter() : services() {
 }
 
-BluetoothScanFilter::BluetoothScanFilter(
-    const std::vector<device::BluetoothUUID>& services)
-    : services(services) {
-}
-
 BluetoothScanFilter::~BluetoothScanFilter() {
 }
 

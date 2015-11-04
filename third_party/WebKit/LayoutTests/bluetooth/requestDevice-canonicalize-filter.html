@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+
+test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  return assert_promise_rejects(requestDeviceWithKeyDown(),
+                                new TypeError());
+}, 'Requires an argument.');
+
+[{}, {
+  optionalServices: ['wrong_service']
+}].forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                  new TypeError());
+  }, 'RequestDeviceOptions requires a |filters| member.');
+});
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  return assert_promise_rejects(requestDeviceWithKeyDown({
+    filters: [{}]
+  }), new TypeError());
+}, 'A filter must restrict the devices in some way.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  let expected = {
+    name: 'TypeError',
+    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': A device '
+           + 'name can\'t be longer than 248 bytes.'
+  };
+  let name_too_long = generate_string(249, 'a');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
+    expected, 'Device name longer than 29');
+}, 'A device name longer than 248 must reject.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  let expected = {
+    name: 'NotFoundError',
+    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+             'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
+             'results in no devices being found, because a device can\'t ' +
+             'advertise a name longer than 29 bytes.'
+  };
+  let name_too_long = generate_string(30, 'a');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
+    expected, 'Device name longer than 29');
+}, 'A device name longer than 29 must reject.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
+  let valid_unicode_name = generate_string(
+    9, '\u2764'); // \u2764's UTF-8 representationis 3 bytes long.
+                  // 9 chars * 3 bytes/char = 27 bytes
+  return requestDeviceWithKeyDown({filters: [{name: valid_unicode_name}]})
+    .then(device => {
+      assert_equals(device.name, valid_unicode_name);
+    });
+}, 'A name containing unicode characters whose utf8 length is less than 30 ' +
+   'must not throw an error.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
+  let valid_unicode_name = generate_string(
+    9, '\u2764'); // \u2764's UTF-8 representationis 3 bytes long.
+                  // 9 chars * 3 bytes/char = 27 bytes
+  return requestDeviceWithKeyDown({filters: [{namePrefix: valid_unicode_name}]})
+    .then(device => {
+      assert_equals(device.name, valid_unicode_name);
+    });
+}, 'A namePrefix containing unicode characters whose utf8 length is less than 30 ' +
+   'must not throw an error.');
+
+[{
+  test_name: 'Unicode string with utf8 representation between (29, 248] must throw ' +
+        'NotFoundError.',
+  chars: 10, // \u2764's UTF-8 respresentation is 3 bytes long.
+             // 10 chars * 3 bytes/char = 30 bytes
+  expected: {
+    name: 'NotFoundError',
+    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+             'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
+             'results in no devices being found, because a device can\'t ' +
+             'advertise a name longer than 29 bytes.'
+  }
+}, {
+  test_name: 'Unicode string with utf8 representation greater than 248 must throw ' +
+        'TypeError.',
+  chars: 83, // \u2764's UTF-8 respresentation is 3 bytes long.
+             // 83 chars * 3 bytes/char = 249 bytes
+  expected: {
+    name: 'TypeError',
+    message: 'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+             'A device name can\'t be longer than 248 bytes.'
+  }
+}].forEach(t => {
+  let unicode_name = generate_string(t.chars, '\u2764');
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
+    return assert_promise_rejects_with_message(
+      requestDeviceWithKeyDown({filters: [{name: unicode_name}]}),
+      t.expected);
+  }, '\'name\': ' + t.test_name);
+
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
+    return assert_promise_rejects_with_message(
+      requestDeviceWithKeyDown({filters: [{namePrefix: unicode_name}]}),
+      t.expected);
+  }, '\'namePrefix\': ' + t.test_name);
+});
+
+function generateRequestDeviceArgsWithServices(services) {
+  services = (services === undefined) ? ['heart_rate'] : services;
+
+  return [{
+    filters: [{ services: services}]
+  }, {
+    filters: [{ services: services, name: 'Name'}]
+  }, {
+    filters: [{ services: services, namePrefix: 'Pre'}]
+  }, {
+    filters: [{ services: services, name: 'Name', namePrefix: 'Pre'}]
+  }, {
+    filters: [{ services: services}],
+    optionalServices: ['heart_rate']
+  }, {
+    filters: [{ services: services, name: 'Name'}],
+    optionalServices: ['heart_rate']
+  }, {
+    filters: [{ services: services, namePrefix: 'Pre'}],
+    optionalServices: ['heart_rate']
+  }, {
+    filters: [{ services: services, name: 'Name', namePrefix: 'Pre'}],
+    optionalServices: ['heart_rate']
+  }];
+}
+
+generateRequestDeviceArgsWithServices([]).forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                  new TypeError());
+  }, 'Services member must contain at least one service.');
+});
+
+generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                  new SyntaxError());
+  }, 'Invalid service must reject the promise.');
+});
+
+[{
+  filters: [{ namePrefix: ''}]
+}, {
+  filters: [{ namePrefix: '', name: 'Name'}]
+}, {
+  filters: [{ namePrefix: '', services: ['heart_rate']}]
+}, {
+  filters: [{ namePrefix: '', name: 'Name', services: ['heart_rate']}]
+}, {
+  filters: [{ namePrefix: ''}],
+  optionalServices: ['heart_rate']
+}, {
+  filters: [{ namePrefix: '', name: 'Name'}],
+  optionalServices: ['heart_rate']
+}, {
+  filters: [{ namePrefix: '', services: ['heart_rate']}],
+  optionalServices: ['heart_rate']
+}, {
+  filters: [{ namePrefix: '', name: 'Name', services: ['heart_rate']}],
+  optionalServices: ['heart_rate']
+}].forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                  new TypeError());
+  }, 'A filter must restrict the devices in some way.');
+});
+
+[{
+  optionalServices: ['wrong_service'],
+  filters: [{services: ['heart_rate']}]
+}, {
+  optionalServices: ['wrong_service'],
+  filters: [{ services: ['heart_rate'], name: 'Name'}]
+}, {
+  optionalServices: ['wrong_service'],
+  filters: [{ services: ['heart_rate'], namePrefix: 'Pre'}]
+}, {
+  optionalServices: ['wrong_service'],
+  filters: [{ services: ['heart_rate'], name: 'Name', namePrefix: 'Pre'}]
+}, {
+  optionalServices: ['wrong_service'],
+  filters: [{ name: 'Name'}]
+}, {
+  optionalServices: ['wrong_service'],
+  filters: [{ name: 'Name', namePrefix: 'Pre'}]
+}, {
+  optionalServices: ['wrong_service'],
+  filters: [{ namePrefix: 'Pre'}]
+}].forEach(args => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                  new SyntaxError());
+  }, 'Invalid optional service must reject the promise.');
+});
+</script>

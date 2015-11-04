@@ -199,6 +199,8 @@ void BluetoothDispatcher::requestDevice(
     for (const WebString& service : web_filter.services) {
       filter.services.push_back(device::BluetoothUUID(service.utf8()));
     }
+    filter.name = web_filter.name.utf8();
+    filter.namePrefix = web_filter.namePrefix.utf8();
   }
   std::vector<device::BluetoothUUID> optional_services;
   optional_services.reserve(options.optionalServices.size());

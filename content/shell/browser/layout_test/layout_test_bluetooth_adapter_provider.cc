@@ -124,6 +124,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetFailStartDiscoveryAdapter();
   else if (fake_adapter_name == "GlucoseHeartRateAdapter")
     return GetGlucoseHeartRateAdapter();
+  else if (fake_adapter_name == "UnicodeDeviceAdapter")
+    return GetUnicodeDeviceAdapter();
   else if (fake_adapter_name == "MissingServiceGenericAccessAdapter")
     return GetMissingServiceGenericAccessAdapter();
   else if (fake_adapter_name == "MissingCharacteristicGenericAccessAdapter")
@@ -260,6 +262,16 @@ LayoutTestBluetoothAdapterProvider::GetGlucoseHeartRateAdapter() {
 
   adapter->AddMockDevice(GetHeartRateDevice(adapter.get()));
   adapter->AddMockDevice(GetGlucoseDevice(adapter.get()));
+
+  return adapter.Pass();
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetUnicodeDeviceAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+
+  adapter->AddMockDevice(GetBaseDevice(adapter.get(), "❤❤❤❤❤❤❤❤❤"));
 
   return adapter.Pass();
 }

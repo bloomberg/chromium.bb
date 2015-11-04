@@ -46,28 +46,61 @@ namespace {
 // https://crbug.com/436280 and https://crbug.com/484504
 const int kDelayTime = 5;         // 5 seconds for scanning and discovering
 const int kTestingDelayTime = 0;  // No need to wait during tests
+const size_t kMaxLengthForDeviceName =
+    29;  // max length of device name in filter.
+
+bool IsEmptyOrInvalidFilter(const content::BluetoothScanFilter& filter) {
+  return filter.name.empty() && filter.namePrefix.empty() &&
+         filter.services.empty() &&
+         filter.name.length() > kMaxLengthForDeviceName &&
+         filter.namePrefix.length() > kMaxLengthForDeviceName;
+}
+
+bool HasEmptyOrInvalidFilter(
+    const std::vector<content::BluetoothScanFilter>& filters) {
+  return filters.empty()
+             ? true
+             : filters.end() != std::find_if(filters.begin(), filters.end(),
+                                             IsEmptyOrInvalidFilter);
+}
 
 // Defined at
 // https://webbluetoothchrome.github.io/web-bluetooth/#dfn-matches-a-filter
-bool MatchesFilter(const std::set<BluetoothUUID>& device_uuids,
+bool MatchesFilter(const device::BluetoothDevice& device,
                    const content::BluetoothScanFilter& filter) {
-  if (filter.services.empty())
-    return false;
-  for (const BluetoothUUID& service : filter.services) {
-    if (!ContainsKey(device_uuids, service)) {
+  DCHECK(!IsEmptyOrInvalidFilter(filter));
+
+  const std::string device_name = base::UTF16ToUTF8(device.GetName());
+
+  if (!filter.name.empty() && (device_name != filter.name)) {
       return false;
+  }
+
+  if (!filter.namePrefix.empty() &&
+      (!base::StartsWith(device_name, filter.namePrefix,
+                         base::CompareCase::SENSITIVE))) {
+    return false;
+  }
+
+  if (!filter.services.empty()) {
+    const auto& device_uuid_list = device.GetUUIDs();
+    const std::set<BluetoothUUID> device_uuids(device_uuid_list.begin(),
+                                               device_uuid_list.end());
+    for (const auto& service : filter.services) {
+      if (!ContainsKey(device_uuids, service)) {
+        return false;
+      }
     }
   }
+
   return true;
 }
 
 bool MatchesFilters(const device::BluetoothDevice& device,
                     const std::vector<content::BluetoothScanFilter>& filters) {
-  const std::vector<BluetoothUUID>& device_uuid_list = device.GetUUIDs();
-  const std::set<BluetoothUUID> device_uuids(device_uuid_list.begin(),
-                                             device_uuid_list.end());
+  DCHECK(!HasEmptyOrInvalidFilter(filters));
   for (const content::BluetoothScanFilter& filter : filters) {
-    if (MatchesFilter(device_uuids, filter)) {
+    if (MatchesFilter(device, filter)) {
       return true;
     }
   }
@@ -443,6 +476,9 @@ void BluetoothDispatcherHost::OnRequestDevice(
 
   VLOG(1) << "requestDevice called with the following filters: ";
   for (const BluetoothScanFilter& filter : filters) {
+    VLOG(1) << "Name: " << filter.name;
+    VLOG(1) << "Name Prefix: " << filter.namePrefix;
+    VLOG(1) << "Services:";
     VLOG(1) << "\t[";
     for (const BluetoothUUID& service : filter.services)
       VLOG(1) << "\t\t" << service.value();
@@ -480,6 +516,13 @@ void BluetoothDispatcherHost::OnRequestDevice(
         UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_NOT_PRESENT);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
+    return;
+  }
+
+  // The renderer should never send empty filters.
+  if (HasEmptyOrInvalidFilter(filters)) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_EMPTY_OR_INVALID_FILTERS);
     return;
   }
 

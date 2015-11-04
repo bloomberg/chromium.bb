@@ -204,3 +204,10 @@ function assert_properties_equal(properties, expected_properties) {
     assert_equals(properties[key], expected_properties[key]);
   }
 }
+
+// Generates a string of size |size|.
+function generate_string(size, char) {
+  // When passing an array of n undefined's to String the resulting string
+  // has size n - 1.
+  return char.repeat(size);
+}

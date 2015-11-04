@@ -17,10 +17,11 @@ namespace content {
 // blink::WebBluetoothScanFilter.
 struct CONTENT_EXPORT BluetoothScanFilter {
   BluetoothScanFilter();
-  BluetoothScanFilter(const std::vector<device::BluetoothUUID>& services);
   ~BluetoothScanFilter();
 
   std::vector<device::BluetoothUUID> services;
+  std::string name;
+  std::string namePrefix;
 };
 
 }  // namespace content

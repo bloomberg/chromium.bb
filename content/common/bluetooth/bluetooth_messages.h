@@ -106,6 +106,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebBluetoothError,
 
 IPC_STRUCT_TRAITS_BEGIN(content::BluetoothScanFilter)
 IPC_STRUCT_TRAITS_MEMBER(services)
+IPC_STRUCT_TRAITS_MEMBER(name)
+IPC_STRUCT_TRAITS_MEMBER(namePrefix)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.

@@ -21,23 +21,94 @@
 
 namespace blink {
 
-// Returns a DOMException if the conversion fails, or null if it succeeds.
+namespace {
+// A device name can never be longer than 29 bytes. A adv packet is at most
+// 31 bytes long. The length and identifier of the length field take 2 bytes.
+// That least 29 bytes for the name.
+const size_t kMaxFilterNameLength = 29;
+const char kFilterNameTooLong[] =
+    "A 'name' or 'namePrefix' longer than 29 bytes results in no devices being found, because a device can't advertise a name longer than 29 bytes.";
+// Per the Bluetooth Spec: The name is a user-friendly name associated with the
+// device and consists of a maximum of 248 bytes coded according to the UTF-8
+// standard.
+const size_t kMaxDeviceNameLength = 248;
+const char kDeviceNameTooLong[] = "A device name can't be longer than 248 bytes.";
+} // namespace
+
+static void canonicalizeFilter(const BluetoothScanFilter& filter, WebBluetoothScanFilter& canonicalizedFilter, ExceptionState& exceptionState)
+{
+    if (!(filter.hasServices() || filter.hasName() || filter.hasNamePrefix())) {
+        exceptionState.throwTypeError(
+            "A filter must restrict the devices in some way.");
+        return;
+    }
+
+    if (filter.hasServices()) {
+        if (filter.services().size() == 0) {
+            exceptionState.throwTypeError(
+                "'services', if present, must contain at least one service.");
+            return;
+        }
+        Vector<WebString> services;
+        for (const StringOrUnsignedLong& service : filter.services()) {
+            const String& validatedService = BluetoothUUID::getService(service, exceptionState);
+            if (exceptionState.hadException())
+                return;
+            services.append(validatedService);
+        }
+        canonicalizedFilter.services.assign(services);
+    }
+
+    if (filter.hasName()) {
+        size_t nameLength = filter.name().utf8().length();
+        if (nameLength > kMaxDeviceNameLength) {
+            exceptionState.throwTypeError(kDeviceNameTooLong);
+            return;
+        }
+        if (nameLength > kMaxFilterNameLength) {
+            exceptionState.throwDOMException(NotFoundError, kFilterNameTooLong);
+            return;
+        }
+        canonicalizedFilter.name = filter.name();
+    }
+
+    if (filter.hasNamePrefix()) {
+        size_t namePrefixLength = filter.namePrefix().utf8().length();
+        if (namePrefixLength > kMaxDeviceNameLength) {
+            exceptionState.throwTypeError(kDeviceNameTooLong);
+            return;
+        }
+        if (namePrefixLength > kMaxFilterNameLength) {
+            exceptionState.throwDOMException(NotFoundError, kFilterNameTooLong);
+            return;
+        }
+        if (filter.namePrefix().length() == 0) {
+            exceptionState.throwTypeError(
+                "'namePrefix', if present, must me non-empty.");
+            return;
+        }
+        canonicalizedFilter.namePrefix = filter.namePrefix();
+    }
+}
+
 static void convertRequestDeviceOptions(const RequestDeviceOptions& options, WebRequestDeviceOptions& result, ExceptionState& exceptionState)
 {
-    if (options.hasFilters()) {
-        Vector<WebBluetoothScanFilter> filters;
-        for (const BluetoothScanFilter& filter : options.filters()) {
-            Vector<WebString> services;
-            for (const StringOrUnsignedLong& service : filter.services()) {
-                const String& validatedService = BluetoothUUID::getService(service, exceptionState);
-                if (exceptionState.hadException())
-                    return;
-                services.append(validatedService);
-            }
-            filters.append(WebBluetoothScanFilter(services));
-        }
-        result.filters.assign(filters);
+    ASSERT(options.hasFilters());
+
+    Vector<WebBluetoothScanFilter> filters;
+    for (const BluetoothScanFilter& filter : options.filters()) {
+        WebBluetoothScanFilter canonicalizedFilter = WebBluetoothScanFilter();
+
+        canonicalizeFilter(filter, canonicalizedFilter, exceptionState);
+
+        if (exceptionState.hadException())
+            return;
+
+        filters.append(canonicalizedFilter);
     }
+
+    result.filters.assign(filters);
+
     if (options.hasOptionalServices()) {
         Vector<WebString> optionalServices;
         for (const StringOrUnsignedLong& optionalService : options.optionalServices()) {

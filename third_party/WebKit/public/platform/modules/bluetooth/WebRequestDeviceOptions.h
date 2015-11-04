@@ -14,12 +14,10 @@ namespace blink {
 // specified in the IDL.
 struct WebBluetoothScanFilter {
     WebBluetoothScanFilter() { }
-    WebBluetoothScanFilter(const WebVector<WebString>& services)
-        : services(services)
-    {
-    }
 
     WebVector<WebString> services;
+    WebString name;
+    WebString namePrefix;
 };
 
 // Contains members corresponding to RequestDeviceOptions members as

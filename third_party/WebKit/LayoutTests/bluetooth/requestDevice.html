@@ -10,18 +10,6 @@ test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); }
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  return assert_promise_rejects(requestDeviceWithKeyDown(),
-                                new TypeError());
-}, 'Requires an argument.');
-
-promise_test(() => {
-  testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  return assert_promise_rejects(requestDeviceWithKeyDown({}),
-                                new TypeError());
-}, 'RequestDeviceOptions requires a |filters| member.');
-
-promise_test(() => {
   testRunner.setBluetoothMockDataSet('FailStartDiscoveryAdapter');
   testRunner.setBluetoothManualChooser();
   let requestDevicePromise =
