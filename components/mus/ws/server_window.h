@@ -40,6 +40,8 @@ class ServerWindowSurfaceManager;
 // from the parent.
 class ServerWindow {
  public:
+  using Windows = std::vector<ServerWindow*>;
+
   ServerWindow(ServerWindowDelegate* delegate, const WindowId& id);
   ~ServerWindow();
 
@@ -78,6 +80,7 @@ class ServerWindow {
 
   std::vector<const ServerWindow*> GetChildren() const;
   std::vector<ServerWindow*> GetChildren();
+  const Windows& children() const { return children_; }
 
   // Returns the ServerWindow object with the provided |id| if it lies in a
   // subtree of |this|.
@@ -86,8 +89,8 @@ class ServerWindow {
   // Returns true if this contains |window| or is |window|.
   bool Contains(const ServerWindow* window) const;
 
-  // Returns true if the window is visible. This does not consider visibility
-  // of any ancestors.
+  // Returns the visibility requested by this window. IsDrawn() returns whether
+  // the window is actually visible on screen.
   bool visible() const { return visible_; }
   void SetVisible(bool value);
 
@@ -124,7 +127,6 @@ class ServerWindow {
 #endif
 
  private:
-  typedef std::vector<ServerWindow*> Windows;
 
   // Implementation of removing a window. Doesn't send any notification.
   void RemoveImpl(ServerWindow* window);
