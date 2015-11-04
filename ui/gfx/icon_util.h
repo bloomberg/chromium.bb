@@ -64,11 +64,11 @@ class GFX_EXPORT IconUtil {
   // default for historical reasons.
   enum WriteType { ATOMIC_WRITE, NORMAL_WRITE };
   // The size of the large icon entries in .ico files on Windows Vista+.
-  static const int kLargeIconSize = 256;
+  enum { kLargeIconSize = 256 };
   // The size of icons in the medium icons view on Windows Vista+. This is the
   // maximum size Windows will display an icon that does not have a 256x256
   // image, even at the large or extra large icons views.
-  static const int kMediumIconSize = 48;
+  enum { kMediumIconSize = 48 };
 
   // The dimensions for icon images in Windows icon files. All sizes are square;
   // that is, the value 48 means a 48x48 pixel image. Sizes are listed in

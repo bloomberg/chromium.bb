@@ -27,11 +27,6 @@ unsigned int RoundUp(unsigned int size) {
 
 }  // namespace
 
-#ifndef _MSC_VER
-const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
-const unsigned int FencedAllocator::kAllocAlignment;
-#endif
-
 FencedAllocator::FencedAllocator(unsigned int size, CommandBufferHelper* helper)
     : helper_(helper), bytes_in_use_(0) {
   Block block = { FREE, 0, RoundDown(size), kUnusedToken };

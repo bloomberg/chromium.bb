@@ -33,10 +33,10 @@ class GPU_EXPORT FencedAllocator {
  public:
   typedef unsigned int Offset;
   // Invalid offset, returned by Alloc in case of failure.
-  static const Offset kInvalidOffset = 0xffffffffU;
+  enum : Offset { kInvalidOffset = 0xffffffffU };
 
   // Allocation alignment, must be a power of two.
-  static const unsigned int kAllocAlignment = 16;
+  enum : unsigned int { kAllocAlignment = 16 };
 
   // Creates a FencedAllocator. Note that the size of the buffer is passed, but
   // not its base address: everything is handled as offsets into the buffer.
