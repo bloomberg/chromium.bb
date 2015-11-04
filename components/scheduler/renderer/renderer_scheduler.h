@@ -34,6 +34,7 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
     NONE,
     COMPOSITOR_GESTURE,
     MAIN_THREAD_GESTURE,
+    SYNCHRONIZED_GESTURE,  // Both threads in the critical path.
     TOUCHSTART,
     LOADING,
     // Must be the last entry.

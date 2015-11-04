@@ -168,6 +168,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   // of shared timers is enabled.
   static const int kSuspendTimersWhenBackgroundedDelayMillis = 5 * 60 * 1000;
 
+  // The time we should stay in a priority-escalated mode after a call to
+  // DidAnimateForInputOnCompositorThread().
+  static const int kFlingEscalationLimitMillis = 100;
+
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and
   // sets |policy_may_need_update_|. Note |any_thread_lock_| must be
   // locked.
@@ -273,13 +277,16 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
 
   struct AnyThread {
     AnyThread();
+    ~AnyThread();
 
     base::TimeTicks last_idle_period_end_time;
     base::TimeTicks rails_loading_priority_deadline;
+    base::TimeTicks fling_compositor_escalation_deadline;
     UserModel user_model;
     bool awaiting_touch_start_response;
     bool in_idle_period;
     bool begin_main_frame_on_critical_path;
+    bool last_gesture_was_compositor_driven;
   };
 
   struct CompositorThreadOnly {

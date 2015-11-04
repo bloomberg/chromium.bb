@@ -54,6 +54,8 @@ const char* RendererScheduler::UseCaseToString(UseCase use_case) {
       return "compositor_gesture";
     case UseCase::MAIN_THREAD_GESTURE:
       return "main_thread_gesture";
+    case UseCase::SYNCHRONIZED_GESTURE:
+      return "synchronized_gesture";
     case UseCase::TOUCHSTART:
       return "touchstart";
     case UseCase::LOADING:

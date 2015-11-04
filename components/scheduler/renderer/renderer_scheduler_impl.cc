@@ -129,13 +129,15 @@ RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 RendererSchedulerImpl::AnyThread::AnyThread()
     : awaiting_touch_start_response(false),
       in_idle_period(false),
-      begin_main_frame_on_critical_path(false) {}
+      begin_main_frame_on_critical_path(false),
+      last_gesture_was_compositor_driven(false) {}
+
+RendererSchedulerImpl::AnyThread::~AnyThread() {}
 
 RendererSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
     : last_input_type(blink::WebInputEvent::Undefined) {}
 
-RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() {
-}
+RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() {}
 
 void RendererSchedulerImpl::Shutdown() {
   helper_.Shutdown();
@@ -398,9 +400,10 @@ void RendererSchedulerImpl::DidHandleInputEventOnCompositorThread(
 void RendererSchedulerImpl::DidAnimateForInputOnCompositorThread() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::DidAnimateForInputOnCompositorThread");
-  UpdateForInputEventOnCompositorThread(
-      blink::WebInputEvent::Undefined,
-      InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+  base::AutoLock lock(any_thread_lock_);
+  AnyThread().fling_compositor_escalation_deadline =
+      helper_.tick_clock()->NowTicks() +
+      base::TimeDelta::FromMilliseconds(kFlingEscalationLimitMillis);
 }
 
 void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
@@ -429,6 +432,10 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
     switch (type) {
       case blink::WebInputEvent::TouchStart:
         AnyThread().awaiting_touch_start_response = true;
+        // This is just a fail-safe to reset the state of
+        // |last_gesture_was_compositor_driven| to the default. We don't know
+        // yet where the gesture will run.
+        AnyThread().last_gesture_was_compositor_driven = false;
         break;
 
       case blink::WebInputEvent::TouchMove:
@@ -444,10 +451,19 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
         }
         break;
 
-      case blink::WebInputEvent::Undefined:
+      case blink::WebInputEvent::GesturePinchBegin:
+      case blink::WebInputEvent::GestureScrollBegin:
+        AnyThread().last_gesture_was_compositor_driven =
+            input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
+        AnyThread().awaiting_touch_start_response = false;
+        break;
+
+      case blink::WebInputEvent::GestureFlingCancel:
+        AnyThread().fling_compositor_escalation_deadline = base::TimeTicks();
+        break;
+
       case blink::WebInputEvent::GestureTapDown:
       case blink::WebInputEvent::GestureShowPress:
-      case blink::WebInputEvent::GestureFlingCancel:
       case blink::WebInputEvent::GestureScrollEnd:
         // With no observable effect, these meta events do not indicate a
         // meaningful touchstart response and should not impact task priority.
@@ -486,12 +502,13 @@ bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
     return false;
 
   MaybeUpdatePolicy();
-  // The touchstart and main-thread gesture use cases indicate a strong
-  // likelihood of high-priority work in the near future.
+  // The touchstart, synchronized gesture and main-thread gesture use cases
+  // indicate a strong likelihood of high-priority work in the near future.
   UseCase use_case = MainThreadOnly().current_use_case;
   return MainThreadOnly().touchstart_expected_soon ||
          use_case == UseCase::TOUCHSTART ||
-         use_case == UseCase::MAIN_THREAD_GESTURE;
+         use_case == UseCase::MAIN_THREAD_GESTURE ||
+         use_case == UseCase::SYNCHRONIZED_GESTURE;
 }
 
 bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
@@ -506,13 +523,12 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
   // for it since these tasks are not user-provided work and they are only
   // intended to run before the next task, not interrupt the tasks.
   switch (MainThreadOnly().current_use_case) {
+    case UseCase::COMPOSITOR_GESTURE:
     case UseCase::NONE:
       return MainThreadOnly().touchstart_expected_soon;
 
-    case UseCase::COMPOSITOR_GESTURE:
-      return MainThreadOnly().touchstart_expected_soon;
-
     case UseCase::MAIN_THREAD_GESTURE:
+    case UseCase::SYNCHRONIZED_GESTURE:
       return !compositor_task_runner_->IsQueueEmpty() ||
              MainThreadOnly().touchstart_expected_soon;
 
@@ -578,7 +594,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   bool touchstart_expected_soon = false;
   if (MainThreadOnly().has_visible_render_widget_with_touch_handler) {
     touchstart_expected_soon = AnyThread().user_model.IsGestureExpectedSoon(
-        use_case, now, &touchstart_expected_flag_valid_for_duration);
+        now, &touchstart_expected_flag_valid_for_duration);
   }
   MainThreadOnly().touchstart_expected_soon = touchstart_expected_soon;
 
@@ -620,6 +636,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   bool block_expensive_timer_tasks = false;
   switch (use_case) {
     case UseCase::COMPOSITOR_GESTURE:
+      // We could be in a fling, so it's possible for another gesture to start.
       if (touchstart_expected_soon) {
         block_expensive_loading_tasks = true;
         block_expensive_timer_tasks = true;
@@ -632,14 +649,25 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       }
       break;
 
+    case UseCase::SYNCHRONIZED_GESTURE:
+      new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
+      block_expensive_loading_tasks = true;
+      block_expensive_timer_tasks = true;
+      break;
+
     case UseCase::MAIN_THREAD_GESTURE:
       // In main thread gestures we don't have perfect knowledge about which
       // things we should be prioritizing. The following is best guess
       // heuristic which lets us produce frames quickly but does not prevent
       // loading of additional content.
       new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
-      block_expensive_loading_tasks = false;
-      block_expensive_timer_tasks = true;
+      if (touchstart_expected_soon) {
+        block_expensive_loading_tasks = true;
+        block_expensive_timer_tasks = true;
+      } else {
+        block_expensive_loading_tasks = false;
+        block_expensive_timer_tasks = true;
+      }
       break;
 
     case UseCase::TOUCHSTART:
@@ -732,6 +760,7 @@ bool RendererSchedulerImpl::InputSignalsSuggestGestureInProgress(
   switch (ComputeCurrentUseCase(now, &unused_policy_duration)) {
     case UseCase::COMPOSITOR_GESTURE:
     case UseCase::MAIN_THREAD_GESTURE:
+    case UseCase::SYNCHRONIZED_GESTURE:
     case UseCase::TOUCHSTART:
       return true;
 
@@ -745,25 +774,40 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
     base::TimeTicks now,
     base::TimeDelta* expected_use_case_duration) const {
   any_thread_lock_.AssertAcquired();
+  // Special case for flings. This is needed because we don't get notification
+  // of a fling ending (although we do for cancellation).
+  if (AnyThread().fling_compositor_escalation_deadline > now) {
+    *expected_use_case_duration =
+        AnyThread().fling_compositor_escalation_deadline - now;
+    return UseCase::COMPOSITOR_GESTURE;
+  }
   // Above all else we want to be responsive to user input.
   *expected_use_case_duration =
       AnyThread().user_model.TimeLeftInUserGesture(now);
   if (*expected_use_case_duration > base::TimeDelta()) {
-    // Has scrolling been fully established?
+    // Has a gesture been fully established?
     if (AnyThread().awaiting_touch_start_response) {
       // No, so arrange for compositor tasks to be run at the highest priority.
       return UseCase::TOUCHSTART;
     }
-    // Yes scrolling has been established.  If BeginMainFrame is on the critical
-    // path, compositor tasks need to be prioritized, otherwise now might be a
-    // good time to run potentially expensive work.
+
+    // Yes a gesture has been established.  Based on how the gesture is handled
+    // we need to choose between one of three use cases:
+    // 1. COMPOSITOR_GESTURE where the gesture is processed only on the
+    //    compositor thread.
+    // 2. MAIN_THREAD_GESTURE where the gesture is processed only on the main
+    //    thread.
+    // 3. SYNCHRONIZED_GESTURE where the gesture is processed on both threads.
     // TODO(skyostil): Consider removing in_idle_period_ and
     // HadAnIdlePeriodRecently() unless we need them here.
-    if (AnyThread().begin_main_frame_on_critical_path) {
-      return UseCase::MAIN_THREAD_GESTURE;
-    } else {
-      return UseCase::COMPOSITOR_GESTURE;
+    if (AnyThread().last_gesture_was_compositor_driven) {
+      if (AnyThread().begin_main_frame_on_critical_path) {
+        return UseCase::SYNCHRONIZED_GESTURE;
+      } else {
+        return UseCase::COMPOSITOR_GESTURE;
+      }
     }
+    return UseCase::MAIN_THREAD_GESTURE;
   }
 
   // TODO(alexclarke): return UseCase::LOADING if signals suggest the system is
@@ -871,6 +915,10 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       "rails_loading_priority_deadline",
       (AnyThread().rails_loading_priority_deadline - base::TimeTicks())
           .InMillisecondsF());
+  state->SetDouble(
+      "fling_compositor_escalation_deadline",
+      (AnyThread().fling_compositor_escalation_deadline - base::TimeTicks())
+          .InMillisecondsF());
   state->SetInteger("navigation_task_expected_count",
                     MainThreadOnly().navigation_task_expected_count);
   state->SetDouble("last_idle_period_end_time",
@@ -880,6 +928,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                     AnyThread().awaiting_touch_start_response);
   state->SetBoolean("begin_main_frame_on_critical_path",
                     AnyThread().begin_main_frame_on_critical_path);
+  state->SetBoolean("last_gesture_was_compositor_driven",
+                    AnyThread().last_gesture_was_compositor_driven);
   state->SetDouble("expected_loading_task_duration",
                    MainThreadOnly()
                        .loading_task_cost_estimator.expected_task_duration()
