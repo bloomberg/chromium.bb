@@ -49611,6 +49611,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent doing incremental marking steps during GC.</summary>
 </histogram>
 
+<histogram name="V8.GCIncrementalMarkingFinalize" units="milliseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>hpayer@chromium.org</owner>
+  <summary>Time spent in finalizing incremental marking.</summary>
+</histogram>
+
+<histogram name="V8.GCIncrementalMarkingStart" units="milliseconds">
+  <owner>jochen@chromium.org</owner>
+  <owner>hpayer@chromium.org</owner>
+  <summary>Time spent in starting incremental marking.</summary>
+</histogram>
+
 <histogram name="V8.GCLowMemoryNotification" units="milliseconds">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
