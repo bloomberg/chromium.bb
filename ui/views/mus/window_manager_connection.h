@@ -14,8 +14,13 @@ namespace mojo {
 class ApplicationImpl;
 }
 
+namespace ui {
+namespace mojo {
+class UIInit;
+}
+}
+
 namespace views {
-class AuraInit;
 
 // Establishes a connection to the window manager for use by views within an
 // application, and performs Aura initialization.
@@ -54,7 +59,7 @@ class WindowManagerConnection : public ViewsDelegate,
 
   mojo::ApplicationImpl* app_;
   mus::mojom::WindowManagerPtr window_manager_;
-  scoped_ptr<AuraInit> aura_init_;
+  scoped_ptr<ui::mojo::UIInit> ui_init_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };

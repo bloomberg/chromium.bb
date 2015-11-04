@@ -28,6 +28,7 @@ source_set("lib") {
     "//base",
     "//components/mus/public/cpp",
     "//components/url_formatter",
+    "//mandoline/ui/common",
     "//mandoline/ui/desktop_ui/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/common",
@@ -35,6 +36,7 @@ source_set("lib") {
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx/geometry",
+    "//ui/mojo/init",
     "//ui/views",
     "//ui/views/mus",
   ]

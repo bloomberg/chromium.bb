@@ -7,15 +7,12 @@
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "components/mus/public/cpp/window.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/display.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "components/font_service/public/cpp/font_loader.h"
@@ -31,29 +28,10 @@ std::set<std::string> GetResourcePaths(const std::string& resource_file) {
   return paths;
 }
 
-std::vector<gfx::Display> GetDisplaysFromWindow(mus::Window* window) {
-  static int64 synthesized_display_id = 2000;
-  gfx::Display display;
-  display.set_id(synthesized_display_id++);
-  display.SetScaleAndBounds(
-      window->viewport_metrics().device_pixel_ratio,
-      gfx::Rect(window->viewport_metrics().size_in_pixels.To<gfx::Size>()));
-  std::vector<gfx::Display> displays;
-  displays.push_back(display);
-  return displays;
-}
-
 }  // namespace
 
-AuraInit::AuraInit(mojo::ApplicationImpl* app,
-                   const std::string& resource_file,
-                   mus::Window* window)
-    : AuraInit(app, resource_file, GetDisplaysFromWindow(window)) {}
-
-AuraInit::AuraInit(mojo::ApplicationImpl* app,
-                   const std::string& resource_file,
-                   const std::vector<gfx::Display>& displays)
-    : ui_init_(displays), resource_file_(resource_file) {
+AuraInit::AuraInit(mojo::ApplicationImpl* app, const std::string& resource_file)
+    : resource_file_(resource_file) {
   aura::Env::CreateInstance(false);
 
   InitializeResources(app);

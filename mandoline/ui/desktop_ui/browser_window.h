@@ -16,12 +16,21 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/mus/aura_init.h"
 #include "url/gurl.h"
 
 namespace mojo {
 class ApplicationConnection;
 class Shell;
+}
+
+namespace ui {
+namespace mojo {
+class UIInit;
+}
+}
+
+namespace views {
+class AuraInit;
 }
 
 namespace mandoline {
@@ -96,6 +105,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   void EmbedOmnibox();
 
   mojo::ApplicationImpl* app_;
+  scoped_ptr<ui::mojo::UIInit> ui_init_;
   scoped_ptr<views::AuraInit> aura_init_;
   mus::mojom::WindowTreeHostPtr host_;
   mojo::Binding<WindowTreeHostClient> host_client_binding_;

@@ -20,6 +20,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -355,6 +356,8 @@ bool WindowTypeLauncher::ConfigureIncomingConnection(
 }
 
 void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
+  aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
+
   mus::mojom::WindowManagerPtr window_manager;
   app->ConnectToService(mojo::URLRequest::From(std::string("mojo:example_wm")),
                         &window_manager);

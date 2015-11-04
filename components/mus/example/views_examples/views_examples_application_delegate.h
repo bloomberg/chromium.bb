@@ -9,6 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 
+namespace views {
+class AuraInit;
+}
+
 class ViewsExamplesApplicationDelegate : public mojo::ApplicationDelegate {
  public:
   ViewsExamplesApplicationDelegate();
@@ -19,6 +23,8 @@ class ViewsExamplesApplicationDelegate : public mojo::ApplicationDelegate {
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
+
+  scoped_ptr<views::AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsExamplesApplicationDelegate);
 };

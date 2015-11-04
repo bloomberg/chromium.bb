@@ -15,7 +15,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/mus/aura_init.h"
+#include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/native_widget_mus.h"
 
 namespace mojo {
@@ -117,8 +117,7 @@ WindowManagerConnection::WindowManagerConnection(
     mus::mojom::WindowManagerPtr window_manager,
     mojo::ApplicationImpl* app)
     : app_(app), window_manager_(window_manager.Pass()) {
-  aura_init_.reset(new AuraInit(
-      app, "views_mus_resources.pak",
+  ui_init_.reset(new ui::mojo::UIInit(
       GetDisplaysFromWindowManager(&window_manager_)));
 }
 

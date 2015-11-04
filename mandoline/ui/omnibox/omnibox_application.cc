@@ -10,9 +10,11 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/url_formatter/url_fixer.h"
+#include "mandoline/ui/common/util.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/common_type_converters.h"
+#include "ui/mojo/init/ui_init.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -57,6 +59,7 @@ class OmniboxImpl : public mus::WindowTreeDelegate,
   void HideWindow();
   void ShowWindow();
 
+  scoped_ptr<ui::mojo::UIInit> ui_init_;
   scoped_ptr<views::AuraInit> aura_init_;
   mojo::ApplicationImpl* app_;
   mus::Window* root_;
@@ -116,7 +119,8 @@ void OmniboxImpl::OnEmbed(mus::Window* root) {
   root_ = root;
 
   if (!aura_init_.get()) {
-    aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak", root_));
+    ui_init_.reset(new ui::mojo::UIInit(GetDisplaysFromWindow(root_)));
+    aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak"));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
     edit_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
