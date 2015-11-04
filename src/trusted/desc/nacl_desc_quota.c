@@ -106,7 +106,6 @@ ssize_t NaClDescQuotaRead(struct NaClDesc *vself,
 }
 
 static size_t CapWriteLength(size_t len) {
-#if SIZE_T_MAX > INT64_MAX
   /*
    * Write can always return a short, non-zero transfer count.
    */
@@ -116,7 +115,6 @@ static size_t CapWriteLength(size_t len) {
   if (len_u64 > NACL_MAX_VAL(int64_t)) {
     len = (size_t) NACL_MAX_VAL(int64_t);
   }
-#endif
   return len;
 }
 
