@@ -32,8 +32,36 @@
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
+
+namespace {
+
+// Converts |contentID| taken from a Content-ID MIME header
+// into URI using "cid" scheme.  Based primarily on an example
+// from rfc2557 in section 9.5, but also based on more
+// normative parts of specs like:
+// - rfc2557 - MHTML - section 8.3 - "Use of the Content-ID header and CID URLs"
+// - rfc1738 - URL - section 4 (reserved scheme names;  includes "cid")
+// - rfc2387 - multipart/related - section 3.4 - "Syntax" (cid := msg-id)
+// - rfc0822 - msg-id = "<" addr-spec ">"; addr-spec = local-part "@" domain
+KURL convertContentIDToURI(const String& contentID)
+{
+    if (contentID.length() <= 2)
+        return KURL();
+
+    if (!contentID.startsWith('<') || !contentID.endsWith('>'))
+        return KURL();
+
+    StringBuilder uriBuilder;
+    uriBuilder.append("cid:");
+    uriBuilder.append(contentID, 1, contentID.length() - 2);
+    return KURL(KURL(), uriBuilder.toString());
+}
+
+}
 
 ArchiveResourceCollection::ArchiveResourceCollection()
 {
@@ -50,12 +78,12 @@ void ArchiveResourceCollection::addAllResources(MHTMLArchive* archive)
         return;
 
     const MHTMLArchive::SubArchiveResources& subresources = archive->subresources();
-    for (MHTMLArchive::SubArchiveResources::const_iterator iterator = subresources.begin(); iterator != subresources.end(); ++iterator)
-        m_subresources.set((*iterator)->url(), iterator->get());
+    for (const RefPtrWillBeMember<ArchiveResource>& subresource : subresources) {
+        addResource(*subresource);
+    }
 
     const MHTMLArchive::SubFrameArchives& subframes = archive->subframeArchives();
-    for (MHTMLArchive::SubFrameArchives::const_iterator iterator = subframes.begin(); iterator != subframes.end(); ++iterator) {
-        RefPtrWillBeRawPtr<MHTMLArchive> archive = *iterator;
+    for (const RefPtrWillBeMember<MHTMLArchive>& archive : subframes) {
         ASSERT(archive->mainResource());
 
         const String& frameName = archive->mainResource()->frameName();
@@ -65,19 +93,23 @@ void ArchiveResourceCollection::addAllResources(MHTMLArchive* archive)
             // In the MHTML case, frames don't have a name so we use the URL instead.
             m_subframes.set(archive->mainResource()->url().string(), archive.get());
         }
+
+        KURL cidURI = convertContentIDToURI(archive->mainResource()->contentID());
+        if (cidURI.isValid())
+            m_subframes.set(cidURI, archive.get());
     }
 }
 
 // FIXME: Adding a resource directly to a DocumentLoader/ArchiveResourceCollection seems like bad design, but is API some apps rely on.
 // Can we change the design in a manner that will let us deprecate that API without reducing functionality of those apps?
-void ArchiveResourceCollection::addResource(PassRefPtrWillBeRawPtr<ArchiveResource> resource)
+void ArchiveResourceCollection::addResource(ArchiveResource& resource)
 {
-    ASSERT(resource);
-    if (!resource)
-        return;
+    const KURL& url = resource.url();
+    m_subresources.set(url, &resource);
 
-    const KURL& url = resource->url(); // get before passing PassRefPtr (which sets it to 0)
-    m_subresources.set(url, resource);
+    KURL cidURI = convertContentIDToURI(resource.contentID());
+    if (cidURI.isValid())
+        m_subresources.set(cidURI, &resource);
 }
 
 ArchiveResource* ArchiveResourceCollection::archiveResourceForURL(const KURL& url)
