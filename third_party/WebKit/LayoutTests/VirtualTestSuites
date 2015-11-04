@@ -212,5 +212,10 @@
     "base": "paint",
     "args": ["--enable-blink-features=SlimmingPaintSynchronizedPainting"],
     "references_use_default_args": true
+  },
+  {
+    "prefix": "syncpaint",
+    "base": "inspector/tracing",
+    "args": ["--enable-blink-features=SlimmingPaintSynchronizedPainting"]
   }
 ]
