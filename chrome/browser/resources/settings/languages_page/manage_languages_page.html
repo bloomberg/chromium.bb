@@ -18,9 +18,9 @@
     </settings-languages>
     <div class="content">
       <h2 i18n-content="enabledLanguages"></h2>
-      <div class="item-list">
+      <div>
         <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-          <paper-item>
+          <paper-item class="settings-row">
             <div class="language-name"
                 title="[[item.language.nativeDisplayName]]"
                 >[[item.language.displayName]]</div>

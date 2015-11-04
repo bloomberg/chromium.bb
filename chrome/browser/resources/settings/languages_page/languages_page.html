@@ -29,11 +29,11 @@
         section="languages">
       <neon-animatable id="main">
         <h2 i18n-content="languagesListTitle"></h2>
-        <div class="item-list">
+        <div>
           <array-selector id="languageSelector" selected="{{detailLanguage}}"
               items="{{languages.enabledLanguages}}"></array-selector>
           <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-            <paper-item on-tap="onLanguageTap_">
+            <paper-item class="settings-row" on-tap="onLanguageTap_">
               <div class="flex" title="[[item.language.nativeDisplayName]]"
                   >[[item.language.displayName]]</div>
               <iron-icon icon="done"
@@ -50,9 +50,9 @@
         </div>
 <if expr="chromeos">
         <h2 i18n-content="inputMethodsListTitle"></h2>
-        <div class="item-list">
+        <div>
           <template is="dom-repeat" items="{{languages.inputMethods}}">
-            <paper-item>
+            <paper-item class="settings-row">
               <div class="flex">[[item.name]]</div>
               <iron-icon icon="done"
                   hidden$="[[
