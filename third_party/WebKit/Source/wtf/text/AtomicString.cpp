@@ -110,6 +110,11 @@ static inline HashSet<StringImpl*>& atomicStrings()
     return atomicStringTable().table();
 }
 
+void AtomicString::reserveTableCapacity(size_t size)
+{
+    atomicStringTable().table().reserveCapacityForSize(size);
+}
+
 template<typename T, typename HashTranslator>
 static inline PassRefPtr<StringImpl> addToStringTable(const T& value)
 {

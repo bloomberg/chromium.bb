@@ -101,6 +101,7 @@ void CoreInitializer::init()
 
     StringImpl::reserveStaticStringsCapacityForSize(coreStaticStringsCount + StringImpl::allStaticStrings().size());
     QualifiedName::initAndReserveCapacityForSize(qualifiedNamesCount);
+    AtomicString::reserveTableCapacity(coreStaticStringsCount);
 
     HTMLNames::init();
     SVGNames::init();

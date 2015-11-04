@@ -33,6 +33,7 @@ struct AtomicStringHash;
 class WTF_EXPORT AtomicString {
 public:
     static void init();
+    static void reserveTableCapacity(size_t);
 
     AtomicString() { }
     AtomicString(const LChar* s) : m_string(add(s)) { }
