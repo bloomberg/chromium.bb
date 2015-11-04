@@ -96,7 +96,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     title_ =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
   } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CHOOSE_TITLE);
+    GetAccountChooserDialogTitleTextAndLinkRange(
+        GetSmartLockBrandingState(GetProfile()) ==
+        password_bubble_experiment::SmartLockBranding::FULL,
+        &title_,
+        &title_brand_link_range_);
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
     // There is no title.
   } else if (state_ == password_manager::ui::MANAGE_STATE) {
@@ -123,21 +127,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     save_confirmation_link_range_ =
         gfx::Range(offset, offset + save_confirmation_link.length());
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    if (GetSmartLockBrandingState(GetProfile()) ==
-        password_bubble_experiment::SmartLockBranding::FULL) {
-      size_t offset;
-      base::string16 brand_name =
-          l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-      autosignin_welcome_text_ = l10n_util::GetStringFUTF16(
-          IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME, brand_name,
-          &offset);
-      autosignin_welcome_link_range_ =
-          gfx::Range(offset, offset + brand_name.length());
-    } else {
-      autosignin_welcome_text_ = l10n_util::GetStringFUTF16(
-          IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME,
-          l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND));
-    }
+    GetAutoSigninPromptFirstRunExperienceExplanation(
+        GetSmartLockBrandingState(GetProfile()) ==
+        password_bubble_experiment::SmartLockBranding::FULL,
+        &autosignin_welcome_text_,
+        &autosignin_welcome_link_range_);
   }
 
   manage_link_ =

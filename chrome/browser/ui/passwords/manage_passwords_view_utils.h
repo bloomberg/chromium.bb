@@ -70,4 +70,16 @@ void GetAutoSigninPromptFirstRunExperienceExplanation(
     base::string16* explanation,
     gfx::Range* explanation_link_range);
 
+// Loads |smartlock_string_id| or |default_string_id| string from the resources
+// and substitutes the placeholder with the correct password manager branding
+// (Google Smart Lock, Google Chrome or Chromium) according to
+// |is_smartlock_branding_enabled|. If |is_smartlock_branding_enabled| is true
+// then |link_range| contains the link range for the brand name.
+void GetBrandedTextAndLinkRange(
+    bool is_smartlock_branding_enabled,
+    int smartlock_string_id,
+    int default_string_id,
+    base::string16* out_string,
+    gfx::Range* link_range);
+
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_

@@ -169,6 +169,12 @@ void BuildPaddingSingleColumnSet(views::GridLayout* layout, int padding) {
                         0);
 }
 
+views::StyledLabel::RangeStyleInfo GetLinkStyle() {
+  auto result = views::StyledLabel::RangeStyleInfo::CreateForLink();
+  result.disable_line_wrapping = false;
+  return result;
+}
+
 // Given a layout and a model, add an appropriate title using a
 // SINGLE_VIEW_COLUMN_SET, followed by a spacer row.
 void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
@@ -182,6 +188,23 @@ void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(title_label);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+// Creates a title row possibly with a link. Adds it to |layout|.
+void AddTitleRowWithLink(views::GridLayout* layout,
+                           ManagePasswordsBubbleModel* model,
+                           views::StyledLabelListener* listener) {
+  views::StyledLabel* title_label =
+      new views::StyledLabel(model->title(), listener);
+  title_label->SetBaseFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::MediumFont));
+  if (!model->title_brand_link_range().is_empty()) {
+    title_label->AddStyleRange(model->title_brand_link_range(), GetLinkStyle());
+  }
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+  layout->AddView(title_label);
 }
 
 scoped_ptr<views::LabelButton> GenerateButton(views::ButtonListener* listener,
@@ -202,7 +225,8 @@ scoped_ptr<views::LabelButton> GenerateButton(views::ButtonListener* listener,
 // "Cancel" button.
 class ManagePasswordsBubbleView::AccountChooserView
     : public views::View,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public views::StyledLabelListener {
  public:
   explicit AccountChooserView(ManagePasswordsBubbleView* parent);
   ~AccountChooserView() override;
@@ -210,6 +234,10 @@ class ManagePasswordsBubbleView::AccountChooserView
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
   // Adds |password_forms| to the layout remembering their |type|.
   void AddCredentialItemsWithType(
@@ -233,8 +261,8 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
       GenerateButton(this, l10n_util::GetStringUTF16(IDS_CANCEL)).release();
 
   // Title row.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
+  AddTitleRowWithLink(layout, parent_->model(), this);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   AddCredentialItemsWithType(
       layout, parent_->model()->local_credentials(),
@@ -247,7 +275,7 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
   // Button row.
   BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(
-      0, SINGLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+      0, SINGLE_BUTTON_COLUMN_SET, 0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(cancel_button_);
 
   parent_->set_initially_focused_view(cancel_button_);
@@ -292,6 +320,13 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
     parent_->model()->OnCancelClicked();
   }
   parent_->Close();
+}
+
+void ManagePasswordsBubbleView::AccountChooserView::StyledLabelLinkClicked(
+    const gfx::Range& range,
+    int event_flags) {
+  DCHECK_EQ(range, parent_->model()->title_brand_link_range());
+  parent_->model()->OnBrandLinkClicked();
 }
 
 // ManagePasswordsBubbleView::AutoSigninView ----------------------------------
@@ -371,7 +406,7 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
     if (!parent_->model()->autosignin_welcome_link_range().is_empty()) {
       welcome_label->AddStyleRange(
           parent_->model()->autosignin_welcome_link_range(),
-          views::StyledLabel::RangeStyleInfo::CreateForLink());
+          GetLinkStyle());
     }
     // Add the warm welcome.
     BuildPaddingSingleColumnSet(layout, credential->GetLabelOffset());
@@ -482,19 +517,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
            .release();
 
   // Title row.
-  views::StyledLabel* title_label =
-      new views::StyledLabel(parent_->model()->title(), this);
-  title_label->SetBaseFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::MediumFont));
-  if (!parent_->model()->title_brand_link_range().is_empty()) {
-    title_label->AddStyleRange(
-        parent_->model()->title_brand_link_range(),
-        views::StyledLabel::RangeStyleInfo::CreateForLink());
-  }
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(title_label);
+  AddTitleRowWithLink(layout, parent_->model(), this);
 
   // Credential row.
   if (item) {
@@ -692,8 +715,7 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
       ui::ResourceBundle::GetSharedInstance().GetFontList(
           ui::ResourceBundle::SmallFont));
   confirmation->AddStyleRange(
-      parent_->model()->save_confirmation_link_range(),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
+      parent_->model()->save_confirmation_link_range(), GetLinkStyle());
 
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(confirmation);
@@ -839,20 +861,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
           ui::ResourceBundle::SmallFont));
 
   // Title row.
-  views::StyledLabel* title_label =
-      new views::StyledLabel(parent_->model()->title(), this);
-  title_label->SetBaseFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::MediumFont));
-  if (!parent_->model()->title_brand_link_range().is_empty()) {
-    title_label->AddStyleRange(
-        parent_->model()->title_brand_link_range(),
-        views::StyledLabel::RangeStyleInfo::CreateForLink());
-  }
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  AddTitleRowWithLink(layout, parent_->model(), this);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   // Credential row.
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);

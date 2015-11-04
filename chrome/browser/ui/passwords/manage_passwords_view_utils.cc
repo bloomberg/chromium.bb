@@ -80,7 +80,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
   } else {
     replacements.insert(
         replacements.begin(),
-        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND));
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TITLE_BRAND));
     *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
   }
 }
@@ -106,37 +106,39 @@ void GetAccountChooserDialogTitleTextAndLinkRange(
     bool is_smartlock_branding_enabled,
     base::string16* title,
     gfx::Range* title_link_range) {
-  if (is_smartlock_branding_enabled) {
-    size_t offset;
-    base::string16 title_link =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-    *title = l10n_util::GetStringFUTF16(
-        IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE_SMART_LOCK, title_link,
-        &offset);
-    *title_link_range = gfx::Range(offset, offset + title_link.length());
-  } else {
-    *title =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE);
-  }
+  GetBrandedTextAndLinkRange(is_smartlock_branding_enabled,
+                             IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE,
+                             IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE,
+                             title, title_link_range);
 }
 
 void GetAutoSigninPromptFirstRunExperienceExplanation(
     bool is_smartlock_branding_enabled,
     base::string16* explanation,
     gfx::Range* explanation_link_range) {
-  *explanation_link_range = gfx::Range();
+  GetBrandedTextAndLinkRange(
+      is_smartlock_branding_enabled,
+      IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME,
+      IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME,
+      explanation, explanation_link_range);
+}
+
+void GetBrandedTextAndLinkRange(bool is_smartlock_branding_enabled,
+                                int smartlock_string_id,
+                                int default_string_id,
+                                base::string16* out_string,
+                                gfx::Range* link_range) {
   if (is_smartlock_branding_enabled) {
     size_t offset;
-    base::string16 explanation_link =
+    base::string16 brand_name =
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-    *explanation = l10n_util::GetStringFUTF16(
-        IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_SMART_LOCK_WELCOME, explanation_link,
-        &offset);
-    *explanation_link_range =
-        gfx::Range(offset, offset + explanation_link.length());
+    *out_string = l10n_util::GetStringFUTF16(smartlock_string_id, brand_name,
+                                             &offset);
+    *link_range = gfx::Range(offset, offset + brand_name.length());
   } else {
-    *explanation = l10n_util::GetStringFUTF16(
-        IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME,
-        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND));
+    *out_string = l10n_util::GetStringFUTF16(
+        default_string_id,
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TITLE_BRAND));
+    *link_range = gfx::Range();
   }
 }
