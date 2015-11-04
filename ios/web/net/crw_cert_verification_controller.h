@@ -89,9 +89,8 @@ typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
           forHost:(NSString*)host
            status:(net::CertStatus)status;
 
-// Cancels all pending verification requests. Completion handlers will not be
-// called after |shutDown| call. Must always be called before object's
-// deallocation.
+// Invalidates CRWCertVerificationController. Must always be called before
+// object's deallocation.
 - (void)shutDown;
 
 @end
