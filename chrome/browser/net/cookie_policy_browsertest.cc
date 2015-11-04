@@ -15,7 +15,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::BrowserThread;
 
@@ -31,12 +31,12 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
 
 // Visits a page that sets a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
                                                true);
 
-  GURL url(test_server()->GetURL("set-cookie?cookie1"));
+  GURL url(embedded_test_server()->GetURL("/set-cookie?cookie1"));
 
   std::string cookie = content::GetCookies(browser()->profile(), url);
   ASSERT_EQ("", cookie);
@@ -51,13 +51,13 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
 // a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
                        AllowFirstPartyCookiesRedirect) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
                                                true);
 
-  GURL url(test_server()->GetURL("server-redirect?"));
-  GURL redirected_url(test_server()->GetURL("set-cookie?cookie2"));
+  GURL url(embedded_test_server()->GetURL("/server-redirect?"));
+  GURL redirected_url(embedded_test_server()->GetURL("/set-cookie?cookie2"));
 
   // Change the host name from 127.0.0.1 to www.example.com so it triggers
   // third-party cookie blocking if the first party for cookies URL is not

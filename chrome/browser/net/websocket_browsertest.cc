@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/test_data_directory.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "url/gurl.h"
 
@@ -80,32 +81,32 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
 // server.
 class WebSocketBrowserConnectToTest : public WebSocketBrowserTest {
  protected:
-  WebSocketBrowserConnectToTest()
-      : http_server_(net::SpawnedTestServer::TYPE_HTTP,
-                     net::SpawnedTestServer::kLocalhost,
-                     net::GetWebSocketTestDataDirectory()) {}
+  WebSocketBrowserConnectToTest() {
+    http_server_.ServeFilesFromSourceDirectory(
+        net::GetWebSocketTestDataDirectory());
+  }
 
   // The title watcher and HTTP server are set up automatically by the test
   // framework. Each test case still needs to configure and start the
   // WebSocket server(s) it needs.
   void SetUpOnMainThread() override {
     WebSocketBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(http_server_.StartInBackground());
+    ASSERT_TRUE(http_server_.Start());
   }
 
   // Supply a ws: or wss: URL to connect to.
   void ConnectTo(GURL url) {
-    ASSERT_TRUE(http_server_.BlockUntilStarted());
+    ASSERT_TRUE(http_server_.Started());
     std::string query("url=" + url.spec());
     GURL::Replacements replacements;
     replacements.SetQueryStr(query);
     ui_test_utils::NavigateToURL(browser(),
-                                 http_server_.GetURL("files/connect_to.html")
+                                 http_server_.GetURL("/connect_to.html")
                                      .ReplaceComponents(replacements));
   }
 
  private:
-  net::SpawnedTestServer http_server_;
+  net::EmbeddedTestServer http_server_;
 };
 
 // Automatically fill in any login prompts that appear with the supplied
@@ -298,11 +299,10 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SSLConnectionLimit) {
 
 // Regression test for crbug.com/903553005
 IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN),
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   net::SpawnedTestServer wss_server(
       net::SpawnedTestServer::TYPE_WSS,
       net::SpawnedTestServer::SSLOptions(
@@ -310,20 +310,18 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
       net::GetWebSocketTestDataDirectory());
   // This test sets HSTS on localhost. To avoid being redirected to https, start
   // the http server on 127.0.0.1 instead.
-  net::SpawnedTestServer http_server(
-      net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.StartInBackground());
-  ASSERT_TRUE(http_server.StartInBackground());
+  net::EmbeddedTestServer http_server;
+  http_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+  ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(wss_server.StartInBackground());
-  ASSERT_TRUE(https_server.BlockUntilStarted());
 
   // Set HSTS on localhost.
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),
       base::ASCIIToUTF16("SET"));
-  ui_test_utils::NavigateToURL(
-      browser(), https_server.GetURL("files/websocket/set-hsts.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("/websocket/set-hsts.html"));
   const base::string16 result = title_watcher.WaitAndGetTitle();
   EXPECT_TRUE(base::EqualsASCII(result, "SET"));
 
@@ -337,9 +335,8 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
 
   // An https: URL won't work here here because the mixed content policy
   // disallows connections to unencrypted WebSockets from encrypted pages.
-  ASSERT_TRUE(http_server.BlockUntilStarted());
   GURL http_url =
-      http_server.GetURL("files/websocket/check-hsts.html#" + ws_url.spec());
+      http_server.GetURL("/websocket/check-hsts.html#" + ws_url.spec());
 
   ui_test_utils::NavigateToURL(browser(), http_url);
 

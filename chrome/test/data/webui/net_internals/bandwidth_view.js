@@ -245,7 +245,7 @@ DataReductionProxyTask.prototype = {
 TEST_F('NetInternalsTest', 'netInternalsSessionBandwidthSucceed', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
-      new NetInternalsTest.GetTestServerURLTask('files/title1.html'));
+      new NetInternalsTest.GetTestServerURLTask('/title1.html'));
   // Load a page with a content length of 66 bytes and a 45-byte favicon.
   taskQueue.addTask(new BandwidthTask(66, 45));
   taskQueue.run();

@@ -599,7 +599,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
     test_server_.RegisterRequestHandler(
         base::Bind(&SdchResponseHandler::HandleRequest,
                    base::Unretained(&response_handler_)));
-    CHECK(test_server_.InitializeAndWaitUntilReady());
+    CHECK(test_server_.Start());
     url_request_context_getter_ = browser()->profile()->GetRequestContext();
 
     content::BrowserThread::PostTask(
@@ -644,7 +644,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
   }
 
   SdchResponseHandler response_handler_;
-  net::test_server::EmbeddedTestServer test_server_;
+  net::EmbeddedTestServer test_server_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_ptr<net::URLFetcher> fetcher_;
   bool url_fetch_complete_;

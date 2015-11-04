@@ -571,9 +571,9 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, PreconnectProxySsl) {
 
 // Integration test with a real network response.
 IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, Integration) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(spawned_test_server()->Start());
   TimingDeltas navigation_deltas;
-  RunTestWithUrl(test_server()->GetURL("chunked?waitBeforeHeaders=100"),
+  RunTestWithUrl(spawned_test_server()->GetURL("chunked?waitBeforeHeaders=100"),
                  &navigation_deltas);
 
   // Due to potential roundoff issues, never check exact differences.

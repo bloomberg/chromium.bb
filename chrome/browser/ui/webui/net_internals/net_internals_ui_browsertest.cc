@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -39,6 +40,8 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/log/net_log.h"
 #include "net/log/write_to_file_net_log_observer.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -191,7 +194,7 @@ void NetInternalsTest::MessageHandler::GetTestServerURL(
   ASSERT_TRUE(net_internals_test_->StartTestServer());
   std::string path;
   ASSERT_TRUE(list_value->GetString(0, &path));
-  GURL url = net_internals_test_->test_server()->GetURL(path);
+  GURL url = net_internals_test_->embedded_test_server()->GetURL(path);
   scoped_ptr<base::Value> url_value(new base::StringValue(url.spec()));
   RunJavascriptCallback(url_value.get());
 }
@@ -352,22 +355,20 @@ content::WebUIMessageHandler* NetInternalsTest::GetMockMessageHandler() {
 GURL NetInternalsTest::CreatePrerenderLoaderUrl(
     const GURL& prerender_url) {
   EXPECT_TRUE(StartTestServer());
-  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
+  base::StringPairs replacement_text;
   replacement_text.push_back(
       make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
   std::string replacement_path;
-  EXPECT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
-      "files/prerender/prerender_loader.html",
-      replacement_text,
-      &replacement_path));
-  GURL url_loader = test_server()->GetURL(replacement_path);
+  net::test_server::GetFilePathWithReplacements(
+      "/prerender/prerender_loader.html", replacement_text, &replacement_path);
+  GURL url_loader = embedded_test_server()->GetURL(replacement_path);
   return url_loader;
 }
 
 bool NetInternalsTest::StartTestServer() {
   if (test_server_started_)
     return true;
-  test_server_started_ = test_server()->Start();
+  test_server_started_ = embedded_test_server()->Start();
 
   // Sample domain for SDCH-view test. Dictionaries for localhost/127.0.0.1
   // are forbidden.

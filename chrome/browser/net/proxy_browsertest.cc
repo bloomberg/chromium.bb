@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/test_data_directory.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace {
@@ -143,10 +145,8 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
 // Fetch PAC script via an http:// URL.
 class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
-  HttpProxyScriptBrowserTest()
-      : http_server_(net::SpawnedTestServer::TYPE_HTTP,
-                     net::SpawnedTestServer::kLocalhost,
-                     base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+  HttpProxyScriptBrowserTest() {
+    http_server_.ServeFilesFromSourceDirectory("chrome/test/data");
   }
   ~HttpProxyScriptBrowserTest() override {}
 
@@ -156,13 +156,13 @@ class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    base::FilePath pac_script_path(FILE_PATH_LITERAL("files"));
+    base::FilePath pac_script_path(FILE_PATH_LITERAL("/"));
     command_line->AppendSwitchASCII(switches::kProxyPacUrl, http_server_.GetURL(
         pac_script_path.Append(kPACScript).MaybeAsASCII()).spec());
   }
 
  private:
-  net::SpawnedTestServer http_server_;
+  net::EmbeddedTestServer http_server_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyScriptBrowserTest);
 };

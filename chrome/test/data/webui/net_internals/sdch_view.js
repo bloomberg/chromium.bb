@@ -12,7 +12,7 @@ GEN_INCLUDE(['net_internals_test.js']);
 // content from the different origin. Otherwise favicon requests for the main
 // page domain would spoil SDCH blacklists counters making test behavior hardly
 // predicatble.
-var BASE_PATH = 'files/sdch/base-page.html?iframe_url=';
+var BASE_PATH = '/sdch/base-page.html?iframe_url=';
 
 /**
  * Checks the display on the SDCH tab against the information it should be
@@ -100,7 +100,7 @@ LoadSdchDictionaryTask.prototype = {
       expectEquals(1, testDict.length);
       var dict = testDict[0];
       expectEquals('/', dict.path);
-      expectTrue(dict.url.indexOf('/files/sdch/dict') !== -1);
+      expectTrue(dict.url.indexOf('/sdch/dict') !== -1);
 
       var tableId = SdchView.DICTIONARIES_TBODY_ID;
       var domain = NetInternalsTest.getTbodyText(tableId, 0, 0);
@@ -182,7 +182,7 @@ TEST_F('NetInternalsTest', 'netInternalsSdchViewFetchDictionary', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/files/sdch/page.html')));
+          BASE_PATH + encodeURI('/sdch/page.html')));
   taskQueue.addTask(new LoadSdchDictionaryTask());
   taskQueue.run();
 });
@@ -195,11 +195,11 @@ TEST_F('NetInternalsTest', 'netInternalsSdchViewBlacklistMeta', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/files/sdch/page.html')));
+          BASE_PATH + encodeURI('/sdch/page.html')));
   taskQueue.addTask(new LoadSdchDictionaryTask());
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/files/sdch/non-html')));
+          BASE_PATH + encodeURI('/sdch/non-html')));
   taskQueue.addTask(
       new LoadPageWithDecodeErrorTask('META_REFRESH_UNSUPPORTED'));
   taskQueue.run();
@@ -212,7 +212,7 @@ TEST_F('NetInternalsTest', 'netInternalsSdchViewBlacklistNonSdch', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/files/sdch/non-sdch.html')));
+          BASE_PATH + encodeURI('/sdch/non-sdch.html')));
   taskQueue.addTask(
       new LoadPageWithDecodeErrorTask('PASSING_THROUGH_NON_SDCH'));
   taskQueue.run();

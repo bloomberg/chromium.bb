@@ -230,7 +230,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     connection_listener_.reset(new ConnectionListener());
     embedded_test_server()->SetConnectionListener(connection_listener_.get());
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {
@@ -343,11 +343,10 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCycle) {
 #define MAYBE_DnsPrefetch DnsPrefetch
 #endif
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, MAYBE_DnsPrefetch) {
-  ASSERT_TRUE(test_server()->Start());
   int hostnames_requested_before_load = RequestedHostnameCount();
   ui_test_utils::NavigateToURL(
       browser(),
-      GURL(test_server()->GetURL("files/predictor/dns_prefetch.html")));
+      GURL(embedded_test_server()->GetURL("/predictor/dns_prefetch.html")));
   WaitUntilHostHasBeenRequested(kChromiumHostname);
   ASSERT_FALSE(HasHostBeenRequested(kInvalidLongHostname));
   ASSERT_EQ(hostnames_requested_before_load + 1, RequestedHostnameCount());
