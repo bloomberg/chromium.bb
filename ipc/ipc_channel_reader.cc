@@ -15,7 +15,9 @@
 namespace IPC {
 namespace internal {
 
-ChannelReader::ChannelReader(Listener* listener) : listener_(listener) {
+ChannelReader::ChannelReader(Listener* listener)
+  : listener_(listener),
+    max_input_buffer_size_(Channel::kMaximumReadBufferSize) {
   memset(input_buf_, 0, sizeof(input_buf_));
 }
 
@@ -114,6 +116,11 @@ bool ChannelReader::TranslateInputData(const char* input_data,
     }
   }
 
+  // Account for the case where last message's byte is in the next data chunk.
+  size_t next_message_buffer_size = next_message_size ?
+      next_message_size + Channel::kReadBufferSize - 1:
+      0;
+
   // Save any partial data in the overflow buffer.
   input_overflow_buf_.assign(p, end - p);
 
@@ -122,10 +129,28 @@ bool ChannelReader::TranslateInputData(const char* input_data,
     // append the next data chunk (instead of parsing it directly). So we
     // resize the buffer to fit the next message, to avoid repeatedly
     // growing the buffer as we receive all message' data chunks.
-    next_message_size += Channel::kReadBufferSize - 1;
-    if (next_message_size > input_overflow_buf_.capacity()) {
-      input_overflow_buf_.reserve(next_message_size);
+    if (next_message_buffer_size > input_overflow_buf_.capacity()) {
+      input_overflow_buf_.reserve(next_message_buffer_size);
     }
+  }
+
+  // Trim the buffer if we can
+  if (next_message_buffer_size < max_input_buffer_size_ &&
+      input_overflow_buf_.size() < max_input_buffer_size_ &&
+      input_overflow_buf_.capacity() > max_input_buffer_size_) {
+    // std::string doesn't really have a method to shrink capacity to
+    // a specific value, so we have to swap with another string.
+    std::string trimmed_buf;
+    trimmed_buf.reserve(max_input_buffer_size_);
+    if (trimmed_buf.capacity() > max_input_buffer_size_) {
+      // Since we don't control how much space reserve() actually reserves,
+      // we have to go other way around and change the max size to avoid
+      // getting into the outer if() again.
+      max_input_buffer_size_ = trimmed_buf.capacity();
+    }
+    trimmed_buf.assign(input_overflow_buf_.data(),
+                       input_overflow_buf_.size());
+    input_overflow_buf_.swap(trimmed_buf);
   }
 
   if (input_overflow_buf_.empty() && !DidEmptyInputBuffers())

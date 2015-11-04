@@ -97,6 +97,11 @@ class IPC_EXPORT Channel : public Endpoint {
   // Amount of data to read at once from the pipe.
   static const size_t kReadBufferSize = 4 * 1024;
 
+  // Maximum persistent read buffer size. Read buffer can grow larger to
+  // accommodate large messages, but it's recommended to shrink back to this
+  // value because it fits 99.9% of all messages (see issue 529940 for data).
+  static const size_t kMaximumReadBufferSize = 64 * 1024;
+
   // Initialize a Channel.
   //
   // |channel_handle| identifies the communication Channel. For POSIX, if

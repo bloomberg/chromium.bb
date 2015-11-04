@@ -129,6 +129,7 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, AttachmentNotYetBrokered);
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, ResizeOverflowBuffer);
   FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, InvalidMessageSize);
+  FRIEND_TEST_ALL_PREFIXES(ChannelReaderTest, TrimBuffer);
 
   using AttachmentIdSet = std::set<BrokerableAttachment::AttachmentId>;
   using AttachmentIdVector = std::vector<BrokerableAttachment::AttachmentId>;
@@ -194,6 +195,11 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   // Large messages that span multiple pipe buffers, get built-up using
   // this buffer.
   std::string input_overflow_buf_;
+
+  // Maximum overflow buffer size, see Channel::kMaximumReadBufferSize.
+  // This is not a constant because we update it to reflect the reality
+  // of std::string::reserve() implementation.
+  size_t max_input_buffer_size_;
 
   // These messages are waiting to be dispatched. If this vector is non-empty,
   // then the front Message must be blocked on receiving an attachment from the
