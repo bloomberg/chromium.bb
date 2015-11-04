@@ -15,7 +15,7 @@ void MainApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   connections_.push_back(app->ConnectToApplication("mojo:mock_sysui"));
   connections_.push_back(app->ConnectToApplication("mojo:views_examples"));
   connections_.push_back(
-      app->ConnectToApplication("exe:window_type_launcher"));
+      app->ConnectToApplication("exe:window_type_launcher_exe"));
 }
 
 bool MainApplicationDelegate::ConfigureIncomingConnection(
