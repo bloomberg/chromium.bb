@@ -28,11 +28,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -53,6 +50,7 @@
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/pref_names.h"
+#include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_driver_switches.h"
@@ -1112,8 +1110,7 @@ void ProfileSyncService::OnBackendInitialized(
   sync_js_controller_.AttachJsBackend(js_backend);
   debug_info_listener_ = debug_info_listener;
 
-  SigninClient* signin_client =
-      ChromeSigninClientFactory::GetForProfile(profile_);
+  SigninClient* signin_client = signin_->GetOriginal()->signin_client();
   DCHECK(signin_client);
   std::string signin_scoped_device_id =
       signin_client->GetSigninScopedDeviceId();
@@ -1367,8 +1364,9 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // On desktop Chrome, sign out the user after a dashboard clear.
       // Skip sign out on ChromeOS/Android.
       if (!startup_controller_->auto_start_enabled()) {
-        SigninManagerFactory::GetForProfile(profile_)->SignOut(
-            signin_metrics::SERVER_FORCED_DISABLE);
+        SigninManager* signin_manager =
+            static_cast<SigninManager*>(signin_->GetOriginal());
+        signin_manager->SignOut(signin_metrics::SERVER_FORCED_DISABLE);
       }
 #endif
       break;

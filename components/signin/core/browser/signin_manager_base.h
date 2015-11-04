@@ -132,12 +132,13 @@ class SigninManagerBase : public KeyedService {
   void RemoveSigninDiagnosticsObserver(
       signin_internals_util::SigninDiagnosticsObserver* observer);
 
+  // Gives access to the SigninClient instance associated with this instance.
+  SigninClient* signin_client() const { return client_; }
+
  protected:
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;
   }
-
-  SigninClient* signin_client() const { return client_; }
 
   // Sets the authenticated user's account id.
   void SetAuthenticatedAccountId(const std::string& account_id);
