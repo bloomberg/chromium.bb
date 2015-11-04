@@ -917,11 +917,14 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     changes_to_test = []
 
     _, db = self._run.GetCIDBHandle()
-    actions_for_changes = db.GetActionsForChanges(changes)
-    for change in changes:
-      status = clactions.GetCLPreCQStatus(change, actions_for_changes)
-      if status == constants.CL_STATUS_PASSED:
-        changes_to_test.append(change)
+    if db:
+      actions_for_changes = db.GetActionsForChanges(changes)
+      for change in changes:
+        status = clactions.GetCLPreCQStatus(change, actions_for_changes)
+        if status == constants.CL_STATUS_PASSED:
+          changes_to_test.append(change)
+    else:
+      logging.warning("DB not available, unable to filter for PreCQ passed.")
 
     # Allow Commit-Ready=+2 changes to bypass the Pre-CQ, if there are no other
     # changes.
