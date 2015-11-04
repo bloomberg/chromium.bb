@@ -16,6 +16,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -406,8 +407,7 @@ void PerfProvider::ParseOutputProtoIfValid(
       AddToPerfHistogram(PROTOBUF_NOT_PARSED);
       return;
     }
-    sampled_profile->set_ms_after_boot(
-        perf_data_proto.timestamp_sec() * base::Time::kMillisecondsPerSecond);
+    sampled_profile->set_ms_after_boot(base::SysInfo::Uptime());
     sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
   } else {
     DCHECK(!perf_stat.empty());
