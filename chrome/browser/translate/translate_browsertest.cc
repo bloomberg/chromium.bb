@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -35,55 +37,59 @@ namespace {
 
 const base::FilePath::CharType kTranslateRoot[] =
     FILE_PATH_LITERAL("chrome/test/data/translate");
-const char kNonSecurePrefix[] = "/translate/";
+const char kNonSecurePrefix[] = "translate/";
 const char kSecurePrefix[] = "files/";
-const char kFrenchTestPath[] = "fr_test.html";
-const char kRefreshMetaTagTestPath[] = "refresh_meta_tag.html";
+const char kFrenchTestPath[] = "/fr_test.html";
+const char kBasicFrenchTestPath[] = "/basic_fr_test.html";
+const char kRefreshMetaTagTestPath[] = "/refresh_meta_tag.html";
 const char kRefreshMetaTagCaseInsensitiveTestPath[] =
-    "refresh_meta_tag_casei.html";
+    "/refresh_meta_tag_casei.html";
 const char kRefreshMetaTagAtOnloadTestPath[] =
-    "refresh_meta_tag_at_onload.html";
-const char kUpdateLocationTestPath[] = "update_location.html";
-const char kUpdateLocationAtOnloadTestPath[] = "update_location_at_onload.html";
-const char kMainScriptPath[] = "pseudo_main.js";
-const char kElementMainScriptPath[] = "pseudo_element_main.js";
+    "/refresh_meta_tag_at_onload.html";
+const char kUpdateLocationTestPath[] = "/update_location.html";
+const char kUpdateLocationAtOnloadTestPath[] =
+    "/update_location_at_onload.html";
+const char kMainScriptPath[] = "/pseudo_main.js";
+const char kElementMainScriptPath[] = "/pseudo_element_main.js";
 
 };  // namespace
 
-class TranslateBrowserTest : public InProcessBrowserTest {
+// Basic translate browser test with an embedded non-secure test server.
+class TranslateBaseBrowserTest : public InProcessBrowserTest {
  public:
-  TranslateBrowserTest()
-      : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
-                      SSLOptions(SSLOptions::CERT_OK),
-                      base::FilePath(kTranslateRoot)),
-        infobar_service_(NULL) {}
+  TranslateBaseBrowserTest() {}
 
   void SetUp() override {
+    set_open_about_blank_on_browser_launch(false);
     translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ASSERT_TRUE(https_server_.Start());
-    // Setup alternate security origin for testing in order to allow XHR against
-    // local test server. Note that this flag shows a confirm infobar in tests.
-    GURL base_url = GetSecureURL("");
-    command_line->AppendSwitchASCII(
-        translate::switches::kTranslateSecurityOrigin,
-        base_url.GetOrigin().spec());
+  void SetUpOnMainThread() override {
+    net::test_server::EmbeddedTestServer* test_server = embedded_test_server();
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    test_data_dir = test_data_dir.AppendASCII(kNonSecurePrefix);
+    test_server->ServeFilesFromDirectory(test_data_dir);
+    ASSERT_TRUE(test_server->InitializeAndWaitUntilReady());
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
  protected:
   GURL GetNonSecureURL(const std::string& path) const {
-    std::string prefix(kNonSecurePrefix);
-    return embedded_test_server()->GetURL(prefix + path);
+    return embedded_test_server()->GetURL(path);
   }
 
-  GURL GetSecureURL(const std::string& path) const {
-    std::string prefix(kSecurePrefix);
-    return https_server_.GetURL(prefix + path);
-  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TranslateBaseBrowserTest);
+};
 
+// Translate browser test for loading a page and checking infobar UI.
+class TranslateBrowserTest : public TranslateBaseBrowserTest {
+ public:
+  TranslateBrowserTest() : infobar_service_(NULL) {}
+
+ protected:
   translate::TranslateInfoBarDelegate* GetExistingTranslateInfoBarDelegate() {
     if (!infobar_service_) {
       content::WebContents* web_contents =
@@ -103,14 +109,13 @@ class TranslateBrowserTest : public InProcessBrowserTest {
       // This infobar appears in all tests of TranslateBrowserTest and can be
       // ignored here.
       if (infobar_service_->infobar_at(i)->delegate()->
-              AsConfirmInfoBarDelegate()) {
+          AsConfirmInfoBarDelegate()) {
         continue;
       }
 
       translate::TranslateInfoBarDelegate* translate =
-          infobar_service_->infobar_at(i)
-              ->delegate()
-              ->AsTranslateInfoBarDelegate();
+          infobar_service_->infobar_at(i)->delegate()->
+          AsTranslateInfoBarDelegate();
       if (translate) {
         EXPECT_FALSE(delegate) << "multiple infobars are shown unexpectedly";
         delegate = translate;
@@ -123,32 +128,108 @@ class TranslateBrowserTest : public InProcessBrowserTest {
     return delegate;
   }
 
+  void LoadPageWithInfobar(const std::string& path) {
+    // Setup infobar observer.
+    content::WindowedNotificationObserver infobar(
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+        content::NotificationService::AllSources());
+
+    // Visit non-secure page which is going to be translated.
+    ui_test_utils::NavigateToURL(browser(), GetNonSecureURL(path));
+
+    // Wait for Chrome Translate infobar.
+    infobar.Wait();
+  }
+
+  void LoadPageWithoutInfobar(const std::string& path) {
+    // If infobar won't be triggered, we need to use another observer.
+    // Setup page title observer.
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents);
+    content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
+    watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
+
+    // Visit non-secure page which is going to be translated.
+    ui_test_utils::NavigateToURL(browser(), GetNonSecureURL(path));
+
+    // Wait for the page title is changed after the test finished.
+    const base::string16 result = watcher.WaitAndGetTitle();
+    EXPECT_EQ("PASS", base::UTF16ToASCII(result));
+  }
+
+  void CheckForTranslateUI(const std::string& path, bool should_trigger_UI) {
+    ASSERT_FALSE(TranslateService::IsTranslateBubbleEnabled());
+    // Check if there is no Translate infobar.
+    translate::TranslateInfoBarDelegate* delegate =
+        GetExistingTranslateInfoBarDelegate();
+    EXPECT_FALSE(delegate);
+
+    if (should_trigger_UI) {
+      ASSERT_NO_FATAL_FAILURE(LoadPageWithInfobar(path));
+    } else {
+      ASSERT_NO_FATAL_FAILURE(LoadPageWithoutInfobar(path));
+    }
+
+    // Check whether the translate infobar showed up.
+    delegate = GetExistingTranslateInfoBarDelegate();
+    if (should_trigger_UI) {
+      // Check if there is a translate infobar.
+      EXPECT_TRUE(delegate);
+    } else {
+      // Check if there is no translate infobar.
+      EXPECT_FALSE(delegate);
+    }
+  }
+
+  void Translate() {
+    translate::TranslateInfoBarDelegate* delegate =
+        GetExistingTranslateInfoBarDelegate();
+    ASSERT_TRUE(delegate);
+    delegate->Translate();
+  }
+
+ private:
+  InfoBarService* infobar_service_;
+};
+
+// Translate browser test with a seperate secure server setup.
+class TranslateWithSecureServerBrowserTest : public TranslateBrowserTest {
+ public:
+  TranslateWithSecureServerBrowserTest()
+      : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
+                      SSLOptions(SSLOptions::CERT_OK),
+                      base::FilePath(kTranslateRoot)) {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(https_server_.Start());
+    // Setup alternate security origin for testing in order to allow XHR against
+    // local test server. Note that this flag shows a confirm infobar in tests.
+    GURL base_url = GetSecureURL("");
+    command_line->AppendSwitchASCII(
+        translate::switches::kTranslateSecurityOrigin,
+        base_url.GetOrigin().spec());
+    TranslateBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ protected:
+  GURL GetSecureURL(const std::string& path) const {
+    std::string prefix(kSecurePrefix);
+    return https_server_.GetURL(prefix + path);
+  }
+
  private:
   net::SpawnedTestServer https_server_;
-  InfoBarService* infobar_service_;
 
   typedef net::SpawnedTestServer::SSLOptions SSLOptions;
 
-  DISALLOW_COPY_AND_ASSIGN(TranslateBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(TranslateWithSecureServerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
-
+IN_PROC_BROWSER_TEST_F(TranslateWithSecureServerBrowserTest,
+                       TranslateInIsolatedWorld) {
   net::TestURLFetcherFactory factory;
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Check if there is no Translate infobar.
-  translate::TranslateInfoBarDelegate* translate =
-      GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
-
-  // Setup infobar observer.
-  content::WindowedNotificationObserver infobar(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      content::NotificationService::AllSources());
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kFrenchTestPath, true));
 
   // Setup page title observer.
   content::WebContents* web_contents =
@@ -157,16 +238,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
   content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
-  // Visit non-secure page which is going to be translated.
-  ui_test_utils::NavigateToURL(browser(), GetNonSecureURL(kFrenchTestPath));
-
-  // Wait for Chrome Translate infobar.
-  infobar.Wait();
-
-  // Perform Chrome Translate.
-  translate = GetExistingTranslateInfoBarDelegate();
-  ASSERT_TRUE(translate);
-  translate->Translate();
+  // Perform translate.
+  ASSERT_NO_FATAL_FAILURE(Translate());
 
   // Hook URLFetcher for element.js.
   GURL script1_url = GetSecureURL(kMainScriptPath);
@@ -198,169 +271,33 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
   EXPECT_EQ("PASS", base::UTF16ToASCII(result));
 }
 
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, BasicTranslation) {
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kBasicFrenchTestPath, true));
+}
+
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Check if there is no Translate infobar.
-  translate::TranslateInfoBarDelegate* translate =
-      GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
-
-  // Setup page title observer.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
-
-  // Visit a test page.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GetNonSecureURL(kRefreshMetaTagTestPath));
-
-  // Wait for the page title is changed after the test finished.
-  const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
-
-  // Check if there is no Translate infobar.
-  translate = GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
+      kRefreshMetaTagTestPath, false));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
                        IgnoreRefreshMetaTagInCaseInsensitive) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Check if there is no Translate infobar.
-  translate::TranslateInfoBarDelegate* translate =
-      GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
-
-  // Setup page title observer.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
-
-  // Visit a test page.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GetNonSecureURL(kRefreshMetaTagCaseInsensitiveTestPath));
-
-  // Wait for the page title is changed after the test finished.
-  const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
-
-  // Check if there is no Translate infobar.
-  translate = GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
+      kRefreshMetaTagCaseInsensitiveTestPath, false));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Check if there is no Translate infobar.
-  translate::TranslateInfoBarDelegate* translate =
-      GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
-
-  // Setup page title observer.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
-
-  // Visit a test page.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GetNonSecureURL(kRefreshMetaTagAtOnloadTestPath));
-
-  // Wait for the page title is changed after the test finished.
-  const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
-
-  // Check if there is no Translate infobar.
-  translate = GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
+      kRefreshMetaTagAtOnloadTestPath, false));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Check if there is no Translate infobar.
-  translate::TranslateInfoBarDelegate* translate =
-      GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
-
-  // Setup page title observer.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
-
-  // Visit a test page.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GetNonSecureURL(kUpdateLocationTestPath));
-
-  // Wait for the page title is changed after the test finished.
-  const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
-
-  // Check if there is no Translate infobar.
-  translate = GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
+      kUpdateLocationTestPath, false));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Check if there is no Translate infobar.
-  translate::TranslateInfoBarDelegate* translate =
-      GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
-
-  // Setup page title observer.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
-
-  // Visit a test page.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GetNonSecureURL(kUpdateLocationAtOnloadTestPath));
-
-  // Wait for the page title is changed after the test finished.
-  const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
-
-  // Check if there is no Translate infobar.
-  translate = GetExistingTranslateInfoBarDelegate();
-  EXPECT_FALSE(translate);
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
+      kUpdateLocationAtOnloadTestPath, false));
 }
 #endif  // !defined(USE_AURA)
