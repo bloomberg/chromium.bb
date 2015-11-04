@@ -138,7 +138,15 @@ gfx::NativeWindow ScreenAsh::GetWindowUnderCursor() {
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {
-  return wm::GetRootWindowAt(point)->GetTopWindowContainingPoint(point);
+  aura::Window* root_window = wm::GetRootWindowAt(point);
+  aura::client::ScreenPositionClient* position_client =
+      aura::client::GetScreenPositionClient(root_window);
+
+  gfx::Point local_point = point;
+  if (position_client)
+    position_client->ConvertPointFromScreen(root_window, &local_point);
+
+  return root_window->GetTopWindowContainingPoint(local_point);
 }
 
 int ScreenAsh::GetNumDisplays() const {

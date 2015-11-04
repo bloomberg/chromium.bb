@@ -830,6 +830,7 @@
       'display/projecting_observer_chromeos_unittest.cc',
       'display/resolution_notification_controller_unittest.cc',
       'display/root_window_transformers_unittest.cc',
+      'display/screen_ash_unittest.cc',
       'display/screen_position_controller_unittest.cc',
       'display/unified_mouse_warp_controller_unittest.cc',
       'drag_drop/drag_drop_controller_unittest.cc',
