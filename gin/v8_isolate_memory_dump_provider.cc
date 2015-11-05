@@ -103,6 +103,18 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         heap_statistics.total_heap_size() - known_spaces_size);
 
+  // If V8 zaps garbage, all the memory mapped regions become resident,
+  // so we add an extra dump to avoid mismatches w.r.t. the total
+  // resident values.
+  if (heap_statistics.does_zap_garbage()) {
+    auto zap_dump = process_memory_dump->CreateAllocatorDump(
+        dump_base_name + "/zapped_for_debug");
+    zap_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        heap_statistics.total_heap_size() -
+                            heap_statistics.total_physical_size());
+  }
+
   // If light dump is requested, then object statistics are not dumped
   if (args.level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::LIGHT)
     return;
