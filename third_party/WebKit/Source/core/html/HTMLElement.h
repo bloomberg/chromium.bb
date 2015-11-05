@@ -121,6 +121,7 @@ protected:
     void calculateAndAdjustDirectionality();
 
 private:
+    String debugNodeName() const final;
     String nodeName() const final;
 
     bool isHTMLElement() const = delete; // This will catch anyone doing an unnecessary check.

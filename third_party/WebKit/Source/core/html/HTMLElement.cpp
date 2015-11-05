@@ -72,8 +72,21 @@ using namespace std;
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
+String HTMLElement::debugNodeName() const
+{
+    if (document().isHTMLDocument()) {
+        return tagQName().hasPrefix()
+            ? Element::nodeName().upper()
+            : tagQName().localName().upper();
+    }
+    return Element::nodeName();
+}
+
 String HTMLElement::nodeName() const
 {
+    // localNameUpper may intern and cache an AtomicString.
+    RELEASE_ASSERT(isMainThread());
+
     // FIXME: Would be nice to have an atomicstring lookup based off uppercase
     // chars that does not have to copy the string on a hit in the hash.
     // FIXME: We should have a way to detect XHTML elements and replace the hasPrefix() check with it.

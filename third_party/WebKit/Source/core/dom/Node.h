@@ -579,6 +579,8 @@ public:
     //
     virtual void removedFrom(ContainerNode* insertionPoint);
 
+    // FIXME(dominicc): This method is not debug-only--it is used by
+    // Tracing--rename it to something indicative.
     String debugName() const;
 
 #ifndef NDEBUG
@@ -786,6 +788,13 @@ private:
     void removedLastRef();
 #endif
     bool hasTreeSharedParent() const { return !!parentOrShadowHostNode(); }
+
+    // Gets nodeName without caching AtomicStrings. Used by
+    // debugName. Compositor may call debugName from the "impl" thread
+    // during "commit". The main thread is stopped at that time, but
+    // it is not safe to cache AtomicStrings because those are
+    // per-thread.
+    virtual String debugNodeName() const;
 
     enum EditableLevel { Editable, RichlyEditable };
     bool hasEditableStyle(EditableLevel, UserSelectAllTreatment = UserSelectAllIsAlwaysNonEditable) const;

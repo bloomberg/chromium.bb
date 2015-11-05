@@ -1439,8 +1439,7 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
 String Node::debugName() const
 {
     StringBuilder name;
-    name.append(nodeName());
-
+    name.append(debugNodeName());
     if (isElementNode()) {
         const Element& thisElement = toElement(*this);
         if (thisElement.hasID()) {
@@ -1459,8 +1458,12 @@ String Node::debugName() const
             name.append('\'');
         }
     }
-
     return name.toString();
+}
+
+String Node::debugNodeName() const
+{
+    return nodeName();
 }
 
 #ifndef NDEBUG
