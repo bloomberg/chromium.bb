@@ -315,14 +315,6 @@ wl_display_init_shm(struct wl_display *display)
 }
 
 WL_EXPORT struct wl_shm_buffer *
-wl_shm_buffer_create(struct wl_client *client,
-		     uint32_t id, int32_t width, int32_t height,
-		     int32_t stride, uint32_t format)
-{
-	return NULL;
-}
-
-WL_EXPORT struct wl_shm_buffer *
 wl_shm_buffer_get(struct wl_resource *resource)
 {
 	if (resource == NULL)
@@ -588,3 +580,20 @@ wl_shm_buffer_end_access(struct wl_shm_buffer *buffer)
 		sigbus_data->current_pool = NULL;
 	}
 }
+
+/** \cond */ /* Deprecated functions below. */
+
+WL_EXPORT struct wl_shm_buffer *
+wl_shm_buffer_create(struct wl_client *client,
+		     uint32_t id, int32_t width, int32_t height,
+		     int32_t stride, uint32_t format)
+{
+	return NULL;
+}
+
+/** \endcond */
+
+/* Functions at the end of this file are deprecated.  Instead of adding new
+ * code here, add it before the comment above that states:
+ * Deprecated functions below.
+ */
