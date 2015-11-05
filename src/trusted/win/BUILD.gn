@@ -13,12 +13,16 @@ toolchain("nacl_win_as") {
     win_as_script = rebase_path("//native_client/tools/win_as.py",
                                 root_build_dir)
     if (current_cpu == "x86") {
+      env = "environment.x86"
       win_as_arch = "Win32"
     } else {
+      env = "environment.x64"
       win_as_arch = current_cpu
     }
-    nacl_path = rebase_path("//native_client", root_build_dir)
-    command = "$python_path $win_as_script -a $win_as_arch -p $nacl_path -o {{output}} {{source}}"
+    top_srcdir = rebase_path("//", root_build_dir)
+    rspfile = "{{output}}.rsp"
+    rspfile_content = "$python_path $win_as_script -a $win_as_arch -p $top_srcdir -o {{output}} {{source}}"
+    command = "$python_path gyp-win-tool action-wrapper $env $rspfile"
     depsformat = "msvc"
     description = "GNU ASM {{output}}"
     outputs = [
