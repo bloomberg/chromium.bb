@@ -93,6 +93,12 @@ void AudioSyncReader::Read(AudioBus* dest) {
   ++renderer_callback_count_;
   if (!WaitUntilDataIsReady()) {
     ++renderer_missed_callback_count_;
+    if (renderer_missed_callback_count_ <= 100) {
+      LOG(WARNING) << "AudioSyncReader::Read timed out, audio glitch count="
+                   << renderer_missed_callback_count_;
+      if (renderer_missed_callback_count_ == 100)
+        LOG(WARNING) << "(log cap reached, suppressing further logs)";
+    }
     dest->Zero();
     return;
   }
