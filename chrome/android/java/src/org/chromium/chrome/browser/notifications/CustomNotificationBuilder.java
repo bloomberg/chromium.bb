@@ -15,6 +15,7 @@ import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
@@ -22,18 +23,30 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /**
  * Builds a notification using the given inputs. Uses RemoteViews to provide a custom layout.
  */
 public class CustomNotificationBuilder implements NotificationBuilder {
-    // Permits the usual 2 buttons plus 1 for settings.
+    /**
+     * Maximum length of CharSequence inputs to prevent excessive memory consumption. At current
+     * screen sizes we display about 500 characters at most, so this is a pretty generous limit, and
+     * it matches what NotificationCompat does.
+     */
+    @VisibleForTesting static final int MAX_CHARSEQUENCE_LENGTH = 5 * 1024;
+
+    /**
+     * The maximum number of action buttons. One is for the settings button, and two more slots are
+     * for developer provided buttons.
+     */
     private static final int MAX_ACTION_BUTTONS = 3;
 
     private final Context mContext;
 
-    private String mTitle;
-    private String mBody;
-    private String mOrigin;
+    private CharSequence mTitle;
+    private CharSequence mBody;
+    private CharSequence mOrigin;
     private CharSequence mTickerText;
     private Bitmap mLargeIcon;
     private int mSmallIconId;
@@ -99,26 +112,26 @@ public class CustomNotificationBuilder implements NotificationBuilder {
     }
 
     @Override
-    public NotificationBuilder setTitle(String title) {
-        mTitle = title;
+    public NotificationBuilder setTitle(CharSequence title) {
+        mTitle = limitLength(title);
         return this;
     }
 
     @Override
-    public NotificationBuilder setBody(String body) {
-        mBody = body;
+    public NotificationBuilder setBody(CharSequence body) {
+        mBody = limitLength(body);
         return this;
     }
 
     @Override
-    public NotificationBuilder setOrigin(String origin) {
-        mOrigin = origin;
+    public NotificationBuilder setOrigin(CharSequence origin) {
+        mOrigin = limitLength(origin);
         return this;
     }
 
     @Override
     public NotificationBuilder setTicker(CharSequence tickerText) {
-        mTickerText = tickerText;
+        mTickerText = limitLength(tickerText);
         return this;
     }
 
@@ -152,7 +165,7 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             throw new IllegalStateException(
                     "Cannot add more than " + MAX_ACTION_BUTTONS + " actions.");
         }
-        mActions.add(new Action(iconId, title, intent));
+        mActions.add(new Action(iconId, limitLength(title), intent));
         return this;
     }
 
@@ -166,5 +179,16 @@ public class CustomNotificationBuilder implements NotificationBuilder {
     public NotificationBuilder setVibrate(long[] pattern) {
         mVibratePattern = Arrays.copyOf(pattern, pattern.length);
         return this;
+    }
+
+    @Nullable
+    private static CharSequence limitLength(@Nullable CharSequence input) {
+        if (input == null) {
+            return input;
+        }
+        if (input.length() > MAX_CHARSEQUENCE_LENGTH) {
+            return input.subSequence(0, MAX_CHARSEQUENCE_LENGTH);
+        }
+        return input;
     }
 }

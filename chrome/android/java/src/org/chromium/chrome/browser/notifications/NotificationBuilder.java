@@ -23,17 +23,17 @@ public interface NotificationBuilder {
     /**
      * Sets the title text (first row) of the notification.
      */
-    NotificationBuilder setTitle(@Nullable String title);
+    NotificationBuilder setTitle(@Nullable CharSequence title);
 
     /**
      * Sets the body text (second row) of the notification.
      */
-    NotificationBuilder setBody(@Nullable String body);
+    NotificationBuilder setBody(@Nullable CharSequence body);
 
     /**
      * Sets the origin text (bottom row) of the notification.
      */
-    NotificationBuilder setOrigin(@Nullable String origin);
+    NotificationBuilder setOrigin(@Nullable CharSequence origin);
 
     /**
      * Sets the text that is displayed in the status bar when the notification first arrives.

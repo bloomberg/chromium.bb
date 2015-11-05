@@ -12,8 +12,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.text.SpannableStringBuilder;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,6 +22,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Instrumentation unit tests for CustomNotificationBuilder.
@@ -45,7 +46,7 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
                                             .setTitle("title")
                                             .setBody("body")
                                             .setOrigin("origin")
-                                            .setTicker(new SpannableStringBuilder("ticker"))
+                                            .setTicker("ticker")
                                             .setDefaults(Notification.DEFAULT_ALL)
                                             .setVibrate(new long[] {100L})
                                             .setContentIntent(contentIntent)
@@ -118,6 +119,34 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         assertEquals("There is a maximum of 3 buttons", 3, buttons.size());
     }
 
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testCharSequenceLimits() {
+        Context context = getInstrumentation().getTargetContext();
+        int maxLength = CustomNotificationBuilder.MAX_CHARSEQUENCE_LENGTH;
+        Notification notification =
+                new CustomNotificationBuilder(context)
+                        .setTitle(createString('a', maxLength + 1))
+                        .setBody(createString('b', maxLength + 1))
+                        .setOrigin(createString('c', maxLength + 1))
+                        .setTicker(createString('d', maxLength + 1))
+                        .addAction(0 /* iconId */, createString('e', maxLength + 1),
+                                createIntent(context, "ActionButtonOne"))
+                        .build();
+        View compactView = notification.contentView.apply(context, new LinearLayout(context));
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+
+        assertEquals(maxLength, getIdenticalText(R.id.title, compactView, bigView).length());
+        assertEquals(maxLength, getIdenticalText(R.id.body, compactView, bigView).length());
+        assertEquals(maxLength, getIdenticalText(R.id.origin, compactView, bigView).length());
+        assertEquals(maxLength, notification.tickerText.length());
+
+        ArrayList<View> buttons = new ArrayList<>();
+        bigView.findViewsWithText(buttons, createString('e', maxLength), View.FIND_VIEWS_WITH_TEXT);
+        assertEquals(1, buttons.size());
+        assertEquals(maxLength, ((Button) buttons.get(0)).getText().length());
+    }
+
     /**
      * Finds a TextView with the given id in each of the given views, and checks that they all
      * contain the same text.
@@ -144,5 +173,11 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         Intent intent = new Intent("CustomNotificationBuilderTest." + action);
         return PendingIntent.getBroadcast(
                 context, 0 /* requestCode */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private String createString(char character, int length) {
+        char[] chars = new char[length];
+        Arrays.fill(chars, character);
+        return new String(chars);
     }
 }

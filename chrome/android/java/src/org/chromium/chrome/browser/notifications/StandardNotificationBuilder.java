@@ -27,19 +27,19 @@ public class StandardNotificationBuilder implements NotificationBuilder {
     }
 
     @Override
-    public NotificationBuilder setTitle(String title) {
+    public NotificationBuilder setTitle(CharSequence title) {
         mBuilder.setContentTitle(title);
         return this;
     }
 
     @Override
-    public NotificationBuilder setBody(String body) {
+    public NotificationBuilder setBody(CharSequence body) {
         mBuilder.setContentText(body).setStyle(new NotificationCompat.BigTextStyle().bigText(body));
         return this;
     }
 
     @Override
-    public NotificationBuilder setOrigin(String origin) {
+    public NotificationBuilder setOrigin(CharSequence origin) {
         mBuilder.setSubText(origin);
         return this;
     }
