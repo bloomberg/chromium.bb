@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -85,11 +86,19 @@ class TestProfileSyncServiceNoBackup : public ProfileSyncService {
       ProfileOAuth2TokenService* oauth2_token_service,
       browser_sync::ProfileSyncServiceStartBehavior start_behavior)
       : ProfileSyncService(sync_client.Pass(),
-                           profile,
                            signin_wrapper.Pass(),
                            oauth2_token_service,
                            start_behavior,
-                           base::Bind(&EmptyNetworkTimeUpdate)) {}
+                           base::Bind(&EmptyNetworkTimeUpdate),
+                           profile->GetPath(),
+                           profile->GetRequestContext(),
+                           profile->GetDebugName(),
+                           chrome::GetChannel(),
+                           content::BrowserThread::GetMessageLoopProxyForThread(
+                               content::BrowserThread::DB),
+                           content::BrowserThread::GetMessageLoopProxyForThread(
+                               content::BrowserThread::FILE),
+                           content::BrowserThread::GetBlockingPool()) {}
 
  protected:
   bool NeedBackup() const override { return false; }

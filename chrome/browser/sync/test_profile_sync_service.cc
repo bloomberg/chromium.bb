@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
+#include "chrome/common/channel_info.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
@@ -128,11 +129,19 @@ TestProfileSyncService::TestProfileSyncService(
     : ProfileSyncService(make_scoped_ptr(new browser_sync::ChromeSyncClient(
                              profile,
                              make_scoped_ptr(new SyncApiComponentFactoryMock))),
-                         profile,
                          make_scoped_ptr(new SigninManagerWrapper(signin)),
                          oauth2_token_service,
                          behavior,
-                         base::Bind(&EmptyNetworkTimeUpdate)) {
+                         base::Bind(&EmptyNetworkTimeUpdate),
+                         profile->GetPath(),
+                         profile->GetRequestContext(),
+                         profile->GetDebugName(),
+                         chrome::GetChannel(),
+                         content::BrowserThread::GetMessageLoopProxyForThread(
+                             content::BrowserThread::DB),
+                         content::BrowserThread::GetMessageLoopProxyForThread(
+                             content::BrowserThread::FILE),
+                         content::BrowserThread::GetBlockingPool()) {
   SetSyncSetupCompleted();
 }
 

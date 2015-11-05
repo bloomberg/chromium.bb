@@ -187,8 +187,15 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<browser_sync::ChromeSyncClient> sync_client(
       new browser_sync::ChromeSyncClient(profile, sync_factory.Pass()));
   ProfileSyncService* pss = new ProfileSyncService(
-      sync_client.Pass(), profile, signin_wrapper.Pass(), token_service,
-      behavior, base::Bind(&UpdateNetworkTime));
+      sync_client.Pass(), signin_wrapper.Pass(), token_service,
+      behavior, base::Bind(&UpdateNetworkTime), profile->GetPath(),
+      profile->GetRequestContext(), profile->GetDebugName(),
+      chrome::GetChannel(),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::DB),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE),
+      content::BrowserThread::GetBlockingPool());
   pss->Initialize();
   return pss;
 }

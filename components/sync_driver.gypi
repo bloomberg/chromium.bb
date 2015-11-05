@@ -167,6 +167,7 @@
       'type': 'static_library',
       'dependencies': [
         'sync_driver',
+        'version_info',
         '../base/base.gyp:base',
         '../sync/sync.gyp:sync',
         '../sync/sync.gyp:test_support_sync_internal_api',

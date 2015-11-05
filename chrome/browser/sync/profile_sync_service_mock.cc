@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,12 +33,20 @@ ProfileSyncServiceMock::ProfileSyncServiceMock(
     Profile* profile)
     : ProfileSyncService(
           sync_client.Pass(),
-          profile,
           make_scoped_ptr(new SigninManagerWrapper(
               SigninManagerFactory::GetForProfile(profile))),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           browser_sync::MANUAL_START,
-          base::Bind(&EmptyNetworkTimeUpdate)) {
+          base::Bind(&EmptyNetworkTimeUpdate),
+          profile->GetPath(),
+          profile->GetRequestContext(),
+          profile->GetDebugName(),
+          chrome::GetChannel(),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::DB),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::FILE),
+          content::BrowserThread::GetBlockingPool()) {
     ON_CALL(*this, IsSyncRequested()).WillByDefault(testing::Return(true));
 }
 

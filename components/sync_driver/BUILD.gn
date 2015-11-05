@@ -194,6 +194,7 @@ source_set("test_support") {
     "//components/autofill/core/browser",
     "//components/password_manager/core/browser",
     "//components/sessions",
+    "//components/version_info",
     "//google_apis",
     "//sync:test_support_sync_internal_api",
     "//testing/gmock",

@@ -76,6 +76,10 @@ BookmarkUndoService* FakeSyncClient::GetBookmarkUndoServiceIfExists() {
   return nullptr;
 }
 
+invalidation::InvalidationService* FakeSyncClient::GetInvalidationService() {
+  return nullptr;
+}
+
 scoped_refptr<syncer::ExtensionsActivity>
 FakeSyncClient::GetExtensionsActivity() {
   return scoped_refptr<syncer::ExtensionsActivity>();

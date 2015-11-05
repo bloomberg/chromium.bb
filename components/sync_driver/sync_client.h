@@ -35,6 +35,10 @@ namespace history {
 class HistoryService;
 }  // namespace history
 
+namespace invalidation {
+class InvalidationService;
+}  // namespace invalidation
+
 namespace password_manager {
 class PasswordStore;
 }  // namespace password_manager
@@ -94,6 +98,7 @@ class SyncClient {
   virtual scoped_refptr<autofill::AutofillWebDataService>
   GetWebDataService() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoServiceIfExists() = 0;
+  virtual invalidation::InvalidationService* GetInvalidationService() = 0;
   virtual scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() = 0;
   virtual sync_sessions::SyncSessionsClient* GetSyncSessionsClient() = 0;
 

@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
@@ -51,11 +52,19 @@ class FakeProfileSyncService : public ProfileSyncService {
             make_scoped_ptr(new browser_sync::ChromeSyncClient(
                 profile,
                 make_scoped_ptr(new SyncApiComponentFactoryMock()))),
-            profile,
             make_scoped_ptr<SigninManagerWrapper>(NULL),
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
             browser_sync::MANUAL_START,
-            base::Bind(&EmptyNetworkTimeUpdate)),
+            base::Bind(&EmptyNetworkTimeUpdate),
+            profile->GetPath(),
+            profile->GetRequestContext(),
+            profile->GetDebugName(),
+            chrome::GetChannel(),
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::DB),
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::FILE),
+            content::BrowserThread::GetBlockingPool()),
         sync_initialized_(true),
         initialized_state_violation_(false) {}
 

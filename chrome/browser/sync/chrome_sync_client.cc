@@ -11,6 +11,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +35,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/sync_driver/glue/browser_thread_model_worker.h"
@@ -230,6 +232,14 @@ ChromeSyncClient::GetWebDataService() {
 
 BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoServiceIfExists() {
   return BookmarkUndoServiceFactory::GetForProfileIfExists(profile_);
+}
+
+invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
+  invalidation::ProfileInvalidationProvider* provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+  if (provider)
+    return provider->GetInvalidationService();
+  return nullptr;
 }
 
 scoped_refptr<syncer::ExtensionsActivity>

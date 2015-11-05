@@ -38,6 +38,7 @@ class ChromeSyncClient : public sync_driver::SyncClient {
       override;
   base::Closure GetPasswordStateChangedCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
+  invalidation::InvalidationService* GetInvalidationService() override;
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;

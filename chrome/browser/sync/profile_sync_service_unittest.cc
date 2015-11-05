@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -306,9 +307,16 @@ class ProfileSyncServiceTest : public ::testing::Test {
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
                    base::Unretained(this))));
     service_.reset(new ProfileSyncService(
-        sync_client.Pass(), profile_,
+        sync_client.Pass(),
         make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
-        behavior, base::Bind(&EmptyNetworkTimeUpdate)));
+        behavior, base::Bind(&EmptyNetworkTimeUpdate), profile_->GetPath(),
+        profile_->GetRequestContext(), profile_->GetDebugName(),
+        chrome::GetChannel(),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::DB),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::FILE),
+        content::BrowserThread::GetBlockingPool()));
     service_->RegisterDataTypeController(
         new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
   }

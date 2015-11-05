@@ -30,6 +30,7 @@ class FakeSyncClient : public SyncClient {
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
+  invalidation::InvalidationService* GetInvalidationService() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(

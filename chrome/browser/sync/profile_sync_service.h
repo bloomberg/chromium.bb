@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -38,6 +39,7 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service.h"
 #include "components/sync_driver/sync_stopped_reporter.h"
+#include "components/version_info/version_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
@@ -231,11 +233,17 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Takes ownership of |factory| and |signin_wrapper|.
   ProfileSyncService(
       scoped_ptr<sync_driver::SyncClient> sync_client,
-      Profile* profile,
       scoped_ptr<SigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
       browser_sync::ProfileSyncServiceStartBehavior start_behavior,
-      const syncer::NetworkTimeUpdateCallback& network_time_update_callback);
+      const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
+      base::FilePath base_directory,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context,
+      std::string debug_identifier,
+      version_info::Channel channel,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread,
+      base::SequencedWorkerPool* blocking_pool);
   ~ProfileSyncService() override;
 
   // Initializes the object. This must be called at most once, and
@@ -779,9 +787,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // the Sync API component factory.
   scoped_ptr<sync_driver::SyncClient> sync_client_;
 
-  // The profile whose data we are synchronizing.
-  Profile* profile_;
-
   // The class that handles getting, setting, and persisting sync
   // preferences.
   sync_driver::SyncPrefs sync_prefs_;
@@ -797,6 +802,24 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Callback to update the network time; used for initializing the backend.
   syncer::NetworkTimeUpdateCallback network_time_update_callback_;
+
+  // The path to the base directory under which sync should store its
+  // information.
+  base::FilePath base_directory_;
+
+  // The request context in which sync should operate.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+
+  // An identifier representing this instance for debugging purposes.
+  std::string debug_identifier_;
+
+  // The product channel of the embedder.
+  version_info::Channel channel_;
+
+  // Threading context.
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
+  base::SequencedWorkerPool* blocking_pool_;
 
   // Indicates if this is the first time sync is being configured.  This value
   // is equal to !HasSyncSetupCompleted() at the time of OnBackendInitialized().
@@ -968,6 +991,10 @@ class ProfileSyncService : public sync_driver::SyncService,
   // the user. This logic is only enabled on platforms that consume the
   // IsPassphrasePrompted sync preference.
   bool passphrase_prompt_triggered_by_version_;
+
+  // Used to ensure that certain operations are performed on the thread that
+  // this object was created on.
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 
