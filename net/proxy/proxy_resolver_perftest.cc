@@ -15,7 +15,7 @@
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -90,10 +90,12 @@ class PacPerfSuiteRunner {
   // |resolver_name| is the label used when logging the results.
   PacPerfSuiteRunner(ProxyResolverFactory* factory,
                      const std::string& resolver_name)
-      : factory_(factory), resolver_name_(resolver_name) {
-    test_server_.ServeFilesFromSourceDirectory(
-        "net/data/proxy_resolver_perftest");
-  }
+      : factory_(factory),
+        resolver_name_(resolver_name),
+        test_server_(SpawnedTestServer::TYPE_HTTP,
+                     SpawnedTestServer::kLocalhost,
+                     base::FilePath(FILE_PATH_LITERAL(
+                         "net/data/proxy_resolver_perftest"))) {}
 
   void RunAllTests() {
     ASSERT_TRUE(test_server_.Start());
@@ -111,7 +113,8 @@ class PacPerfSuiteRunner {
                int queries_len) {
     scoped_ptr<ProxyResolver> resolver;
     if (!factory_->expects_pac_bytes()) {
-      GURL pac_url = test_server_.GetURL(std::string("/") + script_name);
+      GURL pac_url =
+          test_server_.GetURL(std::string("files/") + script_name);
       int rv = factory_->CreateProxyResolver(
           ProxyResolverScriptData::FromURL(pac_url), &resolver,
           CompletionCallback(), nullptr);
@@ -186,7 +189,7 @@ class PacPerfSuiteRunner {
 
   ProxyResolverFactory* factory_;
   std::string resolver_name_;
-  EmbeddedTestServer test_server_;
+  SpawnedTestServer test_server_;
 };
 
 #if defined(OS_WIN)

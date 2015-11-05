@@ -25,8 +25,9 @@ EmbeddedTestServerAndroid::~EmbeddedTestServerAndroid() {
   Java_EmbeddedTestServer_clearNativePtr(env, weak_java_server_.get(env).obj());
 }
 
-jboolean EmbeddedTestServerAndroid::Start(JNIEnv* env, jobject jobj) {
-  return test_server_.Start();
+jboolean EmbeddedTestServerAndroid::InitializeAndWaitUntilReady(JNIEnv* env,
+                                                                jobject jobj) {
+  return test_server_.InitializeAndWaitUntilReady();
 }
 
 jboolean EmbeddedTestServerAndroid::ShutdownAndWaitUntilComplete(JNIEnv* env,

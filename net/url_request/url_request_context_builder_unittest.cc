@@ -9,7 +9,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,16 +47,18 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
 
 class URLRequestContextBuilderTest : public PlatformTest {
  protected:
-  URLRequestContextBuilderTest() {
-    test_server_.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  URLRequestContextBuilderTest()
+      : test_server_(SpawnedTestServer::TYPE_HTTP,
+                     SpawnedTestServer::kLocalhost,
+                     base::FilePath(
+                         FILE_PATH_LITERAL("net/data/url_request_unittest"))) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
     builder_.set_proxy_config_service(make_scoped_ptr(
         new ProxyConfigServiceFixed(ProxyConfig::CreateDirect())));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   }
 
-  EmbeddedTestServer test_server_;
+  SpawnedTestServer test_server_;
   URLRequestContextBuilder builder_;
 };
 
@@ -66,7 +68,7 @@ TEST_F(URLRequestContextBuilderTest, DefaultSettings) {
   scoped_ptr<URLRequestContext> context(builder_.Build());
   TestDelegate delegate;
   scoped_ptr<URLRequest> request(context->CreateRequest(
-      test_server_.GetURL("/echoheader?Foo"), DEFAULT_PRIORITY, &delegate));
+      test_server_.GetURL("echoheader?Foo"), DEFAULT_PRIORITY, &delegate));
   request->set_method("GET");
   request->SetExtraRequestHeaderByName("Foo", "Bar", false);
   request->Start();
@@ -81,7 +83,7 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
   scoped_ptr<URLRequestContext> context(builder_.Build());
   TestDelegate delegate;
   scoped_ptr<URLRequest> request(
-      context->CreateRequest(test_server_.GetURL("/echoheader?User-Agent"),
+      context->CreateRequest(test_server_.GetURL("echoheader?User-Agent"),
                              DEFAULT_PRIORITY, &delegate));
   request->set_method("GET");
   request->Start();

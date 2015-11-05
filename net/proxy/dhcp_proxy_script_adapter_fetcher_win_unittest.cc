@@ -13,7 +13,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/mock_proxy_script_fetcher.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -283,12 +283,14 @@ class MockDhcpRealFetchProxyScriptAdapterFetcher
 };
 
 TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
-  EmbeddedTestServer test_server;
-  test_server.ServeFilesFromSourceDirectory(
-      "net/data/proxy_script_fetcher_unittest");
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTP,
+      SpawnedTestServer::kLocalhost,
+      base::FilePath(
+          FILE_PATH_LITERAL("net/data/proxy_script_fetcher_unittest")));
   ASSERT_TRUE(test_server.Start());
 
-  GURL configured_url = test_server.GetURL("/downloadable.pac");
+  GURL configured_url = test_server.GetURL("files/downloadable.pac");
 
   FetcherClient client;
   TestURLRequestContext url_request_context;

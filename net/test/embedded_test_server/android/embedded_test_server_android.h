@@ -24,7 +24,7 @@ class EmbeddedTestServerAndroid {
 
   void Destroy(JNIEnv* env, jobject obj);
 
-  jboolean Start(JNIEnv* env, jobject jobj);
+  jboolean InitializeAndWaitUntilReady(JNIEnv* env, jobject jobj);
 
   jboolean ShutdownAndWaitUntilComplete(JNIEnv* env, jobject jobj);
 

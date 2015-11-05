@@ -15,10 +15,10 @@ namespace net {
 namespace {
 
 TEST(TrafficStatsAndroidTest, BasicsTest) {
-  EmbeddedTestServer embedded_test_server;
+  test_server::EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-  ASSERT_TRUE(embedded_test_server.Start());
+  ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
   int64_t tx_bytes_before_request = -1;
   int64_t rx_bytes_before_request = -1;
@@ -48,10 +48,10 @@ TEST(TrafficStatsAndroidTest, BasicsTest) {
 }
 
 TEST(TrafficStatsAndroidTest, UIDBasicsTest) {
-  EmbeddedTestServer embedded_test_server;
+  test_server::EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-  ASSERT_TRUE(embedded_test_server.Start());
+  ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
   int64_t tx_bytes_before_request = -1;
   int64_t rx_bytes_before_request = -1;

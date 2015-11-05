@@ -16,7 +16,7 @@ import java.io.File;
  *   EmbeddedTestServer s = new EmbeddedTestServer();
  *   s.initializeNative();
  *   s.serveFilesFromDirectory("/path/to/my/directory");
- *   if (!s.start()) {
+ *   if (!s.initializeAndWaitUntilReady()) {
  *       throw new SomeKindOfException("Unable to initialize EmbeddedTestServer.");
  *   }
  *
@@ -54,26 +54,15 @@ public class EmbeddedTestServer {
         nativeServeFilesFromDirectory(mNativeEmbeddedTestServer, directoryPath);
     }
 
-    // TODO(svaldez): Remove once all consumers have switched to start().
-    /** Wrapper for start()
-     *
-     *  start() should be used instead of this.
-     *
-     *  @return Whether the server was successfully initialized.
-     */
-    public boolean initializeAndWaitUntilReady() {
-        return start();
-    }
-
-    /** Starts the server.
+    /** Initialize the server.
      *
      *  Note that this should be called after handlers are set up, including any relevant calls
      *  serveFilesFromDirectory.
      *
      *  @return Whether the server was successfully initialized.
      */
-    public boolean start() {
-        return nativeStart(mNativeEmbeddedTestServer);
+    public boolean initializeAndWaitUntilReady() {
+        return nativeInitializeAndWaitUntilReady(mNativeEmbeddedTestServer);
     }
 
     /** Get the full URL for the given relative URL.
@@ -114,7 +103,7 @@ public class EmbeddedTestServer {
 
     private native void nativeInit();
     private native void nativeDestroy(long nativeEmbeddedTestServerAndroid);
-    private native boolean nativeStart(long nativeEmbeddedTestServerAndroid);
+    private native boolean nativeInitializeAndWaitUntilReady(long nativeEmbeddedTestServerAndroid);
     private native boolean nativeShutdownAndWaitUntilComplete(long nativeEmbeddedTestServerAndroid);
     private native String nativeGetURL(long nativeEmbeddedTestServerAndroid, String relativeUrl);
     private native void nativeServeFilesFromDirectory(
