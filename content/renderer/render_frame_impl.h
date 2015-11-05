@@ -671,6 +671,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void AddObserver(RenderFrameObserver* observer);
   void RemoveObserver(RenderFrameObserver* observer);
 
+  bool IsLocalRoot() const;
+
   // Builds and sends DidCommitProvisionalLoad to the host.
   void SendDidCommitProvisionalLoad(blink::WebFrame* frame,
                                     blink::WebHistoryCommitType commit_type,
@@ -907,10 +909,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // |frame_| has been invalidated.
   bool is_main_frame_;
 
-  // Frame is a local root if it is rendered in a process different than parent
-  // or it is a main frame.
-  bool is_local_root_;
-
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
   bool is_swapped_out_;
@@ -927,11 +925,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(creis): Remove this after switching to PlzNavigate.
   int proxy_routing_id_;
 
-  // Used when the RenderFrame is a local root. For now, RenderWidgets are
-  // added only when a child frame is in a different process from its parent
-  // frame, but eventually this will also apply to top-level frames.
-  // TODO(kenrb): Correct the above statement when top-level frames have their
-  // own RenderWidgets.
+  // Non-null when the RenderFrame is a local root for compositing, input,
+  // layout, etc. A local frame is also a local root iff it does not have a
+  // parent that is a local frame.
   scoped_refptr<RenderWidget> render_widget_;
 
   // Temporarily holds state pertaining to a navigation that has been initiated

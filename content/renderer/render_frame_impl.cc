@@ -722,7 +722,6 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
 RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
     : frame_(NULL),
       is_main_frame_(true),
-      is_local_root_(false),
       render_view_(params.render_view->AsWeakPtr()),
       routing_id_(params.routing_id),
       is_swapped_out_(false),
@@ -830,7 +829,6 @@ void RenderFrameImpl::SetWebFrame(blink::WebLocalFrame* web_frame) {
 
 void RenderFrameImpl::Initialize() {
   is_main_frame_ = !frame_->parent();
-  is_local_root_ = is_main_frame_ || frame_->parent()->isWebRemoteFrame();
 
   RenderFrameImpl* parent_frame = RenderFrameImpl::FromWebFrame(
       frame_->parent());
@@ -851,7 +849,7 @@ void RenderFrameImpl::Initialize() {
 #endif
   new SharedWorkerRepository(this);
 
-  if (is_local_root_ && !render_frame_proxy_) {
+  if (IsLocalRoot() && !is_swapped_out_) {
     // DevToolsAgent is a RenderFrameObserver, and will destruct itself
     // when |this| is deleted.
     devtools_agent_ = new DevToolsAgent(this);
@@ -4060,6 +4058,13 @@ bool RenderFrameImpl::IsMainFrame() {
 
 bool RenderFrameImpl::IsHidden() {
   return GetRenderWidget()->is_hidden();
+}
+
+bool RenderFrameImpl::IsLocalRoot() const {
+  bool is_local_root = render_widget_ != nullptr;
+  DCHECK_EQ(is_local_root,
+            !(frame_->parent() && frame_->parent()->isWebLocalFrame()));
+  return render_widget_ != nullptr;
 }
 
 // Tell the embedding application that the URL of the active page has changed.
