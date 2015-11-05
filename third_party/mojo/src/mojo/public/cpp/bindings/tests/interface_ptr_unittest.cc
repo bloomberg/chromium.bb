@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/math_calculator.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
@@ -119,7 +119,7 @@ class SelfDestructingMathCalculatorUI {
       // Add some more and wait for re-entrant call to Output!
       calculator_->Add(
           1.0, MakeRunnable(&SelfDestructingMathCalculatorUI::Output, this));
-      RunLoop::current()->RunUntilIdle();
+      base::MessageLoop::current()->RunUntilIdle();
     } else {
       delete this;
     }
@@ -184,13 +184,13 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
 
 class InterfacePtrTest : public testing::Test {
  public:
+  InterfacePtrTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~InterfacePtrTest() override { loop_.RunUntilIdle(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 
  private:
-  Environment env_;
-  RunLoop loop_;
+  base::MessageLoop loop_;
 };
 
 TEST_F(InterfacePtrTest, IsBound) {
@@ -470,8 +470,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(StrongConnectorTest, Math) {
-  Environment env;
-  RunLoop loop;
+  base::MessageLoop loop(common::MessagePumpMojo::Create());
 
   bool error_received = false;
   bool destroyed = false;
@@ -539,8 +538,7 @@ class WeakMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(WeakConnectorTest, Math) {
-  Environment env;
-  RunLoop loop;
+  base::MessageLoop loop(common::MessagePumpMojo::Create());
 
   bool error_received = false;
   bool destroyed = false;

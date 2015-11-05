@@ -34,10 +34,11 @@
       'target_name': 'mojo_public_bindings_unittests',
       'type': 'executable',
       'dependencies': [
+        '../../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../../mojo/mojo_base.gyp:mojo_message_pump_lib',
         '../../testing/gtest.gyp:gtest',
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_public.gyp:mojo_cpp_bindings',
-        'mojo_public.gyp:mojo_environment_standalone',
         'mojo_public.gyp:mojo_public_bindings_test_utils',
         'mojo_public.gyp:mojo_public_test_interfaces',
         'mojo_public.gyp:mojo_public_test_utils',

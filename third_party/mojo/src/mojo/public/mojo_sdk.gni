@@ -123,7 +123,9 @@ template("mojo_sdk_source_set") {
           # the Mojo SDK should be on targets within the same file or on a
           # whitelisted set of external dependencies.
           dep_dir = get_path_info(dep, "dir")
-          assert(dep_dir == "." || dep == "//testing/gtest")
+          assert(dep_dir == "." || dep == "//testing/gtest" ||
+                 dep == "//mojo/environment:chromium" ||
+                 dep == "//mojo/message_pump")
         }
         deps += [ dep ]
       }

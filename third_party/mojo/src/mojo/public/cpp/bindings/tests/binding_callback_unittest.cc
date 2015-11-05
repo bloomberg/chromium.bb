@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/test_support/test_support.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,6 +112,7 @@ class InterfaceImpl : public sample::Provider {
 
 class BindingCallbackTest : public testing::Test {
  public:
+  BindingCallbackTest() : loop_(common::MessagePumpMojo::Create()) {}
   ~BindingCallbackTest() override {}
 
  protected:
@@ -121,8 +122,7 @@ class BindingCallbackTest : public testing::Test {
   void PumpMessages() { loop_.RunUntilIdle(); }
 
  private:
-  Environment env_;
-  RunLoop loop_;
+  base::MessageLoop loop_;
 };
 
 // Tests that the InterfacePtr and the Binding can communicate with each

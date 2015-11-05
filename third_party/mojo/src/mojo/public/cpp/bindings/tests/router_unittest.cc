@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/message_loop/message_loop.h"
+#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -125,7 +125,7 @@ class LazyResponseGenerator : public ResponseGenerator {
 
 class RouterTest : public testing::Test {
  public:
-  RouterTest() {}
+  RouterTest() : loop_(common::MessagePumpMojo::Create()) {}
 
   void SetUp() override {
     CreateMessagePipe(nullptr, &handle0_, &handle1_);
@@ -140,8 +140,7 @@ class RouterTest : public testing::Test {
   ScopedMessagePipeHandle handle1_;
 
  private:
-  Environment env_;
-  RunLoop loop_;
+  base::MessageLoop loop_;
 };
 
 TEST_F(RouterTest, BasicRequestResponse) {

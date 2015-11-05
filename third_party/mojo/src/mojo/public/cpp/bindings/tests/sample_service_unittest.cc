@@ -6,8 +6,6 @@
 #include <ostream>
 #include <string>
 
-#include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -313,16 +311,7 @@ class SimpleMessageReceiver : public mojo::MessageReceiverWithResponder {
   }
 };
 
-class BindingsSampleTest : public testing::Test {
- public:
-  BindingsSampleTest() {}
-  ~BindingsSampleTest() override {}
-
- private:
-  mojo::Environment env_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(BindingsSampleTest);
-};
+using BindingsSampleTest = testing::Test;
 
 TEST_F(BindingsSampleTest, Basic) {
   SimpleMessageReceiver receiver;
