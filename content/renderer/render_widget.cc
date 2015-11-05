@@ -825,17 +825,17 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_widget_size);
   }
-  WebSize pinch_viewport_size;
+  WebSize visual_viewport_size;
 
   if (IsUseZoomForDSFEnabled()) {
     gfx::SizeF scaled_visible_viewport_size =
         gfx::ScaleSize(gfx::SizeF(visible_viewport_size), device_scale_factor_);
-    pinch_viewport_size = gfx::ToCeiledSize(scaled_visible_viewport_size);
+    visual_viewport_size = gfx::ToCeiledSize(scaled_visible_viewport_size);
   } else {
-    pinch_viewport_size = visible_viewport_size_;
+    visual_viewport_size = visible_viewport_size_;
   }
 
-  webwidget()->resizePinchViewport(pinch_viewport_size);
+  webwidget()->resizeVisualViewport(visual_viewport_size);
 
   if (new_size.IsEmpty() || physical_backing_size.IsEmpty()) {
     // In this case there is no paint/composite and therefore no

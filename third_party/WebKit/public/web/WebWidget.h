@@ -78,10 +78,6 @@ public:
     // keyboard to overlay over content but allow scrolling it into view.
     virtual void resizeVisualViewport(const WebSize&) { }
 
-    // TODO(bokan): Renamed to visual viewport above. Remove once chromium-side
-    // callers are renamed.
-    virtual void resizePinchViewport(const WebSize&) { }
-
     // Ends a group of resize events that was started with a call to
     // willStartLiveResize.
     virtual void willEndLiveResize() { }

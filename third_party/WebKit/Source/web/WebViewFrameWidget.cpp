@@ -52,9 +52,9 @@ void WebViewFrameWidget::resize(const WebSize& size)
     return m_webView->resize(size);
 }
 
-void WebViewFrameWidget::resizePinchViewport(const WebSize& size)
+void WebViewFrameWidget::resizeVisualViewport(const WebSize& size)
 {
-    return m_webView->resizePinchViewport(size);
+    return m_webView->resizeVisualViewport(size);
 }
 
 void WebViewFrameWidget::willEndLiveResize()

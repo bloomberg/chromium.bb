@@ -199,11 +199,6 @@ void WebFrameWidgetImpl::sendResizeEventAndRepaint()
     }
 }
 
-void WebFrameWidgetImpl::resizePinchViewport(const WebSize& newSize)
-{
-    // TODO(bokan): To Remove.
-}
-
 void WebFrameWidgetImpl::resizeVisualViewport(const WebSize& newSize)
 {
     // FIXME: Implement visual viewport for out-of-process iframes.

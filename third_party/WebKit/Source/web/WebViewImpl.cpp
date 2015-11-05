@@ -1751,11 +1751,6 @@ void WebViewImpl::resizeVisualViewport(const WebSize& newSize)
     page()->frameHost().visualViewport().clampToBoundaries();
 }
 
-void WebViewImpl::resizePinchViewport(const WebSize& newSize)
-{
-    resizeVisualViewport(newSize);
-}
-
 void WebViewImpl::performResize()
 {
     pageScaleConstraintsSet().didChangeViewSize(m_size);
@@ -3046,20 +3041,10 @@ void WebViewImpl::setVisualViewportOffset(const WebFloatPoint& offset)
     page()->frameHost().visualViewport().setLocation(offset);
 }
 
-void WebViewImpl::setPinchViewportOffset(const WebFloatPoint& offset)
-{
-    setVisualViewportOffset(offset);
-}
-
 WebFloatPoint WebViewImpl::visualViewportOffset() const
 {
     ASSERT(page());
     return page()->frameHost().visualViewport().visibleRect().location();
-}
-
-WebFloatPoint WebViewImpl::pinchViewportOffset() const
-{
-    return visualViewportOffset();
 }
 
 WebFloatSize WebViewImpl::visualViewportSize() const

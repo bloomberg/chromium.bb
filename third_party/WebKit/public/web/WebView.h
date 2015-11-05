@@ -232,13 +232,6 @@ public:
     // is scaled up, < 1.0 is scaled down.
     virtual float pageScaleFactor() const = 0;
 
-    // TODO: Obsolete, the origin parameter is ambiguous with two viewports. Remove
-    // once Chromium side users are removed.
-    // Scales a page by a factor of scaleFactor and then sets a scroll position to (x, y).
-    // setPageScaleFactor() magnifies and shrinks a page without affecting layout.
-    // On the other hand, zooming affects layout of the page.
-    virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) { setPageScaleFactor(scaleFactor); }
-
     // Scales the page without affecting layout by using the visual viewport.
     virtual void setPageScaleFactor(float) = 0;
 
@@ -247,17 +240,9 @@ public:
     // stays within the frame's bounds.
     virtual void setVisualViewportOffset(const WebFloatPoint&) = 0;
 
-    // TODO(bokan): Renamed to VisualViewport above, remove once chromium
-    // side callers are renamed.
-    virtual void setPinchViewportOffset(const WebFloatPoint&) = 0;
-
     // Gets the visual viewport's current offset within the page's main frame,
     // in partial CSS pixels.
     virtual WebFloatPoint visualViewportOffset() const = 0;
-
-    // TODO(bokan): Renamed to VisualViewport above, remove once chromium
-    // side callers are renamed.
-    virtual WebFloatPoint pinchViewportOffset() const = 0;
 
     // Get the visual viewport's size in CSS pixels.
     virtual WebFloatSize visualViewportSize() const = 0;
