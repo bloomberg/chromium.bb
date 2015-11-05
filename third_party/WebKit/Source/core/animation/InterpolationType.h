@@ -24,6 +24,8 @@ class InterpolationType {
     USING_FAST_MALLOC(InterpolationType);
     WTF_MAKE_NONCOPYABLE(InterpolationType);
 public:
+    virtual ~InterpolationType() { ASSERT_NOT_REACHED(); }
+
     PropertyHandle property() const { return m_property; }
 
     // Represents logic for determining whether a conversion decision is no longer valid given the current environment.

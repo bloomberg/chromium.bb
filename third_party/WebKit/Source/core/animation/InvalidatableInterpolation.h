@@ -12,16 +12,18 @@
 
 namespace blink {
 
+using InterpolationTypes = Vector<OwnPtr<const InterpolationType>>;
+
 // TODO(alancutter): This class will replace *StyleInterpolation, SVGInterpolation, Interpolation.
 // For now it needs to distinguish itself during the refactor and temporarily has an ugly name.
 class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
 public:
     static PassRefPtr<InvalidatableInterpolation> create(
-        const Vector<const InterpolationType*>& InterpolationTypes,
+        const InterpolationTypes& interpolationTypes,
         const PropertySpecificKeyframe& startKeyframe,
         const PropertySpecificKeyframe& endKeyframe)
     {
-        return adoptRef(new InvalidatableInterpolation(InterpolationTypes, startKeyframe, endKeyframe));
+        return adoptRef(new InvalidatableInterpolation(interpolationTypes, startKeyframe, endKeyframe));
     }
 
     PropertyHandle property() const final { return m_interpolationTypes.first()->property(); }
@@ -34,7 +36,7 @@ public:
 
 private:
     InvalidatableInterpolation(
-        const Vector<const InterpolationType*>& interpolationTypes,
+        const InterpolationTypes& interpolationTypes,
         const PropertySpecificKeyframe& startKeyframe,
         const PropertySpecificKeyframe& endKeyframe)
         : Interpolation(nullptr, nullptr)
@@ -55,7 +57,7 @@ private:
     void setFlagIfInheritUsed(InterpolationEnvironment&) const;
     double underlyingFraction() const;
 
-    const Vector<const InterpolationType*>& m_interpolationTypes;
+    const InterpolationTypes& m_interpolationTypes;
     const PropertySpecificKeyframe* m_startKeyframe;
     const PropertySpecificKeyframe* m_endKeyframe;
     double m_currentFraction;
