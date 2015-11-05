@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -20,8 +18,10 @@
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/test_support/test_support.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -185,13 +185,17 @@ class DummyMessageReceiver : public MessageReceiver {
   }
 };
 
-using ValidationTest = testing::Test;
+class ValidationTest : public testing::Test {
+ public:
+  ~ValidationTest() override {}
+
+ private:
+  Environment env_;
+};
 
 class ValidationIntegrationTest : public ValidationTest {
  public:
-  ValidationIntegrationTest()
-      : loop_(common::MessagePumpMojo::Create()),
-        test_message_receiver_(nullptr) {}
+  ValidationIntegrationTest() : test_message_receiver_(nullptr) {}
 
   ~ValidationIntegrationTest() override {}
 
@@ -239,7 +243,7 @@ class ValidationIntegrationTest : public ValidationTest {
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 
-  base::MessageLoop loop_;
+  RunLoop loop_;
   TestMessageReceiver* test_message_receiver_;
   ScopedMessagePipeHandle testee_endpoint_;
 };

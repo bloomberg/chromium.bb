@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/tests/container_test_util.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +20,13 @@ using mojo::internal::ArrayValidateParams;
 using mojo::internal::FixedBufferForTesting;
 using mojo::internal::String_Data;
 
-using ArrayTest = testing::Test;
+class ArrayTest : public testing::Test {
+ public:
+  ~ArrayTest() override {}
+
+ private:
+  Environment env_;
+};
 
 // Tests that basic Array operations work.
 TEST_F(ArrayTest, Basic) {

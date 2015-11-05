@@ -5,11 +5,11 @@
 // Note: This file tests both binding.h (mojo::Binding) and strong_binding.h
 // (mojo::StrongBinding).
 
-#include "base/message_loop/message_loop.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,13 +19,14 @@ namespace {
 
 class BindingTestBase : public testing::Test {
  public:
-  BindingTestBase() : loop_(common::MessagePumpMojo::Create()) {}
+  BindingTestBase() {}
   ~BindingTestBase() override {}
 
-  base::MessageLoop& loop() { return loop_; }
+  RunLoop& loop() { return loop_; }
 
  private:
-  base::MessageLoop loop_;
+  Environment env_;
+  RunLoop loop_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(BindingTestBase);
 };
