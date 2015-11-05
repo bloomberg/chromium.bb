@@ -10,6 +10,9 @@
 
 {
   'WATCHLIST_DEFINITIONS': {
+    'about_flags': {
+      'filepath': 'chrome/browser/about_flags\.cc'
+    },
     'accelerator_table': {
       'filepath': 'ash/accelerators/accelerator_table\.cc' \
                   '|chrome/browser/ui/views/accelerator_table\.cc',
@@ -497,7 +500,9 @@
                   '|chrome/browser/extensions/api/metrics_private/'\
                   '|chrome/browser/ui/webui/metrics_handler'\
                   '|content/browser/user_metrics.cc'\
+                  '|components/metrics/'\
                   '|components/rappor/'\
+                  '|components/variations/'\
                   '|content/public/browser/user_metrics.h'\
                   # Exclude XML files; in particular, histograms.xml.
                   '|tools/metrics/[^.]*([.](?!xml$).*)?$',
@@ -1201,6 +1206,7 @@
   },
 
   'WATCHLISTS': {
+    'about_flags': ['asvitkine+watch@chromium.org'],
     'accelerator_table': ['derat+watch@chromium.org',
                           'yusukes+watch@chromium.org'],
     'accessibility': ['aboxhall+watch@chromium.org',
