@@ -118,7 +118,7 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
     std::string category_filter = "-*,";  // Disable all other trace categories.
     category_filter += MemoryDumpManager::kTraceCategory;
     base::trace_event::TraceConfig trace_config(category_filter, "");
-    TracingMsg_BeginTracing msg(trace_config.ToString(), base::TraceTicks(), 0);
+    TracingMsg_BeginTracing msg(trace_config.ToString(), base::TimeTicks(), 0);
     SimulateSyntheticMessageFromBrowser(msg);
   }
 

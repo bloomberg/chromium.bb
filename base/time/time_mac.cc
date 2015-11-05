@@ -231,9 +231,4 @@ ThreadTicks ThreadTicks::Now() {
   return ThreadTicks(ComputeThreadTicks());
 }
 
-// static
-TraceTicks TraceTicks::Now() {
-  return TraceTicks(ComputeCurrentTicks());
-}
-
 }  // namespace base

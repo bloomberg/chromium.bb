@@ -183,11 +183,11 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count,
                                            end_time - begin_time)              \
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(                                   \
         "startup", basename, 0,                                                \
-        StartupTimeToTraceTicks(begin_time).ToInternalValue(), "Temperature",  \
+        StartupTimeToTimeTicks(begin_time).ToInternalValue(), "Temperature",  \
         g_startup_temperature);                                                \
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1(                                     \
         "startup", basename, 0,                                                \
-        StartupTimeToTraceTicks(end_time).ToInternalValue(), "Temperature",    \
+        StartupTimeToTimeTicks(end_time).ToInternalValue(), "Temperature",    \
         g_startup_temperature);                                                \
   }
 
@@ -245,17 +245,17 @@ void RecordHardFaultHistogram(bool is_first_run) {
 #endif  // defined(OS_WIN)
 }
 
-// Converts a base::Time value to a base::TraceTicks value. The conversion isn't
+// Converts a base::Time value to a base::TimeTicks value. The conversion isn't
 // exact, but is within the time delta taken to synchronously resolve
-// base::Time::Now() and base::TraceTicks::Now() which in practice is pretty
+// base::Time::Now() and base::TimeTicks::Now() which in practice is pretty
 // much instant compared to multi-seconds startup timings.
 // TODO(gab): Find a precise way to do this (http://crbug.com/544131).
-base::TraceTicks StartupTimeToTraceTicks(const base::Time& time) {
+base::TimeTicks StartupTimeToTimeTicks(const base::Time& time) {
   // First get a base which represents the same point in time in both units.
   // The wall clock time it takes to gather both of these is the precision of
   // this method.
   static const base::Time time_base = base::Time::Now();
-  static const base::TraceTicks trace_ticks_base = base::TraceTicks::Now();
+  static const base::TimeTicks trace_ticks_base = base::TimeTicks::Now();
 
   // Then use the TimeDelta common ground between the two units to make the
   // conversion.

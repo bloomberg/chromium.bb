@@ -48,7 +48,6 @@ using base::ThreadTicks;
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using base::TraceTicks;
 
 namespace {
 
@@ -459,14 +458,6 @@ void InitializeNowFunctionPointer() {
   //
   // Otherwise, Now uses the high-resolution QPC clock. As of 21 August 2015,
   // ~72% of users fall within this category.
-  //
-  // TraceTicks::Now() always uses the same clock as TimeTicks::Now(), even
-  // when the QPC exists but is expensive or unreliable. This is because we'd
-  // eventually like to merge TraceTicks and TimeTicks and have one type of
-  // timestamp that is reliable, monotonic, and comparable. Also, while we could
-  // use the high-resolution timer for TraceTicks even when it's unreliable or
-  // slow, it's easier to make tracing tools accommodate a coarse timer than
-  // one that's unreliable or slow.
   NowFunction now_function;
   base::CPU cpu;
   if (ticks_per_sec.QuadPart <= 0 ||
@@ -610,11 +601,6 @@ double ThreadTicks::TSCTicksPerSecond() {
   tsc_ticks_per_second = tsc_ticks / elapsed_time_seconds;
 
   return tsc_ticks_per_second;
-}
-
-// static
-TraceTicks TraceTicks::Now() {
-  return TraceTicks() + g_now_function();
 }
 
 // static

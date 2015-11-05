@@ -244,17 +244,9 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
           FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT,
                       0,
                       &begin_component)) {
-        // The timestamp stored in ORIGINAL/UI_COMPONENT is using clock
-        // CLOCK_MONOTONIC while TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0
-        // expects timestamp using CLOCK_MONOTONIC or CLOCK_SYSTEM_TRACE (on
-        // CrOS). So we need to adjust the diff between in CLOCK_MONOTONIC and
-        // CLOCK_SYSTEM_TRACE. Note that the diff is drifting overtime so we
-        // can't use a static value.
-        base::TimeDelta diff = (base::TimeTicks::Now() - base::TimeTicks()) -
-            (base::TraceTicks::Now() - base::TraceTicks());
-        ts = (begin_component.event_time - diff).ToInternalValue();
+        ts = begin_component.event_time.ToInternalValue();
       } else {
-        ts = base::TraceTicks::Now().ToInternalValue();
+        ts = base::TimeTicks::Now().ToInternalValue();
       }
 
       if (trace_name_str) {

@@ -79,7 +79,7 @@ void TraceEvent::CopyFrom(const TraceEvent& other) {
 
 void TraceEvent::Initialize(
     int thread_id,
-    TraceTicks timestamp,
+    TimeTicks timestamp,
     ThreadTicks thread_timestamp,
     char phase,
     const unsigned char* category_group_enabled,
@@ -177,7 +177,7 @@ void TraceEvent::Reset() {
     convertable_values_[i] = NULL;
 }
 
-void TraceEvent::UpdateDuration(const TraceTicks& now,
+void TraceEvent::UpdateDuration(const TimeTicks& now,
                                 const ThreadTicks& thread_now) {
   DCHECK_EQ(duration_.ToInternalValue(), -1);
   duration_ = now - timestamp_;

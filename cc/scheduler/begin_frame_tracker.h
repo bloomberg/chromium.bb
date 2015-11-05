@@ -87,9 +87,9 @@ class CC_EXPORT BeginFrameTracker {
   const tracked_objects::Location location_;
   const std::string location_string_;
 
-  base::TraceTicks current_updated_at_;
+  base::TimeTicks current_updated_at_;
   BeginFrameArgs current_args_;
-  base::TraceTicks current_finished_at_;
+  base::TimeTicks current_finished_at_;
 };
 
 }  // namespace cc

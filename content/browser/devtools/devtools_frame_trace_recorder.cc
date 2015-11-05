@@ -64,7 +64,7 @@ class TraceableDevToolsScreenshot
   SkBitmap frame_;
 };
 
-void FrameCaptured(base::TraceTicks timestamp, const SkBitmap& bitmap,
+void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap,
     ReadbackResponse response) {
   if (response != READBACK_SUCCESS)
     return;
@@ -98,7 +98,7 @@ void CaptureFrame(RenderFrameHostImpl* host,
       metadata.scrollable_viewport_size, scale)));
   view->CopyFromCompositingSurface(
       gfx::Rect(), snapshot_size,
-      base::Bind(FrameCaptured, base::TraceTicks::Now()),
+      base::Bind(FrameCaptured, base::TimeTicks::Now()),
       kN32_SkColorType);
 }
 

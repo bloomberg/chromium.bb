@@ -651,8 +651,8 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
       }
     }
   }
-  base::TraceTicks timestamp_tt =
-      base::TraceTicks() + base::TimeDelta::FromSecondsD(timestamp);
+  base::TimeTicks timestamp_tt =
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
           phase, category_group_enabled, name, id, trace_event_internal::kNoId,
@@ -687,8 +687,8 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
       }
     }
   }
-  base::TraceTicks timestamp_tt =
-      base::TraceTicks() + base::TimeDelta::FromSecondsD(timestamp);
+  base::TimeTicks timestamp_tt =
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
           phase, category_group_enabled, name, id, trace_event_internal::kNoId,
@@ -1084,7 +1084,7 @@ double BlinkPlatformImpl::monotonicallyIncreasingTime() {
 }
 
 double BlinkPlatformImpl::systemTraceTime() {
-  return (base::TraceTicks::Now() - base::TraceTicks()).InSecondsF();
+  return (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
 }
 
 void BlinkPlatformImpl::cryptographicallyRandomValues(

@@ -201,7 +201,7 @@ void TraceLog::AddClockSyncMetadataEvent() {
   // debugfs that takes the written data and pushes it onto the trace
   // buffer. So, to establish clock sync, we write our monotonic clock into that
   // trace buffer.
-  double now_in_seconds = (TraceTicks::Now() - TraceTicks()).InSecondsF();
+  double now_in_seconds = (TimeTicks::Now() - TimeTicks()).InSecondsF();
   std::string marker = StringPrintf(
       "trace_event_clock_sync: parent_ts=%f\n", now_in_seconds);
   WriteToATrace(atrace_fd, marker.c_str(), marker.size());

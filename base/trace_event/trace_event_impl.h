@@ -95,7 +95,7 @@ class BASE_EXPORT TraceEvent {
 
   void Initialize(
       int thread_id,
-      TraceTicks timestamp,
+      TimeTicks timestamp,
       ThreadTicks thread_timestamp,
       char phase,
       const unsigned char* category_group_enabled,
@@ -112,7 +112,7 @@ class BASE_EXPORT TraceEvent {
 
   void Reset();
 
-  void UpdateDuration(const TraceTicks& now, const ThreadTicks& thread_now);
+  void UpdateDuration(const TimeTicks& now, const ThreadTicks& thread_now);
 
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
@@ -126,7 +126,7 @@ class BASE_EXPORT TraceEvent {
                                 TraceValue value,
                                 std::string* out);
 
-  TraceTicks timestamp() const { return timestamp_; }
+  TimeTicks timestamp() const { return timestamp_; }
   ThreadTicks thread_timestamp() const { return thread_timestamp_; }
   char phase() const { return phase_; }
   int thread_id() const { return thread_id_; }
@@ -154,7 +154,7 @@ class BASE_EXPORT TraceEvent {
 
  private:
   // Note: these are ordered by size (largest first) for optimal packing.
-  TraceTicks timestamp_;
+  TimeTicks timestamp_;
   ThreadTicks thread_timestamp_;
   TimeDelta duration_;
   TimeDelta thread_duration_;

@@ -362,11 +362,8 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
     base::TimeTicks now(optional_now.is_null()
                             ? helper_->tick_clock()->NowTicks()
                             : optional_now);
-    base::TraceTicks trace_now = base::TraceTicks::Now();
-    idle_period_deadline_for_tracing_ = trace_now + (new_deadline - now);
     TraceEventIdlePeriodStateChange(
-        new_state, running_idle_task_for_tracing_,
-        idle_period_deadline_for_tracing_, trace_now);
+        new_state, running_idle_task_for_tracing_, idle_period_deadline_, now);
   }
 
   idle_period_state_ = new_state;
@@ -388,8 +385,8 @@ void IdleHelper::State::TraceIdleIdleTaskStart() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
   if (is_tracing) {
     TraceEventIdlePeriodStateChange(
-        idle_period_state_, true, idle_period_deadline_for_tracing_,
-        base::TraceTicks::Now());
+        idle_period_state_, true, idle_period_deadline_,
+        base::TimeTicks::Now());
   }
 }
 
@@ -400,16 +397,16 @@ void IdleHelper::State::TraceIdleIdleTaskEnd() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
   if (is_tracing) {
     TraceEventIdlePeriodStateChange(
-        idle_period_state_, false, idle_period_deadline_for_tracing_,
-        base::TraceTicks::Now());
+        idle_period_state_, false, idle_period_deadline_,
+        base::TimeTicks::Now());
   }
 }
 
 void IdleHelper::State::TraceEventIdlePeriodStateChange(
     IdlePeriodState new_state,
     bool new_running_idle_task,
-    base::TraceTicks new_deadline,
-    base::TraceTicks now) {
+    base::TimeTicks new_deadline,
+    base::TimeTicks now) {
   TRACE_EVENT2(disabled_by_default_tracing_category_, "SetIdlePeriodState",
                "old_state",
                IdleHelper::IdlePeriodStateToString(idle_period_state_),
@@ -418,12 +415,11 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
   if (idle_period_trace_event_started_ && running_idle_task_for_tracing_ &&
       !new_running_idle_task) {
     running_idle_task_for_tracing_ = false;
-    if (!idle_period_deadline_for_tracing_.is_null() &&
-        now > idle_period_deadline_for_tracing_) {
+    if (!idle_period_deadline_.is_null() && now > idle_period_deadline_) {
       TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
           tracing_category_, idle_period_tracing_name_, this,
           "DeadlineOverrun",
-          std::max(idle_period_deadline_for_tracing_,
+          std::max(idle_period_deadline_,
                    last_idle_task_trace_time_).ToInternalValue());
     }
   }

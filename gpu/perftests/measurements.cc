@@ -55,7 +55,7 @@ Measurement::~Measurement() {
 MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
     : wall_time_start_(), cpu_time_start_(), gpu_timer_() {
   DCHECK(gpu_timing_client);
-  wall_time_start_ = base::TraceTicks::Now();
+  wall_time_start_ = base::TimeTicks::Now();
   if (base::ThreadTicks::IsSupported()) {
     base::ThreadTicks::WaitUntilInitialized();
     cpu_time_start_ = base::ThreadTicks::Now();
@@ -72,7 +72,7 @@ MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
 }
 
 void MeasurementTimers::Record() {
-  wall_time_ = base::TraceTicks::Now() - wall_time_start_;
+  wall_time_ = base::TimeTicks::Now() - wall_time_start_;
   if (base::ThreadTicks::IsSupported()) {
     cpu_time_ = base::ThreadTicks::Now() - cpu_time_start_;
   }

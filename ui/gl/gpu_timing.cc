@@ -39,7 +39,7 @@ class GPUTimingImpl : public GPUTiming {
 
   int64 GetCurrentCPUTime() {
     return cpu_time_for_testing_.is_null()
-           ? (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
+           ? (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds()
            : cpu_time_for_testing_.Run();
   }
   void SetCpuTimeForTesting(const base::Callback<int64(void)>& cpu_time) {

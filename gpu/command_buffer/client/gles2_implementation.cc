@@ -771,7 +771,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_TIMESTAMP_EXT:
       // We convert all GPU timestamps to CPU time.
       *params = base::saturated_cast<GLint>(
-          (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
+          (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds()
           * base::Time::kNanosecondsPerMicrosecond);
       return true;
     case GL_GPU_DISJOINT_EXT:
@@ -1069,7 +1069,7 @@ bool GLES2Implementation::GetInteger64vHelper(GLenum pname, GLint64* params) {
       return true;
     case GL_TIMESTAMP_EXT:
       // We convert all GPU timestamps to CPU time.
-      *params = (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
+      *params = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds()
                 * base::Time::kNanosecondsPerMicrosecond;
       return true;
     default:

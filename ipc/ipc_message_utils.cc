@@ -865,25 +865,6 @@ void ParamTraits<base::TimeTicks>::Log(const param_type& p, std::string* l) {
   ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
 }
 
-void ParamTraits<base::TraceTicks>::Write(Message* m, const param_type& p) {
-  ParamTraits<int64_t>::Write(m, p.ToInternalValue());
-}
-
-bool ParamTraits<base::TraceTicks>::Read(const Message* m,
-                                         base::PickleIterator* iter,
-                                         param_type* r) {
-  int64_t value;
-  bool ret = ParamTraits<int64_t>::Read(m, iter, &value);
-  if (ret)
-    *r = base::TraceTicks::FromInternalValue(value);
-
-  return ret;
-}
-
-void ParamTraits<base::TraceTicks>::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
-}
-
 void ParamTraits<IPC::ChannelHandle>::Write(Message* m, const param_type& p) {
 #if defined(OS_WIN)
   // On Windows marshalling pipe handle is not supported.

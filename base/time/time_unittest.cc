@@ -665,12 +665,6 @@ TEST(ThreadTicks, MAYBE_ThreadNow) {
   }
 }
 
-TEST(TraceTicks, NowFromSystemTraceTime) {
-  // Re-use HighRes test for now since clock properties are identical.
-  using NowFunction = TimeTicks (*)(void);
-  HighResClockTest(reinterpret_cast<NowFunction>(&TraceTicks::Now));
-}
-
 TEST(TimeTicks, SnappedToNextTickBasic) {
   base::TimeTicks phase = base::TimeTicks::FromInternalValue(4000);
   base::TimeDelta interval = base::TimeDelta::FromMicroseconds(1000);

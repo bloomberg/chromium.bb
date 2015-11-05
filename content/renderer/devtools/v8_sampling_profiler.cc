@@ -97,14 +97,14 @@ class SampleRecord {
 
   SampleRecord() {}
 
-  base::TraceTicks timestamp() const { return timestamp_; }
+  base::TimeTicks timestamp() const { return timestamp_; }
   void Collect(v8::Isolate* isolate,
-               base::TraceTicks timestamp,
+               base::TimeTicks timestamp,
                const v8::RegisterState& state);
   scoped_refptr<ConvertableToTraceFormat> ToTraceFormat() const;
 
  private:
-  base::TraceTicks timestamp_;
+  base::TimeTicks timestamp_;
   unsigned vm_state_ : 4;
   unsigned frames_count_ : kMaxFramesCountLog2;
   const void* frames_[kMaxFramesCount];
@@ -113,7 +113,7 @@ class SampleRecord {
 };
 
 void SampleRecord::Collect(v8::Isolate* isolate,
-                           base::TraceTicks timestamp,
+                           base::TimeTicks timestamp,
                            const v8::RegisterState& state) {
   v8::SampleInfo sample_info;
   isolate->GetStackSample(state, (void**)frames_, kMaxFramesCount,
@@ -284,7 +284,7 @@ void Sampler::Sample() {
 void Sampler::DoSample(const v8::RegisterState& state) {
   // Called in the sampled thread signal handler.
   // Because of that it is not allowed to do any memory allocation here.
-  base::TraceTicks timestamp = base::TraceTicks::Now();
+  base::TimeTicks timestamp = base::TimeTicks::Now();
   SampleRecord* record = samples_data_->StartEnqueue();
   if (!record)
     return;
@@ -298,7 +298,7 @@ void Sampler::InjectPendingEvents() {
     TRACE_EVENT_SAMPLE_WITH_TID_AND_TIMESTAMP1(
         TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"), "V8Sample",
         platform_data_.thread_id(),
-        (record->timestamp() - base::TraceTicks()).InMicroseconds(), "data",
+        (record->timestamp() - base::TimeTicks()).InMicroseconds(), "data",
         record->ToTraceFormat());
     samples_data_->Remove();
     record = samples_data_->Peek();

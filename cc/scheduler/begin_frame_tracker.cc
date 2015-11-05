@@ -11,8 +11,7 @@ BeginFrameTracker::BeginFrameTracker(const tracked_objects::Location& location)
       location_string_(location.ToString()),
       current_updated_at_(),
       current_args_(),
-      current_finished_at_(base::TraceTicks::FromInternalValue(-1)) {
-}
+      current_finished_at_(base::TimeTicks::FromInternalValue(-1)) {}
 
 BeginFrameTracker::~BeginFrameTracker() {
 }
@@ -35,9 +34,9 @@ void BeginFrameTracker::Start(BeginFrameArgs new_args) {
 
   DCHECK(HasFinished())
       << "Tried to start a new frame before finishing an existing frame.";
-  current_updated_at_ = base::TraceTicks::Now();
+  current_updated_at_ = base::TimeTicks::Now();
   current_args_ = new_args;
-  current_finished_at_ = base::TraceTicks();
+  current_finished_at_ = base::TimeTicks();
 
   // TODO(mithro): Add UMA tracking of delta between current_updated_at_ time
   // and the new_args.frame_time argument. This will give us how long after a
@@ -54,7 +53,7 @@ const BeginFrameArgs& BeginFrameTracker::Current() const {
 
 void BeginFrameTracker::Finish() {
   DCHECK(!HasFinished()) << "Tried to finish an already finished frame";
-  current_finished_at_ = base::TraceTicks::Now();
+  current_finished_at_ = base::TimeTicks::Now();
   TRACE_EVENT_ASYNC_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
                          location_string_.c_str(),
                          current_args_.frame_time.ToInternalValue());
@@ -81,10 +80,10 @@ base::TimeDelta BeginFrameTracker::Interval() const {
 void BeginFrameTracker::AsValueInto(
     base::TimeTicks now,
     base::trace_event::TracedValue* state) const {
-  state->SetInteger("updated_at_us", (current_updated_at_ - base::TraceTicks())
-                                         .InMicroseconds());
-  state->SetInteger("finished_at_us", (current_finished_at_ -
-                                       base::TraceTicks()).InMicroseconds());
+  state->SetInteger("updated_at_us",
+                    (current_updated_at_ - base::TimeTicks()).InMicroseconds());
+  state->SetInteger("finished_at_us", (current_finished_at_ - base::TimeTicks())
+                                          .InMicroseconds());
   if (HasFinished()) {
     state->SetString("state", "FINISHED");
     state->BeginDictionary("current_args_");

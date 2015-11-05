@@ -133,7 +133,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // For TRACE_EVENT_PHASE_COMPLETE events, the client will still receive pairs
   // of TRACE_EVENT_PHASE_BEGIN and TRACE_EVENT_PHASE_END events to keep the
   // interface simple.
-  typedef void (*EventCallback)(TraceTicks timestamp,
+  typedef void (*EventCallback)(TimeTicks timestamp,
                                 char phase,
                                 const unsigned char* category_group_enabled,
                                 const char* name,
@@ -221,7 +221,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       unsigned long long id,
       unsigned long long context_id,
       int thread_id,
-      const TraceTicks& timestamp,
+      const TimeTicks& timestamp,
       int num_args,
       const char** arg_names,
       const unsigned char* arg_types,
@@ -236,7 +236,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       unsigned long long context_id,
       unsigned long long bind_id,
       int thread_id,
-      const TraceTicks& timestamp,
+      const TimeTicks& timestamp,
       int num_args,
       const char** arg_names,
       const unsigned char* arg_types,
@@ -301,7 +301,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // sort index, ascending, then by their name, and then tid.
   void SetThreadSortIndex(PlatformThreadId thread_id, int sort_index);
 
-  // Allow setting an offset between the current TraceTicks time and the time
+  // Allow setting an offset between the current TimeTicks time and the time
   // that should be reported.
   void SetTimeOffset(TimeDelta offset);
 
@@ -374,7 +374,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   TraceBuffer* CreateTraceBuffer();
 
   std::string EventToConsoleMessage(unsigned char phase,
-                                    const TraceTicks& timestamp,
+                                    const TimeTicks& timestamp,
                                     TraceEvent* trace_event);
 
   TraceEvent* AddEventToThreadSharedChunkWhileLocked(TraceEventHandle* handle,
@@ -408,8 +408,8 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   }
   void UseNextTraceBuffer();
 
-  TraceTicks OffsetNow() const { return OffsetTimestamp(TraceTicks::Now()); }
-  TraceTicks OffsetTimestamp(const TraceTicks& timestamp) const {
+  TimeTicks OffsetNow() const { return OffsetTimestamp(TimeTicks::Now()); }
+  TimeTicks OffsetTimestamp(const TimeTicks& timestamp) const {
     return timestamp - time_offset_;
   }
 
@@ -444,10 +444,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   base::hash_map<int, std::string> thread_names_;
 
   // The following two maps are used only when ECHO_TO_CONSOLE.
-  base::hash_map<int, std::stack<TraceTicks>> thread_event_start_times_;
+  base::hash_map<int, std::stack<TimeTicks>> thread_event_start_times_;
   base::hash_map<std::string, int> thread_colors_;
 
-  TraceTicks buffer_limit_reached_timestamp_;
+  TimeTicks buffer_limit_reached_timestamp_;
 
   // XORed with TraceID to make it unlikely to collide with other processes.
   unsigned long long process_id_hash_;

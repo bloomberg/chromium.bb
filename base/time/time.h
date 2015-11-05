@@ -13,13 +13,13 @@
 // TimeDelta represents a duration of time, internally represented in
 // microseconds.
 //
-// TimeTicks, ThreadTicks, and TraceTicks represent an abstract time that is
-// most of the time incrementing, for use in measuring time durations.
-// Internally, they are represented in microseconds. They can not be converted
-// to a human-readable time, but are guaranteed not to decrease (unlike the Time
-// class). Note that TimeTicks may "stand still" (e.g., if the computer is
-// suspended), and ThreadTicks will "stand still" whenever the thread has been
-// de-scheduled by the operating system.
+// TimeTicks and ThreadTicks represent an abstract time that is most of the time
+// incrementing, for use in measuring time durations. Internally, they are
+// represented in microseconds. They can not be converted to a human-readable
+// time, but are guaranteed not to decrease (unlike the Time class). Note that
+// TimeTicks may "stand still" (e.g., if the computer is suspended), and
+// ThreadTicks will "stand still" whenever the thread has been de-scheduled by
+// the operating system.
 //
 // All time classes are copyable, assignable, and occupy 64-bits per
 // instance. Thus, they can be efficiently passed by-value (as opposed to
@@ -45,12 +45,6 @@
 //
 //   ThreadTicks: Benchmarking how long the current thread has been doing actual
 //                work.
-//
-//   TraceTicks:  This is only meant to be used by the event tracing
-//                infrastructure, and by outside code modules in special
-//                circumstances.  Please be sure to consult a
-//                base/trace_event/OWNER before committing any new code that
-//                uses this.
 
 #ifndef BASE_TIME_TIME_H_
 #define BASE_TIME_TIME_H_
@@ -783,52 +777,6 @@ class BASE_EXPORT ThreadTicks : public time_internal::TimeBase<ThreadTicks> {
 
 // For logging use only.
 BASE_EXPORT std::ostream& operator<<(std::ostream& os, ThreadTicks time_ticks);
-
-// TraceTicks ----------------------------------------------------------------
-
-// Represents high-resolution system trace clock time.
-class BASE_EXPORT TraceTicks : public time_internal::TimeBase<TraceTicks> {
- public:
-  // We define this even without OS_CHROMEOS for seccomp sandbox testing.
-#if defined(OS_LINUX)
-  // Force definition of the system trace clock; it is a chromeos-only api
-  // at the moment and surfacing it in the right place requires mucking
-  // with glibc et al.
-  static const clockid_t kClockSystemTrace = 11;
-#endif
-
-  TraceTicks() : TimeBase(0) {
-  }
-
-  // Returns the current system trace time or, if not available on this
-  // platform, a high-resolution time value; or a low-resolution time value if
-  // neither are avalable. On systems where a global trace clock is defined,
-  // timestamping TraceEvents's with this value guarantees synchronization
-  // between events collected inside chrome and events collected outside
-  // (e.g. kernel, X server).
-  //
-  // On some platforms, the clock source used for tracing can vary depending on
-  // hardware and/or kernel support.  Do not make any assumptions without
-  // consulting the documentation for this functionality in the time_win.cc,
-  // time_posix.cc, etc. files.
-  //
-  // NOTE: This is only meant to be used by the event tracing infrastructure,
-  // and by outside code modules in special circumstances.  Please be sure to
-  // consult a base/trace_event/OWNER before committing any new code that uses
-  // this.
-  static TraceTicks Now();
-
- private:
-  friend class time_internal::TimeBase<TraceTicks>;
-
-  // Please use Now() to create a new object. This is for internal use
-  // and testing.
-  explicit TraceTicks(int64 us) : TimeBase(us) {
-  }
-};
-
-// For logging use only.
-BASE_EXPORT std::ostream& operator<<(std::ostream& os, TraceTicks time_ticks);
 
 }  // namespace base
 

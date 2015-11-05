@@ -192,8 +192,6 @@ TEST(TimeTicks, TimerPerformance) {
   std::vector<TestCase> cases;
   cases.push_back({reinterpret_cast<TestFunc>(&Time::Now), "Time::Now"});
   cases.push_back({&TimeTicks::Now, "TimeTicks::Now"});
-  cases.push_back(
-      {reinterpret_cast<TestFunc>(&TraceTicks::Now), "TraceTicks::Now"});
 
   if (ThreadTicks::IsSupported()) {
     ThreadTicks::WaitUntilInitialized();

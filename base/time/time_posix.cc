@@ -329,11 +329,6 @@ ThreadTicks ThreadTicks::Now() {
 #endif
 }
 
-// static
-TraceTicks TraceTicks::Now() {
-  return TraceTicks(ClockNow(CLOCK_MONOTONIC));
-}
-
 #endif  // !OS_MACOSX
 
 // static
