@@ -1,6 +1,7 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
@@ -26,8 +27,7 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
                 R.string.translate_infobar_translation_done, mOptions.targetLanguage()));
 
         if (!mOptions.triggeredFromMenu()) {
-            TranslateCheckBox checkBox = new TranslateCheckBox(context, mOptions, mListener);
-            layout.setCustomContent(checkBox);
+            layout.setCustomContent(createAlwaysToggle(context, mOptions));
         }
 
         layout.setButtons(context.getString(R.string.translate_button_done),
@@ -41,5 +41,17 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
         } else {
             mListener.onPanelClosed(ActionType.TRANSLATE_SHOW_ORIGINAL);
         }
+    }
+
+    /**
+     * Creates a toggle that shows the current status of the "Always translate <language>" option.
+     */
+    static InfoBarControlLayout createAlwaysToggle(Context context, TranslateOptions options) {
+        InfoBarControlLayout controlLayout = new InfoBarControlLayout(context);
+        controlLayout.addSwitch(-1,
+                context.getString(R.string.translate_always_text, options.sourceLanguage()),
+                R.id.translate_infobar_always_toggle,
+                options.alwaysTranslateLanguageState());
+        return controlLayout;
     }
 }
