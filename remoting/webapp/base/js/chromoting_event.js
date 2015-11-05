@@ -91,9 +91,10 @@ remoting.ChromotingEvent = function(type) {
   this.session_entry_point;
   /** @type {number} */
   this.host_status_update_elapsed_time;
-
   /** @type {remoting.ChromotingEvent.AuthMethod} */
   this.auth_method;
+  /** @type {string} */
+  this.raw_plugin_error;
 
   this.init_();
 };

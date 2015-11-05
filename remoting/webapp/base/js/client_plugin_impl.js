@@ -182,7 +182,8 @@ remoting.ClientPluginImpl.prototype.onPluginCrashed_ = function(event) {
 remoting.ClientPluginImpl.prototype.onPluginLoadError_ = function() {
   console.error('Failed to load plugin : ' + this.plugin_.lastError);
   this.onInitializedDeferred_.reject(
-      new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
+      new remoting.Error(
+          remoting.Error.Tag.MISSING_PLUGIN, this.plugin_.lastError));
 };
 
 /**

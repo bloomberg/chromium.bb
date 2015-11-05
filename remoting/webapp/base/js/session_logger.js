@@ -52,6 +52,8 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   this.mode_ = remoting.ChromotingEvent.Mode.ME2ME;
   /** @private {remoting.ChromotingEvent.AuthMethod} */
   this.authMethod_;
+  /** @private */
+  this.pluginError_ = '';
 
   this.setSessionId_();
 };
@@ -126,6 +128,13 @@ remoting.SessionLogger.prototype.setLogEntryMode = function(mode) {
  */
 remoting.SessionLogger.prototype.setAuthMethod = function(method) {
   this.authMethod_ = method;
+};
+
+/**
+ * @param {string} error  The error string of the plugin error.
+ */
+remoting.SessionLogger.prototype.setPluginError = function(error) {
+  this.pluginError_ = error;
 };
 
 /**
@@ -310,6 +319,9 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
   }
   if (this.authMethod_ != undefined) {
     entry.auth_method = this.authMethod_;
+  }
+  if (Boolean(this.pluginError_)) {
+    entry.raw_plugin_error = this.pluginError_;
   }
   entry.host_version = this.hostVersion_;
   entry.host_os = this.hostOs_;

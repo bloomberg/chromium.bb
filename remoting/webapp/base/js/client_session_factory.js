@@ -52,10 +52,7 @@ remoting.ClientSessionFactory.prototype.createSession =
   var clientPlugin;
 
   function OnError(/** !remoting.Error */ error) {
-    logger.logSessionStateChange(
-        remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
-        toConnectionError(error));
-
+    logError(logger, error);
     base.dispose(signalStrategy);
     base.dispose(clientPlugin);
     throw error;
@@ -128,14 +125,30 @@ function createPlugin(container, capabilities) {
 }
 
 /**
+ * Converts |e| to remoting.ChromotingEvent.ConnectionError and logs
+ * it to the telemetry service.
+ *
+ * TODO(kelvinp): Move this block to remoting.SessionLogger and consolidate
+ * the code path with xmpp_error.
+ *
+ * @param {remoting.SessionLogger} logger
  * @param {remoting.Error} e
- * @return {remoting.ChromotingEvent.ConnectionError}
  */
-function toConnectionError(/** Error */ e) {
+function logError(logger, e) {
+  var error = remoting.ChromotingEvent.ConnectionError.UNEXPECTED;
+
   if (e instanceof remoting.Error) {
-    return e.toConnectionError();
+    error = e.toConnectionError();
+
+    if (e.hasTag(remoting.Error.Tag.MISSING_PLUGIN)) {
+      var pluginError = /** @type {string} */ (e.getDetail());
+      console.assert(Boolean(pluginError), 'Missing plugin error string.');
+      logger.setPluginError(pluginError);
+    }
   }
-  return remoting.ChromotingEvent.ConnectionError.UNEXPECTED;
+
+  logger.logSessionStateChange(
+      remoting.ChromotingEvent.SessionState.CONNECTION_FAILED, error);
 }
 
 })();
