@@ -299,7 +299,7 @@ public:
         , m_nextReadPosition(0)
         , m_lastSetByte(nullptr)
         , m_state(JPEG_HEADER)
-        , m_samples(0)
+        , m_samples(nullptr)
 #if USE(QCMSLIB)
         , m_transform(0)
 #endif
@@ -540,15 +540,10 @@ public:
             m_info.colormap = 0;
 
             // Make a one-row-high sample array that will go away when done with
-            // image. Always make it big enough to hold an RGB row. Since this
+            // image. Always make it big enough to hold one RGBA row. Since this
             // uses the IJG memory manager, it must be allocated before the call
-            // to jpeg_start_compress().
-            // FIXME: note that some output color spaces do not need the samples
-            // buffer. Remove this allocation for those color spaces.
-            {
-                int samplesWidth = (m_info.out_color_space == JCS_YCbCr) ? computeYUVSize(&m_info, 0, ImageDecoder::SizeForMemoryAllocation).width() : m_info.output_width;
-                m_samples = (*m_info.mem->alloc_sarray)(reinterpret_cast_ptr<j_common_ptr>(&m_info), JPOOL_IMAGE, samplesWidth * 4, 1);
-            }
+            // to jpeg_start_decompress().
+            m_samples = allocateSampleArray();
 
             // Start decompressor.
             if (!jpeg_start_decompress(&m_info))
@@ -667,6 +662,23 @@ public:
 #endif
 
 private:
+    JSAMPARRAY allocateSampleArray()
+    {
+        // Some output color spaces don't need the sample array: don't allocate in that case.
+#if defined(TURBO_JPEG_RGB_SWIZZLE)
+        if (turboSwizzled(m_info.out_color_space))
+            return nullptr;
+#endif
+        int width;
+
+        if (m_info.out_color_space == JCS_YCbCr)
+            width = computeYUVSize(&m_info, 0, ImageDecoder::SizeForMemoryAllocation).width();
+        else
+            width = m_info.output_width;
+
+        return (*m_info.mem->alloc_sarray)(reinterpret_cast_ptr<j_common_ptr>(&m_info), JPOOL_IMAGE, width * 4, 1);
+    }
+
     void updateRestartPosition()
     {
         if (m_lastSetByte != m_info.src->next_input_byte) {
@@ -685,7 +697,8 @@ private:
 
     RefPtr<SharedBuffer> m_data;
     JPEGImageDecoder* m_decoder;
-    // True if we need to back up to m_restartPosition.
+
+    // Input reading: True if we need to back up to m_restartPosition.
     bool m_needsRestart;
     // If libjpeg needed to restart, this is the position to restart from.
     unsigned m_restartPosition;
@@ -703,7 +716,6 @@ private:
     jstate m_state;
 
     JSAMPARRAY m_samples;
-
     IntSize m_uvSize;
 
 #if USE(QCMSLIB)
