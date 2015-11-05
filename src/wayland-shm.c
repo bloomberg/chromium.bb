@@ -319,34 +319,7 @@ wl_shm_buffer_create(struct wl_client *client,
 		     uint32_t id, int32_t width, int32_t height,
 		     int32_t stride, uint32_t format)
 {
-	struct wl_shm_buffer *buffer;
-
-	if (!format_is_supported(client, format))
-		return NULL;
-
-	buffer = malloc(sizeof *buffer + stride * height);
-	if (buffer == NULL)
-		return NULL;
-
-	buffer->width = width;
-	buffer->height = height;
-	buffer->format = format;
-	buffer->stride = stride;
-	buffer->offset = 0;
-	buffer->pool = NULL;
-
-	buffer->resource =
-		wl_resource_create(client, &wl_buffer_interface, 1, id);
-	if (buffer->resource == NULL) {
-		free(buffer);
-		return NULL;
-	}
-
-	wl_resource_set_implementation(buffer->resource,
-				       &shm_buffer_interface,
-				       buffer, destroy_buffer);
-
-	return buffer;
+	return NULL;
 }
 
 WL_EXPORT struct wl_shm_buffer *
