@@ -64,16 +64,19 @@ void CustomButton::SetState(ButtonState state) {
   if (animate_on_state_change_ &&
       (!is_throbbing_ || !hover_animation_->is_animating())) {
     is_throbbing_ = false;
-    if (state_ == STATE_NORMAL && state == STATE_HOVERED) {
-      // Button is hovered from a normal state, start hover animation.
-      hover_animation_->Show();
-    } else if ((state_ == STATE_HOVERED || state_ == STATE_PRESSED)
-          && state == STATE_NORMAL) {
-      // Button is returning to a normal state from hover, start hover
-      // fade animation.
+    if ((state_ == STATE_HOVERED) && (state == STATE_NORMAL)) {
+      // For HOVERED -> NORMAL, animate from hovered (1) to not hovered (0).
       hover_animation_->Hide();
+    } else if (state != STATE_HOVERED) {
+      // For HOVERED -> PRESSED/DISABLED, or any transition not involving
+      // HOVERED at all, simply set the state to not hovered (0).
+      hover_animation_->Reset();
+    } else if (state_ == STATE_NORMAL) {
+      // For NORMAL -> HOVERED, animate from not hovered (0) to hovered (1).
+      hover_animation_->Show();
     } else {
-      hover_animation_->Stop();
+      // For PRESSED/DISABLED -> HOVERED, simply set the state to hovered (1).
+      hover_animation_->Reset(1);
     }
   }
 
