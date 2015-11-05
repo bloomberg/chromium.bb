@@ -165,6 +165,9 @@ void Heap::init()
     s_collectedWrapperCount = 0;
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_estimatedMarkingTimePerByte = 0.0;
+#if ENABLE(ASSERT)
+    s_gcGeneration = 1;
+#endif
 
     GCInfoTable::init();
 
@@ -440,6 +443,13 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     WTF::Partitions::reportMemoryUsageHistogram();
 
     postGC(gcType);
+
+#if ENABLE(ASSERT)
+    // 0 is used to figure non-assigned area, so avoid to use 0 in s_gcGeneration.
+    if (++s_gcGeneration == 0) {
+        s_gcGeneration = 1;
+    }
+#endif
 
     if (state->isMainThread())
         ScriptForbiddenScope::exit();
@@ -751,5 +761,8 @@ size_t Heap::s_wrapperCountAtLastGC = 0;
 size_t Heap::s_collectedWrapperCount = 0;
 size_t Heap::s_partitionAllocSizeAtLastGC = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
+#if ENABLE(ASSERT)
+uint16_t Heap::s_gcGeneration = 0;
+#endif
 
 } // namespace blink

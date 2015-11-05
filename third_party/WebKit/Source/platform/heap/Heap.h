@@ -259,6 +259,10 @@ public:
     static void reportMemoryUsageHistogram();
     static void reportMemoryUsageForTracing();
 
+#if ENABLE(ASSERT)
+    static uint16_t gcGeneration() { return s_gcGeneration; }
+#endif
+
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
     // by base addresses.
@@ -304,6 +308,9 @@ private:
     static size_t s_collectedWrapperCount;
     static size_t s_partitionAllocSizeAtLastGC;
     static double s_estimatedMarkingTimePerByte;
+#if ENABLE(ASSERT)
+    static uint16_t s_gcGeneration;
+#endif
 
     friend class ThreadState;
 };
