@@ -101,7 +101,9 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   bool is_root = !layer->parent();
 
   // Whether we have an ancestor clip that we might need to apply.
-  bool ancestor_clips_subtree = is_root || parent->data.layers_are_clipped;
+  // Don't apply ancestor clip when the layer has copy requests.
+  bool ancestor_clips_subtree =
+      (is_root || parent->data.layers_are_clipped) && !layer->HasCopyRequest();
 
   bool layers_are_clipped = false;
   bool has_unclipped_surface = false;
@@ -120,7 +122,6 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       // of its own, but clips from ancestor nodes don't need to be considered
       // when computing clip rects or visibility.
       has_unclipped_surface = true;
-      DCHECK(!parent->data.applies_local_clip);
     }
     // A surface with unclipped descendants cannot be clipped by its ancestor
     // clip at draw time since the unclipped descendants aren't affected by the

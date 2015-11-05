@@ -5448,13 +5448,13 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  // We should have one render surface, as the others are clipped out.
-  ASSERT_EQ(1u, render_surface_layer_list.size());
+  // We should have two render surface, as the others are clipped out.
+  ASSERT_EQ(2u, render_surface_layer_list.size());
   EXPECT_EQ(root->id(), render_surface_layer_list.at(0)->id());
 
-  // The root render surface should only have 1 contributing layer, since the
+  // The root render surface should only have 2 contributing layer, since the
   // other layers are empty/clipped away.
-  ASSERT_EQ(1u, root->render_surface()->layer_list().size());
+  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
   EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
 }
 

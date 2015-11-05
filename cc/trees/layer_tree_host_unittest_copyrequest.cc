@@ -473,10 +473,10 @@ class LayerTreeHostCopyRequestTestClippedOut
   }
 
   void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
-    // We should still get a callback with no output if the copy requested layer
-    // was completely clipped away.
+    // We should still get the content even if the copy requested layer was
+    // completely clipped away.
     EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
-    EXPECT_EQ(gfx::Size().ToString(), result->size().ToString());
+    EXPECT_EQ(gfx::Size(10, 10).ToString(), result->size().ToString());
     EndTest();
   }
 
