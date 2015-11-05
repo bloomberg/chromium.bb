@@ -17,8 +17,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-selector/iron-selectable.html">
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
 
 <!--
+Material design: [Dropdown menus](https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons)
+
 `paper-dropdown-menu` is similar to a native browser select element.
 `paper-dropdown-menu` works with selectable content. The currently selected
 item is displayed in the control. If no item is selected, the `label` is
@@ -106,16 +110,17 @@ respectively.
     }
 
     paper-ripple {
-      top: 20px;
-      left: 8px;
-      bottom: 16px;
-      right: 8px;
+      top: 12px;
+      left: 0px;
+      bottom: 8px;
+      right: 0px;
 
       @apply(--paper-dropdown-menu-ripple);
     }
 
     paper-menu-button {
       display: block;
+      padding: 0;
       @apply(--paper-dropdown-menu-button);
     }
 
@@ -131,10 +136,13 @@ respectively.
 
   </style>
   <template>
+    <!-- this div fulfills an a11y requirement for combobox, do not remove -->
+    <div role="button"></div>
     <paper-menu-button id="menuButton" vertical-align="top" horizontal-align="right" vertical-offset="[[_computeMenuVerticalOffset(noLabelFloat)]]" disabled="[[disabled]]" no-animations="[[noAnimations]]" on-iron-select="_onIronSelect" on-iron-deselect="_onIronDeselect" opened="{{opened}}">
       <div class="dropdown-trigger">
         <paper-ripple></paper-ripple>
-        <paper-input readonly="" disabled="[[disabled]]" value="[[selectedItemLabel]]" placeholder="[[placeholder]]" always-float-label="[[alwaysFloatLabel]]" no-label-float="[[noLabelFloat]]" label="[[label]]">
+        <!-- paper-input has type="text" for a11y, do not remove -->
+        <paper-input type="text" invalid="[[invalid]]" readonly="" disabled="[[disabled]]" value="[[selectedItemLabel]]" placeholder="[[placeholder]]" always-float-label="[[alwaysFloatLabel]]" no-label-float="[[noLabelFloat]]" label="[[label]]">
           <iron-icon icon="arrow-drop-down" suffix=""></iron-icon>
         </paper-input>
       </div>

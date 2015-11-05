@@ -142,6 +142,21 @@ Polymer({
       } else {
         this._handleValue(this._inputElement);
       }
+
+      this._numberOfPrefixNodes = 0;
+      this._prefixObserver = Polymer.dom(this.$.prefix).observeNodes(
+          function(mutations) {
+            // Keep track whether there's at least one prefix node, since it
+            // affects laying out the floating label.
+            this._numberOfPrefixNodes += mutations.addedNodes.length -
+                mutations.removedNodes.length;
+          }.bind(this));
+    },
+
+    detached: function() {
+      if (this._prefixObserver) {
+        Polymer.dom(this.$.prefix).unobserveNodes(this._prefixObserver);
+      }
     },
 
     _onAddonAttached: function(event) {
@@ -238,16 +253,15 @@ Polymer({
           } else if (focused) {
             cls += " label-is-highlighted";
           }
-          // The label might have a horizontal offset if a prefix element exists
+          // If a prefix element exists, the label has a horizontal offset
           // which needs to be undone when displayed as a floating label.
-          if (Polymer.dom(this.$.prefix).getDistributedNodes().length > 0 &&
-              label && label.offsetParent) {
-            label.style.left = -label.offsetParent.offsetLeft + 'px';
+          if (this._numberOfPrefixNodes > 0) {
+            this.$.labelAndInputContainer.style.position = 'static';
           }
         } else {
           // When the label is not floating, it should overlap the input element.
           if (label) {
-            label.style.left = 0;
+            this.$.labelAndInputContainer.style.position = 'relative';
           }
         }
       } else {

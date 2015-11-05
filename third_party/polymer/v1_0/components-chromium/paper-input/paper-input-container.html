@@ -73,15 +73,15 @@ Custom property | Description | Default
 `--paper-input-container-invalid-color` | Label and underline color when the input is is invalid | `--google-red-500`
 `--paper-input-container-input-color` | Input foreground color | `--primary-text-color`
 `--paper-input-container` | Mixin applied to the container | `{}`
+`--paper-input-container-disabled` | Mixin applied to the container when it's disabled | `{}`
 `--paper-input-container-label` | Mixin applied to the label | `{}`
 `--paper-input-container-label-focus` | Mixin applied to the label when the input is focused | `{}`
 `--paper-input-container-input` | Mixin applied to the input | `{}`
-`--paper-input-container-input-disabled` | Mixin applied to the input when it's disabled | `{}`
-`--paper-input-container-prefix` | Mixin applied to the input prefix | `{}`
-`--paper-input-container-suffix` | Mixin applied to the input suffix | `{}`
 `--paper-input-container-underline` | Mixin applied to the underline | `{}`
 `--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focued | `{}`
 `--paper-input-container-underline-disabled` | Mixin applied to the underline when the input is disabled | `{}`
+`--paper-input-prefix` | Mixin applied to the input prefix | `{}`
+`--paper-input-suffix` | Mixin applied to the input suffix | `{}`
 
 This element is `display:block` by default, but you can set the `inline` attribute to make it
 `display:inline-block`.
@@ -184,6 +184,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         font: inherit;
         color: var(--paper-input-container-color, --secondary-text-color);
 
+        @apply(--paper-font-common-nowrap);
         @apply(--paper-font-subhead);
         @apply(--paper-input-container-label);
       }
@@ -192,12 +193,27 @@ This element is `display:block` by default, but you can set the `inline` attribu
       .input-content.label-is-floating ::content .paper-input-label {
         -webkit-transform: translateY(-75%) scale(0.75);
         transform: translateY(-75%) scale(0.75);
-        -webkit-transform-origin: left top;
-        transform-origin: left top;
         -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
 
+        -webkit-transform-origin: left top;
+        transform-origin: left top;
+
+        /* Since we scale to 75/100 of the size, we actually have 100/75 of the
+        original space now available */
+        width: 133%;
+
         @apply(--paper-transition-easing);
+      }
+
+      :host-context([dir="rtl"]) .input-content.label-is-floating ::content label,
+      :host-context([dir="rtl"]) .input-content.label-is-floating ::content .paper-input-label {
+        /* TODO(noms): Figure out why leaving the width at 133% before the animation
+         * actually makes
+         * it wider on the right side, not left side, as you would expect in RTL */
+        width: 100%;
+        -webkit-transform-origin: right top;
+        transform-origin: right top;
       }
 
       .input-content.label-is-highlighted ::content label,
@@ -230,6 +246,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         border: none;
         color: var(--paper-input-container-input-color, --primary-text-color);
         -webkit-appearance: none;
+        text-align: inherit;
 
         @apply(--paper-font-subhead);
         @apply(--paper-input-container-input);
@@ -254,6 +271,10 @@ This element is `display:block` by default, but you can set the `inline` attribu
         resize: none;
       }
 
+      .add-on-content {
+        position: relative;
+      }
+
       .add-on-content.is-invalid ::content * {
         color: var(--paper-input-container-invalid-color, --google-red-500);
       }
@@ -269,7 +290,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
     <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
       <content select="[prefix]" id="prefix"></content>
-      <div class="label-and-input-container">
+
+      <div class="label-and-input-container" id="labelAndInputContainer">
         <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
       </div>
       <content select="[suffix]"></content>

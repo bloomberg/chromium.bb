@@ -1,5 +1,4 @@
 Polymer({
-
       is: 'paper-spinner',
 
       listeners: {
@@ -8,7 +7,6 @@ Polymer({
       },
 
       properties: {
-
         /**
          * Displays the spinner.
          *
@@ -51,7 +49,6 @@ Polymer({
           type: String,
           computed: '_computeSpinnerContainerClassName(active, _coolingDown)'
         }
-
       },
 
       _computeSpinnerContainerClassName: function(active, coolingDown) {
@@ -63,9 +60,7 @@ Polymer({
 
       _activeChanged: function(active, old) {
         this._setAriaHidden(!active);
-        if (!active && old) {
-          this._coolingDown = true;
-        }
+        this._coolingDown = !active && old;
       },
 
       _altChanged: function(alt) {
@@ -91,5 +86,4 @@ Polymer({
         this.active = false;
         this._coolingDown = false;
       }
-
     });

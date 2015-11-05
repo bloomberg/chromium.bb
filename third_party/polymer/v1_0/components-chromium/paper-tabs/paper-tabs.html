@@ -103,6 +103,10 @@ Custom property | Description | Default
       @apply(--paper-tabs);
     }
 
+    :host-context([dir=rtl]) {
+      @apply(--layout-horizontal-reverse);
+    }
+
     #tabsContainer {
       position: relative;
       height: 100%;
@@ -129,8 +133,10 @@ Custom property | Description | Default
     }
 
     paper-icon-button {
-      width: 24px;
-      padding: 16px;
+      width: 48px;
+      height: 48px;
+      padding: 12px;
+      margin: 0 4px;
     }
 
     #selectionBar {

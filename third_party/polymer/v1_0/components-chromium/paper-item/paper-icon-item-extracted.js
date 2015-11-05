@@ -2,7 +2,7 @@ Polymer({
       is: 'paper-icon-item',
 
       hostAttributes: {
-        'role': 'listitem',
+        'role': 'option',
         'tabindex': '0'
       },
 

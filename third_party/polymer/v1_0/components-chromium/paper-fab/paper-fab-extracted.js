@@ -46,5 +46,4 @@ Polymer({
         reflectToAttribute: true
       }
     }
-
   });

@@ -4,22 +4,9 @@ Polymer({
 
     behaviors: [
       Polymer.IronControlState,
-      Polymer.IronButtonState
+      Polymer.IronButtonState,
+      Polymer.PaperRippleBehavior
     ],
-
-    properties: {
-
-      /**
-       * If true, ink ripple effect is disabled.
-       *
-       * @attribute noink
-       */
-      noink: {
-        type: Boolean,
-        value: false
-      }
-
-    },
 
     hostAttributes: {
       role: 'tab'
@@ -27,6 +14,12 @@ Polymer({
 
     listeners: {
       down: '_updateNoink'
+    },
+
+    ready: function() {
+      var ripple = this.getRipple();
+      ripple.initialOpacity = 0.95;
+      ripple.opacityDecayVelocity = 0.98;
     },
 
     attached: function() {

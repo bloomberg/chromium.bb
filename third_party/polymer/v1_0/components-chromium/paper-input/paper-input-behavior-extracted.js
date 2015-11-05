@@ -77,7 +77,7 @@
       },
 
       /**
-       * The datalist of the input (if any). This should match the id of an existing <datalist>. Bind this
+       * The datalist of the input (if any). This should match the id of an existing `<datalist>`. Bind this
        * to the `<input is="iron-input">`'s `list` property.
        */
       list: {
@@ -277,6 +277,20 @@
        */
       results: {
         type: Number
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `accept` property, , used with type=file.
+       */
+      accept: {
+        type: String
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `multiple` property, , used with type=file.
+       */
+      multiple: {
+        type: Boolean
       },
 
       _ariaDescribedBy: {

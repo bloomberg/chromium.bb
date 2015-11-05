@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-behaviors/iron-control-state.html">
-<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 
@@ -53,6 +53,10 @@ Custom property | Description | Default
       word-wrap: break-word;
     }
 
+    .fit {
+      @apply(--layout-fit);
+    }
+
     textarea {
       position: relative;
       outline: none;
@@ -66,6 +70,7 @@ Custom property | Description | Default
       font-size: inherit;
       font-family: inherit;
       line-height: inherit;
+      text-align: inherit;
       @apply(--iron-autogrow-textarea);
     }
 
@@ -76,6 +81,7 @@ Custom property | Description | Default
   </style>
   <template>
     <!-- the mirror sizes the input/textarea so it grows with typing -->
+    <!-- use &#160; instead &nbsp; of to allow this element to be used in XHTML -->
     <div id="mirror" class="mirror-text" aria-hidden="true">&nbsp;</div>
 
     <!-- size the input/textarea with a div, because the textarea has intrinsic size in ff -->

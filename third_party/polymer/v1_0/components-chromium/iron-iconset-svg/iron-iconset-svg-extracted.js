@@ -4,9 +4,9 @@
    * `iron-iconset-svg` element. Multiple icons should be given distinct id's.
    *
    * Using svg elements to create icons has a few advantages over traditional
-   * bitmap graphics like jpg or png. Icons that use svg are vector based so they
-   * are resolution independent and should look good on any device. They are
-   * stylable via css. Icons can be themed, colorized, and even animated.
+   * bitmap graphics like jpg or png. Icons that use svg are vector based so
+   * they are resolution independent and should look good on any device. They
+   * are stylable via css. Icons can be themed, colorized, and even animated.
    *
    * Example:
    *
@@ -14,8 +14,8 @@
    *       <svg>
    *         <defs>
    *           <g id="shape">
-   *             <rect x="50" y="50" width="50" height="50" />
-   *             <circle cx="50" cy="50" r="50" />
+   *             <rect x="12" y="0" width="12" height="24" />
+   *             <circle cx="12" cy="12" r="12" />
    *           </g>
    *         </defs>
    *       </svg>
@@ -31,18 +31,15 @@
    *
    * @element iron-iconset-svg
    * @demo demo/index.html
+   * @implements {Polymer.Iconset}
    */
   Polymer({
-
     is: 'iron-iconset-svg',
 
     properties: {
 
       /**
        * The name of the iconset.
-       *
-       * @attribute name
-       * @type string
        */
       name: {
         type: String,
@@ -51,16 +48,16 @@
 
       /**
        * The size of an individual icon. Note that icons must be square.
-       *
-       * @attribute iconSize
-       * @type number
-       * @default 24
        */
       size: {
         type: Number,
         value: 24
       }
 
+    },
+
+    attached: function() {
+      this.style.display = 'none';
     },
 
     /**
@@ -84,7 +81,7 @@
      * @method applyIcon
      * @param {Element} element Element to which the icon is applied.
      * @param {string} iconName Name of the icon to apply.
-     * @return {Element} The svg element which renders the icon.
+     * @return {?Element} The svg element which renders the icon.
      */
     applyIcon: function(element, iconName) {
       // insert svg element into shadow root, if it exists

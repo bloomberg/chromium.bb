@@ -22,10 +22,29 @@ Polymer({
         observer: 'queryChanged'
       },
 
+      /**
+       * If true, the query attribute is assumed to be a complete media query
+       * string rather than a single media feature.
+       */
+      full: {
+        type: Boolean,
+        value: false
+      },
+      
+      /**
+       * @type {function(MediaQueryList)}
+       */ 
       _boundMQHandler: {
         value: function() {
           return this.queryHandler.bind(this);
         }
+      },
+      
+      /**
+       * @type {MediaQueryList}
+       */ 
+      _mq: {
+        value: null
       }
     },
 
@@ -56,7 +75,7 @@ Polymer({
       if (!query) {
         return;
       }
-      if (query[0] !== '(') {
+      if (!this.full && query[0] !== '(') {
         query = '(' + query + ')';
       }
       this._mq = window.matchMedia(query);

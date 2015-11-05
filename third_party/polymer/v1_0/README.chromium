@@ -1,7 +1,7 @@
 Name: Polymer
 Short Name: polymer
 URL: http://www.polymer-project.org
-Version: 1.1.13
+Version: 1.2.1
 Revision: (See components/<component>/.bower.json)
 License: BSD
 License File: ../LICENSE.polymer

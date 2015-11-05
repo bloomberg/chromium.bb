@@ -18,7 +18,9 @@
 
       behaviors: [
         Polymer.IronControlState,
-        Polymer.IronButtonState
+        Polymer.IronButtonState,
+        Polymer.IronFormElementBehavior,
+        Polymer.IronValidatableBehavior
       ],
 
       properties: {
@@ -30,7 +32,7 @@
         selectedItemLabel: {
           type: String,
           notify: true,
-          computed: '_computeSelectedItemLabel(selectedItem)'
+          readOnly: true
         },
 
         /**
@@ -42,6 +44,17 @@
          */
         selectedItem: {
           type: Object,
+          notify: true,
+          readOnly: true
+        },
+
+        /**
+         * The value for this element that will be used when submitting in
+         * a form. It is read only, and will always have the same value
+         * as `selectedItemLabel`.
+         */
+        value: {
+          type: String,
           notify: true,
           readOnly: true
         },
@@ -66,7 +79,8 @@
         opened: {
           type: Boolean,
           notify: true,
-          value: false
+          value: false,
+          observer: '_openedChanged'
         },
 
         /**
@@ -108,9 +122,14 @@
       },
 
       hostAttributes: {
-        role: 'group',
+        role: 'combobox',
+        'aria-autocomplete': 'none',
         'aria-haspopup': 'true'
       },
+
+      observers: [
+        '_selectedItemChanged(selectedItem)'
+      ],
 
       attached: function() {
         // NOTE(cdata): Due to timing, a preselected value in a `IronSelectable`
@@ -179,12 +198,16 @@
        * @param {Element} selectedItem A selected Element item, with an
        * optional `label` property.
        */
-      _computeSelectedItemLabel: function(selectedItem) {
+      _selectedItemChanged: function(selectedItem) {
+        var value = '';
         if (!selectedItem) {
-          return '';
+          value = '';
+        } else {
+          value = selectedItem.label || selectedItem.textContent.trim();
         }
 
-        return selectedItem.label || selectedItem.textContent.trim();
+        this._setValue(value);
+        this._setSelectedItemLabel(value);
       },
 
       /**
@@ -199,7 +222,25 @@
         // derived from the metrics of elements internal to `paper-input`'s
         // template. The metrics will change depending on whether or not the
         // input has a floating label.
-        return noLabelFloat ? -4 : 16;
+        return noLabelFloat ? -4 : 8;
+      },
+
+      /**
+       * Returns false if the element is required and does not have a selection,
+       * and true otherwise.
+       * @return {boolean} true if `required` is false, or if `required` is true
+       * and the element has a valid selection.
+       */
+      _getValidity: function() {
+        return this.disabled || !this.required || (this.required && this.value);
+      },
+
+      _openedChanged: function() {
+        var openState = this.opened ? 'true' : 'false';
+        var e = this.contentElement;
+        if (e) {
+          e.setAttribute('aria-expanded', openState);
+        }
       }
     });
   })();

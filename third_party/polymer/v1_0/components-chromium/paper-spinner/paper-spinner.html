@@ -7,10 +7,13 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="paper-spinner-styles.html">
 
 <!--
+Material design: [Progress & activity](https://www.google.com/design/spec/components/progress-activity.html)
+
 Element providing material design circular spinner.
 
     <paper-spinner active></paper-spinner>
@@ -46,10 +49,8 @@ Custom property | Description | Default
 -->
 
 </head><body><dom-module id="paper-spinner">
-
-  <link rel="import" type="css" href="paper-spinner.css">
-
   <template>
+    <style include="paper-spinner-styles"></style>
 
     <div id="spinnerContainer" class-name="[[_spinnerContainerClassName]]">
       <div class="spinner-layer layer-1">
@@ -92,7 +93,6 @@ Custom property | Description | Default
         </div>
       </div>
     </div>
-
   </template>
 
   </dom-module>

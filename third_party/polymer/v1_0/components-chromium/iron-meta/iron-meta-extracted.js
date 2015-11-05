@@ -3,6 +3,7 @@
     // monostate data
     var metaDatas = {};
     var metaArrays = {};
+    var singleton = null;
 
     Polymer.IronMeta = Polymer({
 
@@ -55,9 +56,15 @@
 
       },
 
+      hostAttributes: {
+        hidden: true
+      },
+
       /**
        * Only runs if someone invokes the factory/constructor directly
        * e.g. `new Polymer.IronMeta()`
+       *
+       * @param {{type: (string|undefined), key: (string|undefined), value}=} config
        */
       factoryImpl: function(config) {
         if (config) {
@@ -149,6 +156,13 @@
 
     });
 
+    Polymer.IronMeta.getIronMeta = function getIronMeta() {
+       if (singleton === null) {
+         singleton = new Polymer.IronMeta();
+       }
+       return singleton;
+     };
+
     /**
     `iron-meta-query` can be used to access infomation stored in `iron-meta`.
 
@@ -215,6 +229,8 @@
       /**
        * Actually a factory method, not a true constructor. Only runs if
        * someone invokes it directly (via `new Polymer.IronMeta()`);
+       *
+       * @param {{type: (string|undefined), key: (string|undefined)}=} config
        */
       factoryImpl: function(config) {
         if (config) {

@@ -9,22 +9,66 @@ return list;
 _parseNodeAnnotations: function (node, list) {
 return node.nodeType === Node.TEXT_NODE ? this._parseTextNodeAnnotation(node, list) : this._parseElementAnnotations(node, list);
 },
-_testEscape: function (value) {
-var escape = value.slice(0, 2);
-if (escape === '{{' || escape === '[[') {
-return escape;
+_bindingRegex: /([^{[]*)({{|\[\[)([^}\]]*)(?:]]|}})/g,
+_parseBindings: function (text) {
+var re = this._bindingRegex;
+var parts = [];
+var m, lastIndex;
+while ((m = re.exec(text)) !== null) {
+if (m[1]) {
+parts.push({ literal: m[1] });
+}
+var mode = m[2][0];
+var value = m[3].trim();
+var negate = false;
+if (value[0] == '!') {
+negate = true;
+value = value.substring(1).trim();
+}
+var customEvent, notifyEvent, colon;
+if (mode == '{' && (colon = value.indexOf('::')) > 0) {
+notifyEvent = value.substring(colon + 2);
+value = value.substring(0, colon);
+customEvent = true;
+}
+parts.push({
+compoundIndex: parts.length,
+value: value,
+mode: mode,
+negate: negate,
+event: notifyEvent,
+customEvent: customEvent
+});
+lastIndex = re.lastIndex;
+}
+if (lastIndex && lastIndex < text.length) {
+var literal = text.substring(lastIndex);
+if (literal) {
+parts.push({ literal: literal });
+}
+}
+if (parts.length) {
+return parts;
 }
 },
+_literalFromParts: function (parts) {
+var s = '';
+for (var i = 0; i < parts.length; i++) {
+var literal = parts[i].literal;
+s += literal || '';
+}
+return s;
+},
 _parseTextNodeAnnotation: function (node, list) {
-var v = node.textContent;
-var escape = this._testEscape(v);
-if (escape) {
-node.textContent = ' ';
+var parts = this._parseBindings(node.textContent);
+if (parts) {
+node.textContent = this._literalFromParts(parts) || ' ';
 var annote = {
 bindings: [{
 kind: 'text',
-mode: escape[0],
-value: v.slice(2, -2).trim()
+name: 'textContent',
+parts: parts,
+isCompound: parts.length !== 1
 }]
 };
 list.push(annote);
@@ -86,62 +130,50 @@ index: index
 });
 },
 _parseNodeAttributeAnnotations: function (node, annotation) {
-for (var i = node.attributes.length - 1, a; a = node.attributes[i]; i--) {
-var n = a.name, v = a.value;
-if (n === 'id' && !this._testEscape(v)) {
-annotation.id = v;
-} else if (n.slice(0, 3) === 'on-') {
+var attrs = Array.prototype.slice.call(node.attributes);
+for (var i = attrs.length - 1, a; a = attrs[i]; i--) {
+var n = a.name;
+var v = a.value;
+var b;
+if (n.slice(0, 3) === 'on-') {
 node.removeAttribute(n);
 annotation.events.push({
 name: n.slice(3),
 value: v
 });
-} else {
-var b = this._parseNodeAttributeAnnotation(node, n, v);
-if (b) {
+} else if (b = this._parseNodeAttributeAnnotation(node, n, v)) {
 annotation.bindings.push(b);
-}
+} else if (n === 'id') {
+annotation.id = v;
 }
 }
 },
-_parseNodeAttributeAnnotation: function (node, n, v) {
-var escape = this._testEscape(v);
-if (escape) {
-var customEvent;
-var name = n;
-var mode = escape[0];
-v = v.slice(2, -2).trim();
-var not = false;
-if (v[0] == '!') {
-v = v.substring(1);
-not = true;
-}
+_parseNodeAttributeAnnotation: function (node, name, value) {
+var parts = this._parseBindings(value);
+if (parts) {
+var origName = name;
 var kind = 'property';
-if (n[n.length - 1] == '$') {
-name = n.slice(0, -1);
+if (name[name.length - 1] == '$') {
+name = name.slice(0, -1);
 kind = 'attribute';
 }
-var notifyEvent, colon;
-if (mode == '{' && (colon = v.indexOf('::')) > 0) {
-notifyEvent = v.substring(colon + 2);
-v = v.substring(0, colon);
-customEvent = true;
+var literal = this._literalFromParts(parts);
+if (literal && kind == 'attribute') {
+node.setAttribute(name, literal);
 }
-if (node.localName == 'input' && n == 'value') {
-node.setAttribute(n, '');
+if (node.localName == 'input' && name == 'value') {
+node.setAttribute(origName, '');
 }
-node.removeAttribute(n);
+node.removeAttribute(origName);
 if (kind === 'property') {
 name = Polymer.CaseMap.dashToCamelCase(name);
 }
 return {
 kind: kind,
-mode: mode,
 name: name,
-value: v,
-negate: not,
-event: notifyEvent,
-customEvent: customEvent
+parts: parts,
+literal: literal,
+isCompound: parts.length !== 1
 };
 }
 },
@@ -232,9 +264,14 @@ for (var i = 0; i < notes.length; i++) {
 var note = notes[i];
 for (var j = 0; j < note.bindings.length; j++) {
 var b = note.bindings[j];
-b.signature = this._parseMethod(b.value);
-if (!b.signature) {
-b.model = this._modelForPath(b.value);
+for (var k = 0; k < b.parts.length; k++) {
+var p = b.parts[k];
+if (!p.literal) {
+p.signature = this._parseMethod(p.value);
+if (!p.signature) {
+p.model = this._modelForPath(p.value);
+}
+}
 }
 }
 if (note.templateContent) {
@@ -245,10 +282,12 @@ for (var prop in pp) {
 bindings.push({
 index: note.index,
 kind: 'property',
-mode: '{',
 name: '_parent_' + prop,
+parts: [{
+mode: '{',
 model: prop,
 value: prop
+}]
 });
 }
 note.bindings = note.bindings.concat(bindings);
@@ -259,14 +298,16 @@ _discoverTemplateParentProps: function (notes) {
 var pp = {};
 notes.forEach(function (n) {
 n.bindings.forEach(function (b) {
-if (b.signature) {
-var args = b.signature.args;
+b.parts.forEach(function (p) {
+if (p.signature) {
+var args = p.signature.args;
 for (var k = 0; k < args.length; k++) {
 pp[args[k].model] = true;
 }
 } else {
-pp[b.model] = true;
+pp[p.model] = true;
 }
+});
 });
 if (n.templateContent) {
 var tpp = n.templateContent._parentProps;
@@ -286,15 +327,43 @@ this._marshalAnnotatedNodes();
 this._marshalAnnotatedListeners();
 }
 },
-_configureAnnotationReferences: function () {
-this._configureTemplateContent();
-},
-_configureTemplateContent: function () {
-this._notes.forEach(function (note, i) {
-if (note.templateContent) {
-this._nodes[i]._content = note.templateContent;
+_configureAnnotationReferences: function (config) {
+var notes = this._notes;
+var nodes = this._nodes;
+for (var i = 0; i < notes.length; i++) {
+var note = notes[i];
+var node = nodes[i];
+this._configureTemplateContent(note, node);
+this._configureCompoundBindings(note, node);
 }
-}, this);
+},
+_configureTemplateContent: function (note, node) {
+if (note.templateContent) {
+node._content = note.templateContent;
+}
+},
+_configureCompoundBindings: function (note, node) {
+var bindings = note.bindings;
+for (var i = 0; i < bindings.length; i++) {
+var binding = bindings[i];
+if (binding.isCompound) {
+var storage = node.__compoundStorage__ || (node.__compoundStorage__ = {});
+var parts = binding.parts;
+var literals = new Array(parts.length);
+for (var j = 0; j < parts.length; j++) {
+literals[j] = parts[j].literal;
+}
+var name = binding.name;
+storage[name] = literals;
+if (binding.literal && binding.kind == 'property') {
+if (node._configValue) {
+node._configValue(name, binding.literal);
+} else {
+node[name] = binding.literal;
+}
+}
+}
+}
 },
 _marshalIdNodes: function () {
 this.$ = {};
@@ -1086,7 +1155,9 @@ this._callbacks.splice(0, len);
 this._lastVal += len;
 }
 };
-new (window.MutationObserver || JsMutationObserver)(Polymer.Async._atEndOfMicrotask.bind(Polymer.Async)).observe(Polymer.Async._twiddle, { characterData: true });
+new window.MutationObserver(function () {
+Polymer.Async._atEndOfMicrotask();
+}).observe(Polymer.Async._twiddle, { characterData: true });
 Polymer.Debounce = function () {
 var Async = Polymer.Async;
 var Debouncer = function (context) {
@@ -1168,6 +1239,32 @@ if (toElement) {
 Polymer.dom(toElement).setAttribute(name, '');
 }
 },
+getEffectiveChildNodes: function () {
+return Polymer.dom(this).getEffectiveChildNodes();
+},
+getEffectiveChildren: function () {
+var list = Polymer.dom(this).getEffectiveChildNodes();
+return list.filter(function (n) {
+return n.nodeType === Node.ELEMENT_NODE;
+});
+},
+getEffectiveTextContent: function () {
+var cn = this.getEffectiveChildNodes();
+var tc = [];
+for (var i = 0, c; c = cn[i]; i++) {
+if (c.nodeType !== Node.COMMENT_NODE) {
+tc.push(Polymer.dom(c).textContent);
+}
+}
+return tc.join('');
+},
+queryEffectiveChildren: function (slctr) {
+var e$ = Polymer.dom(this).queryDistributedElements(slctr);
+return e$ && e$[0];
+},
+queryAllEffectiveChildren: function (slctr) {
+return Polymer.dom(this).queryAllDistributedElements(slctr);
+},
 getContentChildNodes: function (slctr) {
 var content = Polymer.dom(this.root).querySelector(slctr || 'content');
 return content ? Polymer.dom(content).getDistributedNodes() : [];
@@ -1205,7 +1302,7 @@ if (index >= 0) {
 return path.splice(index, 1);
 }
 } else {
-var arr = this.get(path);
+var arr = this._get(path);
 index = arr.indexOf(item);
 if (index >= 0) {
 return this.splice(path, index, 1);
@@ -1244,7 +1341,7 @@ elt[n] = props[n];
 return elt;
 },
 isLightDescendant: function (node) {
-return this.contains(node) && Polymer.dom(this).getOwnerRoot() === Polymer.dom(node).getOwnerRoot();
+return this !== node && this.contains(node) && Polymer.dom(this).getOwnerRoot() === Polymer.dom(node).getOwnerRoot();
 },
 isLocalDescendant: function (node) {
 return this.root === Polymer.dom(node).getOwnerRoot();
@@ -1387,7 +1484,7 @@ _notedListenerFactory: function (property, path, isStructured, bogusTest) {
 return function (e, target) {
 if (!bogusTest(e, target)) {
 if (e.detail && e.detail.path) {
-this.notifyPath(this._fixPath(path, property, e.detail.path), e.detail.value);
+this._notifyPath(this._fixPath(path, property, e.detail.path), e.detail.value);
 } else {
 var value = target[property];
 if (!isStructured) {
@@ -1413,16 +1510,16 @@ node.addEventListener(info.event, inst._notifyListener.bind(inst, info.changedFn
 };
 Polymer.Base.extend(Polymer.Bind, {
 _shouldAddListener: function (effect) {
-return effect.name && effect.mode === '{' && !effect.negate && effect.kind != 'attribute';
+return effect.name && effect.kind != 'attribute' && effect.kind != 'text' && !effect.isCompound && effect.parts[0].mode === '{' && !effect.parts[0].negate;
 },
 _annotationEffect: function (source, value, effect) {
 if (source != effect.value) {
-value = this.get(effect.value);
+value = this._get(effect.value);
 this.__data__[effect.value] = value;
 }
 var calc = effect.negate ? !value : value;
 if (!effect.customEvent || this._nodes[effect.index][effect.name] !== calc) {
-return this._applyEffectValue(calc, effect);
+return this._applyEffectValue(effect, calc);
 }
 },
 _reflectEffect: function (source) {
@@ -1460,7 +1557,7 @@ var args = Polymer.Bind._marshalArgs(this.__data__, effect, source, value);
 if (args) {
 var fn = this[effect.method];
 if (fn) {
-this.__setProperty(effect.property, fn.apply(this, args));
+this.__setProperty(effect.name, fn.apply(this, args));
 } else {
 this._warn(this._logf('_computeEffect', 'compute method `' + effect.method + '` not defined'));
 }
@@ -1476,7 +1573,7 @@ var computedvalue = fn.apply(computedHost, args);
 if (effect.negate) {
 computedvalue = !computedvalue;
 }
-this._applyEffectValue(computedvalue, effect);
+this._applyEffectValue(effect, computedvalue);
 }
 } else {
 computedHost._warn(computedHost._logf('_annotatedComputationEffect', 'compute method `' + effect.method + '` not defined'));
@@ -1492,7 +1589,7 @@ var v;
 if (arg.literal) {
 v = arg.value;
 } else if (arg.structured) {
-v = Polymer.Base.get(name, model);
+v = Polymer.Base._get(name, model);
 } else {
 v = model[name];
 }
@@ -1555,7 +1652,7 @@ this._addPropertyEffect(arg.model, 'compute', {
 method: sig.method,
 args: sig.args,
 trigger: arg,
-property: name
+name: name
 });
 }, this);
 },
@@ -1593,35 +1690,49 @@ this._addAnnotationEffect(binding, index);
 },
 _addAnnotationEffect: function (note, index) {
 if (Polymer.Bind._shouldAddListener(note)) {
-Polymer.Bind._addAnnotatedListener(this, index, note.name, note.value, note.event);
+Polymer.Bind._addAnnotatedListener(this, index, note.name, note.parts[0].value, note.parts[0].event);
 }
-if (note.signature) {
-this._addAnnotatedComputationEffect(note, index);
-} else {
-note.index = index;
-this._addPropertyEffect(note.model, 'annotation', note);
+for (var i = 0; i < note.parts.length; i++) {
+var part = note.parts[i];
+if (part.signature) {
+this._addAnnotatedComputationEffect(note, part, index);
+} else if (!part.literal) {
+this._addPropertyEffect(part.model, 'annotation', {
+kind: note.kind,
+index: index,
+name: note.name,
+value: part.value,
+isCompound: note.isCompound,
+compoundIndex: part.compoundIndex,
+event: part.event,
+customEvent: part.customEvent,
+negate: part.negate
+});
+}
 }
 },
-_addAnnotatedComputationEffect: function (note, index) {
-var sig = note.signature;
+_addAnnotatedComputationEffect: function (note, part, index) {
+var sig = part.signature;
 if (sig.static) {
-this.__addAnnotatedComputationEffect('__static__', index, note, sig, null);
+this.__addAnnotatedComputationEffect('__static__', index, note, part, null);
 } else {
 sig.args.forEach(function (arg) {
 if (!arg.literal) {
-this.__addAnnotatedComputationEffect(arg.model, index, note, sig, arg);
+this.__addAnnotatedComputationEffect(arg.model, index, note, part, arg);
 }
 }, this);
 }
 },
-__addAnnotatedComputationEffect: function (property, index, note, sig, trigger) {
+__addAnnotatedComputationEffect: function (property, index, note, part, trigger) {
 this._addPropertyEffect(property, 'annotatedComputation', {
 index: index,
+isCompound: note.isCompound,
+compoundIndex: part.compoundIndex,
 kind: note.kind,
-property: note.name,
-negate: note.negate,
-method: sig.method,
-args: sig.args,
+name: note.name,
+negate: part.negate,
+method: part.signature.method,
+args: part.signature.args,
 trigger: trigger
 });
 },
@@ -1690,9 +1801,14 @@ _marshalInstanceEffects: function () {
 Polymer.Bind.prepareInstance(this);
 Polymer.Bind.setupBindListeners(this);
 },
-_applyEffectValue: function (value, info) {
+_applyEffectValue: function (info, value) {
 var node = this._nodes[info.index];
-var property = info.property || info.name || 'textContent';
+var property = info.name;
+if (info.isCompound) {
+var storage = node.__compoundStorage__[property];
+storage[info.compoundIndex] = value;
+value = storage.join('');
+}
 if (info.kind == 'attribute') {
 this.serializeValueToAttribute(value, property, node);
 } else {
@@ -1772,10 +1888,10 @@ for (var p in config) {
 var fx = fx$[p];
 if (fx) {
 for (var i = 0, l = fx.length, x; i < l && (x = fx[i]); i++) {
-if (x.kind === 'annotation') {
+if (x.kind === 'annotation' && !x.isCompound) {
 var node = this._nodes[x.effect.index];
 if (node._configValue) {
-var value = p === x.effect.value ? config[p] : this.get(x.effect.value, config);
+var value = p === x.effect.value ? config[p] : this._get(x.effect.value, config);
 node._configValue(x.effect.name, value);
 }
 }
@@ -1822,11 +1938,16 @@ this._handlers = [];
 'use strict';
 Polymer.Base._addFeature({
 notifyPath: function (path, value, fromAbove) {
+var info = {};
+this._get(path, this, info);
+this._notifyPath(info.path, value, fromAbove);
+},
+_notifyPath: function (path, value, fromAbove) {
 var old = this._propertySetter(path, value);
 if (old !== value && (old === old || value === value)) {
 this._pathEffector(path, value);
 if (!fromAbove) {
-this._notifyPath(path, value);
+this._notifyPathUp(path, value);
 }
 return true;
 }
@@ -1853,41 +1974,67 @@ var last = parts[parts.length - 1];
 if (parts.length > 1) {
 for (var i = 0; i < parts.length - 1; i++) {
 var part = parts[i];
+if (array && part[0] == '#') {
+prop = Polymer.Collection.get(array).getItem(part);
+} else {
 prop = prop[part];
-if (array && parseInt(part) == part) {
+if (array && parseInt(part, 10) == part) {
 parts[i] = Polymer.Collection.get(array).getKey(prop);
+}
 }
 if (!prop) {
 return;
 }
 array = Array.isArray(prop) ? prop : null;
 }
-if (array && parseInt(last) == last) {
+if (array) {
 var coll = Polymer.Collection.get(array);
+if (last[0] == '#') {
+var key = last;
+var old = coll.getItem(key);
+last = array.indexOf(old);
+coll.setItem(key, value);
+} else if (parseInt(last, 10) == last) {
 var old = prop[last];
 var key = coll.getKey(old);
 parts[i] = key;
 coll.setItem(key, value);
 }
+}
 prop[last] = value;
 if (!root) {
-this.notifyPath(parts.join('.'), value);
+this._notifyPath(parts.join('.'), value);
 }
 } else {
 prop[path] = value;
 }
 },
 get: function (path, root) {
+return this._get(path, root);
+},
+_get: function (path, root, info) {
 var prop = root || this;
 var parts = this._getPathParts(path);
-var last = parts.pop();
-while (parts.length) {
-prop = prop[parts.shift()];
+var array;
+for (var i = 0; i < parts.length; i++) {
 if (!prop) {
 return;
 }
+var part = parts[i];
+if (array && part[0] == '#') {
+prop = Polymer.Collection.get(array).getItem(part);
+} else {
+prop = prop[part];
+if (info && array && parseInt(part, 10) == part) {
+parts[i] = Polymer.Collection.get(array).getKey(prop);
 }
-return prop[last];
+}
+array = Array.isArray(prop) ? prop : null;
+}
+if (info) {
+info.path = parts.join('.');
+}
+return prop;
 },
 _pathEffector: function (path, value) {
 var model = this._modelForPath(path);
@@ -1909,9 +2056,9 @@ if (effect.value === path || effect.value.indexOf(path + '.') === 0) {
 Polymer.Bind._annotationEffect.call(this, path, value, effect);
 } else if (path.indexOf(effect.value + '.') === 0 && !effect.negate) {
 var node = this._nodes[effect.index];
-if (node && node.notifyPath) {
+if (node && node._notifyPath) {
 var p = this._fixPath(effect.name, effect.value, path);
-node.notifyPath(p, value, true);
+node._notifyPath(p, value, true);
 }
 }
 },
@@ -1951,16 +2098,16 @@ _notifyBoundPaths: function (path, value) {
 for (var a in this._boundPaths) {
 var b = this._boundPaths[a];
 if (path.indexOf(a + '.') == 0) {
-this.notifyPath(this._fixPath(b, a, path), value);
+this._notifyPath(this._fixPath(b, a, path), value);
 } else if (path.indexOf(b + '.') == 0) {
-this.notifyPath(this._fixPath(a, b, path), value);
+this._notifyPath(this._fixPath(a, b, path), value);
 }
 }
 },
 _fixPath: function (property, root, path) {
 return property + path.slice(root.length);
 },
-_notifyPath: function (path, value) {
+_notifyPathUp: function (path, value) {
 var rootName = this._modelForPath(path);
 var dashCaseName = Polymer.CaseMap.camelToDashCase(rootName);
 var eventName = dashCaseName + this._EVENT_CHANGED;
@@ -1974,47 +2121,62 @@ var dot = path.indexOf('.');
 return dot < 0 ? path : path.slice(0, dot);
 },
 _EVENT_CHANGED: '-changed',
+notifySplices: function (path, splices) {
+var info = {};
+var array = this._get(path, this, info);
+this._notifySplices(array, info.path, splices);
+},
+_notifySplices: function (array, path, splices) {
+var change = {
+keySplices: Polymer.Collection.applySplices(array, splices),
+indexSplices: splices
+};
+if (!array.hasOwnProperty('splices')) {
+Object.defineProperty(array, 'splices', {
+configurable: true,
+writable: true
+});
+}
+array.splices = change;
+this._notifyPath(path + '.splices', change);
+this._notifyPath(path + '.length', array.length);
+change.keySplices = null;
+change.indexSplices = null;
+},
 _notifySplice: function (array, path, index, added, removed) {
-var splices = [{
+this._notifySplices(array, path, [{
 index: index,
 addedCount: added,
 removed: removed,
 object: array,
 type: 'splice'
-}];
-var change = {
-keySplices: Polymer.Collection.applySplices(array, splices),
-indexSplices: splices
-};
-this.set(path + '.splices', change);
-if (added != removed.length) {
-this.notifyPath(path + '.length', array.length);
-}
-change.keySplices = null;
-change.indexSplices = null;
+}]);
 },
 push: function (path) {
-var array = this.get(path);
+var info = {};
+var array = this._get(path, this, info);
 var args = Array.prototype.slice.call(arguments, 1);
 var len = array.length;
 var ret = array.push.apply(array, args);
 if (args.length) {
-this._notifySplice(array, path, len, args.length, []);
+this._notifySplice(array, info.path, len, args.length, []);
 }
 return ret;
 },
 pop: function (path) {
-var array = this.get(path);
+var info = {};
+var array = this._get(path, this, info);
 var hadLength = Boolean(array.length);
 var args = Array.prototype.slice.call(arguments, 1);
 var ret = array.pop.apply(array, args);
 if (hadLength) {
-this._notifySplice(array, path, array.length, 0, [ret]);
+this._notifySplice(array, info.path, array.length, 0, [ret]);
 }
 return ret;
 },
 splice: function (path, start, deleteCount) {
-var array = this.get(path);
+var info = {};
+var array = this._get(path, this, info);
 if (start < 0) {
 start = array.length - Math.floor(-start);
 } else {
@@ -2027,26 +2189,28 @@ var args = Array.prototype.slice.call(arguments, 1);
 var ret = array.splice.apply(array, args);
 var addedCount = Math.max(args.length - 2, 0);
 if (addedCount || ret.length) {
-this._notifySplice(array, path, start, addedCount, ret);
+this._notifySplice(array, info.path, start, addedCount, ret);
 }
 return ret;
 },
 shift: function (path) {
-var array = this.get(path);
+var info = {};
+var array = this._get(path, this, info);
 var hadLength = Boolean(array.length);
 var args = Array.prototype.slice.call(arguments, 1);
 var ret = array.shift.apply(array, args);
 if (hadLength) {
-this._notifySplice(array, path, 0, 0, [ret]);
+this._notifySplice(array, info.path, 0, 0, [ret]);
 }
 return ret;
 },
 unshift: function (path) {
-var array = this.get(path);
+var info = {};
+var array = this._get(path, this, info);
 var args = Array.prototype.slice.call(arguments, 1);
 var ret = array.unshift.apply(array, args);
 if (args.length) {
-this._notifySplice(array, path, 0, args.length, []);
+this._notifySplice(array, info.path, 0, args.length, []);
 }
 return ret;
 },
@@ -2054,8 +2218,10 @@ prepareModelNotifyPath: function (model) {
 this.mixin(model, {
 fire: Polymer.Base.fire,
 notifyPath: Polymer.Base.notifyPath,
+_get: Polymer.Base._get,
 _EVENT_CHANGED: Polymer.Base._EVENT_CHANGED,
 _notifyPath: Polymer.Base._notifyPath,
+_notifyPathUp: Polymer.Base._notifyPathUp,
 _pathEffector: Polymer.Base._pathEffector,
 _annotationPathEffect: Polymer.Base._annotationPathEffect,
 _complexObserverPathEffect: Polymer.Base._complexObserverPathEffect,
@@ -2063,7 +2229,8 @@ _annotatedComputationPathEffect: Polymer.Base._annotatedComputationPathEffect,
 _computePathEffect: Polymer.Base._computePathEffect,
 _modelForPath: Polymer.Base._modelForPath,
 _pathMatchesEffect: Polymer.Base._pathMatchesEffect,
-_notifyBoundPaths: Polymer.Base._notifyBoundPaths
+_notifyBoundPaths: Polymer.Base._notifyBoundPaths,
+_getPathParts: Polymer.Base._getPathParts
 });
 }
 });
@@ -2200,7 +2367,7 @@ _rx: {
 comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
-mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
+mixinProp: /(?:^|[\s;])?--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
 mixinApply: /@apply[\s]*\([^)]*?\)[\s]*(?:[;\n]|$)?/gim,
 varApply: /[^;:]*?:[^;]*var[^;]*(?:[;\n]|$)?/gim,
 keyframesRule: /^@[^\s]*keyframes/
@@ -2903,7 +3070,7 @@ props[i] = v;
 }
 },
 rx: {
-VAR_ASSIGN: /(?:^|[;\n]\s*)(--[\w-]*?):\s*(?:([^;{]*)|{([^}]*)})(?:(?=[;\n])|$)/gi,
+VAR_ASSIGN: /(?:^|[;\s{]\s*)(--[\w-]*?)\s*:\s*(?:([^;{]*)|{([^}]*)})(?:(?=[;\s}])|$)/gi,
 MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\)/i,
 VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,)]*)|(?:[^;]*\([^;)]*\)))[\s]*?\)/gi,
 VAR_CAPTURE: /\([\s]*(--[^,\s)]*)(?:,[\s]*(--[^,\s)]*))?(?:\)|,)/gi,
@@ -3287,7 +3454,7 @@ archetype._prepEffects();
 this._customPrepEffects(archetype);
 archetype._prepBehaviors();
 archetype._prepBindings();
-archetype._notifyPath = this._notifyPathImpl;
+archetype._notifyPathUp = this._notifyPathUpImpl;
 archetype._scopeElementClass = this._scopeElementClassImpl;
 archetype.listen = this._listenImpl;
 archetype._showHideChildren = this._showHideChildrenImpl;
@@ -3425,7 +3592,7 @@ _forwardInstancePath: function (inst, path, value) {
 },
 _forwardInstanceProp: function (inst, prop, value) {
 },
-_notifyPathImpl: function (path, value) {
+_notifyPathUpImpl: function (path, value) {
 var dataHost = this.dataHost;
 var dot = path.indexOf('.');
 var root = dot < 0 ? path : path.slice(0, dot);
@@ -3438,7 +3605,10 @@ _pathEffectorImpl: function (path, value, fromAbove) {
 if (this._forwardParentPath) {
 if (path.indexOf(this._parentPropPrefix) === 0) {
 var subPath = path.substring(this._parentPropPrefix.length);
+var model = this._modelForPath(subPath);
+if (model in this._parentProps) {
 this._forwardParentPath(subPath, value);
+}
 }
 }
 Polymer.Base._pathEffector.call(this._templatized, path, value, fromAbove);
@@ -3543,9 +3713,10 @@ this.omap.set(item, key);
 } else {
 this.pmap[item] = key;
 }
-return key;
+return '#' + key;
 },
 removeKey: function (key) {
+key = this._parseKey(key);
 this._removeFromMap(this.store[key]);
 delete this.store[key];
 },
@@ -3562,16 +3733,29 @@ this.removeKey(key);
 return key;
 },
 getKey: function (item) {
+var key;
 if (item && typeof item == 'object') {
-return this.omap.get(item);
+key = this.omap.get(item);
 } else {
-return this.pmap[item];
+key = this.pmap[item];
+}
+if (key != undefined) {
+return '#' + key;
 }
 },
 getKeys: function () {
-return Object.keys(this.store);
+return Object.keys(this.store).map(function (key) {
+return '#' + key;
+});
+},
+_parseKey: function (key) {
+if (key[0] == '#') {
+return key.slice(1);
+}
+throw new Error('unexpected key ' + key);
 },
 setItem: function (key, item) {
+key = this._parseKey(key);
 var old = this.store[key];
 if (old) {
 this._removeFromMap(old);
@@ -3584,6 +3768,7 @@ this.pmap[item] = key;
 this.store[key] = item;
 },
 getItem: function (key) {
+key = this._parseKey(key);
 return this.store[key];
 },
 getItems: function () {
@@ -3977,7 +4162,7 @@ this.set('items.' + idx, value);
 },
 _forwardInstancePath: function (inst, path, value) {
 if (path.indexOf(this.as + '.') === 0) {
-this.notifyPath('items.' + inst.__key__ + '.' + path.slice(this.as.length + 1), value);
+this._notifyPath('items.' + inst.__key__ + '.' + path.slice(this.as.length + 1), value);
 }
 },
 _forwardParentProp: function (prop, value) {
@@ -3987,7 +4172,7 @@ inst.__setProperty(prop, value, true);
 },
 _forwardParentPath: function (path, value) {
 this._instances.forEach(function (inst) {
-inst.notifyPath(path, value, true);
+inst._notifyPath(path, value, true);
 }, this);
 },
 _forwardItemPath: function (path, value) {
@@ -3999,7 +4184,7 @@ var inst = this._instances[idx];
 if (inst) {
 if (dot >= 0) {
 path = this.as + '.' + path.substring(dot + 1);
-inst.notifyPath(path, value, true);
+inst._notifyPath(path, value, true);
 } else {
 inst.__setProperty(this.as, value, true);
 }
@@ -4051,6 +4236,7 @@ this.unlinkPaths('selected.' + i);
 }
 } else {
 this.unlinkPaths('selected');
+this.unlinkPaths('selectedItem');
 }
 if (this.multi) {
 if (!this.selected || this.selected.length) {
@@ -4190,7 +4376,7 @@ this._instance[prop] = value;
 },
 _forwardParentPath: function (path, value) {
 if (this._instance) {
-this._instance.notifyPath(path, value, true);
+this._instance._notifyPath(path, value, true);
 }
 }
 });

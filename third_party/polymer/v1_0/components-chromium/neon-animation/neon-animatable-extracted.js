@@ -3,7 +3,8 @@ Polymer({
     is: 'neon-animatable',
 
     behaviors: [
-      Polymer.NeonAnimatableBehavior
+      Polymer.NeonAnimatableBehavior,
+      Polymer.IronResizableBehavior
     ]
 
   });

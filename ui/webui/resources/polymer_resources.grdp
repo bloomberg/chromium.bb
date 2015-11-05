@@ -413,9 +413,6 @@
   <structure name="IDR_POLYMER_1_0_PAPER_DRAWER_PANEL_PAPER_DRAWER_PANEL_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-drawer-panel/paper-drawer-panel-extracted.js"
              type="chrome_html" />
-  <structure name="IDR_POLYMER_1_0_PAPER_DRAWER_PANEL_PAPER_DRAWER_PANEL_CSS"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-drawer-panel/paper-drawer-panel.css"
-             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_DRAWER_PANEL_PAPER_DRAWER_PANEL_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-drawer-panel/paper-drawer-panel.html"
              type="chrome_html" />
@@ -569,11 +566,11 @@
   <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-extracted.js"
              type="chrome_html" />
-  <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_CSS"
-             file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner.css"
-             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_STYLES_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-styles.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_STYLES_CLASSES_SHADOW_LAYOUT_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-styles/classes/shadow-layout.html"
@@ -657,4 +654,3 @@
              file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
              type="chrome_html" />
 </grit-part>
-

@@ -1,8 +1,8 @@
-/** 
+/**
  * `iron-range-behavior` provides the behavior for something with a minimum to maximum range.
  *
  * @demo demo/index.html
- * @polymerBehavior 
+ * @polymerBehavior
  */
  Polymer.IronRangeBehavior = {
 
@@ -71,7 +71,7 @@
   _calcStep: function(value) {
    /**
     * if we calculate the step using
-    * `Math.round(value / step) * step` we may hit a precision point issue 
+    * `Math.round(value / step) * step` we may hit a precision point issue
     * eg. 0.1 * 0.2 =  0.020000000000000004
     * http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
     *
@@ -79,7 +79,8 @@
     */
     // polymer/issues/2493
     value = parseFloat(value);
-    return this.step ? (Math.round((value + this.min) / this.step) / (1 / this.step)) - this.min : value;
+    return this.step ? (Math.round((value + this.min) / this.step) -
+        (this.min / this.step)) / (1 / this.step) : value;
   },
 
   _validateValue: function() {

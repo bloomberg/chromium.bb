@@ -12,6 +12,8 @@ Polymer({
 
       /**
        * Use this property instead of `value` for two-way data binding.
+       *
+       * @type {string|number|undefined|null}
        */
       bindValue: {
         observer: '_bindValueChanged',
@@ -215,7 +217,8 @@ Polymer({
       while (this.rows > 0 && _tokens.length < this.rows) {
         _tokens.push('');
       }
-      return _tokens.join('<br>') + '&nbsp;';
+      // Use &#160; instead &nbsp; of to allow this element to be used in XHTML.
+      return _tokens.join('<br/>') + '&#160;';
     },
 
     _valueForMirror: function() {

@@ -26,7 +26,8 @@ Polymer({
        */
       elevation: {
         type: Number,
-        value: 1
+        value: 1,
+        reflectToAttribute: true
       },
 
       /**
@@ -36,6 +37,17 @@ Polymer({
       animatedShadow: {
         type: Boolean,
         value: false
+      },
+
+      /**
+       * Read-only property used to pass down the `animatedShadow` value to
+       * the underlying paper-material style (since they have different names).
+       */
+      animated: {
+        type: Boolean,
+        reflectToAttribute: true,
+        readOnly: true,
+        computed: '_computeAnimated(animatedShadow)'
       }
     },
 
@@ -49,5 +61,9 @@ Polymer({
       if (image)
         cls += ' over-image';
       return cls;
+    },
+
+    _computeAnimated: function(animatedShadow) {
+      return animatedShadow;
     }
   });

@@ -23,18 +23,3 @@ index baf9ab3..985fe6c 100644
  },
  removeCustomPropAssignment: function (cssText) {
  return cssText.replace(this._rx.customProp, '').replace(this._rx.mixinProp, '');
-diff --git a/components-chromium/polymer-externs/polymer.externs.js b/components-chromium/polymer-externs/polymer.externs.js
-index e7d685d..0e950f9 100644
---- a/components-chromium/polymer-externs/polymer.externs.js
-+++ b/components-chromium/polymer-externs/polymer.externs.js
-@@ -464,6 +464,9 @@ PolymerElement.prototype.updateStyles = function(properties) {};
-  */
- PolymerElement.prototype.customStyle;
- 
-+/** @type {Node|undefined} */
-+PolymerElement.prototype.shadyRoot;
-+
- /**
-  * Logs a message to the console.
-  *
-

@@ -8,8 +8,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-media-query/iron-media-query.html">
 <link rel="import" href="../iron-selector/iron-selector.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 
 <!--
+Material design: [Navigation drawer](https://www.google.com/design/spec/patterns/navigation-drawer.html)
+
 `paper-drawer-panel` contains a drawer panel and a main panel.  The drawer
 and the main panel are side-by-side with drawer on the left.  When the browser
 window size is smaller than the `responsiveWidth`, `paper-drawer-panel`
@@ -72,7 +75,7 @@ To position the drawer to the right, add `right-drawer` attribute.
       <div main> Main panel... </div>
     </paper-drawer-panel>
 
-Styling `paper-drawer-panel`
+### Styling
 
 To change the main container:
 
@@ -98,6 +101,25 @@ To change the drawer container when it's in the right side:
       };
     }
 
+To customize the scrim:
+
+    paper-drawer-panel {
+      --paper-drawer-panel-scrim: {
+        background-color: red;
+      };
+    }
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-drawer-panel-scrim-opacity` | Scrim opacity | 1
+`--paper-drawer-panel-drawer-container` | Mixin applied to drawer container | {}
+`--paper-drawer-panel-left-drawer-container` | Mixin applied to container when it's in the left side | {}
+`--paper-drawer-panel-main-container` | Mixin applied to main container | {}
+`--paper-drawer-panel-right-drawer-container` | Mixin applied to container when it's in the right side | {}
+`--paper-drawer-panel-scrim` | Mixin applied to scrim | {}
+
 @group Paper elements
 @element paper-drawer-panel
 @demo demo/index.html
@@ -105,15 +127,160 @@ To change the drawer container when it's in the right side:
 -->
 
 </head><body><dom-module id="paper-drawer-panel">
-  <link rel="import" type="css" href="paper-drawer-panel.css">
-
   <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      iron-selector > #drawer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background-color: white;
+
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+
+        @apply(--paper-drawer-panel-drawer-container);
+      }
+
+      .transition > #drawer {
+        transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
+        transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
+      }
+
+      .left-drawer > #drawer {
+        @apply(--paper-drawer-panel-left-drawer-container);
+      }
+
+      .right-drawer > #drawer {
+        left: auto;
+        right: 0;
+
+        @apply(--paper-drawer-panel-right-drawer-container);
+      }
+
+      iron-selector > #main {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+
+        @apply(--paper-drawer-panel-main-container);
+      }
+
+      .transition > #main {
+        transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
+      }
+
+      .right-drawer > #main {
+        left: 0;
+      }
+
+      .right-drawer.transition > #main {
+        transition: right ease-in-out 0.3s, padding ease-in-out 0.3s;
+      }
+
+      #main > ::content > [main] {
+        height: 100%;
+      }
+
+      #drawer > ::content > [drawer] {
+        height: 100%;
+      }
+
+      #scrim {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity ease-in-out 0.38s, visibility ease-in-out 0.38s;
+        background-color: rgba(0, 0, 0, 0.3);
+
+        @apply(--paper-drawer-panel-scrim);
+      }
+
+      .narrow-layout > #drawer {
+        will-change: transform;
+      }
+
+      .narrow-layout > #drawer.iron-selected {
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+      }
+
+      .right-drawer.narrow-layout > #drawer.iron-selected {
+        box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.15);
+      }
+
+      .narrow-layout > #drawer > ::content > [drawer] {
+        border: 0;
+      }
+
+      .left-drawer.narrow-layout > #drawer:not(.iron-selected) {
+        -webkit-transform: translateX(-100%);
+        transform: translateX(-100%);
+      }
+
+      .right-drawer.narrow-layout > #drawer:not(.iron-selected) {
+        left: auto;
+        visibility: hidden;
+
+        -webkit-transform: translateX(100%);
+        transform: translateX(100%);
+      }
+
+      .right-drawer.narrow-layout.dragging > #drawer:not(.iron-selected),
+      .right-drawer.narrow-layout.peeking > #drawer:not(.iron-selected) {
+        visibility: visible;
+      }
+
+      .narrow-layout > #main {
+        padding: 0;
+      }
+
+      .right-drawer.narrow-layout > #main {
+        left: 0;
+        right: 0;
+      }
+
+      .narrow-layout > #main:not(.iron-selected) > #scrim,
+      .dragging > #main > #scrim {
+        visibility: visible;
+        opacity: var(--paper-drawer-panel-scrim-opacity, 1);
+      }
+
+      .narrow-layout > #main > * {
+        margin: 0;
+        min-height: 100%;
+        left: 0;
+        right: 0;
+
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+
+      iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
+        display: none;
+      }
+    </style>
+
     <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
     </iron-media-query>
 
     <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer, peeking)]]" activate-event="" selected="[[selected]]">
 
-      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
+      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]" on-transitionend="_onMainTransitionEnd">
         <content select="[main]"></content>
         <div id="scrim" on-tap="closeDrawer"></div>
       </div>
@@ -125,6 +292,5 @@ To change the drawer container when it's in the right side:
     </iron-selector>
   </template>
 
-</dom-module>
-
+  </dom-module>
 <script src="paper-drawer-panel-extracted.js"></script></body></html>

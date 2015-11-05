@@ -256,7 +256,7 @@ document.registerElement('dom-module', DomModule);
 function forceDocumentUpgrade() {
 if (cePolyfill) {
 var script = document._currentScript || document.currentScript;
-var doc = script && script.ownerDocument;
+var doc = script && script.ownerDocument || document;
 if (doc) {
 CustomElements.upgradeAll(doc);
 }
@@ -568,7 +568,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.1.5';
+Polymer.version = '1.2.1';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();

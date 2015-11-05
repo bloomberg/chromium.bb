@@ -438,6 +438,13 @@ PolymerElement.prototype.translate3d = function(x, y, z, node) {};
 PolymerElement.prototype.importHref = function(href, onload, onerror) {};
 
 /**
+ * Checks whether an element is in this element's light DOM tree.
+ * @param {HTMLElement=} node The element to be checked.
+ * @return {boolean} true if node is in this element's light DOM tree.
+ */
+PolymerElement.prototype.isLightDescendant = function(node) {};
+
+/**
  * Delete an element from an array.
  * @param {!Array|string} array Path to array from which to remove the item (or
  *     the array itself).
@@ -472,9 +479,6 @@ PolymerElement.prototype.updateStyles = function(properties) {};
  * @type {!Object<string, string|undefined>}
  */
 PolymerElement.prototype.customStyle;
-
-/** @type {Node|undefined} */
-PolymerElement.prototype.shadyRoot;
 
 /**
  * Logs a message to the console.
@@ -597,6 +601,15 @@ PolymerDomApi.prototype.setAttribute = function(attribute, value) {};
 
 /** @param {string} attribute */
 PolymerDomApi.prototype.removeAttribute = function(attribute) {};
+
+/**
+ * @param {!Function} callback
+ * @return {!{fn: (!Function|undefined), _nodes: !Array<!Node>}}
+ */
+PolymerDomApi.prototype.observeNodes = function(callback) {};
+
+/** @param {!{fn: (!Function|undefined), _nodes: !Array<!Node>}} handle */
+PolymerDomApi.prototype.unobserveNodes = function(handle) {};
 
 /** @type {?DOMTokenList} */
 PolymerDomApi.prototype.classList;

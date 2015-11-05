@@ -228,6 +228,13 @@
     },
 
     /**
+     * The bottom of the scroll.
+     */
+    get _scrollBottom() {
+      return this._scrollPosition + this._viewportSize;
+    },
+
+    /**
      * The n-th item rendered in the last physical item.
      */
     get _virtualEnd() {
@@ -382,19 +389,13 @@
      * items in the viewport and recycle tiles as needed.
      */
     _refresh: function() {
-      var SCROLL_DIRECTION_UP = -1;
-      var SCROLL_DIRECTION_DOWN = 1;
-      var SCROLL_DIRECTION_NONE = 0;
-
       // clamp the `scrollTop` value
       // IE 10|11 scrollTop may go above `_maxScrollTop`
       // iOS `scrollTop` may go below 0 and above `_maxScrollTop`
       var scrollTop = Math.max(0, Math.min(this._maxScrollTop, this._scroller.scrollTop));
-
-      var tileHeight, kth, recycledTileSet;
+      var tileHeight, tileTop, kth, recycledTileSet, scrollBottom;
       var ratio = this._ratio;
       var delta = scrollTop - this._scrollPosition;
-      var direction = SCROLL_DIRECTION_NONE;
       var recycledTiles = 0;
       var hiddenContentSize = this._hiddenContentSize;
       var currentRatio = ratio;
@@ -406,18 +407,19 @@
       // clear cached visible index
       this._firstVisibleIndexVal = null;
 
+      scrollBottom = this._scrollBottom;
+
       // random access
       if (Math.abs(delta) > this._physicalSize) {
         this._physicalTop += delta;
-        direction = SCROLL_DIRECTION_NONE;
         recycledTiles =  Math.round(delta / this._physicalAverage);
       }
       // scroll up
       else if (delta < 0) {
         var topSpace = scrollTop - this._physicalTop;
         var virtualStart = this._virtualStart;
+        var physicalBottom = this._physicalBottom;
 
-        direction = SCROLL_DIRECTION_UP;
         recycledTileSet = [];
 
         kth = this._physicalEnd;
@@ -430,12 +432,14 @@
             // recycle less physical items than the total
             recycledTiles < this._physicalCount &&
             // ensure that these recycled tiles are needed
-            virtualStart - recycledTiles > 0
+            virtualStart - recycledTiles > 0 &&
+            // ensure that the tile is not visible
+            physicalBottom - this._physicalSizes[kth] > scrollBottom
         ) {
 
-          tileHeight = this._physicalSizes[kth] || this._physicalAverage;
+          tileHeight = this._physicalSizes[kth];
           currentRatio += tileHeight / hiddenContentSize;
-
+          physicalBottom -= tileHeight;
           recycledTileSet.push(kth);
           recycledTiles++;
           kth = (kth === 0) ? this._physicalCount - 1 : kth - 1;
@@ -443,15 +447,13 @@
 
         movingUp = recycledTileSet;
         recycledTiles = -recycledTiles;
-
       }
       // scroll down
       else if (delta > 0) {
-        var bottomSpace = this._physicalBottom - (scrollTop + this._viewportSize);
+        var bottomSpace = this._physicalBottom - scrollBottom;
         var virtualEnd = this._virtualEnd;
         var lastVirtualItemIndex = this._virtualCount-1;
 
-        direction = SCROLL_DIRECTION_DOWN;
         recycledTileSet = [];
 
         kth = this._physicalStart;
@@ -464,10 +466,12 @@
             // recycle less physical items than the total
             recycledTiles < this._physicalCount &&
             // ensure that these recycled tiles are needed
-            virtualEnd + recycledTiles < lastVirtualItemIndex
+            virtualEnd + recycledTiles < lastVirtualItemIndex &&
+            // ensure that the tile is not visible
+            this._physicalTop + this._physicalSizes[kth] < scrollTop
           ) {
 
-          tileHeight = this._physicalSizes[kth] || this._physicalAverage;
+          tileHeight = this._physicalSizes[kth];
           currentRatio += tileHeight / hiddenContentSize;
 
           this._physicalTop += tileHeight;
@@ -477,7 +481,15 @@
         }
       }
 
-      if (recycledTiles !== 0) {
+      if (recycledTiles === 0) {
+        // If the list ever reach this case, the physical average is not significant enough
+        // to create all the items needed to cover the entire viewport.
+        // e.g. A few items have a height that differs from the average by serveral order of magnitude.
+        if (this._increasePoolIfNeeded()) {
+          // yield and set models to the new items
+          this.async(this._update);
+        }
+      } else {
         this._virtualStart = this._virtualStart + recycledTiles;
         this._update(recycledTileSet, movingUp);
       }
@@ -509,7 +521,7 @@
 
       // increase the pool of physical items if needed
       if (this._increasePoolIfNeeded()) {
-        // set models to the new items
+        // yield set models to the new items
         this.async(this._update);
       }
     },
@@ -535,7 +547,7 @@
     },
 
     /**
-     * Increases the pool size. That is, the physical items in the DOM.
+     * Increases the pool of physical items only if needed.
      * This function will allocate additional physical items
      * (limited by `MAX_PHYSICAL_COUNT`) if the content size is shorter than
      * `_optPhysicalSize`
@@ -543,16 +555,22 @@
      * @return boolean
      */
     _increasePoolIfNeeded: function() {
-      if (this._physicalSize >= this._optPhysicalSize || this._physicalAverage === 0) {
+      if (this._physicalAverage === 0) {
         return false;
       }
+      if (this._physicalBottom < this._scrollBottom || this._physicalTop > this._scrollPosition) {
+        return this._increasePool(1);
+      }
+      if (this._physicalSize < this._optPhysicalSize) {
+        return this._increasePool(Math.round((this._optPhysicalSize - this._physicalSize) * 1.2 / this._physicalAverage));
+      }
+      return false;
+    },
 
-      // the estimated number of physical items that we will need to reach
-      // the cap established by `_optPhysicalSize`.
-      var missingItems = Math.round(
-          (this._optPhysicalSize - this._physicalSize) * 1.2 / this._physicalAverage
-        );
-
+    /**
+     * Increases the pool size.
+     */
+    _increasePool: function(missingItems) {
       // limit the size
       var nextPhysicalCount = Math.min(
           this._physicalCount + missingItems,
@@ -567,11 +585,8 @@
         return false;
       }
 
-      var newPhysicalItems = this._createPool(delta);
-      var emptyArray = new Array(delta);
-
-      [].push.apply(this._physicalItems, newPhysicalItems);
-      [].push.apply(this._physicalSizes, emptyArray);
+      [].push.apply(this._physicalItems, this._createPool(delta));
+      [].push.apply(this._physicalSizes, new Array(delta));
 
       this._physicalCount = prevPhysicalCount + delta;
 
@@ -966,10 +981,9 @@
 
       // increase the pool of physical items if needed
       if (this._increasePoolIfNeeded()) {
-        // set models to the new items
+        // yield set models to the new items
         this.async(this._update);
       }
-
       // clear cached visible index
       this._firstVisibleIndexVal = null;
     },
