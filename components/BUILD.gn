@@ -18,6 +18,7 @@ group("all_components") {
     "//components/bookmarks/common",
     "//components/bookmarks/managed",
     "//components/bookmarks/test",
+    "//components/browser_sync/common",
     "//components/bubble",
     "//components/captive_portal",
     "//components/chrome_apps",

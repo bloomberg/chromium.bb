@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/common",
   "+chrome/installer/launcher_support",
+  "+components/browser_sync/common",
   "+components/cloud_devices/common",
   "+content/public/common",
   "+google_apis",

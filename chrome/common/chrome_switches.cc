@@ -339,16 +339,6 @@ const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 // and allocates certain resources accordingly.
 const char kDisableSiteEngagementService[] = "disable-site-engagement-service";
 
-// Disables syncing browser data to a Google Account.
-const char kDisableSync[]                   = "disable-sync";
-
-// Disables syncing one or more sync data types that are on by default.
-// See sync/internal_api/public/base/model_type.h for possible types. Types
-// should be comma separated, and follow the naming convention for string
-// representation of model types, e.g.:
-// --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'
-const char kDisableSyncTypes[]              = "disable-sync-types";
-
 // Disables Web Notification custom layouts.
 const char kDisableWebNotificationCustomLayouts[] =
     "disable-web-notification-custom-layouts";
@@ -571,9 +561,6 @@ const char kEnableWebNotificationCustomLayouts[] =
 // Bypasses the WebUSB permission prompt as it is not yet implemented.
 // crbug.com/529950
 const char kEnableWebUsbOnAnyOrigin[] = "enable-webusb-on-any-origin";
-
-// Enables synchronizing WiFi credentials across devices, using Chrome Sync.
-const char kEnableWifiCredentialSync[]      = "enable-wifi-credential-sync";
 
 // Values for the kExtensionContentVerification flag.
 // See ContentVerifierDelegate::Mode for more explanation.

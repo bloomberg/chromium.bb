@@ -14,6 +14,7 @@
     'auto_login_parser.gypi',
     'autofill.gypi',
     'bookmarks.gypi',
+    'browser_sync.gypi',
     'bubble.gypi',
     'captive_portal.gypi',
     'certificate_reporting.gypi',

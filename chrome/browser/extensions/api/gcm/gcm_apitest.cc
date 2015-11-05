@@ -11,6 +11,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/browser_sync/common/browser_sync_switches.h"
 #include "extensions/test/result_catcher.h"
 
 using extensions::ResultCatcher;

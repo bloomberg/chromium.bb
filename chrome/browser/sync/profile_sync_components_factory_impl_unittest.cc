@@ -17,6 +17,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/signin_manager_wrapper.h"

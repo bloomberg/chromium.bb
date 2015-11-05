@@ -62,6 +62,7 @@ source_set("lib") {
     "//base/third_party/dynamic_annotations",
     "//chrome/common:constants",
     "//cloud_print/common",
+    "//components/browser_sync/common",
     "//components/cloud_devices/common",
     "//content/public/common:static_switches",
     "//google_apis",

@@ -23,6 +23,7 @@
 #include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/service/service_constants.h"
 #include "cloud_print/service/win/service_utils.h"
+#include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
