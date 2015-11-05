@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/audio/AudioUtilities.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -41,6 +42,18 @@ AbstractAudioContext* AudioContext::create(Document& document, ExceptionState& e
     AudioContext* audioContext = new AudioContext(document);
     audioContext->suspendIfNeeded();
 
+    if (!AudioUtilities::isValidAudioBufferSampleRate(audioContext->sampleRate())) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::indexOutsideRange(
+                "hardware sample rate",
+                audioContext->sampleRate(),
+                AudioUtilities::minAudioBufferSampleRate(),
+                ExceptionMessages::InclusiveBound,
+                AudioUtilities::maxAudioBufferSampleRate(),
+                ExceptionMessages::InclusiveBound));
+        return audioContext;
+    }
     // This starts the audio thread. The destination node's
     // provideInput() method will now be called repeatedly to render
     // audio.  Each time provideInput() is called, a portion of the
