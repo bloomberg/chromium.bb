@@ -11,6 +11,7 @@
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_fence_nv.h"
 #include "ui/gl/gl_gl_api_implementation.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
 #if defined(OS_MACOSX)
@@ -28,6 +29,7 @@ GLFence::~GLFence() {
 bool GLFence::IsSupported() {
   DCHECK(GetGLVersionInfo());
   return g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
+         GetGLImplementation() == kGLImplementationDesktopGLCoreProfile ||
 #if defined(OS_MACOSX)
          g_driver_gl.ext.b_GL_APPLE_fence ||
 #else
@@ -43,7 +45,8 @@ GLFence* GLFence::Create() {
   scoped_ptr<GLFence> fence;
   // Prefer ARB_sync which supports server-side wait.
   if (g_driver_gl.ext.b_GL_ARB_sync ||
-      GetGLVersionInfo()->is_es3) {
+      GetGLVersionInfo()->is_es3 ||
+      GetGLImplementation() == kGLImplementationDesktopGLCoreProfile) {
     fence.reset(new GLFenceARB);
 #if defined(OS_MACOSX)
   } else if (g_driver_gl.ext.b_GL_APPLE_fence) {
