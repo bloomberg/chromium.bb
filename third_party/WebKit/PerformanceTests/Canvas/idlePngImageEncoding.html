@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src = "../resources/runner.js"></script>
+<script src = "./asyncPngImageEncoding.js"></script>
+<script>
+
+var canvas_idle = null;
+
+window.onload = function () {
+    window.internals.settings.setIdleCanvasImageEncodingEnabled(true);
+    canvas_idle = createCanvas4kBy4k("canvas_idle");
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        unit: 'ms',
+        done: function () {
+            isDone = true;
+        },
+        description: "Measures performance of canvas." + 
+            "toBlob that has png image encoding performed in idle periods."
+    });
+    runTest(canvas_idle);
+};
+</script>
+</body>
+</html>
+
