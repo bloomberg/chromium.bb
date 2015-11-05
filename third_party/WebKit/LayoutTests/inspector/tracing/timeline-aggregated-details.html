@@ -3,6 +3,10 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../tracing-test.js"></script>
 <script>
+function initialize_EventsView()
+{
+    Runtime.experiments.enableForTest("timelineEventsTreeView");
+}
 
 function test()
 {
@@ -294,12 +298,29 @@ function test()
             }
         },
         "cat": "disabled-by-default-devtools.timeline",
+        "name": "TimerInstall",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 230111
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "a", "callUID": "a", "scriptId": 1 },
+                    { "functionName": "l", "callUID": "l", "scriptId": 1 },
+                    { "functionName": "f", "callUID": "f", "scriptId": 1 },
+                    { "functionName": "sin", "callUID": "sin", "scriptId": 2, "url": "native math.js" }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
         "name": "JSSample",
         "ph": "I",
         "pid": 17851,
         "tid": 23,
-        "ts": 230125,
-        "tts": 1758056
+        "ts": 230125
     },
     {
         "args": {},
@@ -560,32 +581,38 @@ function test()
         timeline.requestWindowTimes(0, Infinity);
         for (var grouping in WebInspector.AggregatedTimelineTreeView.GroupBy) {
             var groupingValue = WebInspector.AggregatedTimelineTreeView.GroupBy[grouping];
-            testProfileTree(WebInspector.TimelinePanel.DetailsTab.CallTree, groupingValue);
-            testProfileTree(WebInspector.TimelinePanel.DetailsTab.BottomUp, groupingValue);
+            testEventTree(WebInspector.TimelinePanel.DetailsTab.CallTree, groupingValue);
+            testEventTree(WebInspector.TimelinePanel.DetailsTab.BottomUp, groupingValue);
         }
+
+        testEventTree(WebInspector.TimelinePanel.DetailsTab.Events);
         InspectorTest.completeTest();
     }
 
-    function testProfileTree(type, grouping)
+    function testEventTree(type, grouping)
     {
         InspectorTest.addResult("");
-        InspectorTest.addResult(type + "  Group by: " + grouping);
         timeline._detailsView.selectTab(type, true);
         var callTree = timeline._detailsView._rangeDetailViews.get(type);
-        callTree._groupByCombobox.select(callTree._groupByCombobox.options().find((x) => x.value === grouping));
-        callTree._onGroupByChanged();
+        if (grouping) {
+            InspectorTest.addResult(type + "  Group by: " + grouping);
+            callTree._groupByCombobox.select(callTree._groupByCombobox.options().find((x) => x.value === grouping));
+            callTree._onGroupByChanged();
+        } else {
+            InspectorTest.addResult(type);
+        }
         var rootNode = callTree._dataGrid.rootNode();
         for (var node of rootNode.children)
-            printProfileTree(1, node._profileNode);
+            printEventTree(1, node._profileNode);
     }
 
-    function printProfileTree(padding, node)
+    function printEventTree(padding, node)
     {
         var name = node.name || (node.event.name === WebInspector.TimelineModel.RecordType.JSFrame
             ? WebInspector.beautifyFunctionName(node.event.args["data"]["functionName"])
             : WebInspector.TimelineUIUtils.eventTitle(node.event));
         InspectorTest.addResult("  ".repeat(padding) + name + ": " + [node.selfTime, node.totalTime].map(function (t) { return t.toFixed(3); }).join("  "));
-        (node.children || new Map()).forEach(printProfileTree.bind(null, padding + 1));
+        (node.children || new Map()).forEach(printEventTree.bind(null, padding + 1));
     }
 }
 
