@@ -9,7 +9,7 @@
   |        |                                            |
   |  Icon  |  Title text                        1:23 pm |
   |        |  Body text                                 |
-  |        |  https://www.example.com/                  |
+  |        |  www.example.com                           |
   |________|____________________________________________|
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
