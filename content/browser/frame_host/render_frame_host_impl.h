@@ -387,9 +387,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // another renderer process.
   void UpdateOpener();
 
-  // Clear focus from this frame in the renderer process.
-  void ClearFocus();
-
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.
   void ExtendSelectionAndDelete(size_t before, size_t after);

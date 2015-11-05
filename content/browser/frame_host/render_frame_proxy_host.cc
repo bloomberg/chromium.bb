@@ -218,6 +218,10 @@ void RenderFrameProxyHost::UpdateOpener() {
   Send(new FrameMsg_UpdateOpener(GetRoutingID(), opener_routing_id));
 }
 
+void RenderFrameProxyHost::SetFocusedFrame() {
+  Send(new FrameMsg_SetFocusedFrame(routing_id_));
+}
+
 void RenderFrameProxyHost::OnDetach() {
   if (frame_tree_node_->render_manager()->ForInnerDelegate()) {
     // Only main frame proxy can detach for inner WebContents.

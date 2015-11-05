@@ -735,7 +735,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnSetFrameOwnerProperties(
       const blink::WebFrameOwnerProperties& frame_owner_properties);
-  void OnClearFocus();
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);

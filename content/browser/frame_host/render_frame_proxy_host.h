@@ -111,6 +111,11 @@ class RenderFrameProxyHost
   // another renderer process.
   void UpdateOpener();
 
+  // Set this proxy as the focused frame in the renderer process.  This is
+  // called to replicate the focused frame when a frame in a different process
+  // becomes focused.
+  void SetFocusedFrame();
+
   void set_render_frame_proxy_created(bool created) {
     render_frame_proxy_created_ = created;
   }

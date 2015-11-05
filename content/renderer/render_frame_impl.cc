@@ -1165,7 +1165,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(FrameMsg_ClearFocus, OnClearFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
@@ -1728,10 +1727,6 @@ void RenderFrameImpl::OnSetFrameOwnerProperties(
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   DCHECK(frame_);
   frame_->setFrameOwnerProperties(frame_owner_properties);
-}
-
-void RenderFrameImpl::OnClearFocus() {
-  frame_->clearFocus();
 }
 
 void RenderFrameImpl::OnTextTrackSettingsChanged(

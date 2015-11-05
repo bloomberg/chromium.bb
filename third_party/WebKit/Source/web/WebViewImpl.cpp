@@ -2809,6 +2809,11 @@ void WebViewImpl::setFocusedFrame(WebFrame* frame)
     coreFrame->page()->focusController().setFocusedFrame(coreFrame);
 }
 
+void WebViewImpl::focusDocumentView(WebFrame* frame)
+{
+    page()->focusController().focusDocumentView(toCoreFrame(frame));
+}
+
 void WebViewImpl::setInitialFocus(bool reverse)
 {
     if (!m_page)

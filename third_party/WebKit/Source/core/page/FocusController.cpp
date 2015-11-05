@@ -629,6 +629,18 @@ Frame* FocusController::focusedOrMainFrame() const
     return m_page->mainFrame();
 }
 
+HTMLFrameOwnerElement* FocusController::focusedFrameOwnerElement(LocalFrame& currentFrame) const
+{
+    Frame* focusedFrame = m_focusedFrame.get();
+    for (; focusedFrame; focusedFrame = focusedFrame->tree().parent()) {
+        if (focusedFrame->tree().parent() == &currentFrame) {
+            ASSERT(focusedFrame->owner()->isLocal());
+            return focusedFrame->deprecatedLocalOwner();
+        }
+    }
+    return nullptr;
+}
+
 void FocusController::setFocused(bool focused)
 {
     if (isFocused() == focused)
@@ -832,7 +844,8 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr
     if (newDocument && oldDocument == newDocument && newDocument->focusedElement() == element)
         return true;
 
-    clearSelectionIfNeeded(oldFocusedFrame.get(), toLocalFrame(newFocusedFrame.get()), element);
+    if (newFocusedFrame && newFocusedFrame->isLocalFrame())
+        clearSelectionIfNeeded(oldFocusedFrame.get(), toLocalFrame(newFocusedFrame.get()), element);
 
     if (oldDocument && oldDocument != newDocument)
         oldDocument->setFocusedElement(nullptr);

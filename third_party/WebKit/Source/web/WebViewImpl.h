@@ -181,6 +181,7 @@ public:
         const WebString& name, WebFrame* relativeToFrame) override;
     WebFrame* focusedFrame() override;
     void setFocusedFrame(WebFrame*) override;
+    void focusDocumentView(WebFrame*) override;
     void setInitialFocus(bool reverse) override;
     void clearFocusedElement() override;
     bool scrollFocusedNodeIntoRect(const WebRect&) override;

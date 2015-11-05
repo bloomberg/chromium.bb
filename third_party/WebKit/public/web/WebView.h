@@ -166,6 +166,12 @@ public:
     virtual WebFrame* focusedFrame() = 0;
     virtual void setFocusedFrame(WebFrame*) = 0;
 
+    // Sets the provided frame as focused and fires blur/focus events on any
+    // currently focused elements in old/new focused documents.  Note that this
+    // is different from setFocusedFrame, which does not fire events on focused
+    // elements.
+    virtual void focusDocumentView(WebFrame*) = 0;
+
     // Focus the first (last if reverse is true) focusable node.
     virtual void setInitialFocus(bool reverse) = 0;
 

@@ -654,8 +654,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
 // new origin.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateOrigin, url::Origin /* origin */)
 
-// Notifies this frame that it lost focus to a frame in another process.
-IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocus)
+// Notifies this frame or proxy that it is now focused.  This is used to
+// support cross-process focused frame changes.
+IPC_MESSAGE_ROUTED0(FrameMsg_SetFocusedFrame);
 
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.

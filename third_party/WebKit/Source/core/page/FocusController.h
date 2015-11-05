@@ -39,6 +39,7 @@ namespace blink {
 struct FocusCandidate;
 class Element;
 class Frame;
+class HTMLFrameOwnerElement;
 class InputDeviceCapabilities;
 class LocalFrame;
 class Node;
@@ -53,6 +54,11 @@ public:
     void focusDocumentView(PassRefPtrWillBeRawPtr<Frame>);
     LocalFrame* focusedFrame() const;
     Frame* focusedOrMainFrame() const;
+
+    // Finds the focused HTMLFrameOwnerElement, if any, in the provided frame.
+    // An HTMLFrameOwnerElement is considered focused if the frame it owns, or
+    // one of its descendant frames, is currently focused.
+    HTMLFrameOwnerElement* focusedFrameOwnerElement(LocalFrame& currentFrame) const;
 
     bool setInitialFocus(WebFocusType);
     bool advanceFocus(WebFocusType type, InputDeviceCapabilities* sourceCapabilities = nullptr) { return advanceFocus(type, false, sourceCapabilities); }
