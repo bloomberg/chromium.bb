@@ -17,11 +17,6 @@ ADD * /engine/
 RUN mv /engine/chrome_sandbox /engine/chrome-sandbox
 RUN chown -R blimp_user /engine
 
-# TODO(sriramsr): Under Docker on GCE, the sandbox fails unless it's setuid
-# (crbug.com/551140).
-RUN chown root /engine/chrome-sandbox
-RUN chmod 4755 /engine/chrome-sandbox
-
 USER blimp_user
 WORKDIR "/engine"
 
