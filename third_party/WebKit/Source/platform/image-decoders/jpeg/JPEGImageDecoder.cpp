@@ -89,7 +89,7 @@ struct decoder_error_mgr {
 
 struct decoder_source_mgr {
     struct jpeg_source_mgr pub; // "public" fields for IJG library
-    JPEGImageReader* decoder;
+    JPEGImageReader* reader;
 };
 
 enum jstate {
@@ -323,7 +323,7 @@ public:
         m_src.pub.skip_input_data = skip_input_data;
         m_src.pub.resync_to_restart = jpeg_resync_to_restart;
         m_src.pub.term_source = term_source;
-        m_src.decoder = this;
+        m_src.reader = this;
 
 #if USE(ICCJPEG)
         // Retain ICC color profile markers for color management.
@@ -742,20 +742,17 @@ void init_source(j_decompress_ptr)
 
 void skip_input_data(j_decompress_ptr jd, long num_bytes)
 {
-    decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(jd->src);
-    src->decoder->skipBytes(num_bytes);
+    reinterpret_cast_ptr<decoder_source_mgr*>(jd->src)->reader->skipBytes(num_bytes);
 }
 
 boolean fill_input_buffer(j_decompress_ptr jd)
 {
-    decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(jd->src);
-    return src->decoder->fillBuffer();
+    return reinterpret_cast_ptr<decoder_source_mgr*>(jd->src)->reader->fillBuffer();
 }
 
 void term_source(j_decompress_ptr jd)
 {
-    decoder_source_mgr* src = reinterpret_cast_ptr<decoder_source_mgr*>(jd->src);
-    src->decoder->decoder()->complete();
+    reinterpret_cast_ptr<decoder_source_mgr*>(jd->src)->reader->decoder()->complete();
 }
 
 JPEGImageDecoder::JPEGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
