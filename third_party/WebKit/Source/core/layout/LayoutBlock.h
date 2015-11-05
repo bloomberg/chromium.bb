@@ -454,11 +454,6 @@ protected:
     // applying any forced or unforced break, if needed.
     void paginatedContentWasLaidOut(LayoutUnit logicalTopOffsetAfterPagination);
 
-    // Update minimum page height required to avoid fragmentation where it shouldn't occur (inside
-    // unbreakable content, between orphans and widows, etc.). This will be used as a hint to the
-    // column balancer to help set a good minimum column height.
-    void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight);
-
     // Adjust from painting offsets to the local coords of this layoutObject
     void offsetForContents(LayoutPoint&) const;
 

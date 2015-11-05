@@ -61,7 +61,6 @@ public:
 
     bool heightIsAuto() const;
     void resetColumnHeight();
-    void updateMinimumColumnHeight(LayoutUnit height) { m_minimumColumnHeight = std::max(height, m_minimumColumnHeight); }
     bool recalculateColumnHeight(BalancedColumnHeightCalculation calculationMode);
 
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const;
@@ -113,9 +112,7 @@ private:
 
     LayoutUnit m_columnHeight;
 
-    // The following variables are used when balancing the column set.
     LayoutUnit m_maxColumnHeight; // Maximum column height allowed.
-    LayoutUnit m_minimumColumnHeight;
 };
 
 // List of all fragmentainer groups within a column set. There will always be at least one

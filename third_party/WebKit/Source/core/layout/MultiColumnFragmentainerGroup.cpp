@@ -49,9 +49,6 @@ bool MultiColumnFragmentainerGroup::heightIsAuto() const
 
 void MultiColumnFragmentainerGroup::resetColumnHeight()
 {
-    // Nuke previously stored minimum column height. Contents may have changed for all we know.
-    m_minimumColumnHeight = 0;
-
     m_maxColumnHeight = calculateMaxColumnHeight();
 
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
@@ -346,7 +343,7 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
         // content run (after having "inserted" implicit breaks), and find its start offset (by
         // looking at the previous run's end offset, or, if there's no previous run, the set's start
         // offset in the flow thread).
-        return std::max(InitialColumnHeightFinder::initialMinimalBalancedHeight(*this), m_minimumColumnHeight);
+        return InitialColumnHeightFinder::initialMinimalBalancedHeight(*this);
     }
 
     if (actualColumnCount() <= m_columnSet.usedColumnCount()) {

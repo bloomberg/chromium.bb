@@ -88,7 +88,6 @@ public:
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule);
 
     virtual void contentWasLaidOut(LayoutUnit logicalTopInFlowThreadAfterPagination) = 0;
-    virtual void updateMinimumPageHeight(LayoutUnit /*offset*/, LayoutUnit /*minHeight*/) { }
 
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }

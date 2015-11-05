@@ -737,17 +737,6 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     return newLogicalTop;
 }
 
-static inline LayoutUnit calculateMinimumPageHeight(const ComputedStyle& style, const RootInlineBox& lastLine)
-{
-    // We may require a certain minimum number of lines per page in order to satisfy
-    // orphans and widows, and that may affect the minimum page height.
-    unsigned lineCount = std::max<unsigned>(style.hasAutoOrphans() ? 1 : style.orphans(), style.widows());
-    const RootInlineBox* firstLine = &lastLine;
-    for (unsigned i = 1; i < lineCount && firstLine->prevRootBox(); i++)
-        firstLine = firstLine->prevRootBox();
-    return lastLine.lineBottomWithLeading() - firstLine->lineTopWithLeading();
-}
-
 static inline bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInlineBox& lineBox, LayoutUnit lineLogicalOffset, int lineIndex, LayoutUnit remainingLogicalHeight)
 {
     bool wantsStrutOnBlock = false;
@@ -786,7 +775,6 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
     // line and all following lines.
     LayoutUnit logicalOffset = lineBox.lineTopWithLeading();
     LayoutUnit lineHeight = lineBox.lineBottomWithLeading() - logicalOffset;
-    updateMinimumPageHeight(logicalOffset, calculateMinimumPageHeight(styleRef(), lineBox));
     logicalOffset += delta;
     lineBox.setPaginationStrut(LayoutUnit());
     lineBox.setIsFirstAfterPageBreak(false);
@@ -836,7 +824,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
     paginatedContentWasLaidOut(logicalOffset);
 }
 
-LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutUnit logicalOffset)
+LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutUnit logicalOffset) const
 {
     if (child.paginationBreakability() == AllowAnyBreaks)
         return logicalOffset;
@@ -845,7 +833,6 @@ LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutU
     if (child.isFloating())
         childLogicalHeight += marginBeforeForChild(child) + marginAfterForChild(child);
     LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
-    updateMinimumPageHeight(logicalOffset, childLogicalHeight);
     if (!pageLogicalHeight)
         return logicalOffset;
     LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, AssociateWithLatterPage);

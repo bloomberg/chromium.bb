@@ -928,10 +928,4 @@ void LayoutMultiColumnFlowThread::contentWasLaidOut(LayoutUnit logicalTopInFlowT
     appendNewFragmentainerGroupIfNeeded(logicalTopInFlowThreadAfterPagination);
 }
 
-void LayoutMultiColumnFlowThread::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight)
-{
-    if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset))
-        multicolSet->updateMinimumColumnHeight(offset, minHeight);
-}
-
 }

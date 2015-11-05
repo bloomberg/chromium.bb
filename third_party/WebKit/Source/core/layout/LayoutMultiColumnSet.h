@@ -111,8 +111,6 @@ public:
 
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
 
-    void updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height);
-
     // (Re-)calculate the column height if it's auto. This is first and foremost needed by sets that
     // are to balance the column height, but even when it isn't to be balanced, this is necessary if
     // the multicol container's height is constrained.

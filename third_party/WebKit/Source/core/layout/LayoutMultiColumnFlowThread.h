@@ -227,7 +227,6 @@ private:
     void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     void updateLogicalWidth() override;
     void contentWasLaidOut(LayoutUnit logicalTopInFlowThreadAfterPagination) override;
-    void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a
     // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong

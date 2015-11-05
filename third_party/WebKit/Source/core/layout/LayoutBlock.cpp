@@ -2671,12 +2671,6 @@ void LayoutBlock::paginatedContentWasLaidOut(LayoutUnit logicalTopOffsetAfterPag
         flowThread->contentWasLaidOut(offsetFromLogicalTopOfFirstPage() + logicalTopOffsetAfterPagination);
 }
 
-void LayoutBlock::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight)
-{
-    if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
-        flowThread->updateMinimumPageHeight(offsetFromLogicalTopOfFirstPage() + offset, minHeight);
-}
-
 LayoutUnit LayoutBlock::collapsedMarginBeforeForChild(const LayoutBox& child) const
 {
     // If the child has the same directionality as we do, then we can just return its

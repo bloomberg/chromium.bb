@@ -209,11 +209,6 @@ LayoutPoint LayoutMultiColumnSet::visualPointToFlowThreadPoint(const LayoutPoint
     return row.visualPointToFlowThreadPoint(visualPoint - row.offsetFromColumnSet());
 }
 
-void LayoutMultiColumnSet::updateMinimumColumnHeight(LayoutUnit offsetInFlowThread, LayoutUnit height)
-{
-    fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).updateMinimumColumnHeight(height);
-}
-
 LayoutUnit LayoutMultiColumnSet::pageLogicalTopForOffset(LayoutUnit offset) const
 {
     return fragmentainerGroupAtFlowThreadOffset(offset).columnLogicalTopForOffset(offset);

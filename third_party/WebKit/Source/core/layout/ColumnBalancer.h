@@ -138,6 +138,8 @@ private:
     //
     // [1] http://www.w3.org/TR/css3-break/#parallel-flows
     Vector<LayoutUnit, 32> m_shortestStruts;
+
+    LayoutUnit m_minimumColumnLogicalHeight;
 };
 
 // If we have previously used InitialColumnHeightFinder to estimate an initial column height, and

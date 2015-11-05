@@ -530,7 +530,7 @@ private:
     // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.
     void adjustLinePositionForPagination(RootInlineBox&, LayoutUnit& deltaOffset);
     // If the child is unsplittable and can't fit on the current page, return the top of the next page/column.
-    LayoutUnit adjustForUnsplittableChild(LayoutBox&, LayoutUnit logicalOffset);
+    LayoutUnit adjustForUnsplittableChild(LayoutBox&, LayoutUnit logicalOffset) const;
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_canPropagateFloatIntoSibling;

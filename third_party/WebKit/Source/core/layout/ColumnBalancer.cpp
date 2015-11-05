@@ -92,7 +92,8 @@ LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const
 {
     unsigned index = contentRunIndexWithTallestColumns();
     LayoutUnit startOffset = index > 0 ? m_contentRuns[index - 1].breakOffset() : group().logicalTopInFlowThread();
-    return m_contentRuns[index].columnLogicalHeight(startOffset);
+    LayoutUnit logicalHeightEstimate = m_contentRuns[index].columnLogicalHeight(startOffset);
+    return std::max(logicalHeightEstimate, m_minimumColumnLogicalHeight);
 }
 
 void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
@@ -107,16 +108,38 @@ void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
 
     if (box.hasForcedBreakAfter())
         addContentRun(flowThreadOffset() + box.logicalHeight());
+
+    if (box.paginationBreakability() != LayoutBox::AllowAnyBreaks) {
+        LayoutUnit unsplittableLogicalHeight = box.logicalHeight();
+        if (box.isFloating())
+            unsplittableLogicalHeight += box.marginBefore() + box.marginAfter();
+        if (m_minimumColumnLogicalHeight < unsplittableLogicalHeight)
+            m_minimumColumnLogicalHeight = unsplittableLogicalHeight;
+    }
 }
 
 void InitialColumnHeightFinder::examineBoxBeforeLeaving(const LayoutBox& box)
 {
 }
 
+static inline LayoutUnit columnLogicalHeightRequirementForLine(const ComputedStyle& style, const RootInlineBox& lastLine)
+{
+    // We may require a certain minimum number of lines per page in order to satisfy
+    // orphans and widows, and that may affect the minimum page height.
+    unsigned minimumLineCount = std::max<unsigned>(style.hasAutoOrphans() ? 1 : style.orphans(), style.widows());
+    const RootInlineBox* firstLine = &lastLine;
+    for (unsigned i = 1; i < minimumLineCount && firstLine->prevRootBox(); i++)
+        firstLine = firstLine->prevRootBox();
+    return lastLine.lineBottomWithLeading() - firstLine->lineTopWithLeading();
+}
+
 void InitialColumnHeightFinder::examineLine(const RootInlineBox& line)
 {
     LayoutUnit lineTop = line.lineTopWithLeading();
     LayoutUnit lineTopInFlowThread = flowThreadOffset() + lineTop;
+    LayoutUnit minimumLogialHeight = columnLogicalHeightRequirementForLine(line.block().styleRef(), line);
+    if (m_minimumColumnLogicalHeight < minimumLogialHeight)
+        m_minimumColumnLogicalHeight = minimumLogialHeight;
     ASSERT(isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut());
     if (isFirstAfterBreak(lineTopInFlowThread))
         recordStrutBeforeOffset(lineTopInFlowThread, line.paginationStrut());
