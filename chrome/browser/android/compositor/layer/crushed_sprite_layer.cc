@@ -46,7 +46,7 @@ void CrushedSpriteLayer::DrawSpriteFrame(
 
     // Reset the previous_frame if the animation is being re-run.
     if (previous_frame_ > sprite_frame) {
-      previous_frame_ = 0;
+      previous_frame_ = -1;
     }
 
     // Set up an SkCanvas backed by an SkBitmap to draw into.
@@ -55,6 +55,13 @@ void CrushedSpriteLayer::DrawSpriteFrame(
                           resource->GetUnscaledSpriteSize().height());
     skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(bitmap));
 
+    if (previous_frame_ == -1 ||
+        sprite_frame == resource->GetFrameCount() - 1) {
+      // The newly allocated pixels for the SkBitmap need to be cleared if this
+      // is the first frame being drawn or the last frame. See crbug.com/549453.
+      canvas->clear(SK_ColorTRANSPARENT);
+    }
+
     // If this isn't the first or last frame, draw the previous frame(s).
     // Note(twellington): This assumes that the last frame in the crushed sprite
     // animation does not require any previous frames drawn before it. This code
@@ -62,16 +69,14 @@ void CrushedSpriteLayer::DrawSpriteFrame(
     // assumption does not hold.
     if (sprite_frame != 0 && sprite_frame != resource->GetFrameCount() - 1) {
       // Draw the previous frame.
-      canvas->drawBitmap(previous_frame_bitmap_, 0, 0, nullptr);
+      if (previous_frame_ != -1){
+        canvas->drawBitmap(previous_frame_bitmap_, 0, 0, nullptr);
+      }
 
       // Draw any skipped frames.
       for (int i = previous_frame_ + 1; i < sprite_frame; ++i) {
         DrawRectanglesForFrame(resource, i, canvas);
       }
-    } else {
-      // The newly allocated pixels for the SkBitmap need to be cleared if this
-      // is the first or last frame. See crbug.com/549453.
-      canvas->clear(SK_ColorTRANSPARENT);
     }
 
     // Draw the current frame.
