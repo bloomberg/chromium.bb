@@ -1129,8 +1129,12 @@ void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {
+  const int kActiveTabFillId = IDR_THEME_TOOLBAR;
+  const bool has_custom_image =
+      GetThemeProvider()->HasCustomImage(kActiveTabFillId);
   if (IsActive()) {
-    PaintActiveTabBackground(canvas);
+    PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
+                                  has_custom_image, 0);
   } else {
     if (pinned_title_change_animation_ &&
         pinned_title_change_animation_->is_animating())
@@ -1142,7 +1146,8 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
     if (throb_value > 0) {
       canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
                              GetLocalBounds());
-      PaintActiveTabBackground(canvas);
+      PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
+                                    has_custom_image, 0);
       canvas->Restore();
     }
   }
@@ -1174,107 +1179,81 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
-  int tab_id, frame_id;
-  GetTabIdAndFrameId(GetWidget(), &tab_id, &frame_id);
+  int fill_id, frame_id;
+  GetTabIdAndFrameId(GetWidget(), &fill_id, &frame_id);
   // HasCustomImage() is only true if the theme provides the image. However,
   // even if the theme does not provide a tab background, the theme machinery
   // will make one if given a frame image.
   ui::ThemeProvider* theme_provider = GetThemeProvider();
-  const bool has_custom_image = theme_provider->HasCustomImage(tab_id) ||
+  const bool has_custom_image = theme_provider->HasCustomImage(fill_id) ||
       (frame_id != 0 && theme_provider->HasCustomImage(frame_id));
 
   // Explicitly map the id so we cache correctly.
   const chrome::HostDesktopType host_desktop_type = GetHostDesktopType(this);
-  tab_id = chrome::MapThemeImage(host_desktop_type, tab_id);
+  fill_id = chrome::MapThemeImage(host_desktop_type, fill_id);
+
+  // If the theme is providing a custom background image, then its top edge
+  // should be at the top of the tab. Otherwise, we assume that the background
+  // image is a composited foreground + frame image.
+  const int y_offset = GetThemeProvider()->HasCustomImage(fill_id) ?
+      0 : background_offset_.y();
 
   // We only cache the image when it's the default image and we're not hovered,
   // to avoid caching a background image that isn't the same for all tabs.
   if (!has_custom_image && !hover_controller_.ShouldDraw()) {
     ui::ScaleFactor scale_factor =
         ui::GetSupportedScaleFactor(canvas->image_scale());
-    gfx::ImageSkia cached_image(GetCachedImage(tab_id, size(), scale_factor));
+    gfx::ImageSkia cached_image(GetCachedImage(fill_id, size(), scale_factor));
     if (cached_image.width() == 0) {
       gfx::Canvas tmp_canvas(size(), canvas->image_scale(), false);
-      PaintInactiveTabBackgroundUsingResourceId(&tmp_canvas, tab_id);
+      PaintTabBackgroundUsingFillId(&tmp_canvas, false, fill_id, false,
+                                    y_offset);
       cached_image = gfx::ImageSkia(tmp_canvas.ExtractImageRep());
-      SetCachedImage(tab_id, scale_factor, cached_image);
+      SetCachedImage(fill_id, scale_factor, cached_image);
     }
     canvas->DrawImageInt(cached_image, 0, 0);
   } else {
-    PaintInactiveTabBackgroundUsingResourceId(canvas, tab_id);
+    PaintTabBackgroundUsingFillId(canvas, false, fill_id, has_custom_image,
+                                  y_offset);
   }
 }
 
-void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
-                                                    int tab_id) {
-  gfx::ImageSkia* tab_background =
-      GetThemeProvider()->GetImageSkiaNamed(tab_id);
+void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
+                                        bool is_active,
+                                        int fill_id,
+                                        bool has_custom_image,
+                                        int y_offset) {
+  gfx::ImageSkia* fill_image = GetThemeProvider()->GetImageSkiaNamed(fill_id);
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
   // position within the frame background image.
   const int x_offset = GetMirroredX() + background_offset_.x();
 
-  // If the theme is providing a custom background image, then its top edge
-  // should be at the top of the tab. Otherwise, we assume that the background
-  // image is a composited foreground + frame image.
-  const int y_offset = GetThemeProvider()->HasCustomImage(tab_id) ?
-      0 : background_offset_.y();
-
-  const gfx::Insets tab_insets(GetLayoutInsets(TAB));
-  // Don't draw over the toolbar, but do include the 1 px divider stroke at the
-  // bottom.
-  const int toolbar_overlap = tab_insets.bottom() - 1;
-
   const SkScalar radius = SkFloatToScalar(width() / 3.f);
-  const bool draw_hover = hover_controller_.ShouldDraw() && radius > 0;
+  const bool draw_hover =
+      !is_active && hover_controller_.ShouldDraw() && radius > 0;
   SkPoint hover_location(PointToSkPoint(hover_controller_.location()));
   const SkAlpha hover_alpha = hover_controller_.GetAlpha();
 
-  // Draw everything to a temporary canvas so we can extract an image for use in
-  // masking the hover glow.
-  gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
-
-  // Draw left edge.
-  gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
-      *tab_background, x_offset, y_offset, mask_images_.l_width, height());
-  gfx::ImageSkia theme_l =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *mask_images_.image_l);
-  background_canvas.DrawImageInt(
-      theme_l, 0, 0, theme_l.width(), theme_l.height() - toolbar_overlap, 0, 0,
-      theme_l.width(), theme_l.height() - toolbar_overlap, false);
-
-  // Draw right edge.
-  gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(
-      *tab_background, x_offset + width() - mask_images_.r_width, y_offset,
-      mask_images_.r_width, height());
-  gfx::ImageSkia theme_r =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *mask_images_.image_r);
-  background_canvas.DrawImageInt(theme_r, 0, 0, theme_r.width(),
-                                 theme_r.height() - toolbar_overlap,
-                                 width() - theme_r.width(), 0, theme_r.width(),
-                                 theme_r.height() - toolbar_overlap, false);
-
-  // Draw center.  Instead of masking out the top portion we simply skip over
-  // it by incrementing by the top padding, since it's a simple rectangle.
-  background_canvas.TileImageInt(
-      *tab_background, x_offset + mask_images_.l_width,
-      y_offset + tab_insets.top(), mask_images_.l_width, tab_insets.top(),
-      width() - mask_images_.l_width - mask_images_.r_width,
-      height() - tab_insets.top() - toolbar_overlap);
-
-  gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
-  canvas->DrawImageInt(background_image, 0, 0);
-
   if (draw_hover) {
+    // Draw everything to a temporary canvas so we can extract an image for use
+    // in masking the hover glow.
+    gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
+    PaintTabFill(&background_canvas, fill_image, x_offset, y_offset, is_active);
+    gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
+    canvas->DrawImageInt(background_image, 0, 0);
+
     gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
     DrawHighlight(&hover_canvas, hover_location, radius, hover_alpha);
     gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
         gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
     canvas->DrawImageInt(result, 0, 0);
+  } else {
+    PaintTabFill(canvas, fill_image, x_offset, y_offset, is_active);
   }
 
   // Now draw the stroke, highlights, and shadows around the tab edge.
-  TabImages* stroke_images = &inactive_images_;
+  TabImages* stroke_images = is_active ? &active_images_ : &inactive_images_;
   canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
   canvas->TileImageInt(
       *stroke_images->image_c, stroke_images->l_width, 0,
@@ -1283,47 +1262,43 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
                        width() - stroke_images->r_width, 0);
 }
 
-void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
-  gfx::ImageSkia* tab_background =
-      GetThemeProvider()->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-  int x_offset = GetMirroredX() + background_offset_.x();
-
+void Tab::PaintTabFill(gfx::Canvas* canvas,
+                       gfx::ImageSkia* fill_image,
+                       int x_offset,
+                       int y_offset,
+                       bool is_active) {
   const gfx::Insets tab_insets(GetLayoutInsets(TAB));
+  // If this isn't the foreground tab, don't draw over the toolbar, but do
+  // include the 1 px divider stroke at the bottom.
+  const int toolbar_overlap = is_active ? 0 : (tab_insets.bottom() - 1);
 
   // Draw left edge.
   gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
-      *tab_background, x_offset, 0, mask_images_.l_width, height());
+      *fill_image, x_offset, y_offset, mask_images_.l_width, height());
   gfx::ImageSkia theme_l =
       gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *mask_images_.image_l);
   canvas->DrawImageInt(
-      theme_l, 0, 0, theme_l.width(), theme_l.height(), 0, 0, theme_l.width(),
-      theme_l.height(), false);
+      theme_l, 0, 0, theme_l.width(), theme_l.height() - toolbar_overlap, 0, 0,
+      theme_l.width(), theme_l.height() - toolbar_overlap, false);
 
   // Draw right edge.
   gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(
-      *tab_background, x_offset + width() - mask_images_.r_width, 0,
+      *fill_image, x_offset + width() - mask_images_.r_width, y_offset,
       mask_images_.r_width, height());
   gfx::ImageSkia theme_r =
       gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *mask_images_.image_r);
-  canvas->DrawImageInt(theme_r, 0, 0, theme_r.width(), theme_r.height(),
+  canvas->DrawImageInt(theme_r, 0, 0, theme_r.width(),
+                       theme_r.height() - toolbar_overlap,
                        width() - theme_r.width(), 0, theme_r.width(),
-                       theme_r.height(), false);
+                       theme_r.height() - toolbar_overlap, false);
 
   // Draw center.  Instead of masking out the top portion we simply skip over it
   // by incrementing by the top padding, since it's a simple rectangle.
-  canvas->TileImageInt(*tab_background, x_offset + mask_images_.l_width,
-                       tab_insets.top(), mask_images_.l_width, tab_insets.top(),
+  canvas->TileImageInt(*fill_image, x_offset + mask_images_.l_width,
+                       y_offset + tab_insets.top(), mask_images_.l_width,
+                       tab_insets.top(),
                        width() - mask_images_.l_width - mask_images_.r_width,
-                       height() - tab_insets.top());
-
-  // Now draw the stroke, highlights, and shadows around the tab edge.
-  TabImages* stroke_images = &active_images_;
-  canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
-  canvas->TileImageInt(
-      *stroke_images->image_c, stroke_images->l_width, 0,
-      width() - stroke_images->l_width - stroke_images->r_width, height());
-  canvas->DrawImageInt(*stroke_images->image_r,
-                       width() - stroke_images->r_width, 0);
+                       height() - tab_insets.top() - toolbar_overlap);
 }
 
 void Tab::PaintIcon(gfx::Canvas* canvas) {

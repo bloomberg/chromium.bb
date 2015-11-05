@@ -239,9 +239,16 @@ class Tab : public gfx::AnimationDelegate,
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
-  void PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
-                                                 int tab_id);
-  void PaintActiveTabBackground(gfx::Canvas* canvas);
+  void PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
+                                     bool is_active,
+                                     int fill_id,
+                                     bool has_custom_image,
+                                     int y_offset);
+  void PaintTabFill(gfx::Canvas* canvas,
+                    gfx::ImageSkia* fill_image,
+                    int x_offset,
+                    int y_offset,
+                    bool is_active);
 
   // Paints the favicon, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
