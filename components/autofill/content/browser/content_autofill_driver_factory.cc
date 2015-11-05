@@ -57,11 +57,7 @@ ContentAutofillDriverFactory::ContentAutofillDriverFactory(
                  base::Unretained(this)));
 }
 
-ContentAutofillDriverFactory::~ContentAutofillDriverFactory() {
-  STLDeleteContainerPairSecondPointers(frame_driver_map_.begin(),
-                                       frame_driver_map_.end());
-  frame_driver_map_.clear();
-}
+ContentAutofillDriverFactory::~ContentAutofillDriverFactory() {}
 
 ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {
@@ -72,19 +68,19 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
 bool ContentAutofillDriverFactory::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
-  return frame_driver_map_[render_frame_host]->HandleMessage(message);
+  return frame_driver_map_.find(render_frame_host)
+      ->second->HandleMessage(message);
 }
 
 void ContentAutofillDriverFactory::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   // RenderFrameCreated is called more than once for the main frame.
-  if (!frame_driver_map_[render_frame_host])
+  if (!ContainsKey(frame_driver_map_, render_frame_host))
     CreateDriverForFrame(render_frame_host);
 }
 
 void ContentAutofillDriverFactory::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  delete frame_driver_map_[render_frame_host];
   frame_driver_map_.erase(render_frame_host);
 }
 
@@ -92,7 +88,7 @@ void ContentAutofillDriverFactory::DidNavigateAnyFrame(
     content::RenderFrameHost* rfh,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  frame_driver_map_[rfh]->DidNavigateFrame(details, params);
+  frame_driver_map_.find(rfh)->second->DidNavigateFrame(details, params);
 }
 
 void ContentAutofillDriverFactory::NavigationEntryCommitted(
@@ -106,9 +102,11 @@ void ContentAutofillDriverFactory::WasHidden() {
 
 void ContentAutofillDriverFactory::CreateDriverForFrame(
     content::RenderFrameHost* render_frame_host) {
-  DCHECK(!frame_driver_map_[render_frame_host]);
-  frame_driver_map_[render_frame_host] = new ContentAutofillDriver(
-      render_frame_host, client_, app_locale_, enable_download_manager_);
+  DCHECK(!ContainsKey(frame_driver_map_, render_frame_host));
+  frame_driver_map_.set(
+      render_frame_host,
+      make_scoped_ptr(new ContentAutofillDriver(
+          render_frame_host, client_, app_locale_, enable_download_manager_)));
 }
 
 }  // namespace autofill
