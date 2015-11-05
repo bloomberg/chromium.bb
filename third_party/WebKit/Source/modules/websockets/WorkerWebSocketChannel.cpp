@@ -476,6 +476,11 @@ bool Bridge::waitForMethodCompletion(PassOwnPtr<ExecutionContextTask> task)
     return !m_workerGlobalScope->thread()->terminated();
 }
 
+void Bridge::peerShouldBeDisconnected()
+{
+    RELEASE_ASSERT(!m_peer);
+}
+
 DEFINE_TRACE(Bridge)
 {
     visitor->trace(m_client);

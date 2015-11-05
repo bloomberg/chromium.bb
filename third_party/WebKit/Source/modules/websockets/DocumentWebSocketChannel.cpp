@@ -388,6 +388,11 @@ Document* DocumentWebSocketChannel::document()
     return toDocument(context);
 }
 
+void DocumentWebSocketChannel::handleShouldBeDisconnected()
+{
+    RELEASE_ASSERT(!m_handle);
+}
+
 void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, const WebString& selectedProtocol, const WebString& extensions)
 {
     WTF_LOG(Network, "DocumentWebSocketChannel %p didConnect(%p, %s, %s)", this, handle, selectedProtocol.utf8().c_str(), extensions.utf8().c_str());

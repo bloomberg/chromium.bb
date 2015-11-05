@@ -123,6 +123,7 @@ public:
     // Bridge for Peer. Running on the worker thread.
     class Bridge final : public GarbageCollectedFinalized<Bridge> {
         WTF_MAKE_NONCOPYABLE(Bridge);
+        USING_PRE_FINALIZER(Bridge, peerShouldBeDisconnected);
     public:
         Bridge(WebSocketChannelClient*, WorkerGlobalScope&);
         ~Bridge();
@@ -145,6 +146,7 @@ public:
     private:
         // Returns false if shutdown event is received before method completion.
         bool waitForMethodCompletion(PassOwnPtr<ExecutionContextTask>);
+        void peerShouldBeDisconnected();
 
         Member<WebSocketChannelClient> m_client;
         RefPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;

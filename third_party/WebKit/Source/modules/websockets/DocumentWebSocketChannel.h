@@ -62,6 +62,7 @@ class WebSocketHandshakeResponseInfo;
 // DOMWindow (i.e. works in the main thread).
 class MODULES_EXPORT DocumentWebSocketChannel final : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentWebSocketChannel);
+    USING_PRE_FINALIZER(DocumentWebSocketChannel, handleShouldBeDisconnected);
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
@@ -133,6 +134,7 @@ private:
     void abortAsyncOperations();
     void handleDidClose(bool wasClean, unsigned short code, const String& reason);
     Document* document();
+    void handleShouldBeDisconnected();
 
     // WebSocketHandleClient functions.
     void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) override;
