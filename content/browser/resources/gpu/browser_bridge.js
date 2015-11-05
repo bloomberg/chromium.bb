@@ -156,6 +156,17 @@ cr.define('gpu', function() {
       return this.logMessages_;
     },
 
+    /**
+     * Returns the value of the "Sandboxed" row.
+     */
+    isSandboxedForTesting : function() {
+      for (i = 0; i < this.gpuInfo_.basic_info.length; ++i) {
+        var info = this.gpuInfo_.basic_info[i];
+        if (info.description == "Sandboxed")
+          return info.value;
+      }
+      return false;
+    }
   };
 
   return {
