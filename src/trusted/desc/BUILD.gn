@@ -30,12 +30,12 @@ static_library("nrd_xfer") {
       "posix/nacl_desc_imc_bound_desc.c",
       "posix/nacl_makeboundsock.c",
     ]
-  }
-
-  if (current_os == "win") {
+  } else {
     sources += [
-      "nacl_desc_imc_bound_desc.c",
       "win/nacl_desc.c",
+      "nacl_desc_conn_cap.c",
+      "nacl_desc_imc_bound_desc.c",
+      "nacl_makeboundsock.c",
     ]
   }
 
