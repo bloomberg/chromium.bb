@@ -57,8 +57,8 @@ Unstable protocols have a special naming convention in order to make it
 possible to make discoverable backward incompatible changes.
 
 An unstable protocol has at least two versions; the major version which
-are represents backward incompatible changes, and the minor versions,
-which represents backward compatible changes to the interfaces in the
+represents backward incompatible changes, and the minor versions
+which represent backward compatible changes to the interfaces in the
 protocol.
 
 The major version is part of the XML file name and the protocol name in
@@ -71,10 +71,10 @@ postfixed with the major version number.
 
 For example, an unstable protocol called foo-bar with major version 2
 containing the two interfaces wl_foo and wl_bar both minor version 1 will
-a directory called +foo-bar/+ placed in the directory +unstable/+
+be placed in the directory +unstable/foo-bar/+
 consisting of one file called +README+ and one called
 +foo-bar-unstable-v2.xml+. The XML file will consist of two interfaces
-called +zwl_foo2+ and +zwl_foo2+ with the +version+ attribute set to +1+.
+called +zwl_foo2+ and +zwl_bar2+ with the +version+ attribute set to +1+.
 
 Unstable protocol changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,7 +108,7 @@ The procedure of doing this is the following:
   . Copy the final version of the XML that is the version that was
     decided to be declared stable into the new directory. The target name
     should be the same name as the protocol directory but with the +.xml+
-    prefix.
+    suffix.
   . Rename the name of the protocol in the XML by removing the
     'unstable' part and the major version number.
   . Remove the +z+ prefix and the major version number postfix from all
