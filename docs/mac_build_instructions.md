@@ -207,3 +207,30 @@ open -nWa /Applications/Emacs.app/Contents/MacOS/Emacs --args --no-desktop \
 and in your `.bashrc` or similar,
 
     export EDITOR=$HOME/bin/EmacsEditor
+
+## Improving performance of `git status`
+
+`git status` is used frequently to determine the status of your checkout.  Due
+to the number of files in Chromium's checkout, `git status` performance can be
+quite variable.  Increasing the system's vnode cache appears to help.  By
+default, this command:
+
+    sysctl -a | egrep kern\..*vnodes
+
+Outputs `kern.maxvnodes: 263168` (263168 is 257 * 1024).  To increase this
+setting:
+
+    sudo sysctl kern.maxvnodes=$((512*1024))
+
+Higher values may be appropriate if you routinely move between different
+Chromium checkouts.  This setting will reset on reboot, the startup setting can
+be set in `/etc/sysctl.conf`:
+
+    echo kern.maxvnodes=$((512*1024)) | sudo tee -a /etc/sysctl.conf
+
+Or edit the file directly.
+
+If your `git --version` reports 2.6 or higher, the following may also improve
+performance of `git status`:
+
+    git update-index --untracked-cache
