@@ -94,6 +94,8 @@ settings, since Chromium requires it to render.
 It may not be immediately obvious where your test code gets compiled to, so here
 are some general rules:
 
+*  If your test code lives under /base, it will be built as part of the
+   base_unittests_apk.
 *  If your test code lives under /content, it will probably be built as part of
    the content_shell_test_apk
 *  If your test code lives under /chrome (or higher), it will probably be built
