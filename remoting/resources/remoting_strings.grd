@@ -570,6 +570,12 @@
         <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">
           Show/hide keyboard.
         </message>
+        <message desc="Menu item to select the Touch input mode. In this mode, there is no visible mouse pointer and the user must tap on the screen to simulate a left-click." name="IDS_SELECT_TOUCH_MODE" formatter_data="android_java">
+          Touch mode
+        </message>
+        <message desc="Menu item to select the Trackpad input mode. In this mode, the mouse cursor is visible and the screen acts as a laptop's trackpad." name="IDS_SELECT_TRACKPAD_MODE" formatter_data="android_java">
+          Trackpad mode
+        </message>
         <message desc="Message displayed to the user if there are no hosts registered to their account" name="IDS_HOST_LIST_EMPTY_ANDROID" formatter_data="android_java">
           You have no computers registered.
         </message>
@@ -659,12 +665,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         </message>
         <message desc="Subtitle shown in the host list when host is offline. Indicates when host was last seen online." name ="IDS_LAST_ONLINE_SUBTITLE">
           last online <ph name="DATE">$1<ex>1/6/13</ex></ph>
-        </message>
-        <message desc="Menu item to select the Touch input mode. In this mode, there is not visible mouse pointer and the user must tap on the screen to simulate a left-click." name ="IDS_SELECT_TOUCH_MODE">
-          Touch mode
-        </message>
-        <message desc="Menu item to select the Trackpad input mode. In this mode, the mouse cursor is visible and the screen acts as a laptop's trackpad." name ="IDS_SELECT_TRACKPAD_MODE">
-          Trackpad mode
         </message>
       </if> <!-- is_ios -->
 

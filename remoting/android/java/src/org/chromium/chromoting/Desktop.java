@@ -174,6 +174,9 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
             menu.findItem(R.id.actionbar_hide).setVisible(false);
         }
 
+        // TODO(joedow): Remove this line when touch input mode has been implemented.
+        menu.findItem(R.id.actionbar_input_mode).setVisible(false);
+
         ChromotingUtil.tintMenuIcons(this, menu);
 
         return super.onCreateOptionsMenu(menu);

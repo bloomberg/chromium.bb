@@ -12,6 +12,11 @@
             android:title="@string/cast_button_title"
             app:actionProviderClass="android.support.v7.app.MediaRouteActionProvider"
             app:showAsAction="always"/>
+    <!-- The title for actionbar_input_mode is set when the activity starts. -->
+    <item android:id="@+id/actionbar_input_mode"
+            android:title=""
+            android:icon="@drawable/ic_mouse"
+            app:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_keyboard"
             android:title="@string/show_hide_keyboard"
             android:icon="@drawable/ic_action_keyboard"
