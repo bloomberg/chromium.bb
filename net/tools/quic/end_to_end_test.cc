@@ -179,6 +179,7 @@ vector<TestParams> GetTestParams() {
                   client_supports_stateless_rejects,
                   server_uses_stateless_rejects_if_peer_supported,
                   congestion_control_tag, auto_tune_flow_control_window));
+#if 0
               if (client_supports_stateless_rejects &&
                   server_uses_stateless_rejects_if_peer_supported) {
                 // TODO(b/23745998) Make stateless reject work with version
@@ -200,6 +201,7 @@ vector<TestParams> GetTestParams() {
                     server_uses_stateless_rejects_if_peer_supported,
                     congestion_control_tag, auto_tune_flow_control_window));
               }
+#endif
             }
           }
         }
