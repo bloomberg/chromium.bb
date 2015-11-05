@@ -1,0 +1,12 @@
+This test ensures that scrolling the visual viewport doesn't trigger an onscroll event.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+OnScroll called for scroll #1
+PASS numScrollsReceived is 1
+PASS numScrollsReceived is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

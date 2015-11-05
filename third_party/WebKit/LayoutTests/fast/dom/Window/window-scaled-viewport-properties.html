@@ -1,9 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE html>
 <script src="../../../resources/js-test.js"></script>
 <style>
   body {
     padding: 0px;
     margin: 0px;
+    /* Overflow hidden so that the size of the scrollbar is not added to
+    the innerHeight/Width properties. */
+    overflow: hidden;
   }
 
   .spacer {
@@ -18,45 +21,78 @@
 </style>
 <script language="JavaScript" type="text/javascript">
     if (window.testRunner && window.internals) {
+        // Note that the layout viewport is based on the minimum page scale.
+        // Thus, the minimum scale of 0.5 causes the layout viewport to become
+        // twice of what we would normally expect.
         window.internals.setPageScaleFactorLimits(0.5, 4.0);
         window.jsTestIsAsync = true;
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
+        setPrintTestResultsLazily();
     }
 
     description("This test makes sure the window properties related to the\
         viewport remain correct under pinch-to-zoom.");
 
-    debug('===Unscaled===');
-    debug('');
-    shouldBe('window.innerWidth', '800');
-    shouldBe('window.innerHeight', '600');
+
+    function testInitialScale () {
+        debug('===Initial Scale===');
+        debug('');
+        shouldBe('window.innerWidth', '1600');
+        shouldBe('window.innerHeight', '1200');
+        shouldBe('internals.visualViewportWidth()', '1600');
+        shouldBe('internals.visualViewportHeight()', '1200');
+    }
+
+    function jsScrollTo(x, y) {
+        window.scrollTo(x, y);
+    }
+
+    function jsScrollBy(x, y) {
+        window.scrollBy(x, y);
+    }
+
+    function testScrolls(jsScroll) {
+        // Test that the layout and visual viewport viewport scroll.
+        jsScroll(100, 200);
+        shouldBe('window.scrollX', '100');
+        shouldBe('window.scrollY', '200');
+        shouldBe('internals.visualViewportScrollX()', '100');
+        shouldBe('internals.visualViewportScrollY()', '200');
+
+        // Test that the scroll doesn't bubble to the visual viewport.
+        jsScroll(1500, 1100);
+        shouldBe('window.scrollX', '400');
+        shouldBe('window.scrollY', '300');
+        shouldBe('internals.visualViewportScrollX()', '400');
+        shouldBe('internals.visualViewportScrollY()', '300');
+
+        // Reset.
+        window.scrollTo(0, 0);
+        shouldBe('window.scrollX', '0');
+        shouldBe('window.scrollY', '0');
+    }
 
     function testPinchedIn() {
         debug('');
         debug('===Pinch Zoom in to 2X===');
         debug('');
         window.internals.setPageScaleFactor(2.0);
-        shouldBe('window.innerWidth', '400');
-        shouldBe('window.innerHeight', '300');
+        // Test that the innerWidth, innerHeight, scrollX, scrollY are relative
+        // to the layout viewport after page scale.
+        shouldBe('window.innerWidth', '1600');
+        shouldBe('window.innerHeight', '1200');
         shouldBe('window.scrollX', '0');
         shouldBe('window.scrollY', '0');
 
-        window.scrollBy(10, 20);
-        shouldBe('window.scrollX', '10');
-        shouldBe('window.scrollY', '20');
-        window.scrollBy(1590, 1180);
-        shouldBe('window.scrollX', '1600');
-        shouldBe('window.scrollY', '1200');
-        window.scrollBy(-1600, -1200);
-        shouldBe('window.scrollX', '0');
-        shouldBe('window.scrollY', '0');
-        window.scrollTo(1600, 1200);
-        shouldBe('window.scrollX', '1600');
-        shouldBe('window.scrollY', '1200');
-        window.scrollTo(0, 0);
-        shouldBe('window.scrollX', '0');
-        shouldBe('window.scrollY', '0');
+        // Test that the visual viewport size changes after page scale.
+        shouldBe('internals.visualViewportWidth()', '400');
+        shouldBe('internals.visualViewportHeight()', '300');
+
+        debug('===ScrollBy===');
+        testScrolls(jsScrollBy);
+        debug('===ScrollTo===');
+        testScrolls(jsScrollTo);
     }
 
     function testMaximallyPinchedOut() {
@@ -68,86 +104,28 @@
         shouldBe('window.innerHeight', '1200');
         shouldBe('window.scrollX', '0');
         shouldBe('window.scrollY', '0');
+        shouldBe('internals.visualViewportWidth()', '1600');
+        shouldBe('internals.visualViewportHeight()', '1200');
 
-        window.scrollBy(10, 20);
-        shouldBe('window.scrollX', '10');
-        shouldBe('window.scrollY', '20');
-        window.scrollBy(390, 280);
-        shouldBe('window.scrollX', '400');
-        shouldBe('window.scrollY', '300');
-        window.scrollBy(-400, -300);
-        shouldBe('window.scrollX', '0');
-        shouldBe('window.scrollY', '0');
-        window.scrollTo(400, 300);
-        shouldBe('window.scrollX', '400');
-        shouldBe('window.scrollY', '300');
-        window.scrollTo(0, 0);
-        shouldBe('window.scrollX', '0');
-        shouldBe('window.scrollY', '0');
-    }
-
-    function testOnScroll() {
-        debug('');
-        debug('===Test OnScroll===');
-        debug('');
-        window.internals.setPageScaleFactor(1.0);
-        shouldBe('window.innerWidth', '800');
-        shouldBe('window.innerHeight', '600');
-        shouldBe('window.scrollX', '0');
-        shouldBe('window.scrollY', '0');
-
-        // First scroll scrolls only the outer viewport.
-        // Second scrolls the outer and the inner.
-        // Third scrolls only the inner.
-        var scrolls = [100, 400, 100];
-        var numScrollsReceived = 0;
-        var numRAFCalls = 0;
-
-        document.onscroll = function() {
-            if (numRAFCalls == 0)
-                return;
-
-            ++numScrollsReceived;
-            debug('PASS OnScroll called for scroll #' + numScrollsReceived);
-            if (numScrollsReceived < scrolls.length) {
-                var scrollAmount = scrolls[numScrollsReceived];
-                window.scrollBy(scrollAmount, 0);
-            } else if (numScrollsReceived == scrolls.length) {
-                // Make sure scrollTo that moves only the inner viewport also
-                // triggers a scroll event.
-                window.scrollTo(1200, 0);
-            } else {
-                debug('');
-                finishJSTest();
-            }
-        }
-
-        // Scroll events are fired right before RAF so this is a good place to
-        // make sure event was handled.
-        var failureSentinel = function() {
-            if (numRAFCalls == 0) {
-                window.scrollBy(scrolls[0], 0);
-            }else if (numRAFCalls > numScrollsReceived) {
-                testFailed("Failed to receive scroll event #" + (numScrollsReceived+1));
-                finishJSTest();
-            }
-            ++numRAFCalls;
-            window.requestAnimationFrame(failureSentinel);
-        }
-
-        window.requestAnimationFrame(failureSentinel);
+        debug('===ScrollBy===');
+        testScrolls(jsScrollBy);
+        debug('===ScrollTo===');
+        testScrolls(jsScrollTo);
     }
 
     function forceLayout() {
-        window.scrollTo(0, 0);
+        window.scrollX;
     }
 
     function runTests() {
         if (window.testRunner && window.internals) {
+            // TODO(ymalik): The call to setPageScaleFactorLimits should force
+            // layout. Fix that instead of forcing layout here.
             forceLayout();
+            testInitialScale();
             testPinchedIn();
             testMaximallyPinchedOut();
-            testOnScroll();
+            finishJSTest();
         }
     }
 

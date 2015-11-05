@@ -11,7 +11,8 @@
 
       function scroll() {
           // Fully scroll to bring the fixed pos rect into view.
-          window.scrollTo(500, 1700);
+          eventSender.mouseMoveTo(100, 100);
+          eventSender.continuousMouseScrollBy(-500, -1700);
       }
 
       function scaleWithEventSender() {

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+  #target {
+    width: 2000px;
+    height: 1500px;
+  }
+</style>
+<script>
+    var numScrollsReceived = 0;
+    var numRAFCalls = 0;
+    if (window.testRunner && window.internals) {
+        window.jsTestIsAsync = true;
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+        setPrintTestResultsLazily();
+    }
+
+    description("This test ensures that scrolling the visual viewport doesn't\
+        trigger an onscroll event.");
+
+    function runTest() {
+        if (!window.testRunner || !window.internals) {
+            testFailed("This test requires test runner and internals")
+            finishJSTest();
+            return;
+        }
+
+        window.internals.setPageScaleFactor(2.0);
+        var target = document.getElementById('target');
+
+        document.onscroll = function() {
+            ++numScrollsReceived;
+            debug('OnScroll called for scroll #' + numScrollsReceived);
+        }
+
+        var failureSentinel = function() {
+            if (numRAFCalls == 0) {
+                // The first scroll should trigger onscroll because it scrolls
+                // the layout viewport.
+                eventSender.mouseMoveTo(target.offsetLeft + 5, target.offsetTop + 5);
+                eventSender.continuousMouseScrollBy(0, -400);
+            } else if (numRAFCalls == 1) {
+                shouldBe('numScrollsReceived', '1');
+                // The second scroll should not trigger onscroll because it only
+                // scrolls the visual viewport.
+                eventSender.mouseMoveTo(target.offsetLeft + 5, target.offsetTop + 5);
+                eventSender.continuousMouseScrollBy(0, 40);
+            } else {
+                shouldBe('numScrollsReceived', '1');
+                finishJSTest();
+                return;
+            }
+            ++numRAFCalls;
+            window.requestAnimationFrame(failureSentinel);
+        }
+
+        window.requestAnimationFrame(failureSentinel);
+    }
+
+    onload = runTest;
+</script>
+<div id="target"></div>
