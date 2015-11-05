@@ -408,4 +408,14 @@ def run(port, options, args, logging_stream, stdout):
         printer.cleanup()
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:], sys.stdout, sys.stderr))
+    exit_code = main(sys.argv[1:], sys.stdout, sys.stderr)
+    # Temporary logging to try and diagnose hangs on the Windows bots.
+    if 'win_chromium_rel_ng' in sys.argv:
+        print "Exiting with exit code: %d" % exit_code  # pylint: disable=E1601
+
+    try:
+        sys.exit(exit_code)
+    finally:
+        # Temporary logging to try and diagnose hangs on the Windows bots.
+        if 'win_chromium_rel_ng' in sys.argv:
+            print "sys.exit completed"  # pylint: disable=E1601
