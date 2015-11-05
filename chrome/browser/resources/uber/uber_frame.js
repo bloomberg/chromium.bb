@@ -105,14 +105,10 @@ cr.define('uber_frame', function() {
    * Shows nav items belonging to the same group as the selected item.
    */
   function showNavItems() {
-    var navItems = document.querySelectorAll('li');
-    var selectedNavItem = getSelectedNavItem();
-    assert(selectedNavItem);
-
-    var selectedGroup = selectedNavItem.getAttribute('group');
-    for (var i = 0; i < navItems.length; ++i) {
-      navItems[i].hidden = navItems[i].getAttribute('group') != selectedGroup;
-    }
+    var hideSettingsAndHelp = loadTimeData.getBoolean('hideSettingsAndHelp');
+    $('settings').hidden = hideSettingsAndHelp;
+    $('help').hidden = hideSettingsAndHelp;
+    $('extensions').hidden = loadTimeData.getBoolean('hideExtensions');
   }
 
   /**

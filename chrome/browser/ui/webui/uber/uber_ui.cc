@@ -90,26 +90,21 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
 #endif  // defined(OS_CHROMEOS)
 
-  // Group settings and help separately if settings in a window is enabled.
-  std::string settings_group("settings_group");
-  std::string other_group(
-      ::switches::SettingsWindowEnabled() ? "other_group" : "settings_group");
+  source->AddBoolean("hideExtensions", ::switches::MdExtensionsEnabled());
+  source->AddBoolean("hideSettingsAndHelp",
+                     ::switches::SettingsWindowEnabled());
   source->AddString("extensionsHost", chrome::kChromeUIExtensionsHost);
   source->AddLocalizedString("extensionsDisplayName",
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
-  source->AddString("extensionsGroup", other_group);
   source->AddString("helpHost", chrome::kChromeUIHelpHost);
   source->AddLocalizedString("helpDisplayName", IDS_ABOUT_TITLE);
-  source->AddString("helpGroup", settings_group);
   source->AddString("historyHost", chrome::kChromeUIHistoryHost);
   source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);
-  source->AddString("historyGroup", other_group);
   source->AddString("settingsHost", chrome::kChromeUISettingsHost);
   source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
-  source->AddString("settingsGroup", settings_group);
-  bool overridesHistory =
+  bool overrides_history =
       HasExtensionType(browser_context, chrome::kChromeUIHistoryHost);
-  source->AddString("overridesHistory", overridesHistory ? "yes" : "no");
+  source->AddString("overridesHistory", overrides_history ? "yes" : "no");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
 

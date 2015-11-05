@@ -18,24 +18,22 @@
 
 <h1 i18n-content="shortProductName"></h1>
 <ul role="tablist">
-  <li i18n-values="controls:historyHost;override:overridesHistory;
-                   group:historyGroup" role="tab" class="hide-in-guest" hidden>
+  <li i18n-values="controls:historyHost;override:overridesHistory" role="tab"
+      class="hide-in-guest">
     <button class="custom-appearance"
         i18n-content="historyDisplayName"></button>
   </li>
-  <li i18n-values="controls:extensionsHost;group:extensionsGroup"
-      class="hide-in-guest" role="tab" hidden>
+  <li i18n-values="controls:extensionsHost" role="tab" id="extensions"
+      class="hide-in-guest">
     <button class="custom-appearance"
         i18n-content="extensionsDisplayName"></button>
   </li>
-  <li i18n-values="controls:settingsHost;group:settingsGroup" role="tab" hidden>
+  <li i18n-values="controls:settingsHost" role="tab" id="settings">
     <button class="custom-appearance"
         i18n-content="settingsDisplayName"></button>
   </li>
-  <li id="helpNavItem" i18n-values="controls:helpHost;group:helpGroup"
-      role="tab" hidden>
-    <button class="custom-appearance"
-        i18n-content="helpDisplayName"></button>
+  <li i18n-values="controls:helpHost" role="tab" id="help">
+    <button class="custom-appearance" i18n-content="helpDisplayName"></button>
   </li>
 </ul>
 
