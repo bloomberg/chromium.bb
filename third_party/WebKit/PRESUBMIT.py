@@ -96,7 +96,7 @@ def _CheckPatchFiles(input_api, output_api):
 
 def _CheckTestExpectations(input_api, output_api):
     local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
-    if any(path.startswith('LayoutTests') for path in local_paths):
+    if any('LayoutTests' in path for path in local_paths):
         lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
             'Tools', 'Scripts', 'lint-test-expectations')
         _, errs = input_api.subprocess.Popen(
