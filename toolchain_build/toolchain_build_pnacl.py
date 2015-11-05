@@ -1282,8 +1282,9 @@ def main():
     unsandboxed_runtime_canonical = is_canonical or pynacl.platform.IsMac()
     packages.update(pnacl_targetlibs.UnsandboxedRuntime(
         'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_runtime_canonical))
-    packages.update(pnacl_targetlibs.UnsandboxedRuntime(
-        'arm-%s' % pynacl.platform.GetOS(), unsandboxed_runtime_canonical))
+    if pynacl.platform.IsLinux():
+      packages.update(pnacl_targetlibs.UnsandboxedRuntime(
+          'arm-%s' % pynacl.platform.GetOS(), unsandboxed_runtime_canonical))
 
   if args.build_sbtc and not args.pnacl_in_pnacl:
     packages.update(pnacl_sandboxed_translator.SandboxedTranslators(

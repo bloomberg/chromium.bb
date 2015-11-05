@@ -817,16 +817,17 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
   return libs
 
 def UnsandboxedRuntime(arch, is_canonical):
-  if arch not in ('arm-linux', 'x86-32-linux'):
-    return {}
+  assert arch in ('arm-linux', 'x86-32-linux', 'x86-32-mac')
 
   prefix = {
     'arm-linux': 'arm-linux-gnueabihf-',
     'x86-32-linux': '',
+    'x86-32-mac': '',
   }[arch]
   arch_cflags = {
     'arm-linux': ['-mcpu=cortex-a9', '-D__arm_nonsfi_linux__'],
     'x86-32-linux': ['-m32'],
+    'x86-32-mac': ['-m32'],
   }[arch]
 
   libs = {
