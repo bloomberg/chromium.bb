@@ -62,8 +62,8 @@ class InputInsnsTest(cros_test_lib.MockTestCase):
   def testOutputInsnsBasic(self):
     """Verify output instructions are sane"""
     exp_content = """[insns]
-keyset = stumpy-mp-v3
 channel = dev canary
+keyset = stumpy-mp-v3
 chromeos_shell = false
 ensure_no_password = true
 firmware_update = true
@@ -75,7 +75,7 @@ create_nplusone = true
 
     insns = pushimage.InputInsns('test.board')
     m = self.PatchObject(osutils, 'WriteFile')
-    insns.OutputInsns('recovery', '/bogus', {}, {})
+    insns.OutputInsns('/bogus', {}, {})
     self.assertTrue(m.called)
     content = m.call_args_list[0][0][1]
     self.assertEqual(content.rstrip(), exp_content.rstrip())
@@ -83,8 +83,8 @@ create_nplusone = true
   def testOutputInsnsReplacements(self):
     """Verify output instructions can be updated"""
     exp_content = """[insns]
-keyset = batman
 channel = dev
+keyset = batman
 chromeos_shell = false
 ensure_no_password = true
 firmware_update = true
@@ -106,7 +106,7 @@ config_board = test.board
 
     insns = pushimage.InputInsns('test.board')
     m = self.PatchObject(osutils, 'WriteFile')
-    insns.OutputInsns('recovery', '/a/file', sect_insns, sect_general)
+    insns.OutputInsns('/a/file', sect_insns, sect_general)
     self.assertTrue(m.called)
     content = m.call_args_list[0][0][1]
     self.assertEqual(content.rstrip(), exp_content.rstrip())
@@ -271,6 +271,31 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
       self.assertRaises(pushimage.PushError, pushimage.PushImage, '/src',
                         'test.board', 'R34-5126.0.0')
 
+  def testMultipleKeysets(self):
+    """Verify behavior when processing an insn w/multiple keysets"""
+    EXPECTED = {
+        'canary': [
+            ('gs://chromeos-releases/canary-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board.instructions'),
+            ('gs://chromeos-releases/canary-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-key2.instructions'),
+            ('gs://chromeos-releases/canary-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-key3.instructions'),
+        ],
+        'dev': [
+            ('gs://chromeos-releases/dev-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board.instructions'),
+            ('gs://chromeos-releases/dev-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-key2.instructions'),
+            ('gs://chromeos-releases/dev-channel/test.board/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-test.board-key3.instructions'),
+        ],
+    }
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                                 force_keysets=('key1', 'key2', 'key3'))
+    self.assertEqual(urls, EXPECTED)
+
 
 class MainTests(cros_test_lib.MockTestCase):
   """Tests for main()"""
@@ -289,4 +314,4 @@ def main(_argv):
   signing.INPUT_INSN_DIR = signing.TEST_INPUT_INSN_DIR
 
   # Run the tests.
-  cros_test_lib.main(level='info', module=__name__)
+  cros_test_lib.main(level='notice', module=__name__)
