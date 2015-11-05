@@ -811,18 +811,6 @@ hooks = [
     'pattern': '.',
     'action': ['python', 'src/build/gyp_chromium'],
   },
-  {
-    # Verify committers' ~/.netc, gclient and git are properly configured for
-    # write access to the git repo. To be removed sometime after Chrome to git
-    # migration completes (let's say Sep 1 2014).
-    'name': 'check_git_config',
-    'pattern': '.',
-    'action': [
-        'python',
-        'src/tools/check_git_config.py',
-        '--running-as-hook',
-    ],
-  },
 ]
 
 
