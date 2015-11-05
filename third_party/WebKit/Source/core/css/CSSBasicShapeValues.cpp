@@ -100,7 +100,7 @@ static PassRefPtrWillBeRawPtr<CSSValuePair> buildSerializablePositionOffset(Pass
         side = defaultSide;
     }
 
-    return CSSValuePair::create(cssValuePool().createValue(side), amount.release(), CSSValuePair::KeepIdenticalValues);
+    return CSSValuePair::create(cssValuePool().createIdentifierValue(side), amount.release(), CSSValuePair::KeepIdenticalValues);
 }
 
 String CSSBasicShapeCircleValue::customCSSText() const

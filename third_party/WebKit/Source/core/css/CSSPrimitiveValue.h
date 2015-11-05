@@ -30,6 +30,7 @@
 #include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/TypeTraits.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {
@@ -200,6 +201,7 @@ public:
     }
     template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(T value)
     {
+        static_assert(!WTF::IsSameType<T, CSSValueID>::value, "Do not call create() with a CSSValueID; call createIdentifier() instead");
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value));
     }
 

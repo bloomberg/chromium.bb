@@ -150,9 +150,9 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSourceType(EMaskSourceType t
 {
     switch (type) {
     case MaskAlpha:
-        return cssValuePool().createValue(CSSValueAlpha);
+        return cssValuePool().createIdentifierValue(CSSValueAlpha);
     case MaskLuminance:
-        return cssValuePool().createValue(CSSValueLuminance);
+        return cssValuePool().createIdentifierValue(CSSValueLuminance);
     }
 
     ASSERT_NOT_REACHED();
@@ -1186,7 +1186,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> adjustSVGPaintForCurrentColor(SVGPaintTy
         RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
         values->append(CSSURIValue::create(url));
         if (paintType == SVG_PAINTTYPE_URI_NONE)
-            values->append(CSSPrimitiveValue::create(CSSValueNone));
+            values->append(CSSPrimitiveValue::createIdentifier(CSSValueNone));
         else if (paintType == SVG_PAINTTYPE_URI_CURRENTCOLOR)
             values->append(CSSColorValue::create(currentColor.rgb()));
         else if (paintType == SVG_PAINTTYPE_URI_RGBCOLOR)
@@ -1194,7 +1194,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> adjustSVGPaintForCurrentColor(SVGPaintTy
         return values.release();
     }
     if (paintType == SVG_PAINTTYPE_NONE)
-        return CSSPrimitiveValue::create(CSSValueNone);
+        return CSSPrimitiveValue::createIdentifier(CSSValueNone);
     if (paintType == SVG_PAINTTYPE_CURRENTCOLOR)
         return CSSColorValue::create(currentColor.rgb());
 
@@ -1598,9 +1598,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyFlexFlow:
         return valuesForShorthandProperty(flexFlowShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyFlexGrow:
-        return cssValuePool().createValue(style.flexGrow());
+        return cssValuePool().createValue(style.flexGrow(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyFlexShrink:
-        return cssValuePool().createValue(style.flexShrink());
+        return cssValuePool().createValue(style.flexShrink(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyFlexWrap:
         return cssValuePool().createValue(style.flexWrap());
     case CSSPropertyJustifyContent:
@@ -1736,7 +1736,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return CSSPrimitiveValue::create(style.imageRendering());
     case CSSPropertyImageOrientation:
         if (style.respectImageOrientation() == RespectImageOrientation)
-            return cssValuePool().createValue(CSSValueFromImage);
+            return cssValuePool().createIdentifierValue(CSSValueFromImage);
         return cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Degrees);
     case CSSPropertyIsolation:
         return cssValuePool().createValue(style.isolation());

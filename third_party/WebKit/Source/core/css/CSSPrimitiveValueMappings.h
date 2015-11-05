@@ -55,24 +55,10 @@
 
 namespace blink {
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(short i)
-    : CSSValue(PrimitiveClass)
-{
-    init(UnitType::Number);
-    m_value.num = static_cast<double>(i);
-}
-
 template<> inline short CSSPrimitiveValue::convertTo() const
 {
     ASSERT(isNumber());
     return clampTo<short>(getDoubleValue());
-}
-
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(unsigned short i)
-    : CSSValue(PrimitiveClass)
-{
-    init(UnitType::Number);
-    m_value.num = static_cast<double>(i);
 }
 
 template<> inline unsigned short CSSPrimitiveValue::convertTo() const
@@ -91,14 +77,6 @@ template<> inline unsigned CSSPrimitiveValue::convertTo() const
 {
     ASSERT(isNumber());
     return clampTo<unsigned>(getDoubleValue());
-}
-
-
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(float i)
-    : CSSValue(PrimitiveClass)
-{
-    init(UnitType::Number);
-    m_value.num = static_cast<double>(i);
 }
 
 template<> inline float CSSPrimitiveValue::convertTo() const
