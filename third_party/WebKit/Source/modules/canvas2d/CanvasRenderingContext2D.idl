@@ -58,7 +58,7 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
 
     // compositing
     attribute unrestricted float globalAlpha; // (default 1.0)
-    [TreatNullAs=NullString] attribute DOMString globalCompositeOperation; // (default source-over)
+    attribute DOMString globalCompositeOperation; // (default source-over)
     [RuntimeEnabled=ExperimentalCanvasFeatures] attribute DOMString filter; // (default 'none') 
 
     // image smoothing
@@ -77,7 +77,7 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     attribute unrestricted float shadowOffsetX;
     attribute unrestricted float shadowOffsetY;
     attribute unrestricted float shadowBlur;
-    [TreatNullAs=NullString] attribute DOMString shadowColor;
+    attribute DOMString shadowColor;
 
     // rects
     void clearRect(unrestricted float x, unrestricted float y, unrestricted float width, unrestricted float height);
@@ -133,8 +133,8 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     // FIXME: factor out to CanvasDrawingStyles
     // line caps/joins
     attribute unrestricted float lineWidth; // (default 1)
-    [TreatNullAs=NullString] attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
-    [TreatNullAs=NullString] attribute DOMString lineJoin; // "round", "bevel", "miter" (default "miter")
+    attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
+    attribute DOMString lineJoin; // "round", "bevel", "miter" (default "miter")
     attribute unrestricted float miterLimit; // (default 10)
 
     // dashed lines
