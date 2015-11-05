@@ -13,7 +13,7 @@
       'browser/after_startup_task_utils_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
       'browser/android/contextualsearch/contextual_search_delegate_unittest.cc',
-      'browser/android/datausage/external_data_use_observer_unittest.cc',
+      'browser/android/data_usage/external_data_use_observer_unittest.cc',
       'browser/android/history_report/delta_file_backend_leveldb_unittest.cc',
       'browser/android/history_report/delta_file_commons_unittest.cc',
       'browser/android/history_report/usage_reports_buffer_backend_unittest.cc',

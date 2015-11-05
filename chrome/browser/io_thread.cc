@@ -112,7 +112,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#include "chrome/browser/android/datausage/external_data_use_observer.h"
+#include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 #endif
 
