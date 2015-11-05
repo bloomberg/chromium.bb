@@ -4,10 +4,6 @@
 
 #include "ui/views/controls/glow_hover_controller.h"
 
-#include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -72,49 +68,13 @@ double GlowHoverController::GetAnimationValue() const {
   return animation_.GetCurrentValue();
 }
 
-bool GlowHoverController::ShouldDraw() const {
-  return animation_.IsShowing() || animation_.is_animating();
+SkAlpha GlowHoverController::GetAlpha() const {
+  return static_cast<SkAlpha>(gfx::ToFlooredInt(
+      0.5 + animation_.CurrentValueBetween(0., 255 * opacity_scale_)));
 }
 
-void GlowHoverController::Draw(gfx::Canvas* canvas,
-                               const gfx::ImageSkia& mask_image) const {
-  if (!ShouldDraw())
-    return;
-
-  // Draw a radial gradient to hover_canvas.
-  gfx::Canvas hover_canvas(gfx::Size(mask_image.width(), mask_image.height()),
-                           canvas->image_scale(),
-                           false);
-
-  // Draw a radial gradient to hover_canvas.
-  int radius = view_->width() / 3;
-
-  SkPoint center_point;
-  center_point.iset(location_.x(), location_.y());
-  SkColor colors[2];
-  int hover_alpha =
-      static_cast<int>(255 * opacity_scale_ * animation_.GetCurrentValue());
-  colors[0] = SkColorSetARGB(hover_alpha, 255, 255, 255);
-  colors[1] = SkColorSetARGB(0, 255, 255, 255);
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      SkGradientShader::CreateRadial(
-          center_point, SkIntToScalar(radius), colors, NULL, 2,
-          SkShader::kClamp_TileMode));
-  // Shader can end up null when radius = 0.
-  // If so, this results in default full tab glow behavior.
-  if (shader) {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setAntiAlias(true);
-    paint.setShader(shader.get());
-    hover_canvas.DrawRect(gfx::Rect(location_.x() - radius,
-                                    location_.y() - radius,
-                                    radius * 2, radius * 2), paint);
-  }
-  gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
-      gfx::ImageSkia(hover_canvas.ExtractImageRep()), mask_image);
-  canvas->DrawImageInt(result, (view_->width() - mask_image.width()) / 2,
-                       (view_->height() - mask_image.height()) / 2);
+bool GlowHoverController::ShouldDraw() const {
+  return animation_.IsShowing() || animation_.is_animating();
 }
 
 void GlowHoverController::AnimationEnded(const gfx::Animation* animation) {

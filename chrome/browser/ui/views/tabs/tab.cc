@@ -1225,6 +1225,11 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
   // bottom.
   const int toolbar_overlap = tab_insets.bottom() - 1;
 
+  const SkScalar radius = SkFloatToScalar(width() / 3.f);
+  const bool draw_hover = hover_controller_.ShouldDraw() && radius > 0;
+  SkPoint hover_location(PointToSkPoint(hover_controller_.location()));
+  const SkAlpha hover_alpha = hover_controller_.GetAlpha();
+
   // Draw everything to a temporary canvas so we can extract an image for use in
   // masking the hover glow.
   gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
@@ -1260,9 +1265,13 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
   gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
   canvas->DrawImageInt(background_image, 0, 0);
 
-  if (!GetThemeProvider()->HasCustomImage(tab_id) &&
-      hover_controller_.ShouldDraw())
-    hover_controller_.Draw(canvas, background_image);
+  if (draw_hover) {
+    gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
+    DrawHighlight(&hover_canvas, hover_location, radius, hover_alpha);
+    gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
+        gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
+    canvas->DrawImageInt(result, 0, 0);
+  }
 
   // Now draw the stroke, highlights, and shadows around the tab edge.
   TabImages* stroke_images = &inactive_images_;
