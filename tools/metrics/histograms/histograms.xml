@@ -61313,6 +61313,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="986" label="HTMLLabelElementFormContentAttribute"/>
   <int value="987" label="DeviceOrientationAbsoluteInsecureOrigin"/>
   <int value="988" label="DeviceOrientationAbsoluteSecureOrigin"/>
+  <int value="989" label="FontFaceConstructor"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
