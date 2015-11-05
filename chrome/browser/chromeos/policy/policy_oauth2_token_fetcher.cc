@@ -110,7 +110,8 @@ void PolicyOAuth2TokenFetcher::OnClientOAuthSuccess(
 
 void PolicyOAuth2TokenFetcher::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
-  VLOG(1) << "OAuth2 tokens fetch for policy fetch failed!";
+  VLOG(1) << "OAuth2 tokens fetch for policy fetch failed! (error = "
+          << error.state() << ")";
   RetryOnError(error,
                base::Bind(&PolicyOAuth2TokenFetcher::StartFetchingRefreshToken,
                           AsWeakPtr()));
