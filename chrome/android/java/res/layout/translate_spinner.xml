@@ -11,6 +11,7 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="10dp"
     android:layout_marginBottom="10dp"
-    android:padding="10dp"
+    android:background="?android:attr/selectableItemBackground"
     android:ellipsize="end"
+    android:padding="10dp"
     android:singleLine="true" />

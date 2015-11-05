@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v7.widget.AppCompatSpinner;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -19,7 +20,6 @@ import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
@@ -105,9 +105,8 @@ public class TranslateLanguagePanel
         mTargetAdapter.measureWidthRequiredForView();
 
         // Create the spinners.
-        LayoutInflater inflater = LayoutInflater.from(context);
-        mSourceSpinner = (Spinner) inflater.inflate(R.layout.spinner, null);
-        mTargetSpinner = (Spinner) inflater.inflate(R.layout.spinner, null);
+        mSourceSpinner = new AppCompatSpinner(context);
+        mTargetSpinner = new AppCompatSpinner(context);
         mSourceSpinner.setOnItemSelectedListener(this);
         mTargetSpinner.setOnItemSelectedListener(this);
         mSourceSpinner.setAdapter(mSourceAdapter);
@@ -223,8 +222,6 @@ public class TranslateLanguagePanel
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
             View result = super.getDropDownView(position, convertView, parent);
-            result.setBackgroundColor(ApiCompatibilityUtils.getColor(
-                    getContext().getResources(), R.color.infobar_background));
             if (result instanceof TextView) {
                 ((TextView) result).setText(getItem(position).toString());
             }
