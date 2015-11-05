@@ -47,7 +47,7 @@
 
 namespace blink {
 
-static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
+static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSetOpener shouldSetOpener, bool& created)
 {
     created = false;
 
@@ -83,7 +83,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (!oldHost)
         return nullptr;
 
-    Page* page = oldHost->chromeClient().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
+    Page* page = oldHost->chromeClient().createWindow(&openerFrame, request, features, policy, shouldSetOpener);
     if (!page)
         return nullptr;
     FrameHost* host = &page->frameHost();
@@ -155,7 +155,7 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
     bool created;
-    Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
+    Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSetOpener, created);
     if (!newFrame)
         return nullptr;
 
@@ -168,7 +168,7 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     return newFrame->domWindow();
 }
 
-void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
+void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, ShouldSetOpener shouldSetOpener)
 {
     ASSERT(request.resourceRequest().requestorOrigin() || (openerFrame.document() && openerFrame.document()->url().isEmpty()));
 
@@ -186,11 +186,12 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
 
     WindowFeatures features;
     bool created;
-    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, created);
+    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSetOpener, created);
     if (!newFrame)
         return;
-    if (shouldSendReferrer == MaybeSendReferrer) {
+    if (shouldSetOpener == MaybeSetOpener)
         newFrame->client()->setOpener(&openerFrame);
+    if (shouldSendReferrer == MaybeSendReferrer) {
         // TODO(japhet): Does ReferrerPolicy need to be proagated for RemoteFrames?
         if (newFrame->isLocalFrame())
             toLocalFrame(newFrame)->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());

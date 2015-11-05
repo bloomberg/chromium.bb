@@ -64,6 +64,11 @@ enum ShouldSendReferrer {
     NeverSendReferrer
 };
 
+enum ShouldSetOpener {
+    MaybeSetOpener,
+    NeverSetOpener
+};
+
 enum ReasonForCallingAllowPlugins {
     AboutToInstantiatePlugin,
     NotAboutToInstantiatePlugin

@@ -367,8 +367,10 @@ void HTMLAnchorElement::handleClick(Event* event)
         request.setRequestContext(WebURLRequest::RequestContextHyperlink);
         FrameLoadRequest frameRequest(&document(), request, getAttribute(targetAttr));
         frameRequest.setTriggeringEvent(event);
-        if (hasRel(RelationNoReferrer))
+        if (hasRel(RelationNoReferrer)) {
             frameRequest.setShouldSendReferrer(NeverSendReferrer);
+            frameRequest.setShouldSetOpener(NeverSetOpener);
+        }
         frame->loader().load(frameRequest);
     }
 }
