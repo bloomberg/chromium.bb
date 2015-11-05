@@ -238,11 +238,11 @@ void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
                                   content::BrowserContext* context,
                                   bool allowed) {
   if (allowed != AllowedScriptingOnAllUrls(extension_id, context)) {
-    SetAllowedScriptingOnAllUrlsHelper(context, extension_id, allowed, true);
     ExtensionPrefs::Get(context)->UpdateExtensionPref(
         extension_id,
         kHasSetScriptOnAllUrlsPrefName,
         new base::FundamentalValue(true));
+    SetAllowedScriptingOnAllUrlsHelper(context, extension_id, allowed, true);
   }
 }
 

@@ -53,13 +53,13 @@ class ScriptingPermissionsModifier {
   // be granted, populating |granted_permissions_out| with the set of all
   // permissions that can be granted, and |withheld_permissions_out| with the
   // set of all withheld permissions.
-  // If |check_prefs| is false, this won't take into account preferences like
-  // AllowedScriptingOnAllUrls().
+  // If |use_initial_state| is true, this will treat the extension as though it
+  // was just installed, not taking into account extra granted preferences.
   void WithholdPermissions(
       const PermissionSet& permissions,
       scoped_ptr<const PermissionSet>* granted_permissions_out,
       scoped_ptr<const PermissionSet>* withheld_permissions_out,
-      bool check_prefs) const;
+      bool use_initial_state) const;
 
   // Grants any withheld all-hosts (or all-hosts-like) permissions.
   void GrantWithheldImpliedAllHosts() const;

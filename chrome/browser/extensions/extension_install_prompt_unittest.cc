@@ -7,7 +7,9 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
@@ -20,6 +22,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
+
+namespace {
 
 void VerifyPromptPermissionsCallback(
     const base::Closure& quit_closure,
@@ -38,8 +42,31 @@ void VerifyPromptPermissionsCallback(
   quit_closure.Run();
 }
 
-TEST(ExtensionInstallPromptUnittest, PromptShowsPermissionWarnings) {
-  content::TestBrowserThreadBundle thread_bundle;
+class ExtensionInstallPromptUnitTest : public testing::Test {
+ public:
+  ExtensionInstallPromptUnitTest() {}
+  ~ExtensionInstallPromptUnitTest() override {}
+
+  // testing::Test:
+  void SetUp() override {
+    profile_.reset(new TestingProfile());
+  }
+  void TearDown() override {
+    profile_.reset();
+  }
+
+  Profile* profile() { return profile_.get(); }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestingProfile> profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallPromptUnitTest);
+};
+
+}  // namespace
+
+TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kTab);
   scoped_ptr<const PermissionSet> permission_set(
@@ -51,7 +78,9 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsPermissionWarnings) {
                              .Set("version", "1.0")
                              .Set("manifest_version", 2)
                              .Set("description", "Random Ext")).Build();
-  ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
+
+  content::TestWebContentsFactory factory;
+  ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
   base::RunLoop run_loop;
   prompt.set_callback_for_test(
       base::Bind(&VerifyPromptPermissionsCallback,
@@ -63,9 +92,7 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsPermissionWarnings) {
   run_loop.Run();
 }
 
-TEST(ExtensionInstallPromptUnittest, PromptShowsWithheldPermissions) {
-  content::TestBrowserThreadBundle thread_bundle;
-
+TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
   // Enable consent flag so that <all_hosts> permissions get withheld.
   FeatureSwitch::ScopedOverride enable_scripts_switch(
       FeatureSwitch::scripts_require_action(), true);
@@ -80,7 +107,9 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsWithheldPermissions) {
                                   ListBuilder().Append("http://*/*")
                                                .Append("http://www.google.com/")
                                                .Append("tabs"))).Build();
-  ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
+
+  content::TestWebContentsFactory factory;
+  ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
   base::RunLoop run_loop;
 
   // We expect <all_hosts> to be withheld, but http://www.google.com/ and tabs
@@ -95,8 +124,8 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsWithheldPermissions) {
   run_loop.Run();
 }
 
-TEST(ExtensionInstallPromptUnittest, DelegatedPromptShowsOptionalPermissions) {
-  content::TestBrowserThreadBundle thread_bundle;
+TEST_F(ExtensionInstallPromptUnitTest,
+       DelegatedPromptShowsOptionalPermissions) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder().SetManifest(
           DictionaryBuilder().Set("name", "foo")
@@ -107,7 +136,9 @@ TEST(ExtensionInstallPromptUnittest, DelegatedPromptShowsOptionalPermissions) {
                                   ListBuilder().Append("clipboardRead"))
                              .Set("optional_permissions",
                                   ListBuilder().Append("tabs"))).Build();
-  ExtensionInstallPrompt prompt(nullptr /* no web contents in this test */);
+
+  content::TestWebContentsFactory factory;
+  ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
   base::RunLoop run_loop;
   prompt.set_callback_for_test(
       base::Bind(&VerifyPromptPermissionsCallback,

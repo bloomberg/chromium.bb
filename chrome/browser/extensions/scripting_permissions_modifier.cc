@@ -90,7 +90,7 @@ bool ScriptingPermissionsModifier::HasGrantedHostPermission(
   scoped_ptr<const PermissionSet> granted_permissions;
   scoped_ptr<const PermissionSet> withheld_permissions;
   WithholdPermissions(required_permissions, &granted_permissions,
-                      &withheld_permissions, false);
+                      &withheld_permissions, true);
   if (!granted_permissions->effective_hosts().MatchesURL(origin) &&
       withheld_permissions->effective_hosts().MatchesURL(origin))
     return true;
@@ -124,13 +124,23 @@ void ScriptingPermissionsModifier::WithholdPermissions(
     const PermissionSet& permissions,
     scoped_ptr<const PermissionSet>* granted_permissions_out,
     scoped_ptr<const PermissionSet>* withheld_permissions_out,
-    bool check_prefs) const {
+    bool use_initial_state) const {
   bool should_withhold = false;
-  if (CanAffectExtension(permissions))
-    should_withhold = check_prefs
-                          ? !util::AllowedScriptingOnAllUrls(extension_->id(),
-                                                             browser_context_)
-                          : !util::DefaultAllowedScriptingOnAllUrls();
+  if (CanAffectExtension(permissions)) {
+    if (use_initial_state) {
+      // If the user ever set the extension's "all-urls" preference, then the
+      // initial state was withheld. This is important, since the all-urls
+      // permission should be shown as revokable. Otherwise, default to whatever
+      // the system setting is.
+      should_withhold =
+          util::HasSetAllowedScriptingOnAllUrls(extension_->id(),
+                                                browser_context_) ||
+          !util::DefaultAllowedScriptingOnAllUrls();
+    } else {
+      should_withhold =
+          !util::AllowedScriptingOnAllUrls(extension_->id(), browser_context_);
+    }
+  }
 
   if (!should_withhold) {
     *granted_permissions_out = permissions.Clone();

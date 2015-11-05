@@ -159,7 +159,7 @@ scoped_ptr<const PermissionSet> PermissionsUpdater::GetRevokablePermissions(
   scoped_ptr<const PermissionSet> granted;
   scoped_ptr<const PermissionSet> withheld;
   ScriptingPermissionsModifier(browser_context_, make_scoped_refptr(extension))
-      .WithholdPermissions(required, &granted, &withheld, false);
+      .WithholdPermissions(required, &granted, &withheld, true);
   return PermissionSet::CreateDifference(
       extension->permissions_data()->active_permissions(), *granted);
 }
@@ -193,7 +193,7 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   ScriptingPermissionsModifier(browser_context_, make_scoped_refptr(extension))
       .WithholdPermissions(*bounded_active, &granted_permissions,
                            &withheld_permissions,
-                           (init_flag_ & INIT_FLAG_TRANSIENT) == 0);
+                           (init_flag_ & INIT_FLAG_TRANSIENT) != 0);
 
   SetPermissions(extension, granted_permissions.Pass(),
                  withheld_permissions.Pass());
