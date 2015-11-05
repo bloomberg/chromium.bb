@@ -83,6 +83,7 @@ def main(argv):
   parser.add_option('--no-clean', action='store_true',
                     help='Re-used build directory instead of using new '
                          'temporary location each time')
+  parser.add_option('--gn-gen-args', help='Args to pass to gn gen --args')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Log more details')
   options, args = parser.parse_args(argv)
@@ -234,6 +235,7 @@ def write_ninja(path, options):
       'base/threading/post_task_and_reply_impl.cc',
       'base/threading/sequenced_worker_pool.cc',
       'base/threading/simple_thread.cc',
+      'base/threading/thread.cc',
       'base/threading/thread_checker_impl.cc',
       'base/threading/thread_collision_warner.cc',
       'base/threading/thread_id_name_manager.cc',
@@ -435,9 +437,10 @@ def write_ninja(path, options):
 
 
 def build_gn_with_gn(temp_gn, build_dir, options):
-  cmd = [temp_gn, 'gen', build_dir]
+  gn_gen_args = options.gn_gen_args or ''
   if not options.debug:
-    cmd.append('--args=is_debug=false')
+    gn_gen_args += ' is_debug=false'
+  cmd = [temp_gn, 'gen', build_dir, '--args=%s' % gn_gen_args]
   check_call(cmd)
 
   cmd = ['ninja', '-C', build_dir]

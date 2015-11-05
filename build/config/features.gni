@@ -115,6 +115,8 @@ declare_args() {
   # specified in testing/variations/fieldtrial_testing_config_*.json.
   # Note: this setting is ignored if is_chrome_branded.
   fieldtrial_testing_like_official_build = is_chrome_branded
+
+  use_cups = (is_desktop_linux || is_mac) && !is_chromecast
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -162,8 +164,6 @@ use_dbus = is_linux && !is_chromecast
 enable_extensions = !is_android && !is_ios
 
 enable_task_manager = !is_ios && !is_android
-
-use_cups = (is_desktop_linux || is_mac) && !is_chromecast
 
 enable_themes = !is_android && !is_ios
 
