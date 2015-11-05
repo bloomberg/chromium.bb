@@ -707,6 +707,9 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
 
 // TODO(nparker): Switch this to use TestSafeBrowsingDatabaseManager and run
 // with SAFE_BROWSING_DB_LOCAL || SAFE_BROWSING_DB_REMOTE.
+// Note: don't forget to override GetProtocolManagerDelegate and return NULL,
+// because FakeSafeBrowsingDatabaseManager does not implement
+// LocalSafeBrowsingDatabaseManager.
 #if defined(FULL_SAFE_BROWSING)
 // A SafeBrowsingDatabaseManager implementation that returns a fixed result for
 // a given URL.

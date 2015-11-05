@@ -45,6 +45,11 @@ class TestSafeBrowsingService : public SafeBrowsingService {
 
  protected:
   ~TestSafeBrowsingService() override {}
+
+  SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate() override {
+    // Our FakeDatabaseManager doesn't implement this delegate.
+    return NULL;
+  }
 };
 
 class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
