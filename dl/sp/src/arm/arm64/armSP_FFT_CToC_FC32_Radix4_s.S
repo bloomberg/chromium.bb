@@ -80,8 +80,11 @@
 // Neon Registers
 
 #define dW1     v0.2s
+#define dW1s    v0.s
 #define dW2     v1.2s
+#define dW2s    v1.s
 #define dW3     v2.2s
+#define dW3s    v2.s
 
 #define dXr0    v4.2s
 #define dXi0    v5.2s
@@ -182,49 +185,49 @@ radix4SetLoop\name :
 
 
         .ifeqs  "\inverse", "TRUE"
-            fmul   dZr1,dXr1,dW1[0]
-            fmul   dZi1,dXi1,dW1[0]
-            fmul   dZr2,dXr2,dW2[0]
-            fmul   dZi2,dXi2,dW2[0]
-            fmul   dZr3,dXr3,dW3[0]
-            fmul   dZi3,dXi3,dW3[0]
+            fmul   dZr1,dXr1,dW1s[0]
+            fmul   dZi1,dXi1,dW1s[0]
+            fmul   dZr2,dXr2,dW2s[0]
+            fmul   dZi2,dXi2,dW2s[0]
+            fmul   dZr3,dXr3,dW3s[0]
+            fmul   dZi3,dXi3,dW3s[0]
 
-            fmla   dZr1,dXi1,dW1[1]                // real part
-            fmls   dZi1,dXr1,dW1[1]                // imag part
+            fmla   dZr1,dXi1,dW1s[1]                // real part
+            fmls   dZi1,dXr1,dW1s[1]                // imag part
 
             //  data[1] for next iteration
             ld2     {dXr1,dXi1},[pSrc],pointStep
 
-            fmla   dZr2,dXi2,dW2[1]                // real part
-            fmls   dZi2,dXr2,dW2[1]                // imag part
+            fmla   dZr2,dXi2,dW2s[1]                // real part
+            fmls   dZi2,dXr2,dW2s[1]                // imag part
 
             //  data[2] for next iteration
             ld2     {dXr2,dXi2},[pSrc],pointStep
 
-            fmla   dZr3,dXi3,dW3[1]                // real part
-            fmls   dZi3,dXr3,dW3[1]                // imag part
+            fmla   dZr3,dXi3,dW3s[1]                // real part
+            fmls   dZi3,dXr3,dW3s[1]                // imag part
         .else
-            fmul   dZr1,dXr1,dW1[0]
-            fmul   dZi1,dXi1,dW1[0]
-            fmul   dZr2,dXr2,dW2[0]
-            fmul   dZi2,dXi2,dW2[0]
-            fmul   dZr3,dXr3,dW3[0]
-            fmul   dZi3,dXi3,dW3[0]
+            fmul   dZr1,dXr1,dW1s[0]
+            fmul   dZi1,dXi1,dW1s[0]
+            fmul   dZr2,dXr2,dW2s[0]
+            fmul   dZi2,dXi2,dW2s[0]
+            fmul   dZr3,dXr3,dW3s[0]
+            fmul   dZi3,dXi3,dW3s[0]
 
-            fmls   dZr1,dXi1,dW1[1]                // real part
-            fmla   dZi1,dXr1,dW1[1]                // imag part
+            fmls   dZr1,dXi1,dW1s[1]                // real part
+            fmla   dZi1,dXr1,dW1s[1]                // imag part
 
             //  data[1] for next iteration
             ld2     {dXr1,dXi1},[pSrc],pointStep
 
-            fmls   dZr2,dXi2,dW2[1]                // real part
-            fmla   dZi2,dXr2,dW2[1]                // imag part
+            fmls   dZr2,dXi2,dW2s[1]                // real part
+            fmla   dZi2,dXr2,dW2s[1]                // imag part
 
             //  data[2] for next iteration
             ld2     {dXr2,dXi2},[pSrc],pointStep
 
-            fmls   dZr3,dXi3,dW3[1]                // real part
-            fmla   dZi3,dXr3,dW3[1]                // imag part
+            fmls   dZr3,dXi3,dW3s[1]                // real part
+            fmla   dZi3,dXr3,dW3s[1]                // imag part
         .endif
 
         //  data[3] & update pSrc to data[0]

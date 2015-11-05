@@ -112,6 +112,7 @@
 #define dZip    v19.2s
 #define dZip8b  v19.8b
 #define half    v13.2s
+#define halfs   v13.s
 
         .macro FFTSTAGE scaled, inverse, name
 
@@ -140,8 +141,8 @@
 
         fadd    dY0,dX0,dX1                   // [b+d | a+c]
         fsub    dY1,dX0,dX1                   // [b-d | a-c]
-        fmul    dY0, dY0, half[0]
-        fmul    dY1, dY1, half[0]
+        fmul    dY0, dY0, halfs[0]
+        fmul    dY1, dY1, halfs[0]
 
         // dY0= [a-c | a+c] ;dY1= [b-d | b+d]
         // VZIP    dY0,dY1
@@ -201,11 +202,11 @@ evenOddButterflyLoop\name :
         fsub    dT1,dX0i,dX1i                 // b-d
         SUB     step1,step1,#8
 
-        fmul    dT2, dT2, half[0]
-        fmul    dT3, dT3, half[0]
+        fmul    dT2, dT2, halfs[0]
+        fmul    dT3, dT3, halfs[0]
 
-        fmul    dT0, dT0, half[0]
-        fmul    dT1, dT1, half[0]
+        fmul    dT0, dT0, halfs[0]
+        fmul    dT1, dT1, halfs[0]
 
         // VZIP    dW1r,dW1i
         // VZIP    dW0r,dW0i

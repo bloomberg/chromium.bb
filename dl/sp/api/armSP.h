@@ -93,8 +93,8 @@ typedef struct ARMsFFTSpec_FC32_Tag
 /*
  * Compute log2(x), where x must be a power of 2.
  */
-static inline OMX_U32 fastlog2(long x) {
-  OMX_U32 out;
+static inline long fastlog2(long x) {
+  long out;
   asm("clz %0,%1\n\t"
       "sub %0, %0, #63\n\t"
       "neg %0, %0\n\t"

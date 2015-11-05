@@ -70,6 +70,7 @@
 // Neon Registers
 
 #define dW      v0.2s
+#define dWs     v0.s
 #define dX0     v2.2s
 #define dX1     v3.2s
 #define dX2     v4.2s
@@ -135,17 +136,17 @@ radix2SetLoop\name :
         SUBS    setCount,setCount,#2
 
         .ifeqs  "\inverse", "TRUE"
-            fmul   qT0,dX2,dW[0]
-            fmla   qT0,dX3,dW[1]                       // real part
-            fmul   qT1,dX3,dW[0]
-            fmls   qT1,dX2,dW[1]                       // imag part
+            fmul   qT0,dX2,dWs[0]
+            fmla   qT0,dX3,dWs[1]                       // real part
+            fmul   qT1,dX3,dWs[0]
+            fmls   qT1,dX2,dWs[1]                       // imag part
 
         .else
 
-            fmul   qT0,dX2,dW[0]
-            fmls   qT0,dX3,dW[1]                       // real part
-            fmul   qT1,dX3,dW[0]
-            fmla   qT1,dX2,dW[1]                       // imag part
+            fmul   qT0,dX2,dWs[0]
+            fmls   qT0,dX3,dWs[1]                       // real part
+            fmul   qT1,dX3,dWs[0]
+            fmla   qT1,dX2,dWs[1]                       // imag part
 
         .endif
 

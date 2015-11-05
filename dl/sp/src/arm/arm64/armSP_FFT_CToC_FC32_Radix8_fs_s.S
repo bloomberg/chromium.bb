@@ -352,10 +352,10 @@ radix8fsGrpZeroSetLoop\name :
         .ifeqs  "\inverse", "TRUE"
 
             // calculate a*v5
-            fmul    dT1,dVr5,dT0[0]              // use dVi0 for dT1
+            fmul    dT1,dVr5,dT0s[0]              // use dVi0 for dT1
 
             ld2     {dXr4,dXi4},[pSrc],pointStep //  data[4]
-            fmul    dVi5,dVi5,dT0[0]
+            fmul    dVi5,dVi5,dT0s[0]
 
             ld2     {dXr5,dXi5},[pSrc],pointStep //  data[5]
             fsub    dVr5,dT1,dVi5                // a * V5
@@ -364,8 +364,8 @@ radix8fsGrpZeroSetLoop\name :
             ld2     {dXr6,dXi6},[pSrc],pointStep //  data[6]
 
             // calculate  b*v7
-            fmul    dT1,dVr7,dT0[0]
-            fmul    dVi7,dVi7,dT0[0]
+            fmul    dT1,dVr7,dT0s[0]
+            fmul    dVi7,dVi7,dT0s[0]
 
             // fadd    qY1,qV1,qV5
             // fsub    qY5,qV1,qV5
@@ -399,9 +399,9 @@ radix8SkipLastUpdateInv\name:
         .else
 
             // calculate  b*v7
-            fmul    dT1,dVr7,dT0[0]
+            fmul    dT1,dVr7,dT0s[0]
             ld2     {dXr4,dXi4},[pSrc],pointStep //  data[4]
-            fmul    dVi7,dVi7,dT0[0]
+            fmul    dVi7,dVi7,dT0s[0]
 
             ld2     {dXr5,dXi5},[pSrc],pointStep //  data[5]
             fadd    dVr7,dT1,dVi7                     // b * V7
@@ -410,8 +410,8 @@ radix8SkipLastUpdateInv\name:
             ld2     {dXr6,dXi6},[pSrc],pointStep //  data[6]
 
             // calculate a*v5
-            fmul    dT1,dVr5,dT0[0]              // use dVi0 for dT1
-            fmul    dVi5,dVi5,dT0[0]
+            fmul    dT1,dVr5,dT0s[0]              // use dVi0 for dT1
+            fmul    dVi5,dVi5,dT0s[0]
 
             fadd    dYr7,dVr3,dVr7
             fadd    dYi7,dVi3,dVi7
