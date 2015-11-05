@@ -141,6 +141,9 @@ Recovery::Recovery(Connection* connection)
   if (db_->page_size_)
     recover_db_.set_page_size(db_->page_size_);
 
+  // Files with I/O errors cannot be safely memory-mapped.
+  recover_db_.set_mmap_disabled();
+
   // TODO(shess): This may not handle cases where the default page
   // size is used, but the default has changed.  I do not think this
   // has ever happened.  This could be handled by using "PRAGMA

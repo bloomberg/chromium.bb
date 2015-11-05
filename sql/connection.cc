@@ -1628,18 +1628,6 @@ bool Connection::OpenInternal(const std::string& file_name,
   // secure_delete.
   ignore_result(Execute("PRAGMA journal_mode = TRUNCATE"));
 
-  // Enable memory-mapped access.  This value will be capped by
-  // SQLITE_MAX_MMAP_SIZE, which could be different between 32-bit and 64-bit
-  // platforms.
-  mmap_enabled_ = false;
-  if (!mmap_disabled_)
-    ignore_result(Execute("PRAGMA mmap_size = 268435456"));  // 256MB.
-  {
-    Statement s(GetUniqueStatement("PRAGMA mmap_size"));
-    if (s.Step() && s.ColumnInt64(0) > 0)
-      mmap_enabled_ = true;
-  }
-
   const base::TimeDelta kBusyTimeout =
     base::TimeDelta::FromSeconds(kBusyTimeoutSeconds);
 
@@ -1666,6 +1654,25 @@ bool Connection::OpenInternal(const std::string& file_name,
     if (was_poisoned && retry_flag == RETRY_ON_POISON)
       return OpenInternal(file_name, NO_RETRY);
     return false;
+  }
+
+  // Enable memory-mapped access.  The explicit-disable case is because SQLite
+  // can be built to default-enable mmap.  This value will be capped by
+  // SQLITE_MAX_MMAP_SIZE, which could be different between 32-bit and 64-bit
+  // platforms.
+  if (mmap_disabled_) {
+    ignore_result(Execute("PRAGMA mmap_size = 0"));
+  } else {
+    ignore_result(Execute("PRAGMA mmap_size = 268435456"));  // 256MB.
+  }
+
+  // Determine if memory-mapping has actually been enabled.  The Execute() above
+  // can succeed without changing the amount mapped.
+  mmap_enabled_ = false;
+  {
+    Statement s(GetUniqueStatement("PRAGMA mmap_size"));
+    if (s.Step() && s.ColumnInt64(0) > 0)
+      mmap_enabled_ = true;
   }
 
   return true;

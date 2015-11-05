@@ -692,4 +692,16 @@ TEST_F(SQLRecoveryTest, Bug387868) {
 }
 #endif  // !defined(USE_SYSTEM_SQLITE)
 
+// Memory-mapped I/O interacts poorly with I/O errors.  Make sure the recovery
+// database doesn't accidentally enable it.
+TEST_F(SQLRecoveryTest, NoMmap) {
+  scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(&db(), db_path());
+  ASSERT_TRUE(recovery.get());
+
+  // In the current implementation, the PRAGMA successfully runs with no result
+  // rows.  Running with a single result of |0| is also acceptable.
+  sql::Statement s(recovery->db()->GetUniqueStatement("PRAGMA mmap_size"));
+  EXPECT_TRUE(!s.Step() || !s.ColumnInt64(0));
+}
+
 }  // namespace
