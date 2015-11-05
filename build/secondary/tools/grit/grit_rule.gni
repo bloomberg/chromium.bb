@@ -83,6 +83,11 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
+declare_args() {
+  # Enables used resource whitelist generation.
+  enable_resource_whitelist_generation = false
+}
+
 grit_defines = []
 
 # Mac and iOS want Title Case strings.
@@ -335,10 +340,17 @@ template("grit") {
   rebased_output_dir = rebase_path(output_dir, root_build_dir)
   source_path = rebase_path(invoker.source, root_build_dir)
 
+  grit_flags = []
+  if (enable_resource_whitelist_generation) {
+    grit_flags += [ "-h" ]
+    if (is_win) {
+      grit_flags += [ "#define {textual_id} __pragma(message(\"whitelisted_resource_{numeric_id}\")) {numeric_id}" ]
+    } else {
+      grit_flags += [ "#define {textual_id} _Pragma(\"whitelisted_resource_{numeric_id}\") {numeric_id}" ]
+    }
+  }
   if (defined(invoker.grit_flags)) {
-    grit_flags = invoker.grit_flags
-  } else {
-    grit_flags = []  # These are optional so default to empty list.
+    grit_flags += invoker.grit_flags
   }
 
   assert_files_flags = []
@@ -370,6 +382,13 @@ template("grit") {
     if (!defined(invoker.use_qualified_include) ||
         !invoker.use_qualified_include) {
       include_dirs = [ output_dir ]
+    }
+
+    if ((is_linux || is_android) && enable_resource_whitelist_generation) {
+      cflags = [
+        "-Wunknown-pragmas",
+        "-Wno-error=unknown-pragmas",
+      ]
     }
     visibility = target_visibility
   }
