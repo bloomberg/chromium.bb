@@ -219,11 +219,7 @@ void CompareSnapshotToReference(const base::FilePath& reference,
                                 const SkBitmap& bitmap,
                                 content::ReadbackResponse response) {
   DCHECK(snapshot_matches);
-  if (response != content::READBACK_SUCCESS) {
-    *snapshot_matches = false;
-    done_cb.Run();
-    return;
-  }
+  ASSERT_EQ(content::READBACK_SUCCESS, response);
 
   *snapshot_matches = SnapshotMatches(reference, bitmap);
 
@@ -275,6 +271,12 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
         switches::kOverridePluginPowerSaverForTesting, "ignore-list");
 
     ASSERT_TRUE(ppapi::RegisterPowerSaverTestPlugin(command_line));
+
+#if !defined(OS_CHROMEOS)
+    // These pixel tests are flaky on MSan bots with hardware rendering.
+    // However, ChromeOS does not support software compositing.
+    command_line->AppendSwitch(switches::kDisableGpu);
+#endif
   }
 
  protected:
@@ -321,6 +323,13 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
   bool VerifySnapshot(const base::FilePath::StringType& expected_filename) {
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+    // Because we cannot use hardware OpenGL under MSan, but also cannot use
+    // software rendering under ChromeOS, we skip this portion of the test.
+    // See crbug.com/512140
+    return true;
+#endif
+
     base::FilePath reference = ui_test_utils::GetTestFilePath(
         base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),
         base::FilePath(expected_filename));
@@ -333,11 +342,10 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     content::RenderWidgetHost* rwh =
         GetActiveWebContents()->GetRenderViewHost()->GetWidget();
 
-    // When a widget is first shown, it can take some time before it is ready
-    // for copying from its backing store.  This is a transient condition, and
-    // so it is not being treated as a test failure.
-    if (!rwh->CanCopyFromBackingStore())
+    if (!rwh->CanCopyFromBackingStore()) {
+      ADD_FAILURE() << "Could not copy from backing store.";
       return false;
+    }
 
     bool snapshot_matches = false;
     rwh->CopyFromBackingStore(
