@@ -353,10 +353,12 @@ wl_shm_buffer_get_stride(struct wl_shm_buffer *buffer)
 WL_EXPORT void *
 wl_shm_buffer_get_data(struct wl_shm_buffer *buffer)
 {
-	if (buffer->pool)
-		return buffer->pool->data + buffer->offset;
-	else
-		return buffer + 1;
+	assert(buffer->pool);
+
+	if (!buffer->pool)
+		return NULL;
+
+	return buffer->pool->data + buffer->offset;
 }
 
 WL_EXPORT uint32_t
