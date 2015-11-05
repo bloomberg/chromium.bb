@@ -37,10 +37,6 @@ void ANGLEPlatformImpl::logWarning(const char* warningMessage) {
   LOG(WARNING) << warningMessage;
 }
 
-void ANGLEPlatformImpl::logInfo(const char* infoMessage) {
-  LOG(INFO) << infoMessage;
-}
-
 angle::Platform::TraceEventHandle ANGLEPlatformImpl::addTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
