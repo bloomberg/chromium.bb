@@ -1893,9 +1893,6 @@ static void CalculateDrawPropertiesInternal(
 
     accumulated_surface_state->push_back(AccumulatedSurfaceState(layer));
 
-    // Don't clip if the layer has copy requests.
-    if (layer->HasCopyRequest())
-      subtree_is_clipped_by_surface_bounds = false;
     render_surface->SetIsClipped(subtree_is_clipped_by_surface_bounds);
     if (!subtree_is_clipped_by_surface_bounds) {
       render_surface->SetClipRect(gfx::Rect());
