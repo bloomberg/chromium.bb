@@ -8,6 +8,8 @@
 #include <limits>
 #include <set>
 
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_host.h"
@@ -15,6 +17,7 @@
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
+#include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/base/synced_property.h"
 #include "cc/debug/devtools_instrumentation.h"
@@ -629,6 +632,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     return false;
 
   {
+    base::ElapsedTimer timer;
     TRACE_EVENT2(
         "cc", "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
         "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
@@ -652,6 +656,13 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         &render_surface_layer_list_, render_surface_layer_list_id_,
         &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    if (const char* client_name = GetClientNameForMetrics()) {
+      UMA_HISTOGRAM_COUNTS(
+          base::StringPrintf(
+              "Compositing.%s.LayerTreeImpl.CalculateDrawPropertiesUs",
+              client_name),
+          timer.Elapsed().InMicroseconds());
+    }
   }
 
   {

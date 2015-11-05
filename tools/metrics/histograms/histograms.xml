@@ -4615,6 +4615,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Browser.LayerTreeImpl.CalculateDrawPropertiesUs"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating layer draw properties, in microseconds. Recorded when a
+    LayerTreeImpl's draw properties are updated (in a browser process).
+  </summary>
+</histogram>
+
 <histogram name="Compositing.Browser.PictureMemoryUsageKb" units="KB">
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -4786,6 +4795,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Time spent updating (i.e. recording) a display list, in microseconds.
     Recorded when display list is updated (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.LayerTreeImpl.CalculateDrawPropertiesUs"
+    units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating layer draw properties, in microseconds. Recorded when a
+    LayerTreeImpl's draw properties are updated (in a renderer process).
   </summary>
 </histogram>
 
