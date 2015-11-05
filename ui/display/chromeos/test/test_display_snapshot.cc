@@ -23,6 +23,7 @@ TestDisplaySnapshot::TestDisplaySnapshot(
     const gfx::Size& physical_size,
     DisplayConnectionType type,
     bool is_aspect_preserving_scaling,
+    int64_t product_id,
     const std::vector<const DisplayMode*>& modes,
     const DisplayMode* current_mode,
     const DisplayMode* native_mode)
@@ -35,7 +36,9 @@ TestDisplaySnapshot::TestDisplaySnapshot(
                       std::string(),
                       modes,
                       current_mode,
-                      native_mode) {}
+                      native_mode) {
+  product_id_ = product_id;
+}
 
 TestDisplaySnapshot::~TestDisplaySnapshot() {}
 

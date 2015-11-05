@@ -358,6 +358,7 @@ test("ash_unittests") {
     deps += [
       "//device/bluetooth",
       "//ui/display",
+      "//ui/display:test_support",
       "//ui/display:test_util",
       "//ui/display/types",
       "//chromeos:power_manager_proto",

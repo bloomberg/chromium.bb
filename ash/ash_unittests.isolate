@@ -37,6 +37,14 @@
         ],
       },
     }],
+
+    ['chromeos==1', {
+      'variables': {
+        'files': [
+          'display/test_data/'
+        ],
+      },
+    }],
     ['OS=="linux"', {
       'variables': {
         'files': [

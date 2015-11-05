@@ -18,6 +18,7 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
                       const gfx::Size& physical_size,
                       DisplayConnectionType type,
                       bool is_aspect_preserving_scaling,
+                      int64_t product_id,
                       const std::vector<const DisplayMode*>& modes,
                       const DisplayMode* current_mode,
                       const DisplayMode* native_mode);
