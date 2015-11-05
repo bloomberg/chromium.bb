@@ -39,6 +39,7 @@ TEST(MediaValuesTest, Basic)
         { 1.3, CSSPrimitiveValue::UnitType::Inches, 16, 300, 300, true, 124 },
         { 13, CSSPrimitiveValue::UnitType::Points, 16, 300, 300, true, 17 },
         { 1.3, CSSPrimitiveValue::UnitType::Picas, 16, 300, 300, true, 20 },
+        { 40.0, CSSPrimitiveValue::UnitType::UserUnits, 16, 300, 300, true, 40 },
         { 1.3, CSSPrimitiveValue::UnitType::Unknown, 16, 300, 300, false, 20 },
         { 0.0, CSSPrimitiveValue::UnitType::Unknown, 0, 0, 0, false, 0.0 } // Do not remove the terminating line.
     };

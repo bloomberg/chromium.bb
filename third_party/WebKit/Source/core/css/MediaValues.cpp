@@ -167,6 +167,7 @@ bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType ty
         factor = defaultFontSize;
         break;
     case CSSPrimitiveValue::UnitType::Pixels:
+    case CSSPrimitiveValue::UnitType::UserUnits:
         factor = 1;
         break;
     case CSSPrimitiveValue::UnitType::Exs:

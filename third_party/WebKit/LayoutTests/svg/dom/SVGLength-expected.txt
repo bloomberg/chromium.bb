@@ -62,10 +62,10 @@ PASS length.valueAsString is "2px"
 PASS length.value is 2
 PASS length.valueInSpecifiedUnits is 2
 PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
-PASS length.valueAsString = '1pX' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGLength': The value provided ('1pX') is invalid..
-PASS length.valueAsString is "2px"
-PASS length.value is 2
-PASS length.valueInSpecifiedUnits is 2
+PASS length.valueAsString = '1pX' did not throw exception.
+PASS length.valueAsString is "1px"
+PASS length.value is 1
+PASS length.valueInSpecifiedUnits is 1
 PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
 PASS length.valueAsString = ',5 em' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGLength': The value provided (',5 em') is invalid..
 PASS length.valueAsString is "2px"

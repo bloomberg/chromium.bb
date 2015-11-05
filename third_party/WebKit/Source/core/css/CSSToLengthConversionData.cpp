@@ -122,6 +122,7 @@ double CSSToLengthConversionData::zoomedComputedPixels(double value, CSSPrimitiv
     // zoomedComputedPixels() more generic (to solve both cases) without hurting performance.
     switch (type) {
     case CSSPrimitiveValue::UnitType::Pixels:
+    case CSSPrimitiveValue::UnitType::UserUnits:
         return value * zoom();
 
     case CSSPrimitiveValue::UnitType::Centimeters:

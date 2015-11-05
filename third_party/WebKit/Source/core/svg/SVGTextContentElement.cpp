@@ -59,7 +59,7 @@ public:
     {
         SVGTextContentElement* textContentElement = toSVGTextContentElement(contextElement());
         if (!textContentElement->textLengthIsSpecifiedByUser())
-            baseValue()->newValueSpecifiedUnits(LengthTypeNumber, textContentElement->getComputedTextLength());
+            baseValue()->newValueSpecifiedUnits(CSSPrimitiveValue::UnitType::Number, textContentElement->getComputedTextLength());
 
         return SVGAnimatedLength::baseVal();
     }

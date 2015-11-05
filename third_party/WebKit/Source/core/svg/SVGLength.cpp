@@ -26,6 +26,9 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/SVGNames.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValue.h"
+#include "core/css/CSSValuePool.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
@@ -35,113 +38,25 @@
 
 namespace blink {
 
-namespace {
-
-inline const char* lengthTypeToString(SVGLengthType type)
-{
-    switch (type) {
-    case LengthTypeUnknown:
-    case LengthTypeNumber:
-        return "";
-    case LengthTypePercentage:
-        return "%";
-    case LengthTypeEMS:
-        return "em";
-    case LengthTypeEXS:
-        return "ex";
-    case LengthTypePX:
-        return "px";
-    case LengthTypeCM:
-        return "cm";
-    case LengthTypeMM:
-        return "mm";
-    case LengthTypeIN:
-        return "in";
-    case LengthTypePT:
-        return "pt";
-    case LengthTypePC:
-        return "pc";
-    case LengthTypeREMS:
-        return "rem";
-    case LengthTypeCHS:
-        return "ch";
-    }
-
-    ASSERT_NOT_REACHED();
-    return "";
-}
-
-template<typename CharType>
-SVGLengthType stringToLengthType(const CharType*& ptr, const CharType* end)
-{
-    if (ptr == end)
-        return LengthTypeNumber;
-
-    SVGLengthType type = LengthTypeUnknown;
-    const CharType firstChar = *ptr++;
-
-    if (firstChar == '%') {
-        type = LengthTypePercentage;
-    } else if (isHTMLSpace<CharType>(firstChar)) {
-        type = LengthTypeNumber;
-    } else if (ptr < end) {
-        const CharType secondChar = *ptr++;
-
-        if (firstChar == 'p') {
-            if (secondChar == 'x')
-                type = LengthTypePX;
-            if (secondChar == 't')
-                type = LengthTypePT;
-            if (secondChar == 'c')
-                type = LengthTypePC;
-        } else if (firstChar == 'e') {
-            if (secondChar == 'm')
-                type = LengthTypeEMS;
-            if (secondChar == 'x')
-                type = LengthTypeEXS;
-        } else if (firstChar == 'r') {
-            if (secondChar == 'e' && ptr < end) {
-                const CharType thirdChar = *ptr++;
-                if (thirdChar == 'm')
-                    type = LengthTypeREMS;
-            }
-        } else if (firstChar == 'c') {
-            if (secondChar == 'h')
-                type = LengthTypeCHS;
-            if (secondChar == 'm')
-                type = LengthTypeCM;
-        } else if (firstChar == 'm' && secondChar == 'm') {
-            type = LengthTypeMM;
-        } else if (firstChar == 'i' && secondChar == 'n') {
-            type = LengthTypeIN;
-        } else if (isHTMLSpace<CharType>(firstChar) && isHTMLSpace<CharType>(secondChar)) {
-            type = LengthTypeNumber;
-        }
-    }
-
-    if (!skipOptionalSVGSpaces(ptr, end))
-        return type;
-
-    return LengthTypeUnknown;
-}
-
-} // namespace
-
 SVGLength::SVGLength(SVGLengthMode mode)
     : SVGPropertyBase(classType())
-    , m_valueInSpecifiedUnits(0)
+    , m_value(cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits))
     , m_unitMode(static_cast<unsigned>(mode))
-    , m_unitType(LengthTypeNumber)
 {
     ASSERT(unitMode() == mode);
 }
 
 SVGLength::SVGLength(const SVGLength& o)
     : SVGPropertyBase(classType())
-    , m_valueInSpecifiedUnits(o.m_valueInSpecifiedUnits)
+    , m_value(o.m_value)
     , m_unitMode(o.m_unitMode)
-    , m_unitType(o.m_unitType)
 {
+}
+
+DEFINE_TRACE(SVGLength)
+{
+    visitor->trace(m_value);
+    SVGPropertyBase::trace(visitor);
 }
 
 PassRefPtrWillBeRawPtr<SVGLength> SVGLength::clone() const
@@ -154,13 +69,11 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const Strin
     RefPtrWillBeRawPtr<SVGLength> length = create();
 
     length->m_unitMode = m_unitMode;
-    length->m_unitType = m_unitType;
 
     TrackExceptionState exceptionState;
     length->setValueAsString(value, exceptionState);
     if (exceptionState.hadException()) {
-        length->m_unitType = LengthTypeNumber;
-        length->m_valueInSpecifiedUnits = 0;
+        length->m_value = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits);
     }
 
     return length.release();
@@ -168,116 +81,108 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const Strin
 
 bool SVGLength::operator==(const SVGLength& other) const
 {
-    return m_unitMode == other.m_unitMode
-        && m_unitType == other.m_unitType
-        && m_valueInSpecifiedUnits == other.m_valueInSpecifiedUnits;
+    return m_unitMode == other.m_unitMode && m_value == other.m_value;
 }
 
 float SVGLength::value(const SVGLengthContext& context) const
 {
-    return context.convertValueToUserUnits(m_valueInSpecifiedUnits, unitMode(), unitType());
+    return context.convertValueToUserUnits(
+        m_value->getFloatValue(), unitMode(), m_value->typeWithCalcResolved());
 }
 
 void SVGLength::setValue(float value, const SVGLengthContext& context)
 {
-    m_valueInSpecifiedUnits = context.convertValueFromUserUnits(value, unitMode(), unitType());
+    m_value = CSSPrimitiveValue::create(
+        context.convertValueFromUserUnits(value, unitMode(), m_value->typeWithCalcResolved()),
+        m_value->typeWithCalcResolved());
 }
 
-void SVGLength::setUnitType(SVGLengthType type)
+bool isSupportedCSSUnitType(CSSPrimitiveValue::UnitType type)
 {
-    ASSERT(type != LengthTypeUnknown && type <= LengthTypeCHS);
-    m_unitType = type;
+    return type != CSSPrimitiveValue::UnitType::Unknown
+        && (type <= CSSPrimitiveValue::UnitType::UserUnits
+            || type == CSSPrimitiveValue::UnitType::Chs
+            || type == CSSPrimitiveValue::UnitType::Rems);
+}
+
+void SVGLength::setUnitType(CSSPrimitiveValue::UnitType type)
+{
+    ASSERT(isSupportedCSSUnitType(type));
+    m_value = CSSPrimitiveValue::create(m_value->getFloatValue(), type);
 }
 
 float SVGLength::valueAsPercentage() const
 {
     // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
-    if (m_unitType == LengthTypePercentage) {
+    if (m_value->isPercentage()) {
         // Note: This division is a source of floating point inaccuracy.
-        return m_valueInSpecifiedUnits / 100;
+        return m_value->getFloatValue() / 100;
     }
 
-    return m_valueInSpecifiedUnits;
+    return m_value->getFloatValue();
 }
 
 float SVGLength::valueAsPercentage100() const
 {
     // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
-    if (m_unitType == LengthTypePercentage)
-        return m_valueInSpecifiedUnits;
+    if (m_value->isPercentage())
+        return m_value->getFloatValue();
 
-    return m_valueInSpecifiedUnits * 100;
+    return m_value->getFloatValue() * 100;
 }
 
 float SVGLength::scaleByPercentage(float input) const
 {
-    float result = input * m_valueInSpecifiedUnits;
-    if (m_unitType == LengthTypePercentage) {
+    float result = input * m_value->getFloatValue();
+    if (m_value->isPercentage()) {
         // Delaying division by 100 as long as possible since it introduces floating point errors.
         result = result / 100;
     }
     return result;
 }
 
-template<typename CharType>
-static bool parseValueInternal(const String& string, float& convertedNumber, SVGLengthType& type)
-{
-    const CharType* ptr = string.getCharacters<CharType>();
-    const CharType* end = ptr + string.length();
-
-    if (!parseNumber(ptr, end, convertedNumber, AllowLeadingWhitespace))
-        return false;
-
-    type = stringToLengthType(ptr, end);
-    ASSERT(ptr <= end);
-    if (type == LengthTypeUnknown)
-        return false;
-
-    return true;
-}
-
 void SVGLength::setValueAsString(const String& string, ExceptionState& exceptionState)
 {
     if (string.isEmpty()) {
-        m_unitType = LengthTypeNumber;
-        m_valueInSpecifiedUnits = 0;
+        m_value = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits);
         return;
     }
 
-    float convertedNumber = 0;
-    SVGLengthType type = LengthTypeUnknown;
-
-    bool success = string.is8Bit() ?
-        parseValueInternal<LChar>(string, convertedNumber, type) :
-        parseValueInternal<UChar>(string, convertedNumber, type);
-
-    if (!success) {
+    CSSParserContext svgParserContext(SVGAttributeMode, 0);
+    RefPtrWillBeRawPtr<CSSValue> parsed = CSSParser::parseSingleValue(CSSPropertyX, string, svgParserContext);
+    if (!parsed || !parsed->isPrimitiveValue()) {
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
         return;
     }
 
-    m_unitType = type;
-    m_valueInSpecifiedUnits = convertedNumber;
+    CSSPrimitiveValue* newValue = toCSSPrimitiveValue(parsed.get());
+    // TODO(fs): Enable calc for SVG lengths
+    if (newValue->isCalculated() || !isSupportedCSSUnitType(newValue->typeWithCalcResolved())) {
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
+        return;
+    }
+
+    m_value = newValue;
 }
 
 String SVGLength::valueAsString() const
 {
-    return String::number(m_valueInSpecifiedUnits) + lengthTypeToString(unitType());
+    return m_value->customCSSText();
 }
 
-void SVGLength::newValueSpecifiedUnits(SVGLengthType type, float value)
+void SVGLength::newValueSpecifiedUnits(CSSPrimitiveValue::UnitType type, float value)
 {
-    setUnitType(type);
-    m_valueInSpecifiedUnits = value;
+    m_value = CSSPrimitiveValue::create(value, type);
 }
 
-void SVGLength::convertToSpecifiedUnits(SVGLengthType type, const SVGLengthContext& context)
+void SVGLength::convertToSpecifiedUnits(CSSPrimitiveValue::UnitType type, const SVGLengthContext& context)
 {
-    ASSERT(type != LengthTypeUnknown && type <= LengthTypeCHS);
+    ASSERT(isSupportedCSSUnitType(type));
 
     float valueInUserUnits = value(context);
-    m_unitType = type;
-    setValue(valueInUserUnits, context);
+    m_value = CSSPrimitiveValue::create(
+        context.convertValueFromUserUnits(valueInUserUnits, unitMode(), type),
+        type);
 }
 
 SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(const QualifiedName& attrName)
@@ -323,7 +228,13 @@ void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* c
     setValue(value(lengthContext) + toSVGLength(other)->value(lengthContext), lengthContext);
 }
 
-void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement,
+    float percentage,
+    unsigned repeatCount,
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue,
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue,
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue,
+    SVGElement* contextElement)
 {
     RefPtrWillBeRawPtr<SVGLength> fromLength = toSVGLength(fromValue);
     RefPtrWillBeRawPtr<SVGLength> toLength = toSVGLength(toValue);
@@ -331,11 +242,14 @@ void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
 
     SVGLengthContext lengthContext(contextElement);
     float animatedNumber = value(lengthContext);
-    animationElement->animateAdditiveNumber(percentage, repeatCount, fromLength->value(lengthContext), toLength->value(lengthContext), toAtEndOfDurationLength->value(lengthContext), animatedNumber);
+    animationElement->animateAdditiveNumber(percentage, repeatCount, fromLength->value(lengthContext),
+        toLength->value(lengthContext), toAtEndOfDurationLength->value(lengthContext), animatedNumber);
 
     ASSERT(unitMode() == lengthModeForAnimatedLengthAttribute(animationElement->attributeName()));
-    m_unitType = percentage < 0.5 ? fromLength->unitType() : toLength->unitType();
-    setValue(animatedNumber, lengthContext);
+
+    CSSPrimitiveValue::UnitType newUnit = percentage < 0.5 ? fromLength->typeWithCalcResolved() : toLength->typeWithCalcResolved();
+    animatedNumber = lengthContext.convertValueFromUserUnits(animatedNumber, unitMode(), newUnit);
+    m_value = CSSPrimitiveValue::create(animatedNumber, newUnit);
 }
 
 float SVGLength::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)

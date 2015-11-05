@@ -60,43 +60,52 @@ enum LengthInterpolatedUnit {
     LengthInterpolatedCHS,
 };
 
-static const SVGLengthType unitTypes[] = { LengthTypeNumber, LengthTypePercentage, LengthTypeEMS, LengthTypeEXS, LengthTypeREMS, LengthTypeCHS };
+static const CSSPrimitiveValue::UnitType unitTypes[] = {
+    CSSPrimitiveValue::UnitType::Number,
+    CSSPrimitiveValue::UnitType::Percentage,
+    CSSPrimitiveValue::UnitType::Ems,
+    CSSPrimitiveValue::UnitType::Exs,
+    CSSPrimitiveValue::UnitType::Rems,
+    CSSPrimitiveValue::UnitType::Chs
+};
 
 const size_t numLengthInterpolatedUnits = WTF_ARRAY_LENGTH(unitTypes);
 
-LengthInterpolatedUnit convertToInterpolatedUnit(SVGLengthType lengthType, double& value)
+LengthInterpolatedUnit convertToInterpolatedUnit(CSSPrimitiveValue::UnitType unitType, double& value)
 {
-    switch (lengthType) {
-    case LengthTypeUnknown:
+    switch (unitType) {
+    case CSSPrimitiveValue::UnitType::Unknown:
     default:
         ASSERT_NOT_REACHED();
-    case LengthTypePX:
-    case LengthTypeNumber:
+    case CSSPrimitiveValue::UnitType::Pixels:
+    case CSSPrimitiveValue::UnitType::Number:
         return LengthInterpolatedNumber;
-    case LengthTypePercentage:
+    case CSSPrimitiveValue::UnitType::Percentage:
         return LengthInterpolatedPercentage;
-    case LengthTypeEMS:
+    case CSSPrimitiveValue::UnitType::Ems:
         return LengthInterpolatedEMS;
-    case LengthTypeEXS:
+    case CSSPrimitiveValue::UnitType::Exs:
         return LengthInterpolatedEXS;
-    case LengthTypeCM:
+    case CSSPrimitiveValue::UnitType::Centimeters:
         value *= cssPixelsPerCentimeter;
         return LengthInterpolatedNumber;
-    case LengthTypeMM:
+    case CSSPrimitiveValue::UnitType::Millimeters:
         value *= cssPixelsPerMillimeter;
         return LengthInterpolatedNumber;
-    case LengthTypeIN:
+    case CSSPrimitiveValue::UnitType::Inches:
         value *= cssPixelsPerInch;
         return LengthInterpolatedNumber;
-    case LengthTypePT:
+    case CSSPrimitiveValue::UnitType::Points:
         value *= cssPixelsPerPoint;
         return LengthInterpolatedNumber;
-    case LengthTypePC:
+    case CSSPrimitiveValue::UnitType::Picas:
         value *= cssPixelsPerPica;
         return LengthInterpolatedNumber;
-    case LengthTypeREMS:
+    case CSSPrimitiveValue::UnitType::UserUnits:
+        return LengthInterpolatedNumber;
+    case CSSPrimitiveValue::UnitType::Rems:
         return LengthInterpolatedREMS;
-    case LengthTypeCHS:
+    case CSSPrimitiveValue::UnitType::Chs:
         return LengthInterpolatedCHS;
     }
 }
@@ -109,7 +118,7 @@ PassOwnPtr<InterpolableValue> LengthSVGInterpolation::toInterpolableValue(SVGLen
         populateModeData(attribute, ptrModeData);
 
     double value = length->valueInSpecifiedUnits();
-    LengthInterpolatedUnit unitType = convertToInterpolatedUnit(length->unitType(), value);
+    LengthInterpolatedUnit unitType = convertToInterpolatedUnit(length->typeWithCalcResolved(), value);
 
     double values[numLengthInterpolatedUnits] = { };
     values[unitType] = value;
@@ -126,7 +135,7 @@ PassRefPtrWillBeRawPtr<SVGLength> LengthSVGInterpolation::fromInterpolableValue(
     ASSERT(element);
 
     double value = 0;
-    SVGLengthType lengthType = LengthTypeNumber;
+    CSSPrimitiveValue::UnitType unitType = CSSPrimitiveValue::UnitType::UserUnits;
     unsigned unitTypeCount = 0;
     // We optimise for the common case where only one unit type is involved.
     for (size_t i = 0; i < numLengthInterpolatedUnits; i++) {
@@ -138,12 +147,12 @@ PassRefPtrWillBeRawPtr<SVGLength> LengthSVGInterpolation::fromInterpolableValue(
             break;
 
         value = entry;
-        lengthType = unitTypes[i];
+        unitType = unitTypes[i];
     }
 
     if (unitTypeCount > 1) {
         value = 0;
-        lengthType = LengthTypeNumber;
+        unitType = CSSPrimitiveValue::UnitType::UserUnits;
 
         // SVGLength does not support calc expressions, so we convert to canonical units.
         SVGLengthContext lengthContext(element);
@@ -158,8 +167,7 @@ PassRefPtrWillBeRawPtr<SVGLength> LengthSVGInterpolation::fromInterpolableValue(
         value = 0;
 
     RefPtrWillBeRawPtr<SVGLength> result = SVGLength::create(modeData.unitMode); // defaults to the length 0
-    result->setUnitType(lengthType);
-    result->setValueInSpecifiedUnits(value);
+    result->newValueSpecifiedUnits(unitType, value);
     return result.release();
 }
 

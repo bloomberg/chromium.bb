@@ -71,11 +71,13 @@ shouldBe("length.value", "2");
 shouldBe("length.valueInSpecifiedUnits", "2");
 shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
 
-shouldThrow("length.valueAsString = '1pX'");
-shouldBeEqualToString("length.valueAsString", "2px");
-shouldBe("length.value", "2");
-shouldBe("length.valueInSpecifiedUnits", "2");
+shouldNotThrow("length.valueAsString = '1pX'");
+shouldBeEqualToString("length.valueAsString", "1px");
+shouldBe("length.value", "1");
+shouldBe("length.valueInSpecifiedUnits", "1");
 shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
+
+length.valueAsString = "2px"; // reset to 2px
 
 shouldThrow("length.valueAsString = ',5 em'");
 shouldBeEqualToString("length.valueAsString", "2px");

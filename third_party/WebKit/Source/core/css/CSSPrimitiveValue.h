@@ -76,6 +76,7 @@ public:
         Inches,
         Points,
         Picas,
+        UserUnits, // The SVG term for unitless lengths
         Degrees,
         Radians,
         Gradians,
@@ -167,7 +168,7 @@ public:
     static bool isViewportPercentageLength(UnitType type) { return type >= UnitType::ViewportWidth && type <= UnitType::ViewportMax; }
     static bool isLength(UnitType type)
     {
-        return (type >= UnitType::Ems && type <= UnitType::Picas) || type == UnitType::QuirkyEms || type == UnitType::Rems || type == UnitType::Chs || isViewportPercentageLength(type);
+        return (type >= UnitType::Ems && type <= UnitType::UserUnits) || type == UnitType::QuirkyEms || type == UnitType::Rems || type == UnitType::Chs || isViewportPercentageLength(type);
     }
     bool isLength() const { return isLength(typeWithCalcResolved()); }
     bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }

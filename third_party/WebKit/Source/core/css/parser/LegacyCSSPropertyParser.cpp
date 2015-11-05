@@ -213,6 +213,7 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
     case CSSPrimitiveValue::UnitType::Inches:
     case CSSPrimitiveValue::UnitType::Points:
     case CSSPrimitiveValue::UnitType::Picas:
+    case CSSPrimitiveValue::UnitType::UserUnits:
     case CSSPrimitiveValue::UnitType::ViewportWidth:
     case CSSPrimitiveValue::UnitType::ViewportHeight:
     case CSSPrimitiveValue::UnitType::ViewportMin:

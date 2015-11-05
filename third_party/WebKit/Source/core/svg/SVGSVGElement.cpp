@@ -635,17 +635,17 @@ FloatSize SVGSVGElement::currentViewportSize() const
 
 bool SVGSVGElement::hasIntrinsicWidth() const
 {
-    return width()->currentValue()->unitType() != LengthTypePercentage;
+    return width()->currentValue()->typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Percentage;
 }
 
 bool SVGSVGElement::hasIntrinsicHeight() const
 {
-    return height()->currentValue()->unitType() != LengthTypePercentage;
+    return height()->currentValue()->typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Percentage;
 }
 
 Length SVGSVGElement::intrinsicWidth() const
 {
-    if (width()->currentValue()->unitType() == LengthTypePercentage)
+    if (width()->currentValue()->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Percentage)
         return Length(0, Fixed);
 
     SVGLengthContext lengthContext(this);
@@ -654,7 +654,7 @@ Length SVGSVGElement::intrinsicWidth() const
 
 Length SVGSVGElement::intrinsicHeight() const
 {
-    if (height()->currentValue()->unitType() == LengthTypePercentage)
+    if (height()->currentValue()->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Percentage)
         return Length(0, Fixed);
 
     SVGLengthContext lengthContext(this);

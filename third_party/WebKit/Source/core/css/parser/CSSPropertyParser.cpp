@@ -278,6 +278,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRan
         case CSSPrimitiveValue::UnitType::Inches:
         case CSSPrimitiveValue::UnitType::Points:
         case CSSPrimitiveValue::UnitType::Picas:
+        case CSSPrimitiveValue::UnitType::UserUnits:
         case CSSPrimitiveValue::UnitType::ViewportWidth:
         case CSSPrimitiveValue::UnitType::ViewportHeight:
         case CSSPrimitiveValue::UnitType::ViewportMin:
@@ -294,7 +295,10 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRan
         if (!shouldAcceptUnitlessValues(token.numericValue(), cssParserMode, unitless)
             || (valueRange == ValueRangeNonNegative && token.numericValue() < 0))
             return nullptr;
-        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Pixels);
+        CSSPrimitiveValue::UnitType unitType = CSSPrimitiveValue::UnitType::Pixels;
+        if (cssParserMode == SVGAttributeMode)
+            unitType = CSSPrimitiveValue::UnitType::UserUnits;
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), unitType);
     }
     CalcParser calcParser(range, valueRange);
     if (calcParser.value() && calcParser.value()->category() == CalcLength)

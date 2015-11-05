@@ -63,6 +63,7 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::UnitType::Inches:
     case CSSPrimitiveValue::UnitType::Points:
     case CSSPrimitiveValue::UnitType::Picas:
+    case CSSPrimitiveValue::UnitType::UserUnits:
     case CSSPrimitiveValue::UnitType::Rems:
     case CSSPrimitiveValue::UnitType::Chs:
     case CSSPrimitiveValue::UnitType::ViewportWidth:
@@ -101,6 +102,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::UnitType::Inches:
     case CSSPrimitiveValue::UnitType::Points:
     case CSSPrimitiveValue::UnitType::Picas:
+    case CSSPrimitiveValue::UnitType::UserUnits:
     case CSSPrimitiveValue::UnitType::Degrees:
     case CSSPrimitiveValue::UnitType::Radians:
     case CSSPrimitiveValue::UnitType::Gradians:

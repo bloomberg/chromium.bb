@@ -49,7 +49,7 @@ void SVGAnimatedLength::setBaseValueAsString(const String& value, SVGParsingErro
 
     if (es.hadException()) {
         parseError = ParsingAttributeFailedError;
-        baseValue()->newValueSpecifiedUnits(LengthTypeNumber, 0);
+        baseValue()->newValueSpecifiedUnits(CSSPrimitiveValue::UnitType::UserUnits, 0);
     } else if (m_negativeValuesMode == ForbidNegativeLengths && baseValue()->valueInSpecifiedUnits() < 0) {
         parseError = NegativeValueForbiddenError;
     }

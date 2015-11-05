@@ -32,6 +32,7 @@
 #define SVGLengthTearOff_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
@@ -71,7 +72,7 @@ public:
     void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState&);
     void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
 
-    bool hasExposedLengthUnit() { return target()->unitType() <= LengthTypePC; }
+    bool hasExposedLengthUnit() { return target()->typeWithCalcResolved() <= CSSPrimitiveValue::UnitType::UserUnits; }
 
 private:
     SVGLengthTearOff(PassRefPtrWillBeRawPtr<SVGLength>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());

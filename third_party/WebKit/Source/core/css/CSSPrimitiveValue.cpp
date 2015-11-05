@@ -60,6 +60,7 @@ StringToUnitTable createStringToUnitTable()
     table.set(String("in"), CSSPrimitiveValue::UnitType::Inches);
     table.set(String("pt"), CSSPrimitiveValue::UnitType::Points);
     table.set(String("pc"), CSSPrimitiveValue::UnitType::Picas);
+    table.set(String(""), CSSPrimitiveValue::UnitType::UserUnits);
     table.set(String("deg"), CSSPrimitiveValue::UnitType::Degrees);
     table.set(String("rad"), CSSPrimitiveValue::UnitType::Radians);
     table.set(String("grad"), CSSPrimitiveValue::UnitType::Gradians);
@@ -120,6 +121,7 @@ CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitCategory(UnitType type)
     case UnitType::Inches:
     case UnitType::Points:
     case UnitType::Picas:
+    case UnitType::UserUnits:
         return CSSPrimitiveValue::ULength;
     case UnitType::Milliseconds:
     case UnitType::Seconds:
@@ -328,6 +330,7 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::Inches:
     case UnitType::Points:
     case UnitType::Picas:
+    case UnitType::UserUnits:
     case UnitType::Degrees:
     case UnitType::Radians:
     case UnitType::Gradians:
@@ -459,6 +462,7 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(UnitType unitTyp
     switch (unitType) {
     // These are "canonical" units in their respective categories.
     case UnitType::Pixels:
+    case UnitType::UserUnits:
     case UnitType::Degrees:
     case UnitType::Milliseconds:
     case UnitType::Hertz:
@@ -646,6 +650,7 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     switch (type) {
     case UnitType::Number:
     case UnitType::Integer:
+    case UnitType::UserUnits:
         return "";
     case UnitType::Percentage:
         return "%";
@@ -744,6 +749,7 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::Inches:
     case UnitType::Points:
     case UnitType::Picas:
+    case UnitType::UserUnits:
     case UnitType::Degrees:
     case UnitType::Radians:
     case UnitType::Gradians:
@@ -800,6 +806,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case UnitType::Inches:
     case UnitType::Points:
     case UnitType::Picas:
+    case UnitType::UserUnits:
     case UnitType::Degrees:
     case UnitType::Radians:
     case UnitType::Gradians:

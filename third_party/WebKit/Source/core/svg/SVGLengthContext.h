@@ -20,6 +20,7 @@
 #ifndef SVGLengthContext_h
 #define SVGLengthContext_h
 
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/Length.h"
 #include "platform/geometry/FloatRect.h"
@@ -68,8 +69,8 @@ public:
     static FloatPoint resolvePoint(const SVGElement*, SVGUnitTypes::SVGUnitType, const SVGLength& x, const SVGLength& y);
     static float resolveLength(const SVGElement*, SVGUnitTypes::SVGUnitType, const SVGLength&);
 
-    float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit) const;
-    float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
+    float convertValueToUserUnits(float, SVGLengthMode, CSSPrimitiveValue::UnitType fromUnit) const;
+    float convertValueFromUserUnits(float, SVGLengthMode, CSSPrimitiveValue::UnitType toUnit) const;
 
     float valueForLength(const UnzoomedLength&, SVGLengthMode = SVGLengthMode::Other) const;
     float valueForLength(const Length&, const ComputedStyle&, SVGLengthMode = SVGLengthMode::Other) const;

@@ -147,11 +147,11 @@ void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement
 
     for (size_t i = 0; i < toLengthListSize; ++i) {
         float animatedNumber = at(i)->value(lengthContext);
-        SVGLengthType unitType = toList->at(i)->unitType();
+        CSSPrimitiveValue::UnitType unitType = toList->at(i)->typeWithCalcResolved();
         float effectiveFrom = 0;
         if (fromLengthListSize) {
             if (percentage < 0.5)
-                unitType = fromList->at(i)->unitType();
+                unitType = fromList->at(i)->typeWithCalcResolved();
             effectiveFrom = fromList->at(i)->value(lengthContext);
         }
         float effectiveTo = toList->at(i)->value(lengthContext);
