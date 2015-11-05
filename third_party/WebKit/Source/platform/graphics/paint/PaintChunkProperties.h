@@ -5,6 +5,7 @@
 #ifndef PaintChunkProperties_h
 #define PaintChunkProperties_h
 
+#include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
@@ -24,6 +25,7 @@ namespace blink {
 struct PaintChunkProperties {
     // TODO(pdr): Add clip and scroll properties.
     RefPtr<TransformPaintPropertyNode> transform;
+    RefPtr<ClipPaintPropertyNode> clip;
     RefPtr<EffectPaintPropertyNode> effect;
 };
 
@@ -32,6 +34,7 @@ struct PaintChunkProperties {
 inline bool operator==(const PaintChunkProperties& a, const PaintChunkProperties& b)
 {
     return a.transform.get() == b.transform.get()
+        && a.clip.get() == b.clip.get()
         && a.effect.get() == b.effect.get();
 }
 

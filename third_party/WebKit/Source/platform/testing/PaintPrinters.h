@@ -11,6 +11,7 @@ namespace blink {
 
 struct PaintChunk;
 struct PaintProperties;
+class ClipPaintPropertyNode;
 class TransformPaintPropertyNode;
 class EffectPaintPropertyNode;
 
@@ -25,6 +26,7 @@ class EffectPaintPropertyNode;
 // use these printers. If, however, you get a link error about these symbols,
 // you need to make sure the blink_platform_test_support target is linked in
 // your unit test binary.
+void PrintTo(const ClipPaintPropertyNode&, std::ostream*);
 void PrintTo(const PaintChunk&, std::ostream*);
 void PrintTo(const PaintProperties&, std::ostream*);
 void PrintTo(const TransformPaintPropertyNode&, std::ostream*);

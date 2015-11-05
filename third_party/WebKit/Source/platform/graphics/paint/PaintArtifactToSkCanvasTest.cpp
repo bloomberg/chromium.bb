@@ -20,8 +20,10 @@
 #include <gtest/gtest.h>
 
 using testing::_;
+using testing::Eq;
 using testing::Pointee;
 using testing::Property;
+using testing::ResultOf;
 
 namespace blink {
 namespace {
@@ -237,6 +239,53 @@ TEST(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
     PaintChunk chunk2(1, 2, PaintChunkProperties());
     chunk2.properties.effect = opacityEffectD.get();
     artifact.paintChunks().append(chunk2);
+
+    paintArtifactToSkCanvas(artifact, &canvas);
+}
+
+static SkRegion getCanvasClipAsRegion(SkCanvas* canvas)
+{
+    return SkCanvas::LayerIter(canvas, false).clip();
+}
+
+TEST(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping)
+{
+    // The setup is to simulate scenario similar to this html:
+    // <div style="position:absolute; left:0; top:0; clip:rect(200px,200px,300px,100px);">
+    //     <div style="position:fixed; left:150px; top:150px; width:100px; height:100px; overflow:hidden;">
+    //         client1
+    //     </div>
+    // </div>
+    // <script>scrollTo(0, 100)</script>
+    // The content itself will not be scrolled due to fixed positioning,
+    // but will be affected by some scrolled clip.
+
+    // Setup transform tree.
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(
+        TransformationMatrix().translate(0, -100), FloatPoint3D());
+
+    // Setup clip tree.
+    RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
+        transform1.get(), FloatRoundedRect(100, 200, 100, 100));
+    RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(150, 150, 100, 100), clip1.get());
+
+    PaintArtifact artifact;
+
+    DummyRectClient client1(SkRect::MakeXYWH(0, 0, 300, 200), SK_ColorRED);
+    artifact.displayItemList().allocateAndConstruct<DrawingDisplayItem>(
+        client1, DisplayItem::DrawingFirst, client1.makePicture());
+    PaintChunk chunk1(0, 1, PaintChunkProperties());
+    chunk1.properties.clip = clip2.get();
+    artifact.paintChunks().append(chunk1);
+
+    MockCanvas canvas(kCanvasWidth, kCanvasHeight);
+
+    SkRegion totalClip;
+    totalClip.setRect(SkIRect::MakeXYWH(100, 100, 100, 100));
+    totalClip.op(SkIRect::MakeXYWH(150, 150, 100, 100), SkRegion::kIntersect_Op);
+    EXPECT_CALL(canvas, onDrawRect(client1.rect(), Property(&SkPaint::getColor, client1.color()),
+        ResultOf(&getCanvasClipAsRegion, Eq(totalClip))));
 
     paintArtifactToSkCanvas(artifact, &canvas);
 }

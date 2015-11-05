@@ -7,9 +7,40 @@
 
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
+#include <iomanip> // NOLINT
 #include <ostream> // NOLINT
 
+namespace {
+    class StreamStateSaver : private std::ios {
+        WTF_MAKE_NONCOPYABLE(StreamStateSaver);
+    public:
+        StreamStateSaver(std::ios& other) : std::ios(nullptr), m_other(other) { copyfmt(other); }
+        ~StreamStateSaver() { m_other.copyfmt(*this); }
+    private:
+        std::ios& m_other;
+    };
+} // unnamed namespace
+
 namespace blink {
+
+// basic_ostream::operator<<(const void*) is drunk.
+static void PrintPointer(const void* ptr, std::ostream& os)
+{
+    StreamStateSaver saver(os);
+    uintptr_t intPtr = reinterpret_cast<uintptr_t>(ptr);
+    os << "0x" << std::setfill('0') << std::setw(sizeof(uintptr_t) * 2) << std::hex << intPtr;
+}
+
+void PrintTo(const ClipPaintPropertyNode& node, std::ostream* os)
+{
+    *os << "ClipPaintPropertyNode(clip=";
+    PrintTo(node.clipRect(), os);
+    *os << ", base=";
+    PrintPointer(node.base(), *os);
+    *os << ", parent=";
+    PrintPointer(node.parent(), *os);
+    *os << ")";
+}
 
 void PrintTo(const PaintChunk& chunk, std::ostream* os)
 {

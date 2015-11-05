@@ -660,6 +660,7 @@
       'graphics/paint/CachedDisplayItem.h',
       'graphics/paint/ClipDisplayItem.cpp',
       'graphics/paint/ClipDisplayItem.h',
+      'graphics/paint/ClipPaintPropertyNode.h',
       'graphics/paint/ClipPathDisplayItem.cpp',
       'graphics/paint/ClipPathDisplayItem.h',
       'graphics/paint/ClipPathRecorder.cpp',

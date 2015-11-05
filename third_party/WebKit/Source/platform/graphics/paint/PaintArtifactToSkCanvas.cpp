@@ -5,6 +5,7 @@
 #include "config.h"
 #include "platform/graphics/paint/PaintArtifactToSkCanvas.h"
 
+#include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintArtifact.h"
@@ -94,23 +95,33 @@ static void applyEffectNodesToCanvas(const EffectPaintPropertyNode* previousEffe
     }
 }
 
+static TransformationMatrix totalTransform(const TransformPaintPropertyNode* currentSpace)
+{
+    TransformationMatrix matrix;
+    for (; currentSpace; currentSpace = currentSpace->parent()) {
+        TransformationMatrix localMatrix = currentSpace->matrix();
+        localMatrix.applyTransformOrigin(currentSpace->origin());
+        matrix = localMatrix * matrix;
+    }
+    return matrix;
+}
+
 void paintArtifactToSkCanvas(const PaintArtifact& artifact, SkCanvas* canvas)
 {
     SkAutoCanvasRestore restore(canvas, true);
     const DisplayItemList& displayItems = artifact.displayItemList();
     const EffectPaintPropertyNode* previousEffect = nullptr;
     for (const PaintChunk& chunk : artifact.paintChunks()) {
-        // Compute the total transformation matrix for this chunk.
-        TransformationMatrix matrix;
-        for (const TransformPaintPropertyNode* transformNode = chunk.properties.transform.get();
-            transformNode; transformNode = transformNode->parent()) {
-            TransformationMatrix localMatrix = transformNode->matrix();
-            localMatrix.applyTransformOrigin(transformNode->origin());
-            matrix = localMatrix * matrix;
+        // Setup the canvas clip state first because it clobbers matrix state.
+        for (const ClipPaintPropertyNode* currentClipNode = chunk.properties.clip.get();
+            currentClipNode; currentClipNode = currentClipNode->parent()) {
+            canvas->setMatrix(TransformationMatrix::toSkMatrix44(totalTransform(currentClipNode->base())));
+            canvas->clipRRect(currentClipNode->clipRect());
         }
 
         // Set the canvas state to match the paint properties.
-        canvas->setMatrix(TransformationMatrix::toSkMatrix44(matrix));
+        TransformationMatrix combinedMatrix = totalTransform(chunk.properties.transform.get());
+        canvas->setMatrix(TransformationMatrix::toSkMatrix44(combinedMatrix));
 
         // Push and pop layers on the SkCanvas as necessary to implement the
         // current effect.
