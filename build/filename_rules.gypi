@@ -14,7 +14,7 @@
                     ['exclude', '(^|/)win_[^/]*\\.(h|cc)$'] ],
     }],
     ['OS!="mac" or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_(cocoa|mac)(_unittest)?\\.(h|cc|mm?)$'],
+      'sources/': [ ['exclude', '_(cocoa|mac)(_unittest)?\\.(h|cc|c|mm?)$'],
                     ['exclude', '(^|/)(cocoa|mac)/'] ],
     }],
     ['OS!="ios" or >(nacl_untrusted_build)==1', {

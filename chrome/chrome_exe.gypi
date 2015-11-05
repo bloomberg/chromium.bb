@@ -46,6 +46,7 @@
       # GN version: //chrome:chrome_initial
       'target_name': 'chrome_initial',
       'type': 'executable',
+      'dependencies' : [ '../chrome/common_constants.gyp:version_header', ],
       # Name the exe chrome.exe, not chrome_initial.exe.
       'product_name': 'chrome',
       'mac_bundle': 1,
@@ -60,7 +61,7 @@
         '<(DEPTH)/content/public/common/content_switches.cc',
         'app/chrome_exe_load_config_win.cc',
         'app/chrome_exe_main_aura.cc',
-        'app/chrome_exe_main_mac.cc',
+        'app/chrome_exe_main_mac.c',
         'app/chrome_exe_main_win.cc',
         'app/chrome_exe_resource.h',
         'app/chrome_watcher_client_win.cc',
@@ -270,7 +271,7 @@
             'infoplist_strings_tool',
             # On Mac, make sure we've built chrome_dll, which contains all of
             # the library code with Chromium functionality.
-            'chrome_dll',
+            'chrome_dll_dependency_shim',
           ],
           'mac_bundle_resources': [
             'app/theme/<(branding_path_component)/mac/app.icns',

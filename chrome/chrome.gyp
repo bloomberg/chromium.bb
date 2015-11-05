@@ -154,19 +154,23 @@
           'product_name': '<(mac_product_name) Helper',
           'mac_bundle': 1,
           'dependencies': [
-            'chrome_dll',
+            'chrome_dll_dependency_shim',
             'infoplist_strings_tool',
+            'common_constants.gyp:version_header',
+          ],
+          'defines': [
+            'HELPER_EXECUTABLE'
           ],
           'sources': [
-            # chrome_exe_main_mac.cc's main() is the entry point for
+            # chrome_exe_main_mac.c's main() is the entry point for
             # the "chrome" (browser app) target.  All it does is jump
             # to chrome_dll's ChromeMain.  This is appropriate for
             # helper processes too, because the logic to discriminate
             # between process types at run time is actually directed
             # by the --type command line argument processed by
-            # ChromeMain.  Sharing chrome_exe_main_mac.cc with the
+            # ChromeMain.  Sharing chrome_exe_main_mac.c with the
             # browser app will suffice for now.
-            'app/chrome_exe_main_mac.cc',
+            'app/chrome_exe_main_mac.c',
             'app/helper-Info.plist',
           ],
           # TODO(mark): Come up with a fancier way to do this.  It should only

@@ -209,7 +209,7 @@ if (!is_android) {
     }
 
     if (is_mac) {
-      sources += [ "app/chrome_exe_main_mac.cc" ]
+      sources += [ "app/chrome_exe_main_mac.c" ]
       deps += [ ":chrome_dll" ]
 
       # TODO(GYP) lots more stuff in the is_mac block.
