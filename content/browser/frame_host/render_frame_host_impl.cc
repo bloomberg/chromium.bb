@@ -16,6 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
@@ -42,6 +43,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/wake_lock/wake_lock_service_context.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -194,6 +196,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       accessibility_reset_token_(0),
       accessibility_reset_count_(0),
       no_create_browser_accessibility_manager_for_testing_(false),
+      web_ui_type_(WebUI::kNoWebUI),
       weak_ptr_factory_(this) {
   bool is_swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   bool hidden = !!(flags & CREATE_RF_HIDDEN);
@@ -233,6 +236,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  // Release the WebUI before all else as the WebUI accesses the RenderFrameHost
+  // during cleanup.
+  ResetWebUI();
+
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
@@ -1216,6 +1223,7 @@ void RenderFrameHostImpl::OnSwappedOut() {
   TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
   swapout_event_monitor_timeout_->Stop();
 
+  ResetWebUI();
 
   // If this is a main frame RFH that's about to be deleted, update its RVH's
   // swapped-out state here, since SetState won't be called once this RFH is
@@ -2047,6 +2055,65 @@ bool RenderFrameHostImpl::IsFocused() {
           frame_tree_->GetFocusedFrame()->IsDescendantOf(frame_tree_node()));
 }
 
+bool RenderFrameHostImpl::UpdateWebUI(const GURL& dest_url,
+                                      int entry_bindings) {
+  WebUI::TypeID new_web_ui_type = WebUI::kNoWebUI;
+  if (dest_url.is_valid()) {
+    new_web_ui_type =
+        WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
+            GetSiteInstance()->GetBrowserContext(), dest_url);
+  }
+
+  WebUIImpl* prev_web_ui = web_ui_.get();
+  if (new_web_ui_type == WebUI::kNoWebUI) {
+    ResetWebUI();
+  } else {
+    // The current WebUI should be reused when dest_url requires a WebUI and its
+    // type matches the current. Otherwise replace it with a new one.
+    if (web_ui_type_ != new_web_ui_type) {
+      web_ui_ = delegate_->CreateWebUIForRenderFrameHost(dest_url);
+      DCHECK(web_ui_);
+      web_ui_type_ = new_web_ui_type;
+
+      // If we have assigned (zero or more) bindings to the NavigationEntry in
+      // the past, make sure we're not granting it different bindings than it
+      // had before. If so, note it and don't give it any bindings, to avoid a
+      // potential privilege escalation.
+      if (entry_bindings != NavigationEntryImpl::kInvalidBindings &&
+          web_ui_->GetBindings() != entry_bindings) {
+        RecordAction(
+            base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
+        ResetWebUI();
+        return !!prev_web_ui;
+      }
+    }
+  }
+  DCHECK_EQ(!web_ui_, web_ui_type_ == WebUI::kNoWebUI);
+
+  // Check RenderViewHost for proper bindings.
+  if (web_ui_ && !render_view_host_->GetProcess()->IsForGuestsOnly()) {
+    // If a WebUI was created for the URL and the RenderView is not in a guest
+    // process, then enable missing bindings with the RenderViewHost.
+    int new_bindings = web_ui_->GetBindings();
+    if ((render_view_host_->GetEnabledBindings() & new_bindings) !=
+        new_bindings) {
+      render_view_host_->AllowBindings(new_bindings);
+    }
+  } else if (render_view_host_->is_active()) {
+    // If the ongoing navigation is not to a WebUI or the RenderView is in a
+    // guest process, ensure that we don't create an unprivileged RenderView in
+    // a WebUI-enabled process unless it's swapped out.
+    bool url_acceptable_for_webui =
+        WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
+            GetSiteInstance()->GetBrowserContext(), dest_url);
+    if (!url_acceptable_for_webui) {
+      CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+          GetProcess()->GetID()));
+    }
+  }
+  return prev_web_ui != web_ui_.get();
+}
+
 const image_downloader::ImageDownloaderPtr&
 RenderFrameHostImpl::GetMojoImageDownloader() {
   if (!mojo_image_downloader_.get() && GetServiceRegistry()) {
@@ -2356,6 +2423,11 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
 
   if (src.parent_routing_id != -1)
     dst->parent_tree_id = RoutingIDToAXTreeID(src.parent_routing_id);
+}
+
+void RenderFrameHostImpl::ResetWebUI() {
+  web_ui_type_ = WebUI::kNoWebUI;
+  web_ui_.reset();
 }
 
 }  // namespace content

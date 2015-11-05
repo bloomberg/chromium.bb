@@ -81,13 +81,21 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   // WebUIFactory implementation.
   WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
                                                const GURL& url) const override {
-    if (!(should_create_webui_ && HasWebUIScheme(url)))
-      return NULL;
-    return new WebUIController(web_ui);
+    // If WebUI creation is enabled for the test and this is a WebUI URL,
+    // returns a new instance.
+    if (should_create_webui_ && HasWebUIScheme(url))
+      return new WebUIController(web_ui);
+    return nullptr;
   }
 
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override {
+    // If WebUI creation is enabled for the test and this is a WebUI URL,
+    // returns a mock WebUI type.
+    if (should_create_webui_ && HasWebUIScheme(url)) {
+      return const_cast<RenderFrameHostManagerTestWebUIControllerFactory*>(
+          this);
+    }
     return WebUI::kNoWebUI;
   }
 
@@ -1116,12 +1124,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateStateForNavigate() took the short cut path.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    EXPECT_FALSE(manager->speculative_web_ui());
-  } else {
-    EXPECT_FALSE(manager->pending_web_ui());
-  }
+  EXPECT_FALSE(manager->GetNavigatingWebUI());
   EXPECT_TRUE(manager->web_ui());
 
   // Commit.
@@ -1191,12 +1194,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // No cross-process transition happens because we are already in the right
   // SiteInstance.  We should grant bindings immediately.
   EXPECT_EQ(host2, manager2->current_frame_host());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    EXPECT_TRUE(manager2->speculative_web_ui());
-  } else {
-    EXPECT_TRUE(manager2->pending_web_ui());
-  }
+  EXPECT_TRUE(manager2->GetNavigatingWebUI());
   EXPECT_TRUE(
       host2->render_view_host()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
