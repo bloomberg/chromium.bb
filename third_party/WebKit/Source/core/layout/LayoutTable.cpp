@@ -1416,4 +1416,36 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
     LayoutBlock::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 }
 
+LayoutUnit LayoutTable::paddingTop() const
+{
+    if (collapseBorders())
+        return LayoutUnit();
+
+    return LayoutBlock::paddingTop();
+}
+
+LayoutUnit LayoutTable::paddingBottom() const
+{
+    if (collapseBorders())
+        return LayoutUnit();
+
+    return LayoutBlock::paddingBottom();
+}
+
+LayoutUnit LayoutTable::paddingLeft() const
+{
+    if (collapseBorders())
+        return LayoutUnit();
+
+    return LayoutBlock::paddingLeft();
+}
+
+LayoutUnit LayoutTable::paddingRight() const
+{
+    if (collapseBorders())
+        return LayoutUnit();
+
+    return LayoutBlock::paddingRight();
+}
+
 }

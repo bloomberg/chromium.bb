@@ -263,6 +263,14 @@ public:
         return 0;
     }
 
+    // The collapsing border model dissallows paddings on table, which is why we
+    // override those functions.
+    // See http://www.w3.org/TR/CSS2/tables.html#collapsing-borders.
+    LayoutUnit paddingTop() const override;
+    LayoutUnit paddingBottom() const override;
+    LayoutUnit paddingLeft() const override;
+    LayoutUnit paddingRight() const override;
+
     // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
     LayoutUnit paddingEnd() const override { return static_cast<int>(LayoutBlock::paddingEnd()); }
     LayoutUnit paddingStart() const override { return static_cast<int>(LayoutBlock::paddingStart()); }

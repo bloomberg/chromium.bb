@@ -8,6 +8,6 @@ layer at (0,0) size 800x538
           LayoutTableRow {DIV} at (0,0) size 500x500 [border: (1px solid #FF0000)]
             LayoutTableCell {DIV} at (0,0) size 500x480 [border: (1px solid #0000FF)] [r=0 c=0 rs=1 cs=1]
               LayoutTable {DIV} at (1,1) size 498x478 [border: none]
-                LayoutTableSection (anonymous) at (0,0) size 477x477
-                  LayoutTableRow {DIV} at (0,0) size 477x477 [border: (1px solid #00FFFF)]
+                LayoutTableSection (anonymous) at (0,0) size 497x477
+                  LayoutTableRow {DIV} at (0,0) size 497x477 [border: (1px solid #00FFFF)]
                     LayoutTableCell {DIV} at (0,0) size 497x1 [border: (1px solid #FF00FF)] [r=0 c=0 rs=1 cs=1]

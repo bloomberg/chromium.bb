@@ -185,8 +185,10 @@ public:
     LayoutUnit computedCSSPaddingStart() const { return computedCSSPadding(style()->paddingStart()); }
     LayoutUnit computedCSSPaddingEnd() const { return computedCSSPadding(style()->paddingEnd()); }
 
-    // These functions are used during layout. Table cells override them to
-    // include the intrinsic padding (see explanations in LayoutTableCell).
+    // These functions are used during layout.
+    // - Table cells override them to include the intrinsic padding (see
+    // explanations in LayoutTableCell).
+    // - Table override them to exclude padding with collapsing borders.
     virtual LayoutUnit paddingTop() const { return computedCSSPaddingTop(); }
     virtual LayoutUnit paddingBottom() const { return computedCSSPaddingBottom(); }
     virtual LayoutUnit paddingLeft() const { return computedCSSPaddingLeft(); }
