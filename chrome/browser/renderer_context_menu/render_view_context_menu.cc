@@ -392,6 +392,8 @@ void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
   // one.
   gfx::Path circular_mask;
   gfx::Canvas canvas(icon.Size(), 1.0f, true);
+  canvas.FillRect(gfx::Rect(icon.Size()), SK_ColorTRANSPARENT,
+                  SkXfermode::kClear_Mode);
   circular_mask.addCircle(SkIntToScalar(width) / 2, SkIntToScalar(height) / 2,
                           SkIntToScalar(std::min(width, height)) / 2);
   canvas.ClipPath(circular_mask, true);
