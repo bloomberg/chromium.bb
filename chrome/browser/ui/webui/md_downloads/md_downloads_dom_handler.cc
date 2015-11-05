@@ -506,7 +506,7 @@ void MdDownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
   if (!file)
     return;
 
-  std::vector<content::DownloadItem*> downloads;
+  DownloadVector downloads;
   downloads.push_back(file);
   RemoveDownloads(downloads);
 }
@@ -516,7 +516,7 @@ void MdDownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
   if (removals_.empty())
     return;
 
-  const std::set<uint32> last_removed_ids = removals_.back();
+  const IdSet last_removed_ids = removals_.back();
   removals_.pop_back();
 
   for (auto id : last_removed_ids) {
@@ -549,7 +549,7 @@ void MdDownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
 
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
 
-  std::vector<content::DownloadItem*> downloads;
+  DownloadVector downloads;
   if (GetMainNotifierManager())
     GetMainNotifierManager()->GetAllDownloads(&downloads);
   if (GetOriginalNotifierManager())
@@ -557,9 +557,8 @@ void MdDownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
   RemoveDownloads(downloads);
 }
 
-void MdDownloadsDOMHandler::RemoveDownloads(
-    const std::vector<content::DownloadItem*>& to_remove) {
-  std::set<uint32> ids;
+void MdDownloadsDOMHandler::RemoveDownloads(const DownloadVector& to_remove) {
+  IdSet ids;
 
   for (auto* download : to_remove) {
     DownloadItemModel item_model(download);
@@ -618,7 +617,7 @@ content::DownloadManager* MdDownloadsDOMHandler::GetOriginalNotifierManager()
 
 void MdDownloadsDOMHandler::FinalizeRemovals() {
   while (!removals_.empty()) {
-    const std::set<uint32> remove = removals_.back();
+    const IdSet remove = removals_.back();
     removals_.pop_back();
 
     for (const auto id : remove) {

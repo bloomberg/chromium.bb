@@ -108,9 +108,8 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler,
   void FinalizeRemovals();
 
  private:
-  // Shorthand for |observing_items_|, which tracks all items that this is
-  // observing so that RemoveObserver will be called for all of them.
-  typedef std::set<content::DownloadItem*> DownloadSet;
+  using IdSet = std::set<uint32>;
+  using DownloadVector = std::vector<content::DownloadItem*>;
 
   // Convenience method to call |main_notifier_->GetManager()| while
   // null-checking |main_notifier_|.
@@ -146,7 +145,7 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler,
   content::DownloadItem* GetDownloadById(uint32 id);
 
   // Remove all downloads in |to_remove| with the ability to undo removal later.
-  void RemoveDownloads(const std::vector<content::DownloadItem*>& to_remove);
+  void RemoveDownloads(const DownloadVector& to_remove);
 
   // Weak reference to the DownloadManager this class was constructed with. You
   // should probably be using use Get{Main,Original}NotifierManager() instead.
@@ -163,13 +162,13 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler,
   scoped_ptr<AllDownloadItemNotifier> original_notifier_;
 
   // IDs of downloads to remove when this handler gets deleted.
-  std::vector<std::set<uint32>> removals_;
+  std::vector<IdSet> removals_;
 
   // Whether a call to SendCurrentDownloads() is currently scheduled.
   bool update_scheduled_;
 
   // IDs of new downloads that the page doesn't know about yet.
-  std::set<uint32> new_downloads_;
+  IdSet new_downloads_;
 
   base::WeakPtrFactory<MdDownloadsDOMHandler> weak_ptr_factory_;
 
