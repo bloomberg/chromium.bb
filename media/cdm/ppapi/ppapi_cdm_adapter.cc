@@ -341,8 +341,10 @@ PpapiCdmAdapter::PpapiCdmAdapter(PP_Instance instance, pp::Module* module)
 PpapiCdmAdapter::~PpapiCdmAdapter() {}
 
 CdmWrapper* PpapiCdmAdapter::CreateCdmInstance(const std::string& key_system) {
-  CdmWrapper* cdm = CdmWrapper::Create(key_system.data(), key_system.size(),
-                                       GetCdmHost, this);
+  // The Pepper plugin will be staticly linked to the CDM, so pass the plugin's
+  // CreateCdmInstance() to CdmWrapper.
+  CdmWrapper* cdm = CdmWrapper::Create(::CreateCdmInstance, key_system.data(),
+                                       key_system.size(), GetCdmHost, this);
 
   const std::string message = "CDM instance for " + key_system +
                               (cdm ? "" : " could not be") + " created.";

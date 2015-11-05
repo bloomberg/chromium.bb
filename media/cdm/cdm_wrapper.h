@@ -12,6 +12,7 @@
 #include "media/cdm/supported_cdm_versions.h"
 
 #if defined(USE_PPAPI_CDM_ADAPTER)
+// When building the ppapi adapter do not include any non-trivial base/ headers.
 #include "ppapi/cpp/logging.h"
 #define PLATFORM_DCHECK PP_DCHECK
 #else
@@ -20,6 +21,19 @@
 #endif
 
 namespace media {
+
+// Returns a pointer to the requested CDM upon success.
+// Returns NULL if an error occurs or the requested |cdm_interface_version| or
+// |key_system| is not supported or another error occurs.
+// The caller should cast the returned pointer to the type matching
+// |cdm_interface_version|.
+// Caller retains ownership of arguments and must call Destroy() on the returned
+// object.
+typedef void* (*CreateCdmFunc)(int cdm_interface_version,
+                               const char* key_system,
+                               uint32_t key_system_size,
+                               GetCdmHostFunc get_cdm_host_func,
+                               void* user_data);
 
 // CdmWrapper wraps different versions of ContentDecryptionModule interfaces and
 // exposes a common interface to the caller.
@@ -36,7 +50,8 @@ namespace media {
 // (just a shim layer in most cases), everything is done in this header file.
 class CdmWrapper {
  public:
-  static CdmWrapper* Create(const char* key_system,
+  static CdmWrapper* Create(CreateCdmFunc create_cdm_func,
+                            const char* key_system,
                             uint32_t key_system_size,
                             GetCdmHostFunc get_cdm_host_func,
                             void* user_data);
@@ -103,15 +118,16 @@ class CdmWrapper {
 template <class CdmInterface>
 class CdmWrapperImpl : public CdmWrapper {
  public:
-  static CdmWrapper* Create(const char* key_system,
+  static CdmWrapper* Create(CreateCdmFunc create_cdm_func,
+                            const char* key_system,
                             uint32_t key_system_size,
                             GetCdmHostFunc get_cdm_host_func,
                             void* user_data) {
     void* cdm_instance =
-        ::CreateCdmInstance(CdmInterface::kVersion, key_system, key_system_size,
-                            get_cdm_host_func, user_data);
+        create_cdm_func(CdmInterface::kVersion, key_system, key_system_size,
+                        get_cdm_host_func, user_data);
     if (!cdm_instance)
-      return NULL;
+      return nullptr;
 
     return new CdmWrapperImpl<CdmInterface>(
         static_cast<CdmInterface*>(cdm_instance));
@@ -256,7 +272,8 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_7>::
       init_data_type_as_string.length(), init_data, init_data_size);
 }
 
-CdmWrapper* CdmWrapper::Create(const char* key_system,
+CdmWrapper* CdmWrapper::Create(CreateCdmFunc create_cdm_func,
+                               const char* key_system,
                                uint32_t key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
@@ -280,13 +297,15 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
   // Try to create the CDM using the latest CDM interface version.
   CdmWrapper* cdm_wrapper =
       CdmWrapperImpl<cdm::ContentDecryptionModule>::Create(
-          key_system, key_system_size, get_cdm_host_func, user_data);
+          create_cdm_func, key_system, key_system_size, get_cdm_host_func,
+          user_data);
 
   // If |cdm_wrapper| is NULL, try to create the CDM using older supported
   // versions of the CDM interface here.
   if (!cdm_wrapper) {
     cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_7>::Create(
-        key_system, key_system_size, get_cdm_host_func, user_data);
+        create_cdm_func, key_system, key_system_size, get_cdm_host_func,
+        user_data);
   }
 
   return cdm_wrapper;

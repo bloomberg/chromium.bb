@@ -165,6 +165,9 @@ class PpapiCdmAdapter : public pp::Instance,
     std::string legacy_destination_url;
   };
 
+  // Create an instance of the |key_system| CDM. Caller owns the returned
+  // pointer. On error (unable to load CDM, does not support |key_system|,
+  // does not support an supported interface, etc.) NULL will be returned.
   CdmWrapper* CreateCdmInstance(const std::string& key_system);
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
