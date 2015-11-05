@@ -12,7 +12,6 @@
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
-#include "mandoline/ui/common/util.h"
 #include "mandoline/ui/desktop_ui/browser_commands.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mandoline/ui/desktop_ui/find_bar_view.h"
@@ -27,6 +26,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/display_converter.h"
 #include "ui/views/mus/native_widget_view_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -392,7 +392,7 @@ void BrowserWindow::OnHideFindBar() {
 void BrowserWindow::Init(mus::Window* root) {
   DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
   if (!aura_init_) {
-    ui_init_.reset(new ui::mojo::UIInit(GetDisplaysFromWindow(root)));
+    ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
     aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak"));
   }
 

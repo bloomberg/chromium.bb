@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/mus/window_manager_client_area_insets.h"
 #include "ui/views/views_delegate.h"
 
 namespace mojo {
@@ -58,6 +59,8 @@ struct TypeConverter<gfx::Display, mus::mojom::DisplayPtr> {
 
 }  // namespace mojo
 
+namespace views {
+
 namespace {
 
 using WindowManagerConnectionPtr =
@@ -69,18 +72,23 @@ base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
 
 std::vector<gfx::Display> GetDisplaysFromWindowManager(
     mus::mojom::WindowManagerPtr* window_manager) {
+  WindowManagerClientAreaInsets client_insets;
   std::vector<gfx::Display> displays;
-  (*window_manager)->GetDisplays(
-      [&displays](mojo::Array<mus::mojom::DisplayPtr> mojom_displays) {
-        displays = mojom_displays.To<std::vector<gfx::Display>>();
+  (*window_manager)
+      ->GetConfig([&displays,
+                   &client_insets](mus::mojom::WindowManagerConfigPtr results) {
+        displays = results->displays.To<std::vector<gfx::Display>>();
+        client_insets.normal_insets =
+            results->normal_client_area_insets.To<gfx::Insets>();
+        client_insets.maximized_insets =
+            results->maximized_client_area_insets.To<gfx::Insets>();
       });
   CHECK(window_manager->WaitForIncomingResponse());
+  NativeWidgetMus::SetWindowManagerClientAreaInsets(client_insets);
   return displays;
 }
 
-}
-
-namespace views {
+}  // namespace
 
 // static
 void WindowManagerConnection::Create(

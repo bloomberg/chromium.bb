@@ -122,26 +122,20 @@ void ServerWindow::SetBounds(const gfx::Rect& bounds) {
 
   // TODO(fsamuel): figure out how will this work with CompositorFrames.
 
-  // |client_area_| is relative to the bounds. If the size of bounds change
-  // we have to reset the client area. We assume any size change is quicky
-  // followed by a client area change.
-  if (bounds_.size() != bounds.size())
-    client_area_ = gfx::Rect(bounds.size());
-
   const gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnWindowBoundsChanged(this, old_bounds, bounds));
 }
 
-void ServerWindow::SetClientArea(const gfx::Rect& bounds) {
-  if (client_area_ == bounds)
+void ServerWindow::SetClientArea(const gfx::Insets& insets) {
+  if (client_area_ == insets)
     return;
 
-  const gfx::Rect old_client_area = client_area_;
-  client_area_ = bounds;
+  const gfx::Insets old_client_area = client_area_;
+  client_area_ = insets;
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowClientAreaChanged(this, old_client_area, bounds));
+                    OnWindowClientAreaChanged(this, old_client_area, insets));
 }
 
 const ServerWindow* ServerWindow::GetRoot() const {

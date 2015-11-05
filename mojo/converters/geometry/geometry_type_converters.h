@@ -6,6 +6,7 @@
 #define MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
 
 #include "mojo/converters/geometry/mojo_geometry_export.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -76,6 +77,24 @@ struct MOJO_GEOMETRY_EXPORT TypeConverter<Size, gfx::Size> {
 template <>
 struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Size, Size> {
   static gfx::Size Convert(const Size& input);
+};
+
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<Insets, gfx::Insets> {
+  static Insets Convert(const gfx::Insets& input);
+};
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Insets, Insets> {
+  static gfx::Insets Convert(const Insets& input);
+};
+
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<InsetsPtr, gfx::Insets> {
+  static InsetsPtr Convert(const gfx::Insets& input);
+};
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Insets, InsetsPtr> {
+  static gfx::Insets Convert(const InsetsPtr& input);
 };
 
 }  // namespace mojo

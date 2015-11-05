@@ -15,6 +15,7 @@
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mus {
@@ -182,9 +183,9 @@ void WindowTreeClientImpl::OnSetBoundsResponse(
 }
 
 void WindowTreeClientImpl::SetClientArea(Id window_id,
-                                         const gfx::Rect& client_area) {
+                                         const gfx::Insets& client_area) {
   DCHECK(tree_);
-  tree_->SetClientArea(window_id, mojo::Rect::From(client_area));
+  tree_->SetClientArea(window_id, mojo::Insets::From(client_area));
 }
 
 void WindowTreeClientImpl::SetFocus(Id window_id) {
@@ -361,12 +362,13 @@ void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,
       .LocalSetBounds(old_bounds.To<gfx::Rect>(), new_bounds.To<gfx::Rect>());
 }
 
-void WindowTreeClientImpl::OnClientAreaChanged(uint32_t window_id,
-                                               mojo::RectPtr old_client_area,
-                                               mojo::RectPtr new_client_area) {
+void WindowTreeClientImpl::OnClientAreaChanged(
+    uint32_t window_id,
+    mojo::InsetsPtr old_client_area,
+    mojo::InsetsPtr new_client_area) {
   Window* window = GetWindowById(window_id);
   if (window)
-    WindowPrivate(window).LocalSetClientArea(new_client_area.To<gfx::Rect>());
+    WindowPrivate(window).LocalSetClientArea(new_client_area.To<gfx::Insets>());
 }
 
 namespace {

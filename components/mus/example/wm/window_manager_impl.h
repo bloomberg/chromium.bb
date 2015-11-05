@@ -39,7 +39,7 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   void SetShowState(mus::Id window_id,
                     mus::mojom::ShowState show_state,
                     const WindowManagerErrorCodeCallback& callback) override;
-  void GetDisplays(const GetDisplaysCallback& callback) override;
+  void GetConfig(const GetConfigCallback& callback) override;
 
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;

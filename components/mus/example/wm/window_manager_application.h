@@ -21,8 +21,17 @@
 class BackgroundLayout;
 class ShelfLayout;
 class WindowLayout;
-
 class WindowManagerImpl;
+
+namespace ui {
+namespace mojo {
+class UIInit;
+}
+}
+
+namespace views {
+class AuraInit;
+}
 
 class WindowManagerApplication
     : public mojo::ApplicationDelegate,
@@ -40,6 +49,8 @@ class WindowManagerApplication
 
   mus::Window* GetWindowForContainer(ash::mojom::Container container);
   mus::Window* GetWindowById(mus::Id id);
+
+  mojo::ApplicationImpl* app() { return app_; }
 
  private:
   // ApplicationDelegate:
@@ -66,7 +77,12 @@ class WindowManagerApplication
   mus::Window* root_;
   int window_count_;
 
+  mojo::ApplicationImpl* app_;
+
   mus::mojom::WindowTreeHostPtr host_;
+
+  scoped_ptr<ui::mojo::UIInit> ui_init_;
+  scoped_ptr<views::AuraInit> aura_init_;
 
   // |window_manager_| is created once OnEmbed() is called. Until that time
   // |requests_| stores any pending WindowManager interface requests.

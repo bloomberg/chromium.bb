@@ -255,8 +255,8 @@ void ConnectionManager::ProcessWindowBoundsChanged(
 
 void ConnectionManager::ProcessClientAreaChanged(
     const ServerWindow* window,
-    const gfx::Rect& old_client_area,
-    const gfx::Rect& new_client_area) {
+    const gfx::Insets& old_client_area,
+    const gfx::Insets& new_client_area) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessClientAreaChanged(
         window, old_client_area, new_client_area, IsChangeSource(pair.first));
@@ -387,8 +387,8 @@ void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
 
 void ConnectionManager::OnWindowClientAreaChanged(
     ServerWindow* window,
-    const gfx::Rect& old_client_area,
-    const gfx::Rect& new_client_area) {
+    const gfx::Insets& old_client_area,
+    const gfx::Insets& new_client_area) {
   if (in_destructor_)
     return;
 

@@ -37,3 +37,10 @@ struct Transform {
   // Row major order.
   array<float, 16> matrix;
 };
+
+struct Insets {
+  int32 top;
+  int32 left;
+  int32 bottom;
+  int32 right;
+};

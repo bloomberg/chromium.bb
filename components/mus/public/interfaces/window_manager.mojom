@@ -8,6 +8,12 @@ import "components/mus/public/interfaces/window_manager_constants.mojom";
 import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
+struct WindowManagerConfig {
+  array<Display> displays;
+  mojo.Insets normal_client_area_insets;
+  mojo.Insets maximized_client_area_insets;
+};
+
 // Represents a core interface that should be implemented by any window manager
 // built on top of Mus.
 // For security reasons, methods that take window_ids can only pass window ids
@@ -35,5 +41,5 @@ interface WindowManager {
   SetShowState(uint32 window_id, ShowState show_state) =>
       (WindowManagerErrorCode result);
 
-  GetDisplays() => (array<Display> displays);
+  GetConfig() => (WindowManagerConfig config);
 };

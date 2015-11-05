@@ -303,7 +303,7 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   child.SetBounds(gfx::Rect(10, 10, 20, 20));
 
-  child.SetClientArea(gfx::Rect(5, 5, 10, 10));
+  child.SetClientArea(gfx::Insets(5, 5, 5, 5));
 
   TestEventDispatcherDelegate event_dispatcher_delegate(&root);
   EventDispatcher dispatcher(&event_dispatcher_delegate);

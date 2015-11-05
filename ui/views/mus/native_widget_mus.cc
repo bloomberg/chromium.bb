@@ -10,15 +10,23 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
+#include "ui/compositor/clip_transform_recorder.h"
+#include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/views/mus/window_manager_client_area_insets.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/custom_frame_view.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
 
 namespace views {
 namespace {
+
+WindowManagerClientAreaInsets* window_manager_client_area_insets = nullptr;
 
 // TODO: figure out what this should be.
 class FocusRulesImpl : public wm::BaseFocusRules {
@@ -61,6 +69,60 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
 };
 
+// As the window manager renderers the non-client decorations this class does
+// very little but honor the client area insets from the window manager.
+class ClientSideNonClientFrameView : public NonClientFrameView {
+ public:
+  explicit ClientSideNonClientFrameView(views::Widget* widget)
+      : widget_(widget) {}
+  ~ClientSideNonClientFrameView() override {}
+
+ private:
+  // Returns the default values of client area insets from the window manager.
+  static gfx::Insets GetDefaultWindowManagerInsets(bool is_maximized) {
+    if (!window_manager_client_area_insets)
+      return gfx::Insets();
+    return is_maximized ? window_manager_client_area_insets->maximized_insets
+                        : window_manager_client_area_insets->normal_insets;
+  }
+
+  // NonClientFrameView:
+  gfx::Rect GetBoundsForClientView() const override {
+    gfx::Rect result(GetLocalBounds());
+    result.Inset(GetDefaultWindowManagerInsets(widget_->IsMaximized()));
+    return result;
+  }
+  gfx::Rect GetWindowBoundsForClientBounds(
+      const gfx::Rect& client_bounds) const override {
+    const gfx::Insets insets(
+        GetDefaultWindowManagerInsets(widget_->IsMaximized()));
+    return gfx::Rect(client_bounds.x() - insets.left(),
+                     client_bounds.y() - insets.top(),
+                     client_bounds.width() + insets.width(),
+                     client_bounds.height() + insets.height());
+  }
+  int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
+    // The window manager provides the shape; do nothing.
+  }
+  void ResetWindowControls() override {
+    // TODO(sky): push to wm?
+  }
+  void UpdateWindowIcon() override {
+    // NOTIMPLEMENTED();
+  }
+  void UpdateWindowTitle() override {
+    // NOTIMPLEMENTED();
+  }
+  void SizeConstraintsChanged() override {
+    // NOTIMPLEMENTED();
+  }
+
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,6 +140,15 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       content_(new aura::Window(this)) {}
 NativeWidgetMus::~NativeWidgetMus() {}
 
+// static
+void NativeWidgetMus::SetWindowManagerClientAreaInsets(
+    const WindowManagerClientAreaInsets& insets) {
+  delete window_manager_client_area_insets;
+  // This is called early on, so we don't bother trying to relayout existing
+  // NativeWidgetMus. When we support restarting the WM we'll need to do that.
+  window_manager_client_area_insets = new WindowManagerClientAreaInsets(insets);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, private:
 
@@ -87,11 +158,19 @@ void NativeWidgetMus::UpdateClientAreaInWindowManager() {
   if (!non_client_view || !non_client_view->client_view())
     return;
 
-  window_->SetClientArea(non_client_view->client_view()->bounds());
+  const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
+  window_->SetClientArea(gfx::Insets(
+      client_area_rect.y(), client_area_rect.x(),
+      non_client_view->bounds().height() - client_area_rect.bottom(),
+      non_client_view->bounds().width() - client_area_rect.right()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, internal::NativeWidgetPrivate implementation:
+
+NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
+  return new ClientSideNonClientFrameView(GetWidget());
+}
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   window_tree_host_.reset(
@@ -117,11 +196,6 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   window_tree_host_->window()->AddChild(content_);
   // TODO(beng): much else, see [Desktop]NativeWidgetAura.
-}
-
-NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
-  // NOTIMPLEMENTED();
-  return nullptr;
 }
 
 bool NativeWidgetMus::ShouldUseNativeFrame() const {
@@ -386,7 +460,7 @@ void NativeWidgetMus::RunShellDrag(
 }
 
 void NativeWidgetMus::SchedulePaintInRect(const gfx::Rect& rect) {
-  // NOTIMPLEMENTED();
+  content_->SchedulePaintInRect(rect);
 }
 
 void NativeWidgetMus::SetCursor(gfx::NativeCursor cursor) {

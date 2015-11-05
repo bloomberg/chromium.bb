@@ -214,7 +214,7 @@ void Window::SetBounds(const gfx::Rect& bounds) {
   LocalSetBounds(bounds_, bounds);
 }
 
-void Window::SetClientArea(const gfx::Rect& client_area) {
+void Window::SetClientArea(const gfx::Insets& client_area) {
   if (!OwnsWindow(connection_, this) && !IsConnectionRoot(this))
     return;
 
@@ -535,13 +535,11 @@ void Window::LocalSetBounds(const gfx::Rect& old_bounds,
   // the bounds.
   DCHECK(!OwnsWindow(connection_, this) || old_bounds == bounds_);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
-  if (bounds_.size() != new_bounds.size())
-    client_area_ = gfx::Rect(new_bounds.size());
   bounds_ = new_bounds;
 }
 
-void Window::LocalSetClientArea(const gfx::Rect& new_client_area) {
-  const gfx::Rect old_client_area = client_area_;
+void Window::LocalSetClientArea(const gfx::Insets& new_client_area) {
+  const gfx::Insets old_client_area = client_area_;
   client_area_ = new_client_area;
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowClientAreaChanged(this, old_client_area));

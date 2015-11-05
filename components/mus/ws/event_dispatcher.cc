@@ -34,8 +34,12 @@ bool IsOnlyOneMouseButtonDown(mojom::EventFlags flags) {
 
 bool IsLocationInNonclientArea(const ServerWindow* target,
                                const gfx::Point& location) {
-  return target->parent() &&
-         !target->client_area().Contains(location);
+  if (!target->parent())
+    return false;
+
+  gfx::Rect client_area(target->bounds().size());
+  client_area.Inset(target->client_area());
+  return !client_area.Contains(location);
 }
 
 gfx::Point EventLocationToPoint(const mojom::Event& event) {

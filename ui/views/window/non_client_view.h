@@ -73,12 +73,19 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   // the parent NonClientView because that makes it more difficult to calculate
   // hittests for regions that are partially obscured by the ClientView, e.g.
   // HTSYSMENU.
+  // Return value is one of the windows HT constants (see ui/base/hit_test.h).
   virtual int NonClientHitTest(const gfx::Point& point) = 0;
+
+  // Used to make the hosting widget shaped (non-rectangular). For a
+  // rectangular window do nothing. For a shaped window update |window_mask|
+  // accordingly. |size| is the size of the widget.
   virtual void GetWindowMask(const gfx::Size& size,
                              gfx::Path* window_mask) = 0;
   virtual void ResetWindowControls() = 0;
   virtual void UpdateWindowIcon() = 0;
   virtual void UpdateWindowTitle() = 0;
+
+  // Whether the widget can be resized or maximized has changed.
   virtual void SizeConstraintsChanged() = 0;
 
   // View:

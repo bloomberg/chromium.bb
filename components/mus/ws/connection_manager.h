@@ -160,8 +160,8 @@ class ConnectionManager : public ServerWindowDelegate,
                                   const gfx::Rect& old_bounds,
                                   const gfx::Rect& new_bounds);
   void ProcessClientAreaChanged(const ServerWindow* window,
-                                const gfx::Rect& old_client_area,
-                                const gfx::Rect& new_client_area);
+                                const gfx::Insets& old_client_area,
+                                const gfx::Insets& new_client_area);
   void ProcessViewportMetricsChanged(const mojom::ViewportMetrics& old_metrics,
                                      const mojom::ViewportMetrics& new_metrics);
   void ProcessWillChangeWindowHierarchy(const ServerWindow* window,
@@ -216,8 +216,8 @@ class ConnectionManager : public ServerWindowDelegate,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
   void OnWindowClientAreaChanged(ServerWindow* window,
-                                 const gfx::Rect& old_client_area,
-                                 const gfx::Rect& new_client_area) override;
+                                 const gfx::Insets& old_client_area,
+                                 const gfx::Insets& new_client_area) override;
   void OnWindowReordered(ServerWindow* window,
                          ServerWindow* relative,
                          mojom::OrderDirection direction) override;

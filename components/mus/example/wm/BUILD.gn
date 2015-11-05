@@ -22,6 +22,10 @@ source_set("example_wm_lib") {
     "layout_manager.h",
     "move_loop.cc",
     "move_loop.h",
+    "non_client_frame_controller.cc",
+    "non_client_frame_controller.h",
+    "non_client_frame_view_impl.cc",
+    "non_client_frame_view_impl.h",
     "property_util.cc",
     "property_util.h",
     "shelf_layout.cc",
@@ -42,6 +46,10 @@ source_set("example_wm_lib") {
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
+    "//skia",
+    "//ui/mojo/init",
+    "//ui/views",
+    "//ui/views/mus",
   ]
 }
 
@@ -53,11 +61,14 @@ mojo_native_application("example_wm") {
   deps = [
     ":example_wm_lib",
     "//mojo/application/public/cpp",
+    "//ui/views/mus:resources",
   ]
 
   data_deps = [
     "//components/mus",
   ]
+
+  resources = [ "$root_out_dir/views_mus_resources.pak" ]
 }
 
 mojo_native_application("apptests") {

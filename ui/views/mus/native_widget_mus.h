@@ -23,6 +23,10 @@ class Shell;
 
 namespace mus {
 class Window;
+
+namespace mojom {
+class WindowManager;
+}
 }
 
 namespace wm {
@@ -30,6 +34,7 @@ class FocusController;
 }
 
 namespace views {
+struct WindowManagerClientAreaInsets;
 class WindowTreeHostMus;
 
 // An implementation of NativeWidget that binds to a mus::Window. Because Aura
@@ -47,12 +52,22 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
                   mus::mojom::SurfaceType surface_type);
   ~NativeWidgetMus() override;
 
+  // Sets the insets for the client area. These values come from the window
+  // manager.
+  static void SetWindowManagerClientAreaInsets(
+      const WindowManagerClientAreaInsets& insets);
+
+  mus::Window* window() { return window_; }
+
+ protected:
+  // internal::NativeWidgetPrivate:
+  NonClientFrameView* CreateNonClientFrameView() override;
+
  private:
   void UpdateClientAreaInWindowManager();
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
-  NonClientFrameView* CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;

@@ -31,6 +31,12 @@ mus::mojom::EventFlags MouseOnlyEventFlags(mus::mojom::EventFlags flags) {
                mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
 }
 
+gfx::Rect ClientAreaBounds(const mus::Window* window) {
+  gfx::Rect client_area(window->bounds().size());
+  client_area.Inset(window->client_area());
+  return client_area;
+}
+
 }  // namespace
 
 MoveLoop::~MoveLoop() {
@@ -44,7 +50,7 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
   DCHECK_EQ(event.action, mus::mojom::EVENT_TYPE_POINTER_DOWN);
   const gfx::Point location(EventLocationToPoint(event));
   if (!gfx::Rect(target->bounds().size()).Contains(location) ||
-      target->client_area().Contains(location)) {
+      ClientAreaBounds(target).Contains(location)) {
     return nullptr;
   }
 
@@ -123,16 +129,17 @@ void MoveLoop::DetermineType(mus::Window* target,
       kResizeSize *
       std::max(1.f, target->viewport_metrics().device_pixel_ratio));
 
-  if (location.x() < target->client_area().x())
+  const gfx::Rect client_area(ClientAreaBounds(target));
+  if (location.x() < client_area.x())
     *h_loc = HorizontalLocation::LEFT;
-  else if (location.x() >= target->client_area().right())
+  else if (location.x() >= client_area.right())
     *h_loc = HorizontalLocation::RIGHT;
   else
     *h_loc = HorizontalLocation::OTHER;
 
   if (location.y() < resize_size)
     *v_loc = VerticalLocation::TOP;
-  else if (location.y() >= target->client_area().bottom())
+  else if (location.y() >= client_area.bottom())
     *v_loc = VerticalLocation::BOTTOM;
   else
     *v_loc = VerticalLocation::OTHER;

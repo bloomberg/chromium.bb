@@ -22,10 +22,9 @@ void SetClientArea(mus::Window* window) {
   if (window->bounds().IsEmpty())
     window->SetBounds(gfx::Rect(100, 200, 300, 400));
 
-  gfx::Rect client_area(window->bounds().size());
-  client_area.Inset(MoveLoop::kResizeSize, MoveLoop::kResizeSize + 10,
-                    MoveLoop::kResizeSize, MoveLoop::kResizeSize);
-  window->SetClientArea(client_area);
+  window->SetClientArea(
+      gfx::Insets(MoveLoop::kResizeSize + 10, MoveLoop::kResizeSize,
+                  MoveLoop::kResizeSize, MoveLoop::kResizeSize));
 }
 
 mus::mojom::EventPtr CreatePointerDownEvent(const gfx::Point& location) {

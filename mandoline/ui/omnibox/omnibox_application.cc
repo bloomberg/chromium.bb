@@ -10,7 +10,6 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/url_formatter/url_fixer.h"
-#include "mandoline/ui/common/util.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/common_type_converters.h"
@@ -20,6 +19,7 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/display_converter.h"
 #include "ui/views/mus/native_widget_view_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -119,7 +119,7 @@ void OmniboxImpl::OnEmbed(mus::Window* root) {
   root_ = root;
 
   if (!aura_init_.get()) {
-    ui_init_.reset(new ui::mojo::UIInit(GetDisplaysFromWindow(root_)));
+    ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root_)));
     aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak"));
     edit_ = new views::Textfield;
     edit_->set_controller(this);

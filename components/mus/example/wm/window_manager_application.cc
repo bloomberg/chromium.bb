@@ -13,9 +13,12 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mojo/application/public/cpp/application_connection.h"
+#include "ui/mojo/init/ui_init.h"
+#include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/display_converter.h"
 
 WindowManagerApplication::WindowManagerApplication()
-    : root_(nullptr), window_count_(0) {}
+    : root_(nullptr), window_count_(0), app_(nullptr) {}
 WindowManagerApplication::~WindowManagerApplication() {}
 
 mus::Window* WindowManagerApplication::GetWindowForContainer(
@@ -30,6 +33,7 @@ mus::Window* WindowManagerApplication::GetWindowById(mus::Id id) {
 }
 
 void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
+  app_ = app;
   mus::mojom::WindowManagerPtr window_manager;
   requests_.push_back(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
       mojo::GetProxy(&window_manager)));
@@ -54,6 +58,10 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
       GetWindowForContainer(ash::mojom::CONTAINER_USER_WINDOWS)));
 
   window_manager_.reset(new WindowManagerImpl(this));
+
+  ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
+  aura_init_.reset(new views::AuraInit(app_, "views_mus_resources.pak"));
+
   for (auto request : requests_)
     window_manager_binding_.AddBinding(window_manager_.get(), request->Pass());
   requests_.clear();

@@ -54,7 +54,7 @@ class WindowPrivate {
                       const gfx::Rect& new_bounds) {
     window_->LocalSetBounds(old_bounds, new_bounds);
   }
-  void LocalSetClientArea(const gfx::Rect& new_client_area) {
+  void LocalSetClientArea(const gfx::Insets& new_client_area) {
     window_->LocalSetClientArea(new_client_area);
   }
   void LocalSetDrawn(bool drawn) { window_->LocalSetDrawn(drawn); }

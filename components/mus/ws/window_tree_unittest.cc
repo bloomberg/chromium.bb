@@ -77,8 +77,8 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                                    new_bounds.Pass());
   }
   void OnClientAreaChanged(uint32_t window_id,
-                           mojo::RectPtr old_client_area,
-                           mojo::RectPtr new_client_area) override {}
+                           mojo::InsetsPtr old_client_area,
+                           mojo::InsetsPtr new_client_area) override {}
   void OnWindowViewportMetricsChanged(
       mojom::ViewportMetricsPtr old_metrics,
       mojom::ViewportMetricsPtr new_metrics) override {

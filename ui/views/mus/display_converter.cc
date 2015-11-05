@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/common/util.h"
+#include "ui/views/mus/display_converter.h"
 
 #include "components/mus/public/cpp/window.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
-namespace mandoline {
+namespace views {
 
 std::vector<gfx::Display> GetDisplaysFromWindow(mus::Window* window) {
   static int64 synthesized_display_id = 2000;
@@ -21,4 +21,4 @@ std::vector<gfx::Display> GetDisplaysFromWindow(mus::Window* window) {
   return displays;
 }
 
-}  // namespace mandoline
+}  // namespace views

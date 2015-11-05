@@ -8,6 +8,7 @@
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 
 namespace gfx {
+class Insets;
 class Rect;
 }
 
@@ -46,8 +47,8 @@ class ServerWindowObserver {
                                      const gfx::Rect& new_bounds) {}
 
   virtual void OnWindowClientAreaChanged(ServerWindow* window,
-                                         const gfx::Rect& old_client_area,
-                                         const gfx::Rect& new_client_area) {}
+                                         const gfx::Insets& old_client_area,
+                                         const gfx::Insets& new_client_area) {}
 
   virtual void OnWindowReordered(ServerWindow* window,
                                  ServerWindow* relative,
