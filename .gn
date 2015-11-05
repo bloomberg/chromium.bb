@@ -73,7 +73,7 @@ check_targets = [
   # core includes stuff from the content version of the dom_distiller.
   #"//components/dom_distiller/*",
 
-  #"//components/domain_reliability/*",  # TODO(brettw) gn gets confused by generated .cc file.
+  "//components/domain_reliability/*",
   "//components/drive/*",
   "//components/enhanced_bookmarks/*",
   "//components/error_page/*",
@@ -112,14 +112,15 @@ check_targets = [
   #"//components/navigation_interception/*",
   #"//components/navigation_metrics/*",
   "//components/net_log/*",
+
   #"//components/network_hints/*",
   "//components/network_time/*",
+
   #"//components/offline_pages/*",
   #"//components/omnibox/*",
   #"//components/onc/*",
   #"//components/open_from_clipboard/*",
   #"//components/os_crypt/*",
-
   #"//components/ownership/*",
   #"//components/packed_ct_ev_whitelist/*",
   #"//components/page_load_metrics/*",
