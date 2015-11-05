@@ -117,7 +117,7 @@ void HeapDumpWriter::WriteTypeId(TypeId type_id) {
     traced_value_->SetString("type", "");
   } else {
     // Format the type ID as a string.
-    SStringPrintf(&buffer_, "%i", type_id);
+    SStringPrintf(&buffer_, "%" PRIu16, type_id);
     traced_value_->SetString("type", buffer_);
   }
 }
