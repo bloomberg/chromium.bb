@@ -686,7 +686,28 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Swipes the panel up to its expanded state.
+     * Generate a swipe sequence from the given start/end X,Y percentages, for the given steps.
+     * Works in either landscape or portrait orientation.
+     */
+    private void swipe(float startX, float startY, float endX, float endY, int stepCount) {
+        Point size = new Point();
+        getActivity().getWindowManager().getDefaultDisplay().getSize(size);
+        float dragStartX = size.x * startX;
+        float dragEndX = size.x * endX;
+        float dragStartY = size.y * startY;
+        float dragEndY = size.y * endY;
+        int halfCount = stepCount / 2;
+        long downTime = SystemClock.uptimeMillis();
+        dragStart(dragStartX, dragStartY, downTime);
+        dragTo(dragStartX, dragEndX, dragStartY, dragEndY, halfCount, downTime);
+        // Generate events in the stationary end position in order to simulate a "pause" in
+        // the movement, therefore preventing this gesture from being interpreted as a fling.
+        dragTo(dragEndX, dragEndX, dragEndY, dragEndY, halfCount, downTime);
+        dragEnd(dragEndX, dragEndY, downTime);
+    }
+
+    /**
+     * Flings the panel up to its expanded state.
      */
     private void flingPanelUp() {
         // TODO(pedrosimonetti): Consider using a swipe method instead.
@@ -694,7 +715,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Swipes the panel up to its maximized state.
+     * Swipes the panel down to its peeked state.
+     */
+    private void swipePanelDown() {
+        swipe(0.5f, 0.55f, 0.5f, 0.95f, 100);
+    }
+
+    /**
+     * Flings the panel up to its maximized state.
      */
     private void flingPanelUpToTop() {
         // TODO(pedrosimonetti): Consider using a swipe method instead.
@@ -2258,6 +2286,77 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
+     * Tests swiping panel up and down after a tap search will only load the Content once.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testTapMultipleSwipeOnlyLoadsContentOnce()
+            throws InterruptedException, TimeoutException {
+        // Simulate a tap and make sure Content is not visible.
+        simulateTapSearch("search");
+        assertContentViewCoreCreatedButNeverMadeVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Swiping the Panel should make the Content visible.
+        tapPeekingBarToExpandAndAssert();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Swiping the Panel down should not change the visibility or load content again.
+        swipePanelDown();
+        waitForPanelToPeekAndAssert();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Swiping the Panel up should not change the visibility or load content again.
+        tapPeekingBarToExpandAndAssert();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Closing the Panel should destroy the Content.
+        tapBasePageToClosePanel();
+        assertNoContentViewCore();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+    }
+
+    /**
+     * Tests swiping panel up and down after a long press search will only load the Content once.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testLongPressMultipleSwipeOnlyLoadsContentOnce()
+            throws InterruptedException, TimeoutException {
+        // Simulate a long press and make sure no Content is created.
+        simulateLongPressSearch("search");
+        assertNoContentViewCore();
+        assertNoSearchesLoaded();
+
+        // Swiping the Panel should load the URL and make the Content visible.
+        tapPeekingBarToExpandAndAssert();
+        assertContentViewCoreCreated();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Swiping the Panel down should not change the visibility or load content again.
+        swipePanelDown();
+        waitForPanelToPeekAndAssert();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Swiping the Panel up should not change the visibility or load content again.
+        tapPeekingBarToExpandAndAssert();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Closing the Panel should destroy the Content.
+        tapBasePageToClosePanel();
+        assertNoContentViewCore();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+    }
+
+    /**
      * Tests that chained tap searches create new Content.
      */
     @SmallTest
@@ -2293,6 +2392,51 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         tapBasePageToClosePanel();
         assertNoContentViewCore();
         assertEquals(3, mFakeServer.getLoadedUrlCount());
+    }
+
+    /**
+     * Tests that chained searches load correctly.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testChainedSearchLoadsCorrectSearchTerm()
+            throws InterruptedException, TimeoutException {
+        // Simulate a tap and make sure Content is not visible.
+        simulateTapSearch("search");
+        assertContentViewCoreCreatedButNeverMadeVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+        ContentViewCore cvc1 = getPanelContentViewCore();
+
+        // Swiping the Panel should make the Content visible.
+        tapPeekingBarToExpandAndAssert();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        // Swiping the Panel down should not change the visibility or load content again.
+        swipePanelDown();
+        waitForPanelToPeekAndAssert();
+        assertContentViewCoreVisible();
+        assertEquals(1, mFakeServer.getLoadedUrlCount());
+
+        waitToPreventDoubleTapRecognition();
+
+        // Now simulate a long press, leaving the Panel peeking.
+        simulateLongPressSearch("resolution");
+
+        // Swiping the Panel up should load and display the new search.
+        tapPeekingBarToExpandAndAssert();
+        assertContentViewCoreCreated();
+        assertContentViewCoreVisible();
+        assertEquals(2, mFakeServer.getLoadedUrlCount());
+        assertLoadedSearchTermMatches("Resolution");
+        ContentViewCore cvc2 = getPanelContentViewCore();
+        assertNotSame(cvc1, cvc2);
+
+        // Closing the Panel should destroy the Content.
+        tapBasePageToClosePanel();
+        assertNoContentViewCore();
+        assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
 
     /**
