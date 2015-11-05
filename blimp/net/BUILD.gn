@@ -13,10 +13,14 @@ component("blimp_net") {
     "blimp_transport.h",
     "common.cc",
     "common.h",
-    "packet_reader.cc",
     "packet_reader.h",
-    "packet_writer.cc",
     "packet_writer.h",
+    "stream_packet_reader.cc",
+    "stream_packet_reader.h",
+    "stream_packet_writer.cc",
+    "stream_packet_writer.h",
+    "stream_socket_connection.cc",
+    "stream_socket_connection.h",
     "tcp_client_transport.cc",
     "tcp_client_transport.h",
   ]
@@ -35,8 +39,8 @@ source_set("unit_tests") {
 
   sources = [
     "blimp_message_dispatcher_unittest.cc",
-    "packet_reader_unittest.cc",
-    "packet_writer_unittest.cc",
+    "stream_packet_reader_unittest.cc",
+    "stream_packet_writer_unittest.cc",
     "test_common.cc",
     "test_common.h",
   ]

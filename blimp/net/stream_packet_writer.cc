@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/packet_writer.h"
+#include "blimp/net/stream_packet_writer.h"
 
 #include <iostream>
 
@@ -20,22 +20,22 @@
 namespace blimp {
 
 std::ostream& operator<<(std::ostream& out,
-                         const PacketWriter::WriteState state) {
+                         const StreamPacketWriter::WriteState state) {
   switch (state) {
-    case PacketWriter::WriteState::IDLE:
+    case StreamPacketWriter::WriteState::IDLE:
       out << "IDLE";
       break;
-    case PacketWriter::WriteState::HEADER:
+    case StreamPacketWriter::WriteState::HEADER:
       out << "HEADER";
       break;
-    case PacketWriter::WriteState::PAYLOAD:
+    case StreamPacketWriter::WriteState::PAYLOAD:
       out << "PAYLOAD";
       break;
   }
   return out;
 }
 
-PacketWriter::PacketWriter(net::StreamSocket* socket)
+StreamPacketWriter::StreamPacketWriter(net::StreamSocket* socket)
     : write_state_(WriteState::IDLE),
       socket_(socket),
       header_buffer_(
@@ -45,10 +45,10 @@ PacketWriter::PacketWriter(net::StreamSocket* socket)
   DCHECK(socket_);
 }
 
-PacketWriter::~PacketWriter() {}
+StreamPacketWriter::~StreamPacketWriter() {}
 
-int PacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
-                              const net::CompletionCallback& callback) {
+int StreamPacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
+                                    const net::CompletionCallback& callback) {
   DCHECK_EQ(WriteState::IDLE, write_state_);
   DCHECK(data);
   if (data->BytesRemaining() == 0) {
@@ -77,7 +77,7 @@ int PacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
   return result;
 }
 
-int PacketWriter::DoWriteLoop(int result) {
+int StreamPacketWriter::DoWriteLoop(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
   DCHECK_GE(result, 0);
   DCHECK_NE(WriteState::IDLE, write_state_);
@@ -103,37 +103,39 @@ int PacketWriter::DoWriteLoop(int result) {
   return result;
 }
 
-int PacketWriter::DoWriteHeader(int result) {
+int StreamPacketWriter::DoWriteHeader(int result) {
   DCHECK_EQ(WriteState::HEADER, write_state_);
   DCHECK_GE(result, 0);
 
   header_buffer_->DidConsume(result);
   if (header_buffer_->BytesRemaining() > 0) {
-    return socket_->Write(
-        header_buffer_.get(), header_buffer_->BytesRemaining(),
-        base::Bind(&PacketWriter::OnWriteComplete, weak_factory_.GetWeakPtr()));
+    return socket_->Write(header_buffer_.get(),
+                          header_buffer_->BytesRemaining(),
+                          base::Bind(&StreamPacketWriter::OnWriteComplete,
+                                     weak_factory_.GetWeakPtr()));
   }
 
   write_state_ = WriteState::PAYLOAD;
   return net::OK;
 }
 
-int PacketWriter::DoWritePayload(int result) {
+int StreamPacketWriter::DoWritePayload(int result) {
   DCHECK_EQ(WriteState::PAYLOAD, write_state_);
   DCHECK_GE(result, 0);
 
   payload_buffer_->DidConsume(result);
   if (payload_buffer_->BytesRemaining() > 0) {
-    return socket_->Write(
-        payload_buffer_.get(), payload_buffer_->BytesRemaining(),
-        base::Bind(&PacketWriter::OnWriteComplete, weak_factory_.GetWeakPtr()));
+    return socket_->Write(payload_buffer_.get(),
+                          payload_buffer_->BytesRemaining(),
+                          base::Bind(&StreamPacketWriter::OnWriteComplete,
+                                     weak_factory_.GetWeakPtr()));
   }
 
   write_state_ = WriteState::IDLE;
   return net::OK;
 }
 
-void PacketWriter::OnWriteComplete(int result) {
+void StreamPacketWriter::OnWriteComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
 
   // If the write was succesful, then process the result.

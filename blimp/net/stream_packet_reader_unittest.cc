@@ -7,7 +7,7 @@
 
 #include "base/sys_byteorder.h"
 #include "blimp/net/common.h"
-#include "blimp/net/packet_reader.h"
+#include "blimp/net/stream_packet_reader.h"
 #include "blimp/net/test_common.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -30,16 +30,16 @@ namespace {
 
 const size_t kTestMaxBufferSize = 1 << 16;  // 64KB
 
-class PacketReaderTest : public testing::Test {
+class StreamPacketReaderTest : public testing::Test {
  public:
-  PacketReaderTest()
+  StreamPacketReaderTest()
       : buffer_(new net::GrowableIOBuffer),
         test_msg_("U WOT M8"),
         data_reader_(&socket_) {
     buffer_->SetCapacity(kTestMaxBufferSize);
   }
 
-  ~PacketReaderTest() override {}
+  ~StreamPacketReaderTest() override {}
 
   int ReadPacket() {
     return data_reader_.ReadPacket(buffer_, callback_.callback());
@@ -51,11 +51,11 @@ class PacketReaderTest : public testing::Test {
   net::TestCompletionCallback callback_;
   testing::StrictMock<MockStreamSocket> socket_;
   testing::InSequence sequence_;
-  PacketReader data_reader_;
+  StreamPacketReader data_reader_;
 };
 
 // Successful read with 1 async header read and 1 async payload read.
-TEST_F(PacketReaderTest, ReadAsyncHeaderAsyncPayload) {
+TEST_F(StreamPacketReaderTest, ReadAsyncHeaderAsyncPayload) {
   net::CompletionCallback socket_cb;
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
@@ -75,7 +75,7 @@ TEST_F(PacketReaderTest, ReadAsyncHeaderAsyncPayload) {
 }
 
 // Successful read with 1 async header read and 1 sync payload read.
-TEST_F(PacketReaderTest, ReadAsyncHeaderSyncPayload) {
+TEST_F(StreamPacketReaderTest, ReadAsyncHeaderSyncPayload) {
   net::CompletionCallback socket_cb;
 
   // Asynchronous payload read expectation.
@@ -100,7 +100,7 @@ TEST_F(PacketReaderTest, ReadAsyncHeaderSyncPayload) {
 }
 
 // Successful read with 1 sync header read and 1 async payload read.
-TEST_F(PacketReaderTest, ReadSyncHeaderAsyncPayload) {
+TEST_F(StreamPacketReaderTest, ReadSyncHeaderAsyncPayload) {
   net::CompletionCallback socket_cb;
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
@@ -120,7 +120,7 @@ TEST_F(PacketReaderTest, ReadSyncHeaderAsyncPayload) {
 }
 
 // Successful read with 1 sync header read and 1 sync payload read.
-TEST_F(PacketReaderTest, ReadSyncHeaderSyncPayload) {
+TEST_F(StreamPacketReaderTest, ReadSyncHeaderSyncPayload) {
   net::CompletionCallback socket_cb;
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
@@ -140,7 +140,7 @@ TEST_F(PacketReaderTest, ReadSyncHeaderSyncPayload) {
 
 // Successful read of 2 messages, header and payload reads all completing
 // synchronously with no partial results.
-TEST_F(PacketReaderTest, ReadMultipleMessagesSync) {
+TEST_F(StreamPacketReaderTest, ReadMultipleMessagesSync) {
   net::CompletionCallback socket_cb;
   std::string test_msg2 = test_msg_ + "SlightlyLongerString";
 
@@ -181,7 +181,7 @@ TEST_F(PacketReaderTest, ReadMultipleMessagesSync) {
 
 // Successful read of 2 messages, header and payload reads all completing
 // asynchronously with no partial results.
-TEST_F(PacketReaderTest, ReadMultipleMessagesAsync) {
+TEST_F(StreamPacketReaderTest, ReadMultipleMessagesAsync) {
   net::TestCompletionCallback read_cb1;
   net::TestCompletionCallback read_cb2;
   net::CompletionCallback socket_cb;
@@ -233,7 +233,7 @@ TEST_F(PacketReaderTest, ReadMultipleMessagesAsync) {
 // Verify that partial header reads are supported.
 // Read #0: 1 header byte is read.
 // Read #1: Remainder of header bytes read.
-TEST_F(PacketReaderTest, PartialHeaderReadAsync) {
+TEST_F(StreamPacketReaderTest, PartialHeaderReadAsync) {
   net::CompletionCallback cb;
   std::string header = EncodeHeader(test_msg_.size());
 
@@ -259,7 +259,7 @@ TEST_F(PacketReaderTest, PartialHeaderReadAsync) {
 // Read #0: Header is fully read synchronously.
 // Read #1: First payload byte is read. (Um, it's an acoustic cup modem.)
 // Read #2: Remainder of payload bytes are read.
-TEST_F(PacketReaderTest, PartialPayloadReadAsync) {
+TEST_F(StreamPacketReaderTest, PartialPayloadReadAsync) {
   net::CompletionCallback cb;
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
@@ -283,7 +283,7 @@ TEST_F(PacketReaderTest, PartialPayloadReadAsync) {
 }
 
 // Verify that synchronous header read errors are reported correctly.
-TEST_F(PacketReaderTest, ReadHeaderErrorSync) {
+TEST_F(StreamPacketReaderTest, ReadHeaderErrorSync) {
   net::CompletionCallback cb;
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(Return(net::ERR_FAILED));
@@ -291,7 +291,7 @@ TEST_F(PacketReaderTest, ReadHeaderErrorSync) {
 }
 
 // Verify that synchronous payload read errors are reported correctly.
-TEST_F(PacketReaderTest, ReadPayloadErrorSync) {
+TEST_F(StreamPacketReaderTest, ReadPayloadErrorSync) {
   net::CompletionCallback cb;
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
@@ -304,7 +304,7 @@ TEST_F(PacketReaderTest, ReadPayloadErrorSync) {
 }
 
 // Verify that async header read errors are reported correctly.
-TEST_F(PacketReaderTest, ReadHeaderErrorAsync) {
+TEST_F(StreamPacketReaderTest, ReadHeaderErrorAsync) {
   net::CompletionCallback cb;
   net::TestCompletionCallback test_cb;
 
@@ -318,7 +318,7 @@ TEST_F(PacketReaderTest, ReadHeaderErrorAsync) {
 }
 
 // Verify that asynchronous paylod read errors are reported correctly.
-TEST_F(PacketReaderTest, ReadPayloadErrorAsync) {
+TEST_F(StreamPacketReaderTest, ReadPayloadErrorAsync) {
   net::CompletionCallback cb;
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
@@ -332,12 +332,12 @@ TEST_F(PacketReaderTest, ReadPayloadErrorAsync) {
   EXPECT_EQ(net::ERR_FAILED, callback_.WaitForResult());
 }
 
-// Verify that async header read completions don't break us if the PacketReader
-// object was destroyed.
-TEST_F(PacketReaderTest, ReaderDeletedDuringAsyncHeaderRead) {
+// Verify that async header read completions don't break us if the
+// StreamPacketReader object was destroyed.
+TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncHeaderRead) {
   net::CompletionCallback cb;
   net::TestCompletionCallback test_cb;
-  scoped_ptr<PacketReader> reader(new PacketReader(&socket_));
+  scoped_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),
@@ -349,11 +349,11 @@ TEST_F(PacketReaderTest, ReaderDeletedDuringAsyncHeaderRead) {
   cb.Run(kPacketHeaderSizeBytes);  // Complete the socket operation.
 }
 
-// Verify that async payload read completions don't break us if the PacketReader
-// object was destroyed.
-TEST_F(PacketReaderTest, ReaderDeletedDuringAsyncPayloadRead) {
+// Verify that async payload read completions don't break us if the
+// StreamPacketReader object was destroyed.
+TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncPayloadRead) {
   net::CompletionCallback cb;
-  scoped_ptr<PacketReader> reader(new PacketReader(&socket_));
+  scoped_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),
@@ -368,7 +368,7 @@ TEST_F(PacketReaderTest, ReaderDeletedDuringAsyncPayloadRead) {
 }
 
 // Verify that zero-length payload is reported as an erroneous input.
-TEST_F(PacketReaderTest, ReadWhatIsThisAPacketForAnts) {
+TEST_F(StreamPacketReaderTest, ReadWhatIsThisAPacketForAnts) {
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(0)),
                       Return(kPacketHeaderSizeBytes)))
@@ -378,7 +378,7 @@ TEST_F(PacketReaderTest, ReadWhatIsThisAPacketForAnts) {
 }
 
 // Verify that an illegally large payloads is reported as an erroneous inputs.
-TEST_F(PacketReaderTest, ReadErrorIllegallyLargePayload) {
+TEST_F(StreamPacketReaderTest, ReadErrorIllegallyLargePayload) {
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(
           DoAll(FillBufferFromString<0>(EncodeHeader(kTestMaxBufferSize + 1)),

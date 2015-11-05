@@ -52,7 +52,9 @@ class BlimpEngineSession : public BlimpMessageReceiver,
 
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
 
-  void AttachClientConnection(scoped_ptr<BlimpConnection> client_connection);
+  // BlimpMessageReceiver implementation.
+  // TODO(haibinlu): Remove this in favor of the BlimpMessageDispatcher.
+  net::Error OnBlimpMessage(const BlimpMessage& message) override;
 
  private:
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
@@ -60,9 +62,6 @@ class BlimpEngineSession : public BlimpMessageReceiver,
 
   // Navigates the target tab to the |url|.
   void LoadUrl(const int target_tab_id, const GURL& url);
-
-  // BlimpMessageReceiver implementation.
-  net::Error OnBlimpMessage(const BlimpMessage& message) override;
 
   // content::WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(

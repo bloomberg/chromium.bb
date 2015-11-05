@@ -4,9 +4,18 @@
 
 #include "blimp/net/blimp_connection.h"
 
+#include "base/macros.h"
+#include "blimp/net/packet_reader.h"
+#include "blimp/net/packet_writer.h"
+
 namespace blimp {
 
-BlimpConnection::BlimpConnection() {}
+BlimpConnection::BlimpConnection(scoped_ptr<PacketReader> reader,
+                                 scoped_ptr<PacketWriter> writer)
+    : reader_(reader.Pass()), writer_(writer.Pass()) {
+  DCHECK(reader_);
+  DCHECK(writer_);
+}
 
 BlimpConnection::~BlimpConnection() {}
 

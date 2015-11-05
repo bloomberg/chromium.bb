@@ -14,10 +14,11 @@
 
 namespace net {
 class NetLog;
-class StreamSocket;
 }  // namespace net
 
 namespace blimp {
+
+class BlimpConnection;
 
 // BlimpTransport which creates a TCP connection to one of the specified
 // |addresses| on each call to Connect().
@@ -28,14 +29,14 @@ class TCPClientTransport : public BlimpTransport {
 
   // BlimpTransport implementation.
   int Connect(const net::CompletionCallback& callback) override;
-  scoped_ptr<net::StreamSocket> TakeConnectedSocket() override;
+  scoped_ptr<BlimpConnection> TakeConnection() override;
 
  private:
   void OnTCPConnectComplete(int result);
 
   net::AddressList addresses_;
   net::NetLog* net_log_;
-  scoped_ptr<net::StreamSocket> socket_;
+  scoped_ptr<BlimpConnection> connection_;
   net::CompletionCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientTransport);

@@ -86,23 +86,6 @@ void BlimpEngineSession::Initialize() {
   window_tree_host_->SetBounds(gfx::Rect(screen_->GetPrimaryDisplay().size()));
 }
 
-void BlimpEngineSession::AttachClientConnection(
-    scoped_ptr<BlimpConnection> client_connection) {
-  DCHECK(client_connection);
-  client_connection_ = client_connection.Pass();
-
-  // TODO(haibinlu): Remove this once we can use client connection to send in
-  // a navigation message.
-  BlimpMessage message;
-  message.set_type(BlimpMessage::CONTROL);
-  message.mutable_control()->set_type(ControlMessage::CREATE_TAB);
-  OnBlimpMessage(message);
-  message.mutable_control()->set_type(ControlMessage::LOAD_URL);
-  message.mutable_control()->mutable_load_url()->set_url(
-      "https://www.google.com/");
-  OnBlimpMessage(message);
-}
-
 void BlimpEngineSession::CreateWebContents(const int target_tab_id) {
   // TODO(haibinlu): Support more than one active WebContents (crbug/547231).
   DCHECK(!web_contents_);

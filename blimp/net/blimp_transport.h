@@ -7,9 +7,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
-#include "net/socket/stream_socket.h"
 
 namespace blimp {
+
+class BlimpConnection;
 
 // An interface which encapsulates the transport-specific code for
 // establishing network connections between the client and engine.
@@ -26,12 +27,12 @@ class BlimpTransport {
   // Returns net::ERR_IO_PENDING if the connection is being established
   // asynchronously. |callback| is later invoked with the connection outcome.
   //
-  // If the connection is successful, the connected socket can be taken by
+  // If the connection is successful, the BlimpConnection can be taken by
   // calling TakeConnectedSocket().
   virtual int Connect(const net::CompletionCallback& callback) = 0;
 
-  // Returns the connected socket following a successful Connect().
-  virtual scoped_ptr<net::StreamSocket> TakeConnectedSocket() = 0;
+  // Returns the connection object after a successful Connect().
+  virtual scoped_ptr<BlimpConnection> TakeConnection() = 0;
 };
 
 }  // namespace blimp

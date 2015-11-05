@@ -7,7 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "blimp/net/common.h"
-#include "blimp/net/packet_writer.h"
+#include "blimp/net/stream_packet_writer.h"
 #include "blimp/net/test_common.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -27,31 +27,31 @@ using testing::SaveArg;
 namespace blimp {
 namespace {
 
-class PacketWriterTest : public testing::Test {
+class StreamPacketWriterTest : public testing::Test {
  public:
-  PacketWriterTest()
+  StreamPacketWriterTest()
       : test_data_(
             new net::DrainableIOBuffer(new net::StringIOBuffer(test_data_str_),
                                        test_data_str_.size())),
         message_writer_(&socket_) {}
 
-  ~PacketWriterTest() override {}
+  ~StreamPacketWriterTest() override {}
 
  protected:
   const std::string test_data_str_ = "U WOT M8";
   scoped_refptr<net::DrainableIOBuffer> test_data_;
 
   MockStreamSocket socket_;
-  PacketWriter message_writer_;
+  StreamPacketWriter message_writer_;
   base::MessageLoop message_loop_;
   testing::InSequence mock_sequence_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PacketWriterTest);
+  DISALLOW_COPY_AND_ASSIGN(StreamPacketWriterTest);
 };
 
 // Successful write with 1 async header write and 1 async payload write.
-TEST_F(PacketWriterTest, TestWriteAsync) {
+TEST_F(StreamPacketWriterTest, TestWriteAsync) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
@@ -76,7 +76,7 @@ TEST_F(PacketWriterTest, TestWriteAsync) {
 }
 
 // Successful write with 2 async header writes and 2 async payload writes.
-TEST_F(PacketWriterTest, TestPartialWriteAsync) {
+TEST_F(StreamPacketWriterTest, TestPartialWriteAsync) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
@@ -115,7 +115,7 @@ TEST_F(PacketWriterTest, TestPartialWriteAsync) {
 }
 
 // Async socket error while writing data.
-TEST_F(PacketWriterTest, TestWriteErrorAsync) {
+TEST_F(StreamPacketWriterTest, TestWriteErrorAsync) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
@@ -136,7 +136,7 @@ TEST_F(PacketWriterTest, TestWriteErrorAsync) {
 }
 
 // Successful write with 1 sync header write and 1 sync payload write.
-TEST_F(PacketWriterTest, TestWriteSync) {
+TEST_F(StreamPacketWriterTest, TestWriteSync) {
   net::TestCompletionCallback writer_cb;
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
                              kPacketHeaderSizeBytes, _))
@@ -150,7 +150,7 @@ TEST_F(PacketWriterTest, TestWriteSync) {
 }
 
 // Successful write with 2 sync header writes and 2 sync payload writes.
-TEST_F(PacketWriterTest, TestPartialWriteSync) {
+TEST_F(StreamPacketWriterTest, TestPartialWriteSync) {
   net::TestCompletionCallback writer_cb;
 
   std::string header = EncodeHeader(test_data_str_.size());
@@ -173,7 +173,7 @@ TEST_F(PacketWriterTest, TestPartialWriteSync) {
 }
 
 // Verify that zero-length packets are rejected.
-TEST_F(PacketWriterTest, TestZeroLengthPacketsRejected) {
+TEST_F(StreamPacketWriterTest, TestZeroLengthPacketsRejected) {
   net::TestCompletionCallback writer_cb;
 
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
@@ -185,7 +185,7 @@ TEST_F(PacketWriterTest, TestZeroLengthPacketsRejected) {
 }
 
 // Sync socket error while writing header data.
-TEST_F(PacketWriterTest, TestWriteHeaderErrorSync) {
+TEST_F(StreamPacketWriterTest, TestWriteHeaderErrorSync) {
   net::TestCompletionCallback writer_cb;
 
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
@@ -201,7 +201,7 @@ TEST_F(PacketWriterTest, TestWriteHeaderErrorSync) {
 }
 
 // Sync socket error while writing payload data.
-TEST_F(PacketWriterTest, TestWritePayloadErrorSync) {
+TEST_F(StreamPacketWriterTest, TestWritePayloadErrorSync) {
   net::TestCompletionCallback writer_cb;
 
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
@@ -218,11 +218,11 @@ TEST_F(PacketWriterTest, TestWritePayloadErrorSync) {
 
 // Verify that asynchronous header write completions don't cause a
 // use-after-free error if the writer object is deleted.
-TEST_F(PacketWriterTest, DeletedDuringHeaderWrite) {
+TEST_F(StreamPacketWriterTest, DeletedDuringHeaderWrite) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
-  scoped_ptr<PacketWriter> writer(new PacketWriter(&socket_));
+  scoped_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
 
   // Write header.
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
@@ -239,11 +239,11 @@ TEST_F(PacketWriterTest, DeletedDuringHeaderWrite) {
 
 // Verify that asynchronous payload write completions don't cause a
 // use-after-free error if the writer object is deleted.
-TEST_F(PacketWriterTest, DeletedDuringPayloadWrite) {
+TEST_F(StreamPacketWriterTest, DeletedDuringPayloadWrite) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
-  scoped_ptr<PacketWriter> writer(new PacketWriter(&socket_));
+  scoped_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
 
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
                              kPacketHeaderSizeBytes, _))

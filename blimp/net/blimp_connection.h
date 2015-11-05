@@ -6,17 +6,25 @@
 #define BLIMP_NET_BLIMP_CONNECTION_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 
 namespace blimp {
 
+class PacketReader;
+class PacketWriter;
+
 class BLIMP_NET_EXPORT BlimpConnection {
  public:
-  BlimpConnection();
-  ~BlimpConnection();
+  virtual ~BlimpConnection();
+
+ protected:
+  BlimpConnection(scoped_ptr<PacketReader> reader,
+                  scoped_ptr<PacketWriter> writer);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BlimpConnection);
+  scoped_ptr<PacketReader> reader_;
+  scoped_ptr<PacketWriter> writer_;
 };
 
 }  // namespace blimp

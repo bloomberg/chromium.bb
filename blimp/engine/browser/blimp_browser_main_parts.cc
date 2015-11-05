@@ -4,6 +4,7 @@
 
 #include "blimp/engine/browser/blimp_browser_main_parts.h"
 
+#include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
 #include "blimp/engine/browser/blimp_engine_session.h"
 #include "blimp/net/blimp_connection.h"
@@ -37,9 +38,18 @@ void BlimpBrowserMainParts::PreMainMessageLoopRun() {
       new BlimpBrowserContext(false, net_log_.get()));
   engine_session_.reset(new BlimpEngineSession(browser_context.Pass()));
   engine_session_->Initialize();
-  // TODO(haibinlu): remove this after a real client connection can be attached.
-  scoped_ptr<BlimpConnection> clientConnection(new BlimpConnection);
-  engine_session_->AttachClientConnection(clientConnection.Pass());
+
+  // TODO(haibinlu): Create EngineConnectionManager to accept new connections.
+  // TODO(haibinlu): Remove these test messages and switch to using the
+  // MessageDispatcher for incoming messages.
+  BlimpMessage message;
+  message.set_type(BlimpMessage::CONTROL);
+  message.mutable_control()->set_type(ControlMessage::CREATE_TAB);
+  engine_session_->OnBlimpMessage(message);
+  message.mutable_control()->set_type(ControlMessage::LOAD_URL);
+  message.mutable_control()->mutable_load_url()->set_url(
+      "https://www.google.com/");
+  engine_session_->OnBlimpMessage(message);
 }
 
 void BlimpBrowserMainParts::PostMainMessageLoopRun() {

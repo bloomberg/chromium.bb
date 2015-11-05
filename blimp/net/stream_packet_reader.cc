@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/packet_reader.h"
+#include "blimp/net/stream_packet_reader.h"
 
 #include <iostream>
 
@@ -18,32 +18,33 @@
 namespace blimp {
 
 std::ostream& operator<<(std::ostream& out,
-                         const PacketReader::ReadState state) {
+                         const StreamPacketReader::ReadState state) {
   switch (state) {
-    case PacketReader::ReadState::HEADER:
+    case StreamPacketReader::ReadState::HEADER:
       out << "HEADER";
       break;
-    case PacketReader::ReadState::PAYLOAD:
+    case StreamPacketReader::ReadState::PAYLOAD:
       out << "PAYLOAD";
       break;
-    case PacketReader::ReadState::IDLE:
+    case StreamPacketReader::ReadState::IDLE:
       out << "IDLE";
       break;
   }
   return out;
 }
 
-PacketReader::PacketReader(net::StreamSocket* socket)
+StreamPacketReader::StreamPacketReader(net::StreamSocket* socket)
     : read_state_(ReadState::IDLE), socket_(socket), weak_factory_(this) {
   DCHECK(socket_);
   header_buffer_ = new net::GrowableIOBuffer;
   header_buffer_->SetCapacity(kPacketHeaderSizeBytes);
 }
 
-PacketReader::~PacketReader() {}
+StreamPacketReader::~StreamPacketReader() {}
 
-int PacketReader::ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,
-                             const net::CompletionCallback& callback) {
+int StreamPacketReader::ReadPacket(
+    const scoped_refptr<net::GrowableIOBuffer>& buf,
+    const net::CompletionCallback& callback) {
   DCHECK_EQ(ReadState::IDLE, read_state_);
   DCHECK_GT(buf->capacity(), 0);
 
@@ -66,7 +67,7 @@ int PacketReader::ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,
   return result;
 }
 
-int PacketReader::DoReadLoop(int result) {
+int StreamPacketReader::DoReadLoop(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
   DCHECK_GE(result, 0);
   DCHECK_NE(ReadState::IDLE, read_state_);
@@ -92,7 +93,7 @@ int PacketReader::DoReadLoop(int result) {
   return result;
 }
 
-int PacketReader::DoReadHeader(int result) {
+int StreamPacketReader::DoReadHeader(int result) {
   DCHECK_EQ(ReadState::HEADER, read_state_);
   DCHECK_GT(kPacketHeaderSizeBytes,
             static_cast<size_t>(header_buffer_->offset()));
@@ -101,9 +102,10 @@ int PacketReader::DoReadHeader(int result) {
   header_buffer_->set_offset(header_buffer_->offset() + result);
   if (static_cast<size_t>(header_buffer_->offset()) < kPacketHeaderSizeBytes) {
     // There is more header to read.
-    return socket_->Read(
-        header_buffer_.get(), kPacketHeaderSizeBytes - header_buffer_->offset(),
-        base::Bind(&PacketReader::OnReadComplete, weak_factory_.GetWeakPtr()));
+    return socket_->Read(header_buffer_.get(),
+                         kPacketHeaderSizeBytes - header_buffer_->offset(),
+                         base::Bind(&StreamPacketReader::OnReadComplete,
+                                    weak_factory_.GetWeakPtr()));
   }
 
   // Finished reading the header. Parse the size and prepare for payload read.
@@ -118,15 +120,16 @@ int PacketReader::DoReadHeader(int result) {
   return net::OK;
 }
 
-int PacketReader::DoReadPayload(int result) {
+int StreamPacketReader::DoReadPayload(int result) {
   DCHECK_EQ(ReadState::PAYLOAD, read_state_);
   DCHECK_GE(result, 0);
 
   payload_buffer_->set_offset(payload_buffer_->offset() + result);
   if (static_cast<size_t>(payload_buffer_->offset()) < payload_size_) {
-    return socket_->Read(
-        payload_buffer_.get(), payload_size_ - payload_buffer_->offset(),
-        base::Bind(&PacketReader::OnReadComplete, weak_factory_.GetWeakPtr()));
+    return socket_->Read(payload_buffer_.get(),
+                         payload_size_ - payload_buffer_->offset(),
+                         base::Bind(&StreamPacketReader::OnReadComplete,
+                                    weak_factory_.GetWeakPtr()));
   }
 
   // Finished reading the payload.
@@ -134,7 +137,7 @@ int PacketReader::DoReadPayload(int result) {
   return payload_size_;
 }
 
-void PacketReader::OnReadComplete(int result) {
+void StreamPacketReader::OnReadComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
 
   // If the read was succesful, then process the result.
