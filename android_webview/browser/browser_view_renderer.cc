@@ -30,8 +30,6 @@ namespace {
 
 const double kEpsilon = 1e-8;
 
-const int64 kFallbackTickTimeoutInMilliseconds = 100;
-
 // Used to calculate memory allocation. Determined experimentally.
 const size_t kMemoryMultiplier = 20;
 const size_t kBytesPerPixel = 4;
@@ -103,8 +101,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
-      offscreen_pre_raster_(false),
-      fallback_tick_pending_(false) {}
+      offscreen_pre_raster_(false) {}
 
 BrowserViewRenderer::~BrowserViewRenderer() {
 }
@@ -225,12 +222,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
   shared_renderer_state_.SetScrollOffsetOnUI(last_on_draw_scroll_offset_);
   hardware_enabled_ = true;
 
-  return CompositeHw();
-}
-
-bool BrowserViewRenderer::CompositeHw() {
-  CancelFallbackTick();
-
   ReturnResourceFromParent();
   UpdateMemoryPolicy();
 
@@ -270,14 +261,16 @@ bool BrowserViewRenderer::CompositeHw() {
                      transform_for_tile_priority, offscreen_pre_raster_,
                      parent_draw_constraints.is_layer));
 
-  // Uncommitted frame can happen with consecutive fallback ticks.
+  // If we haven't received a kModeSync functor call since the last
+  // CompositeHw then we need to discard the resources that are being
+  // held onto by the previously prepared frame.
   ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
   shared_renderer_state_.SetCompositorFrameOnUI(child_frame.Pass());
   return true;
 }
 
 void BrowserViewRenderer::UpdateParentDrawConstraints() {
-  PostInvalidateWithFallback();
+  PostInvalidate();
   ParentCompositorDrawConstraints parent_draw_constraints =
       shared_renderer_state_.GetParentDrawConstraintsOnUI();
   client_->ParentDrawConstraintsUpdated(parent_draw_constraints);
@@ -351,7 +344,7 @@ void BrowserViewRenderer::ClearView() {
 
   clear_view_ = true;
   // Always invalidate ignoring the compositor to actually clear the webview.
-  PostInvalidateWithFallback();
+  PostInvalidate();
 }
 
 void BrowserViewRenderer::SetOffscreenPreRaster(bool enable) {
@@ -649,80 +642,11 @@ void BrowserViewRenderer::DidOverscroll(
 void BrowserViewRenderer::PostInvalidate() {
   TRACE_EVENT_INSTANT0("android_webview", "BrowserViewRenderer::PostInvalidate",
                        TRACE_EVENT_SCOPE_THREAD);
-  PostInvalidateWithFallback();
-}
-
-void BrowserViewRenderer::PostInvalidateWithFallback() {
-  // Always call view invalidate. We rely the Android framework to ignore the
-  // invalidate when it's not needed such as when view is not visible.
   client_->PostInvalidate();
-
-  // Stop fallback ticks when one of these is true.
-  // 1) Webview is paused. Also need to check we are not in clear view since
-  // paused, offscreen still expect clear view to recover.
-  // 2) If we are attached to window and the window is not visible (eg when
-  // app is in the background). We are sure in this case the webview is used
-  // "on-screen" but that updates are not needed when in the background.
-  bool throttle_fallback_tick =
-      (is_paused_ && !clear_view_) || (attached_to_window_ && !window_visible_);
-
-  if (throttle_fallback_tick || fallback_tick_pending_)
-    return;
-
-  DCHECK(post_fallback_tick_.IsCancelled());
-  DCHECK(fallback_tick_fired_.IsCancelled());
-
-  post_fallback_tick_.Reset(base::Bind(&BrowserViewRenderer::PostFallbackTick,
-                                       base::Unretained(this)));
-  ui_task_runner_->PostTask(FROM_HERE, post_fallback_tick_.callback());
-  fallback_tick_pending_ = true;
-}
-
-void BrowserViewRenderer::CancelFallbackTick() {
-  post_fallback_tick_.Cancel();
-  fallback_tick_fired_.Cancel();
-  fallback_tick_pending_ = false;
-}
-
-void BrowserViewRenderer::PostFallbackTick() {
-  DCHECK(fallback_tick_fired_.IsCancelled());
-  TRACE_EVENT0("android_webview", "BrowserViewRenderer::PostFallbackTick");
-  post_fallback_tick_.Cancel();
-  fallback_tick_fired_.Reset(base::Bind(&BrowserViewRenderer::FallbackTickFired,
-                                        base::Unretained(this)));
-  ui_task_runner_->PostDelayedTask(
-      FROM_HERE, fallback_tick_fired_.callback(),
-      base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
-}
-
-void BrowserViewRenderer::FallbackTickFired() {
-  TRACE_EVENT0("android_webview", "BrowserViewRenderer::FallbackTickFired");
-  // This should only be called if OnDraw or DrawGL did not come in time, which
-  // means fallback_tick_pending_ must still be true.
-  DCHECK(fallback_tick_pending_);
-  fallback_tick_fired_.Cancel();
-  fallback_tick_pending_ = false;
-  if (compositor_) {
-    if (hardware_enabled_ && !size_.IsEmpty()) {
-      CompositeHw();
-    } else {
-      ForceFakeCompositeSW();
-    }
-  }
-}
-
-void BrowserViewRenderer::ForceFakeCompositeSW() {
-  DCHECK(compositor_);
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(1, 1);
-  bitmap.eraseColor(0);
-  SkCanvas canvas(bitmap);
-  CompositeSW(&canvas);
 }
 
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(compositor_);
-  CancelFallbackTick();
   ReturnResourceFromParent();
   return compositor_->DemandDrawSw(canvas);
 }
@@ -744,8 +668,6 @@ std::string BrowserViewRenderer::ToString() const {
   base::StringAppendF(&str, "window_visible: %d ", window_visible_);
   base::StringAppendF(&str, "dip_scale: %f ", dip_scale_);
   base::StringAppendF(&str, "page_scale_factor: %f ", page_scale_factor_);
-  base::StringAppendF(&str, "fallback_tick_pending: %d ",
-                      fallback_tick_pending_);
   base::StringAppendF(&str, "view size: %s ", size_.ToString().c_str());
   base::StringAppendF(&str, "attached_to_window: %d ", attached_to_window_);
   base::StringAppendF(&str,

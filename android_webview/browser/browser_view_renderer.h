@@ -120,18 +120,12 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
  private:
   void SetTotalRootLayerScrollOffset(const gfx::Vector2dF& new_value_dip);
   bool CanOnDraw();
-  // Posts an invalidate with fallback tick. All invalidates posted while an
-  // invalidate is pending will be posted as a single invalidate after the
-  // pending invalidate is done.
-  void PostInvalidateWithFallback();
-  void CancelFallbackTick();
   void UpdateCompositorIsActive();
   bool CompositeSW(SkCanvas* canvas);
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   RootLayerStateAsValue(const gfx::Vector2dF& total_scroll_offset_dip,
                         const gfx::SizeF& scrollable_size_dip);
 
-  bool CompositeHw();
   void ReturnUnusedResource(scoped_ptr<ChildFrame> frame);
   void ReturnResourceFromParent();
 
@@ -141,11 +135,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // so ensure delayed task is inserted only after the draw task returns.
   void PostFallbackTick();
   void FallbackTickFired();
-
-  // Force invoke the compositor to run produce a 1x1 software frame that is
-  // immediately discarded. This is a hack to force invoke parts of the
-  // compositor that are not directly exposed here.
-  void ForceFakeCompositeSW();
 
   gfx::Vector2d max_scroll_offset() const;
 
@@ -178,10 +167,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;
-
-  base::CancelableClosure post_fallback_tick_;
-  base::CancelableClosure fallback_tick_fired_;
-  bool fallback_tick_pending_;
 
   gfx::Size size_;
 
