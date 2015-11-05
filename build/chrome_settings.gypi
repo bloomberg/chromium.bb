@@ -8,6 +8,8 @@
   'variables': {
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py'],
+    'grit_defines': ['-D', 'version=<(version_full)'],
+    'includes': ['util/version.gypi'],
 
     'conditions': [
       ['OS=="mac"', {
