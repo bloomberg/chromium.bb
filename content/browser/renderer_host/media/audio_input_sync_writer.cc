@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 using media::AudioBus;
 using media::AudioInputBuffer;
@@ -222,6 +223,22 @@ void AudioInputSyncWriter::CheckTimeSinceLastWrite() {
 }
 
 void AudioInputSyncWriter::AddToNativeLog(const std::string& message) {
+#if defined(OS_ANDROID)
+  // MediaStreamManager::SendMessageToNativeLog will hop to the UI thread which
+  // on Android will attach the current thread. The audio thread than we're on
+  // now may be a native thread which we don't want to attach, so to avoid this
+  // we first hop to the IO thread.
+  // TODO(tommi): Make a nicer solution, preferably avoiding the many thread
+  // hops in MediaStreamManager and later when adding a log message.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&MediaStreamManager::SendMessageToNativeLog,
+                   message));
+    return;
+  }
+#endif
   MediaStreamManager::SendMessageToNativeLog(message);
 }
 
