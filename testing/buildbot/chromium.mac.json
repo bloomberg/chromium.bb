@@ -1184,10 +1184,7 @@
       },
       {
         "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
+        "name": "telemetry_perf_unittests"
       }
     ],
     "scripts": [
@@ -1474,10 +1471,7 @@
       },
       {
         "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
+        "name": "telemetry_perf_unittests"
       }
     ],
     "scripts": [
