@@ -362,7 +362,8 @@
       var params = interpolationTest.params;
       params.fromComposite = params.fromComposite || 'replace';
       params.toComposite = params.toComposite || 'replace';
-      var description = `Interpolate attribute <${params.property}> from ${params.fromComposite} [${params.from}] to ${params.toComposite} [${params.to}]`;
+      var underlyingText = params.underlying ? `with underlying [${params.underlying}] ` : '';
+      var description = `Interpolate attribute <${params.property}> ${underlyingText}from ${params.fromComposite} [${params.from}] to ${params.toComposite} [${params.to}]`;
 
     if (rebaselineTests) {
         var rebaseline = createElement('pre', rebaselineContainer);
