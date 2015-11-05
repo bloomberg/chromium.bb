@@ -37,7 +37,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebFrameHostScheduler.h"
 #include "public/platform/WebScheduler.h"
 
 namespace blink {
@@ -54,7 +53,6 @@ FrameHost::FrameHost(Page& page)
     , m_visualViewport(VisualViewport::create(*this))
     , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
     , m_consoleMessageStorage(ConsoleMessageStorage::create())
-    , m_frameHostScheduler(adoptPtr(Platform::current()->currentThread()->scheduler()->createFrameHostScheduler()))
     , m_subframeCount(0)
 {
 }

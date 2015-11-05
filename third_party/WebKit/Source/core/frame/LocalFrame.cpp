@@ -73,9 +73,9 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/TextStream.h"
-#include "public/platform/WebFrameHostScheduler.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebViewScheduler.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -908,7 +908,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
 WebFrameScheduler* LocalFrame::frameScheduler()
 {
     if (!m_frameScheduler.get())
-        m_frameScheduler = adoptPtr(host()->frameHostScheduler()->createFrameScheduler());
+        m_frameScheduler = page()->chromeClient().createFrameScheduler();
 
     ASSERT(m_frameScheduler.get());
     return m_frameScheduler.get();

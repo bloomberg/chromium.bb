@@ -6,7 +6,8 @@
 
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
-#include "components/scheduler/renderer/web_frame_host_scheduler_impl.h"
+#include "components/scheduler/renderer/web_view_scheduler_impl.h"
+#include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 
 namespace scheduler {
 
@@ -30,9 +31,10 @@ void RendererWebSchedulerImpl::resumeTimerQueue() {
   renderer_scheduler_->ResumeTimerQueue();
 }
 
-blink::WebFrameHostScheduler*
-RendererWebSchedulerImpl::createFrameHostScheduler() {
-  return new WebFrameHostSchedulerImpl(renderer_scheduler_);
+blink::WebPassOwnPtr<blink::WebViewScheduler>
+RendererWebSchedulerImpl::createWebViewScheduler(blink::WebView* web_view) {
+  return blink::adoptWebPtr(
+      new WebViewSchedulerImpl(web_view, renderer_scheduler_));
 }
 
 void RendererWebSchedulerImpl::addPendingNavigation() {

@@ -62,7 +62,7 @@ source_set("unit_tests") {
     "renderer/renderer_scheduler_impl_unittest.cc",
     "renderer/task_cost_estimator_unittest.cc",
     "renderer/user_model_unittest.cc",
-    "renderer/web_frame_host_scheduler_impl_unittest.cc",
+    "renderer/web_view_scheduler_impl_unittest.cc",
     "renderer/webthread_impl_for_renderer_scheduler_unittest.cc",
   ]
 

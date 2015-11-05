@@ -20,7 +20,8 @@ class SCHEDULER_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
   // blink::WebScheduler implementation:
   void suspendTimerQueue() override;
   void resumeTimerQueue() override;
-  blink::WebFrameHostScheduler* createFrameHostScheduler() override;
+  blink::WebPassOwnPtr<blink::WebViewScheduler> createWebViewScheduler(
+      blink::WebView* web_view) override;
   void addPendingNavigation() override;
   void removePendingNavigation() override;
   void onNavigationStarted() override;

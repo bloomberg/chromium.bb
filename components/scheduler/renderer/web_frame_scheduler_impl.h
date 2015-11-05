@@ -20,13 +20,13 @@ namespace scheduler {
 
 class RendererScheduler;
 class TaskQueue;
-class WebFrameHostSchedulerImpl;
 class WebTaskRunnerImpl;
+class WebViewSchedulerImpl;
 
 class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
  public:
   WebFrameSchedulerImpl(RendererScheduler* render_scheduler,
-                        WebFrameHostSchedulerImpl* parent_frame_host_scheduler);
+                        WebViewSchedulerImpl* parent_web_view_scheduler);
 
   ~WebFrameSchedulerImpl() override;
 
@@ -37,16 +37,16 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
   void setFrameOrigin(const blink::WebSecurityOrigin* origin) override;
 
  private:
-  friend class WebFrameHostSchedulerImpl;
+  friend class WebViewSchedulerImpl;
 
-  void DetachFromFrameHostScheduler();
+  void DetachFromWebViewScheduler();
 
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
   scoped_ptr<WebTaskRunnerImpl> loading_web_task_runner_;
   scoped_ptr<WebTaskRunnerImpl> timer_web_task_runner_;
-  RendererScheduler* render_scheduler_;                     // NOT OWNED
-  WebFrameHostSchedulerImpl* parent_frame_host_scheduler_;  // NOT OWNED
+  RendererScheduler* render_scheduler_;              // NOT OWNED
+  WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   blink::WebSecurityOrigin origin_;
   bool visible_;
 

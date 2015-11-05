@@ -44,6 +44,13 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
                                blink::WebThread::IdleTask* task) override;
   blink::WebTaskRunner* loadingTaskRunner() override;
   blink::WebTaskRunner* timerTaskRunner() override;
+  blink::WebPassOwnPtr<blink::WebViewScheduler> createWebViewScheduler(
+      blink::WebView*) override;
+  void suspendTimerQueue() override {}
+  void resumeTimerQueue() override {}
+  void addPendingNavigation() override {}
+  void removePendingNavigation() override {}
+  void onNavigationStarted() override {}
 
   // TODO(alexclarke): Remove when possible.
   void postTimerTaskAt(const blink::WebTraceLocation& location,

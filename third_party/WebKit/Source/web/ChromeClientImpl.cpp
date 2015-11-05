@@ -65,8 +65,10 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCursorInfo.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/WebViewScheduler.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebColorChooser.h"
@@ -1006,6 +1008,11 @@ void ChromeClientImpl::didObserveNonGetFetchFromScript() const
 {
     if (m_webView->pageImportanceSignals())
         m_webView->pageImportanceSignals()->setIssuedNonGetFetchFromScript();
+}
+
+PassOwnPtr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler()
+{
+    return m_webView->scheduler()->createFrameScheduler().release();
 }
 
 } // namespace blink

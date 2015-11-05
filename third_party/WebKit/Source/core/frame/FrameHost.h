@@ -51,7 +51,6 @@ class PageScaleConstraintsSet;
 class Settings;
 class UseCounter;
 class Visitor;
-class WebFrameHostScheduler;
 
 // FrameHost is the set of global data shared between multiple frames
 // and is provided by the embedder to each frame when created.
@@ -103,8 +102,6 @@ public:
     void setDefaultPageScaleLimits(float minScale, float maxScale);
     void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
 
-    WebFrameHostScheduler* frameHostScheduler() const { return m_frameHostScheduler.get(); }
-
 private:
     explicit FrameHost(Page&);
 
@@ -114,7 +111,6 @@ private:
     const OwnPtrWillBeMember<VisualViewport> m_visualViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
     const OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;
-    const OwnPtr<WebFrameHostScheduler> m_frameHostScheduler;
 
     AtomicString m_overrideEncoding;
     int m_subframeCount;

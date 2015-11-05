@@ -8,6 +8,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebViewScheduler.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <queue>
@@ -179,6 +180,14 @@ public:
         ASSERT(hasOneTimerTask());
         return m_timerTasks.top().delaySeconds();
     }
+
+    void shutdown() override {}
+    WebPassOwnPtr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
+    void suspendTimerQueue() override { }
+    void resumeTimerQueue() override { }
+    void addPendingNavigation() override { }
+    void removePendingNavigation() override { }
+    void onNavigationStarted() override { }
 
 private:
     std::priority_queue<DelayedTask> m_timerTasks;

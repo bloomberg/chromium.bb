@@ -63,6 +63,7 @@ class Node;
 class Page;
 class PopupOpeningObserver;
 class WebCompositorAnimationTimeline;
+class WebFrameScheduler;
 
 struct CompositedSelection;
 struct DateTimeChooserParameters;
@@ -252,6 +253,8 @@ public:
     // method is initiated from javascript. At this time, it is not guaranteed
     // that this is comprehensive.
     virtual void didObserveNonGetFetchFromScript() const {}
+
+    virtual PassOwnPtr<WebFrameScheduler> createFrameScheduler() = 0;
 
 protected:
     ~ChromeClient() override { }

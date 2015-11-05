@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFrameHostScheduler_h
-#define WebFrameHostScheduler_h
+#ifndef WebViewScheduler_h
+#define WebViewScheduler_h
 
 #include "WebCommon.h"
+#include "public/platform/WebPassOwnPtr.h"
 
 namespace blink {
 
 class WebFrameScheduler;
 
-class BLINK_PLATFORM_EXPORT WebFrameHostScheduler {
+class BLINK_PLATFORM_EXPORT WebViewScheduler {
 public:
-    virtual ~WebFrameHostScheduler() { }
+    virtual ~WebViewScheduler() { }
 
     // The scheduler may throttle tasks associated with background pages.
-    virtual void setPageInBackground(bool) { }
+    virtual void setPageInBackground(bool) = 0;
 
     // Creaters a new WebFrameScheduler, the caller is responsible for deleting it.
-    virtual WebFrameScheduler* createFrameScheduler() { return nullptr; }
+    virtual WebPassOwnPtr<WebFrameScheduler> createFrameScheduler() = 0;
 };
 
 } // namespace blink
 
-#endif // WebFrameHostScheduler
+#endif // WebViewScheduler

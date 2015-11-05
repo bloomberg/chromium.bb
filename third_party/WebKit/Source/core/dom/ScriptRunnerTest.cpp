@@ -11,6 +11,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebViewScheduler.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -94,7 +95,7 @@ public:
     Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
 };
 
-class MockPlatform : public Platform, private WebScheduler {
+class MockPlatform : public Platform, public WebScheduler {
 public:
     MockPlatform()
         : m_mockWebThread(this)
@@ -112,17 +113,6 @@ public:
 
     WebThread* currentThread() override { return &m_mockWebThread; }
 
-    WebTaskRunner* loadingTaskRunner() override
-    {
-        return &m_mockWebTaskRunner;
-    }
-
-    WebTaskRunner* timerTaskRunner() override
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
     void runSingleTask()
     {
         if (m_tasks.isEmpty())
@@ -135,6 +125,32 @@ public:
         while (!m_tasks.isEmpty())
             m_tasks.takeFirst()->run();
     }
+
+    // WebScheduler implementation.
+    WebTaskRunner* loadingTaskRunner() override
+    {
+        return &m_mockWebTaskRunner;
+    }
+
+    WebTaskRunner* timerTaskRunner() override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
+    void shutdown() override {}
+    bool shouldYieldForHighPriorityWork() override { return false; }
+    bool canExceedIdleDeadlineIfRequired() override { return false; }
+    void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    void postTimerTaskAt(const WebTraceLocation&, WebTaskRunner::Task*, double monotonicTime) override { }
+    WebPassOwnPtr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
+    void suspendTimerQueue() override { }
+    void resumeTimerQueue() override { }
+    void addPendingNavigation() override { }
+    void removePendingNavigation() override { }
+    void onNavigationStarted() override { }
 
 private:
     MockWebThread m_mockWebThread;

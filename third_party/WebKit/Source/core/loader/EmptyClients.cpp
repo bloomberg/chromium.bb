@@ -35,6 +35,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/FileChooser.h"
 #include "platform/Widget.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/modules/mediasession/WebMediaSession.h"
@@ -69,6 +70,24 @@ public:
     void disconnectClient() override { }
 };
 
+class EmptyFrameScheduler : public WebFrameScheduler {
+public:
+    void setFrameVisible(bool) override { }
+    WebTaskRunner* loadingTaskRunner() override;
+    WebTaskRunner* timerTaskRunner() override;
+    void setFrameOrigin(const WebSecurityOrigin*) override { }
+};
+
+WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner()
+{
+    return Platform::current()->currentThread()->taskRunner();
+}
+
+WebTaskRunner* EmptyFrameScheduler::timerTaskRunner()
+{
+    return Platform::current()->currentThread()->taskRunner();
+}
+
 PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::openPopupMenu(LocalFrame&, HTMLSelectElement&)
 {
     return adoptRefWillBeNoop(new EmptyPopupMenu());
@@ -95,6 +114,11 @@ void EmptyChromeClient::openFileChooser(LocalFrame*, PassRefPtr<FileChooser>)
 String EmptyChromeClient::acceptLanguages()
 {
     return String();
+}
+
+PassOwnPtr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler()
+{
+    return adoptPtr(new EmptyFrameScheduler());
 }
 
 NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool)

@@ -6,16 +6,16 @@
 
 #include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
-#include "components/scheduler/renderer/web_frame_host_scheduler_impl.h"
+#include "components/scheduler/renderer/web_view_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace scheduler {
 
 WebFrameSchedulerImpl::WebFrameSchedulerImpl(
     RendererScheduler* render_scheduler,
-    WebFrameHostSchedulerImpl* parent_frame_host_scheduler)
+    WebViewSchedulerImpl* parent_web_view_scheduler)
     : render_scheduler_(render_scheduler),
-      parent_frame_host_scheduler_(parent_frame_host_scheduler),
+      parent_web_view_scheduler_(parent_web_view_scheduler),
       visible_(true) {}
 
 WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
@@ -25,12 +25,12 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   if (timer_task_queue_.get())
     timer_task_queue_->UnregisterTaskQueue();
 
-  if (parent_frame_host_scheduler_)
-    parent_frame_host_scheduler_->Unregister(this);
+  if (parent_web_view_scheduler_)
+    parent_web_view_scheduler_->Unregister(this);
 }
 
-void WebFrameSchedulerImpl::DetachFromFrameHostScheduler() {
-  parent_frame_host_scheduler_ = nullptr;
+void WebFrameSchedulerImpl::DetachFromWebViewScheduler() {
+  parent_web_view_scheduler_ = nullptr;
 }
 
 void WebFrameSchedulerImpl::setFrameVisible(bool visible) {

@@ -87,6 +87,7 @@ class WebPagePopupImpl;
 class WebPlugin;
 class WebSelection;
 class WebSettingsImpl;
+class WebViewScheduler;
 
 class WebViewImpl final : public WebView
     , public RefCounted<WebViewImpl>
@@ -517,6 +518,8 @@ public:
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
 
+    WebViewScheduler* scheduler() const { return m_scheduler.get(); }
+
 private:
     InspectorOverlay* inspectorOverlay();
 
@@ -751,6 +754,8 @@ private:
     RefPtrWillBePersistent<EventListener> m_popupMouseWheelEventListener;
 
     WebPageImportanceSignals m_pageImportanceSignals;
+
+    const OwnPtr<WebViewScheduler> m_scheduler;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());

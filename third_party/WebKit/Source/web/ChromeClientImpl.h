@@ -173,6 +173,8 @@ public:
 
     void didObserveNonGetFetchFromScript() const override;
 
+    PassOwnPtr<WebFrameScheduler> createFrameScheduler() override;
+
 private:
     explicit ChromeClientImpl(WebViewImpl*);
 
