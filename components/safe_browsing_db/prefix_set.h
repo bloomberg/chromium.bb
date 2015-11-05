@@ -55,7 +55,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/safe_browsing_db/safe_browsing_db_util.h"
+#include "components/safe_browsing_db/util.h"
 
 namespace base {
 class FilePath;

@@ -758,7 +758,7 @@ class FakeSafeBrowsingDatabaseManager
         std::vector<GURL>(1, gurl),
         std::vector<SBFullHash>(),
         client,
-        safe_browsing_util::MALWARE,
+        safe_browsing::MALWARE,
         expected_threats);
     sb_check.url_results[0] = threat_type_;
     sb_check.OnSafeBrowsingResult();

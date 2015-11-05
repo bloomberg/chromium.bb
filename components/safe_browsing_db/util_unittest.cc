@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -20,12 +20,12 @@ bool VectorContains(const std::vector<std::string>& data,
 // according to the Safe Browsing spec.
 // See section 6.2 in
 // http://code.google.com/p/google-safe-browsing/wiki/Protocolv2Spec.
-TEST(SafeBrowsingUtilTest, UrlParsing) {
+TEST(SafeBrowsingDbUtilTest, UrlParsing) {
   std::vector<std::string> hosts, paths;
 
   GURL url("http://a.b.c/1/2.html?param=1");
-  safe_browsing_util::GenerateHostsToCheck(url, &hosts);
-  safe_browsing_util::GeneratePathsToCheck(url, &paths);
+  safe_browsing::GenerateHostsToCheck(url, &hosts);
+  safe_browsing::GeneratePathsToCheck(url, &paths);
   EXPECT_EQ(hosts.size(), static_cast<size_t>(2));
   EXPECT_EQ(paths.size(), static_cast<size_t>(4));
   EXPECT_EQ(hosts[0], "b.c");
@@ -37,8 +37,8 @@ TEST(SafeBrowsingUtilTest, UrlParsing) {
   EXPECT_TRUE(VectorContains(paths, "/"));
 
   url = GURL("http://a.b.c.d.e.f.g/1.html");
-  safe_browsing_util::GenerateHostsToCheck(url, &hosts);
-  safe_browsing_util::GeneratePathsToCheck(url, &paths);
+  safe_browsing::GenerateHostsToCheck(url, &hosts);
+  safe_browsing::GeneratePathsToCheck(url, &paths);
   EXPECT_EQ(hosts.size(), static_cast<size_t>(5));
   EXPECT_EQ(paths.size(), static_cast<size_t>(2));
   EXPECT_EQ(hosts[0], "f.g");
@@ -50,7 +50,7 @@ TEST(SafeBrowsingUtilTest, UrlParsing) {
   EXPECT_TRUE(VectorContains(paths, "/"));
 
   url = GURL("http://a.b/saw-cgi/eBayISAPI.dll/");
-  safe_browsing_util::GeneratePathsToCheck(url, &paths);
+  safe_browsing::GeneratePathsToCheck(url, &paths);
   EXPECT_EQ(paths.size(), static_cast<size_t>(3));
   EXPECT_TRUE(VectorContains(paths, "/saw-cgi/eBayISAPI.dll/"));
   EXPECT_TRUE(VectorContains(paths, "/saw-cgi/"));
@@ -60,7 +60,7 @@ TEST(SafeBrowsingUtilTest, UrlParsing) {
 // Tests the url canonicalization according to the Safe Browsing spec.
 // See section 6.1 in
 // http://code.google.com/p/google-safe-browsing/wiki/Protocolv2Spec.
-TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
+TEST(SafeBrowsingDbUtilTest, CanonicalizeUrl) {
   struct {
     const char* input_url;
     const char* expected_canonicalized_hostname;
@@ -265,7 +265,7 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
     std::string canonicalized_hostname;
     std::string canonicalized_path;
     std::string canonicalized_query;
-    safe_browsing_util::CanonicalizeUrl(url, &canonicalized_hostname,
+    safe_browsing::CanonicalizeUrl(url, &canonicalized_hostname,
         &canonicalized_path, &canonicalized_query);
 
     EXPECT_EQ(tests[i].expected_canonicalized_hostname,
@@ -277,47 +277,63 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
   }
 }
 
-TEST(SafeBrowsingUtilTest, ListIdListNameConversion) {
+TEST(SafeBrowsingDbUtilTest, ListIdListNameConversion) {
   std::string list_name;
-  EXPECT_FALSE(safe_browsing_util::GetListName(safe_browsing_util::INVALID,
+  EXPECT_FALSE(safe_browsing::GetListName(safe_browsing::INVALID,
                                                &list_name));
-  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::MALWARE,
+  EXPECT_TRUE(safe_browsing::GetListName(safe_browsing::MALWARE,
                                               &list_name));
-  EXPECT_EQ(list_name, std::string(safe_browsing_util::kMalwareList));
-  EXPECT_EQ(safe_browsing_util::MALWARE,
-            safe_browsing_util::GetListId(list_name));
+  EXPECT_EQ(list_name, std::string(safe_browsing::kMalwareList));
+  EXPECT_EQ(safe_browsing::MALWARE,
+            safe_browsing::GetListId(list_name));
 
-  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::PHISH,
+  EXPECT_TRUE(safe_browsing::GetListName(safe_browsing::PHISH,
                                               &list_name));
-  EXPECT_EQ(list_name, std::string(safe_browsing_util::kPhishingList));
-  EXPECT_EQ(safe_browsing_util::PHISH,
-            safe_browsing_util::GetListId(list_name));
+  EXPECT_EQ(list_name, std::string(safe_browsing::kPhishingList));
+  EXPECT_EQ(safe_browsing::PHISH,
+            safe_browsing::GetListId(list_name));
 
-  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::BINURL,
+  EXPECT_TRUE(safe_browsing::GetListName(safe_browsing::BINURL,
                                               &list_name));
-  EXPECT_EQ(list_name, std::string(safe_browsing_util::kBinUrlList));
-  EXPECT_EQ(safe_browsing_util::BINURL,
-            safe_browsing_util::GetListId(list_name));
+  EXPECT_EQ(list_name, std::string(safe_browsing::kBinUrlList));
+  EXPECT_EQ(safe_browsing::BINURL,
+            safe_browsing::GetListId(list_name));
 }
 
 // Since the ids are saved in file, we need to make sure they don't change.
 // Since only the last bit of each id is saved in file together with
 // chunkids, this checks only last bit.
-TEST(SafeBrowsingUtilTest, ListIdVerification) {
-  EXPECT_EQ(0, safe_browsing_util::MALWARE % 2);
-  EXPECT_EQ(1, safe_browsing_util::PHISH % 2);
-  EXPECT_EQ(0, safe_browsing_util::BINURL %2);
+TEST(SafeBrowsingDbUtilTest, ListIdVerification) {
+  EXPECT_EQ(0, safe_browsing::MALWARE % 2);
+  EXPECT_EQ(1, safe_browsing::PHISH % 2);
+  EXPECT_EQ(0, safe_browsing::BINURL %2);
 }
 
-TEST(SafeBrowsingUtilTest, StringToSBFullHashAndSBFullHashToString) {
+TEST(SafeBrowsingDbUtilTest, StringToSBFullHashAndSBFullHashToString) {
   // 31 chars plus the last \0 as full_hash.
   const std::string hash_in = "12345678902234567890323456789012";
-  SBFullHash hash_out = safe_browsing_util::StringToSBFullHash(hash_in);
+  SBFullHash hash_out = safe_browsing::StringToSBFullHash(hash_in);
   EXPECT_EQ(0x34333231U, hash_out.prefix);
   EXPECT_EQ(0, memcmp(hash_in.data(), hash_out.full_hash, sizeof(SBFullHash)));
 
-  std::string hash_final = safe_browsing_util::SBFullHashToString(hash_out);
+  std::string hash_final = safe_browsing::SBFullHashToString(hash_out);
   EXPECT_EQ(hash_in, hash_final);
+}
+
+TEST(SafeBrowsingDbUtilTest, FullHashOperators) {
+  const SBFullHash kHash1 = safe_browsing::SBFullHashForString("one");
+  const SBFullHash kHash2 = safe_browsing::SBFullHashForString("two");
+
+  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash1, kHash1));
+  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash2, kHash2));
+  EXPECT_FALSE(safe_browsing::SBFullHashEqual(kHash1, kHash2));
+  EXPECT_FALSE(safe_browsing::SBFullHashEqual(kHash2, kHash1));
+
+  EXPECT_FALSE(safe_browsing::SBFullHashLess(kHash1, kHash2));
+  EXPECT_TRUE(safe_browsing::SBFullHashLess(kHash2, kHash1));
+
+  EXPECT_FALSE(safe_browsing::SBFullHashLess(kHash1, kHash1));
+  EXPECT_FALSE(safe_browsing::SBFullHashLess(kHash2, kHash2));
 }
 
 }  // namespace

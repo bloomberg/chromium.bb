@@ -578,7 +578,7 @@
     ],
     'safe_browsing_db_unittest_sources': [
       'safe_browsing_db/prefix_set_unittest.cc',
-      'safe_browsing_db/safe_browsing_db_util_unittest.cc',
+      'safe_browsing_db/util_unittest.cc',
     ],
     'safe_json_unittest_sources': [
       'safe_json/json_sanitizer_unittest.cc',

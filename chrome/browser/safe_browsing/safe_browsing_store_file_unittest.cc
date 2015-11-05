@@ -13,6 +13,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/safe_browsing_db/prefix_set.h"
+#include "components/safe_browsing_db/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -26,12 +27,12 @@ const int kAddChunk4 = 7;
 const int kSubChunk1 = 2;
 const int kSubChunk2 = 4;
 
-const SBFullHash kHash1 = SBFullHashForString("one");
-const SBFullHash kHash2 = SBFullHashForString("two");
-const SBFullHash kHash3 = SBFullHashForString("three");
-const SBFullHash kHash4 = SBFullHashForString("four");
-const SBFullHash kHash5 = SBFullHashForString("five");
-const SBFullHash kHash6 = SBFullHashForString("six");
+const SBFullHash kHash1 = safe_browsing::SBFullHashForString("one");
+const SBFullHash kHash2 = safe_browsing::SBFullHashForString("two");
+const SBFullHash kHash3 = safe_browsing::SBFullHashForString("three");
+const SBFullHash kHash4 = safe_browsing::SBFullHashForString("four");
+const SBFullHash kHash5 = safe_browsing::SBFullHashForString("five");
+const SBFullHash kHash6 = safe_browsing::SBFullHashForString("six");
 
 const SBPrefix kMinSBPrefix = 0u;
 const SBPrefix kMaxSBPrefix = ~kMinSBPrefix;
@@ -194,7 +195,8 @@ TEST_F(SafeBrowsingStoreFileTest, BasicStore) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
+    EXPECT_TRUE(safe_browsing::SBFullHashEqual(
+        kHash4, add_full_hashes_result[0].full_hash));
   }
 }
 
@@ -279,7 +281,8 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
+    EXPECT_TRUE(safe_browsing::SBFullHashEqual(
+        kHash4, add_full_hashes_result[0].full_hash));
   }
 
   ASSERT_TRUE(store_->BeginUpdate());
@@ -302,7 +305,8 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
+    EXPECT_TRUE(safe_browsing::SBFullHashEqual(
+        kHash4, add_full_hashes_result[0].full_hash));
   }
 
   ASSERT_TRUE(store_->BeginUpdate());
@@ -326,7 +330,8 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
+    EXPECT_TRUE(safe_browsing::SBFullHashEqual(
+        kHash4, add_full_hashes_result[0].full_hash));
   }
 }
 
@@ -392,7 +397,8 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk3, add_full_hashes_result[0].chunk_id);
-    EXPECT_TRUE(SBFullHashEqual(kHash6, add_full_hashes_result[0].full_hash));
+    EXPECT_TRUE(safe_browsing::SBFullHashEqual(
+        kHash6, add_full_hashes_result[0].full_hash));
   }
 
   // Expected chunks are there in another update.
@@ -665,7 +671,7 @@ TEST_F(SafeBrowsingStoreFileTest, GetAddPrefixesAndHashes) {
   EXPECT_TRUE(store_->GetAddFullHashes(&add_hashes));
   ASSERT_EQ(1U, add_hashes.size());
   EXPECT_EQ(kAddChunk2, add_hashes[0].chunk_id);
-  EXPECT_TRUE(SBFullHashEqual(kHash4, add_hashes[0].full_hash));
+  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash4, add_hashes[0].full_hash));
 }
 
 // Test that the database handles resharding correctly, both when growing and
@@ -807,7 +813,7 @@ TEST_F(SafeBrowsingStoreFileTest, Version8) {
   EXPECT_TRUE(store_->GetAddFullHashes(&add_hashes));
   ASSERT_EQ(1U, add_hashes.size());
   EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
-  EXPECT_TRUE(SBFullHashEqual(kHash2, add_hashes[0].full_hash));
+  EXPECT_TRUE(safe_browsing::SBFullHashEqual(kHash2, add_hashes[0].full_hash));
 
   // Attempt an update to make sure things work end-to-end.
   EXPECT_TRUE(store_->BeginUpdate());

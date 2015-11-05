@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
+#include "components/safe_browsing_db/util.h"
 
 namespace safe_browsing {
 class PrefixSet;
@@ -590,10 +591,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Helpers for InsertChunks().
   void InsertAddChunk(SafeBrowsingStore* store,
-                      safe_browsing_util::ListType list_id,
+                      safe_browsing::ListType list_id,
                       const SBChunkData& chunk);
   void InsertSubChunk(SafeBrowsingStore* store,
-                      safe_browsing_util::ListType list_id,
+                      safe_browsing::ListType list_id,
                       const SBChunkData& chunk);
 
   // Updates the |store| and stores the result on disk under |store_filename|.

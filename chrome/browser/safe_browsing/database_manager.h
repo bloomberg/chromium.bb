@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/util.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 

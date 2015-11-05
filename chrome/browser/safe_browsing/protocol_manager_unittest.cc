@@ -408,7 +408,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
   net::TestURLFetcherFactory url_fetcher_factory;
 
   std::vector<SBListChunkRanges> ranges;
-  SBListChunkRanges range_phish(safe_browsing_util::kPhishingList);
+  SBListChunkRanges range_phish(safe_browsing::kPhishingList);
   range_phish.adds = "adds_phish";
   range_phish.subs = "subs_phish";
   ranges.push_back(range_phish);

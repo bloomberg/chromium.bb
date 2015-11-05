@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/common/env_vars.h"
+#include "components/safe_browsing_db/util.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -631,10 +632,10 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   bool found_phishing = false;
   for (size_t i = 0; i < lists.size(); ++i) {
     update_list_data_.append(safe_browsing::FormatList(lists[i]));
-    if (lists[i].name == safe_browsing_util::kPhishingList)
+    if (lists[i].name == safe_browsing::kPhishingList)
       found_phishing = true;
 
-    if (lists[i].name == safe_browsing_util::kMalwareList)
+    if (lists[i].name == safe_browsing::kMalwareList)
       found_malware = true;
   }
 
@@ -645,11 +646,11 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   // removed.
   if (!found_phishing) {
     update_list_data_.append(safe_browsing::FormatList(
-        SBListChunkRanges(safe_browsing_util::kPhishingList)));
+        SBListChunkRanges(safe_browsing::kPhishingList)));
   }
   if (!found_malware) {
     update_list_data_.append(safe_browsing::FormatList(
-        SBListChunkRanges(safe_browsing_util::kMalwareList)));
+        SBListChunkRanges(safe_browsing::kMalwareList)));
   }
 
   // Large requests are (probably) a sign of database corruption.

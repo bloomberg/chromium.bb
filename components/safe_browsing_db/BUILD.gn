@@ -5,7 +5,7 @@
 group("safe_browsing_db") {
   deps = [
     ":prefix_set",
-    ":safe_browsing_db_util",
+    ":util",
   ]
 }
 
@@ -19,26 +19,30 @@ source_set("prefix_set") {
   ]
 }
 
-source_set("safe_browsing_db_util") {
+source_set("util") {
   sources = [
-    "safe_browsing_db_util.cc",
-    "safe_browsing_db_util.h",
+    "util.cc",
+    "util.h",
   ]
   deps = [
     "//base",
     "//crypto",
   ]
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]  # Conversion from size_t to 'type'.
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
     "prefix_set_unittest.cc",
-    "safe_browsing_db_util_unittest.cc",
+    "util_unittest.cc",
   ]
   deps = [
     ":prefix_set",
-    ":safe_browsing_db_util",
+    ":util",
     "//base",
     "//testing/gtest",
   ]

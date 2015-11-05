@@ -88,8 +88,10 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddFullChunk) {
   EXPECT_TRUE(chunks[0]->IsFullHash());
 
   ASSERT_EQ(2U, chunks[0]->FullHashCount());
-  EXPECT_TRUE(SBFullHashEqual(chunks[0]->FullHashAt(0), full_hash1));
-  EXPECT_TRUE(SBFullHashEqual(chunks[0]->FullHashAt(1), full_hash2));
+  EXPECT_TRUE(
+      safe_browsing::SBFullHashEqual(chunks[0]->FullHashAt(0), full_hash1));
+  EXPECT_TRUE(
+      safe_browsing::SBFullHashEqual(chunks[0]->FullHashAt(1), full_hash2));
 }
 
 // Test parsing multiple add chunks. We'll use the same chunk as above, and add
@@ -282,9 +284,11 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubFullChunk) {
   EXPECT_TRUE(chunks[0]->IsFullHash());
 
   ASSERT_EQ(2U, chunks[0]->FullHashCount());
-  EXPECT_TRUE(SBFullHashEqual(chunks[0]->FullHashAt(0), full_hash1));
+  EXPECT_TRUE(
+      safe_browsing::SBFullHashEqual(chunks[0]->FullHashAt(0), full_hash1));
   EXPECT_EQ(7, chunks[0]->AddChunkNumberAt(0));
-  EXPECT_TRUE(SBFullHashEqual(chunks[0]->FullHashAt(1), full_hash2));
+  EXPECT_TRUE(
+      safe_browsing::SBFullHashEqual(chunks[0]->FullHashAt(1), full_hash2));
   EXPECT_EQ(9, chunks[0]->AddChunkNumberAt(1));
 }
 
@@ -396,15 +400,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[0].list_id);
+  EXPECT_EQ(safe_browsing::PHISH, full_hashes[0].list_id);
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "00001111222233334444555566667777",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[1].list_id);
+  EXPECT_EQ(safe_browsing::PHISH, full_hashes[1].list_id);
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "ffffeeeeddddccccbbbbaaaa99998888",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[2].list_id);
+  EXPECT_EQ(safe_browsing::PHISH, full_hashes[2].list_id);
 
   // Test multiple lists in the GetHash results.
   const std::string get_hash2(base::StringPrintf(
@@ -423,15 +427,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[0].list_id);
+  EXPECT_EQ(safe_browsing::PHISH, full_hashes[0].list_id);
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "cafebeefcafebeefdeaddeaddeaddead",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[1].list_id);
+  EXPECT_EQ(safe_browsing::MALWARE, full_hashes[1].list_id);
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[2].list_id);
+  EXPECT_EQ(safe_browsing::MALWARE, full_hashes[2].list_id);
 
   // Test metadata parsing.
   const std::string get_hash3(base::StringPrintf(
@@ -451,17 +455,17 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[0].list_id);
+  EXPECT_EQ(safe_browsing::MALWARE, full_hashes[0].list_id);
   EXPECT_EQ(std::string("ab"), full_hashes[0].metadata);
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[1].list_id);
+  EXPECT_EQ(safe_browsing::MALWARE, full_hashes[1].list_id);
   EXPECT_EQ(std::string("xy"), full_hashes[1].metadata);
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "cafebeefcafebeefdeaddeaddeaddead",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[2].list_id);
+  EXPECT_EQ(safe_browsing::PHISH, full_hashes[2].list_id);
   EXPECT_EQ(std::string(), full_hashes[2].metadata);
 }
 
@@ -483,7 +487,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
   ASSERT_EQ(1U, full_hashes.size());
   EXPECT_EQ(memcmp("12345678901234567890123456789012",
                    &full_hashes[0].hash, sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[0].list_id);
+  EXPECT_EQ(safe_browsing::PHISH, full_hashes[0].list_id);
 
   hash_response += base::StringPrintf(
       "%s:32:1\n"
@@ -498,10 +502,10 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
   EXPECT_EQ(2U, full_hashes.size());
   EXPECT_EQ(memcmp("12345678901234567890123456789012",
                    &full_hashes[0].hash, sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[0].list_id);
+  EXPECT_EQ(safe_browsing::PHISH, full_hashes[0].list_id);
   EXPECT_EQ(memcmp("abcdefghijklmnopqrstuvwxyz123457",
                    &full_hashes[1].hash, sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[1].list_id);
+  EXPECT_EQ(safe_browsing::MALWARE, full_hashes[1].list_id);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownListAndMetadata) {
@@ -523,7 +527,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownListAndMetadata) {
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "0123456789hashhashhashhashhashha",
                    sizeof(SBFullHash)), 0);
-  EXPECT_EQ(safe_browsing_util::MALWARE, full_hashes[0].list_id);
+  EXPECT_EQ(safe_browsing::MALWARE, full_hashes[0].list_id);
   EXPECT_EQ(std::string(), full_hashes[0].metadata);
 }
 

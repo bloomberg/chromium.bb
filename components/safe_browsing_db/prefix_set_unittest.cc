@@ -19,7 +19,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "components/safe_browsing_db/safe_browsing_db_util.h"
+#include "components/safe_browsing_db/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

@@ -16,8 +16,8 @@
         # Note: sources list duplicated in GN build.
         'safe_browsing_db/prefix_set.h',
         'safe_browsing_db/prefix_set.cc',
-        'safe_browsing_db/safe_browsing_db_util.h',
-        'safe_browsing_db/safe_browsing_db_util.cc',
+        'safe_browsing_db/util.h',
+        'safe_browsing_db/util.cc',
       ],
       'include_dirs': [
         '..',
