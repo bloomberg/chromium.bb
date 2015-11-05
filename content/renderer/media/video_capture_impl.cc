@@ -359,7 +359,21 @@ void VideoCaptureImpl::OnBufferReceived(
                    weak_factory_.GetWeakPtr(), buffer_id, buffer));
   } else {
     scoped_refptr<ClientBuffer> buffer;
-    if (storage_type == media::VideoFrame::STORAGE_UNOWNED_MEMORY) {
+    if (storage_type == media::VideoFrame::STORAGE_OPAQUE) {
+      DCHECK(mailbox_holder.mailbox.Verify());
+      DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format);
+      frame = media::VideoFrame::WrapNativeTexture(
+          pixel_format,
+          mailbox_holder,
+          base::Bind(&SaveReleaseSyncToken, release_sync_token.get()),
+          coded_size,
+          gfx::Rect(coded_size),
+          coded_size,
+          timestamp - first_frame_timestamp_);
+    }
+    else {
+      DCHECK(storage_type == media::VideoFrame::STORAGE_UNOWNED_MEMORY ||
+             storage_type == media::VideoFrame::STORAGE_SHMEM);
       DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
       const auto& iter = client_buffers_.find(buffer_id);
       DCHECK(iter != client_buffers_.end());
@@ -375,16 +389,8 @@ void VideoCaptureImpl::OnBufferReceived(
           buffer->buffer()->handle(),
           0 /* shared_memory_offset */,
           timestamp - first_frame_timestamp_);
-    } else {
-      DCHECK_EQ(storage_type, media::VideoFrame::STORAGE_OPAQUE);
-      DCHECK(mailbox_holder.mailbox.Verify());
-      DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format);
-      frame = media::VideoFrame::WrapNativeTexture(
-          pixel_format, mailbox_holder,
-          base::Bind(&SaveReleaseSyncToken, release_sync_token.get()),
-          coded_size, gfx::Rect(coded_size), coded_size,
-          timestamp - first_frame_timestamp_);
     }
+    DCHECK(frame);
     buffer_finished_callback = media::BindToCurrentLoop(
         base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
                    weak_factory_.GetWeakPtr(), buffer_id, buffer));
