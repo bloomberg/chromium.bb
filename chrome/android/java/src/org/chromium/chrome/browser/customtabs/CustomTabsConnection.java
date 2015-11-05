@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.ICustomTabsCallback;
 import android.support.customtabs.ICustomTabsService;
 import android.text.TextUtils;
@@ -228,6 +229,52 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         }
     }
 
+    /**
+     * High confidence mayLaunchUrl() call, that is:
+     * - Tries to prerender if possible.
+     * - An empty URL cancels the current prerender if any.
+     * - If prerendering is not possible, makes sure that there is a spare renderer.
+     */
+    private void highConfidenceMayLaunchUrl(
+            IBinder session, int uid, String url, Bundle extras, List<Bundle> otherLikelyBundles) {
+        ThreadUtils.assertOnUiThread();
+        if (TextUtils.isEmpty(url)) {
+            cancelPrerender(session);
+            return;
+        }
+        boolean noPrerendering =
+                extras != null ? extras.getBoolean(NO_PRERENDERING_KEY, false) : false;
+        WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
+                Profile.getLastUsedProfile(), url);
+        boolean didStartPrerender = false;
+        if (!noPrerendering && mayPrerender()) {
+            didStartPrerender = prerenderUrl(session, url, extras, uid);
+        }
+        preconnectUrls(otherLikelyBundles);
+        if (!didStartPrerender) createSpareWebContents();
+    }
+
+    /**
+     * Low confidence mayLaunchUrl() call, that is:
+     * - Preconnects to the ordered list of URLs.
+     * - Makes sure that there is a spare renderer.
+     */
+    private void lowConfidenceMayLaunchUrl(List<Bundle> likelyBundles) {
+        ThreadUtils.assertOnUiThread();
+        preconnectUrls(likelyBundles);
+        createSpareWebContents();
+    }
+
+    private void preconnectUrls(List<Bundle> likelyBundles) {
+        if (likelyBundles == null) return;
+        WarmupManager warmupManager = WarmupManager.getInstance();
+        Profile profile = Profile.getLastUsedProfile();
+        for (Bundle bundle : likelyBundles) {
+            String url = bundle.getString(CustomTabsService.KEY_URL);
+            if (url != null) warmupManager.maybePreconnectUrlAndSubResources(profile, url);
+        }
+    }
+
     @Override
     public boolean mayLaunchUrl(ICustomTabsCallback callback, Uri url, Bundle extras,
             List<Bundle> otherLikelyBundles) {
@@ -237,11 +284,12 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     private boolean mayLaunchUrlInternal(ICustomTabsCallback callback, Uri url, final Bundle extras,
-            List<Bundle> otherLikelyBundles) {
+            final List<Bundle> otherLikelyBundles) {
         // Don't do anything for unknown schemes. Not having a scheme is
         // allowed, as we allow "www.example.com".
-        String scheme = url.normalizeScheme().getScheme();
-        if (scheme != null && !scheme.equals("http") && !scheme.equals("https")) return false;
+        String scheme = url == null ? null : url.normalizeScheme().getScheme();
+        boolean allowedScheme = scheme == null || scheme.equals("http") || scheme.equals("https");
+        if (!allowedScheme) return false;
         // Things below need the browser process to be initialized.
 
         // Forbids warmup() from creating a spare renderer, as prerendering wouldn't reuse
@@ -250,29 +298,21 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         if (!warmupInternal(false)) return false; // Also does the foreground check.
 
         final IBinder session = callback.asBinder();
-        final String urlString = url.toString();
-        final boolean noPrerendering =
-                extras != null ? extras.getBoolean(NO_PRERENDERING_KEY, false) : false;
+        final String urlString = url == null ? null : url.toString();
         final int uid = Binder.getCallingUid();
-        if (!mClientManager.updateStatsAndReturnWhetherAllowed(session, uid, urlString)) {
+        final boolean lowConfidence = TextUtils.isEmpty(urlString) && otherLikelyBundles != null;
+        // TODO(lizeb): Also throttle low-confidence mode.
+        if (!lowConfidence
+                && !mClientManager.updateStatsAndReturnWhetherAllowed(session, uid, urlString)) {
             return false;
         }
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (TextUtils.isEmpty(urlString)) {
-                    cancelPrerender(session);
-                    return;
-                }
-                WarmupManager warmupManager = WarmupManager.getInstance();
-                warmupManager.maybePrefetchDnsForUrlInBackground(
-                        mApplication.getApplicationContext(), urlString);
-                warmupManager.maybePreconnectUrlAndSubResources(
-                        Profile.getLastUsedProfile(), urlString);
-                if (!noPrerendering && mayPrerender()) {
-                    prerenderUrl(session, urlString, extras, uid);
+                if (lowConfidence) {
+                    lowConfidenceMayLaunchUrl(otherLikelyBundles);
                 } else {
-                    createSpareWebContents();
+                    highConfidenceMayLaunchUrl(session, uid, urlString, extras, otherLikelyBundles);
                 }
             }
         });
@@ -531,26 +571,35 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         }
     }
 
-    private void prerenderUrl(IBinder session, String url, Bundle extras, int uid) {
+    /**
+     * Tries to request a prerender for a given URL.
+     *
+     * @param session Session the request comes from.
+     * @param url URL to prerender.
+     * @param extras extra parameters.
+     * @param uid UID of the caller.
+     * @return true if a prerender has been initiated.
+     */
+    private boolean prerenderUrl(IBinder session, String url, Bundle extras, int uid) {
         ThreadUtils.assertOnUiThread();
         // TODO(lizeb): Prerendering through ChromePrerenderService is
         // incompatible with prerendering through this service. Remove this
         // limitation, or remove ChromePrerenderService.
         WarmupManager.getInstance().disallowPrerendering();
         // Ignores mayPrerender() for an empty URL, since it cancels an existing prerender.
-        if (!mayPrerender() && !TextUtils.isEmpty(url)) return;
-        if (!mWarmupHasBeenCalled.get()) return;
+        if (!mayPrerender() && !TextUtils.isEmpty(url)) return false;
+        if (!mWarmupHasBeenCalled.get()) return false;
         // Last one wins and cancels the previous prerender.
         cancelPrerender(null);
-        if (TextUtils.isEmpty(url)) return;
-        if (!mClientManager.isPrerenderingAllowed(uid)) return;
+        if (TextUtils.isEmpty(url)) return false;
+        if (!mClientManager.isPrerenderingAllowed(uid)) return false;
 
         // A prerender will be requested. Time to destroy the spare WebContents.
         destroySpareWebContents();
 
         Intent extrasIntent = new Intent();
         if (extras != null) extrasIntent.putExtras(extras);
-        if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
+        if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return false;
         if (mExternalPrerenderHandler == null) {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
@@ -563,10 +612,10 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
                 Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y);
-        if (webContents != null) {
-            mClientManager.registerPrerenderRequest(uid, url);
-            mPrerender = new PrerenderedUrlParams(session, webContents, url, referrer, extras);
-        }
+        if (webContents == null) return false;
+        mClientManager.registerPrerenderRequest(uid, url);
+        mPrerender = new PrerenderedUrlParams(session, webContents, url, referrer, extras);
+        return true;
     }
 
     /**

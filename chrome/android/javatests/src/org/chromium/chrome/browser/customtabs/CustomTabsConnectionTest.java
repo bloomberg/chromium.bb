@@ -11,7 +11,9 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Process;
+import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -19,6 +21,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Tests for CustomTabsConnection. */
 public class CustomTabsConnectionTest extends InstrumentationTestCase {
@@ -148,6 +153,79 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         });
     }
 
+    @SmallTest
+    public void testMayLaunchUrlNullOrEmptyUrl() {
+        assertWarmupAndMayLaunchUrl(null, null, true);
+        CustomTabsTestUtils.cleanupSessions(mCustomTabsConnection); // Resets throttling.
+        assertWarmupAndMayLaunchUrl(null, "", true);
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testUnderstandsLowConfidenceMayLaunchUrl() {
+        final ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        assertTrue(mCustomTabsConnection.newSession(cb));
+        List<Bundle> urls = new ArrayList<>();
+        Bundle urlBundle = new Bundle();
+        urlBundle.putString(CustomTabsService.KEY_URL, URL);
+        urls.add(urlBundle);
+        mCustomTabsConnection.mayLaunchUrl(cb, null, null, urls);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertSpareWebContentsNotNullAndDestroy();
+                IBinder session = cb.asBinder();
+                String referrer = mCustomTabsConnection.getReferrerForSession(session).getUrl();
+                assertNull(mCustomTabsConnection.takePrerenderedUrl(session, URL, referrer));
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testStillHighConfidenceMayLaunchUrlWithSeveralUrls() {
+        final ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        assertTrue(mCustomTabsConnection.newSession(cb));
+        List<Bundle> urls = new ArrayList<>();
+        Bundle urlBundle = new Bundle();
+        urlBundle.putString(CustomTabsService.KEY_URL, URL);
+        urls.add(urlBundle);
+
+        mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), null, urls);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
+                IBinder session = cb.asBinder();
+                String referrer = mCustomTabsConnection.getReferrerForSession(session).getUrl();
+                assertNotNull(mCustomTabsConnection.takePrerenderedUrl(session, URL, referrer));
+            }
+        });
+    }
+
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testCanCancelPrerender() {
+        final ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
+            }
+        });
+        assertTrue(mCustomTabsConnection.mayLaunchUrl(cb, null, null, null));
+        // mayLaunchUrl() posts a task, the following has to run after it.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                IBinder session = cb.asBinder();
+                String referrer = mCustomTabsConnection.getReferrerForSession(session).getUrl();
+                assertNull(mCustomTabsConnection.takePrerenderedUrl(session, URL, referrer));
+            }
+        });
+    }
+
     private void assertSpareWebContentsNotNullAndDestroy() {
         WebContents webContents = mCustomTabsConnection.takeSpareWebContents();
         assertNotNull(webContents);
@@ -165,7 +243,8 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
             cb = new CustomTabsTestUtils.DummyCallback();
             mCustomTabsConnection.newSession(cb);
         }
-        boolean succeeded = mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(url), null, null);
+        Uri uri = url == null ? null : Uri.parse(url);
+        boolean succeeded = mCustomTabsConnection.mayLaunchUrl(cb, uri, null, null);
         assertEquals(shouldSucceed, succeeded);
         return shouldSucceed ? cb : null;
     }
