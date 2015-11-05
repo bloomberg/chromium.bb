@@ -10,6 +10,10 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/preferences/pref_service_bridge.h"
+#endif  // OS_ANDROID
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
 #include "chrome/browser/upgrade_detector_impl.h"
 #endif
@@ -77,6 +81,15 @@ bool ChromeVariationsServiceClient::OverridesRestrictParameter(
 #else
   return false;
 #endif
+}
+
+variations::VariationsFirstRunSeedCallback
+ChromeVariationsServiceClient::GetVariationsFirstRunSeedCallback() {
+#if defined(OS_ANDROID)
+  return base::Bind(&PrefServiceBridge::GetVariationsFirstRunSeed);
+#else   // OS_ANDROID
+  return variations::VariationsFirstRunSeedCallback();
+#endif  // OS_ANDROID
 }
 
 void ChromeVariationsServiceClient::OnInitialStartup() {

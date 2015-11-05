@@ -152,6 +152,11 @@ VariationsSeedStore::~VariationsSeedStore() {
 bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
   invalid_base64_signature_.clear();
 
+#if defined(OS_ANDROID)
+  if (!local_state_->HasPrefPath(prefs::kVariationsSeedSignature))
+    ImportFirstRunJavaSeed();
+#endif  // OS_ANDROID
+
   std::string seed_data;
   if (!ReadSeedData(&seed_data))
     return false;
@@ -335,6 +340,36 @@ void VariationsSeedStore::ClearPrefs() {
   local_state_->ClearPref(prefs::kVariationsSeedDate);
   local_state_->ClearPref(prefs::kVariationsSeedSignature);
 }
+
+#if defined(OS_ANDROID)
+void VariationsSeedStore::ImportFirstRunJavaSeed() {
+  DVLOG(1) << "Importing first run seed from Java preferences.";
+  std::string seed_data;
+  std::string seed_signature;
+  std::string seed_country;
+  if (!get_variations_first_run_seed_.is_null()) {
+    get_variations_first_run_seed_.Run(&seed_data, &seed_signature,
+                                       &seed_country);
+  }
+
+  if (seed_data.empty()) {
+    // TODO(agulenko): add a new UMA histogram for the state of failing
+    // to import seed from Java preferences during Chrome first run.
+    return;
+  }
+
+  // TODO(agulenko): Pull actual time from the response.
+  base::Time current_time = base::Time::Now();
+
+  // TODO(agulenko): Support gzip compressed seed.
+  if (!StoreSeedData(seed_data, seed_signature, seed_country, current_time,
+                     false, false, nullptr)) {
+    LOG(WARNING) << "First run variations seed is invalid.";
+    return;
+  }
+  // TODO(agulenko): Clear Java prefs.
+}
+#endif  // OS_ANDROID
 
 bool VariationsSeedStore::ReadSeedData(std::string* seed_data) {
   std::string base64_seed_data =

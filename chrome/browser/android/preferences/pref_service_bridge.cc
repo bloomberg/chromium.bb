@@ -5,13 +5,16 @@
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 
 #include <jni.h>
+#include <vector>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -36,6 +39,7 @@
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
+#include "components/variations/pref_names.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +51,7 @@ using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::GetApplicationContext;
 using base::android::ScopedJavaLocalRef;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
@@ -109,6 +114,14 @@ bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
 
 PrefService* GetPrefService() {
   return GetOriginalProfile()->GetPrefs();
+}
+
+std::string JavaByteArrayToString(JNIEnv* env, jbyteArray byte_array) {
+  if (!byte_array)
+    return std::string();
+  std::vector<uint8> array_data;
+  base::android::JavaByteArrayToByteVector(env, byte_array, &array_data);
+  return std::string(array_data.begin(), array_data.end());
 }
 
 }  // namespace
@@ -947,4 +960,23 @@ std::string PrefServiceBridge::GetAndroidPermissionForContentSetting(
     return std::string();
 
   return ConvertJavaStringToUTF8(android_permission);
+}
+
+// static
+void PrefServiceBridge::GetVariationsFirstRunSeed(std::string* seed_data,
+                                                  std::string* seed_signature,
+                                                  std::string* seed_country) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_seed_data =
+      Java_PrefServiceBridge_getVariationsFirstRunSeedData(
+          env, GetApplicationContext());
+  ScopedJavaLocalRef<jstring> j_seed_signature =
+      Java_PrefServiceBridge_getVariationsFirstRunSeedSignature(
+          env, GetApplicationContext());
+  ScopedJavaLocalRef<jstring> j_seed_country =
+      Java_PrefServiceBridge_getVariationsFirstRunSeedCountry(
+          env, GetApplicationContext());
+  *seed_data = JavaByteArrayToString(env, j_seed_data.obj());
+  *seed_signature = ConvertJavaStringToUTF8(j_seed_signature);
+  *seed_country = ConvertJavaStringToUTF8(j_seed_country);
 }

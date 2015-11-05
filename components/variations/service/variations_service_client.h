@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
+#include "components/variations/variations_seed_store.h"
 #include "components/version_info/version_info.h"
 
 namespace base {
@@ -59,6 +60,10 @@ class VariationsServiceClient {
 
   // Called from VariationsService::PerformPreMainMessageLoopStartup().
   virtual void OnInitialStartup() {}
+
+  // Get callback for pulling variations first run seed from Java applicaton
+  // in Chrome for Android.
+  virtual VariationsFirstRunSeedCallback GetVariationsFirstRunSeedCallback();
 };
 
 }  // namespace variations

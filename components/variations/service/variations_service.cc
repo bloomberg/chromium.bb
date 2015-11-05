@@ -4,6 +4,8 @@
 
 #include "components/variations/service/variations_service.h"
 
+#include <vector>
+
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -288,6 +290,8 @@ VariationsService::VariationsService(
   DCHECK(resource_request_allowed_notifier_.get());
 
   resource_request_allowed_notifier_->Init(this);
+  seed_store_.SetVariationsFirstRunSeedCallback(
+      client_->GetVariationsFirstRunSeedCallback());
 }
 
 VariationsService::~VariationsService() {
