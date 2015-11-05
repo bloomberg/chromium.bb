@@ -1607,12 +1607,6 @@
       {
         "test": "window_manager_unittests"
       }
-    ],
-    "scripts": [
-      {
-        "name": "mojo_apptests",
-        "script": "mojo_apptests.py"
-      }
     ]
   },
   "Win8 GN": {

@@ -16,7 +16,7 @@ def main_run(args):
   build_dir = os.path.join(common.SRC_DIR, 'out', args.build_config_fs)
 
   with common.temporary_file() as tempfile_path:
-    rc = common.run_command([sys.executable, runner, build_dir, '--verbose',
+    rc = common.run_command([runner, build_dir, '--verbose',
                              '--write-full-results-to', tempfile_path])
     with open(tempfile_path) as f:
       results = json.load(f)
