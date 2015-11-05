@@ -187,7 +187,7 @@ bool UpdateClientImpl::IsUpdating(const std::string& id) const {
 
   for (const auto& task : tasks_) {
     const auto ids(task->GetIds());
-    if (std::find(std::begin(ids), std::end(ids), id) != std::end(ids)) {
+    if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
       return true;
     }
   }
