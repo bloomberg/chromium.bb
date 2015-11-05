@@ -2682,9 +2682,8 @@ TEST_F(AutofillMetricsTest, DaysSinceLastUse_Profile) {
                                      1);
 }
 
-// Verify that we correctly log user happiness metrics dealing with form loading
-// and form submission.
-TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
+// Verify that we correctly log the submitted form's state.
+TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   // Start with a form with insufficiently many fields.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -2696,87 +2695,76 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   form.fields.push_back(field);
   test::CreateTestFormField("Email", "email", "", "text", &field);
   form.fields.push_back(field);
-
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Unknown", "unknown", "", "text", &field);
+  form.fields.push_back(field);
   std::vector<FormData> forms(1, form);
 
   // Expect no notifications when the form is first seen.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnFormsSeen(forms, TimeTicks());
-    histogram_tester.ExpectTotalCount("Autofill.UserHappiness", 0);
+    histogram_tester.ExpectTotalCount("Autofill.FormSubmittedState", 0);
   }
 
-
-  // Expect no notifications when the form is submitted.
-  {
-    base::HistogramTester histogram_tester;
-    autofill_manager_->SubmitForm(form, TimeTicks::Now());
-    histogram_tester.ExpectTotalCount("Autofill.UserHappiness", 0);
-  }
-
-  // Add more fields to the form.
-  test::CreateTestFormField("Phone", "phone", "", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Unknown", "unknown", "", "text", &field);
-  form.fields.push_back(field);
-  forms.front() = form;
-
-  // Expect a notification when the form is first seen.
-  {
-    base::HistogramTester histogram_tester;
-    autofill_manager_->OnFormsSeen(forms, TimeTicks());
-    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
-                                        AutofillMetrics::FORMS_LOADED, 1);
-  }
-
-  // Expect a notification when the form is submitted.
+  // No data entered in the form.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
-        "Autofill.UserHappiness", AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM,
-        1);
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA, 1);
   }
 
-  // Fill in two of the fields.
+  // Non fillable form.
   form.fields[0].value = ASCIIToUTF16("Elvis Aaron Presley");
   form.fields[1].value = ASCIIToUTF16("theking@gmail.com");
   forms.front() = form;
 
-  // Expect a notification when the form is submitted.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
-        "Autofill.UserHappiness", AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM,
-        1);
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA, 1);
   }
 
   // Fill in the third field.
   form.fields[2].value = ASCIIToUTF16("12345678901");
   forms.front() = form;
 
-  // Expect notifications when the form is submitted.
+  // Autofilled none with no suggestions shown.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
-        "Autofill.UserHappiness",
-        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE, 1);
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS,
+        1);
   }
 
+  // Autofilled none with suggestions shown.
+  autofill_manager_->DidShowSuggestions(true, form, form.fields[2]);
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->SubmitForm(form, TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS, 1);
+  }
 
   // Mark one of the fields as autofilled.
   form.fields[1].is_autofilled = true;
   forms.front() = form;
 
-  // Expect notifications when the form is submitted.
+  // Autofilled some of the fields.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
-        "Autofill.UserHappiness",
-        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME, 1);
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME, 1);
   }
 
   // Mark all of the fillable fields as autofilled.
@@ -2784,26 +2772,26 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   form.fields[2].is_autofilled = true;
   forms.front() = form;
 
-  // Expect notifications when the form is submitted.
+  // Autofilled all the fields.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
-        "Autofill.UserHappiness",
-        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL, 1);
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL, 1);
   }
 
   // Clear out the third field's value.
   form.fields[2].value = base::string16();
   forms.front() = form;
 
-  // Expect notifications when the form is submitted.
+  // Non fillable form.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
     histogram_tester.ExpectUniqueSample(
-        "Autofill.UserHappiness", AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM,
-        1);
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA, 1);
   }
 }
 

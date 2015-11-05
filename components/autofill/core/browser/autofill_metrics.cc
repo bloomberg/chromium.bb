@@ -649,6 +649,13 @@ void AutofillMetrics::LogProfileActionOnFormSubmitted(
                             AUTOFILL_PROFILE_ACTION_ENUM_SIZE);
 }
 
+// static
+void AutofillMetrics::LogAutofillFormSubmittedState(
+    AutofillFormSubmittedState state) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.FormSubmittedState", state,
+                            AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
+}
+
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),

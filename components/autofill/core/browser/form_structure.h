@@ -127,7 +127,8 @@ class FormStructure {
   void LogQualityMetrics(const base::TimeTicks& load_time,
                          const base::TimeTicks& interaction_time,
                          const base::TimeTicks& submission_time,
-                         rappor::RapporService* rappor_service) const;
+                         rappor::RapporService* rappor_service,
+                         bool did_show_suggestions) const;
 
   // Classifies each field in |fields_| based upon its |autocomplete| attribute,
   // if the attribute is available.  The association is stored into the field's

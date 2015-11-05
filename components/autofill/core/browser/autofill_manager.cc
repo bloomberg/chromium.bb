@@ -877,9 +877,9 @@ void AutofillManager::UploadFormDataAsyncCallback(
     const TimeTicks& load_time,
     const TimeTicks& interaction_time,
     const TimeTicks& submission_time) {
-  submitted_form->LogQualityMetrics(load_time, interaction_time,
-                                    submission_time,
-                                    client_->GetRapporService());
+  submitted_form->LogQualityMetrics(
+      load_time, interaction_time, submission_time, client_->GetRapporService(),
+      did_show_suggestions_);
 
   if (submitted_form->ShouldBeCrowdsourced())
     UploadFormData(*submitted_form);

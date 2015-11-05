@@ -29,6 +29,15 @@ class AutofillMetrics {
     AUTOFILL_PROFILE_ACTION_ENUM_SIZE,
   };
 
+  enum AutofillFormSubmittedState {
+    NON_FILLABLE_FORM_OR_NEW_DATA,
+    FILLABLE_FORM_AUTOFILLED_ALL,
+    FILLABLE_FORM_AUTOFILLED_SOME,
+    FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS,
+    FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS,
+    AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE,
+  };
+
   enum DeveloperEngagementMetric {
     // Parsed a form that is potentially autofillable.
     FILLABLE_FORM_PARSED = 0,
@@ -589,6 +598,10 @@ class AutofillMetrics {
   // This should be called at each form submission to indicate what profile
   // action happened.
   static void LogProfileActionOnFormSubmitted(AutofillProfileAction action);
+
+  // This should be called at each form submission to indicate the autofilled
+  // state of the form.
+  static void LogAutofillFormSubmittedState(AutofillFormSubmittedState state);
 
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.

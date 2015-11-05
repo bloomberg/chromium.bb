@@ -2196,6 +2196,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="Autofill.FormSubmittedState" enum="AutofillFormSubmittedState">
+  <owner>sebsg@chromium.org</owner>
+  <summary>The autofill state related to a submitted form.</summary>
+</histogram>
+
 <histogram name="Autofill.IsEnabled.PageLoad" enum="BooleanEnabled">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -53792,6 +53797,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              (once)"/>
 </enum>
 
+<enum name="AutofillFormSubmittedState" type="int">
+  <int value="0" label="Non fillable form or new data"/>
+  <int value="1" label="Fillable form, autofilled all"/>
+  <int value="2" label="Fillable form, autofilled some"/>
+  <int value="3" label="Fillable form, autofilled none, did show suggestions"/>
+  <int value="4"
+      label="Fillable form, autofilled none, did not show suggestions"/>
+</enum>
+
 <enum name="AutofillGetRealPanResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Retriable failure"/>
@@ -53935,10 +53949,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="AutofillUserHappiness" type="int">
   <int value="0" label="Forms loaded"/>
-  <int value="1" label="Submitted fillable form, autofilled all"/>
-  <int value="2" label="Submitted fillable form, autofilled some"/>
-  <int value="3" label="Submitted fillable form, autofilled none"/>
-  <int value="4" label="Submitted non-fillable form or new data"/>
+  <int value="1" label="Deprecated 1"/>
+  <int value="2" label="Deprecated 2"/>
+  <int value="3" label="Deprecated 3"/>
+  <int value="4" label="Deprecated 4"/>
   <int value="5" label="User did type"/>
   <int value="6" label="Suggestions shown"/>
   <int value="7" label="Suggestions shown (once)"/>

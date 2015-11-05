@@ -807,11 +807,11 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   form_signature_field_names_ = cached_form.form_signature_field_names_;
 }
 
-void FormStructure::LogQualityMetrics(
-    const base::TimeTicks& load_time,
-    const base::TimeTicks& interaction_time,
-    const base::TimeTicks& submission_time,
-    rappor::RapporService* rappor_service) const {
+void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
+                                      const base::TimeTicks& interaction_time,
+                                      const base::TimeTicks& submission_time,
+                                      rappor::RapporService* rappor_service,
+                                      bool did_show_suggestions) const {
   size_t num_detected_field_types = 0;
   size_t num_server_mismatches = 0;
   size_t num_heuristic_mismatches = 0;
@@ -912,18 +912,22 @@ void FormStructure::LogQualityMetrics(
       num_edited_autofilled_fields);
 
   if (num_detected_field_types < kRequiredAutofillFields) {
-    AutofillMetrics::LogUserHappinessMetric(
-        AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM);
+    AutofillMetrics::LogAutofillFormSubmittedState(
+        AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   } else {
     if (did_autofill_all_possible_fields) {
-      AutofillMetrics::LogUserHappinessMetric(
-          AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL);
+      AutofillMetrics::LogAutofillFormSubmittedState(
+          AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL);
     } else if (did_autofill_some_possible_fields) {
-      AutofillMetrics::LogUserHappinessMetric(
-          AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME);
+      AutofillMetrics::LogAutofillFormSubmittedState(
+          AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME);
+    } else if (!did_show_suggestions) {
+      AutofillMetrics::LogAutofillFormSubmittedState(
+          AutofillMetrics::
+              FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS);
     } else {
-      AutofillMetrics::LogUserHappinessMetric(
-          AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE);
+      AutofillMetrics::LogAutofillFormSubmittedState(
+          AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS);
     }
 
     // Log some RAPPOR metrics for problematic cases.
