@@ -84,6 +84,7 @@
       'c/dev/ppb_cursor_control_dev.h',
       'c/dev/ppb_device_ref_dev.h',
       'c/dev/ppb_file_chooser_dev.h',
+      'c/dev/ppb_font_dev.h',
       'c/dev/ppb_ime_input_event_dev.h',
       'c/dev/ppb_memory_dev.h',
       'c/dev/ppb_printing_dev.h',
