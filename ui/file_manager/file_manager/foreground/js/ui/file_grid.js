@@ -151,16 +151,23 @@ FileGrid.prototype.onThumbnailLoaded_ = function(event) {
     if (box) {
       var mimeType = this.metadataModel_.getCache(
           [entry], ['contentMimeType'])[0].contentMimeType;
-      FileGrid.setThumbnailImage_(
-          assertInstanceof(box, HTMLDivElement),
-          entry,
-          event.dataUrl,
-          event.width,
-          event.height,
-          /* should animate */ true,
-          mimeType);
+      if (!event.dataUrl) {
+        FileGrid.clearThumbnailImage_(
+            assertInstanceof(box, HTMLDivElement));
+        FileGrid.setGenericThumbnail_(
+            assertInstanceof(box, HTMLDivElement), entry);
+      } else {
+        FileGrid.setThumbnailImage_(
+            assertInstanceof(box, HTMLDivElement),
+            entry,
+            assert(event.dataUrl),
+            assert(event.width),
+            assert(event.height),
+            /* should animate */ true,
+            mimeType);
+      }
     }
-    listItem.classList.toggle('thumbnail-loaded', true);
+    listItem.classList.toggle('thumbnail-loaded', !!event.dataUrl);
   }
 };
 
@@ -582,14 +589,15 @@ FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
   }
 
   if (entry.isDirectory) {
-    box.setAttribute('generic-thumbnail', 'folder');
+    FileGrid.setGenericThumbnail_(box, entry);
     return;
   }
 
-  // Set thumbnail if it's already in cache.
-  if (this.listThumbnailLoader_ &&
-      this.listThumbnailLoader_.getThumbnailFromCache(entry)) {
-    var thumbnailData = this.listThumbnailLoader_.getThumbnailFromCache(entry);
+  // Set thumbnail if it's already in cache, and the thumbnail data is not
+  // empty.
+  var thumbnailData = this.listThumbnailLoader_ ?
+      this.listThumbnailLoader_.getThumbnailFromCache(entry) : null;
+  if (thumbnailData && thumbnailData.dataUrl) {
     var mimeType = this.metadataModel_.getCache(
         [entry], ['contentMimeType'])[0].contentMimeType;
     FileGrid.setThumbnailImage_(
@@ -602,8 +610,7 @@ FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
         mimeType);
     li.classList.toggle('thumbnail-loaded', true);
   } else {
-    var mediaType = FileType.getMediaType(entry);
-    box.setAttribute('generic-thumbnail', mediaType);
+    FileGrid.setGenericThumbnail_(box, entry);
     li.classList.toggle('thumbnail-loaded', false);
   }
   var mimeType = this.metadataModel_.getCache(
@@ -652,11 +659,11 @@ FileGrid.prototype.onSplice_ = function() {
 /**
  * Sets thumbnail image to the box.
  * @param {!HTMLDivElement} box A div element to hold thumbnails.
- * @param {Entry!} entry An entry of the thumbnail.
+ * @param {!Entry} entry An entry of the thumbnail.
  * @param {string} dataUrl Data url of thumbnail.
  * @param {number} width Width of thumbnail.
  * @param {number} height Height of thumbnail.
- * @param {boolean} shouldAnimate Whether the thumbanil is shown with animation
+ * @param {boolean} shouldAnimate Whether the thumbnail is shown with animation
  *     or not.
  * @param {string=} opt_mimeType Optional mime type for the image.
  * @private
@@ -689,6 +696,34 @@ FileGrid.setThumbnailImage_ = function(
   if (shouldAnimate)
     thumbnail.classList.add('animate');
   box.appendChild(thumbnail);
+};
+
+/**
+ * Clears thumbnail image from the box.
+ * @param {!HTMLDivElement} box A div element to hold thumbnails.
+ * @private
+ */
+FileGrid.clearThumbnailImage_ = function(box) {
+  var oldThumbnails = box.querySelectorAll('.thumbnail');
+  for (var i = 0; i < oldThumbnails.length; i++) {
+    box.removeChild(oldThumbnails[i]);
+  }
+  return;
+};
+
+/**
+ * Sets a generic thumbnail on the box.
+ * @param {!HTMLDivElement} box A div element to hold thumbnails.
+ * @param {!Entry} entry An entry of the thumbnail.
+ * @private
+ */
+FileGrid.setGenericThumbnail_ = function(box, entry) {
+  if (entry.isDirectory) {
+    box.setAttribute('generic-thumbnail', 'folder');
+  } else {
+    var mediaType = FileType.getMediaType(entry);
+    box.setAttribute('generic-thumbnail', mediaType);
+  }
 };
 
 /**

@@ -44,6 +44,8 @@ function generateSampleImageDataUrl(document) {
 var listThumbnailLoader;
 var getCallbacks;
 var thumbnailLoadedEvents;
+var thumbnailModel;
+var metadataModel;
 var fileListModel;
 var directoryModel;
 var currentVolumeType;
@@ -67,7 +69,7 @@ function setUp() {
   MockThumbnailLoader.testImageHeight = 160;
 
   getCallbacks = {};
-  var thumbnailModel = {
+  thumbnailModel = {
     get: function(entries) {
       return new Promise(function(fulfill) {
         getCallbacks[getKeyOfGetCallback_(entries)] = fulfill;
@@ -75,7 +77,7 @@ function setUp() {
     }
   };
 
-  var metadataModel = {
+  metadataModel = {
     get: function() {},
     getCache: function(entries, names) {
       return [{}];
@@ -374,4 +376,42 @@ function testDirectoryScanIsRunning() {
   directoryModel.dispatchEvent(new Event('scan-completed'));
 
   assertEquals(2, Object.keys(getCallbacks).length);
+}
+
+/**
+ * Test case for EXIF IO error and retrying logic.
+ */
+function testExifIOError(callback) {
+  var task = new ListThumbnailLoader.Task(
+      entry1,
+      // Mocking volume manager.
+      {
+        getVolumeInfo: function(entry) {
+          return { volumeType: currentVolumeType };
+        }
+      },
+      // Mocking thumbnail model.
+      {
+        get: function(entries) {
+          return Promise.resolve([{
+            thumbnail: {
+              urlError: {
+                errorDescription: 'Error: Unexpected EOF @0'
+              }
+            }
+          }]);
+        }
+      },
+      function() {
+        // Thumbnails should be fetched only from EXIF on IO error.
+        assertTrue(false);
+      });
+
+  return reportPromise(task.fetch().then(function(thumbnailData) {
+    assertEquals(null, thumbnailData.dataUrl);
+    assertFalse(thumbnailData.outdated);
+    return waitUntil(function() {
+      return thumbnailData.outdated;
+    });
+  }), callback);
 }

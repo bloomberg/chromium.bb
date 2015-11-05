@@ -526,9 +526,14 @@ FileTable.prototype.onThumbnailLoaded_ = function(event) {
   if (listItem) {
     var box = listItem.querySelector('.detail-thumbnail');
     if (box) {
-      this.setThumbnailImage_(
-          assertInstanceof(box, HTMLDivElement), event.dataUrl,
-          true /* with animation */);
+      if (event.dataUrl) {
+        this.setThumbnailImage_(
+            assertInstanceof(box, HTMLDivElement), event.dataUrl,
+            true /* with animation */);
+      } else {
+        this.clearThumbnailImage_(
+            assertInstanceof(box, HTMLDivElement));
+      }
     }
   }
 };
@@ -965,8 +970,9 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
   box.className = 'detail-thumbnail';
 
   // Set thumbnail if it's already in cache.
-  if (this.listThumbnailLoader_ &&
-      this.listThumbnailLoader_.getThumbnailFromCache(entry)) {
+  var thumbnailData = this.listThumbnailLoader_ ?
+      this.listThumbnailLoader_.getThumbnailFromCache(entry) : null;
+  if (thumbnailData && thumbnailData.dataUrl) {
     this.setThumbnailImage_(
         box, this.listThumbnailLoader_.getThumbnailFromCache(entry).dataUrl,
         false /* without animation */);
@@ -1004,6 +1010,19 @@ FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
     thumbnail.classList.add('animate');
 
   box.appendChild(thumbnail);
+};
+
+/**
+ * Clears thumbnail image from the box.
+ * @param {!HTMLDivElement} box Detail thumbnail div element.
+ * @private
+ */
+FileTable.prototype.clearThumbnailImage_ = function(box) {
+  var oldThumbnails = box.querySelectorAll('.thumbnail');
+
+  for (var i = 0; i < oldThumbnails.length; i++) {
+    box.removeChild(oldThumbnails[i]);
+  }
 };
 
 /**
