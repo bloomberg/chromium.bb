@@ -58,7 +58,8 @@ class SURFACE_EXPORT TransportDIB {
 
   // Returns a canvas using the memory of this TransportDIB. The returned
   // pointer will be owned by the caller. The bitmap will be of the given size,
-  // which should fit inside this memory.
+  // which should fit inside this memory. Bitmaps returned will be either
+  // opaque or have premultiplied alpha.
   //
   // On POSIX, this |TransportDIB| will be mapped if not already. On Windows,
   // this |TransportDIB| will NOT be mapped and should not be mapped prior,
@@ -66,7 +67,7 @@ class SURFACE_EXPORT TransportDIB {
   //
   // Will return NULL on allocation failure. This could be because the image
   // is too large to map into the current process' address space.
-  SkCanvas* GetPlatformCanvas(int w, int h);
+  SkCanvas* GetPlatformCanvas(int w, int h, bool opaque);
 
   // Map the DIB into the current process if it is not already. This is used to
   // map a DIB that has already been created. Returns true if the DIB is mapped.

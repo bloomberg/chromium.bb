@@ -54,10 +54,11 @@ bool TransportDIB::is_valid_handle(Handle dib) {
   return base::SharedMemory::IsHandleValid(dib);
 }
 
-skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
+skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h,
+                                                      bool opaque) {
   if ((!memory() && !Map()) || !VerifyCanvasSize(w, h))
     return NULL;
-  return skia::CreatePlatformCanvas(w, h, true,
+  return skia::CreatePlatformCanvas(w, h, opaque,
                                     reinterpret_cast<uint8_t*>(memory()),
                                     skia::RETURN_NULL_ON_FAILURE);
 }

@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 
 namespace skia {
 
@@ -122,6 +123,15 @@ SK_API SkBaseDevice* GetTopDevice(const SkCanvas& canvas);
 // The bitmap will remain empty if we can't allocate enough memory for a copy
 // of the pixels.
 SK_API SkBitmap ReadPixels(SkCanvas* canvas);
+
+// Gives the pixmap passed in *writable* access to the pixels backing this
+// canvas. All writes to the pixmap should be visible if the canvas is
+// raster-backed.
+//
+// Returns false on failure: if either argument is nullptr, or if the
+// pixels can not be retrieved from the canvas. In the latter case resets
+// the pixmap to empty.
+SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 
 // Returns true if native platform routines can be used to draw on the
 // given canvas. If this function returns false, BeginPlatformPaint will

@@ -20,6 +20,23 @@ SkBitmap ReadPixels(SkCanvas* canvas) {
   return bitmap;
 }
 
+bool GetWritablePixels(SkCanvas* canvas, SkPixmap* result) {
+  if (!canvas || !result) {
+    return false;
+  }
+
+  SkImageInfo info;
+  size_t row_bytes;
+  void* pixels = canvas->accessTopLayerPixels(&info, &row_bytes);
+  if (!pixels) {
+    result->reset();
+    return false;
+  }
+
+  result->reset(info, pixels, row_bytes);
+  return true;
+}
+
 bool SupportsPlatformPaint(const SkCanvas* canvas) {
   PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
   return platform_device && platform_device->SupportsPlatformPaint();

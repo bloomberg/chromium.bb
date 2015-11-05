@@ -10,6 +10,7 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 
 struct SkIRect;
 struct SkPoint;
@@ -129,12 +130,13 @@ class SK_API SkiaBitLocker {
   bool userClipRectSpecified_;
 
   CGContextRef cgContext_;
-  SkBitmap bitmap_;
+  // offscreen_ is only valid if useDeviceBits_ is false
+  SkBitmap offscreen_;
   SkIPoint bitmapOffset_;
   SkScalar bitmapScaleFactor_;
 
-  // True if we are drawing to |canvas_|'s SkBaseDevice's bits directly through
-  // |bitmap_|. Otherwise, the bits in |bitmap_| are our allocation and need to
+  // True if we are drawing to |canvas_|'s backing store directly.
+  // Otherwise, the bits in |bitmap_| are our allocation and need to
   // be copied over to |canvas_|.
   bool useDeviceBits_;
 

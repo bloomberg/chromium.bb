@@ -387,16 +387,16 @@ PlatformImageData::~PlatformImageData() {
 
 void* PlatformImageData::Map() {
   if (!mapped_canvas_.get()) {
+    const bool is_opaque = false;
     mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
-                                                           desc_.size.height));
+                                                           desc_.size.height,
+                                                           is_opaque));
     if (!mapped_canvas_.get())
       return NULL;
   }
-  const SkBitmap& bitmap =
-      skia::GetTopDevice(*mapped_canvas_)->accessBitmap(true);
-
-  bitmap.lockPixels();
-  return bitmap.getAddr(0, 0);
+  SkPixmap pixmap;
+  skia::GetWritablePixels(mapped_canvas_.get(), &pixmap);
+  return pixmap.writable_addr();
 }
 
 void PlatformImageData::Unmap() {

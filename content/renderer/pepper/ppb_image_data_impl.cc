@@ -19,6 +19,7 @@
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/surface/transport_dib.h"
 
 using ppapi::thunk::PPB_ImageData_API;
@@ -167,18 +168,18 @@ TransportDIB* ImageDataPlatformBackend::GetTransportDIB() const {
 
 void* ImageDataPlatformBackend::Map() {
   if (!mapped_canvas_) {
-    mapped_canvas_.reset(dib_->GetPlatformCanvas(width_, height_));
+    const bool is_opaque = false;
+    mapped_canvas_.reset(dib_->GetPlatformCanvas(width_, height_, is_opaque));
     if (!mapped_canvas_)
       return NULL;
   }
-  const SkBitmap& bitmap =
-      skia::GetTopDevice(*mapped_canvas_)->accessBitmap(true);
-
-  // Our platform bitmaps are set to opaque by default, which we don't want.
-  const_cast<SkBitmap&>(bitmap).setAlphaType(kPremul_SkAlphaType);
-
-  bitmap.lockPixels();
-  return bitmap.getAddr32(0, 0);
+  SkPixmap pixmap;
+  skia::GetWritablePixels(mapped_canvas_.get(), &pixmap);
+  DCHECK(pixmap.addr());
+  // SkPixmap does not manage the lifetime of this pointer, so it remains
+  // valid after the object goes out of scope. It will become invalid if
+  // the canvas' backing is destroyed or a pending saveLayer() is resolved.
+  return pixmap.writable_addr32(0, 0);
 }
 
 void ImageDataPlatformBackend::Unmap() {

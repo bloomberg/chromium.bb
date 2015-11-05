@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/bitmap_platform_device_mac.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
@@ -297,15 +298,15 @@ SkIRect SkiaBitLocker::computeDirtyRect() {
   // If the user specified a clip region, assume that it was tight and that the
   // dirty rect is approximately the whole bitmap.
   if (userClipRectSpecified_)
-    return SkIRect::MakeWH(bitmap_.width(), bitmap_.height());
+    return SkIRect::MakeWH(offscreen_.width(), offscreen_.height());
 
   // Find the bits that were drawn to.
-  SkAutoLockPixels lockedPixels(bitmap_);
+  SkAutoLockPixels lockedPixels(offscreen_);
   const uint32_t* pixelBase
-      = reinterpret_cast<uint32_t*>(bitmap_.getPixels());
-  int rowPixels = bitmap_.rowBytesAsPixels();
-  int width = bitmap_.width();
-  int height = bitmap_.height();
+      = reinterpret_cast<uint32_t*>(offscreen_.getPixels());
+  int rowPixels = offscreen_.rowBytesAsPixels();
+  int width = offscreen_.width();
+  int height = offscreen_.height();
   SkIRect bounds;
   bounds.fTop = 0;
   int x;
@@ -367,13 +368,11 @@ foundRight:
 void SkiaBitLocker::releaseIfNeeded() {
   if (!cgContext_)
     return;
-  if (useDeviceBits_) {
-    bitmap_.unlockPixels();
-  } else if (!bitmapIsDummy_) {
+  if (!useDeviceBits_ && !bitmapIsDummy_) {
     // Find the bits that were drawn to.
     SkIRect bounds = computeDirtyRect();
     SkBitmap subset;
-    if (!bitmap_.extractSubset(&subset, bounds)) {
+    if (!offscreen_.extractSubset(&subset, bounds)) {
         return;
     }
     subset.setImmutable();  // Prevents a defensive copy inside Skia.
@@ -414,41 +413,49 @@ CGContextRef SkiaBitLocker::cgContext() {
   // Now make clip_bounds be relative to the current layer/device
   clip_bounds.offset(-device->getOrigin());
 
-  const SkBitmap& deviceBits = device->accessBitmap(true);
+  SkPixmap devicePixels;
+  skia::GetWritablePixels(canvas_, &devicePixels);
 
   // Only draw directly if we have pixels, and we're only rect-clipped.
   // If not, we allocate an offscreen and draw into that, relying on the
   // compositing step to apply skia's clip.
-  useDeviceBits_ = deviceBits.getPixels() &&
+  useDeviceBits_ = devicePixels.addr() &&
                    canvas_->isClipRect() &&
                    !bitmapIsDummy_;
+  base::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
+      CGColorSpaceCreateDeviceRGB());
+
+  int displayHeight;
   if (useDeviceBits_) {
-    bool result = deviceBits.extractSubset(&bitmap_, clip_bounds);
+    SkPixmap subset;
+    bool result = devicePixels.extractSubset(&subset, clip_bounds);
     DCHECK(result);
     if (!result)
       return 0;
-    bitmap_.lockPixels();
+    displayHeight = subset.height();
+    cgContext_ = CGBitmapContextCreate(subset.writable_addr(), subset.width(),
+      subset.height(), 8, subset.rowBytes(), colorSpace, 
+      kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
   } else {
-    bool result = bitmap_.tryAllocN32Pixels(
+    bool result = offscreen_.tryAllocN32Pixels(
         SkScalarCeilToInt(bitmapScaleFactor_ * clip_bounds.width()),
         SkScalarCeilToInt(bitmapScaleFactor_ * clip_bounds.height()));
     DCHECK(result);
     if (!result)
       return 0;
-    bitmap_.eraseColor(0);
+    offscreen_.eraseColor(0);
+    displayHeight = offscreen_.height();
+    cgContext_ = CGBitmapContextCreate(offscreen_.getPixels(),
+      offscreen_.width(), offscreen_.height(), 8, offscreen_.rowBytes(),
+      colorSpace, kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
   }
-  base::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
-      CGColorSpaceCreateDeviceRGB());
-  cgContext_ = CGBitmapContextCreate(bitmap_.getPixels(), bitmap_.width(),
-    bitmap_.height(), 8, bitmap_.rowBytes(), colorSpace, 
-    kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
   DCHECK(cgContext_);
 
   SkMatrix matrix = canvas_->getTotalMatrix();
   matrix.postTranslate(-SkIntToScalar(bitmapOffset_.x()),
                        -SkIntToScalar(bitmapOffset_.y()));
   matrix.postScale(bitmapScaleFactor_, -bitmapScaleFactor_);
-  matrix.postTranslate(0, SkIntToScalar(bitmap_.height()));
+  matrix.postTranslate(0, SkIntToScalar(displayHeight));
 
   CGContextConcatCTM(cgContext_, SkMatrixToCGAffineTransform(matrix));
   

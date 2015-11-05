@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -143,13 +144,12 @@ void ScrollCanvas(SkCanvas* canvas,
   // Cairo has no nice scroll function so we do our own. On Mac it's possible to
   // use platform scroll code, but it's complex so we just use the same path
   // here. Either way it will be software-only, so it shouldn't matter much.
-  SkBitmap& bitmap = const_cast<SkBitmap&>(
-      skia::GetTopDevice(*canvas)->accessBitmap(true));
-  SkAutoLockPixels lock(bitmap);
+  SkPixmap pixmap;
+  skia::GetWritablePixels(canvas, &pixmap);
 
   // We expect all coords to be inside the canvas, so clip here.
   gfx::Rect clip = gfx::IntersectRects(
-      in_clip, gfx::Rect(0, 0, bitmap.width(), bitmap.height()));
+      in_clip, gfx::Rect(0, 0, pixmap.width(), pixmap.height()));
 
   // Compute the set of pixels we'll actually end up painting.
   gfx::Rect dest_rect = gfx::IntersectRects(clip + offset, clip);
@@ -163,15 +163,15 @@ void ScrollCanvas(SkCanvas* canvas,
   if (offset.y() > 0) {
     // Data is moving down, copy from the bottom up.
     for (int y = dest_rect.height() - 1; y >= 0; y--) {
-      memcpy(bitmap.getAddr32(dest_rect.x(), dest_rect.y() + y),
-             bitmap.getAddr32(src_rect.x(), src_rect.y() + y),
+      memcpy(pixmap.writable_addr32(dest_rect.x(), dest_rect.y() + y),
+             pixmap.addr32(src_rect.x(), src_rect.y() + y),
              row_bytes);
     }
   } else if (offset.y() < 0) {
     // Data is moving up, copy from the top down.
     for (int y = 0; y < dest_rect.height(); y++) {
-      memcpy(bitmap.getAddr32(dest_rect.x(), dest_rect.y() + y),
-             bitmap.getAddr32(src_rect.x(), src_rect.y() + y),
+      memcpy(pixmap.writable_addr32(dest_rect.x(), dest_rect.y() + y),
+             pixmap.addr32(src_rect.x(), src_rect.y() + y),
              row_bytes);
     }
   } else if (offset.x() != 0) {
@@ -179,8 +179,8 @@ void ScrollCanvas(SkCanvas* canvas,
     // to-top, but have to be careful about the order for copying each row.
     // Fortunately, memmove already handles this for us.
     for (int y = 0; y < dest_rect.height(); y++) {
-      memmove(bitmap.getAddr32(dest_rect.x(), dest_rect.y() + y),
-              bitmap.getAddr32(src_rect.x(), src_rect.y() + y),
+      memmove(pixmap.writable_addr32(dest_rect.x(), dest_rect.y() + y),
+              pixmap.addr32(src_rect.x(), src_rect.y() + y),
               row_bytes);
     }
   }

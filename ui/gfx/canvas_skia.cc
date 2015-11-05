@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -27,24 +29,24 @@ namespace {
 // pixel against both the halo color and transparent since
 // |DrawStringRectWithHalo| will modify the bitmap as it goes, and cleared
 // pixels shouldn't count as changed.
-bool PixelShouldGetHalo(const SkBitmap& bitmap,
+bool PixelShouldGetHalo(const SkPixmap& pixmap,
                         int x, int y,
                         SkColor halo_color) {
   if (x > 0 &&
-      *bitmap.getAddr32(x - 1, y) != halo_color &&
-      *bitmap.getAddr32(x - 1, y) != 0)
+      *pixmap.addr32(x - 1, y) != halo_color &&
+      *pixmap.addr32(x - 1, y) != 0)
     return true;  // Touched pixel to the left.
-  if (x < bitmap.width() - 1 &&
-      *bitmap.getAddr32(x + 1, y) != halo_color &&
-      *bitmap.getAddr32(x + 1, y) != 0)
+  if (x < pixmap.width() - 1 &&
+      *pixmap.addr32(x + 1, y) != halo_color &&
+      *pixmap.addr32(x + 1, y) != 0)
     return true;  // Touched pixel to the right.
   if (y > 0 &&
-      *bitmap.getAddr32(x, y - 1) != halo_color &&
-      *bitmap.getAddr32(x, y - 1) != 0)
+      *pixmap.addr32(x, y - 1) != halo_color &&
+      *pixmap.addr32(x, y - 1) != 0)
     return true;  // Touched pixel above.
-  if (y < bitmap.height() - 1 &&
-      *bitmap.getAddr32(x, y + 1) != halo_color &&
-      *bitmap.getAddr32(x, y + 1) != 0)
+  if (y < pixmap.height() - 1 &&
+      *pixmap.addr32(x, y + 1) != halo_color &&
+      *pixmap.addr32(x, y + 1) != 0)
     return true;  // Touched pixel below.
   return false;
 }
@@ -291,16 +293,16 @@ void Canvas::DrawStringRectWithHalo(const base::string16& text,
       Rect(1, 1, display_rect.width(), display_rect.height()), flags);
 
   uint32_t halo_premul = SkPreMultiplyColor(halo_color);
-  SkBitmap& text_bitmap = const_cast<SkBitmap&>(
-      skia::GetTopDevice(*text_canvas.sk_canvas())->accessBitmap(true));
+  SkPixmap pixmap;
+  skia::GetWritablePixels(text_canvas.sk_canvas(), &pixmap);
 
-  for (int cur_y = 0; cur_y < text_bitmap.height(); cur_y++) {
-    uint32_t* text_row = text_bitmap.getAddr32(0, cur_y);
-    for (int cur_x = 0; cur_x < text_bitmap.width(); cur_x++) {
+  for (int cur_y = 0; cur_y < pixmap.height(); cur_y++) {
+    uint32_t* text_row = pixmap.writable_addr32(0, cur_y);
+    for (int cur_x = 0; cur_x < pixmap.width(); cur_x++) {
       if (text_row[cur_x] == halo_premul) {
         // This pixel was not touched by the text routines. See if it borders
         // a touched pixel in any of the 4 directions (not diagonally).
-        if (!PixelShouldGetHalo(text_bitmap, cur_x, cur_y, halo_premul))
+        if (!PixelShouldGetHalo(pixmap, cur_x, cur_y, halo_premul))
           text_row[cur_x] = 0;  // Make transparent.
       } else {
         text_row[cur_x] |= 0xff << SK_A32_SHIFT;  // Make opaque.
@@ -309,7 +311,10 @@ void Canvas::DrawStringRectWithHalo(const base::string16& text,
   }
 
   // Draw the halo bitmap with blur.
-  ImageSkia text_image = ImageSkia(ImageSkiaRep(text_bitmap,
+  SkBitmap bitmap;
+  bitmap.installPixels(pixmap.info(), pixmap.writable_addr(),
+                       pixmap.rowBytes());
+  ImageSkia text_image = ImageSkia(ImageSkiaRep(bitmap,
       text_canvas.image_scale()));
   DrawImageInt(text_image, display_rect.x() - 1, display_rect.y() - 1);
 }
