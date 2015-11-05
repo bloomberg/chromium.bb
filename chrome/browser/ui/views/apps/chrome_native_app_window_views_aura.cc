@@ -325,9 +325,11 @@ ChromeNativeAppWindowViewsAura::CreateNonClientFrameView(
       return CreateNonStandardAppFrame();
 
     if (app_window()->window_type_is_panel()) {
-      views::NonClientFrameView* frame_view =
+      ash::PanelFrameView* frame_view =
           new ash::PanelFrameView(widget, ash::PanelFrameView::FRAME_ASH);
       frame_view->set_context_menu_controller(this);
+      if (HasFrameColor())
+        frame_view->SetFrameColors(ActiveFrameColor(), InactiveFrameColor());
       return frame_view;
     }
 

@@ -32,6 +32,11 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
 PanelFrameView::~PanelFrameView() {
 }
 
+void PanelFrameView::SetFrameColors(SkColor active_frame_color,
+                                    SkColor inactive_frame_color) {
+  header_painter_->SetFrameColors(active_frame_color, inactive_frame_color);
+}
+
 const char* PanelFrameView::GetClassName() const {
   return kViewClassName;
 }

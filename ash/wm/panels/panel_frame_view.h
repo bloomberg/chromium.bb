@@ -31,6 +31,10 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
   PanelFrameView(views::Widget* frame, FrameType frame_type);
   ~PanelFrameView() override;
 
+  // Sets the active and inactive frame colors. Note the inactive frame color
+  // will have some transparency added when the frame is drawn.
+  void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
+
   // Overridden from views::View:
   const char* GetClassName() const override;
 
