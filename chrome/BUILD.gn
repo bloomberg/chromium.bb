@@ -123,7 +123,7 @@ if (!is_android) {
       deps += [
         ":chrome_dll",
         ":chrome_exe_version",
-        ":file_pre_reader",
+        ":image_pre_reader",
 
         # 'chrome_nacl_win64" TODO(GYP) bug 512869
         # '../win8/delegate_execute/delegate_execute.gyp:*', TODO(GYP) bug 512867
@@ -517,10 +517,10 @@ if (is_win) {
     output = "$target_gen_dir/other_version.rc"
   }
 
-  source_set("file_pre_reader") {
+  source_set("image_pre_reader") {
     sources = [
-      "app/file_pre_reader_win.cc",
-      "app/file_pre_reader_win.h",
+      "app/image_pre_reader_win.cc",
+      "app/image_pre_reader_win.h",
     ]
     deps = [
       "//base",

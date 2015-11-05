@@ -409,7 +409,7 @@
             'chrome_process_finder',
             'chrome_version_resources',
             'installer_util',
-            'file_pre_reader',
+            'image_pre_reader',
             '../base/base.gyp:base',
             '../crypto/crypto.gyp:crypto',
             '../breakpad/breakpad.gyp:breakpad_handler',
@@ -508,11 +508,11 @@
     ['OS=="win"', {
       'targets': [
         {
-          'target_name': 'file_pre_reader',
+          'target_name': 'image_pre_reader',
           'type': 'static_library',
           'sources': [
-            'app/file_pre_reader_win.cc',
-            'app/file_pre_reader_win.h',
+            'app/image_pre_reader_win.cc',
+            'app/image_pre_reader_win.h',
           ],
           'dependencies': [
              '../base/base.gyp:base',
