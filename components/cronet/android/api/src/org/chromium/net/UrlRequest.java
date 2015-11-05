@@ -237,7 +237,7 @@ public interface UrlRequest {
         /**
          * Invoked whenever a redirect is encountered. This will only be invoked
          * between the call to {@link UrlRequest#start} and
-         * {@link Callback#onResponseStarted Callback.onResponseStarted()}.
+         * {@link Callback#onResponseStarted onResponseStarted()}.
          * The body of the redirect response, if it has one, will be ignored.
          *
          * The redirect will not be followed until the URLRequest's
@@ -562,21 +562,21 @@ public interface UrlRequest {
     /**
      * Follows a pending redirect. Must only be called at most once for each
      * invocation of {@link Callback#onRedirectReceived
-     * Callback.onRedirectReceived()}.
+     * onRedirectReceived()}.
      */
     public void followRedirect();
 
     /**
      * Attempts to read part of the response body into the provided buffer.
      * Must only be called at most once in response to each invocation of the
-     * {@link Callback#onResponseStarted onResponseStarted} and {@link
-     * Callback#onReadCompleted onReadCompleted} methods of the {@link
+     * {@link Callback#onResponseStarted onResponseStarted()} and {@link
+     * Callback#onReadCompleted onReadCompleted()} methods of the {@link
      * Callback}. Each call will result in an asynchronous call to
      * either the {@link Callback Callback's}
-     * {@link Callback#onReadCompleted onReadCompleted} method if data
-     * is read, its {@link Callback#onSucceeded onSucceeded} method if
+     * {@link Callback#onReadCompleted onReadCompleted()} method if data
+     * is read, its {@link Callback#onSucceeded onSucceeded()} method if
      * there's no more data to read, or its {@link Callback#onFailed
-     * onFailed} method if there's an error.
+     * onFailed()} method if there's an error.
      *
      * @param buffer {@link ByteBuffer} to write response body to. Must be a
      *     direct ByteBuffer. The embedder must not read or modify buffer's
@@ -591,14 +591,14 @@ public interface UrlRequest {
     /**
      * Attempts to read part of the response body into the provided buffer.
      * Must only be called at most once in response to each invocation of the
-     * {@link Callback#onResponseStarted onResponseStarted} and {@link
-     * Callback#onReadCompleted onReadCompleted} methods of the {@link
+     * {@link Callback#onResponseStarted onResponseStarted()} and {@link
+     * Callback#onReadCompleted onReadCompleted()} methods of the {@link
      * Callback}. Each call will result in an asynchronous call to
      * either the {@link Callback Callback's}
-     * {@link Callback#onReadCompleted onReadCompleted} method if data
-     * is read, its {@link Callback#onSucceeded onSucceeded} method if
+     * {@link Callback#onReadCompleted onReadCompleted()} method if data
+     * is read, its {@link Callback#onSucceeded onSucceeded()} method if
      * there's no more data to read, or its {@link Callback#onFailed
-     * onFailed} method if there's an error.
+     * onFailed()} method if there's an error.
      *
      * @param buffer {@link ByteBuffer} to write response body to. Must be a
      *     direct ByteBuffer. The embedder must not read or modify buffer's
@@ -610,10 +610,10 @@ public interface UrlRequest {
 
     /**
      * Cancels the request. Can be called at any time.
-     * {@link Callback#onCanceled} will be invoked when cancellation
+     * {@link Callback#onCanceled onCanceled()} will be invoked when cancellation
      * is complete and no further callback methods will be invoked. If the
      * request has completed or has not started, calling {@code cancel()} has no
-     * effect and {@code onCanceled} will not be invoked. If the
+     * effect and {@code onCanceled()} will not be invoked. If the
      * {@link Executor} passed in during {@code UrlRequest} construction runs
      * tasks on a single thread, and {@code cancel()} is called on that thread,
      * no callback methods (besides {@code onCanceled()}) will be invoked after

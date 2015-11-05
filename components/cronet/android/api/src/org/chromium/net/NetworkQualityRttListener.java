@@ -9,6 +9,7 @@ package org.chromium.net;
  * various layers of the network stack. These include RTT estimates by QUIC
  * and TCP, as well as the time between when a URL request is sent and when
  * the first byte of the response is received.
+ * @deprecated not really deprecated but hidden for now as it's a prototype.
  */
 public interface NetworkQualityRttListener {
     /**

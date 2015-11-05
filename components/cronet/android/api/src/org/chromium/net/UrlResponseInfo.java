@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Contains basic information about a response. Included in {@link UrlRequest.Callback} callbacks.
- * Each {@link UrlRequest.Callback#onRedirectReceived UrlRequest.Callback.onRedirectReceived()}
+ * Each {@link UrlRequest.Callback#onRedirectReceived onRedirectReceived()}
  * callback gets a different copy of {@code UrlResponseInfo} describing a particular redirect
  * response.
  */

@@ -270,7 +270,7 @@ public abstract class CronetEngine {
         /**
          * Adds hint that {@code host} supports QUIC.
          * Note that {@link #enableHttpCache enableHttpCache}
-         * ({@link HttpCache#DISK DISK}) is needed to take advantage of 0-RTT
+         * ({@link #HTTP_CACHE_DISK}) is needed to take advantage of 0-RTT
          * connection establishment between sessions.
          *
          * @param host hostname of the server that supports QUIC.

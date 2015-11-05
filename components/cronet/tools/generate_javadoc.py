@@ -40,7 +40,10 @@ def GenerateJavadoc(options):
   build_utils.MakeDirectory(output_dir)
   javadoc_cmd = ['ant', '-Dsource.dir=src', '-Ddoc.dir=' + output_dir,
              '-Doverview=' + overview_file, 'doc']
-  build_utils.CheckOutput(javadoc_cmd, cwd=working_dir)
+  stdout = build_utils.CheckOutput(javadoc_cmd, cwd=working_dir)
+  if " error: " in stdout or "warning" in stdout:
+    build_utils.DeleteDirectory(output_dir)
+    raise build_utils.CalledProcessError(working_dir, javadoc_cmd, stdout)
 
 
 def main():
