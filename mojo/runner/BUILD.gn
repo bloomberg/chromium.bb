@@ -7,10 +7,6 @@ import("//mojo/public/mojo_application.gni")
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-# We don't support building in the component build since mojo apps are
-# inherently components.
-assert(!is_component_build)
-
 group("runner") {
   testonly = true
 
@@ -166,10 +162,12 @@ source_set("lib") {
     ":switches",
   ]
 
-  data_deps = [
-    "//components/devtools_service",
-    "//mojo/services/tracing",
-  ]
+  if (!is_component_build) {
+    data_deps = [
+      "//components/devtools_service",
+      "//mojo/services/tracing",
+    ]
+  }
 
   if (is_android) {
     sources += [
