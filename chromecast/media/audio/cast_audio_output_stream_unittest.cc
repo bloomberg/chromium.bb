@@ -129,21 +129,22 @@ class FakeMediaPipelineBackend : public MediaPipelineBackend {
     return true;
   }
   bool Start(int64_t start_pts) override {
-    DCHECK(state_ == kStateStopped);
+    EXPECT_EQ(kStateStopped, state_);
     state_ = kStateRunning;
     return true;
   }
   bool Stop() override {
+    EXPECT_TRUE(state_ == kStateRunning || state_ == kStatePaused);
     state_ = kStateStopped;
     return true;
   }
   bool Pause() override {
-    DCHECK(state_ == kStateRunning);
+    EXPECT_EQ(kStateRunning, state_);
     state_ = kStatePaused;
     return true;
   }
   bool Resume() override {
-    DCHECK(state_ == kStatePaused);
+    EXPECT_EQ(kStatePaused, state_);
     state_ = kStateRunning;
     return true;
   }
@@ -636,6 +637,13 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   EXPECT_TRUE(audio_device);
   EXPECT_EQ(FakeMediaPipelineBackend::kStateRunning, GetBackend()->state());
 
+  CloseStream(stream);
+}
+
+TEST_F(CastAudioOutputStreamTest, CloseWithoutStart) {
+  ::media::AudioOutputStream* stream = CreateStream();
+  ASSERT_TRUE(stream);
+  ASSERT_TRUE(OpenStream(stream));
   CloseStream(stream);
 }
 

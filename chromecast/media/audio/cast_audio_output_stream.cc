@@ -98,7 +98,7 @@ class CastAudioOutputStream::Backend : public MediaPipelineBackend::Delegate {
   void Close() {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    if (backend_)
+    if (backend_ && !first_start_)  // Only stop the backend if it was started.
       backend_->Stop();
     backend_.reset();
     backend_task_runner_.reset();
