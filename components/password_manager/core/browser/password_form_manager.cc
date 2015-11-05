@@ -879,10 +879,7 @@ bool PasswordFormManager::UploadChangePasswordForm(
   DCHECK(password_type == autofill::NEW_PASSWORD ||
          password_type == autofill::PROBABLY_NEW_PASSWORD ||
          autofill::NOT_NEW_PASSWORD);
-  // |new_password_element| might be empty in tests.
-  // TODO: Fix it and add DCHECK. http://crbug.com/549525
-  if (pending_credentials_.new_password_element.empty())
-    return false;
+  DCHECK(!pending_credentials_.new_password_element.empty());
   autofill::AutofillManager* autofill_manager =
       client_->GetAutofillManagerForMainFrame();
   if (!autofill_manager || !autofill_manager->download_manager())
