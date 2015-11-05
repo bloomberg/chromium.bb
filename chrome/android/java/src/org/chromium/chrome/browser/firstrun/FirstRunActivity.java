@@ -137,7 +137,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         mProfileDataCache.setProfile(Profile.getLastUsedProfile());
         new FirstRunFlowSequencer(this, mFreProperties) {
             @Override
-            public void onFlowIsKnown(Activity activity, Bundle freProperties) {
+            public void onFlowIsKnown(Bundle freProperties) {
                 if (freProperties == null) {
                     completeFirstRunExperience();
                     return;
