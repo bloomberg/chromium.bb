@@ -372,4 +372,24 @@ TEST_F(ComposedTreeTraversalTest, previousPostOrder)
     EXPECT_EQ(nullptr, ComposedTreeTraversal::previousPostOrder(*s120->firstChild(), s12.get()));
 }
 
+TEST_F(ComposedTreeTraversalTest, nextSiblingNotInDocumentComposedTree)
+{
+    const char* mainHTML =
+        "<div id='m0'>m0</div>"
+        "<div id='m1'>"
+            "<span id='m10'>m10</span>"
+            "<span id='m11'>m11</span>"
+        "</div>"
+        "<div id='m2'>m2</div>";
+    const char* shadowHTML =
+        "<content select='#m11'></content>";
+    setupSampleHTML(mainHTML, shadowHTML, 1);
+
+    RefPtrWillBeRawPtr<Element> body = document().body();
+    RefPtrWillBeRawPtr<Element> m10 = body->querySelector("#m10", ASSERT_NO_EXCEPTION);
+
+    EXPECT_EQ(nullptr, ComposedTreeTraversal::nextSibling(*m10));
+    EXPECT_EQ(nullptr, ComposedTreeTraversal::previousSibling(*m10));
+}
+
 } // namespace blink

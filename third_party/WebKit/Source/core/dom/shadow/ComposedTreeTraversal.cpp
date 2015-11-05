@@ -86,7 +86,7 @@ Node* ComposedTreeTraversal::traverseSiblingOrBackToInsertionPoint(const Node& n
 
     const InsertionPoint* insertionPoint = resolveReprojection(&node);
     if (!insertionPoint)
-        return traverseSiblingInCurrentTree(node, direction);
+        return nullptr;
 
     if (Node* found = traverseDistributedNodes(direction == TraversalDirectionForward ? insertionPoint->distributedNodeNextTo(&node) : insertionPoint->distributedNodePreviousTo(&node), *insertionPoint, direction))
         return found;
