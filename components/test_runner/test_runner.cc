@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
@@ -39,6 +40,7 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPageImportanceSignals.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
@@ -258,6 +260,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void WaitUntilExternalURLLoad();
   void DumpDragImage();
   void DumpNavigationPolicy();
+  void DumpPageImportanceSignals();
   void ShowWebInspector(gin::Arguments* args);
   void CloseWebInspector();
   bool IsChooserShown();
@@ -524,6 +527,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpDragImage", &TestRunnerBindings::DumpDragImage)
       .SetMethod("dumpNavigationPolicy",
                  &TestRunnerBindings::DumpNavigationPolicy)
+      .SetMethod("dumpPageImportanceSignals",
+                 &TestRunnerBindings::DumpPageImportanceSignals)
       .SetMethod("showWebInspector", &TestRunnerBindings::ShowWebInspector)
       .SetMethod("closeWebInspector", &TestRunnerBindings::CloseWebInspector)
       .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
@@ -1268,6 +1273,11 @@ void TestRunnerBindings::DumpDragImage() {
 void TestRunnerBindings::DumpNavigationPolicy() {
   if (runner_)
     runner_->DumpNavigationPolicy();
+}
+
+void TestRunnerBindings::DumpPageImportanceSignals() {
+  if (runner_)
+    runner_->DumpPageImportanceSignals();
 }
 
 void TestRunnerBindings::ShowWebInspector(gin::Arguments* args) {
@@ -2787,6 +2797,22 @@ void TestRunner::DumpDragImage() {
 
 void TestRunner::DumpNavigationPolicy() {
   dump_navigation_policy_ = true;
+}
+
+void TestRunner::DumpPageImportanceSignals() {
+  blink::WebPageImportanceSignals* signals =
+    web_view_->pageImportanceSignals();
+  if (!signals)
+    return;
+
+  std::string message = base::StringPrintf(
+      "WebPageImportanceSignals:\n"
+      "  hadFormInteraction: %s\n"
+      "  issuedNonGetFetchFromScript: %s\n",
+      signals->hadFormInteraction() ? "true" : "false",
+      signals->issuedNonGetFetchFromScript() ? "true" : "false");
+  if (delegate_)
+    delegate_->PrintMessage(message);
 }
 
 void TestRunner::CloseWebInspector() {

@@ -478,6 +478,9 @@ class TestRunner : public WebTestRunner,
   // policy passed to the decidePolicyForNavigation callback.
   void DumpNavigationPolicy();
 
+  // Dump current PageImportanceSignals for the page.
+  void DumpPageImportanceSignals();
+
   ///////////////////////////////////////////////////////////////////////////
   // Methods interacting with the WebTestProxy
 
