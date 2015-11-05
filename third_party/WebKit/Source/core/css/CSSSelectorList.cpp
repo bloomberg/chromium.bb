@@ -175,13 +175,13 @@ public:
     }
 };
 
-bool CSSSelectorList::hasShadowDistributedAt(size_t index) const
+bool CSSSelectorList::selectorHasShadowDistributed(size_t index) const
 {
     SelectorHasShadowDistributed functor;
     return forEachTagSelector(functor, selectorAt(index));
 }
 
-class SelectorCrossesTreeScopes {
+class SelectorUsesDeepCombinatorOrShadowPseudo {
 public:
     bool operator()(const CSSSelector& selector)
     {
@@ -189,9 +189,9 @@ public:
     }
 };
 
-bool CSSSelectorList::selectorCrossesTreeScopes(size_t index) const
+bool CSSSelectorList::selectorUsesDeepCombinatorOrShadowPseudo(size_t index) const
 {
-    SelectorCrossesTreeScopes functor;
+    SelectorUsesDeepCombinatorOrShadowPseudo functor;
     return forEachTagSelector(functor, selectorAt(index));
 }
 

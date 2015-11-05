@@ -106,13 +106,13 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector))
         selectorCount++;
 
-    m_crossesTreeBoundary = false;
+    m_usesDeepCombinatorOrShadowPseudo = false;
     m_needsUpdatedDistribution = false;
     m_selectors.reserveInitialCapacity(selectorCount);
     unsigned index = 0;
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector), ++index) {
         m_selectors.uncheckedAppend(selector);
-        m_crossesTreeBoundary |= selectorList.selectorCrossesTreeScopes(index);
+        m_usesDeepCombinatorOrShadowPseudo |= selectorList.selectorUsesDeepCombinatorOrShadowPseudo(index);
         m_needsUpdatedDistribution |= selectorList.selectorNeedsUpdatedDistribution(index);
     }
 }
@@ -213,7 +213,7 @@ void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const Q
 
 inline bool SelectorDataList::canUseFastQuery(const ContainerNode& rootNode) const
 {
-    if (m_crossesTreeBoundary)
+    if (m_usesDeepCombinatorOrShadowPseudo)
         return false;
     if (m_needsUpdatedDistribution)
         return false;
@@ -455,7 +455,7 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
     if (!canUseFastQuery(rootNode)) {
         if (m_needsUpdatedDistribution)
             rootNode.updateDistribution();
-        if (m_crossesTreeBoundary) {
+        if (m_usesDeepCombinatorOrShadowPseudo) {
             executeSlowTraversingShadowTree<SelectorQueryTrait>(rootNode, output);
         } else {
             executeSlow<SelectorQueryTrait>(rootNode, output);
