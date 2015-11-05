@@ -180,7 +180,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForImage() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 8;
+        final int expectedMenuSize = 9;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "logo");
         assertEquals(expectedMenuSize, menu.size());
 
@@ -196,6 +196,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertTrue(menu.findItem(R.id.contextmenu_save_image).isVisible());
         assertTrue(menu.findItem(R.id.contextmenu_share_image).isVisible());
         assertTrue(menu.findItem(R.id.contextmenu_open_image).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_search_by_image).isVisible());
 
         assertFalse(menu.findItem(R.id.contextmenu_copy_link_address).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_copy_email_address).isVisible());
@@ -211,7 +212,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForLink() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 8;
+        final int expectedMenuSize = 9;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(),
                 "aboutLink");
         assertEquals(expectedMenuSize, menu.size());
@@ -233,6 +234,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertFalse(menu.findItem(R.id.contextmenu_copy_email_address).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_save_image).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_open_image).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_search_by_image).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_save_video).isVisible());
     }
 

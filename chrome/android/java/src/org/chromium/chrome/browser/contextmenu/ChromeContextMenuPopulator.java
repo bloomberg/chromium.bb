@@ -33,6 +33,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             R.id.contextmenu_copy_link_address,
             R.id.contextmenu_copy_email_address,
             R.id.contextmenu_copy_link_text,
+            R.id.contextmenu_save_link_as,
             R.id.contextmenu_save_image,
             R.id.contextmenu_share_image,
             R.id.contextmenu_save_video,
@@ -51,8 +52,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     // Additional items for custom tabs mode.
     private static final int[] CUSTOM_TAB_MODE_WHITELIST = {
-            R.id.contextmenu_save_link_as,
-            R.id.contextmenu_open_image
+            R.id.contextmenu_open_image,
+            R.id.contextmenu_search_by_image
     };
 
     // Additional items for fullscreen tabs mode.
