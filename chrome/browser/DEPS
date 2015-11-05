@@ -148,7 +148,6 @@ include_rules = [
   "+media/base",  # For media switches
   "+media/midi",  # For midi switches
   "+mojo/application/public/cpp",
-  "+mojo/runner/child",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",

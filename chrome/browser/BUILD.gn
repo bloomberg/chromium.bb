@@ -567,21 +567,12 @@ source_set("browser") {
   if (use_aura) {
     sources +=
         rebase_path(gypi_values.chrome_browser_aura_sources, ".", "//chrome")
-
-    # These files are only built in a GN build because they bring in
-    # dependencies that don't build with GYP.
-    sources += [
-      "mojo_runner_state.cc",
-      "mojo_runner_state.h",
-    ]
     deps += [
-      "//mojo/runner/child:lib",
       "//ui/aura",
       "//ui/compositor",
       "//ui/keyboard",
       "//ui/keyboard:keyboard_with_content",
     ]
-    defines += [ "MOJO_RUNNER_CLIENT" ]
   }
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]

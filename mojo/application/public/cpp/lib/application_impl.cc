@@ -86,9 +86,11 @@ scoped_ptr<ApplicationConnection>
   return registry.Pass();
 }
 
-void ApplicationImpl::WaitForInitialize() {
-  DCHECK(!shell_.is_bound());
-  binding_.WaitForIncomingMethodCall();
+void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
+  shell_ = shell.Pass();
+  shell_.set_connection_error_handler([this]() { OnConnectionError(); });
+  url_ = url;
+  delegate_->Initialize(this);
 }
 
 void ApplicationImpl::Quit() {
@@ -100,13 +102,6 @@ void ApplicationImpl::Quit() {
   } else {
     QuitNow();
   }
-}
-
-void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
-  shell_ = shell.Pass();
-  shell_.set_connection_error_handler([this]() { OnConnectionError(); });
-  url_ = url;
-  delegate_->Initialize(this);
 }
 
 void ApplicationImpl::AcceptConnection(

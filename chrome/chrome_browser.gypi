@@ -663,8 +663,6 @@
       'browser/memory_details_win.cc',
       'browser/mod_pagespeed/mod_pagespeed_metrics.cc',
       'browser/mod_pagespeed/mod_pagespeed_metrics.h',
-      'browser/mojo_runner_util.cc',
-      'browser/mojo_runner_util.h',
       'browser/native_window_notification_source.h',
       'browser/net/predictor_tab_helper.cc',
       'browser/net/predictor_tab_helper.h',
