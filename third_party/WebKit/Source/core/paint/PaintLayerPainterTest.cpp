@@ -46,33 +46,29 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 7,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 13,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
-            TestDisplayItem(htmlLayer, subsequenceType),
+            TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+            TestDisplayItem(container1Layer, DisplayItem::Subsequence),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
+            TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(container2Layer, DisplayItem::Subsequence),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(htmlLayer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     }
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
@@ -80,61 +76,54 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     paint();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 9,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 7,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), cachedBackgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, cachedBackgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
             TestDisplayItem(container2, cachedBackgroundType),
-            TestDisplayItem(container2Layer, cachedSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(content2, cachedBackgroundType),
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
-        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 10,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), cachedBackgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
-            TestDisplayItem(htmlLayer, subsequenceType),
+            TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+            TestDisplayItem(container1Layer, DisplayItem::Subsequence),
             TestDisplayItem(container1, cachedBackgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
-            TestDisplayItem(container2, cachedBackgroundType),
-            TestDisplayItem(container2Layer, cachedSubsequenceType),
-            TestDisplayItem(htmlLayer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(container2Layer, DisplayItem::CachedSubsequence),
+            TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     }
 
     commit();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 7,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 13,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
-            TestDisplayItem(htmlLayer, subsequenceType),
+            TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+            TestDisplayItem(container1Layer, DisplayItem::Subsequence),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
+            TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(container2Layer, DisplayItem::Subsequence),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(htmlLayer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     }
 }
 
@@ -179,41 +168,35 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // Content2b is out of the interest rect and output nothing;
     // Container3 is partly in the interest rect.
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 15,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 9,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
             TestDisplayItem(container3, backgroundType),
-            TestDisplayItem(container3Layer, subsequenceType),
             TestDisplayItem(content3, backgroundType),
-            TestDisplayItem(container3Layer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 17,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
-            TestDisplayItem(htmlLayer, subsequenceType),
+            TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+            TestDisplayItem(container1Layer, DisplayItem::Subsequence),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
+            TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(container2Layer, DisplayItem::Subsequence),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
+            TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(container3Layer, DisplayItem::Subsequence),
             TestDisplayItem(container3, backgroundType),
-            TestDisplayItem(container3Layer, subsequenceType),
             TestDisplayItem(content3, backgroundType),
-            TestDisplayItem(container3Layer, endSubsequenceType),
-            TestDisplayItem(htmlLayer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(container3Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     }
 
     updateLifecyclePhasesBeforePaint();
@@ -227,65 +210,58 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // Container3 becomes out of the interest rect and outputs nothing.
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 10,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), cachedBackgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, cachedBackgroundType),
-            TestDisplayItem(container1Layer, cachedSubsequenceType),
+            TestDisplayItem(content1, cachedBackgroundType),
             TestDisplayItem(container2, cachedBackgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, cachedBackgroundType),
             TestDisplayItem(content2b, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
-        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 12,
+        EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 11,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), cachedBackgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
-            TestDisplayItem(htmlLayer, subsequenceType),
-            TestDisplayItem(container1, cachedBackgroundType),
-            TestDisplayItem(container1Layer, cachedSubsequenceType),
+            TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+            TestDisplayItem(container1Layer, DisplayItem::CachedSubsequence),
+            TestDisplayItem(container2Layer, DisplayItem::Subsequence),
             TestDisplayItem(container2, cachedBackgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, cachedBackgroundType),
             TestDisplayItem(content2b, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(htmlLayer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     }
 
     commit();
 
     if (rootLayerScrolls) {
-        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 12,
+        EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 8,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, backgroundType),
             TestDisplayItem(content2b, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 14,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
-            TestDisplayItem(htmlLayer, subsequenceType),
+            TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
+            TestDisplayItem(container1Layer, DisplayItem::Subsequence),
             TestDisplayItem(container1, backgroundType),
-            TestDisplayItem(container1Layer, subsequenceType),
             TestDisplayItem(content1, backgroundType),
-            TestDisplayItem(container1Layer, endSubsequenceType),
+            TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(container2Layer, DisplayItem::Subsequence),
             TestDisplayItem(container2, backgroundType),
-            TestDisplayItem(container2Layer, subsequenceType),
             TestDisplayItem(content2a, backgroundType),
             TestDisplayItem(content2b, backgroundType),
-            TestDisplayItem(container2Layer, endSubsequenceType),
-            TestDisplayItem(htmlLayer, endSubsequenceType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
+            TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence),
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     }
 }
 

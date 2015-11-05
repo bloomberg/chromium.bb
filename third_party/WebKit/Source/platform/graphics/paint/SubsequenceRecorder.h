@@ -22,9 +22,9 @@ class PaintController;
 //
 class PLATFORM_EXPORT SubsequenceRecorder {
 public:
-    static bool useCachedSubsequenceIfPossible(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
+    static bool useCachedSubsequenceIfPossible(GraphicsContext&, const DisplayItemClientWrapper&);
 
-    SubsequenceRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
+    SubsequenceRecorder(GraphicsContext&, const DisplayItemClientWrapper&);
     ~SubsequenceRecorder();
 
     void setUncacheable();
@@ -33,7 +33,6 @@ private:
     PaintController& m_paintController;
     DisplayItemClientWrapper m_client;
     size_t m_beginSubsequenceIndex;
-    DisplayItem::Type m_type;
 };
 
 } // namespace blink

@@ -38,10 +38,10 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
+        TestDisplayItem(rootLayer, DisplayItem::Subsequence),
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow),
-        TestDisplayItem(rootLayer, endSubsequenceType));
+        TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 
     updateLifecyclePhasesBeforePaint();
     interestRect = IntRect(0, 300, 200, 1000);
@@ -49,10 +49,10 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
+        TestDisplayItem(rootLayer, DisplayItem::Subsequence),
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(rootLayer, subsequenceType),
         TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow),
-        TestDisplayItem(rootLayer, endSubsequenceType));
+        TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 }
 
 } // namespace blink

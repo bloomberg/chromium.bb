@@ -213,10 +213,33 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     if (m_paintLayer.layoutObject()->isLayoutPart() && toLayoutPart(m_paintLayer.layoutObject())->isThrottledFrameView())
         return FullyPainted;
 
-    PaintLayerPaintingInfo paintingInfo = paintingInfoArg;
-
     // Ensure our lists are up-to-date.
     m_paintLayer.stackingNode()->updateLayerListsIfNeeded();
+
+    Optional<SubsequenceRecorder> subsequenceRecorder;
+    if (!paintingInfoArg.disableSubsequenceCache
+        && !context->printing()
+        && !(paintingInfoArg.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
+        && !(paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars))
+        && m_paintLayer.stackingNode()->isStackingContext()
+        && PaintLayerStackingNodeIterator(*m_paintLayer.stackingNode(), AllChildren).next()) {
+        if (!m_paintLayer.needsRepaint()
+            && paintingInfoArg.scrollOffsetAccumulation == m_paintLayer.previousScrollOffsetAccumulationForPainting()
+            && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer))
+            return result;
+        subsequenceRecorder.emplace(*context, m_paintLayer);
+    }
+
+    PaintLayerPaintingInfo paintingInfo = paintingInfoArg;
+
+    // This is a workaround of ancestor clip change issue (crbug.com/533717).
+    // TODO(wangxianzhu):
+    // - spv1: This disables subsequence cache for all descendants of LayoutView with root-layer-scrolls because
+    //   LayoutView has overflow clip. Should find another workaround method working with root-layer-scrolls
+    //   if it ships before slimming paint v2. crbug.com/552030.
+    // - spv2: Ensure subsequence cache works with ancestor clip change. crbug.com/536138.
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_paintLayer.layoutObject()->hasClipOrOverflowClip())
+        paintingInfo.disableSubsequenceCache = true;
 
     LayoutPoint offsetFromRoot;
     m_paintLayer.convertToLayerCoords(paintingInfo.rootLayer, offsetFromRoot);
@@ -330,6 +353,11 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     }
 
     m_paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfoArg.scrollOffsetAccumulation);
+
+    // Set subsequence not cacheable if the bounding box of this layer and descendants is not fully contained
+    // by paintRect, because later paintRect changes may expose new contents which will need repainting.
+    if (result == MaybeNotFullyPainted && subsequenceRecorder)
+        subsequenceRecorder->setUncacheable();
 
     return result;
 }
@@ -467,33 +495,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childre
     if (!child)
         return result;
 
-    DisplayItem::Type subsequenceType;
-    if (childrenToVisit == NegativeZOrderChildren) {
-        subsequenceType = DisplayItem::SubsequenceNegativeZOrder;
-    } else {
-        ASSERT(childrenToVisit == (NormalFlowChildren | PositiveZOrderChildren));
-        subsequenceType = DisplayItem::SubsequenceNormalFlowAndPositiveZOrder;
-    }
-
-    Optional<SubsequenceRecorder> subsequenceRecorder;
-    if (!paintingInfo.disableSubsequenceCache
-        && !context->printing()
-        && m_paintLayer.stackingNode()->isStackingContext()
-        && !(paintingInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
-        && !(paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars))) {
-        if (!m_paintLayer.needsRepaint()
-            && paintingInfo.scrollOffsetAccumulation == m_paintLayer.previousScrollOffsetAccumulationForPainting()
-            && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, m_paintLayer, subsequenceType))
-            return result;
-        subsequenceRecorder.emplace(*context, m_paintLayer, subsequenceType);
-    }
-
     IntSize scrollOffsetAccumulationForChildren = paintingInfo.scrollOffsetAccumulation;
     if (m_paintLayer.layoutObject()->hasOverflowClip())
         scrollOffsetAccumulationForChildren += m_paintLayer.layoutBox()->scrolledContentOffset();
-
-    bool disableChildSubsequenceCache = !RuntimeEnabledFeatures::slimmingPaintV2Enabled()
-        && (m_paintLayer.layoutObject()->hasOverflowClip() || m_paintLayer.layoutObject()->hasClip());
 
     for (; child; child = iterator.next()) {
         PaintLayerPainter childPainter(*child->layer());
@@ -503,7 +507,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childre
             continue;
 
         PaintLayerPaintingInfo childPaintingInfo = paintingInfo;
-        childPaintingInfo.disableSubsequenceCache = disableChildSubsequenceCache;
         childPaintingInfo.scrollOffsetAccumulation = scrollOffsetAccumulationForChildren;
         // Rare case: accumulate scroll offset of non-stacking-context ancestors up to m_paintLayer.
         for (PaintLayer* parentLayer = child->layer()->parent(); parentLayer != &m_paintLayer; parentLayer = parentLayer->parent()) {
@@ -514,11 +517,6 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childre
         if (childPainter.paintLayer(context, childPaintingInfo, paintFlags) == MaybeNotFullyPainted)
             result = MaybeNotFullyPainted;
     }
-
-    // Set subsequence not cacheable if the bounding box of this layer and descendants is not fully contained
-    // by paintRect, because later paintRect changes may expose new contents which will need repainting.
-    if (result == MaybeNotFullyPainted && subsequenceRecorder)
-        subsequenceRecorder->setUncacheable();
 
     return result;
 }

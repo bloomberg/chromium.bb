@@ -155,15 +155,6 @@ static String transform3DTypeAsDebugString(DisplayItem::Type type)
     }
 }
 
-static String subsequenceTypeAsDebugString(DisplayItem::Type type)
-{
-    switch (type) {
-        DEBUG_STRING_CASE(SubsequenceNegativeZOrder);
-        DEBUG_STRING_CASE(SubsequenceNormalFlowAndPositiveZOrder);
-        DEFAULT_CASE;
-    }
-}
-
 WTF::String DisplayItem::typeAsDebugString(Type type)
 {
     if (isDrawingType(type))
@@ -191,13 +182,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndTransform3DType(type))
         return "End" + transform3DTypeAsDebugString(endTransform3DTypeToTransform3DType(type));
 
-    if (isSubsequenceType(type))
-        return subsequenceTypeAsDebugString(type);
-    if (isEndSubsequenceType(type))
-        return "End" + subsequenceTypeAsDebugString(endSubsequenceTypeToSubsequenceType(type));
-    if (isCachedSubsequenceType(type))
-        return "Cached" + subsequenceTypeAsDebugString(cachedSubsequenceTypeToSubsequenceType(type));
-
     switch (type) {
         DEBUG_STRING_CASE(BeginFilter);
         DEBUG_STRING_CASE(EndFilter);
@@ -211,6 +195,9 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         DEBUG_STRING_CASE(EndFixedPosition);
         DEBUG_STRING_CASE(BeginFixedPositionContainer);
         DEBUG_STRING_CASE(EndFixedPositionContainer);
+        DEBUG_STRING_CASE(Subsequence);
+        DEBUG_STRING_CASE(EndSubsequence);
+        DEBUG_STRING_CASE(CachedSubsequence);
         DEBUG_STRING_CASE(CachedDisplayItemList);
         DEBUG_STRING_CASE(UninitializedType);
         DEFAULT_CASE;

@@ -29,10 +29,10 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(textInlineBox, foregroundType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
@@ -49,11 +49,11 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(textInlineBox, foregroundType),
             TestDisplayItem(divLayoutObject, DisplayItem::Caret), // New!
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
@@ -78,10 +78,10 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 4,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(firstTextBox, foregroundType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());
@@ -102,11 +102,11 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
 
     if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
         EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 5,
+            TestDisplayItem(rootLayer, DisplayItem::Subsequence),
             TestDisplayItem(layoutView(), backgroundType),
-            TestDisplayItem(rootLayer, subsequenceType),
             TestDisplayItem(newFirstTextBox, foregroundType),
             TestDisplayItem(secondTextBox, foregroundType),
-            TestDisplayItem(rootLayer, endSubsequenceType));
+            TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
     } else {
         GraphicsContext context(rootPaintController());
         PaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), GlobalPaintNormalPhase, LayoutSize());

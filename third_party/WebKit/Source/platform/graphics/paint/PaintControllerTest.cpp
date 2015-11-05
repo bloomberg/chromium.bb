@@ -42,9 +42,6 @@ private:
 const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);
 const DisplayItem::Type backgroundDrawingType = DisplayItem::DrawingPaintPhaseFirst;
 const DisplayItem::Type clipType = DisplayItem::ClipFirst;
-const DisplayItem::Type subsequenceType = DisplayItem::SubsequenceNormalFlowAndPositiveZOrder;
-const DisplayItem::Type endSubsequenceType = DisplayItem::subsequenceTypeToEndSubsequenceType(subsequenceType);
-const DisplayItem::Type cachedSubsequenceType = DisplayItem::subsequenceTypeToCachedSubsequenceType(subsequenceType);
 
 class TestDisplayItemClient {
 public:
@@ -463,14 +460,14 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     GraphicsContext context(paintController());
 
     {
-        SubsequenceRecorder r(context, container1, subsequenceType);
+        SubsequenceRecorder r(context, container1);
         drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
         drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
         drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
     {
-        SubsequenceRecorder r(context, container2, subsequenceType);
+        SubsequenceRecorder r(context, container2);
         drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
         drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
         drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
@@ -479,44 +476,44 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     paintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(paintController().displayItemList(), 12,
-        TestDisplayItem(container1, subsequenceType),
+        TestDisplayItem(container1, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, endSubsequenceType),
+        TestDisplayItem(container1, DisplayItem::EndSubsequence),
 
-        TestDisplayItem(container2, subsequenceType),
+        TestDisplayItem(container2, DisplayItem::Subsequence),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(container2, foregroundDrawingType),
-        TestDisplayItem(container2, endSubsequenceType));
+        TestDisplayItem(container2, DisplayItem::EndSubsequence));
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-    EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2, subsequenceType));
-    EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1, subsequenceType));
+    EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
+    EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
 
     EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 2,
-        TestDisplayItem(container2, cachedSubsequenceType),
-        TestDisplayItem(container1, cachedSubsequenceType));
+        TestDisplayItem(container2, DisplayItem::CachedSubsequence),
+        TestDisplayItem(container1, DisplayItem::CachedSubsequence));
 
     paintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(paintController().displayItemList(), 12,
-        TestDisplayItem(container2, subsequenceType),
+        TestDisplayItem(container2, DisplayItem::Subsequence),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(container2, foregroundDrawingType),
-        TestDisplayItem(container2, endSubsequenceType),
+        TestDisplayItem(container2, DisplayItem::EndSubsequence),
 
-        TestDisplayItem(container1, subsequenceType),
+        TestDisplayItem(container1, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, endSubsequenceType));
+        TestDisplayItem(container1, DisplayItem::EndSubsequence));
 }
 
 TEST_F(PaintControllerTest, OutOfOrderNoCrash)
@@ -555,41 +552,41 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
     GraphicsContext context(paintController());
 
     {
-        SubsequenceRecorder r(context, container1, subsequenceType);
+        SubsequenceRecorder r(context, container1);
         drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
         {
-            SubsequenceRecorder r(context, content1, subsequenceType);
+            SubsequenceRecorder r(context, content1);
             drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
             drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
         }
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
     {
-        SubsequenceRecorder r(context, container2, subsequenceType);
+        SubsequenceRecorder r(context, container2);
         drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
         {
-            SubsequenceRecorder r(context, content2, subsequenceType);
+            SubsequenceRecorder r(context, content2);
             drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
         }
     }
     paintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(paintController().displayItemList(), 14,
-        TestDisplayItem(container1, subsequenceType),
+        TestDisplayItem(container1, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundDrawingType),
-        TestDisplayItem(content1, subsequenceType),
+        TestDisplayItem(content1, DisplayItem::Subsequence),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
-        TestDisplayItem(content1, endSubsequenceType),
+        TestDisplayItem(content1, DisplayItem::EndSubsequence),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, endSubsequenceType),
+        TestDisplayItem(container1, DisplayItem::EndSubsequence),
 
-        TestDisplayItem(container2, subsequenceType),
+        TestDisplayItem(container2, DisplayItem::Subsequence),
         TestDisplayItem(container2, backgroundDrawingType),
-        TestDisplayItem(content2, subsequenceType),
+        TestDisplayItem(content2, DisplayItem::Subsequence),
         TestDisplayItem(content2, backgroundDrawingType),
-        TestDisplayItem(content2, endSubsequenceType),
-        TestDisplayItem(container2, endSubsequenceType));
+        TestDisplayItem(content2, DisplayItem::EndSubsequence),
+        TestDisplayItem(container2, DisplayItem::EndSubsequence));
 
     // Invalidate container1 but not content1.
     paintController().invalidate(container1, PaintInvalidationFull, nullptr);
@@ -599,44 +596,44 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
 
     paintController().invalidate(container2, PaintInvalidationFull, nullptr);
     paintController().invalidate(content2, PaintInvalidationFull, nullptr);
-    EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2, subsequenceType));
-    EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content2, subsequenceType));
+    EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
+    EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content2));
     // Content2 now outputs foreground only.
     {
-        SubsequenceRecorder r(context, content2, subsequenceType);
+        SubsequenceRecorder r(context, content2);
         drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
     }
     // Repaint container1 with foreground only.
     {
-        EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1, subsequenceType));
-        SubsequenceRecorder r(context, container1, subsequenceType);
+        EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
+        SubsequenceRecorder r(context, container1);
         // Use cached subsequence of content1.
-        EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1, subsequenceType));
+        EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
     EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 7,
-        TestDisplayItem(content2, subsequenceType),
+        TestDisplayItem(content2, DisplayItem::Subsequence),
         TestDisplayItem(content2, foregroundDrawingType),
-        TestDisplayItem(content2, endSubsequenceType),
-        TestDisplayItem(container1, subsequenceType),
-        TestDisplayItem(content1, cachedSubsequenceType),
+        TestDisplayItem(content2, DisplayItem::EndSubsequence),
+        TestDisplayItem(container1, DisplayItem::Subsequence),
+        TestDisplayItem(content1, DisplayItem::CachedSubsequence),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, endSubsequenceType));
+        TestDisplayItem(container1, DisplayItem::EndSubsequence));
 
     paintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(paintController().displayItemList(), 10,
-        TestDisplayItem(content2, subsequenceType),
+        TestDisplayItem(content2, DisplayItem::Subsequence),
         TestDisplayItem(content2, foregroundDrawingType),
-        TestDisplayItem(content2, endSubsequenceType),
+        TestDisplayItem(content2, DisplayItem::EndSubsequence),
 
-        TestDisplayItem(container1, subsequenceType),
-        TestDisplayItem(content1, subsequenceType),
+        TestDisplayItem(container1, DisplayItem::Subsequence),
+        TestDisplayItem(content1, DisplayItem::Subsequence),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
-        TestDisplayItem(content1, endSubsequenceType),
+        TestDisplayItem(content1, DisplayItem::EndSubsequence),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, endSubsequenceType));
+        TestDisplayItem(container1, DisplayItem::EndSubsequence));
 }
 
 TEST_F(PaintControllerTest, Scope)
