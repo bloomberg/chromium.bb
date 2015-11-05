@@ -68,6 +68,10 @@ Polymer({
     },
   },
 
+  behaviors: [
+    I18nBehavior,
+  ],
+
   ready: function() {
     this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
   },
