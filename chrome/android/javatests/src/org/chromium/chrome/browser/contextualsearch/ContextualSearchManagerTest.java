@@ -603,7 +603,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                     }
                 }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
         assertTrue("Panel did not enter " + state + " state. "
-                + "Instead, the current state is " + mPanel.getPanelState(), success);
+                + "Instead, the current state is " + mPanel.getPanelState() + ".", success);
     }
 
     /**
@@ -2247,7 +2247,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTapContentVisibility() throws InterruptedException, TimeoutException {
         // Simulate a tap and make sure Content is not visible.
         simulateTapSearch("search");
@@ -2268,7 +2268,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testLongPressContentVisibility() throws InterruptedException, TimeoutException {
         // Simulate a long press and make sure no Content is created.
         simulateLongPressSearch("search");
@@ -2298,7 +2298,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertContentViewCoreCreatedButNeverMadeVisible();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // Swiping the Panel should make the Content visible.
+        // Expanding the Panel should make the Content visible.
         tapPeekingBarToExpandAndAssert();
         assertContentViewCoreVisible();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -2309,7 +2309,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertContentViewCoreVisible();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // Swiping the Panel up should not change the visibility or load content again.
+        // Expanding the Panel should not change the visibility or load content again.
         tapPeekingBarToExpandAndAssert();
         assertContentViewCoreVisible();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -2333,7 +2333,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertNoContentViewCore();
         assertNoSearchesLoaded();
 
-        // Swiping the Panel should load the URL and make the Content visible.
+        // Expanding the Panel should load the URL and make the Content visible.
         tapPeekingBarToExpandAndAssert();
         assertContentViewCoreCreated();
         assertContentViewCoreVisible();
@@ -2345,7 +2345,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertContentViewCoreVisible();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // Swiping the Panel up should not change the visibility or load content again.
+        // Expanding the Panel should not change the visibility or load content again.
         tapPeekingBarToExpandAndAssert();
         assertContentViewCoreVisible();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -2408,7 +2408,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(1, mFakeServer.getLoadedUrlCount());
         ContentViewCore cvc1 = getPanelContentViewCore();
 
-        // Swiping the Panel should make the Content visible.
+        // Expanding the Panel should make the Content visible.
         tapPeekingBarToExpandAndAssert();
         assertContentViewCoreVisible();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -2424,7 +2424,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // Now simulate a long press, leaving the Panel peeking.
         simulateLongPressSearch("resolution");
 
-        // Swiping the Panel up should load and display the new search.
+        // Expanding the Panel should load and display the new search.
         tapPeekingBarToExpandAndAssert();
         assertContentViewCoreCreated();
         assertContentViewCoreVisible();
@@ -2444,7 +2444,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testChainedSearchContentVisibility()
             throws InterruptedException, TimeoutException {
         // Simulate a tap and make sure Content is not visible.
@@ -2460,9 +2460,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertNeverCalledContentViewCoreOnShow();
         assertEquals(1, mFakeServer.getLoadedUrlCount());
 
-        // Swiping the Panel up should load and display the new search.
-        flingPanelUp();
-        waitForPanelToExpandAndAssert();
+        // Expanding the Panel should load and display the new search.
+        tapPeekingBarToExpandAndAssert();
         assertContentViewCoreCreated();
         assertContentViewCoreVisible();
         assertEquals(2, mFakeServer.getLoadedUrlCount());
@@ -2500,7 +2499,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTapExpandNotRemovedFromHistory()
             throws InterruptedException, TimeoutException {
         // Simulate a tap and make sure a URL was loaded.
