@@ -55,7 +55,7 @@ Each transform node has:
   which the above should be interpreted
 
 The parent node pointers link the transform nodes in a hierarchy (the *transform
-tree*), which define how the transform for any painted content can be
+tree*), which defines how the transform for any painted content can be
 determined.
 
 ***promo
@@ -68,6 +68,32 @@ order to create the illusion of depth.
 
 *** aside
 TODO(jbroman): Explain flattening, etc., once it exists in the paint properties.
+***
+
+### Effects
+
+Each paint chunk is associated with an [effect node](EffectPaintPropertyNode.h),
+which defines the effect (opacity, transfer mode, filter, mask, etc.) that
+should be applied to the content before or as it is composited into the content
+below.
+
+Each effect node has:
+
+* a floating-point opacity (from 0 to 1, inclusive)
+* a pointer to the parent node, which will be applied to the result of this
+  effect before or as it is composited into its parent in the effect tree
+
+The paret node pointers link the effect nodes in a hierarchy (the *effect
+tree*), which defines the dependencies between rasterization of different
+contents.
+
+One can imagine each effect node as corresponding roughly to a bitmap that is
+drawn before being composited into another bitmap, though for implementation
+reasons this may not be how it is actually implemented.
+
+*** aside
+TODO(jbroman): Explain the connection with the transform and clip trees, once it
+exists, as well as effects other than opacity.
 ***
 
 ## Display items
