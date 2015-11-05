@@ -5,12 +5,12 @@
 (function() {
 
 // We are going to kill all of the builtins, so hold onto the ones we need.
-var defineGetter = Object.prototype.__defineGetter__;
-var defineSetter = Object.prototype.__defineSetter__;
+var defineProperty = Object.defineProperty;
 var Error = window.Error;
 var forEach = Array.prototype.forEach;
 var push = Array.prototype.push;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 var getOwnPropertyNames = Object.getOwnPropertyNames;
 var stringify = JSON.stringify;
 
@@ -41,15 +41,26 @@ function clobber(obj, name, qualifiedName) {
       qualifiedName == 'Object.valueOf') {
     return;
   }
-  if (typeof obj[name] == 'function') {
-    obj[name] = function() {
-      throw new Error('Clobbered ' + qualifiedName + ' function');
-    };
+  var desc = getOwnPropertyDescriptor(obj, name);
+  if (!desc.configurable) return;
+  var new_desc;
+  if (desc.get || desc.set || typeof desc.value !== 'function') {
+    new_desc =
+        { get: function() {
+                 throw new Error('Clobbered ' + qualifiedName + ' getter');
+               },
+          set: function(x) {
+                 throw new Error('Clobbered ' + qualifiedName + ' setter');
+               },
+        };
   } else {
-    defineGetter.call(obj, name, function() {
-      throw new Error('Clobbered ' + qualifiedName + ' getter');
-    });
+    new_desc =
+        { value: function() {
+                   throw new Error('Clobbered ' + qualifiedName + ' function');
+                 }
+        };
   }
+  defineProperty(obj, name, new_desc);
 }
 
 forEach.call(builtinTypes, function(builtin) {
