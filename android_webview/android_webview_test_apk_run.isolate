@@ -8,10 +8,21 @@
   'variables': {
     'command': [
       '<(PRODUCT_DIR)/bin/run_android_webview_test_apk',
+       '--enable-platform-mode',
+       '-e', 'local',
+       '--apk-under-test', '<(PRODUCT_DIR)/apks/AndroidWebView.apk',
     ],
     'files': [
-      '<(PRODUCT_DIR)/bin/run_android_webview_test_apk',
+      '../third_party/proguard/lib/proguard.jar',
+      '<(PRODUCT_DIR)/host_forwarder',
+      '<(PRODUCT_DIR)/forwarder_dist/',
       '<(PRODUCT_DIR)/android_webview_test_apk/',
+      '<(PRODUCT_DIR)/apks/AndroidWebView.apk',
+      '<(PRODUCT_DIR)/apks/AndroidWebViewTest.apk',
+      '<(PRODUCT_DIR)/bin/run_android_webview_test_apk',
+      '<(PRODUCT_DIR)/test.lib.java/AndroidWebViewTest.jar',
+      'android_webview_test_apk.isolate',
+      'test/data/',
     ]
   },
 }
