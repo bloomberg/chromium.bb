@@ -157,7 +157,6 @@
       'browser/extensions/api/file_system/file_system_apitest.cc',
       'browser/extensions/api/file_system/file_system_apitest_chromeos.cc',
       'browser/extensions/api/font_settings/font_settings_apitest.cc',
-      'browser/extensions/api/gcd_private/gcd_private_apitest.cc',
       'browser/extensions/api/gcm/gcm_apitest.cc',
       'browser/extensions/api/history/history_apitest.cc',
       'browser/extensions/api/hotword_private/hotword_private_apitest.cc',
@@ -2596,6 +2595,7 @@
         }],
         ['enable_mdns==1', {
           'sources' : [
+            'browser/extensions/api/gcd_private/gcd_private_apitest.cc',
             'browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc',
           ]
         }],

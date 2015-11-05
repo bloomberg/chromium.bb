@@ -2,64 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/json/json_reader.h"
-#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/local_discovery/gcd_api_flow.h"
+#include "chrome/browser/local_discovery/test_service_discovery_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/mdns.h"
 #include "extensions/common/switches.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-#if defined(ENABLE_MDNS)
-#include "chrome/browser/local_discovery/test_service_discovery_client.h"
-#endif  // ENABLE_MDNS
 
 namespace api = extensions::api;
 
-using testing::Invoke;
-
 namespace {
-
-const char kCloudPrintResponse[] =
-    "{"
-    "   \"success\": true,"
-    "   \"printers\": ["
-    "     {\"id\" : \"someCloudPrintID\","
-    "      \"displayName\": \"someCloudPrintDisplayName\","
-    "      \"description\": \"someCloudPrintDescription\"}"
-    "    ]"
-    "}";
-
-const char kGCDResponse[] =
-    "{"
-    "\"kind\": \"clouddevices#devicesListResponse\","
-    "\"devices\": [{"
-    "  \"kind\": \"clouddevices#device\","
-    "  \"id\": \"someGCDID\","
-    "  \"deviceKind\": \"someType\","
-    "  \"creationTimeMs\": \"123\","
-    "  \"systemName\": \"someGCDDisplayName\","
-    "  \"owner\": \"user@domain.com\","
-    "  \"description\": \"someGCDDescription\","
-    "  \"state\": {"
-    "  \"base\": {"
-    "    \"connectionStatus\": \"offline\""
-    "   }"
-    "  },"
-    "  \"channel\": {"
-    "  \"supportedType\": \"xmpp\""
-    "  },"
-    "  \"personalizedInfo\": {"
-    "   \"maxRole\": \"owner\""
-    "  }}]}";
-
-#if defined(ENABLE_MDNS)
 
 const char kPrivetInfoResponse[] =
     "{\"version\":\"3.0\","
@@ -120,103 +73,6 @@ const uint8 kAnnouncePacket[] = {
     0x03, 0x04,
 };
 
-const uint8 kGoodbyePacket[] = {
-    // Header
-    0x00, 0x00,  // ID is zeroed out
-    0x80, 0x00,  // Standard query response, RA, no error
-    0x00, 0x00,  // No questions (for simplicity)
-    0x00, 0x02,  // 1 RR (answers)
-    0x00, 0x00,  // 0 authority RRs
-    0x00, 0x00,  // 0 additional RRs
-    0x07, '_',  'p',  'r',  'i',  'v',  'e', 't',  0x04, '_',  't',  'c',
-    'p',  0x05, 'l',  'o',  'c',  'a',  'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
-    0x00, 0x01,                                                 // CLASS is IN.
-    0x00, 0x00,              // TTL (4 bytes) is 0 seconds.
-    0x00, 0x00, 0x00, 0x0c,  // RDLENGTH is 12 bytes.
-    0x09, 'm',  'y',  'S',  'e',  'r',  'v', 'i',  'c',  'e',  0xc0, 0x0c,
-    0x09, 'm',  'y',  'S',  'e',  'r',  'v', 'i',  'c',  'e',  0xc0, 0x0c,
-    0x00, 0x21,                          // Type is SRV
-    0x00, 0x01,                          // CLASS is IN
-    0x00, 0x00,                          // TTL (4 bytes) is 0 seconds.
-    0x00, 0x00, 0x00, 0x17,              // RDLENGTH is 23
-    0x00, 0x00, 0x00, 0x00, 0x22, 0xb8,  // port 8888
-    0x09, 'm',  'y',  'S',  'e',  'r',  'v', 'i',  'c',  'e',  0x05, 'l',
-    'o',  'c',  'a',  'l',  0x00,
-};
-
-const uint8 kQueryPacket[] = {
-    // Header
-    0x00, 0x00,  // ID is zeroed out
-    0x00, 0x00,  // No flags.
-    0x00, 0x01,  // One question.
-    0x00, 0x00,  // 0 RRs (answers)
-    0x00, 0x00,  // 0 authority RRs
-    0x00, 0x00,  // 0 additional RRs
-
-    // Question
-    // This part is echoed back from the respective query.
-    0x07, '_',  'p', 'r', 'i', 'v', 'e', 't',  0x04, '_',  't', 'c',
-    'p',  0x05, 'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
-    0x00, 0x01,                                             // CLASS is IN.
-};
-
-#endif  // ENABLE_MDNS
-
-// Sentinel value to signify the request should fail.
-const char kResponseValueFailure[] = "FAILURE";
-
-class FakeGCDApiFlowFactory
-    : public extensions::GcdPrivateAPI::GCDApiFlowFactoryForTests {
- public:
-  FakeGCDApiFlowFactory() {
-    extensions::GcdPrivateAPI::SetGCDApiFlowFactoryForTests(this);
-  }
-
-  ~FakeGCDApiFlowFactory() override {
-    extensions::GcdPrivateAPI::SetGCDApiFlowFactoryForTests(NULL);
-  }
-
-  scoped_ptr<local_discovery::GCDApiFlow> CreateGCDApiFlow() override {
-    return scoped_ptr<local_discovery::GCDApiFlow>(new FakeGCDApiFlow(this));
-  }
-
-  void SetResponse(const GURL& url, const std::string& response) {
-    responses_[url] = response;
-  }
-
- private:
-  class FakeGCDApiFlow : public local_discovery::GCDApiFlow {
-   public:
-    explicit FakeGCDApiFlow(FakeGCDApiFlowFactory* factory)
-        : factory_(factory) {}
-
-    ~FakeGCDApiFlow() override {}
-
-    void Start(scoped_ptr<Request> request) override {
-      std::string response_str = factory_->responses_[request->GetURL()];
-
-      if (response_str == kResponseValueFailure) {
-        request->OnGCDAPIFlowError(
-            local_discovery::GCDApiFlow::ERROR_MALFORMED_RESPONSE);
-        return;
-      }
-
-      scoped_ptr<base::Value> response = base::JSONReader::Read(response_str);
-      ASSERT_TRUE(response);
-
-      base::DictionaryValue* response_dict;
-      ASSERT_TRUE(response->GetAsDictionary(&response_dict));
-
-      request->OnGCDAPIFlowComplete(*response_dict);
-    }
-
-   private:
-    FakeGCDApiFlowFactory* factory_;
-  };
-
-  std::map<GURL /*request url*/, std::string /*response json*/> responses_;
-};
-
 class GcdPrivateAPITest : public ExtensionApiTest {
  public:
   GcdPrivateAPITest() : url_fetcher_factory_(&url_fetcher_impl_factory_) {
@@ -231,22 +87,10 @@ class GcdPrivateAPITest : public ExtensionApiTest {
   }
 
  protected:
-  FakeGCDApiFlowFactory api_flow_factory_;
   net::URLFetcherImplFactory url_fetcher_impl_factory_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
 };
 
-IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, GetCloudList) {
-  api_flow_factory_.SetResponse(
-      GURL("https://www.google.com/cloudprint/search"), kCloudPrintResponse);
-
-  api_flow_factory_.SetResponse(
-      GURL("https://www.googleapis.com/clouddevices/v1/devices"), kGCDResponse);
-
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "get_cloud_list.html"));
-}
-
-#if defined(ENABLE_MDNS)
 class GcdPrivateWithMdnsAPITest : public GcdPrivateAPITest {
  public:
   void SetUpOnMainThread() override {
@@ -295,36 +139,5 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, Session) {
                                        net::URLRequestStatus::SUCCESS);
   EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "session.html"));
 }
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, AddBefore) {
-  test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
-                                                  sizeof(kAnnouncePacket));
-
-  EXPECT_TRUE(
-      RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, AddAfter) {
-  SimulateReceiveWithDelay(kAnnouncePacket, sizeof(kAnnouncePacket));
-  EXPECT_TRUE(
-      RunExtensionSubtest("gcd_private/api", "receive_new_device.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, AddRemove) {
-  test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
-                                                  sizeof(kAnnouncePacket));
-  SimulateReceiveWithDelay(kGoodbyePacket, sizeof(kGoodbyePacket));
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "remove_device.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(GcdPrivateWithMdnsAPITest, SendQuery) {
-  if (ExtensionSubtestsAreSkipped())
-    return;
-  EXPECT_CALL(*test_service_discovery_client_.get(),
-              OnSendTo(std::string(reinterpret_cast<const char*>(kQueryPacket),
-                                   sizeof(kQueryPacket)))).Times(2);
-  EXPECT_TRUE(RunExtensionSubtest("gcd_private/api", "send_query.html"));
-}
-#endif  // ENABLE_MDNS
 
 }  // namespace
