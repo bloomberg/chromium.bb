@@ -126,6 +126,16 @@ void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
     RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableExperimentalFramework(bool enable)
+{
+    RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isExperimentalFrameworkEnabled()
+{
+    return RuntimeEnabledFeatures::experimentalFrameworkEnabled();
+}
+
 void WebRuntimeFeatures::enableFastMobileScrolling(bool enable)
 {
     RuntimeEnabledFeatures::setFastMobileScrollingEnabled(enable);

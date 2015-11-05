@@ -79,6 +79,9 @@ public:
 
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
 
+    BLINK_EXPORT static void enableExperimentalFramework(bool);
+    BLINK_EXPORT static bool isExperimentalFrameworkEnabled();
+
     BLINK_EXPORT static void enableFastMobileScrolling(bool);
 
     BLINK_EXPORT static void enableFileSystem(bool);

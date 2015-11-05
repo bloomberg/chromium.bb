@@ -6,11 +6,15 @@
 #include "core/experiments/Experiments.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
 bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String& apiName)
 {
+    if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
+        return false;
+    }
     return false;
 }
 
