@@ -37,5 +37,5 @@ java_prebuilt("chromium_errorprone") {
   main_class = "com.google.errorprone.ErrorProneCompiler"
 
   # TODO(mikecase): Remove this extra arg when the bots are on jdk8 or higher.
-  extra_java_args = "-Xbootclasspath/p:$target_gen_dir/javac_java.jar"
+  bootclasspath = "$target_gen_dir/javac_java.jar"
 }

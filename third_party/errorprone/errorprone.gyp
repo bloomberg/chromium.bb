@@ -84,7 +84,7 @@
             'python', '<(DEPTH)/build/android/gyp/create_java_binary_script.py',
             '--output', '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
             # TODO(mikecase): Remove this extra arg when the bots are on jdk8 or higher.
-            '--extra-java-args', '-Xbootclasspath/p:<(PRODUCT_DIR)/lib.java/javac_jar.jar',
+            '--bootclasspath', '<(PRODUCT_DIR)/lib.java/javac_jar.jar',
             '--jar-path=<(jar_path)',
             '--classpath=>@(input_jars_paths)',
             '--main-class=com.google.errorprone.ErrorProneCompiler',

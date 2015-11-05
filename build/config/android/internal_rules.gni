@@ -166,10 +166,10 @@ template("java_binary_script") {
     if (defined(invoker.wrapper_script_args)) {
       args += [ "--" ] + invoker.wrapper_script_args
     }
-    if (defined(invoker.extra_java_args)) {
+    if (defined(invoker.bootclasspath)) {
       args += [
-        "--extra-java-args",
-        invoker.extra_java_args,
+        "--bootclasspath",
+        invoker.bootclasspath,
       ]
     }
   }
@@ -1033,7 +1033,7 @@ template("java_prebuilt_impl") {
     java_binary_script(binary_script_target_name) {
       forward_variables_from(invoker,
                              [
-                               "extra_java_args",
+                               "bootclasspath",
                                "main_class",
                                "wrapper_script_args",
                              ])
@@ -1383,7 +1383,7 @@ template("java_library_impl") {
     java_binary_script("${_template_name}__java_binary_script") {
       forward_variables_from(invoker,
                              [
-                               "extra_java_args",
+                               "bootclasspath",
                                "main_class",
                                "wrapper_script_args",
                              ])

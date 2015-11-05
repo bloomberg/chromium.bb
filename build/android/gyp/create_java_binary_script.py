@@ -30,13 +30,15 @@ import sys
 
 self_dir = os.path.dirname(__file__)
 classpath = [{classpath}]
-extra_java_args = {extra_java_args}
+bootclasspath = [{bootclasspath}]
 extra_program_args = {extra_program_args}
 if os.getcwd() != self_dir:
   offset = os.path.relpath(self_dir, os.getcwd())
   classpath = [os.path.join(offset, p) for p in classpath]
+  bootclasspath = [os.path.join(offset, p) for p in bootclasspath]
 java_cmd = ["java"]
-java_cmd.extend(extra_java_args)
+if bootclasspath:
+    java_cmd.append("-Xbootclasspath/p:" + ":".join(bootclasspath))
 java_cmd.extend(
     ["-classpath", ":".join(classpath), "-enableassertions", \"{main_class}\"])
 java_cmd.extend(extra_program_args)
@@ -52,28 +54,28 @@ def main(argv):
   parser.add_option('--jar-path', help='Path to the main jar.')
   parser.add_option('--main-class',
       help='Name of the java class with the "main" entry point.')
-  parser.add_option('--classpath', action='append',
+  parser.add_option('--classpath', action='append', default=[],
       help='Classpath for running the jar.')
-  parser.add_option('--extra-java-args',
-      help='Extra args passed to the "java" cmd')
+  parser.add_option('--bootclasspath', action='append', default=[],
+      help='zip/jar files to add to bootclasspath for java cmd.')
   options, extra_program_args = parser.parse_args(argv)
 
   classpath = [options.jar_path]
   for cp_arg in options.classpath:
     classpath += build_utils.ParseGypList(cp_arg)
 
-  if options.extra_java_args:
-    extra_java_args = build_utils.ParseGypList(options.extra_java_args)
-  else:
-    extra_java_args = []
+  bootclasspath = []
+  for bootcp_arg in options.bootclasspath:
+    bootclasspath += build_utils.ParseGypList(bootcp_arg)
 
   run_dir = os.path.dirname(options.output)
   classpath = [os.path.relpath(p, run_dir) for p in classpath]
 
   with open(options.output, 'w') as script:
     script.write(script_template.format(
-      extra_java_args=repr(extra_java_args),
       classpath=('"%s"' % '", "'.join(classpath)),
+      bootclasspath=('"%s"' % '", "'.join(bootclasspath)
+                     if bootclasspath else ''),
       main_class=options.main_class,
       extra_program_args=repr(extra_program_args)))
 
