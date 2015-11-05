@@ -3180,6 +3180,30 @@
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
+          'target_name': 'telemetry_chrome_test_base',
+          'type': 'none',
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:telemetry_base',
+          ],
+          'conditions': [
+            ['OS=="linux" or OS=="mac"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:dump_syms',
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies': [
+                '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
+              ],
+            }],
+            ['OS=="win"', {
+              'dependencies': [
+                'chrome.gyp:crash_service',
+              ],
+            }],
+          ],
+        },
+        {
           'target_name': 'browser_tests_run',
           'type': 'none',
           'dependencies': [
@@ -3199,6 +3223,20 @@
                 '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
               ],
             }],
+          ],
+        },
+        {
+         'target_name': 'telemetry_perf_unittests',
+         'type': 'none',
+         'dependencies': [
+            'chrome_run',
+            'telemetry_chrome_test_base'
+         ],
+         'includes': [
+           '../build/isolate.gypi',
+          ],
+          'sources': [
+            'telemetry_perf_unittests.isolate',
           ],
         },
         {
@@ -3295,30 +3333,6 @@
                   '../build/isolate.gypi',
                 ],
               },
-            },
-            {
-              'target_name': 'telemetry_chrome_test_base',
-              'type': 'none',
-              'dependencies': [
-                '../content/content_shell_and_tests.gyp:telemetry_base',
-              ],
-              'conditions': [
-                ['OS=="linux" or OS=="mac"', {
-                  'dependencies': [
-                    '../breakpad/breakpad.gyp:dump_syms',
-                  ],
-                }],
-                ['OS=="mac"', {
-                  'dependencies': [
-                    '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
-                  ],
-                }],
-                ['OS=="win"', {
-                  'dependencies': [
-                    'chrome.gyp:crash_service',
-                  ],
-                }],
-              ],
             },
             {
               # GN: //gpu:angle_unittests_run
