@@ -29,10 +29,14 @@ views::Combobox* GenerateUsernameCombobox(
     const base::string16& best_matched_username) {
   std::vector<base::string16> usernames;
   size_t best_matched_username_index = forms.size();
+  size_t preferred_form_index = forms.size();
   for (size_t index = 0; index < forms.size(); ++index) {
     usernames.push_back(forms[index]->username_value);
     if (forms[index]->username_value == best_matched_username) {
       best_matched_username_index = index;
+    }
+    if (forms[index]->preferred) {
+      preferred_form_index = index;
     }
   }
 
@@ -41,6 +45,8 @@ views::Combobox* GenerateUsernameCombobox(
 
   if (best_matched_username_index < forms.size()) {
     combobox->SetSelectedIndex(best_matched_username_index);
+  } else if (preferred_form_index < forms.size()) {
+    combobox->SetSelectedIndex(preferred_form_index);
   }
   return combobox;
 }
