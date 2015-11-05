@@ -5,11 +5,11 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "f2e639ce370ae073db5a6ee82e854725b4911eb5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.log",
+          "hash": "774eb84f350f8f6fb0ab568a859e19c27c5e56c6",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.log",
           "name": "sandboxed_translators.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.tgz"
         }
       ],
       "version": 1
@@ -18,11 +18,11 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "f2e639ce370ae073db5a6ee82e854725b4911eb5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.log",
+          "hash": "774eb84f350f8f6fb0ab568a859e19c27c5e56c6",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.log",
           "name": "sandboxed_translators.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.tgz"
         }
       ],
       "version": 1
@@ -31,11 +31,11 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "f2e639ce370ae073db5a6ee82e854725b4911eb5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.log",
+          "hash": "774eb84f350f8f6fb0ab568a859e19c27c5e56c6",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.log",
           "name": "sandboxed_translators.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.tgz"
         }
       ],
       "version": 1
@@ -44,16 +44,16 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "f2e639ce370ae073db5a6ee82e854725b4911eb5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.log",
+          "hash": "774eb84f350f8f6fb0ab568a859e19c27c5e56c6",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.log",
           "name": "sandboxed_translators.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_18a10e408551fc577cd5e166ffdb00e5a23dc6ea.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/sandboxed_translators_99571b039d5b93397b7682872617e6f782846f69.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": "8460e6c72392e8018b17fab07d2a2995604cae7a",
-  "revision_hash": "946681ba9cf5077a2ef1e4e643958a3e36df5de9"
+  "revision": "5fbc0829573fa1f694107defa049d62b1bde74ad",
+  "revision_hash": "4a43c6edfc589d4d25a8dc0510fe83f0f3551071"
 }
