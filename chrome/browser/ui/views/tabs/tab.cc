@@ -1179,15 +1179,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
-  int fill_id, frame_id;
-  GetTabIdAndFrameId(GetWidget(), &fill_id, &frame_id);
-  // HasCustomImage() is only true if the theme provides the image. However,
-  // even if the theme does not provide a tab background, the theme machinery
-  // will make one if given a frame image.
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
-  const bool has_custom_image = theme_provider->HasCustomImage(fill_id) ||
-      (frame_id != 0 && theme_provider->HasCustomImage(frame_id));
-
+  bool has_custom_image;
+  int fill_id = controller_->GetBackgroundResourceId(&has_custom_image);
   // Explicitly map the id so we cache correctly.
   const chrome::HostDesktopType host_desktop_type = GetHostDesktopType(this);
   fill_id = chrome::MapThemeImage(host_desktop_type, fill_id);
@@ -1489,22 +1482,6 @@ gfx::Rect Tab::GetImmersiveBarRect() const {
   int main_bar_right = width() - active_images_.r_width + kBarPadding;
   return gfx::Rect(
       main_bar_left, 0, main_bar_right - main_bar_left, kImmersiveBarHeight);
-}
-
-void Tab::GetTabIdAndFrameId(views::Widget* widget,
-                             int* tab_id,
-                             int* frame_id) const {
-  if (widget &&
-      widget->GetTopLevelWidget()->ShouldWindowContentsBeTransparent()) {
-    *tab_id = IDR_THEME_TAB_BACKGROUND_V;
-    *frame_id = 0;
-  } else if (data().incognito) {
-    *tab_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
-    *frame_id = IDR_THEME_FRAME_INCOGNITO;
-  } else {
-    *tab_id = IDR_THEME_TAB_BACKGROUND;
-    *frame_id = IDR_THEME_FRAME;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

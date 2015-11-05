@@ -298,11 +298,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the rectangle for the light bar in immersive mode.
   gfx::Rect GetImmersiveBarRect() const;
 
-  // Gets the tab id and frame id.
-  void GetTabIdAndFrameId(views::Widget* widget,
-                          int* tab_id,
-                          int* frame_id) const;
-
   // Performs a one-time initialization of static resources such as tab images.
   static void InitTabResources();
 

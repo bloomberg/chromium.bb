@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/media_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/views/controls/button/image_button.h"
@@ -60,6 +61,10 @@ class FakeTabController : public TabController {
                          const ui::MouseEvent& event) override {}
   bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) override { return true; }
   bool IsImmersiveStyle() const override { return immersive_style_; }
+  int GetBackgroundResourceId(bool* custom_image) const override {
+    *custom_image = false;
+    return IDR_THEME_TAB_BACKGROUND;
+  }
   void UpdateTabAccessibilityState(const Tab* tab,
                                    ui::AXViewState* state) override{};
 

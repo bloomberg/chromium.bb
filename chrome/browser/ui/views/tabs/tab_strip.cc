@@ -398,11 +398,8 @@ void NewTabButton::PaintFill(bool pressed,
                              double hover_value,
                              float scale,
                              gfx::Canvas* canvas) const {
-  int bg_id = IDR_THEME_TAB_BACKGROUND_V;
-  if (!GetWidget()->ShouldWindowContentsBeTransparent()) {
-    bg_id = tab_strip_->controller()->IsIncognito() ?
-        IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
-  }
+  bool custom_image;
+  const int bg_id = tab_strip_->GetBackgroundResourceId(&custom_image);
 
   // Draw the fill background image.
   const gfx::Size size(GetNewTabButtonSize());
@@ -1206,6 +1203,28 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, gfx::Rect* clip) {
 
 bool TabStrip::IsImmersiveStyle() const {
   return immersive_style_;
+}
+
+int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+
+  if (GetWidget()->ShouldWindowContentsBeTransparent()) {
+    const int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;
+    *custom_image = theme_provider->HasCustomImage(kBackgroundIdGlass);
+    return kBackgroundIdGlass;
+  }
+
+  // If a custom theme does not provide a replacement tab background, but does
+  // provide a replacement frame image, HasCustomImage() on the tab background
+  // ID will return false, but the theme provider will make a custom image from
+  // the frame image.
+  const bool incognito = controller()->IsIncognito();
+  const int id = incognito ?
+      IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
+  *custom_image = theme_provider->HasCustomImage(id) ||
+      theme_provider->HasCustomImage(
+          incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME);
+  return id;
 }
 
 void TabStrip::UpdateTabAccessibilityState(const Tab* tab,
