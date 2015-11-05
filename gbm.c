@@ -4,13 +4,15 @@
  * found in the LICENSE file.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <xf86drm.h>
 
 #include "gbm_priv.h"
+#include "helpers.h"
 #include "util.h"
 
 extern struct gbm_driver gbm_driver_cirrus;
@@ -177,12 +179,11 @@ PUBLIC void gbm_surface_release_buffer(struct gbm_surface *surface,
 {
 }
 
-PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
-				    uint32_t height, uint32_t format,
-				    uint32_t flags)
+static struct gbm_bo *gbm_bo_new(struct gbm_device *gbm,
+				 uint32_t width, uint32_t height,
+				 uint32_t format, uint32_t stride)
 {
 	struct gbm_bo *bo;
-	int ret;
 
 	bo = (struct gbm_bo*) malloc(sizeof(*bo));
 	if (!bo)
@@ -191,11 +192,26 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
 	bo->gbm = gbm;
 	bo->width = width;
 	bo->height = height;
-	bo->stride = 0;
+	bo->stride = stride;
 	bo->format = format;
 	bo->handle.u32 = 0;
 	bo->destroy_user_data = NULL;
 	bo->user_data = NULL;
+
+	return bo;
+}
+
+PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
+				    uint32_t height, uint32_t format,
+				    uint32_t flags)
+{
+	struct gbm_bo *bo;
+	int ret;
+
+	bo = gbm_bo_new(gbm, width, height, format,
+			width * gbm_bytes_from_format(format));
+	if (!bo)
+		return NULL;
 
 	ret = gbm->driver->bo_create(bo, width, height, format, flags);
 	if (ret) {
@@ -216,6 +232,41 @@ PUBLIC void gbm_bo_destroy(struct gbm_bo *bo)
 
 	bo->gbm->driver->bo_destroy(bo);
 	free(bo);
+}
+
+PUBLIC struct gbm_bo *
+gbm_bo_import(struct gbm_device *gbm, uint32_t type,
+              void *buffer, uint32_t usage)
+{
+	struct gbm_import_fd_data *fd_data = buffer;
+	struct gbm_bo *bo;
+	struct drm_prime_handle prime_handle;
+	int ret;
+
+	if (type != GBM_BO_IMPORT_FD)
+		return NULL;
+
+	if (!gbm_device_is_format_supported(gbm, fd_data->format, usage))
+		return NULL;
+
+	bo = gbm_bo_new(gbm, fd_data->width, fd_data->height, fd_data->format,
+			fd_data->stride);
+	if (!bo)
+		return NULL;
+
+	prime_handle.fd = fd_data->fd;
+
+	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &prime_handle);
+	if (ret) {
+		fprintf(stderr, "minigbm: DRM_IOCTL_PRIME_FD_TO_HANDLE failed "
+				"(fd=%u)\n", prime_handle.fd);
+		free(bo);
+		return NULL;
+	}
+
+	bo->handle.u32 = prime_handle.handle;
+
+	return bo;
 }
 
 PUBLIC uint32_t
