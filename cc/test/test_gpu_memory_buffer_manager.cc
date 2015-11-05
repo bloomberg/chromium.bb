@@ -114,9 +114,8 @@ TestGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
   return reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
 }
 
-void TestGpuMemoryBufferManager::SetDestructionSyncPoint(
+void TestGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
-    uint32 sync_point) {
-}
+    const gpu::SyncToken& sync_token) {}
 
 }  // namespace cc

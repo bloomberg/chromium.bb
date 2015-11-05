@@ -190,7 +190,7 @@ class GpuChannelHost : public IPC::Sender,
   // If the validation fails (which can only happen upon context lost), the
   // highest validated flush id will not change. If no flush ID were ever
   // validated then it will return 0 (Note the lowest valid flush ID is 1).
-  uint32_t ValidateFlushIDReachedServer(int32 stream_id);
+  uint32_t ValidateFlushIDReachedServer(int32 stream_id, bool force_validate);
 
   // Returns the highest validated flush ID for a given stream.
   uint32_t GetHighestValidatedFlushID(int32 stream_id);

@@ -136,11 +136,10 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
       blink::WebGraphicsContext3D* web_graphics_context)
       : web_graphics_context_(web_graphics_context) {}
   ~SyncTokenClientImpl() override {}
-  uint32 InsertSyncPoint() override {
-    gpu::SyncToken sync_token;
-    if (!web_graphics_context_->insertSyncPoint(sync_token.GetData()))
-      return 0;
-    return static_cast<uint32>(sync_token.release_count());
+  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
+    if (!web_graphics_context_->insertSyncPoint(sync_token->GetData())) {
+      sync_token->Clear();
+    }
   }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
     web_graphics_context_->waitSyncToken(sync_token.GetConstData());

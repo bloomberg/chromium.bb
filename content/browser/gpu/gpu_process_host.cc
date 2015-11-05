@@ -766,12 +766,12 @@ void GpuProcessHost::CreateGpuMemoryBufferFromHandle(
 
 void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                             int client_id,
-                                            int sync_point) {
+                                            const gpu::SyncToken& sync_token) {
   TRACE_EVENT0("gpu", "GpuProcessHost::DestroyGpuMemoryBuffer");
 
   DCHECK(CalledOnValidThread());
 
-  Send(new GpuMsg_DestroyGpuMemoryBuffer(id, client_id, sync_point));
+  Send(new GpuMsg_DestroyGpuMemoryBuffer(id, client_id, sync_token));
 }
 
 void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {

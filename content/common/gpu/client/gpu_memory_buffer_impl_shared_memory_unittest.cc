@@ -12,7 +12,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplSharedMemory,
                               GpuMemoryBufferImplTest,
                               GpuMemoryBufferImplSharedMemory);
 
-void BufferDestroyed(bool* destroyed, uint32 sync_point) {
+void BufferDestroyed(bool* destroyed, const gpu::SyncToken& sync_token) {
   *destroyed = true;
 }
 

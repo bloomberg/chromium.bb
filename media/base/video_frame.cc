@@ -813,7 +813,7 @@ void VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
   // occurred when it waits on |release_sync_token_|.
   if (release_sync_token_.HasData())
     client->WaitSyncToken(release_sync_token_);
-  release_sync_token_ = gpu::SyncToken(client->InsertSyncPoint());
+  client->GenerateSyncToken(&release_sync_token_);
 }
 
 // static

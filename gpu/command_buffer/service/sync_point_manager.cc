@@ -282,6 +282,29 @@ SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
       namespace_id_(namespace_id),
       client_id_(client_id) {}
 
+bool SyncPointClientWaiter::Wait(SyncPointClientState* release_state,
+                                 uint64_t release_count,
+                                 const base::Closure& wait_complete_callback) {
+  // No order number associated with the current execution context, using
+  // UINT32_MAX will just assume the release is in the SyncPointClientState's
+  // order numbers to be executed.
+  if (!release_state->WaitForRelease(UINT32_MAX, release_count,
+                                     wait_complete_callback)) {
+    wait_complete_callback.Run();
+    return false;
+  }
+  return true;
+}
+
+bool SyncPointClientWaiter::WaitNonThreadSafe(
+    SyncPointClientState* release_state,
+    uint64_t release_count,
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const base::Closure& wait_complete_callback) {
+  return Wait(release_state, release_count,
+              base::Bind(&RunOnThread, runner, wait_complete_callback));
+}
+
 SyncPointManager::SyncPointManager(bool allow_threaded_wait)
     : allow_threaded_wait_(allow_threaded_wait),
       // To reduce the risk that a sync point created in a previous GPU process

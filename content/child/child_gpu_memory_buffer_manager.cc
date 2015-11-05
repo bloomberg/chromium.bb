@@ -13,10 +13,10 @@ namespace {
 
 void DeletedGpuMemoryBuffer(ThreadSafeSender* sender,
                             gfx::GpuMemoryBufferId id,
-                            uint32 sync_point) {
+                            const gpu::SyncToken& sync_token) {
   TRACE_EVENT0("renderer",
                "ChildGpuMemoryBufferManager::DeletedGpuMemoryBuffer");
-  sender->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(id, sync_point));
+  sender->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(id, sync_token));
 }
 
 }  // namespace
@@ -52,7 +52,8 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
       handle, size, format, usage,
       base::Bind(&DeletedGpuMemoryBuffer, sender_, handle.id)));
   if (!buffer) {
-    sender_->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(handle.id, 0));
+    sender_->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
+        handle.id, gpu::SyncToken()));
     return nullptr;
   }
 
@@ -74,11 +75,11 @@ ChildGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
   return GpuMemoryBufferImpl::FromClientBuffer(buffer);
 }
 
-void ChildGpuMemoryBufferManager::SetDestructionSyncPoint(
+void ChildGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
-    uint32 sync_point) {
+    const gpu::SyncToken& sync_token) {
   static_cast<GpuMemoryBufferImpl*>(buffer)
-      ->set_destruction_sync_point(sync_point);
+      ->set_destruction_sync_token(sync_token);
 }
 
 }  // namespace content

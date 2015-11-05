@@ -954,6 +954,12 @@ void GLHelper::DeleteTexture(GLuint texture_id) {
 
 uint32 GLHelper::InsertSyncPoint() { return gl_->InsertSyncPointCHROMIUM(); }
 
+void GLHelper::GenerateSyncToken(gpu::SyncToken* sync_token) {
+  const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
+  gl_->ShallowFlushCHROMIUM();
+  gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+}
+
 void GLHelper::WaitSyncToken(const gpu::SyncToken& sync_token) {
   gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
 }

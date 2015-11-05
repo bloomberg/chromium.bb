@@ -269,7 +269,7 @@ static void TextureCallback(gpu::SyncToken* called_sync_token,
 // Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
 // destroyed with the default release sync point.
 TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
-  gpu::SyncToken called_sync_token(1);
+  gpu::SyncToken called_sync_token(gpu::CommandBufferNamespace::GPU_IO, 1, 1);
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
@@ -296,8 +296,8 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
   explicit SyncTokenClientImpl(const gpu::SyncToken& sync_token)
       : sync_token_(sync_token) {}
   ~SyncTokenClientImpl() override {}
-  uint32 InsertSyncPoint() override {
-    return static_cast<uint32>(sync_token_.release_count());
+  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
+    *sync_token = sync_token_;
   }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {}
 
@@ -313,14 +313,20 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
 TEST(VideoFrame,
      TexturesNoLongerNeededCallbackAfterTakingAndReleasingMailboxes) {
   const int kPlanesNum = 3;
+  const gpu::CommandBufferNamespace kNamespace =
+      gpu::CommandBufferNamespace::GPU_IO;
+  const uint64_t kCommandBufferId = 0x123;
   gpu::Mailbox mailbox[kPlanesNum];
   for (int i = 0; i < kPlanesNum; ++i) {
     mailbox[i].name[0] = 50 + 1;
   }
 
-  gpu::SyncToken sync_token(7);
+  gpu::SyncToken sync_token(kNamespace, kCommandBufferId, 7);
+  sync_token.SetVerifyFlush();
   uint32 target = 9;
-  gpu::SyncToken release_sync_token(111);
+  gpu::SyncToken release_sync_token(kNamespace, kCommandBufferId, 111);
+  release_sync_token.SetVerifyFlush();
+
   gpu::SyncToken called_sync_token;
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapYUV420NativeTextures(

@@ -60,6 +60,7 @@ GpuChannelManager::GpuChannelManager(
           this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       sync_point_manager_(sync_point_manager),
+      sync_point_client_waiter_(new gpu::SyncPointClientWaiter),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       weak_factory_(this) {
   DCHECK(task_runner);
@@ -227,17 +228,22 @@ void GpuChannelManager::DestroyGpuMemoryBufferOnIO(
 void GpuChannelManager::OnDestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
-    int32 sync_point) {
-  if (!sync_point) {
-    DestroyGpuMemoryBuffer(id, client_id);
-  } else {
-    sync_point_manager()->AddSyncPointCallback(
-        sync_point,
-        base::Bind(&GpuChannelManager::DestroyGpuMemoryBuffer,
-                   base::Unretained(this),
-                   id,
-                   client_id));
+    const gpu::SyncToken& sync_token) {
+  if (sync_token.HasData()) {
+    scoped_refptr<gpu::SyncPointClientState> release_state =
+        sync_point_manager()->GetSyncPointClientState(
+            sync_token.namespace_id(), sync_token.command_buffer_id());
+    if (release_state) {
+      sync_point_client_waiter_->Wait(
+          release_state.get(), sync_token.release_count(),
+          base::Bind(&GpuChannelManager::DestroyGpuMemoryBuffer,
+                     base::Unretained(this), id, client_id));
+      return;
+    }
   }
+
+  // No sync token or invalid sync token, destroy immediately.
+  DestroyGpuMemoryBuffer(id, client_id);
 }
 
 void GpuChannelManager::OnUpdateValueState(

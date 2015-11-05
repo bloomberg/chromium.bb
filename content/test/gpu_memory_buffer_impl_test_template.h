@@ -32,7 +32,7 @@ class GpuMemoryBufferImplTest : public testing::Test {
  private:
   void FreeGpuMemoryBuffer(const base::Closure& free_callback,
                            bool* destroyed,
-                           uint32 sync_point) {
+                           const gpu::SyncToken& sync_token) {
     free_callback.Run();
     if (destroyed)
       *destroyed = true;

@@ -35,9 +35,9 @@ MojoGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
   return MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
 }
 
-void MojoGpuMemoryBufferManager::SetDestructionSyncPoint(
+void MojoGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
-    uint32 sync_point) {
+    const gpu::SyncToken& sync_token) {
   NOTIMPLEMENTED();
 }
 
