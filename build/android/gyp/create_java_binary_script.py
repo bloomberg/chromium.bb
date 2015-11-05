@@ -69,6 +69,7 @@ def main(argv):
     bootclasspath += build_utils.ParseGypList(bootcp_arg)
 
   run_dir = os.path.dirname(options.output)
+  bootclasspath = [os.path.relpath(p, run_dir) for p in bootclasspath]
   classpath = [os.path.relpath(p, run_dir) for p in classpath]
 
   with open(options.output, 'w') as script:
