@@ -9,11 +9,29 @@
 
 namespace switches {
 
+extern const char kDisableContextualSearch[];
+extern const char kDisableIOSFastWebScrollViewInsets[];
+extern const char kDisableIOSPasswordGeneration[];
+extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableIOSWKWebView[];
-extern const char kEnableIOSWKWebView[];
-extern const char kEnableReaderModeToolbarIcon[];
 extern const char kDisableKeyboardCommands[];
+extern const char kDisableNTPFavicons[];
+extern const char kDisableOfflineAutoReload[];
+extern const char kDisableTabSwitcher[];
+
+extern const char kEnableContextualSearch[];
+extern const char kEnableCredentialManagerAPI[];
+extern const char kEnableIOSFastWebScrollViewInsets[];
+extern const char kEnableIOSHandoffToOtherDevices[];
+extern const char kEnableIOSPasswordGeneration[];
+extern const char kEnableIOSWKWebView[];
+extern const char kEnableNTPFavicons[];
+extern const char kEnableOfflineAutoReload[];
+extern const char kEnableReaderModeToolbarIcon[];
+extern const char kEnableTabSwitcher[];
+
 extern const char kIOSMetricsRecordingOnly[];
+extern const char kUserAgent[];
 
 }  // namespace switches
 
