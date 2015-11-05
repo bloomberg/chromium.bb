@@ -14,52 +14,60 @@
 
 namespace {
 
-int g_seconds_between_user_input_check = 10;
-int g_seconds_tracking_delay_after_navigation = 10;
-int g_seconds_tracking_delay_after_show = 5;
+int g_seconds_to_pause_engagement_detection = 10;
+int g_seconds_delay_after_navigation = 10;
+int g_seconds_delay_after_show = 5;
 
 }  // anonymous namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SiteEngagementHelper);
 
-SiteEngagementHelper::InputTracker::InputTracker(
-    content::WebContents* web_contents,
+SiteEngagementHelper::PeriodicTracker::PeriodicTracker(
     SiteEngagementHelper* helper)
-    : WebContentsObserver(web_contents),
-      helper_(helper),
-      pause_timer_(new base::Timer(true, false)),
-      is_tracking_(false) {}
+    : helper_(helper), pause_timer_(new base::Timer(true, false)) {}
 
-SiteEngagementHelper::InputTracker::~InputTracker() {}
+SiteEngagementHelper::PeriodicTracker::~PeriodicTracker() {}
 
-void SiteEngagementHelper::InputTracker::Start(base::TimeDelta initial_delay) {
+void SiteEngagementHelper::PeriodicTracker::Start(
+    base::TimeDelta initial_delay) {
   StartTimer(initial_delay);
 }
 
-void SiteEngagementHelper::InputTracker::Pause() {
-  is_tracking_ = false;
-  StartTimer(base::TimeDelta::FromSeconds(g_seconds_between_user_input_check));
+void SiteEngagementHelper::PeriodicTracker::Pause() {
+  TrackingStopped();
+  StartTimer(
+      base::TimeDelta::FromSeconds(g_seconds_to_pause_engagement_detection));
 }
 
-void SiteEngagementHelper::InputTracker::Stop() {
-  is_tracking_ = false;
+void SiteEngagementHelper::PeriodicTracker::Stop() {
+  TrackingStopped();
   pause_timer_->Stop();
 }
 
-void SiteEngagementHelper::InputTracker::SetPauseTimerForTesting(
+void SiteEngagementHelper::PeriodicTracker::SetPauseTimerForTesting(
     scoped_ptr<base::Timer> timer) {
   pause_timer_ = timer.Pass();
 }
 
-void SiteEngagementHelper::InputTracker::StartTimer(base::TimeDelta delay) {
+void SiteEngagementHelper::PeriodicTracker::StartTimer(
+    base::TimeDelta delay) {
   pause_timer_->Start(
       FROM_HERE, delay,
-      base::Bind(&SiteEngagementHelper::InputTracker::StartTracking,
+      base::Bind(&SiteEngagementHelper::PeriodicTracker::TrackingStarted,
                  base::Unretained(this)));
 }
 
-void SiteEngagementHelper::InputTracker::StartTracking() {
+SiteEngagementHelper::InputTracker::InputTracker(
+    SiteEngagementHelper* helper,
+    content::WebContents* web_contents)
+    : PeriodicTracker(helper), content::WebContentsObserver(web_contents) {}
+
+void SiteEngagementHelper::InputTracker::TrackingStarted() {
   is_tracking_ = true;
+}
+
+void SiteEngagementHelper::InputTracker::TrackingStopped() {
+  is_tracking_ = false;
 }
 
 // Record that there was some user input, and defer handling of the input event.
@@ -77,16 +85,17 @@ void SiteEngagementHelper::InputTracker::DidGetUserInteraction(
   // compiler verifying that all cases are covered).
   switch (type) {
     case blink::WebInputEvent::RawKeyDown:
-      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+      helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
       break;
     case blink::WebInputEvent::MouseDown:
-      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+      helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_MOUSE);
       break;
     case blink::WebInputEvent::GestureTapDown:
-      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
+      helper()->RecordUserInput(
+          SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
       break;
     case blink::WebInputEvent::MouseWheel:
-      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_WHEEL);
+      helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_WHEEL);
       break;
     default:
       NOTREACHED();
@@ -94,15 +103,48 @@ void SiteEngagementHelper::InputTracker::DidGetUserInteraction(
   Pause();
 }
 
+SiteEngagementHelper::MediaTracker::MediaTracker(
+    SiteEngagementHelper* helper,
+    content::WebContents* web_contents)
+    : PeriodicTracker(helper), content::WebContentsObserver(web_contents),
+      is_hidden_(false),
+      is_playing_(false) {}
+
+void SiteEngagementHelper::MediaTracker::TrackingStarted() {
+  if (is_playing_)
+    helper()->RecordMediaPlaying(is_hidden_);
+
+  Pause();
+}
+
+void SiteEngagementHelper::MediaTracker::MediaStartedPlaying() {
+  is_playing_ = true;
+}
+
+void SiteEngagementHelper::MediaTracker::MediaPaused() {
+  is_playing_ = false;
+}
+
+void SiteEngagementHelper::MediaTracker::WasShown() {
+  is_hidden_ = false;
+}
+
+void SiteEngagementHelper::MediaTracker::WasHidden() {
+  is_hidden_ = true;
+}
+
 SiteEngagementHelper::~SiteEngagementHelper() {
   content::WebContents* contents = web_contents();
-  if (contents)
+  if (contents) {
     input_tracker_.Stop();
+    media_tracker_.Stop();
+  }
 }
 
 SiteEngagementHelper::SiteEngagementHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      input_tracker_(web_contents, this),
+      input_tracker_(this, web_contents),
+      media_tracker_(this, web_contents),
       record_engagement_(false) {}
 
 void SiteEngagementHelper::RecordUserInput(
@@ -121,10 +163,24 @@ void SiteEngagementHelper::RecordUserInput(
   }
 }
 
+void SiteEngagementHelper::RecordMediaPlaying(bool is_hidden) {
+  content::WebContents* contents = web_contents();
+  if (contents) {
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    SiteEngagementService* service =
+        SiteEngagementServiceFactory::GetForProfile(profile);
+
+    if (service)
+      service->HandleMediaPlaying(contents->GetVisibleURL(), is_hidden);
+  }
+}
+
 void SiteEngagementHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   input_tracker_.Stop();
+  media_tracker_.Stop();
 
   record_engagement_ = params.url.SchemeIsHTTPOrHTTPS();
 
@@ -140,15 +196,19 @@ void SiteEngagementHelper::DidNavigateMainFrame(
   if (service)
     service->HandleNavigation(params.url, params.transition);
 
-  input_tracker_.Start(
-      base::TimeDelta::FromSeconds(g_seconds_tracking_delay_after_navigation));
+  base::TimeDelta delay =
+      base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation);
+  input_tracker_.Start(delay);
+  media_tracker_.Start(delay);
 }
 
 void SiteEngagementHelper::WasShown() {
   // Ensure that the input callbacks are registered when we come into view.
   if (record_engagement_) {
-    input_tracker_.Start(
-        base::TimeDelta::FromSeconds(g_seconds_tracking_delay_after_show));
+    base::TimeDelta delay =
+        base::TimeDelta::FromSeconds(g_seconds_delay_after_show);
+    input_tracker_.Start(delay);
+    media_tracker_.Start(delay);
   }
 }
 
@@ -159,15 +219,15 @@ void SiteEngagementHelper::WasHidden() {
 
 // static
 void SiteEngagementHelper::SetSecondsBetweenUserInputCheck(int seconds) {
-  g_seconds_between_user_input_check = seconds;
+  g_seconds_to_pause_engagement_detection = seconds;
 }
 
 // static
 void SiteEngagementHelper::SetSecondsTrackingDelayAfterNavigation(int seconds) {
-  g_seconds_tracking_delay_after_navigation = seconds;
+  g_seconds_delay_after_navigation = seconds;
 }
 
 // static
 void SiteEngagementHelper::SetSecondsTrackingDelayAfterShow(int seconds) {
-  g_seconds_tracking_delay_after_show = seconds;
+  g_seconds_delay_after_show = seconds;
 }
