@@ -40,9 +40,9 @@ class HpackRoundTripTest : public ::testing::Test {
     string encoded;
     encoder_.EncodeHeaderSet(header_set, &encoded);
 
-    bool success = decoder_.HandleControlFrameHeadersData(1, encoded.data(),
-                                                          encoded.size());
-    success &= decoder_.HandleControlFrameHeadersComplete(1, nullptr);
+    bool success =
+        decoder_.HandleControlFrameHeadersData(encoded.data(), encoded.size());
+    success &= decoder_.HandleControlFrameHeadersComplete(nullptr);
 
     EXPECT_EQ(header_set, decoder_.decoded_block());
     return success;

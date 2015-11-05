@@ -98,8 +98,8 @@ class HpackDecoderTest : public ::testing::TestWithParam<bool> {
     if (GetParam()) {
       decoder_.HandleControlFrameHeadersStart(&handler_);
     }
-    return decoder_.HandleControlFrameHeadersData(0, str.data(), str.size()) &&
-           decoder_.HandleControlFrameHeadersComplete(0, nullptr);
+    return decoder_.HandleControlFrameHeadersData(str.data(), str.size()) &&
+           decoder_.HandleControlFrameHeadersComplete(nullptr);
   }
 
   const SpdyHeaderBlock& decoded_block() const {
@@ -137,13 +137,11 @@ INSTANTIATE_TEST_CASE_P(WithAndWithoutHeadersHandler,
 
 TEST_P(HpackDecoderTest, HandleControlFrameHeadersData) {
   // Strings under threshold are concatenated in the buffer.
-  EXPECT_TRUE(
-      decoder_.HandleControlFrameHeadersData(0, "small string one", 16));
-  EXPECT_TRUE(
-      decoder_.HandleControlFrameHeadersData(0, "small string two", 16));
+  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData("small string one", 16));
+  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData("small string two", 16));
   // A string which would push the buffer over the threshold is refused.
   EXPECT_FALSE(decoder_.HandleControlFrameHeadersData(
-      0, "fails", kMaxDecodeBufferSize - 32 + 1));
+      "fails", kMaxDecodeBufferSize - 32 + 1));
 
   EXPECT_EQ(decoder_peer_.headers_block_buffer(),
             "small string onesmall string two");
@@ -181,7 +179,7 @@ TEST_P(HpackDecoderTest, HandleHeaderRepresentation) {
   decoder_peer_.HandleHeaderRepresentation("cookie", " fin!");
 
   // Finish and emit all headers.
-  decoder_.HandleControlFrameHeadersComplete(0, nullptr);
+  decoder_.HandleControlFrameHeadersComplete(nullptr);
 
   // Resulting decoded headers are in the same order as input.
   EXPECT_THAT(decoded_block(),

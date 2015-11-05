@@ -1663,8 +1663,8 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
   size_t process_bytes = std::min(
       data_len, remaining_data_length_ - remaining_padding_payload_length_);
   if (is_hpack_header_block) {
-    if (!GetHpackDecoder()->HandleControlFrameHeadersData(
-            current_frame_stream_id_, data, process_bytes)) {
+    if (!GetHpackDecoder()->HandleControlFrameHeadersData(data,
+                                                          process_bytes)) {
       // TODO(jgraettinger): Finer-grained HPACK error codes.
       set_error(SPDY_DECOMPRESS_FAILURE);
       processed_successfully = false;
@@ -1687,7 +1687,7 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
       if (is_hpack_header_block) {
         size_t compressed_len = 0;
         if (GetHpackDecoder()->HandleControlFrameHeadersComplete(
-                current_frame_stream_id_, &compressed_len)) {
+                &compressed_len)) {
           // TODO(jgraettinger): To be removed with migration to
           // SpdyHeadersHandlerInterface. Serializes the HPACK block as a SPDY3
           // block, delivered via reentrant call to

@@ -53,8 +53,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // TODO(jgraettinger): A future version of this method will incrementally
   // parse and deliver headers via SpdyHeadersHandlerInterface. For now,
   // header data is buffered until HandleControlFrameHeadersComplete().
-  bool HandleControlFrameHeadersData(SpdyStreamId stream_id,
-                                     const char* headers_data,
+  bool HandleControlFrameHeadersData(const char* headers_data,
                                      size_t headers_data_length);
 
   // Called after a headers block has been completely delivered via
@@ -67,8 +66,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // future version of this method will simply deliver the Cookie
   // header (which has been incrementally reconstructed) and notify
   // the visitor that the block is finished.
-  bool HandleControlFrameHeadersComplete(SpdyStreamId stream_id,
-                                         size_t* compressed_len);
+  bool HandleControlFrameHeadersComplete(size_t* compressed_len);
 
   // Accessor for the most recently decoded headers block. Valid until the next
   // call to HandleControlFrameHeadersData().

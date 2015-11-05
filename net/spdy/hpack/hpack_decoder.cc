@@ -31,8 +31,7 @@ HpackDecoder::HpackDecoder(const HpackHuffmanTable& table)
 
 HpackDecoder::~HpackDecoder() {}
 
-bool HpackDecoder::HandleControlFrameHeadersData(SpdyStreamId id,
-                                                 const char* headers_data,
+bool HpackDecoder::HandleControlFrameHeadersData(const char* headers_data,
                                                  size_t headers_data_length) {
   decoded_block_.clear();
   if (!header_block_started_) {
@@ -50,8 +49,7 @@ bool HpackDecoder::HandleControlFrameHeadersData(SpdyStreamId id,
   return true;
 }
 
-bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id,
-                                                     size_t* compressed_len) {
+bool HpackDecoder::HandleControlFrameHeadersComplete(size_t* compressed_len) {
   HpackInputStream input_stream(max_string_literal_size_,
                                 headers_block_buffer_);
   regular_header_seen_ = false;
