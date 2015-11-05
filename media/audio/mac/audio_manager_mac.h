@@ -92,7 +92,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   bool MaybeChangeBufferSize(AudioDeviceID device_id,
                              AudioUnit audio_unit,
                              AudioUnitElement element,
-                             size_t desired_buffer_size);
+                             size_t desired_buffer_size,
+                             bool* size_was_changed);
 
  protected:
   ~AudioManagerMac() override;

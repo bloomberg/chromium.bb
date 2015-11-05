@@ -17514,11 +17514,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.InputBufferSizeWasChangedMac"
+    enum="BooleanSuccess">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Indicates if the size of the audio unit's IO buffer was changed when
+    starting an input audio stream. Only sampled when
+    Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.InputStartupSuccessMac" enum="BooleanSuccess">
   <owner>henrika@chromium.org</owner>
   <summary>
     Indicates if audio capturing did start after stream startup was requested.
     Sampled once 5 seconds after a stream has been asked to start.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.InputStartWasDeferredMac" enum="BooleanSuccess">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Indicates if audio capturing started with a small delay or not. Only sampled
+    when Media.Audio.InputStartupSuccessMac reports 'Failure'.
   </summary>
 </histogram>
 

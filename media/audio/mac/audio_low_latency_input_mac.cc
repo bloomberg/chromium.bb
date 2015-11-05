@@ -62,7 +62,9 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       fifo_(input_params.channels(),
             number_of_frames_,
             kNumberOfBlocksBufferInFifo),
-      input_callback_is_active_(false) {
+      input_callback_is_active_(false),
+      start_was_deferred_(false),
+      buffer_size_was_changed_(false) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -199,10 +201,13 @@ bool AUAudioInputStream::Open() {
   }
 
   if (!manager_->MaybeChangeBufferSize(input_device_id_, audio_unit_, 1,
-                                       number_of_frames_)) {
+                                       number_of_frames_,
+                                       &buffer_size_was_changed_)) {
     CloseAudioUnit();
     return false;
   }
+  DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
+                                             << number_of_frames_;
 
   // Register the input procedure for the AUHAL.
   // This procedure will be called when the AUHAL has received new data
@@ -251,6 +256,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
 
   // Check if we should defer Start() for http://crbug.com/160920.
   if (manager_->ShouldDeferStreamStart()) {
+    start_was_deferred_ = true;
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
     deferred_start_cb_.Reset(base::Bind(
@@ -765,8 +771,9 @@ void AUAudioInputStream::CheckInputStartupSuccess() {
     DVLOG(1) << "input_callback_is_active: " << input_callback_is_active;
 
     if (!input_callback_is_active) {
-      // TODO(henrika): perhaps we should close the stream here and trigger
-      // HandleError with as suitable error code.
+      // Now when we know that startup has failed for some reason, add extra
+      // UMA stats in an attempt to figure out the exact reason.
+      AddHistogramsForFailedStartup();
     }
   }
 }
@@ -782,6 +789,14 @@ void AUAudioInputStream::CloseAudioUnit() {
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioComponentInstanceDispose() failed.";
   audio_unit_ = 0;
+}
+
+void AUAudioInputStream::AddHistogramsForFailedStartup() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputStartWasDeferredMac",
+                        start_was_deferred_);
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputBufferSizeWasChangedMac",
+                        buffer_size_was_changed_);
 }
 
 }  // namespace media
