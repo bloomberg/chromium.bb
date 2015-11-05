@@ -590,6 +590,7 @@ template("package_apk") {
 #   rezip_apk: Whether to add crazy-linker alignment.
 template("finalize_apk") {
   action(target_name) {
+    deps = []
     script = "//build/android/gyp/finalize_apk.py"
     depfile = "$target_gen_dir/$target_name.d"
     forward_variables_from(invoker,
@@ -628,8 +629,8 @@ template("finalize_apk") {
       invoker.keystore_password,
     ]
     if (defined(invoker.rezip_apk) && invoker.rezip_apk) {
+      deps += [ "//build/android/rezip" ]
       _rezip_jar_path = "$root_build_dir/lib.java/rezip_apk.jar"
-      inputs += [ _rezip_jar_path ]
       args += [
         "--load-library-from-zip=1",
         "--rezip-apk-jar-path",
