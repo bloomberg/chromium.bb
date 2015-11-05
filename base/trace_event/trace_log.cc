@@ -432,6 +432,9 @@ bool TraceLog::OnMemoryDump(const MemoryDumpArgs& args,
     AutoLock lock(lock_);
     if (logged_events_)
       logged_events_->EstimateTraceMemoryOverhead(&overhead);
+
+    for (auto& metadata_event : metadata_events_)
+      metadata_event->EstimateTraceMemoryOverhead(&overhead);
   }
   overhead.AddSelf();
   overhead.DumpInto("tracing/main_trace_log", pmd);

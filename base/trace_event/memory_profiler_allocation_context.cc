@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/trace_event_memory_overhead.h"
 
 namespace base {
 namespace trace_event {
@@ -112,6 +113,24 @@ void StackFrameDeduplicator::AppendAsTraceFormat(std::string* out) const {
   }
 
   out->append("}");  // End the |stackFrames| dictionary.
+}
+
+void StackFrameDeduplicator::EstimateTraceMemoryOverhead(
+    TraceEventMemoryOverhead* overhead) {
+
+  // The sizes here are only estimates; they fail to take into account the
+  // overhead of the tree nodes for the map, but as an estimate this should be
+  // fine.
+  size_t maps_size = roots_.size() * sizeof(std::pair<StackFrame, int>);
+  size_t frames_allocated = frames_.capacity() * sizeof(FrameNode);
+  size_t frames_resident = frames_.size() * sizeof(FrameNode);
+
+  for (const FrameNode& node : frames_)
+    maps_size += node.children.size() * sizeof(std::pair<StackFrame, int>);
+
+  overhead->Add("StackFrameDeduplicator",
+                sizeof(StackFrameDeduplicator) + maps_size + frames_allocated,
+                sizeof(StackFrameDeduplicator) + maps_size + frames_resident);
 }
 
 bool operator==(const AllocationContext& lhs, const AllocationContext& rhs) {
