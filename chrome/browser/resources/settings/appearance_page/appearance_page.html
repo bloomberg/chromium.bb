@@ -1,47 +1,104 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
-<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://md-settings/controls/settings_input.html">
 <link rel="import" href="chrome://md-settings/controls/settings_radio_group.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="appearance_fonts_page.html">
 
 <dom-module id="settings-appearance-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css"
-      href="chrome://md-settings/appearance_page/appearance_page.css">
+      href="chrome://md-settings/appearance_page/appearance_shared.css">
   <link rel="import" type="css" href="chrome://resources/css/widgets.css">
   <link rel="import" href="chrome://resources/html/action_link.html">
   <template>
-    <div id="action-container">
-      <paper-button i18n-content="setWallpaper"></paper-button>
-      <paper-button id="get-themes" i18n-content="getThemes"
-          on-tap="openThemesGallery_">
-      </paper-button>
-      <paper-button id="resetTheme" i18n-content="resetToDefaultTheme" disabled
-          on-tap="resetTheme_">
-      </paper-button>
-    </div>
-    <hr>
-    <settings-checkbox pref="{{prefs.browser.show_home_button}}"
-        i18n-values="label:showHomeButton">
-    </settings-checkbox>
-    <template is="dom-if" if="{{prefs.browser.show_home_button.value}}">
-      <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
-        <paper-radio-button name="true"
-            >[[i18n_.homePageNtp]]</paper-radio-button>
-        <paper-radio-button name="false"
-            >[[i18n_.openThisPage]]</paper-radio-button>
-      </settings-radio-group>
-      <div class="radio-extended">
-        <settings-input no-label-float pref="{{prefs.homepage}}"
-            label="[[i18n_.onStartupEnterUrl]]">
-        </settings-input>
-      </div>
-    </template>
-    <settings-checkbox pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
-        i18n-values="label:showBookmarksBar">
-    </settings-checkbox>
+    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
+        section="appearance">
+      <neon-animatable id="main">
+        <div class="settings-row">
+          <div>
+            <iron-icon icon="image:brightness-1"></iron-icon>
+            <paper-button i18n-content="setWallpaper"></paper-button>
+          </div>
+          <iron-icon icon="exit-to-app" disabled></iron-icon>
+        </div>
+        <div class="settings-row">
+          <div>
+            <iron-icon icon="image:brightness-1"></iron-icon>
+            <paper-button id="get-themes"
+                on-tap="openThemesGallery_"
+                >[[i18n('getThemes')]]</paper-button>
+          </div>
+          <div>
+            <template is="dom-if" if="[[!allowResetTheme_]]">
+              <iron-icon icon="exit-to-app"></iron-icon>
+            </template>
+            <template is="dom-if" if="[[allowResetTheme_]]">
+              <paper-button on-tap="resetTheme_"
+                  >[[i18n('resetToDefaultTheme')]]</paper-button>
+            </template>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div i18n-content="showHomeButton"></div>
+          <paper-toggle-button
+              checked="{{prefs.browser.show_home_button.value}}">
+          </paper-toggle-button>
+        </div>
+        <template is="dom-if" if="[[prefs.browser.show_home_button.value]]">
+          <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
+            <paper-radio-button name="true"
+                >[[i18n('homePageNtp')]]</paper-radio-button>
+            <paper-radio-button name="false"
+                >[[i18n('openThisPage')]]</paper-radio-button>
+          </settings-radio-group>
+          <div class="radio-extended">
+            <settings-input no-label-float pref="{{prefs.homepage}}"
+                label="[[i18n('onStartupEnterUrl')]]">
+            </settings-input>
+          </div>
+        </template>
+        <div class="settings-row">
+          <div i18n-content="showBookmarksBar"></div>
+          <paper-toggle-button
+              checked="{{prefs.bookmark_bar.show_on_all_tabs.value}}">
+          </paper-toggle-button>
+        </div>
+        <div class="settings-row">
+          <div i18n-content="fontSize"></div>
+          <settings-appearance-font-menu id="defaultFontSize" disabled
+              pref="{{prefs.webkit.webprefs.default_font_size}}"
+              menuOptions="[[fontSizeOptions_]]">
+          </settings-appearance-font-menu>
+        </div>
+        <div class="settings-row">
+          <div class="flex" i18n-content="customizeFonts"></div>
+          <paper-button on-tap="onCustomizeFontsTap_"
+              i18n-content="customizeFonts"></paper-button>
+        </div>
+        <div class="settings-row">
+          <div i18n-content="pageZoom"></div>
+          <settings-appearance-font-menu id="pageZoom" disabled
+              pref="{{prefs.partition.default_zoom_level}}"
+              menuOptions="[[pageZoomOptions_]]">
+          </settings-appearance-font-menu>
+        </div>
+      </neon-animatable>
+      <neon-animatable id="appearance-fonts">
+        <settings-subheader i18n-values="page-title:customizeFonts">
+        </settings-subheader>
+        <settings-appearance-fonts-page prefs="{{prefs}}">
+        </settings-appearance-fonts-page>
+      </neon-animatable>
+    </settings-animated-pages>
   </template>
   <script src="appearance_page.js"></script>
 </dom-module>

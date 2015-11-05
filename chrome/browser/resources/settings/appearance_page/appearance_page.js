@@ -22,26 +22,54 @@ Polymer({
 
   properties: {
     /**
-     * Preferences state.
+     * The current active route.
      */
-    prefs: {
-      type: Object,
+    currentRoute: {
       notify: true,
+      type: Object,
     },
 
     /**
-     * Translated strings used in data binding.
+     * Preferences state.
      */
-    i18n_: {
-      type: Object,
+    allowResetTheme_: {
+      notify: true,
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * @private
+     */
+    allowResetTheme_: {
+      notify: true,
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * List of options for the font size drop-down menu.
+     * The order of entries in this array matches the
+     * prefs.browser.clear_data.time_period.value enum.
+     * @private {!Array<!Array<{0: number, 1: string}>>}
+     */
+    fontSizeOptions_: {
+      readOnly: true,
+      type: Array,
       value: function() {
-        return {
-          homePageNtp: loadTimeData.getString('homePageNtp'),
-          openThisPage: loadTimeData.getString('openThisPage'),
-          onStartupEnterUrl: loadTimeData.getString('onStartupEnterUrl'),
-        };
+        return [
+          [9, loadTimeData.getString('verySmall')],
+          [12, loadTimeData.getString('small')],
+          [16, loadTimeData.getString('medium')],
+          [20, loadTimeData.getString('large')],
+          [24, loadTimeData.getString('veryLarge')],
+        ];
       },
     },
+  },
+
+  ready: function() {
+    this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
   },
 
   /** @override */
@@ -55,8 +83,16 @@ Polymer({
                         this.setResetThemeEnabled.bind(this));
   },
 
+  /**
+   * @param {boolean} enabled Whether the theme reset is available.
+   */
   setResetThemeEnabled: function(enabled) {
-    this.$.resetTheme.disabled = !enabled;
+    this.allowResetTheme_ = enabled;
+  },
+
+  /** @private */
+  onCustomizeFontsTap_: function() {
+    this.$.pages.setSubpageChain(['appearance-fonts']);
   },
 
   /** @private */

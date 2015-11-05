@@ -33,14 +33,15 @@
 </if>
     <settings-section i18n-values="page-title:appearancePageTitle"
         current-route="[[currentRoute]]" section="appearance">
-      <settings-appearance-page prefs="{{prefs}}">
+      <settings-appearance-page prefs="{{prefs}}"
+          current-route="[[currentRoute]]">
       </settings-appearance-page>
     </settings-section>
 
     <settings-section i18n-values="page-title:onStartup"
         current-route="[[currentRoute]]" section="on-startup">
-      <settings-on-startup-page
-          prefs="{{prefs}}" current-route="{{currentRoute}}">
+      <settings-on-startup-page prefs="{{prefs}}"
+          current-route="{{currentRoute}}">
       </settings-on-startup-page>
     </settings-section>
 

@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * 'settings-router' is a simple router for settings. Its responsibilites:
+ * 'settings-router' is a simple router for settings. Its responsibilities:
  *  - Update the URL when the routing state changes.
  *  - Initialize the routing state with the initial URL.
  *  - Process and validate all routing state changes.
@@ -89,6 +89,13 @@ Polymer({
       section: '',
       subpage: [],
       subpageTitles: [],
+    },
+    {
+      url: '/fonts',
+      page: 'basic',
+      section: 'appearance',
+      subpage: ['appearance-fonts'],
+      subpageTitles: ['customizeFonts'],
     },
     {
       url: '/startup',
