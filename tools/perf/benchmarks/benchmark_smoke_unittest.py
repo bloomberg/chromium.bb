@@ -18,6 +18,7 @@ from telemetry.core import discover
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
+from benchmarks import chrome_signin_startup
 from benchmarks import image_decoding
 from benchmarks import indexeddb_perf
 from benchmarks import jetstream
@@ -77,6 +78,7 @@ def SmokeTestGenerator(benchmark):
 
 # The list of benchmark modules to be excluded from our smoke tests.
 _BLACK_LIST_TEST_MODULES = {
+    chrome_signin_startup, # Fail on many Mac bots (crbug.com/551938).
     image_decoding, # Always fails on Mac10.9 Tests builder.
     indexeddb_perf,  # Always fails on Win7 & Android Tests builder.
     new_tab,  # Fails fairly often on the Linux Tests builder, crbug.com/535664
