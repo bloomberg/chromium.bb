@@ -236,7 +236,7 @@ TEST(ProofTest, VerifyRSAKnownAnswerTest) {
   };
 
   scoped_ptr<ProofVerifier> verifier(
-      CryptoTestUtils::ProofVerifierForTesting());
+      CryptoTestUtils::RealProofVerifierForTesting());
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
@@ -318,7 +318,7 @@ TEST(ProofTest, VerifyECDSAKnownAnswerTest) {
   };
 
   scoped_ptr<ProofVerifier> verifier(
-      CryptoTestUtils::ProofVerifierForTesting());
+      CryptoTestUtils::RealProofVerifierForTesting());
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";

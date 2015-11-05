@@ -220,11 +220,7 @@ class TestStrikeRegisterClient : public StrikeRegisterClient {
 TEST(QuicCryptoServerConfigTest, ServerConfig) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
-#if defined(USE_OPENSSL)
                                 CryptoTestUtils::ProofSourceForTesting());
-#else
-                                CryptoTestUtils::FakeProofSourceForTesting());
-#endif
   MockClock clock;
 
   scoped_ptr<CryptoHandshakeMessage>(
@@ -235,11 +231,7 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
 TEST(QuicCryptoServerConfigTest, GetOrbitIsCalledWithoutTheStrikeRegisterLock) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
-#if defined(USE_OPENSSL)
                                 CryptoTestUtils::ProofSourceForTesting());
-#else
-                                CryptoTestUtils::FakeProofSourceForTesting());
-#endif
   MockClock clock;
 
   TestStrikeRegisterClient* strike_register =
@@ -262,11 +254,7 @@ class SourceAddressTokenTest : public ::testing::Test {
         rand_(QuicRandom::GetInstance()),
         server_(QuicCryptoServerConfig::TESTING,
                 rand_,
-#if defined(USE_OPENSSL)
                 CryptoTestUtils::ProofSourceForTesting()),
-#else
-                CryptoTestUtils::FakeProofSourceForTesting()),
-#endif
         peer_(&server_) {
     // Advance the clock to some non-zero time.
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1000000));
@@ -440,11 +428,7 @@ TEST_F(SourceAddressTokenTest, SourceAddressTokenMultipleAddresses) {
 TEST(QuicCryptoServerConfigTest, ValidateServerNonce) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
-#if defined(USE_OPENSSL)
                                 CryptoTestUtils::ProofSourceForTesting());
-#else
-                                CryptoTestUtils::FakeProofSourceForTesting());
-#endif
   QuicCryptoServerConfigPeer peer(&server);
 
   StringPiece message("hello world");
@@ -477,11 +461,7 @@ class CryptoServerConfigsTest : public ::testing::Test {
       : rand_(QuicRandom::GetInstance()),
         config_(QuicCryptoServerConfig::TESTING,
                 rand_,
-#if defined(USE_OPENSSL)
                 CryptoTestUtils::ProofSourceForTesting()),
-#else
-                CryptoTestUtils::FakeProofSourceForTesting()),
-#endif
         test_peer_(&config_) {
   }
 

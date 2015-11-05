@@ -40,8 +40,6 @@ using testing::_;
 namespace net {
 namespace test {
 
-#if defined(USE_OPENSSL)
-
 class QuicCryptoServerConfigPeer {
  public:
   static string GetPrimaryOrbit(const QuicCryptoServerConfig& config) {
@@ -425,8 +423,6 @@ TEST_P(QuicCryptoServerStreamTest, DoesPeerSupportStatelessRejects) {
 }
 
 }  // namespace
-
-#endif
 
 }  // namespace test
 }  // namespace net

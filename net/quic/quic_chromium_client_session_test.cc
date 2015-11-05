@@ -22,7 +22,9 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_packet_reader.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_chromium_client_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
@@ -112,8 +114,6 @@ INSTANTIATE_TEST_CASE_P(Tests,
                         QuicChromiumClientSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
-#if defined(OPENSSL)
-
 TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
@@ -129,8 +129,16 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   }
   EXPECT_FALSE(session_.CreateOutgoingDynamicStream());
 
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection, session_.GetNumOpenStreams());
+
   // Close a stream and ensure I can now open a new one.
-  session_.CloseStream(streams[0]->id());
+  QuicStreamId stream_id = streams[0]->id();
+  session_.CloseStream(stream_id);
+
+  EXPECT_FALSE(session_.CreateOutgoingDynamicStream());
+  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
+  session_.OnRstStream(rst1);
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection - 1, session_.GetNumOpenStreams());
   EXPECT_TRUE(session_.CreateOutgoingDynamicStream());
 }
 
@@ -152,7 +160,10 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
                                         callback.callback()));
 
   // Close a stream and ensure I can now open a new one.
-  session_.CloseStream(streams[0]->id());
+  QuicStreamId stream_id = streams[0]->id();
+  session_.CloseStream(stream_id);
+  QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
+  session_.OnRstStream(rst1);
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_TRUE(stream != nullptr);
@@ -257,8 +268,6 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
 
   EXPECT_TRUE(session_.CanPool("mail.example.org", PRIVACY_MODE_DISABLED));
 }
-
-#endif
 
 }  // namespace
 }  // namespace test

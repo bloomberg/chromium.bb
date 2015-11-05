@@ -24,8 +24,6 @@ namespace net {
 namespace test {
 namespace {
 
-#if defined(USE_OPENSSL)
-
 const char kServerHostname[] = "test.example.com";
 const uint16 kServerPort = 443;
 
@@ -286,8 +284,6 @@ TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
   EXPECT_EQ(expected_id, server_designated_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
 }
-
-#endif
 
 }  // namespace
 }  // namespace test
