@@ -590,7 +590,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         RevenueStats.getInstance().tabCreated(this);
 
         ContextualSearchTabHelper.createForTab(this);
-        if (window != null) ThumbnailTabHelper.createForTab(this);
         MediaSessionTabHelper.createForTab(this);
 
         if (creationState != null) {
