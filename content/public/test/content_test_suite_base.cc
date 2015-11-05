@@ -37,6 +37,7 @@
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_android_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
+#include "ui/events/android/events_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
@@ -88,6 +89,7 @@ void ContentTestSuiteBase::Initialize() {
   ui::android::RegisterJni(env);
   ui::RegisterUIAndroidJni(env);
   ui::gl::android::RegisterJni(env);
+  ui::events::android::RegisterJni(env);
   ui::shell_dialogs::RegisterJni(env);
 
   content::Compositor::Initialize();

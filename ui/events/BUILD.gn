@@ -5,6 +5,10 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 static_library("dom_keycode_converter") {
   sources = [
     "keycodes/dom/dom_code.h",
@@ -180,6 +184,16 @@ component("events") {
 
   if (is_win || is_mac || use_x11 || use_ozone || (is_android && use_aura)) {
     sources -= [ "events_stub.cc" ]
+  }
+
+  if (is_android) {
+    sources += [
+      "android/events_jni_registrar.cc",
+      "android/events_jni_registrar.h",
+      "android/motion_event_android.cc",
+      "android/motion_event_android.h",
+    ]
+    deps += [ ":motionevent_jni_headers" ]
   }
 }
 
@@ -412,5 +426,16 @@ test("events_unittests") {
       "gestures/gesture_provider_aura_unittest.cc",
       "gestures/motion_event_aura_unittest.cc",
     ]
+  }
+
+  if (is_android) {
+    sources += [ "android/motion_event_android_unittest.cc" ]
+  }
+}
+
+if (is_android) {
+  generate_jar_jni("motionevent_jni_headers") {
+    jni_package = "ui"
+    classes = [ "android/view/MotionEvent.class" ]
   }
 }

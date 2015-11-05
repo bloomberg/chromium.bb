@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 
 #include "base/logging.h"
-#include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
+#include "ui/events/android/motion_event_android.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"

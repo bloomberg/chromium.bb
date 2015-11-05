@@ -61,6 +61,11 @@
       'process_outputs_as_sources': 1,
     },
   ],
+  'direct_dependent_settings': {
+    'include_dirs': [
+      '<(SHARED_INTERMEDIATE_DIR)/<(jni_gen_package)',
+    ],
+  },
   # This target exports a hard dependency because it generates header
   # files.
   'hard_dependency': 1,

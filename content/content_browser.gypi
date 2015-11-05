@@ -1162,8 +1162,6 @@
       'browser/renderer_host/input/input_router_config_helper.h',
       'browser/renderer_host/input/input_router_impl.cc',
       'browser/renderer_host/input/input_router_impl.h',
-      'browser/renderer_host/input/motion_event_android.cc',
-      'browser/renderer_host/input/motion_event_android.h',
       'browser/renderer_host/input/motion_event_web.cc',
       'browser/renderer_host/input/motion_event_web.h',
       'browser/renderer_host/input/mouse_wheel_rails_filter_mac.cc',

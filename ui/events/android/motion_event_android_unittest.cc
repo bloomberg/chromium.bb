@@ -5,14 +5,14 @@
 #include <android/input.h>
 
 #include "base/android/jni_android.h"
-#include "content/browser/renderer_host/input/motion_event_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/android/motion_event_android.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/motion_event_test_utils.h"
 
-using ui::MotionEvent;
+namespace ui {
+class MotionEvent;
 
-namespace content {
 namespace {
 const float kPixToDip = 0.5f;
 

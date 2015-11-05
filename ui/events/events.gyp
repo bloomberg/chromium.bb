@@ -197,6 +197,17 @@
             'ozone/events_ozone.gyp:events_ozone_layout',
           ],
         }],
+        ['OS=="android"', {
+          'sources': [
+            'android/events_jni_registrar.cc',
+            'android/events_jni_registrar.h',
+            'android/motion_event_android.cc',
+            'android/motion_event_android.h',
+          ],
+          'dependencies': [
+            'motionevent_jni_headers',
+          ],
+        }],
       ],
     },
     {
@@ -479,6 +490,9 @@
           ],
         }],
         ['OS == "android"', {
+          'sources': [
+            'android/motion_event_android_unittest.cc',
+          ],
           'dependencies': [
             '../../testing/android/native_test.gyp:native_test_native_code',
           ],
@@ -489,6 +503,15 @@
   'conditions': [
     ['OS == "android"', {
       'targets': [
+        {
+          'target_name': 'motionevent_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'ui',
+            'input_java_class': 'android/view/MotionEvent.class',
+          },
+          'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+        },
         {
           'target_name': 'events_unittests_apk',
           'type': 'none',

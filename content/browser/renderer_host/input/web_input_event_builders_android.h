@@ -9,9 +9,11 @@
 
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-namespace content {
-
+namespace ui {
 class MotionEventAndroid;
+}
+
+namespace content {
 
 class WebMouseEventBuilder {
  public:

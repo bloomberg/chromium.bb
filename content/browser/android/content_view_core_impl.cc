@@ -25,7 +25,6 @@
 #include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
-#include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -52,6 +51,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -893,7 +893,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
   if (!rwhv)
     return false;
 
-  MotionEventAndroid::Pointer pointer0(pointer_id_0,
+  ui::MotionEventAndroid::Pointer pointer0(pointer_id_0,
                                        pos_x_0,
                                        pos_y_0,
                                        touch_major_0,
@@ -901,7 +901,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                                        orientation_0,
                                        tilt_0,
                                        android_tool_type_0);
-  MotionEventAndroid::Pointer pointer1(pointer_id_1,
+  ui::MotionEventAndroid::Pointer pointer1(pointer_id_1,
                                        pos_x_1,
                                        pos_y_1,
                                        touch_major_1,
@@ -909,7 +909,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                                        orientation_1,
                                        tilt_1,
                                        android_tool_type_1);
-  MotionEventAndroid event(1.f / dpi_scale(),
+  ui::MotionEventAndroid event(1.f / dpi_scale(),
                            env,
                            motion_event,
                            time_ms,

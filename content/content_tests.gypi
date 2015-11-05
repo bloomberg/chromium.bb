@@ -794,7 +794,6 @@
       'browser/android/java/java_type_unittest.cc',
       'browser/android/java/jni_helper_unittest.cc',
       'browser/android/url_request_content_job_unittest.cc',
-      'browser/renderer_host/input/motion_event_android_unittest.cc',
       'common/gpu/client/gpu_memory_buffer_impl_surface_texture_unittest.cc',
       'common/gpu/gpu_memory_buffer_factory_surface_texture_unittest.cc',
       'renderer/java/gin_java_bridge_value_converter_unittest.cc',

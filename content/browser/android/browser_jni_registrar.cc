@@ -35,7 +35,6 @@
 #include "content/browser/mojo/service_registry_android.h"
 #include "content/browser/power_save_blocker_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
-#include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
@@ -83,8 +82,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"MediaResourceGetterImpl",
      content::MediaResourceGetterImpl::RegisterMediaResourceGetter},
     {"MediaSession", content::MediaSession::RegisterMediaSession},
-    {"MotionEventAndroid",
-     content::MotionEventAndroid::RegisterMotionEventAndroid},
     {"MotionEventSynthesizer",
      content::SyntheticGestureTargetAndroid::RegisterMotionEventSynthesizer},
     {"NavigationControllerAndroid",

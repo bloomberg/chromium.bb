@@ -3,24 +3,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOTION_EVENT_ANDROID_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOTION_EVENT_ANDROID_H_
+#ifndef UI_EVENTS_ANDROID_MOTION_EVENT_ANDROID_H_
+#define UI_EVENTS_ANDROID_MOTION_EVENT_ANDROID_H_
 
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "ui/events/events_export.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/point_f.h"
 
-namespace content {
+namespace ui {
 
 // Implementation of ui::MotionEvent wrapping a native Android MotionEvent.
 // All *input* coordinates are in device pixels (as with Android MotionEvent),
 // while all *output* coordinates are in DIPs (as with WebTouchEvent).
-class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
+class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
  public:
   struct Pointer {
     Pointer(jint id,
@@ -135,4 +136,4 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOTION_EVENT_ANDROID_H_
+#endif  // UI_EVENTS_ANDROID_MOTION_EVENT_ANDROID_H_

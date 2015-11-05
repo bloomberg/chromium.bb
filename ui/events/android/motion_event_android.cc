@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/motion_event_android.h"
+#include "ui/events/android/motion_event_android.h"
 
 #include <android/input.h>
 
@@ -16,7 +16,7 @@
 using base::android::AttachCurrentThread;
 using namespace JNI_MotionEvent;
 
-namespace content {
+namespace ui {
 namespace {
 
 MotionEventAndroid::Action FromAndroidAction(int android_action) {

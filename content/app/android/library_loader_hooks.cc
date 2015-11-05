@@ -30,6 +30,7 @@
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_android_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
+#include "ui/events/android/events_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
@@ -53,6 +54,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!ui::gl::android::RegisterJni(env))
+      return false;
+
+    if (!ui::events::android::RegisterJni(env))
       return false;
 
     if (!ui::shell_dialogs::RegisterJni(env))
