@@ -892,7 +892,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     @CalledByNative
-    void onNativeContentViewCoreDestroyed(long nativeContentViewCore) {
+    private void onNativeContentViewCoreDestroyed(long nativeContentViewCore) {
         assert nativeContentViewCore == mNativeContentViewCore;
         mNativeContentViewCore = 0;
     }
@@ -1025,7 +1025,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      * @return native ContentViewCore pointer.
      */
     @CalledByNative
-    public long getNativeContentViewCore() {
+    long getNativeContentViewCore() {
         return mNativeContentViewCore;
     }
 
@@ -1075,7 +1075,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      * @return Width of underlying physical surface.
      */
     @CalledByNative
-    public int getPhysicalBackingWidthPix() {
+    private int getPhysicalBackingWidthPix() {
         return mPhysicalBackingWidthPix;
     }
 
@@ -1083,7 +1083,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      * @return Height of underlying physical surface.
      */
     @CalledByNative
-    public int getPhysicalBackingHeightPix() {
+    private int getPhysicalBackingHeightPix() {
         return mPhysicalBackingHeightPix;
     }
 

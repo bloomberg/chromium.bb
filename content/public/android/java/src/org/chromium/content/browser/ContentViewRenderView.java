@@ -198,10 +198,6 @@ public class ContentViewRenderView extends FrameLayout {
     }
 
     @CalledByNative
-    protected void onCompositorLayout() {
-    }
-
-    @CalledByNative
     private void onSwapBuffersCompleted() {
         if (mSurfaceView.getBackground() != null) {
             post(new Runnable() {
