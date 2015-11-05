@@ -352,7 +352,7 @@ void StyleResolver::popParentElement(Element& parent)
     m_selectorFilter.popParent(parent);
 }
 
-static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
+static inline ScopedStyleResolver* scopedResolverFor(const Element& element)
 {
     // Ideally, returning element->treeScope().scopedStyleResolver() should be
     // enough, but ::cue and custom pseudo elements like ::-webkit-meter-bar pierce
@@ -365,17 +365,17 @@ static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
     // FIXME: Make ::cue and custom pseudo elements part of boundary crossing rules
     // when moving those rules to ScopedStyleResolver as part of issue 401359.
 
-    TreeScope* treeScope = &element->treeScope();
+    TreeScope* treeScope = &element.treeScope();
     if (ScopedStyleResolver* resolver = treeScope->scopedStyleResolver()) {
-        ASSERT(element->shadowPseudoId().isEmpty());
-        ASSERT(!element->isVTTElement());
+        ASSERT(element.shadowPseudoId().isEmpty());
+        ASSERT(!element.isVTTElement());
         return resolver;
     }
 
     treeScope = treeScope->parentTreeScope();
     if (!treeScope)
         return nullptr;
-    if (element->shadowPseudoId().isEmpty() && !element->isVTTElement())
+    if (element.shadowPseudoId().isEmpty() && !element.isVTTElement())
         return nullptr;
     return treeScope->scopedStyleResolver();
 }
@@ -393,7 +393,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
         resolversInShadowTree.at(j)->collectMatchingShadowHostRules(collector, ++cascadeOrder);
 
     // Apply normal rules from element scope.
-    if (ScopedStyleResolver* resolver = scopedResolverFor(element))
+    if (ScopedStyleResolver* resolver = scopedResolverFor(*element))
         resolver->collectMatchingAuthorRules(collector, ++cascadeOrder);
 
     // Apply /deep/ and ::shadow rules from outer scopes, and ::content from inner.
