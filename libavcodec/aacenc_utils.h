@@ -89,14 +89,60 @@ static inline int find_min_book(float maxval, int sf)
     float Q34 = sqrtf(Q * sqrtf(Q));
     int qmaxval, cb;
     qmaxval = maxval * Q34 + C_QUANT;
-    if      (qmaxval ==  0) cb = 0;
-    else if (qmaxval ==  1) cb = 1;
-    else if (qmaxval ==  2) cb = 3;
-    else if (qmaxval <=  4) cb = 5;
-    else if (qmaxval <=  7) cb = 7;
-    else if (qmaxval <= 12) cb = 9;
-    else                    cb = 11;
+    if (qmaxval >= (FF_ARRAY_ELEMS(aac_maxval_cb)))
+        cb = 11;
+    else
+        cb = aac_maxval_cb[qmaxval];
     return cb;
+}
+
+static inline float find_form_factor(int group_len, int swb_size, float thresh,
+                                     const float *scaled, float nzslope) {
+    const float iswb_size = 1.0f / swb_size;
+    const float iswb_sizem1 = 1.0f / (swb_size - 1);
+    const float ethresh = thresh;
+    float form = 0.0f, weight = 0.0f;
+    int w2, i;
+    for (w2 = 0; w2 < group_len; w2++) {
+        float e = 0.0f, e2 = 0.0f, var = 0.0f, maxval = 0.0f;
+        float nzl = 0;
+        for (i = 0; i < swb_size; i++) {
+            float s = fabsf(scaled[w2*128+i]);
+            maxval = FFMAX(maxval, s);
+            e += s;
+            e2 += s *= s;
+            /* We really don't want a hard non-zero-line count, since
+             * even below-threshold lines do add up towards band spectral power.
+             * So, fall steeply towards zero, but smoothly
+             */
+            if (s >= ethresh) {
+                nzl += 1.0f;
+            } else {
+                nzl += powf(s / ethresh, nzslope);
+            }
+        }
+        if (e2 > thresh) {
+            float frm;
+            e *= iswb_size;
+
+            /** compute variance */
+            for (i = 0; i < swb_size; i++) {
+                float d = fabsf(scaled[w2*128+i]) - e;
+                var += d*d;
+            }
+            var = sqrtf(var * iswb_sizem1);
+
+            e2 *= iswb_size;
+            frm = e / FFMIN(e+4*var,maxval);
+            form += e2 * sqrtf(frm) / FFMAX(0.5f,nzl);
+            weight += e2;
+        }
+    }
+    if (weight > 0) {
+        return form / weight;
+    } else {
+        return 1.0f;
+    }
 }
 
 /** Return the minimum scalefactor where the quantized coef does not clip. */
@@ -128,6 +174,14 @@ static inline int quant_array_idx(const float val, const float *arr, const int n
     return index;
 }
 
+/**
+ * approximates exp10f(-3.0f*(0.5f + 0.5f * cosf(FFMIN(b,15.5f) / 15.5f)))
+ */
+static av_always_inline float bval2bmax(float b)
+{
+    return 0.001f + 0.0035f * (b*b*b) / (15.5f*15.5f*15.5f);
+}
+
 /*
  * linear congruential pseudorandom number generator, copied from the decoder
  */
@@ -147,6 +201,5 @@ static inline int lcg_random(unsigned previous_val)
     if (cond) { \
         av_log(avctx, AV_LOG_WARNING, __VA_ARGS__); \
     }
-
 
 #endif /* AVCODEC_AACENC_UTILS_H */

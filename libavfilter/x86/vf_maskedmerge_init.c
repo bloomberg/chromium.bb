@@ -1,7 +1,5 @@
 /*
- * Header file for hardcoded AAC SBR windows
- *
- * Copyright (c) 2014 Reimar Döffinger <Reimar.Doeffinger@gmx.de>
+ * Copyright (c) 2015 Paul B Mahol
  *
  * This file is part of FFmpeg.
  *
@@ -20,22 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include "libavutil/common.h"
-#include "cabac_functions.h"
-#undef CONFIG_HARDCODED_TABLES
-#define CONFIG_HARDCODED_TABLES 0
-av_const int av_log2(unsigned v) { int r = 0; while (v >>= 1) r++; return r; }
-#include "cabac_tablegen.h"
-#include "tableprint.h"
+#include "libavutil/attributes.h"
+#include "libavutil/cpu.h"
+#include "libavutil/x86/cpu.h"
+#include "libavfilter/maskedmerge.h"
 
-int main(void)
+void ff_maskedmerge8_sse2(const uint8_t *bsrc, const uint8_t *osrc,
+                          const uint8_t *msrc, uint8_t *dst,
+                          ptrdiff_t blinesize, ptrdiff_t olinesize,
+                          ptrdiff_t mlinesize, ptrdiff_t dlinesize,
+                          int w, int h,
+                          int half, int shift);
+
+av_cold void ff_maskedmerge_init_x86(MaskedMergeContext *s)
 {
-    cabac_tableinit();
+    int cpu_flags = av_get_cpu_flags();
 
-    write_fileheader();
-
-    WRITE_ARRAY("const", uint8_t, ff_h264_cabac_tables);
-
-    return 0;
+    if (ARCH_X86_64 && EXTERNAL_SSE2(cpu_flags) && s->depth == 8) {
+        s->maskedmerge = ff_maskedmerge8_sse2;
+    }
 }

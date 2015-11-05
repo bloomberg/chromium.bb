@@ -15,11 +15,55 @@ libavutil:     2015-08-28
 
 API changes, most recent first:
 
-2015-xx-xx - lavu 55.0.100 / lavu 55.0.0
-  xxxxxxx - Change type of AVPixFmtDescriptor.flags from uint8_t to uint64_t.
-  xxxxxxx - Change type of AVComponentDescriptor fields from uint16_t to int
+2015-10-29 - lavc 57.12.100 / 57.8.0 - avcodec.h
+  xxxxxx - Deprecate av_free_packet(). Use av_packet_unref() as replacement,
+           it resets the packet in a more consistent way.
+  xxxxxx - Deprecate av_dup_packet(), it is a no-op for most cases.
+           Use av_packet_ref() to make a non-refcounted AVPacket refcounted.
+  xxxxxx - Add av_packet_alloc(), av_packet_clone(), av_packet_free().
+           They match the AVFrame functions with the same name.
+
+2015-10-27 - xxxxxxx - lavu 55.5.100 - cpu.h
+  Add AV_CPU_FLAG_AESNI.
+
+2015-10-22 - xxxxxxx - lavc 57.9.100 / lavc 57.5.0 - avcodec.h
+  Add data and linesize array to AVSubtitleRect, to be used instead of
+  the ones from the embedded AVPicture.
+
+2015-10-22 - xxxxxxx - lavc 57.8.100 / lavc 57.0.0 - qsv.h
+  Add an API for allocating opaque surfaces.
+
+2015-10-15 - xxxxxxx - lavf 57.4.100
+  Remove the latm demuxer that was a duplicate of the loas demuxer.
+
+2015-10-14 - xxxxxxx - lavu 55.4.100 / lavu 55.2.0 - dict.h
+  Change return type of av_dict_copy() from void to int, so that a proper
+  error code can be reported.
+
+2015-09-29 - b01891a / 948f3c1 - lavc 57.3.100 / lavc 57.2.0 - avcodec.h
+  Change type of AVPacket.duration from int to int64_t.
+
+2015-09-17 - 7c46f24 / e3d4784 - lavc 57.3.100 / lavc 57.2.0 - d3d11va.h
+  Add av_d3d11va_alloc_context(). This function must from now on be used for
+  allocating AVD3D11VAContext.
+
+2015-09-15 - lavf 57.2.100 - avformat.h
+  probesize and max_analyze_duration switched to 64bit, both
+  are only accessible through AVOptions
+
+2015-09-15 - lavf 57.1.100 - avformat.h
+  bit_rate was changed to 64bit, make sure you update any
+  printf() or other type sensitive code
+
+2015-09-15 - lavc 57.2.100 - avcodec.h
+  bit_rate/rc_max_rate/rc_min_rate were changed to 64bit, make sure you update
+  any printf() or other type sensitive code
+
+2015-09-07 - lavu 55.0.100 / lavu 55.0.0
+  c734b34 / b8b5d82 - Change type of AVPixFmtDescriptor.flags from uint8_t to uint64_t.
+  f53569a / 6b3ef7f - Change type of AVComponentDescriptor fields from uint16_t to int
             and drop bit packing.
-  xxxxxxx - Add step, offset, and depth to AVComponentDescriptor to replace
+  151aa2e / 2268db2 - Add step, offset, and depth to AVComponentDescriptor to replace
             the deprecated step_minus1, offset_plus1, and depth_minus1.
 
 -------- 8< --------- FFmpeg 2.8 was cut here -------- 8< ---------
@@ -1032,9 +1076,6 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
 
 2012-11-11 - 03b0787 / 5980f5d - lavu 52.6.100 / 52.2.0 - audioconvert.h
   Rename audioconvert.h to channel_layout.h. audioconvert.h is now deprecated.
-
-2012-11-05 - 7d26be6 / dfde8a3 - lavu 52.5.100 / 52.1.0 - intmath.h
-  Add av_ctz() for trailing zero bit count
 
 2012-10-21 - e3a91c5 / a893655 - lavu 51.77.100 / 51.45.0 - error.h
   Add AVERROR_EXPERIMENTAL

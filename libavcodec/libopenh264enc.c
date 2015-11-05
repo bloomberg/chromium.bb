@@ -37,6 +37,9 @@ typedef struct SVCContext {
     int slice_mode;
     int loopfilter;
     char *profile;
+    int max_nal_size;
+    int skip_frames;
+    int skipped;
 } SVCContext;
 
 #define OPENH264_VER_AT_LEAST(maj, min) \
@@ -50,8 +53,11 @@ static const AVOption options[] = {
         { "fixed", "a fixed number of slices", 0, AV_OPT_TYPE_CONST, { .i64 = SM_FIXEDSLCNUM_SLICE }, 0, 0, VE, "slice_mode" },
         { "rowmb", "one slice per row of macroblocks", 0, AV_OPT_TYPE_CONST, { .i64 = SM_ROWMB_SLICE }, 0, 0, VE, "slice_mode" },
         { "auto", "automatic number of slices according to number of threads", 0, AV_OPT_TYPE_CONST, { .i64 = SM_AUTO_SLICE }, 0, 0, VE, "slice_mode" },
+        { "dyn", "Dynamic slicing", 0, AV_OPT_TYPE_CONST, { .i64 = SM_DYN_SLICE }, 0, 0, VE, "slice_mode" },
     { "loopfilter", "enable loop filter", OFFSET(loopfilter), AV_OPT_TYPE_INT, { .i64 = 1 }, 0, 1, VE },
-    { "profile", "set profile restrictions", OFFSET(profile), AV_OPT_TYPE_STRING, { 0 }, 0, 0, VE },
+    { "profile", "set profile restrictions", OFFSET(profile), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, VE },
+    { "max_nal_size", "Set maximum NAL size in bytes", OFFSET(max_nal_size), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, VE },
+    { "allow_skip_frames", "Allow skipping frames to hit the target bitrate", OFFSET(skip_frames), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
     { NULL }
 };
 
@@ -59,29 +65,12 @@ static const AVClass class = {
     "libopenh264enc", av_default_item_name, options, LIBAVUTIL_VERSION_INT
 };
 
-// Convert ffmpeg log level to equivalent libopenh264 log level.  Given the
-// conversions below, you must set the ffmpeg log level to something greater
-// than AV_LOG_DEBUG if you want to see WELS_LOG_DETAIL messages.
-static int ffmpeg_to_libopenh264_log_level  (
-    int ffmpeg_log_level
-    )
-{
-    if      (ffmpeg_log_level >  AV_LOG_DEBUG)   return WELS_LOG_DETAIL;
-    else if (ffmpeg_log_level >= AV_LOG_DEBUG)   return WELS_LOG_DEBUG;
-    else if (ffmpeg_log_level >= AV_LOG_INFO)    return WELS_LOG_INFO;
-    else if (ffmpeg_log_level >= AV_LOG_WARNING) return WELS_LOG_WARNING;
-    else if (ffmpeg_log_level >= AV_LOG_ERROR)   return WELS_LOG_ERROR;
-    else                                         return WELS_LOG_QUIET;
-}
-
 // Convert libopenh264 log level to equivalent ffmpeg log level.
-static int libopenh264_to_ffmpeg_log_level  (
-    int libopenh264_log_level
-    )
+static int libopenh264_to_ffmpeg_log_level(int libopenh264_log_level)
 {
     if      (libopenh264_log_level >= WELS_LOG_DETAIL)  return AV_LOG_TRACE;
     else if (libopenh264_log_level >= WELS_LOG_DEBUG)   return AV_LOG_DEBUG;
-    else if (libopenh264_log_level >= WELS_LOG_INFO)    return AV_LOG_INFO;
+    else if (libopenh264_log_level >= WELS_LOG_INFO)    return AV_LOG_VERBOSE;
     else if (libopenh264_log_level >= WELS_LOG_WARNING) return AV_LOG_WARNING;
     else if (libopenh264_log_level >= WELS_LOG_ERROR)   return AV_LOG_ERROR;
     else                                                return AV_LOG_QUIET;
@@ -93,20 +82,12 @@ static int libopenh264_to_ffmpeg_log_level  (
 //
 //        typedef void (*WelsTraceCallback) (void* ctx, int level, const char* string);
 
-static void libopenh264_trace_callback  (
-    void *          ctx,
-    int             level,
-    char const *    msg
-    )
+static void libopenh264_trace_callback(void *ctx, int level, char const *msg)
 {
     // The message will be logged only if the requested EQUIVALENT ffmpeg log level is
-    // less than or equal to the current ffmpeg log level.  Note, however, that before
-    // this function is called, welsCodecTrace::CodecTrace() will have already discarded
-    // the message (and this function will not be called) if the requested libopenh264
-    // log level "level" is greater than the current libopenh264 log level.
+    // less than or equal to the current ffmpeg log level.
     int equiv_ffmpeg_log_level = libopenh264_to_ffmpeg_log_level(level);
-    if (equiv_ffmpeg_log_level <= av_log_get_level())
-        av_log(ctx, equiv_ffmpeg_log_level, "%s\n", msg);
+    av_log(ctx, equiv_ffmpeg_log_level, "%s\n", msg);
 }
 
 static av_cold int svc_encode_close(AVCodecContext *avctx)
@@ -115,6 +96,8 @@ static av_cold int svc_encode_close(AVCodecContext *avctx)
 
     if (s->encoder)
         WelsDestroySVCEncoder(s->encoder);
+    if (s->skipped > 0)
+        av_log(avctx, AV_LOG_WARNING, "%d frames skipped\n", s->skipped);
     return 0;
 }
 
@@ -123,7 +106,7 @@ static av_cold int svc_encode_init(AVCodecContext *avctx)
     SVCContext *s = avctx->priv_data;
     SEncParamExt param = { 0 };
     int err = AVERROR_UNKNOWN;
-    int equiv_libopenh264_log_level;
+    int log_level;
     WelsTraceCallback callback_function;
 
     // Mingw GCC < 4.7 on x86_32 uses an incorrect/buggy ABI for the WelsGetCodecVersion
@@ -142,27 +125,16 @@ static av_cold int svc_encode_init(AVCodecContext *avctx)
         return AVERROR_UNKNOWN;
     }
 
-    // Set libopenh264 message logging level for this instance of the encoder using
-    // the current ffmpeg log level converted to the equivalent libopenh264 level.
-    //
-    // The client should have the ffmpeg level set to the desired value before creating
-    // the libopenh264 encoder.  Once the encoder has been created, the libopenh264
-    // log level is fixed for that encoder.  Changing the ffmpeg log level to a LOWER
-    // value, in the expectation that higher level libopenh264 messages will no longer
-    // be logged, WILL have the expected effect.  However, changing the ffmpeg log level
-    // to a HIGHER value, in the expectation that higher level libopenh264 messages will
-    // now be logged, WILL NOT have the expected effect.  This is because the higher
-    // level messages will be discarded by the libopenh264 logging system before our
-    // message logging callback function can be invoked.
-    equiv_libopenh264_log_level = ffmpeg_to_libopenh264_log_level(av_log_get_level());
-    (*s->encoder)->SetOption(s->encoder,ENCODER_OPTION_TRACE_LEVEL,&equiv_libopenh264_log_level);
+    // Pass all libopenh264 messages to our callback, to allow ourselves to filter them.
+    log_level = WELS_LOG_DETAIL;
+    (*s->encoder)->SetOption(s->encoder, ENCODER_OPTION_TRACE_LEVEL, &log_level);
 
     // Set the logging callback function to one that uses av_log() (see implementation above).
     callback_function = (WelsTraceCallback) libopenh264_trace_callback;
-    (*s->encoder)->SetOption(s->encoder,ENCODER_OPTION_TRACE_CALLBACK,(void *)&callback_function);
+    (*s->encoder)->SetOption(s->encoder, ENCODER_OPTION_TRACE_CALLBACK, (void *)&callback_function);
 
     // Set the AVCodecContext as the libopenh264 callback context so that it can be passed to av_log().
-    (*s->encoder)->SetOption(s->encoder,ENCODER_OPTION_TRACE_CALLBACK_CONTEXT,(void *)&avctx);
+    (*s->encoder)->SetOption(s->encoder, ENCODER_OPTION_TRACE_CALLBACK_CONTEXT, (void *)&avctx);
 
     (*s->encoder)->GetDefaultParams(s->encoder, &param);
 
@@ -177,7 +149,7 @@ static av_cold int svc_encode_init(AVCodecContext *avctx)
     param.bEnableDenoise             = 0;
     param.bEnableBackgroundDetection = 1;
     param.bEnableAdaptiveQuant       = 1;
-    param.bEnableFrameSkip           = 0;
+    param.bEnableFrameSkip           = s->skip_frames;
     param.bEnableLongTermReference   = 0;
     param.iLtrMarkPeriod             = 30;
     param.uiIntraPeriod              = avctx->gop_size;
@@ -201,10 +173,35 @@ static av_cold int svc_encode_init(AVCodecContext *avctx)
     param.sSpatialLayers[0].iSpatialBitrate     = param.iTargetBitrate;
     param.sSpatialLayers[0].iMaxSpatialBitrate  = param.iMaxBitrate;
 
+    if ((avctx->slices > 1) && (s->max_nal_size)){
+        av_log(avctx,AV_LOG_ERROR,"Invalid combination -slices %d and -max_nal_size %d.\n",avctx->slices,s->max_nal_size);
+        goto fail;
+    }
+
     if (avctx->slices > 1)
         s->slice_mode = SM_FIXEDSLCNUM_SLICE;
+
+    if (s->max_nal_size)
+        s->slice_mode = SM_DYN_SLICE;
+
     param.sSpatialLayers[0].sSliceCfg.uiSliceMode               = s->slice_mode;
     param.sSpatialLayers[0].sSliceCfg.sSliceArgument.uiSliceNum = avctx->slices;
+
+    if (s->slice_mode == SM_DYN_SLICE) {
+        if (s->max_nal_size){
+            param.uiMaxNalSize = s->max_nal_size;
+            param.sSpatialLayers[0].sSliceCfg.sSliceArgument.uiSliceSizeConstraint = s->max_nal_size;
+        } else {
+            if (avctx->rtp_payload_size) {
+                av_log(avctx,AV_LOG_DEBUG,"Using RTP Payload size for uiMaxNalSize");
+                param.uiMaxNalSize = avctx->rtp_payload_size;
+                param.sSpatialLayers[0].sSliceCfg.sSliceArgument.uiSliceSizeConstraint = avctx->rtp_payload_size;
+            } else {
+                av_log(avctx,AV_LOG_ERROR,"Invalid -max_nal_size, specify a valid max_nal_size to use -slice_mode dyn\n");
+                goto fail;
+            }
+        }
+    }
 
     if ((*s->encoder)->InitializeExt(s->encoder, &param) != cmResultSuccess) {
         av_log(avctx, AV_LOG_ERROR, "Initialize failed\n");
@@ -258,6 +255,7 @@ static int svc_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         return AVERROR_UNKNOWN;
     }
     if (fbi.eFrameType == videoFrameTypeSkip) {
+        s->skipped++;
         av_log(avctx, AV_LOG_DEBUG, "frame skipped\n");
         return 0;
     }

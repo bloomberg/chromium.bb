@@ -36,12 +36,36 @@ void av_init_packet(AVPacket *pkt)
     pkt->dts                  = AV_NOPTS_VALUE;
     pkt->pos                  = -1;
     pkt->duration             = 0;
+#if FF_API_CONVERGENCE_DURATION
+FF_DISABLE_DEPRECATION_WARNINGS
     pkt->convergence_duration = 0;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     pkt->flags                = 0;
     pkt->stream_index         = 0;
     pkt->buf                  = NULL;
     pkt->side_data            = NULL;
     pkt->side_data_elems      = 0;
+}
+
+AVPacket *av_packet_alloc(void)
+{
+    AVPacket *pkt = av_mallocz(sizeof(AVPacket));
+    if (!pkt)
+        return pkt;
+
+    av_packet_unref(pkt);
+
+    return pkt;
+}
+
+void av_packet_free(AVPacket **pkt)
+{
+    if (!pkt || !*pkt)
+        return;
+
+    av_packet_unref(*pkt);
+    av_freep(pkt);
 }
 
 static int packet_alloc(AVBufferRef **buf, int size)
@@ -126,6 +150,8 @@ int av_packet_from_data(AVPacket *pkt, uint8_t *data, int size)
     return 0;
 }
 
+#if FF_API_AVPACKET_OLD_API
+FF_DISABLE_DEPRECATION_WARNINGS
 #define ALLOC_MALLOC(data, size) data = av_malloc(size)
 #define ALLOC_BUF(data, size)                \
 do {                                         \
@@ -175,7 +201,7 @@ static int copy_packet_data(AVPacket *pkt, const AVPacket *src, int dup)
     return 0;
 
 failed_alloc:
-    av_free_packet(pkt);
+    av_packet_unref(pkt);
     return AVERROR(ENOMEM);
 }
 
@@ -200,9 +226,11 @@ int av_copy_packet_side_data(AVPacket *pkt, const AVPacket *src)
     return 0;
 
 failed_alloc:
-    av_free_packet(pkt);
+    av_packet_unref(pkt);
     return AVERROR(ENOMEM);
 }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
 int av_dup_packet(AVPacket *pkt)
 {
@@ -230,6 +258,8 @@ void av_packet_free_side_data(AVPacket *pkt)
     pkt->side_data_elems = 0;
 }
 
+#if FF_API_AVPACKET_OLD_API
+FF_DISABLE_DEPRECATION_WARNINGS
 void av_free_packet(AVPacket *pkt)
 {
     if (pkt) {
@@ -241,6 +271,8 @@ void av_free_packet(AVPacket *pkt)
         av_packet_free_side_data(pkt);
     }
 }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
 uint8_t *av_packet_new_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
                                  int size)
@@ -334,7 +366,7 @@ int av_packet_merge_side_data(AVPacket *pkt){
         bytestream_put_be64(&p, FF_MERGE_MARKER);
         av_assert0(p-pkt->data == pkt->size);
         memset(p, 0, AV_INPUT_BUFFER_PADDING_SIZE);
-        av_free_packet(&old);
+        av_packet_unref(&old);
         pkt->side_data_elems = 0;
         pkt->side_data = NULL;
         return 1;
@@ -468,7 +500,11 @@ int av_packet_copy_props(AVPacket *dst, const AVPacket *src)
     dst->dts                  = src->dts;
     dst->pos                  = src->pos;
     dst->duration             = src->duration;
+#if FF_API_CONVERGENCE_DURATION
+FF_DISABLE_DEPRECATION_WARNINGS
     dst->convergence_duration = src->convergence_duration;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     dst->flags                = src->flags;
     dst->stream_index         = src->stream_index;
 
@@ -526,6 +562,19 @@ fail:
     return ret;
 }
 
+AVPacket *av_packet_clone(AVPacket *src)
+{
+    AVPacket *ret = av_packet_alloc();
+
+    if (!ret)
+        return ret;
+
+    if (av_packet_ref(ret, src))
+        av_packet_free(&ret);
+
+    return ret;
+}
+
 void av_packet_move_ref(AVPacket *dst, AVPacket *src)
 {
     *dst = *src;
@@ -540,8 +589,12 @@ void av_packet_rescale_ts(AVPacket *pkt, AVRational src_tb, AVRational dst_tb)
         pkt->dts = av_rescale_q(pkt->dts, src_tb, dst_tb);
     if (pkt->duration > 0)
         pkt->duration = av_rescale_q(pkt->duration, src_tb, dst_tb);
+#if FF_API_CONVERGENCE_DURATION
+FF_DISABLE_DEPRECATION_WARNINGS
     if (pkt->convergence_duration > 0)
         pkt->convergence_duration = av_rescale_q(pkt->convergence_duration, src_tb, dst_tb);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 }
 
 int ff_side_data_set_encoder_stats(AVPacket *pkt, int quality, int64_t *error, int error_count, int pict_type)

@@ -47,8 +47,11 @@ static inline av_flatten int get_symbol_inline(RangeCoder *c, uint8_t *state,
     else {
         int i, e, a;
         e = 0;
-        while (get_rac(c, state + 1 + FFMIN(e, 9))) // 1..10
+        while (get_rac(c, state + 1 + FFMIN(e, 9))) { // 1..10
             e++;
+            if (e > 31)
+                return AVERROR_INVALIDDATA;
+        }
 
         a = 1;
         for (i = e - 1; i >= 0; i--)
@@ -302,7 +305,7 @@ static int decode_slice_header(FFV1Context *f, FFV1Context *fs)
     for (i = 0; i < f->plane_count; i++) {
         PlaneContext * const p = &fs->plane[i];
         int idx = get_symbol(c, state, 0);
-        if (idx > (unsigned)f->quant_table_count) {
+        if (idx >= (unsigned)f->quant_table_count) {
             av_log(f->avctx, AV_LOG_ERROR, "quant_table_index out of range\n");
             return -1;
         }
@@ -405,6 +408,7 @@ static int decode_slice(AVCodecContext *c, void *arg)
         if (ff_ffv1_init_slice_state(f, fs) < 0)
             return AVERROR(ENOMEM);
         if (decode_slice_header(f, fs) < 0) {
+            fs->slice_x = fs->slice_y = fs->slice_height = fs->slice_width = 0;
             fs->slice_damaged = 1;
             return AVERROR_INVALIDDATA;
         }
@@ -499,7 +503,10 @@ static int read_quant_tables(RangeCoder *c,
     int context_count = 1;
 
     for (i = 0; i < 5; i++) {
-        context_count *= read_quant_table(c, quant_table[i], context_count);
+        int ret = read_quant_table(c, quant_table[i], context_count);
+        if (ret < 0)
+            return ret;
+        context_count *= ret;
         if (context_count > 32768U) {
             return AVERROR_INVALIDDATA;
         }
@@ -562,8 +569,10 @@ static int read_extra_header(FFV1Context *f)
     }
 
     f->quant_table_count = get_symbol(c, state, 0);
-    if (f->quant_table_count > (unsigned)MAX_QUANT_TABLES)
+    if (f->quant_table_count > (unsigned)MAX_QUANT_TABLES || !f->quant_table_count) {
+        av_log(f->avctx, AV_LOG_ERROR, "quant table count %d is invalid\n", f->quant_table_count);
         return AVERROR_INVALIDDATA;
+    }
 
     for (i = 0; i < f->quant_table_count; i++) {
         f->context_count[i] = read_quant_tables(c, f->quant_tables[i]);
@@ -775,6 +784,7 @@ static int read_header(FFV1Context *f)
             av_log(f->avctx, AV_LOG_ERROR, "read_quant_table error\n");
             return AVERROR_INVALIDDATA;
         }
+        f->slice_count = f->max_slice_count;
     } else if (f->version < 3) {
         f->slice_count = get_symbol(c, state, 0);
     } else {
@@ -789,8 +799,8 @@ static int read_header(FFV1Context *f)
             p -= size + trailer;
         }
     }
-    if (f->slice_count > (unsigned)MAX_SLICES || f->slice_count <= 0) {
-        av_log(f->avctx, AV_LOG_ERROR, "slice count %d is invalid\n", f->slice_count);
+    if (f->slice_count > (unsigned)MAX_SLICES || f->slice_count <= 0 || f->slice_count > f->max_slice_count) {
+        av_log(f->avctx, AV_LOG_ERROR, "slice count %d is invalid (max=%d)\n", f->slice_count, f->max_slice_count);
         return AVERROR_INVALIDDATA;
     }
 
@@ -932,6 +942,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
         else                     v = buf_p - c->bytestream_start;
         if (buf_p - c->bytestream_start < v) {
             av_log(avctx, AV_LOG_ERROR, "Slice pointer chain broken\n");
+            ff_thread_report_progress(&f->picture, INT_MAX, 0);
             return AVERROR_INVALIDDATA;
         }
         buf_p -= v;
@@ -975,16 +986,18 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
         FFV1Context *fs = f->slice_context[i];
         int j;
         if (fs->slice_damaged && f->last_picture.f->data[0]) {
+            const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(avctx->pix_fmt);
             const uint8_t *src[4];
             uint8_t *dst[4];
             ff_thread_await_progress(&f->last_picture, INT_MAX, 0);
             for (j = 0; j < 4; j++) {
+                int pixshift = desc->comp[j].depth > 8;
                 int sh = (j == 1 || j == 2) ? f->chroma_h_shift : 0;
                 int sv = (j == 1 || j == 2) ? f->chroma_v_shift : 0;
                 dst[j] = p->data[j] + p->linesize[j] *
-                         (fs->slice_y >> sv) + (fs->slice_x >> sh);
+                         (fs->slice_y >> sv) + ((fs->slice_x >> sh) << pixshift);
                 src[j] = f->last_picture.f->data[j] + f->last_picture.f->linesize[j] *
-                         (fs->slice_y >> sv) + (fs->slice_x >> sh);
+                         (fs->slice_y >> sv) + ((fs->slice_x >> sh) << pixshift);
             }
             av_image_copy(dst, p->linesize, src,
                           f->last_picture.f->linesize,
@@ -1008,6 +1021,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
     return buf_size;
 }
 
+#if HAVE_THREADS
 static int init_thread_copy(AVCodecContext *avctx)
 {
     FFV1Context *f = avctx->priv_data;
@@ -1016,6 +1030,7 @@ static int init_thread_copy(AVCodecContext *avctx)
     f->picture.f      = NULL;
     f->last_picture.f = NULL;
     f->sample_buffer  = NULL;
+    f->max_slice_count = 0;
     f->slice_count = 0;
 
     for (i = 0; i < f->quant_table_count; i++) {
@@ -1032,6 +1047,7 @@ static int init_thread_copy(AVCodecContext *avctx)
 
     return 0;
 }
+#endif
 
 static void copy_fields(FFV1Context *fsdst, FFV1Context *fssrc, FFV1Context *fsrc)
 {
@@ -1061,6 +1077,7 @@ static void copy_fields(FFV1Context *fsdst, FFV1Context *fssrc, FFV1Context *fsr
     }
 }
 
+#if HAVE_THREADS
 static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
 {
     FFV1Context *fsrc = src->priv_data;
@@ -1091,7 +1108,7 @@ static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
         av_assert0(!fdst->sample_buffer);
     }
 
-    av_assert1(fdst->slice_count == fsrc->slice_count);
+    av_assert1(fdst->max_slice_count == fsrc->max_slice_count);
 
 
     ff_thread_release_buffer(dst, &fdst->picture);
@@ -1104,6 +1121,7 @@ static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
 
     return 0;
 }
+#endif
 
 AVCodec ff_ffv1_decoder = {
     .name           = "ffv1",
@@ -1118,4 +1136,5 @@ AVCodec ff_ffv1_decoder = {
     .update_thread_context = ONLY_IF_THREADS_ENABLED(update_thread_context),
     .capabilities   = AV_CODEC_CAP_DR1 /*| AV_CODEC_CAP_DRAW_HORIZ_BAND*/ |
                       AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_SLICE_THREADS,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP
 };

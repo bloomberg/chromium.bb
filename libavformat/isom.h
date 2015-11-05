@@ -103,6 +103,7 @@ typedef struct MOVSbgp {
 typedef struct MOVFragmentIndexItem {
     int64_t moof_offset;
     int64_t time;
+    int headers_read;
 } MOVFragmentIndexItem;
 
 typedef struct MOVFragmentIndex {
@@ -176,6 +177,9 @@ typedef struct MOVContext {
     int64_t duration;     ///< duration of the longest track
     int found_moov;       ///< 'moov' atom has been found
     int found_mdat;       ///< 'mdat' atom has been found
+    int found_hdlr_mdta;  ///< 'hdlr' atom with type 'mdta' has been found
+    char **meta_keys;
+    unsigned meta_keys_count;
     DVDemuxContext *dv_demux;
     AVFormatContext *dv_fctx;
     int isom;             ///< 1 if file is ISO Media (mp4/3gp)
@@ -197,6 +201,7 @@ typedef struct MOVContext {
     int has_looked_for_mfra;
     MOVFragmentIndex** fragment_index_data;
     unsigned fragment_index_count;
+    int fragment_index_complete;
     int atom_depth;
     unsigned int aax_mode;  ///< 'aax' file has been detected
     uint8_t file_key[20];

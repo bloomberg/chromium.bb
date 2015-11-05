@@ -223,6 +223,7 @@ library:
 
 @multitable @columnfractions .4 .1 .1 .4
 @item Name @tab Encoding @tab Decoding @tab Comments
+@item 3dostr                    @tab   @tab X
 @item 4xm                       @tab   @tab X
     @tab 4X Technologies format, used in some games.
 @item 8088flex TMV              @tab   @tab X
@@ -241,10 +242,14 @@ library:
     @tab Multimedia format used in game Heart Of Darkness.
 @item Apple HTTP Live Streaming @tab   @tab X
 @item Artworx Data Format       @tab   @tab X
+@item Interplay ACM             @tab   @tab X
+    @tab Audio only format used in some Interplay games.
 @item ADP                       @tab   @tab X
     @tab Audio format used on the Nintendo Gamecube.
 @item AFC                       @tab   @tab X
     @tab Audio format used on the Nintendo Gamecube.
+@item ADS/SS2                   @tab   @tab X
+    @tab Audio format used on the PS2.
 @item APNG                      @tab X @tab X
 @item ASF                       @tab X @tab X
 @item AST                       @tab X @tab X
@@ -296,6 +301,7 @@ library:
     @tab Audio format used in some games by CRYO Interactive Entertainment.
 @item D-Cinema audio            @tab X @tab X
 @item Deluxe Paint Animation    @tab   @tab X
+@item DCSTR                     @tab   @tab X
 @item DFA                       @tab   @tab X
     @tab This format is used in Chronomaster game
 @item DirectDraw Surface        @tab   @tab X
@@ -322,6 +328,8 @@ library:
 @item G.723.1                   @tab X @tab X
 @item G.729 BIT                 @tab X @tab X
 @item G.729 raw                 @tab   @tab X
+@item GENH                      @tab   @tab X
+    @tab Audio format for various games.
 @item GIF Animation             @tab X @tab X
 @item GXF                       @tab X @tab X
     @tab General eXchange Format SMPTE 360M, used by Thomson Grass Valley
@@ -380,6 +388,8 @@ library:
     @tab also known as DVB Transport Stream
 @item MPEG-4                    @tab X @tab X
     @tab MPEG-4 is a variant of QuickTime.
+@item MSF                       @tab   @tab X
+    @tab Audio format used on the PS3.
 @item Mirillis FIC video        @tab   @tab X
     @tab No cursor rendering.
 @item MIME multipart JPEG       @tab X @tab
@@ -496,6 +506,8 @@ library:
 @item SoX native format         @tab X @tab X
 @item SUN AU format             @tab X @tab X
 @item SUP raw PGS subtitles     @tab   @tab X
+@item SVAG                      @tab   @tab X
+    @tab Audio format used in Konami PS2 games.
 @item TDSC                      @tab   @tab X
 @item Text files                @tab   @tab X
 @item THP                       @tab   @tab X
@@ -503,6 +515,8 @@ library:
 @item Tiertex Limited SEQ       @tab   @tab X
     @tab Tiertex .seq files used in the DOS CD-ROM version of the game Flashback.
 @item True Audio                @tab   @tab X
+@item VAG                       @tab   @tab X
+    @tab Audio format used in many Sony PS2 games.
 @item VC-1 test bitstream       @tab X @tab X
 @item Vidvox Hap                @tab X @tab X
 @item Vivo                      @tab   @tab X
@@ -516,8 +530,11 @@ library:
     @tab Multimedia format used in Westwood Studios games.
 @item Westwood Studios VQA      @tab   @tab X
     @tab Multimedia format used in Westwood Studios games.
+@item WVE                       @tab   @tab X
 @item XMV                       @tab   @tab X
     @tab Microsoft video container used in Xbox games.
+@item XVAG                      @tab   @tab X
+    @tab Audio format used on the PS3.
 @item xWMA                      @tab   @tab X
     @tab Microsoft audio container used by XAudio 2.
 @item eXtended BINary text (XBIN) @tab @tab X
@@ -800,6 +817,7 @@ following image formats are supported:
     @tab Texture dictionaries used by the Renderware Engine.
 @item RL2 video              @tab     @tab  X
     @tab used in some games by Entertainment Software Partners
+@item Screenpresso           @tab     @tab  X
 @item Sierra VMD video       @tab     @tab  X
     @tab Used in Sierra VMD files.
 @item Silicon Graphics Motion Video Compressor 1 (MVC1)  @tab     @tab  X
@@ -872,6 +890,7 @@ following image formats are supported:
     @tab encoding supported through external library libfaac and libvo-aacenc
 @item AC-3                   @tab IX  @tab  IX
 @item ADPCM 4X Movie         @tab     @tab  X
+@item APDCM Yamaha AICA      @tab     @tab  X
 @item ADPCM CDROM XA         @tab     @tab  X
 @item ADPCM Creative Technology @tab     @tab  X
     @tab 16 -> 4, 8 -> 4, 8 -> 3, 8 -> 2
@@ -907,6 +926,7 @@ following image formats are supported:
 @item ADPCM Nintendo Gamecube AFC  @tab     @tab  X
 @item ADPCM Nintendo Gamecube DTK  @tab     @tab  X
 @item ADPCM Nintendo THP  @tab     @tab  X
+@item APDCM Playstation      @tab     @tab  X
 @item ADPCM QT IMA           @tab  X  @tab  X
 @item ADPCM SEGA CRI ADX     @tab  X  @tab  X
     @tab Used in Sega Dreamcast games.
@@ -945,6 +965,8 @@ following image formats are supported:
     @tab Used in Quake III, Jedi Knight 2 and other computer games.
 @item DPCM Interplay         @tab     @tab  X
     @tab Used in various Interplay computer games.
+@item DPCM Squareroot-Delta-Exact  @tab  @tab  X
+    @tab Used in various games.
 @item DPCM Sierra Online     @tab     @tab  X
     @tab Used in Sierra Online game audio files.
 @item DPCM Sol               @tab     @tab  X
@@ -969,6 +991,7 @@ following image formats are supported:
 @item iLBC (Internet Low Bitrate Codec) @tab  E  @tab  E
     @tab encoding and decoding supported through external library libilbc
 @item IMC (Intel Music Coder)  @tab     @tab  X
+@item Interplay ACM            @tab     @tab  X
 @item MACE (Macintosh Audio Compression/Expansion) 3:1  @tab     @tab  X
 @item MACE (Macintosh Audio Compression/Expansion) 6:1  @tab     @tab  X
 @item MLP (Meridian Lossless Packing)  @tab     @tab  X
@@ -984,8 +1007,8 @@ following image formats are supported:
 @item Musepack SV8           @tab     @tab  X
 @item Nellymoser Asao        @tab  X  @tab  X
 @item On2 AVC (Audio for Video Codec) @tab     @tab  X
-@item Opus                   @tab  E  @tab  E
-    @tab supported through external library libopus
+@item Opus                   @tab  E  @tab  X
+    @tab encoding supported through external library libopus
 @item PCM A-law              @tab  X  @tab  X
 @item PCM mu-law             @tab  X  @tab  X
 @item PCM signed 8-bit planar  @tab  X  @tab  X

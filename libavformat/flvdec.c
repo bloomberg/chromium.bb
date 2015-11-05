@@ -39,6 +39,8 @@
 
 #define VALIDATE_INDEX_TS_THRESH 2500
 
+#define RESYNC_BUFFER_SIZE (1<<20)
+
 typedef struct FLVContext {
     const AVClass *class; ///< Class for private options.
     int trust_metadata;   ///< configure streams according onMetaData
@@ -54,6 +56,10 @@ typedef struct FLVContext {
     int validate_next;
     int validate_count;
     int searched_for_end;
+
+    uint8_t resync_buffer[2*RESYNC_BUFFER_SIZE];
+
+    int broken_sizes;
 } FLVContext;
 
 static int probe(AVProbeData *p, int live)
@@ -512,6 +518,17 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
                     }
                 }
             }
+            if (amf_type == AMF_DATA_TYPE_STRING) {
+                if (!strcmp(key, "encoder")) {
+                    int version = -1;
+                    if (1 == sscanf(str_val, "Open Broadcaster Software v0.%d", &version)) {
+                        if (version > 0 && version <= 655)
+                            flv->broken_sizes = 1;
+                    }
+                } else if (!strcmp(key, "metadatacreator") && !strcmp(str_val, "MEGA")) {
+                    flv->broken_sizes = 1;
+                }
+            }
         }
 
         if (amf_type == AMF_DATA_TYPE_OBJECT && s->nb_streams == 1 &&
@@ -790,6 +807,36 @@ skip:
     return ret;
 }
 
+static int resync(AVFormatContext *s)
+{
+    FLVContext *flv = s->priv_data;
+    int64_t i;
+    int64_t pos = avio_tell(s->pb);
+
+    for (i=0; !avio_feof(s->pb); i++) {
+        int j  = i & (RESYNC_BUFFER_SIZE-1);
+        int j1 = j + RESYNC_BUFFER_SIZE;
+        flv->resync_buffer[j ] =
+        flv->resync_buffer[j1] = avio_r8(s->pb);
+
+        if (i > 22) {
+            unsigned lsize2 = AV_RB32(flv->resync_buffer + j1 - 4);
+            if (lsize2 >= 11 && lsize2 + 8LL < FFMIN(i, RESYNC_BUFFER_SIZE)) {
+                unsigned  size2 = AV_RB24(flv->resync_buffer + j1 - lsize2 + 1 - 4);
+                unsigned lsize1 = AV_RB32(flv->resync_buffer + j1 - lsize2 - 8);
+                if (lsize1 >= 11 && lsize1 + 8LL + lsize2 < FFMIN(i, RESYNC_BUFFER_SIZE)) {
+                    unsigned  size1 = AV_RB24(flv->resync_buffer + j1 - lsize1 + 1 - lsize2 - 8);
+                    if (size1 == lsize1 - 11 && size2  == lsize2 - 11) {
+                        avio_seek(s->pb, pos + i - lsize1 - lsize2 - 8, SEEK_SET);
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return AVERROR_EOF;
+}
+
 static int flv_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     FLVContext *flv = s->priv_data;
@@ -802,11 +849,13 @@ static int flv_read_packet(AVFormatContext *s, AVPacket *pkt)
     int av_uninit(sample_rate);
     AVStream *st    = NULL;
     int last = -1;
+    int orig_size;
 
+retry:
     /* pkt size is repeated at end. skip it */
-    for (;; last = avio_rb32(s->pb)) {
         pos  = avio_tell(s->pb);
         type = (avio_r8(s->pb) & 0x1F);
+        orig_size =
         size = avio_rb24(s->pb);
         dts  = avio_rb24(s->pb);
         dts |= avio_r8(s->pb) << 24;
@@ -832,8 +881,10 @@ static int flv_read_packet(AVFormatContext *s, AVPacket *pkt)
             }
         }
 
-        if (size == 0)
-            continue;
+        if (size == 0) {
+            ret = AVERROR(EAGAIN);
+            goto leave;
+        }
 
         next = size + avio_tell(s->pb);
 
@@ -876,12 +927,15 @@ static int flv_read_packet(AVFormatContext *s, AVPacket *pkt)
                    type, size, flags);
 skip:
             avio_seek(s->pb, next, SEEK_SET);
-            continue;
+            ret = AVERROR(EAGAIN);
+            goto leave;
         }
 
         /* skip empty data packets */
-        if (!size)
-            continue;
+        if (!size) {
+            ret = AVERROR(EAGAIN);
+            goto leave;
+        }
 
         /* now find stream */
         for (i = 0; i < s->nb_streams; i++) {
@@ -901,7 +955,7 @@ skip:
         }
         if (i == s->nb_streams) {
             static const enum AVMediaType stream_types[] = {AVMEDIA_TYPE_VIDEO, AVMEDIA_TYPE_AUDIO, AVMEDIA_TYPE_SUBTITLE};
-            av_log(s, AV_LOG_WARNING, "Stream discovered after head already parsed\n");
+            av_log(s, AV_LOG_WARNING, "%s stream discovered after head already parsed\n", av_get_media_type_string(stream_types[stream_type]));
             st = create_stream(s, stream_types[stream_type]);
             if (!st)
                 return AVERROR(ENOMEM);
@@ -919,10 +973,9 @@ skip:
             || st->discard >= AVDISCARD_ALL
         ) {
             avio_seek(s->pb, next, SEEK_SET);
-            continue;
+            ret = AVERROR(EAGAIN);
+            goto leave;
         }
-        break;
-    }
 
     // if not streamed and no duration from metadata then seek to end to find
     // the duration from the timestamps
@@ -1083,7 +1136,18 @@ retry_duration:
         pkt->flags |= AV_PKT_FLAG_KEY;
 
 leave:
-    avio_skip(s->pb, 4);
+    last = avio_rb32(s->pb);
+    if (last != orig_size + 11 &&
+        (last != orig_size || !last) &&
+        !flv->broken_sizes) {
+        av_log(s, AV_LOG_ERROR, "Packet mismatch %d %d\n", last, orig_size + 11);
+        avio_seek(s->pb, pos + 1, SEEK_SET);
+        ret = resync(s);
+        av_packet_unref(pkt);
+        if (ret >= 0) {
+            goto retry;
+        }
+    }
     return ret;
 }
 

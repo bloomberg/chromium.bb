@@ -817,6 +817,8 @@ static int avi_read_header(AVFormatContext *s)
 
                     if (st->codec->codec_tag == MKTAG('V', 'S', 'S', 'H'))
                         st->need_parsing = AVSTREAM_PARSE_FULL;
+                    if (st->codec->codec_id == AV_CODEC_ID_RV40)
+                        st->need_parsing = AVSTREAM_PARSE_NONE;
 
                     if (st->codec->codec_tag == 0 && st->codec->height > 0 &&
                         st->codec->extradata_size < 1U << 30) {
@@ -1429,7 +1431,7 @@ resync:
             pkt->buf    = avbuf;
             pkt->flags |= AV_PKT_FLAG_KEY;
             if (size < 0)
-                av_free_packet(pkt);
+                av_packet_unref(pkt);
         } else if (st->codec->codec_type == AVMEDIA_TYPE_SUBTITLE &&
                    !st->codec->codec_tag && read_gab2_sub(s, st, pkt)) {
             ast->frame_offset++;
@@ -1494,7 +1496,7 @@ resync:
         }
 
         if (!avi->non_interleaved && pkt->pos >= 0 && ast->seek_pos > pkt->pos) {
-            av_free_packet(pkt);
+            av_packet_unref(pkt);
             goto resync;
         }
         ast->seek_pos= 0;
@@ -1526,8 +1528,9 @@ static int avi_read_idx1(AVFormatContext *s, int size)
     int nb_index_entries, i;
     AVStream *st;
     AVIStream *ast;
-    unsigned int index, tag, flags, pos, len, first_packet = 1;
-    unsigned last_pos = -1;
+    int64_t pos;
+    unsigned int index, tag, flags, len, first_packet = 1;
+    int64_t last_pos = -1;
     unsigned last_idx = -1;
     int64_t idx1_pos, first_packet_pos = 0, data_offset = 0;
     int anykey = 0;
@@ -1557,7 +1560,7 @@ static int avi_read_idx1(AVFormatContext *s, int size)
         flags = avio_rl32(pb);
         pos   = avio_rl32(pb);
         len   = avio_rl32(pb);
-        av_log(s, AV_LOG_TRACE, "%d: tag=0x%x flags=0x%x pos=0x%x len=%d/",
+        av_log(s, AV_LOG_TRACE, "%d: tag=0x%x flags=0x%x pos=0x%"PRIx64" len=%d/",
                 i, tag, flags, pos, len);
 
         index  = ((tag      & 0xff) - '0') * 10;
@@ -1568,7 +1571,8 @@ static int avi_read_idx1(AVFormatContext *s, int size)
         ast = st->priv_data;
 
         if (first_packet && first_packet_pos) {
-            data_offset  = first_packet_pos - pos;
+            if (avi->movi_list + 4 != pos || pos + 500 > first_packet_pos)
+                data_offset  = first_packet_pos - pos;
             first_packet = 0;
         }
         pos += data_offset;
@@ -1746,7 +1750,7 @@ static void seek_subtitle(AVStream *st, AVStream *st2, int64_t timestamp)
 {
     AVIStream *ast2 = st2->priv_data;
     int64_t ts2     = av_rescale_q(timestamp, st->time_base, st2->time_base);
-    av_free_packet(&ast2->sub_pkt);
+    av_packet_unref(&ast2->sub_pkt);
     if (avformat_seek_file(ast2->sub_ctx, 0, INT64_MIN, ts2, ts2, 0) >= 0 ||
         avformat_seek_file(ast2->sub_ctx, 0, ts2, ts2, INT64_MAX, 0) >= 0)
         ff_read_packet(ast2->sub_ctx, &ast2->sub_pkt);
@@ -1884,7 +1888,7 @@ static int avi_read_close(AVFormatContext *s)
                 avformat_close_input(&ast->sub_ctx);
             }
             av_freep(&ast->sub_buffer);
-            av_free_packet(&ast->sub_pkt);
+            av_packet_unref(&ast->sub_pkt);
         }
     }
 

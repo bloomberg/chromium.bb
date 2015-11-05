@@ -1125,7 +1125,7 @@ kilobits/s.
 
 @item vbr (@emph{vbr}, @emph{hard-cbr}, and @emph{cvbr})
 Set VBR mode. The FFmpeg @option{vbr} option has the following
-valid arguments, with the their @command{opusenc} equivalent options
+valid arguments, with the @command{opusenc} equivalent options
 in parentheses:
 
 @table @samp
@@ -1411,7 +1411,7 @@ can be selected with @code{-pred 1}.
 @table @option
 @item format
 Can be set to either @code{j2k} or @code{jp2} (the default) that
-allows to store non-rgb pix_fmts.
+makes it possible to store non-rgb pix_fmts.
 
 @end table
 
@@ -2069,6 +2069,10 @@ For example to specify libx264 encoding options with @command{ffmpeg}:
 ffmpeg -i foo.mpg -vcodec libx264 -x264opts keyint=123:min-keyint=20 -an out.mkv
 @end example
 
+@item a53cc @var{boolean}
+Import closed captions (which must be ATSC compatible format) into output.
+Only the mpeg2 and h264 decoders provide these. Default is 0 (off).
+
 @item x264-params (N.A.)
 Override the x264 configuration using a :-separated list of key=value
 parameters.
@@ -2396,9 +2400,6 @@ configuration. You need to explicitly configure the build with
 
 @item b
 Set target video bitrate in bit/s and enable rate control.
-
-@item threads
-Set number of encoding threads.
 
 @item kvazaar-params
 Set kvazaar parameters as a list of @var{name}=@var{value} pairs separated

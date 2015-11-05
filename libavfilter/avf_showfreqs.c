@@ -39,7 +39,7 @@ enum AmplitudeScale { AS_LINEAR, AS_SQRT, AS_CBRT, AS_LOG, NB_ASCALES };
 enum WindowFunc     { WFUNC_RECT, WFUNC_HANNING, WFUNC_HAMMING, WFUNC_BLACKMAN,
                       WFUNC_BARTLETT, WFUNC_WELCH, WFUNC_FLATTOP,
                       WFUNC_BHARRIS, WFUNC_BNUTTALL, WFUNC_SINE, WFUNC_NUTTALL,
-                      WFUNC_BHANN, NB_WFUNC };
+                      WFUNC_BHANN, WFUNC_LANCZOS, WFUNC_GAUSS, NB_WFUNC };
 
 typedef struct ShowFreqsContext {
     const AVClass *class;
@@ -110,6 +110,8 @@ static const AVOption showfreqs_options[] = {
         { "bhann",    "Bartlett-Hann",    0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BHANN},    0, 0, FLAGS, "win_func" },
         { "sine",     "Sine",             0, AV_OPT_TYPE_CONST, {.i64=WFUNC_SINE},     0, 0, FLAGS, "win_func" },
         { "nuttall",  "Nuttall",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_NUTTALL},  0, 0, FLAGS, "win_func" },
+        { "lanczos",  "Lanczos",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_LANCZOS},  0, 0, FLAGS, "win_func" },
+        { "gauss",    "Gauss",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_GAUSS},    0, 0, FLAGS, "win_func" },
     { "overlap",  "set window overlap", OFFSET(overlap), AV_OPT_TYPE_FLOAT, {.dbl=1.}, 0., 1., FLAGS },
     { "averaging", "set time averaging", OFFSET(avg), AV_OPT_TYPE_INT, {.i64=1}, 0, INT32_MAX, FLAGS },
     { "colors", "set channels colors", OFFSET(colors), AV_OPT_TYPE_STRING, {.str = "red|green|blue|yellow|orange|lime|pink|magenta|brown" }, 0, 0, FLAGS },
@@ -126,28 +128,25 @@ static int query_formats(AVFilterContext *ctx)
     AVFilterLink *outlink = ctx->outputs[0];
     static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_NONE };
     static const enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_RGBA, AV_PIX_FMT_NONE };
+    int ret;
 
     /* set input audio formats */
     formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ff_formats_ref(formats, &inlink->out_formats);
+    if ((ret = ff_formats_ref(formats, &inlink->out_formats)) < 0)
+        return ret;
 
     layouts = ff_all_channel_layouts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts);
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
+        return ret;
 
     formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ff_formats_ref(formats, &inlink->out_samplerates);
+    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0)
+        return ret;
 
     /* set output video format */
     formats = ff_make_format_list(pix_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ff_formats_ref(formats, &outlink->in_formats);
+    if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
+        return ret;
 
     return 0;
 }
@@ -164,7 +163,7 @@ static void generate_window_func(float *lut, int N, int win_func, float *overlap
         break;
     case WFUNC_BARTLETT:
         for (n = 0; n < N; n++)
-            lut[n] = 1.-FFABS((n-(N-1)/2.)/((N-1)/2.));
+            lut[n] = 1.-fabs((n-(N-1)/2.)/((N-1)/2.));
         *overlap = 0.5;
         break;
     case WFUNC_HANNING:
@@ -208,7 +207,7 @@ static void generate_window_func(float *lut, int N, int win_func, float *overlap
         break;
     case WFUNC_BHANN:
         for (n = 0; n < N; n++)
-            lut[n] = 0.62-0.48*FFABS(n/(double)(N-1)-.5)-0.38*cos(2*M_PI*n/(N-1));
+            lut[n] = 0.62-0.48*fabs(n/(double)(N-1)-.5)-0.38*cos(2*M_PI*n/(N-1));
         *overlap = 0.5;
         break;
     case WFUNC_SINE:
@@ -220,6 +219,17 @@ static void generate_window_func(float *lut, int N, int win_func, float *overlap
         for (n = 0; n < N; n++)
             lut[n] = 0.355768-0.487396*cos(2*M_PI*n/(N-1))+0.144232*cos(4*M_PI*n/(N-1))-0.012604*cos(6*M_PI*n/(N-1));
         *overlap = 0.663;
+        break;
+    case WFUNC_LANCZOS:
+#define SINC(x) (!(x)) ? 1 : sin(M_PI * (x))/(M_PI * (x));
+        for (n = 0; n < N; n++)
+            lut[n] = SINC((2.*n)/(N-1)-1);
+        *overlap = 0.75;
+        break;
+    case WFUNC_GAUSS:
+        for (n = 0; n < N; n++)
+            lut[n] = pow(M_E,-0.5*pow((n-(N-1)/2)/(0.4*(N-1)/2.f),2));
+        *overlap = 0.75;
         break;
     default:
         av_assert0(0);
@@ -287,7 +297,6 @@ static int config_output(AVFilterLink *outlink)
         s->scale += s->window_func_lut[i] * s->window_func_lut[i];
     }
 
-    outlink->flags |= FF_LINK_FLAG_REQUEST_LOOP;
     outlink->frame_rate = av_make_q(inlink->sample_rate, s->win_size * (1.-s->overlap));
     outlink->sample_aspect_ratio = (AVRational){1,1};
     outlink->w = s->w;

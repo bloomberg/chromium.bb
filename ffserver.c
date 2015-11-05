@@ -71,6 +71,8 @@
 #include "cmdutils.h"
 #include "ffserver_config.h"
 
+#define PATH_LENGTH 1024
+
 const char program_name[] = "ffserver";
 const int program_birth_year = 2000;
 
@@ -285,10 +287,14 @@ static int ffm_write_write_index(int fd, int64_t pos)
     for(i=0;i<8;i++)
         buf[i] = (pos >> (56 - i * 8)) & 0xff;
     if (lseek(fd, 8, SEEK_SET) < 0)
-        return AVERROR(EIO);
+        goto bail_eio;
     if (write(fd, buf, 8) != 8)
-        return AVERROR(EIO);
+        goto bail_eio;
+
     return 8;
+
+bail_eio:
+    return AVERROR(EIO);
 }
 
 static void ffm_set_write_index(AVFormatContext *s, int64_t pos,
@@ -388,16 +394,33 @@ static int compute_datarate(DataRateData *drd, int64_t count)
 
 static void start_children(FFServerStream *feed)
 {
-    char pathname[1024];
+    char *pathname;
     char *slash;
     int i;
+    size_t cmd_length;
 
     if (no_launch)
         return;
 
+    cmd_length = strlen(my_program_name);
+
+   /**
+    * FIXME: WIP Safeguard. Remove after clearing all harcoded
+    * '1024' path lengths
+    */
+    if (cmd_length > PATH_LENGTH - 1) {
+        http_log("Could not start children. Command line: '%s' exceeds "
+                    "path length limit (%d)\n", my_program_name, PATH_LENGTH);
+        return;
+    }
+
+    pathname = av_strdup (my_program_name);
+    if (!pathname) {
+        http_log("Could not allocate memory for children cmd line\n");
+        return;
+    }
    /* replace "ffserver" with "ffmpeg" in the path of current
     * program. Ignore user provided path */
-    av_strlcpy(pathname, my_program_name, sizeof(pathname));
 
     slash = strrchr(pathname, '/');
     if (!slash)
@@ -445,8 +468,10 @@ static void start_children(FFServerStream *feed)
 
         signal(SIGPIPE, SIG_DFL);
         execvp(pathname, feed->child_argv);
+        av_free (pathname);
         _exit(1);
     }
+    av_free (pathname);
 }
 
 /* open a listening socket */
@@ -717,8 +742,10 @@ static void http_send_too_busy_reply(int fd)
                        "Content-type: text/html\r\n"
                        "\r\n"
                        "<html><head><title>Too busy</title></head><body>\r\n"
-                       "<p>The server is too busy to serve your request at this time.</p>\r\n"
-                       "<p>The number of current connections is %u, and this exceeds the limit of %u.</p>\r\n"
+                       "<p>The server is too busy to serve your request at "
+                       "this time.</p>\r\n"
+                       "<p>The number of current connections is %u, and this "
+                       "exceeds the limit of %u.</p>\r\n"
                        "</body></html>\r\n",
                        nb_connections, config.nb_max_connections);
     av_assert0(len < sizeof(buffer));
@@ -1462,9 +1489,11 @@ static int http_parse_request(HTTPContext *c)
                       "Content-type: text/html\r\n"
                       "\r\n"
                       "<html><head><title>Too busy</title></head><body>\r\n"
-                      "<p>The server is too busy to serve your request at this time.</p>\r\n"
-                      "<p>The bandwidth being served (including your stream) is %"PRIu64"kbit/sec, "
-                      "and this exceeds the limit of %"PRIu64"kbit/sec.</p>\r\n"
+                      "<p>The server is too busy to serve your request at "
+                      "this time.</p>\r\n"
+                      "<p>The bandwidth being served (including your stream) "
+                      "is %"PRIu64"kbit/s, and this exceeds the limit of "
+                      "%"PRIu64"kbit/s.</p>\r\n"
                       "</body></html>\r\n",
                  current_bandwidth, config.max_bandwidth);
         q += strlen(q);
@@ -1761,7 +1790,7 @@ static inline void print_stream_params(AVIOContext *pb, FFServerStream *stream)
     stream_no = stream->nb_streams;
 
     avio_printf(pb, "<table cellspacing=0 cellpadding=4><tr><th>Stream<th>"
-                    "type<th>kbits/s<th align=left>codec<th align=left>"
+                    "type<th>kbit/s<th align=left>codec<th align=left>"
                     "Parameters\n");
 
     for (i = 0; i < stream_no; i++) {
@@ -1787,9 +1816,9 @@ static inline void print_stream_params(AVIOContext *pb, FFServerStream *stream)
             abort();
         }
 
-        avio_printf(pb, "<tr><td align=right>%d<td>%s<td align=right>%d"
+        avio_printf(pb, "<tr><td align=right>%d<td>%s<td align=right>%"PRId64
                         "<td>%s<td>%s\n",
-                    i, type, st->codec->bit_rate/1000,
+                    i, type, (int64_t)st->codec->bit_rate/1000,
                     codec ? codec->name : "", parameters);
      }
 
@@ -1826,7 +1855,7 @@ static void compute_status(HTTPContext *c)
     /* format status */
     avio_printf(pb, "<h2>Available Streams</h2>\n");
     avio_printf(pb, "<table cellspacing=0 cellpadding=4>\n");
-    avio_printf(pb, "<tr><th valign=top>Path<th align=left>Served<br>Conns<th><br>bytes<th valign=top>Format<th>Bit rate<br>kbits/s<th align=left>Video<br>kbits/s<th><br>Codec<th align=left>Audio<br>kbits/s<th><br>Codec<th align=left valign=top>Feed\n");
+    avio_printf(pb, "<tr><th valign=top>Path<th align=left>Served<br>Conns<th><br>bytes<th valign=top>Format<th>Bit rate<br>kbit/s<th align=left>Video<br>kbit/s<th><br>Codec<th align=left>Audio<br>kbit/s<th><br>Codec<th align=left valign=top>Feed\n");
     stream = config.first_stream;
     while (stream) {
         char sfilename[1024];
@@ -1981,7 +2010,7 @@ static void compute_status(HTTPContext *c)
 
     avio_printf(pb, "<table>\n");
     avio_printf(pb, "<tr><th>#<th>File<th>IP<th>Proto<th>State<th>Target "
-                    "bits/sec<th>Actual bits/sec<th>Bytes transferred\n");
+                    "bit/s<th>Actual bit/s<th>Bytes transferred\n");
     c1 = first_http_ctx;
     i = 0;
     while (c1) {
@@ -2289,7 +2318,7 @@ static int http_prepare_data(HTTPContext *c)
                         c->packet_stream_index = pkt.stream_index;
                         ctx = c->rtp_ctx[c->packet_stream_index];
                         if(!ctx) {
-                            av_free_packet(&pkt);
+                            av_packet_unref(&pkt);
                             break;
                         }
                         codec = ctx->streams[0]->codec;
@@ -2341,11 +2370,11 @@ static int http_prepare_data(HTTPContext *c)
 
                     codec->frame_number++;
                     if (len == 0) {
-                        av_free_packet(&pkt);
+                        av_packet_unref(&pkt);
                         goto redo;
                     }
                 }
-                av_free_packet(&pkt);
+                av_packet_unref(&pkt);
             }
         }
         break;
@@ -3519,7 +3548,7 @@ static void extract_mpeg4_header(AVFormatContext *infile)
             }
             mpeg4_count--;
         }
-        av_free_packet(&pkt);
+        av_packet_unref(&pkt);
     }
 }
 
@@ -3840,6 +3869,7 @@ int main(int argc, char **argv)
     if ((ret = ffserver_parse_ffconfig(config.filename, &config)) < 0) {
         fprintf(stderr, "Error reading configuration file '%s': %s\n",
                 config.filename, av_err2str(ret));
+        av_freep(&config.filename);
         exit(1);
     }
     av_freep(&config.filename);

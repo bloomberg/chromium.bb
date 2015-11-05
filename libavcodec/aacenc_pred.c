@@ -21,7 +21,7 @@
 
 /**
  * @file
- * AAC encoder Intensity Stereo
+ * AAC encoder main-type prediction
  * @author Rostislav Pehlivanov ( atomnuker gmail com )
  */
 
@@ -148,7 +148,7 @@ static inline int update_counters(IndividualChannelStream *ics, int inc)
     return 0;
 }
 
-void ff_aac_adjust_common_prediction(AACEncContext *s, ChannelElement *cpe)
+void ff_aac_adjust_common_pred(AACEncContext *s, ChannelElement *cpe)
 {
     int start, w, w2, g, i, count = 0;
     SingleChannelElement *sce0 = &cpe->ch[0];
@@ -271,7 +271,7 @@ void ff_aac_search_for_pred(AACEncContext *s, SingleChannelElement *sce)
         abs_pow34_v(O34, &sce->coeffs[start_coef], num_coeffs);
         dist1 = quantize_and_encode_band_cost(s, NULL, &sce->coeffs[start_coef], NULL,
                                               O34, num_coeffs, sce->sf_idx[sfb],
-                                              cb_n, s->lambda / band->threshold, INFINITY, &cost1, 0);
+                                              cb_n, s->lambda / band->threshold, INFINITY, &cost1, NULL, 0);
         cost_coeffs += cost1;
 
         /* Encoded coefficients - needed for #bits, band type and quant. error */
@@ -284,7 +284,7 @@ void ff_aac_search_for_pred(AACEncContext *s, SingleChannelElement *sce)
             cb_p = cb_n;
         quantize_and_encode_band_cost(s, NULL, SENT, QERR, S34, num_coeffs,
                                       sce->sf_idx[sfb], cb_p, s->lambda / band->threshold, INFINITY,
-                                      &cost2, 0);
+                                      &cost2, NULL, 0);
 
         /* Reconstructed coefficients - needed for distortion measurements */
         for (i = 0; i < num_coeffs; i++)
@@ -296,7 +296,7 @@ void ff_aac_search_for_pred(AACEncContext *s, SingleChannelElement *sce)
             cb_p = cb_n;
         dist2 = quantize_and_encode_band_cost(s, NULL, &sce->prcoeffs[start_coef], NULL,
                                               P34, num_coeffs, sce->sf_idx[sfb],
-                                              cb_p, s->lambda / band->threshold, INFINITY, NULL, 0);
+                                              cb_p, s->lambda / band->threshold, INFINITY, NULL, NULL, 0);
         for (i = 0; i < num_coeffs; i++)
             dist_spec_err += (O34[i] - P34[i])*(O34[i] - P34[i]);
         dist_spec_err *= s->lambda / band->threshold;
@@ -333,7 +333,8 @@ void ff_aac_encode_main_pred(AACEncContext *s, SingleChannelElement *sce)
     IndividualChannelStream *ics = &sce->ics;
     const int pmax = FFMIN(ics->max_sfb, ff_aac_pred_sfb_max[s->samplerate_index]);
 
-    if (!ics->predictor_present)
+    if (s->profile != FF_PROFILE_AAC_MAIN ||
+        !ics->predictor_present)
         return;
 
     put_bits(&s->pb, 1, !!ics->predictor_reset_group);

@@ -77,6 +77,7 @@ static int do_show_format_tags = 0;
 static int do_show_frame_tags = 0;
 static int do_show_program_tags = 0;
 static int do_show_stream_tags = 0;
+static int do_show_packet_tags = 0;
 
 static int show_value_unit              = 0;
 static int use_value_prefix             = 0;
@@ -135,6 +136,7 @@ typedef enum {
     SECTION_ID_LIBRARY_VERSION,
     SECTION_ID_LIBRARY_VERSIONS,
     SECTION_ID_PACKET,
+    SECTION_ID_PACKET_TAGS,
     SECTION_ID_PACKETS,
     SECTION_ID_PACKETS_AND_FRAMES,
     SECTION_ID_PACKET_SIDE_DATA_LIST,
@@ -178,7 +180,8 @@ static struct section sections[] = {
     [SECTION_ID_LIBRARY_VERSION] =    { SECTION_ID_LIBRARY_VERSION, "library_version", 0, { -1 } },
     [SECTION_ID_PACKETS] =            { SECTION_ID_PACKETS, "packets", SECTION_FLAG_IS_ARRAY, { SECTION_ID_PACKET, -1} },
     [SECTION_ID_PACKETS_AND_FRAMES] = { SECTION_ID_PACKETS_AND_FRAMES, "packets_and_frames", SECTION_FLAG_IS_ARRAY, { SECTION_ID_PACKET, -1} },
-    [SECTION_ID_PACKET] =             { SECTION_ID_PACKET, "packet", 0, { SECTION_ID_PACKET_SIDE_DATA_LIST, -1 } },
+    [SECTION_ID_PACKET] =             { SECTION_ID_PACKET, "packet", 0, { SECTION_ID_PACKET_TAGS, SECTION_ID_PACKET_SIDE_DATA_LIST, -1 } },
+    [SECTION_ID_PACKET_TAGS] =        { SECTION_ID_PACKET_TAGS, "tags", SECTION_FLAG_HAS_VARIABLE_FIELDS, { -1 }, .element_name = "tag", .unique_name = "packet_tags" },
     [SECTION_ID_PACKET_SIDE_DATA_LIST] ={ SECTION_ID_PACKET_SIDE_DATA_LIST, "side_data_list", SECTION_FLAG_IS_ARRAY, { SECTION_ID_PACKET_SIDE_DATA, -1 } },
     [SECTION_ID_PACKET_SIDE_DATA] =     { SECTION_ID_PACKET_SIDE_DATA, "side_data", 0, { -1 } },
     [SECTION_ID_PIXEL_FORMATS] =      { SECTION_ID_PIXEL_FORMATS, "pixel_formats", SECTION_FLAG_IS_ARRAY, { SECTION_ID_PIXEL_FORMAT, -1 } },
@@ -1762,6 +1765,16 @@ static void show_packet(WriterContext *w, AVFormatContext *fmt_ctx, AVPacket *pk
 
     if (pkt->side_data_elems) {
         int i;
+        int size;
+        const uint8_t *side_metadata;
+
+        side_metadata = av_packet_get_side_data(pkt, AV_PKT_DATA_STRINGS_METADATA, &size);
+        if (side_metadata && size && do_show_packet_tags) {
+            AVDictionary *dict = NULL;
+            if (av_packet_unpack_dictionary(side_metadata, size, &dict) >= 0)
+                show_tags(w, dict, SECTION_ID_PACKET_TAGS);
+            av_dict_free(&dict);
+        }
         writer_print_section_header(w, SECTION_ID_PACKET_SIDE_DATA_LIST);
         for (i = 0; i < pkt->side_data_elems; i++) {
             AVPacketSideData *sd = &pkt->side_data[i];
@@ -1890,7 +1903,6 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
             print_str("side_data_type", name ? name : "unknown");
             print_int("side_data_size", sd->size);
             if (sd->type == AV_FRAME_DATA_DISPLAYMATRIX && sd->size >= 9*4) {
-                abort();
                 writer_print_integers(w, "displaymatrix", sd->data, 9, " %11d", 3, 4, 1);
                 print_int("rotation", av_display_rotation_get((int32_t *)sd->data));
             }
@@ -2056,7 +2068,7 @@ static int read_interval_packets(WriterContext *w, AVFormatContext *fmt_ctx,
                 while (pkt1.size && process_frame(w, fmt_ctx, frame, &pkt1) > 0);
             }
         }
-        av_free_packet(&pkt);
+        av_packet_unref(&pkt);
     }
     av_init_packet(&pkt);
     pkt.data = NULL;
@@ -3062,16 +3074,16 @@ static int opt_show_versions(const char *opt, const char *arg)
         return 0;                                                       \
     }
 
-DEFINE_OPT_SHOW_SECTION(chapters,         CHAPTERS);
-DEFINE_OPT_SHOW_SECTION(error,            ERROR);
-DEFINE_OPT_SHOW_SECTION(format,           FORMAT);
-DEFINE_OPT_SHOW_SECTION(frames,           FRAMES);
-DEFINE_OPT_SHOW_SECTION(library_versions, LIBRARY_VERSIONS);
-DEFINE_OPT_SHOW_SECTION(packets,          PACKETS);
-DEFINE_OPT_SHOW_SECTION(pixel_formats,    PIXEL_FORMATS);
-DEFINE_OPT_SHOW_SECTION(program_version,  PROGRAM_VERSION);
-DEFINE_OPT_SHOW_SECTION(streams,          STREAMS);
-DEFINE_OPT_SHOW_SECTION(programs,         PROGRAMS);
+DEFINE_OPT_SHOW_SECTION(chapters,         CHAPTERS)
+DEFINE_OPT_SHOW_SECTION(error,            ERROR)
+DEFINE_OPT_SHOW_SECTION(format,           FORMAT)
+DEFINE_OPT_SHOW_SECTION(frames,           FRAMES)
+DEFINE_OPT_SHOW_SECTION(library_versions, LIBRARY_VERSIONS)
+DEFINE_OPT_SHOW_SECTION(packets,          PACKETS)
+DEFINE_OPT_SHOW_SECTION(pixel_formats,    PIXEL_FORMATS)
+DEFINE_OPT_SHOW_SECTION(program_version,  PROGRAM_VERSION)
+DEFINE_OPT_SHOW_SECTION(streams,          STREAMS)
+DEFINE_OPT_SHOW_SECTION(programs,         PROGRAMS)
 
 static const OptionDef real_options[] = {
 #include "cmdutils_common_opts.h"
@@ -3178,6 +3190,7 @@ int main(int argc, char **argv)
     SET_DO_SHOW(FRAME_TAGS, frame_tags);
     SET_DO_SHOW(PROGRAM_TAGS, program_tags);
     SET_DO_SHOW(STREAM_TAGS, stream_tags);
+    SET_DO_SHOW(PACKET_TAGS, packet_tags);
 
     if (do_bitexact && (do_show_program_version || do_show_library_versions)) {
         av_log(NULL, AV_LOG_ERROR,

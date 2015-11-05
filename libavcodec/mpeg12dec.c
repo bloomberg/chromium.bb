@@ -95,13 +95,6 @@ static const uint32_t btype2mb_type[11] = {
     MB_TYPE_QUANT | MB_TYPE_L0L1 | MB_TYPE_CBP,
 };
 
-static const uint8_t non_linear_qscale[32] = {
-     0,  1,  2,  3,  4,  5,   6,   7,
-     8, 10, 12, 14, 16, 18,  20,  22,
-    24, 28, 32, 36, 40, 44,  48,  52,
-    56, 64, 72, 80, 88, 96, 104, 112,
-};
-
 /* as H.263, but only 17 codes */
 static int mpeg_decode_motion(MpegEncContext *s, int fcode, int pred)
 {
@@ -718,7 +711,7 @@ static inline int get_qscale(MpegEncContext *s)
 {
     int qscale = get_bits(&s->gb, 5);
     if (s->q_scale_type)
-        return non_linear_qscale[qscale];
+        return ff_mpeg2_non_linear_qscale[qscale];
     else
         return qscale << 1;
 }
@@ -1136,6 +1129,7 @@ static av_cold int mpeg_decode_init(AVCodecContext *avctx)
     ff_mpeg12_common_init(&s->mpeg_enc_ctx);
     ff_mpeg12_init_vlcs();
 
+    s2->chroma_format              = 1;
     s->mpeg_enc_ctx_allocated      = 0;
     s->mpeg_enc_ctx.picture_number = 0;
     s->repeat_field                = 0;
@@ -1144,6 +1138,7 @@ static av_cold int mpeg_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
+#if HAVE_THREADS
 static int mpeg_decode_update_thread_context(AVCodecContext *avctx,
                                              const AVCodecContext *avctx_from)
 {
@@ -1168,6 +1163,7 @@ static int mpeg_decode_update_thread_context(AVCodecContext *avctx,
 
     return 0;
 }
+#endif
 
 static void quant_matrix_rebuild(uint16_t *matrix, const uint8_t *old_perm,
                                  const uint8_t *new_perm)

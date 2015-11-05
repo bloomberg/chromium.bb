@@ -1547,7 +1547,7 @@ static void calculate_visual_weight(SnowContext *s, Plane *p){
                 }
             }
 
-            b->qlog= (int)(log(352256.0/sqrt(error)) / log(pow(2.0, 1.0/QROOT))+0.5);
+            b->qlog= (int)(QROOT * log2(352256.0/sqrt(error)) + 0.5);
         }
     }
 }
@@ -1557,7 +1557,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 {
     SnowContext *s = avctx->priv_data;
     RangeCoder * const c= &s->c;
-    AVFrame *pic = pict;
+    AVFrame *pic;
     const int width= s->avctx->width;
     const int height= s->avctx->height;
     int level, orientation, plane_index, i, y, ret;
@@ -1584,7 +1584,9 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     }
     emms_c();
-    s->new_picture = pict;
+    pic = s->input_picture;
+    pic->pict_type = pict->pict_type;
+    pic->quality = pict->quality;
 
     s->m.picture_number= avctx->frame_number;
     if(avctx->flags&AV_CODEC_FLAG_PASS2){
@@ -1835,7 +1837,7 @@ redo_frame:
                     }
                 }
             s->avctx->error[plane_index] += error;
-            s->current_picture->error[plane_index] = error;
+            s->encoding_error[plane_index] = error;
         }
 
     }
@@ -1845,8 +1847,8 @@ redo_frame:
     ff_snow_release_buffer(avctx);
 
     s->current_picture->coded_picture_number = avctx->frame_number;
-    s->current_picture->pict_type = pict->pict_type;
-    s->current_picture->quality = pict->quality;
+    s->current_picture->pict_type = pic->pict_type;
+    s->current_picture->quality = pic->quality;
     s->m.frame_bits = 8*(s->c.bytestream - s->c.bytestream_start);
     s->m.p_tex_bits = s->m.frame_bits - s->m.misc_bits - s->m.mv_bits;
     s->m.current_picture.f->display_picture_number =
@@ -1867,9 +1869,15 @@ redo_frame:
     emms_c();
 
     ff_side_data_set_encoder_stats(pkt, s->current_picture->quality,
-                                   s->current_picture->error,
+                                   s->encoding_error,
                                    (s->avctx->flags&AV_CODEC_FLAG_PSNR) ? 4 : 0,
                                    s->current_picture->pict_type);
+
+#if FF_API_ERROR_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
+    memcpy(s->current_picture->error, s->encoding_error, sizeof(s->encoding_error));
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     pkt->size = ff_rac_terminate(c);
     if (s->current_picture->key_frame)

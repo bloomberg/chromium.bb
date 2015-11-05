@@ -142,7 +142,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterContext *ctx = inlink->dst;
     LADSPAContext *s = ctx->priv;
     AVFrame *out;
-    int i, h;
+    int i, h, p;
 
     if (!s->nb_outputs ||
         (av_frame_is_writable(in) && s->nb_inputs == s->nb_outputs &&
@@ -159,13 +159,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     for (h = 0; h < s->nb_handles; h++) {
         for (i = 0; i < s->nb_inputs; i++) {
+            p = s->nb_handles > 1 ? h : i;
             s->desc->connect_port(s->handles[h], s->ipmap[i],
-                                  (LADSPA_Data*)in->extended_data[i]);
+                                  (LADSPA_Data*)in->extended_data[p]);
         }
 
         for (i = 0; i < s->nb_outputs; i++) {
+            p = s->nb_handles > 1 ? h : i;
             s->desc->connect_port(s->handles[h], s->opmap[i],
-                                  (LADSPA_Data*)out->extended_data[i]);
+                                  (LADSPA_Data*)out->extended_data[p]);
         }
 
         s->desc->run(s->handles[h], in->nb_samples);
@@ -595,22 +597,29 @@ static int query_formats(AVFilterContext *ctx)
     AVFilterChannelLayouts *layouts;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_NONE };
+    int ret;
 
     formats = ff_make_format_list(sample_fmts);
     if (!formats)
         return AVERROR(ENOMEM);
-    ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats(ctx, formats);
+    if (ret < 0)
+        return ret;
 
     if (s->nb_inputs) {
         formats = ff_all_samplerates();
         if (!formats)
             return AVERROR(ENOMEM);
 
-        ff_set_common_samplerates(ctx, formats);
+        ret = ff_set_common_samplerates(ctx, formats);
+        if (ret < 0)
+            return ret;
     } else {
         int sample_rates[] = { s->sample_rate, -1 };
 
-        ff_set_common_samplerates(ctx, ff_make_format_list(sample_rates));
+        ret = ff_set_common_samplerates(ctx, ff_make_format_list(sample_rates));
+        if (ret < 0)
+            return ret;
     }
 
     if (s->nb_inputs == 1 && s->nb_outputs == 1) {
@@ -619,11 +628,17 @@ static int query_formats(AVFilterContext *ctx)
         if (!layouts)
             return AVERROR(ENOMEM);
 
-        ff_set_common_channel_layouts(ctx, layouts);
+        ret = ff_set_common_channel_layouts(ctx, layouts);
+        if (ret < 0)
+            return ret;
     } else if (s->nb_inputs == 2 && s->nb_outputs == 2) {
         layouts = NULL;
-        ff_add_channel_layout(&layouts, AV_CH_LAYOUT_STEREO);
-        ff_set_common_channel_layouts(ctx, layouts);
+        ret = ff_add_channel_layout(&layouts, AV_CH_LAYOUT_STEREO);
+        if (ret < 0)
+            return ret;
+        ret = ff_set_common_channel_layouts(ctx, layouts);
+        if (ret < 0)
+            return ret;
     } else {
         AVFilterLink *outlink = ctx->outputs[0];
 
@@ -632,19 +647,30 @@ static int query_formats(AVFilterContext *ctx)
             int64_t inlayout = FF_COUNT2LAYOUT(s->nb_inputs);
 
             layouts = NULL;
-            ff_add_channel_layout(&layouts, inlayout);
-            ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts);
+            ret = ff_add_channel_layout(&layouts, inlayout);
+            if (ret < 0)
+                return ret;
+            ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts);
+            if (ret < 0)
+                return ret;
 
-            if (!s->nb_outputs)
-                ff_channel_layouts_ref(layouts, &outlink->in_channel_layouts);
+            if (!s->nb_outputs) {
+                ret = ff_channel_layouts_ref(layouts, &outlink->in_channel_layouts);
+                if (ret < 0)
+                    return ret;
+            }
         }
 
         if (s->nb_outputs >= 1) {
             int64_t outlayout = FF_COUNT2LAYOUT(s->nb_outputs);
 
             layouts = NULL;
-            ff_add_channel_layout(&layouts, outlayout);
-            ff_channel_layouts_ref(layouts, &outlink->in_channel_layouts);
+            ret = ff_add_channel_layout(&layouts, outlayout);
+            if (ret < 0)
+                return ret;
+            ret = ff_channel_layouts_ref(layouts, &outlink->in_channel_layouts);
+            if (ret < 0)
+                return ret;
         }
     }
 

@@ -49,7 +49,7 @@ int ff_qsv_map_pixfmt(enum AVPixelFormat format)
     }
 }
 
-int ff_qsv_decode_init(AVCodecContext *avctx, QSVContext *q, AVPacket *avpkt)
+static int qsv_decode_init(AVCodecContext *avctx, QSVContext *q, AVPacket *avpkt)
 {
     mfxVideoParam param = { { 0 } };
     mfxBitstream bs   = { { { 0 } } };
@@ -58,24 +58,30 @@ int ff_qsv_decode_init(AVCodecContext *avctx, QSVContext *q, AVPacket *avpkt)
                                        AV_PIX_FMT_NV12,
                                        AV_PIX_FMT_NONE };
 
-    q->iopattern  = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
-    if (!q->session) {
-        if (avctx->hwaccel_context) {
-            AVQSVContext *qsv = avctx->hwaccel_context;
+    ret = ff_get_format(avctx, pix_fmts);
+    if (ret < 0)
+        return ret;
 
-            q->session        = qsv->session;
-            q->iopattern      = qsv->iopattern;
-            q->ext_buffers    = qsv->ext_buffers;
-            q->nb_ext_buffers = qsv->nb_ext_buffers;
-        }
-        if (!q->session) {
+    avctx->pix_fmt      = ret;
+
+    q->iopattern  = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    if (avctx->hwaccel_context) {
+        AVQSVContext *qsv = avctx->hwaccel_context;
+
+        q->session        = qsv->session;
+        q->iopattern      = qsv->iopattern;
+        q->ext_buffers    = qsv->ext_buffers;
+        q->nb_ext_buffers = qsv->nb_ext_buffers;
+    }
+    if (!q->session) {
+        if (!q->internal_qs.session) {
             ret = ff_qsv_init_internal_session(avctx, &q->internal_qs,
                                                q->load_plugins);
             if (ret < 0)
                 return ret;
-
-            q->session = q->internal_qs.session;
         }
+
+        q->session = q->internal_qs.session;
     }
 
     if (avpkt->size) {
@@ -123,11 +129,6 @@ int ff_qsv_decode_init(AVCodecContext *avctx, QSVContext *q, AVPacket *avpkt)
         return ff_qsv_error(ret);
     }
 
-    ret = ff_get_format(avctx, pix_fmts);
-    if (ret < 0)
-        return ret;
-
-    avctx->pix_fmt      = ret;
     avctx->profile      = param.mfx.CodecProfile;
     avctx->level        = param.mfx.CodecLevel;
     avctx->coded_width  = param.mfx.FrameInfo.Width;
@@ -293,7 +294,8 @@ static void close_decoder(QSVContext *q)
 {
     QSVFrame *cur;
 
-    MFXVideoDECODE_Close(q->session);
+    if (q->session)
+        MFXVideoDECODE_Close(q->session);
 
     cur = q->work_frames;
     while (cur) {
@@ -322,7 +324,7 @@ static int do_qsv_decode(AVCodecContext *avctx, QSVContext *q,
     int flush    = !avpkt->size || q->reinit_pending;
 
     if (!q->engine_ready) {
-        ret = ff_qsv_decode_init(avctx, q, avpkt);
+        ret = qsv_decode_init(avctx, q, avpkt);
         if (ret)
             return ret;
     }
