@@ -151,6 +151,23 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
       FROM_HERE, base::Bind(callback, server_backed_state_keys_));
 }
 
+void FakeSessionManagerClient::CheckArcAvailability(
+    const ArcCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, false));
+}
+
+void FakeSessionManagerClient::StartArcInstance(const std::string& socket_path,
+                                                const ArcCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, false));
+}
+
+void FakeSessionManagerClient::StopArcInstance(const ArcCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, false));
+}
+
 const std::string& FakeSessionManagerClient::device_policy() const {
   return device_policy_;
 }

@@ -331,6 +331,41 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    callback));
   }
 
+  void CheckArcAvailability(const ArcCallback& callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerCheckArcAvailability);
+
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnCheckArcAvailability,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void StartArcInstance(const std::string& socket_path,
+                        const ArcCallback& callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStartArcInstance);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(socket_path);
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnArcMethod,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   login_manager::kSessionManagerStartArcInstance, callback));
+  }
+
+  void StopArcInstance(const ArcCallback& callback) override {
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerStopArcInstance);
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnArcMethod,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   login_manager::kSessionManagerStartArcInstance, callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     session_manager_proxy_ = bus->GetObjectProxy(
@@ -631,6 +666,37 @@ class SessionManagerClientImpl : public SessionManagerClient {
       callback.Run(state_keys);
   }
 
+  // Called when kSessionManagerCheckArcAvailability method is complete.
+  void OnCheckArcAvailability(const ArcCallback& callback,
+                              dbus::Response* response) {
+    bool available = false;
+    if (!response) {
+      LOG(ERROR) << "Failed to call "
+                 << login_manager::kSessionManagerCheckArcAvailability;
+    } else {
+      dbus::MessageReader reader(response);
+      if (!reader.PopBool(&available))
+        LOG(ERROR) << "Invalid response: " << response->ToString();
+    }
+    if (!callback.is_null())
+      callback.Run(available);
+  }
+
+  // Called when kSessionManagerStartArcInstance or
+  // kSessionManagerStopArcInstance methods complete.
+  void OnArcMethod(const std::string& method_name,
+                   const ArcCallback& callback,
+                   dbus::Response* response) {
+    bool success = false;
+    if (!response) {
+      LOG(ERROR) << "Failed to call " << method_name;
+    } else {
+      success = true;
+    }
+
+    if (!callback.is_null())
+      callback.Run(success);
+  }
 
   dbus::ObjectProxy* session_manager_proxy_;
   scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
@@ -795,6 +861,19 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
     if (!callback.is_null())
       callback.Run(state_keys);
+  }
+
+  void CheckArcAvailability(const ArcCallback& callback) override {
+    callback.Run(false);
+  }
+
+  void StartArcInstance(const std::string& socket_path,
+                        const ArcCallback& callback) override {
+    callback.Run(false);
+  }
+
+  void StopArcInstance(const ArcCallback& callback) override {
+    callback.Run(false);
   }
 
  private:

@@ -191,6 +191,24 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // will be invoked with an empty state key vector in case of errors.
   virtual void GetServerBackedStateKeys(const StateKeysCallback& callback) = 0;
 
+  // Used for CheckArcAvailability.  Takes a boolean indicating whether the
+  // operation was successful or not.
+  typedef base::Callback<void(bool)> ArcCallback;
+
+  // Asynchronously checks if starting the ARC instance is available.
+  // The result of the operation is reported through |callback|.
+  virtual void CheckArcAvailability(const ArcCallback& callback) = 0;
+
+  // Asynchronously starts the ARC instance using |socket_path| as the IPC
+  // socket for communication with the instance.  Upon completion, invokes
+  // |callback| with the result.
+  virtual void StartArcInstance(const std::string& socket_path,
+                                const ArcCallback& callback) = 0;
+
+  // Asynchronously stops the ARC instance.  Upon completion, invokes
+  // |callback| with the result.
+  virtual void StopArcInstance(const ArcCallback& callback) = 0;
+
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);
 

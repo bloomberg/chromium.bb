@@ -119,6 +119,11 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
 
+  void CheckArcAvailability(const ArcCallback& callback) override;
+  void StartArcInstance(const std::string& socket_path,
+                        const ArcCallback& callback) override;
+  void StopArcInstance(const ArcCallback& callback) override;
+
  private:
   struct PolicyState {
     bool store_result_;

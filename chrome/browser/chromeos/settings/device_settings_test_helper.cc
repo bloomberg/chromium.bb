@@ -180,6 +180,14 @@ void DeviceSettingsTestHelper::SetFlagsForUser(
 void DeviceSettingsTestHelper::GetServerBackedStateKeys(
     const StateKeysCallback& callback) {}
 
+void DeviceSettingsTestHelper::CheckArcAvailability(
+    const ArcCallback& callback) {}
+
+void DeviceSettingsTestHelper::StartArcInstance(const std::string& socket_path,
+                                                const ArcCallback& callback) {}
+
+void DeviceSettingsTestHelper::StopArcInstance(const ArcCallback& callback) {}
+
 DeviceSettingsTestHelper::PolicyState::PolicyState()
     : store_result_(true) {}
 

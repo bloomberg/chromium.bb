@@ -62,6 +62,11 @@ class FakeSessionManagerClient : public SessionManagerClient {
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
 
+  void CheckArcAvailability(const ArcCallback& callback) override;
+  void StartArcInstance(const std::string& socket_path,
+                        const ArcCallback& callback) override;
+  void StopArcInstance(const ArcCallback& callback) override;
+
   const std::string& device_policy() const;
   void set_device_policy(const std::string& policy_blob);
 
