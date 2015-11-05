@@ -5,6 +5,7 @@
 #include "ui/views/mus/native_widget_view_manager.h"
 
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"

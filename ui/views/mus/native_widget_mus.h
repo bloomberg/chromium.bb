@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
@@ -184,8 +185,7 @@ class NativeWidgetMus : public internal::NativeWidgetPrivate,
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   const mus::mojom::SurfaceType surface_type_;
-
-  mus::mojom::ShowState show_state_before_fullscreen_;
+  ui::PlatformWindowState show_state_before_fullscreen_;
 
   // Aura configuration.
   scoped_ptr<WindowTreeHostMus> window_tree_host_;

@@ -5,7 +5,6 @@
 #include "ui/views/mus/native_widget_mus.h"
 
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/layout_manager.h"
@@ -136,7 +135,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       shell_(shell),
       native_widget_delegate_(delegate),
       surface_type_(surface_type),
-      show_state_before_fullscreen_(mus::mojom::SHOW_STATE_RESTORED),
+      show_state_before_fullscreen_(ui::PLATFORM_WINDOW_STATE_UNKNOWN),
       content_(new aura::Window(this)) {}
 NativeWidgetMus::~NativeWidgetMus() {}
 
@@ -406,36 +405,52 @@ void NativeWidgetMus::SetVisibleOnAllWorkspaces(bool always_visible) {
 }
 
 void NativeWidgetMus::Maximize() {
-  window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_MAXIMIZED);
+  window_tree_host_->platform_window()->Maximize();
 }
 
 void NativeWidgetMus::Minimize() {
-  window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_MINIMIZED);
+  window_tree_host_->platform_window()->Minimize();
 }
 
 bool NativeWidgetMus::IsMaximized() const {
-  return window_tree_host_->show_state() == mus::mojom::SHOW_STATE_MAXIMIZED;
+  return window_tree_host_->show_state() == ui::PLATFORM_WINDOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetMus::IsMinimized() const {
-  return window_tree_host_->show_state() == mus::mojom::SHOW_STATE_MINIMIZED;
+  return window_tree_host_->show_state() == ui::PLATFORM_WINDOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetMus::Restore() {
-  window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_RESTORED);
+  window_tree_host_->platform_window()->Restore();
 }
 
 void NativeWidgetMus::SetFullscreen(bool fullscreen) {
+  if (IsFullscreen() == fullscreen)
+    return;
   if (fullscreen) {
     show_state_before_fullscreen_ = window_tree_host_->show_state();
-    window_tree_host_->SetShowState(mus::mojom::SHOW_STATE_PRESENTATION);
+    window_tree_host_->platform_window()->ToggleFullscreen();
   } else {
-    window_tree_host_->SetShowState(show_state_before_fullscreen_);
+    switch (show_state_before_fullscreen_) {
+      case ui::PLATFORM_WINDOW_STATE_MAXIMIZED:
+        Maximize();
+        break;
+      case ui::PLATFORM_WINDOW_STATE_MINIMIZED:
+        Minimize();
+        break;
+      case ui::PLATFORM_WINDOW_STATE_UNKNOWN:
+      case ui::PLATFORM_WINDOW_STATE_NORMAL:
+      case ui::PLATFORM_WINDOW_STATE_FULLSCREEN:
+        // TODO(sad): This may not be sufficient.
+        Restore();
+        break;
+    }
   }
 }
 
 bool NativeWidgetMus::IsFullscreen() const {
-  return window_tree_host_->show_state() == mus::mojom::SHOW_STATE_PRESENTATION;
+  return window_tree_host_->show_state() ==
+      ui::PLATFORM_WINDOW_STATE_FULLSCREEN;
 }
 
 void NativeWidgetMus::SetOpacity(unsigned char opacity) {

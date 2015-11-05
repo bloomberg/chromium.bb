@@ -26,10 +26,12 @@
 
 namespace aura {
 
+#if defined(OS_WIN) || defined(OS_ANDROID) || defined(USE_OZONE)
 // static
 WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
   return new WindowTreeHostPlatform(bounds);
 }
+#endif
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
     : WindowTreeHostPlatform() {

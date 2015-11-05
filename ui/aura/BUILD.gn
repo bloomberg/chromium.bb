@@ -137,13 +137,6 @@ component("aura") {
     ]
   }
 
-  if (!is_win && !is_android && !use_ozone) {
-    sources -= [
-      "window_tree_host_platform.cc",
-      "window_tree_host_platform.h",
-    ]
-  }
-
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
