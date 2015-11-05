@@ -348,7 +348,7 @@ void MemoryInternalsProxy::ConvertTabsInformation(
 }
 
 void MemoryInternalsProxy::FinishCollection() {
-  information_->SetInteger("uptime", base::SysInfo::Uptime());
+  information_->SetInteger("uptime", base::SysInfo::Uptime().InMilliseconds());
   information_->SetString("os", base::SysInfo::OperatingSystemName());
   information_->SetString("os_version",
                           base::SysInfo::OperatingSystemVersion());

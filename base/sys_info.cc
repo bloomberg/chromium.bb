@@ -55,12 +55,12 @@ std::string SysInfo::HardwareModelName() {
 #endif
 
 // static
-int64 SysInfo::Uptime() {
+base::TimeDelta SysInfo::Uptime() {
   // This code relies on an implementation detail of TimeTicks::Now() - that
   // its return value happens to coincide with the system uptime value in
   // microseconds, on Win/Mac/iOS/Linux/ChromeOS and Android.
   int64 uptime_in_microseconds = TimeTicks::Now().ToInternalValue();
-  return uptime_in_microseconds / 1000;
+  return base::TimeDelta::FromMicroseconds(uptime_in_microseconds);
 }
 
 }  // namespace base

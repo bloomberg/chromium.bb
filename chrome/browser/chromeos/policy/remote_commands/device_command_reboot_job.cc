@@ -55,8 +55,7 @@ void DeviceCommandRebootJob::RunImpl(
     const CallbackWithResult& failed_callback) {
   // Determines the time delta between the command having been issued and the
   // boot time of the system.
-  const base::TimeDelta uptime =
-      base::TimeDelta::FromMilliseconds(base::SysInfo::Uptime());
+  const base::TimeDelta uptime = base::SysInfo::Uptime();
   const base::TimeTicks boot_time = base::TimeTicks::Now() - uptime;
   const base::TimeDelta delta = boot_time - issued_time();
   // If the reboot command was issued before the system booted, we inform the

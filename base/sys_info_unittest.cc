@@ -56,13 +56,13 @@ TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
 #endif
 
 TEST_F(SysInfoTest, Uptime) {
-  int64 up_time_1 = base::SysInfo::Uptime();
+  base::TimeDelta up_time_1 = base::SysInfo::Uptime();
   // UpTime() is implemented internally using TimeTicks::Now(), which documents
   // system resolution as being 1-15ms. Sleep a little longer than that.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
-  int64 up_time_2 = base::SysInfo::Uptime();
-  EXPECT_GT(up_time_1, 0);
-  EXPECT_GT(up_time_2, up_time_1);
+  base::TimeDelta up_time_2 = base::SysInfo::Uptime();
+  EXPECT_GT(up_time_1.InMicroseconds(), 0);
+  EXPECT_GT(up_time_2.InMicroseconds(), up_time_1.InMicroseconds());
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

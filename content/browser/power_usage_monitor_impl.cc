@@ -136,8 +136,7 @@ void PowerUsageMonitor::Start() {
 
   // Delay initialization until the system has been up for a while.
   // This is to mitigate the effect of increased power draw during system start.
-  base::TimeDelta uptime =
-      base::TimeDelta::FromMilliseconds(base::SysInfo::Uptime());
+  base::TimeDelta uptime = base::SysInfo::Uptime();
   base::TimeDelta min_uptime = base::TimeDelta::FromMinutes(kMinUptimeMinutes);
   if (uptime < min_uptime) {
     base::TimeDelta delay = min_uptime - uptime;

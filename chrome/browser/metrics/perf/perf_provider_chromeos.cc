@@ -407,7 +407,8 @@ void PerfProvider::ParseOutputProtoIfValid(
       AddToPerfHistogram(PROTOBUF_NOT_PARSED);
       return;
     }
-    sampled_profile->set_ms_after_boot(base::SysInfo::Uptime());
+    sampled_profile->set_ms_after_boot(
+        base::SysInfo::Uptime().InMilliseconds());
     sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
   } else {
     DCHECK(!perf_stat.empty());

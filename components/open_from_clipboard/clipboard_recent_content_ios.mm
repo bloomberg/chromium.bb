@@ -70,9 +70,7 @@
 - (void)didBecomeActive:(NSNotification*)notification {
   if (_delegate) {
     _delegate->LoadFromUserDefaults();
-    base::TimeDelta uptime =
-        base::TimeDelta::FromMilliseconds(base::SysInfo::Uptime());
-    if (_delegate->HasPasteboardChanged(uptime)) {
+    if (_delegate->HasPasteboardChanged(base::SysInfo::Uptime())) {
       _delegate->PasteboardChanged();
     }
   }
@@ -168,7 +166,7 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS(
     NSUserDefaults* group_user_defaults)
     : application_scheme_(application_scheme),
       shared_user_defaults_([group_user_defaults retain]) {
-  Init(base::TimeDelta::FromMilliseconds(base::SysInfo::Uptime()));
+  Init(base::SysInfo::Uptime());
 }
 
 ClipboardRecentContentIOS::ClipboardRecentContentIOS(

@@ -119,7 +119,7 @@ class TaskManagerDataDumper :
     dict->SetInteger("system.memory.physical", InMBFromB(memory));
     memory = base::SysInfo::AmountOfAvailablePhysicalMemory();
     dict->SetInteger("system.memory.available", InMBFromB(memory));
-    dict->SetInteger("system.uptime", base::SysInfo::Uptime() / 1000 );
+    dict->SetInteger("system.uptime", base::SysInfo::Uptime().InSeconds());
     dict->SetString("os.name", base::SysInfo::OperatingSystemName());
 #if !defined(OS_LINUX)
     int32 major, minor, bugfix;

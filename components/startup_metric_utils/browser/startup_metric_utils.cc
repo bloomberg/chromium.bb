@@ -348,9 +348,7 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
 
   // Bail if uptime < 7 minutes, to filter out cases where Chrome may have been
   // autostarted and the machine is under io pressure.
-  const int64 kSevenMinutesInMilliseconds =
-      base::TimeDelta::FromMinutes(7).InMilliseconds();
-  if (base::SysInfo::Uptime() < kSevenMinutesInMilliseconds)
+  if (base::SysInfo::Uptime() < base::TimeDelta::FromMinutes(7))
     return;
 
   // The Startup.BrowserMessageLoopStartTime histogram exhibits instability in

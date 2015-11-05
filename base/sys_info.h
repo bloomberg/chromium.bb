@@ -48,8 +48,8 @@ class BASE_EXPORT SysInfo {
   // or -1 on failure.
   static int64 AmountOfFreeDiskSpace(const FilePath& path);
 
-  // Returns system uptime in milliseconds.
-  static int64 Uptime();
+  // Returns system uptime.
+  static TimeDelta Uptime();
 
   // Returns a descriptive string for the current machine model or an empty
   // string if the machine model is unknown or an error occured.
