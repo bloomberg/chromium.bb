@@ -44,14 +44,14 @@ $(diagrams): $(diagramssrc)
 
 $(diagram_maps):  $(diagramssrc)
 
-xml/%/index.xml: $(scanned_src_files_%) wayland.doxygen $(diagrams) $(diagram_maps) | xml/%
+xml/%/index.xml: $(top_srcdir)/src/scanner.c $(scanned_src_files_%) wayland.doxygen $(diagrams) $(diagram_maps) | xml/%
 	$(AM_V_GEN)(cat wayland.doxygen; \
           echo "GENERATE_XML=YES"; \
           echo "XML_OUTPUT=xml/$*"; \
           echo "INPUT= $(scanned_src_files_$*)"; \
           ) | $(DOXYGEN) -
 
-man/man3/wl_display.3: $(scanned_src_files_man) wayland.doxygen | man/man3
+man/man3/wl_display.3: $(top_srcdir)/src/scanner.c $(scanned_src_files_man) wayland.doxygen | man/man3
 	$(AM_V_GEN)(cat wayland.doxygen; \
           echo "GENERATE_MAN=YES"; \
           echo "MAN_OUTPUT=man"; \
