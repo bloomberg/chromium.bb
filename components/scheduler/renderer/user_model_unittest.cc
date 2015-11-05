@@ -103,7 +103,27 @@ TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfter_GestureScrollBegin) {
   base::TimeDelta prediction_valid_duration;
   EXPECT_FALSE(user_model_->IsGestureExpectedSoon(clock_->NowTicks(),
                                                   &prediction_valid_duration));
-  EXPECT_EQ(base::TimeDelta(), prediction_valid_duration);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(
+                UserModel::kMedianGestureDurationMillis) -
+                delta,
+            prediction_valid_duration);
+}
+
+TEST_F(UserModelTest, GestureExpectedSoon_LongAfter_GestureScrollBegin) {
+  user_model_->DidStartProcessingInputEvent(
+      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+  user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
+
+  base::TimeDelta delta(base::TimeDelta::FromMilliseconds(
+      UserModel::kMedianGestureDurationMillis * 2));
+  clock_->Advance(delta);
+
+  base::TimeDelta prediction_valid_duration;
+  EXPECT_TRUE(user_model_->IsGestureExpectedSoon(clock_->NowTicks(),
+                                                 &prediction_valid_duration));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(
+                UserModel::kExpectSubsequentGestureMillis),
+            prediction_valid_duration);
 }
 
 TEST_F(UserModelTest, GestureExpectedSoon_ImmediatelyAfter_GestureScrollEnd) {
@@ -171,6 +191,63 @@ TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfterInput_GestureTap) {
   base::TimeDelta prediction_valid_duration;
   EXPECT_FALSE(user_model_->IsGestureExpectedSoon(clock_->NowTicks(),
                                                   &prediction_valid_duration));
+  EXPECT_EQ(base::TimeDelta(), prediction_valid_duration);
+}
+
+TEST_F(UserModelTest, IsGestureExpectedToContinue_NoGesture) {
+  base::TimeDelta prediction_valid_duration;
+  EXPECT_FALSE(user_model_->IsGestureExpectedToContinue(
+      clock_->NowTicks(), &prediction_valid_duration));
+  EXPECT_EQ(base::TimeDelta(), prediction_valid_duration);
+}
+
+TEST_F(UserModelTest, IsGestureExpectedToContinue_GestureJustStarted) {
+  user_model_->DidStartProcessingInputEvent(
+      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+  base::TimeDelta prediction_valid_duration;
+  EXPECT_TRUE(user_model_->IsGestureExpectedToContinue(
+      clock_->NowTicks(), &prediction_valid_duration));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(
+                UserModel::kMedianGestureDurationMillis),
+            prediction_valid_duration);
+}
+
+TEST_F(UserModelTest, IsGestureExpectedToContinue_GestureJustEnded) {
+  user_model_->DidStartProcessingInputEvent(
+      blink::WebInputEvent::Type::GestureScrollEnd, clock_->NowTicks());
+  base::TimeDelta prediction_valid_duration;
+  EXPECT_FALSE(user_model_->IsGestureExpectedToContinue(
+      clock_->NowTicks(), &prediction_valid_duration));
+  EXPECT_EQ(base::TimeDelta(), prediction_valid_duration);
+}
+
+TEST_F(UserModelTest, IsGestureExpectedToContinue_ShortlyAfterGestureStarted) {
+  user_model_->DidStartProcessingInputEvent(
+      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+
+  base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
+  clock_->Advance(delta);
+
+  base::TimeDelta prediction_valid_duration;
+  EXPECT_TRUE(user_model_->IsGestureExpectedToContinue(
+      clock_->NowTicks(), &prediction_valid_duration));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(
+                UserModel::kMedianGestureDurationMillis) -
+                delta,
+            prediction_valid_duration);
+}
+
+TEST_F(UserModelTest, IsGestureExpectedToContinue_LongAfterGestureStarted) {
+  user_model_->DidStartProcessingInputEvent(
+      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+
+  base::TimeDelta delta(base::TimeDelta::FromMilliseconds(
+      UserModel::kMedianGestureDurationMillis * 2));
+  clock_->Advance(delta);
+
+  base::TimeDelta prediction_valid_duration;
+  EXPECT_FALSE(user_model_->IsGestureExpectedToContinue(
+      clock_->NowTicks(), &prediction_valid_duration));
   EXPECT_EQ(base::TimeDelta(), prediction_valid_duration);
 }
 

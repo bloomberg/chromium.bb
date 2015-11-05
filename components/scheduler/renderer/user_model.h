@@ -38,10 +38,20 @@ class SCHEDULER_EXPORT UserModel {
   bool IsGestureExpectedSoon(const base::TimeTicks now,
                              base::TimeDelta* prediction_valid_duration);
 
+  // Returns true if a gesture has been in progress for less than the median
+  // gesture duration. The prediction may change after
+  // |prediction_valid_duration| has elapsed.
+  bool IsGestureExpectedToContinue(
+      const base::TimeTicks now,
+      base::TimeDelta* prediction_valid_duration) const;
+
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
   // The time we should stay in a priority-escalated mode after an input event.
   static const int kGestureEstimationLimitMillis = 100;
+
+  // This is based on two weeks of Android usage data.
+  static const int kMedianGestureDurationMillis = 300;
 
   // We consider further gesture start events to be likely if the user has
   // interacted with the device in the past two seconds.

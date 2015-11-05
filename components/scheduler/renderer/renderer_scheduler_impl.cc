@@ -636,10 +636,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   bool block_expensive_timer_tasks = false;
   switch (use_case) {
     case UseCase::COMPOSITOR_GESTURE:
-      // We could be in a fling, so it's possible for another gesture to start.
       if (touchstart_expected_soon) {
         block_expensive_loading_tasks = true;
         block_expensive_timer_tasks = true;
+        new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
       } else {
         // What we really want to do is priorize loading tasks, but that doesn't
         // seem to be safe. Instead we do that by proxy by deprioritizing
@@ -904,6 +904,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                    IdleHelper::IdlePeriodStateToString(
                        idle_helper_.SchedulerIdlePeriodState()));
   state->SetBoolean("renderer_hidden", MainThreadOnly().renderer_hidden);
+  state->SetBoolean("have_seen_a_begin_main_frame",
+                    MainThreadOnly().have_seen_a_begin_main_frame);
   state->SetBoolean("renderer_backgrounded",
                     MainThreadOnly().renderer_backgrounded);
   state->SetBoolean("timer_queue_suspended_when_backgrounded",

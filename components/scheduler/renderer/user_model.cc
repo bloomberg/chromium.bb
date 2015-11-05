@@ -144,9 +144,19 @@ bool UserModel::IsGestureExpectedSoon(
 bool UserModel::IsGestureExpectedSoonImpl(
     const base::TimeTicks now,
     base::TimeDelta* prediction_valid_duration) const {
-  // If we've have a finished a gesture then a subsequent gesture is deemed
-  // likely.
-  if (!is_gesture_active_) {
+  if (is_gesture_active_) {
+    if (IsGestureExpectedToContinue(now, prediction_valid_duration)) {
+      return false;
+    } else {
+      // If a gesture is not expected to continue then we expect a subsequent
+      // gesture soon.
+      *prediction_valid_duration =
+          base::TimeDelta::FromMilliseconds(kExpectSubsequentGestureMillis);
+      return true;
+    }
+  } else {
+    // If we've have a finished a gesture then a subsequent gesture is deemed
+    // likely.
     base::TimeDelta expect_subsequent_gesture_for =
         base::TimeDelta::FromMilliseconds(kExpectSubsequentGestureMillis);
     if (last_continuous_gesture_time_.is_null() ||
@@ -155,6 +165,23 @@ bool UserModel::IsGestureExpectedSoonImpl(
     }
     *prediction_valid_duration =
         last_continuous_gesture_time_ + expect_subsequent_gesture_for - now;
+    return true;
+  }
+}
+
+bool UserModel::IsGestureExpectedToContinue(
+    const base::TimeTicks now,
+    base::TimeDelta* prediction_valid_duration) const {
+  if (!is_gesture_active_)
+    return false;
+
+  base::TimeDelta median_gesture_duration =
+      base::TimeDelta::FromMilliseconds(kMedianGestureDurationMillis);
+  base::TimeTicks expected_gesture_end_time =
+      last_gesture_start_time_ + median_gesture_duration;
+
+  if (expected_gesture_end_time > now) {
+    *prediction_valid_duration = expected_gesture_end_time - now;
     return true;
   }
   return false;
