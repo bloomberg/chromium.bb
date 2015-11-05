@@ -42,6 +42,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
@@ -358,6 +359,8 @@ void ServiceWorkerContainer::setController(WebPassOwnPtr<WebServiceWorker::Handl
     if (!executionContext())
         return;
     m_controller = ServiceWorker::from(executionContext(), handle.release());
+    if (m_controller)
+        UseCounter::count(executionContext(), UseCounter::ServiceWorkerControlledPage);
     if (shouldNotifyControllerChange)
         dispatchEvent(Event::create(EventTypeNames::controllerchange));
 }
