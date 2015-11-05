@@ -43,9 +43,9 @@ namespace {
 // Size of client edge drawn inside the outer frame borders.
 const int kNonClientBorderThicknessPreWin10 = 3;
 const int kNonClientBorderThicknessWin10 = 1;
-// Besides the frame border, there's another 9 px of empty space atop the
-// window in restored mode, to use to drag the window around.
-const int kNonClientRestoredExtraThickness = 9;
+// Besides the frame border, there's empty space atop the window in restored
+// mode, to use to drag the window around.
+const int kNonClientRestoredExtraThickness = 11;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of the top and bottom edges triggers diagonal resizing.
 const int kResizeCornerWidth = 16;
@@ -328,13 +328,18 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   if (frame()->IsFullscreen())
     return 0;
 
+  const int top = FrameTopBorderHeight();
   // The tab top inset is equal to the height of any shadow region above the
   // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
-  // shadow region off the top of the screen.
-  const int tab_shadow_height = GetLayoutInsets(TAB).top() - 1;
-  return FrameTopBorderHeight() +
-      (frame()->IsMaximized() ?
-          -tab_shadow_height : kNonClientRestoredExtraThickness);
+  // shadow region off the top of the screen but leave the top stroke.
+  // Annoyingly, the pre-MD layout uses different heights for the hit-test
+  // exclusion region (which we want here, since we're trying to size the border
+  // so that the region above the tab's hit-test zone matches) versus the shadow
+  // thickness.
+  const int exclusion = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
+  return frame()->IsMaximized() ?
+      (top - GetLayoutInsets(TAB).top() + 1) :
+      (top + kNonClientRestoredExtraThickness - exclusion);
 }
 
 void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {

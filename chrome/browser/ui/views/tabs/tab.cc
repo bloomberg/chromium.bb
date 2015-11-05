@@ -699,16 +699,14 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
 #if defined(OS_MACOSX)
   // Mac's Cocoa UI doesn't have shadows.
   const SkScalar kTabInset = 0;
-  const SkScalar kTabTop = 0;
 #elif defined(TOOLKIT_VIEWS)
   // The views browser UI has shadows in the left, right and top parts of the
   // tab.
   const SkScalar kTabInset = 6;
-  const SkScalar kTabTop = 2;
 #endif
 
   SkScalar left = kTabInset;
-  SkScalar top = kTabTop;
+  SkScalar top = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
   SkScalar right = SkIntToScalar(width()) - kTabInset;
   SkScalar bottom = SkIntToScalar(height());
 
@@ -722,7 +720,7 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
   mask->lineTo(left + kTabCapWidth, top);
 
   // Extend over the top shadow area if we have one and the caller wants it.
-  if (kTabTop > 0 && extend_to_top) {
+  if (top > 0 && extend_to_top) {
     mask->lineTo(left + kTabCapWidth, 0);
     mask->lineTo(right - kTabCapWidth, 0);
   }

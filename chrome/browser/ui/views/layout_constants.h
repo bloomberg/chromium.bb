@@ -72,6 +72,13 @@ enum LayoutConstant {
   // Width available for content inside a pinned tab.
   TAB_PINNED_CONTENT_WIDTH,
 
+  // Height of the region atop the tab bounds that is normally excluded when
+  // calculating the tab hit test region or considering where to paint a
+  // custom theme background.  (Based on theme behavior it seems like at some
+  // point this was added to the area above the top of the tab images, and we
+  // now need to subtract it back off to compensate.)
+  TAB_TOP_EXCLUSION_HEIGHT,
+
   // Non-ash uses a rounded content area with no shadow in the assets.
   // Ash doesn't use a rounded content area and its top edge has an extra
   // shadow.

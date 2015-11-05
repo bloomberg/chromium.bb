@@ -20,9 +20,9 @@
 
 namespace {
 
-// Besides the frame border, there's another 9 px of empty space atop the
-// window in restored mode, to use to drag the window around.
-const int kNonClientRestoredExtraThickness = 9;
+// Besides the frame border, there's empty space atop the window in restored
+// mode, to use to drag the window around.
+const int kNonClientRestoredExtraThickness = 11;
 
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
@@ -227,8 +227,13 @@ int OpaqueBrowserFrameViewLayout::NonClientTopBorderHeight(
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
   const int top = NonClientTopBorderHeight(restored);
+  // Annoyingly, the pre-MD layout uses different heights for the hit-test
+  // exclusion region (which we want here, since we're trying to size the border
+  // so that the region above the tab's hit-test zone matches) versus the shadow
+  // thickness.
+  const int exclusion = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
   return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen())) ?
-      top : (top + kNonClientRestoredExtraThickness);
+      top : (top + kNonClientRestoredExtraThickness - exclusion);
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarBottomThickness(bool restored) const {

@@ -25,9 +25,11 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kTabMaximumTitleWidth[] = {175, 175, 175};
   const int kTabPinnedContentWidth[] = {25, 25, 25};
 #if defined(OS_MACOSX)
+  const int kTabTopExclusionHeight[] = {0, 0, 0};
   const int kTabstripNewTabButtonOverlap[] = {8, 8, 8};
   const int kTabstripTabOverlap[] = {19, 19, 19};
 #else
+  const int kTabTopExclusionHeight[] = {2, 2, 2};
   const int kTabstripNewTabButtonOverlap[] = {11, 11, 11};
   const int kTabstripTabOverlap[] = {26, 26, 26};
 #endif
@@ -78,6 +80,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kTabMaximumTitleWidth[mode];
     case TAB_PINNED_CONTENT_WIDTH:
       return kTabPinnedContentWidth[mode];
+    case TAB_TOP_EXCLUSION_HEIGHT:
+      return kTabTopExclusionHeight[mode];
     case TOOLBAR_CONTENT_SHADOW_HEIGHT:
       return kToolbarContentShadowHeight[mode];
     case TOOLBAR_CONTENT_SHADOW_HEIGHT_ASH:
