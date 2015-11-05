@@ -479,7 +479,6 @@ public:
         WindowPostMessage = 574,
         WindowPostMessageWithLegacyTargetOriginArgument = 575,
         RenderRuby = 576,
-        CanvasRenderingContext2DCompositeOperationDarker = 577,
         ScriptElementWithInvalidTypeHasSrc = 578,
         XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload = 581,
         CSSSelectorPseudoScrollbar = 582,

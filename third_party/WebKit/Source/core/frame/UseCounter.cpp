@@ -831,9 +831,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case ConsoleTimelineEnd:
         return replacedBy("console.timelineEnd", "console.timeEnd");
 
-    case CanvasRenderingContext2DCompositeOperationDarker:
-        return replacedBy("darker", "darken");
-
     case XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload:
         return "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.";
 

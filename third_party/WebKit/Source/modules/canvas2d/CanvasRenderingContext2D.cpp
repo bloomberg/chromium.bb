@@ -45,7 +45,6 @@
 #include "core/events/Event.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/TextMetrics.h"
@@ -630,14 +629,7 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
 {
     CompositeOperator op = CompositeSourceOver;
     WebBlendMode blendMode = WebBlendModeNormal;
-    // TODO(dshwang): Support nonstandard "darker" until M43. crbug.com/425628
-    String operationName = operation;
-    if (operation == "darker") {
-        operationName = "darken";
-        if (canvas())
-            UseCounter::countDeprecation(canvas()->document(), UseCounter::CanvasRenderingContext2DCompositeOperationDarker);
-    }
-    if (!parseCompositeAndBlendOperator(operationName, op, blendMode))
+    if (!parseCompositeAndBlendOperator(operation, op, blendMode))
         return;
     SkXfermode::Mode xfermode = WebCoreCompositeToSkiaComposite(op, blendMode);
     if (state().globalComposite() == xfermode)
