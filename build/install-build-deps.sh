@@ -174,16 +174,25 @@ nacl_list="g++-mingw-w64-i686 lib32z1-dev
            libxrandr2:i386 libxss1:i386 libxtst6:i386 texinfo xvfb
            ${naclports_list}"
 
-# Find the proper version of libgbm-dev. We can't just install libgbm-dev as
-# it depends on mesa, and only one version of mesa can exists on the system.
-# Hence we must match the same version or this entire script will fail.
-mesa_variant=""
-for variant in "-lts-trusty" "-lts-utopic"; do
-  if $(dpkg-query -Wf'${Status}' libgl1-mesa-glx${variant} 2>/dev/null | \
-       grep -q " ok installed"); then
-    mesa_variant="${variant}"
-  fi
-done
+# Find the proper version of packages that depend on mesa. Only one -lts variant
+# of mesa can be installed and everything that depends on it must match.
+
+# Query for the name and status of all mesa LTS variants, filter for only
+# installed packages, extract just the name, and eliminate duplicates (there can
+# be more than one with the same name in the case of multiarch). Expand into an
+# array.
+mesa_packages=($(dpkg-query -Wf'${package} ${status}\n' \
+                            libgl1-mesa-glx-lts-\* | \
+                 grep " ok installed" | cut -d " " -f 1 | sort -u))
+if [ "${#mesa_packages[@]}" -eq 0 ]; then
+  mesa_variant=""
+elif [ "${#mesa_packages[@]}" -eq 1 ]; then
+  # Strip the base package name and leave just "-lts-whatever"
+  mesa_variant="${mesa_packages[0]#libgl1-mesa-glx}"
+else
+  echo "ERROR: unable to determine which libgl1-mesa-glx variant is installed."
+  exit 1
+fi
 dev_list="${dev_list} libgbm-dev${mesa_variant}
           libgles2-mesa-dev${mesa_variant} libgl1-mesa-dev${mesa_variant}
           mesa-common-dev${mesa_variant}"
