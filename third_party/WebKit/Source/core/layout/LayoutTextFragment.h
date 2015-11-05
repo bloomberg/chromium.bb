@@ -44,6 +44,7 @@ public:
     bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
 
     unsigned start() const { return m_start; }
+    unsigned fragmentLength() const { return m_fragmentLength; }
 
     unsigned textStartOffset() const override { return start(); }
 
@@ -80,7 +81,6 @@ private:
 
     Text* associatedTextNode() const;
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
-    unsigned fragmentLength() const { return m_fragmentLength; }
 
     unsigned m_start;
     unsigned m_fragmentLength;

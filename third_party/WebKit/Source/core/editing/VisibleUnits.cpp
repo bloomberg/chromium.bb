@@ -29,6 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
@@ -51,6 +52,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -2149,6 +2151,32 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, L
     return VisiblePosition();
 }
 
+// TODO(yosin): We should use |associatedLayoutObjectOf()| in "VisibleUnits.cpp"
+// where it takes |LayoutObject| from |Position|.
+static LayoutObject* associatedLayoutObjectOf(const Node& node, int offsetInNode)
+{
+    ASSERT(offsetInNode >= 0);
+    LayoutObject* layoutObject = node.layoutObject();
+    if (!node.isTextNode() || !layoutObject || !toLayoutText(layoutObject)->isTextFragment())
+        return layoutObject;
+    LayoutTextFragment* layoutTextFragment = toLayoutTextFragment(layoutObject);
+    if (layoutTextFragment->isRemainingTextLayoutObject()) {
+        if (static_cast<unsigned>(offsetInNode) >= layoutTextFragment->start())
+            return layoutObject;
+        LayoutObject* firstLetterLayoutObject = layoutTextFragment->firstLetterPseudoElement()->layoutObject();
+        if (!firstLetterLayoutObject)
+            return nullptr;
+        // TODO(yosin): We're not sure when |firstLetterLayoutObject| has
+        // multiple child layout object.
+        ASSERT(firstLetterLayoutObject->slowFirstChild() == firstLetterLayoutObject->slowLastChild());
+        return firstLetterLayoutObject->slowFirstChild();
+    }
+    // TODO(yosin): We should rename |LayoutTextFramge::length()| instead of
+    // |end()|, once |LayoutTextFramge| has it. See http://crbug.com/545789
+    ASSERT(static_cast<unsigned>(offsetInNode) <= layoutTextFragment->start() + layoutTextFragment->fragmentLength());
+    return layoutTextFragment;
+}
+
 template <typename Strategy>
 static bool inRenderedText(const PositionTemplate<Strategy>& position)
 {
@@ -2156,22 +2184,23 @@ static bool inRenderedText(const PositionTemplate<Strategy>& position)
     if (!anchorNode || !anchorNode->isTextNode())
         return false;
 
-    LayoutObject* layoutObject = anchorNode->layoutObject();
+    const int offsetInNode = position.computeEditingOffset();
+    LayoutObject* layoutObject = associatedLayoutObjectOf(*anchorNode, offsetInNode);
     if (!layoutObject)
         return false;
 
-    const int offsetInNode = position.computeEditingOffset();
     LayoutText* textLayoutObject = toLayoutText(layoutObject);
+    const int textOffset = offsetInNode - textLayoutObject->textStartOffset();
     for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
-        if (offsetInNode < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
+        if (textOffset < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
             // The offset we're looking for is before this node
             // this means the offset must be in content that is
             // not laid out. Return false.
             return false;
         }
-        if (box->containsCaretOffset(offsetInNode)) {
+        if (box->containsCaretOffset(textOffset)) {
             // Return false for offsets inside composed characters.
-            return offsetInNode == 0 || offsetInNode == textLayoutObject->nextOffset(textLayoutObject->previousOffset(offsetInNode));
+            return textOffset == 0 || textOffset == textLayoutObject->nextOffset(textLayoutObject->previousOffset(textOffset));
         }
     }
 
@@ -2406,7 +2435,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
             return lastVisible.deprecatedComputePosition();
 
         // skip position in non-laid out or invisible node
-        LayoutObject* layoutObject = currentNode->layoutObject();
+        LayoutObject* layoutObject = associatedLayoutObjectOf(*currentNode, currentPos.offsetInLeafNode());
         if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
             continue;
 
@@ -2433,19 +2462,33 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
 
         // return current position if it is in laid out text
         if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
+            LayoutText* const textLayoutObject = toLayoutText(layoutObject);
+            const unsigned textStartOffset = textLayoutObject->textStartOffset();
             if (currentNode != startNode) {
                 // This assertion fires in layout tests in the case-transform.html test because
                 // of a mix-up between offsets in the text in the DOM tree with text in the
                 // layout tree which can have a different length due to case transformation.
                 // Until we resolve that, disable this so we can run the layout tests!
                 // ASSERT(currentOffset >= layoutObject->caretMaxOffset());
-                return PositionTemplate<Strategy>(currentNode, layoutObject->caretMaxOffset());
+                return PositionTemplate<Strategy>(currentNode, layoutObject->caretMaxOffset() + textStartOffset);
             }
 
-            unsigned textOffset = currentPos.offsetInLeafNode();
-            LayoutText* textLayoutObject = toLayoutText(layoutObject);
+            // Map offset in DOM node to offset in InlineBox.
+            ASSERT(currentPos.offsetInLeafNode() >= static_cast<int>(textStartOffset));
+            const unsigned textOffset = currentPos.offsetInLeafNode() - textStartOffset;
             InlineTextBox* lastTextBox = textLayoutObject->lastTextBox();
             for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+                if (textOffset == box->start()) {
+                    if (textLayoutObject->isTextFragment() && toLayoutTextFragment(layoutObject)->isRemainingTextLayoutObject()) {
+                        // |currentPos| is at start of remaining text of
+                        // |Text| node with :first-letter.
+                        ASSERT(currentPos.offsetInLeafNode() >= 1);
+                        LayoutObject* firstLetterLayoutObject = toLayoutTextFragment(layoutObject)->firstLetterPseudoElement()->layoutObject();
+                        if (firstLetterLayoutObject && firstLetterLayoutObject->style()->visibility() == VISIBLE)
+                            return currentPos.computePosition();
+                    }
+                    continue;
+                }
                 if (textOffset <= box->start() + box->len()) {
                     if (textOffset > box->start())
                         return currentPos.computePosition();
@@ -2543,7 +2586,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
             return lastVisible.deprecatedComputePosition();
 
         // skip position in non-laid out or invisible node
-        LayoutObject* layoutObject = currentNode->layoutObject();
+        LayoutObject* layoutObject = associatedLayoutObjectOf(*currentNode, currentPos.offsetInLeafNode());
         if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
             continue;
 
@@ -2565,13 +2608,16 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
 
         // return current position if it is in laid out text
         if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
+            LayoutText* const textLayoutObject = toLayoutText(layoutObject);
+            const unsigned textStartOffset = textLayoutObject->textStartOffset();
             if (currentNode != startNode) {
                 ASSERT(currentPos.atStartOfNode());
-                return PositionTemplate<Strategy>(currentNode, layoutObject->caretMinOffset());
+                return PositionTemplate<Strategy>(currentNode, layoutObject->caretMinOffset() + textStartOffset);
             }
 
-            unsigned textOffset = currentPos.offsetInLeafNode();
-            LayoutText* textLayoutObject = toLayoutText(layoutObject);
+            // Map offset in DOM node to offset in InlineBox.
+            ASSERT(currentPos.offsetInLeafNode() >= static_cast<int>(textStartOffset));
+            const unsigned textOffset = currentPos.offsetInLeafNode() - textStartOffset;
             InlineTextBox* lastTextBox = textLayoutObject->lastTextBox();
             for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->end()) {

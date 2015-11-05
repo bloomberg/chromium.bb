@@ -762,6 +762,28 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor)
     EXPECT_EQ(PositionInComposedTree::lastPositionInNode(host.get()), mostForwardCaretPosition(PositionInComposedTree::afterNode(host.get())));
 }
 
+TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetter)
+{
+    // Note: first-letter pseudo element contains letter and punctuations.
+    const char* bodyContent = "<style>p:first-letter {color:red;}</style><p id=sample> (2)45 </p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample")->firstChild();
+
+    EXPECT_EQ(Position(sample->parentNode(), 0), mostBackwardCaretPosition(Position(sample, 0)));
+    EXPECT_EQ(Position(sample->parentNode(), 0), mostBackwardCaretPosition(Position(sample, 1)));
+    EXPECT_EQ(Position(sample, 2), mostBackwardCaretPosition(Position(sample, 2)));
+    EXPECT_EQ(Position(sample, 3), mostBackwardCaretPosition(Position(sample, 3)));
+    EXPECT_EQ(Position(sample, 4), mostBackwardCaretPosition(Position(sample, 4)));
+    EXPECT_EQ(Position(sample, 5), mostBackwardCaretPosition(Position(sample, 5)));
+    EXPECT_EQ(Position(sample, 6), mostBackwardCaretPosition(Position(sample, 6)));
+    EXPECT_EQ(Position(sample, 6), mostBackwardCaretPosition(Position(sample, 7)));
+    EXPECT_EQ(Position(sample, 6), mostBackwardCaretPosition(Position::lastPositionInNode(sample->parentNode())));
+    EXPECT_EQ(Position(sample, 6), mostBackwardCaretPosition(Position::afterNode(sample->parentNode())));
+    EXPECT_EQ(Position::lastPositionInNode(document().body()), mostBackwardCaretPosition(Position::lastPositionInNode(document().body())));
+}
+
 TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='host'><b id='one'>1</b></p>";
@@ -776,6 +798,28 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor)
 
     EXPECT_EQ(Position(one->firstChild(), 1), mostBackwardCaretPosition(Position::afterNode(host.get())));
     EXPECT_EQ(PositionInComposedTree(three->firstChild(), 3), mostBackwardCaretPosition(PositionInComposedTree::afterNode(host.get())));
+}
+
+TEST_F(VisibleUnitsTest, mostForwardCaretPositionFirstLetter)
+{
+    // Note: first-letter pseudo element contains letter and punctuations.
+    const char* bodyContent = "<style>p:first-letter {color:red;}</style><p id=sample> (2)45 </p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample")->firstChild();
+
+    EXPECT_EQ(Position(document().body(), 0), mostForwardCaretPosition(Position::firstPositionInNode(document().body())));
+    EXPECT_EQ(Position(sample, 1), mostForwardCaretPosition(Position::beforeNode(sample->parentNode())));
+    EXPECT_EQ(Position(sample, 1), mostForwardCaretPosition(Position::firstPositionInNode(sample->parentNode())));
+    EXPECT_EQ(Position(sample, 1), mostForwardCaretPosition(Position(sample, 0)));
+    EXPECT_EQ(Position(sample, 1), mostForwardCaretPosition(Position(sample, 1)));
+    EXPECT_EQ(Position(sample, 2), mostForwardCaretPosition(Position(sample, 2)));
+    EXPECT_EQ(Position(sample, 3), mostForwardCaretPosition(Position(sample, 3)));
+    EXPECT_EQ(Position(sample, 4), mostForwardCaretPosition(Position(sample, 4)));
+    EXPECT_EQ(Position(sample, 5), mostForwardCaretPosition(Position(sample, 5)));
+    EXPECT_EQ(Position(sample, 7), mostForwardCaretPosition(Position(sample, 6)));
+    EXPECT_EQ(Position(sample, 7), mostForwardCaretPosition(Position(sample, 7)));
 }
 
 TEST_F(VisibleUnitsTest, nextPositionOf)
