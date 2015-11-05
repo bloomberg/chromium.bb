@@ -41,12 +41,16 @@ source_set("lib") {
     "transient_window_manager.cc",
     "transient_window_manager.h",
     "transient_window_observer.h",
+    "transient_window_stacking_client.cc",
+    "transient_window_stacking_client.h",
     "window_coordinate_conversions.cc",
     "window_coordinate_conversions.h",
     "window_finder.cc",
     "window_finder.h",
     "window_manager_access_policy.cc",
     "window_manager_access_policy.h",
+    "window_stacking_client.cc",
+    "window_stacking_client.h",
     "window_tree_host_connection.cc",
     "window_tree_host_connection.h",
     "window_tree_host_delegate.h",
@@ -54,6 +58,8 @@ source_set("lib") {
     "window_tree_host_impl.h",
     "window_tree_impl.cc",
     "window_tree_impl.h",
+    "window_utils.cc",
+    "window_utils.h",
   ]
 
   deps = [

@@ -54,6 +54,8 @@ class ServerWindowObserver {
                                  ServerWindow* relative,
                                  mojom::OrderDirection direction) {}
 
+  virtual void OnWindowStackingChanged(ServerWindow* window) {}
+
   virtual void OnWillChangeWindowVisibility(ServerWindow* window) {}
   virtual void OnWindowVisibilityChanged(ServerWindow* window) {}
 

@@ -10,6 +10,7 @@
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/server_window_surface_manager.h"
+#include "components/mus/ws/window_stacking_client.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace mus {
@@ -103,6 +104,12 @@ void ServerWindow::Reorder(ServerWindow* child,
   DCHECK(child);
   DCHECK(child->parent() == this);
   DCHECK_GT(children_.size(), 1u);
+
+  WindowStackingClient* stacking_client = GetWindowStackingClient();
+  if (stacking_client &&
+      !stacking_client->AdjustStacking(&child, &relative, &direction))
+    return;
+
   children_.erase(std::find(children_.begin(), children_.end(), child));
   Windows::iterator i = std::find(children_.begin(), children_.end(), relative);
   if (direction == mojom::ORDER_DIRECTION_ABOVE) {
@@ -114,6 +121,21 @@ void ServerWindow::Reorder(ServerWindow* child,
   }
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnWindowReordered(this, relative, direction));
+  child->OnStackingChanged();
+}
+
+void ServerWindow::StackChildAtBottom(ServerWindow* child) {
+  // There's nothing to do if the child is already at the bottom.
+  if (children_.size() <= 1 || child == children_.front())
+    return;
+  Reorder(child, children_.front(), mojom::ORDER_DIRECTION_BELOW);
+}
+
+void ServerWindow::StackChildAtTop(ServerWindow* child) {
+  // There's nothing to do if the child is already at the top.
+  if (children_.size() <= 1 || child == children_.back())
+    return;
+  Reorder(child, children_.back(), mojom::ORDER_DIRECTION_ABOVE);
 }
 
 void ServerWindow::SetBounds(const gfx::Rect& bounds) {
@@ -273,6 +295,11 @@ void ServerWindow::BuildDebugInfo(const std::string& depth,
 void ServerWindow::RemoveImpl(ServerWindow* window) {
   window->parent_ = NULL;
   children_.erase(std::find(children_.begin(), children_.end(), window));
+}
+
+void ServerWindow::OnStackingChanged() {
+  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
+                    OnWindowStackingChanged(this));
 }
 
 }  // namespace ws

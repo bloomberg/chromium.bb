@@ -60,6 +60,8 @@ class ServerWindow {
   void Reorder(ServerWindow* child,
                ServerWindow* relative,
                mojom::OrderDirection direction);
+  void StackChildAtBottom(ServerWindow* child);
+  void StackChildAtTop(ServerWindow* child);
 
   const gfx::Rect& bounds() const { return bounds_; }
   // Sets the bounds. If the size changes this implicitly resets the client
@@ -127,9 +129,11 @@ class ServerWindow {
 #endif
 
  private:
-
   // Implementation of removing a window. Doesn't send any notification.
   void RemoveImpl(ServerWindow* window);
+
+  // Called when this window's stacking order among its siblings is changed.
+  void OnStackingChanged();
 
   ServerWindowDelegate* delegate_;
   const WindowId id_;
