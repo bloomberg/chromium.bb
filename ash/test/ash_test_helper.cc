@@ -32,6 +32,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #endif
 
 #if defined(OS_WIN)
@@ -54,6 +55,7 @@ AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
   CHECK(message_loop_);
 #if defined(OS_CHROMEOS)
   dbus_thread_manager_initialized_ = false;
+  bluez_dbus_manager_initialized_ = false;
 #endif
 #if defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
@@ -91,6 +93,15 @@ void AshTestHelper::SetUp(bool start_session) {
     chromeos::DBusThreadManager::Initialize();
     dbus_thread_manager_initialized_ = true;
   }
+
+  if (!bluez::BluezDBusManager::IsInitialized()) {
+    bluez::BluezDBusManager::Initialize(
+        chromeos::DBusThreadManager::Get()->GetSystemBus(),
+        chromeos::DBusThreadManager::Get()->IsUsingStub(
+            chromeos::DBusClientBundle::BLUETOOTH));
+    bluez_dbus_manager_initialized_ = true;
+  }
+
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
@@ -136,6 +147,10 @@ void AshTestHelper::TearDown() {
 
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::Shutdown();
+  if (bluez_dbus_manager_initialized_) {
+    bluez::BluezDBusManager::Shutdown();
+    bluez_dbus_manager_initialized_ = false;
+  }
   if (dbus_thread_manager_initialized_) {
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_initialized_ = false;

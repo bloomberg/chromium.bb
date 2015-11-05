@@ -101,6 +101,8 @@ class AshTestHelper {
 #if defined(OS_CHROMEOS)
   // Check if DBus Thread Manager was initialized here.
   bool dbus_thread_manager_initialized_;
+  // Check if Bluez DBus Manager was initialized here.
+  bool bluez_dbus_manager_initialized_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);

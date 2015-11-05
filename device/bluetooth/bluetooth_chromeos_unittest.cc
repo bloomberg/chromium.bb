@@ -6,12 +6,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
-#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
-#include "chromeos/dbus/fake_bluetooth_device_client.h"
-#include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
-#include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
@@ -20,6 +14,12 @@
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_pairing_chromeos.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_service_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -57,17 +57,18 @@ int GetDeviceIndexByAddress(BluetoothAdapter::DeviceList& devices,
 }
 
 class FakeBluetoothProfileServiceProviderDelegate
-    : public chromeos::BluetoothProfileServiceProvider::Delegate {
+    : public bluez::BluetoothProfileServiceProvider::Delegate {
  public:
   FakeBluetoothProfileServiceProviderDelegate() {}
 
-  // BluetoothProfileServiceProvider::Delegate:
+  // bluez::BluetoothProfileServiceProvider::Delegate:
   void Released() override {}
 
-  void NewConnection(const dbus::ObjectPath&,
-                     scoped_ptr<dbus::FileDescriptor>,
-                     const BluetoothProfileServiceProvider::Delegate::Options&,
-                     const ConfirmationCallback&) override {}
+  void NewConnection(
+      const dbus::ObjectPath&,
+      scoped_ptr<dbus::FileDescriptor>,
+      const bluez::BluetoothProfileServiceProvider::Delegate::Options&,
+      const ConfirmationCallback&) override {}
 
   void RequestDisconnection(const dbus::ObjectPath&,
                             const ConfirmationCallback&) override {}
@@ -165,25 +166,28 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
 class BluetoothChromeOSTest : public testing::Test {
  public:
   void SetUp() override {
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    // We need to initialize DBusThreadManager early to prevent
+    scoped_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
+        bluez::BluezDBusManager::GetSetterForTesting();
+    // We need to initialize BluezDBusManager early to prevent
     // Bluetooth*::Create() methods from picking the real instead of fake
     // implementations.
-    fake_bluetooth_adapter_client_ = new FakeBluetoothAdapterClient;
+    fake_bluetooth_adapter_client_ = new bluez::FakeBluetoothAdapterClient;
     dbus_setter->SetBluetoothAdapterClient(
-        scoped_ptr<BluetoothAdapterClient>(fake_bluetooth_adapter_client_));
-    fake_bluetooth_device_client_ = new FakeBluetoothDeviceClient;
+        scoped_ptr<bluez::BluetoothAdapterClient>(
+            fake_bluetooth_adapter_client_));
+    fake_bluetooth_device_client_ = new bluez::FakeBluetoothDeviceClient;
     dbus_setter->SetBluetoothDeviceClient(
-        scoped_ptr<BluetoothDeviceClient>(fake_bluetooth_device_client_));
+        scoped_ptr<bluez::BluetoothDeviceClient>(
+            fake_bluetooth_device_client_));
     dbus_setter->SetBluetoothInputClient(
-        scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
+        scoped_ptr<bluez::BluetoothInputClient>(
+            new bluez::FakeBluetoothInputClient));
     dbus_setter->SetBluetoothAgentManagerClient(
-        scoped_ptr<BluetoothAgentManagerClient>(
-            new FakeBluetoothAgentManagerClient));
+        scoped_ptr<bluez::BluetoothAgentManagerClient>(
+            new bluez::FakeBluetoothAgentManagerClient));
     dbus_setter->SetBluetoothGattServiceClient(
-        scoped_ptr<BluetoothGattServiceClient>(
-            new FakeBluetoothGattServiceClient));
+        scoped_ptr<bluez::BluetoothGattServiceClient>(
+            new bluez::FakeBluetoothGattServiceClient));
 
     fake_bluetooth_adapter_client_->SetSimulationIntervalMs(10);
 
@@ -208,7 +212,7 @@ class BluetoothChromeOSTest : public testing::Test {
     }
     discovery_sessions_.clear();
     adapter_ = nullptr;
-    DBusThreadManager::Shutdown();
+    bluez::BluezDBusManager::Shutdown();
   }
 
   // Generic callbacks
@@ -337,8 +341,8 @@ class BluetoothChromeOSTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
-  FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
+  bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
+  bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
   int callback_count_;
@@ -366,7 +370,7 @@ TEST_F(BluetoothChromeOSTest, AlreadyPresent) {
   // and initializes with an existing adapter if there is one.
   EXPECT_TRUE(adapter_->IsPresent());
   EXPECT_FALSE(adapter_->IsPowered());
-  EXPECT_EQ(FakeBluetoothAdapterClient::kAdapterAddress,
+  EXPECT_EQ(bluez::FakeBluetoothAdapterClient::kAdapterAddress,
             adapter_->GetAddress());
   EXPECT_FALSE(adapter_->IsDiscovering());
 
@@ -375,12 +379,14 @@ TEST_F(BluetoothChromeOSTest, AlreadyPresent) {
   EXPECT_EQ(2U, devices.size());
 
   // |devices| are not ordered, verify it contains the 2 device addresses.
-  EXPECT_NE(-1, GetDeviceIndexByAddress(
-                    devices, FakeBluetoothDeviceClient::kPairedDeviceAddress));
-  EXPECT_NE(-1,
-            GetDeviceIndexByAddress(
-                devices,
-                FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress));
+  EXPECT_NE(
+      -1, GetDeviceIndexByAddress(
+              devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress));
+  EXPECT_NE(
+      -1,
+      GetDeviceIndexByAddress(
+          devices,
+          bluez::FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress));
 }
 
 TEST_F(BluetoothChromeOSTest, BecomePresent) {
@@ -401,7 +407,7 @@ TEST_F(BluetoothChromeOSTest, BecomePresent) {
 
   // We should have had a device announced.
   EXPECT_EQ(2, observer.device_added_count());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
+  EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress,
             observer.last_device_address());
 
   // Other callbacks shouldn't be called if the values are false.
@@ -430,10 +436,10 @@ TEST_F(BluetoothChromeOSTest, BecomeNotPresent) {
   EXPECT_EQ(2, observer.device_removed_count());
   // 2 possibilities for the last device here.
   std::string address = observer.last_device_address();
-  EXPECT_TRUE(
-      address.compare(
-          FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress) == 0 ||
-      address.compare(FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
+  EXPECT_TRUE(address.compare(bluez::FakeBluetoothDeviceClient::
+                                  kPairedUnconnectableDeviceAddress) == 0 ||
+              address.compare(
+                  bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
 
   // Other callbacks shouldn't be called since the values are false.
   EXPECT_EQ(0, observer.powered_changed_count());
@@ -455,7 +461,7 @@ TEST_F(BluetoothChromeOSTest, SecondAdapter) {
   EXPECT_EQ(0, observer.present_changed_count());
 
   EXPECT_TRUE(adapter_->IsPresent());
-  EXPECT_EQ(FakeBluetoothAdapterClient::kAdapterAddress,
+  EXPECT_EQ(bluez::FakeBluetoothAdapterClient::kAdapterAddress,
             adapter_->GetAddress());
 
   // Try removing the first adapter, we should now act as if the adapter
@@ -472,10 +478,10 @@ TEST_F(BluetoothChromeOSTest, SecondAdapter) {
   // As BluetoothAdapter devices removal does not keep the order of adding them,
   // 2 possibilities for the last device here.
   std::string address = observer.last_device_address();
-  EXPECT_TRUE(
-      address.compare(
-          FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress) == 0 ||
-      address.compare(FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
+  EXPECT_TRUE(address.compare(bluez::FakeBluetoothDeviceClient::
+                                  kPairedUnconnectableDeviceAddress) == 0 ||
+              address.compare(
+                  bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
 
   // Other callbacks shouldn't be called since the values are false.
   EXPECT_EQ(0, observer.powered_changed_count());
@@ -745,7 +751,7 @@ TEST_F(BluetoothChromeOSTest, Discovery) {
   message_loop_.Run();
 
   EXPECT_EQ(2, observer.device_added_count());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kLowEnergyAddress,
+  EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress,
             observer.last_device_address());
 
   // Next we should get another two devices...
@@ -757,7 +763,7 @@ TEST_F(BluetoothChromeOSTest, Discovery) {
     message_loop_.Run();
 
   EXPECT_EQ(1, observer.device_removed_count());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kVanishingDeviceAddress,
+  EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kVanishingDeviceAddress,
             observer.last_device_address());
 }
 
@@ -777,7 +783,7 @@ TEST_F(BluetoothChromeOSTest, PoweredAndDiscovering) {
 
   // Stop the timers that the simulation uses
   fake_bluetooth_device_client_->EndDiscoverySimulation(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath));
 
   ASSERT_TRUE(adapter_->IsPowered());
   ASSERT_TRUE(adapter_->IsDiscovering());
@@ -971,21 +977,23 @@ TEST_F(BluetoothChromeOSTest,
 
   // Stop the timers that the simulation uses
   fake_bluetooth_device_client_->EndDiscoverySimulation(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath));
 
   ASSERT_TRUE(adapter_->IsPowered());
   ASSERT_TRUE(adapter_->IsDiscovering());
 
   // Stop device discovery behind the adapter. The adapter and the observer
   // should be notified of the change and the reference count should be reset.
-  // Even though FakeBluetoothAdapterClient does its own reference counting and
+  // Even though bluez::FakeBluetoothAdapterClient does its own reference
+  // counting and
   // we called 3 BluetoothAdapter::StartDiscoverySession 3 times, the
-  // FakeBluetoothAdapterClient's count should be only 1 and a single call to
-  // FakeBluetoothAdapterClient::StopDiscovery should work.
+  // bluez::FakeBluetoothAdapterClient's count should be only 1 and a single
+  // call to
+  // bluez::FakeBluetoothAdapterClient::StopDiscovery should work.
   fake_bluetooth_adapter_client_->StopDiscovery(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath), GetCallback(),
-      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                base::Unretained(this)));
   message_loop_.Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
@@ -1018,7 +1026,7 @@ TEST_F(BluetoothChromeOSTest,
     EXPECT_TRUE(discovery_sessions_[i]->IsActive());
 
   fake_bluetooth_device_client_->EndDiscoverySimulation(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath));
 
   // Make the adapter disappear and appear. This will make it come back as
   // discovering. When this happens, the reference count should become and
@@ -1043,7 +1051,8 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_TRUE(observer.last_discovering());
   EXPECT_TRUE(adapter_->IsDiscovering());
 
-  // Start and stop discovery. At this point, FakeBluetoothAdapterClient has
+  // Start and stop discovery. At this point, bluez::FakeBluetoothAdapterClient
+  // has
   // a reference count that is equal to 1. Pretend that this was done by an
   // application other than us. Starting and stopping discovery will succeed
   // but it won't cause the discovery state to change.
@@ -1088,9 +1097,9 @@ TEST_F(BluetoothChromeOSTest,
   // the discovery state won't change since our BluetoothAdapter also just
   // requested it via D-Bus.
   fake_bluetooth_adapter_client_->StopDiscovery(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath), GetCallback(),
-      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                base::Unretained(this)));
   message_loop_.Run();
   EXPECT_EQ(5, observer.discovering_changed_count());
   EXPECT_EQ(10, callback_count_);
@@ -1149,7 +1158,7 @@ TEST_F(BluetoothChromeOSTest, InvalidatedDiscoverySessions) {
 
   // Stop the timers that the simulation uses
   fake_bluetooth_device_client_->EndDiscoverySimulation(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath));
 
   ASSERT_TRUE(adapter_->IsPowered());
   ASSERT_TRUE(adapter_->IsDiscovering());
@@ -1166,9 +1175,9 @@ TEST_F(BluetoothChromeOSTest, InvalidatedDiscoverySessions) {
   // memory errors as the sessions that we explicitly deleted should get
   // cleaned up.
   fake_bluetooth_adapter_client_->StopDiscovery(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath), GetCallback(),
-      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                base::Unretained(this)));
   message_loop_.Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
@@ -1201,7 +1210,7 @@ TEST_F(BluetoothChromeOSTest, QueuedDiscoveryRequests) {
   EXPECT_EQ(0, callback_count_);
 
   fake_bluetooth_device_client_->EndDiscoverySimulation(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath));
 
   // The underlying adapter has started discovery, but our call hasn't returned
   // yet.
@@ -2119,14 +2128,15 @@ TEST_F(BluetoothChromeOSTest, DeviceProperties) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[idx]->GetAddress());
 
   // Verify the other device properties.
-  EXPECT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
-            devices[idx]->GetName());
+  EXPECT_EQ(
+      base::UTF8ToUTF16(bluez::FakeBluetoothDeviceClient::kPairedDeviceName),
+      devices[idx]->GetName());
   EXPECT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
   EXPECT_TRUE(devices[idx]->IsPaired());
   EXPECT_FALSE(devices[idx]->IsConnected());
@@ -2155,7 +2165,7 @@ TEST_F(BluetoothChromeOSTest, DeviceClassChanged) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
   ASSERT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
 
@@ -2163,9 +2173,9 @@ TEST_F(BluetoothChromeOSTest, DeviceClassChanged) {
   // we change the class of the device.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   properties->bluetooth_class.ReplaceValue(0x002580);
 
@@ -2183,20 +2193,21 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[idx]->GetAddress());
-  ASSERT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
-            devices[idx]->GetName());
+  ASSERT_EQ(
+      base::UTF8ToUTF16(bluez::FakeBluetoothDeviceClient::kPairedDeviceName),
+      devices[idx]->GetName());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the alias of the device.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   static const std::string new_name("New Device Name");
   properties->alias.ReplaceValue(new_name);
@@ -2215,20 +2226,21 @@ TEST_F(BluetoothChromeOSTest, DeviceAddressChanged) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[idx]->GetAddress());
-  ASSERT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
-            devices[idx]->GetName());
+  ASSERT_EQ(
+      base::UTF8ToUTF16(bluez::FakeBluetoothDeviceClient::kPairedDeviceName),
+      devices[idx]->GetName());
 
   // Install an observer; expect the DeviceAddressChanged method to be called
   // when we change the alias of the device.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   static const char* kNewAddress = "D9:1F:FC:11:22:33";
   properties->address.ReplaceValue(kNewAddress);
@@ -2248,9 +2260,9 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[idx]->GetAddress());
 
   BluetoothDevice::UUIDList uuids = devices[idx]->GetUUIDs();
@@ -2262,9 +2274,9 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   // we change the class of the device.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   std::vector<std::string> new_uuids;
   new_uuids.push_back(uuids[0].canonical_value());
@@ -2297,12 +2309,12 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryRSSIInvalidated) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
 
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   // During discovery, rssi is a valid value (-75)
   properties->rssi.ReplaceValue(-75);
@@ -2334,12 +2346,12 @@ TEST_F(BluetoothChromeOSTest, DeviceInquiryTxPowerInvalidated) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
 
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   // During discovery, tx_power is a valid value (0)
   properties->tx_power.ReplaceValue(0);
@@ -2369,9 +2381,9 @@ TEST_F(BluetoothChromeOSTest, ForgetDevice) {
   ASSERT_EQ(2U, devices.size());
 
   int idx = GetDeviceIndexByAddress(
-      devices, FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+  ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[idx]->GetAddress());
 
   std::string address = devices[idx]->GetAddress();
@@ -2395,8 +2407,8 @@ TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
   GetAdapter();
   DiscoverDevices();
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConnectUnpairableAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConnectUnpairableAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2413,9 +2425,9 @@ TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
   ASSERT_FALSE(device->IsConnecting());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kConnectUnpairablePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kConnectUnpairablePath));
   ASSERT_TRUE(properties->trusted.value());
 
   // Install an observer; expect the DeviceRemoved method to be called
@@ -2426,20 +2438,20 @@ TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
   EXPECT_EQ(0, error_callback_count_);
 
   EXPECT_EQ(1, observer.device_removed_count());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kConnectUnpairableAddress,
+  EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kConnectUnpairableAddress,
             observer.last_device_address());
 
   // GetDevices shouldn't return the device either.
-  device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConnectUnpairableAddress);
+  device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConnectUnpairableAddress);
   EXPECT_FALSE(device != nullptr);
 }
 
 TEST_F(BluetoothChromeOSTest, ConnectPairedDevice) {
   GetAdapter();
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(device->IsPaired());
 
@@ -2467,8 +2479,8 @@ TEST_F(BluetoothChromeOSTest, ConnectUnpairableDevice) {
   GetAdapter();
   DiscoverDevices();
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConnectUnpairableAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConnectUnpairableAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2492,9 +2504,9 @@ TEST_F(BluetoothChromeOSTest, ConnectUnpairableDevice) {
   EXPECT_FALSE(device->IsConnecting());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kConnectUnpairablePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kConnectUnpairablePath));
   EXPECT_TRUE(properties->trusted.value());
 
   // Verify is a HID device and is not connectable.
@@ -2507,8 +2519,8 @@ TEST_F(BluetoothChromeOSTest, ConnectUnpairableDevice) {
 TEST_F(BluetoothChromeOSTest, ConnectConnectedDevice) {
   GetAdapter();
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(device->IsPaired());
 
@@ -2545,8 +2557,8 @@ TEST_F(BluetoothChromeOSTest, ConnectDeviceFails) {
   GetAdapter();
   DiscoverDevices();
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kLegacyAutopairAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kLegacyAutopairAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2571,8 +2583,8 @@ TEST_F(BluetoothChromeOSTest, ConnectDeviceFails) {
 TEST_F(BluetoothChromeOSTest, DisconnectDevice) {
   GetAdapter();
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(device->IsPaired());
 
@@ -2605,8 +2617,8 @@ TEST_F(BluetoothChromeOSTest, DisconnectDevice) {
 TEST_F(BluetoothChromeOSTest, DisconnectUnconnectedDevice) {
   GetAdapter();
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(device->IsPaired());
   ASSERT_FALSE(device->IsConnected());
@@ -2630,18 +2642,20 @@ TEST_F(BluetoothChromeOSTest, PairTrustedDevice) {
   GetAdapter();
 
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(
-          FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDevicePath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::
+                           kConnectedTrustedNotPairedDevicePath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::
+                              kConnectedTrustedNotPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
 
   // On the DBus level the device is trusted but not paired. But the current
   // implementation of |BluetoothDevice::IsPaired()| returns true in this case.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
-          FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::
+                               kConnectedTrustedNotPairedDevicePath));
   EXPECT_FALSE(properties->paired.value());
   EXPECT_TRUE(properties->trusted.value());
   ASSERT_TRUE(device->IsPaired());
@@ -2667,7 +2681,7 @@ TEST_F(BluetoothChromeOSTest, PairTrustedDevice) {
 
   // Make sure the paired property has been set to true.
   properties = fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
-      FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDevicePath));
+      bluez::FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDevicePath));
   EXPECT_TRUE(properties->paired.value());
 }
 
@@ -2675,16 +2689,16 @@ TEST_F(BluetoothChromeOSTest, PairAlreadyPairedDevice) {
   GetAdapter();
 
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
 
   // On the DBus level a device can be trusted but not paired.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
   EXPECT_TRUE(properties->paired.value());
   EXPECT_TRUE(properties->trusted.value());
   ASSERT_TRUE(device->IsPaired());
@@ -2712,8 +2726,8 @@ TEST_F(BluetoothChromeOSTest, PairLegacyAutopair) {
 
   // The Legacy Autopair device requires no PIN or Passkey to pair because
   // the daemon provides 0000 to the device for us.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kLegacyAutopairAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kLegacyAutopairAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2750,9 +2764,9 @@ TEST_F(BluetoothChromeOSTest, PairLegacyAutopair) {
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kLegacyAutopairPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kLegacyAutopairPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -2763,8 +2777,8 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPinCode) {
   DiscoverDevices();
 
   // Requires that we display a randomly generated PIN on the screen.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kDisplayPinCodeAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kDisplayPinCodeAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2803,9 +2817,9 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPinCode) {
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kDisplayPinCodePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kDisplayPinCodePath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -2817,8 +2831,8 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPasskey) {
 
   // Requires that we display a randomly generated Passkey on the screen,
   // and notifies us as it's typed in.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kDisplayPasskeyAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kDisplayPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2878,9 +2892,9 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPasskey) {
   EXPECT_FALSE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kDisplayPasskeyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kDisplayPasskeyPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -2891,8 +2905,8 @@ TEST_F(BluetoothChromeOSTest, PairRequestPinCode) {
   DiscoverDevices();
 
   // Requires that the user enters a PIN for them.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPinCodeAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2932,9 +2946,9 @@ TEST_F(BluetoothChromeOSTest, PairRequestPinCode) {
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kRequestPinCodePath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -2945,8 +2959,8 @@ TEST_F(BluetoothChromeOSTest, PairConfirmPasskey) {
   DiscoverDevices();
 
   // Requests that we confirm a displayed passkey.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -2983,9 +2997,9 @@ TEST_F(BluetoothChromeOSTest, PairConfirmPasskey) {
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -2997,8 +3011,8 @@ TEST_F(BluetoothChromeOSTest, PairRequestPasskey) {
 
   // Requires that the user enters a Passkey, this would be some kind of
   // device that has a display, but doesn't use "just works" - maybe a car?
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPasskeyAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3034,9 +3048,9 @@ TEST_F(BluetoothChromeOSTest, PairRequestPasskey) {
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -3049,7 +3063,7 @@ TEST_F(BluetoothChromeOSTest, PairJustWorks) {
   // Uses just-works pairing, since this is an outgoing pairing, no delegate
   // interaction is required.
   BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kJustWorksAddress);
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kJustWorksAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3081,9 +3095,9 @@ TEST_F(BluetoothChromeOSTest, PairJustWorks) {
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -3091,10 +3105,10 @@ TEST_F(BluetoothChromeOSTest, PairUnpairableDeviceFails) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
-  DiscoverDevice(FakeBluetoothDeviceClient::kUnconnectableDeviceAddress);
+  DiscoverDevice(bluez::FakeBluetoothDeviceClient::kUnconnectableDeviceAddress);
 
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kUnpairableDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kUnpairableDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3125,11 +3139,11 @@ TEST_F(BluetoothChromeOSTest, PairingFails) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
   GetAdapter();
-  DiscoverDevice(FakeBluetoothDeviceClient::kVanishingDeviceAddress);
+  DiscoverDevice(bluez::FakeBluetoothDeviceClient::kVanishingDeviceAddress);
 
   // The vanishing device times out during pairing
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kVanishingDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kVanishingDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3165,7 +3179,7 @@ TEST_F(BluetoothChromeOSTest, PairingFailsAtConnection) {
   // Everything seems to go according to plan with the unconnectable device;
   // it pairs, but then you can't make connections to it after.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kUnconnectableDeviceAddress);
+      bluez::FakeBluetoothDeviceClient::kUnconnectableDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3197,9 +3211,9 @@ TEST_F(BluetoothChromeOSTest, PairingFailsAtConnection) {
 
   // Make sure the trusted property has been set to true still (since pairing
   // worked).
-  FakeBluetoothDeviceClient::Properties* properties =
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
-          FakeBluetoothDeviceClient::kUnconnectableDevicePath));
+          bluez::FakeBluetoothDeviceClient::kUnconnectableDevicePath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
@@ -3210,8 +3224,8 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPinCode) {
   DiscoverDevices();
 
   // Reject the pairing after we receive a request for the PIN code.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPinCodeAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3248,8 +3262,8 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPinCode) {
   DiscoverDevices();
 
   // Cancel the pairing after we receive a request for the PIN code.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPinCodeAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3286,8 +3300,8 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPasskey) {
   DiscoverDevices();
 
   // Reject the pairing after we receive a request for the passkey.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPasskeyAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3324,8 +3338,8 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPasskey) {
   DiscoverDevices();
 
   // Cancel the pairing after we receive a request for the passkey.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPasskeyAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3362,8 +3376,8 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtConfirmation) {
   DiscoverDevices();
 
   // Reject the pairing after we receive a request for passkey confirmation.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3400,8 +3414,8 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtConfirmation) {
   DiscoverDevices();
 
   // Cancel the pairing after we receive a request for the passkey.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3438,8 +3452,8 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledInFlight) {
   DiscoverDevices();
 
   // Cancel the pairing while we're waiting for the remote host.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kLegacyAutopairAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kLegacyAutopairAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
@@ -3480,19 +3494,19 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCode) {
 
   // Requires that we provide a PIN code.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPinCodeAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPinCodePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath), true,
-      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPinCodePath),
+      true, GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                      base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.request_pincode_count_);
@@ -3511,9 +3525,9 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCode) {
   EXPECT_TRUE(device->IsPaired());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kRequestPinCodePath));
   ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
@@ -3534,19 +3548,19 @@ TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskey) {
 
   // Requests that we confirm a displayed passkey.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath), true,
-      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath),
+      true, GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                      base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.confirm_passkey_count_);
@@ -3566,9 +3580,9 @@ TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskey) {
   EXPECT_TRUE(device->IsPaired());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath));
   ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
@@ -3589,19 +3603,19 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskey) {
 
   // Requests that we provide a Passkey.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPasskeyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath), true,
-      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath),
+      true, GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                      base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.request_passkey_count_);
@@ -3620,9 +3634,9 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskey) {
   EXPECT_TRUE(device->IsPaired());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath));
   ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
@@ -3644,17 +3658,17 @@ TEST_F(BluetoothChromeOSTest, IncomingPairJustWorks) {
   // Uses just-works pairing so, sinec this an incoming pairing, require
   // authorization from the user.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath));
   BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kJustWorksAddress);
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kJustWorksAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath), true,
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath), true,
       GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
                                 base::Unretained(this)));
 
@@ -3675,9 +3689,9 @@ TEST_F(BluetoothChromeOSTest, IncomingPairJustWorks) {
   EXPECT_TRUE(device->IsPaired());
 
   // Make sure the trusted property has been set to true.
-  FakeBluetoothDeviceClient::Properties* properties =
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath));
   ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
@@ -3694,19 +3708,19 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCodeWithoutDelegate) {
   // Requires that we provide a PIN Code, without a pairing delegate,
   // that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPinCodeAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPinCodePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPinCodeAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath), true,
-      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPinCodePath),
+      true, GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                      base::Unretained(this)));
 
   message_loop_.Run();
 
@@ -3733,19 +3747,19 @@ TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskeyWithoutDelegate) {
   // Requests that we confirm a displayed passkey, without a pairing delegate,
   // that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kConfirmPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath), true,
-      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kConfirmPasskeyPath),
+      true, GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                      base::Unretained(this)));
 
   message_loop_.Run();
 
@@ -3772,19 +3786,19 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskeyWithoutDelegate) {
   // Requests that we provide a displayed passkey, without a pairing delegate,
   // that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPasskeyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath), true,
-      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath),
+      true, GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                      base::Unretained(this)));
 
   message_loop_.Run();
 
@@ -3811,17 +3825,17 @@ TEST_F(BluetoothChromeOSTest, IncomingPairJustWorksWithoutDelegate) {
   // Uses just-works pairing and thus requires authorization for incoming
   // pairings, without a pairing delegate, that will be rejected.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath));
   BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kJustWorksAddress);
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kJustWorksAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath), true,
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kJustWorksPath), true,
       GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
                                 base::Unretained(this)));
 
@@ -3854,19 +3868,19 @@ TEST_F(BluetoothChromeOSTest, RemovePairingDelegateDuringPairing) {
 
   // Requests that we provide a Passkey.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kRequestPasskeyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kRequestPasskeyAddress);
   ASSERT_TRUE(device != nullptr);
   ASSERT_FALSE(device->IsPaired());
 
   TestBluetoothAdapterObserver observer(adapter_);
 
   fake_bluetooth_device_client_->SimulatePairing(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath), true,
-      GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kRequestPasskeyPath),
+      true, GetCallback(), base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                                      base::Unretained(this)));
 
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.request_passkey_count_);
@@ -3897,11 +3911,11 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
 
   // Use the built-in paired device for this test, grab its Properties
   // structure so we can adjust the underlying modalias property.
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
-  FakeBluetoothDeviceClient::Properties* properties =
-      fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(properties != nullptr);
@@ -3949,8 +3963,8 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
 
 TEST_F(BluetoothChromeOSTest, GetConnectionInfoForDisconnectedDevice) {
   GetAdapter();
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
 
   // Calling GetConnectionInfo for an unconnected device should return a result
   // in which all fields are filled with BluetoothDevice::kUnknownPower.
@@ -3965,8 +3979,8 @@ TEST_F(BluetoothChromeOSTest, GetConnectionInfoForDisconnectedDevice) {
 
 TEST_F(BluetoothChromeOSTest, GetConnectionInfoForConnectedDevice) {
   GetAdapter();
-  BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
 
   device->Connect(nullptr, GetCallback(),
                   base::Bind(&BluetoothChromeOSTest::ConnectErrorCallback,
@@ -4011,8 +4025,9 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   EXPECT_TRUE(adapter_->IsDiscoverable());
   EXPECT_TRUE(adapter_->IsDiscovering());
   EXPECT_EQ(2U, adapter_->GetDevices().size());
-  EXPECT_NE(nullptr, adapter_->GetDevice(
-                         FakeBluetoothDeviceClient::kPairedDeviceAddress));
+  EXPECT_NE(nullptr,
+            adapter_->GetDevice(
+                bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress));
   EXPECT_NE(dbus::ObjectPath(""), static_cast<BluetoothAdapterChromeOS*>(
                                       adapter_.get())->object_path());
 
@@ -4089,7 +4104,7 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   FakeBluetoothProfileServiceProviderDelegate profile_delegate;
   adapter_chrome_os->UseProfile(
       BluetoothUUID(), dbus::ObjectPath(""),
-      BluetoothProfileManagerClient::Options(), &profile_delegate,
+      bluez::BluetoothProfileManagerClient::Options(), &profile_delegate,
       base::Bind(&BluetoothChromeOSTest::ProfileRegisteredCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCompletionCallback,
@@ -4109,7 +4124,8 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   adapter_chrome_os->DeviceRemoved(dbus::ObjectPath(""));
   adapter_chrome_os->DevicePropertyChanged(dbus::ObjectPath(""), "");
   adapter_chrome_os->InputPropertyChanged(dbus::ObjectPath(""), "");
-  // BluetoothAgentServiceProvider::Delegate omitted, dbus will be shutdown,
+  // bluez::BluetoothAgentServiceProvider::Delegate omitted, dbus will be
+  // shutdown,
   //   with the exception of Released.
   adapter_chrome_os->Released();
 
@@ -4166,7 +4182,7 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   // UseProfile to be set first, do so again here just before calling them.
   adapter_chrome_os->UseProfile(
       BluetoothUUID(), dbus::ObjectPath(""),
-      BluetoothProfileManagerClient::Options(), &profile_delegate,
+      bluez::BluetoothProfileManagerClient::Options(), &profile_delegate,
       base::Bind(&BluetoothChromeOSTest::ProfileRegisteredCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothChromeOSTest::ErrorCompletionCallback,
@@ -4201,8 +4217,9 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   EXPECT_EQ(1, error_callback_count_--) << "StartDiscoverySession error";
 
   EXPECT_EQ(0U, adapter_->GetDevices().size());
-  EXPECT_EQ(nullptr, adapter_->GetDevice(
-                         FakeBluetoothDeviceClient::kPairedDeviceAddress));
+  EXPECT_EQ(nullptr,
+            adapter_->GetDevice(
+                bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress));
   TestPairingDelegate pairing_delegate2;
   adapter_->AddPairingDelegate(
       &pairing_delegate2, BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
