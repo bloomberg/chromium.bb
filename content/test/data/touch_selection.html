@@ -4,7 +4,7 @@
 <script>
 
 function focus_textfield() {
-  document.getElementById("textfield").focus();
+  document.getElementById('textfield').focus();
   // Focusing the textfiled selects its text. Collapse selection to a cursor.
   window.getSelection().collapseToStart();
 }
@@ -24,6 +24,10 @@ function get_point_inside_text() {
 
 function get_point_inside_textfield() {
   get_point_inside(document.getElementById('textfield'));
+}
+
+function empty_textfield() {
+  document.getElementById('textfield').value = "";
 }
 
 </script>

@@ -42,6 +42,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionMenuRunner {
 
   static TouchSelectionMenuRunner* GetInstance();
 
+  // Checks whether there is any command available to show in the menu.
+  virtual bool IsMenuAvailable(
+      const TouchSelectionMenuClient* client) const = 0;
+
   // Creates and displays the quick menu, if there is any command available.
   // |anchor_rect| is in screen coordinates.
   virtual void OpenMenu(TouchSelectionMenuClient* client,

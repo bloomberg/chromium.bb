@@ -66,6 +66,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
     // Controls whether an insertion handle is shown on a tap for an empty
     // editable text. Defauls to false.
+    // TODO(mohsen): This flag used to be set to |true| on Aura. That's not the
+    // case anymore and it is always |false|. Consider removing it.
     bool show_on_tap_for_empty_editable;
   };
 

@@ -11,6 +11,7 @@
 #include "ui/touch_selection/touch_selection_menu_runner.h"
 
 namespace content {
+struct ContextMenuParams;
 class RenderWidgetHostViewAura;
 
 // An implementation of |TouchSelectionControllerClient| to be used in Aura's
@@ -35,11 +36,20 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   void OnScrollStarted();
   void OnScrollCompleted();
 
+  // Gives an opportunity to the client to handle context menu request and show
+  // the quick menu instead, if appropriate. Returns |true| to indicate that no
+  // further handling is needed.
+  // TODO(mohsen): This is to match Chrome on Android behavior. However, it is
+  // better not to send context menu request from the renderer in this case and
+  // instead decide in the client about showing the quick menu in response to
+  // selection events. (http://crbug.com/548245)
+  bool HandleContextMenu(const ContextMenuParams& params);
+
  private:
   friend class TestTouchSelectionControllerClientAura;
   class EnvPreTargetHandler;
 
-  bool IsQuickMenuAllowed() const;
+  bool IsQuickMenuAvailable() const;
   void ShowQuickMenu();
   void UpdateQuickMenu();
 
@@ -62,10 +72,10 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   RenderWidgetHostViewAura* rwhva_;
 
   base::Timer quick_menu_timer_;
+  bool quick_menu_requested_;
   bool touch_down_;
   bool scroll_in_progress_;
   bool handle_drag_in_progress_;
-  bool insertion_quick_menu_allowed_;
 
   bool show_quick_menu_immediately_for_test_;
 

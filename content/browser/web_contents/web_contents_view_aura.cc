@@ -944,9 +944,12 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
 
 void WebContentsViewAura::ShowContextMenu(RenderFrameHost* render_frame_host,
                                           const ContextMenuParams& params) {
-  ui::TouchSelectionController* selection_controller = GetSelectionController();
-  if (selection_controller)
-    selection_controller->HideAndDisallowShowingAutomatically();
+  TouchSelectionControllerClientAura* selection_controller_client =
+      GetSelectionControllerClient();
+  if (selection_controller_client &&
+      selection_controller_client->HandleContextMenu(params)) {
+    return;
+  }
   if (delegate_) {
     RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
         web_contents_->GetRenderWidgetHostView());

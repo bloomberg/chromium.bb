@@ -46,6 +46,11 @@ class TestTouchSelectionMenuRunner : public ui::TouchSelectionMenuRunner {
   ~TestTouchSelectionMenuRunner() override {}
 
  private:
+  bool IsMenuAvailable(
+      const ui::TouchSelectionMenuClient* client) const override {
+    return true;
+  }
+
   void OpenMenu(ui::TouchSelectionMenuClient* client,
                 const gfx::Rect& anchor_rect,
                 const gfx::Size& handle_image_size,
@@ -140,6 +145,11 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
       return JSONToPoint(str, point);
     }
     return false;
+  }
+
+  bool EmptyTextfield() {
+    return ExecuteScript(shell()->web_contents()->GetMainFrame(),
+                         "empty_textfield()");
   }
 
  private:
@@ -249,6 +259,48 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
 
   // Tap once more on the insertion handle; the quick menu should disappear.
   generator.GestureTapAt(handle_center);
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+}
+
+// Tests that tapping in an empty textfield does not bring up the insertion
+// handle.
+IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
+                       EmptyTextfieldInsertionOnTap) {
+  // Set the test page up.
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
+  WebContents* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+      web_contents->GetRenderWidgetHostView());
+  TestTouchSelectionControllerClientAura* selection_controller_client =
+      new TestTouchSelectionControllerClientAura(rwhva);
+  rwhva->SetSelectionControllerClientForTest(
+      make_scoped_ptr(selection_controller_client));
+
+  // Clear textfield contents.
+  ASSERT_TRUE(EmptyTextfield());
+
+  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
+            rwhva->selection_controller()->active_status());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Tap inside the textfield and wait for the insertion cursor.
+  selection_controller_client->InitWaitForSelectionEvent(
+      ui::SELECTION_ESTABLISHED);
+
+  gfx::PointF point;
+  ASSERT_TRUE(GetPointInsideTextfield(&point));
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
+  tap_details.set_tap_count(1);
+  ui::GestureEvent tap(point.x(), point.y(), 0, ui::EventTimeForNow(),
+                       tap_details);
+  rwhva->OnGestureEvent(&tap);
+
+  selection_controller_client->Wait();
+
+  // Check that insertion is not active and the quick menu is not showing.
+  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
+            rwhva->selection_controller()->active_status());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 

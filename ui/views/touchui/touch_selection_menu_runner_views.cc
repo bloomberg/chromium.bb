@@ -38,24 +38,19 @@ const int kEllipsesButtonTag = -1;
 class TouchSelectionMenuRunnerViews::Menu : public BubbleDelegateView,
                                             public ButtonListener {
  public:
-  // Closes the menu. This will eventually self-destroy the object.
-  void Close();
-
-  // Returns a new instance of Menu if there is any command available;
-  // otherwise, returns |nullptr|.
-  static Menu* Create(TouchSelectionMenuRunnerViews* owner,
-                      ui::TouchSelectionMenuClient* client,
-                      const gfx::Rect& anchor_rect,
-                      const gfx::Size& handle_image_size,
-                      aura::Window* context);
-
- private:
   Menu(TouchSelectionMenuRunnerViews* owner,
        ui::TouchSelectionMenuClient* client,
        const gfx::Rect& anchor_rect,
        const gfx::Size& handle_image_size,
        aura::Window* context);
 
+  // Checks whether there is any command available to show in the menu.
+  static bool IsMenuAvailable(const ui::TouchSelectionMenuClient* client);
+
+  // Closes the menu. This will eventually self-destroy the object.
+  void Close();
+
+ private:
   ~Menu() override;
 
   // Queries the |client_| for what commands to show in the menu and sizes the
@@ -77,24 +72,6 @@ class TouchSelectionMenuRunnerViews::Menu : public BubbleDelegateView,
 
   DISALLOW_COPY_AND_ASSIGN(Menu);
 };
-
-TouchSelectionMenuRunnerViews::Menu*
-TouchSelectionMenuRunnerViews::Menu::Create(
-    TouchSelectionMenuRunnerViews* owner,
-    ui::TouchSelectionMenuClient* client,
-    const gfx::Rect& anchor_rect,
-    const gfx::Size& handle_image_size,
-    aura::Window* context) {
-  DCHECK(client);
-
-  for (size_t i = 0; i < arraysize(kMenuCommands); i++) {
-    if (client->IsCommandIdEnabled(kMenuCommands[i]))
-      return new Menu(owner, client, anchor_rect, handle_image_size, context);
-  }
-
-  // No command is available, so return |nullptr|.
-  return nullptr;
-}
 
 TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
                                           ui::TouchSelectionMenuClient* client,
@@ -134,6 +111,17 @@ TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
 
   BubbleDelegateView::CreateBubble(this);
   GetWidget()->Show();
+}
+
+bool TouchSelectionMenuRunnerViews::Menu::IsMenuAvailable(
+    const ui::TouchSelectionMenuClient* client) {
+  DCHECK(client);
+
+  for (size_t i = 0; i < arraysize(kMenuCommands); i++) {
+    if (client->IsCommandIdEnabled(kMenuCommands[i]))
+      return true;
+  }
+  return false;
 }
 
 TouchSelectionMenuRunnerViews::Menu::~Menu() {
@@ -223,6 +211,11 @@ gfx::Rect TouchSelectionMenuRunnerViews::GetAnchorRectForTest() const {
   return menu_ ? menu_->GetAnchorRect() : gfx::Rect();
 }
 
+bool TouchSelectionMenuRunnerViews::IsMenuAvailable(
+    const ui::TouchSelectionMenuClient* client) const {
+  return TouchSelectionMenuRunnerViews::Menu::IsMenuAvailable(client);
+}
+
 void TouchSelectionMenuRunnerViews::OpenMenu(
     ui::TouchSelectionMenuClient* client,
     const gfx::Rect& anchor_rect,
@@ -230,7 +223,8 @@ void TouchSelectionMenuRunnerViews::OpenMenu(
     aura::Window* context) {
   CloseMenu();
 
-  menu_ = Menu::Create(this, client, anchor_rect, handle_image_size, context);
+  if (TouchSelectionMenuRunnerViews::Menu::IsMenuAvailable(client))
+    menu_ = new Menu(this, client, anchor_rect, handle_image_size, context);
 }
 
 void TouchSelectionMenuRunnerViews::CloseMenu() {
