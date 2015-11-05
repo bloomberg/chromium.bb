@@ -56,6 +56,7 @@ def CommonChecks(input_api, output_api):
           J('devil', 'utils', 'cmd_helper_test.py'),
           J('devil', 'utils', 'timeout_retry_unittest.py'),
           J('gyp', 'util', 'md5_check_test.py'),
+          J('play_services', 'update_test.py'),
           J('pylib', 'base', 'test_dispatcher_unittest.py'),
           J('pylib', 'gtest', 'gtest_test_instance_test.py'),
           J('pylib', 'instrumentation',

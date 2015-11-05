@@ -36,6 +36,10 @@ class ColorStreamHandler(logging.StreamHandler):
     logging.CRITICAL: colorama.Back.RED + colorama.Style.BRIGHT,
   }
 
+  def __init__(self, force_color=False):
+    super(ColorStreamHandler, self).__init__()
+    self.force_color = force_color
+
   @property
   def is_tty(self):
     isatty = getattr(self.stream, 'isatty', None)
@@ -44,8 +48,9 @@ class ColorStreamHandler(logging.StreamHandler):
   #override
   def format(self, record):
     message = logging.StreamHandler.format(self, record)
-    if self.is_tty:
+    if self.force_color or self.is_tty:
       return self.Colorize(message, record.levelno)
+    return message
 
   def Colorize(self, message, log_level):
     try:
@@ -54,16 +59,19 @@ class ColorStreamHandler(logging.StreamHandler):
       return message
 
   @staticmethod
-  def MakeDefault():
+  def MakeDefault(force_color=False):
      """
      Replaces the default logging handlers with a coloring handler. To use
      a colorizing handler at the same time as others, either register them
      after this call, or add the ColorStreamHandler on the logger using
      Logger.addHandler()
+
+     Args:
+       force_color: Set to True to bypass the tty check and always colorize.
      """
      # If the existing handlers aren't removed, messages are duplicated
      logging.getLogger().handlers = []
-     logging.getLogger().addHandler(ColorStreamHandler())
+     logging.getLogger().addHandler(ColorStreamHandler(force_color))
 
 
 @contextlib.contextmanager

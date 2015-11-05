@@ -14,7 +14,6 @@ import logging
 import os
 import re
 import sys
-import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from devil.utils import cmd_helper
@@ -112,13 +111,3 @@ def MakeLocalCommit(repo_root, files_to_commit, message):
   logging.debug('Committing.')
   if cmd_helper.Call(['git', 'commit', '-m', message], cwd=repo_root) != 0:
     raise Exception('The local commit failed.')
-
-
-def ZipDir(output, base_dir):
-  '''Creates a zip file from a directory.'''
-
-  base = os.path.join(base_dir, os.pardir)
-  with zipfile.ZipFile(output, 'w') as out_file:
-    for root, _, files in os.walk(base_dir):
-      for in_file in files:
-        out_file.write(os.path.join(root, in_file), base)
