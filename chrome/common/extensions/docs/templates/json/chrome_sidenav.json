@@ -537,10 +537,6 @@
                 "href": "/apps/faq"
               },
               {
-                "title": "Google Groups",
-                "href": "https://groups.google.com/a/chromium.org/forum/#!forum/chromium-apps"
-              },
-              {
                 "title": "Stack Overflow",
                 "href": "http://stackoverflow.com/questions/tagged/google-chrome-app"
               }
@@ -1072,8 +1068,8 @@
                 "href": "/webstore/faq"
               },
               {
-                "title": "Google Groups",
-                "href": "https://groups.google.com/a/chromium.org/forum/#!forum/chromium-apps"
+                "title": "Stack Overflow",
+                "href": "http://stackoverflow.com/questions/tagged/google-chrome-app"
               },
               {
                 "title": "Articles",
