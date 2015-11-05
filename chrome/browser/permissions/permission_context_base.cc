@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -16,6 +17,7 @@
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 
@@ -59,10 +61,13 @@ void PermissionContextBase::RequestPermission(
 
   // First check if this permission has been disabled.
   if (IsPermissionKillSwitchOn()) {
+    // Log to the developer console.
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_LOG,
+        base::StringPrintf("%s permission has been blocked.",
+            PermissionUtil::GetPermissionString(permission_type_).c_str()));
     // The kill switch is enabled for this permission; Block all requests.
-    NotifyPermissionSet(id, requesting_frame.GetOrigin(),
-        web_contents->GetLastCommittedURL().GetOrigin(), callback,
-        false /* persist */, CONTENT_SETTING_BLOCK);
+    callback.Run(CONTENT_SETTING_BLOCK);
     return;
   }
 
