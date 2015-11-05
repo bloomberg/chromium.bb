@@ -48,10 +48,12 @@ requirement_suffix="\
 and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
 "
 
+enforcement_flags="restrict"
+
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${crashpad_handler}" \
     -r="designated => identifier \"crashpad_handler\" \
-${requirement_suffix}"
+${requirement_suffix}" --options "${enforcement_flags}"
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${framework}" \
     -r="designated => identifier \"com.google.Chrome.framework\" \
@@ -59,7 +61,7 @@ ${requirement_suffix}"
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${helper_app}" \
     -r="designated => identifier \"com.google.Chrome.helper\" \
-${requirement_suffix}"
+${requirement_suffix}" --options "${enforcement_flags}"
 
 # Verify everything. Don't use --deep on the framework because Keystone's
 # signature is in a transitional state (radar 18474911).

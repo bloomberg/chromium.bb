@@ -50,9 +50,11 @@ designated => \
 and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
 "
 
+enforcement_flags="restrict"
+
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${browser_app}" --resource-rules "${browser_app_rules}" \
-    -r="${requirement_string}"
+    -r="${requirement_string}" --options "${enforcement_flags}"
 
 # Show the signature.
 codesign --display -r- -vvvvvv "${browser_app}"
