@@ -45,9 +45,7 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
   explicit SyncTokenClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
   ~SyncTokenClientImpl() override {}
-  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    gl_helper_->GenerateSyncToken(sync_token);
-  }
+  uint32 InsertSyncPoint() override { return gl_helper_->InsertSyncPoint(); }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
     gl_helper_->WaitSyncToken(sync_token);
   }

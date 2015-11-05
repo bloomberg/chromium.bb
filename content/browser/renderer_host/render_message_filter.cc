@@ -687,11 +687,11 @@ void RenderMessageFilter::GpuMemoryBufferAllocated(
 
 void RenderMessageFilter::OnDeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
-    const gpu::SyncToken& sync_token) {
+    uint32 sync_point) {
   DCHECK(BrowserGpuMemoryBufferManager::current());
 
   BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(
-      id, PeerHandle(), render_process_id_, sync_token);
+      id, PeerHandle(), render_process_id_, sync_point);
 }
 
 }  // namespace content

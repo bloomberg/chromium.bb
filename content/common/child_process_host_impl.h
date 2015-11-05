@@ -28,10 +28,6 @@ namespace IPC {
 class MessageFilter;
 }
 
-namespace gpu {
-struct SyncToken;
-}
-
 namespace content {
 class ChildProcessHostDelegate;
 
@@ -105,7 +101,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
                                  gfx::BufferUsage usage,
                                  gfx::GpuMemoryBufferHandle* handle);
   void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                const gpu::SyncToken& sync_token);
+                                uint32 sync_point);
 
   ChildProcessHostDelegate* delegate_;
   base::Process peer_process_;

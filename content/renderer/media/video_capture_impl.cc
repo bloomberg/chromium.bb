@@ -100,7 +100,7 @@ class VideoCaptureImpl::ClientBuffer2
       buffer->Unmap();
   }
 
-  void DestroyGpuMemoryBuffer(const gpu::SyncToken& sync_token) {}
+  void DestroyGpuMemoryBuffer(uint32 sync_point) {}
 
   const std::vector<gfx::GpuMemoryBufferHandle> handles_;
   const gfx::Size size_;

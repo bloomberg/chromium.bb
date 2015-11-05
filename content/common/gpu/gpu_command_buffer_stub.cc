@@ -1107,15 +1107,12 @@ void GpuCommandBufferStub::OnWaitFenceSyncCompleted(
   scheduler_->SetScheduled(true);
 }
 
-void GpuCommandBufferStub::OnCreateImage(
-    const GpuCommandBufferMsg_CreateImage_Params& params) {
+void GpuCommandBufferStub::OnCreateImage(int32 id,
+                                         gfx::GpuMemoryBufferHandle handle,
+                                         gfx::Size size,
+                                         gfx::BufferFormat format,
+                                         uint32 internalformat) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateImage");
-  const int32_t id = params.id;
-  const gfx::GpuMemoryBufferHandle& handle = params.gpu_memory_buffer;
-  const gfx::Size& size = params.size;
-  const gfx::BufferFormat& format = params.format;
-  const uint32_t internalformat = params.internal_format;
-  const uint64_t image_release_count = params.image_release_count;
 
   if (!decoder_)
     return;
@@ -1151,9 +1148,6 @@ void GpuCommandBufferStub::OnCreateImage(
     return;
 
   image_manager->AddImage(image.get(), id);
-  if (image_release_count) {
-    sync_point_client_->ReleaseFenceSync(image_release_count);
-  }
 }
 
 void GpuCommandBufferStub::OnDestroyImage(int32 id) {

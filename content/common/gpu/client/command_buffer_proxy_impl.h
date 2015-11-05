@@ -106,11 +106,11 @@ class CommandBufferProxyImpl
   int32 CreateImage(ClientBuffer buffer,
                     size_t width,
                     size_t height,
-                    unsigned internal_format) override;
+                    unsigned internalformat) override;
   void DestroyImage(int32 id) override;
   int32 CreateGpuMemoryBufferImage(size_t width,
                                    size_t height,
-                                   unsigned internal_format,
+                                   unsigned internalformat,
                                    unsigned usage) override;
   uint32 InsertSyncPoint() override;
   uint32_t InsertFutureSyncPoint() override;

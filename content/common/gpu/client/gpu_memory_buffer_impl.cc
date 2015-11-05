@@ -29,11 +29,12 @@ GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
       size_(size),
       format_(format),
       callback_(callback),
-      mapped_(false) {}
+      mapped_(false),
+      destruction_sync_point_(0) {}
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
   DCHECK(!mapped_);
-  callback_.Run(destruction_sync_token_);
+  callback_.Run(destruction_sync_point_);
 }
 
 // static

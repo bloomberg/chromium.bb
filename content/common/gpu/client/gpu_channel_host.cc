@@ -398,8 +398,7 @@ int32 GpuChannelHost::GenerateStreamID() {
   return next_stream_id_.GetNext();
 }
 
-uint32_t GpuChannelHost::ValidateFlushIDReachedServer(int32 stream_id,
-                                                      bool force_validate) {
+uint32_t GpuChannelHost::ValidateFlushIDReachedServer(int32 stream_id) {
   // Store what flush ids we will be validating for all streams.
   base::hash_map<int32, uint32_t> validate_flushes;
   uint32_t flushed_stream_flush_id = 0;
@@ -422,7 +421,7 @@ uint32_t GpuChannelHost::ValidateFlushIDReachedServer(int32 stream_id,
     }
   }
 
-  if (!force_validate && flushed_stream_flush_id == verified_stream_flush_id) {
+  if (flushed_stream_flush_id == verified_stream_flush_id) {
     // Current stream has no unverified flushes.
     return verified_stream_flush_id;
   }

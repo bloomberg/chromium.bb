@@ -75,14 +75,13 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
                       const gpu::SyncToken& sync_token)
       : gl_(gl), sync_token_(sync_token) {}
   ~SyncTokenClientImpl() override {}
-  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
+  uint32 InsertSyncPoint() override {
     if (sync_token_.HasData()) {
-      *sync_token = sync_token_;
-    } else {
-      const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
-      gl_->ShallowFlushCHROMIUM();
-      gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+      DCHECK_EQ(gpu::CommandBufferNamespace::OLD_SYNC_POINTS,
+                sync_token_.namespace_id());
+      return static_cast<uint32>(sync_token_.release_count());
     }
+    return gl_->InsertSyncPointCHROMIUM();
   }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
     if (sync_token.HasData()) {

@@ -34,9 +34,7 @@ class GLShareGroup;
 
 namespace gpu {
 class PreemptionFlag;
-class SyncPointClientWaiter;
 class SyncPointManager;
-struct SyncToken;
 union ValueState;
 namespace gles2 {
 class FramebufferCompletenessCache;
@@ -158,7 +156,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id, int client_id);
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 int client_id,
-                                const gpu::SyncToken& sync_token);
+                                int32 sync_point);
 
   void OnUpdateValueState(int client_id,
                           unsigned int target,
@@ -184,7 +182,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   GpuMemoryManager gpu_memory_manager_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   gpu::SyncPointManager* sync_point_manager_;
-  scoped_ptr<gpu::SyncPointClientWaiter> sync_point_client_waiter_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<gpu::gles2::FramebufferCompletenessCache>

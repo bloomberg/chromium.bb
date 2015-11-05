@@ -5522,7 +5522,6 @@ GLuint GLES2Implementation::CreateImageCHROMIUMHelper(ClientBuffer buffer,
     return 0;
   }
 
-  ShallowFlushCHROMIUM();
   int32_t image_id =
       gpu_control_->CreateImage(buffer, width, height, internalformat);
   if (image_id < 0) {

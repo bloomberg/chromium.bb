@@ -65,8 +65,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       gfx::BufferFormat format) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
-  void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
-                               const gpu::SyncToken& sync_token) override;
+  void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
+                               uint32 sync_point) override;
 
   // Overridden from base::trace_event::MemoryDumpProvider:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -90,7 +90,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       gfx::GpuMemoryBufferId id,
       base::ProcessHandle child_process_handle,
       int child_client_id,
-      const gpu::SyncToken& sync_token);
+      uint32 sync_point);
   void ProcessRemoved(base::ProcessHandle process_handle, int client_id);
 
   bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
@@ -164,7 +164,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                                   const gfx::GpuMemoryBufferHandle& handle);
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
                                   int client_id,
-                                  const gpu::SyncToken& sync_token);
+                                  uint32 sync_point);
 
   uint64_t ClientIdToTracingProcessId(int client_id) const;
 
