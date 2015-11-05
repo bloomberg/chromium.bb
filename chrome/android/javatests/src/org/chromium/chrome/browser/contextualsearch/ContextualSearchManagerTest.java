@@ -2245,6 +2245,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that tap followed by expand makes Content visible.
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -2266,6 +2267,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Tests that long press followed by expand creates Content and makes it visible.
      *
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -2288,6 +2290,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests swiping panel up and down after a tap search will only load the Content once.
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
@@ -2323,6 +2326,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests swiping panel up and down after a long press search will only load the Content once.
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
@@ -2397,6 +2401,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that chained searches load correctly.
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
@@ -2442,11 +2447,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that chained searches make Content visible when opening the Panel.
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    public void testChainedSearchContentVisibility()
-            throws InterruptedException, TimeoutException {
+    public void testChainedSearchContentVisibility() throws InterruptedException, TimeoutException {
         // Simulate a tap and make sure Content is not visible.
         simulateTapSearch("search");
         assertContentViewCoreCreatedButNeverMadeVisible();
@@ -2497,6 +2502,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that a tap followed by opening the Panel does not remove the loaded URL from history.
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
