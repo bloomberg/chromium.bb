@@ -85,9 +85,6 @@ void SiteEngagementHelper::InputTracker::DidGetUserInteraction(
     case blink::WebInputEvent::GestureTapDown:
       helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
       break;
-    case blink::WebInputEvent::MouseWheel:
-      helper_->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_WHEEL);
-      break;
     default:
       NOTREACHED();
   }
