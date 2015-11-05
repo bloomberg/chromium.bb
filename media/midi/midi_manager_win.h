@@ -47,6 +47,7 @@ class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
 
   // MidiManager overrides:
   void StartInitialization() final;
+  void Finalize() final;
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32 port_index,
                             const std::vector<uint8>& data,

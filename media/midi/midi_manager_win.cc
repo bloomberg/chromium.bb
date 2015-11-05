@@ -428,7 +428,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
   ~MidiServiceWinImpl() final {
     // Start() and Stop() of the threads, and AddDevicesChangeObserver() and
     // RemoveDevicesChangeObserver() should be called on the same thread.
-    CHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
 
     destructor_started = true;
     base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
@@ -482,7 +482,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
   void InitializeAsync(MidiServiceWinDelegate* delegate) final {
     // Start() and Stop() of the threads, and AddDevicesChangeObserver() and
     // RemoveDevicesChangeObserver() should be called on the same thread.
-    CHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
 
     delegate_ = delegate;
 
@@ -539,7 +539,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
 
   // base::SystemMonitor::DevicesChangedObserver overrides:
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) final {
-    CHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (destructor_started)
       return;
 
@@ -1120,13 +1120,16 @@ MidiManagerWin::MidiManagerWin() {
 }
 
 MidiManagerWin::~MidiManagerWin() {
-  midi_service_.reset();
 }
 
 void MidiManagerWin::StartInitialization() {
   midi_service_.reset(new MidiServiceWinImpl);
   // Note that |CompleteInitialization()| will be called from the callback.
   midi_service_->InitializeAsync(this);
+}
+
+void MidiManagerWin::Finalize() {
+  midi_service_.reset();
 }
 
 void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
