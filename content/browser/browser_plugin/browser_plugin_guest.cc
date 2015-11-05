@@ -1010,7 +1010,7 @@ void BrowserPluginGuest::OnShowPopup(
   gfx::Rect translated_bounds(params.bounds);
   translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
   BrowserPluginPopupMenuHelper popup_menu_helper(
-      owner_web_contents_->GetRenderViewHost(), render_frame_host);
+      owner_web_contents_->GetMainFrame(), render_frame_host);
   popup_menu_helper.ShowPopupMenu(translated_bounds,
                                   params.item_height,
                                   params.item_font_size,

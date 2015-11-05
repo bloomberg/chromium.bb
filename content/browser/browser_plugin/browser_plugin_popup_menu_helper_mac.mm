@@ -5,22 +5,19 @@
 #include "content/browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h"
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/render_widget_host.h"
 
 namespace content {
 
 BrowserPluginPopupMenuHelper::BrowserPluginPopupMenuHelper(
-    RenderViewHost* embedder_rvh, RenderFrameHost* guest_rfh)
-    : PopupMenuHelper(guest_rfh),
-      embedder_rvh_(static_cast<RenderViewHostImpl*>(embedder_rvh)) {
-}
+    RenderFrameHostImpl* embedder_rfh,
+    RenderFrameHost* guest_rfh)
+    : PopupMenuHelper(guest_rfh), embedder_rfh_(embedder_rfh) {}
 
 RenderWidgetHostViewMac*
     BrowserPluginPopupMenuHelper::GetRenderWidgetHostView() const {
-  return static_cast<RenderWidgetHostViewMac*>(
-      embedder_rvh_->GetWidget()->GetView());
+  return static_cast<RenderWidgetHostViewMac*>(embedder_rfh_->GetView());
 }
 
 }  // namespace content

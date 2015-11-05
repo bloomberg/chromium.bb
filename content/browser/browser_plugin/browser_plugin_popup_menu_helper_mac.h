@@ -9,8 +9,6 @@
 
 namespace content {
 
-class RenderViewHost;
-class RenderViewHostImpl;
 class RenderFrameHost;
 class RenderFrameHostImpl;
 
@@ -19,15 +17,15 @@ class RenderFrameHostImpl;
 class BrowserPluginPopupMenuHelper : public PopupMenuHelper {
  public:
   // Creates a BrowserPluginPopupMenuHelper that positions popups relative to
-  // |embedder_rvh| and will notify |guest_rfh| when a user selects or cancels
+  // |embedder_rfh| and will notify |guest_rfh| when a user selects or cancels
   // the popup.
-  BrowserPluginPopupMenuHelper(RenderViewHost* embedder_rvh,
+  BrowserPluginPopupMenuHelper(RenderFrameHostImpl* embedder_rfh,
                                RenderFrameHost* guest_rfh);
 
  private:
   RenderWidgetHostViewMac* GetRenderWidgetHostView() const override;
 
-  RenderViewHostImpl* embedder_rvh_;
+  RenderFrameHostImpl* embedder_rfh_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPopupMenuHelper);
 };

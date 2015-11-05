@@ -9,6 +9,8 @@
 #include "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
@@ -119,7 +121,11 @@ void PopupMenuHelper::DontShowPopupMenuForTesting() {
 
 RenderWidgetHostViewMac* PopupMenuHelper::GetRenderWidgetHostView() const {
   return static_cast<RenderWidgetHostViewMac*>(
-      render_frame_host_->GetRenderViewHost()->GetWidget()->GetView());
+      render_frame_host_->frame_tree_node()
+          ->frame_tree()
+          ->root()
+          ->current_frame_host()
+          ->GetView());
 }
 
 void PopupMenuHelper::Observe(int type,
