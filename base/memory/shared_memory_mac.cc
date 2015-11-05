@@ -52,7 +52,7 @@ SharedMemoryHandle::Type GetABTestMechanism() {
     group = SharedMemoryHandle::POSIX;
     found_group = true;
   } else {
-    group = SharedMemoryHandle::MACH;
+    group = SharedMemoryHandle::POSIX;
   }
 
   return group;
