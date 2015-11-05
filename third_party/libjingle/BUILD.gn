@@ -34,9 +34,6 @@ config("jingle_unexported_configs") {
     "../../third_party/usrsctp",
   ]
 
-  # Assumes libpeer is linked statically.
-  defines += [ "LIBPEERCONNECTION_LIB=1" ]
-
   if (is_win && current_cpu == "x86") {
     defines += [ "_USE_32BIT_TIME_T" ]
   }
