@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -36,6 +37,11 @@ public class ContextualSearchFieldTrial {
 
     static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS = "disable_extra_search_bar_animations";
 
+    // Translation.
+    @VisibleForTesting
+    static final String TRANSLATION_ONEBOX_ENABLED = "translation_onebox_enabled";
+
+    // Tap handling.
     private static final int UNLIMITED_TAPS = -1;
     private static final int DEFAULT_TAP_RESOLVE_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
     private static final int DEFAULT_TAP_PREFETCH_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
@@ -46,6 +52,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sEnabled;
     private static Boolean sIsPeekPromoEnabled;
     private static Integer sPeekPromoMaxCount;
+    private static Boolean sIsTranslationOneboxEnabled;
 
     /**
      * Don't instantiate.
@@ -212,6 +219,16 @@ public class ContextualSearchFieldTrial {
                     PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT);
         }
         return sPeekPromoMaxCount.intValue();
+    }
+
+    /**
+     * @return Whether triggering a translation Onebox in the SERP is enabled.
+     */
+    static boolean isTranslationOneboxEnabled() {
+        if (sIsTranslationOneboxEnabled == null) {
+            sIsTranslationOneboxEnabled = getBooleanParam(TRANSLATION_ONEBOX_ENABLED);
+        }
+        return sIsTranslationOneboxEnabled.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------

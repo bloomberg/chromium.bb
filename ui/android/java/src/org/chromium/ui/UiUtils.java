@@ -12,16 +12,22 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
 
 import org.chromium.base.ContentUriUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -134,6 +140,28 @@ public class UiUtils {
         final float density = context.getResources().getDisplayMetrics().density;
         final float bottomMarginDp = Math.abs(rootView.getHeight() - appRect.height()) / density;
         return bottomMarginDp > KEYBOARD_DETECT_BOTTOM_THRESHOLD_DP;
+    }
+
+    /**
+     * Gets the set of locales supported by the current enabled Input Methods.
+     * @param context A {@link Context} instance.
+     * @return A possibly-empty {@link Set} of locale strings.
+     */
+    public static Set<String> getIMELocales(Context context) {
+        LinkedHashSet<String> locales = new LinkedHashSet<String>();
+        InputMethodManager imManager =
+                (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        List<InputMethodInfo> enabledMethods = imManager.getEnabledInputMethodList();
+        for (int i = 0; i < enabledMethods.size(); i++) {
+            List<InputMethodSubtype> subtypes =
+                    imManager.getEnabledInputMethodSubtypeList(enabledMethods.get(i), true);
+            if (subtypes == null) continue;
+            for (int j = 0; j < subtypes.size(); j++) {
+                String locale = subtypes.get(j).getLocale();
+                if (!TextUtils.isEmpty(locale)) locales.add(locale);
+            }
+        }
+        return locales;
     }
 
     /**

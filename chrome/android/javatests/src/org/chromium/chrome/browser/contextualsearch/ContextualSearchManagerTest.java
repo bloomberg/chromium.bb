@@ -268,10 +268,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         private final boolean mDoPreventPreload;
         private final int mStartAdjust;
         private final int mEndAdjust;
+        private final String mContextLanguage;
 
         public FakeResponseOnMainThread(boolean isNetworkUnavailable, int responseCode,
                                         String searchTerm, String displayText, String alternateTerm,
-                                        boolean doPreventPreload, int startAdjust, int endAdjudst) {
+                                        boolean doPreventPreload, int startAdjust, int endAdjudst,
+                                        String contextLanguage) {
             mIsNetworkUnavailable = isNetworkUnavailable;
             mResponseCode = responseCode;
             mSearchTerm = searchTerm;
@@ -280,13 +282,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             mDoPreventPreload = doPreventPreload;
             mStartAdjust = startAdjust;
             mEndAdjust = endAdjudst;
+            mContextLanguage = contextLanguage;
         }
 
         @Override
         public void run() {
-            mFakeServer.handleSearchTermResolutionResponse(
-                    mIsNetworkUnavailable, mResponseCode, mSearchTerm, mDisplayText,
-                    mAlternateTerm, mDoPreventPreload, mStartAdjust, mEndAdjust);
+            mFakeServer.handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
+                    mSearchTerm, mDisplayText, mAlternateTerm, mDoPreventPreload, mStartAdjust,
+                    mEndAdjust, mContextLanguage);
         }
     }
 
@@ -297,20 +300,20 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
         fakeResponse(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm,
-                doPreventPreload, 0, 0);
+                doPreventPreload, 0, 0, "");
     }
 
     /**
      * Fakes a server response with the parameters given.
      * {@See ContextualSearchManager#handleSearchTermResolutionResponse}.
      */
-    private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
-            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
-            int startAdjust, int endAdjust) {
+    private void fakeResponse(boolean isNetworkUnavailable, int responseCode, String searchTerm,
+            String displayText, String alternateTerm, boolean doPreventPreload, int startAdjust,
+            int endAdjust, String contextLanguage) {
         if (mFakeServer.getSearchTermRequested() != null) {
-            getInstrumentation().runOnMainSync(
-                    new FakeResponseOnMainThread(isNetworkUnavailable, responseCode, searchTerm,
-                            displayText, alternateTerm, doPreventPreload, startAdjust, endAdjust));
+            getInstrumentation().runOnMainSync(new FakeResponseOnMainThread(isNetworkUnavailable,
+                    responseCode, searchTerm, displayText, alternateTerm, doPreventPreload,
+                    startAdjust, endAdjust, contextLanguage));
         }
     }
 
@@ -449,10 +452,18 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     private void assertLoadedSearchTermMatches(String searchTerm) {
         boolean doesMatch = false;
+        String message = "but there was no loaded URL!";
         if (mFakeServer != null) {
             doesMatch = mFakeServer.getLoadedUrl().contains("q=" + searchTerm);
+            // TODO(donnd): remove the following line once the Translate API is updated!
+            // The current Translate API requires a change to the query parameter so
+            // checking it for the search term does not work.  We plan to fix this very
+            // soon, and this workaround allows tests to work until then, but needs to be
+            // removed when we switch to the new API.  See crbug.com/413717.
+            doesMatch = doesMatch || mFakeServer.getLoadedUrl().contains("tlitetxt=" + searchTerm);
+            message = "in URL: " + mFakeServer.getLoadedUrl();
         }
-        assertTrue(doesMatch);
+        assertTrue("Expected to find searchTerm " + searchTerm + ", " + message, doesMatch);
     }
 
     private void assertContainsParameters(String searchTerm, String alternateTerm) {
@@ -2194,7 +2205,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         waitForPanelToPeekAndAssert();
 
         fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
-                false, -14, 0);
+                false, -14, 0, "");
         waitForSelectionToBe("United States Intelligence");
     }
 
@@ -2558,5 +2569,35 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertTrue(mFakeServer.hasRemovedUrl(url1));
         assertTrue(mFakeServer.hasRemovedUrl(url2));
         assertTrue(mFakeServer.hasRemovedUrl(url3));
+    }
+
+    /**
+     * Tests that a simple Tap with language determination triggers translation.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_ONEBOX_ENABLED + "=true")
+    public void testTapWithLanguage() throws InterruptedException, TimeoutException {
+        // Tapping a german word should trigger translation.
+        simulateTapSearch("german");
+
+        // Make sure we tried to trigger translate.
+        assertTrue(mManager.getRequest().isTranslationForced());
+    }
+
+    /**
+     * Tests that a simple Tap without language determination does not trigger translation.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TRANSLATION_ONEBOX_ENABLED + "=true")
+    public void testTapWithoutLanguage() throws InterruptedException, TimeoutException {
+        // Tapping an English word should NOT trigger translation.
+        simulateTapSearch("search");
+
+        // Make sure we did not try to trigger translate.
+        assertFalse(mManager.getRequest().isTranslationForced());
     }
 }

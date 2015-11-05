@@ -46,16 +46,17 @@ class ContextualSearchManager {
                              jobject j_base_content_view_core,
                              jboolean j_may_send_base_page_url);
 
+  // Gets the target language for translation purposes.
+  base::android::ScopedJavaLocalRef<jstring> GetTargetLanguage(JNIEnv* env,
+                                                               jobject obj);
+
+  // Gets the accept-languages preference string.
+  base::android::ScopedJavaLocalRef<jstring> GetAcceptLanguages(JNIEnv* env,
+                                                                jobject obj);
+
  private:
-  // TODO(donnd): encapsulate these response parameters?
-  void OnSearchTermResolutionResponse(bool is_invalid,
-                                      int response_code,
-                                      const std::string& search_term,
-                                      const std::string& display_text,
-                                      const std::string& alternate_term,
-                                      bool prevent_preload,
-                                      int selection_start_adjust,
-                                      int selection_end_adjust);
+  void OnSearchTermResolutionResponse(
+      const ResolvedSearchTerm& resolved_search_term);
 
   // Calls back to Java with the surrounding text to be displayed.
   void OnSurroundingTextAvailable(const std::string& after_text);

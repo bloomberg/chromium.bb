@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -48,10 +49,16 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.TopControlsState;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -113,6 +120,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     private boolean mIsShowingPromo;
     private boolean mDidLogPromoOutcome;
+
+    // Cached target languages for translation;
+    private List<String> mTargetLanguages;
 
     /**
      * Whether contextual search manager is currently promoting a tab. We should be ignoring hide
@@ -290,11 +300,19 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     /**
-     * Sets the selection controller for testing purposes.
+     * @return The selection controller, for testing purposes.
      */
     @VisibleForTesting
     ContextualSearchSelectionController getSelectionController() {
         return mSelectionController;
+    }
+
+    /**
+     * @return The current search request, or {@code null} if there is none, for testing.
+     */
+    @VisibleForTesting
+    ContextualSearchRequest getRequest() {
+        return mSearchRequest;
     }
 
     @VisibleForTesting
@@ -476,10 +494,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
             mNetworkCommunicator.startSearchTermResolutionRequest(
                     mSelectionController.getSelectedText());
             didRequestSurroundings = true;
+            // Cache the target languages in case they are needed for translation.
+            if (mPolicy.isTranslationEnabled()) getTargetLanguages();
         } else {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult(isTap);
             mSearchRequest = new ContextualSearchRequest(mSelectionController.getSelectedText(),
                     null, shouldPrefetch);
+            // TODO(donnd): figure out a way to do translation on long-press selections.
             mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanel.displaySearchTerm(mSelectionController.getSelectedText());
             if (shouldPrefetch) loadSearchUrl();
@@ -675,20 +696,22 @@ public class ContextualSearchManager extends ContextualSearchObservable
      *        selection should be expanded by.
      * @param selectionEndAdjust A positive number of characters that the end of the existing
      *        selection should be expanded by.
+     * @param contextLanguage The language of the original search term, or an empty string.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
-            boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust) {
+            boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
+            final String contextLanguage) {
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, doPreventPreload, selectionStartAdjust,
-                selectionEndAdjust);
+                selectionEndAdjust, contextLanguage);
     }
 
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
-            int selectionStartAdjust, int selectionEndAdjust) {
+            int selectionStartAdjust, int selectionEndAdjust, String contextLanguage) {
         if (!mSearchPanel.isShowing()) return;
 
         // Show an appropriate message for what to search for.
@@ -721,6 +744,14 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // appear in the user's history until the user views it).  See crbug.com/406446.
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult(true);
             mSearchRequest = new ContextualSearchRequest(searchTerm, alternateTerm, shouldPreload);
+            // Trigger translation, if enabled.
+            if (!contextLanguage.isEmpty() && mPolicy.isTranslationEnabled()) {
+                List<String> targetLanguages = getTargetLanguages();
+                if (mPolicy.needsTranslation(contextLanguage, targetLanguages)) {
+                    mSearchRequest.forceTranslation(
+                            contextLanguage, mPolicy.bestTargetLanguage(targetLanguages));
+                }
+            }
             mDidStartLoadingResolvedSearchRequest = false;
             if (mSearchPanel.isContentShowing()) {
                 mSearchRequest.setNormalPriority();
@@ -766,6 +797,68 @@ public class ContextualSearchManager extends ContextualSearchObservable
         if (mDidBasePageLoadJustStart) return false;
 
         return mPolicy.isTapSupported();
+    }
+
+    // ============================================================================================
+    // Translation support
+    // ============================================================================================
+
+    /**
+     * Gets the list of target languages for the current user, with the first
+     * item in the list being the user's primary language.
+     * @return The {@link List} of languages the user understands with their primary language first.
+     */
+    private List<String> getTargetLanguages() {
+        // May be cached.
+        if (mTargetLanguages != null) return mTargetLanguages;
+
+        // Using LinkedHashSet keeps the entries both unique and ordered.
+        Set<String> uniqueLanguages = new LinkedHashSet<String>();
+
+        // The primary language always comes first.
+        uniqueLanguages.add(
+                trimLocaleToLanguage(nativeGetTargetLanguage(mNativeContextualSearchManagerPtr)));
+
+        // Next add languages the user knows how to type.
+        Context context = mActivity.getApplicationContext();
+        List<String> locales = context != null
+                ? new ArrayList<String>(UiUtils.getIMELocales(context))
+                : new ArrayList<String>();
+        for (int i = 0; i < locales.size(); i++) {
+            uniqueLanguages.add(trimLocaleToLanguage(locales.get(i)));
+        }
+
+        // Add the accept languages last, since they are a weaker hint than presence of a keyboard.
+        List<String> acceptLanguages = getAcceptLanguages();
+        for (int i = 0; i < acceptLanguages.size(); i++) {
+            uniqueLanguages.add(trimLocaleToLanguage(acceptLanguages.get(i)));
+        }
+        mTargetLanguages = new ArrayList<String>(uniqueLanguages);
+        return mTargetLanguages;
+    }
+
+    /**
+     * Gets the list of accept languages for this user.
+     * @return The {@link List} of languages the user understands or does not want translated.
+     */
+    private List<String> getAcceptLanguages() {
+        String acceptLanguages = nativeGetAcceptLanguages(mNativeContextualSearchManagerPtr);
+        List<String> result = new ArrayList<String>();
+        for (String language : acceptLanguages.split(",")) {
+            result.add(language);
+        }
+        return result;
+    }
+
+    /**
+     * @return The given locale as a language code.
+     */
+    private String trimLocaleToLanguage(String locale) {
+        // TODO(donnd): use getScript or getLanguageTag (both API 21), or some other standard way to
+        // strip the country, instead of hard-coding the two character language code.
+        // TODO(donnd): Shouldn't getLanguage() do this?
+        String trimmedLocale = locale.substring(0, 2);
+        return new Locale(trimmedLocale).getLanguage();
     }
 
     // ============================================================================================
@@ -1194,4 +1287,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private native void nativeGatherSurroundingText(long nativeContextualSearchManager,
             String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
             boolean maySendBasePageUrl);
+    private native String nativeGetTargetLanguage(long nativeContextualSearchManager);
+    private native String nativeGetAcceptLanguages(long nativeContextualSearchManager);
 }

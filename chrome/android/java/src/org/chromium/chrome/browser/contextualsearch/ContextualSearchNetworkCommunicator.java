@@ -33,10 +33,11 @@ public interface ContextualSearchNetworkCommunicator {
      *        the search term.
      * @param selectionEndAdjust The end offset adjustment of the selection to use to highlight
      *        the search term.
+     * @param contextLanguage The language of the context, or the empty string if unknown.
      */
     void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
-            int selectionStartAdjust, int selectionEndAdjust);
+            int selectionStartAdjust, int selectionEndAdjust, String contextLanguage);
 
     // --------------------------------------------------------------------------------------------
     // These are non-network actions that need to be stubbed out for testing.

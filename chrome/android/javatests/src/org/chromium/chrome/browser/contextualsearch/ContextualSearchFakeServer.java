@@ -141,6 +141,8 @@ class ContextualSearchFakeServer
         private final boolean mDoPreventPreload;
         private final int mStartAdjust;
         private final int mEndAdjust;
+        private final String mContextLanguage;
+
 
         boolean mDidStartResolution;
         boolean mDidFinishResolution;
@@ -154,11 +156,13 @@ class ContextualSearchFakeServer
          * @param alternateTerm         The alternate text.
          * @param doPreventPreload      Whether search preload should be prevented.
          * @param startAdjust           The start adjustment of the selection.
-         * @param endAdjudst            The end adjustment of the selection.
+         * @param endAdjust             The end adjustment of the selection.
+         * @param contextLanguage       The language of the context determined by the server.
          */
         FakeTapSearch(String nodeId, boolean isNetworkUnavailable, int responseCode,
                       String searchTerm, String displayText, String alternateTerm,
-                      boolean doPreventPreload, int startAdjust, int endAdjudst) {
+                      boolean doPreventPreload, int startAdjust, int endAdjust,
+                      String contextLanguage) {
             super(nodeId);
 
             mIsNetworkUnavailable = isNetworkUnavailable;
@@ -168,7 +172,8 @@ class ContextualSearchFakeServer
             mAlternateTerm = alternateTerm;
             mDoPreventPreload = doPreventPreload;
             mStartAdjust = startAdjust;
-            mEndAdjust = endAdjudst;
+            mEndAdjust = endAdjust;
+            mContextLanguage = contextLanguage;
         }
 
         @Override
@@ -226,7 +231,7 @@ class ContextualSearchFakeServer
         /**
          * Simulates a Search Term Resolution.
          */
-        private void simulateSearchTermResolution() throws InterruptedException, TimeoutException {
+        private void simulateSearchTermResolution() {
             mManagerTest.runOnMainSync(getRunnable());
         }
 
@@ -240,7 +245,8 @@ class ContextualSearchFakeServer
                     if (!mDidFinishResolution) {
                         handleSearchTermResolutionResponse(
                                 mIsNetworkUnavailable, mResponseCode, mSearchTerm, mDisplayText,
-                                mAlternateTerm, mDoPreventPreload, mStartAdjust, mEndAdjust);
+                                mAlternateTerm, mDoPreventPreload, mStartAdjust, mEndAdjust,
+                                mContextLanguage);
 
                         mActiveFakeTapSearch = null;
                         mDidFinishResolution = true;
@@ -386,7 +392,7 @@ class ContextualSearchFakeServer
     }
 
     /**
-     * @return
+     * @return Whether onShow() was ever called for the current {@code ContentViewCore}.
      */
     @VisibleForTesting
     boolean didEverCallContentViewCoreOnShow() {
@@ -433,10 +439,10 @@ class ContextualSearchFakeServer
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
-            int selectionStartAdjust, int selectionEndAdjust) {
+            int selectionStartAdjust, int selectionEndAdjust, String contextLanguage) {
         mBaseManager.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, doPreventPreload, selectionStartAdjust,
-                selectionEndAdjust);
+                selectionEndAdjust, contextLanguage);
     }
 
     @Override
@@ -469,11 +475,13 @@ class ContextualSearchFakeServer
         registerFakeLongPressSearch(new FakeLongPressSearch("resolution", "Resolution"));
 
         registerFakeTapSearch(new FakeTapSearch("search", false, 200,
-                "Search", "Search", "alternate-term", false, 0, 0));
+                "Search", "Search", "alternate-term", false, 0, 0, ""));
         registerFakeTapSearch(new FakeTapSearch("term", false, 200,
-                "Term", "Term", "alternate-term", false, 0, 0));
+                "Term", "Term", "alternate-term", false, 0, 0, ""));
         registerFakeTapSearch(new FakeTapSearch("resolution", false, 200,
-                "Resolution", "Resolution", "alternate-term", false, 0, 0));
+                "Resolution", "Resolution", "alternate-term", false, 0, 0, ""));
+        registerFakeTapSearch(new FakeTapSearch("german", false, 200,
+                "Deutsche", "Deutsche", "alternate-term", false, 0, 0, "de"));
     }
 
     /**

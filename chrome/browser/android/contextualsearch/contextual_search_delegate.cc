@@ -9,14 +9,18 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "chrome/browser/android/proto/client_discourse_context.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/translate/translate_service.h"
+#include "chrome/common/pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_header_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -39,6 +43,7 @@ const char kContextualSearchDoNotSendURLParamName[] = "do_not_send_url";
 const char kContextualSearchResponseDisplayTextParam[] = "display_text";
 const char kContextualSearchResponseSelectedTextParam[] = "selected_text";
 const char kContextualSearchResponseSearchTermParam[] = "search_term";
+const char kContextualSearchResponseLanguageParam[] = "lang";
 const char kContextualSearchResponseResolvedTermParam[] = "resolved_term";
 const char kContextualSearchPreventPreload[] = "prevent_preload";
 const char kContextualSearchMentions[] = "mentions";
@@ -147,15 +152,17 @@ void ContextualSearchDelegate::OnURLFetchComplete(
   int mention_end = 0;
   int start_adjust = 0;
   int end_adjust = 0;
+  std::string context_language;
+  std::string target_language;
 
   if (source->GetStatus().is_success() && response_code == 200) {
     std::string response;
     bool has_string_response = source->GetResponseAsString(&response);
     DCHECK(has_string_response);
     if (has_string_response) {
-      DecodeSearchTermsFromJsonResponse(response, &search_term, &display_text,
-                                        &alternate_term, &prevent_preload,
-                                        &mention_start, &mention_end);
+      DecodeSearchTermFromJsonResponse(
+          response, &search_term, &display_text, &alternate_term,
+          &prevent_preload, &mention_start, &mention_end, &context_language);
       if (mention_start != 0 || mention_end != 0) {
         // Sanity check that our selection is non-zero and it is less than
         // 100 characters as that would make contextual search bar hide.
@@ -175,9 +182,11 @@ void ContextualSearchDelegate::OnURLFetchComplete(
     }
   }
   bool is_invalid = response_code == net::URLFetcher::RESPONSE_CODE_INVALID;
-  search_term_callback_.Run(
+  ResolvedSearchTerm resolved_search_term(
       is_invalid, response_code, search_term, display_text, alternate_term,
-      prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust);
+      prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
+      context_language);
+  search_term_callback_.Run(resolved_search_term);
 
   // The ContextualSearchContext is consumed once the request has completed.
   context_.reset();
@@ -415,16 +424,33 @@ bool ContextualSearchDelegate::CanSendPageURL(
   return true;
 }
 
+// Gets the target language from the translate service using the user's profile.
+std::string ContextualSearchDelegate::GetTargetLanguage() {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  PrefService* pref_service = profile->GetPrefs();
+  std::string result = TranslateService::GetTargetLanguage(pref_service);
+  DCHECK(!result.empty());
+  return result;
+}
+
+// Returns the accept languages preference string.
+std::string ContextualSearchDelegate::GetAcceptLanguages() {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  PrefService* pref_service = profile->GetPrefs();
+  return pref_service->GetString(prefs::kAcceptLanguages);
+}
+
 // Decodes the given response from the search term resolution request and sets
 // the value of the given parameters.
-void ContextualSearchDelegate::DecodeSearchTermsFromJsonResponse(
+void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     const std::string& response,
     std::string* search_term,
     std::string* display_text,
     std::string* alternate_term,
     std::string* prevent_preload,
     int* mention_start,
-    int* mention_end) {
+    int* mention_end,
+    std::string* lang) {
   bool contains_xssi_escape = response.find(kXssiEscape) == 0;
   const std::string& proper_json =
       contains_xssi_escape ? response.substr(strlen(kXssiEscape)) : response;
@@ -436,6 +462,7 @@ void ContextualSearchDelegate::DecodeSearchTermsFromJsonResponse(
         static_cast<base::DictionaryValue*>(root.get());
     dict->GetString(kContextualSearchPreventPreload, prevent_preload);
     dict->GetString(kContextualSearchResponseSearchTermParam, search_term);
+    dict->GetString(kContextualSearchResponseLanguageParam, lang);
     // For the display_text, if not present fall back to the "search_term".
     if (!dict->GetString(kContextualSearchResponseDisplayTextParam,
                          display_text)) {

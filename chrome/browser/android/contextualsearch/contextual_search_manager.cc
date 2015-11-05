@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
+#include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -89,27 +90,45 @@ void ContextualSearchManager::GatherSurroundingText(
                                           may_send_base_page_url);
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+ContextualSearchManager::GetTargetLanguage(JNIEnv* env, jobject obj) {
+  std::string target_language = delegate_->GetTargetLanguage();
+  base::android::ScopedJavaLocalRef<jstring> j_target_language =
+      base::android::ConvertUTF8ToJavaString(env, target_language.c_str());
+  return j_target_language;
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+ContextualSearchManager::GetAcceptLanguages(JNIEnv* env, jobject obj) {
+  std::string accept_languages = delegate_->GetAcceptLanguages();
+  base::android::ScopedJavaLocalRef<jstring> j_accept_languages =
+      base::android::ConvertUTF8ToJavaString(env, accept_languages.c_str());
+  return j_accept_languages;
+}
+
 void ContextualSearchManager::OnSearchTermResolutionResponse(
-    bool is_invalid,
-    int response_code,
-    const std::string& search_term,
-    const std::string& display_text,
-    const std::string& alternate_term,
-    bool prevent_preload,
-    int selection_start_adjust,
-    int selection_end_adjust) {
+    const ResolvedSearchTerm& resolved_search_term) {
   // Notify the Java UX of the result.
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_search_term =
-      base::android::ConvertUTF8ToJavaString(env, search_term.c_str());
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.search_term.c_str());
   base::android::ScopedJavaLocalRef<jstring> j_display_text =
-      base::android::ConvertUTF8ToJavaString(env, display_text.c_str());
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.display_text.c_str());
   base::android::ScopedJavaLocalRef<jstring> j_alternate_term =
-      base::android::ConvertUTF8ToJavaString(env, alternate_term.c_str());
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.alternate_term.c_str());
+  base::android::ScopedJavaLocalRef<jstring> j_context_language =
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.context_language.c_str());
   Java_ContextualSearchManager_onSearchTermResolutionResponse(
-      env, java_manager_.obj(), is_invalid, response_code, j_search_term.obj(),
-      j_display_text.obj(), j_alternate_term.obj(), prevent_preload,
-      selection_start_adjust, selection_end_adjust);
+      env, java_manager_.obj(), resolved_search_term.is_invalid,
+      resolved_search_term.response_code, j_search_term.obj(),
+      j_display_text.obj(), j_alternate_term.obj(),
+      resolved_search_term.prevent_preload,
+      resolved_search_term.selection_start_adjust,
+      resolved_search_term.selection_end_adjust, j_context_language.obj());
 }
 
 void ContextualSearchManager::OnSurroundingTextAvailable(

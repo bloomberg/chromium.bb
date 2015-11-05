@@ -102,6 +102,8 @@
       'browser/android/contextualsearch/contextual_search_manager.h',
       'browser/android/contextualsearch/contextual_search_tab_helper.cc',
       'browser/android/contextualsearch/contextual_search_tab_helper.h',
+      'browser/android/contextualsearch/resolved_search_term.cc',
+      'browser/android/contextualsearch/resolved_search_term.h',
       'browser/android/cookies/cookies_fetcher.cc',
       'browser/android/cookies/cookies_fetcher.h',
       'browser/android/data_usage/external_data_use_observer.cc',

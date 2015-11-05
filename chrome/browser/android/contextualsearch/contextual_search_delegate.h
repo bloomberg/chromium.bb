@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
+#include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -27,15 +28,9 @@ class ContextualSearchDelegate
     : public net::URLFetcherDelegate,
       public base::SupportsWeakPtr<ContextualSearchDelegate> {
  public:
-  typedef base::Callback<void(bool,
-                              int,
-                              const std::string&,
-                              const std::string&,
-                              const std::string&,
-                              bool,
-                              int,
-                              int)> SearchTermResolutionCallback;
   typedef base::Callback<void(const std::string&)> SurroundingTextCallback;
+  typedef base::Callback<void(const ResolvedSearchTerm&)>
+      SearchTermResolutionCallback;
   typedef base::Callback<
       void(const base::string16&, int, int)>
       HandleSurroundingsCallback;
@@ -76,6 +71,12 @@ class ContextualSearchDelegate
   // text has been gathered.
   void ContinueSearchTermResolutionRequest();
 
+  // Gets the target language for translation purposes for this user.
+  std::string GetTargetLanguage();
+
+  // Returns the accept languages preference string.
+  std::string GetAcceptLanguages();
+
   // For testing.
   void set_context_for_testing(ContextualSearchContext* context) {
     context_.reset(context);
@@ -97,7 +98,7 @@ class ContextualSearchDelegate
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            SurroundingTextForIcingNegativeLimit);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
-                           DecodeSearchTermsFromJsonResponse);
+                           DecodeSearchTermFromJsonResponse);
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -152,13 +153,14 @@ class ContextualSearchDelegate
                       TemplateURLService* template_url_service);
 
   // Decodes the given json response string and extracts parameters.
-  void DecodeSearchTermsFromJsonResponse(const std::string& response,
-                                         std::string* search_term,
-                                         std::string* display_text,
-                                         std::string* alternate_term,
-                                         std::string* prevent_preload,
-                                         int* mention_start,
-                                         int* mention_end);
+  void DecodeSearchTermFromJsonResponse(const std::string& response,
+                                        std::string* search_term,
+                                        std::string* display_text,
+                                        std::string* alternate_term,
+                                        std::string* prevent_preload,
+                                        int* mention_start,
+                                        int* mention_end,
+                                        std::string* context_language);
 
   void ExtractMentionsStartEnd(const base::ListValue& mentions_list,
                                int* startResult,

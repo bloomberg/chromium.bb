@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -15,6 +16,8 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content.browser.ContentViewCore;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
@@ -385,6 +388,45 @@ class ContextualSearchPolicy {
     @VisibleForTesting
     int getTapCount() {
         return mPreferenceManager.getContextualSearchTapCount();
+    }
+
+    /**
+     * Determines whether translation is needed between the given languages.
+     * @param sourceLanguage The source language code; language we're translating from.
+     * @param targetLanguages A list of target language codes; languages we might translate to.
+     * @return Whether translation is needed or not.
+     */
+    boolean needsTranslation(String sourceLanguage, List<String> targetLanguages) {
+        // For now, we just look for a language match.
+        for (String targetLanguage : targetLanguages) {
+            if (TextUtils.equals(sourceLanguage, targetLanguage)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Determines the best target language.
+     */
+    String bestTargetLanguage(List<String> targetLanguages) {
+        // For now, we just return the first language, unless it's English (due to over-usage).
+        // TODO(donnd): Improve this logic. Determining the right language seems non-trivial.
+        // E.g. If this language doesn't match the user's server preferences, they might see a page
+        // in one language and the one box translation in another, which might be confusing.
+        if (TextUtils.equals(targetLanguages.get(0), Locale.ENGLISH.getLanguage())
+                && targetLanguages.size() > 1) {
+            return targetLanguages.get(1);
+        } else {
+            return targetLanguages.get(0);
+        }
+    }
+
+    /**
+     * @return Whether translation should be enabled or not.
+     */
+    boolean isTranslationEnabled() {
+        return ContextualSearchFieldTrial.isTranslationOneboxEnabled();
     }
 
     // --------------------------------------------------------------------------------------------
