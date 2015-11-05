@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "native_client/src/include/build_config.h"
@@ -573,10 +574,14 @@ bool test_utimes(const char *test_file) {
   // TODO(mseaborn): Implement utimes for unsandboxed mode.
   if (NONSFI_MODE)
     return true;
-  // These numbers are close enough to the epoch time. Windows
-  // does not like going back in time.
-  const time_t a_sec = 2132067496;
-  const time_t m_sec = 2132067497;
+  // To avoid going back in time (problematic for Windows), grab a future time
+  // which (usually) matches our DST state. This also minimizes the risk of a
+  // bug (also found on Windows) where the result of stat is inaccurate if the
+  // current and target time are in different Daylight Savings Time states.
+  const time_t current_time = time(NULL);
+  static const time_t SEC_PER_HOUR = 60 * 60;
+  const time_t a_sec = current_time + SEC_PER_HOUR;
+  const time_t m_sec = current_time + SEC_PER_HOUR + 1;
   struct timeval times[2] = {
     {a_sec, 0},
     {m_sec, 0}
