@@ -16,18 +16,28 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 8. target received mousedown
 9. target received pointerup
 10. target received mouseup
-- drag & release within target -
+- drag out of and into target & release within target -
 11. target received pointerdown
 12. target received mousedown
 13. target received pointermove
 14. target received mousemove
-15. target received pointerup
-16. target received mouseup
+15. target received pointerout
+16. target received mouseout
+17. target received pointerleave
+18. target received mouseleave
+19. target received pointerover
+20. target received mouseover
+21. target received pointerenter
+22. target received mouseenter
+23. target received pointermove
+24. target received mousemove
+25. target received pointerup
+26. target received mouseup
 - move outside target again -
-17. target received pointerout
-18. target received mouseout
-19. target received pointerleave
-20. target received mouseleave
+27. target received pointerout
+28. target received mouseout
+29. target received pointerleave
+30. target received mouseleave
 
 --- test with preventDefault on pointerdown ---
 - start with mouse outside target -
@@ -40,15 +50,24 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 6. target received mousemove
 7. target received pointerdown, prevented default
 8. target received pointerup
-- drag & release within target -
+- drag out of and into target & release within target -
 9. target received pointerdown, prevented default
 10. target received pointermove
-11. target received pointerup
+11. target received pointerout
+12. target received mouseout
+13. target received pointerleave
+14. target received mouseleave
+15. target received pointerover
+16. target received mouseover
+17. target received pointerenter
+18. target received mouseenter
+19. target received pointermove
+20. target received pointerup
 - move outside target again -
-12. target received pointerout
-13. target received mouseout
-14. target received pointerleave
-15. target received mouseleave
+21. target received pointerout
+22. target received mouseout
+23. target received pointerleave
+24. target received mouseleave
 
 --- test with preventDefault on pointerup ---
 - start with mouse outside target -
@@ -63,18 +82,28 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 8. target received mousedown
 9. target received pointerup, prevented default
 10. target received mouseup
-- drag & release within target -
+- drag out of and into target & release within target -
 11. target received pointerdown
 12. target received mousedown
 13. target received pointermove
 14. target received mousemove
-15. target received pointerup, prevented default
-16. target received mouseup
+15. target received pointerout
+16. target received mouseout
+17. target received pointerleave
+18. target received mouseleave
+19. target received pointerover
+20. target received mouseover
+21. target received pointerenter
+22. target received mouseenter
+23. target received pointermove
+24. target received mousemove
+25. target received pointerup, prevented default
+26. target received mouseup
 - move outside target again -
-17. target received pointerout
-18. target received mouseout
-19. target received pointerleave
-20. target received mouseleave
+27. target received pointerout
+28. target received mouseout
+29. target received pointerleave
+30. target received mouseleave
 
 --- test with preventDefault on pointerenter ---
 - start with mouse outside target -
@@ -89,18 +118,28 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 8. target received mousedown
 9. target received pointerup
 10. target received mouseup
-- drag & release within target -
+- drag out of and into target & release within target -
 11. target received pointerdown
 12. target received mousedown
 13. target received pointermove
 14. target received mousemove
-15. target received pointerup
-16. target received mouseup
+15. target received pointerout
+16. target received mouseout
+17. target received pointerleave
+18. target received mouseleave
+19. target received pointerover
+20. target received mouseover
+21. target received pointerenter, prevented default
+22. target received mouseenter
+23. target received pointermove
+24. target received mousemove
+25. target received pointerup
+26. target received mouseup
 - move outside target again -
-17. target received pointerout
-18. target received mouseout
-19. target received pointerleave
-20. target received mouseleave
+27. target received pointerout
+28. target received mouseout
+29. target received pointerleave
+30. target received mouseleave
 
 --- test with preventDefault on pointerleave ---
 - start with mouse outside target -
@@ -115,18 +154,28 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 8. target received mousedown
 9. target received pointerup
 10. target received mouseup
-- drag & release within target -
+- drag out of and into target & release within target -
 11. target received pointerdown
 12. target received mousedown
 13. target received pointermove
 14. target received mousemove
-15. target received pointerup
-16. target received mouseup
+15. target received pointerout
+16. target received mouseout
+17. target received pointerleave, prevented default
+18. target received mouseleave
+19. target received pointerover
+20. target received mouseover
+21. target received pointerenter
+22. target received mouseenter
+23. target received pointermove
+24. target received mousemove
+25. target received pointerup
+26. target received mouseup
 - move outside target again -
-17. target received pointerout
-18. target received mouseout
-19. target received pointerleave, prevented default
-20. target received mouseleave
+27. target received pointerout
+28. target received mouseout
+29. target received pointerleave, prevented default
+30. target received mouseleave
 
 --- test with preventDefault on pointerover ---
 - start with mouse outside target -
@@ -141,18 +190,28 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 8. target received mousedown
 9. target received pointerup
 10. target received mouseup
-- drag & release within target -
+- drag out of and into target & release within target -
 11. target received pointerdown
 12. target received mousedown
 13. target received pointermove
 14. target received mousemove
-15. target received pointerup
-16. target received mouseup
+15. target received pointerout
+16. target received mouseout
+17. target received pointerleave
+18. target received mouseleave
+19. target received pointerover, prevented default
+20. target received mouseover
+21. target received pointerenter
+22. target received mouseenter
+23. target received pointermove
+24. target received mousemove
+25. target received pointerup
+26. target received mouseup
 - move outside target again -
-17. target received pointerout
-18. target received mouseout
-19. target received pointerleave
-20. target received mouseleave
+27. target received pointerout
+28. target received mouseout
+29. target received pointerleave
+30. target received mouseleave
 
 --- test with preventDefault on pointerout ---
 - start with mouse outside target -
@@ -167,18 +226,28 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 8. target received mousedown
 9. target received pointerup
 10. target received mouseup
-- drag & release within target -
+- drag out of and into target & release within target -
 11. target received pointerdown
 12. target received mousedown
 13. target received pointermove
 14. target received mousemove
-15. target received pointerup
-16. target received mouseup
+15. target received pointerout, prevented default
+16. target received mouseout
+17. target received pointerleave
+18. target received mouseleave
+19. target received pointerover
+20. target received mouseover
+21. target received pointerenter
+22. target received mouseenter
+23. target received pointermove
+24. target received mousemove
+25. target received pointerup
+26. target received mouseup
 - move outside target again -
-17. target received pointerout, prevented default
-18. target received mouseout
-19. target received pointerleave
-20. target received mouseleave
+27. target received pointerout, prevented default
+28. target received mouseout
+29. target received pointerleave
+30. target received mouseleave
 
 --- test with preventDefault on pointermove ---
 - start with mouse outside target -
@@ -193,18 +262,28 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 8. target received mousedown
 9. target received pointerup
 10. target received mouseup
-- drag & release within target -
+- drag out of and into target & release within target -
 11. target received pointerdown
 12. target received mousedown
 13. target received pointermove, prevented default
 14. target received mousemove
-15. target received pointerup
-16. target received mouseup
+15. target received pointerout
+16. target received mouseout
+17. target received pointerleave
+18. target received mouseleave
+19. target received pointerover
+20. target received mouseover
+21. target received pointerenter
+22. target received mouseenter
+23. target received pointermove, prevented default
+24. target received mousemove
+25. target received pointerup
+26. target received mouseup
 - move outside target again -
-17. target received pointerout
-18. target received mouseout
-19. target received pointerleave
-20. target received mouseleave
+27. target received pointerout
+28. target received mouseout
+29. target received pointerleave
+30. target received mouseleave
 
 PASS successfullyParsed is true
 

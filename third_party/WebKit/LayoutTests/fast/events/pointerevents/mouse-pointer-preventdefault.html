@@ -66,12 +66,12 @@ function runTests() {
     eventSender.mouseDown();
     eventSender.mouseUp();
 
-    debug("- drag & release within target -");
+    debug("- drag out of and into target & release within target -");
     eventSender.mouseDown();
     eventSender.mouseMoveTo(x2+5, y2+5);
+    eventSender.mouseMoveTo(x1, y1);
+    eventSender.mouseMoveTo(x2, y2);
     eventSender.mouseUp();
-
-    // TODO(mustaq): Add drag across target border after fixing crbug.com/356090.
 
     debug("- move outside target again -");
     eventSender.mouseMoveTo(x1, y1);
