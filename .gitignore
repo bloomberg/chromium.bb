@@ -13,6 +13,7 @@
 *.suo
 *.targets
 *.user
+*.vc.opendb
 *.vcproj
 *.vcxproj
 *.vcxproj.filters
