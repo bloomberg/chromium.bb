@@ -11,14 +11,12 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 #include "net/dns/dns_protocol.h"
 
 namespace net {
-
 class IOBufferWithSize;
-
-}  // namespace net
+}
 
 // Record for storing response data.
 struct DnsResponseRecord {

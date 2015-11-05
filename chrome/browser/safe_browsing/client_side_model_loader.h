@@ -21,7 +21,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/net_util.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 

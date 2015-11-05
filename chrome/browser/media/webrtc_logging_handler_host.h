@@ -13,7 +13,6 @@
 #include "chrome/common/partial_circular_buffer.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_process_host.h"
-#include "net/base/net_util.h"
 #include "net/base/network_interfaces.h"
 
 namespace net {

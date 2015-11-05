@@ -52,7 +52,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "net/base/net_util.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 namespace autofill {

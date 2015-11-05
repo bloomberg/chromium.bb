@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 
 // Stores information about service.
 struct ServiceParameters {

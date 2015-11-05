@@ -32,7 +32,9 @@
 #include "content/common/p2p_socket_type.h"
 #include "content/renderer/p2p/network_list_manager.h"
 #include "ipc/message_filter.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
+#include "net/base/ip_endpoint.h"
+#include "net/base/network_interfaces.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "net/base/address_family.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 
 namespace net {
 class MDnsClient;

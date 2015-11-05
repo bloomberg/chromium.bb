@@ -10,8 +10,6 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/local_discovery/device_description.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/net_util.h"
 
 namespace local_discovery {
 
