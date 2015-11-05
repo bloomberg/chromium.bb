@@ -329,7 +329,7 @@ AudioPlayer.prototype.onKeyDown_ = function(event) {
  * @type {number}
  * @const
  */
-AudioPlayer.HEADER_HEIGHT = 33;  // 32px + border 1px
+AudioPlayer.HEADER_HEIGHT = 36;  // 32px + border 4px
 
 /**
  * Track height in pixels.

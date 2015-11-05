@@ -21,10 +21,13 @@ var AUDIO_PLAYER_APP_URL = 'audio_player.html';
 var audioPlayerCreateOptions = {
   id: 'audio-player',
   type: 'panel',
-  minHeight: 48 + 96,  // 48px: track, 96px: controller
+  minHeight: 4 + 48 + 96,  // 4px: border-top, 48px: track, 96px: controller
   minWidth: 280,
-  height: 48 + 96,  // collapsed
-  width: 280
+  height: 4 + 48 + 96,  // collapsed
+  width: 280,
+  frame: {
+    color: '#fafafa'
+  }
 };
 
 /**
