@@ -338,6 +338,7 @@ bool GetPasswordForm(const SyntheticForm& form,
 
   std::string layout_sequence;
   layout_sequence.reserve(form.control_elements.size());
+  bool visible_passwords_fields_found = false;
   for (size_t i = 0; i < form.control_elements.size(); ++i) {
     WebFormControlElement control_element = form.control_elements[i];
 
@@ -364,12 +365,23 @@ bool GetPasswordForm(const SyntheticForm& form,
     // was made readonly by JavaScript before submission. We can do this by
     // checking whether password element was updated not from JavaScript.
     if (input_element->isPasswordField() &&
-        form_util::IsWebNodeVisible(*input_element) &&
         (!input_element->isReadOnly() ||
          (nonscript_modified_values &&
           nonscript_modified_values->find(*input_element) !=
               nonscript_modified_values->end()) ||
          password_marked_by_autocomplete_attribute)) {
+      if (form_util::IsWebNodeVisible(*input_element)) {
+        if (!visible_passwords_fields_found) {
+          // Remove all invisible passwords fields, we don't care about them
+          // anymore.
+          passwords.clear();
+          visible_passwords_fields_found = true;
+        }
+      } else {
+        if (visible_passwords_fields_found)
+          continue;
+      }
+
       // We add the field to the list of password fields if it was not flagged
       // as a special NOT_PASSWORD prediction by Autofill. The NOT_PASSWORD
       // mechanism exists because some webpages use the type "password" for
