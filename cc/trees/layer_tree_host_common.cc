@@ -79,6 +79,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
     bool verify_property_trees,
+    bool use_property_trees,
     LayerImplList* render_surface_layer_list,
     int current_render_surface_layer_list_id,
     PropertyTrees* property_trees)
@@ -99,6 +100,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
       verify_property_trees(verify_property_trees),
+      use_property_trees(use_property_trees),
       render_surface_layer_list(render_surface_layer_list),
       current_render_surface_layer_list_id(
           current_render_surface_layer_list_id),
@@ -125,6 +127,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               true,
                               false,
                               true,
+                              false,
                               render_surface_layer_list,
                               0,
                               GetPropertyTrees(root_layer)) {
@@ -2435,7 +2438,8 @@ void CalculateRenderSurfaceLayerListInternal(
     const bool can_render_to_separate_surface,
     const int current_render_surface_layer_list_id,
     const int max_texture_size,
-    const bool verify_property_trees) {
+    const bool verify_property_trees,
+    const bool use_property_trees) {
   // This calculates top level Render Surface Layer List, and Layer List for all
   // Render Surfaces.
 
@@ -2480,6 +2484,26 @@ void CalculateRenderSurfaceLayerListInternal(
       layer->draw_properties().render_target = nullptr;
       return;
     }
+
+    if (use_property_trees) {
+      RenderSurfaceDrawProperties draw_properties;
+      ComputeSurfaceDrawPropertiesUsingPropertyTrees(
+          layer->render_surface(), property_trees, &draw_properties);
+      // TODO(ajuma): Once property tree verification is removed, make the above
+      // call directly set the surface's properties, so that the copying below
+      // is no longer needed.
+      layer->render_surface()->SetIsClipped(draw_properties.is_clipped);
+      layer->render_surface()->SetDrawOpacity(draw_properties.draw_opacity);
+      layer->render_surface()->SetDrawTransform(draw_properties.draw_transform);
+      layer->render_surface()->SetScreenSpaceTransform(
+          draw_properties.screen_space_transform);
+      layer->render_surface()->SetReplicaDrawTransform(
+          draw_properties.replica_draw_transform);
+      layer->render_surface()->SetReplicaScreenSpaceTransform(
+          draw_properties.replica_screen_space_transform);
+      layer->render_surface()->SetClipRect(draw_properties.clip_rect);
+    }
+
     if (IsRootLayer(layer)) {
       // The root surface does not contribute to any other surface, it has no
       // target.
@@ -2521,8 +2545,10 @@ void CalculateRenderSurfaceLayerListInternal(
     descendants->push_back(layer);
   }
 
+  bool compute_content_rects = verify_property_trees || use_property_trees;
+
   // Clear the old accumulated content rect of surface.
-  if (verify_property_trees && render_to_separate_surface)
+  if (compute_content_rects && render_to_separate_surface)
     layer->render_surface()->SetAccumulatedContentRect(gfx::Rect());
 
   for (auto& child_layer : layer->children()) {
@@ -2530,7 +2556,7 @@ void CalculateRenderSurfaceLayerListInternal(
         child_layer, property_trees, render_surface_layer_list, descendants,
         nearest_occlusion_immune_ancestor, layer_is_drawn,
         can_render_to_separate_surface, current_render_surface_layer_list_id,
-        max_texture_size, verify_property_trees);
+        max_texture_size, verify_property_trees, use_property_trees);
 
     // If the child is its own render target, then it has a render surface.
     if (child_layer->render_target() == child_layer &&
@@ -2559,7 +2585,7 @@ void CalculateRenderSurfaceLayerListInternal(
   // The render surface's content rect is the union of drawable content rects
   // of the layers that draw into the surface. If the render surface is clipped,
   // it is also intersected with the render's surface clip rect.
-  if (verify_property_trees) {
+  if (compute_content_rects) {
     if (!IsRootLayer(layer)) {
       if (render_to_separate_surface) {
         gfx::Rect surface_content_rect =
@@ -2590,8 +2616,12 @@ void CalculateRenderSurfaceLayerListInternal(
             std::min(surface_content_rect.width(), max_texture_size));
         surface_content_rect.set_height(
             std::min(surface_content_rect.height(), max_texture_size));
-        layer->render_surface()->SetContentRectFromPropertyTrees(
-            surface_content_rect);
+        if (use_property_trees)
+          layer->render_surface()->SetContentRect(surface_content_rect);
+        if (verify_property_trees) {
+          layer->render_surface()->SetContentRectFromPropertyTrees(
+              surface_content_rect);
+        }
       }
       const LayerImpl* parent_target = layer->parent()->render_target();
       if (!IsRootLayer(parent_target)) {
@@ -2616,7 +2646,10 @@ void CalculateRenderSurfaceLayerListInternal(
       // The root layer's surface content rect is always the entire viewport.
       gfx::Rect viewport =
           gfx::ToEnclosingRect(property_trees->clip_tree.ViewportClip());
-      layer->render_surface()->SetContentRectFromPropertyTrees(viewport);
+      if (use_property_trees)
+        layer->render_surface()->SetContentRect(viewport);
+      if (verify_property_trees)
+        layer->render_surface()->SetContentRectFromPropertyTrees(viewport);
     }
   }
 
@@ -2653,17 +2686,25 @@ void CalculateRenderSurfaceLayerList(
       inputs->render_surface_layer_list, nullptr, nullptr,
       subtree_visible_from_ancestor, inputs->can_render_to_separate_surface,
       inputs->current_render_surface_layer_list_id, inputs->max_texture_size,
-      inputs->verify_property_trees);
+      inputs->verify_property_trees, inputs->use_property_trees);
+}
+
+static void ComputeMaskLayerDrawProperties(const LayerImpl* layer,
+                                           LayerImpl* mask_layer) {
+  DrawProperties& mask_layer_draw_properties = mask_layer->draw_properties();
+  mask_layer_draw_properties.visible_layer_rect = gfx::Rect(layer->bounds());
+  mask_layer_draw_properties.target_space_transform = layer->draw_transform();
+  mask_layer_draw_properties.maximum_animation_contents_scale =
+      layer->draw_properties().maximum_animation_contents_scale;
+  mask_layer_draw_properties.starting_animation_contents_scale =
+      layer->draw_properties().starting_animation_contents_scale;
 }
 
 void CalculateDrawPropertiesAndVerify(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
     PropertyTreeOption property_tree_option) {
-  SubtreeGlobals globals;
-  DataForRecursion data_for_recursion;
   inputs->render_surface_layer_list->clear();
 
-  ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
   UpdateMetaInformationSequenceNumber(inputs->root_layer);
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformationInternal(inputs->root_layer, &recursive_data);
@@ -2672,9 +2713,8 @@ void CalculateDrawPropertiesAndVerify(
       inputs->verify_property_trees &&
       (property_tree_option == BUILD_PROPERTY_TREES_IF_NEEDED);
 
-  if (inputs->verify_property_trees) {
-    LayerImplList update_layer_list;
-
+  LayerImplList visible_layer_list;
+  if (inputs->verify_property_trees || inputs->use_property_trees) {
     switch (property_tree_option) {
       case BUILD_PROPERTY_TREES_IF_NEEDED: {
         // The translation from layer to property trees is an intermediate
@@ -2693,7 +2733,7 @@ void CalculateDrawPropertiesAndVerify(
             inputs->device_scale_factor,
             gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
             inputs->can_render_to_separate_surface, inputs->property_trees,
-            &update_layer_list);
+            &visible_layer_list);
 
         if (should_measure_property_tree_performance) {
           TRACE_EVENT_END0(
@@ -2725,7 +2765,7 @@ void CalculateDrawPropertiesAndVerify(
             inputs->device_transform);
         ComputeVisibleRectsUsingPropertyTrees(
             inputs->root_layer, inputs->property_trees,
-            inputs->can_render_to_separate_surface, &update_layer_list);
+            inputs->can_render_to_separate_surface, &visible_layer_list);
         break;
       }
     }
@@ -2738,9 +2778,27 @@ void CalculateDrawPropertiesAndVerify(
 
   std::vector<AccumulatedSurfaceState> accumulated_surface_state;
   CalculateRenderTarget(inputs);
-  CalculateDrawPropertiesInternal(inputs->root_layer, globals,
-                                  data_for_recursion,
-                                  &accumulated_surface_state);
+  if (inputs->use_property_trees) {
+    for (LayerImpl* layer : visible_layer_list) {
+      ComputeLayerDrawPropertiesUsingPropertyTrees(
+          layer, inputs->property_trees, inputs->layers_always_allowed_lcd_text,
+          inputs->can_use_lcd_text, &layer->draw_properties());
+      if (layer->mask_layer())
+        ComputeMaskLayerDrawProperties(layer, layer->mask_layer());
+      LayerImpl* replica_mask_layer = layer->replica_layer()
+                                          ? layer->replica_layer()->mask_layer()
+                                          : nullptr;
+      if (replica_mask_layer)
+        ComputeMaskLayerDrawProperties(layer, replica_mask_layer);
+    }
+  } else {
+    SubtreeGlobals globals;
+    DataForRecursion data_for_recursion;
+    ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
+    CalculateDrawPropertiesInternal(inputs->root_layer, globals,
+                                    data_for_recursion,
+                                    &accumulated_surface_state);
+  }
   CalculateRenderSurfaceLayerList(inputs);
 
   if (should_measure_property_tree_performance) {

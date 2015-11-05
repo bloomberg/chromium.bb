@@ -135,6 +135,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
 
+  settings.use_property_trees =
+      command_line->HasSwitch(cc::switches::kEnableCompositorPropertyTrees);
   settings.use_zero_copy = IsUIZeroCopyEnabled();
 
   settings.renderer_settings.use_rgba_4444_textures =

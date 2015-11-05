@@ -599,7 +599,8 @@ void ComputeVisibleRectsUsingPropertyTreesInternal(
     LayerType* root_layer,
     PropertyTrees* property_trees,
     bool can_render_to_separate_surface,
-    typename LayerType::LayerListType* update_layer_list) {
+    typename LayerType::LayerListType* update_layer_list,
+    std::vector<LayerType*>* visible_layer_list) {
   if (property_trees->non_root_surfaces_enabled !=
       can_render_to_separate_surface) {
     property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
@@ -613,12 +614,11 @@ void ComputeVisibleRectsUsingPropertyTreesInternal(
   ComputeOpacities(&property_trees->effect_tree);
 
   const bool subtree_is_visible_from_ancestor = true;
-  std::vector<LayerType*> visible_layer_list;
   FindLayersThatNeedUpdates(root_layer, property_trees->transform_tree,
                             subtree_is_visible_from_ancestor, update_layer_list,
-                            &visible_layer_list);
+                            visible_layer_list);
   CalculateVisibleRects<LayerType>(
-      visible_layer_list, property_trees->clip_tree,
+      *visible_layer_list, property_trees->clip_tree,
       property_trees->transform_tree, can_render_to_separate_surface);
 }
 
@@ -654,32 +654,34 @@ void BuildPropertyTreesAndComputeVisibleRects(
     const gfx::Transform& device_transform,
     bool can_render_to_separate_surface,
     PropertyTrees* property_trees,
-    LayerImplList* update_layer_list) {
+    LayerImplList* visible_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
                                         can_render_to_separate_surface,
-                                        update_layer_list);
+                                        visible_layer_list);
 }
 
 void ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
                                            PropertyTrees* property_trees,
                                            bool can_render_to_separate_surface,
                                            LayerList* update_layer_list) {
-  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees,
-                                                can_render_to_separate_surface,
-                                                update_layer_list);
+  std::vector<Layer*> visible_layer_list;
+  ComputeVisibleRectsUsingPropertyTreesInternal(
+      root_layer, property_trees, can_render_to_separate_surface,
+      update_layer_list, &visible_layer_list);
 }
 
 void ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
                                            PropertyTrees* property_trees,
                                            bool can_render_to_separate_surface,
-                                           LayerImplList* update_layer_list) {
-  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees,
-                                                can_render_to_separate_surface,
-                                                update_layer_list);
+                                           LayerImplList* visible_layer_list) {
+  LayerImplList update_layer_list;
+  ComputeVisibleRectsUsingPropertyTreesInternal(
+      root_layer, property_trees, can_render_to_separate_surface,
+      &update_layer_list, visible_layer_list);
 }
 
 template <typename LayerType>

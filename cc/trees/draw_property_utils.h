@@ -65,7 +65,7 @@ void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
     const gfx::Transform& device_transform,
     bool can_render_to_separate_surface,
     PropertyTrees* property_trees,
-    LayerImplList* update_layer_list);
+    LayerImplList* visible_layer_list);
 
 void CC_EXPORT
 ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
@@ -77,7 +77,7 @@ void CC_EXPORT
 ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
                                       PropertyTrees* property_trees,
                                       bool can_render_to_separate_surface,
-                                      LayerImplList* update_layer_list);
+                                      LayerImplList* visible_layer_list);
 
 void CC_EXPORT ComputeLayerDrawPropertiesUsingPropertyTrees(
     const LayerImpl* layer,

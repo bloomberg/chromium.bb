@@ -75,6 +75,7 @@ class CC_EXPORT LayerTreeHostCommon {
         bool can_render_to_separate_surface,
         bool can_adjust_raster_scales,
         bool verify_property_trees,
+        bool use_property_trees,
         LayerImplList* render_surface_layer_list,
         int current_render_surface_layer_list_id,
         PropertyTrees* property_trees);
@@ -95,6 +96,7 @@ class CC_EXPORT LayerTreeHostCommon {
     bool can_render_to_separate_surface;
     bool can_adjust_raster_scales;
     bool verify_property_trees;
+    bool use_property_trees;
     LayerImplList* render_surface_layer_list;
     int current_render_surface_layer_list_id;
     PropertyTrees* property_trees;

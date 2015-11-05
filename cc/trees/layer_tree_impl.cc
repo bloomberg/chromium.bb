@@ -648,8 +648,9 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         settings().can_use_lcd_text, settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        settings().verify_property_trees, &render_surface_layer_list_,
-        render_surface_layer_list_id_, &property_trees_);
+        settings().verify_property_trees, settings().use_property_trees,
+        &render_surface_layer_list_, render_surface_layer_list_id_,
+        &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 
@@ -1540,10 +1541,11 @@ struct FindScrollingLayerFunctor {
 LayerImpl* LayerTreeImpl::FindFirstScrollingLayerThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
+  bool use_property_trees =
+      settings().use_property_trees || settings().verify_property_trees;
   FindClosestMatchingLayer(
       screen_space_point, root_layer(), FindScrollingLayerFunctor(),
-      property_trees_.transform_tree, settings().verify_property_trees,
-      &data_for_recursion);
+      property_trees_.transform_tree, use_property_trees, &data_for_recursion);
   return data_for_recursion.closest_match;
 }
 
@@ -1563,11 +1565,12 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
   bool update_lcd_text = false;
   if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
+  bool use_property_trees =
+      settings().use_property_trees || settings().verify_property_trees;
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
   FindClosestMatchingLayer(screen_space_point, root_layer(),
                            HitTestVisibleScrollableOrTouchableFunctor(),
-                           property_trees_.transform_tree,
-                           settings().verify_property_trees,
+                           property_trees_.transform_tree, use_property_trees,
                            &data_for_recursion);
   return data_for_recursion.closest_match;
 }
@@ -1609,11 +1612,13 @@ LayerImpl* LayerTreeImpl::FindLayerWithWheelHandlerThatIsHitByPoint(
   bool update_lcd_text = false;
   if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
+  bool use_property_trees =
+      settings().use_property_trees || settings().verify_property_trees;
   FindWheelEventLayerFunctor func;
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
-  FindClosestMatchingLayer(
-      screen_space_point, root_layer(), func, property_trees_.transform_tree,
-      settings().verify_property_trees, &data_for_recursion);
+  FindClosestMatchingLayer(screen_space_point, root_layer(), func,
+                           property_trees_.transform_tree, use_property_trees,
+                           &data_for_recursion);
   return data_for_recursion.closest_match;
 }
 
@@ -1634,13 +1639,14 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
   bool update_lcd_text = false;
   if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
-  FindTouchEventLayerFunctor func = {screen_space_point,
-                                     property_trees_.transform_tree,
-                                     settings().verify_property_trees};
+  bool use_property_trees =
+      settings().use_property_trees || settings().verify_property_trees;
+  FindTouchEventLayerFunctor func = {
+      screen_space_point, property_trees_.transform_tree, use_property_trees};
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
-  FindClosestMatchingLayer(
-      screen_space_point, root_layer(), func, property_trees_.transform_tree,
-      settings().verify_property_trees, &data_for_recursion);
+  FindClosestMatchingLayer(screen_space_point, root_layer(), func,
+                           property_trees_.transform_tree, use_property_trees,
+                           &data_for_recursion);
   return data_for_recursion.closest_match;
 }
 
@@ -1707,11 +1713,13 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
 void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
   DCHECK(selection);
 
+  bool use_property_trees =
+      settings().use_property_trees || settings().verify_property_trees;
   selection->start = ComputeViewportSelectionBound(
       selection_.start,
       selection_.start.layer_id ? LayerById(selection_.start.layer_id) : NULL,
       device_scale_factor(), property_trees_.transform_tree,
-      settings().verify_property_trees);
+      use_property_trees);
   selection->is_editable = selection_.is_editable;
   selection->is_empty_text_form_control = selection_.is_empty_text_form_control;
   if (selection->start.type == SELECTION_BOUND_CENTER ||
@@ -1722,7 +1730,7 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
         selection_.end,
         selection_.end.layer_id ? LayerById(selection_.end.layer_id) : NULL,
         device_scale_factor(), property_trees_.transform_tree,
-        settings().verify_property_trees);
+        use_property_trees);
   }
 }
 
