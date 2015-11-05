@@ -86,8 +86,6 @@ public:
     // URLRegistrable
     URLRegistry& registry() const override;
 
-    // Oilpan: need to eagerly unregister as m_descriptor client.
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
