@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
+#include "chrome/browser/ui/views/bar_control_button.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -60,6 +61,10 @@ const gfx::FontList& GetFontList() {
                             : ui::ResourceBundle::MediumFont);
 }
 
+SkColor GetInfobarTextColor() {
+  return SK_ColorBLACK;
+}
+
 }  // namespace
 
 
@@ -90,7 +95,7 @@ views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
   views::Label* label = new views::Label(text, GetFontList());
   label->SizeToPreferredSize();
   label->SetBackgroundColor(background()->get_color());
-  label->SetEnabledColor(SK_ColorBLACK);
+  label->SetEnabledColor(GetInfobarTextColor());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
 }
@@ -131,8 +136,8 @@ views::LabelButton* InfoBarView::CreateLabelButton(
 
     button->SetBorder(button_border.Pass());
     button->set_animate_on_state_change(false);
-    button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
-    button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);
+    button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
+    button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   }
@@ -222,13 +227,14 @@ void InfoBarView::ViewHierarchyChanged(
       AddChildView(icon_);
     }
 
-    close_button_ = new views::ImageButton(this);
-
     if (ui::MaterialDesignController::IsModeMaterial()) {
-      gfx::ImageSkia image = gfx::CreateVectorIcon(gfx::VectorIconId::BAR_CLOSE,
-                                                   16, gfx::kChromeIconGrey);
-      close_button_->SetImage(views::CustomButton::STATE_NORMAL, &image);
+      BarControlButton* close = new BarControlButton(this);
+      close->SetIcon(gfx::VectorIconId::BAR_CLOSE,
+                     base::Bind(&GetInfobarTextColor));
+      close->set_request_focus_on_press(false);
+      close_button_ = close;
     } else {
+      close_button_ = new views::ImageButton(this);
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                               rb.GetImageNamed(IDR_CLOSE_1).ToImageSkia());
