@@ -21,7 +21,7 @@ InspectorTest.tracingTimelineModel = function()
 
 InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories, enableJSSampling)
 {
-    var categories = "-*,disabled-by-default-devtools.timeline*,devtools.timeline";
+    var categories = "-*,disabled-by-default-devtools.timeline*,devtools.timeline," + WebInspector.TracingModel.TopLevelEventCategory;
     if (additionalCategories)
         categories += "," + additionalCategories;
     InspectorTest.tracingTimelineModel()._startRecordingWithCategories(categories, enableJSSampling, tracingStarted);
