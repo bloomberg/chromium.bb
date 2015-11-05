@@ -36,6 +36,13 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
                        double delayMs) override;
   blink::WebTaskRunner* clone() override;
 
+  // blink::WebTaskRunner::Task should be wrapped by base::Passed() when
+  // used with base::Bind(). See https://crbug.com/551356.
+  // runTask() is a helper to call blink::WebTaskRunner::Task::run from
+  // scoped_ptr<blink::WebTaskRunner::Task>.
+  // runTask() is placed here because scoped_ptr<> cannot be used from Blink.
+  static void runTask(scoped_ptr<blink::WebTaskRunner::Task>);
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

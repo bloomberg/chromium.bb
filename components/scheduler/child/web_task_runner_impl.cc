@@ -21,8 +21,10 @@ void WebTaskRunnerImpl::postTask(const blink::WebTraceLocation& web_location,
                                  blink::WebTaskRunner::Task* task) {
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
-  task_runner_->PostTask(location, base::Bind(&blink::WebTaskRunner::Task::run,
-                                              base::Owned(task)));
+  task_runner_->PostTask(
+      location,
+      base::Bind(&WebTaskRunnerImpl::runTask,
+                 base::Passed(scoped_ptr<blink::WebTaskRunner::Task>(task))));
 }
 
 void WebTaskRunnerImpl::postDelayedTask(
@@ -32,12 +34,19 @@ void WebTaskRunnerImpl::postDelayedTask(
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   task_runner_->PostDelayedTask(
-      location, base::Bind(&blink::WebTaskRunner::Task::run, base::Owned(task)),
+      location,
+      base::Bind(&WebTaskRunnerImpl::runTask,
+                 base::Passed(scoped_ptr<blink::WebTaskRunner::Task>(task))),
       base::TimeDelta::FromMillisecondsD(delayMs));
 }
 
 blink::WebTaskRunner* WebTaskRunnerImpl::clone() {
   return new WebTaskRunnerImpl(task_runner_);
+}
+
+void WebTaskRunnerImpl::runTask(scoped_ptr<blink::WebTaskRunner::Task> task)
+{
+  task->run();
 }
 
 }  // namespace scheduler
