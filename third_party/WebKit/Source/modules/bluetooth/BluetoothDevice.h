@@ -6,6 +6,7 @@
 #define BluetoothDevice_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/bluetooth/BluetoothAdvertisingData.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "wtf/OwnPtr.h"
@@ -38,11 +39,12 @@ public:
     static BluetoothDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDevice>);
 
     // Interface required by Garbage Collection:
-    DEFINE_INLINE_TRACE() { }
+    DECLARE_VIRTUAL_TRACE();
 
     // IDL exposed interface:
     String id() { return m_webDevice->id; }
     String name() { return m_webDevice->name; }
+    BluetoothAdvertisingData* adData() { return m_adData; }
     unsigned deviceClass(bool& isNull);
     String vendorIDSource();
     unsigned vendorID(bool& isNull);
@@ -53,6 +55,7 @@ public:
 
 private:
     OwnPtr<WebBluetoothDevice> m_webDevice;
+    Member<BluetoothAdvertisingData> m_adData;
 };
 
 } // namespace blink

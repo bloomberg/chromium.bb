@@ -551,9 +551,9 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
   pending_requests_.Lookup(request_id)
       ->onSuccess(blink::adoptWebPtr(new WebBluetoothDevice(
           WebString::fromUTF8(device.id), WebString(device.name),
-          device.device_class, GetWebVendorIdSource(device.vendor_id_source),
-          device.vendor_id, device.product_id, device.product_version,
-          device.paired, uuids)));
+          device.tx_power, device.rssi, device.device_class,
+          GetWebVendorIdSource(device.vendor_id_source), device.vendor_id,
+          device.product_id, device.product_version, device.paired, uuids)));
   pending_requests_.Remove(request_id);
 }
 

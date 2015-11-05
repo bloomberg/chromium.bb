@@ -19,6 +19,8 @@ namespace blink {
 
 BluetoothDevice::BluetoothDevice(PassOwnPtr<WebBluetoothDevice> webDevice)
     : m_webDevice(webDevice)
+    , m_adData(BluetoothAdvertisingData::create(m_webDevice->txPower,
+        m_webDevice->rssi))
 {
 }
 
@@ -26,6 +28,11 @@ BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver*, PassOwnPtr<WebBlu
 {
     ASSERT(webDevice);
     return new BluetoothDevice(webDevice);
+}
+
+DEFINE_TRACE(BluetoothDevice)
+{
+    visitor->trace(m_adData);
 }
 
 unsigned BluetoothDevice::deviceClass(bool& isNull)

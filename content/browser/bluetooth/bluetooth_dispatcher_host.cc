@@ -944,14 +944,18 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     VLOG(1) << "\t" << uuid.canonical_value();
 
   content::BluetoothDevice device_ipc(
-      device->GetAddress(),         // id
-      device->GetName(),            // name
-      device->GetBluetoothClass(),  // device_class
-      device->GetVendorIDSource(),  // vendor_id_source
-      device->GetVendorID(),        // vendor_id
-      device->GetProductID(),       // product_id
-      device->GetDeviceID(),        // product_version
-      device->IsPaired(),           // paired
+      device->GetAddress(),  // id
+      device->GetName(),     // name
+      content::BluetoothDevice::ValidatePower(
+          device->GetInquiryTxPower()),  // tx_power
+      content::BluetoothDevice::ValidatePower(
+          device->GetInquiryRSSI()),  // rssi
+      device->GetBluetoothClass(),    // device_class
+      device->GetVendorIDSource(),    // vendor_id_source
+      device->GetVendorID(),          // vendor_id
+      device->GetProductID(),         // product_id
+      device->GetDeviceID(),          // product_version
+      device->IsPaired(),             // paired
       content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
           device->GetUUIDs()));  // uuids
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);

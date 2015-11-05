@@ -8,6 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -20,6 +23,7 @@
 #include "device/bluetooth/test/mock_bluetooth_gatt_notify_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::StringPiece;
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
 using device::BluetoothGattCharacteristic;
@@ -61,6 +65,10 @@ const char kHeartRateServiceUUID[] = "180d";
 const char kHeartRateMeasurementUUID[] = "2a37";
 const char kBodySensorLocation[] = "2a38";
 const char kDeviceNameUUID[] = "2a00";
+
+const int kDefaultTxPower = -10;  // TxPower of a device broadcasting at 0.1mW.
+const int kDefaultRssi = -51;     // RSSI at 1m from a device broadcasting at
+                                  // 0.1mW.
 
 // Invokes Run() on the k-th argument of the function with no arguments.
 ACTION_TEMPLATE(RunCallback,
@@ -142,6 +150,40 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetSecondDiscoveryFindsHeartRateAdapter();
   else if (fake_adapter_name == "")
     return NULL;
+
+  if (base::StartsWith(fake_adapter_name, "PowerValueAdapter",
+                       base::CompareCase::SENSITIVE)) {
+    std::vector<StringPiece> args =
+        base::SplitStringPiece(fake_adapter_name, ":", base::KEEP_WHITESPACE,
+                               base::SPLIT_WANT_NONEMPTY);
+    DCHECK(args[0] == "PowerValueAdapter");
+    DCHECK(args.size() == 3) << "Should contain AdapterName:TxPower:RSSI";
+
+    int tx_power;
+    base::StringToInt(args[1], &tx_power);
+    DCHECK(tx_power >= INT8_MIN && tx_power <= INT8_MAX)
+        << "Must be between [-128, 127]";
+    int rssi;
+    base::StringToInt(args[2], &rssi);
+    DCHECK(rssi >= INT8_MIN && rssi <= INT8_MAX)
+        << "Must be between [-128, 127]";
+    return GetPowerValueAdapter(tx_power, rssi);
+  }
+
+  if (base::StartsWith(fake_adapter_name, "PowerPresenceAdapter",
+                       base::CompareCase::SENSITIVE)) {
+    std::vector<StringPiece> args =
+        base::SplitStringPiece(fake_adapter_name, ":", base::KEEP_WHITESPACE,
+                               base::SPLIT_WANT_NONEMPTY);
+    DCHECK(args[0] == "PowerPresenceAdapter");
+    DCHECK(args.size() == 3)
+        << "Should contain AdapterName:TxPowerPresent:RSSIPResent";
+    DCHECK(args[1] == "true" || args[1] == "false");
+    DCHECK(args[2] == "true" || args[2] == "false");
+
+    return GetPowerPresenceAdapter(args[1] == "true" /* tx_power_present */,
+                                   args[2] == "true" /* rssi_present */);
+  }
 
   NOTREACHED() << fake_adapter_name;
   return NULL;
@@ -253,6 +295,35 @@ LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
           []() { return GetDiscoverySession(); }));
 
   return adapter.Pass();
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetPowerValueAdapter(int8_t tx_power,
+                                                         int8_t rssi) {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+  scoped_ptr<NiceMockBluetoothDevice> device(GetHeartRateDevice(adapter.get()));
+
+  ON_CALL(*device, GetInquiryTxPower()).WillByDefault(Return(tx_power));
+  ON_CALL(*device, GetInquiryRSSI()).WillByDefault(Return(rssi));
+
+  adapter->AddMockDevice(device.Pass());
+
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetPowerPresenceAdapter(
+    bool tx_power_present,
+    bool rssi_present) {
+  // TODO(ortuno): RSSI Unknown and Tx Power Unknown should have different
+  // values. Add kUnknownTxPower when implemented: http://crbug.com/551572
+  int tx_power =
+      tx_power_present ? kDefaultTxPower : BluetoothDevice::kUnknownPower;
+  int rssi = rssi_present ? kDefaultRssi : BluetoothDevice::kUnknownPower;
+
+  return GetPowerValueAdapter(tx_power, rssi);
 }
 
 // static

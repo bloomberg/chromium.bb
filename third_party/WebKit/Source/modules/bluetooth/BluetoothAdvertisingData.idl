@@ -1,0 +1,18 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://webbluetoothcg.github.io/web-bluetooth/#bluetoothadvertisingdata
+
+// Implement BluetoothAdvertisingData interface: http://crbug.com/542756
+
+[
+    GarbageCollected,
+    RuntimeEnabled=WebBluetooth,
+] interface BluetoothAdvertisingData {
+    // readonly attribute unsigned short? appearance;
+    readonly attribute byte? txPower;
+    readonly attribute byte? rssi;
+    // readonly attribute ManufacturerDataMap manufacturerData;
+    // readonly attribute ServiceDataMap  serviceData;
+};

@@ -22,7 +22,7 @@ enum VendorIDSource {
     [DeprecateAs=BluetoothDeviceInstanceId, ImplementedAs=id] readonly attribute DOMString instanceID;
     readonly    attribute DOMString id;
     readonly    attribute DOMString?                 name;
-//    readonly    attribute BluetoothAdvertisingData   adData;
+    readonly    attribute BluetoothAdvertisingData   adData;
     readonly    attribute unsigned long?             deviceClass;
     readonly    attribute VendorIDSource?            vendorIDSource;
     readonly    attribute unsigned long?             vendorID;

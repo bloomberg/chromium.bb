@@ -289,6 +289,10 @@ interface Blob
 interface BlobEvent : Event
     getter data
     method constructor
+interface BluetoothAdvertisingData
+    getter rssi
+    getter txPower
+    method constructor
 interface BluetoothCharacteristicProperties
     getter authenticatedSignedWrites
     getter broadcast
@@ -301,6 +305,7 @@ interface BluetoothCharacteristicProperties
     getter writeWithoutResponse
     method constructor
 interface BluetoothDevice
+    getter adData
     getter deviceClass
     getter id
     getter instanceID
