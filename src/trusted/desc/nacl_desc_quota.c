@@ -105,16 +105,25 @@ ssize_t NaClDescQuotaRead(struct NaClDesc *vself,
   return (*NACL_VTBL(NaClDesc, self->desc)->Read)(self->desc, buf, len);
 }
 
+/*
+ * Cap the length of a write/pwrite to a safe length.  Write can
+ * always return a short, non-zero transfer count, so it's fine if
+ * the amount actually processed here is less than that requested.
+ * The quota APIs use int64_t for their length parameters, so the
+ * safe limit INT64_MAX.  But on 64-bit machines, size_t might go up
+ * to UINT64_MAX, which is too big.  This logic is a no-op for
+ * 32-bit machines and the compiler should just optimize it away.
+ * But the 32-bit Windows compiler complains about the code, so we
+ * #if it out when it's not needed.
+ */
 static size_t CapWriteLength(size_t len) {
-  /*
-   * Write can always return a short, non-zero transfer count.
-   */
+#if NACL_BUILD_SUBARCH == 64
   uint64_t len_u64 = (uint64_t) len;
   NACL_COMPILE_TIME_ASSERT(SIZE_T_MAX <= NACL_UMAX_VAL(uint64_t));
-  /* get rid of the always-true/always-false comparison warning */
   if (len_u64 > NACL_MAX_VAL(int64_t)) {
     len = (size_t) NACL_MAX_VAL(int64_t);
   }
+#endif
   return len;
 }
 
