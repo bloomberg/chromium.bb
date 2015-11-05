@@ -69,6 +69,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "content/common/android/sync_compositor_messages.h"
 #include "content/common/gin_java_bridge_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #endif  // defined(OS_ANDROID)

@@ -177,6 +177,8 @@
       'common/android/surface_texture_manager.h',
       'common/android/surface_texture_peer.cc',
       'common/android/surface_texture_peer.h',
+      'common/android/sync_compositor_messages.cc',
+      'common/android/sync_compositor_messages.h',
       'common/appcache_interfaces.cc',
       'common/appcache_interfaces.h',
       'common/appcache_messages.h',

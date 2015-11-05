@@ -10,6 +10,7 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/range/range.h"
 
 namespace {
@@ -307,6 +308,33 @@ bool ParamTraits<gfx::Range>::Read(const Message* m,
 
 void ParamTraits<gfx::Range>::Log(const gfx::Range& r, std::string* l) {
   l->append(base::StringPrintf("(%" PRIuS ", %" PRIuS ")", r.start(), r.end()));
+}
+
+void ParamTraits<gfx::ScrollOffset>::Write(Message* m, const param_type& p) {
+  m->WriteDouble(p.x());
+  m->WriteDouble(p.y());
+}
+
+bool ParamTraits<gfx::ScrollOffset>::Read(const Message* m,
+                                          base::PickleIterator* iter,
+                                          param_type* r) {
+  double x = 0.f;
+  double y = 0.f;
+  if (!iter->ReadDouble(&x))
+    return false;
+  if (!iter->ReadDouble(&y))
+    return false;
+  r->set_x(x);
+  r->set_y(y);
+  return true;
+}
+
+void ParamTraits<gfx::ScrollOffset>::Log(const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.x(), l);
+  l->append(", ");
+  LogParam(p.y(), l);
+  l->append(")");
 }
 
 }  // namespace IPC

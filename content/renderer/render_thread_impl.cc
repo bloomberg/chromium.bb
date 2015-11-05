@@ -159,7 +159,9 @@
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
+#include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #endif
 
@@ -859,6 +861,13 @@ void RenderThreadImpl::Shutdown() {
     compositor_message_filter_ = NULL;
   }
 
+#if defined(OS_ANDROID)
+  if (sync_compositor_message_filter_) {
+    RemoveFilter(sync_compositor_message_filter_.get());
+    sync_compositor_message_filter_ = nullptr;
+  }
+#endif
+
   media_thread_.reset();
 
   compositor_thread_.reset();
@@ -1131,11 +1140,19 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
   if (enable) {
 #if defined(OS_ANDROID)
-    if (SynchronousCompositorFactory* factory =
-        SynchronousCompositorFactory::GetInstance())
-      compositor_task_runner_ = factory->GetCompositorTaskRunner();
+    SynchronousCompositorFactory* sync_compositor_factory =
+        SynchronousCompositorFactory::GetInstance();
+    bool using_ipc_sync_compositing =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIPCSyncCompositing);
+    DCHECK(!sync_compositor_factory || !using_ipc_sync_compositing);
+
+    if (sync_compositor_factory) {
+      compositor_task_runner_ =
+          sync_compositor_factory->GetCompositorTaskRunner();
+    }
 #endif
-    if (!compositor_task_runner_.get()) {
+    if (!compositor_task_runner_) {
       compositor_thread_.reset(new base::Thread("Compositor"));
       base::Thread::Options compositor_thread_options;
 #if defined(OS_ANDROID)
@@ -1151,9 +1168,14 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
     InputHandlerManagerClient* input_handler_manager_client = NULL;
 #if defined(OS_ANDROID)
-    if (SynchronousCompositorFactory* factory =
-        SynchronousCompositorFactory::GetInstance()) {
-      input_handler_manager_client = factory->GetInputHandlerManagerClient();
+    if (using_ipc_sync_compositing) {
+      sync_compositor_message_filter_ =
+          new SynchronousCompositorFilter(compositor_task_runner_);
+      AddFilter(sync_compositor_message_filter_.get());
+      input_handler_manager_client = sync_compositor_message_filter_.get();
+    } else if (sync_compositor_factory) {
+      input_handler_manager_client =
+          sync_compositor_factory->GetInputHandlerManagerClient();
     }
 #endif
     if (!input_handler_manager_client) {
@@ -1544,7 +1566,11 @@ RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
           SynchronousCompositorFactory::GetInstance()) {
+    DCHECK(!sync_compositor_message_filter_);
     return factory->CreateExternalBeginFrameSource(routing_id);
+  } else if (sync_compositor_message_filter_) {
+    return make_scoped_ptr(new SynchronousCompositorExternalBeginFrameSource(
+        routing_id, sync_compositor_message_filter_.get()));
   }
 #endif
   return make_scoped_ptr(new CompositorExternalBeginFrameSource(

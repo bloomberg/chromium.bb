@@ -15,7 +15,6 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
@@ -245,13 +244,6 @@ void SynchronousCompositorFactoryImpl::SetDeferredGpuService(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   DCHECK(!android_view_service_.get());
   android_view_service_ = service;
-}
-
-base::Thread* SynchronousCompositorFactoryImpl::CreateInProcessGpuThread(
-    const InProcessChildThreadParams& params) {
-  DCHECK(android_view_service_.get());
-  return new InProcessGpuThread(params,
-                                android_view_service_->sync_point_manager());
 }
 
 }  // namespace content

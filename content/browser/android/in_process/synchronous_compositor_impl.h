@@ -10,20 +10,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/input/input_event_ack_state.h"
-#include "content/public/browser/android/synchronous_compositor.h"
+#include "content/browser/android/synchronous_compositor_base.h"
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_output_surface.h"
 #include "content/renderer/input/synchronous_input_handler_proxy.h"
 #include "ipc/ipc_message.h"
 
 namespace cc {
-struct BeginFrameArgs;
 class InputHandler;
-}
-
-namespace blink {
-class WebInputEvent;
 }
 
 namespace content {
@@ -39,7 +33,7 @@ struct DidOverscrollParams;
 // from the Compositor thread.
 class SynchronousCompositorImpl
     : public SynchronousInputHandler,
-      public SynchronousCompositor,
+      public SynchronousCompositorBase,
       public SynchronousCompositorExternalBeginFrameSourceClient,
       public SynchronousCompositorOutputSurfaceClient {
  public:
@@ -47,12 +41,10 @@ class SynchronousCompositorImpl
   // is implicitly that of the in-process renderer.
   static SynchronousCompositorImpl* FromRoutingID(int routing_id);
 
-  static scoped_ptr<SynchronousCompositorImpl> Create(
-      RenderWidgetHostViewAndroid* rwhva,
-      WebContents* web_contents);
-  ~SynchronousCompositorImpl() override;
+  static void SetGpuServiceInProc(
+      scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
 
-  InputEventAckState HandleInputEvent(const blink::WebInputEvent& input_event);
+  ~SynchronousCompositorImpl() override;
 
   // Called by SynchronousCompositorRegistry.
   void DidInitializeRendererObjects(
@@ -67,10 +59,7 @@ class SynchronousCompositorImpl
   // SynchronousCompositorOutputSurfaceClient overrides.
   void Invalidate() override;
 
-  // Called by RenderWidgetHostViewAndroid.
-  void BeginFrame(const cc::BeginFrameArgs& args);
-
-  // SynchronousCompositor
+  // SynchronousCompositor overrides.
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       const gfx::Size& surface_size,
       const gfx::Transform& transform,
@@ -86,6 +75,12 @@ class SynchronousCompositorImpl
   void SetIsActive(bool is_active) override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
+  // SynchronousCompositorBase overrides.
+  void BeginFrame(const cc::BeginFrameArgs& args) override;
+  InputEventAckState HandleInputEvent(
+      const blink::WebInputEvent& input_event) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+
   // SynchronousInputHandler
   void SetNeedsSynchronousAnimateInput() override;
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
@@ -99,6 +94,7 @@ class SynchronousCompositorImpl
   void DidStopFlinging();
 
  private:
+  friend class SynchronousCompositorBase;
   SynchronousCompositorImpl(RenderWidgetHostViewAndroid* rwhva,
                             SynchronousCompositorClient* client);
   void RegisterWithClient();

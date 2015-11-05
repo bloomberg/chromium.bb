@@ -57,7 +57,7 @@ class ContentViewCoreImpl;
 class OverscrollControllerAndroid;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
-class SynchronousCompositorImpl;
+class SynchronousCompositorBase;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
 
@@ -244,7 +244,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnShowingPastePopup(const gfx::PointF& point);
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
-  SynchronousCompositorImpl* GetSynchronousCompositorImpl();
+  SynchronousCompositorBase* GetSynchronousCompositor();
   void SynchronousFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);
 
@@ -327,6 +327,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool Animate(base::TimeTicks frame_time);
   void RequestDisallowInterceptTouchEvent();
 
+  bool SyncCompositorOnMessageReceived(const IPC::Message& message);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -395,7 +397,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Size default_size_;
 
   const bool using_browser_compositor_;
-  scoped_ptr<SynchronousCompositorImpl> sync_compositor_;
+  scoped_ptr<SynchronousCompositorBase> sync_compositor_;
 
   scoped_ptr<DelegatedFrameEvictor> frame_evictor_;
 

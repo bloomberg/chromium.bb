@@ -372,17 +372,19 @@ void RenderWidgetCompositor::Initialize() {
       cmd->HasSwitch(cc::switches::kStrictLayerPropertyChangeChecking);
 
 #if defined(OS_ANDROID)
-  SynchronousCompositorFactory* synchronous_compositor_factory =
-      SynchronousCompositorFactory::GetInstance();
+  DCHECK(!SynchronousCompositorFactory::GetInstance() ||
+         !cmd->HasSwitch(switches::kIPCSyncCompositing));
+  bool using_synchronous_compositor =
+      SynchronousCompositorFactory::GetInstance() ||
+      cmd->HasSwitch(switches::kIPCSyncCompositing);
 
   // We can't use GPU rasterization on low-end devices, because the Ganesh
   // cache would consume too much memory.
   if (base::SysInfo::IsLowEndDevice())
     settings.gpu_rasterization_enabled = false;
-  settings.using_synchronous_renderer_compositor =
-      synchronous_compositor_factory;
+  settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
   settings.record_full_layer = widget_->DoesRecordFullLayer();
-  if (synchronous_compositor_factory) {
+  if (using_synchronous_compositor) {
     // Android WebView uses system scrollbars, so make ours invisible.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
@@ -395,12 +397,11 @@ void RenderWidgetCompositor::Initialize() {
   }
   settings.renderer_settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
-  settings.ignore_root_layer_flings =
-      synchronous_compositor_factory;
+  settings.ignore_root_layer_flings = using_synchronous_compositor;
   // Memory policy on Android WebView does not depend on whether device is
   // low end, so always use default policy.
   bool use_low_memory_policy =
-      base::SysInfo::IsLowEndDevice() && !synchronous_compositor_factory;
+      base::SysInfo::IsLowEndDevice() && !using_synchronous_compositor;
   // RGBA_4444 textures are only enabled by default for low end devices
   // and are disabled for Android WebView as it doesn't support the format.
   settings.renderer_settings.use_rgba_4444_textures = use_low_memory_policy;
@@ -417,7 +418,7 @@ void RenderWidgetCompositor::Initialize() {
   }
   // Webview does not own the surface so should not clear it.
   settings.renderer_settings.should_clear_root_render_pass =
-      !synchronous_compositor_factory;
+      !using_synchronous_compositor;
 
   // TODO(danakj): Only do this on low end devices.
   settings.create_low_res_tiling = true;

@@ -113,6 +113,7 @@ enum IPCMessageStart {
   BluetoothMsgStart,
   CastMediaMsgStart,
   AwMessagePortMsgStart,
+  SyncCompositorMsgStart,
   ExtensionsGuestViewMsgStart,
   GuestViewMsgStart,
   // Note: CastCryptoMsgStart and CastChannelMsgStart reserved for Chromecast

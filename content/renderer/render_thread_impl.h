@@ -115,6 +115,10 @@ class VideoCaptureImplManager;
 class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
 
+#if defined(OS_ANDROID)
+class SynchronousCompositorFilter;
+#endif
+
 #if defined(COMPILER_MSVC)
 // See explanation for other RenderViewHostImpl which is the same issue.
 #pragma warning(push)
@@ -279,6 +283,10 @@ class CONTENT_EXPORT RenderThreadImpl
 #if defined(OS_ANDROID)
   RendererDemuxerAndroid* renderer_demuxer() {
     return renderer_demuxer_.get();
+  }
+
+  SynchronousCompositorFilter* sync_compositor_message_filter() {
+    return sync_compositor_message_filter_.get();
   }
 #endif
 
@@ -601,6 +609,10 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<IPC::MessageFilter> input_event_filter_;
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<CompositorForwardingMessageFilter> compositor_message_filter_;
+
+#if defined(OS_ANDROID)
+  scoped_refptr<SynchronousCompositorFilter> sync_compositor_message_filter_;
+#endif
 
   scoped_refptr<BluetoothMessageFilter> bluetooth_message_filter_;
 

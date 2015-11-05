@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {

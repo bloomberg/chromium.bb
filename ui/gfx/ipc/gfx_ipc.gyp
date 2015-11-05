@@ -16,6 +16,7 @@
         '../../../ipc/ipc.gyp:ipc',
         '../../../skia/skia.gyp:skia',
         '../gfx.gyp:gfx',
+        '../gfx.gyp:gfx_geometry',
       ],
       'defines': [
         'GFX_IPC_IMPLEMENTATION',

@@ -36,9 +36,9 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"
+#include "content/browser/android/synchronous_compositor_base.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -71,6 +71,8 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -356,6 +358,11 @@ void RenderWidgetHostViewAndroid::Blur() {
 
 bool RenderWidgetHostViewAndroid::OnMessageReceived(
     const IPC::Message& message) {
+  if (IPC_MESSAGE_ID_CLASS(message.type()) == SyncCompositorMsgStart) {
+    bool handled = SyncCompositorOnMessageReceived(message);
+    DCHECK(handled);
+    return handled;
+  }
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
@@ -368,6 +375,11 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+bool RenderWidgetHostViewAndroid::SyncCompositorOnMessageReceived(
+    const IPC::Message& message) {
+  return sync_compositor_ && sync_compositor_->OnMessageReceived(message);
 }
 
 void RenderWidgetHostViewAndroid::InitAsChild(gfx::NativeView parent_view) {
@@ -1179,8 +1191,8 @@ void RenderWidgetHostViewAndroid::RetainFrame(
   last_frame_info_.reset(new LastFrameInfo(output_surface_id, frame.Pass()));
 }
 
-SynchronousCompositorImpl*
-RenderWidgetHostViewAndroid::GetSynchronousCompositorImpl() {
+SynchronousCompositorBase*
+RenderWidgetHostViewAndroid::GetSynchronousCompositor() {
   return sync_compositor_.get();
 }
 
@@ -1812,7 +1824,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   }
 
   if (!sync_compositor_) {
-    sync_compositor_ = SynchronousCompositorImpl::Create(
+    sync_compositor_ = SynchronousCompositorBase::Create(
         this, content_view_core_->GetWebContents());
   }
 }

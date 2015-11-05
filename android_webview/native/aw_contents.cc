@@ -63,7 +63,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/message_port_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
@@ -208,12 +207,8 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
       AwAutofillClient::FromWebContents(web_contents_.get());
   if (autofill_manager_delegate)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
-    // TODO(boliu): Figure out how to deal with this more nicely.
-    content::SynchronousCompositor::SetClientForWebContents(
-        web_contents_.get(), &browser_view_renderer_);
-  }
+  content::SynchronousCompositor::SetClientForWebContents(
+      web_contents_.get(), &browser_view_renderer_);
 }
 
 void AwContents::SetJavaPeers(JNIEnv* env,

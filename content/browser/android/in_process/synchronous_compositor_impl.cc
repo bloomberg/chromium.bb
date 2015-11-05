@@ -13,8 +13,6 @@
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/browser/web_contents/web_contents_android.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input_messages.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
@@ -35,11 +33,6 @@ int g_process_id = ChildProcessHost::kInvalidUniqueID;
 base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
-base::Thread* CreateInProcessGpuThreadForSynchronousCompositor(
-    const InProcessChildThreadParams& params) {
-  return g_factory.Get().CreateInProcessGpuThread(params);
-}
-
 }  // namespace
 
 SynchronousCompositorImpl* SynchronousCompositorImpl::FromRoutingID(
@@ -55,21 +48,8 @@ SynchronousCompositorImpl* SynchronousCompositorImpl::FromRoutingID(
       static_cast<RenderWidgetHostViewAndroid*>(rvh->GetWidget()->GetView());
   if (!rwhva)
     return nullptr;
-  return rwhva->GetSynchronousCompositorImpl();
-}
-
-// static
-scoped_ptr<SynchronousCompositorImpl> SynchronousCompositorImpl::Create(
-    RenderWidgetHostViewAndroid* rwhva,
-    WebContents* web_contents) {
-  DCHECK(web_contents);
-  WebContentsAndroid* web_contents_android =
-      static_cast<WebContentsImpl*>(web_contents)->GetWebContentsAndroid();
-  if (!web_contents_android->synchronous_compositor_client())
-    return nullptr;  // Not using sync compositing.
-
-  return make_scoped_ptr(new SynchronousCompositorImpl(
-      rwhva, web_contents_android->synchronous_compositor_client()));
+  return static_cast<SynchronousCompositorImpl*>(
+      rwhva->GetSynchronousCompositor());
 }
 
 SynchronousCompositorImpl::SynchronousCompositorImpl(
@@ -87,6 +67,7 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(
       need_animate_input_(false),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
+  g_factory.Get();  // Ensure it's initialized.
 
   int process_id = rwhva_->GetRenderWidgetHost()->GetProcess()->GetID();
   if (g_process_id == ChildProcessHost::kInvalidUniqueID) {
@@ -125,11 +106,9 @@ void SynchronousCompositorImpl::RegisterWithClient() {
 }
 
 // static
-void SynchronousCompositor::SetGpuService(
+void SynchronousCompositorImpl::SetGpuServiceInProc(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   g_factory.Get().SetDeferredGpuService(service);
-  GpuProcessHost::RegisterGpuMainThreadFactory(
-      CreateInProcessGpuThreadForSynchronousCompositor);
 }
 
 void SynchronousCompositorImpl::DidInitializeRendererObjects(
@@ -313,6 +292,11 @@ InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
       routing_id_, input_event);
 }
 
+bool SynchronousCompositorImpl::OnMessageReceived(const IPC::Message& message) {
+  NOTREACHED();
+  return false;
+}
+
 void SynchronousCompositorImpl::DeliverMessages() {
   ScopedVector<IPC::Message> messages;
   output_surface_->GetMessagesToDeliver(&messages);
@@ -363,19 +347,6 @@ void SynchronousCompositorImpl::UpdateRootLayerState(
 // requirement: SynchronousCompositorImpl() must only be used on the UI thread.
 bool SynchronousCompositorImpl::CalledOnValidThread() const {
   return BrowserThread::CurrentlyOn(BrowserThread::UI);
-}
-
-// static
-void SynchronousCompositor::SetClientForWebContents(
-    WebContents* contents,
-    SynchronousCompositorClient* client) {
-  DCHECK(contents);
-  DCHECK(client);
-  g_factory.Get();  // Ensure it's initialized.
-  WebContentsAndroid* web_contents_android =
-      static_cast<WebContentsImpl*>(contents)->GetWebContentsAndroid();
-  DCHECK(!web_contents_android->synchronous_compositor_client());
-  web_contents_android->set_synchronous_compositor_client(client);
 }
 
 }  // namespace content

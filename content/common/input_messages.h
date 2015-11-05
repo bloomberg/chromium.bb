@@ -41,8 +41,6 @@
 
 #define IPC_MESSAGE_START InputMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckState,
-                          content::INPUT_EVENT_ACK_STATE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticGestureParams::GestureSourceType,
     content::SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX)

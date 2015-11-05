@@ -1625,6 +1625,10 @@
       'browser/android/in_process/synchronous_compositor_registry_in_proc.h',
       'browser/android/in_process/synchronous_input_event_filter.cc',
       'browser/android/in_process/synchronous_input_event_filter.h',
+      'browser/android/synchronous_compositor_base.cc',
+      'browser/android/synchronous_compositor_base.h',
+      'browser/android/synchronous_compositor_host.cc',
+      'browser/android/synchronous_compositor_host.h',
     ],
     'auralinux_browser_sources': [
       'browser/accessibility/accessibility_tree_formatter_auralinux.cc',

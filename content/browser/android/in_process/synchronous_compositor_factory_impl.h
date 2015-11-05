@@ -47,7 +47,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
   scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
-      int view_id) override;
+      int frame_id) override;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;
@@ -55,8 +55,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   void SetDeferredGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
-  base::Thread* CreateInProcessGpuThread(
-      const InProcessChildThreadParams& params);
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
 

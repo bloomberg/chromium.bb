@@ -9,6 +9,7 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
 
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_state.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -21,6 +22,8 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckState,
+                          content::INPUT_EVENT_ACK_STATE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
                           content::RESOURCE_TYPE_LAST_TYPE - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextType,

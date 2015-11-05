@@ -4,9 +4,7 @@
 
 #include "content/renderer/android/synchronous_compositor_factory.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -18,11 +16,6 @@ SynchronousCompositorFactory* g_instance = NULL;
 void SynchronousCompositorFactory::SetInstance(
     SynchronousCompositorFactory* instance) {
   DCHECK(g_instance == NULL);
-
-  // This feature only makes sense in single process mode.
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSingleProcess));
-
   g_instance = instance;
 }
 

@@ -84,6 +84,8 @@
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "content/renderer/android/synchronous_compositor_filter.h"
+#include "content/renderer/android/synchronous_compositor_output_surface.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -1032,6 +1034,12 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
       return factory->CreateOutputSurface(
           routing_id(), frame_swap_message_queue_, context_provider,
           worker_context_provider);
+    } else if (RenderThreadImpl::current()->sync_compositor_message_filter()) {
+      return make_scoped_ptr(new SynchronousCompositorOutputSurface(
+          context_provider, worker_context_provider, routing_id(),
+          content::RenderThreadImpl::current()
+              ->sync_compositor_message_filter(),
+          frame_swap_message_queue_));
     }
 #endif
   }
@@ -2373,7 +2381,9 @@ RenderWidget::CreateGraphicsContext3D(bool compositor) {
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 #if defined(OS_ANDROID)
   bool using_synchronous_compositing =
-      SynchronousCompositorFactory::GetInstance();
+      SynchronousCompositorFactory::GetInstance() ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIPCSyncCompositing);
   // If we raster too fast we become upload bound, and pending
   // uploads consume memory. For maximum upload throughput, we would
   // want to allow for upload_throughput * pipeline_time of pending
