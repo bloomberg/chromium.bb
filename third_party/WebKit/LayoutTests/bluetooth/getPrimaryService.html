@@ -39,6 +39,28 @@ promise_test(function() {
          gattServer.getPrimaryService(heart_rate.uuid), expected)]));
 }, 'Request for wrong service. Reject with NotFoundError.');
 
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+    .then(service => {
+      assert_equals(service.uuid, heart_rate.uuid);
+    });
+}, 'Request for service. Must return even when the services are not immediately discovered');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => {
+      return assert_promise_rejects_with_message(
+        gattServer.getPrimaryService('battery_service'),
+        {name: 'NotFoundError', message: 'Service not found in device.'});
+    });
+}, 'Request for wrong service. Must reject with NotFoundError even when the services' +
+   ' are not immediately discovered');
+
 promise_test(function() {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})

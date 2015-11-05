@@ -199,6 +199,18 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetGenericAccessAdapter();
 
+  // |DelayedServicesDiscoveryAdapter|
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //   - Heart Rate Device
+  //      - Generic Access UUID (0x1800)
+  //      - Heart Rate UUID (0x180D)
+  //      - Heart Rate Service (No services will be returned the first time
+  //                            GetServices is called. Subsequent calls will
+  //                            return the Heart Rate Service)
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetDelayedServicesDiscoveryAdapter();
+
   // |HeartRateAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

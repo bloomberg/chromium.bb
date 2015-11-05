@@ -58,6 +58,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
 
   struct CacheQueryResult;
   struct RequestDeviceSession;
+  struct PrimaryServicesRequest;
 
   // Set |adapter_| to a BluetoothAdapter instance and register observers,
   // releasing references to previous |adapter_|.
@@ -78,6 +79,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                    device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
+  void GattServicesDiscovered(device::BluetoothAdapter* adapter,
+                              device::BluetoothDevice* device) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic,
@@ -159,13 +162,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       base::TimeTicks start_time,
       device::BluetoothDevice::ConnectErrorCode error_code);
 
-  // Callback for future BluetoothAdapter::ServicesDiscovered callback:
-  // For now we just post a delayed task.
-  // See: https://crbug.com/484504
-  void OnServicesDiscovered(int thread_id,
-                            int request_id,
-                            const std::string& device_id,
-                            const std::string& service_uuid);
+  // Adds the service to the map of services' instance ids to devices' instance
+  // ids and sends the service to the renderer.
+  void AddToServicesMapAndSendGetPrimaryServiceSuccess(
+      const device::BluetoothGattService& service,
+      int thread_id,
+      int request_id);
 
   // Callbacks for BluetoothGattCharacteristic::ReadRemoteCharacteristic.
   void OnCharacteristicValueRead(int thread_id,
@@ -220,6 +222,18 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       const std::string& characteristic_instance_id,
       CacheQueryResult& result);
 
+  // Returns true if all services have been discovered for the device.
+  // When the host gets a ServiceChanged indication, it automatically
+  // re-discovers services, and only forwards the ServiceChanged event to this
+  // class when it's done re-discovering.
+  bool IsServicesDiscoveryCompleteForDevice(const std::string& device_id);
+
+  // Adds the PrimaryServicesRequest to the vector of pending services requests
+  // for that device.
+  void AddToPendingPrimaryServicesRequest(
+      const std::string& device_id,
+      const PrimaryServicesRequest& request);
+
   // Show help pages from the chooser dialog.
   void ShowBluetoothOverviewLink();
   void ShowBluetoothPairingLink();
@@ -267,6 +281,14 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Retain BluetoothGattConnection objects to keep connections open.
   // TODO(scheib): Destroy as connections are closed. http://crbug.com/539643
   ScopedVector<device::BluetoothGattConnection> connections_;
+
+  // Keeps track of which devices have had their services discovered.
+  std::set<std::string> devices_with_discovered_services_;
+
+  // Map of device_id's to primary-services requests that need responses when
+  // that device's service discovery completes.
+  std::map<std::string, std::vector<PrimaryServicesRequest>>
+      pending_primary_services_requests_;
 
   // |weak_ptr_on_ui_thread_| provides weak pointers, e.g. for callbacks, and
   // because it exists and has been bound to the UI thread enforces that all
