@@ -316,8 +316,8 @@ Status ExecuteSwitchToWindow(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   std::string name;
-  if (!params.GetString("name", &name) || name.empty())
-    return Status(kUnknownError, "'name' must be a nonempty string");
+  if (!params.GetString("name", &name))
+    return Status(kUnknownError, "'name' must be a string");
 
   std::list<std::string> web_view_ids;
   Status status = session->chrome->GetWebViewIds(&web_view_ids);
