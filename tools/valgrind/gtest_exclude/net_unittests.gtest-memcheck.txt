@@ -20,3 +20,4 @@ DiskCacheBackendTest.NewEvictionInvalidEntryEnumeration
 DiskCacheBackendTest.ShutdownWithPendingCreate_Fast
 DiskCacheBackendTest.ShutdownWithPendingFileIO_Fast
 DiskCacheBackendTest.ShutdownWithPendingIO_Fast
+EndToEndTests/EndToEndTest.*
