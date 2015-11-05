@@ -129,10 +129,12 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   GURL plugin_url(plugin_metadata_->plugin_url());
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
-  if (plugin_metadata_->url_for_display())
-    installer()->OpenDownloadURL(plugin_url, web_contents);
-  else
-    installer()->StartInstalling(plugin_url, web_contents);
+  if (web_contents) {
+    if (plugin_metadata_->url_for_display())
+      installer()->OpenDownloadURL(plugin_url, web_contents);
+    else
+      installer()->StartInstalling(plugin_url, web_contents);
+  }
   return false;
 }
 
@@ -142,8 +144,10 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
 
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
-  ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
-      web_contents, true, identifier_);
+  if (web_contents) {
+    ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
+        web_contents, true, identifier_);
+  }
 
   return true;
 }
