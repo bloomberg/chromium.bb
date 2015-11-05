@@ -121,6 +121,8 @@ static_library("devtools") {
       "devtools_file_helper.h",
       "devtools_file_system_indexer.cc",
       "devtools_file_system_indexer.h",
+      "devtools_file_watcher.cc",
+      "devtools_file_watcher.h",
       "devtools_target_impl.cc",
       "devtools_target_impl.h",
       "devtools_targets_ui.cc",

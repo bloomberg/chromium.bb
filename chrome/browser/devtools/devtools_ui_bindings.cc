@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/global_confirm_info_bar.h"
@@ -993,6 +994,15 @@ void DevToolsUIBindings::FileSystemRemoved(
   base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("DevToolsAPI.fileSystemRemoved",
                      &file_system_path_value, NULL, NULL);
+}
+
+void DevToolsUIBindings::FilePathsChanged(
+    const std::vector<std::string>& file_paths) {
+  base::ListValue list;
+  for (auto path : file_paths)
+    list.AppendString(path);
+  CallClientFunction("DevToolsAPI.fileSystemFilesChanged",
+                     &list, NULL, NULL);
 }
 
 void DevToolsUIBindings::IndexingTotalWorkCalculated(

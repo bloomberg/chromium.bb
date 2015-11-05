@@ -17,6 +17,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
 
+class DevToolsFileWatcher;
 class Profile;
 
 namespace base {
@@ -45,6 +46,7 @@ class DevToolsFileHelper {
     virtual ~Delegate() {}
     virtual void FileSystemAdded(const FileSystem& file_system) = 0;
     virtual void FileSystemRemoved(const std::string& file_system_path) = 0;
+    virtual void FilePathsChanged(const std::vector<std::string>& paths) = 0;
   };
 
   DevToolsFileHelper(content::WebContents* web_contents, Profile* profile,
@@ -129,6 +131,7 @@ class DevToolsFileHelper {
       const base::FilePath& path,
       bool allowed);
   void FileSystemPathsSettingChanged();
+  void FilePathsChanged(const std::vector<std::string>& paths);
 
   content::WebContents* web_contents_;
   Profile* profile_;
@@ -137,6 +140,7 @@ class DevToolsFileHelper {
   PathsMap saved_files_;
   PrefChangeRegistrar pref_change_registrar_;
   std::set<std::string> file_system_paths_;
+  scoped_ptr<DevToolsFileWatcher> file_watcher_;
   base::WeakPtrFactory<DevToolsFileHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFileHelper);
 };

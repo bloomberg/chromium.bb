@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -212,9 +213,14 @@ DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
   pref_change_registrar_.Add(prefs::kDevToolsFileSystemPaths,
       base::Bind(&DevToolsFileHelper::FileSystemPathsSettingChanged,
                  base::Unretained(this)));
+  file_watcher_.reset(new DevToolsFileWatcher(
+      base::Bind(&DevToolsFileHelper::FilePathsChanged,
+                 weak_factory_.GetWeakPtr())));
 }
 
 DevToolsFileHelper::~DevToolsFileHelper() {
+  BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
+                            file_watcher_.release());
 }
 
 void DevToolsFileHelper::Save(const std::string& url,
@@ -392,6 +398,9 @@ DevToolsFileHelper::GetFileSystems() {
                                                    file_system_id,
                                                    file_system_path);
     file_systems.push_back(filesystem);
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            Bind(&DevToolsFileWatcher::AddWatch,
+                                 base::Unretained(file_watcher_.get()), path));
   }
   return file_systems;
 }
@@ -426,12 +435,26 @@ void DevToolsFileHelper::FileSystemPathsSettingChanged() {
                                                      file_system_id,
                                                      file_system_path);
       delegate_->FileSystemAdded(filesystem);
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              Bind(&DevToolsFileWatcher::AddWatch,
+                                   base::Unretained(file_watcher_.get()),
+                                   path));
     } else {
       remaining.erase(file_system_path);
     }
     file_system_paths_.insert(file_system_path);
   }
 
-  for (auto file_system_path : remaining)
+  for (auto file_system_path : remaining) {
     delegate_->FileSystemRemoved(file_system_path);
+    base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            Bind(&DevToolsFileWatcher::RemoveWatch,
+                                 base::Unretained(file_watcher_.get()), path));
+  }
+}
+
+void DevToolsFileHelper::FilePathsChanged(
+    const std::vector<std::string>& paths) {
+  delegate_->FilePathsChanged(paths);
 }
